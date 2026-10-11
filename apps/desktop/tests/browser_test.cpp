@@ -83,6 +83,29 @@ class BrowserTest : public QObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         QCOMPARE(controller.total(), 5);
     }
+    void preflightPreservesSelectionAndReportsDuplicates() {
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
+        controller.selectRow(2);
+        controller.selectRow(3);
+        QSignalSpy completed(&controller, &BrowserController::preflightReady);
+        controller.inspectSelection();
+        QTRY_COMPARE_WITH_TIMEOUT(completed.count(), 1, 5000);
+        QCOMPARE(controller.selectedCount(), 2);
+        QCOMPARE(controller.entries()->rowCount(), 5);
+        QCOMPARE(controller.preflightReport().value("entries").toString(), "2");
+        QCOMPARE(controller.preflightReport().value("findingCount").toString(), "1");
+        controller.selectRow(2);
+        QVERIFY(controller.preflightReport().isEmpty());
+        controller.selectRow(3);
+        controller.selectRow(0);
+        controller.inspectSelection();
+        QTRY_COMPARE_WITH_TIMEOUT(completed.count(), 2, 5000);
+        QCOMPARE(controller.preflightReport().value("entries").toString(), "2");
+        QCOMPARE(controller.preflightReport().value("bytes").toString(), "12");
+        QVERIFY(controller.preflightReport().value("unicodeReview").toBool());
+    }
     void unicodeSourcePath() {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
@@ -136,6 +159,19 @@ class BrowserTest : public QObject {
         QTest::qWait(30);
         QVERIFY(window->grabWindow().save("zip-browser-dark.png"));
         window->setProperty("darkMode", false);
+        controller->inspectSelection();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
+        auto *reportWindow = window->findChild<QQuickWindow *>("preflightWindow");
+        QVERIFY(reportWindow);
+        QTRY_VERIFY(reportWindow->isVisible());
+        QCOMPARE(reportWindow->transientParent(), window);
+        QCOMPARE(reportWindow->modality(), Qt::NonModal);
+        QVERIFY(reportWindow->flags().testFlag(Qt::WindowTitleHint));
+        QVERIFY(QTest::qWaitForWindowExposed(reportWindow));
+        QVERIFY(reportWindow->grabWindow().save("zip-preflight.png"));
+        reportWindow->close();
+        QVERIFY(window->isVisible());
+        QCOMPARE(controller->selectedCount(), 1);
     }
 };
 QTEST_MAIN(BrowserTest)

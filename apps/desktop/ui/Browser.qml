@@ -31,13 +31,16 @@ ApplicationWindow {
         id: reader
         objectName: "browserController"
         onReadyToClose: root.close()
+        onPreflightReady: preflightWindow.present()
         onChanged: {
+            if (!preflightReport.entries && !preflightReport.error) preflightWindow.close();
             if (sessionId !== root.searchSession) {
                 root.searchSession = sessionId;
                 searchField.clear();
             }
         }
     }
+    PreflightWindow { id: preflightWindow; owner: root; report: reader.preflightReport }
     Shortcut {
         sequence: StandardKey.Open
         enabled: !reader.busy
@@ -67,7 +70,11 @@ ApplicationWindow {
                     enabled: !reader.busy
                     onClicked: reader.chooseArchive()
                 }
-                AppButton { text: qsTr("解压"); enabled: false }
+                AppButton {
+                    text: qsTr("解压预检")
+                    enabled: reader.ready && !reader.busy && reader.selectedCount > 0
+                    onClicked: reader.inspectSelection()
+                }
                 AppButton { text: qsTr("新建"); enabled: false }
                 Item { Layout.fillWidth: true }
                 TextField {

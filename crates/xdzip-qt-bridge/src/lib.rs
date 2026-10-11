@@ -30,12 +30,24 @@ mod ffi {
         total: u64,
         rows: Vec<Row>,
     }
+    struct PreflightReport {
+        entries: u64,
+        declared_bytes: String,
+        findings: Vec<String>,
+        finding_count: u64,
+        unicode_review: bool,
+    }
     extern "Rust" {
         type Cancellation;
         type Archive;
         fn new_cancellation() -> Box<Cancellation>;
         fn cancel(self: &Cancellation);
         fn open_archive(path: &str, control: &Cancellation) -> Result<Box<Archive>>;
+        fn preflight(
+            archive: &Archive,
+            selected: &[String],
+            control: &Cancellation,
+        ) -> Result<PreflightReport>;
         fn count(archive: &Archive) -> u64;
         fn session_id(archive: &Archive) -> String;
         fn browse(
@@ -91,5 +103,44 @@ pub fn browse(
                 warning: entry.warning,
             })
             .collect(),
+    })
+}
+
+/// Preflight selection IDs against the owned snapshot. No output capability is returned.
+pub fn preflight(
+    archive: &Archive,
+    selected: &[String],
+    control: &Cancellation,
+) -> Result<ffi::PreflightReport, xdzip_codec_api::ScanError> {
+    use xdzip_codec_api::ScanError;
+    if selected.len() > 128 {
+        return Err(ScanError::Limit);
+    }
+    let ids = selected
+        .iter()
+        .map(|id| {
+            if id.len() > 20 {
+                return Err(ScanError::Invalid);
+            }
+            id.parse::<u64>()
+                .ok()
+                .and_then(|n| xdzip_domain::identity::EntryId::try_from(n).ok())
+                .ok_or(ScanError::Invalid)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let report = archive.0.preflight(&ids, &control.0)?;
+    Ok(ffi::PreflightReport {
+        entries: report.entries as u64,
+        declared_bytes: report
+            .declared_bytes
+            .map(|n| n.to_string())
+            .unwrap_or_else(|| "unknown".into()),
+        findings: report
+            .findings
+            .iter()
+            .map(|f| format!("{}:{}", f.entry.get(), f.reason))
+            .collect(),
+        finding_count: report.finding_count as u64,
+        unicode_review: report.unicode_review,
     })
 }

@@ -317,12 +317,21 @@ name = "xdzip-domain"
 version = "0.1.0"
 
 [[package]]
+name = "xdzip-extract-plan"
+version = "0.1.0"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-qt-bridge"
 version = "0.1.0"
 dependencies = [
  "cxx",
  "cxx-build",
  "xdzip-codec-api",
+ "xdzip-domain",
  "xdzip-runtime",
 ]
 
@@ -333,4 +342,5 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-codec-zip",
  "xdzip-domain",
+ "xdzip-extract-plan",
 ]

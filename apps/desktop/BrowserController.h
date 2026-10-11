@@ -26,6 +26,9 @@ class ArchiveTableModel final : public QAbstractTableModel {
     void replace(QList<BrowserRow> rows);
     const BrowserRow *rowAt(int row) const;
     void select(int row);
+    QStringList selectedIds() const {
+        return m_selected.values();
+    }
     int selectedCount() const {
         return m_selected.size();
     }
@@ -39,6 +42,7 @@ class BrowserController : public QObject {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
+    Q_PROPERTY(QVariantMap preflightReport READ preflightReport NOTIFY changed)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
     Q_PROPERTY(QString location READ location NOTIFY changed)
@@ -85,6 +89,10 @@ class BrowserController : public QObject {
     QString location() const {
         return m_location;
     }
+    QVariantMap preflightReport() const {
+        return m_preflightReport;
+    }
+    Q_INVOKABLE void inspectSelection();
     Q_INVOKABLE void selectRow(int row);
     Q_INVOKABLE void enterDirectory(int row);
     Q_INVOKABLE void showAll();
@@ -97,10 +105,13 @@ class BrowserController : public QObject {
   signals:
     void changed();
     void readyToClose();
+    void preflightReady();
 
   private:
     struct Store;
     struct Result {
+        bool preflight = false;
+        QVariantMap report;
         QList<BrowserRow> rows;
         QString error;
         QString session;
@@ -115,6 +126,7 @@ class BrowserController : public QObject {
     bool m_busy = false;
     bool m_ready = false;
     bool m_closing = false;
+    QVariantMap m_preflightReport;
     QVariantMap m_detail;
     QString m_directory;
     QString m_location;

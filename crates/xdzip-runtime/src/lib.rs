@@ -61,6 +61,14 @@ impl Archive {
     pub fn key(&self) -> QueryKey {
         self.key
     }
+    /// Inspect metadata for selected physical IDs. This does not open any output file.
+    pub fn preflight(
+        &self,
+        selected: &[xdzip_domain::identity::EntryId],
+        control: &Cancellation,
+    ) -> Result<xdzip_extract_plan::Report, ScanError> {
+        xdzip_extract_plan::inspect(&self.rows, selected, control)
+    }
     /// Filter an immutable snapshot by an explicit safe directory and literal name text.
     /// Directory scope includes descendants; it never resolves a host filesystem path.
     pub fn browse(
@@ -174,6 +182,14 @@ mod tests {
                 .key()
                 .session
         );
+        let report = archive
+            .preflight(
+                &[archive.page(0, 1).unwrap()[0].id],
+                &Cancellation::default(),
+            )
+            .unwrap();
+        assert_eq!(report.entries, 1);
+        assert_eq!(report.finding_count, 0);
         assert_eq!(before, std::fs::read(&path).unwrap());
     }
 }

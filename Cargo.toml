@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/xdzip-runtime", "crates/xdzip-qt-bridge", "crates/xdzip-domain", "crates/xdzip-codec-api", "crates/xdzip-codec-zip", "tools/bridge-probe"]
+members = ["crates/xdzip-extract-plan", "crates/xdzip-runtime", "crates/xdzip-qt-bridge", "crates/xdzip-domain", "crates/xdzip-codec-api", "crates/xdzip-codec-zip", "tools/bridge-probe"]
 resolver = "3"
 
 [workspace.package]

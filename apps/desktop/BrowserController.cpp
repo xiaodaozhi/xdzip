@@ -70,6 +70,15 @@ BrowserController::BrowserController(QObject *parent)
             emit readyToClose();
             return;
         }
+        if (result.preflight) {
+            m_preflightReport = result.report;
+            if (!result.error.isEmpty())
+                m_preflightReport = {{"error", explain(result.error)}};
+            m_message.clear();
+            emit changed();
+            emit preflightReady();
+            return;
+        }
         m_message = explain(result.error);
         m_ready = result.error.isEmpty();
         m_model.replace(result.rows);
@@ -151,6 +160,7 @@ void BrowserController::selectRow(int row) {
                 {"directory", item->directory},
                 {"id", item->id}};
     m_model.select(row);
+    m_preflightReport.clear();
     emit changed();
 }
 void BrowserController::enterDirectory(int row) {
@@ -176,6 +186,63 @@ void BrowserController::search(const QString &text) {
     m_search = text;
     start({}, 0);
 }
+void BrowserController::inspectSelection() {
+    if (m_busy || !m_ready || m_closing || m_model.selectedCount() == 0)
+        return;
+    const auto selected = m_model.selectedIds();
+    m_busy = true;
+    m_preflightReport.clear();
+    m_store->control =
+        std::make_shared<rust::Box<xdzip::reader::Cancellation>>(xdzip::reader::new_cancellation());
+    const auto store = m_store;
+    emit changed();
+    m_watcher.setFuture(QtConcurrent::run([store, selected] {
+        Result result;
+        result.preflight = true;
+        try {
+            if (!store->archive) {
+                result.error = "source_io";
+                return result;
+            }
+            rust::Vec<rust::String> ids;
+            for (const auto &id : selected)
+                ids.push_back(rust::String(id.toStdString()));
+            const auto report = xdzip::reader::preflight(
+                **store->archive, rust::Slice<const rust::String>(ids.data(), ids.size()),
+                **store->control);
+            const QHash<QString, QString> reasons = {
+                {"path", tr("名称包含不支持的路径、保留名或非法组件")},
+                {"collision", tr("输出名称重名，或文件与目录冲突")},
+                {"metadata", tr("编码、链接或特殊条目需要检查")},
+                {"encrypted", tr("加密条目尚不支持")},
+                {"method", tr("压缩方法未纳入首版解码范围")},
+                {"file_limit", tr("声明大小超过单文件 8 GiB 限额")},
+                {"total_limit", tr("声明总量超过 20 GiB 或计数溢出")},
+                {"high_ratio", tr("声明压缩比超过 1000:1，需要复核")}};
+            QStringList findings;
+            for (const auto &finding : report.findings) {
+                const auto value =
+                    QString::fromUtf8(finding.data(), static_cast<qsizetype>(finding.size()));
+                const auto split = value.indexOf(':');
+                findings << tr("记录 %1：%2")
+                                .arg(value.left(split),
+                                     reasons.value(value.mid(split + 1), tr("需要检查")));
+            }
+            result.report = {
+                {"entries", QString::number(report.entries)},
+                {"bytes", QString::fromUtf8(report.declared_bytes.data(),
+                                            static_cast<qsizetype>(report.declared_bytes.size()))},
+                {"findingCount", QString::number(report.finding_count)},
+                {"findings", findings},
+                {"unicodeReview", report.unicode_review}};
+        } catch (const rust::Error &error) {
+            result.error = QString::fromUtf8(error.what());
+        } catch (const std::exception &) {
+            result.error = "source_io";
+        }
+        return result;
+    }));
+}
 void BrowserController::cancel() {
     if (m_store->control)
         (*m_store->control)->cancel();
@@ -191,6 +258,7 @@ bool BrowserController::requestClose() {
 }
 void BrowserController::start(const QString &path, int offset) {
     m_busy = true;
+    m_preflightReport.clear();
     m_detail.clear();
     m_message = tr("正在读取归档目录…");
     m_store->control =
