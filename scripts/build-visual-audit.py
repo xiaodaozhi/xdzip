@@ -25,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=ROOT / '.cache/visual-audit')
     parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/visual-audit')
+    parser.add_argument('--fail-on-differences', action='store_true', help='Fail on measured regressions; unresolved fonts remain explicitly unverified')
     parser.add_argument('--product-commit', help='Revision that produced the captures')
     parser.add_argument('--print-checks', action='store_true', help='Emit ASCII JSON for native CI log review')
     args = parser.parse_args()
@@ -57,8 +58,8 @@ def main():
     for field, expected in zip(['width', 'height', 'minimumWidth', 'minimumHeight'],
                                tokens['size']['initialWindow'] + tokens['size']['minimumWindow']):
         check('主窗口 ' + field, light[field], expected, 'tokens.size')
-    sidebar = one('browser-light', lambda n: n.get('color') == tokens['light']['sidebar'].lower() and n['height'] > 500)
-    inspector = one('browser-light', lambda n: n['class'] == 'QQuickRectangle' and n['x'] > 1000 and n['height'] > 500 and n['width'] > 200)
+    sidebar = one('browser-light', lambda n: n['name'] == 'archiveSidebar' or (n.get('color') == tokens['light']['sidebar'].lower() and n['height'] > 500))
+    inspector = one('browser-light', lambda n: n['name'] == 'archiveInspector' or (n['class'] == 'QQuickRectangle' and n['x'] > 1000 and n['height'] > 500 and n['width'] > 200))
     check('侧栏宽度', sidebar['width'], tokens['size']['sidebar'], 'tokens.size.sidebar')
     check('详情栏宽度', inspector['width'], tokens['size']['inspector'], 'tokens.size.inspector')
     row = one('browser-light', lambda n: n['name'] == 'entry-0-0')
@@ -96,8 +97,23 @@ def main():
     check('200% 字号：侧栏归档名', archive_name('browser-large-type')['resolvedPixelSize'], archive_name('browser-light')['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
     search_large = one('browser-large-type', lambda n: n['name'] == 'archiveSearch')
     check('200% 字号：搜索输入', search_large['resolvedPixelSize'], search['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
-    large_header = one('browser-large-type', lambda n: n.get('text') == '原始大小' and n.get('leftPadding') == 14)
+    large_header = one('browser-large-type', lambda n: n.get('text') == '原始大小' and n.get('leftPadding') in [12, 14])
     check('200% 表头文字可容纳', large_header['contentWidth'] <= large_header['width'] - large_header['leftPadding'], True, 'contentWidth <= width - leftPadding')
+    if any(n['name'] == 'archiveInspector' for n in captures['browser-light']['nodes']):
+        for scene in ['browser-light', 'browser-large-type']:
+            for column in [1, 2]:
+                cell = one(scene, lambda n: n['name'] == f'entry-1-{column}')
+                number = one(scene, lambda n: n['path'].startswith(cell['path'] + '/') and n['class'].startswith('QQuickText') and n.get('text') == ('12 B' if column == 1 else '15 B'))
+                check(f'{scene} 数字列 {column} 右对齐', number['horizontalAlignment'], 'AlignRight', 'Text.AlignRight')
+                check(f'{scene} 数字列 {column} 文字可容纳', number['contentWidth'] <= number['width'], True, 'not elided')
+        narrow = captures['browser-request-1040']
+        narrow_inspector = next(n for n in narrow['nodes'] if n['name'] == 'archiveInspector')
+        check('1040 窄窗口详情栏收起', narrow_inspector['visible'], False, 'inspectorCollapseWidth')
+        check('最小窗口宽度可达', narrow['width'], 1040, 'minimumWindow')
+        for scene in ['browser-light', 'browser-large-type']:
+            opened = one(scene, lambda n: n['name'] == 'archiveOpen')
+            searched = one(scene, lambda n: n['name'] == 'archiveSearch')
+            check(scene + ' 工具栏控件中心 Y 差', opened['y'] + opened['height'] / 2 - searched['y'] - searched['height'] / 2, 0, 'shared controlHeight', .5)
     for theme in ['light', 'dark']:
         for foreground, background in [('text', 'surface'), ('textSecondary', 'surface'), ('accentText', 'accent')]:
             a, b = sorted([luminance(tokens[theme][foreground]), luminance(tokens[theme][background])])
@@ -141,6 +157,9 @@ def main():
     print(json.dumps({k: report[k] for k in ['status', 'passed', 'failed', 'unverified']}, ensure_ascii=False))
     if args.print_checks:
         print('VISUAL_AUDIT_CHECKS=' + json.dumps(dict(environment=environment, checks=checks), ensure_ascii=True))
+
+    if args.fail_on_differences and report['failed']:
+        raise SystemExit(1)
 
 
 if __name__ == '__main__':

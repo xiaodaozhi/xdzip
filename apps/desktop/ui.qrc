@@ -10,6 +10,7 @@
     <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
     <file>ui/Browser.qml</file>
+    <file>ui/InspectorPanel.qml</file>
     <file>ui/PreflightWindow.qml</file>
     <file alias="assets/info-light.png">../../design/hifi/v2/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/hifi/v2/png/dark/info@3x.png</file>
@@ -33,5 +34,21 @@
     <file alias="assets/dark/more.png">../../design/assets/v1/png/dark/more@3x.png</file>
     <file alias="assets/dark/settings.png">../../design/assets/v1/png/dark/settings@3x.png</file>
     <file alias="assets/dark/search.png">../../design/assets/v1/png/dark/search@3x.png</file>
+    <file alias="assets/light/folder.png">../../design/assets/v1/png/light/folder@3x.png</file>
+    <file alias="assets/light/file-text.png">../../design/assets/v1/png/light/file-text@3x.png</file>
+    <file alias="assets/light/file-code.png">../../design/assets/v1/png/light/file-code@3x.png</file>
+    <file alias="assets/light/file-markdown.png">../../design/assets/v1/png/light/file-markdown@3x.png</file>
+    <file alias="assets/light/file-pdf.png">../../design/assets/v1/png/light/file-pdf@3x.png</file>
+    <file alias="assets/light/close.png">../../design/assets/v1/png/light/close@3x.png</file>
+    <file alias="assets/light/view-list.png">../../design/assets/v1/png/light/view-list@3x.png</file>
+    <file alias="assets/dark/folder.png">../../design/assets/v1/png/dark/folder@3x.png</file>
+    <file alias="assets/dark/file-text.png">../../design/assets/v1/png/dark/file-text@3x.png</file>
+    <file alias="assets/dark/file-code.png">../../design/assets/v1/png/dark/file-code@3x.png</file>
+    <file alias="assets/dark/file-markdown.png">../../design/assets/v1/png/dark/file-markdown@3x.png</file>
+    <file alias="assets/dark/file-pdf.png">../../design/assets/v1/png/dark/file-pdf@3x.png</file>
+    <file alias="assets/dark/close.png">../../design/assets/v1/png/dark/close@3x.png</file>
+    <file alias="assets/dark/view-list.png">../../design/assets/v1/png/dark/view-list@3x.png</file>
+    <file alias="assets/light/image-file.png">../../design/hifi/v2/png/light/image-file@3x.png</file>
+    <file alias="assets/dark/image-file.png">../../design/hifi/v2/png/dark/image-file@3x.png</file>
   </qresource>
 </RCC>

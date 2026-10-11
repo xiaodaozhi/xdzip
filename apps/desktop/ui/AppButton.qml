@@ -4,9 +4,12 @@ import QtQuick.Controls
 Button {
     id: root
     property bool primary: false
-    implicitHeight: Math.max(Theme.buttonHeight, contentItem.implicitHeight + Theme.gap * 2)
+    implicitHeight: Math.max(Theme.buttonHeight, contentItem.implicitHeight + 12)
     implicitWidth: contentItem.implicitWidth + Theme.gutter * 2
-    padding: Theme.gap
+    leftPadding: Theme.gap
+    rightPadding: Theme.gap
+    topPadding: 6
+    bottomPadding: 6
     focusPolicy: Qt.StrongFocus
     Accessible.name: text
     contentItem: Text {

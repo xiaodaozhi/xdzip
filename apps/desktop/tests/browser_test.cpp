@@ -275,6 +275,36 @@ class BrowserTest : public QObject {
         QVERIFY(window->isVisible());
         QCOMPARE(controller->selectedCount(), 1);
         QVERIFY(visual_audit::capture(engine, window));
+        // Hiding/reopening details must preserve the actual archive selection.
+        window->resize(1280, 820);
+        auto *inspector = findVisual(window->contentItem(), "archiveInspector");
+        auto *toggle = findVisual(window->contentItem(), "inspectorToggle");
+        QVERIFY(inspector && toggle);
+        QTRY_VERIFY(inspector->isVisible());
+        auto *closeDetails = findVisual(inspector, "inspectorClose");
+        QVERIFY(closeDetails);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            closeDetails->mapToScene(QPointF(closeDetails->width() / 2, closeDetails->height() / 2))
+                .toPoint());
+        QTRY_VERIFY(!inspector->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(toggle, "clicked"));
+        QTRY_VERIFY(inspector->isVisible());
+        window->resize(1040, 680);
+        QTRY_VERIFY(!inspector->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(toggle, "clicked"));
+        auto *detailsWindow = window->findChild<QQuickWindow *>("inspectorWindow");
+        QVERIFY(detailsWindow);
+        QTRY_VERIFY(detailsWindow->isVisible());
+        QCOMPARE(detailsWindow->transientParent(), window);
+        QCOMPARE(detailsWindow->modality(), Qt::NonModal);
+        QVERIFY(!detailsWindow->flags().testFlag(Qt::FramelessWindowHint));
+        QCOMPARE(window->width(), 1040);
+        QCOMPARE(controller->selectedCount(), 1);
+        if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT"))
+            QVERIFY(visual_audit::save(detailsWindow, qEnvironmentVariable("XDZIP_VISUAL_AUDIT"),
+                                       "inspector-independent"));
+        detailsWindow->close();
     }
 };
 QTEST_MAIN(BrowserTest)

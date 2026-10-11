@@ -48,13 +48,13 @@ Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 New-Item -ItemType Directory -Force 'dist/review' | Out-Null
-# Capture actual Qt geometry on each native host. Known visual differences are evidence,
-# not approved golden images; capture or selector failures still fail the build.
+# Gate the repaired geometry and palette contracts on each native host.
+# Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $browserTests @('renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
-Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks')
+Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks', '--fail-on-differences')
 Copy-Item 'build/desktop/apps/desktop/*.png' 'dist/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review'
 Copy-Item 'docs/qa/m1-acceptance.md' 'dist/review/README.md'
