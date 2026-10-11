@@ -16,18 +16,21 @@
     "Changed archive source stops the task and requires reopening",
     "Creating over an existing archive requires explicit confirmation; cancelled creation publishes nothing",
     "Search defers updates during IME composition; empty archives show consistent zero counts",
+    "Three platform title bars place controls correctly; operation windows drag and close",
+    "Closing task details preserves the task; background completion does not steal focus; results reopen",
+    "Closing a conflict window cancels safely rather than implicitly overwriting or skipping",
     "Single-file distributable initializes and opens creation without network access"
   ],
   "page_errors": [],
   "external_requests": [],
   "scope": "Simulated design interactions only",
   "status": "passed",
-  "checked_scenarios": 17,
-  "screenshots": 19,
+  "checked_scenarios": 20,
+  "screenshots": 22,
   "source_sha256": {
-    "design/prototype/index.html": "2fb46ac5c159e83a73157eaadb133ce461ab68734cd22be4381473b7ea13022f",
-    "design/prototype/app.js": "70a476f8c1fa4cd08058009e2027b2a042c28233d2da267d1be9b8c181245c70",
-    "design/prototype/styles.css": "d7b4f3bc9dea1286fac9402271c7a5654fa3578f5d10e8267db3122bb2689ba2"
+    "design/prototype/index.html": "88a91ca482f28290614e2ca3c9d7db0a2dc477ef8e7555851f8584c6ccd29495",
+    "design/prototype/app.js": "b0eb179c20dc38c9048ce98c43c9bcb3f274c134ba2f503662fe8d36e0c134a7",
+    "design/prototype/styles.css": "c43fd97f2f90b627fa135075edfee5ef89f897390e7fe987409e4fa62c986840"
   },
-  "standalone_sha256": "2d78f0f1c99c998963ecfb9df3dcd6527d2857a7bd8ff860a0ecb7fc495d5341"
+  "standalone_sha256": "0d0f594ddb0ce2f9c8c15286d1b0cc82df8a25f587864725c9dc2f7573fd40a8"
 }

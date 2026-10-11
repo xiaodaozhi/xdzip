@@ -29,8 +29,19 @@ const paths = {
     arrow: "M4 12h15 m-5-5 5 5-5 5",
     clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v6h4",
 };
+// Filled document marks distinguish file kinds without relying on color alone.
+const marks = {
+    folder: '<path fill="#8bb6ee" stroke="none" d="M2 5a2 2 0 0 1 2-2h5l3 3h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><path fill="#5592df" stroke="none" d="M2 9h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/>',
+    archive:
+        '<rect x="3" y="2" width="18" height="20" rx="4" fill="#4169df" stroke="none"/><path stroke="white" d="M10 4h3m-2 3h3m-4 3h3m-2 3h3m-4 3h4v4h-4z"/>',
+    pdf: '<path fill="#fbe8e8" stroke="#d97272" d="M5 2h9l5 5v15H5z M14 2v6h5"/><path stroke="#cc5353" d="M8 12h8m-8 3h8m-8 3h5"/>',
+    file: '<path fill="var(--surface)" stroke="#8f9aaa" d="M5 2h9l5 5v15H5z M14 2v6h5 M8 12h8m-8 3h8m-8 3h5"/>',
+    code: '<path stroke="#8193b1" d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 20"/>',
+    markdown:
+        '<rect x="2" y="5" width="20" height="14" rx="2" stroke="#8193b1"/><path stroke="#8193b1" d="M5 16V8l4 4 4-4v8m5-8v8m-2-2 2 2 2-2"/>',
+};
 const icon = (name, cls = "") =>
-    `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.file}"/></svg>`;
+    `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${marks[name] || `<path d="${paths[name] || paths.file}"/>`}</svg>`;
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
     String(s).replace(
@@ -230,7 +241,11 @@ function fileIcon(e) {
           ? "image"
           : e.type.includes("PDF")
             ? "pdf"
-            : "file";
+            : e.name.endsWith(".gpx")
+              ? "code"
+              : e.name.endsWith(".md")
+                ? "markdown"
+                : "file";
 }
 function choosePath(path) {
     state.path = path;
@@ -286,7 +301,7 @@ function render() {
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
-                `<tr tabindex="0" data-id="${e.id}" class="${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name">${icon(fileIcon(e), fileIcon(e))}<span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="date-col">2026/10/08</td></tr>`,
+                `<tr tabindex="0" data-id="${e.id}" class="${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name">${icon(fileIcon(e), fileIcon(e))}<span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${e.folder ? "文件夹" : esc(e.type)}</td><td class="date-col">2026/10/08</td></tr>`,
         )
         .join("");
     $("#file-rows")
@@ -482,16 +497,56 @@ function updateTaskCount() {
         ? `任务 ${["running", "stopping", "conflict"].includes(state.task.status) ? "1" : "· 已结束"}`
         : "任务 0";
 }
+// Web chrome is a design simulation. Production uses separate QQuickWindows.
+function windowClose() {
+    if (state.modal === "conflict") return cancelTask();
+    if (state.modal === "create-overwrite") return showCreate();
+    closeModal(); // Closing a task view never cancels its underlying task.
+}
+function windowChrome(title, taskView) {
+    const mac = document.body.dataset.platform === "macos";
+    const controls = `<div class="os-controls ${mac ? "mac-controls" : "pc-controls"}">
+        <button class="os-close" aria-label="关闭操作窗口">${icon("close")}</button>
+        <button class="os-minimize" aria-label="收起任务窗口" ${taskView ? "" : "disabled"}><span>−</span></button>
+        <button class="os-maximize" aria-label="此窗口不可最大化" disabled><span>□</span></button></div>`;
+    return `<div class="os-titlebar">${mac ? controls : icon("archive")}<span class="os-title">${esc(title)}</span>${mac ? '<span class="os-balance"></span>' : controls}</div>`;
+}
 function dialog(html, kind, spec, focus) {
-    returnFocus = $("#modal").open ? returnFocus : document.activeElement;
-    $("#modal").innerHTML = html;
+    const el = $("#modal");
+    returnFocus = el.open ? returnFocus : document.activeElement;
+    if (el.open) el.close();
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const title = template.content.querySelector("h1")?.textContent || "xdzip";
+    el.innerHTML = windowChrome(title, kind === "progress") + html;
+    el.setAttribute("aria-label", title);
+    el.style.left = el.style.top = el.style.margin = "";
     state.modal = kind;
     setSpec(spec);
-    if (!$("#modal").open) $("#modal").showModal();
-    if (focus) {
-        const el = $(focus);
-        if (el) el.focus();
-    }
+    // Decision windows block only their owner; task details/settings remain modeless.
+    const modeless = ["progress", "settings", "result"].includes(kind);
+    el.dataset.modeless = String(modeless);
+    if (modeless) el.show();
+    else el.showModal();
+    $(".os-close").onclick = windowClose;
+    $(".os-minimize").onclick = closeModal;
+    const bar = $(".os-titlebar");
+    bar.onpointerdown = (event) => {
+        if (event.target.closest("button") || event.button !== 0) return;
+        const rect = el.getBoundingClientRect();
+        const dx = event.clientX - rect.left,
+            dy = event.clientY - rect.top;
+        bar.setPointerCapture(event.pointerId);
+        bar.onpointermove = (move) => {
+            el.style.margin = "0";
+            el.style.left = `${Math.max(0, Math.min(innerWidth - rect.width, move.clientX - dx))}px`;
+            el.style.top = `${Math.max(0, Math.min(innerHeight - 44, move.clientY - dy))}px`;
+        };
+        bar.onpointerup = bar.onlostpointercapture = () => {
+            bar.onpointermove = null;
+        };
+    };
+    if (focus) $(focus)?.focus();
 }
 function closeModal() {
     if ($("#modal").open) $("#modal").close();
@@ -499,8 +554,8 @@ function closeModal() {
     render();
     if (returnFocus?.isConnected) returnFocus.focus();
 }
-function header(title, subtitle, ico = "archive", closable = true) {
-    return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div>${closable ? `<button class="icon-button" data-close aria-label="关闭对话框">${icon("close")}</button>` : ""}</header>`;
+function header(title, subtitle, ico = "archive") {
+    return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
 }
 function footer(content, ready = "准备就绪") {
     return `<footer class="modal-footer"><span class="ready-label">${icon("shield")}${ready}</span>${content}</footer>`;
@@ -774,7 +829,7 @@ function runTimer() {
     clearInterval(timer);
     timer = setInterval(() => {
         const t = state.task;
-        if (!t || t.status !== "running") return;
+        if (!t || !["running", "conflict"].includes(t.status)) return;
         const next = t.progress + 7;
         if (["disk", "source"].includes(state.scenario) && next >= 70) {
             t.progress = 68;
@@ -788,7 +843,7 @@ function runTimer() {
 }
 function cancelTask() {
     const t = state.task;
-    if (!t || t.status !== "running") return;
+    if (!t || !["running", "conflict"].includes(t.status)) return;
     clearInterval(timer);
     t.status = "stopping";
     showProgress();
@@ -827,7 +882,7 @@ function finishTask(result) {
         t.failed = [];
     }
     updateTaskCount();
-    showResult();
+    if (state.modal === "progress") showResult();
 }
 function showResult() {
     const t = state.task,
@@ -1161,19 +1216,26 @@ $("#sort-name").onclick = $("#sort-direction").onclick = () => {
 };
 $("#tasks").onclick = showTask;
 $("#settings").onclick = showSettings;
-$("#modal").addEventListener("cancel", (e) => {
-    e.preventDefault();
-    if (state.modal === "conflict") {
-        toast("请先选择重名处理方式。");
-        return;
-    }
-    if (state.modal === "create-overwrite") {
-        showCreate();
-        return;
-    }
-    closeModal();
+$("#platform").onchange = (event) => {
+    document.body.dataset.platform = event.target.value;
+    if ($("#modal").open) closeModal();
+    $(".search-field kbd").textContent =
+        event.target.value === "macos" ? "⌘ F" : "Ctrl F";
+};
+$("#modal").addEventListener("cancel", (event) => {
+    event.preventDefault();
+    windowClose();
 });
 document.addEventListener("keydown", (e) => {
+    if (
+        e.key === "Escape" &&
+        $("#modal").open &&
+        $("#modal").dataset.modeless === "true"
+    ) {
+        e.preventDefault();
+        windowClose();
+        return;
+    }
     if (e.key === "Escape" && !$("#modal").open) {
         $("#extract-menu").hidden = true;
         if (document.activeElement === $("#search")) {

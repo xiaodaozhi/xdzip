@@ -1678,3 +1678,238 @@ dialog::backdrop {
         font-size: 18px;
     }
 }
+
+/* Platform window frames: no web overlay or sheet attachment. */
+svg {
+    stroke-width: 1.5;
+    flex-shrink: 0;
+}
+.entry-name {
+    gap: 10px;
+    font-size: 13px;
+}
+.entry-name svg {
+    width: 20px;
+    height: 22px;
+    flex-shrink: 0;
+}
+th.type-col {
+    width: 94px;
+    text-align: left;
+}
+td.type-col {
+    color: var(--secondary);
+    font-size: 12px;
+    padding-right: 8px;
+}
+td:nth-child(3),
+td:nth-child(4),
+td:last-child {
+    font-size: 12px;
+}
+tbody tr.selected td:first-child {
+    border-radius: 6px 0 0 6px;
+}
+tbody tr.selected td:last-child {
+    border-radius: 0 6px 6px 0;
+}
+.traffic i {
+    width: 12px;
+    height: 12px;
+}
+.app-brand > svg {
+    width: 24px;
+    height: 28px;
+}
+dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    z-index: 100;
+    border-radius: 12px;
+    box-shadow:
+        0 22px 65px #10182838,
+        0 2px 8px #10182820;
+}
+dialog::backdrop {
+    background: transparent;
+    backdrop-filter: none;
+}
+.os-titlebar {
+    height: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--canvas);
+    user-select: none;
+    touch-action: none;
+}
+.os-title {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.os-controls {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.mac-controls {
+    gap: 8px;
+    width: 52px;
+}
+.mac-controls button {
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid #00000016;
+    display: grid;
+    place-items: center;
+}
+.mac-controls .os-close {
+    background: #ff5f57;
+}
+.mac-controls .os-minimize {
+    background: #febc2e;
+}
+.mac-controls .os-maximize {
+    background: #28c840;
+}
+.mac-controls button:disabled {
+    background: #c5c7ca;
+    opacity: 0.6;
+}
+.mac-controls svg,
+.mac-controls span {
+    width: 8px;
+    height: 8px;
+    font-size: 10px;
+    line-height: 8px;
+    color: #64251f;
+    opacity: 0;
+}
+.mac-controls:hover .os-close svg,
+.mac-controls:hover button:not(:disabled) span {
+    opacity: 1;
+}
+.os-balance {
+    width: 52px;
+}
+.pc-controls {
+    flex-direction: row-reverse;
+    height: 44px;
+    margin-right: -14px;
+}
+.pc-controls button {
+    height: 44px;
+    width: 42px;
+    display: grid;
+    place-items: center;
+    color: var(--text);
+}
+.pc-controls button:disabled {
+    opacity: 0.25;
+}
+.pc-controls .os-close:hover {
+    background: #c42b1c;
+    color: white;
+}
+.pc-controls svg {
+    width: 16px;
+    height: 16px;
+}
+body:not([data-platform="macos"]) .os-title {
+    text-align: left;
+}
+body[data-platform="windows"] dialog {
+    border-radius: 8px;
+}
+body[data-platform="linux"] dialog {
+    border-radius: 10px;
+}
+body[data-platform="linux"] .pc-controls .os-close {
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    margin: 0 8px;
+    background: var(--border);
+}
+body:not([data-platform="macos"]) .titlebar > .traffic {
+    display: none;
+}
+body:not([data-platform="macos"]) .titlebar::after {
+    content: "−　 □　 ×";
+    white-space: pre;
+    font-size: 17px;
+    margin-left: 12px;
+    color: var(--secondary);
+}
+.modal-header {
+    padding-top: 24px;
+    align-items: center;
+}
+.modal-header h1 {
+    line-height: 1.4;
+}
+.modal-symbol {
+    width: 42px;
+    height: 46px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+}
+.modal-symbol svg {
+    width: 28px;
+    height: 30px;
+}
+.modal-footer {
+    align-items: center;
+}
+@media (min-width: 1251px) {
+    .sidebar {
+        width: 220px;
+    }
+    .inspector {
+        width: 280px;
+    }
+}
+@media (max-width: 1150px) {
+    .type-col {
+        display: none;
+    }
+}
+@media (max-width: 700px) {
+    .prototype-tag {
+        display: none;
+    }
+    .review-tools {
+        flex-wrap: wrap;
+    }
+    .os-titlebar {
+        padding: 0 12px;
+    }
+    .entry-name {
+        font-size: 12px;
+    }
+    td:nth-child(3),
+    td:nth-child(4) {
+        font-size: 11px;
+    }
+}
+.pc-controls .os-close {
+    order: 1;
+}
+.pc-controls .os-maximize {
+    order: 2;
+}
+.pc-controls .os-minimize {
+    order: 3;
+}

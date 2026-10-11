@@ -97,7 +97,7 @@
 </tr>
 <tr class="even">
 <td>圆角</td>
-<td>控件 8、面板 12、模态面板 16；平台标题栏遵从系统</td>
+<td>控件 8、面板 12、独立操作窗口遵从平台；平台标题栏遵从系统</td>
 </tr>
 <tr class="odd">
 <td>字体</td>
@@ -250,8 +250,10 @@
 <h2 id="密码与错误">7. 密码与错误<a class="heading-anchor" href="#%E5%AF%86%E7%A0%81%E4%B8%8E%E9%94%99%E8%AF%AF" aria-label="本节链接">#</a></h2>
 <p>密码框禁用自动完成、剪贴板建议和日志。提交后 QML 属性尽快清空，C++ 转移到短生命周期秘密对象；Qt/系统输入法内部复制无法保证全部擦除，因此不宣称绝对零残留。默认不持久记住密码。</p>
 <p>错误码由核心给出，Qt 使用翻译目录形成文案；插件不能直接提供富文本错误页。允许复制脱敏诊断：软件版本、格式、错误码、匿名 TaskId，不带密码、内容或完整路径。</p>
+<h2 id="独立操作窗口">独立操作窗口<a class="heading-anchor" href="#%E7%8B%AC%E7%AB%8B%E6%93%8D%E4%BD%9C%E7%AA%97%E5%8F%A3" aria-label="本节链接">#</a></h2>
+<p>解压、新建、冲突、任务、结果和设置均使用独立顶层窗口，不使用主窗口内遮罩或 macOS sheet。macOS 使用原生左上角系统按钮，Windows/Linux 可自定义标题栏并保留系统窗口行为。所有权、模态范围、关闭与取消语义、原型边界及实机验收以<a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/ux/platform-windows.md">平台窗口规范</a>为准。</p>
 </article><nav class="page-navigation" aria-label="前后文档"><a href="03-domain-data.html">← 03 领域模型与数据设计</a><a href="05-qt-rust-bridge.html">05 Qt/Rust 类型桥接与应用服务协议 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
-<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#信息结构">1. 信息结构</a><a href="#视觉和组件">2. 视觉和组件</a><a href="#c-对象边界">3. C++ 对象边界</a><a href="#事件和交互">4. 事件和交互</a><a href="#跨平台体验">5. 跨平台体验</a><a href="#无障碍和输入">6. 无障碍和输入</a><a href="#密码与错误">7. 密码与错误</a></aside></div>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#信息结构">1. 信息结构</a><a href="#视觉和组件">2. 视觉和组件</a><a href="#c-对象边界">3. C++ 对象边界</a><a href="#事件和交互">4. 事件和交互</a><a href="#跨平台体验">5. 跨平台体验</a><a href="#无障碍和输入">6. 无障碍和输入</a><a href="#密码与错误">7. 密码与错误</a><a href="#独立操作窗口">独立操作窗口</a></aside></div>
 <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
 <label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
 <p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>

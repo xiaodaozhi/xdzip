@@ -8,13 +8,20 @@
         <link rel="stylesheet" href="styles.css" />
         <script defer src="app.js"></script>
     </head>
-    <body>
+    <body data-platform="macos">
         <div class="reviewbar">
             <a class="review-brand" href="#"
                 >xdzip <span>DESIGN STUDIO</span></a
             >
             <div class="review-tools">
-                <span class="prototype-tag">交互原型 · 示例数据</span
+                <label class="scenario-label"
+                    >平台
+                    <select id="platform" aria-label="窗口平台">
+                        <option value="macos">macOS</option>
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                    </select></label
+                ><span class="prototype-tag">交互原型 · 示例数据</span
                 ><label class="scenario-label"
                     >场景
                     <select id="scenario" aria-label="演示场景">
@@ -182,6 +189,7 @@
                                         </th>
                                         <th>原始大小</th>
                                         <th>压缩后</th>
+                                        <th class="type-col">类型</th>
                                         <th class="date-col">修改时间</th>
                                     </tr>
                                 </thead>
