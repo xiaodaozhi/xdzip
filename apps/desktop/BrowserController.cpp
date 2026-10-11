@@ -21,15 +21,37 @@ QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
         return row.cells.at(index.column());
     if (role == Qt::UserRole)
         return row.id;
+    if (role == Qt::UserRole + 1)
+        return row.directory;
+    if (role == Qt::UserRole + 2)
+        return m_selected.contains(row.id);
     return {};
 }
 QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
-    return {{Qt::DisplayRole, "display"}, {Qt::UserRole, "entryId"}};
+    return {{Qt::DisplayRole, "display"},
+            {Qt::UserRole, "entryId"},
+            {Qt::UserRole + 1, "isDirectory"},
+            {Qt::UserRole + 2, "chosen"}};
 }
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
     m_rows = std::move(rows);
+    m_selected.clear();
     endResetModel();
+}
+
+const BrowserRow *ArchiveTableModel::rowAt(int row) const {
+    return row >= 0 && row < m_rows.size() ? &m_rows[row] : nullptr;
+}
+void ArchiveTableModel::select(int row) {
+    const auto *item = rowAt(row);
+    if (!item)
+        return;
+    if (m_selected.contains(item->id))
+        m_selected.remove(item->id);
+    else
+        m_selected.insert(item->id);
+    emit dataChanged(index(row, 0), index(row, 4), {Qt::UserRole + 2});
 }
 
 struct BrowserController::Store {
@@ -51,6 +73,7 @@ BrowserController::BrowserController(QObject *parent)
         m_message = explain(result.error);
         m_ready = result.error.isEmpty();
         m_model.replace(result.rows);
+        m_detail.clear();
         m_total = result.total;
         m_offset = result.offset;
         m_session = result.session;
@@ -97,6 +120,10 @@ void BrowserController::openPath(const QString &path) {
         emit changed();
         return;
     }
+    m_directory.clear();
+    m_location.clear();
+    m_search.clear();
+    m_detail.clear();
     m_title = QFileInfo(path).fileName();
     m_ready = false;
     m_total = 0;
@@ -109,6 +136,45 @@ void BrowserController::fetchPage(int offset) {
     if (m_busy || !m_ready || m_closing || offset < 0 || offset >= m_total)
         return;
     start({}, offset);
+}
+void BrowserController::selectRow(int row) {
+    if (m_busy || !m_ready)
+        return;
+    const auto *item = m_model.rowAt(row);
+    if (!item)
+        return;
+    m_detail = {{"name", item->cells[0]},
+                {"size", item->cells[1]},
+                {"packed", item->cells[2]},
+                {"method", item->cells[3]},
+                {"status", item->cells[4]},
+                {"directory", item->directory},
+                {"id", item->id}};
+    m_model.select(row);
+    emit changed();
+}
+void BrowserController::enterDirectory(int row) {
+    if (m_busy || !m_ready)
+        return;
+    const auto *item = m_model.rowAt(row);
+    if (!item || !item->navigable)
+        return;
+    m_directory = item->id;
+    m_location = item->cells[0];
+    start({}, 0);
+}
+void BrowserController::showAll() {
+    if (m_busy || !m_ready)
+        return;
+    m_directory.clear();
+    m_location.clear();
+    start({}, 0);
+}
+void BrowserController::search(const QString &text) {
+    if (m_busy || !m_ready || text.toUtf8().size() > 1024)
+        return;
+    m_search = text;
+    start({}, 0);
 }
 void BrowserController::cancel() {
     if (m_store->control)
@@ -125,14 +191,17 @@ bool BrowserController::requestClose() {
 }
 void BrowserController::start(const QString &path, int offset) {
     m_busy = true;
+    m_detail.clear();
     m_message = tr("正在读取归档目录…");
     m_store->control =
         std::make_shared<rust::Box<xdzip::reader::Cancellation>>(xdzip::reader::new_cancellation());
     auto store = m_store;
     const auto bytes = path.toUtf8();
+    const auto directory = m_directory.toUtf8();
+    const auto query = m_search.toUtf8();
     emit changed();
     // Exactly one outstanding job. Result delivery is QObject-bound; no worker captures this.
-    m_watcher.setFuture(QtConcurrent::run([store, bytes, offset] {
+    m_watcher.setFuture(QtConcurrent::run([store, bytes, offset, directory, query] {
         Result result;
         try {
             if (!bytes.isEmpty()) {
@@ -156,8 +225,13 @@ void BrowserController::start(const QString &path, int offset) {
             const auto session = xdzip::reader::session_id(archive);
             result.session =
                 QString::fromUtf8(session.data(), static_cast<qsizetype>(session.size()));
-            auto rows = xdzip::reader::page(archive, static_cast<std::uint64_t>(offset), 128);
-            for (const auto &row : rows) {
+            const auto str = [](const QByteArray &value) {
+                return rust::Str(value.constData(), static_cast<std::size_t>(value.size()));
+            };
+            auto page = xdzip::reader::browse(archive, str(directory), str(query),
+                                              static_cast<std::uint64_t>(offset), **store->control);
+            result.total = static_cast<int>(page.total);
+            for (const auto &row : page.rows) {
                 const auto text = [](const rust::String &value) {
                     return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
                 };
@@ -174,7 +248,9 @@ void BrowserController::start(const QString &path, int offset) {
                 result.rows.append(
                     {text(row.id),
                      {text(row.name), QString::number(row.size), QString::number(row.packed_size),
-                      method, status.isEmpty() ? tr("元数据") : status.join(" · ")}});
+                      method, status.isEmpty() ? tr("元数据") : status.join(" · ")},
+                     row.directory,
+                     row.directory && !row.warning});
             }
         } catch (const rust::Error &error) {
             result.error = QString::fromUtf8(error.what());

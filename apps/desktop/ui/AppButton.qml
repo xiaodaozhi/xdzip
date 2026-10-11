@@ -14,7 +14,7 @@ Button {
         textFormat: Text.PlainText
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        color: root.primary ? Theme.onAccent : Theme.text
+        color: root.primary ? Theme.accentText : Theme.text
         opacity: root.enabled ? 1 : 0.45
         font.pixelSize: Theme.bodySize
     }

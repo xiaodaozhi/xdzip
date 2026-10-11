@@ -12,7 +12,7 @@ QtObject {
     readonly property color textSecondary: dark ? "#A2A8B4" : "#626874"
     readonly property color border: dark ? "#30343C" : "#DCDFE3"
     readonly property color accent: dark ? "#4165DB" : "#365FE8"
-    readonly property color onAccent: dark ? "#FFFFFF" : "#FFFFFF"
+    readonly property color accentText: dark ? "#FFFFFF" : "#FFFFFF"
     readonly property color selection: dark ? "#293754" : "#E8EEFF"
     readonly property color accentInk: dark ? "#9DB4FF" : "#365FE8"
     readonly property color taskPanel: dark ? "#202630" : "#F5F8FC"

@@ -1,6 +1,6 @@
 # Qt 开发应用与组件预览
 
-`xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、分页、取消读取；不解压或创建归档。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
+`xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、分页、取消读取、本页多选、目录范围导航及名称搜索；不解压或创建归档。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
 
 `xdzip-ui-preview` 提供独立任务详情窗、共用提示行、按钮和主题 token；不是可用的压缩工具。入口始终标识“组件开发预览”，任务数据固定来自本地示例，不访问文件或连接诊断桥接。不用动画或计时器伪装真实压缩进度。
 
@@ -34,3 +34,5 @@ Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完
 测试输出包含四张离屏渲染截图，位于 CTest 工作目录；这些是组件渲染证据，不替换高保真设计稿。原生装饰不会出现在 contentItem 截图里。详见 [阶段记录](../../docs/qa/foundation-components.md)。
 
 任务窗口已按原稿补齐路径卡片、三列统计和正常字号同行底栏，实际截图与保留差异见 [视觉修订记录](../../docs/qa/task-visual-review.md)。
+
+浏览操作：单击行或复选框选择，双击显式目录进入，左侧“全部文件”返回；搜索框按回车提交。切换页面/查询会清空本页选择。右侧仅显示条目元数据，尚不读取文件内容。

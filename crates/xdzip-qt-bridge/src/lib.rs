@@ -26,6 +26,10 @@ mod ffi {
         encrypted: bool,
         warning: bool,
     }
+    struct BrowsePage {
+        total: u64,
+        rows: Vec<Row>,
+    }
     extern "Rust" {
         type Cancellation;
         type Archive;
@@ -34,7 +38,13 @@ mod ffi {
         fn open_archive(path: &str, control: &Cancellation) -> Result<Box<Archive>>;
         fn count(archive: &Archive) -> u64;
         fn session_id(archive: &Archive) -> String;
-        fn page(archive: &Archive, offset: u64, limit: u32) -> Result<Vec<Row>>;
+        fn browse(
+            archive: &Archive,
+            directory: &str,
+            text: &str,
+            offset: u64,
+            control: &Cancellation,
+        ) -> Result<BrowsePage>;
     }
 }
 /// Shared cancellation supports concurrent const calls; its Box must stay alive for the worker.
@@ -57,25 +67,29 @@ pub fn count(archive: &Archive) -> u64 {
 pub fn session_id(archive: &Archive) -> String {
     archive.0.key().session.get().to_string()
 }
-/// Copy one bounded display page. Raw names remain in Rust and are never output paths.
-pub fn page(
+/// Bounded display query. Physical identities survive filtering and directory navigation.
+pub fn browse(
     archive: &Archive,
+    directory: &str,
+    text: &str,
     offset: u64,
-    limit: u32,
-) -> Result<Vec<ffi::Row>, xdzip_codec_api::ScanError> {
-    Ok(archive
-        .0
-        .page(offset, u64::from(limit))?
-        .iter()
-        .map(|entry| ffi::Row {
-            id: entry.id.get().to_string(),
-            name: entry.display_name.clone(),
-            size: entry.size,
-            packed_size: entry.packed_size,
-            method: entry.method,
-            directory: entry.directory,
-            encrypted: entry.encrypted,
-            warning: entry.warning,
-        })
-        .collect())
+    control: &Cancellation,
+) -> Result<ffi::BrowsePage, xdzip_codec_api::ScanError> {
+    let (total, rows) = archive.0.browse(directory, text, offset, 128, &control.0)?;
+    Ok(ffi::BrowsePage {
+        total: total as u64,
+        rows: rows
+            .into_iter()
+            .map(|entry| ffi::Row {
+                id: entry.id.get().to_string(),
+                name: entry.display_name.clone(),
+                size: entry.size,
+                packed_size: entry.packed_size,
+                method: entry.method,
+                directory: entry.directory,
+                encrypted: entry.encrypted,
+                warning: entry.warning,
+            })
+            .collect(),
+    })
 }

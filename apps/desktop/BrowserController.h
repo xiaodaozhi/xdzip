@@ -2,7 +2,9 @@
 #include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <QObject>
+#include <QSet>
 #include <QStringList>
+#include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 #include <memory>
 
@@ -10,6 +12,8 @@
 struct BrowserRow {
     QString id;
     QStringList cells;
+    bool directory = false;
+    bool navigable = false;
 };
 class ArchiveTableModel final : public QAbstractTableModel {
     Q_OBJECT
@@ -20,15 +24,24 @@ class ArchiveTableModel final : public QAbstractTableModel {
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
     void replace(QList<BrowserRow> rows);
+    const BrowserRow *rowAt(int row) const;
+    void select(int row);
+    int selectedCount() const {
+        return m_selected.size();
+    }
 
   private:
     QList<BrowserRow> m_rows;
+    QSet<QString> m_selected;
 };
 
 class BrowserController : public QObject {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
+    Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
+    Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
+    Q_PROPERTY(QString location READ location NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
@@ -63,6 +76,19 @@ class BrowserController : public QObject {
     QString sessionId() const {
         return m_session;
     }
+    QVariantMap detail() const {
+        return m_detail;
+    }
+    int selectedCount() const {
+        return m_model.selectedCount();
+    }
+    QString location() const {
+        return m_location;
+    }
+    Q_INVOKABLE void selectRow(int row);
+    Q_INVOKABLE void enterDirectory(int row);
+    Q_INVOKABLE void showAll();
+    Q_INVOKABLE void search(const QString &text);
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void chooseArchive();
     Q_INVOKABLE void fetchPage(int offset);
@@ -89,6 +115,10 @@ class BrowserController : public QObject {
     bool m_busy = false;
     bool m_ready = false;
     bool m_closing = false;
+    QVariantMap m_detail;
+    QString m_directory;
+    QString m_location;
+    QString m_search;
     QString m_title;
     QString m_message;
     QString m_session;

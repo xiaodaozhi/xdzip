@@ -61,6 +61,54 @@ impl Archive {
     pub fn key(&self) -> QueryKey {
         self.key
     }
+    /// Filter an immutable snapshot by an explicit safe directory and literal name text.
+    /// Directory scope includes descendants; it never resolves a host filesystem path.
+    pub fn browse(
+        &self,
+        directory: &str,
+        text: &str,
+        offset: u64,
+        limit: u64,
+        control: &Cancellation,
+    ) -> Result<(usize, Vec<&Entry>), ScanError> {
+        control.check()?;
+        let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
+        if directory.len() > 4096 || text.len() > 1024 {
+            return Err(ScanError::Limit);
+        }
+        let prefix = if directory.is_empty() {
+            &[][..]
+        } else {
+            let id = directory.parse::<u64>().map_err(|_| ScanError::Invalid)?;
+            let entry = self
+                .rows
+                .iter()
+                .find(|entry| entry.id.get() == id)
+                .filter(|entry| entry.directory && !entry.warning && entry.raw_name.ends_with(b"/"))
+                .ok_or(ScanError::Invalid)?;
+            entry.raw_name.as_slice()
+        };
+        let needle = text.to_lowercase();
+        let mut count = 0_usize;
+        let mut rows = Vec::new();
+        for entry in &self.rows {
+            control.check()?;
+            if !entry.raw_name.starts_with(prefix)
+                || (!prefix.is_empty() && entry.raw_name == prefix)
+                || (!needle.is_empty() && !entry.display_name.to_lowercase().contains(&needle))
+            {
+                continue;
+            }
+            if count as u64 >= request.offset() && rows.len() < usize::from(request.limit()) {
+                rows.push(entry);
+            }
+            count += 1;
+        }
+        if offset > count as u64 {
+            return Err(ScanError::Limit);
+        }
+        Ok((count, rows))
+    }
     /// Return at most 256 references without copying the complete index.
     pub fn page(&self, offset: u64, limit: u64) -> Result<&[Entry], ScanError> {
         let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
@@ -78,6 +126,36 @@ impl Archive {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn directory_queries_keep_physical_identity_and_enforce_limits() {
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip");
+        let control = Cancellation::default();
+        let archive = Archive::open(&path, &control).unwrap();
+        let (total, rows) = archive.browse("1", "", 0, 128, &control).unwrap();
+        assert_eq!(total, 1);
+        assert_eq!(rows[0].id.get(), 2);
+        let (total, rows) = archive.browse("", "NOTES", 1, 1, &control).unwrap();
+        assert_eq!(total, 2);
+        assert_eq!(rows[0].id.get(), 4);
+        assert_eq!(
+            archive.browse("", "missing", 0, 128, &control).unwrap().0,
+            0
+        );
+        assert!(archive.browse("2", "", 0, 128, &control).is_err());
+        assert!(archive.browse("../", "", 0, 128, &control).is_err());
+        assert!(
+            archive
+                .browse("", &"x".repeat(1025), 0, 128, &control)
+                .is_err()
+        );
+        assert!(archive.browse("", "", u64::MAX, 128, &control).is_err());
+        control.cancel();
+        assert!(matches!(
+            archive.browse("", "", 0, 128, &control),
+            Err(ScanError::Cancelled)
+        ));
+    }
     #[test]
     fn pages_preserve_identity_and_bounds_without_reopening_or_writing() {
         let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/pages.zip");
