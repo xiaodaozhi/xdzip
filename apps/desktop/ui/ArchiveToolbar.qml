@@ -16,16 +16,21 @@ Rectangle {
         searchField.clear();
     }
     color: Theme.surface
-    implicitHeight: actions.implicitHeight + 24
+    // Round once for the entire row: platform font metrics can be fractional.
+    readonly property real controlHeight: Math.ceil(Math.max(openAction.implicitHeight, searchField.implicitHeight))
+    implicitHeight: controlHeight + 24
     RowLayout {
         id: actions
+        height: root.controlHeight
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.margins: 16
         spacing: 8
         ArchiveAction {
-            Layout.fillHeight: true
+            id: openAction
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             objectName: "archiveOpen"
             text: qsTr("打开")
             asset: "open"
@@ -33,7 +38,8 @@ Rectangle {
             onClicked: root.openRequested()
         }
         ArchiveAction {
-            Layout.fillHeight: true
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             text: qsTr("新建")
             asset: "new"
             enabled: false
@@ -46,13 +52,15 @@ Rectangle {
             Layout.rightMargin: 8
         }
         ArchiveAction {
-            Layout.fillHeight: true
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             text: qsTr("测试")
             asset: "archive-test"
             enabled: false
         }
         ArchiveAction {
-            Layout.fillHeight: true
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             asset: "more"
             Accessible.name: qsTr("更多归档操作")
             explanation: qsTr("更多归档操作")
@@ -72,7 +80,8 @@ Rectangle {
         }
         TextField {
             id: searchField
-            Layout.fillHeight: true
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             objectName: "archiveSearch"
             Layout.preferredWidth: Math.max(220, Math.min(360, root.width * 0.3))
             implicitHeight: Math.max(36, contentHeight + 12)
@@ -105,7 +114,8 @@ Rectangle {
             }
         }
         ArchiveAction {
-            Layout.fillHeight: true
+            Layout.minimumHeight: root.controlHeight
+            Layout.maximumHeight: root.controlHeight
             text: root.hasSelection ? qsTr("解压所选") : qsTr("全部解压")
             primary: true
             enabled: false

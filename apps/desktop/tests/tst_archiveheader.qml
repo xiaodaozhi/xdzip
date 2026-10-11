@@ -48,7 +48,7 @@ Item {
             const search = findChild(toolbar, "archiveSearch");
             const op = open.mapToItem(toolbar, 0, 0);
             const sp = search.mapToItem(toolbar, 0, 0);
-            verify(Math.abs(op.y + open.height / 2 - sp.y - search.height / 2) < 0.5);
+            verify(Math.abs(op.y + open.height / 2 - sp.y - search.height / 2) < 0.5, "Open y/height=" + op.y + "/" + open.height + "; search=" + sp.y + "/" + search.height);
             verify(op.x + open.width < sp.x);
             verify(sp.x + search.width < toolbar.width);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
