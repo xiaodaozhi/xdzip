@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "status": "observed-linux-candidates-not-release-lock",
+  "date": "2026-10-11",
+  "host": {
+    "os": "Linux",
+    "architecture": "x86_64",
+    "glibc": "2.41"
+  },
+  "tools": {
+    "rust": {
+      "version": "1.99.0",
+      "commit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "validation": "rustc -Vv only; no cxx build"
+    },
+    "qt": {
+      "version": "6.8.2",
+      "validation": "Core/Gui/Qml/Quick CMake build and offscreen window smoke"
+    },
+    "cmake": {
+      "version": "3.31.6"
+    },
+    "ninja": {
+      "version": "1.12.1"
+    },
+    "cxx_compiler": {
+      "family": "GCC",
+      "version": "14.2.0",
+      "standard": "C++17"
+    },
+    "cxx_bridge": {
+      "version": null,
+      "validation": "not started"
+    }
+  },
+  "archives": [
+    {
+      "file": "cmake_3.31.6-2_amd64.deb",
+      "metadata": "Package: cmake\nVersion: 3.31.6-2\nArchitecture: amd64",
+      "sha256": "dee2fc94973325240604ffbca677a3f16b462fb6520946bd81be1ecbac770a02",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "cmake-data_3.31.6-2_all.deb",
+      "metadata": "Package: cmake-data\nVersion: 3.31.6-2\nArchitecture: all",
+      "sha256": "d9060145be892f43cd1888024114ceab019c81479d4b0a3383fe14cebe2295cb",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "ninja-build_1.12.1-1_amd64.deb",
+      "metadata": "Package: ninja-build\nVersion: 1.12.1-1\nArchitecture: amd64",
+      "sha256": "bc172ce9270bd6fcd6d5335a83ff9d3c7ba0d13ec624cfdfa1b5aa06901dc453",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "qt6-base-dev_6.8.2+dfsg-9+deb13u2_amd64.deb",
+      "metadata": "Package: qt6-base-dev\nVersion: 6.8.2+dfsg-9+deb13u2\nArchitecture: amd64",
+      "sha256": "63660073c1f113ea2e9370ebf4cb0cbf198195093e4520f958783e20eac163f2",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "qt6-base-dev-tools_6.8.2+dfsg-9+deb13u2_amd64.deb",
+      "metadata": "Package: qt6-base-dev-tools\nVersion: 6.8.2+dfsg-9+deb13u2\nArchitecture: amd64",
+      "sha256": "7f2b2e72d3f42d08bdc132b53d661ca86723895d797ff9c44c28987e49398f4c",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "qt6-declarative-dev_6.8.2+dfsg-7_amd64.deb",
+      "metadata": "Package: qt6-declarative-dev\nVersion: 6.8.2+dfsg-7\nArchitecture: amd64",
+      "sha256": "1e9ea051741bd09c22d608ae1c4e512b009c108a0d374fc42a29a942a6b0a5ad",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    },
+    {
+      "file": "qt6-declarative-dev-tools_6.8.2+dfsg-7_amd64.deb",
+      "metadata": "Package: qt6-declarative-dev-tools\nVersion: 6.8.2+dfsg-7\nArchitecture: amd64",
+      "sha256": "b3de980844b6ccfeb58b9a97041013f2783bfb04c1da5956aba7ef30cf0923c4",
+      "source_channel": "Debian package cache; publisher signature not reverified in this task"
+    }
+  ],
+  "license_status": {
+    "qt": "Debian qtbase copyright inspected: LGPL-3/GPL-2 and per-file exceptions; module/transitive deployment audit pending",
+    "rust": "toolchain license/source verification pending",
+    "cmake_ninja_compiler": "build-tool license inventory pending"
+  },
+  "platforms": {
+    "linux-x86_64": "offscreen probe only; not glibc 2.35 validation",
+    "macos-arm64": "not tested",
+    "windows-x86_64-msvc": "not tested"
+  },
+  "limits": [
+    "Archive hashes identify observed local files, not publisher-authenticated provenance",
+    "Not a complete dependency lock or SBOM",
+    "No codec/backend dependency is admitted by this probe"
+  ]
+}
