@@ -8,6 +8,8 @@
 
 以下表格定义概念类型与语义，不是可直接编译的 `cxx::bridge` 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。
 
+M1 已落地独立双句柄、Open/Browse/Preflight/CloseSession/Snapshot、取消/关闭控制通道和 Qt mailbox。当前单会话、串行 GUI 请求；完整查询代际、TaskId、输出授权与扩展协议仍是后续目标。已实现签名、资源预算与故障语义见 [M1 运行时契约](../engineering/m1-runtime.md)，测试和开发包见 [M1 验收入口](../qa/m1-acceptance.md)。
+
 ## 2. 客户端和事件接收
 
 桥接创建两个独占句柄：`CommandClient` 和 `EventReceiver`。内部通过 Arc/有界通道引用同一个 Rust Runtime；C++ 以 RAII 包装拥有它们。

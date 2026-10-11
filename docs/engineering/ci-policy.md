@@ -1,6 +1,6 @@
 # CI 与合入策略
 
-已配置 `.github/workflows/docs.yml`，执行文档链接、JSON、设计资产及提交空白检查；远端执行结果以 GitHub Actions 为准。本地检查已运行。当前没有产品构建工作流，下表产品检查是待实现门槛。
+已配置 Documentation、Foundation probes 和 Qt components 三组工作流，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品与开发验收包。具体执行证据见 [M1 验收入口](../qa/m1-acceptance.md)。下表定义按变更类型执行的门槛，未实现的安全 I/O、格式写入及正式发布检查在对应阶段接入。
 
 | 变更 | 必需检查 |
 | --- | --- |
@@ -15,4 +15,6 @@
 
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
-已新增 Foundation probes：三平台原生 C++/Rust 诊断检查，Qt 暂关闭；执行状态见 Actions。它不替代产品构建和三平台 Qt 原生验收。
+Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
+
+Qt components 通过 scripts/ci-desktop.ps1 在三平台安装固定 Qt 6.8.2，构建真实浏览应用、执行 qmllint 与 6 组 CTest，将并发生命周期套件重复 10 次。macOS/Windows 部署 Qt 后清除开发搜索路径，用原生 cocoa/windows 平台插件执行启动/关闭冒烟检查。上传同提交源代码、许可通知、截图、日志和 build.json；开发包保存 14 天，不作为正式签名发行。离屏截图不证明 GPU、输入法或辅助功能的人工验收已完成。

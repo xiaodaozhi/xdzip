@@ -2,6 +2,8 @@
 
 日期：2026-10-11。Linux x86_64、Rust 1.99.0、Qt 6.8.2、GCC 14.2，Qt offscreen 软件渲染。不是 Apple M1 实机或完整产品验收。
 
+本页保留只读浏览增量的证据与视觉差异；运行时和三平台开发包的最新状态见 [M1 验收入口](m1-acceptance.md)。
+
 ![真实 ZIP 目录浏览](screenshots/zip-browser-light.png)
 
 这是实际 Qt 窗口读取仓库自建 normal.zip 后的截图，两个 notes.txt 是不同物理记录；不是生成式设计图或静态示例列表。系统标题栏不包含在离屏内容截图中。

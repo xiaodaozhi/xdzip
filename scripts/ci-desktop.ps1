@@ -55,11 +55,24 @@ Invoke-Checked python @('scripts/collect-notices.py', 'dist/review/notices')
 Invoke-Checked git @('archive', '--format=tar', '-o', 'dist/review/xdzip-source.tar', 'HEAD')
 if ($IsMacOS) {
     $bundle = 'build/desktop/apps/desktop/xdzip.app'
-    Invoke-Checked macdeployqt @($bundle, '-qmldir=apps/desktop/ui', '-qmlimport=build/desktop/qml', '-always-overwrite')
+    # Qt Quick's LocalStorage may deploy QtSql. Only SQLite is needed; the downloaded
+    # Qt SDK also contains unrelated server drivers with machine-specific dylib paths.
+    Get-ChildItem "$qtPrefix/plugins/sqldrivers/*.dylib" |
+        Where-Object { $_.Name -ne 'libqsqlite.dylib' } | Remove-Item
+    $deploymentLog = & macdeployqt $bundle '-qmldir=apps/desktop/ui' '-qmlimport=build/desktop/qml' '-always-overwrite' 2>&1
+    $deploymentExit = $LASTEXITCODE
+    $deploymentLog | ForEach-Object { Write-Host $_ }
+    # macdeployqt can print missing-library errors and still return zero.
+    if ($deploymentExit -ne 0 -or ($deploymentLog -match '^\s*ERROR:')) {
+        throw 'macdeployqt reported an incomplete deployment'
+    }
     Invoke-Checked codesign @('--force', '--deep', '--sign', '-', $bundle)
+    Invoke-Checked codesign @('--verify', '--deep', '--strict', $bundle)
     # Start the deployed bundle without the development Qt library search path.
     $env:QT_PLUGIN_PATH = ''
     $env:QML_IMPORT_PATH = ''
+    $env:DYLD_FRAMEWORK_PATH = ''
+    $env:DYLD_LIBRARY_PATH = ''
     $env:QT_QPA_PLATFORM = 'cocoa'
     Invoke-Checked "$bundle/Contents/MacOS/xdzip" @('--smoke-test')
     Invoke-Checked ditto @('-c', '-k', '--sequesterRsrc', '--keepParent', $bundle, 'dist/review/xdzip-macos-arm64.zip')

@@ -13,6 +13,7 @@
 <p>正式产品使用 <code>cxx</code> 生成 Rust/C++ 构建期桥接。应用、Rust 静态库和生成头必须来自同一提交和工具链组合；不允许替换为任意版本动态库。此接口面向产品内部，不是第三方二进制 SDK，也不是 <a href="06-codec-extension-sdk.html">06</a> 的进程协议。</p>
 <p>原型 <code>lab_engine_new/lab_request/lab_string_free/lab_engine_free</code> 及 JSON 请求继续作为实验代码保存；产品不能逐步往实验接口塞入密码、输出路径和插件操作后声称它已冻结。</p>
 <p>以下表格定义概念类型与语义，不是可直接编译的 <code>cxx::bridge</code> 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。</p>
+<p>M1 已落地独立双句柄、Open/Browse/Preflight/CloseSession/Snapshot、取消/关闭控制通道和 Qt mailbox。当前单会话、串行 GUI 请求；完整查询代际、TaskId、输出授权与扩展协议仍是后续目标。已实现签名、资源预算与故障语义见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/m1-runtime.md">M1 运行时契约</a>，测试和开发包见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m1-acceptance.md">M1 验收入口</a>。</p>
 <h2 id="客户端和事件接收">2. 客户端和事件接收<a class="heading-anchor" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E4%BA%8B%E4%BB%B6%E6%8E%A5%E6%94%B6" aria-label="本节链接">#</a></h2>
 <p>桥接创建两个独占句柄：<code>CommandClient</code> 和 <code>EventReceiver</code>。内部通过 Arc/有界通道引用同一个 Rust Runtime；C++ 以 RAII 包装拥有它们。</p>
 <ul>

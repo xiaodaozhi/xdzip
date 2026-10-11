@@ -9,7 +9,20 @@
 - 无 Qt 核心测试、原生三平台产品构建及关闭竞态测试。
 - Apple Silicon 开发 app、Windows 开发运行目录、Linux 同版 Qt 验收二进制，以及同提交源代码、依赖通知、截图和测试日志。
 
-实现契约见 [M1 运行时](../engineering/m1-runtime.md)。CI 证据和最终提交将在三平台任务完成后登记；没有通过的任务不算验收完成。
+实现契约见 [M1 运行时](../engineering/m1-runtime.md)。M1 开发与自动化验证已完成，Apple Silicon 桌面人工体验待一次性验收；未将人工检查标记为已通过。
+
+## 通过证据
+
+验证日期：2026-10-11。产品代码提交 `1bb24392129159fefbc9cde941c69f8b2180da4c`，后续收尾整理文档并加严 macOS 部署检查。下载构建的精确提交以包内 build.json 为准；以最新通过的 Qt components 产物进行人工验收。
+
+- [Qt components：三平台产品、测试与打包全部通过](https://github.com/xiaodaozhi/xdzip/actions/runs/38162404763)。每平台 6 组 CTest、生命周期套件再重复 10 次；macOS arm64 与 Windows x64 部署 Qt 后使用原生平台插件启动并完成异步退出。
+- [Foundation probes：三平台 Rust/C++ 及格式检查全部通过](https://github.com/xiaodaozhi/xdzip/actions/runs/38162404787)。每平台 29 项 Rust 单元测试、1 项 compile-fail 文档测试，以及独立桥接检查；Clippy 无警告。
+- [Documentation：链接、资源、token、脚本与空白检查通过](https://github.com/xiaodaozhi/xdzip/actions/runs/38162404840)。文档收尾提交继续运行相同工作流。
+- 本地 Linux 同样通过全部检查；HTML 重新生成后验证 17 页、950 个本地引用、2 张内联图，无外部资源依赖。
+
+首次 macOS 重复测试暴露毫秒心跳的时序误报，已改为在 drain 批次间插入 GUI 队列探针。重复测试还暴露短暂准入竞争，产品已加入有界异步重试；通过记录包含这些修复，而非跳过失败用例。
+
+打包日志复核发现 Qt SDK 附带的非 SQLite 数据库驱动引用外部库，macdeployqt 报错却仍返回 0。收尾构建排除无关驱动、将部署 ERROR 视为失败，并增加 ad-hoc 签名严格验证；原生启动检查继续保留。
 
 ## 下载与运行
 

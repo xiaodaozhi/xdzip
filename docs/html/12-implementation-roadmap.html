@@ -11,7 +11,7 @@
 <main class="content" id="main" tabindex="-1"><article class="document" id="doc-12-implementation-roadmap"><h1 id="xdzip12-实施路线与现有原型迁移">xdzip：12 实施路线与现有原型迁移</h1>
 <h2 id="当前与目标">1. 当前与目标<a class="heading-anchor" href="#%E5%BD%93%E5%89%8D%E4%B8%8E%E7%9B%AE%E6%A0%87" aria-label="本节链接">#</a></h2>
 <p>独立实验工作区中的 <code>crates/lab-core</code> 使用固定十万条样例、JSON 和 C ABI、单模拟任务；<code>apps/qt</code> 有后台 QThread、分页模型和 QML 界面。它们证明界面路线可行，没有真实格式、文件授权或安全输出。</p>
-<p>目标是保留实验资料并建立正式产品边界，不把实验 Engine 改成包罗万象的业务对象。当前处于设计基线阶段，以下目录和任务均待实施。</p>
+<p>目标是保留实验资料并建立正式产品边界，不把实验 Engine 改成包罗万象的业务对象。独立产品已实现 M1 双句柄运行时、Qt 控制器、事件背压与异步关闭，并保留受限真实 ZIP 浏览和元数据预检；当前验证状态与构建证据见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m1-acceptance.md">M1 验收入口</a>。以下目录描述整体目标，并非全部已实现；安全写入、完整查询和扩展宿主按后续里程碑推进。</p>
 <pre class="text"><code>apps/desktop/                 CMake、C++ 控制器/模型、QML、平台集成
 crates/xdzip-domain/
 crates/xdzip-codec-api/
