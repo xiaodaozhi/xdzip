@@ -6,11 +6,12 @@ import Xdzip.Native
 
 ApplicationWindow {
     id: root
-    width: 1360
-    height: 740
+    width: 1280
+    height: 820
     minimumWidth: 1160
     minimumHeight: 600
     readonly property color accentTextColor: Theme.accentText
+    property bool integratedTitlebar: false
     property string searchSession: ""
     property bool darkMode: false
     onDarkModeChanged: Theme.dark = darkMode
@@ -36,7 +37,7 @@ ApplicationWindow {
             if (!preflightReport.entries && !preflightReport.error) preflightWindow.close();
             if (sessionId !== root.searchSession) {
                 root.searchSession = sessionId;
-                searchField.clear();
+                toolbar.clearSearch();
             }
         }
     }
@@ -49,55 +50,24 @@ ApplicationWindow {
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
-        Rectangle {
+        ArchiveTabs {
             Layout.fillWidth: true
-            implicitHeight: 84
-            color: Theme.surface
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 12
-                Text {
-                    text: "xdzip"
-                    font.pixelSize: 25
-                    font.bold: true
-                    color: Theme.text
-                    Layout.rightMargin: 20
-                }
-                AppButton {
-                    text: qsTr("打开归档")
-                    primary: true
-                    enabled: reader.runtimeAvailable && !reader.busy
-                    onClicked: reader.chooseArchive()
-                }
-                AppButton {
-                    text: qsTr("解压预检")
-                    enabled: reader.ready && !reader.busy && reader.selectedCount > 0
-                    onClicked: reader.inspectSelection()
-                }
-                AppButton { text: qsTr("新建"); enabled: false }
-                Item { Layout.fillWidth: true }
-                TextField {
-                    id: searchField
-                    objectName: "archiveSearch"
-                    Layout.preferredWidth: 280
-                    placeholderText: qsTr("搜索归档中的文件 · 回车确认")
-                    implicitHeight: 42
-                    maximumLength: 256
-                    enabled: reader.ready && !reader.busy
-                    onAccepted: reader.search(text)
-                    color: Theme.text
-                    placeholderTextColor: Theme.textSecondary
-                    background: Rectangle { color: Theme.canvas; radius: 8; border.color: Theme.border }
-                }
-
-                AppButton {
-                    text: Theme.dark ? qsTr("浅色") : qsTr("深色")
-                    onClicked: root.darkMode = !root.darkMode
-                }
-            }
+            archiveTitle: reader.title
+            integratedTitlebar: root.integratedTitlebar
+            onThemeRequested: root.darkMode = !root.darkMode
+            onDragRequested: root.startSystemMove()
         }
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.border }
+        ArchiveToolbar {
+            id: toolbar
+            Layout.fillWidth: true
+            canOpen: reader.runtimeAvailable && !reader.busy
+            canSearch: reader.ready && !reader.busy
+            canInspect: reader.ready && !reader.busy && reader.selectedCount > 0
+            hasSelection: reader.selectedCount > 0
+            onOpenRequested: reader.chooseArchive()
+            onInspectRequested: reader.inspectSelection()
+            onSearchRequested: query => reader.search(query)
+        }
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true

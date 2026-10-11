@@ -30,6 +30,9 @@ include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 add_executable(xdzip-browser browser_main.cpp)
 if(APPLE)
+    enable_language(OBJCXX)
+    target_sources(xdzip-browser PRIVATE MacTitlebar.mm)
+    target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"

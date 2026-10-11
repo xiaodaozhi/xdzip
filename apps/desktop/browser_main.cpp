@@ -8,6 +8,10 @@
 #include <QResource>
 #include <QTimer>
 
+#ifdef Q_OS_MACOS
+void integrateMacTitlebar(QQuickWindow *window);
+#endif
+
 // Platform Quit (including Cmd+Q) must use the same asynchronous shutdown as window close.
 class QuitGuard final : public QObject {
   public:
@@ -28,6 +32,9 @@ int main(int argc, char *argv[]) {
     engine.load(QUrl(QStringLiteral("qrc:/xdzip/ui/Browser.qml")));
     if (engine.rootObjects().isEmpty())
         return 1;
+#ifdef Q_OS_MACOS
+    integrateMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()));
+#endif
     auto *controller = engine.rootObjects().first()->findChild<BrowserController *>();
     if (!controller)
         return 1;
@@ -37,6 +44,11 @@ int main(int argc, char *argv[]) {
     QObject::connect(controller, &BrowserController::readyToClose, &application,
                      &QApplication::quit, Qt::QueuedConnection);
     if (application.arguments().contains(QStringLiteral("--smoke-test"))) {
+#ifdef Q_OS_MACOS
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+            !engine.rootObjects().first()->property("integratedTitlebar").toBool())
+            return 3;
+#endif
         // Exercise startup, real receiver wakeup and shutdown, not just QML construction.
         QTimer::singleShot(0, &application, &QApplication::quit);
         QTimer::singleShot(10000, &application, [] { QCoreApplication::exit(2); });

@@ -9,6 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +25,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=ROOT / '.cache/visual-audit')
     parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/visual-audit')
+    parser.add_argument('--product-commit', help='Revision that produced the captures')
     parser.add_argument('--print-checks', action='store_true', help='Emit ASCII JSON for native CI log review')
     args = parser.parse_args()
     captures = {p.stem: json.loads(p.read_text(encoding='utf-8')) for p in sorted(args.input.glob('*.json'))}
@@ -61,14 +63,14 @@ def main():
     check('详情栏宽度', inspector['width'], tokens['size']['inspector'], 'tokens.size.inspector')
     row = one('browser-light', lambda n: n['name'] == 'entry-0-0')
     check('列表行高', row['height'], tokens['size']['row'], 'tokens.size.row')
-    button = one('browser-light', lambda n: n['class'].startswith('AppButton') and n.get('text') == '打开归档')
+    button = one('browser-light', lambda n: n['name'] == 'archiveOpen' or (n['class'].startswith('AppButton') and n.get('text') == '打开归档'))
     check('普通按钮高度', button['height'], tokens['size']['button'], 'tokens.size.button')
     search = one('browser-light', lambda n: n['name'] == 'archiveSearch')
     check('搜索框高度', search['height'], tokens['size']['button'], 'visual/README 搜索框高 36')
     check('详情面板标题字号', label('browser-light', '条目详情')['resolvedPixelSize'], tokens['type']['panelTitle'], 'tokens.type.panelTitle')
     name = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n.get('text') == '旅行/')
     check('列表正文字号', name['resolvedPixelSize'], tokens['type']['table'], 'tokens.type.table')
-    check('按钮正文字号', label('browser-light', '打开归档')['resolvedPixelSize'], tokens['type']['body'], 'tokens.type.body')
+    check('按钮正文字号', label('browser-light', button['text'])['resolvedPixelSize'], tokens['type']['body'], 'tokens.type.body')
     header = label('browser-light', '名称')
     check('名称表头与文件名起点差', name['x'] - header['x'] - header['leftPadding'], 0, 'same column alignment', .5)
     icon = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n['class'] == 'QQuickImage')
@@ -87,8 +89,11 @@ def main():
     values = [label('task-light', t) for t in ['6.2 MB/s', '约 5 秒', '写入文件']]
     baselines = [n['y'] + n['baselineOffset'] for n in values]
     check('任务三列数值基线极差', max(baselines) - min(baselines), 0, '同排数字基线对齐', .5)
-    for text in ['打开归档', '条目详情', 'normal.zip']:
+    for text in [button['text'], '条目详情']:
         check('200% 字号：' + text, label('browser-large-type', text)['resolvedPixelSize'], label('browser-light', text)['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
+    # Archive names also appear in tabs; select the sidebar by its horizontal region.
+    archive_name = lambda scene: one(scene, lambda n: n['class'].startswith('QQuickText') and n.get('text') == 'normal.zip' and n['x'] < 100)
+    check('200% 字号：侧栏归档名', archive_name('browser-large-type')['resolvedPixelSize'], archive_name('browser-light')['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
     search_large = one('browser-large-type', lambda n: n['name'] == 'archiveSearch')
     check('200% 字号：搜索输入', search_large['resolvedPixelSize'], search['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
     large_header = one('browser-large-type', lambda n: n.get('text') == '原始大小' and n.get('leftPadding') == 14)
@@ -112,7 +117,7 @@ def main():
     inputs += ['design/assets/v1/sources/main-light.png', 'design/hifi/v2/screens/03-progress.png', 'docs/visual/tokens.json']
     environment = {key: light[key] for key in ['os', 'architecture', 'qt', 'platform', 'requestedQuickBackend', 'dpr']}
     report = dict(status='differences_found' if any(c['passed'] is False for c in checks) else 'incomplete' if any(c['passed'] is None for c in checks) else 'measured_checks_pass', environment=environment,
-                  product_commit='64bf2feb4fb8b8c135c3a633da285868d5e4d438', checks=checks,
+                  product_commit=args.product_commit or subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').strip(), checks=checks,
                   failed=sum(c['passed'] is False for c in checks), passed=sum(c['passed'] is True for c in checks),
                   unverified=sum(c['passed'] is None for c in checks),
                   evidence_sha256=files, input_sha256={p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in sorted(inputs)})
