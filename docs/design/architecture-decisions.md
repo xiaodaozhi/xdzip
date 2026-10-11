@@ -4,9 +4,9 @@
 
 ## ADR-001：Qt Quick 作为唯一产品界面
 
-**状态：Accepted，用户已确定。**
+**状态：Accepted。**
 
-背景：产品要求现代桌面 UI、统一体验和低占用；已完成 Slint、Tauri、Qt Quick 的同核心原型。当前 Linux 软件渲染数据支持 Qt 进入产品阶段，用户明确选择 Qt Quick。
+背景：产品要求现代桌面 UI、统一体验和低占用；已完成 Slint、Tauri、Qt Quick 的同核心原型。结合界面能力、统一体验与现有 Linux 软件渲染数据，项目选定 Qt Quick 进入产品阶段；其他平台表现仍需验证。
 
 决定：Qt Quick/QML + Qt Quick Controls 2，C++ 薄适配。Slint/Tauri 作为历史实验保留，不打包进产品。
 

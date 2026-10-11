@@ -24,7 +24,7 @@
 <li>不跨 await/阻塞 I/O 持有普通锁；关键区短且顺序一致。公共类型不盲目实现 Clone/Send/Sync。</li>
 <li>用借用、Arc 不可变数据和批处理减少复制；普通循环通常优于难读的多层 iterator 组合。数据大小明确后才考虑结构布局和缓存优化。</li>
 </ul>
-<p>注释示例（示意，不构成本次代码交付）：</p>
+<p>注释示例（接口示意，尚未实现）：</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// 将已校验的暂存文件发布为计划中的目标。</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">///</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">/// 调用者必须持有提交许可；取消只能在发布前或发布后生效。</span></span>

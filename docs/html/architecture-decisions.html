@@ -11,8 +11,8 @@
 <main class="content" id="main" tabindex="-1"><article class="document" id="doc-architecture-decisions"><h1 id="xdzip架构决策记录">xdzip：架构决策记录</h1>
 <p>日期统一为 2026-10-11。Accepted 表示本设计采用，并非实现已验证。若替代某条记录，保留原文并追加新记录。</p>
 <h2 id="adr-001qt-quick-作为唯一产品界面">ADR-001：Qt Quick 作为唯一产品界面<a class="heading-anchor" href="#adr-001qt-quick-%E4%BD%9C%E4%B8%BA%E5%94%AF%E4%B8%80%E4%BA%A7%E5%93%81%E7%95%8C%E9%9D%A2" aria-label="本节链接">#</a></h2>
-<p><strong>状态：Accepted，用户已确定。</strong></p>
-<p>背景：产品要求现代桌面 UI、统一体验和低占用；已完成 Slint、Tauri、Qt Quick 的同核心原型。当前 Linux 软件渲染数据支持 Qt 进入产品阶段，用户明确选择 Qt Quick。</p>
+<p><strong>状态：Accepted。</strong></p>
+<p>背景：产品要求现代桌面 UI、统一体验和低占用；已完成 Slint、Tauri、Qt Quick 的同核心原型。结合界面能力、统一体验与现有 Linux 软件渲染数据，项目选定 Qt Quick 进入产品阶段；其他平台表现仍需验证。</p>
 <p>决定：Qt Quick/QML + Qt Quick Controls 2，C++ 薄适配。Slint/Tauri 作为历史实验保留，不打包进产品。</p>
 <p>代价：承担 Qt 运行库、QML 模块、跨语言构建和许可工作；Mac/Windows 输入、无障碍、GPU 和部署必须补测。不能把 0.80MiB 原型程序当 Qt 完整安装包。</p>
 <p>重新评估触发：Qt 目标平台无法满足必要功能/许可/安全维护，且经过实际优化仍无法达到核心产品预算。普通性能波动不触发重复框架选型。</p>
