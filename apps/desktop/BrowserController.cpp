@@ -54,7 +54,12 @@ void ArchiveTableModel::select(int row) {
 }
 
 BrowserController::BrowserController(QObject *parent)
-    : QObject(parent), m_model(this), m_connection(std::make_unique<RuntimeConnection>(this)) {
+    : QObject(parent), m_model(this), m_directories(this),
+      m_connection(std::make_unique<RuntimeConnection>(this)) {
+    m_directories.setItemRoleNames({{Qt::DisplayRole, "nodeName"},
+                                    {Qt::UserRole, "nodeId"},
+                                    {Qt::UserRole + 1, "entryCount"},
+                                    {Qt::UserRole + 2, "fullPath"}});
     m_admissionRetry.setSingleShot(true);
     connect(&m_admissionRetry, &QTimer::timeout, this, &BrowserController::attemptSubmission);
     m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
@@ -72,6 +77,7 @@ BrowserController::BrowserController(QObject *parent)
             m_message = explain("runtime_unavailable");
             m_ready = false;
             m_model.replace({});
+            replaceDirectories({});
             m_detail.clear();
             m_preflightReport.clear();
         }
@@ -129,9 +135,12 @@ void BrowserController::openPath(const QString &path) {
         emit changed();
         return;
     }
+    m_committedQuery = {};
     m_directory.clear();
     m_location.clear();
     m_search.clear();
+    m_sort = 0;
+    m_navigationLimited = false;
     m_detail.clear();
     m_title = QFileInfo(path).fileName();
     m_ready = false;
@@ -139,6 +148,7 @@ void BrowserController::openPath(const QString &path) {
     m_offset = 0;
     m_session.clear();
     m_model.replace({});
+    replaceDirectories({});
     start(path, 0);
 }
 void BrowserController::fetchPage(int offset) {
@@ -169,8 +179,51 @@ void BrowserController::enterDirectory(int row) {
     const auto *item = m_model.rowAt(row);
     if (!item || !item->navigable)
         return;
-    m_directory = item->id;
+    m_directory = m_directoryPaths.value(item->cells[0], item->id);
     m_location = item->cells[0];
+    start({}, 0);
+}
+void BrowserController::replaceDirectories(const QList<DirectoryRow> &rows) {
+    m_directoryItems.clear();
+    m_directoryPaths.clear();
+    m_directories.clear();
+    m_directories.setColumnCount(1);
+    m_navigationWidth = 160;
+    QHash<QString, int> depths;
+    // Rust emits parents before children, at most 2,048 nodes and 64 levels.
+    for (const auto &row : rows) {
+        auto *parent = row.parent.isEmpty() ? m_directories.invisibleRootItem()
+                                            : m_directoryItems.value(row.parent, nullptr);
+        if (!parent)
+            continue;
+        auto *item = new QStandardItem(row.name);
+        item->setEditable(false);
+        item->setData(row.id, Qt::UserRole);
+        item->setData(row.count, Qt::UserRole + 1);
+        item->setData(row.path, Qt::UserRole + 2);
+        parent->appendRow(item);
+        m_directoryItems.insert(row.id, item);
+        m_directoryPaths.insert(row.path, row.id);
+        const int depth = depths.value(row.parent, -1) + 1;
+        depths.insert(row.id, depth);
+        m_navigationWidth = qMax(m_navigationWidth, 160 + depth * 16);
+    }
+}
+void BrowserController::navigateDirectory(const QString &id) {
+    if (m_busy || !m_ready || m_closing)
+        return;
+    const auto *item = m_directoryItems.value(id, nullptr);
+    if (!item)
+        return;
+    m_directory = id;
+    m_location = item->data(Qt::UserRole + 2).toString();
+    start({}, 0);
+}
+void BrowserController::sortByColumn(int column) {
+    if (m_busy || !m_ready || m_closing || column < -1 || column > 3)
+        return;
+    const int ascending = column * 2 + 1;
+    m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
     start({}, 0);
 }
 void BrowserController::showAll() {
@@ -196,11 +249,18 @@ void BrowserController::inspectSelection() {
         command.selected.push_back(id.toULongLong());
     submit(std::move(command), true);
 }
+void BrowserController::restoreQuery() {
+    m_directory = m_committedQuery.directory;
+    m_location = m_committedQuery.location;
+    m_search = m_committedQuery.search;
+    m_sort = m_committedQuery.sort;
+}
 void BrowserController::cancel() {
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();
         m_busy = false;
+        restoreQuery();
         m_message = explain("cancelled");
         emit changed();
         return;
@@ -230,6 +290,7 @@ void BrowserController::start(const QString &path, int offset) {
     command.directory = rust::String(m_directory.toStdString());
     command.text = rust::String(m_search.toStdString());
     command.offset = static_cast<std::uint64_t>(offset);
+    command.sort = static_cast<std::uint8_t>(m_sort);
     m_detail.clear();
     submit(std::move(command));
 }
@@ -263,6 +324,7 @@ void BrowserController::attemptSubmission() {
                           : result.status == xdzip::reader::Admission::Exhausted
                               ? "identifier_exhausted"
                               : "busy";
+        restoreQuery();
         m_message = explain(code);
         emit changed();
         return;
@@ -287,6 +349,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_busy = false;
         m_ready = false;
         m_model.replace({});
+        replaceDirectories({});
         m_detail.clear();
         m_preflightReport.clear();
         m_message = explain("runtime_unavailable");
@@ -297,9 +360,20 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
     if (event.kind == EventKind::Page) {
-        if (event.total > 10000 || event.offset > event.total || event.rows.size() > 128) {
+        if (event.total > 10000 || event.offset > event.total || event.rows.size() > 128 ||
+            event.directories.size() > 2048) {
             m_result.error = "resource_limit";
             return;
+        }
+        m_result.replaceDirectories = event.replace_directories;
+        m_result.navigationLimited = event.navigation_limited;
+        for (const auto &node : event.directories) {
+            if (node.count > 10000) {
+                m_result.error = "resource_limit";
+                return;
+            }
+            m_result.directories.append({text(node.id), text(node.parent), text(node.name),
+                                         text(node.path), static_cast<int>(node.count)});
         }
         m_result.total = static_cast<int>(event.total);
         m_result.offset = static_cast<int>(event.offset);
@@ -366,6 +440,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 emit preflightReady();
         } else {
             m_ready = m_result.error.isEmpty();
+            m_committedQuery =
+                m_ready ? QueryState{m_directory, m_location, m_search, m_sort} : QueryState{};
+            restoreQuery();
+            if (!m_ready || m_result.replaceDirectories)
+                replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
+            m_navigationLimited = m_ready && m_result.navigationLimited;
             m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
             m_detail.clear();
             m_total = m_ready ? m_result.total : 0;

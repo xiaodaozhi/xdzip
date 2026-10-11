@@ -3,6 +3,7 @@
 #include <QAbstractTableModel>
 #include <QObject>
 #include <QSet>
+#include <QStandardItemModel>
 #include <QStringList>
 #include <QTimer>
 #include <QVariantMap>
@@ -43,6 +44,11 @@ class BrowserController : public QObject {
     Q_OBJECT
     QML_ELEMENT
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
+    Q_PROPERTY(QAbstractItemModel *directories READ directories CONSTANT)
+    Q_PROPERTY(QString directoryId READ directoryId NOTIFY changed)
+    Q_PROPERTY(bool navigationLimited READ navigationLimited NOTIFY changed)
+    Q_PROPERTY(int navigationWidth READ navigationWidth NOTIFY changed)
+    Q_PROPERTY(int sortOrder READ sortOrder NOTIFY changed)
     Q_PROPERTY(QVariantMap preflightReport READ preflightReport NOTIFY changed)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
@@ -61,6 +67,24 @@ class BrowserController : public QObject {
     QAbstractItemModel *entries() {
         return &m_model;
     }
+    QAbstractItemModel *directories() {
+        return &m_directories;
+    }
+    QString directoryId() const {
+        return m_directory;
+    }
+    bool navigationLimited() const {
+        return m_navigationLimited;
+    }
+    int navigationWidth() const {
+        return m_navigationWidth;
+    }
+    int sortOrder() const {
+        return m_sort;
+    }
+    Q_INVOKABLE void navigateDirectory(const QString &id);
+    // Columns 0..3 toggle ascending/descending; -1 restores archive order.
+    Q_INVOKABLE void sortByColumn(int column);
     bool runtimeAvailable() const {
         return !m_closing && !m_faulted && !m_connection->stopped();
     }
@@ -113,18 +137,38 @@ class BrowserController : public QObject {
     void preflightReady();
 
   private:
+    struct DirectoryRow {
+        QString id, parent, name, path;
+        int count = 0;
+    };
     struct Result {
         bool preflight = false;
         QVariantMap report;
         QList<BrowserRow> rows;
+        QList<DirectoryRow> directories;
+        bool replaceDirectories = false;
+        bool navigationLimited = false;
         QString error;
         QString session;
         int total = 0;
         int offset = 0;
     };
+    struct QueryState {
+        QString directory, location, search;
+        int sort = 0;
+    };
+    QueryState m_committedQuery;
+    void restoreQuery();
     void start(const QString &path, int offset);
     static QString explain(const QString &code);
+    void replaceDirectories(const QList<DirectoryRow> &rows);
     ArchiveTableModel m_model;
+    QStandardItemModel m_directories;
+    QHash<QString, QStandardItem *> m_directoryItems;
+    QHash<QString, QString> m_directoryPaths;
+    bool m_navigationLimited = false;
+    int m_navigationWidth = 160;
+    int m_sort = 0;
     std::unique_ptr<RuntimeConnection> m_connection;
     quint64 m_pending = 0;
     // One bounded command may await admission; retries never occupy the GUI thread.

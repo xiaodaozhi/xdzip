@@ -10,6 +10,7 @@ Rectangle {
     required property bool canInspect
     required property bool hasSelection
     signal openRequested
+    signal resetSortRequested
     signal inspectRequested
     signal searchRequested(string query)
     function clearSearch() {
@@ -68,6 +69,11 @@ Rectangle {
             Menu {
                 id: more
                 y: parent.height
+                MenuItem {
+                    text: qsTr("按归档顺序排列")
+                    enabled: root.canSearch
+                    onTriggered: root.resetSortRequested()
+                }
                 MenuItem {
                     text: qsTr("解压元数据预检")
                     enabled: root.canInspect

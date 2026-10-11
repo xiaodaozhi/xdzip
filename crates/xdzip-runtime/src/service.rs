@@ -20,12 +20,14 @@ pub enum Command {
     Browse {
         /// Session identity checked before acting.
         session: u64,
-        /// Explicit directory EntryId, or empty for all records.
+        /// Physical directory EntryId or virtual d-prefixed node ID; empty means all records.
         directory: String,
         /// Bounded literal name search.
         text: String,
         /// Offset within the immutable result.
         offset: u64,
+        /// Full-result sort code: 0 physical; pairs 1..8 name/size/packed/method.
+        sort: u8,
     },
     /// Inspect selected physical records without writing.
     Preflight {
@@ -44,8 +46,11 @@ impl Command {
         match self {
             Self::Open(path) => !path.is_empty() && path.len() <= 4096 && !path.contains('\0'),
             Self::Browse {
-                directory, text, ..
-            } => directory.len() <= 20 && text.len() <= 1024,
+                directory,
+                text,
+                sort,
+                ..
+            } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 8,
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
             _ => true,
         }
@@ -84,6 +89,10 @@ pub enum Payload {
         total: u64,
         /// At most 128 owned display rows.
         rows: Vec<Row>,
+        /// Complete bounded navigation, sent only when opening a new session.
+        navigation: Option<Vec<crate::navigation::Directory>>,
+        /// The independent navigation budget was exceeded; flat browsing remains available.
+        navigation_limited: bool,
     },
     /// Bounded metadata report.
     Preflight(xdzip_extract_plan::Report),
@@ -100,7 +109,16 @@ impl Payload {
     /// Count retained string bytes for end-to-end mailbox admission (containers separately bounded).
     pub fn bytes(&self) -> usize {
         match self {
-            Self::Page { rows, .. } => rows.iter().map(|row| row.name.len()).sum(),
+            Self::Page {
+                rows, navigation, ..
+            } => {
+                rows.iter().map(|row| row.name.len()).sum::<usize>()
+                    + navigation
+                        .iter()
+                        .flatten()
+                        .map(|node| node.name.len() + node.path.len())
+                        .sum::<usize>()
+            }
             Self::Preflight(report) => report.findings.len() * 64,
             _ => 0,
         }
@@ -462,7 +480,7 @@ fn execute(
         xdzip_codec_api::ScanError::Cancelled => "cancelled",
         xdzip_codec_api::ScanError::SourceChanged => "source_changed",
     };
-    let (session, directory, text, offset) = match command {
+    let (session, directory, text, offset, sort, replace_navigation) = match command {
         Command::Snapshot => {
             return Ok(Payload::Snapshot(
                 archive.as_ref().map_or(0, |a| a.key().session.get()),
@@ -473,14 +491,15 @@ fn execute(
             let opened = Archive::open(Path::new(&path), control).map_err(fail)?;
             let session = opened.key().session.get();
             *archive = Some(opened);
-            (session, String::new(), String::new(), 0)
+            (session, String::new(), String::new(), 0, 0, true)
         }
         Command::Browse {
             session,
             directory,
             text,
             offset,
-        } => (session, directory, text, offset),
+            sort,
+        } => (session, directory, text, offset, sort, false),
         Command::Preflight { session, selected } => {
             let archive = archive
                 .as_ref()
@@ -507,12 +526,14 @@ fn execute(
         .filter(|a| a.key().session.get() == session)
         .ok_or("stale_session")?;
     let (total, rows) = archive
-        .browse(&directory, &text, offset, 128, control)
+        .browse_sorted(&directory, &text, offset, 128, sort, control)
         .map_err(fail)?;
     Ok(Payload::Page {
         session,
         offset,
         total: total as u64,
+        navigation: replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec()),
+        navigation_limited: archive.directories().is_none(),
         rows: rows
             .into_iter()
             .map(|entry| Row {
@@ -603,6 +624,8 @@ mod tests {
     fn byte_backpressure_does_not_block_control_or_shutdown() {
         let (client, receiver) = spawn(|_, _| {
             Ok(Payload::Page {
+                navigation: None,
+                navigation_limited: false,
                 session: 1,
                 offset: 0,
                 total: 1,
@@ -709,8 +732,16 @@ mod tests {
         let page = receiver.receive().unwrap();
         assert_eq!(page.request, id);
         let session = match page.payload {
-            Payload::Page { session, rows, .. } => {
+            Payload::Page {
+                session,
+                rows,
+                navigation,
+                navigation_limited,
+                ..
+            } => {
                 assert_eq!(rows.len(), 5);
+                assert!(!navigation_limited);
+                assert_eq!(navigation.unwrap().len(), 1);
                 session
             }
             _ => panic!("expected page"),
@@ -719,7 +750,42 @@ mod tests {
             receiver.receive().unwrap().payload,
             Payload::Finished("")
         ));
+        submit(&client, || Command::Browse {
+            session,
+            directory: "d1".into(),
+            text: String::new(),
+            offset: 0,
+            sort: 2,
+        });
+        match receiver.receive().unwrap().payload {
+            Payload::Page {
+                navigation,
+                total,
+                rows,
+                ..
+            } => {
+                assert!(navigation.is_none());
+                assert_eq!(total, 1);
+                assert_eq!(rows[0].id, 2);
+            }
+            _ => panic!("expected bounded directory query"),
+        }
+        assert!(matches!(
+            receiver.receive().unwrap().payload,
+            Payload::Finished("")
+        ));
+        assert_eq!(
+            client.submit(Command::Browse {
+                session,
+                directory: String::new(),
+                text: String::new(),
+                offset: 0,
+                sort: 9
+            }),
+            Err(Rejection::Invalid)
+        );
         let stale = submit(&client, || Command::Browse {
+            sort: 0,
             session: session + 1,
             directory: String::new(),
             text: String::new(),

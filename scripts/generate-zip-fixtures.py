@@ -32,3 +32,8 @@ wrong_count = bytearray(normal)
 struct.pack_into('<HH', wrong_count, len(normal) - 14, 6, 6)
 (ROOT / 'wrong-count.zip').write_bytes(wrong_count)
 (ROOT / 'pages.zip').write_bytes(archive([(f'folder/entry-{i:03}.txt', b'x', 0) for i in range(270)]))
+(ROOT / 'navigation.zip').write_bytes(archive([
+    ('photos/2026/cover.txt', b'first', 0), ('photos/2026/cover.txt', b'second', 0),
+    ('documents/readme.txt', b'document', 0), ('empty/', b'', 0),
+    ('photos/../review.txt', b'review', 0)]))
+(ROOT / 'navigation-depth.zip').write_bytes(archive([('d/' * 65 + 'file.txt', b'x', 0)]))

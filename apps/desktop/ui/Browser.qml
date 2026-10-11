@@ -123,6 +123,7 @@ ApplicationWindow {
             hasSelection: reader.selectedCount > 0
             onOpenRequested: reader.chooseArchive()
             onInspectRequested: reader.inspectSelection()
+            onResetSortRequested: reader.sortByColumn(-1)
             onSearchRequested: query => reader.search(query)
         }
         RowLayout {
@@ -197,16 +198,105 @@ ApplicationWindow {
                             }
                         }
                     }
+                    TreeView {
+                        id: directoryTree
+                        objectName: "directoryTree"
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        model: reader.directories
+                        enabled: reader.ready && !reader.busy
+                        columnWidthProvider: function (column) {
+                            return Math.max(width, reader.navigationWidth * Math.max(1, Theme.fontScale));
+                        }
+                        onWidthChanged: forceLayout()
+                        Connections {
+                            target: Theme
+                            function onFontScaleChanged() {
+                                directoryTree.forceLayout();
+                            }
+                        }
+                        Connections {
+                            target: reader
+                            function onChanged() {
+                                directoryTree.forceLayout();
+                            }
+                        }
+                        ScrollBar.vertical: ScrollBar {}
+                        ScrollBar.horizontal: ScrollBar {}
+                        delegate: TreeViewDelegate {
+                            id: directoryNode
+                            required property string nodeName
+                            required property string nodeId
+                            required property int entryCount
+                            required property string fullPath
+                            objectName: "directory-" + nodeId
+                            implicitHeight: Math.ceil(Math.max(40, Theme.bodySize * 1.6 + 16))
+                            implicitWidth: directoryTree.width
+                            indentation: 16
+                            leftMargin: 0
+                            topPadding: 0
+                            bottomPadding: 0
+                            rightPadding: 8
+                            palette.windowText: Theme.textSecondary
+                            onClicked: reader.navigateDirectory(nodeId)
+                            Keys.onReturnPressed: reader.navigateDirectory(nodeId)
+                            Keys.onEnterPressed: reader.navigateDirectory(nodeId)
+                            Accessible.name: nodeName + qsTr("，%1 条记录").arg(entryCount)
+                            ToolTip {
+                                visible: directoryNode.hovered
+                                width: Math.min(360, implicitWidth)
+                                contentItem: Text {
+                                    text: directoryNode.fullPath
+                                    textFormat: Text.PlainText
+                                    color: Theme.text
+                                    font.pixelSize: Theme.secondarySize
+                                    wrapMode: Text.WrapAnywhere
+                                    maximumLineCount: 8
+                                    elide: Text.ElideMiddle
+                                }
+                                background: Rectangle {
+                                    color: Theme.surface
+                                    border.color: Theme.border
+                                    radius: Theme.controlRadius
+                                }
+                            }
+                            background: Rectangle {
+                                radius: Theme.controlRadius
+                                color: reader.directoryId === directoryNode.nodeId ? Theme.selection : directoryNode.hovered ? Theme.canvas : "transparent"
+                                border.width: directoryNode.activeFocus ? 2 : 0
+                                border.color: Theme.accent
+                            }
+                            contentItem: RowLayout {
+                                spacing: 8
+                                Image {
+                                    source: root.fileIcon("", true)
+                                    Layout.preferredWidth: 18
+                                    Layout.preferredHeight: 18
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: directoryNode.nodeName
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: Theme.text
+                                    font.pixelSize: Theme.bodySize
+                                }
+                                Text {
+                                    text: directoryNode.entryCount
+                                    color: Theme.textSecondary
+                                    font.pixelSize: Theme.secondarySize
+                                }
+                            }
+                        }
+                    }
                     Text {
                         Layout.fillWidth: true
-                        text: reader.location.length ? reader.location : qsTr("双击目录进入浏览")
-                        textFormat: Text.PlainText
-                        wrapMode: Text.WrapAnywhere
+                        visible: reader.navigationLimited
+                        text: qsTr("目录数量或层级超出显示限额，仍可使用全部文件和搜索。")
+                        wrapMode: Text.Wrap
                         color: Theme.textSecondary
-                        font.pixelSize: Theme.bodySize
-                    }
-                    Item {
-                        Layout.fillHeight: true
+                        font.pixelSize: Theme.secondarySize
                     }
                     Text {
                         text: qsTr("只读浏览")
@@ -258,6 +348,7 @@ ApplicationWindow {
                         Repeater {
                             model: [qsTr("名称"), qsTr("原始大小"), qsTr("压缩后"), qsTr("方法"), qsTr("标记")]
                             Text {
+                                id: columnHeader
                                 required property string modelData
                                 required property int index
                                 width: table.columnSize(index)
@@ -266,9 +357,35 @@ ApplicationWindow {
                                 rightPadding: 12
                                 horizontalAlignment: index === 1 || index === 2 ? Text.AlignRight : Text.AlignLeft
                                 verticalAlignment: Text.AlignVCenter
+                                objectName: "sort-column-" + index
                                 text: modelData
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.secondarySize
+                                activeFocusOnTab: index < 4 && reader.ready && !reader.busy
+                                Accessible.role: index < 4 ? Accessible.Button : Accessible.StaticText
+                                Accessible.name: modelData + (reader.sortOrder === index * 2 + 1 ? qsTr("，升序") : reader.sortOrder === index * 2 + 2 ? qsTr("，降序") : "")
+                                Accessible.onPressAction: reader.sortByColumn(index)
+                                Keys.onReturnPressed: reader.sortByColumn(index)
+                                Keys.onEnterPressed: reader.sortByColumn(index)
+                                Keys.onSpacePressed: reader.sortByColumn(index)
+                                TapHandler {
+                                    enabled: columnHeader.index < 4 && reader.ready && !reader.busy
+                                    onTapped: reader.sortByColumn(columnHeader.index)
+                                }
+                                Rectangle {
+                                    anchors.fill: parent
+                                    color: "transparent"
+                                    border.width: columnHeader.activeFocus ? 2 : 0
+                                    border.color: Theme.accent
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x: columnHeader.index === 0 ? 52 : columnHeader.index < 3 ? 4 : parent.width - 20
+                                    text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
+                                    visible: reader.sortOrder > 0 && Math.floor((reader.sortOrder - 1) / 2) === columnHeader.index
+                                    color: Theme.accentInk
+                                    font.pixelSize: Theme.secondarySize
+                                }
                             }
                         }
                     }

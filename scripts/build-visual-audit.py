@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--input', type=Path, default=ROOT / '.cache/visual-audit')
     parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/visual-audit')
     parser.add_argument('--fail-on-differences', action='store_true', help='Fail on measured regressions; unresolved fonts remain explicitly unverified')
+    parser.add_argument('--require-navigation', action='store_true', help='Require the real tree interaction capture')
     parser.add_argument('--product-commit', help='Revision that produced the captures')
     parser.add_argument('--print-checks', action='store_true', help='Emit ASCII JSON for native CI log review')
     args = parser.parse_args()
@@ -114,6 +115,25 @@ def main():
             opened = one(scene, lambda n: n['name'] == 'archiveOpen')
             searched = one(scene, lambda n: n['name'] == 'archiveSearch')
             check(scene + ' 工具栏控件中心 Y 差', opened['y'] + opened['height'] / 2 - searched['y'] - searched['height'] / 2, 0, 'shared controlHeight', .5)
+    if args.require_navigation and 'navigation-tree' not in captures:
+        raise ValueError('Missing required navigation-tree capture')
+    if 'navigation-tree' in captures:
+        scene = 'navigation-tree'
+        parent = label(scene, 'photos')
+        child = label(scene, '2026')
+        sibling = label(scene, 'documents')
+        check('目录树父子缩进', child['x'] - parent['x'], 16, 'tree indentation', .5)
+        check('目录树同层文字起点差', sibling['x'] - parent['x'], 0, 'same-depth alignment', .5)
+        node = one(scene, lambda n: n['name'] == 'directory-d2')
+        check('目录树行高', node['height'], tokens['size']['row'], 'tokens.size.row')
+        icon = one(scene, lambda n: n['path'].startswith(node['path'] + '/') and n['class'] == 'QQuickImage')
+        check('目录树图标网格', icon['width'], 18, '18 px icon container')
+        check('目录树图文间距', child['x'] - icon['x'] - icon['width'], 8, 'tree spacing', .5)
+        check('目录树文字与行中心 Y 差', child['y'] + child['height'] / 2 - node['y'] - node['height'] / 2, 0, 'row content centered', .5)
+        check('目录树图标与行中心 Y 差', icon['y'] + icon['height'] / 2 - node['y'] - node['height'] / 2, 0, 'row content centered', .5)
+        tree = one(scene, lambda n: n['name'] == 'directoryTree')
+        count = one(scene, lambda n: n['path'].startswith(node['path'] + '/') and n.get('text') == '2')
+        check('目录树计数完整显示', count['x'] + count['width'] <= tree['x'] + tree['width'], True, 'count fits tree viewport')
     for theme in ['light', 'dark']:
         for foreground, background in [('text', 'surface'), ('textSecondary', 'surface'), ('accentText', 'accent')]:
             a, b = sorted([luminance(tokens[theme][foreground]), luminance(tokens[theme][background])])

@@ -31,6 +31,7 @@ mod ffi {
         directory: String,
         text: String,
         offset: u64,
+        sort: u8,
         selected: Vec<u64>,
     }
     struct Row {
@@ -42,6 +43,13 @@ mod ffi {
         directory: bool,
         encrypted: bool,
         warning: bool,
+    }
+    struct Directory {
+        id: String,
+        parent: String,
+        name: String,
+        path: String,
+        count: u64,
     }
     struct PreflightReport {
         entries: u64,
@@ -67,6 +75,9 @@ mod ffi {
         offset: u64,
         total: u64,
         rows: Vec<Row>,
+        directories: Vec<Directory>,
+        replace_directories: bool,
+        navigation_limited: bool,
         report: PreflightReport,
         error: String,
     }
@@ -138,9 +149,10 @@ impl CommandClient {
     pub fn submit(&self, command: ffi::Command) -> ffi::Submission {
         use service::{Command, Rejection};
         if command.path.len() > 4096
-            || command.directory.len() > 20
+            || command.directory.len() > 21
             || command.text.len() > 1024
             || command.selected.len() > 128
+            || command.sort > 8
         {
             return admission(Err(Rejection::Invalid));
         }
@@ -151,6 +163,7 @@ impl CommandClient {
                 directory: command.directory,
                 text: command.text,
                 offset: command.offset,
+                sort: command.sort,
             },
             ffi::CommandKind::Preflight => {
                 let Some(selected) = command
@@ -192,6 +205,9 @@ impl EventReceiver {
             offset: 0,
             total: 0,
             rows: Vec::new(),
+            directories: Vec::new(),
+            replace_directories: false,
+            navigation_limited: false,
             error: String::new(),
             report: ffi::PreflightReport {
                 entries: 0,
@@ -212,11 +228,30 @@ impl EventReceiver {
                 offset,
                 total,
                 rows,
+                navigation,
+                navigation_limited,
             } => {
                 event.kind = ffi::EventKind::Page;
                 event.session = session;
                 event.offset = offset;
                 event.total = total;
+                event.replace_directories = navigation.is_some();
+                event.navigation_limited = navigation_limited;
+                event.directories = navigation
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|node| ffi::Directory {
+                        id: format!("d{}", node.id),
+                        parent: if node.parent == 0 {
+                            String::new()
+                        } else {
+                            format!("d{}", node.parent)
+                        },
+                        name: node.name,
+                        path: node.path,
+                        count: node.count,
+                    })
+                    .collect();
                 event.rows = rows
                     .into_iter()
                     .map(|row| ffi::Row {
@@ -284,6 +319,7 @@ mod tests {
             directory: String::new(),
             text: String::new(),
             offset: 0,
+            sort: 0,
             selected: Vec::new(),
         };
         assert!(client.submit(invalid).status == ffi::Admission::Invalid);
