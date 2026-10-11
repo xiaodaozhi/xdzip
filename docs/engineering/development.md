@@ -1,6 +1,6 @@
 # 开发者准备指南
 
-先读产品 README、AGENTS、软件设计 01/02/10 和当前工作包。仓库目前没有产品 Cargo.toml 或产品构建入口；独立工具链探针已有 CMakeLists；不要把文档准备描述为“应用已能运行”。
+先读产品 README、AGENTS、软件设计 01/02/10 和当前工作包。根 Cargo workspace 与 CMake 目前只管理独立诊断探针，产品模块尚未建立；不要把文档准备描述为“应用已能运行”。
 
 ## 获取与修改
 
@@ -21,3 +21,5 @@ macOS 准备 Xcode Command Line Tools 与 Qt；Windows 准备 MSVC Build Tools�
 ## 首轮工程验证
 
 [工具链探针](../../tools/toolchain-probe/README.md) 提供 Qt Quick 独立窗口的最小构建和 CTest 命令，不构成桌面产品。版本与测试边界见 [WP-01 证据](../qa/toolchain/wp01-linux.md)。
+
+[统一 CMake/Cargo 桥接探针](../../tools/bridge-probe/README.md) 已提供根构建入口、锁定依赖与生命周期检查。依赖记录见 [cxx 诊断准入](cxx-admission.md)。

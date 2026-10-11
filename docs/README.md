@@ -1,6 +1,6 @@
 # 文档导航
 
-基线日期：2026-10-11。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线，当前处于开发前准备阶段。
+基线日期：2026-10-11。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线，当前处于工程基础验证阶段。
 
 ## 阅读顺序
 
@@ -15,7 +15,7 @@
 | Figma 功能设计 | [文件、画板索引与待修项](ux/figma-design.md) |
 | 未绘制页面和异常流程 | [交互补充](ux/interaction-spec.md) |
 | 开发与仓库约定 | [开发指南](engineering/development.md)、[目录规划](engineering/repository-layout.md) |
-| 工具链与依赖 | [工具链决策表](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[许可证](engineering/licensing.md) |
+| 工具链与依赖 | [工具链决策表](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 诊断记录](engineering/cxx-admission.md)、[许可证](engineering/licensing.md) |
 | 接口审查 | [契约冻结清单](engineering/contracts.md) |
 | 隐私与诊断 | [数据生命周期](engineering/privacy.md) |
 | 持续集成与发布 | [CI 策略](engineering/ci-policy.md)、[发布流程](engineering/release-runbook.md) |
