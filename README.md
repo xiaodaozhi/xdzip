@@ -2,7 +2,7 @@
 
 现代、轻量、可扩展的跨平台压缩文件管理工具。
 
-**当前阶段：工程基础验证。已有 Qt 与 Rust/C++ 诊断探针，尚无可用压缩产品或安装包。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
+**当前阶段：核心与界面基础开发。已有 Rust 领域类型、Qt 独立窗口组件预览及桥接探针，尚无可用压缩产品或安装包。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
 ![xdzip 已确认的浅色主窗口设计](docs/visual/xdzip-main-light.png)
 
@@ -15,6 +15,8 @@
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。
+
+开发构建入口：[Qt 组件预览](apps/desktop/README.md)。当前示例数据明确标识，不执行归档操作。
 
 ## 产品方向
 

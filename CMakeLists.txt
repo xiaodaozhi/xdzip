@@ -9,3 +9,8 @@ add_subdirectory(tools/bridge-probe)
 if(XDZIP_BUILD_QT_PROBE)
     add_subdirectory(tools/toolchain-probe)
 endif()
+
+option(XDZIP_BUILD_DESKTOP_PREVIEW "Build the Qt component development preview" OFF)
+if(XDZIP_BUILD_DESKTOP_PREVIEW)
+    add_subdirectory(apps/desktop)
+endif()

@@ -1,6 +1,6 @@
 # 开发者准备指南
 
-先读产品 README、AGENTS、软件设计 01/02/10 和当前工作包。根 Cargo workspace 与 CMake 目前只管理独立诊断探针，产品模块尚未建立；不要把文档准备描述为“应用已能运行”。
+先读产品 README、AGENTS、软件设计 01/02/10 和当前工作包。根 Cargo workspace 已包含 xdzip-domain，CMake 可选择构建 Qt 组件预览和独立探针；不要把文档准备描述为“应用已能运行”。
 
 ## 获取与修改
 
