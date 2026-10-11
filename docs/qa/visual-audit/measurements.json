@@ -1,0 +1,352 @@
+{
+  "status": "differences_found",
+  "environment": {
+    "os": "Debian GNU/Linux 13 (trixie)",
+    "architecture": "x86_64",
+    "qt": "6.8.2",
+    "platform": "offscreen",
+    "requestedQuickBackend": "software",
+    "dpr": 1
+  },
+  "product_commit": "64bf2feb4fb8b8c135c3a633da285868d5e4d438",
+  "checks": [
+    {
+      "title": "主窗口 width",
+      "actual": 1360,
+      "expected": 1280,
+      "passed": false,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 height",
+      "actual": 740,
+      "expected": 820,
+      "passed": false,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 minimumWidth",
+      "actual": 1160,
+      "expected": 1040,
+      "passed": false,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 minimumHeight",
+      "actual": 600,
+      "expected": 680,
+      "passed": false,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "侧栏宽度",
+      "actual": 220,
+      "expected": 220,
+      "passed": true,
+      "source": "tokens.size.sidebar",
+      "tolerance": 0
+    },
+    {
+      "title": "详情栏宽度",
+      "actual": 250,
+      "expected": 280,
+      "passed": false,
+      "source": "tokens.size.inspector",
+      "tolerance": 0
+    },
+    {
+      "title": "列表行高",
+      "actual": 48,
+      "expected": 40,
+      "passed": false,
+      "source": "tokens.size.row",
+      "tolerance": 0
+    },
+    {
+      "title": "普通按钮高度",
+      "actual": 44,
+      "expected": 36,
+      "passed": false,
+      "source": "tokens.size.button",
+      "tolerance": 0
+    },
+    {
+      "title": "搜索框高度",
+      "actual": 42,
+      "expected": 36,
+      "passed": false,
+      "source": "visual/README 搜索框高 36",
+      "tolerance": 0
+    },
+    {
+      "title": "详情面板标题字号",
+      "actual": 18,
+      "expected": 20,
+      "passed": false,
+      "source": "tokens.type.panelTitle",
+      "tolerance": 0
+    },
+    {
+      "title": "列表正文字号",
+      "actual": 13,
+      "expected": 13,
+      "passed": true,
+      "source": "tokens.type.table",
+      "tolerance": 0
+    },
+    {
+      "title": "按钮正文字号",
+      "actual": 14,
+      "expected": 14,
+      "passed": true,
+      "source": "tokens.type.body",
+      "tolerance": 0
+    },
+    {
+      "title": "名称表头与文件名起点差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "same column alignment",
+      "tolerance": 0.5
+    },
+    {
+      "title": "列表图标容器网格",
+      "actual": 24,
+      "expected": 18,
+      "passed": false,
+      "source": "visual/README 建议 18 px；不等于可见墨迹尺寸",
+      "tolerance": 0
+    },
+    {
+      "title": "深色详情栏背景",
+      "actual": "#1d2026",
+      "expected": "#20232a",
+      "passed": false,
+      "source": "tokens.dark.inspector",
+      "tolerance": 0
+    },
+    {
+      "title": "task-light 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-light 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-dark 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-dark 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-large-type 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-large-type 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "任务三列标题 Y 极差",
+      "actual": 3,
+      "expected": 0,
+      "passed": false,
+      "source": "同排标题顶边对齐",
+      "tolerance": 0.5
+    },
+    {
+      "title": "任务三列数值基线极差",
+      "actual": 1,
+      "expected": 0,
+      "passed": false,
+      "source": "同排数字基线对齐",
+      "tolerance": 0.5
+    },
+    {
+      "title": "200% 字号：打开归档",
+      "actual": 28,
+      "expected": 28,
+      "passed": true,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：条目详情",
+      "actual": 18,
+      "expected": 36,
+      "passed": false,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：normal.zip",
+      "actual": 18,
+      "expected": 36,
+      "passed": false,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：搜索输入",
+      "actual": 12,
+      "expected": 24,
+      "passed": false,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 表头文字可容纳",
+      "actual": false,
+      "expected": true,
+      "passed": false,
+      "source": "contentWidth <= width - leftPadding",
+      "tolerance": 0
+    },
+    {
+      "title": "light text/surface 对比度",
+      "actual": 15.73,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "light textSecondary/surface 对比度",
+      "actual": 5.6,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "light accentText/accent 对比度",
+      "actual": 5.3,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark text/surface 对比度",
+      "actual": 14.06,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark textSecondary/surface 对比度",
+      "actual": 6.84,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark accentText/accent 对比度",
+      "actual": 5.11,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    }
+  ],
+  "failed": 17,
+  "passed": 17,
+  "evidence_sha256": {
+    "browser-1280.json": "889d0f623f949ea9a279ff54ad361e9864a4dc7eadd0e9d5f7e304f302c71218",
+    "browser-1280.png": "02116b0c7c0133c0292cb9a09d6b73b925dd1458844024f1ecd0f3ed99e58614",
+    "browser-dark.json": "8124610e05f9ec203f1bcc3d0f927b0ffa4b8d30647066cb555e4a3fddf6d200",
+    "browser-dark.png": "7126e8131179b2b9906c6d3b3b3a4e2be7ca163d38ea66acf3cf8a0b34031cfa",
+    "browser-large-type.json": "10dca98f833fa11e2993c6803a6dac8348de719e465a339399fb836b9724ec26",
+    "browser-large-type.png": "c7b9bf9c1d967ca354a9d687d43c7c0f9162f4902a2b33508d08e79085e5b560",
+    "browser-light.json": "958c27014a3f7935cf979525119cc79194843d63646d8a67cba2d2e0e0f40c63",
+    "browser-light.png": "49820d915ace309d33eb10f7fb46158729f7783418cbc89b545142e1f74eb4f6",
+    "browser-minimum.json": "edef61a63c77115645cc04fdf2c8cba9ea0956a781411f80f54e35946204d243",
+    "browser-minimum.png": "0fe21f0d1333519643f556309a533394cb64fce88b7176aa79417b18e01db550",
+    "browser-request-1040.json": "fb48b80c929037622230516bf2b4877984234f298fb2d210cfa32d665bd71060",
+    "browser-request-1040.png": "981b646d04a6b26a2c96ca78aa5291d4b4e4e882675ee6d0546c5aee1d2b43a5",
+    "preflight-light.json": "59243fbea95990d23f61ed89c494bd8f3fe2d297683d306bfac89ec8a1fbedb0",
+    "preflight-light.png": "8526ccfb975b53ebe23fd43a440070ce74a1af076aa4753bf7d05810435ede65",
+    "task-dark.json": "272113419947f5bbc5f27c55f575c8deb1f08da2842fc7391cb21841df0d9051",
+    "task-dark.png": "d4f536274691c8dac39a28a672027eeb904ca9ee9b841b186f5e0ec4d8ad8925",
+    "task-large-type-bottom.json": "2516a6bff5d0ad20a55d3bbcf498feec6ef2b8c126de587c05d87913345314d6",
+    "task-large-type-bottom.png": "320626d65f63ca140fef8ca1142c04c1b34dde1786afe6f56815e1be9c633fe6",
+    "task-large-type.json": "d49cf68eb968b4591a6230419791edcaa991d7206c7e3a942c4d24c05de255ea",
+    "task-large-type.png": "44456a7a6b0424d3c692c2639a73f1f5a00fd6447144e36f4c3d1d69efba3c1d",
+    "task-light.json": "28208e0e6f19d1f5db060c96d03665a3a7e0bc7a9e44af4ff26353c49d5f058b",
+    "task-light.png": "f7926451d231e4ed93a98572a5d1f47616f7b425d8d4a738689e9c43db8bfb2d"
+  },
+  "input_sha256": {
+    "apps/desktop/ui/AppButton.qml": "48e67400f956a9a70c00e9308a87ca35a2e0e9350e502a58fdb855bb308607fd",
+    "apps/desktop/ui/Browser.qml": "a1d8bd44bc648523b1487bc0b0ddf848a924e2bee60d7c0e0f05893c066b1d54",
+    "apps/desktop/ui/InfoRow.qml": "d30b2dbce21cbb6344566c22d7bcc42bda0a272ead947e9dfa6c013c851fc637",
+    "apps/desktop/ui/OperationWindow.qml": "aa6ff466633fd5a8dcd5923e0e5f95e7fdec932515dcdfe2431b70bf201cb047",
+    "apps/desktop/ui/PreflightWindow.qml": "dd59e55f8cf22a03a00d0cff69b2c22d35dd9d9642d0646b6f7d3b4440349594",
+    "apps/desktop/ui/Preview.qml": "4c6f336b0a6945a22dc303c9a538ffc62460c943c0128fe609f9b1b2b9273bbc",
+    "apps/desktop/ui/TaskMetric.qml": "b228aa085148775e5393a84056f8dc38703df9c51ca0238ec1b61ce212eddce1",
+    "apps/desktop/ui/TaskPathCard.qml": "4ebf1e97d73bbadbe073afe5ab79ca9e97c2e6c3b925ef2b126298837df6cb8f",
+    "apps/desktop/ui/TaskWindow.qml": "a82182e4cea45c06e087b6e3130f68bdfccfe3be5efbcc81deb35a0275e9a5cf",
+    "apps/desktop/ui/Theme.qml": "720c6295f8601f31438663e469402ec63984bf23b4948eb7b269caac24af3ae6",
+    "design/assets/v1/sources/main-light.png": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+    "design/hifi/v2/screens/03-progress.png": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387",
+    "docs/visual/tokens.json": "38cc47753d8a8c2ef02a061a3fccff59c8a7aca94f652e89cde2128764953989"
+  },
+  "art_reference": {
+    "source": "design/hifi/v2/screens/03-progress.png",
+    "content_rect_xyxy": [
+      85,
+      114,
+      1361,
+      1036
+    ],
+    "boundary_uncertainty_source_px": 2,
+    "scale_to_760_content_width": 0.5956112852664577,
+    "target_card_xyxy": [
+      123,
+      279,
+      1323,
+      429
+    ],
+    "progress_card_xyxy": [
+      123,
+      447,
+      1323,
+      712
+    ],
+    "file_card_xyxy": [
+      123,
+      730,
+      1323,
+      876
+    ],
+    "footer_divider_y": 943,
+    "note": "参考估计；不推导生成式图片的精确字号，也不作为规范 token"
+  }
+}

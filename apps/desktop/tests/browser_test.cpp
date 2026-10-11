@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "visual_audit.h"
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
@@ -265,9 +266,15 @@ class BrowserTest : public QObject {
         QVERIFY(reportWindow->flags().testFlag(Qt::WindowTitleHint));
         QVERIFY(QTest::qWaitForWindowExposed(reportWindow));
         QVERIFY(reportWindow->grabWindow().save("zip-preflight.png"));
+        if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT")) {
+            const auto directory = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+            QVERIFY(QDir().mkpath(directory));
+            QVERIFY(visual_audit::save(reportWindow, directory, "preflight-light"));
+        }
         reportWindow->close();
         QVERIFY(window->isVisible());
         QCOMPARE(controller->selectedCount(), 1);
+        QVERIFY(visual_audit::capture(engine, window));
     }
 };
 QTEST_MAIN(BrowserTest)
