@@ -1,0 +1,2126 @@
+{
+  "schema_version": 1,
+  "status": "design-review-candidate",
+  "screens": [
+    {
+      "file": "screens/01-create.png",
+      "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72"
+    },
+    {
+      "file": "screens/02-conflict.png",
+      "sha256": "29681423821a03f3f1c422c01ec8cc009140f817e07f8bc8b0597a662ce7ca0e"
+    },
+    {
+      "file": "screens/03-progress.png",
+      "sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387"
+    },
+    {
+      "file": "screens/04-partial-result.png",
+      "sha256": "056a8570e21226c29ef2ced8a0ea646a7b6988ab3f2c83d6add350695a8269df"
+    },
+    {
+      "file": "screens/05-settings.png",
+      "sha256": "78ce04944d9610d8d1f5a873e488b8ed1fa78a0e34bc8516dc218397939fd6b0"
+    },
+    {
+      "file": "screens/06-task-states.png",
+      "sha256": "618667d2f46760e9d926707a713294f2467d9d50f9043d88f0b99d7e1b47fe13"
+    },
+    {
+      "file": "screens/07-create-overwrite.png",
+      "sha256": "422706e66533e42e3c3ecda80e810d95ca4669edfee6fc6bd4eebdf41bcd7fa9"
+    },
+    {
+      "file": "screens/08-platforms.png",
+      "sha256": "7feb1bf4b03252e43063396f56bdfed1548db306241e578d8210a30c700bd297"
+    }
+  ],
+  "shared_asset_base": "../../assets/v1",
+  "assets": [
+    {
+      "id": "create-archive",
+      "file": "slices/create-archive.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/01-create.png",
+      "rect": [
+        110,
+        130,
+        115,
+        125
+      ],
+      "size": [
+        115,
+        125
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "ffafda06c660e7b9279834db6281b39cae89bd39abfb06da2938a6db483a5d1d"
+    },
+    {
+      "id": "image-blue",
+      "file": "slices/image-blue.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/01-create.png",
+      "rect": [
+        144,
+        415,
+        54,
+        59
+      ],
+      "size": [
+        54,
+        59
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "7492fe252d0065a873442d0507e8d147cc1b7824b06cf78ed45b960b77188f0c"
+    },
+    {
+      "id": "image-amber",
+      "file": "slices/image-amber.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/01-create.png",
+      "rect": [
+        144,
+        485,
+        54,
+        60
+      ],
+      "size": [
+        54,
+        60
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "ad1e78dcaddf460d5959eaebdb6600cfb26af8497f506850085107f8e4e64617"
+    },
+    {
+      "id": "remove-row",
+      "file": "slices/remove-row.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/01-create.png",
+      "rect": [
+        886,
+        422,
+        49,
+        49
+      ],
+      "size": [
+        49,
+        49
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "4571622c7a8220c92e741203e1d4b6c7644c1c0d9ca2d5e7ef8819e163e7f73b"
+    },
+    {
+      "id": "conflict-document",
+      "file": "slices/conflict-document.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/02-conflict.png",
+      "rect": [
+        130,
+        193,
+        116,
+        142
+      ],
+      "size": [
+        116,
+        142
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "bcb178cefad8754676a99daaf420d0005fb0d2e67ba69dbbdfb696c09ea9fdf7"
+    },
+    {
+      "id": "conflict-pdf",
+      "file": "slices/conflict-pdf.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/02-conflict.png",
+      "rect": [
+        156,
+        458,
+        109,
+        119
+      ],
+      "size": [
+        109,
+        119
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "7a83a9792759ce3a919253b0a72c28478a2aeac701d5bb9f57cc50a2e5a9862d"
+    },
+    {
+      "id": "conflict-warning",
+      "file": "slices/conflict-warning.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/02-conflict.png",
+      "rect": [
+        140,
+        681,
+        53,
+        53
+      ],
+      "size": [
+        53,
+        53
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "530111fd0c9f9dd88193f67c01bab42b92c2d8bf34509bd38fc4d0febe8e9730"
+    },
+    {
+      "id": "progress-document",
+      "file": "slices/progress-document.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/03-progress.png",
+      "rect": [
+        133,
+        140,
+        104,
+        119
+      ],
+      "size": [
+        104,
+        119
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "7ce3742e8eb741feb566dbb7f66a7460bf37be4c187447ab67c2ca98fa2c74cc"
+    },
+    {
+      "id": "progress-image",
+      "file": "slices/progress-image.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/03-progress.png",
+      "rect": [
+        169,
+        794,
+        51,
+        61
+      ],
+      "size": [
+        51,
+        61
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "fd741a7c9b7ea1325a74e28df8baa7369b86ab138e56228603d116e07cdf8364"
+    },
+    {
+      "id": "partial-document",
+      "file": "slices/partial-document.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/04-partial-result.png",
+      "rect": [
+        115,
+        143,
+        113,
+        130
+      ],
+      "size": [
+        113,
+        130
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "119e43642c72994078f578aba1df8a386f0fcd073f1594ebaa6b7e99b3a57830"
+    },
+    {
+      "id": "partial-success",
+      "file": "slices/partial-success.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/04-partial-result.png",
+      "rect": [
+        242,
+        306,
+        57,
+        57
+      ],
+      "size": [
+        57,
+        57
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "c65057635c27cc1220141888ed512a4136aea79fed062ea225404234869df2b4"
+    },
+    {
+      "id": "partial-skipped",
+      "file": "slices/partial-skipped.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/04-partial-result.png",
+      "rect": [
+        645,
+        307,
+        56,
+        56
+      ],
+      "size": [
+        56,
+        56
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "1c61e1794e4c1447a4b1e45918a81b04dbec3954f141e8856e5fda6bc1698a67"
+    },
+    {
+      "id": "partial-warning",
+      "file": "slices/partial-warning.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/04-partial-result.png",
+      "rect": [
+        1035,
+        306,
+        59,
+        58
+      ],
+      "size": [
+        59,
+        58
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "6970dfe0fa68dce79dcd313510f1972d7ab5602a6eb44fe42b04af0051442595"
+    },
+    {
+      "id": "settings-gear",
+      "file": "slices/settings-gear.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/05-settings.png",
+      "rect": [
+        115,
+        139,
+        119,
+        120
+      ],
+      "size": [
+        119,
+        120
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "5e612233fa35c0dc6d7457269d83b3fd244b4cf7b5b6fd172d894eb8d9cba2a9"
+    },
+    {
+      "id": "theme-system",
+      "file": "slices/theme-system.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/05-settings.png",
+      "rect": [
+        337,
+        378,
+        109,
+        86
+      ],
+      "size": [
+        109,
+        86
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "833d6ee39d0770f86fa1bed5a98bca49a556acd3d5e1542c441c047430596445"
+    },
+    {
+      "id": "theme-light",
+      "file": "slices/theme-light.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/05-settings.png",
+      "rect": [
+        568,
+        378,
+        109,
+        86
+      ],
+      "size": [
+        109,
+        86
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "2645b5d8ac1cac90a27f5d135b6b3b63aa293b0ea3509fd495ceacbcaf0e2d52"
+    },
+    {
+      "id": "theme-dark",
+      "file": "slices/theme-dark.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/05-settings.png",
+      "rect": [
+        798,
+        378,
+        108,
+        86
+      ],
+      "size": [
+        108,
+        86
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "f4cae2bf62f48f1c7d8abd3cd05c2b1bc42e9376cea41a965121b37bacf01efa"
+    },
+    {
+      "id": "success-large",
+      "file": "slices/success-large.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/06-task-states.png",
+      "rect": [
+        122,
+        107,
+        101,
+        99
+      ],
+      "size": [
+        101,
+        99
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "80a9ead3d786b7ef6d82b0e7ae7dd048baf22a56baf68b7a11d01510a2f6aafc"
+    },
+    {
+      "id": "stopping-spinner",
+      "file": "slices/stopping-spinner.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/06-task-states.png",
+      "rect": [
+        122,
+        634,
+        101,
+        100
+      ],
+      "size": [
+        101,
+        100
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "9569fb1aadc6dc755f108aabecd9aabba8661a798283c8466cb28a650cffaa2d"
+    },
+    {
+      "id": "cancelled-large",
+      "file": "slices/cancelled-large.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/06-task-states.png",
+      "rect": [
+        122,
+        1077,
+        101,
+        98
+      ],
+      "size": [
+        101,
+        98
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "8e8b9dbed29e150d69284fd0f37112c367f4e94852cd7871df4b87a5c7c24cd3"
+    },
+    {
+      "id": "overwrite-archive",
+      "file": "slices/overwrite-archive.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/07-create-overwrite.png",
+      "rect": [
+        122,
+        214,
+        138,
+        163
+      ],
+      "size": [
+        138,
+        163
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "66bd633e2710e47fe0907e0672ff141a54505d8cbb324977d1849fe31594937e"
+    },
+    {
+      "id": "existing-archive",
+      "file": "slices/existing-archive.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/07-create-overwrite.png",
+      "rect": [
+        165,
+        504,
+        117,
+        138
+      ],
+      "size": [
+        117,
+        138
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "8d32db114832deeedc53e1ff08cb9a5c87066cff7250ce2f9cd11450bc3e2edc"
+    },
+    {
+      "id": "windows-document",
+      "file": "slices/windows-document.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/08-platforms.png",
+      "rect": [
+        139,
+        123,
+        77,
+        88
+      ],
+      "size": [
+        77,
+        88
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "2e931b3ec51d04e6be491f0044213e12239c205b3b2d05c2c25d77e84df92f80"
+    },
+    {
+      "id": "linux-document",
+      "file": "slices/linux-document.png",
+      "kind": "original-pixel-crop",
+      "source": "screens/08-platforms.png",
+      "rect": [
+        136,
+        852,
+        80,
+        89
+      ],
+      "size": [
+        80,
+        89
+      ],
+      "usage": "reference-only; baked background",
+      "sha256": "69777c0344bc8b2bd005a035b02e82ec355ea3f263186fcd3014efad48af4e9c"
+    },
+    {
+      "id": "light/archive-add",
+      "file": "svg/light/archive-add.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "1b8b45afb19c237cdf83ded911e7218ee5ca85006cc3b1792b6ba88828681ef7"
+    },
+    {
+      "id": "light/document-download",
+      "file": "svg/light/document-download.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "460513dd485b461089996ea2944e5d20be41ab23c0b7c92a46d5f5841752f120"
+    },
+    {
+      "id": "light/document-warning",
+      "file": "svg/light/document-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "33883dd1cdd4d1e39e4db88ed5e788a60a6aad77abcbfe2eb0427b9a4d99dfde"
+    },
+    {
+      "id": "light/image-file",
+      "file": "svg/light/image-file.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "f8cfaa0267729cac77814798fb616c503418b50f3509f9c91cc252271ec3c4c7"
+    },
+    {
+      "id": "light/status-warning",
+      "file": "svg/light/status-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "a1ab415a37e1d8d899fff595fa352fe19564e9b91e63f5ffcc456bb5ef675131"
+    },
+    {
+      "id": "light/status-success",
+      "file": "svg/light/status-success.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "206c92692a4e62af7f1a9266d0b457971464a2ae46c941548ac54b6a318e57b5"
+    },
+    {
+      "id": "light/status-skipped",
+      "file": "svg/light/status-skipped.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "c71f22e82f1bf378e2770920b74862aa6b60b840ddd8ff3099eab5a5771129d0"
+    },
+    {
+      "id": "light/status-stopped",
+      "file": "svg/light/status-stopped.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "12ef6620b476ae2fb4ef80fd3cea66f6470a0a9893a468b84049e36ae915f6d6"
+    },
+    {
+      "id": "light/spinner",
+      "file": "svg/light/spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "b03953c097a27c51c6cb09687245e513993e234a8c0bca41d8464777ac2cc185"
+    },
+    {
+      "id": "light/info",
+      "file": "svg/light/info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "f562cbc847ce8ab88065c788847f04d0c18f030e37187effd78483d40ffeb6db"
+    },
+    {
+      "id": "light/remove",
+      "file": "svg/light/remove.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "3d9dce5d4de4fcd90feeabdb456968a9b2f2ae9a9085223ee2ccfb19ce3a6e6d"
+    },
+    {
+      "id": "light/clock",
+      "file": "svg/light/clock.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "1b65479138b51b6668fcc5de3bdfc66c845b8138c529d1a3541155607c3c5def"
+    },
+    {
+      "id": "light/theme-system",
+      "file": "svg/light/theme-system.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "229a0f4e6c45c66ed28f3a958a13cf65691096177e60bac50b1a3fa0e9547caa"
+    },
+    {
+      "id": "light/settings-tile",
+      "file": "svg/light/settings-tile.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "sha256": "7f2b01f339e8065da89e106aed2d9ae7453420c864fca66c424e6dbdba94685b"
+    },
+    {
+      "id": "dark/archive-add",
+      "file": "svg/dark/archive-add.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "975406590ceaa3e8e5d5499552bfeddfeb06bde24ab7235193bafcc1bf05c88a"
+    },
+    {
+      "id": "dark/document-download",
+      "file": "svg/dark/document-download.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "f1cc76f8209f1e966a9637f0a691b7c530d7724109693e99708b51ede5b99c47"
+    },
+    {
+      "id": "dark/document-warning",
+      "file": "svg/dark/document-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "bf0400e6625f089f6312c2583a68006744e28c0d1f15ad13aaaff3adb72dbd8d"
+    },
+    {
+      "id": "dark/image-file",
+      "file": "svg/dark/image-file.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "336396386db2d2aaef89e600bcfcd6c37da82bc5c84117902db51cd768684a3f"
+    },
+    {
+      "id": "dark/status-warning",
+      "file": "svg/dark/status-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "534e46ae62e338c92d962060f10837a885b2b05628038520ace0ceaa806a0bcb"
+    },
+    {
+      "id": "dark/status-success",
+      "file": "svg/dark/status-success.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "b38822e67be19020bec1ff6da580537871201f82bcc70b86269c9bd6004a4131"
+    },
+    {
+      "id": "dark/status-skipped",
+      "file": "svg/dark/status-skipped.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "8062a8d1c4e1c1659afabb2824e7719caaea8f3a170653d9bad4d81601921739"
+    },
+    {
+      "id": "dark/status-stopped",
+      "file": "svg/dark/status-stopped.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "c1fe0e3dbafa4e68d758c94b4e41e5f2d8e144e58e753f81f3e744636cce3451"
+    },
+    {
+      "id": "dark/spinner",
+      "file": "svg/dark/spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "49a5491ef8ce97d2f1ade51e2b9a14a2df8ab376404d8d1349ffba778bf1de77"
+    },
+    {
+      "id": "dark/info",
+      "file": "svg/dark/info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "d784ae7fcb411692a74b2afeb9a85638a71551ebb23010007f9cbf180dae0bfa"
+    },
+    {
+      "id": "dark/remove",
+      "file": "svg/dark/remove.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "d4f72112b7a901b511840923234f1f10aa3145df506d2fb47b0eb525ac9f33e1"
+    },
+    {
+      "id": "dark/clock",
+      "file": "svg/dark/clock.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "e45476d9d8b7cb9a4ee9b841af9c5d5cfcbe55a0969b46f614e6d5e9a01f0391"
+    },
+    {
+      "id": "dark/theme-system",
+      "file": "svg/dark/theme-system.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "623be1831fd3af251c9b434ca52d3a60292189763f344230f9c50cc077437da2"
+    },
+    {
+      "id": "dark/settings-tile",
+      "file": "svg/dark/settings-tile.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "sha256": "bb5321968df4ffdaf789957a7bcaaca9afe9646db31bd1b06d5e6b9d04bf58ce"
+    },
+    {
+      "id": "raster/dark/archive-add@1x",
+      "file": "png/dark/archive-add@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/archive-add.svg",
+      "sha256": "dbd7ca70b9fbc80d9f663e4737b51f2aa8b34f1fe1eec43b1d100c1b93381e4f"
+    },
+    {
+      "id": "raster/dark/archive-add@2x",
+      "file": "png/dark/archive-add@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/archive-add.svg",
+      "sha256": "dfb27bca16b1eafcd6c209273bfd4ef02956f020037b5991ac31401ea6c635f0"
+    },
+    {
+      "id": "raster/dark/archive-add@3x",
+      "file": "png/dark/archive-add@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/archive-add.svg",
+      "sha256": "bfca671caf36838e4b109dc7b4348816990e503156e5346b16e2f54ab8189504"
+    },
+    {
+      "id": "raster/dark/clock@1x",
+      "file": "png/dark/clock@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/clock.svg",
+      "sha256": "3b4c216aafa7b570f24d6fe1de91dbfc740cae1286bbb0f7e4fafd7fe65c8eac"
+    },
+    {
+      "id": "raster/dark/clock@2x",
+      "file": "png/dark/clock@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/clock.svg",
+      "sha256": "2b279bfa8fb709c3d956e4073d8bb3760f74f028e11189ddca533e0ee5eeb745"
+    },
+    {
+      "id": "raster/dark/clock@3x",
+      "file": "png/dark/clock@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/clock.svg",
+      "sha256": "86623197319b1a6efa9047c86d519bb7c1cf9ac781e01af0449c0ca7ea1a5e2d"
+    },
+    {
+      "id": "raster/dark/document-download@1x",
+      "file": "png/dark/document-download@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/document-download.svg",
+      "sha256": "e756b94f983c655935316b08ed5e7a93a788ef750d07360957d68a7b03b72d3a"
+    },
+    {
+      "id": "raster/dark/document-download@2x",
+      "file": "png/dark/document-download@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/document-download.svg",
+      "sha256": "5474408e1ad54f166f6af9be55faed438ee54c8816ff4203b97e53cb3bfc0252"
+    },
+    {
+      "id": "raster/dark/document-download@3x",
+      "file": "png/dark/document-download@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/document-download.svg",
+      "sha256": "209bae6312c946f57a4626c2784a236c87379e211a31781109f1e91b2a809801"
+    },
+    {
+      "id": "raster/dark/document-warning@1x",
+      "file": "png/dark/document-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/document-warning.svg",
+      "sha256": "3c32fc94d02c0d9a1eb0b970561b4393da8cc8f566af084085500f757b419fd2"
+    },
+    {
+      "id": "raster/dark/document-warning@2x",
+      "file": "png/dark/document-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/document-warning.svg",
+      "sha256": "ccba130bcd8f00f88255945807cd7fe846955227d8e9cae09a9f4df16210318e"
+    },
+    {
+      "id": "raster/dark/document-warning@3x",
+      "file": "png/dark/document-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/document-warning.svg",
+      "sha256": "eb5558b46aacc9db053c2ae4089fd9b7525116f574bc3cfd034d2f5b94a3fcbd"
+    },
+    {
+      "id": "raster/dark/image-file@1x",
+      "file": "png/dark/image-file@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/image-file.svg",
+      "sha256": "0d834c35afb546830d10ab1e13a43d66f7cb824cc94dbb16cf458f2939698c6d"
+    },
+    {
+      "id": "raster/dark/image-file@2x",
+      "file": "png/dark/image-file@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/image-file.svg",
+      "sha256": "43a05b2d8b5b63e62b9df9692631df203fadfcdfb4f3c4f3037945f2ca4ca8ca"
+    },
+    {
+      "id": "raster/dark/image-file@3x",
+      "file": "png/dark/image-file@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/image-file.svg",
+      "sha256": "08f4b5120305e849c8c3f115d03c3c2f51c666b8c66839503947beb0f4cb0b00"
+    },
+    {
+      "id": "raster/dark/info@1x",
+      "file": "png/dark/info@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/info.svg",
+      "sha256": "1da636c366a746e03c22ed32b416b1ca827fad2d7b5cfe400f21d9df425e7226"
+    },
+    {
+      "id": "raster/dark/info@2x",
+      "file": "png/dark/info@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/info.svg",
+      "sha256": "34b92b7e4de25203c19a10458440d8a296e162962dc6bbf5a37e7c0fb40db89a"
+    },
+    {
+      "id": "raster/dark/info@3x",
+      "file": "png/dark/info@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/info.svg",
+      "sha256": "a6fb5511fd36b76f945ad0107713065e50180b31abe691875813e58482c45409"
+    },
+    {
+      "id": "raster/dark/remove@1x",
+      "file": "png/dark/remove@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/remove.svg",
+      "sha256": "9eb743cb4ac0dcb29f6e66bb57fd7e1ed7f8134ba4b7de3410775a4e2394fcd4"
+    },
+    {
+      "id": "raster/dark/remove@2x",
+      "file": "png/dark/remove@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/remove.svg",
+      "sha256": "0cdec73ceb0a3ffdd45e537196f5a5eddff4add62e6ef0e2be331a2eebbc3284"
+    },
+    {
+      "id": "raster/dark/remove@3x",
+      "file": "png/dark/remove@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/remove.svg",
+      "sha256": "25648c9dfdee42e5f8bd5427d087a619a4f11ce1e6fe3453f355d0bedc36df53"
+    },
+    {
+      "id": "raster/dark/settings-tile@1x",
+      "file": "png/dark/settings-tile@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/settings-tile.svg",
+      "sha256": "35fc777e403fa913b860f11c7760885326951234beb3356421a0d06a8e0e1328"
+    },
+    {
+      "id": "raster/dark/settings-tile@2x",
+      "file": "png/dark/settings-tile@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/settings-tile.svg",
+      "sha256": "3be52771dcc01a2e801d606008327b0044fb8d11d5d582f57c786edab7b3ec50"
+    },
+    {
+      "id": "raster/dark/settings-tile@3x",
+      "file": "png/dark/settings-tile@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/settings-tile.svg",
+      "sha256": "006d785fcb0acf8e05ba7a7e981a94c478303ec3b4ac159864a445fe41c02ec8"
+    },
+    {
+      "id": "raster/dark/spinner@1x",
+      "file": "png/dark/spinner@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/spinner.svg",
+      "sha256": "8b011d42a68da720c7c0c7d12990ccfcee61a466e9b12c3170a9dcd2a2458e06"
+    },
+    {
+      "id": "raster/dark/spinner@2x",
+      "file": "png/dark/spinner@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/spinner.svg",
+      "sha256": "4a0cf39033a6f8a0a2a4355163358a7b764c3caeb766dd1bf4fec6410a3af890"
+    },
+    {
+      "id": "raster/dark/spinner@3x",
+      "file": "png/dark/spinner@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/spinner.svg",
+      "sha256": "f95417b014b7d284c6eba5c8c30fd26c637a61511594c2a9079f30dd1c47c352"
+    },
+    {
+      "id": "raster/dark/status-skipped@1x",
+      "file": "png/dark/status-skipped@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/status-skipped.svg",
+      "sha256": "4c83cc7e3859c11933b4ec1b8b5c701a0f079e759a1c1fd3678bf0f9b704d0d9"
+    },
+    {
+      "id": "raster/dark/status-skipped@2x",
+      "file": "png/dark/status-skipped@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/status-skipped.svg",
+      "sha256": "72872e60bb4a3c1e226612ddf4b4ff8ccfa2eff3736f0a22a2c0d478df21c979"
+    },
+    {
+      "id": "raster/dark/status-skipped@3x",
+      "file": "png/dark/status-skipped@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/status-skipped.svg",
+      "sha256": "80749e4cafbbe6af964638fdc092c7e4721d4a3242af50eacb05e744d01336e0"
+    },
+    {
+      "id": "raster/dark/status-stopped@1x",
+      "file": "png/dark/status-stopped@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/status-stopped.svg",
+      "sha256": "9d3101a657c3cdf451646585e9e87ca4252b4159bbd7d2fdbd5a40da93451c4d"
+    },
+    {
+      "id": "raster/dark/status-stopped@2x",
+      "file": "png/dark/status-stopped@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/status-stopped.svg",
+      "sha256": "17d9ad56e21dc7983c6a2f80949b6738c43456db8e2c0cceb02f7717631f1c74"
+    },
+    {
+      "id": "raster/dark/status-stopped@3x",
+      "file": "png/dark/status-stopped@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/status-stopped.svg",
+      "sha256": "3e58b3075800c2ad2a6b72039c1c01f8a4b0ad358c795ada64c74c50350b4b55"
+    },
+    {
+      "id": "raster/dark/status-success@1x",
+      "file": "png/dark/status-success@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/status-success.svg",
+      "sha256": "57d49d7f2bf5681fe4c5577d6afacd8902cbf7ff0671353b6c4cd081bb9b20f2"
+    },
+    {
+      "id": "raster/dark/status-success@2x",
+      "file": "png/dark/status-success@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/status-success.svg",
+      "sha256": "a2d4836f3cc740ffa3f44a2462b7cb549253e16eb8234216bc518fb872d2467b"
+    },
+    {
+      "id": "raster/dark/status-success@3x",
+      "file": "png/dark/status-success@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/status-success.svg",
+      "sha256": "737d24d66d8e2e7fd6028e94d581673a2ba25b3c183cfb749455095cbef8bf14"
+    },
+    {
+      "id": "raster/dark/status-warning@1x",
+      "file": "png/dark/status-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/status-warning.svg",
+      "sha256": "04e0a0b6948ad3020c75953d531e563bcea2e821bcdb528e8e31e04db7adfa33"
+    },
+    {
+      "id": "raster/dark/status-warning@2x",
+      "file": "png/dark/status-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/status-warning.svg",
+      "sha256": "5aa9fa20b4afa18329941ab5db824ff52f71cf5c807f4caeb1eb07e5b49fe4d0"
+    },
+    {
+      "id": "raster/dark/status-warning@3x",
+      "file": "png/dark/status-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/status-warning.svg",
+      "sha256": "a52e34da9320e6e6b21f9957ed7b712fe3497bd08e9a381071d3e6244756ab05"
+    },
+    {
+      "id": "raster/dark/theme-system@1x",
+      "file": "png/dark/theme-system@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/dark/theme-system.svg",
+      "sha256": "8f8f40ec9adef07984e2fb38e0f125fe56d9a13b79e402002799e848f7aecb4b"
+    },
+    {
+      "id": "raster/dark/theme-system@2x",
+      "file": "png/dark/theme-system@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/dark/theme-system.svg",
+      "sha256": "d7965ed5e5ac55a067b2f6d490695cfa86b66745b15c2648d06ed241d980eca1"
+    },
+    {
+      "id": "raster/dark/theme-system@3x",
+      "file": "png/dark/theme-system@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/dark/theme-system.svg",
+      "sha256": "98e887bc9748e5562f5ea0ce6b54b8deeb2e993af4dccaebcc6bb6b746ad81c9"
+    },
+    {
+      "id": "raster/light/archive-add@1x",
+      "file": "png/light/archive-add@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/archive-add.svg",
+      "sha256": "dbd7ca70b9fbc80d9f663e4737b51f2aa8b34f1fe1eec43b1d100c1b93381e4f"
+    },
+    {
+      "id": "raster/light/archive-add@2x",
+      "file": "png/light/archive-add@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/archive-add.svg",
+      "sha256": "dfb27bca16b1eafcd6c209273bfd4ef02956f020037b5991ac31401ea6c635f0"
+    },
+    {
+      "id": "raster/light/archive-add@3x",
+      "file": "png/light/archive-add@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/archive-add.svg",
+      "sha256": "bfca671caf36838e4b109dc7b4348816990e503156e5346b16e2f54ab8189504"
+    },
+    {
+      "id": "raster/light/clock@1x",
+      "file": "png/light/clock@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/clock.svg",
+      "sha256": "8fc42c76e59cb2bd0a1fb70462a1b4d3cc561a5bdde27ca6a1760b4c2457d9dc"
+    },
+    {
+      "id": "raster/light/clock@2x",
+      "file": "png/light/clock@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/clock.svg",
+      "sha256": "0093cf06dccb3ad2123471f8a67f3459ec9e62e78583ae3d20596d670eca032d"
+    },
+    {
+      "id": "raster/light/clock@3x",
+      "file": "png/light/clock@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/clock.svg",
+      "sha256": "f3ec4511ebe2edc4d02ab77601ad885a72c9e5429c00a1581bdde1c53efceaa7"
+    },
+    {
+      "id": "raster/light/document-download@1x",
+      "file": "png/light/document-download@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/document-download.svg",
+      "sha256": "e756b94f983c655935316b08ed5e7a93a788ef750d07360957d68a7b03b72d3a"
+    },
+    {
+      "id": "raster/light/document-download@2x",
+      "file": "png/light/document-download@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/document-download.svg",
+      "sha256": "5474408e1ad54f166f6af9be55faed438ee54c8816ff4203b97e53cb3bfc0252"
+    },
+    {
+      "id": "raster/light/document-download@3x",
+      "file": "png/light/document-download@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/document-download.svg",
+      "sha256": "209bae6312c946f57a4626c2784a236c87379e211a31781109f1e91b2a809801"
+    },
+    {
+      "id": "raster/light/document-warning@1x",
+      "file": "png/light/document-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/document-warning.svg",
+      "sha256": "3c32fc94d02c0d9a1eb0b970561b4393da8cc8f566af084085500f757b419fd2"
+    },
+    {
+      "id": "raster/light/document-warning@2x",
+      "file": "png/light/document-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/document-warning.svg",
+      "sha256": "ccba130bcd8f00f88255945807cd7fe846955227d8e9cae09a9f4df16210318e"
+    },
+    {
+      "id": "raster/light/document-warning@3x",
+      "file": "png/light/document-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/document-warning.svg",
+      "sha256": "eb5558b46aacc9db053c2ae4089fd9b7525116f574bc3cfd034d2f5b94a3fcbd"
+    },
+    {
+      "id": "raster/light/image-file@1x",
+      "file": "png/light/image-file@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/image-file.svg",
+      "sha256": "0d834c35afb546830d10ab1e13a43d66f7cb824cc94dbb16cf458f2939698c6d"
+    },
+    {
+      "id": "raster/light/image-file@2x",
+      "file": "png/light/image-file@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/image-file.svg",
+      "sha256": "43a05b2d8b5b63e62b9df9692631df203fadfcdfb4f3c4f3037945f2ca4ca8ca"
+    },
+    {
+      "id": "raster/light/image-file@3x",
+      "file": "png/light/image-file@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/image-file.svg",
+      "sha256": "08f4b5120305e849c8c3f115d03c3c2f51c666b8c66839503947beb0f4cb0b00"
+    },
+    {
+      "id": "raster/light/info@1x",
+      "file": "png/light/info@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/info.svg",
+      "sha256": "b77a12b9c55488dbb4a40e2a263cb2dcf27f0dd033184e0bb7f83805590c78a8"
+    },
+    {
+      "id": "raster/light/info@2x",
+      "file": "png/light/info@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/info.svg",
+      "sha256": "b6bed4fcb98a1df06de09b9ecca510133b3d54464ade110222aa6685c7edbf02"
+    },
+    {
+      "id": "raster/light/info@3x",
+      "file": "png/light/info@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/info.svg",
+      "sha256": "e06c7efc9c1e7efa9ff797b5eddc7a59a91d1f4f79c4b2f747bbe90c8dae4c7f"
+    },
+    {
+      "id": "raster/light/remove@1x",
+      "file": "png/light/remove@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/remove.svg",
+      "sha256": "c1ad29872cd97bb5b16a51484bfdeb14ad82d12f182fddea8a24798785db0767"
+    },
+    {
+      "id": "raster/light/remove@2x",
+      "file": "png/light/remove@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/remove.svg",
+      "sha256": "c33a154e31fb0fe78ca8f155e8b3a8cb024911ec76754a30b3178f862f5b3cbb"
+    },
+    {
+      "id": "raster/light/remove@3x",
+      "file": "png/light/remove@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/remove.svg",
+      "sha256": "8bb30e215c0ab16a77d1a1781250b35a296032a7a20f10fec0016ca661d7f2b7"
+    },
+    {
+      "id": "raster/light/settings-tile@1x",
+      "file": "png/light/settings-tile@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/settings-tile.svg",
+      "sha256": "35fc777e403fa913b860f11c7760885326951234beb3356421a0d06a8e0e1328"
+    },
+    {
+      "id": "raster/light/settings-tile@2x",
+      "file": "png/light/settings-tile@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/settings-tile.svg",
+      "sha256": "3be52771dcc01a2e801d606008327b0044fb8d11d5d582f57c786edab7b3ec50"
+    },
+    {
+      "id": "raster/light/settings-tile@3x",
+      "file": "png/light/settings-tile@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/settings-tile.svg",
+      "sha256": "006d785fcb0acf8e05ba7a7e981a94c478303ec3b4ac159864a445fe41c02ec8"
+    },
+    {
+      "id": "raster/light/spinner@1x",
+      "file": "png/light/spinner@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/spinner.svg",
+      "sha256": "c473fa15f8dd3e9147ed777648511a376a2abbb3c1d4f1cf702548d2016cfa5b"
+    },
+    {
+      "id": "raster/light/spinner@2x",
+      "file": "png/light/spinner@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/spinner.svg",
+      "sha256": "12cbf01940e01abc452760aee27d24140687a6b1d8b5f46daef31ab6fbda223d"
+    },
+    {
+      "id": "raster/light/spinner@3x",
+      "file": "png/light/spinner@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/spinner.svg",
+      "sha256": "9d8bb24b22cf02ac41bb1a66579538bb035fa22859390b6bc9a1d691b8e04a42"
+    },
+    {
+      "id": "raster/light/status-skipped@1x",
+      "file": "png/light/status-skipped@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/status-skipped.svg",
+      "sha256": "541b15a69754a35fd67cd44791e23aeef75d7a0515d60ab8b69215616a32d0e5"
+    },
+    {
+      "id": "raster/light/status-skipped@2x",
+      "file": "png/light/status-skipped@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/status-skipped.svg",
+      "sha256": "3efbe1e81070f8463198b63d28525e5e3f8f4ab38468294e69ff29e62a7c09d7"
+    },
+    {
+      "id": "raster/light/status-skipped@3x",
+      "file": "png/light/status-skipped@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/status-skipped.svg",
+      "sha256": "e3abd56124feb56b6b4138c747d4e510b540e3d7e0aff0fe1db0ca24dfe1093a"
+    },
+    {
+      "id": "raster/light/status-stopped@1x",
+      "file": "png/light/status-stopped@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/status-stopped.svg",
+      "sha256": "b4b59e53e2fc5e2a5954c5bd07fc460d0107a9ee83936bdc59cc7389009d1731"
+    },
+    {
+      "id": "raster/light/status-stopped@2x",
+      "file": "png/light/status-stopped@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/status-stopped.svg",
+      "sha256": "d77bd19b591f94922c9a6927c0162cc339929c41e4f3f350b23d148522a05597"
+    },
+    {
+      "id": "raster/light/status-stopped@3x",
+      "file": "png/light/status-stopped@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/status-stopped.svg",
+      "sha256": "906f881e8f043fe0dc9acc6fcbc22c9272dd0247de83572d6ebf88b526ec7a72"
+    },
+    {
+      "id": "raster/light/status-success@1x",
+      "file": "png/light/status-success@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/status-success.svg",
+      "sha256": "57d49d7f2bf5681fe4c5577d6afacd8902cbf7ff0671353b6c4cd081bb9b20f2"
+    },
+    {
+      "id": "raster/light/status-success@2x",
+      "file": "png/light/status-success@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/status-success.svg",
+      "sha256": "a2d4836f3cc740ffa3f44a2462b7cb549253e16eb8234216bc518fb872d2467b"
+    },
+    {
+      "id": "raster/light/status-success@3x",
+      "file": "png/light/status-success@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/status-success.svg",
+      "sha256": "737d24d66d8e2e7fd6028e94d581673a2ba25b3c183cfb749455095cbef8bf14"
+    },
+    {
+      "id": "raster/light/status-warning@1x",
+      "file": "png/light/status-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/status-warning.svg",
+      "sha256": "04e0a0b6948ad3020c75953d531e563bcea2e821bcdb528e8e31e04db7adfa33"
+    },
+    {
+      "id": "raster/light/status-warning@2x",
+      "file": "png/light/status-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/status-warning.svg",
+      "sha256": "5aa9fa20b4afa18329941ab5db824ff52f71cf5c807f4caeb1eb07e5b49fe4d0"
+    },
+    {
+      "id": "raster/light/status-warning@3x",
+      "file": "png/light/status-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/status-warning.svg",
+      "sha256": "a52e34da9320e6e6b21f9957ed7b712fe3497bd08e9a381071d3e6244756ab05"
+    },
+    {
+      "id": "raster/light/theme-system@1x",
+      "file": "png/light/theme-system@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "source": "svg/light/theme-system.svg",
+      "sha256": "c64f616b869e8845c5c7c6c132eb11bed52a2378e0597de3896fc157cfd03795"
+    },
+    {
+      "id": "raster/light/theme-system@2x",
+      "file": "png/light/theme-system@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "source": "svg/light/theme-system.svg",
+      "sha256": "2440536156c84b331453ebeba2879bbd9421a7bac0ee7c883e9ec3eda7d6dbe3"
+    },
+    {
+      "id": "raster/light/theme-system@3x",
+      "file": "png/light/theme-system@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "source": "svg/light/theme-system.svg",
+      "sha256": "20c82239e317d4808f8c8ad6177a22e8cb60c54198a8ae558578b07cb41dfd29"
+    }
+  ],
+  "coordinate_system": "physical pixels, origin top-left; rect = x,y,width,height"
+}
