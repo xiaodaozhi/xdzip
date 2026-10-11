@@ -6,9 +6,13 @@
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>
     <file>ui/TaskWindow.qml</file>
+    <file>ui/TaskPathCard.qml</file>
+    <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
     <file alias="assets/info-light.png">../../design/hifi/v2/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/hifi/v2/png/dark/info@3x.png</file>
     <file alias="assets/document-download.png">../../design/hifi/v2/png/light/document-download@3x.png</file>
+    <file alias="assets/folder.png">../../design/assets/v1/png/light/folder@3x.png</file>
+    <file alias="assets/image-file.png">../../design/hifi/v2/png/light/image-file@3x.png</file>
   </qresource>
 </RCC>

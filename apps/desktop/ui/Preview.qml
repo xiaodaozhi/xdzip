@@ -65,6 +65,11 @@ ApplicationWindow {
         archiveName: qsTr("北境旅行.zip")
         destination: qsTr("下载 / 北境旅行")
         currentFile: qsTr("旅途瞬间-08.jpg")
+        processedSummary: task.totalKnown ? qsTr("已处理 46.5 MB / 77.5 MB") : qsTr("已处理 46.5 MB")
+        fileCountSummary: "18 / 30 个文件"
+        speedSummary: "6.2 MB/s"
+        remainingSummary: "约 5 秒"
+        phaseSummary: "写入文件"
         fraction: 0.6
         totalKnown: root.totalKnown
         stopping: root.stopping

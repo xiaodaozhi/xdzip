@@ -29,4 +29,6 @@ Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完
 - 现有窗口定位仅按显示屏边界夹取；工作区保留边缘、多显示器迁移、实际系统按钮状态、VoiceOver/IME、原生 GPU 和 Qt 打包仍待验证。
 - 无 Qt/Rust 产品桥接、任务调度器、归档浏览、解压或安全文件输出。诊断探针不充当产品 runtime。
 
-测试输出包含三张离屏渲染截图，位于 CTest 工作目录；这些是组件渲染证据，不替换高保真设计稿。原生装饰不会出现在 contentItem 截图里。详见 [阶段记录](../../docs/qa/foundation-components.md)。
+测试输出包含四张离屏渲染截图，位于 CTest 工作目录；这些是组件渲染证据，不替换高保真设计稿。原生装饰不会出现在 contentItem 截图里。详见 [阶段记录](../../docs/qa/foundation-components.md)。
+
+任务窗口已按原稿补齐路径卡片、三列统计和正常字号同行底栏，实际截图与保留差异见 [视觉修订记录](../../docs/qa/task-visual-review.md)。

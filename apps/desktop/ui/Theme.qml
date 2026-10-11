@@ -15,6 +15,11 @@ QtObject {
     readonly property color onAccent: dark ? "#FFFFFF" : "#FFFFFF"
     readonly property color selection: dark ? "#293754" : "#E8EEFF"
     readonly property color accentInk: dark ? "#9DB4FF" : "#365FE8"
+    readonly property color taskPanel: dark ? "#202630" : "#F5F8FC"
+    readonly property color taskBorder: dark ? "#343E4E" : "#DFE6F1"
+    readonly property color taskTrack: dark ? "#384353" : "#DFE4ED"
+    readonly property color progressStart: dark ? "#428FFF" : "#2788FF"
+    readonly property color progressEnd: dark ? "#4165DB" : "#0757FA"
     readonly property real bodySize: 14 * fontScale
     readonly property real tableSize: 13 * fontScale
     readonly property real secondarySize: 12 * fontScale
