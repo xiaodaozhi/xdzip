@@ -1,0 +1,523 @@
+{
+  "status": "measured_checks_pass",
+  "environment": {
+    "os": "Debian GNU/Linux 13 (trixie)",
+    "architecture": "x86_64",
+    "qt": "6.8.2",
+    "platform": "offscreen",
+    "requestedQuickBackend": "software",
+    "dpr": 1
+  },
+  "product_commit": "8d38cc6",
+  "checks": [
+    {
+      "title": "主窗口 width",
+      "actual": 1280,
+      "expected": 1280,
+      "passed": true,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 height",
+      "actual": 820,
+      "expected": 820,
+      "passed": true,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 minimumWidth",
+      "actual": 1040,
+      "expected": 1040,
+      "passed": true,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "主窗口 minimumHeight",
+      "actual": 680,
+      "expected": 680,
+      "passed": true,
+      "source": "tokens.size",
+      "tolerance": 0
+    },
+    {
+      "title": "侧栏宽度",
+      "actual": 220,
+      "expected": 220,
+      "passed": true,
+      "source": "tokens.size.sidebar",
+      "tolerance": 0
+    },
+    {
+      "title": "详情栏宽度",
+      "actual": 280,
+      "expected": 280,
+      "passed": true,
+      "source": "tokens.size.inspector",
+      "tolerance": 0
+    },
+    {
+      "title": "列表行高",
+      "actual": 40,
+      "expected": 40,
+      "passed": true,
+      "source": "tokens.size.row",
+      "tolerance": 0
+    },
+    {
+      "title": "普通按钮高度",
+      "actual": 36,
+      "expected": 36,
+      "passed": true,
+      "source": "tokens.size.button",
+      "tolerance": 0
+    },
+    {
+      "title": "搜索框高度",
+      "actual": 36,
+      "expected": 36,
+      "passed": true,
+      "source": "visual/README 搜索框高 36",
+      "tolerance": 0
+    },
+    {
+      "title": "详情面板标题字号",
+      "actual": 20,
+      "expected": 20,
+      "passed": true,
+      "source": "tokens.type.panelTitle",
+      "tolerance": 0
+    },
+    {
+      "title": "列表正文字号",
+      "actual": 13,
+      "expected": 13,
+      "passed": true,
+      "source": "tokens.type.table",
+      "tolerance": 0
+    },
+    {
+      "title": "按钮正文字号",
+      "actual": 14,
+      "expected": 14,
+      "passed": true,
+      "source": "tokens.type.body",
+      "tolerance": 0
+    },
+    {
+      "title": "名称表头与文件名起点差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "same column alignment",
+      "tolerance": 0.5
+    },
+    {
+      "title": "列表图标容器网格",
+      "actual": 18,
+      "expected": 18,
+      "passed": true,
+      "source": "visual/README 建议 18 px；不等于可见墨迹尺寸",
+      "tolerance": 0
+    },
+    {
+      "title": "深色详情栏背景",
+      "actual": "#20232a",
+      "expected": "#20232a",
+      "passed": true,
+      "source": "tokens.dark.inspector",
+      "tolerance": 0
+    },
+    {
+      "title": "task-light 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-light 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-dark 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-dark 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-large-type 提示图标中心 X 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "task-large-type 提示文字起点 X 差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "两行提示对齐约束",
+      "tolerance": 0.5
+    },
+    {
+      "title": "任务三列标题 Y 极差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "同排标题顶边对齐",
+      "tolerance": 0.5
+    },
+    {
+      "title": "任务三列数值基线极差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "同排数字基线对齐",
+      "tolerance": 0.5
+    },
+    {
+      "title": "200% 字号：打开",
+      "actual": 28,
+      "expected": 28,
+      "passed": true,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：条目详情",
+      "actual": 40,
+      "expected": 40,
+      "passed": true,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：侧栏归档名",
+      "actual": 40,
+      "expected": 40,
+      "passed": true,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 字号：搜索输入",
+      "actual": 28,
+      "expected": 28,
+      "passed": true,
+      "source": "Theme.fontScale 传播",
+      "tolerance": 0
+    },
+    {
+      "title": "200% 表头文字可容纳",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "contentWidth <= width - leftPadding",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-light 数字列 1 右对齐",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "passed": true,
+      "source": "Text.AlignRight",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-light 数字列 1 文字可容纳",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "not elided",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-light 数字列 2 右对齐",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "passed": true,
+      "source": "Text.AlignRight",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-light 数字列 2 文字可容纳",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "not elided",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-large-type 数字列 1 右对齐",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "passed": true,
+      "source": "Text.AlignRight",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-large-type 数字列 1 文字可容纳",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "not elided",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-large-type 数字列 2 右对齐",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "passed": true,
+      "source": "Text.AlignRight",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-large-type 数字列 2 文字可容纳",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "not elided",
+      "tolerance": 0
+    },
+    {
+      "title": "1040 窄窗口详情栏收起",
+      "actual": false,
+      "expected": false,
+      "passed": true,
+      "source": "inspectorCollapseWidth",
+      "tolerance": 0
+    },
+    {
+      "title": "最小窗口宽度可达",
+      "actual": 1040,
+      "expected": 1040,
+      "passed": true,
+      "source": "minimumWindow",
+      "tolerance": 0
+    },
+    {
+      "title": "browser-light 工具栏控件中心 Y 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "shared controlHeight",
+      "tolerance": 0.5
+    },
+    {
+      "title": "browser-large-type 工具栏控件中心 Y 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "shared controlHeight",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树父子缩进",
+      "actual": 16,
+      "expected": 16,
+      "passed": true,
+      "source": "tree indentation",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树同层文字起点差",
+      "actual": 0,
+      "expected": 0,
+      "passed": true,
+      "source": "same-depth alignment",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树行高",
+      "actual": 40,
+      "expected": 40,
+      "passed": true,
+      "source": "tokens.size.row",
+      "tolerance": 0
+    },
+    {
+      "title": "目录树图标网格",
+      "actual": 18,
+      "expected": 18,
+      "passed": true,
+      "source": "18 px icon container",
+      "tolerance": 0
+    },
+    {
+      "title": "目录树图文间距",
+      "actual": 8,
+      "expected": 8,
+      "passed": true,
+      "source": "tree spacing",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树文字与行中心 Y 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "row content centered",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树图标与行中心 Y 差",
+      "actual": 0.0,
+      "expected": 0,
+      "passed": true,
+      "source": "row content centered",
+      "tolerance": 0.5
+    },
+    {
+      "title": "目录树计数完整显示",
+      "actual": true,
+      "expected": true,
+      "passed": true,
+      "source": "count fits tree viewport",
+      "tolerance": 0
+    },
+    {
+      "title": "light text/surface 对比度",
+      "actual": 15.73,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "light textSecondary/surface 对比度",
+      "actual": 5.6,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "light accentText/accent 对比度",
+      "actual": 5.3,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark text/surface 对比度",
+      "actual": 14.06,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark textSecondary/surface 对比度",
+      "actual": 6.84,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    },
+    {
+      "title": "dark accentText/accent 对比度",
+      "actual": 5.11,
+      "expected": ">= 4.5",
+      "passed": true,
+      "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+    }
+  ],
+  "failed": 0,
+  "passed": 54,
+  "unverified": 0,
+  "evidence_sha256": {
+    "browser-1280.json": "74500ea8285a248242349b17b9c249aef6339519e6858636dc6f12fb10e61f34",
+    "browser-1280.png": "80c43756e9d8c2283af2ff364d405be41d897361062821c0f8723f2494830ffb",
+    "browser-dark.json": "22da679a17d0b17a4a4037976af2a5d28a9e28185bcb23a247a4edb4bf49573a",
+    "browser-dark.png": "c631c7e34ddb0084a222f963fd0b4dbaa1808eb307df9c24695117bf810b9945",
+    "browser-large-minimum.json": "15892c2900727a713e8090c552fe4d08a2fcd1842f1dce0c8d798ae180c203e5",
+    "browser-large-minimum.png": "f55606c6211edfe180d85b6866869ee43bb4684a0221119a06743baf6af3cbf2",
+    "browser-large-type.json": "30634e9b1baf4ac7aaad2697d9ece46e4e2fa82884ef45b54a50e43ae7a22d85",
+    "browser-large-type.png": "f0270af065c61763f501705719d4cc45c34df5e4264f8250d140fbaa6fe84dfd",
+    "browser-light.json": "74500ea8285a248242349b17b9c249aef6339519e6858636dc6f12fb10e61f34",
+    "browser-light.png": "80c43756e9d8c2283af2ff364d405be41d897361062821c0f8723f2494830ffb",
+    "browser-minimum.json": "36680749a8ab812a2aafa7a322be018ec88e3e585ef3a2e815e54836ab25a072",
+    "browser-minimum.png": "0ff6e8b20ed570e3fcf9e482b5fe91657f7a33bf387d3d1eaa5e3b96bac5be35",
+    "browser-request-1040.json": "36680749a8ab812a2aafa7a322be018ec88e3e585ef3a2e815e54836ab25a072",
+    "browser-request-1040.png": "0ff6e8b20ed570e3fcf9e482b5fe91657f7a33bf387d3d1eaa5e3b96bac5be35",
+    "inspector-independent.json": "756cc3f6fcc06a87e847582d6b3e77829ec686ec86eb6229533a594b82a89c94",
+    "inspector-independent.png": "9028d7914dedae3e0bf9089ea2efe4db5e25d03bd3bc19b2cf6b597200cd3cb9",
+    "navigation-tree.json": "eba4dd60e4d5d45271d6e0aac37da52172e43eca9d1a87d9a182e0dcdf48ceaf",
+    "navigation-tree.png": "09934c47c0957b41d04f67df730d0dbd1f538ed623eb19955740901e47c52dd6",
+    "preflight-light.json": "95ce1e0a84e83c76c2467d5866c61d74f3e14c68508ae3ecf99bc7649e8a5beb",
+    "preflight-light.png": "cf336081828fe1f623ab0a9840f04b7d937e24dfcb094d43478e55cc22e314bb",
+    "task-dark.json": "9b03ed2957a0de32e05762f3010602d452eeb00aad45ada3acdb703848064aa6",
+    "task-dark.png": "8c6017d7fcd5af3b588bae41bfafab24dc4ccc64c9023eed26b643da711791a8",
+    "task-large-type-bottom.json": "606d62d3974ab787befa0234698881853ccda5fe63860afc7c809e2abce72642",
+    "task-large-type-bottom.png": "9d6e0e1f000021202774965d41541c2568df6176632a87ed76687c8d85c3d673",
+    "task-large-type.json": "95573f23dc65215d297eecaa4cd554f63bee71a0b5c06f385977c046535830b5",
+    "task-large-type.png": "6430254c99dc2b4db246e5f374ac565c49be56955d2b3cc199de963ab85ced89",
+    "task-light.json": "ad7dcb8536bc4436efe67e4341744f2491a3ab5be525b4b2186e75e9e7af555a",
+    "task-light.png": "0400e8864adafdd6aac41d160eafcfd468655bdd41b9c1c98c074f481907820f"
+  },
+  "input_sha256": {
+    "apps/desktop/ui/AppButton.qml": "4a91e101061edf6a1d3cd359870a4220f82dc6aa5f6561dd0791b64056e347c2",
+    "apps/desktop/ui/ArchiveAction.qml": "0c94b3f053b98695b8c980da683394d84e456dbd90690572e359c408b0063b4e",
+    "apps/desktop/ui/ArchiveTabs.qml": "0099c3b75b4bd3b4041a93285c82fe4f0a5c0ba071bab6509f05c7b6bc7d603b",
+    "apps/desktop/ui/ArchiveToolbar.qml": "eaab1419fd7472159d51cce1e710840900cf16bcd1a0a7cd1be5e1d2f0844779",
+    "apps/desktop/ui/Browser.qml": "5bbbad5fc639de70346595c31d16278d4f2aff414a425ae8fcfba4a64446e545",
+    "apps/desktop/ui/InfoRow.qml": "d30b2dbce21cbb6344566c22d7bcc42bda0a272ead947e9dfa6c013c851fc637",
+    "apps/desktop/ui/InspectorPanel.qml": "ef65063e692b878ca4531c47227ae32c6b0946d4da8a9067e1a29a75e333eaa4",
+    "apps/desktop/ui/OperationWindow.qml": "aa6ff466633fd5a8dcd5923e0e5f95e7fdec932515dcdfe2431b70bf201cb047",
+    "apps/desktop/ui/PreflightWindow.qml": "dd59e55f8cf22a03a00d0cff69b2c22d35dd9d9642d0646b6f7d3b4440349594",
+    "apps/desktop/ui/Preview.qml": "4c6f336b0a6945a22dc303c9a538ffc62460c943c0128fe609f9b1b2b9273bbc",
+    "apps/desktop/ui/TaskMetric.qml": "517cd461177e624960a478766c619e2b9357bbafa66880e905293e41f40ea5e2",
+    "apps/desktop/ui/TaskPathCard.qml": "4ebf1e97d73bbadbe073afe5ab79ca9e97c2e6c3b925ef2b126298837df6cb8f",
+    "apps/desktop/ui/TaskWindow.qml": "a82182e4cea45c06e087b6e3130f68bdfccfe3be5efbcc81deb35a0275e9a5cf",
+    "apps/desktop/ui/Theme.qml": "60d29a0cfd350ba921d66e7706d013398c606be5a612abf974074a328f175adf",
+    "design/assets/v1/sources/main-light.png": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+    "design/hifi/v2/screens/03-progress.png": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387",
+    "docs/visual/tokens.json": "cb17f0da5d786dae48bd7807e5860b4c9cb58716203e4b97b29ce0a6f03b3c8d"
+  },
+  "art_reference": {
+    "source": "design/hifi/v2/screens/03-progress.png",
+    "content_rect_xyxy": [
+      85,
+      114,
+      1361,
+      1036
+    ],
+    "boundary_uncertainty_source_px": 2,
+    "scale_to_760_content_width": 0.5956112852664577,
+    "target_card_xyxy": [
+      123,
+      279,
+      1323,
+      429
+    ],
+    "progress_card_xyxy": [
+      123,
+      447,
+      1323,
+      712
+    ],
+    "file_card_xyxy": [
+      123,
+      730,
+      1323,
+      876
+    ],
+    "footer_divider_y": 943,
+    "note": "参考估计；不推导生成式图片的精确字号，也不作为规范 token"
+  }
+}

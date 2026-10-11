@@ -15,14 +15,18 @@
 
 截图采自 Qt 6.8.2 的真实应用窗口，使用自建 navigation.zip。其中 photos 和 2026 都没有显式目录记录，由 Rust 完整索引生成；同名文件按大小降序排列。截图不含操作系统窗口装饰，列头蓝框表示键盘焦点。
 
-<!-- Evidence links are added after the product revision is committed. -->
+产品源版本：`8d38cc6`。
+
+![真实目录树与跨结果排序](navigation-sorting/navigation-tree.png)
+
+[54 项量化检查](navigation-sorting/measurements.md)与[原始数据和哈希](navigation-sorting/measurements.json)保留可复核证据。
 
 ## 本地验证
 
 环境：Debian 13 x86_64、Qt 6.8.2、offscreen/software、DPR 1。
 
 - Rust 工作区测试、Clippy 严格检查、rustfmt、手写 C++ 格式检查和 QML 静态检查通过。
-- CTest 六组通过；真实浏览回归包含 QAbstractItemModelTester、树展开与点击、键盘列头排序、跨页保持排序、超限降级和空归档重置。
+- CTest 六组通过，浏览测试套件另连续运行 10 次通过；真实浏览回归包含 QAbstractItemModelTester、树展开与点击、键盘列头排序、跨页保持排序、超限降级和空归档重置。
 - Rust 测试覆盖重复名称稳定次序、超过 JavaScript 精度的整数比较、隐式父节点、危险后代、独立节点/字节/深度限额、取消及会话失效；验证目录索引仅随 Open 发布，Browse 不重复复制。
 - 视觉检查共 54 项：保留既有 46 项，并加入树行高、缩进、同层文字对齐、图标大小、图文间距、文字/图标垂直居中及计数可见性。54 项本地通过，不能解释为完整设计还原率。
 
