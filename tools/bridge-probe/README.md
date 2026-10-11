@@ -1,6 +1,6 @@
 # Rust / C++ 桥接验证工程
 
-这是 WP-01 的独立诊断工具，不是归档引擎或插件 ABI。根 Cargo workspace 和 CMake 入口仅管理工具链探针；产品模块另按 WP-02 建立。
+这是 WP-01 的独立诊断工具，不是归档引擎或插件 ABI。根 Cargo workspace 现已包含 xdzip-domain，CMake 可选构建 Qt 组件预览；本目录继续保持独立诊断用途，不作为产品运行时。
 
 ## 构建
 
