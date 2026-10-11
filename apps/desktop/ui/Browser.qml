@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQml.Models
 import Xdzip.Native
 
 ApplicationWindow {
@@ -205,6 +206,13 @@ ApplicationWindow {
                         Layout.fillHeight: true
                         clip: true
                         model: reader.directories
+                        selectionModel: ItemSelectionModel {}
+                        selectionMode: TableView.SingleSelection
+                        function activateCurrentDirectory() {
+                            reader.navigateDirectory(reader.directories.data(selectionModel.currentIndex, Qt.UserRole));
+                        }
+                        Keys.onReturnPressed: activateCurrentDirectory()
+                        Keys.onEnterPressed: activateCurrentDirectory()
                         enabled: reader.ready && !reader.busy
                         columnWidthProvider: function (column) {
                             return Math.max(width, reader.navigationWidth * Math.max(1, Theme.fontScale));
@@ -264,7 +272,7 @@ ApplicationWindow {
                             background: Rectangle {
                                 radius: Theme.controlRadius
                                 color: reader.directoryId === directoryNode.nodeId ? Theme.selection : directoryNode.hovered ? Theme.canvas : "transparent"
-                                border.width: directoryNode.activeFocus ? 2 : 0
+                                border.width: directoryNode.activeFocus || (directoryTree.activeFocus && directoryNode.current) ? 2 : 0
                                 border.color: Theme.accent
                             }
                             contentItem: RowLayout {
@@ -361,7 +369,8 @@ ApplicationWindow {
                                 text: modelData
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.secondarySize
-                                activeFocusOnTab: index < 4 && reader.ready && !reader.busy
+                                activeFocusOnTab: index < 4
+                                enabled: index === 4 || (reader.ready && !reader.busy)
                                 Accessible.role: index < 4 ? Accessible.Button : Accessible.StaticText
                                 Accessible.name: modelData + (reader.sortOrder === index * 2 + 1 ? qsTr("，升序") : reader.sortOrder === index * 2 + 2 ? qsTr("，降序") : "")
                                 Accessible.onPressAction: reader.sortByColumn(index)

@@ -239,6 +239,9 @@ class BrowserTest : public QObject {
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *treeView = findVisual(window->contentItem(), "directoryTree");
+        QVERIFY(treeView);
+        QVERIFY(treeView->property("selectionModel").value<QObject *>());
         auto *model = controller->directories();
         QCOMPARE(model->rowCount(), 3);
         const auto parent = model->index(0, 0);
@@ -255,6 +258,18 @@ class BrowserTest : public QObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
         QCOMPARE(controller->directoryId(), "d2");
         QCOMPARE(controller->total(), 2);
+        QCOMPARE(controller->location(), "photos/2026/");
+        // Arrow keys move the tree current item; Enter activates that item's scope.
+        treeView->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_Down);
+        QCOMPARE(treeView->property("currentRow").toInt(), 2);
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
+        QCOMPARE(controller->location(), "documents/");
+        QCOMPARE(controller->total(), 1);
+        QTest::keyClick(window, Qt::Key_Up);
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
         QCOMPARE(controller->location(), "photos/2026/");
         auto *header = findVisual(window->contentItem(), "sort-column-1");
         QVERIFY(header);
