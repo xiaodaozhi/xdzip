@@ -67,7 +67,7 @@
 <h3 id="linux">Linux<a class="heading-anchor" href="#linux" aria-label="本节链接">#</a></h3>
 <p>先发布一种可验证自包含路线，再增加发行版包。针对基线系统构建，不在新 glibc 上构建后宣称老系统可运行。Wayland/X11、portal、Qt 插件和沙箱权限分别测试。AppImage/Flatpak/原生包对文件与工作进程限制不同，按发行配置暴露实际能力。</p>
 <h2 id="许可证和供应链">5. 许可证和供应链<a class="heading-anchor" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%92%8C%E4%BE%9B%E5%BA%94%E9%93%BE" aria-label="本节链接">#</a></h2>
-<p>项目原创内容许可证尚待所有者决定，候选建议为 Apache-2.0；冻结记录见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/licensing.md">许可证决策</a>。正式授权以根目录 LICENSE 为准，未添加前不宣称已获得开源授权。Rust crate、Qt 模块、7z/RAR 原生库、图标和打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。</p>
+<p>项目原创内容采用 Apache-2.0，所有者已确认；冻结记录见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/licensing.md">许可证决策</a>，完整授权条款以根目录 LICENSE 为准。Rust crate、Qt 模块、7z/RAR 原生库、图标和打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。</p>
 <p>依赖许可审查至少包含：分发许可、版权和声明、修改说明、源码提供义务、用户替换库和重新链接条件、安装信息及反调试/签名政策的相容性。LGPL/GPL/商业方案由实际模块和发行方式决定；不能把某一 Qt 模块结论推广到全部 Qt。</p>
 <p>7-Zip/UnRAR 或其他 RAR 实现涉及的具体条款单独评估，尤其创建 RAR 和逆向相关限制；不把它们简单标作“MIT 兼容”。不满足目标许可时不打包该能力，可作为用户自行安装的合规后端候选，仍需评估宿主分发关系。</p>
 <p>发布提供 SBOM（如 SPDX/CycloneDX）、NOTICE、依赖版本/哈希、源码与构建说明、所需许可证材料及文件清单。静态 Rust 第三方代码同样计入 SBOM。签名密钥在发行系统，不入仓库；构建 PR 不获得签名凭据。</p>

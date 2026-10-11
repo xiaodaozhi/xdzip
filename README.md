@@ -25,4 +25,4 @@ Rust 核心独立于 Qt；内置格式通过源码接口扩展，第三方扩展
 
 `docs/design/` 为规范源文档，`docs/visual/` 为已确认视觉资产，`docs/engineering/` 为工程准备，`docs/planning/` 为阶段和风险，`docs/qa/` 为验收计划，`.github/` 为协作模板。文档构建工具仅用于生成 HTML，不构成产品代码。
 
-许可证决策见 [licensing](docs/engineering/licensing.md)。Qt、编解码器和其他依赖分别遵守自身许可证；当前私有仓库保持原有可见性。
+项目原创内容采用 [Apache License 2.0](LICENSE)，详情见 [许可证说明](docs/engineering/licensing.md)。Qt、编解码器和其他依赖分别遵守自身许可证；当前私有仓库保持原有可见性。
