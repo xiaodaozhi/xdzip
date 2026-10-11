@@ -22,7 +22,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "ScrollView_QMLTYPE_56",
+            "class": "ScrollView_QMLTYPE_39",
             "clip": true,
             "contentHeight": 1179,
             "contentWidth": 760,
@@ -218,7 +218,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "TaskPathCard_QMLTYPE_75",
+            "class": "TaskPathCard_QMLTYPE_74",
             "clip": false,
             "color": "#f5f8fc",
             "height": 134,
@@ -383,7 +383,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "ProgressBar_QMLTYPE_74",
+            "class": "ProgressBar_QMLTYPE_76",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -565,7 +565,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "TaskMetric_QMLTYPE_72",
+            "class": "TaskMetric_QMLTYPE_75",
             "clip": false,
             "height": 99,
             "name": "",
@@ -645,7 +645,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "TaskMetric_QMLTYPE_72",
+            "class": "TaskMetric_QMLTYPE_75",
             "clip": false,
             "height": 101,
             "name": "",
@@ -725,7 +725,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "TaskMetric_QMLTYPE_72",
+            "class": "TaskMetric_QMLTYPE_75",
             "clip": false,
             "height": 101,
             "name": "",
@@ -790,7 +790,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "TaskPathCard_QMLTYPE_75",
+            "class": "TaskPathCard_QMLTYPE_74",
             "clip": false,
             "color": "#f5f8fc",
             "height": 134,
@@ -914,7 +914,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "InfoRow_QMLTYPE_73",
+            "class": "InfoRow_QMLTYPE_77",
             "clip": false,
             "height": 35,
             "name": "",
@@ -998,7 +998,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "InfoRow_QMLTYPE_73",
+            "class": "InfoRow_QMLTYPE_77",
             "clip": false,
             "height": 35,
             "name": "",
@@ -1067,7 +1067,7 @@
         },
         {
             "baselineOffset": 38,
-            "class": "AppButton_QMLTYPE_48",
+            "class": "AppButton_QMLTYPE_47",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -1129,7 +1129,7 @@
         },
         {
             "baselineOffset": 38,
-            "class": "AppButton_QMLTYPE_48",
+            "class": "AppButton_QMLTYPE_47",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -1191,7 +1191,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -1226,7 +1226,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,

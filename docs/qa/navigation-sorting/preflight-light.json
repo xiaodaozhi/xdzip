@@ -115,7 +115,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickColumnLayout_QML_57",
+            "class": "QQuickColumnLayout_QML_48",
             "clip": false,
             "height": 43,
             "name": "",
@@ -180,7 +180,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickColumnLayout_QML_57",
+            "class": "QQuickColumnLayout_QML_48",
             "clip": false,
             "height": 43,
             "name": "",
@@ -245,7 +245,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickColumnLayout_QML_57",
+            "class": "QQuickColumnLayout_QML_48",
             "clip": false,
             "height": 43,
             "name": "",
@@ -323,7 +323,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "ScrollView_QMLTYPE_56",
+            "class": "ScrollView_QMLTYPE_39",
             "clip": false,
             "contentHeight": 52,
             "contentWidth": 652,
@@ -477,7 +477,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -512,7 +512,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -588,7 +588,7 @@
         },
         {
             "baselineOffset": 24,
-            "class": "AppButton_QMLTYPE_48",
+            "class": "AppButton_QMLTYPE_47",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,

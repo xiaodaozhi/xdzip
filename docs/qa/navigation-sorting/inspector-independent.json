@@ -22,7 +22,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "InspectorPanel_QMLTYPE_60",
+            "class": "InspectorPanel_QMLTYPE_38",
             "clip": false,
             "color": "#ffffff",
             "height": 600,
@@ -37,7 +37,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "ScrollView_QMLTYPE_56",
+            "class": "ScrollView_QMLTYPE_39",
             "clip": false,
             "contentHeight": 568,
             "contentWidth": 328,
@@ -139,7 +139,7 @@
         },
         {
             "baselineOffset": 6,
-            "class": "ArchiveAction_QMLTYPE_44",
+            "class": "ArchiveAction_QMLTYPE_41",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -302,7 +302,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickGridLayout_QML_61",
+            "class": "QQuickGridLayout_QML_44",
             "clip": false,
             "height": 17,
             "name": "",
@@ -367,7 +367,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickGridLayout_QML_61",
+            "class": "QQuickGridLayout_QML_44",
             "clip": false,
             "height": 17,
             "name": "",
@@ -432,7 +432,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickGridLayout_QML_61",
+            "class": "QQuickGridLayout_QML_44",
             "clip": false,
             "height": 17,
             "name": "",
@@ -497,7 +497,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickGridLayout_QML_61",
+            "class": "QQuickGridLayout_QML_44",
             "clip": false,
             "height": 17,
             "name": "",
@@ -562,7 +562,7 @@
         },
         {
             "baselineOffset": 0,
-            "class": "QQuickGridLayout_QML_61",
+            "class": "QQuickGridLayout_QML_44",
             "clip": false,
             "height": 17,
             "name": "",
@@ -666,7 +666,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
@@ -701,7 +701,7 @@
         },
         {
             "baselineOffset": 2,
-            "class": "ScrollBar_QMLTYPE_39",
+            "class": "ScrollBar_QMLTYPE_40",
             "clip": false,
             "fontFamily": "DejaVu Sans",
             "fontPixelSize": -1,
