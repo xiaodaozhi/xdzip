@@ -31,6 +31,8 @@ xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 add_executable(xdzip-browser browser_main.cpp)
 if(APPLE)
     enable_language(OBJCXX)
+    set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
+        OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
     target_sources(xdzip-browser PRIVATE MacTitlebar.mm)
     target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
