@@ -43,9 +43,12 @@ Item {
         }
         function test_controls_align_and_fit(data) {
             Ui.Theme.fontScale = data.scale;
-            wait(30);
             const open = findChild(toolbar, "archiveOpen");
             const search = findChild(toolbar, "archiveSearch");
+            // Font changes and RowLayout polishing complete on different frames on Cocoa.
+            // Wait for the observable layout state, not a platform-dependent fixed delay.
+            tryCompare(open, "height", toolbar.controlHeight);
+            tryCompare(search, "height", toolbar.controlHeight);
             const op = open.mapToItem(toolbar, 0, 0);
             const sp = search.mapToItem(toolbar, 0, 0);
             verify(Math.abs(op.y + open.height / 2 - sp.y - search.height / 2) < 0.5, "Open y/height=" + op.y + "/" + open.height + "; search=" + sp.y + "/" + search.height);
