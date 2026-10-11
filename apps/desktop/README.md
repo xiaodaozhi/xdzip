@@ -13,6 +13,8 @@ cmake --build build/ui
 ctest --test-dir build/ui --output-on-failure
 ```
 
+Linux 开发环境还需 OpenGL/EGL 和 xkbcommon 开发包；Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。即使使用软件离屏渲染，Qt Gui 的构建配置仍需要这些开发文件。
+
 Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完成签名，使用上述原生命令行开发构建。无显示服务的 Linux 设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 后运行测试，普通桌面运行不设置这些变量。
 
 主窗口可打开/重开任务详情、切换主题、放大文字、检查未知总量和重置示例。关闭详情不发送取消；“取消任务”仅请求示例进入“正在停止”，不显示虚假的取消完成。状态由预览主窗口持有，正式任务状态仍将由 Rust runtime 持有。

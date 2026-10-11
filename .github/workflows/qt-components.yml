@@ -19,7 +19,7 @@ jobs:
           /tmp/xdzip-aqt/bin/pip install aqtinstall==3.3.0
           /tmp/xdzip-aqt/bin/aqt install-qt linux desktop 6.8.2 linux_gcc_64 -O "$RUNNER_TEMP/Qt"
           sudo apt-get update
-          sudo apt-get install -y libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk
+          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk
       - name: Build and check components
         run: |
           export Qt6_DIR="$RUNNER_TEMP/Qt/6.8.2/gcc_64/lib/cmake/Qt6"
