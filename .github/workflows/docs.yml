@@ -12,5 +12,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Check documentation links and assets
         run: python3 scripts/check-docs.py
+      - name: Check prototype JavaScript syntax
+        run: node --check design/prototype/app.js
       - name: Check whitespace
         run: git diff-tree --check HEAD

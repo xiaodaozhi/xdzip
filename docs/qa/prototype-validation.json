@@ -1,0 +1,33 @@
+{
+  "checks": [
+    "Three-file selection totals 27.4 MB",
+    "Same-name output folder is not duplicated",
+    "Selected extraction reaches a consistent success summary",
+    "All-archive and explicit search-result scopes remain distinct",
+    "Conflict defaults to a non-destructive action; rename is reported",
+    "Unwritable destination blocks submission until changed",
+    "Partial failure retains two files and replans only the failed item",
+    "Cancellation passes through stopping before a terminal summary",
+    "Format capabilities update fields; empty input blocks creation; creation publishes one archive",
+    "Empty, no-result, unsupported and damaged states are distinct",
+    "Folder navigation uses the actual fixture children",
+    "390 px mobile review has no horizontal page or dialog overflow",
+    "Skip preserves the existing file and reports two successes plus one skip",
+    "Changed archive source stops the task and requires reopening",
+    "Creating over an existing archive requires explicit confirmation; cancelled creation publishes nothing",
+    "Search defers updates during IME composition; empty archives show consistent zero counts",
+    "Single-file distributable initializes and opens creation without network access"
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "scope": "Simulated design interactions only",
+  "status": "passed",
+  "checked_scenarios": 17,
+  "screenshots": 19,
+  "source_sha256": {
+    "design/prototype/index.html": "2fb46ac5c159e83a73157eaadb133ce461ab68734cd22be4381473b7ea13022f",
+    "design/prototype/app.js": "70a476f8c1fa4cd08058009e2027b2a042c28233d2da267d1be9b8c181245c70",
+    "design/prototype/styles.css": "d7b4f3bc9dea1286fac9402271c7a5654fa3578f5d10e8267db3122bb2689ba2"
+  },
+  "standalone_sha256": "2d78f0f1c99c998963ecfb9df3dcd6527d2857a7bd8ff860a0ecb7fc495d5341"
+}

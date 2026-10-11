@@ -10,6 +10,7 @@
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
 | 视觉基线 | [交付说明](visual/README.md)、[HTML 画廊](visual/index.html)、[颜色尺寸参数](visual/tokens.json) |
+| 交互原型 | [使用说明](../design/prototype/README.md)、[功能映射](ux/prototype-spec.md) |
 | Figma 功能设计 | [文件、画板索引与待修项](ux/figma-design.md) |
 | 未绘制页面和异常流程 | [交互补充](ux/interaction-spec.md) |
 | 开发与仓库约定 | [开发指南](engineering/development.md)、[目录规划](engineering/repository-layout.md) |

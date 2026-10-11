@@ -2,6 +2,8 @@
 
 设计文件：[xdzip · v0.1 产品设计与交互规范](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF)。
 
+后续功能细化在[仓库交互原型](prototype-spec.md)继续，保留本文件作为设计探索记录。
+
 状态：功能设计初稿，尚未完成全部视觉复核和原型连线，不作为最终开发验收基线。此前三张视觉方向图仍保留在 docs/visual；本文件将视觉方向展开为可编辑界面与需求标注。
 
 ## 文件内容

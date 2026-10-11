@@ -10,6 +10,7 @@
 
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
+- [可交互设计原型](design/prototype/README.md)：解压、新建、任务、异常流程与需求标注。
 - [已确认的视觉设计](docs/visual/README.md)：浅色、深色、解压面板与设计参数。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
