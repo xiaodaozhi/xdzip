@@ -69,6 +69,18 @@
 
 三平台 CI 使用 `--fail-on-differences` 阻止已纳入检查的量化差异回退。无法解析的字体（例如某些 Windows offscreen 字体后端返回 -1）标为“待验证”，不伪报为通过或负数字号；该限制仍需原生字体后端解决。生成式高保真稿未作为全屏像素黄金图，图片阴影、示例数据或照片也不作为自动测试预期。
 
+## 三平台复验结果
+
+[三平台 CI](https://github.com/xiaodaozhi/xdzip/actions/runs/38168237925) 对 `235dfdf` 的构建、测试与打包全部通过，包括 macOS Cocoa 原生应用启停。对应的 [原始量化结果摘要](visual-refinement/native-ci-summary.json) 保留每一项数值和字体未解析标记。
+
+| 环境（Qt 6.8.2、offscreen、software、DPR 1） | 通过 | 测得差异 | 待验证 |
+| --- | --- | --- | --- |
+| Ubuntu 24.04 x86_64 | 46 | 0 | 0 |
+| macOS 14.8 ARM64 | 46 | 0 | 0 |
+| Windows Server 2022 x86_64 | 39 | 0 | 7 项字体解析 |
+
+[Apple Silicon 开发包](https://github.com/xiaodaozhi/xdzip/actions/runs/38168237925/artifacts/11712269252) 为开发用 app，采用 ad-hoc 签名，未公证；需要仓库访问权限，CI 产物保留 14 天。这些结果不覆盖最新 macOS 的 Retina、GPU、原生窗口装饰及全屏交互实机验收。
+
 ## 尚存差异与边界
 
 | 类别 | 当前差异 | 验收边界 |
