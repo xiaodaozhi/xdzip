@@ -11,7 +11,7 @@ from lxml import html
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / 'docs/qa/visual-audit-review.md'
 body = subprocess.run(['pandoc', '--from=gfm', '--to=html5', str(REPORT)],
-                      check=True, capture_output=True, text=True).stdout
+                      check=True, capture_output=True, text=True, encoding='utf-8').stdout
 comparisons = '''<section class="comparisons"><h2>原始设计图 / 实际 Qt 截图</h2>
 <p>图片分别等比适应列宽，保留原始外框与背景；此处用于观察结构，精确差值以正文的坐标测量为准。</p>
 <h3>主窗口</h3><div class="pair">

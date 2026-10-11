@@ -26,8 +26,8 @@ def main():
     parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/visual-audit')
     parser.add_argument('--print-checks', action='store_true', help='Emit ASCII JSON for native CI log review')
     args = parser.parse_args()
-    captures = {p.stem: json.loads(p.read_text()) for p in sorted(args.input.glob('*.json'))}
-    tokens = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
+    captures = {p.stem: json.loads(p.read_text(encoding='utf-8')) for p in sorted(args.input.glob('*.json'))}
+    tokens = json.loads((ROOT / 'docs/visual/tokens.json').read_text(encoding='utf-8'))
     checks = []
 
     def one(scene, predicate):
@@ -104,7 +104,7 @@ def main():
     inputs = ['apps/desktop/ui/' + p.name for p in (ROOT / 'apps/desktop/ui').glob('*.qml')]
     inputs += ['design/assets/v1/sources/main-light.png', 'design/hifi/v2/screens/03-progress.png', 'docs/visual/tokens.json']
     environment = {key: light[key] for key in ['os', 'architecture', 'qt', 'platform', 'requestedQuickBackend', 'dpr']}
-    report = dict(status='differences_found', environment=environment,
+    report = dict(status='differences_found' if any(not c['passed'] for c in checks) else 'measured_checks_pass', environment=environment,
                   product_commit='64bf2feb4fb8b8c135c3a633da285868d5e4d438', checks=checks,
                   failed=sum(not c['passed'] for c in checks), passed=sum(c['passed'] for c in checks),
                   evidence_sha256=files, input_sha256={p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in sorted(inputs)})
@@ -121,10 +121,10 @@ def main():
         'footer_divider_y': 943,
         'note': '参考估计；不推导生成式图片的精确字号，也不作为规范 token'
     }
-    (output / 'measurements.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    (output / 'measurements.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     lines = ['| 检查项 | 期望 | 实测 | 结果 |', '| --- | --- | --- | --- |']
     lines += [f"| {c['title']} | {c['expected']} | {c['actual']} | {'通过' if c['passed'] else '差异'} |" for c in checks]
-    (output / 'measurements.md').write_text('# 自动采集检查表\n\n原始坐标与来源见 [measurements.json](measurements.json)。几何容差 0.5 逻辑像素；尺寸 token 按精确值比较。以下计数只描述本表，不是视觉还原率。\n\n' + '\n'.join(lines) + '\n')
+    (output / 'measurements.md').write_text('# 自动采集检查表\n\n原始坐标与来源见 [measurements.json](measurements.json)。几何容差 0.5 逻辑像素；尺寸 token 按精确值比较。以下计数只描述本表，不是视觉还原率。\n\n' + '\n'.join(lines) + '\n', encoding='utf-8')
     print(json.dumps({k: report[k] for k in ['status', 'passed', 'failed']}, ensure_ascii=False))
     if args.print_checks:
         print('VISUAL_AUDIT_CHECKS=' + json.dumps(dict(environment=environment, checks=checks), ensure_ascii=True))
