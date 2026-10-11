@@ -1,0 +1,881 @@
+{
+  "macos": {
+    "environment": {
+      "os": "macOS Sonoma (14.8)",
+      "architecture": "arm64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "requestedQuickBackend": "software",
+      "dpr": 1
+    },
+    "checks": [
+      {
+        "title": "主窗口 width",
+        "actual": 1360,
+        "expected": 1280,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 height",
+        "actual": 740,
+        "expected": 820,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumWidth",
+        "actual": 1160,
+        "expected": 1040,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumHeight",
+        "actual": 600,
+        "expected": 680,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "侧栏宽度",
+        "actual": 220,
+        "expected": 220,
+        "passed": true,
+        "source": "tokens.size.sidebar",
+        "tolerance": 0
+      },
+      {
+        "title": "详情栏宽度",
+        "actual": 250,
+        "expected": 280,
+        "passed": false,
+        "source": "tokens.size.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "列表行高",
+        "actual": 48,
+        "expected": 40,
+        "passed": false,
+        "source": "tokens.size.row",
+        "tolerance": 0
+      },
+      {
+        "title": "普通按钮高度",
+        "actual": 41,
+        "expected": 36,
+        "passed": false,
+        "source": "tokens.size.button",
+        "tolerance": 0
+      },
+      {
+        "title": "搜索框高度",
+        "actual": 42,
+        "expected": 36,
+        "passed": false,
+        "source": "visual/README 搜索框高 36",
+        "tolerance": 0
+      },
+      {
+        "title": "详情面板标题字号",
+        "actual": 18,
+        "expected": 20,
+        "passed": false,
+        "source": "tokens.type.panelTitle",
+        "tolerance": 0
+      },
+      {
+        "title": "列表正文字号",
+        "actual": 13,
+        "expected": 13,
+        "passed": true,
+        "source": "tokens.type.table",
+        "tolerance": 0
+      },
+      {
+        "title": "按钮正文字号",
+        "actual": 14,
+        "expected": 14,
+        "passed": true,
+        "source": "tokens.type.body",
+        "tolerance": 0
+      },
+      {
+        "title": "名称表头与文件名起点差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "same column alignment",
+        "tolerance": 0.5
+      },
+      {
+        "title": "列表图标容器网格",
+        "actual": 24,
+        "expected": 18,
+        "passed": false,
+        "source": "visual/README 建议 18 px；不等于可见墨迹尺寸",
+        "tolerance": 0
+      },
+      {
+        "title": "深色详情栏背景",
+        "actual": "#1d2026",
+        "expected": "#20232a",
+        "passed": false,
+        "source": "tokens.dark.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "task-light 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-light 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列标题 Y 极差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "同排标题顶边对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列数值基线极差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "同排数字基线对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "200% 字号：打开归档",
+        "actual": 28,
+        "expected": 28,
+        "passed": true,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：条目详情",
+        "actual": 18,
+        "expected": 36,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：normal.zip",
+        "actual": 18,
+        "expected": 36,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：搜索输入",
+        "actual": 12,
+        "expected": 24,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 表头文字可容纳",
+        "actual": false,
+        "expected": true,
+        "passed": false,
+        "source": "contentWidth <= width - leftPadding",
+        "tolerance": 0
+      },
+      {
+        "title": "light text/surface 对比度",
+        "actual": 15.73,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light textSecondary/surface 对比度",
+        "actual": 5.6,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light accentText/accent 对比度",
+        "actual": 5.3,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark text/surface 对比度",
+        "actual": 14.06,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark textSecondary/surface 对比度",
+        "actual": 6.84,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark accentText/accent 对比度",
+        "actual": 5.11,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      }
+    ],
+    "run": "https://github.com/xiaodaozhi/xdzip/actions/runs/38164611262",
+    "collector_commit": "754206bd4b19fdb768ff2614b29816e5c9d97220",
+    "review_note": "Font-size sentinel -1 is normalized to unverified, retaining raw values. Original CI log emitted false differences for these unresolved fonts.",
+    "counts": {
+      "passed": 19,
+      "differences": 15,
+      "unverified": 0
+    }
+  },
+  "linux": {
+    "environment": {
+      "os": "Ubuntu 24.04.5 LTS",
+      "architecture": "x86_64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "requestedQuickBackend": "software",
+      "dpr": 1
+    },
+    "checks": [
+      {
+        "title": "主窗口 width",
+        "actual": 1360,
+        "expected": 1280,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 height",
+        "actual": 740,
+        "expected": 820,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumWidth",
+        "actual": 1160,
+        "expected": 1040,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumHeight",
+        "actual": 600,
+        "expected": 680,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "侧栏宽度",
+        "actual": 220,
+        "expected": 220,
+        "passed": true,
+        "source": "tokens.size.sidebar",
+        "tolerance": 0
+      },
+      {
+        "title": "详情栏宽度",
+        "actual": 250,
+        "expected": 280,
+        "passed": false,
+        "source": "tokens.size.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "列表行高",
+        "actual": 48,
+        "expected": 40,
+        "passed": false,
+        "source": "tokens.size.row",
+        "tolerance": 0
+      },
+      {
+        "title": "普通按钮高度",
+        "actual": 45,
+        "expected": 36,
+        "passed": false,
+        "source": "tokens.size.button",
+        "tolerance": 0
+      },
+      {
+        "title": "搜索框高度",
+        "actual": 42,
+        "expected": 36,
+        "passed": false,
+        "source": "visual/README 搜索框高 36",
+        "tolerance": 0
+      },
+      {
+        "title": "详情面板标题字号",
+        "actual": 18,
+        "expected": 20,
+        "passed": false,
+        "source": "tokens.type.panelTitle",
+        "tolerance": 0
+      },
+      {
+        "title": "列表正文字号",
+        "actual": 13,
+        "expected": 13,
+        "passed": true,
+        "source": "tokens.type.table",
+        "tolerance": 0
+      },
+      {
+        "title": "按钮正文字号",
+        "actual": 14,
+        "expected": 14,
+        "passed": true,
+        "source": "tokens.type.body",
+        "tolerance": 0
+      },
+      {
+        "title": "名称表头与文件名起点差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "same column alignment",
+        "tolerance": 0.5
+      },
+      {
+        "title": "列表图标容器网格",
+        "actual": 24,
+        "expected": 18,
+        "passed": false,
+        "source": "visual/README 建议 18 px；不等于可见墨迹尺寸",
+        "tolerance": 0
+      },
+      {
+        "title": "深色详情栏背景",
+        "actual": "#1d2026",
+        "expected": "#20232a",
+        "passed": false,
+        "source": "tokens.dark.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "task-light 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-light 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列标题 Y 极差",
+        "actual": 3,
+        "expected": 0,
+        "passed": false,
+        "source": "同排标题顶边对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列数值基线极差",
+        "actual": 1.171875,
+        "expected": 0,
+        "passed": false,
+        "source": "同排数字基线对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "200% 字号：打开归档",
+        "actual": 28,
+        "expected": 28,
+        "passed": true,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：条目详情",
+        "actual": 18,
+        "expected": 36,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：normal.zip",
+        "actual": 18,
+        "expected": 36,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 字号：搜索输入",
+        "actual": 12,
+        "expected": 24,
+        "passed": false,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0
+      },
+      {
+        "title": "200% 表头文字可容纳",
+        "actual": false,
+        "expected": true,
+        "passed": false,
+        "source": "contentWidth <= width - leftPadding",
+        "tolerance": 0
+      },
+      {
+        "title": "light text/surface 对比度",
+        "actual": 15.73,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light textSecondary/surface 对比度",
+        "actual": 5.6,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light accentText/accent 对比度",
+        "actual": 5.3,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark text/surface 对比度",
+        "actual": 14.06,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark textSecondary/surface 对比度",
+        "actual": 6.84,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark accentText/accent 对比度",
+        "actual": 5.11,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      }
+    ],
+    "run": "https://github.com/xiaodaozhi/xdzip/actions/runs/38164611262",
+    "collector_commit": "754206bd4b19fdb768ff2614b29816e5c9d97220",
+    "review_note": "Font-size sentinel -1 is normalized to unverified, retaining raw values. Original CI log emitted false differences for these unresolved fonts.",
+    "counts": {
+      "passed": 17,
+      "differences": 17,
+      "unverified": 0
+    }
+  },
+  "windows": {
+    "environment": {
+      "os": "Windows Server 2022 Version 21H2",
+      "architecture": "x86_64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "requestedQuickBackend": "software",
+      "dpr": 1
+    },
+    "checks": [
+      {
+        "title": "主窗口 width",
+        "actual": 1360,
+        "expected": 1280,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 height",
+        "actual": 740,
+        "expected": 820,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumWidth",
+        "actual": 1160,
+        "expected": 1040,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "主窗口 minimumHeight",
+        "actual": 600,
+        "expected": 680,
+        "passed": false,
+        "source": "tokens.size",
+        "tolerance": 0
+      },
+      {
+        "title": "侧栏宽度",
+        "actual": 220,
+        "expected": 220,
+        "passed": true,
+        "source": "tokens.size.sidebar",
+        "tolerance": 0
+      },
+      {
+        "title": "详情栏宽度",
+        "actual": 250,
+        "expected": 280,
+        "passed": false,
+        "source": "tokens.size.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "列表行高",
+        "actual": 48,
+        "expected": 40,
+        "passed": false,
+        "source": "tokens.size.row",
+        "tolerance": 0
+      },
+      {
+        "title": "普通按钮高度",
+        "actual": 38,
+        "expected": 36,
+        "passed": false,
+        "source": "tokens.size.button",
+        "tolerance": 0
+      },
+      {
+        "title": "搜索框高度",
+        "actual": 42,
+        "expected": 36,
+        "passed": false,
+        "source": "visual/README 搜索框高 36",
+        "tolerance": 0
+      },
+      {
+        "title": "详情面板标题字号",
+        "actual": null,
+        "expected": 20,
+        "passed": null,
+        "source": "tokens.type.panelTitle",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": 20,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "列表正文字号",
+        "actual": null,
+        "expected": 13,
+        "passed": null,
+        "source": "tokens.type.table",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": 13,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "按钮正文字号",
+        "actual": null,
+        "expected": 14,
+        "passed": null,
+        "source": "tokens.type.body",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": 14,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "名称表头与文件名起点差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "same column alignment",
+        "tolerance": 0.5
+      },
+      {
+        "title": "列表图标容器网格",
+        "actual": 24,
+        "expected": 18,
+        "passed": false,
+        "source": "visual/README 建议 18 px；不等于可见墨迹尺寸",
+        "tolerance": 0
+      },
+      {
+        "title": "深色详情栏背景",
+        "actual": "#1d2026",
+        "expected": "#20232a",
+        "passed": false,
+        "source": "tokens.dark.inspector",
+        "tolerance": 0
+      },
+      {
+        "title": "task-light 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-light 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-dark 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示图标中心 X 差",
+        "actual": 0.0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "task-large-type 提示文字起点 X 差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "两行提示对齐约束",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列标题 Y 极差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "同排标题顶边对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "任务三列数值基线极差",
+        "actual": 0,
+        "expected": 0,
+        "passed": true,
+        "source": "同排数字基线对齐",
+        "tolerance": 0.5
+      },
+      {
+        "title": "200% 字号：打开归档",
+        "actual": null,
+        "expected": null,
+        "passed": null,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": -2,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "200% 字号：条目详情",
+        "actual": null,
+        "expected": null,
+        "passed": null,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": -2,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "200% 字号：normal.zip",
+        "actual": null,
+        "expected": null,
+        "passed": null,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": -2,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "200% 字号：搜索输入",
+        "actual": null,
+        "expected": null,
+        "passed": null,
+        "source": "Theme.fontScale 传播",
+        "tolerance": 0,
+        "raw_actual": -1,
+        "raw_expected": -2,
+        "note": "QFontInfo 未解析；需要原生字体后端复核"
+      },
+      {
+        "title": "200% 表头文字可容纳",
+        "actual": false,
+        "expected": true,
+        "passed": false,
+        "source": "contentWidth <= width - leftPadding",
+        "tolerance": 0
+      },
+      {
+        "title": "light text/surface 对比度",
+        "actual": 15.73,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light textSecondary/surface 对比度",
+        "actual": 5.6,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "light accentText/accent 对比度",
+        "actual": 5.3,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark text/surface 对比度",
+        "actual": 14.06,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark textSecondary/surface 对比度",
+        "actual": 6.84,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      },
+      {
+        "title": "dark accentText/accent 对比度",
+        "actual": 5.11,
+        "expected": ">= 4.5",
+        "passed": true,
+        "source": "WCAG sRGB token 色；不代表所有实际状态组合"
+      }
+    ],
+    "run": "https://github.com/xiaodaozhi/xdzip/actions/runs/38164611262",
+    "collector_commit": "754206bd4b19fdb768ff2614b29816e5c9d97220",
+    "review_note": "Font-size sentinel -1 is normalized to unverified, retaining raw values. Original CI log emitted false differences for these unresolved fonts.",
+    "counts": {
+      "passed": 16,
+      "differences": 11,
+      "unverified": 7
+    }
+  }
+}

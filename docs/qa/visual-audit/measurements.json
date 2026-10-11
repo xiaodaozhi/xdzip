@@ -279,6 +279,7 @@
   ],
   "failed": 17,
   "passed": 17,
+  "unverified": 0,
   "evidence_sha256": {
     "browser-1280.json": "889d0f623f949ea9a279ff54ad361e9864a4dc7eadd0e9d5f7e304f302c71218",
     "browser-1280.png": "02116b0c7c0133c0292cb9a09d6b73b925dd1458844024f1ecd0f3ed99e58614",
