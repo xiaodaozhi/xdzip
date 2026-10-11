@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：需求、设计与验收追踪 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html" aria-current="page"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-requirements-traceability"><h1 id="xdzip需求设计与验收追踪">xdzip：需求、设计与验收追踪</h1>
+<p>需求 ID 的唯一来源为 <a href="01-product-requirements.html">01</a>。下表对应最终产品；后期需求不算首版已经完成。测试编号是计划中的验收套件，不是当前仓库已有测试。</p>
+<h2 id="追踪矩阵">1. 追踪矩阵<a class="heading-anchor" href="#%E8%BF%BD%E8%B8%AA%E7%9F%A9%E9%98%B5" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>需求</th>
+<th>主要设计</th>
+<th>验收套件</th>
+<th>首次交付/门槛</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>P01 浏览不自动解压</td>
+<td><a href="03-domain-data.html">03</a>、<a href="04-qt-quick-ui.html">04</a></td>
+<td>T01 打开只读及临时目录无变化</td>
+<td>M2，v0.1</td>
+</tr>
+<tr class="even">
+<td>P02 浏览/查询/选择</td>
+<td><a href="03-domain-data.html">03</a>、<a href="04-qt-quick-ui.html">04</a>、<a href="09-performance.html">09</a></td>
+<td>T02 身份、查询快照、十万条、过期页面</td>
+<td>M2，v0.1；百万条 M6</td>
+</tr>
+<tr class="odd">
+<td>P03 选择性解压/冲突</td>
+<td><a href="03-domain-data.html">03</a>、<a href="07-file-security.html">07</a>、<a href="08-task-scheduling.html">08</a></td>
+<td>T03 计划范围、重复记录、覆盖/跳过/改名、磁盘结果</td>
+<td>M3，v0.1</td>
+</tr>
+<tr class="even">
+<td>P04 创建归档</td>
+<td><a href="06-codec-extension-sdk.html">06</a>、<a href="07-file-security.html">07</a></td>
+<td>T04 ZIP/TAR/TAR.GZ 双向互操作与旧文件保护</td>
+<td>M4，v0.1</td>
+</tr>
+<tr class="odd">
+<td>P05 能力驱动</td>
+<td><a href="05-qt-rust-bridge.html">05</a>、<a href="06-codec-extension-sdk.html">06</a></td>
+<td>T05 实际特性、伪造操作、禁用原因</td>
+<td>M2～M4；其他能力 M7</td>
+</tr>
+<tr class="even">
+<td>P06 有界任务/取消</td>
+<td><a href="05-qt-rust-bridge.html">05</a>、<a href="08-task-scheduling.html">08</a></td>
+<td>T06 满队列、资源 lease、取消/提交/关闭竞争</td>
+<td>M1/M3，v0.1</td>
+</tr>
+<tr class="odd">
+<td>P07 安全防护</td>
+<td><a href="07-file-security.html">07</a>、<a href="06-codec-extension-sdk.html">06</a></td>
+<td>T07 原生链接竞态、路径逃逸、配额、特殊项</td>
+<td>所有写入阶段阻断</td>
+</tr>
+<tr class="even">
+<td>P08 现代可访问 UI</td>
+<td><a href="04-qt-quick-ui.html">04</a></td>
+<td>T08 三平台键鼠、IME、DPI、读屏和焦点</td>
+<td>M5 基础；v1.0 完整矩阵</td>
+</tr>
+<tr class="odd">
+<td>P09 低资源</td>
+<td><a href="09-performance.html">09</a>、<a href="08-task-scheduling.html">08</a></td>
+<td>T09 实际进程树、GPU、启动、吞吐、完整体积</td>
+<td>M5 建基线，M9 预算退出</td>
+</tr>
+<tr class="even">
+<td>P10 解耦/格式扩展</td>
+<td><a href="02-system-architecture.html">02</a>、<a href="06-codec-extension-sdk.html">06</a></td>
+<td>T10 无 Qt 核心、依赖方向、第三格式样例</td>
+<td>M1/M4，源码 SDK；外部 M8</td>
+</tr>
+<tr class="odd">
+<td>P11 隐私/密码</td>
+<td><a href="04-qt-quick-ui.html">04</a>、<a href="07-file-security.html">07</a></td>
+<td>T11 无默认联网、脱敏、秘密生命周期</td>
+<td>M5 隐私；秘密能力 M7</td>
+</tr>
+<tr class="even">
+<td>P12 可审计发行</td>
+<td><a href="10-quality-engineering.html">10</a>、<a href="11-build-release.html">11</a></td>
+<td>T12 锁定依赖、SBOM、签名、干净机、许可材料</td>
+<td>M5 私测包，M9 正式发行</td>
+</tr>
+<tr class="odd">
+<td>P13 第三方扩展</td>
+<td><a href="06-codec-extension-sdk.html">06</a>、<a href="11-build-release.html">11</a></td>
+<td>T13 独立实现互通、权限变更、拒绝越权/拒绝取消</td>
+<td>M8 试验；M9 满足沙箱门槛</td>
+</tr>
+<tr class="even">
+<td>P14 受限预览</td>
+<td><a href="04-qt-quick-ui.html">04</a>、<a href="07-file-security.html">07</a></td>
+<td>T14 超大图像/文本、活动内容、临时文件清理</td>
+<td>M6，v0.2+</td>
+</tr>
+<tr class="odd">
+<td>P15 可恢复错误</td>
+<td><a href="05-qt-rust-bridge.html">05</a>、<a href="07-file-security.html">07</a>、<a href="08-task-scheduling.html">08</a></td>
+<td>T15 错误分类、源变化、磁盘满、崩溃恢复</td>
+<td>M3～M5，v0.1</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id="横向门槛">2. 横向门槛<a class="heading-anchor" href="#%E6%A8%AA%E5%90%91%E9%97%A8%E6%A7%9B" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>套件</th>
+<th>适用范围</th>
+<th>必须检查的实际结果</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>T16 桥接所有权与生命周期</td>
+<td>M1及每次桥接调整</td>
+<td>重复关闭、receiver唤醒、对象销毁后无回调、无泄漏/越界</td>
+</tr>
+<tr class="even">
+<td>T17 格式互操作与 fuzz</td>
+<td>每个新格式/特性</td>
+<td>独立参考实现互通，损坏内容不发布，超额输入受限</td>
+</tr>
+<tr class="odd">
+<td>T18 安装更新与回退</td>
+<td>每个发行渠道</td>
+<td>干净机能运行、包依赖齐全、更新不覆盖活跃插件、旧版可恢复</td>
+</tr>
+</tbody>
+</table>
+</div><p>新增格式至少覆盖 T05、T07、T10、T17；新增输出操作至少覆盖 T03/T04、T06、T07、T15；新增发行平台至少覆盖 T08、T09、T12、T16、T18。</p>
+<h2 id="代表性端到端场景">3. 代表性端到端场景<a class="heading-anchor" href="#%E4%BB%A3%E8%A1%A8%E6%80%A7%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%9C%BA%E6%99%AF" aria-label="本节链接">#</a></h2>
+<ol type="1">
+<li><strong>普通 ZIP</strong>：拖入 → 显示目录 → 中文查询 → 范围多选 → 选新目录 → 解压 → 内容与参考一致。</li>
+<li><strong>搜索范围</strong>：过滤后无选择 → “全部解压”仍是整个归档；“解压搜索结果”单独显示范围并固定快照。</li>
+<li><strong>重复/碰撞名</strong>：两个记录映射同名 → 宿主提示 → 改名/跳过后结果可追踪，没有最后一项偷偷覆盖。</li>
+<li><strong>取消提交</strong>：提交屏障前取消不发布当前项；屏障后取消保留已提交项；终态只出现一次。</li>
+<li><strong>恶意路径</strong>：包含 <code>../</code>、绝对名、ADS、链接和 reparse 替换 → 全部按平台政策拒绝，授权目录外无变化。</li>
+<li><strong>源变化</strong>：索引后修改源文件 → 启动/读取检测失效 → 停止并说明需重开，没有“成功”摘要。</li>
+<li><strong>新建覆盖旧归档</strong>：写入中磁盘满/取消 → 旧归档校验不变，临时遗留可定位清理。</li>
+<li><strong>工作进程失控</strong>：乱序帧、超长帧、拒绝取消或越权读写 → 终止扩展，宿主可继续处理其他会话。</li>
+<li><strong>异常终止</strong>：发布前/后注入 kill → 下次恢复不自动覆盖或删用户文件，状态不确定时明确提示。</li>
+</ol>
+<h2 id="设计风险清单">4. 设计风险清单<a class="heading-anchor" href="#%E8%AE%BE%E8%AE%A1%E9%A3%8E%E9%99%A9%E6%B8%85%E5%8D%95" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>风险</th>
+<th>缓解和验证</th>
+<th>触发后的范围调整</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cxx/CMake 三平台集成</td>
+<td>M1 最小桥接、生成头、线程/所有权测试</td>
+<td>先修桥接；必要时新 ADR 替代，保持领域不变</td>
+</tr>
+<tr class="even">
+<td>文件系统安全语义差异</td>
+<td>各平台原生竞态和原子原语验证</td>
+<td>不安全目标拒绝或只写新私有目录</td>
+</tr>
+<tr class="odd">
+<td>Qt 运行时与许可成本</td>
+<td>最小部署、完整体积、实际模块审查</td>
+<td>去除未用模块；静态链接需独立审批流程与 ADR</td>
+</tr>
+<tr class="even">
+<td>Codec 能力不完整</td>
+<td>特性矩阵、互操作、候选版本审计</td>
+<td>限制支持表，不吞掉不支持项</td>
+</tr>
+<tr class="odd">
+<td>大索引/结果内存</td>
+<td>紧凑存储、预算、磁盘后端、查询取消</td>
+<td>到限额明确拒绝，不无限增长</td>
+</tr>
+<tr class="even">
+<td>插件沙箱平台缺口</td>
+<td>权限攻击测试、工作进程限额</td>
+<td>第三方禁用，内置源码扩展继续可用</td>
+</tr>
+<tr class="odd">
+<td>断电/网络盘持久性</td>
+<td>故障注入、durable 模式、平台能力说明</td>
+<td>不宣称全目录事务/绝对断电保障</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id="完成定义">5. 完成定义<a class="heading-anchor" href="#%E5%AE%8C%E6%88%90%E5%AE%9A%E4%B9%89" aria-label="本节链接">#</a></h2>
+<p>需求完成需设计落地、对应验收通过、能力文档更新，并在真实发布配置中可用。只有 mock、静态截图、解析成功或接口名字存在不算完成。设计检查只能验证文档一致性，不能替代 T01～T18。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="architecture-decisions.html">← 架构决策记录</a><a href="glossary.html">术语、单位与初始常量 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#追踪矩阵">1. 追踪矩阵</a><a href="#横向门槛">2. 横向门槛</a><a href="#代表性端到端场景">3. 代表性端到端场景</a><a href="#设计风险清单">4. 设计风险清单</a><a href="#完成定义">5. 完成定义</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

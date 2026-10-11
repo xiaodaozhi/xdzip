@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：12 实施路线与现有原型迁移 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html" aria-current="page"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-12-implementation-roadmap"><h1 id="xdzip12-实施路线与现有原型迁移">xdzip：12 实施路线与现有原型迁移</h1>
+<h2 id="当前与目标">1. 当前与目标<a class="heading-anchor" href="#%E5%BD%93%E5%89%8D%E4%B8%8E%E7%9B%AE%E6%A0%87" aria-label="本节链接">#</a></h2>
+<p>独立实验工作区中的 <code>crates/lab-core</code> 使用固定十万条样例、JSON 和 C ABI、单模拟任务；<code>apps/qt</code> 有后台 QThread、分页模型和 QML 界面。它们证明界面路线可行，没有真实格式、文件授权或安全输出。</p>
+<p>目标是保留实验资料并建立正式产品边界，不把实验 Engine 改成包罗万象的业务对象。本次只生成设计，以下目录和任务均待实施。</p>
+<pre class="text"><code>apps/desktop/                 CMake、C++ 控制器/模型、QML、平台集成
+crates/xdzip-domain/
+crates/xdzip-codec-api/
+crates/xdzip-codec-zip/
+crates/xdzip-codec-tar/
+crates/xdzip-index/
+crates/xdzip-io/
+crates/xdzip-platform/
+crates/xdzip-runtime/
+crates/xdzip-plugin-host/    后续启用，协议先独立定义
+crates/xdzip-qt-bridge/
+tools/codec-conformance/
+tests/fixtures/               自建、授权、可生成样本
+docs/design/                  本文档集
+experiments/ui-lab/            原型及测量，迁移时保留原始证据</code></pre>
+<p>xdzip 从独立仓库开始，不复制实验代码作为产品基础。上表 experiments 仅是未来可选的证据归档位置；需要迁入时先核查来源和可复现性。正式 workspace default-members 和打包清单只含 Qt 产品，实验工具需明确命令运行。</p>
+<h2 id="实施工作包">2. 实施工作包<a class="heading-anchor" href="#%E5%AE%9E%E6%96%BD%E5%B7%A5%E4%BD%9C%E5%8C%85" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>里程碑</th>
+<th>工作包</th>
+<th>退出条件</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>M0 基线冻结</td>
+<td>工具链/平台、Qt许可模块、构建清单、领域 ID、需求测试清单</td>
+<td>支持矩阵可解释，依赖版本及发行路径明确</td>
+</tr>
+<tr class="even">
+<td>M1 产品骨架</td>
+<td>cxx 双句柄、Qt 控制器、空闲事件、关闭、无 Qt 核心测试</td>
+<td>三平台最小构建与关闭竞态通过；无 GUI 同步长调用</td>
+</tr>
+<tr class="odd">
+<td>M2 只读 ZIP</td>
+<td>探测、真实目录索引、查询/选择、源版本、能力</td>
+<td>10 万条真实元数据流畅；损坏/不支持特性可解释</td>
+</tr>
+<tr class="even">
+<td>M3 安全解压</td>
+<td>平台授权、路径映射、暂存、CRC、冲突、配额、取消</td>
+<td>原生链接竞态、磁盘满、cancel/commit、目标外无变化</td>
+</tr>
+<tr class="odd">
+<td>M4 创建及 TAR</td>
+<td>ZIP创建、TAR/TAR.GZ组合、输入树、安全提交、摘要</td>
+<td>双向互操作；取消保留旧归档；流式进度真实</td>
+</tr>
+<tr class="even">
+<td>M5 v0.1 私测</td>
+<td>Mac IME/GPU/无障碍、三平台包和基础基准</td>
+<td>P01～P12/P15 对应首版项达标，范围明确，无真实扩展执行</td>
+</tr>
+<tr class="odd">
+<td>M6 大索引/预览</td>
+<td>磁盘索引、百万条、结果分页、受限预览</td>
+<td>资源上限与清理可验证，无自动执行内容</td>
+</tr>
+<tr class="even">
+<td>M7 额外格式</td>
+<td>7z、条件满足的 RAR只读、独立加密/分卷能力</td>
+<td>每个组合独立互操作/取消/许可，不只打开一个样例</td>
+</tr>
+<tr class="odd">
+<td>M8 SDK 试验</td>
+<td>CBOR协议、broker、样例扩展、权限与平台沙箱</td>
+<td>两个独立实现互通；平台越权测试通过才启用第三方</td>
+</tr>
+<tr class="even">
+<td>M9 v1.0</td>
+<td>安全审查、发行合规、性能参考机、支持政策</td>
+<td>三平台签名包和全部已声明能力通过发布门槛</td>
+</tr>
+</tbody>
+</table>
+</div><p>M1→M2→M3 是关键路径；设计系统与测试样本可同时由不同贡献者开发，但任何 UI 接入以服务契约为准。没有沙箱实现经验时先交付内置扩展式产品，不阻塞可靠 ZIP MVP，也不提前放开第三方代码执行。</p>
+<h2 id="原型资产处理">3. 原型资产处理<a class="heading-anchor" href="#%E5%8E%9F%E5%9E%8B%E8%B5%84%E4%BA%A7%E5%A4%84%E7%90%86" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>现有资产</th>
+<th>复用方式</th>
+<th>必须替换/补充</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Qt 虚拟分页模型</td>
+<td>缓存思路、generation guard、键盘验证</td>
+<td>QuerySnapshot身份、增量扫描、完整模型信号与结果类型</td>
+</tr>
+<tr class="even">
+<td>Qt QML 主窗口</td>
+<td>虚拟化与交互经验；正式视觉以已确认高保真稿为准</td>
+<td>tokens、可访问性、IME、能力、真实错误与任务摘要</td>
+</tr>
+<tr class="odd">
+<td>lab-core 条目生成器</td>
+<td>大数据 UI/性能测试 fixture</td>
+<td>不用作真实读取；领域类型独立建模</td>
+</tr>
+<tr class="even">
+<td>JSON/C ABI</td>
+<td>保留比较和回归实验</td>
+<td>正式桥接迁到 cxx，实验 ABI 不成为外部 SDK</td>
+</tr>
+<tr class="odd">
+<td>单模拟任务</td>
+<td>自动化流程示例</td>
+<td>多任务状态机、资源池、实际字节、提交许可和输出日志</td>
+</tr>
+<tr class="even">
+<td>Linux 测量脚本</td>
+<td>环境记录和顺序轮换方法</td>
+<td>原生 Mac/Windows、真实 GPU、完整打包和真实 I/O</td>
+</tr>
+<tr class="odd">
+<td>Slint/Tauri 原型</td>
+<td>历史研究与 UI 独立性证据</td>
+<td>不进入产品运行时/安装包依赖</td>
+</tr>
+</tbody>
+</table>
+</div><p>从实验复制代码时逐段审查线程/所有权，不能因为原型 Clippy 通过就认为产品路径安全已证明。任务轮询被事件接收取代后，基准取消指标定义同步更新。</p>
+<h2 id="推荐首个实现增量">4. 推荐首个实现增量<a class="heading-anchor" href="#%E6%8E%A8%E8%8D%90%E9%A6%96%E4%B8%AA%E5%AE%9E%E7%8E%B0%E5%A2%9E%E9%87%8F" aria-label="本节链接">#</a></h2>
+<p>先交付可审查的最小产品切片：打开一个普通 ZIP → 展示真实目录 → 选择一个小文件 → 到新建私有子目录安全解压 → 校验 → 结果摘要。包含 cxx、线程、授权、路径和取消，但暂不支持覆盖旧文件。</p>
+<p>该增量通过后再加入冲突覆盖、全部解压、新建归档和 TAR。一次接入所有格式会把 codec、I/O 和界面问题混在一起，不利于确定安全边界。</p>
+<h2 id="工作分工接口">5. 工作分工接口<a class="heading-anchor" href="#%E5%B7%A5%E4%BD%9C%E5%88%86%E5%B7%A5%E6%8E%A5%E5%8F%A3" aria-label="本节链接">#</a></h2>
+<p>UI 维护者交付 tokens、QObject 模型、焦点和平台交互；核心维护者交付领域、运行时、索引与任务；安全文件层维护者交付各平台授权/提交；格式维护者交付适配器和互操作；发布维护者交付包、签名、SBOM 和基准。</p>
+<p>这是分工建议，不是本次已启动的多代理工作。每个工作包以依赖、产物、验收和风险明确交接。尚缺专长的安全/许可证项保留为发行阻断，不假设人员必然到位。</p>
+<h2 id="排期方法">6. 排期方法<a class="heading-anchor" href="#%E6%8E%92%E6%9C%9F%E6%96%B9%E6%B3%95" aria-label="本节链接">#</a></h2>
+<p>不在未验证 cxx/平台文件 API 前承诺精确完成日期。M1/M3 是最大技术不确定性，先用技术验证缩小工作量，再按一到两周可验收增量计划。每阶段展示真实操作和失败行为，不能只展示静态 UI。</p>
+<p>范围扩展只能通过明确需求和能力表进入；新格式若新增原生库、密码、分卷或特殊输出，需重新评估安全、调度和许可，而非仅改后缀列表。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="11-build-release.html">← 11 构建、发布、许可证与更新</a><a href="architecture-decisions.html">架构决策记录 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#当前与目标">1. 当前与目标</a><a href="#实施工作包">2. 实施工作包</a><a href="#原型资产处理">3. 原型资产处理</a><a href="#推荐首个实现增量">4. 推荐首个实现增量</a><a href="#工作分工接口">5. 工作分工接口</a><a href="#排期方法">6. 排期方法</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

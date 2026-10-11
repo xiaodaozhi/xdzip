@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：架构决策记录 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html" aria-current="page"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-architecture-decisions"><h1 id="xdzip架构决策记录">xdzip：架构决策记录</h1>
+<p>日期统一为 2026-10-11。Accepted 表示本设计采用，并非实现已验证。若替代某条记录，保留原文并追加新记录。</p>
+<h2 id="adr-001qt-quick-作为唯一产品界面">ADR-001：Qt Quick 作为唯一产品界面<a class="heading-anchor" href="#adr-001qt-quick-%E4%BD%9C%E4%B8%BA%E5%94%AF%E4%B8%80%E4%BA%A7%E5%93%81%E7%95%8C%E9%9D%A2" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted，用户已确定。</strong></p>
+<p>背景：产品要求现代桌面 UI、统一体验和低占用；已完成 Slint、Tauri、Qt Quick 的同核心原型。当前 Linux 软件渲染数据支持 Qt 进入产品阶段，用户明确选择 Qt Quick。</p>
+<p>决定：Qt Quick/QML + Qt Quick Controls 2，C++ 薄适配。Slint/Tauri 作为历史实验保留，不打包进产品。</p>
+<p>代价：承担 Qt 运行库、QML 模块、跨语言构建和许可工作；Mac/Windows 输入、无障碍、GPU 和部署必须补测。不能把 0.80MiB 原型程序当 Qt 完整安装包。</p>
+<p>重新评估触发：Qt 目标平台无法满足必要功能/许可/安全维护，且经过实际优化仍无法达到核心产品预算。普通性能波动不触发重复框架选型。</p>
+<h2 id="adr-002rust-持有全部归档业务">ADR-002：Rust 持有全部归档业务<a class="heading-anchor" href="#adr-002rust-%E6%8C%81%E6%9C%89%E5%85%A8%E9%83%A8%E5%BD%92%E6%A1%A3%E4%B8%9A%E5%8A%A1" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：领域、索引、计划、任务、配额、路径策略和格式注册表在 Rust；Qt 只表示状态、授权系统文件选择和用户决定。业务测试不需 Qt。</p>
+<p>替代方案：把 libarchive/7zip 直接接到 C++/QML，或在每个 UI 中重复控制逻辑。代价是核心与平台 UI 耦合，无法一致验证安全/取消。Rust 也不免除原生库安全风险，相关库可工作进程隔离。</p>
+<p>重新评估触发：某个平台 API 无法在 Rust 可靠实现时，允许小型平台 C++ port，不改变业务所有权。</p>
+<h2 id="adr-003构建期-cxx-桥接">ADR-003：构建期 cxx 桥接<a class="heading-anchor" href="#adr-003%E6%9E%84%E5%BB%BA%E6%9C%9F-cxx-%E6%A1%A5%E6%8E%A5" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted，集成需 M1 验证。</strong></p>
+<p>决定：产品内部用 cxx 生成的类型安全桥接，同提交构建；不维护长期手写 C ABI，不在热点路径 JSON 序列化。桥接不含 Qt 业务。</p>
+<p>替代方案：沿用实验 C ABI、使用 CXX-Qt 自动生成 QObject、通过本地 IPC 连接 GUI 和整个核心。cxx 保留明确的 Qt 模型和线程边界，避免首阶段依赖额外 QObject 生成框架；代价是自行维护薄 QObject 层和 CMake/Cargo 编排。</p>
+<p>不承诺：cxx 不提供跨任意 Rust/Qt 版本的动态二进制兼容，也不生成第三方格式协议。</p>
+<p>重新评估触发：M1 三平台构建/生命周期验证失败，或适配层明显膨胀。届时以 ADR 评估 CXX-Qt 或显式版本化 C ABI，不默默切换。</p>
+<h2 id="adr-004内置源码-sdk-与外部进程协议分离">ADR-004：内置源码 SDK 与外部进程协议分离<a class="heading-anchor" href="#adr-004%E5%86%85%E7%BD%AE%E6%BA%90%E7%A0%81-sdk-%E4%B8%8E%E5%A4%96%E9%83%A8%E8%BF%9B%E7%A8%8B%E5%8D%8F%E8%AE%AE%E5%88%86%E7%A6%BB" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted，线协议为草案。</strong></p>
+<p>决定：内置格式使用 Rust trait 和 Cargo features；外部插件使用有界 CBOR IPC。两者由宿主统一能力和 I/O 端口。</p>
+<p>原因：Rust 动态库 ABI 不稳定；任意进程内原生插件破坏崩溃隔离和资源治理。采用 Wasm 作为通用格式运行时暂不优先，原因是现有原生 codec 迁移、线程、seek 和性能验证成本，不否认其未来用途。</p>
+<p>代价：协议、broker、沙箱和 IPC 开销。协议需两个独立实现互通后冻结。</p>
+<h2 id="adr-005宿主集中控制真实文件写入">ADR-005：宿主集中控制真实文件写入<a class="heading-anchor" href="#adr-005%E5%AE%BF%E4%B8%BB%E9%9B%86%E4%B8%AD%E6%8E%A7%E5%88%B6%E7%9C%9F%E5%AE%9E%E6%96%87%E4%BB%B6%E5%86%99%E5%85%A5" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：后端只写被批准的 OutputSink，真实路径、冲突、暂存和提交由宿主控制。禁止直接调用库的通用 unpack 到任意目录，除非完整验证其端口已受宿主约束。</p>
+<p>原因：各格式重复实现路径保护很容易出现差异；仅检查字符串无法阻止链接/竞态。代价是自己实现三个平台文件安全层和故障测试。</p>
+<p>不承诺：宿主能证明恶意插件输出内容语义正确，或阻止同用户已被控制的恶意进程。插件信任和权限仍需明确。</p>
+<h2 id="adr-006按文件提交解压整体提交新建归档">ADR-006：按文件提交解压，整体提交新建归档<a class="heading-anchor" href="#adr-006%E6%8C%89%E6%96%87%E4%BB%B6%E6%8F%90%E4%BA%A4%E8%A7%A3%E5%8E%8B%E6%95%B4%E4%BD%93%E6%8F%90%E4%BA%A4%E6%96%B0%E5%BB%BA%E5%BD%92%E6%A1%A3" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：解压各文件先暂存校验再发布，任务失败可保留部分完成；新归档整体写完再发布。默认不覆盖。</p>
+<p>原因：合并进现有目录无法跨平台简单提供真正全目录原子事务；假装全任务回滚会误删用户后续修改。代价是详细结果和恢复日志，取消语义需要讲清。</p>
+<p>重新评估触发：新增“全新目录整体发布”模式，可在受限条件下独立实现，不改变已有目录合并语义。</p>
+<h2 id="adr-007有界-actor工作池和事件推送">ADR-007：有界 actor/工作池和事件推送<a class="heading-anchor" href="#adr-007%E6%9C%89%E7%95%8C-actor%E5%B7%A5%E4%BD%9C%E6%B1%A0%E5%92%8C%E4%BA%8B%E4%BB%B6%E6%8E%A8%E9%80%81" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：轻量调度器决定状态，有界池执行工作；Qt 独立事件接收线程，进度合并、终态必达；取消和 shutdown 有独立控制准入。</p>
+<p>替代方案：GUI 同步调用、每文件一个线程、无限 Tokio/spawn_blocking、常驻轮询。归档主要是同步 CPU/I/O，不因“异步”字样引入无限任务；未来真正网络 I/O 可局部使用异步运行时。</p>
+<p>代价：明确背压、关闭和资源 lease；收益是空闲低占用、不会被任务淹没 GUI。</p>
+<h2 id="adr-008能力驱动首版限制格式">ADR-008：能力驱动，首版限制格式<a class="heading-anchor" href="#adr-008%E8%83%BD%E5%8A%9B%E9%A9%B1%E5%8A%A8%E9%A6%96%E7%89%88%E9%99%90%E5%88%B6%E6%A0%BC%E5%BC%8F" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：v0.1 ZIP Store/Deflate 和 TAR/GZIP；加密、分卷、RAR、7z 与额外算法逐项验证。UI 不按后缀推断完整支持。</p>
+<p>原因：格式名称不能描述所有实际特性。代价是首版格式表较短，收益是对用户诚实且可验证。</p>
+<h2 id="adr-009小型产品数据与用户内容分离">ADR-009：小型产品数据与用户内容分离<a class="heading-anchor" href="#adr-009%E5%B0%8F%E5%9E%8B%E4%BA%A7%E5%93%81%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%94%A8%E6%88%B7%E5%86%85%E5%AE%B9%E5%88%86%E7%A6%BB" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：设置、临时索引、事务日志和扩展清单分生命周期管理。默认无遥测、不持久密码、不跨启动缓存归档索引。</p>
+<p>代价：多种 schema 和清理规则。重新评估跨启动索引时需新增源身份、失效、隐私与容量设计。</p>
+<h2 id="adr-010完整分发和许可进入架构门槛">ADR-010：完整分发和许可进入架构门槛<a class="heading-anchor" href="#adr-010%E5%AE%8C%E6%95%B4%E5%88%86%E5%8F%91%E5%92%8C%E8%AE%B8%E5%8F%AF%E8%BF%9B%E5%85%A5%E6%9E%B6%E6%9E%84%E9%97%A8%E6%A7%9B" aria-label="本节链接">#</a></h2>
+<p><strong>状态：Accepted。</strong></p>
+<p>决定：Qt 默认动态部署，准确模块许可审查；安装体积包含运行库；签名、SBOM、替换/源码义务进入发布检查。</p>
+<p>替代方案：只比较 executable 或发布前才补 LICENSE。它们不能证明产品小或可合法分发。</p>
+<p>代价：部署和许可持续维护。Qt 静态构建或商店发行需单独 ADR 与许可审查，不能由 size 优化 PR 顺手改变。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="12-implementation-roadmap.html">← 12 实施路线与现有原型迁移</a><a href="requirements-traceability.html">需求、设计与验收追踪 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#adr-001qt-quick-作为唯一产品界面">ADR-001：Qt Quick 作为唯一产品界面</a><a href="#adr-002rust-持有全部归档业务">ADR-002：Rust 持有全部归档业务</a><a href="#adr-003构建期-cxx-桥接">ADR-003：构建期 cxx 桥接</a><a href="#adr-004内置源码-sdk-与外部进程协议分离">ADR-004：内置源码 SDK 与外部进程协议分离</a><a href="#adr-005宿主集中控制真实文件写入">ADR-005：宿主集中控制真实文件写入</a><a href="#adr-006按文件提交解压整体提交新建归档">ADR-006：按文件提交解压，整体提交新建归档</a><a href="#adr-007有界-actor工作池和事件推送">ADR-007：有界 actor/工作池和事件推送</a><a href="#adr-008能力驱动首版限制格式">ADR-008：能力驱动，首版限制格式</a><a href="#adr-009小型产品数据与用户内容分离">ADR-009：小型产品数据与用户内容分离</a><a href="#adr-010完整分发和许可进入架构门槛">ADR-010：完整分发和许可进入架构门槛</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

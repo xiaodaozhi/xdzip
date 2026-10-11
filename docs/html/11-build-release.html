@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：11 构建、发布、许可证与更新 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html" aria-current="page"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-11-build-release"><h1 id="xdzip11-构建发布许可证与更新">xdzip：11 构建、发布、许可证与更新</h1>
+<h2 id="支持矩阵">1. 支持矩阵<a class="heading-anchor" href="#%E6%94%AF%E6%8C%81%E7%9F%A9%E9%98%B5" aria-label="本节链接">#</a></h2>
+<p>应用显示名和可执行文件基名统一为 <code>xdzip</code>；平台工件为 <code>xdzip.app</code>、<code>xdzip.exe</code> 和 <code>xdzip</code>，Linux 桌面入口为 <code>xdzip.desktop</code>。正式 Rust 模块使用 <code>xdzip-</code> 前缀。组织域名、bundle ID、签名主体和商标归属待项目所有者确定，不以示例扩展 ID 代替真实发布身份。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>平台</th>
+<th>首批目标</th>
+<th>初始最低系统候选</th>
+<th>发布门槛</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>macOS</td>
+<td>arm64 优先，x86_64 独立包后验证</td>
+<td>macOS 13+，需与所选 Qt 官方支持匹配</td>
+<td>原生 GPU/IME/VoiceOver、签名、公证、无开发环境运行</td>
+</tr>
+<tr class="even">
+<td>Windows</td>
+<td>x86_64 MSVC</td>
+<td>Windows 10 22H2+，按维护政策再确认</td>
+<td>Unicode/DPI/长路径/NTFS、签名和干净 VM</td>
+</tr>
+<tr class="odd">
+<td>Linux</td>
+<td>x86_64</td>
+<td>glibc 2.35 基线候选，按 Qt/发行目标验证</td>
+<td>Wayland+X11、平台插件、目标发行版原生文件 API</td>
+</tr>
+</tbody>
+</table>
+</div><p>最低系统是待验证的产品政策，不是对任意 Qt 版本的兼容断言。Mac universal 包只有两架构都通过签名与运行测试后开放；单架构有利于下载体积。Windows ARM64/Linux ARM64 后续按贡献能力单独纳入，不让跨平台变成未经验证的架构列表。</p>
+<h2 id="工具链和构建入口">2. 工具链和构建入口<a class="heading-anchor" href="#%E5%B7%A5%E5%85%B7%E9%93%BE%E5%92%8C%E6%9E%84%E5%BB%BA%E5%85%A5%E5%8F%A3" aria-label="本节链接">#</a></h2>
+<p>产品以 CMake 组织 Qt/C++/QML，Cargo 组织 Rust，顶层脚本/预设负责 target、依赖位置及顺序。Rust 静态核心链接进应用，Qt 默认动态部署，便于许可合规和替换。平台原生 codec/helper 作为明确可审计独立工件。</p>
+<p>Rust 工具链锁定经过 CI 验证的 stable；原型的 1.99.0 是已用版本，不永久规定产品只能用它。Qt 采用 ≥6.8 的已验证且有安全维护的版本，准确补丁版本在实施锁文件记录。Qt LTS 名称不代表所有开源分发渠道都提供相同的长期补丁。</p>
+<p><code>cxx</code>、Cargo、CMake、编译器、Qt 包 SHA、features 和目标架构保存于版本化构建清单。构建生成文件放 build 目录；QML 编译缓存启用与否也写入基准元数据。缓存 key 含工具链/Qt/feature，避免错误复用不同架构产物。</p>
+<p>提供开发 Debug、诊断 ReleaseWithSymbols、发行 Release 三配置。调试符号单独存放，签名前归档；没有实际测量不启用高风险 aggressive LTO/自定义分配器。使用可解释、可回滚的 size 优化，确保 panic/崩溃可定位。</p>
+<h2 id="qt-模块和部署">3. Qt 模块和部署<a class="heading-anchor" href="#qt-%E6%A8%A1%E5%9D%97%E5%92%8C%E9%83%A8%E7%BD%B2" aria-label="本节链接">#</a></h2>
+<p>首批必要模块为 Core、Gui、Qml、Quick、QuickControls2 及 QML Layouts/相应 Templates、Models 等实际传递依赖。图标可需要 Svg；仅在选用时加入。避免 WebEngine、Multimedia、完整 Qt 开发工具和未使用 SQL driver。</p>
+<p>不能仅列直接链接库就删掉所有 transitive DLL/QML 插件。部署工具扫描 QML imports 和动态依赖，在干净机器上验证。QML 包资源和 platform/imageformat 插件用明确允许清单；不从用户当前目录加载未知 Qt 插件。</p>
+<p>macOS 使用部署工具生成 app bundle，配置相对加载路径；Windows 部署 Qt DLL/QML 和必要 MSVC runtime；Linux 按选定 AppImage/发行包方案及 Qt 依赖部署。部署工具的输出需审查，不假设自动满足许可、安全或最小体积。</p>
+<p>产品安装包仅包含 Qt 产品核心和选择的后端，不包含 Slint/Tauri 原型、Python 基准环境、Cargo target、头文件或字体实验资源。源码包可保留选型实验，但必须与产品二进制包分开。</p>
+<h2 id="平台发布">4. 平台发布<a class="heading-anchor" href="#%E5%B9%B3%E5%8F%B0%E5%8F%91%E5%B8%83" aria-label="本节链接">#</a></h2>
+<h3 id="macos">macOS<a class="heading-anchor" href="#macos" aria-label="本节链接">#</a></h3>
+<p>直接下载优先 <code>.dmg</code> 或签名 zip。使用 Developer ID、Hardened Runtime，逐级签名 helper、动态库和主 bundle，再公证、staple、Gatekeeper 验证。权限尽量小，禁止为插件便利开启宽泛禁用保护的 entitlements。</p>
+<p>Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权、下载插件限制和许可；不能认为直接下载的第三方可执行扩展模式自动可用于商店版本。</p>
+<h3 id="windows">Windows<a class="heading-anchor" href="#windows" aria-label="本节链接">#</a></h3>
+<p>签名安装程序或 MSI/便携包按渠道选择，明确是否需要管理员权限，默认用户安装可行。工作进程放固定应用/版本化扩展目录；DLL 加载路径不含不可信当前目录。安装/升级过程中不覆盖仍被任务使用的插件包。</p>
+<h3 id="linux">Linux<a class="heading-anchor" href="#linux" aria-label="本节链接">#</a></h3>
+<p>先发布一种可验证自包含路线，再增加发行版包。针对基线系统构建，不在新 glibc 上构建后宣称老系统可运行。Wayland/X11、portal、Qt 插件和沙箱权限分别测试。AppImage/Flatpak/原生包对文件与工作进程限制不同，按发行配置暴露实际能力。</p>
+<h2 id="许可证和供应链">5. 许可证和供应链<a class="heading-anchor" href="#%E8%AE%B8%E5%8F%AF%E8%AF%81%E5%92%8C%E4%BE%9B%E5%BA%94%E9%93%BE" aria-label="本节链接">#</a></h2>
+<p>项目原创内容许可证尚待所有者决定，候选建议为 Apache-2.0；冻结记录见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/licensing.md">许可证决策</a>。正式授权以根目录 LICENSE 为准，未添加前不宣称已获得开源授权。Rust crate、Qt 模块、7z/RAR 原生库、图标和打包工具各自核查，不能用项目 LICENSE 覆盖依赖条款。Qt 动态部署本身不是全部合规证明。</p>
+<p>依赖许可审查至少包含：分发许可、版权和声明、修改说明、源码提供义务、用户替换库和重新链接条件、安装信息及反调试/签名政策的相容性。LGPL/GPL/商业方案由实际模块和发行方式决定；不能把某一 Qt 模块结论推广到全部 Qt。</p>
+<p>7-Zip/UnRAR 或其他 RAR 实现涉及的具体条款单独评估，尤其创建 RAR 和逆向相关限制；不把它们简单标作“MIT 兼容”。不满足目标许可时不打包该能力，可作为用户自行安装的合规后端候选，仍需评估宿主分发关系。</p>
+<p>发布提供 SBOM（如 SPDX/CycloneDX）、NOTICE、依赖版本/哈希、源码与构建说明、所需许可证材料及文件清单。静态 Rust 第三方代码同样计入 SBOM。签名密钥在发行系统，不入仓库；构建 PR 不获得签名凭据。</p>
+<h2 id="可复现和离线构建">6. 可复现和离线构建<a class="heading-anchor" href="#%E5%8F%AF%E5%A4%8D%E7%8E%B0%E5%92%8C%E7%A6%BB%E7%BA%BF%E6%9E%84%E5%BB%BA" aria-label="本节链接">#</a></h2>
+<p>依赖锁、来源哈希、可选 vendor 缓存和工具链清单支持离线构建。限制未经审查的 build script 下载；不能默认 cargo build 就应访问任意站点。</p>
+<p>平台签名/公证时间戳通常会改变最终包字节，分别比较未签名工件的可复现性和已签名产物的验证结果。不要宣称所有签名包 byte-for-byte 相同。</p>
+<h2 id="更新策略">7. 更新策略<a class="heading-anchor" href="#%E6%9B%B4%E6%96%B0%E7%AD%96%E7%95%A5" aria-label="本节链接">#</a></h2>
+<p>v0.1 手动下载更新，无后台自动安装。v1.0 可提供可关闭的版本检查，但联网需清楚设置和最小数据，不上传用户归档信息。更新清单签名验证不只依赖 TLS，包含版本、平台/架构、最低系统、哈希和来源；拒绝回滚攻击，必要的安全回滚经可信策略授权。</p>
+<p>更新只在任务安全结束后应用，失败保留当前版本。扩展更新独立验证协议、来源和权限变更，正在使用的旧包延后回收。离线用户可以导入完整签名包，缺失网络不是解压功能不可用的理由。</p>
+<h2 id="发布检查表">8. 发布检查表<a class="heading-anchor" href="#%E5%8F%91%E5%B8%83%E6%A3%80%E6%9F%A5%E8%A1%A8" aria-label="本节链接">#</a></h2>
+<ul>
+<li>同一提交生成源包、平台包、符号、SBOM、许可证与基准报告。</li>
+<li>核验格式能力清单，未验证加密/分卷不能写进“全格式支持”。</li>
+<li>三平台干净机器安装、首次打开、系统关联、退出、升级/卸载通过。</li>
+<li>验证源变化、输出配额、取消、恢复、安全路径及沙箱；第三方未达门槛则默认禁用。</li>
+<li>记录完整压缩下载/安装体积，而非只记录主 executable。</li>
+<li>验证签名、公证/安全提示、Qt 替换政策和所有声明；公布已知限制。</li>
+</ul>
+<p>发布负责人可以拒绝不满足安全/许可门槛的功能，不能为了一个版本日期隐式降低默认保护。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="10-quality-engineering.html">← 10 编码规范、注释和质量工程</a><a href="12-implementation-roadmap.html">12 实施路线与现有原型迁移 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#支持矩阵">1. 支持矩阵</a><a href="#工具链和构建入口">2. 工具链和构建入口</a><a href="#qt-模块和部署">3. Qt 模块和部署</a><a href="#平台发布">4. 平台发布</a><a href="#许可证和供应链">5. 许可证和供应链</a><a href="#可复现和离线构建">6. 可复现和离线构建</a><a href="#更新策略">7. 更新策略</a><a href="#发布检查表">8. 发布检查表</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

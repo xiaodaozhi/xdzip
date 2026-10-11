@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：02 系统架构 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html" aria-current="page"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-02-system-architecture"><h1 id="xdzip02-系统架构">xdzip：02 系统架构</h1>
+<h2 id="架构目标">1. 架构目标<a class="heading-anchor" href="#%E6%9E%B6%E6%9E%84%E7%9B%AE%E6%A0%87" aria-label="本节链接">#</a></h2>
+<p>Rust 负责所有归档语义、任务、格式选择和文件安全。QML 负责视图与轻量交互，C++ 负责 Qt 对象、模型、系统桌面接口和 Rust 类型适配。更换 UI 时保留核心和格式适配器；增加格式时不改列表视图和任务状态机。</p>
+<p>MVP 采用一个应用进程、一个 Rust 核心运行时及可选格式工作进程。内置纯 Rust 后端可进程内运行；使用大规模原生解析库的适配器优先放在官方工作进程。第三方扩展一定经过受约束工作进程，不能以“进程隔离”代替沙箱。</p>
+<figure><div class="diagram-panel"><img src="assets/diagram-02-system-architecture-1.svg" alt="系统架构图"></div><figcaption>离线矢量图；可横向滚动查看细节。 <a href="assets/diagram-02-system-architecture-1.svg" target="_blank" rel="noopener">单独打开图表</a></figcaption><details><summary>查看 Mermaid 图表源码</summary><pre class="diagram-source"><code>flowchart TB
+  QML[Qt Quick 视图与设计系统] --&gt; QT[C++ 控制器及虚拟模型]
+  QT --&gt; BR[cxx 构建期桥接]
+  BR --&gt; APP[Rust 应用服务与任务调度]
+  APP --&gt; DOM[领域类型及策略]
+  APP --&gt; IDX[索引与查询]
+  APP --&gt; SAFE[授权文件访问与输出事务]
+  APP --&gt; REG[格式注册表]
+  REG --&gt; CODEC[内置格式适配器]
+  REG --&gt; PH[进程扩展宿主]
+  PH --&gt; WP[受约束格式工作进程]
+  CODEC --&gt; SDK[格式接口]
+  PH --&gt; SDK
+  SAFE --&gt; OS[平台安全文件 API]</code></pre>
+</details></figure><p>箭头表示调用方向。格式适配器通过 SDK 的受限读取/输出对象请求 I/O；图中未画出的受限端口不构成任意文件系统访问。</p>
+<h2 id="拟建模块">2. 拟建模块<a class="heading-anchor" href="#%E6%8B%9F%E5%BB%BA%E6%A8%A1%E5%9D%97" aria-label="本节链接">#</a></h2>
+<p>下表是正式仓库的目标结构，当前实验仓库尚未创建这些 crate。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>模块</th>
+<th>职责</th>
+<th>不允许的依赖/行为</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>xdzip-domain</code></td>
+<td>ID、能力、状态、错误、计划、策略值</td>
+<td>Qt、文件系统、线程、具体格式</td>
+</tr>
+<tr class="even">
+<td><code>xdzip-codec-api</code></td>
+<td>受限流、探测、扫描、读写接口、能力</td>
+<td>QML、用户设置、真实输出路径</td>
+</tr>
+<tr class="odd">
+<td><code>xdzip-index</code></td>
+<td>元数据、分页、排序、筛选、索引存储</td>
+<td>UI 对象、直接解压</td>
+</tr>
+<tr class="even">
+<td><code>xdzip-io</code></td>
+<td>授权根、安全遍历、配额、暂存、提交、清理</td>
+<td>格式魔数、界面弹窗</td>
+</tr>
+<tr class="odd">
+<td><code>xdzip-runtime</code></td>
+<td>会话 actor、计划、任务、资源预算、事件</td>
+<td>Qt、任何 QML 状态</td>
+</tr>
+<tr class="even">
+<td><code>xdzip-codec-zip</code> / <code>xdzip-codec-tar</code></td>
+<td>格式适配、CRC/结构检查、参数映射</td>
+<td>自定义覆盖策略、任意路径写入</td>
+</tr>
+<tr class="odd">
+<td><code>xdzip-plugin-host</code></td>
+<td>工作进程、协议、权限、限额、健康检查</td>
+<td>放宽宿主路径政策、直接加载 Rust dylib</td>
+</tr>
+<tr class="even">
+<td><code>xdzip-platform</code></td>
+<td>安全文件 API、凭据、平台能力</td>
+<td>QML，重复业务策略</td>
+</tr>
+<tr class="odd">
+<td><code>xdzip-qt-bridge</code></td>
+<td>cxx DTO、命令投递、事件接收、异常边界</td>
+<td>QAbstractItemModel、格式实现</td>
+</tr>
+<tr class="even">
+<td><code>apps/desktop</code></td>
+<td>C++、QML、系统对话框、主题、无障碍</td>
+<td>核心文件写入和密码日志</td>
+</tr>
+<tr class="odd">
+<td><code>tools/codec-conformance</code></td>
+<td>扩展契约及互操作测试</td>
+<td>发布产品运行时依赖</td>
+</tr>
+</tbody>
+</table>
+</div><p><code>xdzip-runtime</code> 组合索引、I/O、后端和扩展宿主。<code>xdzip-codec-api</code> 依赖领域；<code>xdzip-io</code> 实现受限流端口；格式实现只依赖领域与 SDK。平台与桥接通过小接口注入，禁止核心反向调用 Qt 全局对象。不存在一个容纳所有工具函数的 <code>common</code> crate。</p>
+<h2 id="进程与线程">3. 进程与线程<a class="heading-anchor" href="#%E8%BF%9B%E7%A8%8B%E4%B8%8E%E7%BA%BF%E7%A8%8B" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>执行位置</th>
+<th>工作</th>
+<th>生命周期</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Qt GUI 线程</td>
+<td>QML、控制器属性、模型更新、文件对话框</td>
+<td>应用主线程；不能等待扫描或解压</td>
+</tr>
+<tr class="even">
+<td>Qt 事件接收线程</td>
+<td>等待 Rust 事件，转换成批量 Qt 值对象，发送 queued signal</td>
+<td>启动时创建；关闭通过独立控制通道唤醒</td>
+</tr>
+<tr class="odd">
+<td>Rust 调度线程</td>
+<td>轻量命令、会话/任务状态、资源准入</td>
+<td>核心运行时；不执行长时间 codec 调用</td>
+</tr>
+<tr class="even">
+<td>Rust 有界工作池</td>
+<td>扫描、查询、解压、压缩、校验、文件提交</td>
+<td>队列有上限，工作项检查取消</td>
+</tr>
+<tr class="odd">
+<td>格式工作进程</td>
+<td>特定后端、官方原生库或第三方扩展</td>
+<td>按任务/会话复用，限制并发与内存</td>
+</tr>
+</tbody>
+</table>
+</div><p>没有为每个文件创建线程。压缩后端自带并行线程必须纳入任务 CPU 额度，不能在外层四线程任务里再启动四个无限线程池。任务状态变化集中到调度器，工作线程只发送结果/进度。</p>
+<p>UI 提交接口只完成校验和非阻塞入队。结果采用事件推送；空闲时事件接收线程阻塞等待，不常驻 100ms 状态轮询。计时和指标采样只在诊断或运行任务时启用。</p>
+<h2 id="服务和所有权">4. 服务和所有权<a class="heading-anchor" href="#%E6%9C%8D%E5%8A%A1%E5%92%8C%E6%89%80%E6%9C%89%E6%9D%83" aria-label="本节链接">#</a></h2>
+<p><code>ApplicationRuntime</code> 持有会话管理、任务调度、能力注册表及事件通道。每个 <code>ArchiveSession</code> 持有源文件授权、格式后端、索引状态、源版本和生命周期计数。查询产生不可变 <code>QuerySnapshot</code>，计划产生不可变 <code>OperationPlan</code>。</p>
+<p>任务不依赖某个标签页存活。关闭标签页释放浏览订阅；有关任务持有其源快照和文件授权，继续运行或根据用户选择取消。关闭整个应用则进入统一 shutdown：停止新命令、请求取消、等待提交安全点、收尾工作进程，再回收模型与运行时。</p>
+<p>一条归档会话允许多个读取任务，但具体并发由后端声明限制。禁止原位修改源；创建新归档或“另存为”使用新输出事务。因此读取任务不会与产品自身的原地写入竞争。</p>
+<h2 id="配置与持久化">5. 配置与持久化<a class="heading-anchor" href="#%E9%85%8D%E7%BD%AE%E4%B8%8E%E6%8C%81%E4%B9%85%E5%8C%96" aria-label="本节链接">#</a></h2>
+<p>小型用户设置使用 Qt 设置适配器：主题、窗口、上次目录、快捷键选项。Rust 只接受验证后的策略快照，不直接读取 GUI 设置。设置分 schema 版本，有迁移和备份；读取异常恢复默认，并显示一次非阻塞提示。</p>
+<p>归档索引先采用内存紧凑结构，达到预算阈值后迁移到临时磁盘索引。每会话独立 SQLite 候选后端仅用于产品自己的元数据，不保存密码或文件内容；是否采用 SQLite 由内存阶段实测决定，但 <code>IndexStore</code> 接口从首版提供。默认不跨启动持久缓存归档索引，避免源身份和隐私问题。</p>
+<p>输出事务日志保存在授权目标内的随机私有工作目录。全局应用数据只保存用户设置、扩展清单和低敏诊断；不能因为打不开一个用户路径就把原始内容搬入全局缓存。</p>
+<h2 id="可替换性和边界检查">6. 可替换性和边界检查<a class="heading-anchor" href="#%E5%8F%AF%E6%9B%BF%E6%8D%A2%E6%80%A7%E5%92%8C%E8%BE%B9%E7%95%8C%E6%A3%80%E6%9F%A5" aria-label="本节链接">#</a></h2>
+<p>单元测试使用内存源、故障注入文件端口、假后端和无 Qt 的事件客户端。界面集成测试使用同一个应用服务，不重复实现“假核心业务”。未来 CLI 是另一个适配器，可复用 <code>xdzip-runtime</code>，不通过 GUI 或 cxx 间接调用。</p>
+<p>架构检查在 CI 禁止核心 crate 依赖 Qt/桥接，禁止格式 crate 依赖桌面应用，检查 Cargo features 不拉入未使用后端。代码审查关注调用方向和资源所有权，不能只以目录拆分作为解耦证据。</p>
+<h2 id="故障边界">7. 故障边界<a class="heading-anchor" href="#%E6%95%85%E9%9A%9C%E8%BE%B9%E7%95%8C" aria-label="本节链接">#</a></h2>
+<p>工作进程崩溃使相关任务失败，宿主回收未提交文件；既已提交的文件留在结果摘要中。格式错误成为领域错误。Rust 内部不变量崩溃和无法恢复的内存错误是进程级故障，不能声明一切 panic 都可捕获继续。桥接入口禁止 panic 越过 FFI；发行 panic 策略在桥接验证阶段确定，并配合输出恢复日志处理异常终止。</p>
+<p>Qt 渲染故障不允许触发重复提交。GUI 断开订阅后核心仍按状态机收尾。关闭等待超过软期限时提供“继续等待/强制退出”；强制退出不承诺零遗留，由下次启动恢复流程处理。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="01-product-requirements.html">← 01 产品与需求</a><a href="03-domain-data.html">03 领域模型与数据设计 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#架构目标">1. 架构目标</a><a href="#拟建模块">2. 拟建模块</a><a href="#进程与线程">3. 进程与线程</a><a href="#服务和所有权">4. 服务和所有权</a><a href="#配置与持久化">5. 配置与持久化</a><a href="#可替换性和边界检查">6. 可替换性和边界检查</a><a href="#故障边界">7. 故障边界</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

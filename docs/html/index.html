@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：软件设计总览 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html" aria-current="page"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-index"><h1 id="xdzip软件设计总览">xdzip：软件设计总览</h1>
+<p>版本：设计基线 0.1；日期：2026-10-11；状态：待实现。产品名称：<strong>xdzip</strong>，统一使用小写拼写。</p>
+<p>用户已选择 <strong>Qt Quick</strong>。正式技术方向为 <strong>Qt Quick/QML + 薄 C++ 适配层 + Rust 核心</strong>。本套文档定义产品行为、模块边界、接口契约、扩展、安全、性能和交付流程，供开源维护者分工实施。本仓库是独立的正式产品仓库，当前只包含开发前文档和设计资产，没有产品代码。历史界面选型实验未迁入本仓库。</p>
+<h2 id="阅读入口">阅读入口<a class="heading-anchor" href="#%E9%98%85%E8%AF%BB%E5%85%A5%E5%8F%A3" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>文档</th>
+<th>解决的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="01-product-requirements.html">01 产品与需求</a></td>
+<td>做什么、先做什么、用户操作和验收标准</td>
+</tr>
+<tr class="even">
+<td><a href="02-system-architecture.html">02 系统架构</a></td>
+<td>依赖方向、进程、线程、服务和部署边界</td>
+</tr>
+<tr class="odd">
+<td><a href="03-domain-data.html">03 领域与数据</a></td>
+<td>归档会话、条目、查询、选择、计划和结果</td>
+</tr>
+<tr class="even">
+<td><a href="04-qt-quick-ui.html">04 Qt Quick 界面</a></td>
+<td>信息结构、视觉系统、虚拟模型、交互与无障碍</td>
+</tr>
+<tr class="odd">
+<td><a href="05-qt-rust-bridge.html">05 Qt/Rust 桥接</a></td>
+<td>类型、生命周期、请求响应、事件和错误</td>
+</tr>
+<tr class="even">
+<td><a href="06-codec-extension-sdk.html">06 格式与扩展 SDK</a></td>
+<td>格式能力、内置适配器、进程协议与兼容性</td>
+</tr>
+<tr class="odd">
+<td><a href="07-file-security.html">07 文件安全与事务</a></td>
+<td>路径逃逸、链接、覆盖、炸弹、预览和密码</td>
+</tr>
+<tr class="even">
+<td><a href="08-task-scheduling.html">08 任务与并发</a></td>
+<td>状态机、资源准入、取消、暂停和故障恢复</td>
+</tr>
+<tr class="odd">
+<td><a href="09-performance.html">09 性能与测量</a></td>
+<td>预算、优化路径、真实工作负载和证据</td>
+</tr>
+<tr class="even">
+<td><a href="10-quality-engineering.html">10 编码与质量</a></td>
+<td>规范、注释、测试、模糊测试与贡献流程</td>
+</tr>
+<tr class="odd">
+<td><a href="11-build-release.html">11 构建、发布与许可</a></td>
+<td>三平台部署、签名、公证、依赖和更新</td>
+</tr>
+<tr class="even">
+<td><a href="12-implementation-roadmap.html">12 实施与原型迁移</a></td>
+<td>仓库演进、实施顺序和阶段退出条件</td>
+</tr>
+<tr class="odd">
+<td><a href="architecture-decisions.html">架构决策记录</a></td>
+<td>选型原因、代价及何时重新评估</td>
+</tr>
+<tr class="even">
+<td><a href="requirements-traceability.html">需求追踪矩阵</a></td>
+<td>需求如何落到设计、测试和版本</td>
+</tr>
+<tr class="odd">
+<td><a href="glossary.html">术语和协议常量</a></td>
+<td>统一名称、单位、初始限额和版本解释</td>
+</tr>
+</tbody>
+</table>
+</div><p>建议：先读 01、02、架构决策；界面贡献者接着读 04、05；格式贡献者接着读 03、06、07；核心维护者需覆盖 08～11。需求以 01 为准，协议边界分别以 05、06 为准，其他文档引用它们，不另造一套接口。</p>
+<h2 id="核心决定">核心决定<a class="heading-anchor" href="#%E6%A0%B8%E5%BF%83%E5%86%B3%E5%AE%9A" aria-label="本节链接">#</a></h2>
+<ol type="1">
+<li>双击压缩包先浏览内容；解压、压缩、覆盖及执行外部程序都由明确操作触发。</li>
+<li>UI 不实现归档业务。Rust 核心不依赖 Qt，预留测试驱动和未来 CLI 接入。</li>
+<li>正式 Qt/Rust 边界使用 <code>cxx</code> 生成的构建期类型桥接，不承诺跨版本二进制 ABI。原型的 JSON/C ABI 仅用于迁移验证。</li>
+<li>格式以能力声明驱动。源码级 Rust 扩展和进程级第三方扩展是不同契约；不加载任意 Rust 动态库。</li>
+<li>文件授权、路径校验、输出事务和配额集中在宿主。编解码器不能自行挑选真实输出路径。</li>
+<li>先完成 ZIP 和 TAR/GZIP 的真实闭环，再扩大格式范围。7z、RAR、加密、分卷、第三方沙箱均有独立验证门槛。</li>
+<li>UI、索引、任务、插件均有有界队列和缓存；任务终态不能被进度事件淹没。</li>
+<li>把“小、快、低占用”转化为机器配置和工作负载明确的预算，不把原型二进制大小当安装体积。</li>
+</ol>
+<h2 id="证据与未验证项">证据与未验证项<a class="heading-anchor" href="#%E8%AF%81%E6%8D%AE%E4%B8%8E%E6%9C%AA%E9%AA%8C%E8%AF%81%E9%A1%B9" aria-label="本节链接">#</a></h2>
+<p>现有比较在 Debian 13/x86_64、Xvfb 软件渲染下完成。Qt 6.8.2 原型的重复启动准备标记 P50 约 158ms，峰值全进程树 PSS 中位数约 81.9MiB；Qt 程序与 Rust 动态库合计约 0.80MiB，<strong>未含 Qt/QML 运行库</strong>。这不是最终产品首帧、安装包或真实解压性能。</p>
+<p>实验原始报告和数据保存在独立的 archive-ui-lab 工作区，未随本仓库分发；上述数字只是历史背景，不是本仓库可复现实测证据。设计选择遵循用户确定的 Qt Quick 方向；后续 Mac 验证用于修正部署、字体、交互和预算，不重复发起框架选型。macOS、Windows、GPU、中文输入法、系统无障碍、签名安装包、真实格式互操作和外部插件沙箱尚未完成验证。</p>
+<h2 id="设计成熟度">设计成熟度<a class="heading-anchor" href="#%E8%AE%BE%E8%AE%A1%E6%88%90%E7%86%9F%E5%BA%A6" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>内容</th>
+<th>当前状态</th>
+<th>落地要求</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>产品体验、核心模块、任务状态、中心安全策略</td>
+<td>设计决定</td>
+<td>编码前补充具体类型及用例测试</td>
+</tr>
+<tr class="even">
+<td>cxx/CMake 集成与事件唤醒</td>
+<td>选定路线，尚未验证</td>
+<td>第一个实施阶段用最小真实调用验证构建和关闭竞态</td>
+</tr>
+<tr class="odd">
+<td>ZIP/TAR 后端具体依赖版本</td>
+<td>候选待审计</td>
+<td>互操作、错误输入、许可证和取消能力通过后锁定</td>
+</tr>
+<tr class="even">
+<td>第三方进程协议</td>
+<td>v1 草案</td>
+<td>两个独立样例扩展通过兼容性套件后冻结</td>
+</tr>
+<tr class="odd">
+<td>平台沙箱、GPU、打包尺寸</td>
+<td>待验证</td>
+<td>在目标机器和签名包上验证，缺少沙箱时禁用第三方执行</td>
+</tr>
+<tr class="even">
+<td>性能数值</td>
+<td>初始工程预算</td>
+<td>参考机冻结并测量，不作已实现承诺</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id="变更规则">变更规则<a class="heading-anchor" href="#%E5%8F%98%E6%9B%B4%E8%A7%84%E5%88%99" aria-label="本节链接">#</a></h2>
+<p>涉及领域身份、能力、任务状态、文件写入或扩展协议的 PR 同时更新对应设计和追踪矩阵。决策变化追加 ADR，标明替代哪条记录。MVP 简化不得隐式降低路径和配额安全要求。仅文案和视觉调整不需要制造新的架构文档。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="01-product-requirements.html">01 产品与需求 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#阅读入口">阅读入口</a><a href="#核心决定">核心决定</a><a href="#证据与未验证项">证据与未验证项</a><a href="#设计成熟度">设计成熟度</a><a href="#变更规则">变更规则</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

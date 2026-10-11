@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：术语、单位与初始常量 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html" aria-current="page"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-glossary"><h1 id="xdzip术语单位与初始常量">xdzip：术语、单位与初始常量</h1>
+<h2 id="术语">1. 术语<a class="heading-anchor" href="#%E6%9C%AF%E8%AF%AD" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<thead>
+<tr class="header">
+<th>术语</th>
+<th>定义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>归档/Archive</td>
+<td>一个容器或受支持压缩流及其授权源</td>
+</tr>
+<tr class="even">
+<td>编解码器/Codec</td>
+<td>识别、扫描、读取或创建格式的实现</td>
+</tr>
+<tr class="odd">
+<td>会话/Session</td>
+<td>打开源、后端、索引和浏览上下文；不是任务</td>
+</tr>
+<tr class="even">
+<td>条目/Entry</td>
+<td>一个实际归档记录；目录可另有合成展示节点</td>
+</tr>
+<tr class="odd">
+<td>查询快照/QuerySnapshot</td>
+<td>固定源/索引版本及结果次序的视图</td>
+</tr>
+<tr class="even">
+<td>代次/Generation</td>
+<td>前端请求替代关系，避免过期结果覆盖</td>
+</tr>
+<tr class="odd">
+<td>计划/OperationPlan</td>
+<td>已固定范围、目标、能力、参数和策略的操作描述</td>
+</tr>
+<tr class="even">
+<td>任务/Task</td>
+<td>执行一个计划的生命周期和结果</td>
+</tr>
+<tr class="odd">
+<td>授权/Grant</td>
+<td>宿主持有的文件/目录访问权，不是路径字符串</td>
+</tr>
+<tr class="even">
+<td>Sink</td>
+<td>受计量、限额和事务控制的写接口</td>
+</tr>
+<tr class="odd">
+<td>工作进程/Worker</td>
+<td>独立进程；只有实施了权限限制才能称受沙箱约束</td>
+</tr>
+<tr class="even">
+<td>提交/Commit</td>
+<td>将已校验暂存内容发布为最终文件的安全点</td>
+</tr>
+<tr class="odd">
+<td>必达事件</td>
+<td>在运行时正常连接下不得合并丢弃的结果/状态/终态</td>
+</tr>
+<tr class="even">
+<td>能力/Capabilities</td>
+<td>特定实现、格式特性、平台和政策的具体交集</td>
+</tr>
+<tr class="odd">
+<td>固实/Solid</td>
+<td>多文件共享压缩块，选择性读取可能需要解码前置内容</td>
+</tr>
+<tr class="even">
+<td>首帧/First presented frame</td>
+<td>实际渲染呈现，不能以 ui_ready 日志冒充</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id="单位和数值">2. 单位和数值<a class="heading-anchor" href="#%E5%8D%95%E4%BD%8D%E5%92%8C%E6%95%B0%E5%80%BC" aria-label="本节链接">#</a></h2>
+<p>内存/文件量使用二进制 KiB/MiB/GiB，1MiB=1024² bytes；传输和计量保留整数 bytes。时间使用 ms 或 s，事件时间来自单调时钟，用户文件时间使用携带精度/来源的日历时间。吞吐统一 MiB/s 并说明压缩输入、解码或输出哪一种字节。</p>
+<p>单核计 CPU 100% 表示占满一个逻辑核心，进程树可超过 100%。PSS/RSS/USS/physical footprint 不互相等同。下载压缩体积、安装体积、executable 大小分别记录。</p>
+<h2 id="初始常量表">3. 初始常量表<a class="heading-anchor" href="#%E5%88%9D%E5%A7%8B%E5%B8%B8%E9%87%8F%E8%A1%A8" aria-label="本节链接">#</a></h2>
+<p>这些是默认策略/草案约束，不是已测量的最优值。可调用户限额必须经过核心验证；线协议硬上限在同一协议主版本中不能任意放宽。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 30%">
+<col style="width: 40%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>常量</th>
+<th style="text-align: right;">初始值</th>
+<th>类别/说明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>列表默认页/最大页</td>
+<td style="text-align: right;">128 / 256 行</td>
+<td>应用契约，页上限固定</td>
+</tr>
+<tr class="even">
+<td>Qt 页缓存</td>
+<td style="text-align: right;">8 页，默认共 1024 行</td>
+<td>UI 策略，可按密度优化不突破内存预算</td>
+</tr>
+<tr class="odd">
+<td>搜索防抖</td>
+<td style="text-align: right;">120ms</td>
+<td>只针对已提交输入，不触发 IME 中间态</td>
+</tr>
+<tr class="even">
+<td>普通 outstanding 请求</td>
+<td style="text-align: right;">128</td>
+<td>取消/关闭另有准入</td>
+</tr>
+<tr class="odd">
+<td>必达事件队列</td>
+<td style="text-align: right;">256</td>
+<td>进度另用合并槽，终态不被进度覆盖</td>
+</tr>
+<tr class="even">
+<td>排队任务/活跃重任务</td>
+<td style="text-align: right;">32 / 2</td>
+<td>资源不足或冲突时进一步降低</td>
+</tr>
+<tr class="odd">
+<td>默认 CPU token</td>
+<td style="text-align: right;"><code>max(1,min(4,cores-1))</code></td>
+<td>后端线程同池计数</td>
+</tr>
+<tr class="even">
+<td>Codec 总准入内存</td>
+<td style="text-align: right;">512MiB</td>
+<td>不含 GUI/索引；进程内估算非 OS 硬隔离</td>
+</tr>
+<tr class="odd">
+<td>第三方进程默认内存</td>
+<td style="text-align: right;">256MiB</td>
+<td>以平台硬限制实施；声明需更高时重新准入</td>
+</tr>
+<tr class="even">
+<td>索引热数据预算/转盘准备阈值</td>
+<td style="text-align: right;">128MiB / 64MiB 每会话</td>
+<td>v0.1未完成磁盘后端时明确拒绝超额，不 OOM</td>
+</tr>
+<tr class="odd">
+<td>索引全局预算/打开会话上限</td>
+<td style="text-align: right;">256MiB / 8</td>
+<td>被任务引用的索引也计入预算</td>
+</tr>
+<tr class="even">
+<td>未启动计划上限/计划结果热数据</td>
+<td style="text-align: right;">8 / 64MiB 全局</td>
+<td>大型数据后续转盘；首版超额返回资源错误</td>
+</tr>
+<tr class="odd">
+<td>任务历史摘要</td>
+<td style="text-align: right;">最近 100 个</td>
+<td>完整结果按显式关闭/期限清理，活动引用不清理</td>
+</tr>
+<tr class="even">
+<td>实际单文件/任务输出限额</td>
+<td style="text-align: right;">8GiB / 20GiB</td>
+<td>用户可明确提高，需新计划</td>
+</tr>
+<tr class="odd">
+<td>默认扫描条目上限</td>
+<td style="text-align: right;">1,000,000</td>
+<td>可提高，但同时受索引预算限制</td>
+</tr>
+<tr class="even">
+<td>单元数据字段上限</td>
+<td style="text-align: right;">64KiB</td>
+<td>原始名、注释等分别限额；平台输出路径通常更小</td>
+</tr>
+<tr class="odd">
+<td>格式流组合深度</td>
+<td style="text-align: right;">4</td>
+<td>不自动递归展开嵌套归档</td>
+</tr>
+<tr class="even">
+<td>最大魔数探测读取</td>
+<td style="text-align: right;">64KiB 每候选</td>
+<td>候选数同时有界，不能任意完整扫描</td>
+</tr>
+<tr class="odd">
+<td>流缓冲/IPC 数据块</td>
+<td style="text-align: right;">256KiB</td>
+<td>两者可独立优化，IPC 不超协议硬限</td>
+</tr>
+<tr class="even">
+<td>IPC 最大 CBOR 帧</td>
+<td style="text-align: right;">1MiB</td>
+<td>先检查长度再分配</td>
+</tr>
+<tr class="odd">
+<td>CBOR 嵌套深度</td>
+<td style="text-align: right;">16</td>
+<td>拒绝无界长和重复关键字段</td>
+</tr>
+<tr class="even">
+<td>IPC 未确认数据块</td>
+<td style="text-align: right;">4 每方向</td>
+<td>信用管理，控制消息不受数据额度挤压</td>
+</tr>
+<tr class="odd">
+<td>EntryBatch 最大行数</td>
+<td style="text-align: right;">128</td>
+<td>同时满足 1MiB 帧限，不能按 128×64KiB盲发</td>
+</tr>
+<tr class="even">
+<td>握手期限/取消合作期限</td>
+<td style="text-align: right;">2s / 2s</td>
+<td>终止后仍需宿主收尾</td>
+</tr>
+<tr class="odd">
+<td>进度合并频率</td>
+<td style="text-align: right;">10Hz</td>
+<td>状态/提示/终态即时，不等待周期</td>
+</tr>
+<tr class="even">
+<td>应用退出软等待</td>
+<td style="text-align: right;">5s</td>
+<td>超时给等待/强退选择，不假成功</td>
+</tr>
+<tr class="odd">
+<td>高压缩比风险提示</td>
+<td style="text-align: right;">&gt;1000:1</td>
+<td>提示，绝对字节/资源配额才是硬保护</td>
+</tr>
+<tr class="even">
+<td>文本预览/图像内容/像素</td>
+<td style="text-align: right;">1MiB / 20MiB / 40MP</td>
+<td>用户显式预览；分配像素前检查</td>
+</tr>
+<tr class="odd">
+<td>外部临时打开上限</td>
+<td style="text-align: right;">100MiB</td>
+<td>不自动执行程序/脚本</td>
+</tr>
+</tbody>
+</table>
+</div><p>密码重试默认每个 Prompt 阶段最多 3 次，继续需新提示；分卷默认最多 32 个授权源，更多需明确扩大策略。等待用户不自动无限增加输出额度。</p>
+<h2 id="状态标准名称">4. 状态标准名称<a class="heading-anchor" href="#%E7%8A%B6%E6%80%81%E6%A0%87%E5%87%86%E5%90%8D%E7%A7%B0" aria-label="本节链接">#</a></h2>
+<p>任务标准名称为 Queued、Preparing、Running、WaitingForUser、Committing、Cancelling、CleaningUp、Succeeded、Failed、Cancelled。代码枚举和事件 schema 从这些语义生成；UI 翻译不改协议值。归档索引状态为 Detecting、Scanning、Ready、Failed、Closed。</p>
+<h2 id="版本规则">5. 版本规则<a class="heading-anchor" href="#%E7%89%88%E6%9C%AC%E8%A7%84%E5%88%99" aria-label="本节链接">#</a></h2>
+<p>设计基线版本、应用版本、Rust SDK SemVer、内部构建桥接版本、外部线协议版本和持久化 schema 版本分别管理。不能拿产品 v0.2 自动推导插件协议 0.2。草案协议在冻结前明确标 experimental；更新草案也要更新样例和一致性测试。</p>
+<h2 id="引用权威">6. 引用权威<a class="heading-anchor" href="#%E5%BC%95%E7%94%A8%E6%9D%83%E5%A8%81" aria-label="本节链接">#</a></h2>
+<p>产品范围以 <a href="01-product-requirements.html">01</a> 为准；内部服务以 <a href="05-qt-rust-bridge.html">05</a> 为准；第三方协议以 <a href="06-codec-extension-sdk.html">06</a> 为准；文件输出政策以 <a href="07-file-security.html">07</a> 为准；调度以 <a href="08-task-scheduling.html">08</a> 为准；工程预算以 <a href="09-performance.html">09</a> 为准。本表集中默认值，改值时修改引用和相关验收。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="requirements-traceability.html">← 需求、设计与验收追踪</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#术语">1. 术语</a><a href="#单位和数值">2. 单位和数值</a><a href="#初始常量表">3. 初始常量表</a><a href="#状态标准名称">4. 状态标准名称</a><a href="#版本规则">5. 版本规则</a><a href="#引用权威">6. 引用权威</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

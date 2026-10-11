@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="712pt" height="553pt" viewBox="0.00 0.00 712.20 553.20" role="img" aria-label="系统架构图">
+<g id="diagram-02-system-architecture-1-graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 531.6)">
+<title>G</title>
+<!-- QML -->
+<g id="diagram-02-system-architecture-1-node1" class="node">
+<title>QML</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M322.5,-510C322.5,-510 184.5,-510 184.5,-510 178.5,-510 172.5,-504 172.5,-498 172.5,-498 172.5,-486 172.5,-486 172.5,-480 178.5,-474 184.5,-474 184.5,-474 322.5,-474 322.5,-474 328.5,-474 334.5,-480 334.5,-486 334.5,-486 334.5,-498 334.5,-498 334.5,-504 328.5,-510 322.5,-510"/>
+<text text-anchor="middle" x="253.5" y="-488.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Qt Quick 视图与设计系统</text>
+</g>
+<!-- QT -->
+<g id="diagram-02-system-architecture-1-node2" class="node">
+<title>QT</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M315,-431C315,-431 192,-431 192,-431 186,-431 180,-425 180,-419 180,-419 180,-407 180,-407 180,-401 186,-395 192,-395 192,-395 315,-395 315,-395 321,-395 327,-401 327,-407 327,-407 327,-419 327,-419 327,-425 321,-431 315,-431"/>
+<text text-anchor="middle" x="253.5" y="-409.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">C++ 控制器及虚拟模型</text>
+</g>
+<!-- QML&#45;&gt;QT -->
+<g id="diagram-02-system-architecture-1-edge1" class="edge">
+<title>QML-&gt;QT</title>
+<path fill="none" stroke="#6b81b8" d="M253.5,-473.91C253.5,-463.24 253.5,-449.36 253.5,-437.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="255.78,-437.54 253.5,-431.04 251.23,-437.54 255.78,-437.54"/>
+</g>
+<!-- BR -->
+<g id="diagram-02-system-architecture-1-node3" class="node">
+<title>BR</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M295.5,-352C295.5,-352 211.5,-352 211.5,-352 205.5,-352 199.5,-346 199.5,-340 199.5,-340 199.5,-328 199.5,-328 199.5,-322 205.5,-316 211.5,-316 211.5,-316 295.5,-316 295.5,-316 301.5,-316 307.5,-322 307.5,-328 307.5,-328 307.5,-340 307.5,-340 307.5,-346 301.5,-352 295.5,-352"/>
+<text text-anchor="middle" x="253.5" y="-330.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">cxx 构建期桥接</text>
+</g>
+<!-- QT&#45;&gt;BR -->
+<g id="diagram-02-system-architecture-1-edge2" class="edge">
+<title>QT-&gt;BR</title>
+<path fill="none" stroke="#6b81b8" d="M253.5,-394.91C253.5,-384.24 253.5,-370.36 253.5,-358.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="255.78,-358.54 253.5,-352.04 251.23,-358.54 255.78,-358.54"/>
+</g>
+<!-- APP -->
+<g id="diagram-02-system-architecture-1-node4" class="node">
+<title>APP</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M322.5,-273C322.5,-273 184.5,-273 184.5,-273 178.5,-273 172.5,-267 172.5,-261 172.5,-261 172.5,-249 172.5,-249 172.5,-243 178.5,-237 184.5,-237 184.5,-237 322.5,-237 322.5,-237 328.5,-237 334.5,-243 334.5,-249 334.5,-249 334.5,-261 334.5,-261 334.5,-267 328.5,-273 322.5,-273"/>
+<text text-anchor="middle" x="253.5" y="-251.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Rust 应用服务与任务调度</text>
+</g>
+<!-- BR&#45;&gt;APP -->
+<g id="diagram-02-system-architecture-1-edge3" class="edge">
+<title>BR-&gt;APP</title>
+<path fill="none" stroke="#6b81b8" d="M253.5,-315.91C253.5,-305.24 253.5,-291.36 253.5,-279.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="255.78,-279.54 253.5,-273.04 251.23,-279.54 255.78,-279.54"/>
+</g>
+<!-- DOM -->
+<g id="diagram-02-system-architecture-1-node5" class="node">
+<title>DOM</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M99,-194C99,-194 12,-194 12,-194 6,-194 0,-188 0,-182 0,-182 0,-170 0,-170 0,-164 6,-158 12,-158 12,-158 99,-158 99,-158 105,-158 111,-164 111,-170 111,-170 111,-182 111,-182 111,-188 105,-194 99,-194"/>
+<text text-anchor="middle" x="55.5" y="-172.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">领域类型及策略</text>
+</g>
+<!-- APP&#45;&gt;DOM -->
+<g id="diagram-02-system-architecture-1-edge4" class="edge">
+<title>APP-&gt;DOM</title>
+<path fill="none" stroke="#6b81b8" d="M209.56,-236.91C178.8,-224.95 137.64,-208.94 105.6,-196.48"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="106.2,-194.28 99.32,-194.04 104.55,-198.52 106.2,-194.28"/>
+</g>
+<!-- IDX -->
+<g id="diagram-02-system-architecture-1-node6" class="node">
+<title>IDX</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M211,-194C211,-194 148,-194 148,-194 142,-194 136,-188 136,-182 136,-182 136,-170 136,-170 136,-164 142,-158 148,-158 148,-158 211,-158 211,-158 217,-158 223,-164 223,-170 223,-170 223,-182 223,-182 223,-188 217,-194 211,-194"/>
+<text text-anchor="middle" x="179.5" y="-172.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">索引与查询</text>
+</g>
+<!-- APP&#45;&gt;IDX -->
+<g id="diagram-02-system-architecture-1-edge5" class="edge">
+<title>APP-&gt;IDX</title>
+<path fill="none" stroke="#6b81b8" d="M237.08,-236.91C226.35,-225.75 212.23,-211.06 200.66,-199.02"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="202.02,-197.15 195.88,-194.04 198.74,-200.3 202.02,-197.15"/>
+</g>
+<!-- SAFE -->
+<g id="diagram-02-system-architecture-1-node7" class="node">
+<title>SAFE</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M395,-194C395,-194 260,-194 260,-194 254,-194 248,-188 248,-182 248,-182 248,-170 248,-170 248,-164 254,-158 260,-158 260,-158 395,-158 395,-158 401,-158 407,-164 407,-170 407,-170 407,-182 407,-182 407,-188 401,-194 395,-194"/>
+<text text-anchor="middle" x="327.5" y="-172.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">授权文件访问与输出事务</text>
+</g>
+<!-- APP&#45;&gt;SAFE -->
+<g id="diagram-02-system-architecture-1-edge6" class="edge">
+<title>APP-&gt;SAFE</title>
+<path fill="none" stroke="#6b81b8" d="M269.92,-236.91C280.65,-225.75 294.77,-211.06 306.34,-199.02"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="308.26,-200.3 311.12,-194.04 304.98,-197.15 308.26,-200.3"/>
+</g>
+<!-- REG -->
+<g id="diagram-02-system-architecture-1-node8" class="node">
+<title>REG</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M507,-194C507,-194 444,-194 444,-194 438,-194 432,-188 432,-182 432,-182 432,-170 432,-170 432,-164 438,-158 444,-158 444,-158 507,-158 507,-158 513,-158 519,-164 519,-170 519,-170 519,-182 519,-182 519,-188 513,-194 507,-194"/>
+<text text-anchor="middle" x="475.5" y="-172.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">格式注册表</text>
+</g>
+<!-- APP&#45;&gt;REG -->
+<g id="diagram-02-system-architecture-1-edge7" class="edge">
+<title>APP-&gt;REG</title>
+<path fill="none" stroke="#6b81b8" d="M302.77,-236.91C339.36,-224.22 389.07,-206.98 425.77,-194.25"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="426.6,-196.37 432,-192.09 425.11,-192.07 426.6,-196.37"/>
+</g>
+<!-- OS -->
+<g id="diagram-02-system-architecture-1-node13" class="node">
+<title>OS</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M375.5,-115C375.5,-115 279.5,-115 279.5,-115 273.5,-115 267.5,-109 267.5,-103 267.5,-103 267.5,-91 267.5,-91 267.5,-85 273.5,-79 279.5,-79 279.5,-79 375.5,-79 375.5,-79 381.5,-79 387.5,-85 387.5,-91 387.5,-91 387.5,-103 387.5,-103 387.5,-109 381.5,-115 375.5,-115"/>
+<text text-anchor="middle" x="327.5" y="-93.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">平台安全文件 API</text>
+</g>
+<!-- SAFE&#45;&gt;OS -->
+<g id="diagram-02-system-architecture-1-edge13" class="edge">
+<title>SAFE-&gt;OS</title>
+<path fill="none" stroke="#6b81b8" d="M327.5,-157.91C327.5,-147.24 327.5,-133.36 327.5,-121.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="329.78,-121.54 327.5,-115.04 325.23,-121.54 329.78,-121.54"/>
+</g>
+<!-- CODEC -->
+<g id="diagram-02-system-architecture-1-node9" class="node">
+<title>CODEC</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M515,-115C515,-115 428,-115 428,-115 422,-115 416,-109 416,-103 416,-103 416,-91 416,-91 416,-85 422,-79 428,-79 428,-79 515,-79 515,-79 521,-79 527,-85 527,-91 527,-91 527,-103 527,-103 527,-109 521,-115 515,-115"/>
+<text text-anchor="middle" x="471.5" y="-93.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">内置格式适配器</text>
+</g>
+<!-- REG&#45;&gt;CODEC -->
+<g id="diagram-02-system-architecture-1-edge8" class="edge">
+<title>REG-&gt;CODEC</title>
+<path fill="none" stroke="#6b81b8" d="M474.61,-157.91C474.06,-147.24 473.34,-133.36 472.73,-121.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="474.99,-121.41 472.39,-115.04 470.45,-121.65 474.99,-121.41"/>
+</g>
+<!-- PH -->
+<g id="diagram-02-system-architecture-1-node10" class="node">
+<title>PH</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M639,-115C639,-115 564,-115 564,-115 558,-115 552,-109 552,-103 552,-103 552,-91 552,-91 552,-85 558,-79 564,-79 564,-79 639,-79 639,-79 645,-79 651,-85 651,-91 651,-91 651,-103 651,-103 651,-109 645,-115 639,-115"/>
+<text text-anchor="middle" x="601.5" y="-93.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">进程扩展宿主</text>
+</g>
+<!-- REG&#45;&gt;PH -->
+<g id="diagram-02-system-architecture-1-edge9" class="edge">
+<title>REG-&gt;PH</title>
+<path fill="none" stroke="#6b81b8" d="M503.46,-157.91C522.47,-146.3 547.71,-130.87 567.82,-118.58"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="569.25,-120.37 573.61,-115.04 566.88,-116.49 569.25,-120.37"/>
+</g>
+<!-- SDK -->
+<g id="diagram-02-system-architecture-1-node12" class="node">
+<title>SDK</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M497,-36C497,-36 446,-36 446,-36 440,-36 434,-30 434,-24 434,-24 434,-12 434,-12 434,-6 440,0 446,0 446,0 497,0 497,0 503,0 509,-6 509,-12 509,-12 509,-24 509,-24 509,-30 503,-36 497,-36"/>
+<text text-anchor="middle" x="471.5" y="-14.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">格式接口</text>
+</g>
+<!-- CODEC&#45;&gt;SDK -->
+<g id="diagram-02-system-architecture-1-edge11" class="edge">
+<title>CODEC-&gt;SDK</title>
+<path fill="none" stroke="#6b81b8" d="M471.5,-78.91C471.5,-68.24 471.5,-54.36 471.5,-42.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="473.78,-42.54 471.5,-36.04 469.23,-42.54 473.78,-42.54"/>
+</g>
+<!-- WP -->
+<g id="diagram-02-system-architecture-1-node11" class="node">
+<title>WP</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M657,-36C657,-36 546,-36 546,-36 540,-36 534,-30 534,-24 534,-24 534,-12 534,-12 534,-6 540,0 546,0 546,0 657,0 657,0 663,0 669,-6 669,-12 669,-12 669,-24 669,-24 669,-30 663,-36 657,-36"/>
+<text text-anchor="middle" x="601.5" y="-14.9" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">受约束格式工作进程</text>
+</g>
+<!-- PH&#45;&gt;WP -->
+<g id="diagram-02-system-architecture-1-edge10" class="edge">
+<title>PH-&gt;WP</title>
+<path fill="none" stroke="#6b81b8" d="M601.5,-78.91C601.5,-68.24 601.5,-54.36 601.5,-42.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="603.78,-42.54 601.5,-36.04 599.23,-42.54 603.78,-42.54"/>
+</g>
+<!-- PH&#45;&gt;SDK -->
+<g id="diagram-02-system-architecture-1-edge12" class="edge">
+<title>PH-&gt;SDK</title>
+<path fill="none" stroke="#6b81b8" d="M572.65,-78.91C552.96,-67.25 526.77,-51.74 505.98,-39.42"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="507.02,-37.4 500.27,-36.04 504.7,-41.31 507.02,-37.4"/>
+</g>
+</g>
+</svg>

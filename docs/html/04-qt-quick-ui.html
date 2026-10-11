@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：04 Qt Quick 界面设计 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html" aria-current="page"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-04-qt-quick-ui"><h1 id="xdzip04-qt-quick-界面设计">xdzip：04 Qt Quick 界面设计</h1>
+<p>正式视觉方向已由用户于 2026-10-11 确认，参见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/visual/README.md">高保真设计交付</a>。图片表达目标视觉；尺寸与颜色以 tokens 和组件规范为实现依据。图片预览仍按既定路线在 M6 交付。</p>
+<h2 id="信息结构">1. 信息结构<a class="heading-anchor" href="#%E4%BF%A1%E6%81%AF%E7%BB%93%E6%9E%84" aria-label="本节链接">#</a></h2>
+<p>主窗口由顶部命令区、会话标签、侧边目录树、中心虚拟文件列表和底部任务区组成。首版允许多个归档会话，开始可用单标签实现，再在模型不变的情况下开放多标签。全局任务区独立于标签页，用户可查看其他会话的任务。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>页面/组件</th>
+<th>内容</th>
+<th>主要动作</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>欢迎页</td>
+<td>打开、新建、可选最近记录</td>
+<td>拖入/选文件；最近记录默认仅本地且可关闭</td>
+</tr>
+<tr class="even">
+<td>归档页</td>
+<td>标题、格式、索引状态、目录树、文件表格</td>
+<td>搜索、排序、多选、解压、查看详情</td>
+</tr>
+<tr class="odd">
+<td>创建面板</td>
+<td>输入列表、格式、目标、压缩选项</td>
+<td>增删输入、预检、创建</td>
+</tr>
+<tr class="even">
+<td>解压面板</td>
+<td>范围、目标、同名目录、冲突和大小摘要</td>
+<td>查看风险、启动</td>
+</tr>
+<tr class="odd">
+<td>冲突对话框</td>
+<td>现有项和新项信息、当前风险</td>
+<td>跳过、改名、覆盖、应用于本任务</td>
+</tr>
+<tr class="even">
+<td>任务抽屉</td>
+<td>状态、实际吞吐、已完成数量、取消</td>
+<td>展开结果、重试失败项（重新规划）</td>
+</tr>
+<tr class="odd">
+<td>详情面板</td>
+<td>原始/展示路径、大小、格式属性、安全提示</td>
+<td>复制安全展示文本</td>
+</tr>
+<tr class="even">
+<td>设置/扩展页</td>
+<td>外观、限额、隐私、版本与能力</td>
+<td>只在需要时管理扩展</td>
+</tr>
+</tbody>
+</table>
+</div><p>应用菜单暴露主要动作。错误首先呈现在任务/会话相邻位置；需要决策时才使用模态对话框。常规完成不用打断当前输入。没有结果、扫描中、损坏、权限拒绝和格式未支持各有独立状态，不复用一个“加载失败”。</p>
+<h2 id="视觉和组件">2. 视觉和组件<a class="heading-anchor" href="#%E8%A7%86%E8%A7%89%E5%92%8C%E7%BB%84%E4%BB%B6" aria-label="本节链接">#</a></h2>
+<p>使用 Qt Quick Controls 2 的可替换控件层和统一 tokens，不依赖某个平台主题偶然的颜色。产品风格为简洁桌面工具：中性色背景、清晰层级、有限强调色、细分隔线、克制圆角；内容密度允许“标准/紧凑”。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Token 类别</th>
+<th>初始规范</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>色彩</td>
+<td>background/surface/raised/text/secondary/border/accent/error/warning/success/focus，浅深色分别定义</td>
+</tr>
+<tr class="even">
+<td>间距</td>
+<td>4/8/12/16/24/32 逻辑像素</td>
+</tr>
+<tr class="odd">
+<td>行高</td>
+<td>标准 40、紧凑 32；高字号时由文本高度提高，不能裁字</td>
+</tr>
+<tr class="even">
+<td>圆角</td>
+<td>控件 8、面板 12、模态面板 16；平台标题栏遵从系统</td>
+</tr>
+<tr class="odd">
+<td>字体</td>
+<td>系统 UI 字体和系统 CJK 回退；不为视觉一致嵌入巨大字体包</td>
+</tr>
+<tr class="even">
+<td>动效</td>
+<td>100～180ms 的透明度/状态转换；系统减少动态效果时关闭</td>
+</tr>
+<tr class="odd">
+<td>可访问性</td>
+<td>正文普通文本对比度目标至少 4.5:1，焦点和选中态可由非颜色线索识别</td>
+</tr>
+</tbody>
+</table>
+</div><p>组件库拟包含 <code>AppButton</code>、<code>SearchField</code>、<code>ArchiveTable</code>、<code>EntryDelegate</code>、<code>TaskCard</code>、<code>InlineMessage</code>、<code>PlanSummary</code>、<code>ConflictDialog</code> 和 <code>PasswordDialog</code>。控件有 busy/disabled/focus/hover/error 状态。圆角、字号和颜色禁止分散硬编码；图标来自审计过许可证的一个集合。</p>
+<h2 id="c-对象边界">3. C++ 对象边界<a class="heading-anchor" href="#c-%E5%AF%B9%E8%B1%A1%E8%BE%B9%E7%95%8C" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>QObject/模型</th>
+<th>对 QML 暴露</th>
+<th>内部责任</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ApplicationController</code></td>
+<td>打开、新建、会话列表、退出状态</td>
+<td>Qt 文件授权、命令关联、应用生命周期</td>
+</tr>
+<tr class="even">
+<td><code>ArchiveController</code></td>
+<td>格式、索引状态、查询、选择、能力</td>
+<td>QueryGeneration、快照身份、请求合并</td>
+</tr>
+<tr class="odd">
+<td><code>ArchiveListModel</code></td>
+<td>name/size/type/modified/selected/status 等角色</td>
+<td>页缓存、占位行、准确的模型变更信号</td>
+</tr>
+<tr class="even">
+<td><code>DirectoryTreeModel</code></td>
+<td>已发现目录和子项状态</td>
+<td>懒加载，不一次构造全目录树</td>
+</tr>
+<tr class="odd">
+<td><code>TaskListModel</code></td>
+<td>任务摘要、进度、可取消、等待原因</td>
+<td>按 TaskId+sequence 合并事件</td>
+</tr>
+<tr class="even">
+<td><code>SettingsController</code></td>
+<td>主题、密度、平台设置</td>
+<td>验证值并生成核心策略快照</td>
+</tr>
+</tbody>
+</table>
+</div><p>QML 不获取 Rust 裸指针，不访问真实输出文件，不解释协议帧。C++ 不判断一个 ZIP 条目是否安全。<code>data()</code> 不发同步 Rust 查询，不读文件；缓存未命中返回占位值并合并异步请求。</p>
+<p>列表页默认 128 行，最多缓存 8 页，共 1024 行；核心页大小上限 256。预取仅保留邻近一页，快速滚动取消旧预取。缓存键带 QueryId 和 revision。获取页面后在 GUI 线程批量 <code>dataChanged</code>；换查询时受控 reset，普通选择变化使用角色定向更新，避免每次重建所有 delegate。</p>
+<p>优先使用 TableView 的行列虚拟化实现；必须实测 delegate 数和销毁行为。不能为了表格外观把整个模型转换成 QML 数组或 Repeater。超长文件名省略显示，完整内容按需提示；工具提示也不加载所有字段。</p>
+<h2 id="事件和交互">4. 事件和交互<a class="heading-anchor" href="#%E4%BA%8B%E4%BB%B6%E5%92%8C%E4%BA%A4%E4%BA%92" aria-label="本节链接">#</a></h2>
+<p>搜索普通输入采用 120ms 初始防抖；输入法 composing 时不提交中间拼音串，commit 后触发。每次查询条件改变递增 generation，响应在进入模型前校验会话、QueryId、generation 和 revision。点击排序合并重复点击，显示已请求方向及加载反馈。</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>动作</th>
+<th>macOS</th>
+<th>Windows/Linux</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>打开</td>
+<td>⌘O</td>
+<td>Ctrl+O</td>
+<td>全局</td>
+</tr>
+<tr class="even">
+<td>新建</td>
+<td>⌘N</td>
+<td>Ctrl+N</td>
+<td>全局</td>
+</tr>
+<tr class="odd">
+<td>全选当前结果</td>
+<td>⌘A</td>
+<td>Ctrl+A</td>
+<td>文件列表；文本输入保留编辑含义</td>
+</tr>
+<tr class="even">
+<td>搜索</td>
+<td>⌘F</td>
+<td>Ctrl+F</td>
+<td>当前归档</td>
+</tr>
+<tr class="odd">
+<td>多选切换</td>
+<td>⌘点击</td>
+<td>Ctrl 点击</td>
+<td>文件列表</td>
+</tr>
+<tr class="even">
+<td>连续范围</td>
+<td>Shift 点击/方向键</td>
+<td>相同</td>
+<td>当前查询快照</td>
+</tr>
+<tr class="odd">
+<td>导航</td>
+<td>方向键、Home/End，适配 Mac 键盘映射</td>
+<td>方向键、Home/End</td>
+<td>列表</td>
+</tr>
+<tr class="even">
+<td>解压</td>
+<td>菜单/工具栏及可配置快捷键</td>
+<td>相同</td>
+<td>已准备计划</td>
+</tr>
+<tr class="odd">
+<td>取消/关闭弹窗</td>
+<td>Escape</td>
+<td>Escape</td>
+<td>最内层可取消交互，不自动取消所有任务</td>
+</tr>
+</tbody>
+</table>
+</div><p>不设置冲突系统快捷键；主菜单快捷键使用 Qt 标准键和平台约定。列表 Enter 显示详情或进入目录，不直接执行内部文件。双击文件仅在明确启用受限预览后触发预览，否则显示详情。</p>
+<p>外部文件拖入可以打开或添加压缩输入；向外拖拽涉及生成临时文件和异步拖放，在 v0.2 单独验证，MVP 不伪装支持。来自浏览器的 URL 不自动下载。</p>
+<h2 id="跨平台体验">5. 跨平台体验<a class="heading-anchor" href="#%E8%B7%A8%E5%B9%B3%E5%8F%B0%E4%BD%93%E9%AA%8C" aria-label="本节链接">#</a></h2>
+<p>macOS 使用系统菜单栏、原生文件选择、标准标题栏和 Dock 行为；首版直接分发签名公证包，若采用 Mac App Store，文件授权/插件政策作为单独发行配置。Windows 支持 per-monitor DPI 和 Unicode 路径，不把 Windows 外观强加给 Mac。Linux 处理 Wayland/X11 和文件选择门户能力，缺失集成时仍有明确可用路径。</p>
+<p>显示统一的“无法输出此名称”，详情解释当前文件系统限制。系统路径不以 POSIX 字符串拼接；Qt 返回的平台路径由适配层转换为授权对象。路径显示方向和双向控制字符必须安全处理，文件图标/文本不能被恶意名字伪造成操作控件。</p>
+<h2 id="无障碍和输入">6. 无障碍和输入<a class="heading-anchor" href="#%E6%97%A0%E9%9A%9C%E7%A2%8D%E5%92%8C%E8%BE%93%E5%85%A5" aria-label="本节链接">#</a></h2>
+<p>列表行提供可读名称、类型、大小、选择态及逻辑行号；未知大小读为“未知”。任务提供阶段和实际进度；事件按低频节奏播报，不能每 100ms 读一次百分比。对话框有明确默认按钮，危险覆盖不能靠默认 Enter 确认。</p>
+<p>关闭面板后恢复焦点。键盘可到达所有按钮、标签、筛选和冲突操作；焦点不能落入不可见 delegate。使用 Qt 可访问性接口验证 VoiceOver、Narrator 和目标 Linux 读屏，而非只看属性写得齐不齐。</p>
+<p>验收包括中文拼音/五笔候选、组合文本、RTL 名称、emoji、200% 字体缩放、125%/150% DPI、深浅色和减少动态效果。原型里的程序化中文搜索不算输入法验收。</p>
+<h2 id="密码与错误">7. 密码与错误<a class="heading-anchor" href="#%E5%AF%86%E7%A0%81%E4%B8%8E%E9%94%99%E8%AF%AF" aria-label="本节链接">#</a></h2>
+<p>密码框禁用自动完成、剪贴板建议和日志。提交后 QML 属性尽快清空，C++ 转移到短生命周期秘密对象；Qt/系统输入法内部复制无法保证全部擦除，因此不宣称绝对零残留。默认不持久记住密码。</p>
+<p>错误码由核心给出，Qt 使用翻译目录形成文案；插件不能直接提供富文本错误页。允许复制脱敏诊断：软件版本、格式、错误码、匿名 TaskId，不带密码、内容或完整路径。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="03-domain-data.html">← 03 领域模型与数据设计</a><a href="05-qt-rust-bridge.html">05 Qt/Rust 类型桥接与应用服务协议 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#信息结构">1. 信息结构</a><a href="#视觉和组件">2. 视觉和组件</a><a href="#c-对象边界">3. C++ 对象边界</a><a href="#事件和交互">4. 事件和交互</a><a href="#跨平台体验">5. 跨平台体验</a><a href="#无障碍和输入">6. 无障碍和输入</a><a href="#密码与错误">7. 密码与错误</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="605pt" height="695pt" viewBox="0.00 0.00 605.35 695.20" role="img" aria-label="任务状态机图">
+<g id="diagram-08-task-scheduling-1-graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 673.6)">
+<title>G</title>
+<!-- _start -->
+<g id="diagram-08-task-scheduling-1-node1" class="node">
+<title>_start</title>
+<ellipse fill="#3158c8" stroke="#adbee8" cx="383.15" cy="-647.5" rx="4.5" ry="4.5"/>
+</g>
+<!-- Queued -->
+<g id="diagram-08-task-scheduling-1-node2" class="node">
+<title>Queued</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M407.15,-598C407.15,-598 359.15,-598 359.15,-598 353.15,-598 347.15,-592 347.15,-586 347.15,-586 347.15,-566 347.15,-566 347.15,-560 353.15,-554 359.15,-554 359.15,-554 407.15,-554 407.15,-554 413.15,-554 419.15,-560 419.15,-566 419.15,-566 419.15,-586 419.15,-586 419.15,-592 413.15,-598 407.15,-598"/>
+<text text-anchor="middle" x="383.15" y="-579.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">排队</text>
+<text text-anchor="middle" x="383.15" y="-566.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Queued</text>
+</g>
+<!-- _start&#45;&gt;Queued -->
+<g id="diagram-08-task-scheduling-1-edge1" class="edge">
+<title>_start-&gt;Queued</title>
+<path fill="none" stroke="#6b81b8" d="M383.15,-642.76C383.15,-635.57 383.15,-619.24 383.15,-604.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="385.42,-604.61 383.15,-598.11 380.87,-604.61 385.42,-604.61"/>
+</g>
+<!-- Preparing -->
+<g id="diagram-08-task-scheduling-1-node3" class="node">
+<title>Preparing</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M148.65,-509C148.65,-509 91.65,-509 91.65,-509 85.65,-509 79.65,-503 79.65,-497 79.65,-497 79.65,-477 79.65,-477 79.65,-471 85.65,-465 91.65,-465 91.65,-465 148.65,-465 148.65,-465 154.65,-465 160.65,-471 160.65,-477 160.65,-477 160.65,-497 160.65,-497 160.65,-503 154.65,-509 148.65,-509"/>
+<text text-anchor="middle" x="120.15" y="-490.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">准备</text>
+<text text-anchor="middle" x="120.15" y="-477.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Preparing</text>
+</g>
+<!-- Queued&#45;&gt;Preparing -->
+<g id="diagram-08-task-scheduling-1-edge2" class="edge">
+<title>Queued-&gt;Preparing</title>
+<path fill="none" stroke="#6b81b8" d="M347.13,-563.09C300.45,-547.64 218.94,-520.68 167.36,-503.62"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="167.79,-501.36 160.91,-501.48 166.36,-505.68 167.79,-501.36"/>
+</g>
+<!-- Cancelling -->
+<g id="diagram-08-task-scheduling-1-node8" class="node">
+<title>Cancelling</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M294.15,-222C294.15,-222 232.15,-222 232.15,-222 226.15,-222 220.15,-216 220.15,-210 220.15,-210 220.15,-190 220.15,-190 220.15,-184 226.15,-178 232.15,-178 232.15,-178 294.15,-178 294.15,-178 300.15,-178 306.15,-184 306.15,-190 306.15,-190 306.15,-210 306.15,-210 306.15,-216 300.15,-222 294.15,-222"/>
+<text text-anchor="middle" x="263.15" y="-203.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">正在取消</text>
+<text text-anchor="middle" x="263.15" y="-190.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Cancelling</text>
+</g>
+<!-- Queued&#45;&gt;Cancelling -->
+<g id="diagram-08-task-scheduling-1-edge11" class="edge">
+<title>Queued-&gt;Cancelling</title>
+<path fill="none" stroke="#6b81b8" d="M419.37,-573.16C471.68,-568.33 562.15,-550.89 562.15,-488 562.15,-488 562.15,-488 562.15,-298 562.15,-272.1 397.78,-231.29 312.78,-211.91"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="313.15,-209.66 306.31,-210.44 312.14,-214.1 313.15,-209.66"/>
+</g>
+<!-- Running -->
+<g id="diagram-08-task-scheduling-1-node4" class="node">
+<title>Running</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M228.15,-420C228.15,-420 178.15,-420 178.15,-420 172.15,-420 166.15,-414 166.15,-408 166.15,-408 166.15,-388 166.15,-388 166.15,-382 172.15,-376 178.15,-376 178.15,-376 228.15,-376 228.15,-376 234.15,-376 240.15,-382 240.15,-388 240.15,-388 240.15,-408 240.15,-408 240.15,-414 234.15,-420 228.15,-420"/>
+<text text-anchor="middle" x="203.15" y="-401.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">执行</text>
+<text text-anchor="middle" x="203.15" y="-388.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Running</text>
+</g>
+<!-- Preparing&#45;&gt;Running -->
+<g id="diagram-08-task-scheduling-1-edge3" class="edge">
+<title>Preparing-&gt;Running</title>
+<path fill="none" stroke="#6b81b8" d="M140.24,-464.94C151.68,-452.95 166.1,-437.84 178.25,-425.1"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="180.11,-426.44 182.95,-420.17 176.82,-423.3 180.11,-426.44"/>
+</g>
+<!-- WaitingForUser -->
+<g id="diagram-08-task-scheduling-1-node5" class="node">
+<title>WaitingForUser</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M132.15,-321C132.15,-321 44.15,-321 44.15,-321 38.15,-321 32.15,-315 32.15,-309 32.15,-309 32.15,-289 32.15,-289 32.15,-283 38.15,-277 44.15,-277 44.15,-277 132.15,-277 132.15,-277 138.15,-277 144.15,-283 144.15,-289 144.15,-289 144.15,-309 144.15,-309 144.15,-315 138.15,-321 132.15,-321"/>
+<text text-anchor="middle" x="88.15" y="-302.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">等待用户</text>
+<text text-anchor="middle" x="88.15" y="-289.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">WaitingForUser</text>
+</g>
+<!-- Preparing&#45;&gt;WaitingForUser -->
+<g id="diagram-08-task-scheduling-1-edge4" class="edge">
+<title>Preparing-&gt;WaitingForUser</title>
+<path fill="none" stroke="#6b81b8" d="M86.94,-464.84C78.53,-458.48 69.96,-451.04 63.15,-443 36.43,-411.46 40.76,-395.08 36.15,-354 35.6,-349.14 34.07,-347.42 36.15,-343 39.2,-336.51 43.77,-330.66 48.96,-325.52"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="50.63,-327.08 53.87,-321 47.54,-323.73 50.63,-327.08"/>
+</g>
+<!-- CleaningUp -->
+<g id="diagram-08-task-scheduling-1-node7" class="node">
+<title>CleaningUp</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M390.65,-133C390.65,-133 321.65,-133 321.65,-133 315.65,-133 309.65,-127 309.65,-121 309.65,-121 309.65,-101 309.65,-101 309.65,-95 315.65,-89 321.65,-89 321.65,-89 390.65,-89 390.65,-89 396.65,-89 402.65,-95 402.65,-101 402.65,-101 402.65,-121 402.65,-121 402.65,-127 396.65,-133 390.65,-133"/>
+<text text-anchor="middle" x="356.15" y="-114.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">收尾清理</text>
+<text text-anchor="middle" x="356.15" y="-101.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">CleaningUp</text>
+</g>
+<!-- Preparing&#45;&gt;CleaningUp -->
+<g id="diagram-08-task-scheduling-1-edge17" class="edge">
+<title>Preparing-&gt;CleaningUp</title>
+<path fill="none" stroke="#6b81b8" d="M160.88,-485.33C259.71,-482.6 504.15,-468.81 504.15,-399 504.15,-399 504.15,-399 504.15,-199 504.15,-153.64 451.84,-131.47 409.42,-120.94"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="409.83,-118.7 402.98,-119.41 408.77,-123.12 409.83,-118.7"/>
+<text text-anchor="middle" x="514.15" y="-296.5" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">失败</text>
+</g>
+<!-- Preparing&#45;&gt;Cancelling -->
+<g id="diagram-08-task-scheduling-1-edge12" class="edge">
+<title>Preparing-&gt;Cancelling</title>
+<path fill="none" stroke="#6b81b8" d="M79.46,-465.98C61.87,-455.01 43.08,-439.62 33.15,-420 4.32,-363.06 -17.65,-328.42 20.15,-277 64.3,-216.93 155.73,-203.03 213,-200.53"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="213.39,-202.79 219.8,-200.28 213.22,-198.24 213.39,-202.79"/>
+</g>
+<!-- Running&#45;&gt;WaitingForUser -->
+<g id="diagram-08-task-scheduling-1-edge5" class="edge">
+<title>Running-&gt;WaitingForUser</title>
+<path fill="none" stroke="#6b81b8" d="M186.14,-375.81C177.2,-365.33 165.71,-352.85 154.15,-343 146.7,-336.66 138.27,-330.5 129.98,-324.93"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="130.96,-322.85 124.28,-321.17 128.45,-326.64 130.96,-322.85"/>
+</g>
+<!-- Committing -->
+<g id="diagram-08-task-scheduling-1-node6" class="node">
+<title>Committing</title>
+<path fill="#edf2ff" stroke="#adbee8" d="M352.65,-321C352.65,-321 283.65,-321 283.65,-321 277.65,-321 271.65,-315 271.65,-309 271.65,-309 271.65,-289 271.65,-289 271.65,-283 277.65,-277 283.65,-277 283.65,-277 352.65,-277 352.65,-277 358.65,-277 364.65,-283 364.65,-289 364.65,-289 364.65,-309 364.65,-309 364.65,-315 358.65,-321 352.65,-321"/>
+<text text-anchor="middle" x="318.15" y="-302.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">提交</text>
+<text text-anchor="middle" x="318.15" y="-289.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Committing</text>
+</g>
+<!-- Running&#45;&gt;Committing -->
+<g id="diagram-08-task-scheduling-1-edge8" class="edge">
+<title>Running-&gt;Committing</title>
+<path fill="none" stroke="#6b81b8" d="M228.1,-375.95C245.73,-361.08 269.45,-341.07 288.12,-325.33"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="289.74,-326.94 293.24,-321.01 286.81,-323.46 289.74,-326.94"/>
+</g>
+<!-- Running&#45;&gt;CleaningUp -->
+<g id="diagram-08-task-scheduling-1-edge18" class="edge">
+<title>Running-&gt;CleaningUp</title>
+<path fill="none" stroke="#6b81b8" d="M196.78,-375.82C185.57,-334.01 167.17,-239.58 208.15,-178 229.33,-146.16 269.75,-129.52 303,-120.92"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="303.78,-123.07 309.55,-119.31 302.69,-118.66 303.78,-123.07"/>
+<text text-anchor="middle" x="194.15" y="-247" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">失败</text>
+</g>
+<!-- Running&#45;&gt;Cancelling -->
+<g id="diagram-08-task-scheduling-1-edge13" class="edge">
+<title>Running-&gt;Cancelling</title>
+<path fill="none" stroke="#6b81b8" d="M209.68,-375.65C220.62,-339.92 242.63,-268.03 254.72,-228.54"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="256.98,-228.91 256.71,-222.03 252.63,-227.57 256.98,-228.91"/>
+</g>
+<!-- WaitingForUser&#45;&gt;Preparing -->
+<g id="diagram-08-task-scheduling-1-edge6" class="edge">
+<title>WaitingForUser-&gt;Preparing</title>
+<path fill="none" stroke="#6b81b8" d="M81.13,-321.2C78.65,-331.12 76.77,-343.12 78.15,-354 82.88,-391.33 97.51,-432.33 108.18,-458.58"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="106.08,-459.45 110.66,-464.6 110.29,-457.72 106.08,-459.45"/>
+<text text-anchor="middle" x="122.65" y="-395.5" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">准备阶段决定</text>
+</g>
+<!-- WaitingForUser&#45;&gt;Running -->
+<g id="diagram-08-task-scheduling-1-edge7" class="edge">
+<title>WaitingForUser-&gt;Running</title>
+<path fill="none" stroke="#6b81b8" d="M83.26,-321.21C82.02,-331.95 82.55,-344.65 89.15,-354 89.29,-354.2 127.43,-368.56 159.55,-380.64"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="159,-382.86 165.89,-383.01 160.6,-378.6 159,-382.86"/>
+<text text-anchor="middle" x="118.65" y="-346" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">运行阶段决定</text>
+</g>
+<!-- WaitingForUser&#45;&gt;Cancelling -->
+<g id="diagram-08-task-scheduling-1-edge14" class="edge">
+<title>WaitingForUser-&gt;Cancelling</title>
+<path fill="none" stroke="#6b81b8" d="M109.17,-276.77C120.79,-265.89 135.93,-253.07 151.15,-244 170.6,-232.4 193.74,-222.9 213.92,-215.8"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="214.68,-217.95 220.08,-213.68 213.19,-213.65 214.68,-217.95"/>
+</g>
+<!-- Committing&#45;&gt;Running -->
+<g id="diagram-08-task-scheduling-1-edge9" class="edge">
+<title>Committing-&gt;Running</title>
+<path fill="none" stroke="#6b81b8" d="M305.92,-321.16C299.01,-331.89 289.66,-344.59 279.15,-354 269.43,-362.7 257.67,-370.4 246.32,-376.8"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="245.05,-374.91 240.45,-380.03 247.24,-378.9 245.05,-374.91"/>
+<text text-anchor="middle" x="309.15" y="-346" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">还有条目</text>
+</g>
+<!-- Committing&#45;&gt;CleaningUp -->
+<g id="diagram-08-task-scheduling-1-edge10" class="edge">
+<title>Committing-&gt;CleaningUp</title>
+<path fill="none" stroke="#6b81b8" d="M364.7,-281.64C376.35,-275.21 387.43,-266.52 394.15,-255 415.62,-218.18 393.29,-169.01 374.92,-138.97"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="376.7,-137.52 371.31,-133.23 372.84,-139.94 376.7,-137.52"/>
+<text text-anchor="middle" x="422.15" y="-197.5" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">全部完成</text>
+</g>
+<!-- Committing&#45;&gt;CleaningUp -->
+<g id="diagram-08-task-scheduling-1-edge19" class="edge">
+<title>Committing-&gt;CleaningUp</title>
+<path fill="none" stroke="#6b81b8" d="M343.81,-276.64C349.63,-270.34 355.01,-262.97 358.15,-255 373.01,-217.19 368.06,-169.3 362.55,-139.65"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="364.78,-139.19 361.3,-133.25 360.31,-140.07 364.78,-139.19"/>
+<text text-anchor="middle" x="377.15" y="-197.5" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">失败</text>
+</g>
+<!-- Committing&#45;&gt;Cancelling -->
+<g id="diagram-08-task-scheduling-1-edge15" class="edge">
+<title>Committing-&gt;Cancelling</title>
+<path fill="none" stroke="#6b81b8" d="M286.22,-276.97C279.13,-270.75 272.45,-263.34 268.15,-255 264.02,-247 262.28,-237.44 261.71,-228.61"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="263.99,-228.45 261.49,-222.03 259.44,-228.6 263.99,-228.45"/>
+<text text-anchor="middle" x="312.15" y="-247" font-family="Noto Sans CJK SC" font-size="10.00" fill="#465878">当前原子提交结束后</text>
+</g>
+<!-- Succeeded -->
+<g id="diagram-08-task-scheduling-1-node9" class="node">
+<title>Succeeded</title>
+<path fill="#e1f3e9" stroke="#adbee8" d="M288.65,-44C288.65,-44 223.65,-44 223.65,-44 217.65,-44 211.65,-38 211.65,-32 211.65,-32 211.65,-12 211.65,-12 211.65,-6 217.65,0 223.65,0 223.65,0 288.65,0 288.65,0 294.65,0 300.65,-6 300.65,-12 300.65,-12 300.65,-32 300.65,-32 300.65,-38 294.65,-44 288.65,-44"/>
+<text text-anchor="middle" x="256.15" y="-25.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">成功</text>
+<text text-anchor="middle" x="256.15" y="-12.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Succeeded</text>
+</g>
+<!-- CleaningUp&#45;&gt;Succeeded -->
+<g id="diagram-08-task-scheduling-1-edge20" class="edge">
+<title>CleaningUp-&gt;Succeeded</title>
+<path fill="none" stroke="#6b81b8" d="M331.94,-88.94C318.04,-76.85 300.48,-61.57 285.76,-48.76"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="286.88,-46.72 280.48,-44.17 283.89,-50.15 286.88,-46.72"/>
+</g>
+<!-- Failed -->
+<g id="diagram-08-task-scheduling-1-node10" class="node">
+<title>Failed</title>
+<path fill="#fbe7e7" stroke="#adbee8" d="M374.15,-44C374.15,-44 338.15,-44 338.15,-44 332.15,-44 326.15,-38 326.15,-32 326.15,-32 326.15,-12 326.15,-12 326.15,-6 332.15,0 338.15,0 338.15,0 374.15,0 374.15,0 380.15,0 386.15,-6 386.15,-12 386.15,-12 386.15,-32 386.15,-32 386.15,-38 380.15,-44 374.15,-44"/>
+<text text-anchor="middle" x="356.15" y="-25.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">失败</text>
+<text text-anchor="middle" x="356.15" y="-12.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Failed</text>
+</g>
+<!-- CleaningUp&#45;&gt;Failed -->
+<g id="diagram-08-task-scheduling-1-edge21" class="edge">
+<title>CleaningUp-&gt;Failed</title>
+<path fill="none" stroke="#6b81b8" d="M356.15,-88.94C356.15,-77.48 356.15,-63.17 356.15,-50.8"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="358.42,-50.67 356.15,-44.17 353.87,-50.67 358.42,-50.67"/>
+</g>
+<!-- Cancelled -->
+<g id="diagram-08-task-scheduling-1-node11" class="node">
+<title>Cancelled</title>
+<path fill="#fff0d9" stroke="#adbee8" d="M482.65,-44C482.65,-44 423.65,-44 423.65,-44 417.65,-44 411.65,-38 411.65,-32 411.65,-32 411.65,-12 411.65,-12 411.65,-6 417.65,0 423.65,0 423.65,0 482.65,0 482.65,0 488.65,0 494.65,-6 494.65,-12 494.65,-12 494.65,-32 494.65,-32 494.65,-38 488.65,-44 482.65,-44"/>
+<text text-anchor="middle" x="453.15" y="-25.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">已取消</text>
+<text text-anchor="middle" x="453.15" y="-12.4" font-family="Noto Sans CJK SC" font-size="12.00" fill="#26354d">Cancelled</text>
+</g>
+<!-- CleaningUp&#45;&gt;Cancelled -->
+<g id="diagram-08-task-scheduling-1-edge22" class="edge">
+<title>CleaningUp-&gt;Cancelled</title>
+<path fill="none" stroke="#6b81b8" d="M379.63,-88.94C393.11,-76.85 410.15,-61.57 424.42,-48.76"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="426.23,-50.2 429.55,-44.17 423.19,-46.81 426.23,-50.2"/>
+</g>
+<!-- Cancelling&#45;&gt;CleaningUp -->
+<g id="diagram-08-task-scheduling-1-edge16" class="edge">
+<title>Cancelling-&gt;CleaningUp</title>
+<path fill="none" stroke="#6b81b8" d="M285.66,-177.94C298.59,-165.85 314.92,-150.57 328.61,-137.76"/>
+<polygon fill="#6b81b8" stroke="#6b81b8" points="330.33,-139.27 333.52,-133.17 327.22,-135.95 330.33,-139.27"/>
+</g>
+</g>
+</svg>

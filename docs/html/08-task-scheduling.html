@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：08 任务状态、资源准入和并发 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html" aria-current="page"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-08-task-scheduling"><h1 id="xdzip08-任务状态资源准入和并发">xdzip：08 任务状态、资源准入和并发</h1>
+<h2 id="状态机">1. 状态机<a class="heading-anchor" href="#%E7%8A%B6%E6%80%81%E6%9C%BA" aria-label="本节链接">#</a></h2>
+<p>Task 在 StartPlan 接受后创建。操作计划不是任务；准备计划本身作为可取消后台请求处理。</p>
+<figure><div class="diagram-panel"><img src="assets/diagram-08-task-scheduling-1.svg" alt="任务状态机图"></div><figcaption>离线矢量图；可横向滚动查看细节。 <a href="assets/diagram-08-task-scheduling-1.svg" target="_blank" rel="noopener">单独打开图表</a></figcaption><details><summary>查看 Mermaid 图表源码</summary><pre class="diagram-source"><code>stateDiagram-v2
+  [*] --&gt; Queued
+  Queued --&gt; Preparing
+  Preparing --&gt; Running
+  Preparing --&gt; WaitingForUser
+  Running --&gt; WaitingForUser
+  WaitingForUser --&gt; Preparing: 准备阶段决定
+  WaitingForUser --&gt; Running: 运行阶段决定
+  Running --&gt; Committing
+  Committing --&gt; Running: 还有条目
+  Committing --&gt; CleaningUp: 全部完成
+  Queued --&gt; Cancelling
+  Preparing --&gt; Cancelling
+  Running --&gt; Cancelling
+  WaitingForUser --&gt; Cancelling
+  Committing --&gt; Cancelling: 当前原子提交结束后
+  Cancelling --&gt; CleaningUp
+  Preparing --&gt; CleaningUp: 失败
+  Running --&gt; CleaningUp: 失败
+  Committing --&gt; CleaningUp: 失败
+  CleaningUp --&gt; Succeeded
+  CleaningUp --&gt; Failed
+  CleaningUp --&gt; Cancelled</code></pre>
+</details></figure><p>终态不可逆，终态事件只发一次；内部状态转换和 outcome 在调度器串行决定。<code>CleaningUp</code> 可由成功、失败或取消进入，它保存最终意图，不自行改成成功。清理失败附带遗留警告；如果数据已全部正确提交，不把“临时目录未删”混同为内容损坏。</p>
+<p><code>TaskPhase</code> 进一步表示扫描/准备输入/解码/写入/校验/发布/清理。状态和阶段不同：Running+Verifying 不需要额外制造几十个顶级状态。</p>
+<h2 id="进度">2. 进度<a class="heading-anchor" href="#%E8%BF%9B%E5%BA%A6" aria-label="本节链接">#</a></h2>
+<p>记录已处理输入、实际解码字节、实际输出字节、完成/跳过/失败项、当前阶段及总量可信度。未知总量显示不定进度和已处理数量，不把估算百分比宣传成精确完成度。校验、固实块跳读和发布均可能改变耗时分布。</p>
+<p>任务对外进度合并频率初始为 10Hz，后台高频计数用原子/局部累加；等待用户、取消反馈和终态即时投递。剩余时间在至少数秒稳定吞吐后才估算，阶段变化时重置；默认不展示高波动数字。</p>
+<p>单文件之间高频 Running/Committing 转换可与进度合并，不要求每个瞬态都穿过 GUI；等待用户、取消反馈和终态即时。核心仍逐次维护完整状态机，合并只影响展示，不能省略提交许可或终态判断。</p>
+<h2 id="准入和线程预算">3. 准入和线程预算<a class="heading-anchor" href="#%E5%87%86%E5%85%A5%E5%92%8C%E7%BA%BF%E7%A8%8B%E9%A2%84%E7%AE%97" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>资源</th>
+<th>初始政策</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>重任务并发</td>
+<td>最多 2；同源/同目标或高内存后端可降到 1</td>
+</tr>
+<tr class="even">
+<td>CPU worker 数</td>
+<td>按逻辑 CPU 与用户限额，默认 <code>max(1, min(4, cores-1))</code></td>
+</tr>
+<tr class="odd">
+<td>后端内部线程</td>
+<td>从同一 CPU token 池借额度，不额外扩张</td>
+</tr>
+<tr class="even">
+<td>队列任务数</td>
+<td>最多 32；满时返回 busy，GUI 保留计划供稍后启动</td>
+</tr>
+<tr class="odd">
+<td>Codec 总内存</td>
+<td>默认 512MiB 的准入预算，此外另计索引和 GUI</td>
+</tr>
+<tr class="even">
+<td>流缓冲</td>
+<td>默认 256KiB，池化复用，按任务计入预算</td>
+</tr>
+<tr class="odd">
+<td>同目标冲突</td>
+<td>目标根及映射范围协调，重叠写任务串行</td>
+</tr>
+</tbody>
+</table>
+</div><p>预算为资源准入及监控政策，进程内库的内存估算不是 OS 硬限额。不能审计并限制分配的原生/第三方后端必须使用工作进程，再加平台硬限制。用户可选择更低资源模式；高字典后端需声明预计内存并在启动前检查。</p>
+<p>任务根据 CPU、内存、源读取模式和目标范围联合准入，不能先拿 CPU 再永久等待目标锁。按统一顺序获取 lease，无法获得全部就退回队列。读取查询/GUI请求单独保留轻量执行容量，避免两个压缩任务占满后搜索完全停顿。</p>
+<h2 id="公平和优先级">4. 公平和优先级<a class="heading-anchor" href="#%E5%85%AC%E5%B9%B3%E5%92%8C%E4%BC%98%E5%85%88%E7%BA%A7" aria-label="本节链接">#</a></h2>
+<p>取消/关闭 &gt; 交互页与提示决定 &gt; 当前会话查询 &gt; 任务调度 &gt; 扫描与预取。优先级不允许长期饿死后台任务，使用有限 burst 和队列等待加权。预取可丢弃，用户已经明确请求的操作应给出结果或取消。</p>
+<p>对同源 ZIP 的读并发取后端限制与全局预算较小者；TAR/固实块通常顺序处理。SSD/NVMe 可不同于机械盘和网络盘，但首版不自动猜测硬件后开无限并发。性能数据决定是否增加块级流水线。</p>
+<h2 id="取消线性化">5. 取消线性化<a class="heading-anchor" href="#%E5%8F%96%E6%B6%88%E7%BA%BF%E6%80%A7%E5%8C%96" aria-label="本节链接">#</a></h2>
+<p>CancelTask 是请求停止，不是函数返回时已停止。调度器登记取消 token 并立即回报 accepted；工作项在读取块、写入块、条目切换、等待用户和发布前检查。等待 I/O 使用可取消/有超时策略；无法打断的系统调用要在 UI 中明确显示正在收尾。</p>
+<p>取消和提交并发时以一个提交许可/状态门控制：取得提交许可后，短原子发布完成再响应取消；未取得许可的当前临时文件清理。已发布项不可无条件删除。最后一项提交及成功终态已线性化后收到取消，返回“已完成”，不把任务改为 Cancelled。</p>
+<p>工作进程 2 秒合作期限后允许终止；先撤销新写信用和后续授权，终止后回收未提交 Sink。进程内不可合作的库不能依靠 kill 一个线程解决；应隔离或不宣称满足取消预算。</p>
+<p>取消终态需等待工作停止、提交许可释放和清理结果确定。UI 不得仅收到 CancelAck 就显示“取消完成”。取消后重新启动创建新 TaskId 和新的有效计划。</p>
+<h2 id="等待用户和暂停">6. 等待用户和暂停<a class="heading-anchor" href="#%E7%AD%89%E5%BE%85%E7%94%A8%E6%88%B7%E5%92%8C%E6%9A%82%E5%81%9C" aria-label="本节链接">#</a></h2>
+<p>冲突/秘密/卷/配额触发 WaitingForUser。释放不必要 CPU token，不持有文件系统互斥锁等待对话框；保留受限临时对象及必要资源，并计入等待预算。用户决定携带 PromptId，过期重复决定无效。</p>
+<p>配额提示只用于准备阶段的风险/估算决策。运行中达到硬输出配额时丢弃当前暂存项并停止为 Failed；提高限额需生成新计划/任务，不能在原不可变计划内静默扩额后继续。</p>
+<p>MVP 不提供通用暂停按钮。可靠暂停需要后端可检查点、源版本和持久化状态，不能用“暂停界面计时”假装暂停 codec。后续只对声明 safe-point pause 的后端开放，且暂停仍占用的资源必须说明。</p>
+<h2 id="失败策略">7. 失败策略<a class="heading-anchor" href="#%E5%A4%B1%E8%B4%A5%E7%AD%96%E7%95%A5" aria-label="本节链接">#</a></h2>
+<p>默认遇内容/结构、安全、权限或配额错误停止任务。用户可在计划中选择“跳过允许的单项错误继续”，限于明确错误类别；路径逃逸、协议错误、源变化和全局磁盘满不被宽泛忽略。</p>
+<p>失败摘要保存分页结果和有限错误样例。“重试失败项”重新获取授权、检查源版本并生成新计划，不复用可能过期的写句柄。插件连续崩溃有熔断，无自动无限重试。</p>
+<h2 id="应用关闭">8. 应用关闭<a class="heading-anchor" href="#%E5%BA%94%E7%94%A8%E5%85%B3%E9%97%AD" aria-label="本节链接">#</a></h2>
+<p>关闭窗口与退出应用分开。任务运行时，退出对话框列出继续等待/取消并退出；后台驻留不是首版默认行为。用户选择取消后停止新命令，唤醒等待提示，取消任务，回收工作进程和事件接收线程。</p>
+<p>软等待期限初始 5 秒。超过后保留“正在安全收尾”信息，可继续等待或强制退出。强制退出说明可能保留暂存和部分结果，下次启动执行恢复检查。shutdown 控制不能被满队列或阻塞 GUI join 卡死。</p>
+<h2 id="并发验证">9. 并发验证<a class="heading-anchor" href="#%E5%B9%B6%E5%8F%91%E9%AA%8C%E8%AF%81" aria-label="本节链接">#</a></h2>
+<p>模型化验证状态转移、cancel/commit 竞争、关标签页/任务独立生存、事件乱序、满队列 shutdown、重复启动、资源回收和两任务重叠目标。测试通过同步屏障和故障点驱动，避免只依赖任意 sleep。必要时对小范围共享状态采用 Loom 等工具，不能把整个 Qt 应用塞进并发模型测试。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="07-file-security.html">← 07 文件安全、权限和输出事务</a><a href="09-performance.html">09 性能设计与基准 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#状态机">1. 状态机</a><a href="#进度">2. 进度</a><a href="#准入和线程预算">3. 准入和线程预算</a><a href="#公平和优先级">4. 公平和优先级</a><a href="#取消线性化">5. 取消线性化</a><a href="#等待用户和暂停">6. 等待用户和暂停</a><a href="#失败策略">7. 失败策略</a><a href="#应用关闭">8. 应用关闭</a><a href="#并发验证">9. 并发验证</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

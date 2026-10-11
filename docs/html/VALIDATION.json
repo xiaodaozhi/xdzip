@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "pages": 17,
+  "source_documents": 16,
+  "checked_local_references": 947,
+  "inline_diagrams": 2,
+  "external_resources": 0,
+  "generator": {
+    "pandoc": "pandoc 3.1.11.1",
+    "renderer": "Graphviz SVG; source edges and labels preserved"
+  }
+}

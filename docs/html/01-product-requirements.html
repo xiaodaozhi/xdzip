@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：01 产品与需求 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html" aria-current="page"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-01-product-requirements"><h1 id="xdzip01-产品与需求">xdzip：01 产品与需求</h1>
+<h2 id="产品定位">1. 产品定位<a class="heading-anchor" href="#%E4%BA%A7%E5%93%81%E5%AE%9A%E4%BD%8D" aria-label="本节链接">#</a></h2>
+<p>xdzip 是面向 macOS、Windows、Linux 的桌面归档管理器。主要价值是像普通文件管理器一样查看压缩包，并可靠地完成选定内容解压和新建归档。用户不必先把整个归档展开到磁盘，也不必理解插件和编解码实现。</p>
+<p>优先体验为 macOS 桌面，包括中文输入法、⌘ 快捷键、Retina、系统文件选择和 Finder 打开方式；三个平台共享信息结构、任务行为和安全语义，遵循各平台键盘、窗口和文件系统习惯。</p>
+<h2 id="编号需求">2. 编号需求<a class="heading-anchor" href="#%E7%BC%96%E5%8F%B7%E9%9C%80%E6%B1%82" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>需求</th>
+<th>验收方式</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>P01</td>
+<td>打开归档只读取和浏览，不自动解压</td>
+<td>打开测试归档后，目标目录和临时预览目录没有新增文件</td>
+</tr>
+<tr class="even">
+<td>P02</td>
+<td>目录导航、搜索、稳定排序、单选及范围多选</td>
+<td>十万条真实元数据集可分页操作，切换排序后选择身份正确</td>
+</tr>
+<tr class="odd">
+<td>P03</td>
+<td>选择性解压、全部解压、冲突预检及结果摘要</td>
+<td>覆盖、跳过、改名、失败和取消均可观察且与实际磁盘一致</td>
+</tr>
+<tr class="even">
+<td>P04</td>
+<td>从文件和目录创建 ZIP、TAR、TAR.GZ</td>
+<td>系统工具或独立参考工具可读取内容，取消不损坏已有目标</td>
+</tr>
+<tr class="odd">
+<td>P05</td>
+<td>能力驱动地开放格式、加密、分卷等操作</td>
+<td>不支持的操作不可提交，核心再次拒绝伪造请求</td>
+</tr>
+<tr class="even">
+<td>P06</td>
+<td>有界后台任务，界面保持可用，可取消</td>
+<td>大任务中可搜索其他会话；取消结果包含已提交项及未完成项</td>
+</tr>
+<tr class="odd">
+<td>P07</td>
+<td>路径、链接、特殊文件和归档炸弹防护</td>
+<td>对抗性样本不能越出授权目标，不超过实际输出配额</td>
+</tr>
+<tr class="even">
+<td>P08</td>
+<td>现代一致界面，可用键盘、IME 和辅助技术操作</td>
+<td>三平台验收表；焦点、读屏、高对比、200% 缩放可用</td>
+</tr>
+<tr class="odd">
+<td>P09</td>
+<td>明确的低资源预算和可复现实测</td>
+<td>发布基准包含运行时、进程树、字体、GPU 和工作负载</td>
+</tr>
+<tr class="even">
+<td>P10</td>
+<td>Rust 核心与界面隔离，格式可按规范扩展</td>
+<td>无 Qt 的核心测试可运行；独立格式适配器接入无需改 QML</td>
+</tr>
+<tr class="odd">
+<td>P11</td>
+<td>隐私和密码保护</td>
+<td>默认无遥测；日志无密码及完整用户路径；退出清理可清理的秘密</td>
+</tr>
+<tr class="even">
+<td>P12</td>
+<td>可审计、可复现、可合法分发的版本</td>
+<td>依赖锁、SBOM、许可证清单、签名及安装卸载验证齐全</td>
+</tr>
+<tr class="odd">
+<td>P13</td>
+<td>自愿安装第三方格式扩展，明确权限和兼容性</td>
+<td>默认不执行下载扩展；沙箱/协议/签名或授权检查未通过则拒绝</td>
+</tr>
+<tr class="even">
+<td>P14</td>
+<td>有限、明确的预览和临时打开</td>
+<td>仅用户触发；受大小、类型、输出配额和临时目录策略限制</td>
+</tr>
+<tr class="odd">
+<td>P15</td>
+<td>错误可定位、可恢复，避免假成功</td>
+<td>错误码和摘要一致；断电、磁盘满、源变化均有独立测试</td>
+</tr>
+</tbody>
+</table>
+</div><h2 id="操作流程">3. 操作流程<a class="heading-anchor" href="#%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B" aria-label="本节链接">#</a></h2>
+<h3 id="打开和浏览">打开和浏览<a class="heading-anchor" href="#%E6%89%93%E5%BC%80%E5%92%8C%E6%B5%8F%E8%A7%88" aria-label="本节链接">#</a></h3>
+<p>文件关联、拖入或“打开”均获得一个用户授权的源文件句柄。按文件魔数和格式探测确定后端，后缀仅提供提示。会话先显示归档标题和探测状态，再增量显示内容。ZIP 可读取目录；TAR 等流式格式显示“正在扫描”，扫描期间总条目数可未知。部分索引不能伪装成完整搜索结果。</p>
+<p>遇到密码先说明是读取目录还是读取内容需要密码。用户取消密码输入后，会话保留可用元数据或返回可操作错误，不静默尝试空密码或无限重试。文件缺失、格式不支持、损坏和权限拒绝使用不同提示。</p>
+<h3 id="解压">解压<a class="heading-anchor" href="#%E8%A7%A3%E5%8E%8B" aria-label="本节链接">#</a></h3>
+<p>工具栏提供“解压选中项”和“全部解压”。有选择时默认使用选中项；没有选择时默认所有条目，<strong>不把当前搜索结果悄悄当成全部归档</strong>。搜索页可通过单独菜单“解压搜索结果”生成明确快照，并在确认区显示数量及“当前结果”的范围。</p>
+<p>用户选择目标目录，可选“创建同名子目录”。核心生成计划：去重递归目录选择、路径可映射性、能力检查、预计大小、已知冲突及风险。对尚未完成的索引，全部解压计划等待扫描完成；大型计划异步构建，有进度和取消。</p>
+<p>默认不覆盖现有文件，遇冲突进入等待决策。对话框提供跳过、改名、覆盖，以及“对本次任务后续同类冲突应用”。决定绑定任务及冲突 ID；任务在实际提交时重新检查磁盘。完成摘要显示成功、跳过、失败、取消前已完成项，并提供“在系统中显示目标目录”。</p>
+<h3 id="创建归档">创建归档<a class="heading-anchor" href="#%E5%88%9B%E5%BB%BA%E5%BD%92%E6%A1%A3" aria-label="本节链接">#</a></h3>
+<p>添加文件/目录 → 选择格式与目标 → 按后端能力选择压缩级别 → 预检 → 后台写入同目录临时归档 → 校验/关闭 → 原子发布。默认 ZIP/Deflate，压缩级别显示“快速/均衡/更小”并展示对应后端参数，不能承诺各格式同等级同结果。目标在输入树内时排除目标和本次临时文件，拒绝会无限递归的输入。</p>
+<h3 id="预览和临时打开">预览和临时打开<a class="heading-anchor" href="#%E9%A2%84%E8%A7%88%E5%92%8C%E4%B8%B4%E6%97%B6%E6%89%93%E5%BC%80" aria-label="本节链接">#</a></h3>
+<p>MVP 不提供自动预览。后续版本只内置有限文本/图像预览，格式和大小由白名单控制；外部打开先完整解码到受控临时目录，说明将调用系统应用。禁止自动执行归档内程序、脚本、宏或 HTML。可执行文件不会因“预览”自动启动。</p>
+<h2 id="范围和版本">4. 范围和版本<a class="heading-anchor" href="#%E8%8C%83%E5%9B%B4%E5%92%8C%E7%89%88%E6%9C%AC" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>阶段</th>
+<th>交付</th>
+<th>明确后续项</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v0.1 私测</td>
+<td>Qt 产品骨架；ZIP Store/Deflate 浏览/创建/解压；TAR/TAR.GZ；路径安全；任务取消；基础键盘及中文体验</td>
+<td>加密、7z、RAR、分卷、外部扩展、预览、归档内编辑</td>
+</tr>
+<tr class="even">
+<td>v0.2 公测</td>
+<td>7z 能力验证；条件满足时 RAR 只读；文本/图像预览；外部扩展 SDK 试验；大索引优化</td>
+<td>完整第三方生态、通用恢复和任意格式写入</td>
+</tr>
+<tr class="odd">
+<td>v1.0</td>
+<td>三平台已验证安装包；稳定核心行为；性能预算；符合条件的第三方扩展；许可证和安全流程</td>
+<td>每种格式加密/分卷须单独列支持项，不因版本号自动包含</td>
+</tr>
+</tbody>
+</table>
+</div><p>v0.1 不承诺 ZIP AES、传统 ZIP 加密、固实压缩、分卷或就地修改。检测到这些特性时显示具体原因，可以推荐已安装的兼容后端，不能按普通 ZIP 接着写出不完整内容。初期更新归档通过“另存为”完整重建，后续评估就地编辑。</p>
+<h2 id="质量验收">5. 质量验收<a class="heading-anchor" href="#%E8%B4%A8%E9%87%8F%E9%AA%8C%E6%94%B6" aria-label="本节链接">#</a></h2>
+<ul>
+<li>路径安全和输出事务是所有阶段的退出条件，不能放到“以后加固”。</li>
+<li>在发行参考 Mac 上验证默认字体、IME、⌘A/⌘O、拖放、Retina 和真实 GPU；在 Windows/Linux 上分别验证平台快捷键与目录授权。</li>
+<li>工作负载区分打开、扫描、查询、解压、创建和预览；所有性能预算见 <a href="09-performance.html">09</a>。</li>
+<li>没有真实格式测试或平台实测的功能，在发布说明中标记为未支持或实验性。</li>
+</ul>
+<h2 id="非目标和产品默认值">6. 非目标和产品默认值<a class="heading-anchor" href="#%E9%9D%9E%E7%9B%AE%E6%A0%87%E5%92%8C%E4%BA%A7%E5%93%81%E9%BB%98%E8%AE%A4%E5%80%BC" aria-label="本节链接">#</a></h2>
+<p>不以首版承担云同步、网络盘协议客户端、病毒扫描服务、磁盘映像挂载或任意归档修复。不会后台扫描用户磁盘，不会自动上传错误内容。默认浅色/深色随系统，基础交互不用付费组件。扩展管理不会出现在每次打开归档的主流程中。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="index.html">← 软件设计总览</a><a href="02-system-architecture.html">02 系统架构 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#产品定位">1. 产品定位</a><a href="#编号需求">2. 编号需求</a><a href="#操作流程">3. 操作流程</a><a href="#范围和版本">4. 范围和版本</a><a href="#质量验收">5. 质量验收</a><a href="#非目标和产品默认值">6. 非目标和产品默认值</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>

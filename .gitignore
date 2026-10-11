@@ -1,0 +1,14 @@
+/target/
+/build/
+/dist/
+/.cache/
+.DS_Store
+Thumbs.db
+*.user
+*.swp
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/

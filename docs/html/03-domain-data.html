@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="xdzip Qt Quick + Rust 软件设计文档，支持离线阅读与搜索。">
+<title>xdzip：03 领域模型与数据设计 · xdzip 软件设计</title><link rel="stylesheet" href="assets/style.css"></head>
+<body><a class="skip-link" href="#main">跳至正文</a>
+<header class="topbar"><button class="button menu-button" id="menu-toggle" aria-label="展开文档目录" aria-expanded="false" aria-controls="sidebar">目录</button>
+<a class="brand" href="index.html">xd<span>zip</span></a><span class="top-label">软件设计 · 基线 0.1 · 16 篇</span>
+<div class="top-actions"><a class="button" href="all.html">完整文档</a><button class="button" id="open-search" aria-haspopup="dialog">搜索<kbd>⌘ / Ctrl K</kbd></button><button class="button" id="theme-toggle">深色</button></div></header>
+<button class="mobile-shade" id="mobile-shade" aria-label="关闭目录"></button>
+<div class="layout"><nav class="sidebar" id="sidebar" aria-label="文档目录"><p class="nav-label">SOFTWARE DESIGN</p><a class="nav-link" href="index.html"><span class="nav-number">00</span><span>软件设计总览</span></a><a class="nav-link" href="01-product-requirements.html"><span class="nav-number">01</span><span>产品与需求</span></a><a class="nav-link" href="02-system-architecture.html"><span class="nav-number">02</span><span>系统架构</span></a><a class="nav-link" href="03-domain-data.html" aria-current="page"><span class="nav-number">03</span><span>领域模型与数据设计</span></a><a class="nav-link" href="04-qt-quick-ui.html"><span class="nav-number">04</span><span>Qt Quick 界面设计</span></a><a class="nav-link" href="05-qt-rust-bridge.html"><span class="nav-number">05</span><span>Qt/Rust 类型桥接与应用服务协议</span></a><a class="nav-link" href="06-codec-extension-sdk.html"><span class="nav-number">06</span><span>格式适配与扩展 SDK</span></a><a class="nav-link" href="07-file-security.html"><span class="nav-number">07</span><span>文件安全、权限和输出事务</span></a><a class="nav-link" href="08-task-scheduling.html"><span class="nav-number">08</span><span>任务状态、资源准入和并发</span></a><a class="nav-link" href="09-performance.html"><span class="nav-number">09</span><span>性能设计与基准</span></a><a class="nav-link" href="10-quality-engineering.html"><span class="nav-number">10</span><span>编码规范、注释和质量工程</span></a><a class="nav-link" href="11-build-release.html"><span class="nav-number">11</span><span>构建、发布、许可证与更新</span></a><a class="nav-link" href="12-implementation-roadmap.html"><span class="nav-number">12</span><span>实施路线与现有原型迁移</span></a><a class="nav-link" href="architecture-decisions.html"><span class="nav-number">ADR</span><span>架构决策记录</span></a><a class="nav-link" href="requirements-traceability.html"><span class="nav-number">REQ</span><span>需求、设计与验收追踪</span></a><a class="nav-link" href="glossary.html"><span class="nav-number">REF</span><span>术语、单位与初始常量</span></a><p class="sidebar-note">Qt Quick / QML + C++ + Rust<br>离线可用 · 无外部资源<br>设计文档，产品尚待实现</p></nav>
+<main class="content" id="main" tabindex="-1"><article class="document" id="doc-03-domain-data"><h1 id="xdzip03-领域模型与数据设计">xdzip：03 领域模型与数据设计</h1>
+<h2 id="身份和版本">1. 身份和版本<a class="heading-anchor" href="#%E8%BA%AB%E4%BB%BD%E5%92%8C%E7%89%88%E6%9C%AC" aria-label="本节链接">#</a></h2>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>类型</th>
+<th>含义</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SessionId</code></td>
+<td>当前运行时归档会话</td>
+<td>运行时生成，不按路径推导</td>
+</tr>
+<tr class="even">
+<td><code>SourceRevision</code></td>
+<td>打开源的版本</td>
+<td>绑定已打开句柄、文件身份、大小、修改信息及可用变化标记</td>
+</tr>
+<tr class="odd">
+<td><code>EntryId</code></td>
+<td>一个物理归档记录</td>
+<td>会话内稳定；重复路径仍有不同 ID</td>
+</tr>
+<tr class="even">
+<td><code>QueryId</code> / <code>QueryGeneration</code></td>
+<td>查询快照与 UI 请求代次</td>
+<td>代次用于丢弃旧响应；QueryId 绑定实际结果版本</td>
+</tr>
+<tr class="odd">
+<td><code>PlanId</code> / <code>PlanRevision</code></td>
+<td>已准备操作计划</td>
+<td>修改目标/策略/源需新修订，旧计划不能启动</td>
+</tr>
+<tr class="even">
+<td><code>TaskId</code> / <code>RequestId</code></td>
+<td>后台任务和调用关联</td>
+<td>不复用，日志可匿名引用</td>
+</tr>
+<tr class="odd">
+<td><code>ConflictId</code> / <code>PromptId</code></td>
+<td>等待的用户决定</td>
+<td>仅对应任务当前决策点，可超时/失效</td>
+</tr>
+</tbody>
+</table>
+</div><p>ID 为不可解释整数或不透明值，桥接中以 64 位数传递；QML 不直接用浮点表示 64 位 ID，由 C++ 提供不透明字符串/值包装，避免 JavaScript 精度截断。行号是视图位置，不是身份。</p>
+<p>源版本检测属于尽力一致性保护，不等同于持有文件句柄就获得静态快照。读取前、读取中关键点和提交前检测变化；不支持可靠检测或用户要求强一致时先做受配额的源快照。检测到变化停止任务，保留已提交项，要求重新打开和规划。</p>
+<h2 id="条目模型">2. 条目模型<a class="heading-anchor" href="#%E6%9D%A1%E7%9B%AE%E6%A8%A1%E5%9E%8B" aria-label="本节链接">#</a></h2>
+<p><code>ArchiveEntry</code> 包含：ID、父节点 ID、归档记录序号、原始路径字节、展示路径、类型、已知/未知压缩大小与解压大小、时间及精度、校验类型、加密标志、属性、扫描序号和安全标记。符号链接目标单独保存，不能当普通文件内容自动恢复。</p>
+<p>大小用 <code>Option&lt;u64&gt;</code> 表示未知，不使用 0 表示未知。时间附带来源和时区/精度；无法确定时显示“未知”。支持常规文件、显式目录、合成目录、符号链接及特殊记录；MVP 只输出常规文件和目录，其余显示原因并拒绝恢复。</p>
+<p>路径原始字节保留。展示优先遵从格式编码规则；UTF-8 标志、Unicode 扩展和编码选择按后端能力处理。非法字节在 UI 中安全替换/转义，不能用替换后的名称直接写出，否则两个不同原始名可能合并。用户可选择会话级旧编码，重新生成展示/输出候选并使旧计划失效。</p>
+<p>同名记录不去重；合成目录使用独立身份，包含实际后代集合。归档内部安全标记如 <code>absolute_path</code>、<code>parent_escape</code>、<code>unsupported_special</code> 不因展示规范化而消失。<code>EntryId -&gt; raw_record</code> 映射保存在核心，扩展必须用该 ID/记录令牌读内容。</p>
+<h2 id="索引状态">3. 索引状态<a class="heading-anchor" href="#%E7%B4%A2%E5%BC%95%E7%8A%B6%E6%80%81" aria-label="本节链接">#</a></h2>
+<p>状态为 <code>Detecting -&gt; Scanning -&gt; Ready</code>，任何阶段可进入 <code>Failed</code> 或 <code>Closed</code>。扫描可产生增量批次及 <code>ScanProgress</code>；已发现行数不等于总数。查询结果具有 <code>complete: bool</code> 和 <code>indexed_count</code>，总匹配数在未完成时为下界。</p>
+<p>部分结果默认按发现/路径显示，可以查询已扫描内容；最终排序和完整计数在扫描结束后建立新快照。UI 明示“已扫描内容”，不能把部分结果用于默认“全部解压”。流式后端必须保留扫描错误位置，不能以提前 EOF 标记 Ready。</p>
+<p>索引字段分为常用列和详情。列表页不复制原始路径、注释或所有扩展属性；点击详情才读取完整记录。超长名称、超多条目、注释和额外字段各自有预算，见 <a href="glossary.html">常量</a>。</p>
+<h2 id="查询与分页">4. 查询与分页<a class="heading-anchor" href="#%E6%9F%A5%E8%AF%A2%E4%B8%8E%E5%88%86%E9%A1%B5" aria-label="本节链接">#</a></h2>
+<p><code>QuerySpec</code> 含目录范围、普通文本搜索、排序字段、方向和隐藏项选项。首版无正则，避免非预期复杂度。默认搜索展示路径，大小/类型筛选是独立显式字段。匹配采用 Unicode 规范化后的大小写折叠副本，原始名不改变；本地排序以确定性比较器加 EntryId 作为终级 tie-breaker。</p>
+<p>建立查询快照可能耗时，因此异步返回。<code>PageRequest {query_id, generation, offset, limit}</code> 中 offset 为 64 位，limit 最大 256。页包含 QueryId、generation、snapshot revision、行数据和完整性。Qt 内部单个模型行数受 <code>int</code> 限制，超过上限时采用分段视图；不能窄化转换或使总数溢出。</p>
+<p>数据更新不就地改变已创建 QuerySnapshot 的行身份。新扫描批次、编码变化、筛选或排序产生新版本。相同查询可共享只读索引，最多保留当前及正在使用的旧版本；旧快照在引用释放后回收。缓存页键为 QueryId+revision+offset，不是 offset 单独。</p>
+<h2 id="选择">5. 选择<a class="heading-anchor" href="#%E9%80%89%E6%8B%A9" aria-label="本节链接">#</a></h2>
+<p><code>SelectionState</code> 属于会话，核心保存选择表达式而不是每次下载所有行。支持显式 ID 集、QuerySnapshot 范围，以及“全部结果减去排除项”。大型范围保存区间/位图并提供统计，避免 UI 持有百万个 ID。</p>
+<p>Ctrl/⌘ 切换单项；Shift 范围基于当前 QueryId 的锚点。查询变化清除锚点，保留已选身份；被筛选隐藏的选择在工具栏显示“已选 N 项，其中 M 项在当前视图”。目录选择在生成计划时展开后代并去重物理 EntryId，不重复解压。</p>
+<p>UI 可先显示轻量本地选中态，核心返回 SelectionRevision 后确认。任何选择命令都带当前 QueryId，过期范围命令返回 <code>stale_query</code>，不能按新行号误选。</p>
+<h2 id="操作计划">6. 操作计划<a class="heading-anchor" href="#%E6%93%8D%E4%BD%9C%E8%AE%A1%E5%88%92" aria-label="本节链接">#</a></h2>
+<p><code>OperationPlan</code> 固定：操作类型、源版本、选择快照、后端版本/能力、授权目标引用、输出映射、冲突策略、配额、压缩参数、预计工作量和风险摘要。计划不保存明文密码；秘密使用单独短生命周期令牌传入。</p>
+<p>计划构建可延迟存储大量条目，但启动后输入集合不得随 UI 选择变化。启动检查源、目标授权、计划修订和后端版本；过期返回 <code>stale_plan</code>。同一 PlanRevision 默认只允许启动一个任务；有重复 RequestId 时返回已创建 TaskId，而不是再写一遍。</p>
+<p>“压缩输入”不是归档条目：使用 <code>InputSourceId</code> 和预扫描树，记录句柄授权及文件版本。扫描文件树不跟随链接，检测输入变化，排除输出和暂存目录。恢复权限只允许普通读写位，不恢复 setuid、setgid、设备节点或不受信任扩展属性。</p>
+<h2 id="结果和持久化">7. 结果和持久化<a class="heading-anchor" href="#%E7%BB%93%E6%9E%9C%E5%92%8C%E6%8C%81%E4%B9%85%E5%8C%96" aria-label="本节链接">#</a></h2>
+<p><code>TaskResult</code> 含状态、完成/跳过/失败数、实际字节、已提交列表或分页结果句柄、清理状态、完整性状态和有限错误样例。成功指所有要求项已完成并通过声明校验；允许跳过的策略产生成功但摘要显示跳过。任何未被用户策略允许的失败使任务为 Failed，摘要仍可含已完成文件。</p>
+<p>事务日志只记录恢复所需的相对映射、随机工作目录、文件身份、临时文件状态和提交状态。日志格式版本化、长度有界，并视为不可信输入。重启不会自动续写或删除陌生文件；恢复流程见 <a href="07-file-security.html">07</a>。</p>
+<p>用户设置、归档索引、事务日志和扩展清单采用不同 schema；不能用一个 SQLite 数据库承载所有生命周期。密码永不进入它们。</p>
+<p>未启动计划默认最多保留 8 个，重新规划释放旧计划；计划映射和分页结果共用独立 64MiB 热数据预算。v0.1 超额明确返回资源错误，M6 将大型映射/结果迁入磁盘后端。任务完成历史默认保留最近 100 个轻量摘要，完整结果在用户关闭/过期时回收；活动任务引用的数据不能提前清理。所有缓存包含选择区间和查询快照，不能只计列表页而漏掉计划内存。</p>
+</article><nav class="page-navigation" aria-label="前后文档"><a href="02-system-architecture.html">← 02 系统架构</a><a href="04-qt-quick-ui.html">04 Qt Quick 界面设计 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#身份和版本">1. 身份和版本</a><a href="#条目模型">2. 条目模型</a><a href="#索引状态">3. 索引状态</a><a href="#查询与分页">4. 查询与分页</a><a href="#选择">5. 选择</a><a href="#操作计划">6. 操作计划</a><a href="#结果和持久化">7. 结果和持久化</a></aside></div>
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
+<label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
+<p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>
+<script src="assets/search-index.js"></script><script src="assets/app.js"></script></body></html>
