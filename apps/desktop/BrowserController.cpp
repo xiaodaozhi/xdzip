@@ -3,8 +3,6 @@
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QtConcurrent/QtConcurrentRun>
-#include <optional>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : static_cast<int>(m_rows.size()); // bounded by 128
@@ -54,48 +52,35 @@ void ArchiveTableModel::select(int row) {
     emit dataChanged(index(row, 0), index(row, 4), {Qt::UserRole + 2});
 }
 
-struct BrowserController::Store {
-    // Worker exclusively owns the archive; only the atomic cancellation supports shared calls.
-    std::optional<rust::Box<xdzip::reader::Archive>> archive;
-    std::shared_ptr<rust::Box<xdzip::reader::Cancellation>> control;
-};
-
 BrowserController::BrowserController(QObject *parent)
-    : QObject(parent), m_model(this), m_store(std::make_shared<Store>()) {
-    connect(&m_watcher, &QFutureWatcher<Result>::finished, this, [this] {
-        const auto result = m_watcher.result();
+    : QObject(parent), m_model(this), m_connection(std::make_unique<RuntimeConnection>(this)) {
+    m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
+    connect(m_connection.get(), &RuntimeConnection::disconnected, this, [this](bool graceful) {
         m_busy = false;
-        if (m_closing) {
-            emit changed();
-            emit readyToClose();
-            return;
+        m_pending = 0;
+        if (!graceful) {
+            m_message = explain("runtime_unavailable");
+            m_ready = false;
+            m_model.replace({});
+            m_detail.clear();
+            m_preflightReport.clear();
         }
-        if (result.preflight) {
-            m_preflightReport = result.report;
-            if (!result.error.isEmpty())
-                m_preflightReport = {{"error", explain(result.error)}};
-            m_message.clear();
-            emit changed();
-            emit preflightReady();
-            return;
-        }
-        m_message = explain(result.error);
-        m_ready = result.error.isEmpty();
-        m_model.replace(result.rows);
-        m_detail.clear();
-        m_total = result.total;
-        m_offset = result.offset;
-        m_session = result.session;
         emit changed();
+        if (m_closing)
+            emit readyToClose();
     });
 }
-BrowserController::~BrowserController() {
-    cancel();
-}
+BrowserController::~BrowserController() = default;
 
 QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
         return {};
+    if (code == "runtime_unavailable")
+        return tr("运行时已断开，请关闭并重新启动应用。");
+    if (code == "busy")
+        return tr("请求暂未接收，请稍后重试。");
+    if (code == "stale_session")
+        return tr("归档会话已变化，请重新打开。");
     if (code == "cancelled")
         return tr("读取已取消。");
     if (code == "resource_limit")
@@ -189,142 +174,150 @@ void BrowserController::search(const QString &text) {
 void BrowserController::inspectSelection() {
     if (m_busy || !m_ready || m_closing || m_model.selectedCount() == 0)
         return;
-    const auto selected = m_model.selectedIds();
-    m_busy = true;
-    m_preflightReport.clear();
-    m_store->control =
-        std::make_shared<rust::Box<xdzip::reader::Cancellation>>(xdzip::reader::new_cancellation());
-    const auto store = m_store;
-    emit changed();
-    m_watcher.setFuture(QtConcurrent::run([store, selected] {
-        Result result;
-        result.preflight = true;
-        try {
-            if (!store->archive) {
-                result.error = "source_io";
-                return result;
-            }
-            rust::Vec<rust::String> ids;
-            for (const auto &id : selected)
-                ids.push_back(rust::String(id.toStdString()));
-            const auto report = xdzip::reader::preflight(
-                **store->archive, rust::Slice<const rust::String>(ids.data(), ids.size()),
-                **store->control);
-            const QHash<QString, QString> reasons = {
-                {"path", tr("名称包含不支持的路径、保留名或非法组件")},
-                {"collision", tr("输出名称重名，或文件与目录冲突")},
-                {"metadata", tr("编码、链接或特殊条目需要检查")},
-                {"encrypted", tr("加密条目尚不支持")},
-                {"method", tr("压缩方法未纳入首版解码范围")},
-                {"file_limit", tr("声明大小超过单文件 8 GiB 限额")},
-                {"total_limit", tr("声明总量超过 20 GiB 或计数溢出")},
-                {"high_ratio", tr("声明压缩比超过 1000:1，需要复核")}};
-            QStringList findings;
-            for (const auto &finding : report.findings) {
-                const auto value =
-                    QString::fromUtf8(finding.data(), static_cast<qsizetype>(finding.size()));
-                const auto split = value.indexOf(':');
-                findings << tr("记录 %1：%2")
-                                .arg(value.left(split),
-                                     reasons.value(value.mid(split + 1), tr("需要检查")));
-            }
-            result.report = {
-                {"entries", QString::number(report.entries)},
-                {"bytes", QString::fromUtf8(report.declared_bytes.data(),
-                                            static_cast<qsizetype>(report.declared_bytes.size()))},
-                {"findingCount", QString::number(report.finding_count)},
-                {"findings", findings},
-                {"unicodeReview", report.unicode_review}};
-        } catch (const rust::Error &error) {
-            result.error = QString::fromUtf8(error.what());
-        } catch (const std::exception &) {
-            result.error = "source_io";
-        }
-        return result;
-    }));
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Preflight;
+    command.session = m_session.toULongLong();
+    for (const auto &id : m_model.selectedIds())
+        command.selected.push_back(id.toULongLong());
+    submit(std::move(command), true);
 }
 void BrowserController::cancel() {
-    if (m_store->control)
-        (*m_store->control)->cancel();
+    if (m_pending)
+        m_connection->cancel(m_pending);
 }
 bool BrowserController::requestClose() {
-    if (!m_busy)
+    if (m_connection->stopped())
         return true;
     m_closing = true;
-    cancel();
-    m_message = tr("正在停止读取…");
+    m_preflightReport.clear();
+    m_message = tr("正在关闭运行时…");
+    m_connection->shutdown();
     emit changed();
     return false;
 }
 void BrowserController::start(const QString &path, int offset) {
-    m_busy = true;
-    m_preflightReport.clear();
-    m_detail.clear();
-    m_message = tr("正在读取归档目录…");
-    m_store->control =
-        std::make_shared<rust::Box<xdzip::reader::Cancellation>>(xdzip::reader::new_cancellation());
-    auto store = m_store;
+    xdzip::reader::Command command{};
+    command.kind =
+        path.isEmpty() ? xdzip::reader::CommandKind::Browse : xdzip::reader::CommandKind::Open;
+    command.session = m_session.toULongLong();
     const auto bytes = path.toUtf8();
-    const auto directory = m_directory.toUtf8();
-    const auto query = m_search.toUtf8();
+    command.path = rust::String(bytes.constData(), static_cast<std::size_t>(bytes.size()));
+    command.directory = rust::String(m_directory.toStdString());
+    command.text = rust::String(m_search.toStdString());
+    command.offset = static_cast<std::uint64_t>(offset);
+    m_detail.clear();
+    submit(std::move(command));
+}
+void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
+    m_preflightReport.clear();
+    const auto result = m_connection->submit(std::move(command));
+    if (result.status != xdzip::reader::Admission::Accepted) {
+        m_message = explain(
+            result.status == xdzip::reader::Admission::Closed ? "runtime_unavailable" : "busy");
+        emit changed();
+        return;
+    }
+    m_pending = result.request_id;
+    m_result = {};
+    m_result.preflight = preflight;
+    m_hasPayload = false;
+    m_busy = true;
+    m_message = preflight ? tr("正在检查所选条目…") : tr("正在读取归档目录…");
     emit changed();
-    // Exactly one outstanding job. Result delivery is QObject-bound; no worker captures this.
-    m_watcher.setFuture(QtConcurrent::run([store, bytes, offset, directory, query] {
-        Result result;
-        try {
-            if (!bytes.isEmpty()) {
-                store->archive.reset();
-                store->archive.emplace(xdzip::reader::open_archive(
-                    rust::Str(bytes.constData(), static_cast<std::size_t>(bytes.size())),
-                    **store->control));
-            }
-            if (!store->archive) {
-                result.error = "source_io";
-                return result;
-            }
-            const auto &archive = **store->archive;
-            const auto count = xdzip::reader::count(archive);
-            if (count > 10000) {
-                result.error = "resource_limit";
-                return result;
-            }
-            result.total = static_cast<int>(count);
-            result.offset = offset;
-            const auto session = xdzip::reader::session_id(archive);
-            result.session =
-                QString::fromUtf8(session.data(), static_cast<qsizetype>(session.size()));
-            const auto str = [](const QByteArray &value) {
-                return rust::Str(value.constData(), static_cast<std::size_t>(value.size()));
-            };
-            auto page = xdzip::reader::browse(archive, str(directory), str(query),
-                                              static_cast<std::uint64_t>(offset), **store->control);
-            result.total = static_cast<int>(page.total);
-            for (const auto &row : page.rows) {
-                const auto text = [](const rust::String &value) {
-                    return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
-                };
-                const auto method = row.method == 0   ? QStringLiteral("Store")
-                                    : row.method == 8 ? QStringLiteral("Deflate")
-                                                      : QString::number(row.method);
-                QStringList status;
-                if (row.directory)
-                    status << tr("目录");
-                if (row.encrypted)
-                    status << tr("加密");
-                if (row.warning)
-                    status << tr("需检查");
-                result.rows.append(
-                    {text(row.id),
-                     {text(row.name), QString::number(row.size), QString::number(row.packed_size),
-                      method, status.isEmpty() ? tr("元数据") : status.join(" · ")},
-                     row.directory,
-                     row.directory && !row.warning});
-            }
-        } catch (const rust::Error &error) {
-            result.error = QString::fromUtf8(error.what());
-        } catch (const std::exception &) {
-            result.error = QStringLiteral("source_io");
+}
+void BrowserController::receive(const xdzip::reader::Event &event) {
+    using xdzip::reader::EventKind;
+    const auto text = [](const rust::String &value) {
+        return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
+    };
+    if (event.kind == EventKind::RuntimeFault) {
+        m_pending = 0;
+        m_busy = false;
+        m_ready = false;
+        m_model.replace({});
+        m_detail.clear();
+        m_preflightReport.clear();
+        m_message = explain("runtime_unavailable");
+        emit changed();
+        return;
+    }
+    // Cancel acknowledgements, stale events and shutdown control never mutate an active page.
+    if (!m_pending || event.request_id != m_pending || m_closing)
+        return;
+    if (event.kind == EventKind::Page) {
+        if (event.total > 10000 || event.offset > event.total || event.rows.size() > 128) {
+            m_result.error = "resource_limit";
+            return;
         }
-        return result;
-    }));
+        m_result.total = static_cast<int>(event.total);
+        m_result.offset = static_cast<int>(event.offset);
+        m_result.session = QString::number(event.session);
+        for (const auto &row : event.rows) {
+            const auto method = row.method == 0   ? QStringLiteral("Store")
+                                : row.method == 8 ? QStringLiteral("Deflate")
+                                                  : QString::number(row.method);
+            QStringList status;
+            if (row.directory)
+                status << tr("目录");
+            if (row.encrypted)
+                status << tr("加密");
+            if (row.warning)
+                status << tr("需检查");
+            m_result.rows.append(
+                {text(row.id),
+                 {text(row.name), QString::number(row.size), QString::number(row.packed_size),
+                  method, status.isEmpty() ? tr("元数据") : status.join(" · ")},
+                 row.directory,
+                 row.directory && !row.warning});
+        }
+        m_hasPayload = true;
+    } else if (event.kind == EventKind::Preflight) {
+        const auto &report = event.report;
+        const QHash<QString, QString> reasons = {
+            {"path", tr("名称包含不支持的路径、保留名或非法组件")},
+            {"collision", tr("输出名称重名，或文件与目录冲突")},
+            {"metadata", tr("编码、链接或特殊条目需要检查")},
+            {"encrypted", tr("加密条目尚不支持")},
+            {"method", tr("压缩方法未纳入首版解码范围")},
+            {"file_limit", tr("声明大小超过单文件 8 GiB 限额")},
+            {"total_limit", tr("声明总量超过 20 GiB 或计数溢出")},
+            {"high_ratio", tr("声明压缩比超过 1000:1，需要复核")}};
+        QStringList findings;
+        for (const auto &finding : report.findings) {
+            const auto value = text(finding);
+            const auto split = value.indexOf(':');
+            findings << tr("记录 %1：%2")
+                            .arg(value.left(split),
+                                 reasons.value(value.mid(split + 1), tr("需要检查")));
+        }
+        m_result.report = {{"entries", QString::number(report.entries)},
+                           {"bytes", text(report.declared_bytes)},
+                           {"findingCount", QString::number(report.finding_count)},
+                           {"findings", findings},
+                           {"unicodeReview", report.unicode_review}};
+        m_hasPayload = true;
+    } else if (event.kind == EventKind::Finished) {
+        m_busy = false;
+        m_pending = 0;
+        if (!event.error.empty())
+            m_result.error = text(event.error);
+        if (!m_hasPayload && m_result.error.isEmpty())
+            m_result.error = "runtime_unavailable";
+        m_message = explain(m_result.error);
+        if (m_result.preflight) {
+            m_preflightReport =
+                m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
+            emit changed();
+            emit preflightReady();
+        } else {
+            m_ready = m_result.error.isEmpty();
+            m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
+            m_detail.clear();
+            m_total = m_ready ? m_result.total : 0;
+            m_offset = m_ready ? m_result.offset : 0;
+            m_session = m_ready ? m_result.session : QString{};
+            emit changed();
+        }
+        m_result = {};
+    }
 }

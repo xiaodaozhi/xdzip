@@ -2,7 +2,7 @@
 
 现代、轻量、可扩展的跨平台压缩文件管理工具。
 
-**当前阶段：核心与界面基础开发。已有真实 ZIP 只读浏览、Rust 领域类型、Qt 独立窗口组件预览及桥接探针，尚无可用压缩产品或安装包。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
+**当前阶段：M1 产品骨架集成验证。正式双句柄运行时与 Qt 事件链已接通，保留真实 ZIP 浏览和预检；实际压缩/解压尚未实现。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
 ![xdzip 已确认的浅色主窗口设计](docs/visual/xdzip-main-light.png)
 
@@ -12,6 +12,7 @@
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
 - [可交互设计原型](design/prototype/README.md)：解压、新建、任务、异常流程与需求标注。
 - [已确认的视觉设计](docs/visual/README.md)：浅色、深色、解压面板与设计参数。
+- [M1 完整验收入口](docs/qa/m1-acceptance.md)：三平台检查和 Apple Silicon 开发构建。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。

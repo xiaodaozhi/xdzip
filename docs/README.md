@@ -22,6 +22,7 @@
 | 项目执行 | [工作清单](planning/backlog.md)、[风险与决策](planning/risks.md)、[就绪评审](planning/readiness.md) |
 | 解压预检 | [阶段契约](engineering/extraction-preflight.md)、[测试与实际窗口](qa/extraction-preflight.md) |
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
+| M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |
 | 实现进展 | [领域与 Qt 组件验证](qa/foundation-components.md)、[任务窗实际截图与对照](qa/task-visual-review.md)、[开发预览](../apps/desktop/README.md) |
 | 质量 | [验收用例](qa/acceptance.md)、[样本规范](qa/fixtures.md) |
 | 开源协作 | [贡献指南](../CONTRIBUTING.md)、[治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |

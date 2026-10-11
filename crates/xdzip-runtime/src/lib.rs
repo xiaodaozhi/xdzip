@@ -1,4 +1,5 @@
 //! First read-only session service. Called only on a bounded background worker.
+pub mod service;
 use std::fs::File;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};

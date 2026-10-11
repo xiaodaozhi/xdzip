@@ -17,7 +17,7 @@ ApplicationWindow {
     visible: true
     title: reader.title.length ? reader.title + " — xdzip" : "xdzip"
     color: Theme.surface
-    onClosing: function(close) { close.accepted = reader.requestClose(); }
+    onClosing: function(close) { close.accepted = reader.requestClose(); if (close.accepted) preflightWindow.close(); }
 
     // Human-readable display only; exact integer strings remain in the model.
     function formatSize(value: string): string {

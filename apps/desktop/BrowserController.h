@@ -1,6 +1,6 @@
 #pragma once
+#include "RuntimeConnection.h"
 #include <QAbstractTableModel>
-#include <QFutureWatcher>
 #include <QObject>
 #include <QSet>
 #include <QStringList>
@@ -108,7 +108,6 @@ class BrowserController : public QObject {
     void preflightReady();
 
   private:
-    struct Store;
     struct Result {
         bool preflight = false;
         QVariantMap report;
@@ -121,8 +120,12 @@ class BrowserController : public QObject {
     void start(const QString &path, int offset);
     static QString explain(const QString &code);
     ArchiveTableModel m_model;
-    std::shared_ptr<Store> m_store;
-    QFutureWatcher<Result> m_watcher;
+    std::unique_ptr<RuntimeConnection> m_connection;
+    quint64 m_pending = 0;
+    Result m_result;
+    bool m_hasPayload = false;
+    void receive(const xdzip::reader::Event &event);
+    void submit(xdzip::reader::Command command, bool preflight = false);
     bool m_busy = false;
     bool m_ready = false;
     bool m_closing = false;

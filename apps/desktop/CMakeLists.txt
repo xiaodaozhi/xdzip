@@ -25,23 +25,30 @@ foreach(target xdzip-ui-preview xdzip-ui-tests)
     endif()
 endforeach()
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Concurrent)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 add_executable(xdzip-browser browser_main.cpp)
+if(APPLE)
+    set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
+        MACOSX_BUNDLE_BUNDLE_NAME "xdzip"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}")
+endif()
 qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES BrowserController.h BrowserController.cpp)
+    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-ui-resources xdzip-reader-rust
-    Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent)
+    Qt6::Widgets Qt6::Quick Qt6::QuickControls2)
 if(BUILD_TESTING)
-    add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h)
+    add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h)
     target_include_directories(xdzip-browser-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-ui-resources xdzip-reader-rust
-        Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent Qt6::Test)
+        Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests)
     set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 30)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)

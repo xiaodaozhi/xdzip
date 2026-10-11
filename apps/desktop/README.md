@@ -6,7 +6,7 @@
 
 ## 构建运行
 
-准备根目录锁定的 Rust、CMake、Ninja、Qt 6.8+ Core/Gui/Qml/Quick/QuickControls2/QuickTest/Widgets/Concurrent。将 Qt 的前缀加入 `CMAKE_PREFIX_PATH`。macOS 同时设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，该值仅为当前工具链候选。
+准备根目录锁定的 Rust、CMake、Ninja、Qt 6.8+ Core/Gui/Qml/Quick/QuickControls2/QuickTest/Widgets。将 Qt 的前缀加入 `CMAKE_PREFIX_PATH`。macOS 同时设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，该值仅为当前工具链候选。
 
 ```sh
 cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
@@ -17,7 +17,7 @@ ctest --test-dir build/ui --output-on-failure
 
 Linux 开发环境还需 OpenGL/EGL 和 xkbcommon 开发包；Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。即使使用软件离屏渲染，Qt Gui 的构建配置仍需要这些开发文件。
 
-Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完成签名，使用上述原生命令行开发构建。无显示服务的 Linux 设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 后运行测试，普通桌面运行不设置这些变量。
+Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/apps/desktop/xdzip.app`，组件预览仍是原生命令行开发构建。三平台 CI 提供开发验收产物，见 [M1 验收入口](../../docs/qa/m1-acceptance.md)；尚未完成 Developer ID 签名或公证。无显示服务的 Linux 设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 后运行测试，普通桌面运行不设置这些变量。
 
 主窗口可打开/重开任务详情、切换主题、放大文字、检查未知总量和重置示例。关闭详情不发送取消；“取消任务”仅请求示例进入“正在停止”，不显示虚假的取消完成。状态由预览主窗口持有，正式任务状态仍将由 Rust runtime 持有。
 
@@ -38,3 +38,5 @@ Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完
 浏览操作：单击行或复选框选择，双击显式目录进入，左侧“全部文件”返回；搜索框按回车提交。切换页面/查询会清空本页选择。右侧仅显示条目元数据，尚不读取文件内容。
 
 选中条目后可点击“解压预检”，在独立原生窗口查看展开计数、声明大小和路径/冲突问题；不写出文件。详见 [预检契约](../../docs/engineering/extraction-preflight.md)。
+
+浏览应用已接入正式双句柄运行时、专用事件线程与有界 mailbox；窗口关闭与 Cmd+Q 均等待异步 shutdown 屏障。诊断探针不承担产品请求。

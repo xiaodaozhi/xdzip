@@ -4,7 +4,9 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSignalSpy>
+#include <QTimer>
 #include <QtTest>
+#include <thread>
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
@@ -24,6 +26,70 @@ class BrowserTest : public QObject {
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
+    }
+    void cleanup() {
+        QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void mailboxBackpressureShutdownAndIdle() {
+        RuntimeConnection connection;
+        QSignalSpy disconnected(&connection, &RuntimeConnection::disconnected);
+        QSet<quint64> accepted;
+        QSet<quint64> finished;
+        bool duplicate = false;
+        connection.setConsumer([&](const xdzip::reader::Event &event) {
+            if (event.kind == xdzip::reader::EventKind::Finished &&
+                accepted.contains(event.request_id)) {
+                duplicate |= finished.contains(event.request_id);
+                finished.insert(event.request_id);
+            }
+        });
+        QElapsedTimer limit;
+        limit.start();
+        // Deliberately do not drain GUI notifications while filling both bounded transports.
+        while (connection.statistics().peakQueued < 256 && limit.elapsed() < 5000) {
+            xdzip::reader::Command command{};
+            command.kind = xdzip::reader::CommandKind::Snapshot;
+            const auto result = connection.submit(std::move(command));
+            if (result.status == xdzip::reader::Admission::Accepted)
+                accepted.insert(result.request_id);
+            else
+                QVERIFY(result.status == xdzip::reader::Admission::Busy);
+            std::this_thread::yield();
+        }
+        QCOMPARE(connection.statistics().peakQueued, std::size_t(256));
+        QVERIFY(connection.statistics().peakBytes <= 8 * 1024 * 1024);
+        connection.shutdown();
+        connection.shutdown();
+        int ticks = 0;
+        QTimer heartbeat;
+        connect(&heartbeat, &QTimer::timeout, this, [&] { ++ticks; });
+        heartbeat.start(1);
+        QTRY_COMPARE_WITH_TIMEOUT(disconnected.count(), 1, 5000);
+        QVERIFY(disconnected.first().first().toBool());
+        QCOMPARE(finished, accepted);
+        QVERIFY(!duplicate);
+        QVERIFY(ticks > 0);
+        QVERIFY(connection.stopped());
+        const auto notifications = connection.statistics().notifications;
+        QTest::qWait(30);
+        QCOMPARE(connection.statistics().notifications, notifications);
+    }
+    void idleAndDestructionDuringWork() {
+        {
+            RuntimeConnection connection;
+            QTest::qWait(30);
+            QCOMPARE(connection.statistics().notifications, std::size_t(0));
+            QSignalSpy stopped(&connection, &RuntimeConnection::disconnected);
+            connection.shutdown();
+            QTRY_COMPARE_WITH_TIMEOUT(stopped.count(), 1, 5000);
+            QVERIFY(stopped.first().first().toBool());
+        }
+        for (int i = 0; i < 20; ++i) {
+            auto controller = std::make_unique<BrowserController>();
+            controller->openPath(QStringLiteral(XDZIP_FIXTURES "/pages.zip"));
+            // Destructor requests shutdown but never waits on a worker or queued GUI notification.
+        }
+        QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
     void realPagesAndFailure() {
         BrowserController controller;
