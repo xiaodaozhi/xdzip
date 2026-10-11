@@ -36,7 +36,18 @@ class BrowserTest : public QObject {
         QSet<quint64> accepted;
         QSet<quint64> finished;
         bool duplicate = false;
+        bool probeScheduled = false;
+        bool guiYieldedBeforeDrainCompleted = false;
         connection.setConsumer([&](const xdzip::reader::Event &event) {
+            if (!probeScheduled) {
+                probeScheduled = true;
+                // Posted during the first batch, before drain posts its continuation. Unlike a
+                // millisecond timer, this tests yielding independently of machine speed.
+                QMetaObject::invokeMethod(
+                    &connection,
+                    [&] { guiYieldedBeforeDrainCompleted = finished.size() < accepted.size(); },
+                    Qt::QueuedConnection);
+            }
             if (event.kind == xdzip::reader::EventKind::Finished &&
                 accepted.contains(event.request_id)) {
                 duplicate |= finished.contains(event.request_id);
@@ -60,15 +71,11 @@ class BrowserTest : public QObject {
         QVERIFY(connection.statistics().peakBytes <= 8 * 1024 * 1024);
         connection.shutdown();
         connection.shutdown();
-        int ticks = 0;
-        QTimer heartbeat;
-        connect(&heartbeat, &QTimer::timeout, this, [&] { ++ticks; });
-        heartbeat.start(1);
         QTRY_COMPARE_WITH_TIMEOUT(disconnected.count(), 1, 5000);
         QVERIFY(disconnected.first().first().toBool());
         QCOMPARE(finished, accepted);
         QVERIFY(!duplicate);
-        QVERIFY(ticks > 0);
+        QVERIFY(guiYieldedBeforeDrainCompleted);
         QVERIFY(connection.stopped());
         const auto notifications = connection.statistics().notifications;
         QTest::qWait(30);
@@ -90,6 +97,29 @@ class BrowserTest : public QObject {
             // Destructor requests shutdown but never waits on a worker or queued GUI notification.
         }
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void consumerCanDestroyConnectionAndInvalidInputIsExplicit() {
+        auto connection = std::make_unique<RuntimeConnection>();
+        connection->setConsumer([&](const xdzip::reader::Event &) { connection.reset(); });
+        bool submitted = false;
+        QTRY_VERIFY_WITH_TIMEOUT(([&] {
+                                     if (submitted)
+                                         return true;
+                                     xdzip::reader::Command command{};
+                                     command.kind = xdzip::reader::CommandKind::Snapshot;
+                                     submitted = connection->submit(std::move(command)).status ==
+                                                 xdzip::reader::Admission::Accepted;
+                                     return submitted;
+                                 })(),
+                                 5000);
+        QTRY_VERIFY_WITH_TIMEOUT(!connection, 5000);
+        BrowserController controller;
+        controller.openPath(QString(4097, 'x'));
+        QVERIFY(!controller.busy());
+        QVERIFY(!controller.ready());
+        QVERIFY(controller.message().contains(QString::fromUtf8("支持范围")));
+        controller.requestClose();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.runtimeAvailable(), 5000);
     }
     void realPagesAndFailure() {
         BrowserController controller;

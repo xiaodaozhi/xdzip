@@ -662,7 +662,16 @@ mod tests {
             assert_eq!(client.submit(Command::Snapshot), Err(Rejection::Busy));
             state.last_id = u64::MAX - 1;
         }
-        assert_eq!(client.submit(Command::Snapshot), Err(Rejection::Exhausted));
+        let deadline = Instant::now() + Duration::from_secs(3);
+        loop {
+            let result = client.submit(Command::Snapshot);
+            if result == Err(Rejection::Busy) && Instant::now() < deadline {
+                thread::yield_now();
+                continue;
+            }
+            assert_eq!(result, Err(Rejection::Exhausted));
+            break;
+        }
         assert_eq!(client.shutdown(), u64::MAX);
         assert_eq!(drain(receiver).last().unwrap().request, u64::MAX);
     }

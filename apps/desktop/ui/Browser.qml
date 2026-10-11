@@ -43,7 +43,7 @@ ApplicationWindow {
     PreflightWindow { id: preflightWindow; owner: root; report: reader.preflightReport }
     Shortcut {
         sequence: StandardKey.Open
-        enabled: !reader.busy
+        enabled: reader.runtimeAvailable && !reader.busy
         onActivated: reader.chooseArchive()
     }
     ColumnLayout {
@@ -67,7 +67,7 @@ ApplicationWindow {
                 AppButton {
                     text: qsTr("打开归档")
                     primary: true
-                    enabled: !reader.busy
+                    enabled: reader.runtimeAvailable && !reader.busy
                     onClicked: reader.chooseArchive()
                 }
                 AppButton {
@@ -206,7 +206,7 @@ ApplicationWindow {
                             color: chosen ? Theme.selection : hover.hovered ? Theme.canvas : Theme.surface
                             HoverHandler { id: hover }
                             TapHandler {
-                                enabled: !reader.busy
+                                enabled: reader.runtimeAvailable && !reader.busy
                                 onSingleTapped: reader.selectRow(cell.row)
                                 onDoubleTapped: reader.enterDirectory(cell.row)
                             }
@@ -224,7 +224,7 @@ ApplicationWindow {
                                 Keys.onReturnPressed: reader.enterDirectory(cell.row)
                                 anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
                                 checked: cell.chosen
-                                enabled: !reader.busy
+                                enabled: reader.runtimeAvailable && !reader.busy
                                 Accessible.name: cell.display
                                 onClicked: reader.selectRow(cell.row)
                             }

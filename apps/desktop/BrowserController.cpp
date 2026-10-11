@@ -3,6 +3,7 @@
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QPointer>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : static_cast<int>(m_rows.size()); // bounded by 128
@@ -54,19 +55,29 @@ void ArchiveTableModel::select(int row) {
 
 BrowserController::BrowserController(QObject *parent)
     : QObject(parent), m_model(this), m_connection(std::make_unique<RuntimeConnection>(this)) {
+    m_admissionRetry.setSingleShot(true);
+    connect(&m_admissionRetry, &QTimer::timeout, this, &BrowserController::attemptSubmission);
     m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
     connect(m_connection.get(), &RuntimeConnection::disconnected, this, [this](bool graceful) {
         m_busy = false;
         m_pending = 0;
+        m_waiting.reset();
+        m_admissionRetry.stop();
         if (!graceful) {
+            m_faulted = true;
+            m_result = {};
+            m_total = 0;
+            m_offset = 0;
+            m_session.clear();
             m_message = explain("runtime_unavailable");
             m_ready = false;
             m_model.replace({});
             m_detail.clear();
             m_preflightReport.clear();
         }
+        QPointer<BrowserController> alive(this);
         emit changed();
-        if (m_closing)
+        if (alive && m_closing)
             emit readyToClose();
     });
 }
@@ -77,6 +88,10 @@ QString BrowserController::explain(const QString &code) {
         return {};
     if (code == "runtime_unavailable")
         return tr("运行时已断开，请关闭并重新启动应用。");
+    if (code == "invalid_request")
+        return tr("请求参数超出当前支持范围。");
+    if (code == "identifier_exhausted")
+        return tr("请求编号已耗尽，请重新启动应用。");
     if (code == "busy")
         return tr("请求暂未接收，请稍后重试。");
     if (code == "stale_session")
@@ -97,7 +112,7 @@ QString BrowserController::explain(const QString &code) {
 }
 
 void BrowserController::chooseArchive() {
-    if (m_busy)
+    if (m_busy || !runtimeAvailable())
         return;
     // No QWidget parent: the native chooser is independent, not an attached macOS sheet.
     // Native per-platform modality and ownership still require desktop acceptance testing.
@@ -182,6 +197,14 @@ void BrowserController::inspectSelection() {
     submit(std::move(command), true);
 }
 void BrowserController::cancel() {
+    if (m_waiting) {
+        m_admissionRetry.stop();
+        m_waiting.reset();
+        m_busy = false;
+        m_message = explain("cancelled");
+        emit changed();
+        return;
+    }
     if (m_pending)
         m_connection->cancel(m_pending);
 }
@@ -189,6 +212,8 @@ bool BrowserController::requestClose() {
     if (m_connection->stopped())
         return true;
     m_closing = true;
+    m_admissionRetry.stop();
+    m_waiting.reset();
     m_preflightReport.clear();
     m_message = tr("正在关闭运行时…");
     m_connection->shutdown();
@@ -210,19 +235,39 @@ void BrowserController::start(const QString &path, int offset) {
 }
 void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_preflightReport.clear();
-    const auto result = m_connection->submit(std::move(command));
-    if (result.status != xdzip::reader::Admission::Accepted) {
-        m_message = explain(
-            result.status == xdzip::reader::Admission::Closed ? "runtime_unavailable" : "busy");
-        emit changed();
-        return;
-    }
-    m_pending = result.request_id;
     m_result = {};
     m_result.preflight = preflight;
     m_hasPayload = false;
     m_busy = true;
     m_message = preflight ? tr("正在检查所选条目…") : tr("正在读取归档目录…");
+    m_waiting.emplace(std::move(command));
+    m_admissionAttempts = 0;
+    attemptSubmission();
+}
+void BrowserController::attemptSubmission() {
+    if (!m_waiting)
+        return;
+    // A short try_lock collision is not a failed user operation. Keep only this bounded DTO
+    // and retry on a later event-loop turn; persistent saturation still reports Busy.
+    const auto result = m_connection->submit(*m_waiting);
+    if (result.status == xdzip::reader::Admission::Busy && ++m_admissionAttempts < 32) {
+        m_admissionRetry.start(1);
+        emit changed();
+        return;
+    }
+    m_waiting.reset();
+    if (result.status != xdzip::reader::Admission::Accepted) {
+        m_busy = false;
+        const auto code = result.status == xdzip::reader::Admission::Closed ? "runtime_unavailable"
+                          : result.status == xdzip::reader::Admission::Invalid ? "invalid_request"
+                          : result.status == xdzip::reader::Admission::Exhausted
+                              ? "identifier_exhausted"
+                              : "busy";
+        m_message = explain(code);
+        emit changed();
+        return;
+    }
+    m_pending = result.request_id;
     emit changed();
 }
 void BrowserController::receive(const xdzip::reader::Event &event) {
@@ -231,6 +276,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
     };
     if (event.kind == EventKind::RuntimeFault) {
+        m_admissionRetry.stop();
+        m_waiting.reset();
+        m_faulted = true;
+        m_result = {};
+        m_total = 0;
+        m_offset = 0;
+        m_session.clear();
         m_pending = 0;
         m_busy = false;
         m_ready = false;
@@ -307,8 +359,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         if (m_result.preflight) {
             m_preflightReport =
                 m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
+            m_result = {};
+            QPointer<BrowserController> alive(this);
             emit changed();
-            emit preflightReady();
+            if (alive)
+                emit preflightReady();
         } else {
             m_ready = m_result.error.isEmpty();
             m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
@@ -316,8 +371,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_total = m_ready ? m_result.total : 0;
             m_offset = m_ready ? m_result.offset : 0;
             m_session = m_ready ? m_result.session : QString{};
+            m_result = {};
             emit changed();
         }
-        m_result = {};
     }
 }

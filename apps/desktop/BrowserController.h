@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QSet>
 #include <QStringList>
+#include <QTimer>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 #include <memory>
@@ -46,6 +47,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
     Q_PROPERTY(QString location READ location NOTIFY changed)
+    Q_PROPERTY(bool runtimeAvailable READ runtimeAvailable NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
@@ -58,6 +60,9 @@ class BrowserController : public QObject {
     ~BrowserController() override;
     QAbstractItemModel *entries() {
         return &m_model;
+    }
+    bool runtimeAvailable() const {
+        return !m_closing && !m_faulted && !m_connection->stopped();
     }
     bool busy() const {
         return m_busy;
@@ -122,13 +127,19 @@ class BrowserController : public QObject {
     ArchiveTableModel m_model;
     std::unique_ptr<RuntimeConnection> m_connection;
     quint64 m_pending = 0;
+    // One bounded command may await admission; retries never occupy the GUI thread.
+    std::optional<xdzip::reader::Command> m_waiting;
+    QTimer m_admissionRetry;
+    int m_admissionAttempts = 0;
     Result m_result;
     bool m_hasPayload = false;
     void receive(const xdzip::reader::Event &event);
     void submit(xdzip::reader::Command command, bool preflight = false);
+    void attemptSubmission();
     bool m_busy = false;
     bool m_ready = false;
     bool m_closing = false;
+    bool m_faulted = false;
     QVariantMap m_preflightReport;
     QVariantMap m_detail;
     QString m_directory;

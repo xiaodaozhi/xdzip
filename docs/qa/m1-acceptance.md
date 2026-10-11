@@ -43,7 +43,7 @@ macOS app 只有 ad-hoc 签名，没有 Developer ID 签名或公证。系统若
 | 请求终态 | 每个已接受请求恰好一次 Finished，数据先于其终态 |
 | 故障 | 注入 worker panic 后 RuntimeFault、pending 失败、服务废弃 |
 | 空闲 | 没有循环 Qt 通知；条件变量等待及关闭唤醒 |
-| Qt 生命周期 | 满 mailbox 继续 drain，GUI 心跳保持，控制器提前销毁无悬空回调 |
+| Qt 生命周期 | 满 mailbox 分批 drain，GUI 队列可穿插处理，消费回调内销毁连接无悬空访问 |
 | 关闭屏障 | ShutdownReady 之前释放源并 join Rust 工作线程；接收线程结束后退出 |
 | 回归 | 真实浏览、预检、中文路径、窗口组件、浅深主题和字体放大 |
 
