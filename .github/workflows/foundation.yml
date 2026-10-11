@@ -19,3 +19,14 @@ jobs:
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
+
+  cpp-format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check handwritten C++ formatting
+        run: |
+          python3 -m venv /tmp/xdzip-format
+          /tmp/xdzip-format/bin/pip install clang-format==18.1.8
+          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp

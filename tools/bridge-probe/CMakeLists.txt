@@ -23,10 +23,18 @@ if(WIN32)
 else()
     set(rust_archive "${rust_target_dir}/${rust_host}/${rust_profile}/libxdzip_bridge_probe.a")
 endif()
+# Cargo's C++ build scripts must use the same deployment target as CMake.
+set(cargo_environment)
+if(APPLE)
+    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        message(FATAL_ERROR "Set CMAKE_OSX_DEPLOYMENT_TARGET explicitly for the native probe")
+    endif()
+    list(APPEND cargo_environment "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+endif()
 add_custom_command(OUTPUT "${rust_archive}"
     BYPRODUCTS "${rust_target_dir}/cxxbridge/xdzip-bridge-probe/src/lib.rs.h"
         "${rust_target_dir}/cxxbridge/rust/cxx.h"
-    COMMAND "${CARGO_EXECUTABLE}" build --locked -p xdzip-bridge-probe
+    COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${CARGO_EXECUTABLE}" build --locked -p xdzip-bridge-probe
         --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml"
         --target-dir "${rust_target_dir}" --target "${rust_host}" --profile "${cargo_profile}"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"

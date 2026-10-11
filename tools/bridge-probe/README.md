@@ -4,7 +4,7 @@
 
 ## 构建
 
-需要 Rust 1.99.0（含 rustfmt、Clippy）、CMake 3.24+、Ninja、C++17 编译器。默认还需要 Qt 6.8+ 的 Core/Gui/Qml/Quick；通过 `CMAKE_PREFIX_PATH` 指向 Qt 安装目录。Windows 在 x64 MSVC 开发者终端运行；macOS 使用与 Rust host 一致的原生架构，M1 使用 arm64 Qt 和 Rust。
+需要 Rust 1.99.0（含 rustfmt、Clippy）、CMake 3.24+、Ninja、C++17 编译器。默认还需要 Qt 6.8+ 的 Core/Gui/Qml/Quick；通过 `CMAKE_PREFIX_PATH` 指向 Qt 安装目录。Windows 在 x64 MSVC 开发者终端运行；macOS 使用与 Rust host 一致的原生架构，M1 使用 arm64 Qt 和 Rust。macOS 运行命令前设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，或向 CMake 显式传入相同目标；该值是探针候选，不是产品最低系统支持承诺。
 
 在仓库根目录执行：
 

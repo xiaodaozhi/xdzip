@@ -1,6 +1,6 @@
 // Diagnostic boundary checks stay active in release builds as well as debug.
-#include "xdzip-bridge-probe/src/lib.rs.h"
 #include "rust/cxx.h"
+#include "xdzip-bridge-probe/src/lib.rs.h"
 #include <exception>
 #include <iostream>
 #include <stdexcept>
@@ -11,17 +11,16 @@
 #endif
 
 namespace {
-void require(bool condition, const char* message) {
+void require(bool condition, const char *message) {
     if (!condition) {
         throw std::runtime_error(message);
     }
 }
 
-template <typename Operation>
-void require_error(Operation operation) {
+template <typename Operation> void require_error(Operation operation) {
     try {
         operation();
-    } catch (const rust::Error&) {
+    } catch (const rust::Error &) {
         return;
     }
     throw std::runtime_error("expected a translated Rust error");
@@ -39,8 +38,9 @@ void check_boundary() {
     std::string original = u8"目录/压缩📦/é";
     original.append(1, '\0');
     original += "tail";
-    #ifdef XDZIP_PROBE_QT
-    const auto qt_input = QString::fromUtf8(original.data(), static_cast<qsizetype>(original.size()));
+#ifdef XDZIP_PROBE_QT
+    const auto qt_input =
+        QString::fromUtf8(original.data(), static_cast<qsizetype>(original.size()));
     const auto qt_bytes = qt_input.toUtf8();
     std::string input(qt_bytes.constData(), static_cast<std::size_t>(qt_bytes.size()));
 #else
@@ -58,9 +58,11 @@ void check_boundary() {
     require(client->submit("late").status == Admission::Closed, "closed admission");
     auto event = receiver->next_event();
     require(!event.end && event.request_id == 1, "ordered event");
-    require(std::string(event.payload.data(), event.payload.size()) == original, "owned UTF-8 bytes");
-    #ifdef XDZIP_PROBE_QT
-    require(QString::fromUtf8(event.payload.data(), static_cast<qsizetype>(event.payload.size())) == qt_input,
+    require(std::string(event.payload.data(), event.payload.size()) == original,
+            "owned UTF-8 bytes");
+#ifdef XDZIP_PROBE_QT
+    require(QString::fromUtf8(event.payload.data(), static_cast<qsizetype>(event.payload.size())) ==
+                qt_input,
             "Qt UTF-8 roundtrip");
 #endif
     auto empty = receiver->next_event();
@@ -74,9 +76,8 @@ void check_thread_shutdown() {
     auto receiver = probe->take_receiver();
     bool ended = false;
     // Move unique ownership to the receiver thread; no C++ alias crosses threads.
-    std::thread worker([receiver = std::move(receiver), &ended]() mutable {
-        ended = receiver->next_event().end;
-    });
+    std::thread worker(
+        [receiver = std::move(receiver), &ended]() mutable { ended = receiver->next_event().end; });
     client->shutdown();
     worker.join();
     require(ended, "shutdown must wake receiver, including shutdown-before-wait");
@@ -89,7 +90,7 @@ int main() {
         check_thread_shutdown();
         std::cout << "bridge ownership, errors, UTF-8, bounds and shutdown: PASS\n";
         return 0;
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << error.what() << '\n';
         return 1;
     }

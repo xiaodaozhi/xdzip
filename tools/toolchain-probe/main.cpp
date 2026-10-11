@@ -7,8 +7,7 @@
 
 // Exercise Qt object ownership only. Offscreen success cannot validate native
 // decorations, compositor focus, real GPU rendering or asynchronous Rust shutdown.
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     QGuiApplication application(argc, argv);
     application.setQuitOnLastWindowClosed(false);
 
@@ -27,15 +26,14 @@ int main(int argc, char* argv[])
     owner.show();
     operation.show();
     QTimer::singleShot(100, &application, [&] {
-        const bool valid = owner.isTopLevel() && operation.isTopLevel()
-            && operation.transientParent() == &owner
-            && operation.modality() == Qt::WindowModal
-            && owner.isVisible() && operation.isVisible();
+        const bool valid =
+            owner.isTopLevel() && operation.isTopLevel() && operation.transientParent() == &owner &&
+            operation.modality() == Qt::WindowModal && owner.isVisible() && operation.isVisible();
         const bool closed = operation.close() && owner.close();
         operation.close();
         owner.close();
-        std::cout << "qt=" << qVersion() << " platform="
-                  << QGuiApplication::platformName().toStdString()
+        std::cout << "qt=" << qVersion()
+                  << " platform=" << QGuiApplication::platformName().toStdString()
                   << " independent_windows=" << valid << " close=" << closed << '\n';
         application.exit(valid && closed ? 0 : 1);
     });

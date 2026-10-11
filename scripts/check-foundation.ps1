@@ -1,5 +1,6 @@
 # Run inside the same shell as MSVC discovery so Cargo's cc build scripts inherit it.
 $ErrorActionPreference = 'Stop'
+if ($IsMacOS) { $env:MACOSX_DEPLOYMENT_TARGET = '14.0' }
 if ($IsWindows) {
     $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
     $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
