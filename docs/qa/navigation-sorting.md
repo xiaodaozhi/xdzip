@@ -32,7 +32,19 @@
 
 截图复核发现树委托继承的单侧内边距使图文比箭头低 6 逻辑像素；现统一上下内边距为零，使用行中心对齐，并由新增检查防止回退。浅层树列宽同时收紧，避免计数落在视口外。
 
-三平台原生 CI 结果将在完成后补记。最新 macOS / M1 的 Retina、GPU、原生标题栏、全屏与字体仍需实机验收；offscreen 截图不能替代这些证据。
+## 三平台验证与开发包
+
+[Qt CI 38170595572](https://github.com/xiaodaozhi/xdzip/actions/runs/38170595572) 对 `0889323` 的三平台构建、CTest、浏览套件连续 10 次回归、视觉检查与打包全部通过。该提交包含产品代码 `7a30dcb`，其后的提交仅记录验收证据。Rust/桥接 [Foundation CI](https://github.com/xiaodaozhi/xdzip/actions/runs/38170595597) 与 [Documentation CI](https://github.com/xiaodaozhi/xdzip/actions/runs/38170595558) 同样通过。
+
+| 实测环境（Qt 6.8.2，offscreen/software，DPR 1） | 量化通过 | 测得差异 | 待验证 |
+| --- | --- | --- | --- |
+| Ubuntu 24.04.5 x86_64 | 54 | 0 | 0 |
+| macOS Sonoma 14.8 ARM64 | 54 | 0 | 0 |
+| Windows Server 2022 x86_64 | 47 | 0 | 7 项字体解析 |
+
+[原始三平台数值](navigation-sorting/native-ci-summary.json)逐项记录实测结果。Windows 的 7 项字体解析仍标为未验证，不计作通过。
+
+[Apple Silicon 开发包](https://github.com/xiaodaozhi/xdzip/actions/runs/38170595572/artifacts/11713374142)包含真实浏览应用，采用 ad-hoc 签名、未公证；需要仓库访问权限，CI 产物保留 14 天。macOS Cocoa 与 Windows 部署后原生应用启停检查通过。最新 macOS / M1 的 Retina、GPU、原生标题栏、全屏与字体仍需实机验收；offscreen 截图不能替代这些证据。
 
 ## 未完成范围
 
