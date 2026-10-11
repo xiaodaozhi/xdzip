@@ -1,5 +1,6 @@
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
+qt_policy(SET QTP0001 NEW)
 qt_add_resources(ui_resources ui.qrc)
 add_library(xdzip-ui-resources STATIC ${ui_resources})
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core)
@@ -15,6 +16,37 @@ if(BUILD_TESTING)
 endif()
 
 foreach(target xdzip-ui-preview xdzip-ui-tests)
+    if(TARGET ${target})
+        if(MSVC)
+            target_compile_options(${target} PRIVATE /W4 /WX /utf-8)
+        else()
+            target_compile_options(${target} PRIVATE -Wall -Wextra -Werror)
+        endif()
+    endif()
+endforeach()
+
+find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Concurrent)
+include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
+xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
+add_executable(xdzip-browser browser_main.cpp)
+qt_add_qml_module(xdzip-browser
+    URI Xdzip.Native VERSION 1.0
+    DEPENDENCIES QtQml.Models
+    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
+    SOURCES BrowserController.h BrowserController.cpp)
+target_link_libraries(xdzip-browser PRIVATE xdzip-ui-resources xdzip-reader-rust
+    Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent)
+if(BUILD_TESTING)
+    add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h)
+    target_include_directories(xdzip-browser-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip")
+    target_link_libraries(xdzip-browser-tests PRIVATE xdzip-ui-resources xdzip-reader-rust
+        Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Concurrent Qt6::Test)
+    add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests)
+    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 30)
+    add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
+endif()
+foreach(target xdzip-browser xdzip-browser-tests)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)

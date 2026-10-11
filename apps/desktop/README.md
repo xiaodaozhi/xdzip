@@ -1,10 +1,12 @@
-# Qt 组件开发预览
+# Qt 开发应用与组件预览
 
-当前提供独立任务详情窗、共用提示行、按钮和主题 token；不是可用的压缩工具。入口始终标识“组件开发预览”，任务数据固定来自本地示例，不访问文件或连接诊断桥接。不用动画或计时器伪装真实压缩进度。
+`xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、分页、取消读取；不解压或创建归档。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
+
+`xdzip-ui-preview` 提供独立任务详情窗、共用提示行、按钮和主题 token；不是可用的压缩工具。入口始终标识“组件开发预览”，任务数据固定来自本地示例，不访问文件或连接诊断桥接。不用动画或计时器伪装真实压缩进度。
 
 ## 构建运行
 
-准备根目录锁定的 Rust、CMake、Ninja、Qt 6.8+ Core/Gui/Qml/Quick/QuickControls2/QuickTest。将 Qt 的前缀加入 `CMAKE_PREFIX_PATH`。macOS 同时设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，该值仅为当前工具链候选。
+准备根目录锁定的 Rust、CMake、Ninja、Qt 6.8+ Core/Gui/Qml/Quick/QuickControls2/QuickTest/Widgets/Concurrent。将 Qt 的前缀加入 `CMAKE_PREFIX_PATH`。macOS 同时设置 `MACOSX_DEPLOYMENT_TARGET=14.0`，该值仅为当前工具链候选。
 
 ```sh
 cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
@@ -27,7 +29,7 @@ Windows 可执行文件带 `.exe`。macOS 尚未生成可分发的 app 包或完
 - `Theme.qml` 由视觉 token 生成；运行 `python3 scripts/generate-qml-theme.py` 更新，`--check` 校验同步。主题选择目前只作用于预览，不持久化。
 - 图标直接引用 v2 已交付的透明 3× PNG，避免额外 SVG 运行时依赖。文字、百分比和进度轨道仍由 QML 绘制；未知总量不显示百分比或虚构已完成长度。
 - 现有窗口定位仅按显示屏边界夹取；工作区保留边缘、多显示器迁移、实际系统按钮状态、VoiceOver/IME、原生 GPU 和 Qt 打包仍待验证。
-- 无 Qt/Rust 产品桥接、任务调度器、归档浏览、解压或安全文件输出。诊断探针不充当产品 runtime。
+- 组件预览不连接真实任务；独立 browser 入口有 Qt/Rust 只读桥接，尚无完整任务调度、解压或安全文件输出。诊断探针不充当产品 runtime。
 
 测试输出包含四张离屏渲染截图，位于 CTest 工作目录；这些是组件渲染证据，不替换高保真设计稿。原生装饰不会出现在 contentItem 截图里。详见 [阶段记录](../../docs/qa/foundation-components.md)。
 

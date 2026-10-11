@@ -1,0 +1,17 @@
+[package]
+name = "xdzip-qt-bridge"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[lib]
+crate-type = ["staticlib", "rlib"]
+[dependencies]
+cxx.workspace = true
+xdzip-runtime = { path = "../xdzip-runtime" }
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+[build-dependencies]
+cxx-build.workspace = true
+[lints]
+workspace = true

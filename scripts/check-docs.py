@@ -16,7 +16,7 @@ def main():
     links = 0
     documents = sorted(ROOT.rglob('*.md'))
     for path in documents:
-        if any(part in {'.git', 'dist', '.venv', 'target', 'build'} for part in path.relative_to(ROOT).parts):
+        if any(part in {'.git', '.cache', 'dist', '.venv', 'target', 'build'} for part in path.relative_to(ROOT).parts):
             continue
         source = re.sub(r'^```[^\n]*\n.*?^```\s*$', '', path.read_text(), flags=re.M | re.S)
         for raw in re.findall(r'!?\[[^\]]*\]\(([^\n)]+)\)', source):

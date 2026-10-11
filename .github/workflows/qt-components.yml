@@ -27,5 +27,5 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/Qt/6.8.2/gcc_64/lib"
           cmake -S . -B build/qt -G Ninja -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
           cmake --build build/qt
-          qmllint apps/desktop/ui/*.qml
+          qmllint -I build/qt/qml apps/desktop/ui/*.qml
           ctest --test-dir build/qt --output-on-failure

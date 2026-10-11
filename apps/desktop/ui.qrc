@@ -9,6 +9,7 @@
     <file>ui/TaskPathCard.qml</file>
     <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
+    <file>ui/Browser.qml</file>
     <file alias="assets/info-light.png">../../design/hifi/v2/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/hifi/v2/png/dark/info@3x.png</file>
     <file alias="assets/document-download.png">../../design/hifi/v2/png/light/document-download@3x.png</file>

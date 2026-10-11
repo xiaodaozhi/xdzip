@@ -1,0 +1,13 @@
+[package]
+name = "xdzip-runtime"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[dependencies]
+xdzip-domain = { path = "../xdzip-domain" }
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-zip = { path = "../xdzip-codec-zip" }
+[lints]
+workspace = true

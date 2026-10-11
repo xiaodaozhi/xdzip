@@ -20,6 +20,7 @@
 | 隐私与诊断 | [数据生命周期](engineering/privacy.md) |
 | 持续集成与发布 | [CI 策略](engineering/ci-policy.md)、[发布流程](engineering/release-runbook.md) |
 | 项目执行 | [工作清单](planning/backlog.md)、[风险与决策](planning/risks.md)、[就绪评审](planning/readiness.md) |
+| ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
 | 实现进展 | [领域与 Qt 组件验证](qa/foundation-components.md)、[任务窗实际截图与对照](qa/task-visual-review.md)、[开发预览](../apps/desktop/README.md) |
 | 质量 | [验收用例](qa/acceptance.md)、[样本规范](qa/fixtures.md) |
 | 开源协作 | [贡献指南](../CONTRIBUTING.md)、[治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |
