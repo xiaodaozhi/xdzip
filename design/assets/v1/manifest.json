@@ -1,0 +1,3757 @@
+{
+  "version": 1,
+  "source_coordinate_system": "physical source pixels, top-left origin; rect = x,y,width,height",
+  "assets": [
+    {
+      "id": "slice/brand-titlebar",
+      "file": "slices/brand-titlebar.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        136,
+        44,
+        31,
+        37
+      ],
+      "size": [
+        31,
+        37
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "ac647402b2c076ac8b5ca4867b3bb42d4e17e0c26f4aee4a440666b62e3ed3eb"
+    },
+    {
+      "id": "slice/brand-extract",
+      "file": "slices/brand-extract.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/extract-macos.png",
+      "rect": [
+        125,
+        136,
+        104,
+        122
+      ],
+      "size": [
+        104,
+        122
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "4026418f6abca63fe637d4927ad1221c142bc87b3198f5098bf64a26910dcb9a"
+    },
+    {
+      "id": "slice/folder",
+      "file": "slices/folder.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        302,
+        42,
+        41
+      ],
+      "size": [
+        42,
+        41
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "6cb63636d7b26eb7191e0a293edacda3a278ca017fd45198dfde5fd2f76d1f30"
+    },
+    {
+      "id": "slice/file-pdf",
+      "file": "slices/file-pdf.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        626,
+        44,
+        50
+      ],
+      "size": [
+        44,
+        50
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "a0f8acb60b75eb0ac3a4841e2c778e9852e81ae2db2dd4a808c74f576f97bb65"
+    },
+    {
+      "id": "slice/file-text",
+      "file": "slices/file-text.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        398,
+        694,
+        43,
+        49
+      ],
+      "size": [
+        43,
+        49
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "3d93c623a851846ef3046c9718d71f42e4088fa62215f40e5bd877ce8bcce3a9"
+    },
+    {
+      "id": "slice/file-code",
+      "file": "slices/file-code.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        760,
+        47,
+        48
+      ],
+      "size": [
+        47,
+        48
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "22bb9b98496c08b77135ccdc4940a7defa5a1840541d864e330c1483ec7a5515"
+    },
+    {
+      "id": "slice/file-markdown",
+      "file": "slices/file-markdown.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        829,
+        47,
+        51
+      ],
+      "size": [
+        47,
+        51
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "bc215a334bd91d030f665dec1e276e4a3357040b5c985ffc41655687be034c03"
+    },
+    {
+      "id": "slice/photo-lake-preview",
+      "file": "slices/photo-lake-preview.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1198,
+        241,
+        350,
+        277
+      ],
+      "size": [
+        350,
+        277
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "demo-image-only",
+      "sha256": "16aecc8b654ffeb62945856475648fa8a1f5f879b2b48c45a07370a87fc669d1"
+    },
+    {
+      "id": "slice/photo-lake-thumbnail",
+      "file": "slices/photo-lake-thumbnail.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        494,
+        45,
+        45
+      ],
+      "size": [
+        45,
+        45
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "demo-image-only",
+      "sha256": "36e0f65d9c96b81a2fc90a2f58dc68264eb97f3af1456cd1609bab0a9663b2bf"
+    },
+    {
+      "id": "slice/photo-sunrise-thumbnail",
+      "file": "slices/photo-sunrise-thumbnail.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        397,
+        560,
+        45,
+        46
+      ],
+      "size": [
+        45,
+        46
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "demo-image-only",
+      "sha256": "9b60108e8f5588a6f980f2ff27afa22d646b363f9249641df15be0229e9232cf"
+    },
+    {
+      "id": "slice/open",
+      "file": "slices/open.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        48,
+        111,
+        32,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "8233bf3728b95988597ba1d40a98b4e92ce4b2f1bea5a86d8408a534b5f1dc55"
+    },
+    {
+      "id": "slice/new",
+      "file": "slices/new.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        174,
+        111,
+        28,
+        32
+      ],
+      "size": [
+        28,
+        32
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "0c6494d0f92b43817a008e8e36fed064ba6a84e7fc277ada41a55b90e0d2a126"
+    },
+    {
+      "id": "slice/archive-test",
+      "file": "slices/archive-test.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        317,
+        110,
+        34,
+        34
+      ],
+      "size": [
+        34,
+        34
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "5632e008775e398bf3540fcf8224856e695e93f43b5d6bda1a474f1f4d715fd9"
+    },
+    {
+      "id": "slice/more",
+      "file": "slices/more.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        448,
+        111,
+        31,
+        31
+      ],
+      "size": [
+        31,
+        31
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "3333e8786df67f69365680970880a967de9614cde84894a1ca88cc52d1182a59"
+    },
+    {
+      "id": "slice/search",
+      "file": "slices/search.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        920,
+        111,
+        32,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "fda812ddc6c4e1803859dba64a75b9d544cc6ee9fcb205739d06be52166706bf"
+    },
+    {
+      "id": "slice/settings",
+      "file": "slices/settings.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1515,
+        43,
+        36,
+        34
+      ],
+      "size": [
+        36,
+        34
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "3272c0ff679056a356e760838c9cd4dc00c3ce76f74cf5e02b36627e579a1294"
+    },
+    {
+      "id": "slice/view-list",
+      "file": "slices/view-list.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1000,
+        182,
+        46,
+        40
+      ],
+      "size": [
+        46,
+        40
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "c0228c6f9c24da6a65968a26a8fd9bc98678d31fcccd88342b13b38970773aa0"
+    },
+    {
+      "id": "slice/view-grid",
+      "file": "slices/view-grid.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1065,
+        185,
+        28,
+        30
+      ],
+      "size": [
+        28,
+        30
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "6de8a5251d9c4e25172d36957c5847c76dabe6014eb048f51125ff7dd4f88482"
+    },
+    {
+      "id": "slice/sort",
+      "file": "slices/sort.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1114,
+        185,
+        36,
+        30
+      ],
+      "size": [
+        36,
+        30
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "8208add7edfd10ab167a128255c026e8ffbf8405fd64e61d8ee2741c9b8a4658"
+    },
+    {
+      "id": "slice/close",
+      "file": "slices/close.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        1524,
+        192,
+        28,
+        27
+      ],
+      "size": [
+        28,
+        27
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "9a20e0c4d367ce38fd28e97c0f2129745310c8be36146e53fbf5dc081586110c"
+    },
+    {
+      "id": "slice/check-selected",
+      "file": "slices/check-selected.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/main-light.png",
+      "rect": [
+        337,
+        501,
+        30,
+        31
+      ],
+      "size": [
+        30,
+        31
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "78076f39d39e480e993c3a8bcfe5d8a562f90e6421623f9a0c38b5d3b965262f"
+    },
+    {
+      "id": "slice/success",
+      "file": "slices/success.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/extract-macos.png",
+      "rect": [
+        141,
+        501,
+        43,
+        43
+      ],
+      "size": [
+        43,
+        43
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "12dcd422520eb6b5229c8c72e9f82c59c2366ce2007f882aadbc4bfb7e06bbed"
+    },
+    {
+      "id": "slice/radio-selected",
+      "file": "slices/radio-selected.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/extract-macos.png",
+      "rect": [
+        142,
+        654,
+        42,
+        42
+      ],
+      "size": [
+        42,
+        42
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "b85572f9dc794a9859a9c404539e4f1685a63349dac154577779faa1307d1c04"
+    },
+    {
+      "id": "slice/radio-unselected",
+      "file": "slices/radio-unselected.png",
+      "kind": "original-pixel-crop",
+      "source": "sources/extract-macos.png",
+      "rect": [
+        142,
+        934,
+        42,
+        43
+      ],
+      "size": [
+        42,
+        43
+      ],
+      "background": "baked source pixels; not transparent",
+      "usage": "visual-reference",
+      "sha256": "3ba83ed00c2eb44b235c82598da2478068e72881f616f8937c896ffa07af08fe"
+    },
+    {
+      "id": "light/open",
+      "file": "svg/light/open.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "f64340e4b0c877ee711f11a8b5e8fe9e2adcd1e213f8ded680dfc31a95aa7d9d"
+    },
+    {
+      "id": "light/new",
+      "file": "svg/light/new.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "796b14e67bd25806a207b6b99a3d6482bba33e30884665e6d5cf601bd26a2ee6"
+    },
+    {
+      "id": "light/archive-test",
+      "file": "svg/light/archive-test.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "88c9476d68fe3eb1246e2c989a1234853164ea9ec187273d330dfc3151ab96f0"
+    },
+    {
+      "id": "light/search",
+      "file": "svg/light/search.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "d784a5819e28a18cb8a354123c80e45ab9d60494fe95336d4117eccc1ac88d7c"
+    },
+    {
+      "id": "light/close",
+      "file": "svg/light/close.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "a3c0c8c3105e0811db4cd356fc2882c112ff8048b4386036d1acea7a7ca63fe3"
+    },
+    {
+      "id": "light/chevron-down",
+      "file": "svg/light/chevron-down.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "773d54f171b412cc47c88e2faf75b1577dfd74455b9fee5c9f2ee60e8d647936"
+    },
+    {
+      "id": "light/chevron-right",
+      "file": "svg/light/chevron-right.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "230e977ba11768eb489b854a848163fc30b67b24fbed53dd80b1012c70b15c85"
+    },
+    {
+      "id": "light/chevron-up",
+      "file": "svg/light/chevron-up.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "b8c4c284a75c9673d9d8766d553ad73ecb3e86c5014141f1575fd7242cf3aed8"
+    },
+    {
+      "id": "light/check",
+      "file": "svg/light/check.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "d657e12d854ea307d8bf85957d1fcd62beddf095a412308c3d20e79847de918a"
+    },
+    {
+      "id": "light/arrow-right",
+      "file": "svg/light/arrow-right.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "b979b34bfd12f6c9ead0a31b39f900ffb1858c0becdc5631fcfce3aa3fe77c86"
+    },
+    {
+      "id": "light/extract",
+      "file": "svg/light/extract.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "aeb6afb26bc209babce99ce135079cb0b9a9a04becee0f2fe4d6f92b0cae166d"
+    },
+    {
+      "id": "light/view-list",
+      "file": "svg/light/view-list.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "ed5e59c083c35c47da729cb7745642bddedbc5173dd66cd3288dd3e06d048608"
+    },
+    {
+      "id": "light/view-grid",
+      "file": "svg/light/view-grid.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "3e7ab9d56315f0d3f48ef3d72d85f209d376ed9754595dd9bcaa456cda246ec4"
+    },
+    {
+      "id": "light/sort",
+      "file": "svg/light/sort.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "5203dcf0f54fd3c1668067bbdd3dc555cbfdeabf4694d830e7ddee6020b5cc47"
+    },
+    {
+      "id": "light/sort-ascending",
+      "file": "svg/light/sort-ascending.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "3aee344055cd05c9abc5c664f27e9311c6d0e1aa3ee29e44318cc71cedfb4d97"
+    },
+    {
+      "id": "light/completed",
+      "file": "svg/light/completed.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "54bd69a385c249b74173a1079f9cce7f4ab0d5813d62c239ef024157df852e87"
+    },
+    {
+      "id": "light/external-open",
+      "file": "svg/light/external-open.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "5c918818ba4acfbdf5ac24acbf422c8c2d8110a779920a0ae23b5ad8ef14ab72"
+    },
+    {
+      "id": "light/minimize",
+      "file": "svg/light/minimize.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "66a3a8fa9a4eb48d70a86ab467f8bc0d271c328657bb065a2297e5f600336d45"
+    },
+    {
+      "id": "light/maximize",
+      "file": "svg/light/maximize.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "1dff402f7ec9f7f205e3e8e1b7a3b318cd9b3c7b5d54d58afc18be7fc7bf8c07"
+    },
+    {
+      "id": "light/settings",
+      "file": "svg/light/settings.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "024cc4707e003a12098be48a50cdd396c99c8605967ba5f367e454eab5d6923b"
+    },
+    {
+      "id": "light/folder",
+      "file": "svg/light/folder.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "deca0671a4a91e4bca2fe7b1bf9df25336f8b10c0b4316a2f5d0f3d6076361aa"
+    },
+    {
+      "id": "light/archive",
+      "file": "svg/light/archive.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "b311b38de981c353c876da0ce52f00d137151d8da9e9d8ae03905513762eee1b"
+    },
+    {
+      "id": "light/file-text",
+      "file": "svg/light/file-text.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "e12ca42df91aa731295730b687df3a1b7ce7561905ca24486cd184f2f2d36d34"
+    },
+    {
+      "id": "light/file-code",
+      "file": "svg/light/file-code.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "a5c8f2526be3a5cc2bc41293d812531857fd0b4d780f5a149075d9f43896505c"
+    },
+    {
+      "id": "light/file-markdown",
+      "file": "svg/light/file-markdown.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "1d2b895b2d48f7f7a0c7468b2e63166769e80f84169d88693a98317849f1c4d3"
+    },
+    {
+      "id": "light/file-pdf",
+      "file": "svg/light/file-pdf.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "a8174933ed7b6ec4fbf07f436b12d7ce7f576e92c1897b21eb89ff594268417d"
+    },
+    {
+      "id": "light/more",
+      "file": "svg/light/more.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "91eb9fd7fabd91be4dc264b22cce85e99ec246992c0cb2c87e66551df992d97d"
+    },
+    {
+      "id": "dark/open",
+      "file": "svg/dark/open.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "ed9a1a6480a5149b5ac0c6688f917266316fdd5c60a8cf0dc1413a0e42a55761"
+    },
+    {
+      "id": "dark/new",
+      "file": "svg/dark/new.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "5234e1e20ae52662c0a4dd14b393d07d22a0080545dbfe6ab3dab5199f4e00d4"
+    },
+    {
+      "id": "dark/archive-test",
+      "file": "svg/dark/archive-test.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "723f072b9f32ee417dc0e6b20ca3073934f954c765bdd4324dc27c22274cd96c"
+    },
+    {
+      "id": "dark/search",
+      "file": "svg/dark/search.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "2c70d9daeb7552cc9b2c66dc1645fd6a41b43f75b91a73c82daf993bcfcde267"
+    },
+    {
+      "id": "dark/close",
+      "file": "svg/dark/close.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "7d92024bd00d588b3ba5820d80f65cb180468df1bb56c2c11d778a9e346313e8"
+    },
+    {
+      "id": "dark/chevron-down",
+      "file": "svg/dark/chevron-down.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "52044d22e3704d44ceb31b62cf050200e8539fcff745daafe725fa1668b7fa88"
+    },
+    {
+      "id": "dark/chevron-right",
+      "file": "svg/dark/chevron-right.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "2388010ca4961fb0f4ec619f10cbf47645e00bc8c77fbcb6291da60ab635dcaf"
+    },
+    {
+      "id": "dark/chevron-up",
+      "file": "svg/dark/chevron-up.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "6b83219dee0ee4ebdec3f6d8f62c91f886555be542355318c11a15109a8973ef"
+    },
+    {
+      "id": "dark/check",
+      "file": "svg/dark/check.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "807368e3eb7a4ef6cc10b83df9adfdd9361f065b3db789cc2ddc0380354edb9c"
+    },
+    {
+      "id": "dark/arrow-right",
+      "file": "svg/dark/arrow-right.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "cae115f9f297b51192666641aaef3f4054b3bd03e2dab63590d18e83e1e36718"
+    },
+    {
+      "id": "dark/extract",
+      "file": "svg/dark/extract.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "ac5e735a7c879ba102cc2b5da0bb1a8ff71d3b463796077716de9ddf49185393"
+    },
+    {
+      "id": "dark/view-list",
+      "file": "svg/dark/view-list.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "90419371e5cc6d3751cd0efa3f8003686ac1003678406f91dfa542c7cb760cb4"
+    },
+    {
+      "id": "dark/view-grid",
+      "file": "svg/dark/view-grid.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "2be75c734f1fbb150a3f3d29140b8abd26d3bffb15e585eb65dce14220018d1b"
+    },
+    {
+      "id": "dark/sort",
+      "file": "svg/dark/sort.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "3de21c5484246836c43ed7ea823e001401ededb2fcc4794d1ed28a0b939ff7bd"
+    },
+    {
+      "id": "dark/sort-ascending",
+      "file": "svg/dark/sort-ascending.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "642dc0558f2a2baa94bc2e876d13eed698820a5901315568e2a0909c4a7b760a"
+    },
+    {
+      "id": "dark/completed",
+      "file": "svg/dark/completed.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "9264de3b064a25dba3a7ff991dcb8c0cf75d64f0beca75fef28fb25c135b0a1a"
+    },
+    {
+      "id": "dark/external-open",
+      "file": "svg/dark/external-open.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "4f21452611008fcfadc7ea8d2a222aa31181281a4a4fe08f95177ff4534654d7"
+    },
+    {
+      "id": "dark/minimize",
+      "file": "svg/dark/minimize.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "bf1630251aa3b4adcb73ca48ec6181e645e2a57868e2bae2576d00a20aa7b5ef"
+    },
+    {
+      "id": "dark/maximize",
+      "file": "svg/dark/maximize.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "900e8935657bffa474432aa87fa430d0546481878ef30c85c846b6384151208c"
+    },
+    {
+      "id": "dark/settings",
+      "file": "svg/dark/settings.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "18d996deaeafec1e54eed7418a74258c61f29e7b20b484f98d55793143a454f3"
+    },
+    {
+      "id": "dark/folder",
+      "file": "svg/dark/folder.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "cd5eea0ca4813acf7f8a9104acfc42dec7ba04b69c268c3db9ca6feec1dfe12d"
+    },
+    {
+      "id": "dark/archive",
+      "file": "svg/dark/archive.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "d702b42ef308187aed9ace0a20738f3bba19c5209976441e07040fb06b2e0b9a"
+    },
+    {
+      "id": "dark/file-text",
+      "file": "svg/dark/file-text.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "c9a4e7c4dae29452250afd325a978345e025c11e0174651b16f4a9c7a6dfbd6d"
+    },
+    {
+      "id": "dark/file-code",
+      "file": "svg/dark/file-code.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "c8d6979c184e934a17758fea3b7c6f159dba0c52acb49b2a461c37ba4b7391de"
+    },
+    {
+      "id": "dark/file-markdown",
+      "file": "svg/dark/file-markdown.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "8c0636decfe8b72ae8475ac0e335a705a83cda9676d967b5dd78f06f12eacfec"
+    },
+    {
+      "id": "dark/file-pdf",
+      "file": "svg/dark/file-pdf.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "07b33b2e7c2e88a9e2b5159c4370a1f3e543bad22f2e302b7d5cb3a89cfb9a83"
+    },
+    {
+      "id": "dark/more",
+      "file": "svg/dark/more.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "459cc38d14978c4646b2676cf64cd206945ed0f5837bca120a38c02292b15e0b"
+    },
+    {
+      "id": "brand/32",
+      "file": "brand/archive-32.png",
+      "kind": "generative-transparent-reconstruction",
+      "size": [
+        32,
+        32
+      ],
+      "usage": "candidate-brand-asset; not pixel-identical to source",
+      "sha256": "093a8e28cb44cdff8da10e123a6541809d07e4525d77c81f1b4e722b5ff986bc"
+    },
+    {
+      "id": "brand/64",
+      "file": "brand/archive-64.png",
+      "kind": "generative-transparent-reconstruction",
+      "size": [
+        64,
+        64
+      ],
+      "usage": "candidate-brand-asset; not pixel-identical to source",
+      "sha256": "c7613eb3b501a3865b11470f53306c13a7fdf00d052e351834074f067ac9eb7f"
+    },
+    {
+      "id": "brand/128",
+      "file": "brand/archive-128.png",
+      "kind": "generative-transparent-reconstruction",
+      "size": [
+        128,
+        128
+      ],
+      "usage": "candidate-brand-asset; not pixel-identical to source",
+      "sha256": "b145a475f632fa9cfaae7ba6aa4afabe1d2e029a94531d14b83309f5691d4a40"
+    },
+    {
+      "id": "brand/256",
+      "file": "brand/archive-256.png",
+      "kind": "generative-transparent-reconstruction",
+      "size": [
+        256,
+        256
+      ],
+      "usage": "candidate-brand-asset; not pixel-identical to source",
+      "sha256": "f617b0869ff25f5bcdd63d2eeefccf67680c66a34725ee64634f6543d59cbaaa"
+    },
+    {
+      "id": "brand/512",
+      "file": "brand/archive-512.png",
+      "kind": "generative-transparent-reconstruction",
+      "size": [
+        512,
+        512
+      ],
+      "usage": "candidate-brand-asset; not pixel-identical to source",
+      "sha256": "88f56d64546ca7095f32cf6889001de231534b1c3af69eb2091677b1e1f048aa"
+    },
+    {
+      "id": "raster/dark/archive-test@1x",
+      "file": "png/dark/archive-test@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive-test.svg",
+      "sha256": "e7fc8b4fc509d334b0c142da6c48de58542e535402d688c379f4c5cb177d9e9b"
+    },
+    {
+      "id": "raster/dark/archive-test@2x",
+      "file": "png/dark/archive-test@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive-test.svg",
+      "sha256": "d13c1bc7ddfe233b7c2d82608be99a2b9c80393935b78f107ad3a211ed3b23ea"
+    },
+    {
+      "id": "raster/dark/archive-test@3x",
+      "file": "png/dark/archive-test@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive-test.svg",
+      "sha256": "757144eea7594c5ab12994a44d4cedc9430bbec99d5393f7ab59791eaeacc052"
+    },
+    {
+      "id": "raster/dark/archive@1x",
+      "file": "png/dark/archive@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive.svg",
+      "sha256": "0935db2ef2a4f6dbc172abb4fac3d4cc9e087ae93b3c460e2d077310262e184c"
+    },
+    {
+      "id": "raster/dark/archive@2x",
+      "file": "png/dark/archive@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive.svg",
+      "sha256": "0a095e3fa8d800d588fface9660faa74fa829734535abedf6c5d9fc4b7397900"
+    },
+    {
+      "id": "raster/dark/archive@3x",
+      "file": "png/dark/archive@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/archive.svg",
+      "sha256": "0c63c8c78629f262977c40fe5ec057b7394b03cab09de350be20565c06a8d710"
+    },
+    {
+      "id": "raster/dark/arrow-right@1x",
+      "file": "png/dark/arrow-right@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/arrow-right.svg",
+      "sha256": "157891384952bab5a72e2df3ad5670ee60d3a84e8e2e22bc3fa9ef168467d1de"
+    },
+    {
+      "id": "raster/dark/arrow-right@2x",
+      "file": "png/dark/arrow-right@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/arrow-right.svg",
+      "sha256": "562776ccbf4c670b1384e4dc197f6db726b9d36f6e00011325330ebb03c1baee"
+    },
+    {
+      "id": "raster/dark/arrow-right@3x",
+      "file": "png/dark/arrow-right@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/arrow-right.svg",
+      "sha256": "7a021cad0edc0aa3289032677b2e458097d7391371e57eb2089acc56fbc8f284"
+    },
+    {
+      "id": "raster/dark/check@1x",
+      "file": "png/dark/check@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/check.svg",
+      "sha256": "25add3143475f2f73a41c30e35da03ad7595d4b7edd891c94d3f591153ead56f"
+    },
+    {
+      "id": "raster/dark/check@2x",
+      "file": "png/dark/check@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/check.svg",
+      "sha256": "f6b3ae2c5ba179773cd40707efea8729d7cb110f752d5bc8cc3efa2ee4793098"
+    },
+    {
+      "id": "raster/dark/check@3x",
+      "file": "png/dark/check@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/check.svg",
+      "sha256": "5938a7b328362b132c2de6f23a0fcf13db9765b07c27c7cccff293add68c932c"
+    },
+    {
+      "id": "raster/dark/chevron-down@1x",
+      "file": "png/dark/chevron-down@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-down.svg",
+      "sha256": "f6b417d93c5aefef0ddd1bca3d5846718e4cc1bb1fe6674c7be7f869aa28fc73"
+    },
+    {
+      "id": "raster/dark/chevron-down@2x",
+      "file": "png/dark/chevron-down@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-down.svg",
+      "sha256": "75551b2eca83b4a79d8620dc67d5999ade5a3c3c63a7978af5a6f889c004077f"
+    },
+    {
+      "id": "raster/dark/chevron-down@3x",
+      "file": "png/dark/chevron-down@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-down.svg",
+      "sha256": "34d5d2f82df57087e067be4b90ab4c8fed6850170b22febd31e697d32b39d50c"
+    },
+    {
+      "id": "raster/dark/chevron-right@1x",
+      "file": "png/dark/chevron-right@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-right.svg",
+      "sha256": "02925722cf7439ac9cbd3c2c99a483c476863f653e67e64e34459096b2eb3665"
+    },
+    {
+      "id": "raster/dark/chevron-right@2x",
+      "file": "png/dark/chevron-right@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-right.svg",
+      "sha256": "815715072970dd9ccdf125d41d18f80f0e63c0688296a4575c5fa8b993e1ba3b"
+    },
+    {
+      "id": "raster/dark/chevron-right@3x",
+      "file": "png/dark/chevron-right@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-right.svg",
+      "sha256": "4e690bec6c6cd5daa9ecfdb704e1f444625d85cd9d056f5b82be5ea6989dc734"
+    },
+    {
+      "id": "raster/dark/chevron-up@1x",
+      "file": "png/dark/chevron-up@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-up.svg",
+      "sha256": "4fb159b5eb335689ff30bc5d9ed5cb2abb2d3cc7a86a90b3349325e893f9c5d0"
+    },
+    {
+      "id": "raster/dark/chevron-up@2x",
+      "file": "png/dark/chevron-up@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-up.svg",
+      "sha256": "2461f9566395d5bfb048cc10251cb14377f7f92a387eaf1841a462d07f347a3f"
+    },
+    {
+      "id": "raster/dark/chevron-up@3x",
+      "file": "png/dark/chevron-up@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/chevron-up.svg",
+      "sha256": "d471e915f659c79bfbe44be36f3fb8209b6a664d318506abfe5e5ae7c02a17e6"
+    },
+    {
+      "id": "raster/dark/close@1x",
+      "file": "png/dark/close@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/close.svg",
+      "sha256": "1bb3b471e4f9a5528f5f8612565d42d5a677a2c44148b7e2d630e6fe7579ed9c"
+    },
+    {
+      "id": "raster/dark/close@2x",
+      "file": "png/dark/close@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/close.svg",
+      "sha256": "9c092e1059d5bfac3c0aacb409629d237c8f3819a08800250933a91f5fafc53c"
+    },
+    {
+      "id": "raster/dark/close@3x",
+      "file": "png/dark/close@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/close.svg",
+      "sha256": "976aeb16a8eefa883815d433ffc35a21a86208b3eabd4e6022ca2861c0cbe612"
+    },
+    {
+      "id": "raster/dark/completed@1x",
+      "file": "png/dark/completed@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/completed.svg",
+      "sha256": "13b94ee661f4d212d4917d419b59d0b278bee9f7dd491987a51ff488cf3def02"
+    },
+    {
+      "id": "raster/dark/completed@2x",
+      "file": "png/dark/completed@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/completed.svg",
+      "sha256": "949556a383e5a120acc94fc10ce6332d912f59ce0cae819da0f23de8bd54937a"
+    },
+    {
+      "id": "raster/dark/completed@3x",
+      "file": "png/dark/completed@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/completed.svg",
+      "sha256": "0d0ffb12a97636a0e4519e284fa3b856bdc5d6692e552e9d60a40a9ab9970172"
+    },
+    {
+      "id": "raster/dark/external-open@1x",
+      "file": "png/dark/external-open@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/external-open.svg",
+      "sha256": "36102337fe162bd6c2ffeab921d2962dfddf25c9cc9e10b9f87d2ee6d6246712"
+    },
+    {
+      "id": "raster/dark/external-open@2x",
+      "file": "png/dark/external-open@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/external-open.svg",
+      "sha256": "9e5fa0755b09ebe52b567c4828800b72e2a9b85686ce62b7078a510d1f1f1207"
+    },
+    {
+      "id": "raster/dark/external-open@3x",
+      "file": "png/dark/external-open@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/external-open.svg",
+      "sha256": "9e7e5be177cdaefd5bea72e262f283594672f35c394bdaf58d1fe46a80ca27b7"
+    },
+    {
+      "id": "raster/dark/extract@1x",
+      "file": "png/dark/extract@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/extract.svg",
+      "sha256": "f6716adf4972148fb7ec00914c0b466302567205935ab47d86dfd94be02c8b14"
+    },
+    {
+      "id": "raster/dark/extract@2x",
+      "file": "png/dark/extract@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/extract.svg",
+      "sha256": "4a927fa120c9e29b0f56303dd8a10d33aba0e72a69cecb83d10ac7896a0ac998"
+    },
+    {
+      "id": "raster/dark/extract@3x",
+      "file": "png/dark/extract@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/extract.svg",
+      "sha256": "00dccc1263421c15c30dce0c9f042d74962f39a27fd5f09ffa17e96f854d1bbf"
+    },
+    {
+      "id": "raster/dark/file-code@1x",
+      "file": "png/dark/file-code@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-code.svg",
+      "sha256": "2e407b0a1ae5bb39c42bd47737190974b312b8e115c9553d251c668143f641a0"
+    },
+    {
+      "id": "raster/dark/file-code@2x",
+      "file": "png/dark/file-code@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-code.svg",
+      "sha256": "17d58b6a7d1142a902330e8727fc855be3bed5eef8ec88ed42f66e3bf4c7d041"
+    },
+    {
+      "id": "raster/dark/file-code@3x",
+      "file": "png/dark/file-code@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-code.svg",
+      "sha256": "e9b7c4c385e7c74207e7e0bb67ee4fd95f6a7df26d4871abbf764e73abd49eb0"
+    },
+    {
+      "id": "raster/dark/file-markdown@1x",
+      "file": "png/dark/file-markdown@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-markdown.svg",
+      "sha256": "a51a14a0b8bcb5810d63ac0a6a5d9c6b6682fd9752c8a01d38af7d539ca0f3d9"
+    },
+    {
+      "id": "raster/dark/file-markdown@2x",
+      "file": "png/dark/file-markdown@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-markdown.svg",
+      "sha256": "4cfda3c21023c16102286f6f87cf35e71b07aab7fedc8d384347c945134e33eb"
+    },
+    {
+      "id": "raster/dark/file-markdown@3x",
+      "file": "png/dark/file-markdown@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-markdown.svg",
+      "sha256": "402f05b31a7ea3aed19393c39447a097de09a609ce7e5f3494c4b8b6a1d62192"
+    },
+    {
+      "id": "raster/dark/file-pdf@1x",
+      "file": "png/dark/file-pdf@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-pdf.svg",
+      "sha256": "c6d63e39bfbd16d7cbfd3bf17cab44619d9a859047026807332ab0b7fc788542"
+    },
+    {
+      "id": "raster/dark/file-pdf@2x",
+      "file": "png/dark/file-pdf@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-pdf.svg",
+      "sha256": "a5bf99eb073304fb99bc73e599c3ed90d16848b3cc879dcae505d73bc41ccad5"
+    },
+    {
+      "id": "raster/dark/file-pdf@3x",
+      "file": "png/dark/file-pdf@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-pdf.svg",
+      "sha256": "5584623701ae9f9a47398a65f3e4fbd3b0234f72a945af2b36d65d80d02d6bde"
+    },
+    {
+      "id": "raster/dark/file-text@1x",
+      "file": "png/dark/file-text@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-text.svg",
+      "sha256": "59ccac85eab5e58755d85a8f675bad0f38f4709e830dccd73490df9bfe8fff7b"
+    },
+    {
+      "id": "raster/dark/file-text@2x",
+      "file": "png/dark/file-text@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-text.svg",
+      "sha256": "d76a39f50371753bf9f09a8a45066257a4821086ddf402f87c044f2937c3a29f"
+    },
+    {
+      "id": "raster/dark/file-text@3x",
+      "file": "png/dark/file-text@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/file-text.svg",
+      "sha256": "abae74b3f5df00f0051ddb254f4e44819586ed2fb0ec66eb9439933f91faacdc"
+    },
+    {
+      "id": "raster/dark/folder@1x",
+      "file": "png/dark/folder@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/folder.svg",
+      "sha256": "a9a3dfa6e0baf0e6fc029eb58d2760494e03238578cddf7756d8692cd8ea38e6"
+    },
+    {
+      "id": "raster/dark/folder@2x",
+      "file": "png/dark/folder@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/folder.svg",
+      "sha256": "534e259c1789b8d01049e213d6ad0badf7a37b2079db0e1df5d266704982ff0f"
+    },
+    {
+      "id": "raster/dark/folder@3x",
+      "file": "png/dark/folder@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/folder.svg",
+      "sha256": "7c196413d08893d41ebdb295e72731e44a2d9619f88b4b2e19ab48a5b5942de1"
+    },
+    {
+      "id": "raster/dark/maximize@1x",
+      "file": "png/dark/maximize@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/maximize.svg",
+      "sha256": "274828a7b8dfedd99068ca08a17c7955f5abfc77d286c416986240231076d608"
+    },
+    {
+      "id": "raster/dark/maximize@2x",
+      "file": "png/dark/maximize@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/maximize.svg",
+      "sha256": "31611f721bf7b8465bbbfb19f9f6f7fc3b8b5612e08297e9432eb18ed487462f"
+    },
+    {
+      "id": "raster/dark/maximize@3x",
+      "file": "png/dark/maximize@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/maximize.svg",
+      "sha256": "21837c4c941e7cc82456248c17d91ea5de61f27540e267879b2fa0e2d28d5bd4"
+    },
+    {
+      "id": "raster/dark/minimize@1x",
+      "file": "png/dark/minimize@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/minimize.svg",
+      "sha256": "ae6791daf0516f310c27af695657478fae4355185be391eab35c3cf3dc67a8e5"
+    },
+    {
+      "id": "raster/dark/minimize@2x",
+      "file": "png/dark/minimize@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/minimize.svg",
+      "sha256": "8372691f3b55087048d90d696ad869546e9c40585539bddc6bf7c47332cb344f"
+    },
+    {
+      "id": "raster/dark/minimize@3x",
+      "file": "png/dark/minimize@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/minimize.svg",
+      "sha256": "b137a032bdbad504f9af797c027fc068e0d95b7e3d9a31d2eae870921e585387"
+    },
+    {
+      "id": "raster/dark/more@1x",
+      "file": "png/dark/more@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/more.svg",
+      "sha256": "d08e0e941a9c49ae4efed36b860b4e3e27b023a678a8be5df7a8f87fdad970c2"
+    },
+    {
+      "id": "raster/dark/more@2x",
+      "file": "png/dark/more@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/more.svg",
+      "sha256": "a0cca26a62c26659cbfbd971c2da3602a38878ffae7766376cae9c07380f7844"
+    },
+    {
+      "id": "raster/dark/more@3x",
+      "file": "png/dark/more@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/more.svg",
+      "sha256": "a42f3e7776bc66bcd1d46e1f4e06d0632ae2e186c7bf3847aea15aa97b727cf2"
+    },
+    {
+      "id": "raster/dark/new@1x",
+      "file": "png/dark/new@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/new.svg",
+      "sha256": "b298eb42af6c1f5f73efb5d3b813ed9da0803b4a1c737c7211e085f0d3396c3d"
+    },
+    {
+      "id": "raster/dark/new@2x",
+      "file": "png/dark/new@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/new.svg",
+      "sha256": "d23b2501848938c8719c5133e42c58a2356f23ecdd5a0a9e230949ad7fc22488"
+    },
+    {
+      "id": "raster/dark/new@3x",
+      "file": "png/dark/new@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/new.svg",
+      "sha256": "d0e34b66cedb30aabc67cf635d7527b76937c7e2754d7ec8497fe433d64cd9d5"
+    },
+    {
+      "id": "raster/dark/open@1x",
+      "file": "png/dark/open@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/open.svg",
+      "sha256": "6fa274934456aeed17ef123a376d6320fb2473ee0bb5585623d4392ddb488240"
+    },
+    {
+      "id": "raster/dark/open@2x",
+      "file": "png/dark/open@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/open.svg",
+      "sha256": "eb3fd794cbe3bd4a32600aed26f3d0ab0f0fc6a16beb1093041a3905430f983d"
+    },
+    {
+      "id": "raster/dark/open@3x",
+      "file": "png/dark/open@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/open.svg",
+      "sha256": "f6511af9d405a250bff724da15c117cadfdf43fa0a14aa936ea7cb89bb66af2d"
+    },
+    {
+      "id": "raster/dark/search@1x",
+      "file": "png/dark/search@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/search.svg",
+      "sha256": "162c4afad49bc81b7db63f593fdcdf49a94a8447eb9068d90f226876c6798814"
+    },
+    {
+      "id": "raster/dark/search@2x",
+      "file": "png/dark/search@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/search.svg",
+      "sha256": "863edf5d3d590eabb58e8dddfaccde6e2694ef3aee41ed4c098d5244e36bc703"
+    },
+    {
+      "id": "raster/dark/search@3x",
+      "file": "png/dark/search@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/search.svg",
+      "sha256": "34f8c50b3fe69247c71a8e383e5bba0fef83c939f7a3e46f7def1481fb324da3"
+    },
+    {
+      "id": "raster/dark/settings@1x",
+      "file": "png/dark/settings@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/settings.svg",
+      "sha256": "689744769c2ef3e9d2379558cd7ea2ecbfb85c5b1b62f8afd138175a651fb85e"
+    },
+    {
+      "id": "raster/dark/settings@2x",
+      "file": "png/dark/settings@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/settings.svg",
+      "sha256": "816846ca485c9f4e144ff3fff924d82e3f22aea3e628dba498a5b8e4220d8aa8"
+    },
+    {
+      "id": "raster/dark/settings@3x",
+      "file": "png/dark/settings@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/settings.svg",
+      "sha256": "4f6567187269f2962faae8bafa76c62f17dd2c85725cd19aa6f74a22981183cb"
+    },
+    {
+      "id": "raster/dark/sort-ascending@1x",
+      "file": "png/dark/sort-ascending@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort-ascending.svg",
+      "sha256": "e9d8fd0aa3d0d97460bb0c9f23b8cf35a9dbd465a08e598860dcba63858c9079"
+    },
+    {
+      "id": "raster/dark/sort-ascending@2x",
+      "file": "png/dark/sort-ascending@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort-ascending.svg",
+      "sha256": "69cfa66f7ac7ec2a79b43ab531e7f04668b71841ac4dbaeb8aa5452a0e336aad"
+    },
+    {
+      "id": "raster/dark/sort-ascending@3x",
+      "file": "png/dark/sort-ascending@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort-ascending.svg",
+      "sha256": "9dd290fb0346662b92821cbb3498544a03435b89cace0c83171c184749614479"
+    },
+    {
+      "id": "raster/dark/sort@1x",
+      "file": "png/dark/sort@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort.svg",
+      "sha256": "9e426b52dfdc911cbdcf65ec30753afefeb06bf659852e7e112a8cbff5b9c735"
+    },
+    {
+      "id": "raster/dark/sort@2x",
+      "file": "png/dark/sort@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort.svg",
+      "sha256": "457677e9e4e2a03c332340d388794f1ef7e7ca4261f628e59eaa77e9a603b0f9"
+    },
+    {
+      "id": "raster/dark/sort@3x",
+      "file": "png/dark/sort@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/sort.svg",
+      "sha256": "092dd15076a889ec57e03d5d6e1f85aeff7df2299e9432ef68776098d78961fb"
+    },
+    {
+      "id": "raster/dark/view-grid@1x",
+      "file": "png/dark/view-grid@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-grid.svg",
+      "sha256": "24f352fde36f795e63596302bcb15c89086aae96ff18c4837ac24b5dae83d36c"
+    },
+    {
+      "id": "raster/dark/view-grid@2x",
+      "file": "png/dark/view-grid@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-grid.svg",
+      "sha256": "fb43634edc6380434a9414fcec57a3d112864a3233bb27a50628676ab247ea64"
+    },
+    {
+      "id": "raster/dark/view-grid@3x",
+      "file": "png/dark/view-grid@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-grid.svg",
+      "sha256": "90002240fc9140a91abd949f438742bc4ddb1ea26e63d7d91493e6044adace35"
+    },
+    {
+      "id": "raster/dark/view-list@1x",
+      "file": "png/dark/view-list@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-list.svg",
+      "sha256": "4c809227feff743d2c1f3faf6dcf11a452a988f6e7b16c47be2e9e10756c7810"
+    },
+    {
+      "id": "raster/dark/view-list@2x",
+      "file": "png/dark/view-list@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-list.svg",
+      "sha256": "ad767cda333981e6a014fc9ede65b8931cf2c491059c074769bc5ee68274b0dd"
+    },
+    {
+      "id": "raster/dark/view-list@3x",
+      "file": "png/dark/view-list@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/view-list.svg",
+      "sha256": "e1a5f573f93ce8aa96ef2b4d8193fc3f7a37eaaaf2c2be9323b3a9dc82d7bc98"
+    },
+    {
+      "id": "raster/light/archive-test@1x",
+      "file": "png/light/archive-test@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive-test.svg",
+      "sha256": "8c346c4b19b6abee49b034f9a56a6e24239a2f6751448006a7fde048b18557b8"
+    },
+    {
+      "id": "raster/light/archive-test@2x",
+      "file": "png/light/archive-test@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive-test.svg",
+      "sha256": "7938ee66924c5686c2c459200c331a193664d505b0961ab534bfb4ff888e9796"
+    },
+    {
+      "id": "raster/light/archive-test@3x",
+      "file": "png/light/archive-test@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive-test.svg",
+      "sha256": "aff06eb0a3276bef842e9d98b47adc9290c05675f47ca34b72b9d4953c3943f2"
+    },
+    {
+      "id": "raster/light/archive@1x",
+      "file": "png/light/archive@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive.svg",
+      "sha256": "0935db2ef2a4f6dbc172abb4fac3d4cc9e087ae93b3c460e2d077310262e184c"
+    },
+    {
+      "id": "raster/light/archive@2x",
+      "file": "png/light/archive@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive.svg",
+      "sha256": "0a095e3fa8d800d588fface9660faa74fa829734535abedf6c5d9fc4b7397900"
+    },
+    {
+      "id": "raster/light/archive@3x",
+      "file": "png/light/archive@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/archive.svg",
+      "sha256": "0c63c8c78629f262977c40fe5ec057b7394b03cab09de350be20565c06a8d710"
+    },
+    {
+      "id": "raster/light/arrow-right@1x",
+      "file": "png/light/arrow-right@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/arrow-right.svg",
+      "sha256": "2ad4a455e421c0ca167b1876c271f89460c768aab8ad13fc1666e9e9a03d69e1"
+    },
+    {
+      "id": "raster/light/arrow-right@2x",
+      "file": "png/light/arrow-right@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/arrow-right.svg",
+      "sha256": "fa9f504bb6559ecd3e4903f22831e3d914a8b554164cf2ea84d962ea7e81ffdb"
+    },
+    {
+      "id": "raster/light/arrow-right@3x",
+      "file": "png/light/arrow-right@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/arrow-right.svg",
+      "sha256": "b1866c39b673b9df72914936c0b33288d959355ae5bf3fcde66d031297fdf489"
+    },
+    {
+      "id": "raster/light/check@1x",
+      "file": "png/light/check@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/check.svg",
+      "sha256": "1da1b7789180ce4bef11f24c40258c2ffe3739392990bb0aae39c61ac6bf9e53"
+    },
+    {
+      "id": "raster/light/check@2x",
+      "file": "png/light/check@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/check.svg",
+      "sha256": "5937ee23a20f95e04f78294268aed9ea32c697b3ee3217080d131a2f536f19a2"
+    },
+    {
+      "id": "raster/light/check@3x",
+      "file": "png/light/check@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/check.svg",
+      "sha256": "9e64e127c655557292236d59b55377658ecc310c77b6387f9637d613a8d7aa68"
+    },
+    {
+      "id": "raster/light/chevron-down@1x",
+      "file": "png/light/chevron-down@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-down.svg",
+      "sha256": "0593103e2adf18b4af406a0fbae79fd6ee48788b34b6adf8c7babd7d879e7f87"
+    },
+    {
+      "id": "raster/light/chevron-down@2x",
+      "file": "png/light/chevron-down@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-down.svg",
+      "sha256": "a4a478a50880dd195f32656b618d55595218462fe6400714bf0cd4e454eb3e2b"
+    },
+    {
+      "id": "raster/light/chevron-down@3x",
+      "file": "png/light/chevron-down@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-down.svg",
+      "sha256": "4a570f3bfeeea22bcd69a16394114dfe068d27a9957bd8018da5dba67af78790"
+    },
+    {
+      "id": "raster/light/chevron-right@1x",
+      "file": "png/light/chevron-right@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-right.svg",
+      "sha256": "9929bd12d477d9e38013b12347a40fcbc0f197aac4f05745c11df7a1673054d4"
+    },
+    {
+      "id": "raster/light/chevron-right@2x",
+      "file": "png/light/chevron-right@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-right.svg",
+      "sha256": "191a928c2d2401f5dfc6cc90d0605245a351db116b41c2399ed4e8802a03bf8f"
+    },
+    {
+      "id": "raster/light/chevron-right@3x",
+      "file": "png/light/chevron-right@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-right.svg",
+      "sha256": "e31b65743cc53b0d306cd9a73f8c73a4aa9cc0b9cde8a2337a87a18e7a5cf033"
+    },
+    {
+      "id": "raster/light/chevron-up@1x",
+      "file": "png/light/chevron-up@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-up.svg",
+      "sha256": "dd347d219e8277fcba9080894e7a9499104c1e1918a2ff1246a90186bd4c486c"
+    },
+    {
+      "id": "raster/light/chevron-up@2x",
+      "file": "png/light/chevron-up@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-up.svg",
+      "sha256": "6e575a0acc274bfbdd18340adbc2a71fd13c3fab49fa756a85d17d5c521fc98c"
+    },
+    {
+      "id": "raster/light/chevron-up@3x",
+      "file": "png/light/chevron-up@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/chevron-up.svg",
+      "sha256": "7f865b14b16dc94962d520607b546dde6f94faad50f653b8d557550ff1479f67"
+    },
+    {
+      "id": "raster/light/close@1x",
+      "file": "png/light/close@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/close.svg",
+      "sha256": "fc5869a92f3ae0aeb508ab72993214dec783d88b07f1bbb6e68d8e95a5f6a310"
+    },
+    {
+      "id": "raster/light/close@2x",
+      "file": "png/light/close@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/close.svg",
+      "sha256": "f3f1ef24199b3ef3dcc6a4c8fc623a8c4b332c4428b3fd78076cc10add38f12a"
+    },
+    {
+      "id": "raster/light/close@3x",
+      "file": "png/light/close@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/close.svg",
+      "sha256": "342b5ecb21a1e1093333db2afea4549c4d0c485f292b8ace732f200a0e6ce881"
+    },
+    {
+      "id": "raster/light/completed@1x",
+      "file": "png/light/completed@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/completed.svg",
+      "sha256": "acfbbdc392e450fb55d1e45e03e37a61495d928e81905c595068a3dcfdd7e533"
+    },
+    {
+      "id": "raster/light/completed@2x",
+      "file": "png/light/completed@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/completed.svg",
+      "sha256": "d9c2593fec42739b3a0446174b7dbb0287f9d1d3d78235b1fdaa26427615a1b5"
+    },
+    {
+      "id": "raster/light/completed@3x",
+      "file": "png/light/completed@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/completed.svg",
+      "sha256": "1450778648a5da85254a238f454f36fa79568c186038eeb690be590c3553a9ed"
+    },
+    {
+      "id": "raster/light/external-open@1x",
+      "file": "png/light/external-open@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/external-open.svg",
+      "sha256": "51a67e74e2f0095eae5a218de843acc6745053a96c20a0a35348b662563ac9fa"
+    },
+    {
+      "id": "raster/light/external-open@2x",
+      "file": "png/light/external-open@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/external-open.svg",
+      "sha256": "62113c8c7f69daa6b37450a67b9f02a84e7d0353a948bc908659ec1b6a3ebb8e"
+    },
+    {
+      "id": "raster/light/external-open@3x",
+      "file": "png/light/external-open@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/external-open.svg",
+      "sha256": "a99431fb7a50118d940f2f64a78c5968be2e0653510f44eeed3d96df36c3cd37"
+    },
+    {
+      "id": "raster/light/extract@1x",
+      "file": "png/light/extract@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/extract.svg",
+      "sha256": "d67167863e42057774427ebd8fcab3c745ed82a5beb79e5e58f045479bf1aebe"
+    },
+    {
+      "id": "raster/light/extract@2x",
+      "file": "png/light/extract@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/extract.svg",
+      "sha256": "5275495f39186c77821130fd5d51a0b0ce8b26fd2a0e8671f8e62194d233f87f"
+    },
+    {
+      "id": "raster/light/extract@3x",
+      "file": "png/light/extract@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/extract.svg",
+      "sha256": "b10ba13b7ed187a45c4d304cced533c1751765385e6df980c2d84a66f4805723"
+    },
+    {
+      "id": "raster/light/file-code@1x",
+      "file": "png/light/file-code@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-code.svg",
+      "sha256": "b3700e5b8570185a9b7b8e0fbfe060924a9511eddc55b217be6fe49d4b4c4b21"
+    },
+    {
+      "id": "raster/light/file-code@2x",
+      "file": "png/light/file-code@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-code.svg",
+      "sha256": "bbad13c46cdc8ecb848569ac09d0ac53edfc5009d19c00817739bdd48381112d"
+    },
+    {
+      "id": "raster/light/file-code@3x",
+      "file": "png/light/file-code@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-code.svg",
+      "sha256": "2b5dacafe2af0e5bb64a117bd7f528db8fbf71fb27fdd15751ceba15ed8b6276"
+    },
+    {
+      "id": "raster/light/file-markdown@1x",
+      "file": "png/light/file-markdown@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-markdown.svg",
+      "sha256": "45a911366bb624b8681a753883aa63f181aae6f4f6e55c3a45e9599700897cc3"
+    },
+    {
+      "id": "raster/light/file-markdown@2x",
+      "file": "png/light/file-markdown@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-markdown.svg",
+      "sha256": "b9cbf6b58c586e62cb7170c46b2a06748a89878940d2b2f9cba22288fd00e3b7"
+    },
+    {
+      "id": "raster/light/file-markdown@3x",
+      "file": "png/light/file-markdown@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-markdown.svg",
+      "sha256": "519253a5a8b858c98c3d4ad9eb947b5d75ebf8415266ad3c0296eafb72bd7784"
+    },
+    {
+      "id": "raster/light/file-pdf@1x",
+      "file": "png/light/file-pdf@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-pdf.svg",
+      "sha256": "c6d63e39bfbd16d7cbfd3bf17cab44619d9a859047026807332ab0b7fc788542"
+    },
+    {
+      "id": "raster/light/file-pdf@2x",
+      "file": "png/light/file-pdf@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-pdf.svg",
+      "sha256": "a5bf99eb073304fb99bc73e599c3ed90d16848b3cc879dcae505d73bc41ccad5"
+    },
+    {
+      "id": "raster/light/file-pdf@3x",
+      "file": "png/light/file-pdf@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-pdf.svg",
+      "sha256": "5584623701ae9f9a47398a65f3e4fbd3b0234f72a945af2b36d65d80d02d6bde"
+    },
+    {
+      "id": "raster/light/file-text@1x",
+      "file": "png/light/file-text@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-text.svg",
+      "sha256": "07ad98f682115b55202937d3af26650dae822a2d11f0a6b377c698c6b5449beb"
+    },
+    {
+      "id": "raster/light/file-text@2x",
+      "file": "png/light/file-text@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-text.svg",
+      "sha256": "c61ffd9f15a8145acb287df86eeb7a0e8a5b0e28dd9425ece469e54f81ef3ac5"
+    },
+    {
+      "id": "raster/light/file-text@3x",
+      "file": "png/light/file-text@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/file-text.svg",
+      "sha256": "b5cd0440667204d0fe3b17361f8ca601756e07535979ead4fcc0ac7f2dc7eff6"
+    },
+    {
+      "id": "raster/light/folder@1x",
+      "file": "png/light/folder@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/folder.svg",
+      "sha256": "a9a3dfa6e0baf0e6fc029eb58d2760494e03238578cddf7756d8692cd8ea38e6"
+    },
+    {
+      "id": "raster/light/folder@2x",
+      "file": "png/light/folder@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/folder.svg",
+      "sha256": "534e259c1789b8d01049e213d6ad0badf7a37b2079db0e1df5d266704982ff0f"
+    },
+    {
+      "id": "raster/light/folder@3x",
+      "file": "png/light/folder@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/folder.svg",
+      "sha256": "7c196413d08893d41ebdb295e72731e44a2d9619f88b4b2e19ab48a5b5942de1"
+    },
+    {
+      "id": "raster/light/maximize@1x",
+      "file": "png/light/maximize@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/maximize.svg",
+      "sha256": "f17f311d64d7ea11b55668f6375bbff264def96a87367333e2270fa7f2e17a7a"
+    },
+    {
+      "id": "raster/light/maximize@2x",
+      "file": "png/light/maximize@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/maximize.svg",
+      "sha256": "38afa3973ae67d5e99b2a8124c0d2fb49f9326de66512cdfc529045a169e26cc"
+    },
+    {
+      "id": "raster/light/maximize@3x",
+      "file": "png/light/maximize@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/maximize.svg",
+      "sha256": "479def585d0b6ab772642e31db03f75c5c1bd1980d0e46449dc04ec654315f8c"
+    },
+    {
+      "id": "raster/light/minimize@1x",
+      "file": "png/light/minimize@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/minimize.svg",
+      "sha256": "24f3b6b2901744b1af71ec71381ac1934082164ba22e09ea214985c92e4dc175"
+    },
+    {
+      "id": "raster/light/minimize@2x",
+      "file": "png/light/minimize@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/minimize.svg",
+      "sha256": "fff3ece6a2c3112a70aff5cc00be796c62767d8dd05356c029a6b065e458755d"
+    },
+    {
+      "id": "raster/light/minimize@3x",
+      "file": "png/light/minimize@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/minimize.svg",
+      "sha256": "0a1582740b92c8cefe87b90bf6834af862b3ce83371329ca00902b29b3134022"
+    },
+    {
+      "id": "raster/light/more@1x",
+      "file": "png/light/more@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/more.svg",
+      "sha256": "faf2ae7beea5f479e00172919bf0371ee8fbcaed90509dc9bf60b4a1696cb93d"
+    },
+    {
+      "id": "raster/light/more@2x",
+      "file": "png/light/more@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/more.svg",
+      "sha256": "3f8eb24947c9216241333dfa09a6bb36275f3cadae2811f9c5a995e5e98e7795"
+    },
+    {
+      "id": "raster/light/more@3x",
+      "file": "png/light/more@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/more.svg",
+      "sha256": "41d05edcc49d6896a53f56e0af2d99775dace819e1b91b0825e5cc72e27cc471"
+    },
+    {
+      "id": "raster/light/new@1x",
+      "file": "png/light/new@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/new.svg",
+      "sha256": "ae2b92a3e1aca7903ec9ba883625064c5a99d976858487d5f361f80729681d3f"
+    },
+    {
+      "id": "raster/light/new@2x",
+      "file": "png/light/new@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/new.svg",
+      "sha256": "d35ab395765df0e77943e146d09c06dd814f34b80c70f57a1ced6a18bebf555a"
+    },
+    {
+      "id": "raster/light/new@3x",
+      "file": "png/light/new@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/new.svg",
+      "sha256": "e3fe3df236c24ebfb0ecf07ed863894a0e02c70430ff8351b2fa9d5f6a914fde"
+    },
+    {
+      "id": "raster/light/open@1x",
+      "file": "png/light/open@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/open.svg",
+      "sha256": "28bd07c3655ad8090b8852bcbe3971d626a8342bdd384a02d05189ffb89d7aa3"
+    },
+    {
+      "id": "raster/light/open@2x",
+      "file": "png/light/open@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/open.svg",
+      "sha256": "9e783157bc8329b4ff004a1b5b0ecbbbc3367ca3cd1d83cf00e0b50f9389a701"
+    },
+    {
+      "id": "raster/light/open@3x",
+      "file": "png/light/open@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/open.svg",
+      "sha256": "3f259ec3c89eafde084e8710fe61a262f8aef3d51469eb71db4c04e6eebc7576"
+    },
+    {
+      "id": "raster/light/search@1x",
+      "file": "png/light/search@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/search.svg",
+      "sha256": "9fb5381bf74228b2188d8132f2b1443185727d1ee332a73c73b4990f6792148f"
+    },
+    {
+      "id": "raster/light/search@2x",
+      "file": "png/light/search@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/search.svg",
+      "sha256": "ae8a39cb76fa79697c8a4d11f83f33d57a33c3a4d35c41969f89b7cb48175ec3"
+    },
+    {
+      "id": "raster/light/search@3x",
+      "file": "png/light/search@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/search.svg",
+      "sha256": "67ff3d4126ffba3db105fe84df2524286b648e331f7421045ac6ec3468133b10"
+    },
+    {
+      "id": "raster/light/settings@1x",
+      "file": "png/light/settings@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/settings.svg",
+      "sha256": "2e7e3f59d4bd0495e2a04706942e80035673d43039b21262e057003f34a19afe"
+    },
+    {
+      "id": "raster/light/settings@2x",
+      "file": "png/light/settings@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/settings.svg",
+      "sha256": "eabf756db5eb00dc76308a2a991c6e71b04ec9e1a6ac85aea29229c6bda75984"
+    },
+    {
+      "id": "raster/light/settings@3x",
+      "file": "png/light/settings@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/settings.svg",
+      "sha256": "b4076fc3e7fe20c3df598c42fda2505172e3b2b27f8cdaa072eac655f64a7255"
+    },
+    {
+      "id": "raster/light/sort-ascending@1x",
+      "file": "png/light/sort-ascending@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort-ascending.svg",
+      "sha256": "0c611fb83cd4e3df5efe3a9862f4e37894a81ce34154bc2192f5a1e2b4d522b2"
+    },
+    {
+      "id": "raster/light/sort-ascending@2x",
+      "file": "png/light/sort-ascending@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort-ascending.svg",
+      "sha256": "02bd989ead0e1ac3588047dbf79895fd2b6df7d7ddba9fb9015f6a65e30ea1e5"
+    },
+    {
+      "id": "raster/light/sort-ascending@3x",
+      "file": "png/light/sort-ascending@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort-ascending.svg",
+      "sha256": "2d18abba2924643faada0a589e7cb16d76a0e72c7cbf6ad5cd32dc6d33a8b66c"
+    },
+    {
+      "id": "raster/light/sort@1x",
+      "file": "png/light/sort@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort.svg",
+      "sha256": "c12ee766d3c20c37507eb09c8f0ea54d1e9cc5f86171893a04968552a57b256d"
+    },
+    {
+      "id": "raster/light/sort@2x",
+      "file": "png/light/sort@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort.svg",
+      "sha256": "45702e476bd881b650d1ad8c1bc5b0f0592c7a926b31ca0a14977ec638fab6dc"
+    },
+    {
+      "id": "raster/light/sort@3x",
+      "file": "png/light/sort@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/sort.svg",
+      "sha256": "660ae743bebefbb9fc82b2cac6f2b8751489bc98750125a4300c3e66c035fff9"
+    },
+    {
+      "id": "raster/light/view-grid@1x",
+      "file": "png/light/view-grid@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-grid.svg",
+      "sha256": "846b5dc7dfab470eb30014d1ab4c2662b55c42492f0f0651ce5ef73db04bd952"
+    },
+    {
+      "id": "raster/light/view-grid@2x",
+      "file": "png/light/view-grid@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-grid.svg",
+      "sha256": "7d949dd8632d75fcc000e5b10380d418a3a75c9c346a84e24fd6010fd1b07afd"
+    },
+    {
+      "id": "raster/light/view-grid@3x",
+      "file": "png/light/view-grid@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-grid.svg",
+      "sha256": "1223c717f87856baec11a5b2235e82569209b7fd68586854e96692ce0db5a75e"
+    },
+    {
+      "id": "raster/light/view-list@1x",
+      "file": "png/light/view-list@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-list.svg",
+      "sha256": "44a195a9df9f70a9a845d53e4f46c12c2eab52936ba3268b579cccdbece5a498"
+    },
+    {
+      "id": "raster/light/view-list@2x",
+      "file": "png/light/view-list@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-list.svg",
+      "sha256": "6f3af3f0d221e5be8c8fee656779168bf3f243cbce0de84350301c0461c52332"
+    },
+    {
+      "id": "raster/light/view-list@3x",
+      "file": "png/light/view-list@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/view-list.svg",
+      "sha256": "b83136d74d69c98f95df9d8db7ee664eebd452a582cdf37bea32ca3988156753"
+    }
+  ]
+}
