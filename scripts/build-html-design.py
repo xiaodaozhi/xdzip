@@ -2,6 +2,7 @@
 """Export the reviewable HTML design with shared SVGs and offline demo images."""
 import argparse
 import base64
+import hashlib
 import json
 import mimetypes
 import re
@@ -9,6 +10,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'design/html'
+FONTS = ROOT / 'design/assets/fonts'
+FONT_STYLESHEET = '../assets/fonts/fonts.css'
 
 
 def data_url(path):
@@ -22,8 +25,11 @@ def script(code):
 def inline_html(name, styles, scripts):
     page = (SOURCE / name).read_text()
     for filename in styles:
+        css = (SOURCE / filename).read_text()
+        if filename == FONT_STYLESHEET:
+            css = css.replace('url("./xdzip-design-sans-sc.woff2")', 'url("' + data_url(FONTS / 'xdzip-design-sans-sc.woff2') + '")')
         page = re.sub(r'<link\s+rel="stylesheet"\s+href="' + re.escape(filename) + r'"\s*/?>',
-                      lambda _: '<style>' + (SOURCE / filename).read_text() + '</style>', page)
+                      lambda _: '<style>' + css + '</style>', page)
     for filename in scripts:
         page = re.sub(r'<script\s+defer\s+src="' + re.escape(filename) + r'"></script>', '', page)
     return page.replace('</body>', ''.join(script((SOURCE / name).read_text()) for name in scripts) + '</body>')
@@ -44,18 +50,24 @@ def main():
     if args.check:
         if (SOURCE / 'assets.js').read_text() != generated:
             raise SystemExit('HTML shared assets are stale; run scripts/build-html-design.py')
+        font_manifest = json.loads((FONTS / 'manifest.json').read_text())
+        for entry in ['subset', 'license']:
+            item = font_manifest[entry]
+            if hashlib.sha256((FONTS / item['path']).read_bytes()).hexdigest() != item['sha256']:
+                raise SystemExit(f'HTML font {entry} does not match its manifest')
         print('HTML shared assets match reviewed SVGs and source photos')
         return
     (SOURCE / 'assets.js').write_text(generated)
-    canvas = inline_html('canvas.html', ['styles.css', 'hifi.css'], ['assets.js', 'app.js'])
+    canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css'], ['assets.js', 'app.js'])
     references = {}
     for path in sorted((ROOT / 'design/hifi').glob('v*/screens/*.png')):
         references['../hifi/' + str(path.relative_to(ROOT / 'design/hifi'))] = data_url(path)
-    review = inline_html('index.html', ['review.css'], [])
+    review = inline_html('index.html', [FONT_STYLESHEET, 'review.css'], [])
     review = review.replace('<script defer src="review.js"></script>', '')
     review = review.replace('src="canvas.html"', 'src="about:blank"')
     config = 'window.XDZIP_CANVAS=' + json.dumps(canvas, ensure_ascii=False) + ';window.XDZIP_REFERENCES=' + json.dumps(references) + ';'
-    review = review.replace('</body>', script(config) + script((SOURCE / 'review.js').read_text()) + '</body>')
+    license_notice = '<script type="text/plain" id="xdzip-font-license">' + (FONTS / 'OFL.txt').read_text() + '</script>'
+    review = review.replace('</body>', license_notice + script(config) + script((SOURCE / 'review.js').read_text()) + '</body>')
     output = ROOT / 'dist/xdzip-hifi-design.html'
     output.parent.mkdir(exist_ok=True)
     output.write_text(review)

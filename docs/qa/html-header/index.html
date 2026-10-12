@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip 顶部视觉复核</title><style>
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:#f4f6fa;color:#202638;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1620px;padding:24px;margin:auto}h1{font-size:25px;margin:0 0 8px}p{color:#5f6b83}nav{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}button{font:inherit;padding:8px 14px;border:1px solid #d9dfeb;border-radius:8px;background:white;cursor:pointer}button[aria-pressed=true]{background:#e7edff;color:#1956ff;border-color:#9fb4ff}label{display:flex;align-items:center;gap:12px}.viewport{overflow:auto;border:1px solid #dce2ed;border-radius:12px;background:white}.artboard{position:relative;min-width:774px;aspect-ratio:1548/137}.artboard img{width:100%;height:100%;position:absolute;inset:0;display:block}.evidence{width:100%;min-width:774px;display:block}table{border-collapse:collapse;width:100%;font-size:13px;background:white}th,td{padding:10px;text-align:left;border-bottom:1px solid #e5e9f0}code{font-size:12px}a{color:#1956ff}.scroll-table{overflow:auto}small{color:#65718a}@media(max-width:650px){main{padding:16px}h1{font-size:21px}}
+</style></head><body><main><h1>xdzip 顶部视觉复核</h1><p>使用同一窗口坐标裁切：1548 × 137 px。所有图片保持比例；手机可横向滚动。原稿、修复前和修复后可独立查看，叠加用于识别边界和中心线偏移。</p>
+<nav aria-label="对照方式"><button data-mode="overlay" aria-pressed="true">原稿 + 修复后叠加</button><button data-mode="reference">原稿</button><button data-mode="after">修复后</button><button data-mode="before">修复前</button><button data-mode="difference">像素差异</button></nav>
+<label>修复后透明度<input id="opacity" type="range" min="0" max="100" value="50"><output id="value">50%</output></label><p><small id="caption">叠加模式。清晰度、原稿光影与字体轮廓差异仍会产生像素差异，不能把差异图直接当成错误数量。</small></p>
+<div class="viewport"><div class="artboard"><img id="base" src="reference.png" alt="已确认原稿顶部"><img id="candidate" src="after.png" style="opacity:.5" alt="HTML 修复后的顶部"></div></div>
+<p>下面上方为原稿，下方为修复后 HTML，保持相同坐标和尺寸。</p><div class="viewport"><img class="evidence" src="comparison.png" alt="相同尺度的原稿和 HTML 对照"></div>
+<p>测量基准来自独立原稿检查。边界和中心容差 1 px，柔化后的图标墨迹边界容差 2 px。字体轮廓仅记录，不声称已还原生成图片的未知原始字体。</p>
+<div class="scroll-table"><table><thead><tr><th>检查</th><th>原稿锚点</th><th>实际</th><th>最大偏差</th></tr></thead><tbody id="rows"></tbody></table></div><p>几何检查仅覆盖本页顶部范围；其他页面仍按各自原稿校准。</p>
+<script src="measurements.js"></script>
+<script>
+const base=document.querySelector('#base'),candidate=document.querySelector('#candidate'),slider=document.querySelector('#opacity');
+const showOpacity=()=>{candidate.style.opacity=slider.value/100;document.querySelector('#value').textContent=slider.value+'%'};
+slider.oninput=()=>{setMode('overlay');showOpacity()};
+function setMode(mode){for(const button of document.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));base.src='reference.png';candidate.hidden=mode!=='overlay';if(mode==='overlay'){showOpacity()}else{base.src=mode+'.png'}document.querySelector('#caption').textContent=mode==='difference'?'像素差异包含字体、抗锯齿和原稿光影差异，并非所有像素差异都是布局错误。':'按相同坐标查看；重点核对 Tab 边界、加号和关闭按钮、设置图标、搜索和解压按钮。'}
+for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>setMode(button.dataset.mode);
+const report=window.XDZIP_HEADER_REPORT;
+if(report){for(const item of report.measurements){const row=document.createElement('tr');for(const value of [item.selector||item.name,JSON.stringify(item.expected),JSON.stringify(item.actual),item.maximum_delta_px===undefined?'字体轮廓记录':item.maximum_delta_px+' px']){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}document.querySelector('#rows').append(row)}}
+</script></main></body></html>

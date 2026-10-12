@@ -13,3 +13,9 @@
 验证顺序：最小互操作 → 恶意/截断输入 → 取消/资源上限 → 许可/SBOM → 干净构建 → 记录决定。不能通过调用库的通用 unpack 绕过宿主路径保护。
 
 应用型 Rust workspace 提交 Cargo.lock。新增原生库和网络下载 build script 需专门审查；禁用未使用 features。弃用或漏洞无修复时按实际可达性决定升级、替换或关闭能力，记录原因。
+
+## HTML 复核字体与工具
+
+采用官方 Noto Sans SC 2.004-H2 的离线可变子集，替代审阅设备的系统回退字体。固定 Google Fonts 提交、原始及衍生哈希、版权和 OFL-1.1 许可见 [材料清单](../../design/assets/fonts/manifest.json)。HTML 仅加载约128KB WOFF2，含400–750字重；无外部服务、传递运行依赖或原生编译。保留系统字体方案会导致跨平台文字度量不同，因此审阅稿采用随包字体。覆盖已检查，未知生成原稿字体仍不能证明匹配；未实施独立漏洞审计。字体上游持续维护，固定版本需随维护情况复核。
+
+设计检查工具为 Playwright（Apache-2.0）、Pillow（HPND）、FontTools（MIT）和 Brotli（MIT），版本固定于 [工具要求](../../scripts/html-design-requirements.txt)，通过独立 venv 安装；Playwright 下载 Chromium 仅作为 CI／本地检查浏览器，不进入应用或离线设计交付。FontTools 和 Brotli 只负责子集生成与检查，不进入运行代码。

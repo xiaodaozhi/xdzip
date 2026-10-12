@@ -1,0 +1,51 @@
+name: HTML design review
+on:
+  push:
+    paths:
+      - 'design/**'
+      - 'scripts/*html*'
+      - 'docs/qa/html-header/**'
+      - '.github/workflows/html-design.yml'
+  pull_request:
+    paths:
+      - 'design/**'
+      - 'scripts/*html*'
+      - 'docs/qa/html-header/**'
+      - '.github/workflows/html-design.yml'
+permissions:
+  contents: read
+jobs:
+  visual-anchors:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install isolated review tooling
+        run: |
+          python3 -m venv .venv-design
+          .venv-design/bin/pip install -r scripts/html-design-requirements.txt
+          .venv-design/bin/python -m playwright install --with-deps chromium
+      - name: Build and compare source anchors
+        run: |
+          export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          .venv-design/bin/python design/assets/fonts/build-subset.py --check
+          .venv-design/bin/python scripts/build-html-design.py
+          .venv-design/bin/python scripts/check-html-header.py
+          .venv-design/bin/python scripts/check-html-preview.py
+          .venv-design/bin/python scripts/check-html-references.py
+          .venv-design/bin/python scripts/check-html-design.py
+          .venv-design/bin/python scripts/build-html-header-review.py
+      - name: Upload actual review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xdzip-html-design-evidence
+          path: |
+            docs/qa/html-header/
+            dist/html-preview-review/
+            dist/html-reference-review/
+            dist/html-design-review/
+            dist/xdzip-header-review.html
+            dist/xdzip-hifi-design.html
+          if-no-files-found: error
+          retention-days: 14

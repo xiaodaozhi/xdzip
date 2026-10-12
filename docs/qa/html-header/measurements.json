@@ -1,0 +1,337 @@
+{
+  "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+  "viewport": [
+    1588,
+    1000
+  ],
+  "device_scale_factor": 1,
+  "font": "Xdzip Design Sans SC embedded variable subset",
+  "measurements": [
+    {
+      "kind": "DOM rect",
+      "selector": ".window",
+      "expected": [
+        20,
+        30,
+        1548,
+        940
+      ],
+      "actual": [
+        20,
+        30,
+        1548,
+        940
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "DOM rect",
+      "selector": ".archive-tab:not(.inactive)",
+      "expected": [
+        293,
+        39,
+        246,
+        49
+      ],
+      "actual": [
+        293,
+        39,
+        246,
+        49
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "DOM rect",
+      "selector": ".archive-tab.inactive",
+      "expected": [
+        542,
+        39,
+        262,
+        49
+      ],
+      "actual": [
+        542,
+        39,
+        262,
+        49
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "DOM rect",
+      "selector": ".search-field",
+      "expected": [
+        906,
+        101,
+        449,
+        51
+      ],
+      "actual": [
+        906,
+        101,
+        449,
+        51
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "DOM rect",
+      "selector": ".split-button",
+      "expected": [
+        1368,
+        101,
+        183,
+        51
+      ],
+      "actual": [
+        1368,
+        101,
+        183,
+        51
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "DOM center",
+      "selector": "#close-archive svg",
+      "expected": [
+        513.5,
+        63.5
+      ],
+      "actual": [
+        513.0,
+        63.5
+      ],
+      "maximum_delta_px": 0.5
+    },
+    {
+      "kind": "DOM center",
+      "selector": "#close-example-tab svg",
+      "expected": [
+        778.5,
+        63.5
+      ],
+      "actual": [
+        778.0,
+        63.5
+      ],
+      "maximum_delta_px": 0.5
+    },
+    {
+      "kind": "DOM center",
+      "selector": "#new-tab svg",
+      "expected": [
+        835.5,
+        62.5
+      ],
+      "actual": [
+        835.5,
+        62.5
+      ],
+      "maximum_delta_px": 0.0
+    },
+    {
+      "kind": "DOM center",
+      "selector": "#title-settings svg",
+      "expected": [
+        1532,
+        61
+      ],
+      "actual": [
+        1532.0,
+        61.0
+      ],
+      "maximum_delta_px": 0.0
+    },
+    {
+      "kind": "painted ink",
+      "name": "active-close",
+      "expected": [
+        508,
+        58,
+        11,
+        11
+      ],
+      "actual": [
+        508,
+        59,
+        10,
+        10
+      ],
+      "maximum_delta_px": 1
+    },
+    {
+      "kind": "painted ink",
+      "name": "inactive-close",
+      "expected": [
+        773,
+        58,
+        11,
+        11
+      ],
+      "actual": [
+        773,
+        59,
+        10,
+        10
+      ],
+      "maximum_delta_px": 1
+    },
+    {
+      "kind": "painted ink",
+      "name": "plus",
+      "expected": [
+        827,
+        54,
+        18,
+        18
+      ],
+      "actual": [
+        828,
+        55,
+        16,
+        16
+      ],
+      "maximum_delta_px": 2
+    },
+    {
+      "kind": "painted ink",
+      "name": "settings",
+      "expected": [
+        1521,
+        50,
+        22,
+        23
+      ],
+      "actual": [
+        1521,
+        50,
+        22,
+        23
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "painted ink",
+      "name": "open",
+      "expected": [
+        50,
+        115,
+        26,
+        24
+      ],
+      "actual": [
+        50,
+        115,
+        26,
+        24
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "painted ink",
+      "name": "new",
+      "expected": [
+        176,
+        114,
+        26,
+        26
+      ],
+      "actual": [
+        175,
+        114,
+        26,
+        26
+      ],
+      "maximum_delta_px": 1
+    },
+    {
+      "kind": "painted ink",
+      "name": "test",
+      "expected": [
+        322,
+        114,
+        26,
+        26
+      ],
+      "actual": [
+        321,
+        114,
+        26,
+        26
+      ],
+      "maximum_delta_px": 1
+    },
+    {
+      "kind": "painted ink",
+      "name": "more",
+      "expected": [
+        452,
+        125,
+        23,
+        4
+      ],
+      "actual": [
+        453,
+        125,
+        22,
+        4
+      ],
+      "maximum_delta_px": 1
+    },
+    {
+      "kind": "type contour (review only)",
+      "name": "brand",
+      "expected": [
+        178,
+        52,
+        54,
+        22
+      ],
+      "actual": [
+        178,
+        52,
+        55,
+        22
+      ]
+    },
+    {
+      "kind": "type contour (review only)",
+      "name": "active-label",
+      "expected": [
+        350,
+        55,
+        113,
+        21
+      ],
+      "actual": [
+        350,
+        55,
+        112,
+        21
+      ]
+    },
+    {
+      "kind": "type contour (review only)",
+      "name": "inactive-label",
+      "expected": [
+        599,
+        55,
+        107,
+        21
+      ],
+      "actual": [
+        599,
+        55,
+        108,
+        20
+      ]
+    }
+  ],
+  "page_errors": [],
+  "limits": [
+    "Source font is unknown; antialiasing and generated highlights still differ.",
+    "Geometry and isolated icon checks do not prove full-page visual fidelity."
+  ]
+}

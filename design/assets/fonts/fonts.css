@@ -1,0 +1,9 @@
+/* Font derivative licensed under OFL-1.1; copyright and full terms are in OFL.txt.
+ * Capture only after document.fonts.ready, so measurements use the embedded font. */
+@font-face {
+  font-family: "Xdzip Design Sans SC";
+  src: url("./xdzip-design-sans-sc.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 750;
+  font-display: block;
+}

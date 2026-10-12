@@ -1140,7 +1140,7 @@ function scenario(value) {
     if (["conflict", "permission", "disk", "source", "cancel"].includes(value))
         showExtract("selected");
 }
-$("#app-brand").innerHTML = icon("app-mark") + "xdzip";
+$("#app-brand").innerHTML = icon("app-mark") + '<span class="brand-label">xdzip</span>';
 hydrate();
 setTheme("light");
 if (innerWidth <= 1050) $("#inspector").classList.add("collapsed-narrow");
@@ -1157,6 +1157,7 @@ $("#reset").onclick = () => {
     scenario("normal");
 };
 $("#title-settings").onclick = showSettings;
+$("#close-example-tab").onclick = () => toast("项目素材.zip 是多标签外观示例，当前演示仅提供一个归档会话。");
 $("#test-archive").onclick = () => toast("设计演示：归档测试通过，30 个文件可读取。");
 $("#more-actions").onclick = () => { $("#spec").hidden = !$("#spec").hidden; };
 $("#grid-view").onclick = () => toast("网格视图待单独设计；当前展示已确认的列表视图。");
