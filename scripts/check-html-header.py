@@ -29,6 +29,18 @@ def ink_bounds(picture, region):
     left, top, right, bottom = bounds
     return [x + left, y + top, right - left, bottom - top]
 
+def white_ink_bounds(picture, region):
+    """Isolate the white chevron from the blue split-button background."""
+    x, y, width, height = region
+    crop = picture.crop((x, y, x + width, y + height)).convert('RGB')
+    pixels = crop.load()
+    mask = Image.new('L', crop.size)
+    mask.putdata([255 if min(pixels[column, row]) > 180
+                  and max(pixels[column, row]) - min(pixels[column, row]) < 80 else 0
+                  for row in range(height) for column in range(width)])
+    left, top, right, bottom = mask.getbbox()
+    return [x + left, y + top, right - left, bottom - top]
+
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(
         executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
@@ -60,6 +72,23 @@ with sync_playwright() as playwright:
             assert delta <= 1, measurements[-1]
         shot = Image.open(io.BytesIO(page.screenshot())).convert('RGB')
         original = Image.open(source).convert('RGB')
+        arrow = spec['extract_chevron']
+        expected = white_ink_bounds(original, arrow['region'])
+        assert expected == arrow['white_ink_bounds'], 'Chevron reference requires remeasurement'
+        actual = white_ink_bounds(shot, arrow['region'])
+        delta = max(abs(a-b) for a,b in zip(actual,expected))
+        measurements.append({'kind':'painted white ink', 'name':'extract-chevron',
+            'expected':expected, 'actual':actual, 'maximum_delta_px':delta})
+        assert delta <= 1, measurements[-1]
+        for sample in spec['active_right_shoulder']['pixel_samples']:
+            point = tuple(sample['point'])
+            expected = list(original.getpixel(point))
+            assert expected == sample['source_rgb'], 'Shoulder reference requires remeasurement'
+            actual = list(shot.getpixel(point))
+            delta = max(abs(a-b) for a,b in zip(actual,expected))
+            measurements.append({'kind':'shoulder sample RGB', 'name':f'right shoulder {point}',
+                'expected':expected, 'actual':actual, 'maximum_delta_rgb':delta})
+            assert delta <= spec['active_right_shoulder']['rgb_tolerance'], measurements[-1]
         for name, region in {'active-close':[501,52,26,26], 'inactive-close':[766,52,26,26],
                              'plus':[820,45,32,34], 'settings':[1514,44,36,35],
                              'open':[45,108,36,38], 'new':[170,108,36,38],
@@ -77,6 +106,13 @@ with sync_playwright() as playwright:
         comparison = Image.new('RGB', (1548, 290), '#e2e6ed')
         comparison.paste(reference, (0,0)); comparison.paste(implementation, (0,153))
         comparison.save(OUTPUT / 'comparison.png')
+        for name, box in {'tabs':(268,0,854,60), 'settings':(1472,0,1548,137),
+                          'tab-right-shoulder':(504,37,548,68),
+                          'extract-chevron':(1480,70,1540,125)}.items():
+            first, second = reference.crop(box), implementation.crop(box)
+            detail = Image.new('RGB', (first.width,first.height*2+12), '#e2e6ed')
+            detail.paste(first, (0,0)); detail.paste(second, (0,first.height+12))
+            detail.save(OUTPUT / f'{name}-comparison.png')
         shot.save(OUTPUT / 'main.png')
         # Record type contours separately; the original font is not recoverable.
         for name, region in {'brand':[173,44,69,38], 'active-label':[345,48,138,33],
@@ -84,6 +120,11 @@ with sync_playwright() as playwright:
             measurements.append({'kind':'type contour (review only)', 'name':name,
                 'expected':ink_bounds(original, region), 'actual':ink_bounds(shot, region)})
         # Verify actual handlers and close the popup before changing platform state.
+        page.locator('#extract-menu-button').click()
+        assert page.locator('#extract-menu').is_visible()
+        page.locator('[data-extract="selected"]').click()
+        assert page.locator('dialog[open][data-kind="extract"]').count() == 1
+        page.keyboard.press('Escape')
         page.locator('#title-settings').click()
         assert page.locator('dialog[open][data-kind="settings"]').count() == 1
         page.keyboard.press('Escape')

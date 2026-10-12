@@ -37,7 +37,7 @@ python scripts/check-html-references.py
 python scripts/build-html-header-review.py
 ```
 
-顶部检查使用原稿独立锚点：DOM 边界／中心最大偏差不超过 1 px，隔离区域中的实际图标墨迹边界偏差不超过 2 px。字形轮廓只记录实测值。叠加图和差异图包含抗锯齿、光影和字形差异，不能将总像素差转换成虚构的相似度。
+顶部检查使用原稿独立锚点：DOM 边界／中心最大偏差不超过 1 px，隔离区域中的实际图标墨迹边界偏差不超过 2 px。下拉箭头白色墨迹边界容差 1 px；Tab 右肩按原稿的白面和弧线取样，单通道颜色容差10/255，以容纳原稿柔化。字形轮廓只记录实测值。叠加图和差异图包含抗锯齿、光影和字形差异，不能将总像素差转换成虚构的相似度。
 
 查看 [同尺寸对照](../qa/html-header/index.html)、[测量结果](../qa/html-header/measurements.json)、[顶部复核说明](../qa/html-header-review.md)。离线文件是 `dist/xdzip-header-review.html`，可切换原稿、修复前、修复后、透明叠加和像素差异；界面单文件是 `dist/xdzip-hifi-design.html`。
 

@@ -276,5 +276,125 @@
       1532,
       61
     ]
+  },
+  "active_right_shoulder": {
+    "radius_estimate_px": 8,
+    "pixel_samples": [
+      {
+        "point": [
+          538,
+          85
+        ],
+        "source_rgb": [
+          255,
+          255,
+          255
+        ],
+        "before_rgb": [
+          227,
+          231,
+          239
+        ]
+      },
+      {
+        "point": [
+          538,
+          86
+        ],
+        "source_rgb": [
+          254,
+          254,
+          254
+        ],
+        "before_rgb": [
+          227,
+          231,
+          239
+        ]
+      },
+      {
+        "point": [
+          539,
+          83
+        ],
+        "source_rgb": [
+          226,
+          229,
+          234
+        ],
+        "before_rgb": [
+          243,
+          244,
+          247
+        ]
+      },
+      {
+        "point": [
+          540,
+          84
+        ],
+        "source_rgb": [
+          228,
+          230,
+          235
+        ],
+        "before_rgb": [
+          244,
+          245,
+          247
+        ]
+      },
+      {
+        "point": [
+          541,
+          85
+        ],
+        "source_rgb": [
+          226,
+          230,
+          234
+        ],
+        "before_rgb": [
+          245,
+          246,
+          248
+        ]
+      },
+      {
+        "point": [
+          542,
+          86
+        ],
+        "source_rgb": [
+          224,
+          228,
+          233
+        ],
+        "before_rgb": [
+          235,
+          236,
+          239
+        ]
+      }
+    ],
+    "rgb_tolerance": 10
+  },
+  "extract_chevron": {
+    "region": [
+      1513,
+      112,
+      27,
+      29
+    ],
+    "white_ink_bounds": [
+      1520,
+      123,
+      12,
+      7
+    ],
+    "center": [
+      1526,
+      126.5
+    ]
   }
 }

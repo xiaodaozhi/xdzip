@@ -86,14 +86,24 @@ body { min-width:1588px; font-size:18px; background:var(--canvas); }
     background:var(--surface);
     box-shadow:0 -1px 3px #24345208;
 }
-.archive-tab:not(.inactive)::before {
+.archive-tab:not(.inactive) {
+    z-index:1;
+}
+.archive-tab:not(.inactive)::before,.archive-tab:not(.inactive)::after {
     content:"";
     position:absolute;
-    left:-9px;
     bottom:-1px;
     width:9px;
     height:9px;
+    pointer-events:none;
+}
+.archive-tab:not(.inactive)::before {
+    left:-9px;
     background:radial-gradient(circle at 0 0,transparent 7px,var(--border) 7px,var(--border) 8px,var(--surface) 8px);
+}
+.archive-tab:not(.inactive)::after {
+    right:-9px;
+    background:radial-gradient(circle at 100% 0,transparent 7.75px,var(--border) 8.25px,var(--border) 8.75px,var(--surface) 9.25px);
 }
 .tab-icon {
     display:flex;
@@ -280,17 +290,30 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
     transform:translateY(-.5px);
 }
 .split-button>.primary {
-    width:135px;
-    min-width:135px;
+    width:134px;
+    min-width:134px;
     border-radius:6px 0 0 6px;
     height:51px;
     padding:0 24px;
     font-size:20px;
 }
 .split-button>button:last-of-type {
-    width:48px;
+    width:49px;
     height:51px;
     border-radius:0 6px 6px 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 2px 0 0;
+    line-height:0;
+}
+#extract-menu-button [data-icon] {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+#extract-menu-button svg {
+    display:block;
 }
 .split-button>button svg {
     width:22px;

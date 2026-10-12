@@ -145,6 +145,113 @@
       "maximum_delta_px": 0.0
     },
     {
+      "kind": "painted white ink",
+      "name": "extract-chevron",
+      "expected": [
+        1520,
+        123,
+        12,
+        7
+      ],
+      "actual": [
+        1520,
+        123,
+        12,
+        7
+      ],
+      "maximum_delta_px": 0
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (538, 85)",
+      "expected": [
+        255,
+        255,
+        255
+      ],
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "maximum_delta_rgb": 0
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (538, 86)",
+      "expected": [
+        254,
+        254,
+        254
+      ],
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "maximum_delta_rgb": 1
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (539, 83)",
+      "expected": [
+        226,
+        229,
+        234
+      ],
+      "actual": [
+        227,
+        231,
+        239
+      ],
+      "maximum_delta_rgb": 5
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (540, 84)",
+      "expected": [
+        228,
+        230,
+        235
+      ],
+      "actual": [
+        227,
+        231,
+        239
+      ],
+      "maximum_delta_rgb": 4
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (541, 85)",
+      "expected": [
+        226,
+        230,
+        234
+      ],
+      "actual": [
+        227,
+        231,
+        239
+      ],
+      "maximum_delta_rgb": 5
+    },
+    {
+      "kind": "shoulder sample RGB",
+      "name": "right shoulder (542, 86)",
+      "expected": [
+        224,
+        228,
+        233
+      ],
+      "actual": [
+        227,
+        231,
+        239
+      ],
+      "maximum_delta_rgb": 6
+    },
+    {
       "kind": "painted ink",
       "name": "active-close",
       "expected": [

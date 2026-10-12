@@ -5,7 +5,7 @@
 <label>修复后透明度<input id="opacity" type="range" min="0" max="100" value="50"><output id="value">50%</output></label><p><small id="caption">叠加模式。清晰度、原稿光影与字体轮廓差异仍会产生像素差异，不能把差异图直接当成错误数量。</small></p>
 <div class="viewport"><div class="artboard"><img id="base" src="reference.png" alt="已确认原稿顶部"><img id="candidate" src="after.png" style="opacity:.5" alt="HTML 修复后的顶部"></div></div>
 <p>下面上方为原稿，下方为修复后 HTML，保持相同坐标和尺寸。</p><div class="viewport"><img class="evidence" src="comparison.png" alt="相同尺度的原稿和 HTML 对照"></div>
-<p>测量基准来自独立原稿检查。边界和中心容差 1 px，柔化后的图标墨迹边界容差 2 px。字体轮廓仅记录，不声称已还原生成图片的未知原始字体。</p>
+<p>活动 Tab 两侧接底圆弧以及下拉箭头均纳入复核；箭头检查实际白色图形边界，圆弧检查原稿曲线上的取样颜色。测量基准来自独立原稿检查。边界和中心容差 1 px，柔化后的图标墨迹边界容差 2 px。字体轮廓仅记录，不声称已还原生成图片的未知原始字体。</p>
 <div class="scroll-table"><table><thead><tr><th>检查</th><th>原稿锚点</th><th>实际</th><th>最大偏差</th></tr></thead><tbody id="rows"></tbody></table></div><p>几何检查仅覆盖本页顶部范围；其他页面仍按各自原稿校准。</p>
 <script src="measurements.js"></script>
 <script>
@@ -15,5 +15,5 @@ slider.oninput=()=>{setMode('overlay');showOpacity()};
 function setMode(mode){for(const button of document.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));base.src='reference.png';candidate.hidden=mode!=='overlay';if(mode==='overlay'){showOpacity()}else{base.src=mode+'.png'}document.querySelector('#caption').textContent=mode==='difference'?'像素差异包含字体、抗锯齿和原稿光影差异，并非所有像素差异都是布局错误。':'按相同坐标查看；重点核对 Tab 边界、加号和关闭按钮、设置图标、搜索和解压按钮。'}
 for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>setMode(button.dataset.mode);
 const report=window.XDZIP_HEADER_REPORT;
-if(report){for(const item of report.measurements){const row=document.createElement('tr');for(const value of [item.selector||item.name,JSON.stringify(item.expected),JSON.stringify(item.actual),item.maximum_delta_px===undefined?'字体轮廓记录':item.maximum_delta_px+' px']){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}document.querySelector('#rows').append(row)}}
+if(report){for(const item of report.measurements){const row=document.createElement('tr');for(const value of [item.selector||item.name,JSON.stringify(item.expected),JSON.stringify(item.actual),item.maximum_delta_rgb!==undefined?item.maximum_delta_rgb+' RGB':item.maximum_delta_px===undefined?'字体轮廓记录':item.maximum_delta_px+' px']){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}document.querySelector('#rows').append(row)}}
 </script></main></body></html>
