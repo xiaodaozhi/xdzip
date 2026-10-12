@@ -1293,3 +1293,17 @@ const reviewQuery = new URLSearchParams(location.search);
 if (reviewQuery.get("standalone") === "1") document.body.dataset.standalone = "true";
 if (reviewQuery.has("platform")) window.XdzipDesign.platform(reviewQuery.get("platform"));
 if (reviewQuery.has("view")) window.XdzipDesign.open(reviewQuery.get("view"));
+
+// Only the containing review page may configure this demonstration canvas.
+window.addEventListener("message", event => {
+    const config = event.data;
+    if (event.source !== window.parent || config?.type !== "xdzip-review-configure") return;
+    if (!["main", "extract", "create", "progress", "conflict", "settings", "empty", "damaged"].includes(config.view)
+        || !["macos", "windows", "linux"].includes(config.platform)
+        || !["light", "dark"].includes(config.theme)) return;
+    document.body.dataset.standalone = config.view === "main" ? "false" : "true";
+    XdzipDesign.platform(config.platform);
+    XdzipDesign.theme(config.theme);
+    XdzipDesign.open(config.view);
+});
+if (window.parent !== window) window.parent.postMessage({type: "xdzip-review-ready"}, "*");

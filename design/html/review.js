@@ -17,21 +17,34 @@ function fit() {
     frame.style.transform = `scale(${scale})`;
     document.querySelector("#scaled").style.cssText = `width:${canvasWidth * scale}px;height:${canvasHeight * scale}px`;
 }
-function update() {
-    const api = frame.contentWindow?.XdzipDesign;
-    if (!api) return;
-    api.platform(current("platform"));
-    api.theme(current("theme"));
-    frame.contentDocument.body.dataset.standalone = current("view") === "main" ? "false" : "true";
-    api.open(current("view"));
+function updateReference() {
     const source = views[current("view")];
     const image = document.querySelector("#reference-image");
     image.hidden = !source;
+    document.querySelector("#reference-message").textContent = source
+        ? "原稿与 HTML 独立展示；图片没有覆盖在界面上。"
+        : "此状态暂无独立的已确认原稿。";
     if (source) image.src = window.XDZIP_REFERENCES?.[source] || source;
+    else image.removeAttribute("src");
+}
+function update() {
+    // postMessage also works when local files have distinct opaque origins.
+    frame.contentWindow?.postMessage({
+        type: "xdzip-review-configure", view: current("view"),
+        platform: current("platform"), theme: current("theme"),
+    }, "*");
+    updateReference();
     document.querySelector("#status").textContent = `${current("platform")} · ${current("theme") === "dark" ? "深色适配（无对应完整主稿）" : "浅色"} · 桌面画布 1548 × 940`;
     fit();
 }
 frame.addEventListener("load", update);
+window.addEventListener("message", event => {
+    if (event.source === frame.contentWindow && event.data?.type === "xdzip-review-ready") update();
+});
+document.querySelector("#reference-image").addEventListener("error", event => {
+    event.currentTarget.hidden = true;
+    document.querySelector("#reference-message").textContent = "原稿加载失败。请使用完整仓库目录，或重新下载离线单文件 HTML。";
+});
 if (window.XDZIP_CANVAS) frame.srcdoc = window.XDZIP_CANVAS;
 for (const id of ["view", "platform", "theme"]) document.querySelector(`#${id}`).addEventListener("change", update);
 document.querySelector("#zoom").addEventListener("change", fit);
@@ -39,6 +52,7 @@ window.addEventListener("resize", fit);
 document.querySelector("#reference-toggle").onclick = event => {
     const reference = document.querySelector("#reference");
     reference.hidden = !reference.hidden;
+    if (!reference.hidden) updateReference();
     event.currentTarget.setAttribute("aria-expanded", String(!reference.hidden));
 };
 document.querySelector("#separate").onclick = () => {
@@ -57,4 +71,4 @@ document.querySelector("#separate").onclick = () => {
         popup.XdzipDesign.open(view);
     });
 };
-fit();
+update();
