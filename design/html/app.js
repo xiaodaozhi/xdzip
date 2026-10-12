@@ -182,6 +182,8 @@ function hydrate() {
     document
         .querySelectorAll("[data-icon]")
         .forEach((n) => (n.innerHTML = icon(n.dataset.icon)));
+    // The inactive archive has its own reviewed artwork, rather than a CSS recolor.
+    $(".archive-tab.inactive .tab-icon").innerHTML = icon("archive-grey");
 }
 function toast(text) {
     $("#toast").textContent = text;
@@ -509,7 +511,7 @@ function windowChrome(title, taskView) {
         <button class="os-close" aria-label="关闭操作窗口">${icon("close")}</button>
         <button class="os-minimize" aria-label="收起任务窗口" ${taskView ? "" : "disabled"}><span>−</span></button>
         <button class="os-maximize" aria-label="此窗口不可最大化" disabled><span>□</span></button></div>`;
-    return `<div class="os-titlebar">${mac ? controls : icon("archive")}<span class="os-title">${esc(title)}</span>${mac ? '<span class="os-balance"></span>' : controls}</div>`;
+    return `<div class="os-titlebar">${mac ? controls : taskView ? icon(document.body.dataset.platform === "windows" ? "windows-document" : "linux-document") : icon("app-mark")}<span class="os-title">${esc(title)}</span>${mac ? '<span class="os-balance"></span>' : controls}</div>`;
 }
 function dialog(html, kind, spec, focus) {
     const el = $("#modal");
@@ -678,9 +680,9 @@ function showExtract(scope = "selected", retryFiles = null) {
         $("#target-preview").textContent = "最终位置：" + state.plan.target;
         $("#target-valid").className =
             "field-note " + (denied ? "error" : "success");
-        $("#target-valid").textContent = denied
+        $("#target-valid").innerHTML = `${icon(denied ? "status-warning" : "success")}<span>${denied
             ? "此位置不可写，请更改目标文件夹。"
-            : "目标位置可用 · 可用空间 126 GB";
+            : "目标位置可用 · 可用空间 126 GB"}</span>`;
         $("#start-extract").disabled = denied;
     };
     $("#target-base").oninput = check;
@@ -738,8 +740,8 @@ function showConflict() {
         e = t.items.find((f) => f.id === "guide") || t.items[0];
     t.conflictEntry = e;
     dialog(
-        header("目标位置已有同名文件", "请选择要保留的版本", "layers", false) +
-            `<div class="modal-content"><div class="conflict-name">${icon("pdf")}${esc(e.name)}</div><div class="comparison"><div><label>已有文件</label><strong>${bytes(Math.round(e.size * 0.875))}</strong><small>2026/10/01 · 09:42</small></div><div><label>压缩包中的文件</label><strong>${bytes(e.size)}</strong><small>2026/10/08 · 14:32</small></div></div><label class="check-label"><input id="apply-conflict-all" type="checkbox">对本次任务后续同类冲突应用此选择</label><div class="notice warning">覆盖会替换已有文件内容。选择“自动改名”可以保留两个版本。</div></div>` +
+        header("目标位置已有同名文件", "请选择要保留的版本", "document-conflict", false) +
+            `<div class="modal-content"><div class="conflict-name">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}${esc(e.name)}</div><div class="comparison"><div><span class="comparison-artwork">${icon(fileIcon(e))}</span><label>已有文件</label><strong>${bytes(Math.round(e.size * 0.875))}</strong><small>2026/10/01 · 09:42</small></div><div><span class="comparison-artwork">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}</span><label>压缩包中的文件</label><strong>${bytes(e.size)}</strong><small>2026/10/08 · 14:32</small></div></div><label class="check-label"><input id="apply-conflict-all" type="checkbox">对本次任务后续同类冲突应用此选择</label><div class="notice warning"><span class="notice-artwork">${icon("conflict-warning")}</span><span>覆盖会替换已有文件内容。选择“自动改名”可以保留两个版本。</span></div></div>` +
             footer(
                 `<button class="button" id="skip-conflict">跳过</button><button class="button primary" id="rename-conflict">自动改名</button><button class="button danger" id="overwrite-conflict">覆盖文件</button>`,
                 "等待你的决定",
@@ -784,7 +786,11 @@ function showProgress() {
                   ? "正在停止任务"
                   : "正在解压",
             `${t.kind === "create" ? "旅行资料" : "北境旅行.zip"}`,
-            t.kind === "create" ? "archive-add" : "document-download",
+            t.status === "stopping" ? "spinner"
+                : t.kind === "create" ? "archive-add"
+                  : document.body.dataset.platform === "windows" ? "windows-document"
+                    : document.body.dataset.platform === "linux" ? "linux-document"
+                      : "document-download",
             false,
         ) +
             `<div class="modal-content"><section class="path-card"><h2>解压到</h2><div>${icon("folder")}<span>${esc(t.target)}</span></div></section><section class="progress-card"><div class="progress-line"><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><strong id="progress-value">${t.progress}%</strong></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="task-metrics"><div><span>速度</span><strong>6.2 MB/s</strong></div><div><span>预计剩余</span><strong>约 5 秒</strong></div><div><span>当前阶段</span><strong id="progress-phase">正在准备</strong></div></div></section><section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon("image-file")}</span><span id="progress-file"></span></div></section><p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p></div><footer class="modal-footer"><span class="info-line">${icon("info")}关闭此窗口后，任务仍会继续。</span><button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button></footer>`,
@@ -820,7 +826,7 @@ function updateProgress() {
         `${bytes(Math.round((total * t.progress) / 100))} / ${bytes(total)}`;
     $("#progress-count").textContent =
         `${Math.floor((t.progress / 100) * t.items.length)} / ${t.items.length} 项`;
-    $("#progress-file-icon").innerHTML = icon(fileIcon(t.items[done]));
+    $("#progress-file-icon").innerHTML = icon(t.items[done].type.includes("JPEG") ? "progress-image" : fileIcon(t.items[done]));
     $("#progress-file").textContent =
         (t.status === "stopping" ? "停止中：" : "") +
         t.items[done].name;
@@ -904,9 +910,9 @@ function showResult() {
         header(
             "任务结果",
             created ? "新建压缩文件" : "北境旅行.zip",
-            ok ? "check" : "warning",
+            ok ? "status-success" : cancel ? "cancelled-large" : "document-warning",
         ) +
-            `<div class="modal-content"><div class="result-hero"><div class="result-icon" style="${ok ? "" : `color:var(--warning);background:color-mix(in srgb,var(--warning) 9%,var(--surface))`}">${icon(ok ? "check" : cancel ? "close" : "warning")}</div><h2>${title}</h2><p>${ok ? (created ? "归档已完成校验并保存。" : "所选内容已处理完成。") : created ? "临时归档未发布，原有文件保持不变。" : "已经完成的文件会保留，不会因本次停止而删除。"}</p></div><div class="result-counts"><div><b>${successCount}</b><span>${created ? "已创建归档" : "成功文件"}</span></div><div><b>${created ? 0 : t.skipped.length}</b><span>跳过</span></div><div><b>${failedCount}</b><span>${cancel ? "未完成" : "失败"}</span></div></div>${!ok ? `<div class="notice ${cancel ? "" : "error"}">${cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足。释放空间或选择其他位置后重试。"}</div>` : ""}<div class="result-destination">${icon("folder")}<span>${esc(t.target)}</span></div>${t.renamed ? `<p class="field-note">重名文件已改名为 ${esc(t.conflictEntry.name.replace(/(\.[^.]+)$/, " (2)$1"))}</p>` : ""}<details><summary class="details-title">查看处理明细</summary><div class="result-list">${t.completed.map((e) => `<div><span>${esc(e.name)}</span><span>已完成</span></div>`).join("")}${t.failed.map((e) => `<div class="bad"><span>${esc(e.name)}</span><span>${cancel ? "未完成" : "失败"}</span></div>`).join("")}${t.skipped.map((id) => `<div><span>${esc(byId.get(id).name)}</span><span>已跳过</span></div>`).join("")}</div></details></div>` +
+            `<div class="modal-content"><div class="result-hero"><div class="result-icon">${icon(ok ? "status-success" : cancel ? "cancelled-large" : "document-warning")}</div><h2>${title}</h2><p>${ok ? (created ? "归档已完成校验并保存。" : "所选内容已处理完成。") : created ? "临时归档未发布，原有文件保持不变。" : "已经完成的文件会保留，不会因本次停止而删除。"}</p></div><div class="result-counts"><div><b>${successCount}</b><span>${icon("status-partial-success")}${created ? "已创建归档" : "成功文件"}</span></div><div><b>${created ? 0 : t.skipped.length}</b><span>${icon("status-skipped")}跳过</span></div><div><b>${failedCount}</b><span>${icon(cancel ? "status-stopped" : "status-warning")}${cancel ? "未完成" : "失败"}</span></div></div>${!ok ? `<div class="notice ${cancel ? "" : "error"}">${cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足。释放空间或选择其他位置后重试。"}</div>` : ""}<div class="result-destination">${icon("folder")}<span>${esc(t.target)}</span></div>${t.renamed ? `<p class="field-note">重名文件已改名为 ${esc(t.conflictEntry.name.replace(/(\.[^.]+)$/, " (2)$1"))}</p>` : ""}<details><summary class="details-title">查看处理明细</summary><div class="result-list">${t.completed.map((e) => `<div><span>${esc(e.name)}</span><span>已完成</span></div>`).join("")}${t.failed.map((e) => `<div class="bad"><span>${esc(e.name)}</span><span>${cancel ? "未完成" : "失败"}</span></div>`).join("")}${t.skipped.map((id) => `<div><span>${esc(byId.get(id).name)}</span><span>已跳过</span></div>`).join("")}</div></details></div>` +
             footer(
                 cancelButton("完成") +
                     (t.result === "source"
@@ -955,7 +961,7 @@ function showCreate() {
     }
     state.createItems = [...roots.slice(0, 3)];
     dialog(
-        header("新建压缩文件", "添加内容，选择格式与保存位置", "archive") +
+        header("新建压缩文件", "添加内容，选择格式与保存位置", "archive-add") +
             `<div class="modal-content"><div class="field-group"><div class="field-label">待压缩内容<span id="create-size"></span></div><div id="create-list" class="create-list"></div><div class="create-actions"><button id="add-input" class="button">${icon("plus")}添加文件</button><button id="clear-input" class="button">清空</button></div></div><div class="field-group"><label for="create-name" class="field-label">压缩文件名称</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="field-group"><label for="create-destination" class="field-label">保存到</label><input id="create-destination" class="text-input" value="下载"></div><div class="two-fields"><div class="field-group"><label for="create-format" class="field-label">归档格式</label><select id="create-format" class="field-select"><option value="zip">ZIP</option><option value="tar">TAR</option><option value="tar.gz">TAR.GZ</option></select></div><div class="field-group" id="method-group"><label for="create-method" class="field-label">压缩方式</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store · 不压缩</option></select></div></div><div class="field-group" id="level-group"><label for="create-level" class="field-label">压缩级别</label><select id="create-level" class="field-select"><option>均衡</option><option>快速</option><option>更小</option></select></div><p id="create-valid" class="field-note success"></p><details><summary class="details-title">更多选项</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div>` +
             footer(
                 cancelButton() +
@@ -971,9 +977,9 @@ function showCreate() {
             $("#create-name").value.trim() &&
             $("#create-destination").value.trim();
         $("#start-create").disabled = !valid;
-        $("#create-valid").textContent = valid
+        $("#create-valid").innerHTML = `${icon(valid ? "success" : "status-warning")}<span>${valid
             ? "预检通过 · " + state.createItems.length + " 个文件 · 目标可写"
-            : "请添加输入文件，并填写名称与保存位置。";
+            : "请添加输入文件，并填写名称与保存位置。"}</span>`;
         $("#create-valid").className =
             "field-note " + (valid ? "success" : "error");
     };
@@ -1052,10 +1058,10 @@ function confirmCreateOverwrite() {
         header(
             "替换已有压缩文件？",
             esc(state.createTarget),
-            "warning",
+            "archive-warning",
             false,
         ) +
-            `<div class="modal-content"><div class="notice warning">已有归档会在新归档成功写入、校验并提交后被替换。取消或失败不会先删除已有文件。</div></div>` +
+            `<div class="modal-content"><section class="existing-archive"><span class="existing-archive-artwork">${icon("existing-archive")}</span><div><strong>已有压缩文件</strong><p>${esc(state.createTarget)}</p></div></section><div class="notice warning">已有归档会在新归档成功写入、校验并提交后被替换。取消或失败不会先删除已有文件。</div></div>` +
             footer(
                 `<button id="cancel-create-overwrite" class="button">返回修改</button><button id="confirm-create-overwrite" class="button danger">替换并创建</button>`,
                 "需要确认",
@@ -1070,15 +1076,17 @@ function confirmCreateOverwrite() {
 }
 function showSettings() {
     dialog(
-        header("设置", "外观与隐私", "settings") +
-            `<div class="modal-content"><div class="settings-row"><label for="setting-theme">外观主题</label><select id="setting-theme" class="field-select"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></div><div class="settings-row"><label for="setting-density">列表密度</label><select id="setting-density" class="field-select"><option value="standard">标准</option><option value="compact">紧凑</option></select></div><label class="check-label"><input id="recent-enabled" type="checkbox" ${state.recent ? "checked" : ""}>在本机保留最近文件记录</label><div class="field-group"><button id="clear-recent" class="button">清空最近记录</button></div><div class="notice">所有归档处理都在本机进行。默认不上传文件、不启用遥测。清空最近记录不会删除原文件。</div></div>` +
+        header("设置", "外观与隐私", "settings-tile") +
+            `<div class="modal-content"><fieldset id="setting-theme" class="settings-theme"><legend>外观主题</legend><div class="theme-cards"><label class="theme-card">${icon("theme-system")}<span><input type="radio" name="setting-theme" value="system">跟随系统</span></label><label class="theme-card">${icon("theme-light")}<span><input type="radio" name="setting-theme" value="light">浅色</span></label><label class="theme-card">${icon("theme-dark")}<span><input type="radio" name="setting-theme" value="dark">深色</span></label></div></fieldset><div class="settings-row"><label for="setting-density">列表密度</label><select id="setting-density" class="field-select"><option value="standard">标准</option><option value="compact">紧凑</option></select></div><label class="check-label"><input id="recent-enabled" type="checkbox" ${state.recent ? "checked" : ""}>在本机保留最近文件记录</label><div class="field-group"><button id="clear-recent" class="button">清空最近记录</button></div><div class="notice">所有归档处理都在本机进行。默认不上传文件、不启用遥测。清空最近记录不会删除原文件。</div></div>` +
             footer(cancelButton("完成"), "设置仅在本机生效"),
         "settings",
         "S01",
     );
     bindClose();
-    $("#setting-theme").value = state.theme;
-    $("#setting-theme").onchange = (e) => setTheme(e.target.value);
+    $(`input[name="setting-theme"][value="${state.theme}"]`).checked = true;
+    $("#setting-theme").onchange = (e) => {
+        if (e.target.matches('input[name="setting-theme"]')) setTheme(e.target.value);
+    };
     $("#setting-density").onchange = (e) => {
         document.documentElement.style.setProperty(
             "--row-height",
@@ -1101,6 +1109,11 @@ function setTheme(theme) {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
     const tick = window.XDZIP_ASSETS.icons[dark ? "dark" : "light"].check.replace(/stroke="[^"]*"/, 'stroke="white"');
     document.documentElement.style.setProperty("--checkbox-tick", `url("data:image/svg+xml,${encodeURIComponent(tick)}")`);
+    document.documentElement.style.setProperty("--checkbox-selected", `url("data:image/svg+xml,${encodeURIComponent(icon("check-selected"))}")`);
+    document.documentElement.style.setProperty("--radio-selected", `url("data:image/svg+xml,${encodeURIComponent(icon("radio-selected"))}")`);
+    document.documentElement.style.setProperty("--radio-unselected", `url("data:image/svg+xml,${encodeURIComponent(icon("radio-unselected"))}")`);
+    const selectedTheme = $(`input[name="setting-theme"][value="${theme}"]`);
+    if (selectedTheme) selectedTheme.checked = true;
     document.querySelectorAll("svg[data-asset]").forEach(el => { el.outerHTML = icon(el.dataset.asset, el.getAttribute("class") || ""); });
     $("#theme").innerHTML = icon(dark ? "sun" : "moon");
     $("#theme").setAttribute(

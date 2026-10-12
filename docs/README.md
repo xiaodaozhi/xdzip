@@ -9,7 +9,7 @@
 | 领域 | 入口 |
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
-| 素材修正 | [统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
+| 素材修正 | [新品牌与遗漏素材](qa/brand-and-assets.md)、[实际图标与页面预览](qa/brand-and-assets/index.html)、[统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [页面与操作状态原稿](../design/hifi/README.md)、[统一素材库](../design/assets/index.html)、[功能状态契约](ux/hifi-state-spec.md) |
 | HTML 高保真设计 | [展示尺寸复核](qa/html-scale-review.md)、[顶部对照复核](qa/html-header-review.md)、[内容区域复核](qa/html-body-review.md)、[复核方法](visual/html-fidelity.md)、[使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |

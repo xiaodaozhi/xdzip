@@ -29,6 +29,13 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 add_executable(xdzip-browser browser_main.cpp)
+set(XDZIP_BRAND_ASSETS "${PROJECT_SOURCE_DIR}/design/assets/brand")
+if(WIN32)
+    enable_language(RC)
+    set(XDZIP_APP_ICON_ICO "${XDZIP_BRAND_ASSETS}/xdzip.ico")
+    configure_file(packaging/windows/app.rc.in "${CMAKE_CURRENT_BINARY_DIR}/xdzip.rc" @ONLY)
+    target_sources(xdzip-browser PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/xdzip.rc")
+endif()
 if(APPLE)
     enable_language(OBJCXX)
     set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
@@ -38,8 +45,12 @@ if(APPLE)
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"
+        MACOSX_BUNDLE_ICON_FILE "xdzip.icns"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}")
+    set_source_files_properties("${XDZIP_BRAND_ASSETS}/xdzip.icns" PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(xdzip-browser PRIVATE "${XDZIP_BRAND_ASSETS}/xdzip.icns")
 endif()
 qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
@@ -48,6 +59,13 @@ qt_add_qml_module(xdzip-browser
     SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-ui-resources xdzip-reader-rust
     Qt6::Widgets Qt6::Quick Qt6::QuickControls2)
+if(UNIX AND NOT APPLE)
+    include(GNUInstallDirs)
+    install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(FILES packaging/linux/xdzip.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES "${XDZIP_BRAND_ASSETS}/xdzip.png"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps")
+endif()
 if(BUILD_TESTING)
     add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h)
     target_include_directories(xdzip-browser-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

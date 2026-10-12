@@ -23,9 +23,10 @@ Rectangle {
         anchors.rightMargin: 16
         spacing: 16
         Image {
-            source: "qrc:/xdzip/assets/app-mark.png"
+            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "app-mark.png"
             Layout.preferredWidth: 24
             Layout.preferredHeight: 24
+            fillMode: Image.PreserveAspectFit
         }
         Text {
             text: "xdzip"
@@ -55,9 +56,10 @@ Rectangle {
                 anchors.margins: 12
                 spacing: 8
                 Image {
-                    source: "qrc:/xdzip/assets/archive.png"
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive.png"
                     Layout.preferredWidth: 18
                     Layout.preferredHeight: 18
+                    fillMode: Image.PreserveAspectFit
                 }
                 Text {
                     Layout.fillWidth: true

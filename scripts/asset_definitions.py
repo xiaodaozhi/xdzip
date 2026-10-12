@@ -126,6 +126,187 @@ def hero_shapes():
                          '<circle cx="12" cy="12" r="3" fill="#2975f5" stroke="#b6d9ff" stroke-width=".45"/>',
     }
 
+
+def status_disc(name, highlight, body, shade, mark, radius=10):
+    """A transparent result medallion with source-like light and a fine rim."""
+    return (
+        f'<defs><radialGradient id="{name}-disc" cx=".27" cy=".2" r=".86">'
+        f'<stop stop-color="{highlight}"/><stop offset=".48" stop-color="{body}"/>'
+        f'<stop offset="1" stop-color="{shade}"/></radialGradient></defs>'
+        f'<circle cx="12" cy="12" r="{radius}" fill="url(#{name}-disc)" stroke="none"/>'
+        f'<circle cx="12" cy="12" r="{radius - .27:.2f}" fill="none" '
+        f'stroke="{shade}" stroke-opacity=".48" stroke-width=".38"/>'
+        '<path d="M5.8 6.35a8.45 8.45 0 0 1 10.8-1.5" '
+        'stroke="white" stroke-opacity=".17" stroke-width=".28"/>'
+        + mark
+    )
+
+
+def warning_mark():
+    """The source's compact exclamation occupies about half the disc height."""
+    return ('<path d="M12 7.3v5.3" stroke="white" stroke-width="1.65"/>'
+            '<circle cx="12" cy="16.7" r=".825" fill="white" stroke="none"/>')
+
+
+def supplemental_shapes(theme):
+    """Rebuild the remaining source references as independent, named assets.
+
+    Theme thumbnails describe the selected theme, so their illustrated colors
+    remain stable in both host themes. Control-state assets document appearance;
+    real controls still own their interaction, focus and checked state.
+    """
+    gray = '#8992a4' if theme == 'light' else '#adb7c9'
+
+    def gradient(name, top, bottom):
+        return (f'<defs><linearGradient id="{name}" x1="0" y1="0" x2="0" y2="1">'
+                f'<stop stop-color="{top}"/><stop offset="1" stop-color="{bottom}"/>'
+                '</linearGradient></defs>')
+
+    def window_preview(name, dark, system=False):
+        background, right, title, border, dot = (
+            ('#2c323f', '#383f4c', '#282e3b', '#212735', '#8b929e') if dark else
+            ('#ffffff', '#f3f4f6', '#eceef2', '#c5cbd5', '#c9ced7'))
+        highlight_color, highlight_opacity = ('#8791a7', '.22') if dark else ('#ffffff', '.8')
+        side_color = '#121a29' if dark else '#9aa4b6'
+        return (
+            f'<defs><clipPath id="{name}-clip"><rect x="2" y="4.75" width="20" height="14.5" rx="1.55"/></clipPath>'
+            f'<linearGradient id="{name}-body" x2="0" y2="1"><stop stop-color="{background}"/>'
+            f'<stop offset="1" stop-color="{right}"/></linearGradient>'
+            f'<radialGradient id="{name}-shadow"><stop stop-color="#17243b" stop-opacity=".22"/>'
+            '<stop offset=".56" stop-color="#17243b" stop-opacity=".09"/>'
+            '<stop offset="1" stop-color="#17243b" stop-opacity="0"/></radialGradient></defs>'
+            + (gradient('theme-system-split', '#3f9dff', '#165795') if system else '')
+            + f'<ellipse cx="12" cy="19.65" rx="10.6" ry="2.1" fill="url(#{name}-shadow)" stroke="none"/>'
+            + f'<g clip-path="url(#{name}-clip)" stroke="none">'
+            f'<rect x="2" y="4.75" width="20" height="14.5" fill="url(#{name}-body)"/>'
+            + (f'<path fill="url(#theme-system-split)" d="M12 4.75h10v14.5H12Z"/>' if system else
+               f'<path fill="{right}" d="M12 9.3h10v10H12Z"/>')
+            + f'<path fill="{title}" d="M2 4.75h{10 if system else 20}V9.3H2Z"/>'
+            f'<path d="M2 9.3h20" stroke="{border}" stroke-width=".3"/>'
+            f'<circle cx="4.7" cy="7" r=".9" fill="{dot}"/>'
+            f'<circle cx="8" cy="7" r=".9" fill="{dot}"/></g>'
+            f'<rect x="2" y="4.75" width="20" height="14.5" rx="1.55" stroke="{border}" stroke-width=".45"/>'
+            f'<path d="M3.2 5.35H20.6" stroke="{highlight_color}" '
+            f'stroke-opacity="{highlight_opacity}" stroke-width=".35"/>'
+            f'<path d="M21.55 6.6v10.8q0 1.35-1.35 1.35H3.8" stroke="{side_color}" '
+            'stroke-opacity=".25" stroke-width=".35"/>'
+        )
+
+    def paper_seam(name, tint, left=14.2, top=1, bottom=7.8, right=21):
+        # The narrow fold seam is transparent and stays inside the paper. It
+        # supplies depth without baking a white or dark surrounding rectangle.
+        return (
+            f'<defs><linearGradient id="{name}-seam" x1="0" y1="0" x2="1" y2="1">'
+            f'<stop stop-color="{tint}" stop-opacity=".06"/>'
+            f'<stop offset=".5" stop-color="{tint}" stop-opacity=".32"/>'
+            f'<stop offset="1" stop-color="{tint}" stop-opacity=".08"/></linearGradient></defs>'
+            f'<path d="M{left} {top + 1.2}v{bottom - top - 3.05:.2f}q0 1.85 1.85 1.85H{right - .45}" '
+            f'stroke="url(#{name}-seam)" stroke-width=".65"/>'
+        )
+
+    def platform_document(name, dark):
+        # The source Linux illustration sits on a dark panel; only the blue
+        # paper is rebuilt, never the baked dark rectangle around the source.
+        top, bottom, fold = ('#47a6ff', '#0758ee', '#164cd6') if dark else ('#4da8ff', '#0867ff', '#1257ef')
+        return (
+            gradient(f'{name}-paper', top, bottom)
+            + f'<path fill="url(#{name}-paper)" stroke="none" d="M5.1 1h9.1L21 7.8v13.1a2.1 2.1 0 0 1-2.1 2.1H5.1A2.1 2.1 0 0 1 3 20.9V3.1A2.1 2.1 0 0 1 5.1 1Z"/>'
+            + f'<path fill="{fold}" stroke="none" d="M14.2 1v5.05a1.75 1.75 0 0 0 1.75 1.75H21Z"/>'
+            + paper_seam(name, '#092e8e')
+            + '<path d="M4 4.3v16.2a1.4 1.4 0 0 0 1.4 1.4h12.9" stroke="#bde5ff" stroke-opacity=".16" stroke-width=".3"/>'
+            + '<path d="M12 10.25v7.1m-3.05-2.9L12 17.35l3.05-2.9" stroke="white" stroke-width="2.05"/>'
+        )
+
+    existing_archive = (
+        gradient('existing-archive-paper', '#49a6ff', '#1455fa')
+        + '<path fill="url(#existing-archive-paper)" stroke="none" d="M5.2 1h9L21 7.8v12.9a2.3 2.3 0 0 1-2.3 2.3H5.3A2.3 2.3 0 0 1 3 20.7V3.2A2.2 2.2 0 0 1 5.2 1Z"/>'
+        + '<path fill="#1450ed" stroke="none" d="M14.2 1v4.8a2 2 0 0 0 2 2H21Z"/>'
+        + paper_seam('existing-archive', '#09287c')
+        + '<path d="M11.3 2.15v11.8 M10.2 2.7h2.7 M11.3 4.7H14 M10.2 6.7h2.7 M11.3 8.7H14 M10.2 10.7h2.7" stroke="white" stroke-width=".88" stroke-linecap="square"/>'
+        + '<path fill="#f8fcff" stroke="none" d="M10.7 12.9h1.7a1 1 0 0 1 1 1v1.2l1.7 1v4.65a1.1 1.1 0 0 1-1.1 1.1H8.4a1.1 1.1 0 0 1-1.1-1.1V16.1l2.4-1v-1.2a1 1 0 0 1 1-1Z"/>'
+        + '<rect x="10.6" y="13.8" width="1.6" height="1.4" rx=".35" fill="#2475ff" stroke="none"/>'
+        # ZIP is drawn as paths, preserving the source pull-tab lettering without
+        # depending on a font being installed in Qt or the browser.
+        + '<path d="M8.6 17.8h1.8l-1.8 2.6h1.8 M11.65 17.8v2.6 M13 20.4v-2.6h.85a.75.75 0 0 1 0 1.5H13" stroke="#1764f4" stroke-width=".48"/>'
+    )
+    conflict_pdf = (
+        gradient('conflict-pdf-paper', '#ff5754', '#f22323')
+        + '<path fill="url(#conflict-pdf-paper)" stroke="#ee292c" stroke-width=".45" d="M4.5 1.225h10L21.275 8v13.025a1.75 1.75 0 0 1-1.75 1.75H4.5a1.775 1.775 0 0 1-1.775-1.775V3A1.775 1.775 0 0 1 4.5 1.225Z"/>'
+        + '<path fill="#e5272a" fill-opacity=".5" stroke="none" d="M14.2 1.9v5.65a1.6 1.6 0 0 0 1.6 1.6h5.2V8L14.2 1.9Z"/>'
+        + '<path fill="#fffafa" stroke="#e93235" stroke-width=".42" d="M14.6 1.6v4.8a1.6 1.6 0 0 0 1.6 1.6H21Z"/>'
+        + paper_seam('conflict-pdf', '#8f1421', left=14.6, top=1.6, bottom=8)
+        + '<g fill="white" stroke="none" fill-rule="evenodd"><path d="M5.15 13.8h2.6a2 2 0 0 1 0 4H6.3v1.65H5.15Z M6.3 14.9v1.8h1.3a.9.9 0 0 0 0-1.8Z"/>'
+        + '<path d="M10.4 13.8h1.75a2.65 2.65 0 0 1 2.65 2.65v.35a2.65 2.65 0 0 1-2.65 2.65H10.4Z M11.55 14.9v3.45h.55a1.5 1.5 0 0 0 1.5-1.5v-.45a1.5 1.5 0 0 0-1.5-1.5Z"/>'
+        + '<path d="M15.9 13.8h3.2v1.1h-2.05v1.15h1.7v1.1h-1.7v2.3H15.9Z"/></g>'
+    )
+    progress_image = (
+        gradient('progress-image-paper', '#b9e7ff', '#87d0fe')
+        + '<path fill="url(#progress-image-paper)" stroke="none" d="M5 1h9.2L21 7.8V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2Z"/>'
+        + '<path fill="#74c3f4" stroke="none" d="M14.2 1v4.95a1.85 1.85 0 0 0 1.85 1.85H21Z"/>'
+        + paper_seam('progress-image', '#347db6')
+        + '<circle cx="8.2" cy="9.6" r="1.45" fill="#fff0b2" stroke="none"/>'
+        + '<circle cx="12.5" cy="10.55" r="1.05" fill="#fff8d7" stroke="none"/>'
+        + '<path fill="#259bec" stroke="none" d="m3 17.1 5.7-5.05 4.3 4.3 3.4-3.2 4.6 4.3V21a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>'
+        + '<path fill="#0b8bea" stroke="none" d="m3 17.1 5.7-5.05 4.3 4.3L7.1 23H5a2 2 0 0 1-2-2Z"/>'
+    )
+    return {
+        'theme-light': window_preview('theme-light', False),
+        'theme-dark': window_preview('theme-dark', True),
+        'theme-system': window_preview('theme-system', False, system=True),
+        'existing-archive': existing_archive,
+        'windows-document': platform_document('windows-document', False),
+        'linux-document': platform_document('linux-document', True),
+        'cancelled-large': status_disc('cancelled-large', '#a8b2c3', '#7c899e', '#637189',
+                                      '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="#ffffff" stroke="none"/>', radius=10.2),
+        'check-selected': gradient('check-selected-box', '#2b7aff', '#1751ff')
+                          + '<rect x="2.5" y="2.5" width="19" height="19" rx="2.5" fill="url(#check-selected-box)" stroke="none"/>'
+                          + '<path d="m6.8 12.2 3.35 3.35 7.1-7.55" stroke="white" stroke-width="1.85"/>',
+        'success': status_disc('success', '#56ae63', '#329345', '#247737',
+                               '<path d="m7.85 12 2.7 2.7 5.6-5.6" stroke="white" stroke-width="1.7"/>'),
+        'radio-selected': '<circle cx="12" cy="12" r="9.2" stroke="#1d63ff" stroke-width="1.45"/>'
+                          '<circle cx="12" cy="12" r="5.4" fill="#1d63ff" stroke="none"/>',
+        'radio-unselected': f'<circle cx="12" cy="12" r="9.2" stroke="{gray}" stroke-width="1.45"/>',
+        'conflict-pdf': conflict_pdf,
+        'conflict-warning': gradient('conflict-warning-disc', '#ffc229', '#efa000')
+                            + '<circle cx="12" cy="12" r="10" fill="url(#conflict-warning-disc)" stroke="none"/>'
+                            + warning_mark(),
+        'progress-image': progress_image,
+    }
+
+
+SUPPLEMENTAL_ROLES = {
+    'theme-light': 'theme-preview', 'theme-dark': 'theme-preview', 'theme-system': 'theme-preview',
+    'existing-archive': 'operation-illustration',
+    'windows-document': 'platform-operation-illustration',
+    'linux-document': 'platform-operation-illustration',
+    'cancelled-large': 'task-result-illustration',
+    'check-selected': 'control-state-reference',
+    'success': 'validation-state-illustration',
+    'radio-selected': 'control-state-reference', 'radio-unselected': 'control-state-reference',
+    'conflict-pdf': 'conflict-file-illustration',
+    'conflict-warning': 'conflict-state-illustration',
+    'progress-image': 'progress-file-illustration',
+}
+
+
+def revised_status_shapes(theme):
+    """Source-specific result discs and the source's open, blue-gray spinner."""
+    white_check = '<path stroke="white" stroke-width="1.7" d="m7.85 12 2.7 2.7 5.6-5.6"/>'
+    skipped = ('#bac2d1', '#949daf', '#7f8a9f') if theme == 'light' else ('#bac6db', '#9eacc2', '#8192ac')
+    stopped = ('#a8b2c3', '#7c899e', '#637189') if theme == 'light' else ('#bcc8dd', '#93a6c2', '#7185a3')
+    track = '#e2e6ef' if theme == 'light' else '#475269'
+    return {
+        'status-success': status_disc('status-success', '#55c342', '#31ad27', '#238e1c', white_check),
+        'status-partial-success': status_disc('status-partial-success', '#4695ff', '#1367ff', '#034cdb', white_check),
+        'status-skipped': status_disc('status-skipped', *skipped, '<path stroke="white" stroke-width="1.7" d="M7.65 12h8.7"/>'),
+        'status-stopped': status_disc('status-stopped', *stopped, '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="white" stroke="none"/>'),
+        'status-warning': status_disc('status-warning', '#ffd36b', '#f3aa0a', '#df8e00',
+                                      warning_mark()),
+        'spinner': '<defs><linearGradient id="spinner-active" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#607bb5"/><stop offset="1" stop-color="#63709e"/></linearGradient></defs>'
+                   f'<path d="M12 3a9 9 0 1 0 0 18" stroke="{track}" stroke-width="2.5"/>'
+                   '<path d="M12 3a9 9 0 0 1 9 9" stroke="url(#spinner-active)" stroke-width="2.5"/>',
+    }
+
 CROPS = {'brand-titlebar': ('main-light', [136, 44, 31, 37]),
  'brand-extract': ('extract-macos', [125, 136, 104, 122]),
  'folder': ('main-light', [397, 302, 42, 41]),
@@ -201,44 +382,14 @@ CONTROL_PATHS = {'open': 'M3 8V5.5A2 2 0 0 1 5 3.5h4.2L12 6h7a2 2 0 0 1 2 2v10.5
              '8.5c-.6-.4-.8-1.1-.4-1.7l.8-1.4c.4-.6 1.1-.8 1.7-.4l1.1.6L10 4.5Z M15 10.2a3 3 0 1 1-6 0 3 3 0 '
              '0 1 6 0'}
 
-MAIN_SHAPES = {'archive': '<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#409cff"/><stop '
-            'offset="1" stop-color="#164fff"/></linearGradient></defs><path fill="url(#a)" stroke="none" '
-            'd="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#1650da" '
-            'stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><path stroke="white" stroke-width=".8" d="M11 '
-            '3.5v11 M10 4h2 M11 6h2 M10 8h2 M11 10h2 M10 12h2"/><rect x="10.1" y="14.5" width="3.2" '
-            'height="4.5" rx=".8" fill="none" stroke="white" stroke-width="1"/>',
- 'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" '
+MAIN_SHAPES = {'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" '
               'r=".8"/><circle cx="4" cy="18" r=".8"/></g><path d="M9 6h10 M9 12h10 M9 18h10"/>',
  'more': '<circle cx="5" cy="12" r="1.5" fill="{ink}" stroke="none"/><circle cx="12" cy="12" r="1.5" '
-         'fill="{ink}" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="{ink}" stroke="none"/>',
- 'app-mark': '<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#409cff"/><stop '
-             'offset="1" stop-color="#164fff"/></linearGradient></defs><rect x="3" y="2" width="18" '
-             'height="20" rx="3" fill="url(#a)" stroke="none"/><path stroke="white" stroke-width=".8" d="M11 '
-             '3.5v11 M10 4h2 M11 6h2 M10 8h2 M11 10h2 M10 12h2"/><rect x="10.1" y="14.5" width="3.2" '
-             'height="4.5" rx=".8" fill="none" stroke="white" stroke-width="1"/>'}
+         'fill="{ink}" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="{ink}" stroke="none"/>'}
 
-STATE_SHAPES = {'status-warning': '<circle cx="12" cy="12" r="10" fill="#eda100" stroke="none"/><path stroke="white" '
-                   'stroke-width="2" d="M12 6v7m0 4h.01"/>',
- 'status-success': '<circle cx="12" cy="12" r="10" fill="#348c44" stroke="none"/><path stroke="white" '
-                   'stroke-width="2" d="m6 12 4 4 8-8"/>',
- 'status-skipped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><path stroke="white" '
-                   'stroke-width="2" d="M7 12h10"/>',
- 'status-stopped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><rect x="8" y="8" width="8" '
-                   'height="8" rx="1.5" fill="white" stroke="none"/>',
- 'spinner': '<circle cx="12" cy="12" r="9" stroke="{track}" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 '
-            '9" stroke="{muted}" stroke-width="2.5"/>',
- 'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></g>',
+STATE_SHAPES = {'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></g>',
  'remove': '<circle cx="12" cy="12" r="9" stroke="{track}"/><path d="M8 12h8"/>',
- 'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>',
- 'theme-system': '<defs><clipPath id="window"><rect x="2" y="4" width="20" height="16" '
-                 'rx="2"/></clipPath></defs><g clip-path="url(#window)"><rect x="2" y="4" width="20" '
-                 'height="16" fill="{paper}" stroke="none"/><path d="M12 4h10v16H12Z" fill="#185eb2" '
-                 'stroke="none"/><path d="M2 4h20v5H2Z" fill="#cfd9e6" fill-opacity=".45" '
-                 'stroke="none"/></g><rect x="2" y="4" width="20" height="16" rx="2" stroke="{muted}" '
-                 'stroke-width=".7"/><g fill="{muted}" stroke="none"><circle cx="5" cy="6.5" r=".7"/><circle '
-                 'cx="8" cy="6.5" r=".7"/></g>',
- 'status-partial-success': '<circle cx="12" cy="12" r="10" fill="#1764ff" stroke="none"/><path '
-                           'stroke="white" stroke-width="2" d="m6 12 4 4 8-8"/>'}
+ 'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>'}
 
 REFERENCES = {'app-mark': 'brand-titlebar',
  'archive': 'brand-extract',
@@ -273,3 +424,6 @@ REFERENCES = {'app-mark': 'brand-titlebar',
  'remove': 'remove-row',
  'theme-system': 'theme-system',
  'settings-tile': 'settings-gear'}
+
+# Every previously unmapped source has its own named reconstruction.
+REFERENCES.update({name: name for name in SUPPLEMENTAL_ROLES})

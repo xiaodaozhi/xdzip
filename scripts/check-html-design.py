@@ -153,7 +153,7 @@ with sync_playwright() as p:
         expect(page.locator('#file-rows tr')).to_have_count(12)
         record('Folder navigation uses the actual fixture children')
         page.locator('#settings').click()
-        page.locator('#setting-theme').select_option('dark')
+        page.locator('input[name="setting-theme"][value="dark"]').check()
         expect(page.locator('html')).to_have_attribute('data-theme','dark')
         screenshot(page, '11-settings-dark')
         page.keyboard.press('Escape')

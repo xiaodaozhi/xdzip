@@ -103,14 +103,67 @@ def load_assets(base):
     return assets
 
 
+def png_dimensions(path):
+    """Read only the PNG header; this checker stays usable in documentation CI."""
+    header = path.read_bytes()[:24]
+    require(header[:8] == b'\x89PNG\r\n\x1a\n' and header[12:16] == b'IHDR',
+            f'Invalid runtime PNG: {path.name}')
+    return list(struct.unpack('>II', header[16:24]))
+
+
+def check_application_icon(base, assets, path, entry, alias, prefix):
+    """Admit exactly the declared high-resolution application icon.
+
+    A platform icon does not weaken shared 24-unit glyph rules. Archive document
+    icons and the original logo reference cannot use this runtime exception.
+    Package ICO/ICNS payload validation belongs to the brand-export checker.
+    """
+    require(alias == 'assets/app-icon.png' and prefix.rstrip('/') == '/xdzip',
+            'Application icon must have the dedicated /xdzip/assets/app-icon.png alias')
+    require(path == (base / 'brand/xdzip.png').resolve(),
+            'Application icon alias must reference brand/xdzip.png')
+    require(entry['kind'] == 'platform-icon', 'Application icon must be a platform export')
+    require(entry.get('purpose') == 'application-icon' and entry.get('format') == 'png',
+            'Application icon must have the application PNG purpose')
+    require(entry.get('size') == [512, 512] and png_dimensions(path) == [512, 512],
+            'Application icon runtime export must be 512×512')
+    require(entry.get('source') == 'brand/xdzip.svg', 'Application icon has the wrong brand master')
+    source = assets.get((base / 'brand/xdzip.svg').resolve())
+    require(source is not None and source['kind'] == 'brand-master',
+            'Application icon lacks its tracked brand master')
+    require(source.get('purpose') == 'application-icon' and source.get('source') == 'brand/mark.svg',
+            'Application master must derive from the current signature')
+    mark = assets.get((base / 'brand/mark.svg').resolve())
+    require(mark is not None and mark['kind'] == 'brand-master'
+            and mark.get('purpose') == 'signature-source', 'Current signature source is untracked')
+    require(hashlib.sha256((base / 'brand/mark.svg').read_bytes()).hexdigest() == mark['sha256']
+            and source.get('source_sha256') == mark['sha256'], 'Application master has stale signature provenance')
+    require(hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'],
+            'Application icon differs from its manifest hash')
+    require(hashlib.sha256((base / 'brand/xdzip.svg').read_bytes()).hexdigest() == source['sha256']
+            and entry.get('source_sha256') == source['sha256'],
+            'Application icon has stale brand source provenance')
+
+
 def check_qt(base, assets, qrc):
-    checked = 0
-    for node in ET.parse(qrc).iter('file'):
+    checked, applications, aliases = 0, 0, set()
+    resources = [(resource.attrib.get('prefix', ''), node)
+                 for resource in ET.parse(qrc).iter('qresource') for node in resource.findall('file')]
+    for prefix, node in resources:
         path = (qrc.parent / node.text).resolve()
         if path.suffix != '.png':
             continue
+        alias = node.attrib.get('alias', node.text)
+        alias_path = prefix.rstrip('/') + '/' + alias.lstrip('/')
+        require(alias_path not in aliases, f'Duplicate runtime image alias: {alias_path}')
+        aliases.add(alias_path)
         entry = assets.get(path)
         require(entry is not None, f'Untracked runtime image: {node.text}')
+        if alias == 'assets/app-icon.png' or path.is_relative_to((base / 'brand').resolve()):
+            check_application_icon(base, assets, path, entry, alias, prefix)
+            applications += 1
+            checked += 1
+            continue
         require(path.is_relative_to((base / 'png').resolve()),
                 f'Only canonical transparent icons can ship: {node.text}')
         require(entry['kind'] == 'vector-rasterization',
@@ -130,12 +183,10 @@ def check_qt(base, assets, qrc):
                 f'Runtime icon logical size must be 24×24: {node.text}')
         require(scale in (1, 2, 3) and entry['size'] == [24 * scale, 24 * scale],
                 f'Invalid icon raster scale: {node.text}')
-        image_header = path.read_bytes()[:24]
-        require(image_header[:8] == b'\x89PNG\r\n\x1a\n' and image_header[12:16] == b'IHDR',
-                f'Invalid runtime PNG: {node.text}')
-        require(list(struct.unpack('>II', image_header[16:24])) == entry['size'],
+        require(png_dimensions(path) == entry['size'],
                 f'Runtime PNG dimensions differ from manifest: {node.text}')
         checked += 1
+    require(applications == 1, 'Qt must register exactly one high-resolution application icon')
     return checked
 
 
@@ -204,6 +255,7 @@ def main():
     html_count, dynamic_count = check_html(ASSET_ROOT, assets, ROOT / 'design/html')
     print(f'Checked {qt_count} Qt raster aliases and {html_count} HTML icon names '
           f'({dynamic_count} dynamic calls) against one canonical library. '
+          'The single 512×512 application icon has separate brand provenance. '
           'Visual fidelity requires separate review.')
 
 

@@ -1,0 +1,64 @@
+{
+  "checks": [
+    "Main brand and dedicated inactive archive load from canonical assets without CSS grayscale",
+    "Three native theme radios use miniwindow assets and respond to keyboard arrows",
+    "Checked and unchecked native radios use their respective shared appearance assets",
+    "Creation and overwrite confirmation consume archive-add, archive-warning and existing-archive",
+    "Extraction checkbox appearance and target validation consume selected and success artwork",
+    "Conflict uses the document illustration, PDF comparison artwork and warning badge",
+    "Windows and Linux progress variants use platform document and progress image assets",
+    "Stopping and cancelled task states use spinner and grey-circle white-square assets",
+    "Partial result uses paper warning illustration and separate success, skipped and failure badges"
+  ],
+  "passed": true,
+  "page_errors": [],
+  "external_requests": [],
+  "captures": [
+    {
+      "file": "settings-dark.png",
+      "sha256": "3dd053a265a8e6452c29a1d745ba652a8187203b5dc113f5fa3067babae282c2"
+    },
+    {
+      "file": "settings-light.png",
+      "sha256": "4ea189816e9d94fb9879a48912073afdf231b149d3a97ffc377b91024982d637"
+    },
+    {
+      "file": "create-overwrite.png",
+      "sha256": "c2f91cd1a1aa8c998a98fb5e9446bd409fe93bc436ebd384cc4cc69808b3b2db"
+    },
+    {
+      "file": "conflict.png",
+      "sha256": "0ef1bc46c739ee3feb24e141e1d982ba6603b57809b08d42ff14ee455c4232b5"
+    },
+    {
+      "file": "progress-windows.png",
+      "sha256": "ba25f522103144b2349a28948ebc4bdf6e12ad80f0b61c54191d21071eb3ba6d"
+    },
+    {
+      "file": "progress-linux.png",
+      "sha256": "feae97694806284a955ce278ed16abbef3e88fa413a0dde5904014e4cdadc472"
+    },
+    {
+      "file": "stopping.png",
+      "sha256": "c95c5e3636b73fde7f754bb0fcc471de68bda671a468fbf0411f6db02be67a21"
+    },
+    {
+      "file": "cancelled.png",
+      "sha256": "852dadce61ede598eec19d5c86213bf8bc18ed895f7b110882900354570d2f1b"
+    },
+    {
+      "file": "partial-result.png",
+      "sha256": "f21db31214263dbd92e575784b1514cd8c700132fe44c400d56111b9864a513b"
+    }
+  ],
+  "notes": [
+    "Current source app and CSS; canonical SVGs embedded in memory, no generated repository files overwritten.",
+    "HTML consumption and keyboard evidence only; not a whole-page source-image fidelity approval."
+  ],
+  "asset_manifest_sha256": "2c08aeb2ec1ff023c217bfe8ec7965b12b0cbc08aa08ae6655e8c7828edf78cd",
+  "consumer_sources": {
+    "design/html/app.js": "5609889db976671ef8b8da96c69b62f88c793fea12d872b1e042920e5902359f",
+    "design/html/hifi.css": "91b4e940b0daba3ee96eeb9a283583bbf138796a0a4db8dcbaa28fd6163e9262"
+  },
+  "final_revision": "Current final warning exclamation height and stop square metrology; all nine checks and captures rerun."
+}

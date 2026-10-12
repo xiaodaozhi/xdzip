@@ -7,6 +7,8 @@ on:
       - 'scripts/*asset*'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
+      - 'docs/qa/brand-and-assets*'
+      - 'docs/qa/brand-and-assets/**'
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
@@ -19,6 +21,8 @@ on:
       - 'scripts/*asset*'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
+      - 'docs/qa/brand-and-assets*'
+      - 'docs/qa/brand-and-assets/**'
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
@@ -69,6 +73,9 @@ jobs:
             docs/qa/html-scrollbars/
             docs/qa/asset-review/
             docs/qa/asset-consumers/
+            docs/qa/brand-and-assets.md
+            docs/qa/brand-and-assets/
+            design/assets/brand/
             design/assets/validation.json
             dist/html-preview-review/
             dist/html-reference-review/

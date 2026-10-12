@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "scope": "Real generated assets with in-memory invalid ledger/alias metadata; no package-format stubs",
+  "rejection_checks": [
+    {
+      "name": "missing preserved-reference coverage",
+      "rejected": true,
+      "reason": "Incomplete reference coverage"
+    },
+    {
+      "name": "nearby stopped glyph replacing cancelled-large",
+      "rejected": true,
+      "reason": "Inexact primary semantic mapping: reference/cancelled-large.png"
+    },
+    {
+      "name": "brand PNG using an ordinary shared-icon alias",
+      "rejected": true,
+      "reason": "Application icon must have the dedicated /xdzip/assets/app-icon.png alias"
+    },
+    {
+      "name": "archive-document PNG masquerading as application icon",
+      "rejected": true,
+      "reason": "Application icon alias must reference brand/xdzip.png"
+    },
+    {
+      "name": "stale application vector-source receipt",
+      "rejected": true,
+      "reason": "Application icon has stale brand source provenance"
+    }
+  ]
+}

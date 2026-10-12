@@ -1,6 +1,7 @@
 #include "BrowserController.h"
 #include <QApplication>
 #include <QEvent>
+#include <QIcon>
 #include <QPointer>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
@@ -23,8 +24,10 @@ class QuitGuard final : public QObject {
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
     application.setApplicationName(QStringLiteral("xdzip"));
+    application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     Q_INIT_RESOURCE(ui);
+    application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
     QQmlApplicationEngine engine;
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,
@@ -44,6 +47,8 @@ int main(int argc, char *argv[]) {
     QObject::connect(controller, &BrowserController::readyToClose, &application,
                      &QApplication::quit, Qt::QueuedConnection);
     if (application.arguments().contains(QStringLiteral("--smoke-test"))) {
+        if (application.windowIcon().isNull() || application.windowIcon().pixmap(64, 64).isNull())
+            return 4;
 #ifdef Q_OS_MACOS
         if (QGuiApplication::platformName() == QStringLiteral("cocoa") &&
             !engine.rootObjects().first()->property("integratedTitlebar").toBool())

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xdzip · 品牌与补全素材</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:#202638;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1120px;margin:auto;padding:32px 24px}h1{margin:0;font-size:30px;letter-spacing:-.6px}h2{font-size:21px;margin-top:32px}p,small{color:#65718a}a{color:#255de7}nav{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}.brand{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}figure{margin:0;background:#fff;border:1px solid #e0e5ef;border-radius:16px;padding:22px;text-align:center}.hero{display:block;width:min(100%,320px);height:auto;margin:auto}figcaption{margin-top:12px;font-weight:600}.small{display:flex;align-items:end;justify-content:center;gap:16px;min-height:82px;margin:18px 0}.small span{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:#65718a}.small img{display:block}.downloads{display:flex;justify-content:center;gap:14px;font-size:13px}.wide{display:block;width:100%;height:auto;border:1px solid #e0e5ef;border-radius:12px}.window{padding:16px;background:white;border:1px solid #e0e5ef;border-radius:14px;margin:16px 0}.window h3{font-size:16px;margin:0 0 14px}.note{border-left:3px solid #2969f8;padding:8px 16px;background:#eaf0fc;border-radius:0 8px 8px 0}details{margin:18px 0}summary{cursor:pointer;font-weight:600}details img{margin-top:16px}@media(max-width:650px){main{padding:24px 14px}h1{font-size:25px}.brand{gap:12px}figure{padding:12px}.small{gap:9px;flex-wrap:wrap}.downloads{gap:9px;flex-wrap:wrap}.window{padding:10px}}
+</style>
+</head>
+<body><main>
+<h1>xdzip 品牌与补全素材</h1>
+<p>下面展示实际生产 PNG、原像素参考与透明 SVG 对照，以及真实界面截图。品牌采用四条交错短带和开口 U，母版与小图都使用同一标记几何。</p>
+<nav><a href="../../../design/assets/index.html">统一素材库</a><a href="../brand-and-assets.md">复核说明</a><a href="../asset-review/source-detail-metrology.json">细节量测</a></nav>
+<div class="brand">
+<figure><img class="hero" src="../../../design/assets/brand/xdzip.png" alt="实际生产 xdzip 应用图标"><figcaption>xdzip 应用图标</figcaption><div class="small"><span><img width="16" height="16" src="../../../design/assets/brand/xdzip-16.png" alt="应用图标16像素">16 px</span><span><img width="24" height="24" src="../../../design/assets/brand/xdzip-24.png" alt="应用图标24像素">24 px</span><span><img width="32" height="32" src="../../../design/assets/brand/xdzip-32.png" alt="应用图标32像素">32 px</span><span><img width="48" height="48" src="../../../design/assets/brand/xdzip-48.png" alt="应用图标48像素">48 px</span></div><div class="downloads"><a href="../../../design/assets/brand/xdzip.svg">SVG</a><a href="../../../design/assets/brand/xdzip.ico">ICO</a><a href="../../../design/assets/brand/xdzip.icns">ICNS</a></div></figure>
+<figure><img class="hero" src="../../../design/assets/brand/xdzip-zip.png" alt="实际生产 ZIP 关联文件图标"><figcaption>ZIP 关联文件图标</figcaption><div class="small"><span><img width="16" height="16" src="../../../design/assets/brand/xdzip-zip-16.png" alt="ZIP图标16像素">16 px</span><span><img width="24" height="24" src="../../../design/assets/brand/xdzip-zip-24.png" alt="ZIP图标24像素">24 px</span><span><img width="32" height="32" src="../../../design/assets/brand/xdzip-zip-32.png" alt="ZIP图标32像素">32 px</span><span><img width="48" height="48" src="../../../design/assets/brand/xdzip-zip-48.png" alt="ZIP图标48像素">48 px</span></div><div class="downloads"><a href="../../../design/assets/brand/xdzip-zip.svg">SVG</a><a href="../../../design/assets/brand/xdzip-zip.ico">ICO</a><a href="../../../design/assets/brand/xdzip-zip.icns">ICNS</a></div></figure>
+</div>
+<h2>十三项补图与状态精修</h2>
+<p>每对左侧是保留背景的原像素切片，右侧是实际透明 SVG 的渲染。两列使用同一显示框；比例量测使用图形墨迹边界，不把切片留白算作圆径。所有原参考保持原字节。</p>
+<img class="wide" src="supplemental-comparison.png" alt="十三项补全与七项状态精修的原像素参考及实际透明SVG逐项对照">
+<h2>HTML 的实际消费</h2>
+<p>新品牌与独立灰色归档进入标题栏；主题卡片保留真实单选和方向键操作。状态页使用对应素材，取消终态是停止方块，停止中是 spinner。</p>
+<div class="window"><h3>主窗口</h3><img class="wide" src="html/main.png" alt="HTML主窗口实际渲染的新品牌与关联文档图标"></div>
+<div class="window"><h3>浅色设置 · 三个原生主题单选</h3><img class="wide" src="html/settings-light.png" alt="浅色设置使用三个完整主题窗口素材"></div>
+<details><summary>深色设置、覆盖确认与重名冲突</summary><img class="wide" src="html/settings-dark.png" alt="深色设置"><img class="wide" src="html/create-overwrite.png" alt="已有归档覆盖确认使用专用existing-archive"><img class="wide" src="html/conflict.png" alt="PDF重名冲突使用文档与警告插图"></details>
+<details><summary>平台进度、停止中、取消与部分结果</summary><img class="wide" src="html/progress-windows.png" alt="Windows进度采用对应下载文档"><img class="wide" src="html/progress-linux.png" alt="Linux进度采用对应下载文档"><img class="wide" src="html/stopping.png" alt="正在停止使用spinner"><img class="wide" src="html/cancelled.png" alt="已取消使用圆盘白方块"><img class="wide" src="html/partial-result.png" alt="部分结果采用分别对应的状态圆章"></details>
+<h2>Qt 真实资源消费</h2>
+<p>应用图标为 512 PNG，标题栏使用同源的浅深色 3× PNG。以下图片来自 Linux Qt 6.8.2 软件渲染；它们不代替目标系统 Finder、Dock 或 Explorer 的实际显示核对。</p>
+<img class="wide" src="qt/brand-light.png" alt="Qt浅色实际加载高分辨率应用图标和浅深色标题栏品牌"><img class="wide" src="qt/brand-dark.png" alt="Qt深色实际加载相同品牌资源">
+<details><summary>Qt 浏览应用的实际浅深色窗口</summary><img class="wide" src="qt/main-light.png" alt="Qt实际浅色浏览窗口"><img class="wide" src="qt/main-dark.png" alt="Qt实际深色浏览窗口"></details>
+<p class="note">关联文件的 SVG、PNG、ICO 与 ICNS 已提供。当前没有注册文件关联或修改默认打开应用。生产图是可维护的矢量重绘，折角投影、拉链微字与字形仍有重绘差异。</p>
+<p><a href="html/validation.json">HTML 消费记录</a> · <a href="qt/validation.json">Qt 消费记录</a> · <a href="negative-gates.json">负向检查</a></p>
+</main></body>
+</html>

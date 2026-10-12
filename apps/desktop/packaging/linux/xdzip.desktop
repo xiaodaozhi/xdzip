@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=xdzip
+Comment=Browse ZIP archive contents
+Comment[zh_CN]=查看 ZIP 压缩文件目录
+Exec=xdzip-browser
+Icon=xdzip
+Terminal=false
+Categories=Utility;Archiving;
+StartupWMClass=xdzip

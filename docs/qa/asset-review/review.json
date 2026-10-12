@@ -11,6 +11,7 @@
       "vector": "design/assets/svg/light/activity.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -22,7 +23,8 @@
       "vector": "design/assets/svg/light/app-mark.svg",
       "runtime": true,
       "html_registered": true,
-      "review": "标题栏圆角品牌与折角压缩文件保持不同轮廓。"
+      "reference_relation": "historical-design-reference",
+      "review": "当前品牌使用四条交错短带和开口 U；左侧旧拉链原图是历史视觉，不是新标志的像素目标。"
     },
     {
       "id": "archive-add",
@@ -33,7 +35,20 @@
       "vector": "design/assets/svg/light/archive-add.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "archive-grey",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/archive-grey.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "historical-design-reference",
+      "review": "非活动归档使用独立灰色矢量，不通过 CSS 灰度或透明度改造活动图。"
     },
     {
       "id": "archive-test",
@@ -44,6 +59,7 @@
       "vector": "design/assets/svg/light/archive-test.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -55,6 +71,7 @@
       "vector": "design/assets/svg/light/archive-warning.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -66,7 +83,8 @@
       "vector": "design/assets/svg/light/archive.svg",
       "runtime": true,
       "html_registered": true,
-      "review": "列表压缩文件保留细拉链、折角和渐变；大图细节单独对照。"
+      "reference_relation": "historical-design-reference",
+      "review": "关联文件采用白色折角纸张和新品牌蓝色标记；旧拉链原图保留作历史对照。"
     },
     {
       "id": "arrow-right",
@@ -77,6 +95,31 @@
       "vector": "design/assets/svg/light/arrow-right.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "cancelled-large",
+      "source_crop": "design/assets/reference/cancelled-large.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/cancelled-large.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "取消终态为灰色圆盘与白色停止方块；方块尺寸按实际圆盘墨迹测量，不使用切片留白作分母。"
+    },
+    {
+      "id": "check-selected",
+      "source_crop": "design/assets/reference/check-selected.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/check-selected.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -88,6 +131,7 @@
       "vector": "design/assets/svg/light/check.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -99,6 +143,7 @@
       "vector": "design/assets/svg/light/chevron-down.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -110,6 +155,7 @@
       "vector": "design/assets/svg/light/chevron-right.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -121,6 +167,7 @@
       "vector": "design/assets/svg/light/chevron-up.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -132,6 +179,7 @@
       "vector": "design/assets/svg/light/clock.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -143,6 +191,7 @@
       "vector": "design/assets/svg/light/close.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -154,6 +203,31 @@
       "vector": "design/assets/svg/light/completed.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "conflict-pdf",
+      "source_crop": "design/assets/reference/conflict-pdf.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/conflict-pdf.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "conflict-warning",
+      "source_crop": "design/assets/reference/conflict-warning.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/conflict-warning.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -165,6 +239,7 @@
       "vector": "design/assets/svg/light/document-conflict.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -176,6 +251,7 @@
       "vector": "design/assets/svg/light/document-download.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -187,7 +263,20 @@
       "vector": "design/assets/svg/light/document-warning.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "圆形提示与三角冲突分别使用 document-warning 和 document-conflict。"
+    },
+    {
+      "id": "existing-archive",
+      "source_crop": "design/assets/reference/existing-archive.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/existing-archive.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
       "id": "external-open",
@@ -198,6 +287,7 @@
       "vector": "design/assets/svg/light/external-open.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -209,6 +299,7 @@
       "vector": "design/assets/svg/light/extract.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -220,6 +311,7 @@
       "vector": "design/assets/svg/light/file-code.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "纸张边框与代码符号在素材源中校准，界面不再缩放内部路径。"
     },
     {
@@ -231,6 +323,7 @@
       "vector": "design/assets/svg/light/file-markdown.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "Markdown 字形与下箭头在素材源中平衡，界面不再改变描边。"
     },
     {
@@ -242,6 +335,7 @@
       "vector": "design/assets/svg/light/file-pdf.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "PDF 纸张圆角、白折角和红色边缘从素材源表达，不在界面中横向拉伸。"
     },
     {
@@ -253,6 +347,7 @@
       "vector": "design/assets/svg/light/file-text.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "折角纸张、短首行和三条正文线在矢量源中定义。"
     },
     {
@@ -264,6 +359,7 @@
       "vector": "design/assets/svg/light/folder.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "目录光学尺寸从 17.5 × 15 修订为 22 × 18.857，中心保持 (12, 12)，使其与文件类型图标的视觉重量协调。旧原稿中的较小目录保留作对照，不再作为当前目录墨迹大小的匹配目标。"
     },
     {
@@ -275,6 +371,7 @@
       "vector": "design/assets/svg/light/image-amber.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -286,6 +383,7 @@
       "vector": "design/assets/svg/light/image-file.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "图片类型图标采用透明矢量；照片缩略图是另一类演示资源。"
     },
     {
@@ -297,7 +395,20 @@
       "vector": "design/assets/svg/light/info.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "信息图标使用次要色；没有独立原稿切片。"
+    },
+    {
+      "id": "linux-document",
+      "source_crop": "design/assets/reference/linux-document.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/linux-document.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
       "id": "maximize",
@@ -308,6 +419,7 @@
       "vector": "design/assets/svg/light/maximize.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -319,6 +431,7 @@
       "vector": "design/assets/svg/light/minimize.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -330,6 +443,7 @@
       "vector": "design/assets/svg/light/moon.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -341,6 +455,7 @@
       "vector": "design/assets/svg/light/more.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -352,6 +467,7 @@
       "vector": "design/assets/svg/light/new.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -363,6 +479,7 @@
       "vector": "design/assets/svg/light/open.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "使用正面圆角文件夹与横向前缘。"
     },
     {
@@ -374,6 +491,7 @@
       "vector": "design/assets/svg/light/panel.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -385,6 +503,43 @@
       "vector": "design/assets/svg/light/plus.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "progress-image",
+      "source_crop": "design/assets/reference/progress-image.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/progress-image.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "radio-selected",
+      "source_crop": "design/assets/reference/radio-selected.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/radio-selected.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "radio-unselected",
+      "source_crop": "design/assets/reference/radio-unselected.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/radio-unselected.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -396,6 +551,7 @@
       "vector": "design/assets/svg/light/remove.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -407,6 +563,7 @@
       "vector": "design/assets/svg/light/search.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -418,6 +575,7 @@
       "vector": "design/assets/svg/light/settings-tile.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -429,6 +587,7 @@
       "vector": "design/assets/svg/light/settings.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -440,6 +599,7 @@
       "vector": "design/assets/svg/light/shield.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -451,6 +611,7 @@
       "vector": "design/assets/svg/light/sort-ascending.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -462,6 +623,7 @@
       "vector": "design/assets/svg/light/sort.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -473,6 +635,7 @@
       "vector": "design/assets/svg/light/spinner.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -484,6 +647,7 @@
       "vector": "design/assets/svg/light/status-partial-success.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -495,6 +659,7 @@
       "vector": "design/assets/svg/light/status-skipped.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -506,6 +671,7 @@
       "vector": "design/assets/svg/light/status-stopped.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -517,6 +683,7 @@
       "vector": "design/assets/svg/light/status-success.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -528,6 +695,19 @@
       "vector": "design/assets/svg/light/status-warning.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "success",
+      "source_crop": "design/assets/reference/success.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/success.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -539,6 +719,7 @@
       "vector": "design/assets/svg/light/sun.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -550,7 +731,32 @@
       "vector": "design/assets/svg/light/task-list.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "theme-dark",
+      "source_crop": "design/assets/reference/theme-dark.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/theme-dark.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "完整深色微型窗口，与浅色和跟随系统预览使用同一结构。"
+    },
+    {
+      "id": "theme-light",
+      "source_crop": "design/assets/reference/theme-light.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/theme-light.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "完整浅色微型窗口；标题栏、两按钮、双列内容、边线与轻影在同一透明源内。"
     },
     {
       "id": "theme-system",
@@ -561,6 +767,7 @@
       "vector": "design/assets/svg/light/theme-system.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -572,6 +779,7 @@
       "vector": "design/assets/svg/light/view-grid.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
@@ -583,6 +791,7 @@
       "vector": "design/assets/svg/light/view-list.svg",
       "runtime": true,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "列表视图是纯横线；任务列表的圆点使用独立 task-list 图标。"
     },
     {
@@ -594,6 +803,19 @@
       "vector": "design/assets/svg/light/warning.svg",
       "runtime": false,
       "html_registered": true,
+      "reference_relation": "appearance-reference",
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "windows-document",
+      "source_crop": "design/assets/reference/windows-document.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/windows-document.svg",
+      "runtime": false,
+      "html_registered": true,
+      "reference_relation": "appearance-reference",
       "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     }
   ],
@@ -914,8 +1136,8 @@
     "per_icon_css_transform": false
   },
   "remaining_visual_differences": [
-    "Source hero illustrations include soft baked shadows not present in transparent SVGs",
-    "Archive hero ZIP micro-lettering has not been reconstructed",
+    "Source baked shadows and transparent layered lighting are independently reconstructed, not recovered alpha layers",
+    "ZIP micro-lettering is reconstructed in the existing archive illustration; other zipper pull details remain simplified",
     "Image mountain motifs and gear corner curves are simplified compared with the source",
     "Source gradients, optical textures and antialiased curves are not exact recovered layers"
   ],

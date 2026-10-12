@@ -4,13 +4,14 @@
 
 | 路径 | 数量 / 规格 | 用途 |
 | --- | --- | --- |
-| `svg/light`、`svg/dark` | 每主题 54 类；全部 24×24 透明画布 | HTML 和 Qt 共用的矢量源 |
-| `png/light`、`png/dark` | 每主题 162 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
+| `svg/light`、`svg/dark` | 每主题 68 类；全部 24×24 透明画布 | HTML 和 Qt 共用的界面矢量源 |
+| `png/light`、`png/dark` | 每主题 204 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
 | `reference` | 45 张 PNG；保留源区域物理尺寸 | 原像素参考，保留背景，不作为透明运行图标 |
 | `demo` | 3 张照片；保留原始切片分辨率 | HTML 示例缩略图及预览；产品预览服务提供真实图像 |
+| `brand` | 26 项；应用与 ZIP 文档母版、平台格式及设计参考 | 系统应用图标、界面品牌和后续安装器的文件图标素材 |
 | `preview` | 1 张素材联系表 | 本次生成的审核预览，不进入产品包 |
 | [fonts](fonts/README.md) | Noto 派生设计字体与 OFL-1.1 | HTML 设计的稳定排版，不进入 Qt 产品字体 |
-| [manifest.json](manifest.json) | 480 项资产 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用 |
+| [manifest.json](manifest.json) | 统一资产与 45 张参考的覆盖台账 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用；总数以本清单为准 |
 | [validation.json](validation.json) | 生成一致性与资产检查 | 检查结果和仍需人工 / 原生核对的范围 |
 
 ## 一份矢量源
@@ -21,7 +22,23 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 文件家族以 `(12,12)` 为中心，PDF、TXT、CODE、Markdown 和图像文件的可见高度统一为 22 单位。天然宽度分别为 PDF 19、TXT 16.5、CODE / Markdown 20、图像 17.6 单位；目录采用 22×约18.86 的横向轮廓，从 17.5×15 等比放大约25.7%，中心和画布不变。HTML 列表统一使用 48×48 原稿坐标槽，正常窗口按同一个比例缩放。不同轮廓不强求相同墨迹宽度。
 
-`app-mark` 和 `archive` 是标题栏品牌 / 归档标识，保留独立的 20 单位视觉高度；它们不属于列表文档家族。操作窗口的插图使用明确的独立语义名称，折角、内侧高光、细边框和渐变在矢量源内定义。校准后的工具栏图标继续使用原几何形状。
+`app-mark`、`archive` 和 `archive-grey` 分别用于应用品牌、蓝色归档和灰色归档标识；它们采用下述新品牌几何，不属于列表文档家族。操作窗口的插图使用明确的独立语义名称，折角、内侧高光、细边框和渐变在矢量源内定义。校准后的工具栏图标继续使用原几何形状。
+
+## 品牌与平台图标
+
+品牌标记采用四条交错带与开放的 U 形下部，几何统一维护在 `scripts/brand_assets.py`。`brand/mark.svg` 是独立标记，`brand/xdzip.svg` 为应用图标母版，`brand/xdzip-zip.svg` 为 ZIP 文档图标母版。界面的 `app-mark`、`archive`、`archive-grey` 从同一几何定义生成；不在 Qt 或 HTML 中另外手绘。
+
+两种母版分别导出 16、24、32、48、64、128、256、512、1024 像素的透明 PNG，共 18 张；512 像素文件命名为 `xdzip.png` 和 `xdzip-zip.png`。16/24/32 像素采用简化的小尺寸表现，保持品牌几何，省去不可读微字和大图光影。Windows 的两份 ICO 各含七种尺寸；macOS 的两份 ICNS 各含十一种表示，包含相应 Retina 密度。所有导出纳入主素材清单，不另建品牌清单。
+
+`brand/identity-reference.png` 是新应用与文档标志的生成式视觉方向，用于审阅，不作为运行图标。此次品牌是明确的新设计修订，不能称为旧高保真 ZIP 拉链图标的无差别还原；十张完整原稿及 48 张原像素切片仍保留原始字节。
+
+应用图标接入 Qt 窗口、macOS app bundle、Windows 可执行资源与 Linux 桌面启动项 / hicolor 目录，详情见 [平台接入说明](../../apps/desktop/packaging/README.md)。ZIP 的 PNG、ICO、ICNS 供后续安装器和文件关联工作使用；当前不注册默认应用或文件关联，不新增双击打开及已运行应用收件行为。
+
+## 参考素材覆盖
+
+主清单的 `reference_coverage` 为全部 45 张原像素参考记录对应语义、浅深色 SVG、用途及说明。旧品牌参考标明历史设计依据，当前品牌指向新母版；控件参考标明实际控件呈现，避免把静态切片称为可操作控件。
+
+补齐主题浅 / 深、已有归档、Windows / Linux 文档、取消大图、选中复选框、成功、选中 / 未选中单选框、冲突 PDF、冲突警告和进度图片十三种语义。取消大图保留方形停止符号；主题系统图标展示完整窗口结构。成功、部分成功、跳过、停止、警告、停止中及系统主题七类既有图标调整渐变、高光或结构，实际表现与仍存在的差异见 [品牌与素材复核](../../docs/qa/brand-and-assets.md)。
 
 ## 原稿与参考的关系
 
@@ -36,6 +53,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 在仓库根目录执行：
 
 ```sh
+python3 scripts/build-brand-assets.py
 python3 scripts/build-design-assets.py
 python3 scripts/render-design-assets.py
 python3 scripts/check-design-assets.py
@@ -44,7 +62,7 @@ python3 scripts/check-asset-integration.py
 python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
 ```
 
-`asset_definitions.py` 是所有矢量形状、参考坐标、固定光学边界的唯一维护源。构建工具依赖 Pillow；透明导出和联系表依赖 Playwright / Chromium。使用 `XDZIP_CHROMIUM` 指定浏览器，使用 `XDZIP_FONTCONFIG_FILE` 指定画廊字体配置；这套工具不进入产品运行时。
+`asset_definitions.py` 维护界面形状、参考坐标及固定光学边界，`brand_assets.py` 维护共用品牌几何与平台导出规格。构建工具依赖 Pillow；透明导出和联系表依赖 Playwright / Chromium。使用 `XDZIP_CHROMIUM` 指定浏览器，使用 `XDZIP_FONTCONFIG_FILE` 指定画廊字体配置；这套工具不进入产品运行时。`build-brand-assets.py --check` 只校验品牌母版、透明 PNG、来源凭据及 ICO / ICNS 容器，不写回文件。
 
 `build-design-assets.py --check` 验证定义、SVG、清单和画廊同步，不改写文件。完整检查还核对原稿裁剪像素、全部画布及透明通道，并验证文件家族在浅深色和三个倍率的光学边界与中心。光学边界统一按 `alpha > 8` 测量；像素边界包含抗锯齿尾部与采样取整，采用固定 1.5 物理像素容差并按倍率收紧，中心容差另行验证，不改变矢量目标边界。[折角采样实测](../../docs/qa/asset-review/image-antialias-evidence.json)记录 SVG 几何及 1×/2×/3× 外沿；独立原稿对照的容差保持原值。
 

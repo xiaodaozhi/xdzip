@@ -14,35 +14,27 @@ import mimetypes
 import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from asset_definitions import REFERENCES as SOURCE_REFERENCES
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'design/assets'
 OUT = ROOT / 'docs/qa/asset-review'
 # A crop is appearance evidence, not a recovered alpha layer or a runtime asset.
-REFERENCES = {
-    'app-mark': 'brand-titlebar', 'archive': 'brand-extract',
-    'folder': 'folder', 'file-pdf': 'file-pdf', 'file-text': 'file-text',
-    'file-code': 'file-code', 'file-markdown': 'file-markdown',
-    'open': 'open', 'new': 'new', 'archive-test': 'archive-test',
-    'more': 'more', 'search': 'search', 'settings': 'settings',
-    'view-list': 'view-list', 'view-grid': 'view-grid', 'sort': 'sort', 'close': 'close',
-    'document-conflict': 'conflict-document', 'image-amber': 'image-amber',
-    'status-partial-success': 'partial-success', 'archive-warning': 'overwrite-archive',
-    'archive-add': 'create-archive', 'document-download': 'progress-document',
-    'document-warning': 'partial-document', 'image-file': 'image-blue',
-    'status-warning': 'partial-warning', 'status-success': 'success-large',
-    'status-skipped': 'partial-skipped', 'status-stopped': 'cancelled-large',
-    'spinner': 'stopping-spinner', 'remove': 'remove-row',
-    'theme-system': 'theme-system', 'settings-tile': 'settings-gear',
-}
+REFERENCES = dict(SOURCE_REFERENCES)
 FILE_ICONS = ('folder', 'file-pdf', 'file-text', 'file-code',
               'file-markdown', 'image-file')
 HERO_ICONS = ('archive-add', 'document-download', 'document-warning',
               'document-conflict', 'archive-warning', 'image-file',
-              'image-amber', 'settings-tile')
+              'image-amber', 'settings-tile', 'existing-archive', 'windows-document',
+              'linux-document', 'cancelled-large', 'theme-light', 'theme-dark',
+              'theme-system', 'conflict-pdf', 'conflict-warning', 'progress-image')
 NOTES = {
-    'app-mark': '标题栏圆角品牌与折角压缩文件保持不同轮廓。',
-    'archive': '列表压缩文件保留细拉链、折角和渐变；大图细节单独对照。',
+    'app-mark': '当前品牌使用四条交错短带和开口 U；左侧旧拉链原图是历史视觉，不是新标志的像素目标。',
+    'archive': '关联文件采用白色折角纸张和新品牌蓝色标记；旧拉链原图保留作历史对照。',
+    'archive-grey': '非活动归档使用独立灰色矢量，不通过 CSS 灰度或透明度改造活动图。',
+    'cancelled-large': '取消终态为灰色圆盘与白色停止方块；方块尺寸按实际圆盘墨迹测量，不使用切片留白作分母。',
+    'theme-light': '完整浅色微型窗口；标题栏、两按钮、双列内容、边线与轻影在同一透明源内。',
+    'theme-dark': '完整深色微型窗口，与浅色和跟随系统预览使用同一结构。',
     'folder': '目录光学尺寸从 17.5 × 15 修订为 22 × 18.857，中心保持 (12, 12)，'
               '使其与文件类型图标的视觉重量协调。旧原稿中的较小目录保留作对照，'
               '不再作为当前目录墨迹大小的匹配目标。',
@@ -306,11 +298,13 @@ def main():
                         'historical_vector': str(old.relative_to(ROOT)) if old else None,
                         'historical_sha256': hashlib.sha256(old.read_bytes()).hexdigest() if old else None,
                         'vector': str(src.relative_to(ROOT)), 'runtime': runtime,
-                        'html_registered': True, 'review': note})
+                        'html_registered': True,
+                        'reference_relation': 'historical-design-reference' if name in ('app-mark', 'archive', 'archive-grey') else 'appearance-reference',
+                        'review': note})
         rows.append(f'<article id="{name}"><h2>{name} '
                     f'<small>{"Qt 资源已引用" if runtime else "Qt 尚未引用"} · HTML 共享库已登记</small></h2>'
                     '<div class="comparison">' + ''.join(f'<div><b>{label}</b>{pic}</div>' for label, pic in [
-                        ('原稿参考 · 含背景', picture(crop)), ('历史重建 · 留存证据', picture(old)),
+                        ('历史品牌原稿 · 含背景' if name in ('app-mark', 'archive', 'archive-grey') else '原稿参考 · 含背景', picture(crop)), ('历史重建 · 留存证据', picture(old)),
                         ('当前透明 SVG · 浅色', picture(src)),
                         ('当前透明 SVG · 深色', picture(ASSETS / 'svg/dark' / src.name, True))])
                     + f'</div><p>{html.escape(note)}</p></article>')
@@ -321,7 +315,8 @@ def main():
              '<a href="hero-icons.html">状态大图轮廓与配色</a></p>'
              '<p class="notice">原稿切片含背景，仅作视觉参考。浅深色生产 SVG 位于同一素材库；'
              '历史重建只用于说明变化。每栏采用共同显示画布，没有逐图缩放补偿。'
-             '深色是配色适配，不表示存在独立的深色原稿。</p>')
+             '深色是配色适配，不表示存在独立的深色原稿。'
+             '品牌采用新标志；主题、状态与遗漏插图补全详见 <a href="../brand-and-assets.md">本次复核</a>。</p>')
     (OUT / 'index.html').write_text(page('xdzip 素材逐项对照', intro + ''.join(rows)))
     focus_names = ('open', 'settings', 'view-list', 'folder', 'file-pdf', 'file-text',
                    'file-code', 'file-markdown', 'archive', 'archive-add', 'document-download',
@@ -345,8 +340,8 @@ def main():
         'display_check': {'shared_svg_canvas': [24, 24], 'file_icon_frame': [48, 48],
                           'inspection_sizes': [24, 48, 72], 'per_icon_css_transform': False},
         'remaining_visual_differences': [
-            'Source hero illustrations include soft baked shadows not present in transparent SVGs',
-            'Archive hero ZIP micro-lettering has not been reconstructed',
+            'Source baked shadows and transparent layered lighting are independently reconstructed, not recovered alpha layers',
+            'ZIP micro-lettering is reconstructed in the existing archive illustration; other zipper pull details remain simplified',
             'Image mountain motifs and gear corner curves are simplified compared with the source',
             'Source gradients, optical textures and antialiased curves are not exact recovered layers'],
         'limits': ['Baked references are not runtime alpha layers',

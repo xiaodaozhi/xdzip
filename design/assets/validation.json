@@ -1,9 +1,12 @@
 {
   "status": "passed",
-  "asset_entries": 480,
+  "asset_entries": 618,
   "source_crops": 48,
-  "svg_files": 108,
-  "vector_png_files": 324,
+  "svg_files": 136,
+  "vector_png_files": 408,
+  "shared_icon_names": 68,
+  "brand_exports": 26,
+  "reference_checks": 45,
   "optical_checks": [
     {
       "file": "png/light/file-code@1x.png",
@@ -888,11 +891,376 @@
       ]
     }
   ],
+  "reference_coverage": [
+    {
+      "reference": "reference/archive-test.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "archive-test"
+      ]
+    },
+    {
+      "reference": "reference/brand-extract.png",
+      "implementation": "shared-svg",
+      "role": "historical-design-reference",
+      "production_icons": [
+        "archive"
+      ]
+    },
+    {
+      "reference": "reference/brand-titlebar.png",
+      "implementation": "shared-svg",
+      "role": "historical-design-reference",
+      "production_icons": [
+        "app-mark"
+      ]
+    },
+    {
+      "reference": "reference/cancelled-large.png",
+      "implementation": "shared-svg",
+      "role": "task-result-illustration",
+      "production_icons": [
+        "cancelled-large",
+        "status-stopped"
+      ]
+    },
+    {
+      "reference": "reference/check-selected.png",
+      "implementation": "shared-svg",
+      "role": "control-state-reference",
+      "production_icons": [
+        "check-selected"
+      ]
+    },
+    {
+      "reference": "reference/close.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "close"
+      ]
+    },
+    {
+      "reference": "reference/conflict-document.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "document-conflict"
+      ]
+    },
+    {
+      "reference": "reference/conflict-pdf.png",
+      "implementation": "shared-svg",
+      "role": "conflict-file-illustration",
+      "production_icons": [
+        "conflict-pdf"
+      ]
+    },
+    {
+      "reference": "reference/conflict-warning.png",
+      "implementation": "shared-svg",
+      "role": "conflict-state-illustration",
+      "production_icons": [
+        "conflict-warning"
+      ]
+    },
+    {
+      "reference": "reference/create-archive.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "archive-add"
+      ]
+    },
+    {
+      "reference": "reference/existing-archive.png",
+      "implementation": "shared-svg",
+      "role": "operation-illustration",
+      "production_icons": [
+        "existing-archive"
+      ]
+    },
+    {
+      "reference": "reference/file-code.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "file-code"
+      ]
+    },
+    {
+      "reference": "reference/file-markdown.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "file-markdown"
+      ]
+    },
+    {
+      "reference": "reference/file-pdf.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "file-pdf"
+      ]
+    },
+    {
+      "reference": "reference/file-text.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "file-text"
+      ]
+    },
+    {
+      "reference": "reference/folder.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "folder"
+      ]
+    },
+    {
+      "reference": "reference/image-amber.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "image-amber"
+      ]
+    },
+    {
+      "reference": "reference/image-blue.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "image-file"
+      ]
+    },
+    {
+      "reference": "reference/linux-document.png",
+      "implementation": "shared-svg",
+      "role": "platform-operation-illustration",
+      "production_icons": [
+        "linux-document"
+      ]
+    },
+    {
+      "reference": "reference/more.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "more"
+      ]
+    },
+    {
+      "reference": "reference/new.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "new"
+      ]
+    },
+    {
+      "reference": "reference/open.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "open"
+      ]
+    },
+    {
+      "reference": "reference/overwrite-archive.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "archive-warning"
+      ]
+    },
+    {
+      "reference": "reference/partial-document.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "document-warning"
+      ]
+    },
+    {
+      "reference": "reference/partial-skipped.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "status-skipped"
+      ]
+    },
+    {
+      "reference": "reference/partial-success.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "status-partial-success"
+      ]
+    },
+    {
+      "reference": "reference/partial-warning.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "status-warning"
+      ]
+    },
+    {
+      "reference": "reference/progress-document.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "document-download"
+      ]
+    },
+    {
+      "reference": "reference/progress-image.png",
+      "implementation": "shared-svg",
+      "role": "progress-file-illustration",
+      "production_icons": [
+        "progress-image"
+      ]
+    },
+    {
+      "reference": "reference/radio-selected.png",
+      "implementation": "shared-svg",
+      "role": "control-state-reference",
+      "production_icons": [
+        "radio-selected"
+      ]
+    },
+    {
+      "reference": "reference/radio-unselected.png",
+      "implementation": "shared-svg",
+      "role": "control-state-reference",
+      "production_icons": [
+        "radio-unselected"
+      ]
+    },
+    {
+      "reference": "reference/remove-row.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "remove"
+      ]
+    },
+    {
+      "reference": "reference/search.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "search"
+      ]
+    },
+    {
+      "reference": "reference/settings.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "settings"
+      ]
+    },
+    {
+      "reference": "reference/settings-gear.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "settings-tile"
+      ]
+    },
+    {
+      "reference": "reference/sort.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "sort"
+      ]
+    },
+    {
+      "reference": "reference/stopping-spinner.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "spinner"
+      ]
+    },
+    {
+      "reference": "reference/success.png",
+      "implementation": "shared-svg",
+      "role": "validation-state-illustration",
+      "production_icons": [
+        "success"
+      ]
+    },
+    {
+      "reference": "reference/success-large.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "status-success"
+      ]
+    },
+    {
+      "reference": "reference/theme-dark.png",
+      "implementation": "shared-svg",
+      "role": "theme-preview",
+      "production_icons": [
+        "theme-dark"
+      ]
+    },
+    {
+      "reference": "reference/theme-light.png",
+      "implementation": "shared-svg",
+      "role": "theme-preview",
+      "production_icons": [
+        "theme-light"
+      ]
+    },
+    {
+      "reference": "reference/theme-system.png",
+      "implementation": "shared-svg",
+      "role": "theme-preview",
+      "production_icons": [
+        "theme-system"
+      ]
+    },
+    {
+      "reference": "reference/view-grid.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "view-grid"
+      ]
+    },
+    {
+      "reference": "reference/view-list.png",
+      "implementation": "shared-svg",
+      "role": "shared-icon-source-reference",
+      "production_icons": [
+        "view-list"
+      ]
+    },
+    {
+      "reference": "reference/windows-document.png",
+      "implementation": "shared-svg",
+      "role": "platform-operation-illustration",
+      "production_icons": [
+        "windows-document"
+      ]
+    }
+  ],
   "checks": [
     "Unique assets exist and match SHA-256",
     "48 source crops match recorded original pixels",
-    "108 safe SVGs share the 24×24 canvas",
-    "324 transparent exports have 24/48/72-pixel canvases",
+    "136 safe SVGs share the 24×24 canvas",
+    "408 transparent exports have 24/48/72-pixel canvases",
+    "45 references map to exact semantic SVGs or explicitly native controls",
+    "26 brand exports pass their platform-format validator and source hashes",
     "SVG paint references resolve to unique local definitions",
     "42 file/folder theme-and-scale exports satisfy fixed optical bounds and center",
     "Generated SVGs, asset metadata and gallery match canonical definitions"

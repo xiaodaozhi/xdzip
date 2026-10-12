@@ -17,7 +17,12 @@
     <file alias="assets/document-download.png">../../design/assets/png/light/document-download@3x.png</file>
     <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
     <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/app-icon.png">../../design/assets/brand/xdzip.png</file>
+    <file alias="assets/light/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/dark/app-mark.png">../../design/assets/png/dark/app-mark@3x.png</file>
     <file alias="assets/archive.png">../../design/assets/png/light/archive@3x.png</file>
+    <file alias="assets/light/archive.png">../../design/assets/png/light/archive@3x.png</file>
+    <file alias="assets/dark/archive.png">../../design/assets/png/dark/archive@3x.png</file>
     <file alias="assets/folder.png">../../design/assets/png/light/folder@3x.png</file>
     <file alias="assets/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
     <file>ui/ArchiveAction.qml</file>

@@ -1,0 +1,133 @@
+{
+  "status": "passed",
+  "asset_manifest": "design/assets/manifest.json",
+  "asset_manifest_sha256": "2c08aeb2ec1ff023c217bfe8ec7965b12b0cbc08aa08ae6655e8c7828edf78cd",
+  "environment": {
+    "qt": "6.8.2",
+    "rust": "1.99.0",
+    "compiler": "GCC 14.2.0",
+    "platform": "Linux x86_64 offscreen, software backend"
+  },
+  "build": "Final resources preserved; both C++ application entry points rebuilt with QIcon file paths and real application-icon checks in existing smoke tests; 5/5 CTest passed.",
+  "ctest": {
+    "passed": 5,
+    "failed": 0,
+    "log": "ctest.log",
+    "log_sha256": "9f602749dfcbcfb4ed4f3a8a060c29ef1a78b8d75fb82b87f8bc9a58dbb5f65e",
+    "raw_log_sha256": "0bc69c1e06b7b19c6a3e20a807d368bb85ac1830f7b27cf19563904c9e3f03ae",
+    "log_normalization": "Removed trailing spaces from transcript channel labels; test output and results are unchanged."
+  },
+  "brand_qrc": {
+    "resource_aliases": [
+      "app-icon",
+      "light/app-mark",
+      "dark/app-mark",
+      "light/archive",
+      "dark/archive"
+    ],
+    "image_ready_cases": 10,
+    "xml": "/tmp/xdzip-brand-qt-consumer/test.xml",
+    "xml_sha256": "967547d63c86681476062b4907d8de9b93dd99add3a88193760790734438d35d",
+    "xml_pass_incidents": 4
+  },
+  "file_qrc": {
+    "types": [
+      "folder",
+      "file-pdf",
+      "file-text",
+      "file-code",
+      "file-markdown",
+      "image-file"
+    ],
+    "logical_slots": [
+      18,
+      32,
+      48
+    ],
+    "image_ready_cases": 36,
+    "xml": "/tmp/xdzip-brand-ui/shared-file-icons-test.xml",
+    "xml_sha256": "ac90f03634edc4900f81c2a0e25f0c8b8bfbac4fef61cd97a66abc16bf2bc8df",
+    "xml_pass_incidents": 4
+  },
+  "captures": [
+    {
+      "file": "/tmp/xdzip-brand-qt-consumer/brand-light.png",
+      "size": [
+        700,
+        210
+      ],
+      "sha256": "b232525676e195f832ee52dce26f175c56e0b67d015669d59af265f3d199b794"
+    },
+    {
+      "file": "/tmp/xdzip-brand-qt-consumer/brand-dark.png",
+      "size": [
+        700,
+        210
+      ],
+      "sha256": "fd93e2032d3a7b591542a2b661160ec150f9cae9ecec138e881b01641592eefb"
+    }
+  ],
+  "consumer_sources": {
+    "apps/desktop/ui.qrc": "e7b3cacaa7e316f7c4731aa6662fa513d72db0cfa53d36c7a0c79287da74a1d3",
+    "apps/desktop/ui/ArchiveTabs.qml": "20ffc8a16bf4a42e988baeb78c7ed85229b7075fe3befbf14f42fb17c1794d1c",
+    "apps/desktop/browser_main.cpp": "aab2164eb0c30077aa9b9a956c9624a3f002b428cb44fd7f5be43f0b9079a84c",
+    "apps/desktop/main.cpp": "380959e10d3dd1bc1827a097ff10e1ae50bf02bcc03d76a6bce6dfefa89d69f4",
+    "apps/desktop/CMakeLists.txt": "e30537161b909ed2bfdbf84bf5efe270102914147c37b9d8c4a8b39790acaa17"
+  },
+  "linux_staging_install": {
+    "path": "/tmp/xdzip-brand-install",
+    "desktop_file_validate": "passed",
+    "app_icon_size": [
+      512,
+      512
+    ],
+    "app_icon_sha256": "a3a8033ef48112b3c921b16c9bd06087cdbea21c665fb3aba0d4def3158d5aca",
+    "mime_association": false
+  },
+  "limits": [
+    "Offscreen Qt resource consumption and startup evidence; not whole-window design-image fidelity approval.",
+    "Native Finder/Dock/Explorer display needs native platform verification.",
+    "ZIP PNG/ICO/ICNS files are delivered for a future installer; no system file association is registered."
+  ],
+  "previous_asset_manifest_sha256": "20880dc65d9361f0e62c57ae3d3985bf1f8c5980890b692239a2f42e73af5c29",
+  "retained_consumption_scope": "The earlier 10 brand and 36 file Image.Ready cases and captures are retained: their PNG bytes did not change in the final warning/stop-only revision; those suites were not rerun.",
+  "resource_bundle_source": {
+    "file": "/tmp/xdzip-brand-ui/apps/desktop/qrc_ui.cpp",
+    "sha256": "1090cc8ff117ef3435b6796ca6d9d7e84bfe9f94efa8f2289407b951910fce57"
+  },
+  "application_window_icon": {
+    "status": "passed",
+    "resource_file_path": ":/xdzip/assets/app-icon.png",
+    "qicon_is_null": false,
+    "qguiapplication_window_icon_is_null": false,
+    "available_sizes": [
+      [
+        512,
+        512
+      ]
+    ],
+    "pixmap_is_null": false,
+    "pixmap_size": [
+      64,
+      64
+    ],
+    "probe_comparison": {
+      "file": "/tmp/xdzip-brand-qt-consumer/qicon-path-validation.json",
+      "sha256": "1febbd77f481c5e7e57e5d3f7ad97e817ff973af1607359bb403fe17c5d7d202"
+    },
+    "probe_source": {
+      "file": "/tmp/xdzip-brand-qt-consumer/qicon_probe.cpp",
+      "sha256": "57a34d1eb6c01ab84550c5070c2411400ed6ca8bc00a0a8104984735bae33267"
+    },
+    "probe_binary": {
+      "file": "/tmp/xdzip-brand-qt-consumer/qicon-probe",
+      "sha256": "e603af19557c6985dd6cf697c54fd0c097a26c86b4275e69efe48afa86c34b06"
+    },
+    "correction": "The earlier QML Image.Ready evidence did not validate the C++ QIcon URL. Its qrc:/ path produced a null application icon; both entry points now use the verified Qt resource file path :/.",
+    "scope": "The Qt probe links the current product rcc static library and checks the actual QGuiApplication.windowIcon; both corrected applications were rebuilt and their startup CTest checks passed.",
+    "production_smoke_assertions": {
+      "apps/desktop/main.cpp": "passed via qt_preview_load: actual application windowIcon and decoded 64-pixel pixmap are non-null",
+      "apps/desktop/browser_main.cpp": "passed via qt_browser_load: actual application windowIcon and decoded 64-pixel pixmap are non-null"
+    }
+  }
+}
