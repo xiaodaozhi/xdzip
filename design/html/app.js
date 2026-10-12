@@ -1,4 +1,7 @@
 "use strict";
+// The reviewer owns artboard navigation; embedded documents keep a fixed canvas.
+// Comparing window identities also works when an offline srcdoc has an opaque origin.
+if (window.parent !== window) document.documentElement.dataset.embeddedCanvas = "true";
 // Design-only state machine: all file operations use in-memory fixtures.
 // This prototype never reads archives, writes files, or uploads user content.
 // Icons come from the same reviewed SVG sources as Qt; no second hand-drawn set.

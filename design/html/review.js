@@ -104,7 +104,10 @@
         const value = preset[id] || (id === "zoom" ? (window.innerWidth < 650 ? "fit" : "1") : control.value);
         if ([...control.options].some(option => option.value === value)) control.value = value;
     }
-    if (preset.presentation) document.body.classList.add("presentation");
+    if (preset.presentation) {
+        document.documentElement.classList.add("presentation");
+        document.body.classList.add("presentation");
+    }
     frame.addEventListener("load", update);
     window.addEventListener("message", event => {
         if (event.source === frame.contentWindow && event.data?.type === "xdzip-review-ready") update();
@@ -117,6 +120,14 @@
     for (const id of ["view","platform","theme"]) document.querySelector(`#${id}`).addEventListener("change", update);
     document.querySelector("#zoom").addEventListener("change", fit);
     window.addEventListener("resize", fit);
+    // Classic page scrollbars can change available width without a window resize,
+    // for example when switching artboards or showing the reference below them.
+    let observedWidth;
+    new ResizeObserver(([entry]) => {
+        if (entry.contentRect.width === observedWidth) return;
+        observedWidth = entry.contentRect.width;
+        fit();
+    }).observe(viewport);
     document.querySelector("#reference-toggle").onclick = event => {
         const reference = document.querySelector("#reference");
         reference.hidden = !reference.hidden;

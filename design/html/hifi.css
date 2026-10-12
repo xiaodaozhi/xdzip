@@ -2,6 +2,10 @@
    The outer reviewer scales this whole artboard; it does not reflow desktop UI. */
 :root { --font:"Xdzip Design Sans SC",sans-serif; --canvas:#f7f8fa; --surface:#fff; --sidebar:#f5f6f8; --text:#141827; --secondary:#626b86; --border:#e3e7ef; --accent:#1956ff; --accent-ink:#1956ff; --accent-hover:#1048e8; --selection:#e7edff; --row-height:66px; }
 :root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#4277ff; --accent-ink:#8aafff; --selection:#30436a; }
+/* An embedded artboard has no document-level scrolling. Its table, inspector,
+   and operation windows retain their own scroll containers; standalone pages
+   still scroll normally when opened in a smaller browser window. */
+html[data-embedded-canvas="true"] { overflow:hidden; }
 body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .reviewbar,.review-footer { display:none; }
 .stage { width:1586px; max-width:none; margin:0; padding:30px 18px 22px 20px; }

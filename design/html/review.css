@@ -1,4 +1,8 @@
 * { box-sizing:border-box; }
+/* Reserve classic page-gutter width so fit-to-width cannot toggle the page's
+   vertical scrollbar as its scaled height crosses the browser height. */
+html { scrollbar-gutter:stable; }
+html.presentation { scrollbar-gutter:auto; }
 body { margin:0; background:#f3f5f8; color:#202638; font:14px/1.6 "Xdzip Design Sans SC",sans-serif; }
 header { padding:20px 28px; display:flex; align-items:center; justify-content:space-between; background:#fff; border-bottom:1px solid #e0e5ee; }
 header strong { font-size:25px; letter-spacing:-.6px; }
@@ -12,7 +16,8 @@ button:hover { background:#edf2ff; }
 button:focus-visible,select:focus-visible { outline:2px solid #316bff; outline-offset:2px; }
 .notice { margin:12px 28px; color:#65718a; }
 main { padding:0 12px; }
-.canvas-viewport { width:100%; overflow:auto; }
+/* The page handles vertical navigation; an oversized artboard pans horizontally. */
+.canvas-viewport { width:100%; overflow-x:auto; overflow-y:hidden; }
 .scaled-canvas { position:relative; overflow:hidden; }
 iframe,#reference-image { display:block; border:0; transform-origin:top left; position:absolute; left:0; top:0; }
 #reference { margin:0; padding:0; }

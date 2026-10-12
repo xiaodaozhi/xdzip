@@ -41,6 +41,11 @@ METRICS = """() => {
     const frame = document.querySelector('#design-frame');
     const image = document.querySelector('#reference-image');
     const child = frame.contentDocument;
+    const root = child.documentElement;
+    const rootStyle = child.defaultView.getComputedStyle(root);
+    const viewport = document.querySelector('#viewport');
+    const viewportStyle = getComputedStyle(viewport);
+    const windowRect = child.querySelector('.window').getBoundingClientRect();
     return {
         viewportWidth: document.querySelector('#viewport').clientWidth,
         referenceViewportWidth: document.querySelector('#reference-viewport').clientWidth,
@@ -51,12 +56,25 @@ METRICS = """() => {
         rawImage: [image.width, image.height],
         naturalImage: [image.naturalWidth, image.naturalHeight],
         referenceHidden: image.hidden,
+        referencePanelHidden: document.querySelector('#reference').hidden,
         window: rect(child.querySelector('.window')),
         windowVisible: !child.querySelector('.window').hidden
             && child.defaultView.getComputedStyle(child.querySelector('.stage')).display !== 'none',
         theme: child.documentElement.dataset.theme,
         platform: child.body.dataset.platform,
         standalone: child.body.dataset.standalone,
+        embeddedCanvas: root.dataset.embeddedCanvas,
+        childViewport: [child.defaultView.innerWidth, child.defaultView.innerHeight],
+        childRootClient: [root.clientWidth, root.clientHeight],
+        childRootScroll: [root.scrollWidth, root.scrollHeight],
+        childRootOverflow: [rootStyle.overflowX, rootStyle.overflowY],
+        childRootGutter: [child.defaultView.innerWidth - root.clientWidth,
+            child.defaultView.innerHeight - root.clientHeight],
+        windowInsideCanvas: windowRect.x >= 0 && windowRect.y >= 0
+            && windowRect.right <= root.clientWidth && windowRect.bottom <= root.clientHeight,
+        viewportOverflow: [viewportStyle.overflowX, viewportStyle.overflowY],
+        viewportClient: [viewport.clientWidth, viewport.clientHeight],
+        viewportScroll: [viewport.scrollWidth, viewport.scrollHeight],
         view: document.querySelector('#view').value,
         zoom: document.querySelector('#zoom').value,
         dpr: devicePixelRatio,
@@ -95,6 +113,7 @@ def main():
         "source_window": SOURCE_WINDOW, "source_to_logical": NORMAL_SCALE,
         "sources": {}, "checks": [], "failures": [],
         "page_errors": [], "external_requests": [],
+        "classic_scrollbars": {"playwright_hide_scrollbars": False, "overlay_scrollbar_disabled": True},
         "limits": [
             "CSS logical pixels are independent of devicePixelRatio and physical display pixels.",
             "Equal dimensions do not prove font, color or full visual fidelity.",
@@ -165,7 +184,8 @@ def main():
                   declared["size"] == source["size"] and resolved == ROOT / source["path"],
                   expected=source, actual=declared)
 
-    def verify_layout(page, mode, width, dpr, view, zoom, popup=False):
+    def verify_layout(page, mode, width, dpr, view, zoom, popup=False,
+                      reference_visible=True, boundary_height=None):
         metrics = page.evaluate(METRICS)
         size = report["sources"][view]["size"] if view in SOURCES else report["sources"]["main"]["size"]
         scale = 1 if zoom == "pixels" else NORMAL_SCALE
@@ -173,8 +193,12 @@ def main():
             scale = min(NORMAL_SCALE, metrics["viewportWidth"] / size[0])
         expected = [size[0] * scale, size[1] * scale]
         prefix = f"{mode}/{width}/DPR{dpr}/{view}/{zoom}" + ("/popup" if popup else "")
+        if boundary_height is not None:
+            prefix += f"/height{boundary_height}/reference-{'open' if reference_visible else 'closed'}"
         common = {"mode": mode, "width": width, "dpr": dpr, "view": view,
                   "zoom": zoom, "popup": popup, "expected_scale": scale}
+        if boundary_height is not None:
+            common.update(boundary_height=boundary_height, reference_visible=reference_visible)
         checks = {
             "source canvas size": metrics["rawFrame"] == size,
             "HTML display size": near(metrics["iframe"][2:], expected),
@@ -182,8 +206,12 @@ def main():
             "HTML origin": near([metrics["iframe"][i] - metrics["wrapper"][i] for i in [0, 1]], [0, 0]),
             "DPR preserved": metrics["dpr"] == dpr,
             "outer document does not overflow": metrics["documentWidth"] <= metrics["browserWidth"],
+            "embedded canvas root configured": metrics["embeddedCanvas"] == "true",
+            "embedded root does not own scrolling": metrics["childRootOverflow"] == ["hidden", "hidden"],
+            "classic root scrollbars consume no space": near(metrics["childRootGutter"], [0, 0]),
+            "outer canvas keeps horizontal scrolling": metrics["viewportOverflow"] == ["auto", "hidden"],
         }
-        if view in SOURCES and not popup:
+        if view in SOURCES and not popup and reference_visible:
             checks.update({
                 "PNG natural size": metrics["naturalImage"] == size,
                 "reference source size": metrics["rawImage"] == size,
@@ -193,11 +221,14 @@ def main():
                 "reference origin": near([metrics["reference"][i] - metrics["referenceWrapper"][i] for i in [0, 1]], [0, 0]),
                 "viewport widths equal": metrics["viewportWidth"] == metrics["referenceViewportWidth"],
             })
+        if boundary_height is not None:
+            checks["selected reference panel state"] = metrics["referencePanelHidden"] != reference_visible
         if view in ["main", "empty", "damaged"]:
             actual_window = [value * scale for value in metrics["window"]]
             expected_window = [value * scale for value in SOURCE_WINDOW]
             checks["main window logical bounds"] = near(actual_window, expected_window)
             checks["main window visible"] = metrics["windowVisible"] and metrics["standalone"] == "false"
+            checks["all four window edges inside canvas"] = metrics["windowInsideCanvas"]
             if zoom == "1":
                 checks["normal window width 1280"] = abs(actual_window[2] - LOGICAL_WIDTH) <= TOLERANCE
             if zoom == "pixels":
@@ -207,11 +238,74 @@ def main():
         check(prefix, all(checks.values()), **common, assertions=checks,
               expected_canvas=expected, actual=metrics)
 
+    def verify_scrollbars(page, mode):
+        """Stress root scrolling independently of exact source artboard sizing.
+
+        A one-pixel viewport reduction may crop source background margins, but
+        must preserve the complete window and never allocate nested root bars.
+        """
+        page.select_option("#view", "main")
+        page.select_option("#zoom", "1")
+        page.select_option("#platform", "macos")
+        page.select_option("#theme", "light")
+        frame = wait_ready(page)
+
+        def assertions(metrics):
+            return {
+                "embedded canvas flag": metrics["embeddedCanvas"] == "true",
+                "canvas root owns no scrollbars": metrics["childRootOverflow"] == ["hidden", "hidden"],
+                "classic gutter occupies no space": near(metrics["childRootGutter"], [0, 0]),
+                "complete main window remains visible": metrics["windowVisible"] and metrics["windowInsideCanvas"],
+                "horizontal pan retained without inner vertical bars": metrics["viewportOverflow"] == ["auto", "hidden"],
+            }
+
+        for zoom in [1.1, 1.2, 1.25]:
+            style = page.add_style_tag(content=f"html{{zoom:{zoom}}}")
+            metrics = page.evaluate(METRICS)
+            tests = assertions(metrics)
+            check(f"{mode}: classic scrollbars at CSS zoom {zoom}", all(tests.values()),
+                  browser_css_zoom=zoom, assertions=tests, actual=metrics)
+            style.evaluate("element => element.remove()")
+
+        size = report["sources"]["main"]["size"]
+        page.wait_for_function("size => {const f=document.querySelector('#design-frame'); return f.clientWidth===size[0] && f.clientHeight===size[1]}", arg=size)
+        # Removing CSS zoom queues the reviewer's width observer. Let that real
+        # adaptive fit finish before injecting the artificial undersized canvas.
+        stable = page.evaluate("""() => new Promise(resolve => requestAnimationFrame(() => {
+            const width=document.querySelector('#viewport').clientWidth;
+            requestAnimationFrame(() => resolve(width===document.querySelector('#viewport').clientWidth));
+        }))""")
+        if not stable:
+            raise RuntimeError("Scrollbar stress setup: reviewer viewport did not settle")
+        reduced_size = [size[0] - 1, size[1] - 1]
+        page.eval_on_selector("#design-frame", "(element,size) => {element.style.width=(size[0]-1)+'px'; element.style.height=(size[1]-1)+'px'}", size)
+        metrics = page.evaluate(METRICS)
+        tests = assertions(metrics)
+        tests["one-pixel source viewport reduction is active"] = metrics["rawFrame"] == reduced_size
+        check(f"{mode}: one-pixel canvas reduction tolerates classic scrollbars", all(tests.values()),
+              assertions=tests, actual=metrics)
+        page.screenshot(path=str(OUTPUT / f"main-classic-{mode}.png"))
+
+        # Removing the dedicated root policy must make this realistic undersized
+        # classic-scrollbar case fail; a permanently hidden browser would miss it.
+        frame.evaluate("delete document.documentElement.dataset.embeddedCanvas")
+        invalid = page.evaluate(METRICS)
+        negative = assertions(invalid)
+        check(f"{mode}: negative root policy removal is detected",
+              invalid["rawFrame"] == reduced_size
+              and not all(negative.values()) and any(value > 0 for value in invalid["childRootGutter"]),
+              rejection_assertions=negative, actual=invalid)
+        if mode == "offline":
+            page.screenshot(path=str(OUTPUT / "negative-classic-root.png"))
+        frame.evaluate("document.documentElement.dataset.embeddedCanvas='true'")
+        page.eval_on_selector("#design-frame", "(element,size) => {element.style.width=size[0]+'px'; element.style.height=size[1]+'px'}", size)
+
     try:
         with local_server() as base, sync_playwright() as playwright:
             browser = playwright.chromium.launch(
                 executable_path=os.environ.get("XDZIP_CHROMIUM", "/usr/bin/chromium"),
-                args=["--no-sandbox", "--disable-dev-shm-usage"],
+                ignore_default_args=["--hide-scrollbars"],
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-features=OverlayScrollbar"],
             )
             try:
                 for mode in ["served", "offline"]:
@@ -316,6 +410,39 @@ def main():
                                                              "window_css": [1280, 940 * NORMAL_SCALE],
                                                              "screenshot_px": list(actual.size)}
                             context.close()
+                    # A separate wide reviewer keeps the scrollbar stress cases
+                    # independent of mobile fit, reference loading and popup state.
+                    context = browser.new_context(viewport={"width": 1858, "height": 1234})
+                    context.route("**/*", route_request)
+                    page = context.new_page()
+                    page.on("pageerror", lambda error: report["page_errors"].append(str(error)))
+                    if mode == "served":
+                        page.goto(base + "/design/html/index.html")
+                    else:
+                        page.set_content(offline)
+                    wait_ready(page)
+                    verify_scrollbars(page, mode)
+                    context.close()
+                    # Classic page scrollbar feedback previously left fit() at
+                    # the obsolete width near these main-view height boundaries.
+                    for height in [1008, 1014, 1020]:
+                        context = browser.new_context(viewport={"width": 1200, "height": height})
+                        context.route("**/*", route_request)
+                        page = context.new_page()
+                        page.on("pageerror", lambda error: report["page_errors"].append(str(error)))
+                        if mode == "served":
+                            page.goto(base + "/design/html/index.html")
+                        else:
+                            page.set_content(offline)
+                        wait_ready(page)
+                        page.select_option("#zoom", "fit")
+                        for reference_visible in [False, True]:
+                            if reference_visible:
+                                page.click("#reference-toggle")
+                            page.wait_for_timeout(20)
+                            verify_layout(page, mode, 1200, 1, "main", "fit",
+                                          reference_visible=reference_visible, boundary_height=height)
+                        context.close()
             finally:
                 browser.close()
     except Exception as error:

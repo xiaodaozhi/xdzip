@@ -1,0 +1,1210 @@
+{
+  "status": "passed",
+  "classic_scrollbars": {
+    "playwright_hide_scrollbars": false,
+    "overlay_scrollbar_disabled": true
+  },
+  "full_matrix": {
+    "checks": 391,
+    "passed": 391,
+    "failed": 0,
+    "report": "../html-scale/validation.json"
+  },
+  "normal": {
+    "outerViewport": [
+      1858,
+      1234
+    ],
+    "rawCanvas": [
+      1586,
+      992
+    ],
+    "rootOverflow": [
+      "hidden",
+      "hidden"
+    ],
+    "embeddedCanvas": "true",
+    "rootGutter": [
+      0,
+      0
+    ],
+    "window": [
+      20,
+      30,
+      1548,
+      940
+    ],
+    "windowFullyVisible": true,
+    "outerPanOverflow": [
+      "auto",
+      "hidden"
+    ],
+    "zoom": "1",
+    "sha256": "ca557bd803a816ee1e6c51cabbd29de6437e072dc735c1cc99b24474e857ff4a"
+  },
+  "stress_cases": [
+    {
+      "name": "served: classic scrollbars at CSS zoom 1.1",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1651,
+      "wrapper_size": [
+        1442.5625,
+        902.28125
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "served: classic scrollbars at CSS zoom 1.2",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1512,
+      "wrapper_size": [
+        1573.703125,
+        984.296875
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "served: classic scrollbars at CSS zoom 1.25",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1450,
+      "wrapper_size": [
+        1639.265625,
+        1025.3125
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "served: one-pixel canvas reduction tolerates classic scrollbars",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true,
+        "one-pixel source viewport reduction is active": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1585,
+        991
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1585,
+        991
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1819,
+      "wrapper_size": [
+        1311.40625,
+        820.25
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "served: negative root policy removal is detected",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": false,
+        "canvas root owns no scrollbars": false,
+        "classic gutter occupies no space": false,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        15,
+        15
+      ],
+      "root_client": [
+        1570,
+        976
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "visible",
+        "visible"
+      ],
+      "embedded_canvas": null,
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1585,
+        991
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1819,
+      "wrapper_size": [
+        1311.40625,
+        820.25
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1008/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1008,
+      "reference_visible": false
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1008/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1008,
+      "reference_visible": true
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1014/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1014,
+      "reference_visible": false
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1014/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1014,
+      "reference_visible": true
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1020/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1020,
+      "reference_visible": false
+    },
+    {
+      "name": "served/1200/DPR1/main/fit/height1020/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1020,
+      "reference_visible": true
+    },
+    {
+      "name": "offline: classic scrollbars at CSS zoom 1.1",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1651,
+      "wrapper_size": [
+        1442.5625,
+        902.28125
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "offline: classic scrollbars at CSS zoom 1.2",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1512,
+      "wrapper_size": [
+        1573.703125,
+        984.296875
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "offline: classic scrollbars at CSS zoom 1.25",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1450,
+      "wrapper_size": [
+        1639.265625,
+        1025.3125
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "offline: one-pixel canvas reduction tolerates classic scrollbars",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": true,
+        "canvas root owns no scrollbars": true,
+        "classic gutter occupies no space": true,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true,
+        "one-pixel source viewport reduction is active": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1585,
+        991
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1585,
+        991
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1819,
+      "wrapper_size": [
+        1311.40625,
+        820.25
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "offline: negative root policy removal is detected",
+      "passed": true,
+      "assertions": {
+        "embedded canvas flag": false,
+        "canvas root owns no scrollbars": false,
+        "classic gutter occupies no space": false,
+        "complete main window remains visible": true,
+        "horizontal pan retained without inner vertical bars": true
+      },
+      "root_gutter": [
+        15,
+        15
+      ],
+      "root_client": [
+        1570,
+        976
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "visible",
+        "visible"
+      ],
+      "embedded_canvas": null,
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1585,
+        991
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1819,
+      "wrapper_size": [
+        1311.40625,
+        820.25
+      ],
+      "boundary_height": null,
+      "reference_visible": null
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1008/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1008,
+      "reference_visible": false
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1008/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1008,
+      "reference_visible": true
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1014/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1014,
+      "reference_visible": false
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1014/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1014,
+      "reference_visible": true
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1020/reference-closed",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1020,
+      "reference_visible": false
+    },
+    {
+      "name": "offline/1200/DPR1/main/fit/height1020/reference-open",
+      "passed": true,
+      "assertions": {
+        "source canvas size": true,
+        "HTML display size": true,
+        "HTML wrapper size": true,
+        "HTML origin": true,
+        "DPR preserved": true,
+        "outer document does not overflow": true,
+        "embedded canvas root configured": true,
+        "embedded root does not own scrolling": true,
+        "classic root scrollbars consume no space": true,
+        "outer canvas keeps horizontal scrolling": true,
+        "PNG natural size": true,
+        "reference source size": true,
+        "reference display size": true,
+        "reference wrapper size": true,
+        "both display sizes equal": true,
+        "reference origin": true,
+        "viewport widths equal": true,
+        "selected reference panel state": true,
+        "main window logical bounds": true,
+        "main window visible": true,
+        "all four window edges inside canvas": true
+      },
+      "root_gutter": [
+        0,
+        0
+      ],
+      "root_client": [
+        1586,
+        992
+      ],
+      "root_scroll": [
+        1586,
+        992
+      ],
+      "root_overflow": [
+        "hidden",
+        "hidden"
+      ],
+      "embedded_canvas": "true",
+      "window_fully_visible": true,
+      "iframe_source_size": [
+        1586,
+        992
+      ],
+      "outer_pan_overflow": [
+        "auto",
+        "hidden"
+      ],
+      "outer_viewport_width": 1161,
+      "wrapper_size": [
+        1161,
+        726.171875
+      ],
+      "boundary_height": 1020,
+      "reference_visible": true
+    }
+  ],
+  "height_boundary_cases": 12,
+  "images": [
+    {
+      "file": "main-after.png",
+      "kind": "Normal exact-size reviewer, no viewport reduction",
+      "size": [
+        1858,
+        1234
+      ],
+      "sha256": "ca557bd803a816ee1e6c51cabbd29de6437e072dc735c1cc99b24474e857ff4a"
+    },
+    {
+      "file": "reproduced-root-bars.png",
+      "kind": "Same-version negative regression: root policy removed and source viewport reduced by 1 px",
+      "size": [
+        1858,
+        1234
+      ],
+      "sha256": "7688ef1ead586295b1105db916725c1e6ced4694f0cf7c7c8dfe529695176075"
+    },
+    {
+      "file": "stress-fixed.png",
+      "kind": "Same 1 px reduction with embedded policy retained",
+      "size": [
+        1858,
+        1234
+      ],
+      "sha256": "179206292913bd74fd3121f73658f9f9067c18d820aa86e080ffa47630120a0d"
+    }
+  ],
+  "inputs": {
+    "design/html/app.js": "97f987b27aee2bb2bf1beff9715f9dd5026c7b1fafbc8024bb26788c6a057541",
+    "design/html/review.js": "59d97e9c8e7b47dec16806c329173d0cee202b855b55d98e56e67e61819fa18e",
+    "design/html/hifi.css": "313f7f8452c74ce59073d0f7ab88df4270c8b5ab97978eabc04873a057d1ac7b",
+    "design/html/review.css": "c9e943aab5daba6c100224ac71fc40ba1c96beb386b65d91031568c36dadd64d",
+    "scripts/check-html-scale.py": "20455f0299924484a60f35252af2bd341eaeae59d39c4b71f37316f2f0bac275"
+  },
+  "limits": [
+    "Controlled negative reproduction, not a historical user screenshot",
+    "CSS zoom is a stress scenario; the observed one-pixel overflow and classic gutter are the proven mechanism",
+    "Source-background margins may be clipped in the 1 px tolerance case; all four window edges remain visible",
+    "True long file/metadata scrolling is separately validated by the classic-scrollbar-enabled 17-case preview check"
+  ]
+}

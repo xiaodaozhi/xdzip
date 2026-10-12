@@ -66,6 +66,7 @@ jobs:
           path: |
             docs/qa/html-header/
             docs/qa/html-body/
+            docs/qa/html-scrollbars/
             docs/qa/asset-review/
             docs/qa/asset-consumers/
             design/assets/validation.json

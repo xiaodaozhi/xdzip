@@ -22,6 +22,8 @@ checks, errors = [], []
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(
         executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
+        # Exercise real classic scrollbars instead of Playwright's hidden defaults.
+        ignore_default_args=['--hide-scrollbars'],
         args=['--no-sandbox', '--disable-dev-shm-usage'])
     try:
         for width in [1588, 1200, 390]:
@@ -33,7 +35,7 @@ with sync_playwright() as playwright:
             expect(panel.locator('#inspector-extract')).to_be_visible()
             frame = next(frame for frame in page.frames if frame.parent_frame)
             for classic in [False, True]:
-                # Reserve classic scrollbar space without relying on host settings.
+                # Check both automatic gutters and a permanently reserved classic gutter.
                 frame.eval_on_selector('#inspector', '(p, enabled) => p.style.scrollbarGutter = enabled ? "stable" : "auto"', classic)
                 for theme in ['light', 'dark']:
                     page.select_option('#theme', theme)
@@ -76,6 +78,8 @@ with sync_playwright() as playwright:
                 frame.eval_on_selector('#inspector', '(p) => {p.style.scrollbarGutter="stable"; p.scrollTop=p.scrollHeight}')
                 metrics = frame.evaluate(METRICS)
                 assert metrics['scrollWidth'] <= metrics['width'], metrics
+                assert metrics['scrollHeight'] > metrics['height'], metrics
+                assert frame.eval_on_selector('#inspector', '(p) => p.scrollTop > 0'), metrics
                 assert metrics['buttonVisible'], metrics
                 checks.append({'selection': 'long metadata', **metrics})
                 frame.locator('#inspector-extract').click()
@@ -86,6 +90,6 @@ with sync_playwright() as playwright:
         browser.close()
         (OUTPUT / 'validation.json').write_text(json.dumps(
             {'checks': checks, 'page_errors': errors,
-             'scope': 'Offline Chromium layout; classic scrollbar space simulated'},
+             'scope': 'Offline Chromium layout; real classic scrollbars enabled, automatic and stable gutters'},
             ensure_ascii=False, indent=2) + '\n')
 print(f'{len(checks)} preview layout checks passed')
