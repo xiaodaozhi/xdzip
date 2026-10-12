@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xdzip 内容区域视觉复核</title>
+<style>
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:#f4f6fa;color:#202638;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1620px;padding:24px;margin:auto}h1{font-size:25px;margin:0 0 8px}p{color:#5f6b83}nav,.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0}button,select{font:inherit;padding:8px 12px;border:1px solid #d9dfeb;border-radius:8px;background:white;color:inherit}button{cursor:pointer}button[aria-pressed=true]{background:#e7edff;color:#1956ff;border-color:#9fb4ff}label{display:flex;align-items:center;gap:8px}select{max-width:100%}.viewport{overflow:auto;border:1px solid #dce2ed;border-radius:12px;background:white}.artboard{position:relative;overflow:hidden;margin:auto}.artboard img{position:absolute;display:block;max-width:none}.comparison{display:block;margin:auto}table{border-collapse:collapse;width:100%;font-size:13px;background:white}th,td{padding:10px;text-align:left;border-bottom:1px solid #e5e9f0}th{white-space:nowrap}td:first-child{font-family:monospace;font-size:12px}.scroll-table{overflow:auto}small{color:#65718a}.pass{color:#287341}.fail{color:#b33232}output{min-width:42px}a{color:#1956ff}details{margin:18px 0}summary{cursor:pointer}#source-data{font:12px/1.6 monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:white;padding:16px;border-radius:8px}@media(max-width:650px){main{padding:16px}h1{font-size:21px}nav{gap:8px}button{padding:7px 10px}.controls{align-items:flex-start;gap:12px}label{flex-wrap:wrap}}
+</style>
+</head>
+<body><main>
+<h1>xdzip 内容区域视觉复核</h1>
+<p>从已确认原稿和 HTML 中按相同坐标裁切工具栏下方区域：1548 × 803 px。手机可选择左侧栏、文件列表、预览或状态栏查看细节；全部内容保留原始桌面布局。</p>
+<div class="controls">
+<label>查看区域<select id="region" aria-label="查看区域"></select></label>
+<button id="actual-size" aria-pressed="false">100% 原始尺寸</button>
+<label>修复后透明度<input id="opacity" type="range" min="0" max="100" value="50"><output id="opacity-value">50%</output></label>
+</div>
+<nav aria-label="对照方式">
+<button data-mode="overlay" aria-pressed="true">原稿 + 修复后叠加</button>
+<button data-mode="reference" aria-pressed="false">原稿</button>
+<button data-mode="after" aria-pressed="false">修复后</button>
+<button data-mode="before" aria-pressed="false">修复前</button>
+<button data-mode="difference" aria-pressed="false">像素差异</button>
+</nav>
+<p><small id="caption">叠加模式用于检查边界、列线、图标中心、文字和间距。字体与原稿光影差异仍会产生像素差异，不能将差异图当成错误数量。</small></p>
+<div id="viewer" class="viewport"><div class="artboard"><img id="base" alt="已确认原稿内容区域"><img id="candidate" alt="HTML 修复后的内容区域"></div></div>
+<p>下面上方为原稿，下方为修复后 HTML。所选区域保持相同坐标和比例。</p>
+<div id="comparison-viewer" class="viewport"><canvas id="comparison" class="comparison" aria-label="原稿与修复后上下对照"></canvas></div>
+<p id="result"></p>
+<p>几何锚点来自原稿独立测量，检查固定画布、内嵌字体、边界和可见图标墨迹。原稿的原始字体无法从图片中精确恢复，因此文字轮廓仅记录供人工复核，不计为字体还原通过。</p>
+<p>保留两处功能语义：选中一项时，全选框显示半选；节省比例为 26% 时，色条填充 26%。原稿分别画成空框和约 56% 填充。正文采用统一行高，字体、软边和光影仍存在细微差异。</p>
+<div class="scroll-table"><table><thead><tr><th>检查</th><th>原稿锚点</th><th>实际</th><th>偏差与容差</th></tr></thead><tbody id="rows"></tbody></table></div>
+<details><summary>原稿来源、坐标和测量基准</summary><pre id="source-data"></pre></details>
+<p><small>本页仅覆盖工具栏下方范围。几何和孤立图标检查不能证明整个界面像素完全一致。</small></p>
+<script src="measurements.js"></script>
+<script>
+const report=window.XDZIP_BODY_REPORT;
+const imagePaths=window.XDZIP_BODY_IMAGES||{reference:'reference.png',after:'after.png',before:'before.png',difference:'difference.png'};
+const base=document.querySelector('#base'),candidate=document.querySelector('#candidate'),slider=document.querySelector('#opacity'),regionSelect=document.querySelector('#region'),board=document.querySelector('.artboard'),viewer=document.querySelector('#viewer'),comparison=document.querySelector('#comparison');
+const regions=report?.review_regions||{full:{label:'全部内容区域',rect:[20,167,1548,803]},sidebar:{label:'左侧归档与目录树',rect:[20,167,292,749]},list:{label:'路径、文件列表',rect:[312,167,866,749]},preview:{label:'右侧文件预览',rect:[1178,167,390,749]},status:{label:'底部状态栏',rect:[20,916,1548,54]}};
+let mode='overlay',actualSize=false;
+const referencePicture=new Image(),afterPicture=new Image();
+referencePicture.onload=layout;afterPicture.onload=layout;
+referencePicture.src=imagePaths.reference;afterPicture.src=imagePaths.after;
+for(const [key,item] of Object.entries(regions)){const option=document.createElement('option');option.value=key;option.textContent=item.label;regionSelect.append(option)}
+function selectedRect(){const rect=regions[regionSelect.value].rect;return[rect[0]-20,rect[1]-167,rect[2],rect[3]]}
+function layout(){const [x,y,width,height]=selectedRect(),scale=actualSize?1:Math.min(1,viewer.clientWidth/width);board.style.width=width*scale+'px';board.style.height=height*scale+'px';for(const img of [base,candidate]){img.style.width=1548*scale+'px';img.style.height=803*scale+'px';img.style.left=-x*scale+'px';img.style.top=-y*scale+'px'}if(referencePicture.complete&&referencePicture.naturalWidth&&afterPicture.complete&&afterPicture.naturalWidth){comparison.width=width;comparison.height=height*2+12;const context=comparison.getContext('2d');context.fillStyle='#e2e6ed';context.fillRect(0,0,comparison.width,comparison.height);context.drawImage(referencePicture,x,y,width,height,0,0,width,height);context.drawImage(afterPicture,x,y,width,height,0,height+12,width,height);comparison.style.width=width*scale+'px';comparison.style.height=(height*2+12)*scale+'px'}}
+function setMode(next){mode=next;for(const button of document.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));base.src=imagePaths[mode==='overlay'?'reference':mode];candidate.src=imagePaths.after;candidate.hidden=mode!=='overlay';candidate.style.opacity=slider.value/100;document.querySelector('#opacity-value').textContent=slider.value+'%';document.querySelector('#caption').textContent=mode==='difference'?'像素差异包含字体、抗锯齿和原稿光影差异，并非所有差异都是布局错误。':'按相同坐标查看目录树、表头、行高、列边界、图片、属性信息与底部状态。';layout()}
+slider.oninput=()=>setMode('overlay');regionSelect.onchange=layout;document.querySelector('#actual-size').onclick=()=>{actualSize=!actualSize;document.querySelector('#actual-size').setAttribute('aria-pressed',String(actualSize));layout()};for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>setMode(button.dataset.mode);new ResizeObserver(layout).observe(viewer);
+if(report){document.querySelector('#result').textContent=report.passed?'记录的几何与孤立图标锚点检查通过。':'检查存在未通过项，详见下表与报告；未标记为视觉验收完成。';document.querySelector('#result').className=report.passed?'pass':'fail';for(const item of report.measurements){const row=document.createElement('tr');const delta=item.review_only?'文字轮廓记录':item.maximum_delta_px!==undefined?(item.maximum_delta_px===null?'缺失':item.maximum_delta_px+' px')+' / 容差 '+item.tolerance_px+' px':item.passed?'通过':'未通过';for(const value of [item.selector||item.name,JSON.stringify(item.expected),JSON.stringify(item.actual),delta]){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}if(item.passed===false)row.className='fail';document.querySelector('#rows').append(row)}document.querySelector('#source-data').textContent=JSON.stringify({source:report.source,sha256:report.source_sha256,viewport:report.viewport,device_scale_factor:report.device_scale_factor,baseline:report.baseline,source_measurements:report.source_measurements,limits:report.limits},null,2)}
+setMode('overlay');
+</script>
+</main></body></html>

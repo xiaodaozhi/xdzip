@@ -5,6 +5,8 @@ on:
       - 'design/**'
       - 'scripts/*html*'
       - 'docs/qa/html-header/**'
+      - 'docs/qa/html-body/**'
+      - 'docs/qa/html-body-review.md'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
   pull_request:
@@ -12,6 +14,8 @@ on:
       - 'design/**'
       - 'scripts/*html*'
       - 'docs/qa/html-header/**'
+      - 'docs/qa/html-body/**'
+      - 'docs/qa/html-body-review.md'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
 permissions:
@@ -37,6 +41,13 @@ jobs:
           .venv-design/bin/python scripts/check-html-references.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
+      - name: Compare body anchors and build offline regional review
+        run: |
+          export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          body_check_exit=0
+          .venv-design/bin/python scripts/check-html-body.py || body_check_exit=$?
+          .venv-design/bin/python scripts/build-html-body-review.py
+          exit "$body_check_exit"
       - name: Upload actual review evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -44,10 +55,12 @@ jobs:
           name: xdzip-html-design-evidence
           path: |
             docs/qa/html-header/
+            docs/qa/html-body/
             dist/html-preview-review/
             dist/html-reference-review/
             dist/html-design-review/
             dist/xdzip-header-review.html
+            dist/xdzip-body-review.html
             dist/xdzip-hifi-design.html
           if-no-files-found: error
           retention-days: 14

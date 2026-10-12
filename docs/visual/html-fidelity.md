@@ -1,11 +1,11 @@
 # HTML 视觉一致性复核
 
-高保真图片是视觉依据，HTML 是可编辑实现。顶部复核从 [已确认主窗口](../../design/hifi/v1/screens/main-light.png) 独立量取尺寸，不从当前 CSS 反推“设计应当如此”。原稿存在柔化边缘和生成式字形，不能凭测试数量声明整页逐像素一致。
+高保真图片是视觉依据，HTML 是可编辑实现。顶部与工具栏下方内容均从 [已确认主窗口](../../design/hifi/v1/screens/main-light.png) 独立量取尺寸，不从当前 CSS 反推“设计应当如此”。原稿存在柔化边缘和生成式字形，不能凭测试数量声明整页逐像素一致。
 
 ## 固定可重复条件
 
-- 画布 1588×1000、窗口 1548×940、窗口原点 `(20,30)`；比较时裁切同一 `(20,30)-(1568,167)` 区域，不拉伸原稿。
-- 原稿 SHA-256 固定在 [header-reference.json](../../design/html/header-reference.json)。原稿变化后必须重新测量，不能默默替换。
+- 画布 1588×1000、窗口 1548×940、窗口原点 `(20,30)`、设备像素比1；顶部同坐标裁切 `(20,30)-(1568,167)`，内容区域裁切 `(20,167)-(1568,970)`，不拉伸原稿。
+- 原稿 SHA-256 固定在 [header-reference.json](../../design/html/header-reference.json) 和 [body-reference.json](../../design/html/body-reference.json)。原稿变化后必须重新测量，不能默默替换。
 - 字体为离线随包的 [Xdzip Design Sans SC](../../design/assets/fonts/README.md)，测量等待 `document.fonts.ready`。固定真实 400–750 字重，减少平台回退字体改变宽度的问题。
 - 参考字体的原始家族无法从生成图片证明。字形轮廓与系统抗锯齿仍可能不同；字形差异单独记录，不能伪称已经还原原始字体。
 
@@ -25,6 +25,16 @@
 
 顶部组件的槽位和排版集中在 `hifi.css` 的标题栏、标签和工具栏段落，不依赖通用 `.icon-button` 的尺寸或继承行高。浅深主题共用几何；Windows/Linux 的标题装饰仍是浏览器演示，正式产品原生窗口单独验收。
 
+## 工具栏下方内容区域
+
+正文范围为归档卡片、目录树、路径栏、列表表头与行、选择状态、文件预览和底部状态栏。记录列边界、行高、内边距、图标中心及可见墨迹，按 [独立基准](../../design/html/body-reference.json) 检查。严格几何与隔离图标墨迹容差均为 2 px，文字轮廓只记录供人工复核。
+
+正文复核保存提交 `d544c2c` 的修复前实际截图。对照使用完整 `1548 × 803` 内容裁切，并提供侧栏、列表、预览、状态栏各自的同尺寸区域；手机按区域查看，不通过改变桌面排版来隐藏差异。
+
+原稿选中一项但全选框为空、标注节省26%但比例条填充约56%，属于静态状态矛盾。HTML 分别保留 `indeterminate` 半选与实际26%比例，作为明确记录的语义例外。正常预览的溢出和长内容滚动由预览专项检查负责；选择、导航、排序、搜索和示例操作由现有交互检查负责，不以几何检查替代功能验证。
+
+查看 [正文复核说明](../qa/html-body-review.md)、[同尺寸区域对照](../qa/html-body/index.html) 和 [测量证据](../qa/html-body/measurements.json)。原稿的未知字体、生成软边、光影和抗锯齿差异必须保留说明；本轮 HTML 证据不能用于宣称 Qt 产品已完成对应校准。
+
 ## 检查与交付
 
 执行：
@@ -32,13 +42,16 @@
 ```sh
 python scripts/build-html-design.py
 python scripts/check-html-header.py
+python scripts/check-html-body.py
 python scripts/check-html-preview.py
 python scripts/check-html-references.py
+python scripts/check-html-design.py
 python scripts/build-html-header-review.py
+python scripts/build-html-body-review.py
 ```
 
 顶部检查使用原稿独立锚点：DOM 边界／中心最大偏差不超过 1 px，隔离区域中的实际图标墨迹边界偏差不超过 2 px。下拉箭头白色墨迹边界容差 1 px；Tab 右肩按原稿的白面和弧线取样，单通道颜色容差10/255，以容纳原稿柔化。字形轮廓只记录实测值。叠加图和差异图包含抗锯齿、光影和字形差异，不能将总像素差转换成虚构的相似度。
 
-查看 [同尺寸对照](../qa/html-header/index.html)、[测量结果](../qa/html-header/measurements.json)、[顶部复核说明](../qa/html-header-review.md)。离线文件是 `dist/xdzip-header-review.html`，可切换原稿、修复前、修复后、透明叠加和像素差异；界面单文件是 `dist/xdzip-hifi-design.html`。
+顶部离线文件是 `dist/xdzip-header-review.html`；正文离线文件是 `dist/xdzip-body-review.html`。两者均可切换原稿、修复前、修复后、透明叠加和像素差异；正文增加手机区域选择。界面单文件是 `dist/xdzip-hifi-design.html`。
 
-[HTML design review 工作流](../../.github/workflows/html-design.yml) 在相关设计变更时运行检查并上传实际截图和报告。锚点失败使检查失败；几何通过后仍要看叠加证据。当前检查范围是顶部，不替代其他页面各自的视觉校准。
+[HTML design review 工作流](../../.github/workflows/html-design.yml) 在相关设计变更时运行顶部和正文检查，生成离线复核并上传实际截图和报告。锚点失败使检查失败；几何通过后仍要看叠加证据。当前主窗口检查不替代其他页面各自的视觉校准，实际验证结果以报告和运行记录为准。

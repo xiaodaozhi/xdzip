@@ -1,15 +1,63 @@
 {
-  "font_sha256": "a2e50ca33bafb2d891e55f0d6d7df7765eb1fc7354b5ff3258ca2e3cc3b5cb98",
+  "font_sha256": "f9adb0c1b75da00630a00c7a818c4660469f1c32bdbb3b0979769c74a95c49cf",
   "browser": "154.0.8037.57",
   "embedded_load_passed": true,
-  "used_fonts": [
-    {
-      "familyName": "Xdzip Design Sans SC",
-      "postScriptName": "XdzipDesignSansSC",
-      "isCustomFont": true,
-      "glyphCount": 50
-    }
-  ],
+  "used_fonts": {
+    ".archive-tab .tab-label": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 8
+      }
+    ],
+    ".archive-card strong": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 8
+      }
+    ],
+    "#sort-name": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 2
+      }
+    ],
+    "tr[data-id=\"lake\"] .entry-name>span:last-child": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 7
+      }
+    ],
+    "#inspector h2": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 7
+      }
+    ],
+    "#selection-status": [
+      {
+        "familyName": "Xdzip Design Sans SC",
+        "postScriptName": "XdzipDesignSansSC",
+        "isCustomFont": true,
+        "glyphCount": 16
+      }
+    ]
+  },
   "coverage_and_axis_validation": "passed by build-subset.py --check",
-  "two_generation_binary_identity": "passed"
+  "two_generation_binary_identity": "passed",
+  "tools": {
+    "playwright": "1.58.0",
+    "Pillow": "12.1.0",
+    "fonttools": "4.61.1",
+    "Brotli": "1.1.0"
+  }
 }

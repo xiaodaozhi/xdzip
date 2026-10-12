@@ -98,6 +98,24 @@ const children = folders.flatMap((f, fi) =>
 const entries = [...folders, ...roots, ...children],
     files = entries.filter((e) => !e.folder),
     byId = new Map(entries.map((e) => [e.id, e]));
+// Demo timestamps follow the approved scene; every entry keeps its own metadata.
+const sceneDates = {
+    photos: "2026/10/01",
+    documents: "2026/10/02",
+    maps: "2026/10/03",
+    lake: "2026/10/08",
+    sunrise: "2026/10/07",
+    guide: "2026/10/06",
+    list: "2026/10/01",
+    route: "2026/10/03",
+    readme: "2026/10/01",
+};
+for (const entry of entries) entry.modified = sceneDates[entry.id] || "2026/10/08";
+const typeAbbreviations = { jpg: "JPEG", pdf: "PDF", txt: "TXT", gpx: "GPX", md: "MD" };
+const imagePropertyOrder = ["尺寸", "原始大小", "压缩后", "修改日期"];
+const displayType = (entry) => entry.folder
+    ? "文件夹"
+    : typeAbbreviations[entry.name.split(".").pop()] || entry.type.replace(" 文件", "");
 const archiveBytes = files.reduce((n, f) => n + f.size, 0),
     compressedBytes = files.reduce((n, f) => n + f.compressed, 0);
 const state = {
@@ -275,7 +293,7 @@ function render() {
     const list = visibleEntries(),
         chosen = selectedFiles(),
         sum = chosen.reduce((n, f) => n + f.size, 0);
-    $("#archive-info").textContent = `ZIP · ${bytes(compressedBytes)}`;
+    $("#archive-info").textContent = bytes(compressedBytes);
     $("#original-size").textContent = bytes(archiveBytes);
     $("#compressed-size").textContent = bytes(compressedBytes);
     const saving = Math.round((1 - compressedBytes / archiveBytes) * 100);
@@ -284,8 +302,8 @@ function render() {
     if (state.archiveState !== "ready") {
         $("#archive-info").textContent =
             state.archiveState === "empty"
-                ? "ZIP · 空归档"
-                : "ZIP · 元数据未就绪";
+                ? "空归档"
+                : "元数据未就绪";
         $("#original-size").textContent =
             state.archiveState === "empty" ? "0 B" : "未知";
         $("#compressed-size").textContent = "未知";
@@ -293,7 +311,7 @@ function render() {
         $("#saving-bar").style.width = "0%";
     }
     $("#breadcrumbs").innerHTML =
-        `<button data-home>北境旅行.zip</button>${icon("chevronRight")}<span>${state.query ? "搜索结果" : state.path ? byId.get(state.path).name : "全部文件"}</span>`;
+        `<button data-home>北境旅行.zip</button><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${state.query ? "搜索结果" : state.path ? byId.get(state.path).name : "全部文件"}</span>`;
     $("#breadcrumbs [data-home]").onclick = () => choosePath("");
     $("#entry-count").textContent = `${state.path || state.query ? list.length : files.length} 项`;
     $("#search-notice").hidden = !state.query;
@@ -302,7 +320,7 @@ function render() {
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
-                `<tr tabindex="0" data-id="${e.id}" class="${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}<span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${e.folder ? "文件夹" : esc(e.type.replace(" 图像", "").replace(" 文档", "").replace("文本文件", "文本").replace(" 文件", ""))}</td><td class="date-col">2026/10/08</td></tr>`,
+                `<tr tabindex="0" data-id="${e.id}" class="${e.folder ? "folder-row " : ""}${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name"><span class="entry-icon">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}</span><span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${esc(displayType(e))}</td><td class="date-col">${esc(e.modified)}</td></tr>`,
         )
         .join("");
     $("#file-rows")
@@ -368,11 +386,15 @@ function render() {
     all.indeterminate =
         !all.checked && list.some((e) => state.selected.has(e.id));
     all.disabled = !list.length;
+    $("#sort-name [data-icon]").innerHTML = icon("sort-ascending");
+    $("#sort-name [data-icon]").classList.toggle("descending", state.sort < 0);
+    $("#sort-name").setAttribute("aria-label", state.sort === 0 ? "按名称升序排序" : "切换名称排序方向");
+    $("#sort-name").closest("th").setAttribute("aria-sort", state.sort === 0 ? "none" : state.sort < 0 ? "descending" : "ascending");
     $("#extract-label").textContent = chosen.length ? "解压所选" : "全部解压";
     $("#extract").disabled = state.archiveState !== "ready";
     $("#extract-menu-button").disabled = state.archiveState !== "ready";
     $("#selection-status").textContent = chosen.length
-        ? `已选择 ${chosen.length} 个文件 · ${bytes(sum)}`
+        ? `已选择 ${chosen.length} 项 · ${bytes(sum)}`
         : `${files.length} 个文件 · ${folders.length} 个文件夹`;
     $("#read-status").textContent =
         state.archiveState === "loading"
@@ -474,7 +496,7 @@ function renderInspector(chosen) {
             ["原始大小", bytes(size)],
             ["压缩后", bytes(packed)],
             [single?.type.includes("JPEG") ? "尺寸" : "压缩方式", single?.type.includes("JPEG") ? "6000 × 4000" : "Deflate"],
-            ["修改日期", "2026/10/08"],
+            ["修改日期", single?.modified || "2026/10/08"],
             [
                 "位置",
                 single && single.parent
@@ -483,9 +505,11 @@ function renderInspector(chosen) {
             ],
         ]
             .filter(([label]) => !single?.type.includes("JPEG") || label !== "位置")
+            .sort((a, b) => single?.type.includes("JPEG")
+                ? imagePropertyOrder.indexOf(a[0]) - imagePropertyOrder.indexOf(b[0]) : 0)
             .map(
                 ([a, b]) =>
-                    `<div class="property"><dt>${a}</dt><dd>${esc(b)}</dd></div>`,
+                    `<div class="property"><dt>${a}</dt><dd${a === "修改日期" ? ' class="modified-value"' : ""}>${esc(b)}</dd></div>`,
             )
             .join(
                 "",
@@ -1101,6 +1125,8 @@ function setTheme(theme) {
         (theme === "system" &&
             matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.dataset.theme = dark ? "dark" : "light";
+    const tick = window.XDZIP_ASSETS.icons[dark ? "dark" : "light"].check.replace(/stroke="[^"]*"/, 'stroke="white"');
+    document.documentElement.style.setProperty("--checkbox-tick", `url("data:image/svg+xml,${encodeURIComponent(tick)}")`);
     document.querySelectorAll("svg[data-asset]").forEach(el => { el.outerHTML = icon(el.dataset.asset, el.getAttribute("class") || ""); });
     $("#theme").innerHTML = icon(dark ? "sun" : "moon");
     $("#theme").setAttribute(

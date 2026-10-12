@@ -7,7 +7,7 @@ assets = []
 
 def run(*args):
     subprocess.run(args, check=True, capture_output=True)
-crops = {'brand-titlebar': ('main-light', 136, 44, 31, 37), 'brand-extract': ('extract-macos', 125, 136, 104, 122), 'folder': ('main-light', 397, 302, 42, 41), 'file-pdf': ('main-light', 397, 626, 44, 50), 'file-text': ('main-light', 398, 694, 43, 49), 'file-code': ('main-light', 397, 760, 47, 48), 'file-markdown': ('main-light', 397, 829, 47, 51), 'photo-lake-preview': ('main-light', 1198, 241, 350, 277), 'photo-lake-thumbnail': ('main-light', 397, 494, 45, 45), 'photo-sunrise-thumbnail': ('main-light', 397, 560, 45, 46), 'open': ('main-light', 48, 111, 32, 32), 'new': ('main-light', 174, 111, 28, 32), 'archive-test': ('main-light', 317, 110, 34, 34), 'more': ('main-light', 448, 111, 31, 31), 'search': ('main-light', 920, 111, 32, 32), 'settings': ('main-light', 1515, 43, 36, 34), 'view-list': ('main-light', 1000, 182, 46, 40), 'view-grid': ('main-light', 1065, 185, 28, 30), 'sort': ('main-light', 1114, 185, 36, 30), 'close': ('main-light', 1524, 192, 28, 27), 'check-selected': ('main-light', 337, 501, 30, 31), 'success': ('extract-macos', 141, 501, 43, 43), 'radio-selected': ('extract-macos', 142, 654, 42, 42), 'radio-unselected': ('extract-macos', 142, 934, 42, 43)}
+crops = {'brand-titlebar': ('main-light', 136, 44, 31, 37), 'brand-extract': ('extract-macos', 125, 136, 104, 122), 'folder': ('main-light', 397, 302, 42, 41), 'file-pdf': ('main-light', 397, 626, 44, 50), 'file-text': ('main-light', 398, 694, 43, 49), 'file-code': ('main-light', 397, 760, 47, 48), 'file-markdown': ('main-light', 397, 829, 47, 51), 'photo-lake-preview': ('main-light', 1198, 241, 351, 277), 'photo-lake-thumbnail': ('main-light', 397, 494, 45, 45), 'photo-sunrise-thumbnail': ('main-light', 397, 560, 45, 46), 'open': ('main-light', 48, 111, 32, 32), 'new': ('main-light', 174, 111, 28, 32), 'archive-test': ('main-light', 317, 110, 34, 34), 'more': ('main-light', 448, 111, 31, 31), 'search': ('main-light', 920, 111, 32, 32), 'settings': ('main-light', 1515, 43, 36, 34), 'view-list': ('main-light', 1000, 182, 46, 40), 'view-grid': ('main-light', 1065, 185, 28, 30), 'sort': ('main-light', 1114, 185, 36, 30), 'close': ('main-light', 1524, 192, 28, 27), 'check-selected': ('main-light', 337, 501, 30, 31), 'success': ('extract-macos', 141, 501, 43, 43), 'radio-selected': ('extract-macos', 142, 654, 42, 42), 'radio-unselected': ('extract-macos', 142, 934, 42, 43)}
 for name, (source, x, y, w, h) in crops.items():
     target = root / 'slices' / f'{name}.png'
     run('magick', str(root / '../../hifi/v1/screens' / f'{source}.png'), '-crop', f'{w}x{h}+{x}+{y}', '+repage', str(target))
@@ -48,9 +48,10 @@ colored = {'folder': '<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><
             'stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><path stroke="white" stroke-width=".8" d="M11 '
             '3.5v11 M10 4h2 M11 6h2 M10 8h2 M11 10h2 M10 12h2"/><rect x="10.1" y="14.5" width="3.2" '
             'height="4.5" rx=".8" fill="none" stroke="white" stroke-width="1"/>',
+ # Source text document has one short header line and three full body lines.
  'file-text': '<path fill="{paper}" stroke="{muted}" stroke-width="1.2" d="M6 2h8l5 5v13.5a1.5 1.5 0 0 1-1.5 '
               '1.5H6a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 6 2Z"/><path stroke="{muted}" '
-              'stroke-width="1.2" d="M14 2v5h5 M7.5 10h8 M7.5 13.5h8 M7.5 17h8"/>',
+              'stroke-width="1.2" d="M14 2v5h5 M7.5 7.5h4.7 M7.5 10.4h8 M7.5 13.4h8 M7.5 16.3h8"/>',
  'file-code': '<rect x="3" y="2" width="18" height="20" rx="2.5" fill="{paper}" stroke="{muted}" '
               'stroke-width="1"/><path d="m8.5 9-3 3 3 3m7-6 3 3-3 3m-2.2-7-2.6 8"/>',
  'file-markdown': '<rect x="3" y="2" width="18" height="20" rx="2.5" fill="{paper}" stroke="{muted}" '
@@ -61,6 +62,10 @@ colored = {'folder': '<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><
              'fill="white" stroke="none" d="M14 2v5h5Z"/><g stroke="white" stroke-width=".9" '
              'stroke-linejoin="round"><path d="M7 18v-5h1.3a1.3 1.3 0 0 1 0 2.6H7 M11 13h.9a1.6 1.6 0 0 1 '
              '1.6 1.6v1.8a1.6 1.6 0 0 1-1.6 1.6H11Z M16 18v-5h2 M16 15.4h1.6"/></g>',
+ # Three bullet-and-line rows distinguish the task drawer from the view-list glyph.
+ # At a 32px UI slot, its visible footprint is approximately 22 by 18px.
+ 'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" r=".8"/>'
+              '<circle cx="4" cy="18" r=".8"/></g><path d="M9 6h10 M9 12h10 M9 18h10"/>',
  'more': '<circle cx="5" cy="12" r="1.5" fill="{ink}" stroke="none"/><circle cx="12" cy="12" r="1.5" '
          'fill="{ink}" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="{ink}" stroke="none"/>',
  'app-mark': '<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#409cff"/><stop '

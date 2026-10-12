@@ -143,16 +143,16 @@
       "rect": [
         1198,
         241,
-        350,
+        351,
         277
       ],
       "size": [
-        350,
+        351,
         277
       ],
       "background": "baked source pixels; not transparent",
       "usage": "demo-image-only",
-      "sha256": "de91156a75e3e01f5dfa718c7a63445e12d8fd01e6e4763ddc4bb2c864117aea"
+      "sha256": "2683e327141d74778422cc2e23f053d69b04eca2063dd60ebf017f50dcf57b3f"
     },
     {
       "id": "slice/photo-lake-thumbnail",
@@ -732,7 +732,7 @@
       ],
       "usage": "candidate-ui-asset",
       "theme": "light",
-      "sha256": "41e657bcc2fa961bfbc83642332e415b298bb8c241e8c1ac63a30c2598e4c242"
+      "sha256": "56c722032eb18bb25685362b80bda8eb0343c2fce5604700c2ae0f3d0ebff81a"
     },
     {
       "id": "light/file-code",
@@ -769,6 +769,18 @@
       "usage": "candidate-ui-asset",
       "theme": "light",
       "sha256": "78d37c8766258d2e1556daab182c2c8c10b63b04ff1272f28129e4527a3cf9f7"
+    },
+    {
+      "id": "light/task-list",
+      "file": "svg/light/task-list.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "light",
+      "sha256": "b4e281ff37f323dde1954486f5e3d39be99433df8485119097bb0de267a7df78"
     },
     {
       "id": "light/more",
@@ -1068,7 +1080,7 @@
       ],
       "usage": "candidate-ui-asset",
       "theme": "dark",
-      "sha256": "3a293410b94984ec16702d00d08d89ff226f0a9967d1e1d0ba6be6b4c42a4382"
+      "sha256": "02d3bc505d7b3f305f877ac8ff85492df3f83443694dcf1336a956f98b27c8bf"
     },
     {
       "id": "dark/file-code",
@@ -1105,6 +1117,18 @@
       "usage": "candidate-ui-asset",
       "theme": "dark",
       "sha256": "f7998a9963f92ef55874c595134fac39b01efb285f5d61a246cbccd03d321d50"
+    },
+    {
+      "id": "dark/task-list",
+      "file": "svg/dark/task-list.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "usage": "candidate-ui-asset",
+      "theme": "dark",
+      "sha256": "14b4bd397ced676d3864ae8333ecec71166a1e46f0b20dec393a985be5301be4"
     },
     {
       "id": "dark/more",
@@ -1864,7 +1888,7 @@
         24
       ],
       "source": "svg/dark/file-text.svg",
-      "sha256": "1016004cd1e2aa49441819bb08b65eedb425d387fdd95a47c2d296b473e8af6a"
+      "sha256": "072b09049770b517cd84220faff9fc6cb676e5b63a0a232bb7ed43cc41fda117"
     },
     {
       "id": "raster/dark/file-text@2x",
@@ -1880,7 +1904,7 @@
         24
       ],
       "source": "svg/dark/file-text.svg",
-      "sha256": "9c25b4d738318ac795198b79fd71c16d4e4ce100cd20cd0d16b6110b2dff82b4"
+      "sha256": "6cd26756952c449df4b07591e0007177acd6710f96fe8f0e871ffb5c32c0f8c4"
     },
     {
       "id": "raster/dark/file-text@3x",
@@ -1896,7 +1920,7 @@
         24
       ],
       "source": "svg/dark/file-text.svg",
-      "sha256": "28247afac18aca4b5872d0129d6480d657323ada192c548c56d79ea1aa40175e"
+      "sha256": "62293dce39f01e6aee2f7a56aa94ccac77354bb5f06b62ae2d8e84743e35a9f4"
     },
     {
       "id": "raster/dark/folder@1x",
@@ -2377,6 +2401,54 @@
       ],
       "source": "svg/dark/sort.svg",
       "sha256": "af64db02dbff454c50cba9041811cc0386d43a169dffb862a49f5ed9ffe77159"
+    },
+    {
+      "id": "raster/dark/task-list@1x",
+      "file": "png/dark/task-list@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/task-list.svg",
+      "sha256": "e66ddbe98d756232f62f8f971b4d7e2c83a901a4408cb23bb770ee176bdfa961"
+    },
+    {
+      "id": "raster/dark/task-list@2x",
+      "file": "png/dark/task-list@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/task-list.svg",
+      "sha256": "faba391a12dd9a470c2ade697c6a5bd823b39480e711ab9b4f036677f2bc34fe"
+    },
+    {
+      "id": "raster/dark/task-list@3x",
+      "file": "png/dark/task-list@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/dark/task-list.svg",
+      "sha256": "c8c62d610e9a566aa6d959d7dc32431c56f52a1ab963f690ed995306e75689a7"
     },
     {
       "id": "raster/dark/view-grid@1x",
@@ -3208,7 +3280,7 @@
         24
       ],
       "source": "svg/light/file-text.svg",
-      "sha256": "38953f78e0b7971978f8920efed994f47c71221daac2dc91019a3348b5d28a29"
+      "sha256": "09401447c3b9d14265a575304143f9c724f5fca0065a132db6298f946c6921b4"
     },
     {
       "id": "raster/light/file-text@2x",
@@ -3224,7 +3296,7 @@
         24
       ],
       "source": "svg/light/file-text.svg",
-      "sha256": "9b20e0e52f99051375e3d2fff8f77cd967ab06395d83938b482404ad462ee7b1"
+      "sha256": "3afaf4e97d361f2180f343e68099df18db84cc6d7dcc4bdab23f4f71f095a988"
     },
     {
       "id": "raster/light/file-text@3x",
@@ -3240,7 +3312,7 @@
         24
       ],
       "source": "svg/light/file-text.svg",
-      "sha256": "ea0ddb459452c39f7385c3689dc2611d99466820aa31d7eb8d31c0f35fef9048"
+      "sha256": "ea0ed837802f7c24557f41391224cbb644eb2f116532d01716ba00902c7b7a58"
     },
     {
       "id": "raster/light/folder@1x",
@@ -3721,6 +3793,54 @@
       ],
       "source": "svg/light/sort.svg",
       "sha256": "f75f27af38617639261ed3de4ec97f16b54c49d41d306e0c2baca6e16149b13d"
+    },
+    {
+      "id": "raster/light/task-list@1x",
+      "file": "png/light/task-list@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/task-list.svg",
+      "sha256": "e5e2c6ed3fb58110b332df151c7b5fd72dcba5373cd47568a891043564b10e19"
+    },
+    {
+      "id": "raster/light/task-list@2x",
+      "file": "png/light/task-list@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "scale": 2,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/task-list.svg",
+      "sha256": "9a9321125b2611b5f08075b7a721ef88ce827ce100d2022f1337f11d87743386"
+    },
+    {
+      "id": "raster/light/task-list@3x",
+      "file": "png/light/task-list@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "scale": 3,
+      "logical_size": [
+        24,
+        24
+      ],
+      "source": "svg/light/task-list.svg",
+      "sha256": "9ceebe27f47e5d2876f07afe119fdd9a704b34f9f96d1986430c48ac726b123f"
     },
     {
       "id": "raster/light/view-grid@1x",

@@ -1,14 +1,14 @@
 {
   "status": "passed",
-  "asset_entries": 248,
+  "asset_entries": 256,
   "source_crops": 24,
-  "svg_files": 56,
-  "vector_png_files": 168,
+  "svg_files": 58,
+  "vector_png_files": 174,
   "checks": [
     "All manifest assets exist and match SHA-256",
     "24 source crops are pixel-identical to recorded source rectangles",
     "Transparent raster exports have expected sizes, transparent pixels and visible content",
-    "56 SVG files parse without scripts or embedded images"
+    "58 SVG files parse without scripts or embedded images"
   ],
   "limits": [
     "No Qt renderer validation",

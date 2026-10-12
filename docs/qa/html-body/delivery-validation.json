@@ -1,0 +1,261 @@
+{
+  "passed": true,
+  "bundle_sha256": "80335a0dee80ad86d1f57619d5dd858cd607172a84b801c4c77e22a07e0c719e",
+  "offline_region_mode_checks": [
+    {
+      "width": 1588,
+      "region": "full",
+      "mode": "reference"
+    },
+    {
+      "width": 1588,
+      "region": "full",
+      "mode": "after"
+    },
+    {
+      "width": 1588,
+      "region": "full",
+      "mode": "before"
+    },
+    {
+      "width": 1588,
+      "region": "full",
+      "mode": "difference"
+    },
+    {
+      "width": 1588,
+      "region": "full",
+      "mode": "overlay"
+    },
+    {
+      "width": 1588,
+      "region": "sidebar",
+      "mode": "reference"
+    },
+    {
+      "width": 1588,
+      "region": "sidebar",
+      "mode": "after"
+    },
+    {
+      "width": 1588,
+      "region": "sidebar",
+      "mode": "before"
+    },
+    {
+      "width": 1588,
+      "region": "sidebar",
+      "mode": "difference"
+    },
+    {
+      "width": 1588,
+      "region": "sidebar",
+      "mode": "overlay"
+    },
+    {
+      "width": 1588,
+      "region": "list",
+      "mode": "reference"
+    },
+    {
+      "width": 1588,
+      "region": "list",
+      "mode": "after"
+    },
+    {
+      "width": 1588,
+      "region": "list",
+      "mode": "before"
+    },
+    {
+      "width": 1588,
+      "region": "list",
+      "mode": "difference"
+    },
+    {
+      "width": 1588,
+      "region": "list",
+      "mode": "overlay"
+    },
+    {
+      "width": 1588,
+      "region": "preview",
+      "mode": "reference"
+    },
+    {
+      "width": 1588,
+      "region": "preview",
+      "mode": "after"
+    },
+    {
+      "width": 1588,
+      "region": "preview",
+      "mode": "before"
+    },
+    {
+      "width": 1588,
+      "region": "preview",
+      "mode": "difference"
+    },
+    {
+      "width": 1588,
+      "region": "preview",
+      "mode": "overlay"
+    },
+    {
+      "width": 1588,
+      "region": "status",
+      "mode": "reference"
+    },
+    {
+      "width": 1588,
+      "region": "status",
+      "mode": "after"
+    },
+    {
+      "width": 1588,
+      "region": "status",
+      "mode": "before"
+    },
+    {
+      "width": 1588,
+      "region": "status",
+      "mode": "difference"
+    },
+    {
+      "width": 1588,
+      "region": "status",
+      "mode": "overlay"
+    },
+    {
+      "width": 390,
+      "region": "full",
+      "mode": "reference"
+    },
+    {
+      "width": 390,
+      "region": "full",
+      "mode": "after"
+    },
+    {
+      "width": 390,
+      "region": "full",
+      "mode": "before"
+    },
+    {
+      "width": 390,
+      "region": "full",
+      "mode": "difference"
+    },
+    {
+      "width": 390,
+      "region": "full",
+      "mode": "overlay"
+    },
+    {
+      "width": 390,
+      "region": "sidebar",
+      "mode": "reference"
+    },
+    {
+      "width": 390,
+      "region": "sidebar",
+      "mode": "after"
+    },
+    {
+      "width": 390,
+      "region": "sidebar",
+      "mode": "before"
+    },
+    {
+      "width": 390,
+      "region": "sidebar",
+      "mode": "difference"
+    },
+    {
+      "width": 390,
+      "region": "sidebar",
+      "mode": "overlay"
+    },
+    {
+      "width": 390,
+      "region": "list",
+      "mode": "reference"
+    },
+    {
+      "width": 390,
+      "region": "list",
+      "mode": "after"
+    },
+    {
+      "width": 390,
+      "region": "list",
+      "mode": "before"
+    },
+    {
+      "width": 390,
+      "region": "list",
+      "mode": "difference"
+    },
+    {
+      "width": 390,
+      "region": "list",
+      "mode": "overlay"
+    },
+    {
+      "width": 390,
+      "region": "preview",
+      "mode": "reference"
+    },
+    {
+      "width": 390,
+      "region": "preview",
+      "mode": "after"
+    },
+    {
+      "width": 390,
+      "region": "preview",
+      "mode": "before"
+    },
+    {
+      "width": 390,
+      "region": "preview",
+      "mode": "difference"
+    },
+    {
+      "width": 390,
+      "region": "preview",
+      "mode": "overlay"
+    },
+    {
+      "width": 390,
+      "region": "status",
+      "mode": "reference"
+    },
+    {
+      "width": 390,
+      "region": "status",
+      "mode": "after"
+    },
+    {
+      "width": 390,
+      "region": "status",
+      "mode": "before"
+    },
+    {
+      "width": 390,
+      "region": "status",
+      "mode": "difference"
+    },
+    {
+      "width": 390,
+      "region": "status",
+      "mode": "overlay"
+    }
+  ],
+  "row_count": 89,
+  "type_contours_review_only": 19,
+  "slider_and_actual_size": "passed at desktop and390px",
+  "page_errors": [],
+  "blocked_requests": []
+}

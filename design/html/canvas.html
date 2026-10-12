@@ -127,14 +127,14 @@
                             <span class="archive-caption">ARCHIVE</span>
                             <div>
                                 <strong>北境旅行.zip</strong
-                                ><span id="archive-info">ZIP 归档</span>
+                                ><div class="archive-summary"><span class="format-badge">ZIP</span><span id="archive-info">归档信息</span></div>
                             </div>
                         </div>
 
                         <nav id="tree" aria-label="归档目录"></nav>
                         <div class="sidebar-bottom">
                             <div class="storage-heading">
-                                <span>压缩节省</span
+                                <span>节省</span
                                 ><strong id="saving"></strong>
                             </div>
                             <div class="storage-bar">
@@ -143,7 +143,7 @@
                             <div class="storage-meta">
                                 <span>原始大小</span><b id="original-size"></b>
                             </div>
-                            <div class="storage-meta">
+                            <div class="storage-meta compressed-meta">
                                 <span>压缩后</span><b id="compressed-size"></b>
                             </div>
                             <div class="sidebar-tip">
@@ -186,14 +186,14 @@
                                             <button id="sort-name">
                                                 名称
                                                 <span
-                                                    data-icon="chevronUp"
+                                                    data-icon="sort-ascending"
                                                 ></span>
                                             </button>
                                         </th>
                                         <th>原始大小</th>
                                         <th>压缩后</th>
                                         <th class="type-col">类型</th>
-                                        <th class="date-col">修改时间</th>
+                                        <th class="date-col">修改日期</th>
                                     </tr>
                                 </thead>
                                 <tbody id="file-rows"></tbody>
@@ -222,8 +222,8 @@
                     ><span class="read-status"
                         ><span data-icon="completed"></span><span id="read-status">目录已读取</span></span
                     ><button id="tasks">
-                        <span data-icon="activity"></span
-                        ><span id="task-count">任务 0</span></button
+                        <span data-icon="task-list"></span
+                        ><span id="task-count">任务 0</span><span class="task-chevron" data-icon="chevron-up"></span></button
                     ><button id="settings" aria-label="设置">
                         <span data-icon="settings"></span>
                     </button>

@@ -24,6 +24,7 @@
 | canvas.html | 桌面主窗口结构 |
 | styles.css | 交互控件、状态和平台窗口基础样式 |
 | hifi.css | 按当前原稿校准的画布、间距、字号、卡片和窗口样式 |
+| header-reference.json、body-reference.json | 从原稿独立测量的顶部与内容区域锚点，不从 CSS 自动生成 |
 | app.js | 内存示例数据和操作状态，不含压缩库 |
 | assets.js | 自动生成的共享素材，修改 SVG 后重新生成，不手改 |
 | screenshots/ | 本次 HTML 实际渲染结果，不是设计原图或 Qt 截图 |
@@ -47,3 +48,7 @@
 预览栏布局专项检查：`python scripts/check-html-preview.py`。覆盖桌面与手机外层缩放、浅深色、经典滚动条空间、照片/PDF/目录/多选/归档属性以及长名称。正常照片预览完整显示操作按钮，无内部横纵滚动；长内容保留纵向滚动，避免截断属性和操作。
 
 顶部复核采用 [独立锚点与同尺寸叠加流程](../../docs/visual/html-fidelity.md)，查看 [原稿／修复后／叠加](../../docs/qa/html-header/index.html)。离线对照文件为 `dist/xdzip-header-review.html`，不是整张图片覆盖在 HTML 界面上。
+
+工具栏下方采用同样流程，查看 [内容区域说明](../../docs/qa/html-body-review.md)、[逐区域对照](../../docs/qa/html-body/index.html) 和 [测量证据](../../docs/qa/html-body/measurements.json)。执行 `python scripts/check-html-body.py`、`python scripts/build-html-body-review.py` 后生成 `dist/xdzip-body-review.html`。同尺寸裁切包括侧栏、列表、预览和状态栏；手机可逐区域检查。几何与隔离图标采用 2 px 容差，文字轮廓只记录，不据此宣称整页像素一致。
+
+原稿选中一项但全选框为空、节省标注 26% 但示意条约填 56% 的两处静态矛盾，HTML 分别保留半选状态和实际 26% 比例。它们是有记录的功能语义例外。本轮正文校准仍属于 HTML 设计交付，不表示 Qt 产品同步完成。
