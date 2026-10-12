@@ -66,11 +66,14 @@ def main():
     review = review.replace('<script defer src="review.js"></script>', '')
     review = review.replace('src="canvas.html"', 'src="about:blank"')
     config = 'window.XDZIP_CANVAS=' + json.dumps(canvas, ensure_ascii=False) + ';window.XDZIP_REFERENCES=' + json.dumps(references) + ';'
+    review = review.replace('<script defer src="display-spec.js"></script>', '')
     license_notice = '<script type="text/plain" id="xdzip-font-license">' + (FONTS / 'OFL.txt').read_text() + '</script>'
-    review = review.replace('</body>', license_notice + script(config) + script((SOURCE / 'review.js').read_text()) + '</body>')
+    review = review.replace('</body>', license_notice + script(config) + script((SOURCE / 'display-spec.js').read_text()) + script((SOURCE / 'review.js').read_text()) + '</body>')
     output = ROOT / 'dist/xdzip-hifi-design.html'
     output.parent.mkdir(exist_ok=True)
     output.write_text(review)
+    # Give the corrected logical-size delivery a distinct download name.
+    output.with_name('xdzip-hifi-design-1to1.html').write_text(review)
     print(f'{output}: {output.stat().st_size} bytes; no external runtime assets')
 
 

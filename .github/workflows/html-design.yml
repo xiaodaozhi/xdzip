@@ -39,6 +39,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
           .venv-design/bin/python scripts/check-html-references.py
+          .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
       - name: Compare body anchors and build offline regional review
@@ -59,8 +60,11 @@ jobs:
             dist/html-preview-review/
             dist/html-reference-review/
             dist/html-design-review/
+            dist/html-scale-review/
             dist/xdzip-header-review.html
             dist/xdzip-body-review.html
             dist/xdzip-hifi-design.html
+            dist/xdzip-hifi-design-1to1.html
+            dist/xdzip-scale-review.html
           if-no-files-found: error
           retention-days: 14

@@ -1306,7 +1306,20 @@ window.XdzipDesign = {
     open(view) {
         if (state.task?.reviewPaused) state.task = null;
         if ($("#modal").open) closeModal();
-        if (view === "main") { state.selected = new Set(["lake"]); render(); return; }
+        // Artboard changes restore the ready demo fixture after an error scene.
+        // Active user-started demo tasks retain their own background state.
+        if (["main", "extract", "create", "settings", "progress"].includes(view)) {
+            state.archiveState = "ready";
+            state.scenario = "normal";
+        }
+        if (view === "main") {
+            state.path = "";
+            state.query = "";
+            $("#search").value = "";
+            state.selected = new Set(["lake"]);
+            render();
+            return;
+        }
         if (view === "extract") { state.selected = new Set(["lake", "sunrise", "guide"]); render(); showExtract("selected"); }
         else if (view === "create") showCreate();
         else if (view === "settings") showSettings();
@@ -1328,7 +1341,7 @@ window.addEventListener("message", event => {
     if (!["main", "extract", "create", "progress", "conflict", "settings", "empty", "damaged"].includes(config.view)
         || !["macos", "windows", "linux"].includes(config.platform)
         || !["light", "dark"].includes(config.theme)) return;
-    document.body.dataset.standalone = config.view === "main" ? "false" : "true";
+    document.body.dataset.standalone = ["main", "empty", "damaged"].includes(config.view) ? "false" : "true";
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);

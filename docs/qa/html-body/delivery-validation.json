@@ -1,261 +1,338 @@
 {
   "passed": true,
   "bundle_sha256": "80335a0dee80ad86d1f57619d5dd858cd607172a84b801c4c77e22a07e0c719e",
-  "offline_region_mode_checks": [
+  "offline_viewing_checks": [
     {
+      "artifact": "xdzip-scale-review.html",
+      "width": 1588,
+      "mode": "overlay"
+    },
+    {
+      "artifact": "xdzip-scale-review.html",
+      "width": 1588,
+      "mode": "html"
+    },
+    {
+      "artifact": "xdzip-scale-review.html",
+      "width": 1588,
+      "mode": "reference"
+    },
+    {
+      "artifact": "xdzip-scale-review.html",
+      "width": 390,
+      "mode": "overlay"
+    },
+    {
+      "artifact": "xdzip-scale-review.html",
+      "width": 390,
+      "mode": "html"
+    },
+    {
+      "artifact": "xdzip-scale-review.html",
+      "width": 390,
+      "mode": "reference"
+    },
+    {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "full",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "full",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "full",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "full",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "full",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "sidebar",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "sidebar",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "sidebar",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "sidebar",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "sidebar",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "list",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "list",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "list",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "list",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "list",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "preview",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "preview",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "preview",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "preview",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "preview",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "status",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "status",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "status",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "status",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 1588,
       "region": "status",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "full",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "full",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "full",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "full",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "full",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "sidebar",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "sidebar",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "sidebar",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "sidebar",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "sidebar",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "list",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "list",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "list",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "list",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "list",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "preview",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "preview",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "preview",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "preview",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "preview",
       "mode": "overlay"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "status",
       "mode": "reference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "status",
       "mode": "after"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "status",
       "mode": "before"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "status",
       "mode": "difference"
     },
     {
+      "artifact": "xdzip-body-review.html",
       "width": 390,
       "region": "status",
       "mode": "overlay"
     }
   ],
-  "row_count": 89,
-  "type_contours_review_only": 19,
-  "slider_and_actual_size": "passed at desktop and390px",
   "page_errors": [],
   "blocked_requests": []
 }

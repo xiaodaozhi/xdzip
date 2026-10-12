@@ -1,74 +1,146 @@
-"use strict";
-const frame = document.querySelector("#design-frame");
-const views = {
-    main: "../hifi/v1/screens/main-light.png",
-    extract: "../hifi/v1/screens/extract-macos.png",
-    create: "../hifi/v2/screens/01-create.png",
-    progress: "../hifi/v2/screens/03-progress.png",
-    conflict: "../hifi/v2/screens/02-conflict.png",
-    settings: "../hifi/v2/screens/05-settings.png",
-};
-const current = id => document.querySelector(`#${id}`).value;
-function fit() {
-    const width = document.querySelector("#viewport").clientWidth;
-    const [canvasWidth, canvasHeight] = current("view") === "main" ? [1588,1000] : current("view") === "progress" ? [1446,1088] : [1092,1440];
-    frame.style.width = `${canvasWidth}px`; frame.style.height = `${canvasHeight}px`;
-    const scale = current("zoom") === "fit" ? Math.min(1, width / canvasWidth) : 1;
-    frame.style.transform = `scale(${scale})`;
-    document.querySelector("#scaled").style.cssText = `width:${canvasWidth * scale}px;height:${canvasHeight * scale}px`;
-}
-function updateReference() {
-    const source = views[current("view")];
-    const image = document.querySelector("#reference-image");
-    image.hidden = !source;
-    document.querySelector("#reference-message").textContent = source
-        ? "原稿与 HTML 独立展示；图片没有覆盖在界面上。"
-        : "此状态暂无独立的已确认原稿。";
-    if (source) image.src = window.XDZIP_REFERENCES?.[source] || source;
-    else image.removeAttribute("src");
-}
-function update() {
-    // postMessage also works when local files have distinct opaque origins.
-    frame.contentWindow?.postMessage({
-        type: "xdzip-review-configure", view: current("view"),
-        platform: current("platform"), theme: current("theme"),
-    }, "*");
-    updateReference();
-    document.querySelector("#status").textContent = `${current("platform")} · ${current("theme") === "dark" ? "深色适配（无对应完整主稿）" : "浅色"} · 桌面画布 1548 × 940`;
-    fit();
-}
-frame.addEventListener("load", update);
-window.addEventListener("message", event => {
-    if (event.source === frame.contentWindow && event.data?.type === "xdzip-review-ready") update();
-});
-document.querySelector("#reference-image").addEventListener("error", event => {
-    event.currentTarget.hidden = true;
-    document.querySelector("#reference-message").textContent = "原稿加载失败。请使用完整仓库目录，或重新下载离线单文件 HTML。";
-});
-if (window.XDZIP_CANVAS) frame.srcdoc = window.XDZIP_CANVAS;
-for (const id of ["view", "platform", "theme"]) document.querySelector(`#${id}`).addEventListener("change", update);
-document.querySelector("#zoom").addEventListener("change", fit);
-window.addEventListener("resize", fit);
-document.querySelector("#reference-toggle").onclick = event => {
-    const reference = document.querySelector("#reference");
-    reference.hidden = !reference.hidden;
-    if (!reference.hidden) updateReference();
-    event.currentTarget.setAttribute("aria-expanded", String(!reference.hidden));
-};
-document.querySelector("#separate").onclick = () => {
-    const view = current("view") === "main" ? "extract" : current("view");
-    const popup = window.open(window.XDZIP_CANVAS ? "about:blank" : `canvas.html?standalone=1&view=${view}&platform=${current("platform")}`, "xdzip-design-window", "popup,width=860,height=1020");
-    if (!popup) { document.querySelector("#status").textContent = "浏览器拦截了独立预览窗口，可允许此次弹窗后重试。"; return; }
-    if (window.XDZIP_CANVAS) {
+(function initializeReview() {
+    "use strict";
+    const frame = document.querySelector("#design-frame");
+    const displaySpec = window.XDZIP_DISPLAY_SPEC;
+    const query = new URLSearchParams(window.location.search);
+    const preset = window.XDZIP_REVIEW_PRESET || {
+        presentation:query.get("presentation") === "1", view:query.get("view"),
+        platform:query.get("platform"), theme:query.get("theme"), zoom:query.get("zoom"),
+    };
+    const viewport = document.querySelector("#viewport");
+    const referenceViewport = document.querySelector("#reference-viewport");
+    const current = id => document.querySelector(`#${id}`).value;
+    const number = value => Number(value.toFixed(2));
+
+    // Source-image pixels are measurement coordinates. Normal presentation uses
+    // explicit CSS logical dimensions; devicePixelRatio never changes this ratio.
+    function sourceScale() {
+        const [width] = displaySpec.views[current("view")].size;
+        if (current("zoom") === "pixels") return 1;
+        if (current("zoom") === "fit") return Math.min(displaySpec.sourceToLogical, viewport.clientWidth / width);
+        return displaySpec.sourceToLogical;
+    }
+
+    function fit() {
+        const [width,height] = displaySpec.views[current("view")].size;
+        const scale = sourceScale();
+        const image = document.querySelector("#reference-image");
+        for (const surface of [frame,image]) {
+            surface.style.width = `${width}px`;
+            surface.style.height = `${height}px`;
+            surface.style.transform = `scale(${scale})`;
+        }
+        for (const wrapper of [document.querySelector("#scaled"),document.querySelector("#reference-scaled")]) {
+            wrapper.style.width = `${width * scale}px`;
+            wrapper.style.height = `${height * scale}px`;
+        }
+        const windowView = ["main","empty","damaged"].includes(current("view"));
+        const [, ,windowWidth,windowHeight] = displaySpec.sourceWindow;
+        const dimensions = windowView ? [windowWidth,windowHeight] : [width,height];
+        const logical = dimensions.map(value => number(value * displaySpec.sourceToLogical));
+        const mode = current("zoom") === "pixels" ? "原稿像素 1:1" : current("zoom") === "fit" ? "适应屏幕" : "100% 设计尺寸";
+        const theme = current("theme") === "dark" ? "深色适配（无对应完整主稿）" : "浅色";
+        document.querySelector("#status").textContent = `${current("platform")} · ${theme} · 设计${windowView ? "窗口" : "图板"} ${logical.join(" × ")} CSS px · ${mode} · 当前 ${number(scale / displaySpec.sourceToLogical * 100)}% 设计倍率（${number(scale * 100)}% 原稿像素）`;
+    }
+
+    function updateReference() {
+        const source = displaySpec.views[current("view")].source;
+        const image = document.querySelector("#reference-image");
+        image.hidden = !source;
+        document.querySelector("#reference-message").textContent = source
+            ? "原稿与 HTML 独立展示，采用相同画布尺寸与缩放倍率；横向滚动同步。"
+            : "此状态暂无独立的已确认原稿。";
+        if (source) image.src = window.XDZIP_REFERENCES?.[source] || source;
+        else image.removeAttribute("src");
+    }
+
+    function update() {
+        // This also configures canvases opened from opaque local-file origins.
+        frame.contentWindow?.postMessage({
+            type:"xdzip-review-configure", view:current("view"),
+            platform:current("platform"), theme:current("theme"),
+        }, "*");
+        updateReference();
+        fit();
+    }
+
+    function openIndependent() {
+        const [width,height] = displaySpec.views[current("view")].size;
+        const scale = sourceScale();
+        const configurationValues = {
+            presentation:true, view:current("view"), platform:current("platform"),
+            theme:current("theme"), zoom:current("zoom"),
+        };
+        let target = "about:blank";
+        if (!window.XDZIP_CANVAS) {
+            const url = new URL("index.html", document.baseURI);
+            for (const [key,value] of Object.entries(configurationValues)) url.searchParams.set(key, key === "presentation" ? "1" : value);
+            target = url.href;
+        }
+        const popup = window.open(target, "xdzip-design-window", `popup,width=${Math.ceil(width * scale)},height=${Math.ceil(height * scale)}`);
+        if (!popup) {
+            document.querySelector("#status").textContent = "浏览器拦截了独立预览窗口，可允许此次弹窗后重试。";
+            return;
+        }
+        if (!window.XDZIP_CANVAS) return;
+        // Reuse the full reviewer so served and offline windows share fit(), assets
+        // and configuration. Only review controls are hidden in presentation mode.
+        const page = document.documentElement.cloneNode(true);
+        page.querySelector("#design-frame").removeAttribute("srcdoc");
+        page.querySelector("#reference-image").removeAttribute("src");
+        const base = document.createElement("base");
+        base.href = document.baseURI;
+        page.querySelector("head").prepend(base);
+        const configuration = document.createElement("script");
+        configuration.textContent = "window.XDZIP_REVIEW_PRESET=" + JSON.stringify(configurationValues).replace(/</g, "\\u003c") + ";";
+        page.querySelector("head").prepend(configuration);
         popup.document.open();
-        popup.document.write(window.XDZIP_CANVAS);
+        popup.document.write("<!doctype html>" + page.outerHTML);
         popup.document.close();
     }
-    popup.addEventListener("load", () => {
-        popup.document.body.dataset.standalone = "true";
-        popup.XdzipDesign.platform(current("platform"));
-        popup.XdzipDesign.theme(current("theme"));
-        popup.XdzipDesign.open(view);
+
+    for (const id of ["view","platform","theme","zoom"]) {
+        const control = document.querySelector(`#${id}`);
+        const value = preset[id] || (id === "zoom" ? (window.innerWidth < 650 ? "fit" : "1") : control.value);
+        if ([...control.options].some(option => option.value === value)) control.value = value;
+    }
+    if (preset.presentation) document.body.classList.add("presentation");
+    frame.addEventListener("load", update);
+    window.addEventListener("message", event => {
+        if (event.source === frame.contentWindow && event.data?.type === "xdzip-review-ready") update();
     });
-};
-update();
+    document.querySelector("#reference-image").addEventListener("error", event => {
+        event.currentTarget.hidden = true;
+        document.querySelector("#reference-message").textContent = "原稿加载失败。请使用完整仓库目录，或重新下载离线单文件 HTML。";
+    });
+    if (window.XDZIP_CANVAS) frame.srcdoc = window.XDZIP_CANVAS;
+    for (const id of ["view","platform","theme"]) document.querySelector(`#${id}`).addEventListener("change", update);
+    document.querySelector("#zoom").addEventListener("change", fit);
+    window.addEventListener("resize", fit);
+    document.querySelector("#reference-toggle").onclick = event => {
+        const reference = document.querySelector("#reference");
+        reference.hidden = !reference.hidden;
+        if (!reference.hidden) {
+            updateReference();
+            referenceViewport.scrollLeft = viewport.scrollLeft;
+        }
+        event.currentTarget.setAttribute("aria-expanded", String(!reference.hidden));
+    };
+    document.querySelector("#separate").onclick = openIndependent;
+    // Ignore the event produced by our own mirrored position. Without this,
+    // a delayed event can overwrite a newer scroll on the opposite panel.
+    const mirroredPositions = new WeakMap();
+    for (const [source,target] of [[viewport,referenceViewport],[referenceViewport,viewport]]) {
+        source.addEventListener("scroll", () => {
+            if (document.querySelector("#reference").hidden || preset.presentation) return;
+            const mirrored = mirroredPositions.get(source);
+            mirroredPositions.delete(source);
+            if (mirrored !== undefined && Math.abs(source.scrollLeft - mirrored) <= .5) return;
+            if (Math.abs(target.scrollLeft - source.scrollLeft) > .5) {
+                target.scrollLeft = source.scrollLeft;
+                mirroredPositions.set(target, target.scrollLeft);
+            }
+        });
+    }
+    update();
+})();

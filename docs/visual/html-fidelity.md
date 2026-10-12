@@ -4,10 +4,18 @@
 
 ## 固定可重复条件
 
-- 画布 1588×1000、窗口 1548×940、窗口原点 `(20,30)`、设备像素比1；顶部同坐标裁切 `(20,30)-(1568,167)`，内容区域裁切 `(20,167)-(1568,970)`，不拉伸原稿。
+- 源画布与 PNG 一致，为 1586×992；窗口 1548×940、原点 `(20,30)`。原稿锚点检查仍使用 1588×1000 浏览器视口、设备像素比1，顶部同坐标裁切 `(20,30)-(1568,167)`，内容区域裁切 `(20,167)-(1568,970)`，不拉伸原稿。
 - 原稿 SHA-256 固定在 [header-reference.json](../../design/html/header-reference.json) 和 [body-reference.json](../../design/html/body-reference.json)。原稿变化后必须重新测量，不能默默替换。
 - 字体为离线随包的 [Xdzip Design Sans SC](../../design/assets/fonts/README.md)，测量等待 `document.fonts.ready`。固定真实 400–750 字重，减少平台回退字体改变宽度的问题。
 - 参考字体的原始家族无法从生成图片证明。字形轮廓与系统抗锯齿仍可能不同；字形差异单独记录，不能伪称已经还原原始字体。
+
+## 展示尺寸与源像素
+
+正常设计展示沿用 [1280 逻辑像素窗口宽度](README.md)，将源坐标整体等比映射为 `1280 / 1548`。主窗口正常展示为 1280 × 约777.26 CSS 像素；原稿也使用同一倍率。这个比例来自显式设计约定，不是根据 PNG 推断 Retina 或 DPI。
+
+`display-spec.js` 是所有图板尺寸和展示比例的唯一来源。桌面默认正常设计尺寸，手机默认适应屏幕；适应倍率上限为正常设计尺寸，避免宽屏自动放大。原稿像素模式则使用 `scale=1`，在 HTML 和图片两侧同时保留原始像素尺寸和滚动范围。设备像素比只影响栅格化密度，不改变 CSS 逻辑宽度。
+
+原稿和 HTML 禁止分别适应容器。顶部、正文锚点仍在源像素坐标中测量，展示缩放不修改已经校准的间距或字号。尺寸一致性另外覆盖实际屏幕边界、原稿自然尺寸、手机滚动、独立预览及离线单文件，证据见 [尺寸复核](../qa/html-scale-review.md)。
 
 ## 本次顶部修正
 
@@ -45,6 +53,7 @@ python scripts/check-html-header.py
 python scripts/check-html-body.py
 python scripts/check-html-preview.py
 python scripts/check-html-references.py
+python scripts/check-html-scale.py
 python scripts/check-html-design.py
 python scripts/build-html-header-review.py
 python scripts/build-html-body-review.py
