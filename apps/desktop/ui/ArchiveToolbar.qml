@@ -17,8 +17,8 @@ Rectangle {
         searchField.clear();
     }
     color: Theme.surface
-    // Round once for the entire row: platform font metrics can be fractional.
-    readonly property real controlHeight: Math.ceil(Math.max(openAction.implicitHeight, searchField.implicitHeight))
+    // An even row height keeps the 24 px icons centered on whole pixels on every host.
+    readonly property real controlHeight: 2 * Math.ceil(Math.max(openAction.implicitHeight, searchField.implicitHeight) / 2)
     implicitHeight: controlHeight + 24
     RowLayout {
         id: actions

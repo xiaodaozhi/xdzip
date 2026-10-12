@@ -35,6 +35,8 @@ Button {
         Text {
             id: label
             objectName: "actionLabel"
+            // Keep the text box centered even when native font metrics have odd heights.
+            Layout.fillHeight: true
             visible: text.length > 0
             text: root.text
             textFormat: Text.PlainText
