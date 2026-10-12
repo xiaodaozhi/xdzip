@@ -7,7 +7,7 @@
   </Environment>
   <TestFunction name="BrandResourceConsumer::initTestCase">
     <Incident type="pass" file="" line="0" />
-    <Duration msecs="0.024256"/>
+    <Duration msecs="0.019259"/>
   </TestFunction>
   <TestFunction name="BrandResourceConsumer::test_current_brand_resources">
     <Incident type="pass" file="" line="0">
@@ -16,11 +16,11 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[dark]]></DataTag>
     </Incident>
-    <Duration msecs="28.0564"/>
+    <Duration msecs="32.4216"/>
   </TestFunction>
   <TestFunction name="BrandResourceConsumer::cleanupTestCase">
     <Incident type="pass" file="" line="0" />
-    <Duration msecs="0.012248"/>
+    <Duration msecs="0.011427"/>
   </TestFunction>
-  <Duration msecs="32.8973"/>
+  <Duration msecs="34.6393"/>
 </TestCase>

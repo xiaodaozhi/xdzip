@@ -44,21 +44,16 @@
     },
     {
       "file": "cancelled.png",
-      "sha256": "852dadce61ede598eec19d5c86213bf8bc18ed895f7b110882900354570d2f1b"
+      "sha256": "87da5039d71eeddc268b085cd8fe0aa84f9c5a8d30e3eb144a60e229192eb7d2"
     },
     {
       "file": "partial-result.png",
-      "sha256": "f21db31214263dbd92e575784b1514cd8c700132fe44c400d56111b9864a513b"
+      "sha256": "164e660bb96acdd3374d00f6858144e95c80846f8d49ad3e45059b972c367c7e"
     }
   ],
   "notes": [
     "Current source app and CSS; canonical SVGs embedded in memory, no generated repository files overwritten.",
     "HTML consumption and keyboard evidence only; not a whole-page source-image fidelity approval."
   ],
-  "asset_manifest_sha256": "2c08aeb2ec1ff023c217bfe8ec7965b12b0cbc08aa08ae6655e8c7828edf78cd",
-  "consumer_sources": {
-    "design/html/app.js": "5609889db976671ef8b8da96c69b62f88c793fea12d872b1e042920e5902359f",
-    "design/html/hifi.css": "91b4e940b0daba3ee96eeb9a283583bbf138796a0a4db8dcbaa28fd6163e9262"
-  },
-  "final_revision": "Current final warning exclamation height and stop square metrology; all nine checks and captures rerun."
+  "asset_manifest_sha256": "958a957e93a16b01dad5ead48619b621cee46871190f6209937bf320946d769b"
 }

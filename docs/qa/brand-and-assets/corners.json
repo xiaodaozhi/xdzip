@@ -1,0 +1,223 @@
+{
+  "status": "passed",
+  "svg_contours": [
+    {
+      "file": "design/assets/brand/xdzip.svg",
+      "sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "bounds": [
+        80.0,
+        80.0,
+        944.0,
+        944.0
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/brand/xdzip-zip.svg",
+      "sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "bounds": [
+        294.0,
+        334.0,
+        730.0,
+        770.0
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/light/app-mark.svg",
+      "sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
+      "bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/light/archive.svg",
+      "sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
+      "bounds": [
+        6.8,
+        9.0,
+        17.2,
+        19.4
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/light/archive-grey.svg",
+      "sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
+      "bounds": [
+        6.8,
+        9.0,
+        17.2,
+        19.4
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/dark/app-mark.svg",
+      "sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
+      "bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/dark/archive.svg",
+      "sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
+      "bounds": [
+        6.8,
+        9.0,
+        17.2,
+        19.4
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    },
+    {
+      "file": "design/assets/svg/dark/archive-grey.svg",
+      "sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
+      "bounds": [
+        6.8,
+        9.0,
+        17.2,
+        19.4
+      ],
+      "corners": 4,
+      "g2_continuous": true
+    }
+  ],
+  "limits": "Contour checks exclude lighting, drop shadows, source-logo tracing accuracy and native OS display.",
+  "master_raster_symmetry": [
+    {
+      "size": 16,
+      "maximum_alpha_delta_after_rotation": 34,
+      "mean_alpha_delta": 1.171875,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 24,
+      "maximum_alpha_delta_after_rotation": 54,
+      "mean_alpha_delta": 3.496528,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 32,
+      "maximum_alpha_delta_after_rotation": 63,
+      "mean_alpha_delta": 0.925781,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 48,
+      "maximum_alpha_delta_after_rotation": 60,
+      "mean_alpha_delta": 0.650174,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 64,
+      "maximum_alpha_delta_after_rotation": 36,
+      "mean_alpha_delta": 0.256836,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 128,
+      "maximum_alpha_delta_after_rotation": 46,
+      "mean_alpha_delta": 0.192139,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 512,
+      "maximum_alpha_delta_after_rotation": 54,
+      "mean_alpha_delta": 0.043388,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 1024,
+      "maximum_alpha_delta_after_rotation": 55,
+      "mean_alpha_delta": 0.021919,
+      "contour_displacement_within_1_pixel": true
+    }
+  ],
+  "ui_raster_symmetry": [
+    {
+      "size": 16,
+      "maximum_alpha_delta_after_rotation": 41,
+      "mean_alpha_delta": 3.46875,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 24,
+      "maximum_alpha_delta_after_rotation": 43,
+      "mean_alpha_delta": 0.638889,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 32,
+      "maximum_alpha_delta_after_rotation": 30,
+      "mean_alpha_delta": 1.642578,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 48,
+      "maximum_alpha_delta_after_rotation": 44,
+      "mean_alpha_delta": 0.545139,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 64,
+      "maximum_alpha_delta_after_rotation": 48,
+      "mean_alpha_delta": 0.83252,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 128,
+      "maximum_alpha_delta_after_rotation": 62,
+      "mean_alpha_delta": 0.463379,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 512,
+      "maximum_alpha_delta_after_rotation": 79,
+      "mean_alpha_delta": 0.123001,
+      "contour_displacement_within_1_pixel": true
+    },
+    {
+      "size": 1024,
+      "maximum_alpha_delta_after_rotation": 91,
+      "mean_alpha_delta": 0.06221,
+      "contour_displacement_within_1_pixel": true
+    }
+  ],
+  "negative_checks": [
+    {
+      "case": "separate-highlight-stroke",
+      "reason": "Open highlight stroke reintroduced"
+    },
+    {
+      "case": "asymmetric-corner-control",
+      "reason": "Corner curvature discontinuity"
+    }
+  ],
+  "comparison": {
+    "baseline_commit": "31c6b944dd7f8d2e8b71b890ba9609f971edc70b",
+    "baseline_png_sha256": "a3a8033ef48112b3c921b16c9bd06087cdbea21c665fb3aba0d4def3158d5aca",
+    "current_png_sha256": "095335fdf0984709fa5505ec182212abdfc095c28895c2d98974e2e8c81ca450",
+    "mark_viewbox": [
+      407,
+      325,
+      440,
+      660
+    ]
+  }
+}

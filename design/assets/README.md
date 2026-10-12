@@ -28,6 +28,8 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 品牌标记采用四条交错带与开放的 U 形下部，几何统一维护在 `scripts/brand_assets.py`。`brand/mark.svg` 是独立标记，`brand/xdzip.svg` 为应用图标母版，`brand/xdzip-zip.svg` 为 ZIP 文档图标母版。界面的 `app-mark`、`archive`、`archive-grey` 从同一几何定义生成；不在 Qt 或 HTML 中另外手绘。
 
+当前标记使用更修长的 440:660 比例，缩放保留宽高比与光学高度。应用底板和文档徽章共用四角旋转对称、曲率连续的轮廓；表面光照使用完全相同的路径，取消单独描边和开口高光线。`scripts/check-brand-corners.py` 从实际 SVG 检查曲线和轮廓，`--render` 另外检查抗锯齿后的边界位移；测量记录见 [圆角复核](../../docs/qa/brand-and-assets/corners.json)。
+
 两种母版分别导出 16、24、32、48、64、128、256、512、1024 像素的透明 PNG，共 18 张；512 像素文件命名为 `xdzip.png` 和 `xdzip-zip.png`。16/24/32 像素采用简化的小尺寸表现，保持品牌几何，省去不可读微字和大图光影。Windows 的两份 ICO 各含七种尺寸；macOS 的两份 ICNS 各含十一种表示，包含相应 Retina 密度。所有导出纳入主素材清单，不另建品牌清单。
 
 `brand/identity-reference.png` 是新应用与文档标志的生成式视觉方向，用于审阅，不作为运行图标。此次品牌是明确的新设计修订，不能称为旧高保真 ZIP 拉链图标的无差别还原；十张完整原稿及 48 张原像素切片仍保留原始字节。

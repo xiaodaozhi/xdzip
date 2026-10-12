@@ -1889,14 +1889,14 @@
           "assets/light/app-mark.png"
         ]
       },
-      "sha256": "8914b84344eaa9f650286e1bbfb07c18a4780c112a14d69fc29c5a75db2e324b",
+      "sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "source_revision": "current-logo",
       "visible_bounds": [
-        1.6667,
+        2.0,
         2.0,
         22.0,
         22.0
@@ -1925,11 +1925,11 @@
           "assets/light/archive.png"
         ]
       },
-      "sha256": "d4ea904833065bca0578d211db84b8a9f3682ea038d7f5a382e458b7905326f4",
+      "sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -1987,9 +1987,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "70a0b33908499bf122403b53cc1e6f3ce8534d75a9a471d110250a1bb41d1e86",
+      "sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -3995,14 +3995,14 @@
           "assets/dark/app-mark.png"
         ]
       },
-      "sha256": "694094af0394cf7cbcee5dc2e88f911c7614d27f6ea9a1be6e115dc5e7aed3e0",
+      "sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "source_revision": "current-logo",
       "visible_bounds": [
-        1.6667,
+        2.0,
         2.0,
         22.0,
         22.0
@@ -4030,11 +4030,11 @@
           "assets/dark/archive.png"
         ]
       },
-      "sha256": "dc9ed79d855f5180a9c34d6ecce23a9d6496032712e90881b25cdd3c56a5e0b7",
+      "sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -4092,9 +4092,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "a3d039f5e9c47fe35ac32c91749b0075973b82bc74764d8562a3a4c503d990a1",
+      "sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -6056,11 +6056,11 @@
       "kind": "brand-master",
       "purpose": "signature-source",
       "size": [
-        562,
-        674
+        440,
+        660
       ],
-      "provenance": "vector redraw of the supplied signature",
-      "sha256": "1f9132bf1ce0e0b941095dfeb1d0f3e39e45101945491938534983c349fe92bb",
+      "provenance": "vector redraw of the revised narrow signature",
+      "sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6074,7 +6074,7 @@
       "kind": "brand-reference",
       "purpose": "generated-visual-direction",
       "provenance": "generated high-fidelity application and document design sheet",
-      "sha256": "dfd556e1ba2ea9ec2bfe51400ac66e2c5e28758147a8f4e1df6ba544acb630e0",
+      "sha256": "819a3691034c4274ceba2255768b68095fe90b431f9d7578203b1dadd29d8d61",
       "size": [
         1536,
         1024
@@ -6096,8 +6096,8 @@
         1024,
         1024
       ],
-      "sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
-      "source_sha256": "1f9132bf1ce0e0b941095dfeb1d0f3e39e45101945491938534983c349fe92bb",
+      "sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6117,8 +6117,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "32ea67f1e0e1f92e13829b35d5dcb9218ace7a04ab51756c311463ed501d4ece",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "9591062ec7048613db5b5857f76d028335d852bf592b6a9e7c68d101dd6948df",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6138,8 +6138,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "22849cb15a3158b7b08e3fc2bf8cc6c19f6215a299c872ca056b3a7d25a886a5",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "a99ec581e43ad5de2d85b568fd167b2b41c6309bce3625454079565a7a3a915d",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6159,8 +6159,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "29df5c35e088d6e049c7cf80f435126011a211047153235e8d9feb44a46b90e9",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "2639849e75fb886d3b2b2907ba298cbfb559c8049d9f3af99edd42df3e092df9",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6180,8 +6180,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "84d4d5f5dfe1c25d74e78cf88f2918bde350064e92e24dcc6c47274d71a02f7d",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "a6dcbcb78565eab5e5f677f70381f64f32c78227448559b68e99dc678b133fd8",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6201,8 +6201,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "14056fd8f0e9988f4f4e9c2305e2335d38548a188e522750380693c1e7f14980",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "d4c58a8458b12c390b68b6bfcbb39a08812b02619fb68d837067826e414ba74a",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6222,8 +6222,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "a1ab645159588978f2263ab048690972a5ab771c7517f1b22e34e11e28c124cd",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "633ae1480203ace511f8733e5ee90dce7e448c58ccd90de3be7914ee3151d185",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6243,8 +6243,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "43ae0e9c7cd462c1fb1fd5259d38713589ab372254cc88a4be3ad7b08442e3a3",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "3989c6a0bfe405ad516f3c742630dadafc089cfa4fc5993f3e52d1bfcebe04da",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6264,8 +6264,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "a3a8033ef48112b3c921b16c9bd06087cdbea21c665fb3aba0d4def3158d5aca",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "095335fdf0984709fa5505ec182212abdfc095c28895c2d98974e2e8c81ca450",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [
           "assets/app-icon.png"
@@ -6289,8 +6289,8 @@
       ],
       "format": "png",
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "f8ac135cdb3697979b2bbe52fdc5988dadae332615dd48b8ddd94e1d78180ec4",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "f9e4b23386b80e74906523185418c3f0e1b79d416c2383df7835b0963b8879c0",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6314,8 +6314,8 @@
         128,
         256
       ],
-      "sha256": "098aafcf0f77c5822939566d53bc6471a0b5370f6de3beb8811979a8b74db7d0",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "6e2f86337b8893e0d474418546cc87293b4462c1d247cd36f1ed1eba24dac601",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -6345,8 +6345,8 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "9117ea1f596e26b9f37c2906c7316d16e15c94d788f49c3e4002bbdb4ed21221",
-      "source_sha256": "e1791572b7df9cf6f9eab191b7b80b15a2d65383506c18d7808329624984d244",
+      "sha256": "7753f7010084aa0e2fa9478e009f1a09bc3999bc13b5a367152c15ba46a4a424",
+      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -6366,8 +6366,8 @@
         1024,
         1024
       ],
-      "sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
-      "source_sha256": "1f9132bf1ce0e0b941095dfeb1d0f3e39e45101945491938534983c349fe92bb",
+      "sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6387,8 +6387,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "89618449b5506a38554123430cef53560a84efde0404e4e05c2b75776c56257f",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "4e3f7e5905e10757943856a0a6965be4fbaccfcffa639e4931c25972beeb79c3",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6408,8 +6408,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "04ac9cbc6df10a1142a398c527065e15d7f32d847174a079094f45c5ce2e92de",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "12b9830f744b7caa644747303cf21b7998d641c99a2f7f3505a599f702e8c816",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6429,8 +6429,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "35e6513e9721832e8514501b604cc80d3a67ea6b98811cba15b161b7ad675e4e",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "f33405ca6a42b9307a283156f6e4b1ff767a6a6169346654bc427404cd5dfe94",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6450,8 +6450,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "56088faaa843824670c9c8365c665a62a5bcddabe031707a00857cd61adb2532",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "b4599ad2252e8015b93be5399b236279ef941be0f4c0a72f3caac0ef8b00cf56",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6471,8 +6471,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "b2fcec45e2f8737a53e5dc5cd0a01f155749d8a336399d41e47803830df60e35",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "053cfc980871f6f16d9e36bbe7783eede3d41a52f80885774643010308b4499a",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6492,8 +6492,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "b63a14b8e4d70ebee48d0ecd408163b786cdd70ed94c737bf3aaa382caa9c101",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "df33e54be7ffd72d6a2f7714b6ea539bb7409e1d620906ae7f93a8e2972a99f9",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6513,8 +6513,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "91c20b7eeb3d3241f359fd3f9ea80f4cbbeb4d23c5162ca44620a9acd86673af",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "f86572d54820a7687faa49b1fc5371c1c1c5d9bb92bf860888a1e00a71b2214b",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6534,8 +6534,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "41f7449d38063170eb8567ee9f0415442988c087272fcbb6937a24697029c84c",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "b496cd55599fdb0a699aba7eed64240f93d4e3e04cdfbec07dffd27372442686",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6555,8 +6555,8 @@
       ],
       "format": "png",
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "f75029bc2ff1fd2017c66cb81b90af297f8acdb01a6f5aab899f9d5337023502",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "e8f5c0545316be5826c7717c446f79529c2356120d7225e598ff02af7f2048ed",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6580,8 +6580,8 @@
         128,
         256
       ],
-      "sha256": "1bb9224818e2271157a466a9f360ccd8c8b85019bf6e247b295e98c1ed5f4762",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "512c225bdc65f1915063151949e9a40d14672794ccc7863db0218edc380f1750",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6609,8 +6609,8 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "a3f745d28b4179f7b966a3457f9453ec6a9058457842f0230d7b57f7327ce1f2",
-      "source_sha256": "9fb4b8fd59f2f1303f62f34f62e7a6f82d7135bc220ce61b2a9c577d50be2acb",
+      "sha256": "d3a44faed234083faee2e7c85f6a1787c3aa0217b411207a30fd9b0fc39fbcd3",
+      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -6726,7 +6726,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "8914b84344eaa9f650286e1bbfb07c18a4780c112a14d69fc29c5a75db2e324b",
+      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
       "visible_bounds": [
         2.0,
         2.0,
@@ -6734,7 +6734,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "e12d1c19514687dfe609aeb45b50e49b577ea5ee1306a45f55a93bd8a3d85375"
+      "sha256": "7117aab3a818a33d9aba0b6a33b3be505cad52a2f6eac082698956b548177788"
     },
     {
       "id": "raster/light/app-mark@2x",
@@ -6756,7 +6756,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "8914b84344eaa9f650286e1bbfb07c18a4780c112a14d69fc29c5a75db2e324b",
+      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
       "visible_bounds": [
         2.0,
         2.0,
@@ -6764,7 +6764,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "9b65f994166a178f78e4b49c6ca716c494636dbbe792e35205f8ac08015d22b8"
+      "sha256": "0a4645012b4b851b8775332e1e93d51719c9c9f027165c933956d798c64f736d"
     },
     {
       "id": "raster/light/app-mark@3x",
@@ -6786,15 +6786,15 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/app-mark.svg",
-      "source_sha256": "8914b84344eaa9f650286e1bbfb07c18a4780c112a14d69fc29c5a75db2e324b",
+      "source_sha256": "87d2f57b88088bb8ffd25fdc762895f806b7091f7b315b0cc49674df2807cd4d",
       "visible_bounds": [
-        1.6667,
+        2.0,
         2.0,
         22.0,
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "3920a959f7e118469da8ecb02086a3dbbd6dcfd5ca3e7a74b947955b07029a18"
+      "sha256": "8d56d7571f33ba10d312b410ab68f0f9f549e5cacd10282ce7309e895768b768"
     },
     {
       "id": "raster/light/archive@1x",
@@ -6816,7 +6816,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive.svg",
-      "source_sha256": "d4ea904833065bca0578d211db84b8a9f3682ea038d7f5a382e458b7905326f4",
+      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
       "visible_bounds": [
         4.0,
         1.0,
@@ -6824,7 +6824,7 @@
         23.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "4bab203bbf2a0842348a777ac9eda9ec8d11ce3d545625fd366b4cf2b4712505"
+      "sha256": "02a5204ddaa06148166c2f089240d8288d10c2bb7588ab3ced98322d2b45a6d3"
     },
     {
       "id": "raster/light/archive@2x",
@@ -6846,7 +6846,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive.svg",
-      "source_sha256": "d4ea904833065bca0578d211db84b8a9f3682ea038d7f5a382e458b7905326f4",
+      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
       "visible_bounds": [
         4.0,
         2.0,
@@ -6854,7 +6854,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "73691a542185bcf731aab1e341aae7d00bd9cfd19646637c75a2c26bb3a3ffbd"
+      "sha256": "93fe724dd5d8833e4326120ace2ce92ec2b848a16724328d36a657020902fd0a"
     },
     {
       "id": "raster/light/archive@3x",
@@ -6876,7 +6876,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive.svg",
-      "source_sha256": "d4ea904833065bca0578d211db84b8a9f3682ea038d7f5a382e458b7905326f4",
+      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -6884,7 +6884,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "96b662169e0247de73e5928f553d9efe3e0b3b8441463b99fdf8a34ae7e87f3c"
+      "sha256": "d5bd2531f7ef0a9d5a5f2db41640c4c70f506342d99fe4668461f80b6ffa248f"
     },
     {
       "id": "raster/light/archive-add@1x",
@@ -6996,7 +6996,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive-grey.svg",
-      "source_sha256": "70a0b33908499bf122403b53cc1e6f3ce8534d75a9a471d110250a1bb41d1e86",
+      "source_sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "visible_bounds": [
         4.0,
         1.0,
@@ -7004,7 +7004,7 @@
         23.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "60ab86b8b11159ed78fd312b92e443222784ba61c85b60e945342b6850be4472"
+      "sha256": "d5cb5ed06c0dd4b642a61e92cb9b0d526ac8da3de1c16697719aa291379040de"
     },
     {
       "id": "raster/light/archive-grey@2x",
@@ -7026,7 +7026,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive-grey.svg",
-      "source_sha256": "70a0b33908499bf122403b53cc1e6f3ce8534d75a9a471d110250a1bb41d1e86",
+      "source_sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "visible_bounds": [
         4.0,
         2.0,
@@ -7034,7 +7034,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "b0866a0f2b5cf9d8c16d81f9350f3192e269dde4c9e6fe9814e6e920c87de288"
+      "sha256": "5de22846a6225655438b6feb706091cb6c1660835ef19b09aafb0211286feed6"
     },
     {
       "id": "raster/light/archive-grey@3x",
@@ -7056,7 +7056,7 @@
       "theme": "light",
       "category": "brand",
       "source": "svg/light/archive-grey.svg",
-      "source_sha256": "70a0b33908499bf122403b53cc1e6f3ce8534d75a9a471d110250a1bb41d1e86",
+      "source_sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -7064,7 +7064,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "b0171f1d54b90e90e594b5ab6f170ad8403244ef2144b78a03ef6d0e0424e2d9"
+      "sha256": "75a38ba6bd9c1ce4ee73f3e17d05eba1f51002f0f423dd23d05459d08ff4f761"
     },
     {
       "id": "raster/light/archive-test@1x",
@@ -13119,7 +13119,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "694094af0394cf7cbcee5dc2e88f911c7614d27f6ea9a1be6e115dc5e7aed3e0",
+      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
       "visible_bounds": [
         2.0,
         2.0,
@@ -13127,7 +13127,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "e12d1c19514687dfe609aeb45b50e49b577ea5ee1306a45f55a93bd8a3d85375"
+      "sha256": "7117aab3a818a33d9aba0b6a33b3be505cad52a2f6eac082698956b548177788"
     },
     {
       "id": "raster/dark/app-mark@2x",
@@ -13149,7 +13149,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "694094af0394cf7cbcee5dc2e88f911c7614d27f6ea9a1be6e115dc5e7aed3e0",
+      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
       "visible_bounds": [
         2.0,
         2.0,
@@ -13157,7 +13157,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "9b65f994166a178f78e4b49c6ca716c494636dbbe792e35205f8ac08015d22b8"
+      "sha256": "0a4645012b4b851b8775332e1e93d51719c9c9f027165c933956d798c64f736d"
     },
     {
       "id": "raster/dark/app-mark@3x",
@@ -13179,15 +13179,15 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/app-mark.svg",
-      "source_sha256": "694094af0394cf7cbcee5dc2e88f911c7614d27f6ea9a1be6e115dc5e7aed3e0",
+      "source_sha256": "b4826837432feb3ffeadf2fed19712a6dc4ba7f166159c78b146c3d460f46c98",
       "visible_bounds": [
-        1.6667,
+        2.0,
         2.0,
         22.0,
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "3920a959f7e118469da8ecb02086a3dbbd6dcfd5ca3e7a74b947955b07029a18"
+      "sha256": "8d56d7571f33ba10d312b410ab68f0f9f549e5cacd10282ce7309e895768b768"
     },
     {
       "id": "raster/dark/archive@1x",
@@ -13209,7 +13209,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive.svg",
-      "source_sha256": "dc9ed79d855f5180a9c34d6ecce23a9d6496032712e90881b25cdd3c56a5e0b7",
+      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
       "visible_bounds": [
         4.0,
         1.0,
@@ -13217,7 +13217,7 @@
         23.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8a8fac0fc42caaf649eef61a22dea54ba330238afedc5042470f038637abff9f"
+      "sha256": "8b7b9fc494c9a4805361125159c5c0fe2ac5744ec32efff44d4febfb2bae49a6"
     },
     {
       "id": "raster/dark/archive@2x",
@@ -13239,7 +13239,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive.svg",
-      "source_sha256": "dc9ed79d855f5180a9c34d6ecce23a9d6496032712e90881b25cdd3c56a5e0b7",
+      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -13247,7 +13247,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "0dc169090b3eefee316389d33d449606a0e81b8b313d6c32bfe7f5d19d5d03e3"
+      "sha256": "18fbc7b7aba8b295ac6cc2a49b81b284ddebca9387bd32ca3a2f3ef0f19cdcc1"
     },
     {
       "id": "raster/dark/archive@3x",
@@ -13269,7 +13269,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive.svg",
-      "source_sha256": "dc9ed79d855f5180a9c34d6ecce23a9d6496032712e90881b25cdd3c56a5e0b7",
+      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -13277,7 +13277,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a4f8cd9f66a14b4de30f1e19d49bd588d771c56af31a22f823d0e4914347a08b"
+      "sha256": "5057197412db0300993f695eb0b2220a88fcf95b45b6d58b186e931eef6ab824"
     },
     {
       "id": "raster/dark/archive-add@1x",
@@ -13389,7 +13389,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive-grey.svg",
-      "source_sha256": "a3d039f5e9c47fe35ac32c91749b0075973b82bc74764d8562a3a4c503d990a1",
+      "source_sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "visible_bounds": [
         4.0,
         1.0,
@@ -13397,7 +13397,7 @@
         23.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "f7c0a5cac503b95b920e1db3d7aeb0e61ec2947573656d02fd05bb12e94fccc6"
+      "sha256": "4638eaeef161caedff8099c8007a4317a880456ca434dabff02500660a0eb16b"
     },
     {
       "id": "raster/dark/archive-grey@2x",
@@ -13419,7 +13419,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive-grey.svg",
-      "source_sha256": "a3d039f5e9c47fe35ac32c91749b0075973b82bc74764d8562a3a4c503d990a1",
+      "source_sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "visible_bounds": [
         4.0,
         2.0,
@@ -13427,7 +13427,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "4a8211b2270d5a1d22fa114da3ba81416cf20ed41a7f7866d43d686414197ba3"
+      "sha256": "7c92d8db38b2bb13c384140d8dbd09d9bae84f02a6d53f73589c345be0fa4a37"
     },
     {
       "id": "raster/dark/archive-grey@3x",
@@ -13449,7 +13449,7 @@
       "theme": "dark",
       "category": "brand",
       "source": "svg/dark/archive-grey.svg",
-      "source_sha256": "a3d039f5e9c47fe35ac32c91749b0075973b82bc74764d8562a3a4c503d990a1",
+      "source_sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "visible_bounds": [
         4.3333,
         2.0,
@@ -13457,7 +13457,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "183630150cbacf2ca4d2699fdcefc2eca45e4a7a505f773a39d4ed683e08f198"
+      "sha256": "30d158d5ca1671f052030e69e13f9ab809e281e54d58437d3ae2a54186c74952"
     },
     {
       "id": "raster/dark/archive-test@1x",

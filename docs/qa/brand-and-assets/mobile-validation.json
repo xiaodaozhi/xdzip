@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "reviews": [
+    {
+      "viewport": 390,
+      "images": 26,
+      "overflow": false,
+      "page_errors": [],
+      "external_requests": []
+    },
+    {
+      "viewport": 1200,
+      "images": 26,
+      "overflow": false,
+      "page_errors": [],
+      "external_requests": []
+    }
+  ],
+  "offline_preview_sha256": "be74a256286c47feb83f2f566cce35d6111d927182d7d5bd4695a9f84db5c40b"
+}
