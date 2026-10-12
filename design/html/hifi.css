@@ -3,6 +3,8 @@
 :root { --font:"Xdzip Design Sans SC",sans-serif; --canvas:#f7f8fa; --surface:#fff; --sidebar:#f5f6f8; --text:#141827; --secondary:#626b86; --border:#e3e7ef; --accent:#1956ff; --accent-ink:#1956ff; --accent-hover:#1048e8; --selection:#e7edff; --row-height:66px; }
 :root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#4277ff; --accent-ink:#8aafff; --selection:#30436a; }
 :root { --pane-header-height:69px; --pane-header-font-size:20px; --pane-header-line-height:28px; --pane-header-text-offset:-2px; }
+/* Column labels and values share the same content edge at every row. */
+:root { --original-size-column-inset:26px; --compressed-size-column-inset:22px; --type-column-inset:28px; }
 /* An embedded artboard has no document-level scrolling. Its table, inspector,
    and operation windows retain their own scroll containers; standalone pages
    still scroll normally when opened in a smaller browser window. */
@@ -427,9 +429,12 @@ th {
     padding:0;
 }
 th:nth-child(2) { width:auto; padding-left:3px; }
-th:nth-child(3) { width:118px; text-align:left; padding:0 0 0 24px; }
-th:nth-child(4) { width:114px; text-align:left; padding:0 0 0 35px; }
-th.type-col { width:131px; padding-left:23px; }
+th:nth-child(3) { width:118px; }
+th:nth-child(4) { width:114px; }
+th:nth-child(3),td:nth-child(3) { text-align:right; padding:0 var(--original-size-column-inset) 0 0; }
+th:nth-child(4),td:nth-child(4) { text-align:right; padding:0 var(--compressed-size-column-inset) 0 0; }
+th.type-col { width:131px; }
+th.type-col,td.type-col { text-align:left; padding-left:var(--type-column-inset); }
 th.date-col { width:172px; padding-left:22px; }
 th:not(:first-child):not(:last-child)::after {
     content:"";
@@ -485,10 +490,8 @@ tbody tr:not(.selected) td:last-child::after { right:17px; }
 td:first-child { padding-left:27px; }
 td:first-child input { display:block; }
 td:nth-child(2) { padding-left:1px; }
-td:nth-child(3) { padding-right:26px; }
-td:nth-child(4) { padding-right:22px; }
 td:nth-child(3),td:nth-child(4) { font-size:19.25px; color:var(--text); }
-td.type-col { padding-left:28px; font-size:18px; color:var(--text); }
+td.type-col { font-size:18px; color:var(--text); }
 td.date-col { padding-left:22px; font-size:19.25px; color:var(--text); }
 .entry-name { font-size:19px; line-height:28px; gap:16px; font-weight:500; }
 .entry-name>span:last-child { letter-spacing:-.2px; }

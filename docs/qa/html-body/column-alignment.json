@@ -1,0 +1,2731 @@
+{
+  "date": "2026-10-12",
+  "coordinate_space": "Unscaled source artboard CSS px",
+  "bundle_sha256": "28ab135a71a4b337e3a9bb2691a5476e9fcb3fa94c4fdc9435d87a1f350e984e",
+  "scope": "Actual HTML table header and all nine visible rows; three platform decorations and both themes",
+  "measurement": "DOM Range text advance edge and cell content edge; glyph ink has font side bearings",
+  "tolerance_css_px": 0.02,
+  "passed": true,
+  "cases": [
+    {
+      "platform": "macos",
+      "theme": "light",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    },
+    {
+      "platform": "macos",
+      "theme": "dark",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "theme": "light",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "theme": "dark",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "theme": "light",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    },
+    {
+      "platform": "linux",
+      "theme": "dark",
+      "columns": [
+        {
+          "name": "原始大小",
+          "alignment": "right",
+          "header": {
+            "text": "原始大小",
+            "alignment": "right",
+            "rect": [
+              642,
+              236,
+              118,
+              51
+            ],
+            "inset": 26,
+            "content_edge": 734,
+            "text_edge": 734,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                287,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                352,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                642,
+                417,
+                118,
+                65
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.4 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                482,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "6.2 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                549.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "12.8 MB",
+              "alignment": "right",
+              "rect": [
+                642,
+                617,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                684.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "116 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                752,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8 KB",
+              "alignment": "right",
+              "rect": [
+                642,
+                819.5,
+                118,
+                67.5
+              ],
+              "inset": 26,
+              "content_edge": 734,
+              "text_edge": 734,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "压缩后",
+          "alignment": "right",
+          "header": {
+            "text": "压缩后",
+            "alignment": "right",
+            "rect": [
+              760,
+              236,
+              114,
+              51
+            ],
+            "inset": 22,
+            "content_edge": 852,
+            "text_edge": 852,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                287,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                352,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "—",
+              "alignment": "right",
+              "rect": [
+                760,
+                417,
+                114,
+                65
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "8.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                482,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "5.9 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                549.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "7.1 MB",
+              "alignment": "right",
+              "rect": [
+                760,
+                617,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "2 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                684.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "68 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                752,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "4 KB",
+              "alignment": "right",
+              "rect": [
+                760,
+                819.5,
+                114,
+                67.5
+              ],
+              "inset": 22,
+              "content_edge": 852,
+              "text_edge": 852,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        },
+        {
+          "name": "类型",
+          "alignment": "left",
+          "header": {
+            "text": "类型",
+            "alignment": "left",
+            "rect": [
+              874,
+              236,
+              131,
+              51
+            ],
+            "inset": 28,
+            "content_edge": 902,
+            "text_edge": 902,
+            "text_to_content_delta": 0
+          },
+          "rows": [
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                287,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                352,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "文件夹",
+              "alignment": "left",
+              "rect": [
+                874,
+                417,
+                131,
+                65
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                482,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "JPEG",
+              "alignment": "left",
+              "rect": [
+                874,
+                549.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "PDF",
+              "alignment": "left",
+              "rect": [
+                874,
+                617,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "TXT",
+              "alignment": "left",
+              "rect": [
+                874,
+                684.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "GPX",
+              "alignment": "left",
+              "rect": [
+                874,
+                752,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            },
+            {
+              "text": "MD",
+              "alignment": "left",
+              "rect": [
+                874,
+                819.5,
+                131,
+                67.5
+              ],
+              "inset": 28,
+              "content_edge": 902,
+              "text_edge": 902,
+              "text_to_content_delta": 0
+            }
+          ],
+          "maximum_edge_delta": 0,
+          "maximum_layout_delta": 0,
+          "all_alignments_match": true
+        }
+      ]
+    }
+  ],
+  "page_errors": [],
+  "external_requests": []
+}
