@@ -6,12 +6,14 @@ on:
       - 'scripts/*html*'
       - 'docs/qa/html-header/**'
       - '.github/workflows/html-design.yml'
+      - '.gitattributes'
   pull_request:
     paths:
       - 'design/**'
       - 'scripts/*html*'
       - 'docs/qa/html-header/**'
       - '.github/workflows/html-design.yml'
+      - '.gitattributes'
 permissions:
   contents: read
 jobs:
