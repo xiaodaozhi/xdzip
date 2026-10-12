@@ -13,3 +13,5 @@
 顶部边界／中心和图标墨迹检查已通过。预览布局、原稿加载和示例流程检查结果分别记录于 [预览报告](html-preview-validation.json)、[原稿报告](html-reference-validation.json)、[交互报告](html-design-validation.json)。这些不代表 Qt 原生渲染或压缩解压验收。
 
 仍有生成原稿的柔化阴影、拉链细节和文字轮廓差异。原稿字体不可证明，固定字体减少新的跨平台漂移，但不宣称是同一个原始字体。新建、设置等其他画面的逐项视觉校准仍未全部完成。
+
+云端验证：[HTML design review 38205107742](https://github.com/xiaodaozhi/xdzip/actions/runs/38205107742) 已通过，验证提交 `f27d32a84fba485154fa1bdcd09d49cde18edcf2`。在干净 Ubuntu 环境中安装固定工具与 Chromium，完成字体检查、离线构建、原稿锚点与实际图形检查、预览布局、原稿加载和完整示例流程，并上传 `xdzip-html-design-evidence`。Qt 原生产品不属于本次 HTML 验证范围。
