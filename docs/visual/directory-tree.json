@@ -3,7 +3,7 @@
   "component": "directory-tree",
   "name": "B · 层级引导目录树",
   "status": "design-ready-awaiting-html-and-qt-integration",
-  "units": "Qt logical pixels / CSS pixels before the HTML source-canvas transform",
+  "units": "Qt logical pixels / CSS pixels in the normalized 1280-wide design window",
   "coordinate_note": "图板是放大的视觉说明，不存在适用于三张图板的共同缩放系数；下列值是组件落地尺寸，不是对图片像素的测量。切片的 source physical rect 单独记入资产清单。",
   "base_tokens": "tokens.json",
   "geometry": {
@@ -294,6 +294,34 @@
       "hidden-current branch indication and focus recovery",
       "HTML recursive component/state fixtures",
       "actual-render alignment, contrast and accessible keyboard validation"
+    ]
+  },
+  "coordinate_mapping": {
+    "qt": "Use geometry values directly as logical pixels",
+    "html_source_canvas": "source CSS pixels = logical value / XDZIP_DISPLAY_SPEC.sourceToLogical",
+    "source_to_logical_ratio": [
+      1280,
+      1548
+    ],
+    "review_zoom": "Apply outside this coordinate conversion; never change source geometry to cancel preview zoom",
+    "device_pixel_ratio": "DPR selects raster density and stroke snapping; it does not determine logical size",
+    "examples": [
+      {
+        "logical": 40,
+        "source_css": 48.375
+      },
+      {
+        "logical": 14,
+        "source_css": 16.93125
+      },
+      {
+        "logical": 20,
+        "source_css": 24.1875
+      },
+      {
+        "logical": 16,
+        "source_css": 19.35
+      }
     ]
   }
 }

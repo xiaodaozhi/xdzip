@@ -90,6 +90,7 @@ def generate():
 <p>图板是放大的视觉说明，局部卡片比例不同。下面的逻辑尺寸用于开发；切片保留物理像素和背景。原始主稿保持不变，此处只修订左侧目录组件。完整深色图板仍待补齐。</p>
 <h2 id="boards">正式图板</h2><div class="boards">''' + ''.join(boards) + '''</div>
 <h2 id="geometry">落地尺寸</h2><div class="table-wrap"><table class="geometry"><tbody>''' + geometry_rows + '''</tbody></table></div>
+<p>Qt 直接使用上述逻辑值。现有 HTML 源画布的 CSS 值 = 逻辑值 ÷ (1280/1548)：40 行高对应 48.375 源 CSS px，14 字号对应 16.93125，20 图标槽对应 24.1875。预览缩放在换算后整体应用，DPR 不参与逻辑尺寸换算。</p>
 <p>完整参数与大字号公式见 <a href="../../docs/visual/directory-tree.json">组件参数</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，不按切片大小设置显示槽。</p>
 <h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；条目数表示全部后代物理记录，包含重复记录，排除该节点自己的目录记录，不受搜索影响。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
 <div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>读取时未知计数显示“—”，索引完整后发布树。空归档的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用全部文件和搜索；读取失败提供重新打开，不假装空目录。</p>
