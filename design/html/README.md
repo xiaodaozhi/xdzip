@@ -43,3 +43,5 @@
 验证运行 `python scripts/check-html-design.py`，报告位于 `dist/html-design-review/validation.json`。它验证示例流程和交付可用性，不代表产品格式、安全或原生窗口验收。
 
 原稿加载专项检查：`python scripts/check-html-references.py`，覆盖普通网页、断网单文件和隔离来源画布，验证六个原稿均可解码、两个无原稿状态正确隐藏图片，以及画布配置不依赖同源 DOM 访问。
+
+预览栏布局专项检查：`python scripts/check-html-preview.py`。覆盖桌面与手机外层缩放、浅深色、经典滚动条空间、照片/PDF/目录/多选/归档属性以及长名称。正常照片预览完整显示操作按钮，无内部横纵滚动；长内容保留纵向滚动，避免截断属性和操作。

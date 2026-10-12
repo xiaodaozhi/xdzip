@@ -1,0 +1,166 @@
+{
+  "checks": [
+    {
+      "outerWidth": 1588,
+      "classicGutter": false,
+      "theme": "light",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1588,
+      "classicGutter": false,
+      "theme": "dark",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1588,
+      "classicGutter": true,
+      "theme": "light",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1588,
+      "classicGutter": true,
+      "theme": "dark",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "selection": "guide",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "selection": "photos",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "selection": "multiple files",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "selection": "archive metadata",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "selection": "long metadata",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 1635,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1200,
+      "classicGutter": false,
+      "theme": "light",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1200,
+      "classicGutter": false,
+      "theme": "dark",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1200,
+      "classicGutter": true,
+      "theme": "light",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 1200,
+      "classicGutter": true,
+      "theme": "dark",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 390,
+      "classicGutter": false,
+      "theme": "light",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 390,
+      "classicGutter": false,
+      "theme": "dark",
+      "width": 389,
+      "scrollWidth": 389,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 390,
+      "classicGutter": true,
+      "theme": "light",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    },
+    {
+      "outerWidth": 390,
+      "classicGutter": true,
+      "theme": "dark",
+      "width": 374,
+      "scrollWidth": 374,
+      "height": 748,
+      "scrollHeight": 748,
+      "buttonVisible": true
+    }
+  ],
+  "page_errors": [],
+  "scope": "Offline Chromium layout; classic scrollbar space simulated"
+}
