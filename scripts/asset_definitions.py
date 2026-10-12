@@ -10,7 +10,7 @@ import math
 # These bounds include the outer stroke. Canvas alignment belongs to the asset,
 # so consumers can use one 24-unit viewBox and never stretch individual types.
 FILE_OPTICAL_SPECS = {
-    'folder': {'bounds': [3.25, 4.5, 20.75, 19.5], 'center': [12, 12]},
+    'folder': {'bounds': [1, 2.571429, 23, 21.428571], 'center': [12, 12]},
     'file-pdf': {'bounds': [2.5, 1, 21.5, 23], 'center': [12, 12]},
     'file-text': {'bounds': [3.75, 1, 20.25, 23], 'center': [12, 12]},
     'file-code': {'bounds': [2, 1, 22, 23], 'center': [12, 12]},
@@ -30,6 +30,24 @@ EXTRA_CONTROL_PATHS = {
 }
 
 
+def folder_shape():
+    """Balance the folder silhouette with documents while preserving its aspect ratio.
+
+    The 22-unit width gives the horizontal folder comparable visual area to
+    the 19-by-22 PDF. Scale inside the shared asset, keeping every consumer's
+    24-unit canvas, center and display slot unchanged.
+    """
+    scale = 22 / 17.5
+    return (
+        f'<g transform="translate(12 12) scale({scale:.9f}) translate(-12 -12)">'
+        '<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6bbcff"/><stop offset="1" stop-color="#4099fa"/></linearGradient></defs>'
+        '<path fill="#2473ff" stroke="#226bfb" stroke-width="1" d="M5.05 5h4.1l2.65 2.55h7.15a1.3 1.3 0 0 1 1.3 1.3v8.85a1.3 1.3 0 0 1-1.3 1.3H5.05a1.3 1.3 0 0 1-1.3-1.3V6.3a1.3 1.3 0 0 1 1.3-1.3Z"/>'
+        '<rect x="3.75" y="8.1" width="16.5" height="10.9" rx="1.3" fill="url(#f)" stroke="#287cf3" stroke-width="1"/>'
+        '<path d="M4.75 9.05h14.5" stroke="#d4efff" stroke-opacity=".72" stroke-width=".65"/>'
+        '</g>'
+    )
+
+
 def file_shapes(theme):
     """Return file glyphs with shared height and deliberately natural widths."""
     paper = '#fff' if theme == 'light' else '#28313f'
@@ -37,7 +55,7 @@ def file_shapes(theme):
     rule = '#929eb2' if theme == 'light' else '#a4b1c6'
     symbol = '#343b4c' if theme == 'light' else '#e4ebf5'
     return {
-        'folder': '''<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6bbcff"/><stop offset="1" stop-color="#4099fa"/></linearGradient></defs><path fill="#2473ff" stroke="#226bfb" stroke-width="1" d="M5.05 5h4.1l2.65 2.55h7.15a1.3 1.3 0 0 1 1.3 1.3v8.85a1.3 1.3 0 0 1-1.3 1.3H5.05a1.3 1.3 0 0 1-1.3-1.3V6.3a1.3 1.3 0 0 1 1.3-1.3Z"/><rect x="3.75" y="8.1" width="16.5" height="10.9" rx="1.3" fill="url(#f)" stroke="#287cf3" stroke-width="1"/><path d="M4.75 9.05h14.5" stroke="#d4efff" stroke-opacity=".72" stroke-width=".65"/>''',
+        'folder': folder_shape(),
         'file-pdf': '''<defs><linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff4c50"/><stop offset=".55" stop-color="#fb2d34"/><stop offset="1" stop-color="#e91623"/></linearGradient></defs><path fill="url(#p)" stroke="#ed2430" stroke-width=".7" d="M4.55 1.35h9.4l7.2 7.1v12.2a2 2 0 0 1-2 2H4.55a1.7 1.7 0 0 1-1.7-1.7V3.05a1.7 1.7 0 0 1 1.7-1.7Z"/><path fill="#fff9fa" stroke="#e82c38" stroke-width=".6" d="M14 1.65v5.2a1.65 1.65 0 0 0 1.65 1.65h5.15Z"/><path d="M4.1 3.3v17a.9.9 0 0 0 .9.9h14.2" stroke="#ffb6b9" stroke-opacity=".5" stroke-width=".55"/><g stroke="#fff" stroke-width=".92"><path d="M5.8 18.8v-5.3h1.55a1.45 1.45 0 0 1 0 2.9H5.8 M10.7 13.5h1.2a1.8 1.8 0 0 1 1.8 1.8V17a1.8 1.8 0 0 1-1.8 1.8h-1.2Z M16.1 18.8v-5.3h2.55 M16.1 16h2.05"/></g>''',
         'file-text': f'''<path fill="{paper}" stroke="{border}" stroke-width="1" d="M5.8 1.5h8.55l5.4 5.4v14a1.6 1.6 0 0 1-1.6 1.6H5.8a1.55 1.55 0 0 1-1.55-1.55V3.05A1.55 1.55 0 0 1 5.8 1.5Z"/><path stroke="{border}" stroke-width="1" d="M14.35 1.75v4.1a1.05 1.05 0 0 0 1.05 1.05h4.1"/><path stroke="{rule}" stroke-width="1" d="M7.25 7.9h4.7 M7.25 10.85h9 M7.25 13.8h9 M7.25 16.75h9"/>''',
         'file-code': f'''<rect x="2.5" y="1.5" width="19" height="21" rx="2.15" fill="{paper}" stroke="{border}" stroke-width="1"/><path d="m8.45 9.1-2.9 2.9 2.9 2.9m7.1-5.8 2.9 2.9-2.9 2.9m-2.35-6.5-2.4 7.2" stroke="{symbol}" stroke-width="1.15"/>''',

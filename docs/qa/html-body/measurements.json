@@ -154,42 +154,118 @@
       {
         "name": "根目录文件夹",
         "region": [
+          46,
+          338,
+          54,
+          49
+        ],
+        "mode": "blue",
+        "previous_region": [
           50,
           342,
           47,
           40
         ],
-        "mode": "blue"
+        "design_revision": "folder-optical-balance",
+        "target_ink_rect": [
+          51,
+          343.642858,
+          44,
+          37.714284
+        ],
+        "authored_display_frame": [
+          49,
+          338.5,
+          48,
+          48
+        ]
       },
       {
         "name": "照片目录文件夹",
         "region": [
+          72,
+          397,
+          53,
+          50
+        ],
+        "mode": "blue",
+        "previous_region": [
           76,
           401,
           44,
           40
         ],
-        "mode": "blue"
+        "design_revision": "folder-optical-balance",
+        "target_ink_rect": [
+          76,
+          403.392858,
+          44,
+          37.714284
+        ],
+        "authored_display_frame": [
+          74,
+          398.25,
+          48,
+          48
+        ]
       },
       {
         "name": "文档目录文件夹",
         "region": [
+          72,
+          458,
+          53,
+          51
+        ],
+        "mode": "blue",
+        "previous_region": [
           76,
           463,
           44,
           40
         ],
-        "mode": "blue"
+        "design_revision": "folder-optical-balance",
+        "target_ink_rect": [
+          76,
+          464.892858,
+          44,
+          37.714284
+        ],
+        "authored_display_frame": [
+          74,
+          459.75,
+          48,
+          48
+        ]
       },
       {
         "name": "地图目录文件夹",
         "region": [
+          72,
+          520,
+          53,
+          51
+        ],
+        "mode": "blue",
+        "previous_region": [
           76,
           526,
           44,
           40
         ],
-        "mode": "blue"
+        "design_revision": "folder-optical-balance",
+        "target_ink_rect": [
+          76,
+          526.392858,
+          44,
+          37.714284
+        ],
+        "authored_display_frame": [
+          74,
+          521.25,
+          48,
+          48
+        ]
       },
       {
         "name": "首个目录展开箭头",
@@ -203,12 +279,31 @@
       {
         "name": "首行文件夹",
         "region": [
+          391,
+          295,
+          57,
+          51
+        ],
+        "mode": "blue",
+        "previous_region": [
           393,
           301,
           47,
           41
         ],
-        "mode": "blue"
+        "design_revision": "folder-optical-balance",
+        "target_ink_rect": [
+          397,
+          300.642858,
+          44,
+          37.714284
+        ],
+        "authored_display_frame": [
+          395,
+          295.5,
+          48,
+          48
+        ]
       },
       {
         "name": "列表模式图标",
@@ -2256,7 +2351,31 @@
       "生成式原稿未包含字体或矢量规格；字体轮廓只作实测和目视复核，不作为相同字体断言。",
       "原稿各行线间距非均匀；使用统一行高，完整原稿行线中心记录在独立测量中。",
       "本轮为HTML设计与共享素材校准，不能代表Qt页面或macOS原生窗口已同步验收。"
-    ]
+    ],
+    "design_revisions": {
+      "folder-optical-balance": {
+        "reason": "文件夹采用与文档协调的视觉面积，保持原横向比例、中心与24×24画布。旧原稿保留独立对照，文件夹尺寸是明确的设计修订。",
+        "previous_bounds": [
+          3.25,
+          4.5,
+          20.75,
+          19.5
+        ],
+        "bounds": [
+          1,
+          2.571429,
+          23,
+          21.428571
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "scale": 1.2571428571428571,
+        "other_source_anchors": "unchanged",
+        "source_comparison": "record-only for the five folder silhouettes; retain original source values and tolerance"
+      }
+    }
   },
   "review_regions": {
     "full": {
@@ -2702,7 +2821,7 @@
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "根目录文件夹",
       "expected": [
         55,
@@ -2711,17 +2830,37 @@
         29
       ],
       "actual": [
-        55,
-        348,
-        36,
-        30
+        51,
+        344,
+        44,
+        38
       ],
-      "maximum_delta_px": 1,
+      "review_only": true,
+      "maximum_delta_px": 9,
+      "design_revision": "folder-optical-balance",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "根目录文件夹",
+      "expected": [
+        51,
+        343.642858,
+        44,
+        37.714284
+      ],
+      "actual": [
+        51,
+        344,
+        44,
+        38
+      ],
+      "maximum_delta_px": 0.3571420000000103,
       "tolerance_px": 2,
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "照片目录文件夹",
       "expected": [
         80,
@@ -2730,17 +2869,37 @@
         31
       ],
       "actual": [
-        80,
-        407,
-        36,
-        30
+        76,
+        403,
+        44,
+        38
       ],
-      "maximum_delta_px": 2,
+      "review_only": true,
+      "maximum_delta_px": 10,
+      "design_revision": "folder-optical-balance",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "照片目录文件夹",
+      "expected": [
+        76,
+        403.392858,
+        44,
+        37.714284
+      ],
+      "actual": [
+        76,
+        403,
+        44,
+        38
+      ],
+      "maximum_delta_px": 0.3928579999999897,
       "tolerance_px": 2,
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "文档目录文件夹",
       "expected": [
         80,
@@ -2749,17 +2908,37 @@
         30
       ],
       "actual": [
-        80,
-        469,
-        36,
-        30
+        76,
+        465,
+        44,
+        38
       ],
-      "maximum_delta_px": 2,
+      "review_only": true,
+      "maximum_delta_px": 9,
+      "design_revision": "folder-optical-balance",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "文档目录文件夹",
+      "expected": [
+        76,
+        464.892858,
+        44,
+        37.714284
+      ],
+      "actual": [
+        76,
+        465,
+        44,
+        38
+      ],
+      "maximum_delta_px": 0.28571600000000075,
       "tolerance_px": 2,
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "地图目录文件夹",
       "expected": [
         80,
@@ -2768,12 +2947,32 @@
         30
       ],
       "actual": [
-        80,
-        530,
-        36,
-        30
+        76,
+        526,
+        44,
+        38
       ],
-      "maximum_delta_px": 1,
+      "review_only": true,
+      "maximum_delta_px": 9,
+      "design_revision": "folder-optical-balance",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "地图目录文件夹",
+      "expected": [
+        76,
+        526.392858,
+        44,
+        37.714284
+      ],
+      "actual": [
+        76,
+        526,
+        44,
+        38
+      ],
+      "maximum_delta_px": 0.39285800000004656,
       "tolerance_px": 2,
       "passed": true
     },
@@ -2797,7 +2996,7 @@
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "首行文件夹",
       "expected": [
         400,
@@ -2806,12 +3005,32 @@
         31
       ],
       "actual": [
-        401,
-        305,
-        36,
-        30
+        397,
+        301,
+        44,
+        38
       ],
-      "maximum_delta_px": 1,
+      "review_only": true,
+      "maximum_delta_px": 9,
+      "design_revision": "folder-optical-balance",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "首行文件夹",
+      "expected": [
+        397,
+        300.642858,
+        44,
+        37.714284
+      ],
+      "actual": [
+        397,
+        301,
+        44,
+        38
+      ],
+      "maximum_delta_px": 0.3571420000000103,
       "tolerance_px": 2,
       "passed": true
     },

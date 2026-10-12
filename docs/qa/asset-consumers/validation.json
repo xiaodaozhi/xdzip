@@ -1,7 +1,7 @@
 {
   "status": "passed",
   "source_manifest": "design/assets/manifest.json",
-  "source_manifest_sha256": "0a873324b336da24255768e966b14bbe33ef1e5c0df7dd8af5f3315389bcea7c",
+  "source_manifest_sha256": "4c300c08eeabde45d65c6600be9db65036b0ffe53eaacf1ebbada0935ce8a515",
   "qt": "6.8.2",
   "platform": "Linux offscreen, software backend, x86_64",
   "capture_sizes": [
@@ -11,7 +11,7 @@
         660,
         320
       ],
-      "sha256": "2fe50cf17991130b9534b00b12cdc52c65dac801f2b5f9926931a251bd13bdaa"
+      "sha256": "d71b14459bacfd36281e3ea67ae92e97a026f43e1db1f3d25b3ccb69ef8df68c"
     },
     {
       "file": "file-icons-dark.png",
@@ -19,7 +19,7 @@
         660,
         320
       ],
-      "sha256": "fb2a992dd6211aed3c5b55e56e9a228840c2346f64fe3db05510b1f69554e620"
+      "sha256": "e7695484b93c7e3c567db641a9d6fcd814de065121b39e87d206d3eb23d06cc8"
     }
   ],
   "image_ready": 36,
@@ -42,13 +42,13 @@
   },
   "consumer_xml": {
     "file": "file-icons-test.xml",
-    "sha256": "76610c79659203fedc3f693cb5f3a194e1d8328ed9bf0bc11bd049e300fca5a1",
+    "sha256": "506a3ed5baf09017c74559d6363d6ba234543281777feb1e84442f92eaf4c6c0",
     "passed": 4,
     "failed": 0
   },
   "checks": [
     "Canonical manifest and real QRC PNG provenance",
-    "Rebuilt Qt QRC and consumer applications after final hero-color revisions",
+    "Rebuilt Qt QRC and consumer applications after final folder optical-size revision",
     "All 36 themed images report Image.Ready",
     "Shared square slots and PreserveAspectFit",
     "Final Qt light/dark captures open as valid PNGs",

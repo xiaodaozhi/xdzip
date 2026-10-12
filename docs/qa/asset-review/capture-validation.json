@@ -352,6 +352,8 @@
       "transform": "none"
     }
   ],
+  "folder_comparison_frames": 24,
+  "folder_comparison_mobile_horizontal_overflow": false,
   "mobile_viewport": [
     390,
     844

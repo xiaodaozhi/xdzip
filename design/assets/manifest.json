@@ -16,10 +16,10 @@
     "file_optical_specs": {
       "folder": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -1812,14 +1812,14 @@
           "assets/light/folder.png"
         ]
       },
-      "sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+      "sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
       "source_reference": "reference/folder.png",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -1828,10 +1828,10 @@
         "bounds_include_stroke": true
       },
       "visible_bounds": [
-        3.0,
-        4.3333,
-        21.0,
-        19.6667
+        1.0,
+        2.3333,
+        23.0,
+        21.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
@@ -3481,14 +3481,14 @@
           "assets/dark/folder.png"
         ]
       },
-      "sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+      "sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
       "source_reference": "reference/folder.png",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -3497,10 +3497,10 @@
         "bounds_include_stroke": true
       },
       "visible_bounds": [
-        3.0,
-        4.3333,
-        21.0,
-        19.6667
+        1.0,
+        2.3333,
+        23.0,
+        21.6667
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
@@ -6651,21 +6651,21 @@
       "theme": "light",
       "category": "file",
       "source": "svg/light/folder.svg",
-      "source_sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+      "source_sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
       "visible_bounds": [
-        3.0,
-        4.0,
-        21.0,
-        20.0
+        1.0,
+        2.0,
+        23.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "6df2bd08113e1bf5aa844f676e4983159c5e66df9fa64e6e61575c355d11be9f",
+      "sha256": "2289d42dcf9192b7750a054828e91576f9f5e6d656e94dd0eb3581088e906b0b",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -6694,21 +6694,21 @@
       "theme": "light",
       "category": "file",
       "source": "svg/light/folder.svg",
-      "source_sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+      "source_sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
       "visible_bounds": [
-        3.0,
-        4.5,
-        21.0,
-        19.5
+        1.0,
+        2.5,
+        23.0,
+        21.5
       ],
       "usage": "runtime-and-design",
-      "sha256": "8cea20a44dde26f7092fb21ac8c011961bc64d89e45847ddd2e8dc4b2f90d595",
+      "sha256": "7da385437c7492d6e5c62ad97d2d1b32839cb744b34bfa74d3598b8700fbf504",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -6737,21 +6737,21 @@
       "theme": "light",
       "category": "file",
       "source": "svg/light/folder.svg",
-      "source_sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+      "source_sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
       "visible_bounds": [
-        3.0,
-        4.3333,
-        21.0,
-        19.6667
+        1.0,
+        2.3333,
+        23.0,
+        21.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d",
+      "sha256": "7c75e91f131e100dcc902a9a1eb1806051d86b65d5fcc737c26c62f004827ce5",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -11784,21 +11784,21 @@
       "theme": "dark",
       "category": "file",
       "source": "svg/dark/folder.svg",
-      "source_sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+      "source_sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
       "visible_bounds": [
-        3.0,
-        4.0,
-        21.0,
-        20.0
+        1.0,
+        2.0,
+        23.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "6df2bd08113e1bf5aa844f676e4983159c5e66df9fa64e6e61575c355d11be9f",
+      "sha256": "2289d42dcf9192b7750a054828e91576f9f5e6d656e94dd0eb3581088e906b0b",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -11827,21 +11827,21 @@
       "theme": "dark",
       "category": "file",
       "source": "svg/dark/folder.svg",
-      "source_sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+      "source_sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
       "visible_bounds": [
-        3.0,
-        4.5,
-        21.0,
-        19.5
+        1.0,
+        2.5,
+        23.0,
+        21.5
       ],
       "usage": "runtime-and-design",
-      "sha256": "8cea20a44dde26f7092fb21ac8c011961bc64d89e45847ddd2e8dc4b2f90d595",
+      "sha256": "7da385437c7492d6e5c62ad97d2d1b32839cb744b34bfa74d3598b8700fbf504",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,
@@ -11870,21 +11870,21 @@
       "theme": "dark",
       "category": "file",
       "source": "svg/dark/folder.svg",
-      "source_sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+      "source_sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
       "visible_bounds": [
-        3.0,
-        4.3333,
-        21.0,
-        19.6667
+        1.0,
+        2.3333,
+        23.0,
+        21.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d",
+      "sha256": "7c75e91f131e100dcc902a9a1eb1806051d86b65d5fcc737c26c62f004827ce5",
       "optical_spec": {
         "bounds": [
-          3.25,
-          4.5,
-          20.75,
-          19.5
+          1,
+          2.571429,
+          23,
+          21.428571
         ],
         "center": [
           12,

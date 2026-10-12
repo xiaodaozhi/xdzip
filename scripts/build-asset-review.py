@@ -43,7 +43,9 @@ HERO_ICONS = ('archive-add', 'document-download', 'document-warning',
 NOTES = {
     'app-mark': '标题栏圆角品牌与折角压缩文件保持不同轮廓。',
     'archive': '列表压缩文件保留细拉链、折角和渐变；大图细节单独对照。',
-    'folder': '目录采用横向轮廓；透明画布与纸张相同，可见高度按视觉重量校准。',
+    'folder': '目录光学尺寸从 17.5 × 15 修订为 22 × 18.857，中心保持 (12, 12)，'
+              '使其与文件类型图标的视觉重量协调。旧原稿中的较小目录保留作对照，'
+              '不再作为当前目录墨迹大小的匹配目标。',
     'file-pdf': 'PDF 纸张圆角、白折角和红色边缘从素材源表达，不在界面中横向拉伸。',
     'file-text': '折角纸张、短首行和三条正文线在矢量源中定义。',
     'file-code': '纸张边框与代码符号在素材源中校准，界面不再缩放内部路径。',
@@ -83,6 +85,11 @@ repeating-conic-gradient(#272d39 0% 25%,#20232a 0% 50%) 0/8px 8px}
 repeating-conic-gradient(#e7eaf0 0% 25%,#fff 0% 50%) 0/8px 8px}
 .size-frame img{display:block}.size-title{font-size:14px;margin:22px 0 14px}
 .legend{font-size:13px;color:#647087}.theme-dark .legend{color:#a8b1c5}
+.folder-review{max-width:430px;padding:12px}.folder-review h1{font-size:21px}
+.folder-review .inspection{padding:12px;margin:12px 0}
+.folder-review h2{font-size:16px;margin:0 0 12px}
+.folder-review .frame-grid{grid-template-columns:repeat(6,48px);gap:8px;justify-content:space-between}
+.folder-review .frame-card{gap:8px}.folder-review .frame-card strong{font-size:11px}
 @media(max-width:760px){.frame-grid,.size-grid{grid-template-columns:repeat(4,minmax(72px,1fr))}}
 @media(max-width:540px){body{padding:12px}.comparison{grid-template-columns:repeat(2,1fr)}
 .frame-grid,.size-grid{grid-template-columns:repeat(3,minmax(72px,1fr))}h1{font-size:22px}}
@@ -146,6 +153,32 @@ def file_inspection():
     return page('xdzip 文件图标共同画布检视', intro + ''.join(sections))
 
 
+def folder_comparison():
+    """Show actual prior/current SVGs, not a CSS approximation of the revision."""
+    labels = {'folder': '目录', 'file-pdf': 'PDF', 'file-text': 'TXT',
+              'file-code': 'CODE', 'file-markdown': 'MD', 'image-file': '图片'}
+    sections = []
+    for theme, theme_label in [('light', '浅色'), ('dark', '深色')]:
+        for previous, caption in [(True, '修订前 · 17.5 × 15'),
+                                  (False, '当前 · 22 × 18.857')]:
+            cards = []
+            for name in FILE_ICONS:
+                source = (OUT / 'before' / f'folder-list-{theme}.svg'
+                          if previous and name == 'folder'
+                          else ASSETS / 'svg' / theme / f'{name}.svg')
+                cards.append('<div class="frame-card"><span class="fixed-frame">'
+                             f'<img src="{embedded(source)}" alt="{name}"></span>'
+                             f'<strong>{labels[name]}</strong></div>')
+            sections.append(f'<section class="inspection theme-{theme}">'
+                            f'<h2>{theme_label} · {caption}</h2>'
+                            '<div class="frame-grid">' + ''.join(cards) + '</div></section>')
+    content = ('<h1>xdzip · 目录图标大小修订</h1><p><a href="file-icons.html">完整尺寸检视</a></p>'
+               '<p>所有图片使用同一 48 × 48 显示槽。只修订目录的源几何；'
+               '另外五类素材完全相同，页面没有逐类型缩放。</p>' + ''.join(sections))
+    return page('xdzip 目录图标大小修订', content).replace(
+        '</style>', '</style><body class="folder-review">').replace('</html>', '</body></html>')
+
+
 def file_geometry():
     """Record source raster bounds, without treating bounds as visual similarity.
 
@@ -171,8 +204,11 @@ def file_geometry():
             x1, y1, x2, y2 = [value / 3 for value in bounds]
             center = [(x1 + x2) / 2, (y1 + y2) / 2]
             assert all(abs(value - 12) <= 1 / 3 for value in center), raster
-            expected_height = 15 if name == 'folder' else 22
-            assert abs(y2 - y1 - expected_height) <= 1 / 3 + 0.001, raster
+            expected_height = 22 / 17.5 * 15 if name == 'folder' else 22
+            # A transformed outline may cover an extra low-alpha raster edge.
+            # Bounds at 3× quantize to thirds; two edge pixels are the limit.
+            height_tolerance = 2 / 3 if name == 'folder' else 1 / 3
+            assert abs(y2 - y1 - expected_height) <= height_tolerance + 0.001, raster
             records.append({'id': name, 'theme': theme, 'canvas': [24, 24],
                             'visible_bounds_alpha_gt32': [round(value, 3) for value in
                                                          [x1, y1, x2 - x1, y2 - y1]],
@@ -218,12 +254,25 @@ def render():
         canvas.locator('#open').screenshot(path=str(OUT / 'open-comparison.png'))
         canvas.set_content((OUT / 'hero-icons.html').read_text(), wait_until='load')
         canvas.screenshot(path=str(OUT / 'hero-icons.png'), full_page=True)
+        canvas.set_viewport_size({'width': 430, 'height': 600})
+        canvas.set_content((OUT / 'folder-before-after.html').read_text(), wait_until='load')
+        assert canvas.evaluate('document.documentElement.scrollWidth <= innerWidth')
+        assert canvas.locator('.fixed-frame img').evaluate_all(
+            'images => images.every(image => image.getBoundingClientRect().width === 48'
+            ' && image.getBoundingClientRect().height === 48'
+            ' && getComputedStyle(image).transform === "none")')
+        folder_frame_count = canvas.locator('.fixed-frame img').count()
+        assert folder_frame_count == len(FILE_ICONS) * 4
+        canvas.screenshot(path=str(OUT / 'folder-before-after.png'), full_page=True)
         canvas.set_viewport_size({'width': 390, 'height': 844})
+        assert canvas.evaluate('document.documentElement.scrollWidth <= innerWidth')
         canvas.set_content((OUT / 'file-icons.html').read_text(), wait_until='load')
         assert canvas.evaluate('document.documentElement.scrollWidth <= innerWidth')
         canvas.locator('#fixed-light').screenshot(path=str(OUT / 'file-icons-mobile.png'))
         (OUT / 'capture-validation.json').write_text(json.dumps({
             'status': 'passed', 'fixed_frame_instances': fixed, 'size_instances': sized,
+            'folder_comparison_frames': folder_frame_count,
+            'folder_comparison_mobile_horizontal_overflow': False,
             'mobile_viewport': [390, 844], 'mobile_horizontal_overflow': False,
             'renderer': 'Chromium; CSS pixel viewport; device scale factor 1',
             'limits': ['Frame and overflow checks do not prove resemblance to the reference',
@@ -237,6 +286,9 @@ def main():
     parser.add_argument('--render', action='store_true', help='also capture Chromium PNG evidence')
     args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
+    folder_baseline = json.loads((OUT / 'folder-baseline.json').read_text())
+    for entry in folder_baseline['assets']:
+        assert hashlib.sha256((ROOT / entry['file']).read_bytes()).hexdigest() == entry['sha256']
     resource_paths = {str((ROOT / 'apps/desktop' / node.text).resolve().relative_to(ROOT))
                       for node in ET.parse(ROOT / 'apps/desktop/ui.qrc').iter('file')}
     rows, records = [], []
@@ -265,6 +317,7 @@ def main():
     intro = ('<h1>xdzip · 原稿与统一素材逐项对照</h1><p>'
              '<a href="../../../design/assets/index.html">统一素材目录</a> · '
              '<a href="file-icons.html">文件图标 24 / 48 / 72 尺寸检视</a> · '
+             '<a href="folder-before-after.html">目录大小修订</a> · '
              '<a href="hero-icons.html">状态大图轮廓与配色</a></p>'
              '<p class="notice">原稿切片含背景，仅作视觉参考。浅深色生产 SVG 位于同一素材库；'
              '历史重建只用于说明变化。每栏采用共同显示画布，没有逐图缩放补偿。'
@@ -281,10 +334,14 @@ def main():
               if record['id'] == name]
     (OUT / 'hero-icons.html').write_text(page('xdzip 状态大图对照', intro + ''.join(heroes)))
     (OUT / 'file-icons.html').write_text(file_inspection())
+    (OUT / 'folder-before-after.html').write_text(folder_comparison())
     geometry = file_geometry()
     (OUT / 'review.json').write_text(json.dumps({
         'status': 'visual-review-with-known-differences', 'source_library': 'design/assets',
         'assets': records, 'file_icon_geometry': geometry,
+        'folder_revision': {'previous': [17.5, 15], 'current': [22, 22 / 17.5 * 15],
+                            'center': [12, 12], 'historical_evidence': folder_baseline,
+                            'source_matching': 'original smaller folder retained for comparison'},
         'display_check': {'shared_svg_canvas': [24, 24], 'file_icon_frame': [48, 48],
                           'inspection_sizes': [24, 48, 72], 'per_icon_css_transform': False},
         'remaining_visual_differences': [

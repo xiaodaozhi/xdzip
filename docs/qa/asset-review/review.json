@@ -264,7 +264,7 @@
       "vector": "design/assets/svg/light/folder.svg",
       "runtime": true,
       "html_registered": true,
-      "review": "目录采用横向轮廓；透明画布与纸张相同，可见高度按视觉重量校准。"
+      "review": "目录光学尺寸从 17.5 × 15 修订为 22 × 18.857，中心保持 (12, 12)，使其与文件类型图标的视觉重量协调。旧原稿中的较小目录保留作对照，不再作为当前目录墨迹大小的匹配目标。"
     },
     {
       "id": "image-amber",
@@ -606,18 +606,18 @@
         24
       ],
       "visible_bounds_alpha_gt32": [
-        3.0,
-        4.333,
-        18.0,
-        15.333
+        1.0,
+        2.333,
+        22.0,
+        19.333
       ],
       "visible_center": [
         12.0,
         12.0
       ],
-      "accepted_visible_height": 15,
-      "svg_sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
-      "raster_sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d"
+      "accepted_visible_height": 18.857142857142858,
+      "svg_sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
+      "raster_sha256": "7c75e91f131e100dcc902a9a1eb1806051d86b65d5fcc737c26c62f004827ce5"
     },
     {
       "id": "file-pdf",
@@ -732,18 +732,18 @@
         24
       ],
       "visible_bounds_alpha_gt32": [
-        3.0,
-        4.333,
-        18.0,
-        15.333
+        1.0,
+        2.333,
+        22.0,
+        19.333
       ],
       "visible_center": [
         12.0,
         12.0
       ],
-      "accepted_visible_height": 15,
-      "svg_sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
-      "raster_sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d"
+      "accepted_visible_height": 18.857142857142858,
+      "svg_sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
+      "raster_sha256": "7c75e91f131e100dcc902a9a1eb1806051d86b65d5fcc737c26c62f004827ce5"
     },
     {
       "id": "file-pdf",
@@ -851,6 +851,52 @@
       "raster_sha256": "e7bf0776d62b991b3dbffd31b5a7ffbe5ebf0dbd74e97834c02c317ea2165529"
     }
   ],
+  "folder_revision": {
+    "previous": [
+      17.5,
+      15
+    ],
+    "current": [
+      22,
+      18.857142857142858
+    ],
+    "center": [
+      12,
+      12
+    ],
+    "historical_evidence": {
+      "usage": "historical visual evidence; not a production asset",
+      "assets": [
+        {
+          "theme": "light",
+          "file": "docs/qa/asset-review/before/folder-list-light.svg",
+          "sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+          "source": "design/assets/svg/light/folder.svg",
+          "source_commit": "425e72f",
+          "optical_bounds": [
+            3.25,
+            4.5,
+            17.5,
+            15
+          ]
+        },
+        {
+          "theme": "dark",
+          "file": "docs/qa/asset-review/before/folder-list-dark.svg",
+          "sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+          "source": "design/assets/svg/dark/folder.svg",
+          "source_commit": "425e72f",
+          "optical_bounds": [
+            3.25,
+            4.5,
+            17.5,
+            15
+          ]
+        }
+      ]
+    },
+    "source_matching": "original smaller folder retained for comparison"
+  },
   "display_check": {
     "shared_svg_canvas": [
       24,

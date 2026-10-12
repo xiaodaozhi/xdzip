@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Measure the area below the toolbar against independently recorded source anchors.
 
-The reference file contains source-image measurements, never values generated from
-CSS. A failed comparison still writes images and measurements for visual review.
+The reference file contains independent source-image measurements and explicitly
+authored design revisions. Revisions keep the original comparison as evidence;
+they never change the approved image or silently relax its tolerance.
+A failed comparison still writes images and measurements for visual review.
 Text contours are review evidence: the raster reference's original font is unknown.
 """
 from pathlib import Path
@@ -164,8 +166,23 @@ def main():
                 if expected is None:
                     failures.append(f'{item["name"]}: source ink region is empty; remeasure it')
                     continue
-                record_geometry(measurements, failures, 'painted ink', item['name'], expected, actual,
-                                item.get('tolerance', args.ink_tolerance))
+                revision = item.get('design_revision')
+                if revision:
+                    if revision not in spec.get('design_revisions', {}):
+                        failures.append(f'{item["name"]}: unrecorded design revision {revision}')
+                        continue
+                    measurements.append({
+                        'kind': 'source ink (design revised)', 'name': item['name'],
+                        'expected': expected, 'actual': actual, 'review_only': True,
+                        'maximum_delta_px': None if actual is None else max(abs(a - b) for a, b in zip(actual, expected)),
+                        'design_revision': revision,
+                        'original_tolerance_px': item.get('tolerance', args.ink_tolerance),
+                    })
+                    record_geometry(measurements, failures, 'revised design ink', item['name'],
+                                    item['target_ink_rect'], actual, item.get('tolerance', args.ink_tolerance))
+                else:
+                    record_geometry(measurements, failures, 'painted ink', item['name'], expected, actual,
+                                    item.get('tolerance', args.ink_tolerance))
             for item in spec.get('type_regions', []):
                 measurements.append({'kind': 'type contour (review only)', 'name': item['name'],
                                      'expected': painted_bounds(original, item['region']),
@@ -239,8 +256,10 @@ def main():
     if failures:
         raise SystemExit('\n'.join(failures))
     strict = sum('passed' in measurement for measurement in measurements)
-    contours = sum(measurement.get('review_only', False) for measurement in measurements)
-    print(f'{strict} strict body checks passed; {contours} type contours recorded for review')
+    contours = sum(measurement['kind'] == 'type contour (review only)' for measurement in measurements)
+    revisions = sum(measurement['kind'] == 'revised design ink' for measurement in measurements)
+    print(f'{strict} strict body checks passed ({revisions} explicit design revisions); '
+          f'{contours} type contours recorded for review')
 
 
 if __name__ == '__main__':

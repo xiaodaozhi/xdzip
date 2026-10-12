@@ -7,7 +7,7 @@
   </Environment>
   <TestFunction name="CanonicalFileIconConsumer::initTestCase">
     <Incident type="pass" file="" line="0" />
-    <Duration msecs="0.020731"/>
+    <Duration msecs="0.017236"/>
   </TestFunction>
   <TestFunction name="CanonicalFileIconConsumer::test_actual_qrc_images">
     <Incident type="pass" file="" line="0">
@@ -16,11 +16,11 @@
     <Incident type="pass" file="" line="0">
       <DataTag><![CDATA[dark]]></DataTag>
     </Incident>
-    <Duration msecs="29.5104"/>
+    <Duration msecs="45.0519"/>
   </TestFunction>
   <TestFunction name="CanonicalFileIconConsumer::cleanupTestCase">
     <Incident type="pass" file="" line="0" />
-    <Duration msecs="0.012489"/>
+    <Duration msecs="0.01281"/>
   </TestFunction>
-  <Duration msecs="32.2015"/>
+  <Duration msecs="51.9988"/>
 </TestCase>
