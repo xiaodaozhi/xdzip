@@ -22,12 +22,14 @@
 ## 切图与资产
 
 - `slices/`：24 张原像素切片，不缩放、不抠底；阴影和背景属于原稿像素，作为视觉参考。
-- `svg/light/`、`svg/dark/`：新增 14 类状态/功能图标，每种主题 14 张，共 28 张透明 SVG。它们是矢量重建候选，不是原图图层。
-- `png/light/`、`png/dark/`：上述矢量的 1×/2×/3× 导出，共 84 张透明 PNG。逻辑尺寸 24×24，物理尺寸 24/48/72。
+- `svg/light/`、`svg/dark/`：新增 18 类状态/功能图标，每种主题 18 张，共 36 张透明 SVG。它们是矢量重建候选，不是原图图层。
+- `png/light/`、`png/dark/`：上述矢量的 1×/2×/3× 导出，共 108 张透明 PNG。逻辑尺寸 24×24，物理尺寸 24/48/72。
 - 共享文件图标、导航和按钮图形继续使用 [v1 素材](../../assets/v1/README.md)，不重复维护。
 - [manifest.json](manifest.json)：图板与素材 SHA-256、来源坐标、尺寸和素材类型；[validation.json](validation.json)：实际资产检查结果。
 
-新增图标：archive-add、document-download、document-warning、image-file、status-warning、status-success、status-skipped、status-stopped、spinner、info、remove、clock、theme-system、settings-tile。
+新增状态变体：document-conflict（三角警告）、image-amber、status-partial-success（蓝色）、archive-warning（琥珀色）。
+
+基础图标：archive-add、document-download、document-warning、image-file、status-warning、status-success、status-skipped、status-stopped、spinner、info、remove、clock、theme-system、settings-tile。
 
 文本、按钮、数字输入、状态背景、选择态、进度条、系统标题栏和交通灯不固化为产品图片。spinner 是单帧形状候选，动画由 Qt 控件执行并遵从减少动态效果设置。预览图标仅表达文件类型，未启用图像内容解码。
 
@@ -57,3 +59,5 @@ python3 scripts/check-hifi-v2.py
 
 - 任务进度页的两行信息提示仍需精确对齐：图标中心处于同一垂直线，图标尺寸、文字起点和图文间距一致。保留本包高保真原稿，精确对齐在 Qt 实现时完成并验收；两个位置已在 Qt 开发预览中复用同一提示行组件；浅深色和 200% 字号的坐标检查通过，原生平台验收仍待完成。
 - macOS 首个原生验证设备为 Apple M1（arm64），系统已更新至设备可用的最新版。具体版本号与构建号在实机验证时采集，不根据“最新版”推断固定版本；操作系统最低版本与 Qt 兼容性仍待验证。
+
+2026-10-12 素材复核：纸张圆角、折角、下载箭头、拉链、图片配色、提示色与系统主题缩略图已修订。参见[逐项对照](../../../docs/qa/asset-review.md)。补齐重名冲突三角警告、琥珀色图片、蓝色成功计数和琥珀色压缩文件的独立状态素材；不再使用近义图标替代。

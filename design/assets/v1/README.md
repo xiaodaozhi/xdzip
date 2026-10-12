@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | [原稿](../../hifi/README.md) | 2 张 | 统一存放于 design/hifi/v1/screens；主窗口 1586×992，解压窗口 1092×1440 |
 | slices | 24 张 PNG | 原像素矩形裁切，不缩放、不去底；包含图标、照片、控件状态参考 |
-| svg/light、svg/dark | 各 27 张 SVG | 根据原稿视觉语言重建的矢量候选；24×24 坐标，1.5 描边 |
-| png/light、png/dark | 各 81 张 PNG | 矢量的 1×/2×/3× 透明导出，对应 24/48/72 像素 |
+| svg/light、svg/dark | 各 28 张 SVG | 根据原稿视觉语言重建的矢量候选；24×24 坐标，1.5 描边 |
+| png/light、png/dark | 各 84 张 PNG | 矢量的 1×/2×/3× 透明导出，对应 24/48/72 像素 |
 | brand | 6 张 PNG | 生成式透明重建母图及 32/64/128/256/512 像素导出 |
 | preview | 1 张 PNG | 素材对照总览，不属于产品运行资源 |
 
@@ -28,7 +28,7 @@
 
 ## 图标清单
 
-品牌与文件：archive、folder、file-pdf、file-text、file-code、file-markdown。
+品牌与文件：app-mark、archive、folder、file-pdf、file-text、file-code、file-markdown。
 
 工具栏与导航：open、new、archive-test、search、more、settings、extract、external-open、view-list、view-grid、sort、sort-ascending、chevron-down、chevron-right、chevron-up、arrow-right。
 
@@ -41,3 +41,9 @@
 生成器会重写本目录派生资源，修改矢量定义和坐标应同步维护生成脚本。执行 `python3 scripts/check-design-assets.py` 校验原像素一致性、尺寸、透明通道与清单哈希，依赖 Pillow。校验记录见 [validation.json](validation.json)。矢量重建未完成与原稿逐像素匹配验收，浏览器栅格化也不代替 Qt SVG 渲染验收。
 
 项目原创设计与工具按仓库 Apache-2.0 交付；包内附完整 LICENSE。来源为本项目生成设计，不包含第三方图标包或字体。
+
+## 素材形状复核（2026-10-12）
+
+见[逐项对照与问题记录](../../../docs/qa/asset-review.md)。工具栏打开图标已恢复正面圆角文件夹；设置齿轮、列表、排序、文件轮廓等从矢量源修正。标题栏品牌 `app-mark` 与折角压缩文件 `archive` 分离。生成式品牌母图仅作历史候选，禁止作为已确认产品品牌接入。
+
+[离线逐项对照](../../../docs/qa/asset-review/index.html) 将原稿切片与当前矢量并排显示。结构检查通过不代表视觉验收通过，未对应独立切片的图标在表中明确标记。

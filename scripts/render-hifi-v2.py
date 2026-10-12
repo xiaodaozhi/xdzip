@@ -52,7 +52,7 @@ def main():
             'source': f'svg/{path.parent.name}/{path.stem[:-3]}.svg',
             'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
     (ROOT / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
-    print('Exported 84 transparent PNGs and two review sheets')
+    print(f'Exported {len(list((ROOT / "png").rglob("*.png")))} transparent PNGs and two review sheets')
 
 
 if __name__ == '__main__':

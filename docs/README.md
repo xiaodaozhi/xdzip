@@ -9,6 +9,7 @@
 | 领域 | 入口 |
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
+| 素材修正 | [问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [v2 图板与素材](../design/hifi/v2/README.md)、[功能状态契约](ux/hifi-state-spec.md) |
 | 交互原型 | [使用说明](../design/prototype/README.md)、[功能映射](ux/prototype-spec.md) |

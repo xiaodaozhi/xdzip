@@ -24,7 +24,9 @@ for a in m['assets']:
 for p in (r / 'svg').rglob('*.svg'):
     ET.parse(p)
     assert '<script' not in p.read_text() and '<image' not in p.read_text()
-checks = ['All manifest assets exist and match SHA-256', '24 source crops are pixel-identical to recorded source rectangles', 'Transparent raster exports have expected sizes, transparent pixels and visible content', '54 SVG files parse without scripts or embedded images']
-report = dict(status='passed', asset_entries=len(m['assets']), source_crops=24, svg_files=54, vector_png_files=len(list((r / 'png').rglob('*.png'))), checks=checks, limits=['No Qt renderer validation', 'Reconstructed vectors and generated brand asset are not exact original layers', 'No native OS window controls exported as production bitmaps'])
+svg_count = len(list((r / 'svg').rglob('*.svg')))
+crop_count = sum(a['kind'] == 'original-pixel-crop' for a in m['assets'])
+checks = ['All manifest assets exist and match SHA-256', '24 source crops are pixel-identical to recorded source rectangles', 'Transparent raster exports have expected sizes, transparent pixels and visible content', f'{svg_count} SVG files parse without scripts or embedded images']
+report = dict(status='passed', asset_entries=len(m['assets']), source_crops=crop_count, svg_files=svg_count, vector_png_files=len(list((r / 'png').rglob('*.png'))), checks=checks, limits=['No Qt renderer validation', 'Reconstructed vectors and generated brand asset are not exact original layers', 'No native OS window controls exported as production bitmaps'])
 (r / 'validation.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
 print(json.dumps(report, ensure_ascii=False))

@@ -35,22 +35,63 @@ SLICES = {
     'linux-document': ('08-platforms', [136, 852, 80, 89]),
 }
 # Reconstructed assets are explicit candidates, not recovered source layers.
-SHAPES = {
-    'archive-add': '<path fill="url(#blue)" stroke="none" d="M5 2h9l5 5v14H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path fill="#1750d8" stroke="none" d="M14 2v5h5z"/><path stroke="white" d="M8 4h2m-1 3h2m-3 3h2m-1 3h2m-3 3h3v3H8z"/><circle cx="18" cy="18" r="5" fill="#2858ff" stroke="white"/><path stroke="white" d="M18 15v6m-3-3h6"/>',
-    'document-download': '<path fill="url(#blue)" stroke="none" d="M5 2h9l5 5v15H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path fill="#1750d8" stroke="none" d="M14 2v5h5z"/><path stroke="white" stroke-width="2" d="M11 9v8m-4-4 4 4 4-4"/>',
-    'document-warning': '<path fill="url(#amber)" stroke="none" d="M5 2h9l5 5v15H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path fill="#df9200" stroke="none" d="M14 2v5h5z"/><circle cx="11" cy="14" r="5" fill="#fff1cc" stroke="none"/><path stroke="#b96a00" d="M11 11v3m0 3h.01"/>',
-    'image-file': '<path fill="url(#blue)" stroke="none" d="M5 2h9l5 5v15H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path fill="#b9e1ff" stroke="none" d="M14 2v5h5"/><circle cx="8" cy="9" r="2" fill="white" stroke="none"/><path fill="#bee5ff" stroke="none" d="m4 18 5-5 3 3 3-4 4 5v5H4z"/>',
-    'status-warning': '<circle cx="12" cy="12" r="10" fill="#eda100" stroke="none"/><path stroke="white" stroke-width="2" d="M12 6v7m0 4h.01"/>',
-    'status-success': '<circle cx="12" cy="12" r="10" fill="#348c44" stroke="none"/><path stroke="white" stroke-width="2" d="m6 12 4 4 8-8"/>',
-    'status-skipped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><path stroke="white" stroke-width="2" d="M7 12h10"/>',
-    'status-stopped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><rect x="8" y="8" width="8" height="8" rx="1.5" fill="white" stroke="none"/>',
-    'spinner': '<circle cx="12" cy="12" r="9" stroke="{track}" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 9" stroke="{muted}" stroke-width="2.5"/>',
-    'info': '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/>',
-    'remove': '<circle cx="12" cy="12" r="9"/><path d="M7 12h10"/>',
-    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>',
-    'theme-system': '<rect x="2" y="4" width="20" height="16" rx="2" fill="{paper}" stroke="{muted}"/><path d="M12 4h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-8z" fill="#2858ff" stroke="none"/><path d="M2 8h20" stroke="{muted}"/>',
-    'settings-tile': '<rect x="1" y="1" width="22" height="22" rx="5" fill="url(#blue)" stroke="none"/><path fill="#dceaff" stroke="none" d="m10 4 4 0 .5 2 2 1 2-.5 2 3-1.5 1.5v2l1.5 1.5-2 3-2-.5-2 1-.5 2h-4l-.5-2-2-1-2 .5-2-3L5 13v-2L3.5 9.5l2-3 2 .5 2-1z"/><circle cx="12" cy="12" r="3" fill="#2858ff" stroke="none"/>',
-}
+SHAPES = {'archive-add': '<path fill="url(#blue)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 '
+                '0 0 1 2-2Z"/><path fill="#1655e4" stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><path '
+                'stroke="white" stroke-width=".7" d="M10 3.5v12 M9 4h2 M10 6h2 M9 8h2 M10 10h2 M9 '
+                '12h2"/><rect x="9" y="14.5" width="3" height="4" rx=".7" stroke="white" '
+                'stroke-width="1"/><circle cx="18.5" cy="18.5" r="4.5" fill="#2465ff" stroke="white" '
+                'stroke-width="1.2"/><path stroke="white" stroke-width="1.2" d="M18.5 16v5 M16 18.5h5"/>',
+ 'document-download': '<path fill="url(#blue)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 '
+                      '1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#1655e4" stroke="none" d="M14 2v4a2 2 0 0 0 2 '
+                      '2h4Z"/><path stroke="white" stroke-width="2.3" d="M12 10v7m-3-3 3 3 3-3"/>',
+ 'document-warning': '<path fill="url(#amber)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 '
+                     '1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#eea015" stroke="none" d="M14 2v4a2 2 0 0 0 2 '
+                     '2h4Z"/><circle cx="12" cy="15" r="4.7" fill="#fff2c8" stroke="none"/><path '
+                     'stroke="#de8300" stroke-width="1.5" d="M12 12.4v3m0 2h.01"/>',
+ 'image-file': '<path fill="url(#sky)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 '
+               '0 1 2-2Z"/><path fill="#69c1f2" stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><circle cx="8" '
+               'cy="10" r="1.5" fill="#fff5d8" stroke="none"/><path fill="#279ef1" stroke="none" d="m4 17 '
+               '5-5 4 4 3-4 4 5v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>',
+ 'status-warning': '<circle cx="12" cy="12" r="10" fill="#eda100" stroke="none"/><path stroke="white" '
+                   'stroke-width="2" d="M12 6v7m0 4h.01"/>',
+ 'status-success': '<circle cx="12" cy="12" r="10" fill="#348c44" stroke="none"/><path stroke="white" '
+                   'stroke-width="2" d="m6 12 4 4 8-8"/>',
+ 'status-skipped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><path stroke="white" '
+                   'stroke-width="2" d="M7 12h10"/>',
+ 'status-stopped': '<circle cx="12" cy="12" r="10" fill="{muted}" stroke="none"/><rect x="8" y="8" width="8" '
+                   'height="8" rx="1.5" fill="white" stroke="none"/>',
+ 'spinner': '<circle cx="12" cy="12" r="9" stroke="{track}" stroke-width="2.5"/><path d="M12 3a9 9 0 0 1 9 '
+            '9" stroke="{muted}" stroke-width="2.5"/>',
+ 'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></g>',
+ 'remove': '<circle cx="12" cy="12" r="9" stroke="{track}"/><path d="M8 12h8"/>',
+ 'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>',
+ 'theme-system': '<defs><clipPath id="window"><rect x="2" y="4" width="20" height="16" '
+                 'rx="2"/></clipPath></defs><g clip-path="url(#window)"><rect x="2" y="4" width="20" '
+                 'height="16" fill="{paper}" stroke="none"/><path d="M12 4h10v16H12Z" fill="#185eb2" '
+                 'stroke="none"/><path d="M2 4h20v5H2Z" fill="#cfd9e6" fill-opacity=".45" '
+                 'stroke="none"/></g><rect x="2" y="4" width="20" height="16" rx="2" stroke="{muted}" '
+                 'stroke-width=".7"/><g fill="{muted}" stroke="none"><circle cx="5" cy="6.5" r=".7"/><circle '
+                 'cx="8" cy="6.5" r=".7"/></g>',
+ 'settings-tile': '<rect x="1" y="1" width="22" height="22" rx="5" fill="url(#blue)" stroke="none"/><path '
+                  'fill="#dceaff" stroke="none" d="m10 4 4 0 .5 2 2 1 2-.5 2 3-1.5 1.5v2l1.5 1.5-2 3-2-.5-2 '
+                  '1-.5 2h-4l-.5-2-2-1-2 .5-2-3L5 13v-2L3.5 9.5l2-3 2 .5 2-1z"/><circle cx="12" cy="12" '
+                  'r="3" fill="#2858ff" stroke="none"/>',
+ 'document-conflict': '<path fill="url(#amber)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 '
+                      '1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#eea015" stroke="none" d="M14 2v4a2 2 0 0 0 2 '
+                      '2h4Z"/><path fill="#f18a00" stroke="none" d="m10.7 10.8-4 7a1.5 1.5 0 0 0 1.3 '
+                      '2.3h8a1.5 1.5 0 0 0 1.3-2.3l-4-7a1.5 1.5 0 0 0-2.6 0Z"/><path stroke="white" '
+                      'stroke-width="1.2" d="M12 13.3v2.7m0 2h.01"/>',
+ 'image-amber': '<path fill="url(#amber)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 '
+                '0 0 1 2-2Z"/><path fill="#ffbe39" stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><circle '
+                'cx="8" cy="10" r="1.5" fill="#fff5d8" stroke="none"/><path fill="#f4a014" stroke="none" '
+                'd="m4 17 5-5 4 4 3-4 4 5v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>',
+ 'status-partial-success': '<circle cx="12" cy="12" r="10" fill="#1764ff" stroke="none"/><path '
+                           'stroke="white" stroke-width="2" d="m6 12 4 4 8-8"/>',
+ 'archive-warning': '<path fill="url(#amber)" stroke="none" d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 '
+                    '1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#ef9400" stroke="none" d="M14 2v4a2 2 0 0 0 2 '
+                    '2h4Z"/><path stroke="white" stroke-width=".7" d="M10 3.5v12 M9 4h2 M10 6h2 M9 8h2 M10 '
+                    '10h2 M9 12h2"/><rect x="9" y="14.5" width="3" height="4" rx=".7" stroke="white" '
+                    'stroke-width="1"/>'}
 
 
 def digest(path):
@@ -73,7 +114,7 @@ def main():
     ]:
         for name, content in SHAPES.items():
             content = content.replace('{muted}', muted).replace('{paper}', paper).replace('{track}', track)
-            gradient = '<defs><linearGradient id="blue" x2="0" y2="1"><stop stop-color="#51adff"/><stop offset="1" stop-color="#1454ff"/></linearGradient><linearGradient id="amber" x2="0" y2="1"><stop stop-color="#ffdc6d"/><stop offset="1" stop-color="#f4a000"/></linearGradient></defs>'
+            gradient = '<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#b6e8ff"/><stop offset="1" stop-color="#79cfff"/></linearGradient><linearGradient id="blue" x2="0" y2="1"><stop stop-color="#51adff"/><stop offset="1" stop-color="#1454ff"/></linearGradient><linearGradient id="amber" x2="0" y2="1"><stop stop-color="#ffdc6d"/><stop offset="1" stop-color="#f4a000"/></linearGradient></defs>'
             svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{ink}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{gradient}{content}</svg>\n'
             target = ROOT / 'svg' / theme / f'{name}.svg'
             target.write_text(svg)
@@ -91,9 +132,9 @@ def main():
     assets = ''.join(f'<figure class="asset"><img src="{a["file"]}" alt="{html.escape(a["id"])}"><figcaption>{html.escape(a["id"])}</figcaption></figure>' for a in entries if a['kind'] == 'original-pixel-crop' or a['id'].startswith('light/'))
     style = '<style>body{margin:0;padding:30px;background:#f4f5f7;color:#20232a;font:14px system-ui}h1{font-size:28px}p{line-height:1.8}.screens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}figure{margin:0;background:white;border:1px solid #dde1e9;border-radius:12px;padding:12px}figure img{display:block;width:100%;height:400px;object-fit:contain}figcaption{padding-top:12px;text-align:center}.assets{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}.asset img{height:72px;width:72px;margin:auto;background:repeating-conic-gradient(#e4e7ee 0% 25%,#fff 0% 50%) 0/12px 12px}.asset figcaption{font-size:11px;overflow-wrap:anywhere}@media(max-width:650px){body{padding:14px}.screens{grid-template-columns:1fr}}</style>'
     head = '<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-    (ROOT / 'index.html').write_text(head + '<title>xdzip 下一阶段高保真稿</title>' + style + '<h1>xdzip · 功能状态高保真稿</h1><p><a href="../index.html">返回全部高保真稿（含主界面）</a></p><p>8 张图板 · 11 个窗口画面 · 9 类功能状态。点击图片查看原图。生成式视觉审阅稿，交互以规格为准。</p><div class="screens">' + cards + '</div><h2>对应切图与新增图标</h2><p>前 24 项为保留背景的原像素切片；后 14 项为透明矢量重建候选。共享素材沿用 v1。</p><div class="assets">' + assets + '</div></html>')
+    (ROOT / 'index.html').write_text(head + '<title>xdzip 下一阶段高保真稿</title>' + style + '<h1>xdzip · 功能状态高保真稿</h1><p><a href="../index.html">返回全部高保真稿（含主界面）</a> · <a href="../../../docs/qa/asset-review/index.html">逐项素材对照</a></p><p>8 张图板 · 11 个窗口画面 · 9 类功能状态。点击图片查看原图。生成式视觉审阅稿，交互以规格为准。</p><div class="screens">' + cards + '</div><h2>对应切图与新增图标</h2><p>前 24 项为保留背景的原像素切片；后 18 项为透明矢量重建候选。共享素材沿用 v1。</p><div class="assets">' + assets + '</div></html>')
     (ROOT / 'assets.html').write_text(head + '<title>xdzip 状态素材</title>' + style + '<h1>xdzip · 新增状态素材</h1><p>原稿切片保留背景；SVG / 透明 PNG 是明确标记的重建候选。</p><div class="assets">' + assets + '</div></html>')
-    (ROOT / 'boards.html').write_text(head + '<title>xdzip 设计图板总览</title>' + style + '<h1>xdzip · 下阶段功能状态稿</h1><p><a href="../index.html">返回全部高保真稿（含主界面）</a></p><div class="screens">' + cards + '</div></html>')
+    (ROOT / 'boards.html').write_text(head + '<title>xdzip 设计图板总览</title>' + style + '<h1>xdzip · 下阶段功能状态稿</h1><p><a href="../index.html">返回全部高保真稿（含主界面）</a> · <a href="../../../docs/qa/asset-review/index.html">逐项素材对照</a></p><div class="screens">' + cards + '</div></html>')
     print(f'Exported {len(SLICES)} source crops and {len(SHAPES) * 2} SVGs')
 
 

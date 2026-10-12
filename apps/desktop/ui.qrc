@@ -16,6 +16,7 @@
     <file alias="assets/info-dark.png">../../design/hifi/v2/png/dark/info@3x.png</file>
     <file alias="assets/document-download.png">../../design/hifi/v2/png/light/document-download@3x.png</file>
     <file alias="assets/file-text.png">../../design/assets/v1/png/light/file-text@3x.png</file>
+    <file alias="assets/app-mark.png">../../design/assets/v1/png/light/app-mark@3x.png</file>
     <file alias="assets/archive.png">../../design/assets/v1/png/light/archive@3x.png</file>
     <file alias="assets/folder.png">../../design/assets/v1/png/light/folder@3x.png</file>
     <file alias="assets/image-file.png">../../design/hifi/v2/png/light/image-file@3x.png</file>

@@ -7,7 +7,7 @@ root = Path(__file__).resolve().parents[1] / 'design/assets/v1'
 if os.environ.get('XDZIP_FONTCONFIG_FILE'):
     os.environ['FONTCONFIG_FILE'] = os.environ['XDZIP_FONTCONFIG_FILE']
 with sync_playwright() as p:
-    b = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox', '--disable-dev-shm-usage'])
+    b = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'), args=['--no-sandbox', '--disable-dev-shm-usage'])
     page = b.new_page()
     for src in sorted((root / 'svg').rglob('*.svg')):
         for scale in [1, 2, 3]:
@@ -25,4 +25,4 @@ for path in sorted((root / 'png').rglob('*.png')):
     scale = int(path.stem[-2])
     manifest['assets'].append(dict(id='raster/' + path.parent.name + '/' + path.stem, file=str(path.relative_to(root)), kind='vector-rasterization', size=[24 * scale, 24 * scale], scale=scale, logical_size=[24, 24], source=f'svg/{path.parent.name}/{path.stem[:-3]}.svg', sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
 (root / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
-print('Exported 162 transparent PNGs and contact sheet')
+print(f'Exported {len(list((root / "png").rglob("*.png")))} transparent PNGs and contact sheet')

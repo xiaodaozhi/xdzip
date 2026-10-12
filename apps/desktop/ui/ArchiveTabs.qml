@@ -23,7 +23,7 @@ Rectangle {
         anchors.rightMargin: 16
         spacing: 16
         Image {
-            source: "qrc:/xdzip/assets/archive.png"
+            source: "qrc:/xdzip/assets/app-mark.png"
             Layout.preferredWidth: 24
             Layout.preferredHeight: 24
         }

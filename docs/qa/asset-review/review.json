@@ -1,0 +1,327 @@
+{
+  "status": "visual-review-with-known-differences",
+  "assets": [
+    {
+      "id": "v1/app-mark",
+      "source_crop": "design/assets/v1/slices/brand-titlebar.png",
+      "vector": "design/assets/v1/svg/light/app-mark.svg",
+      "runtime": true,
+      "review": "已分离：标题栏品牌为圆角方形，压缩文件为折角纸张，不再共用同一轮廓。"
+    },
+    {
+      "id": "v1/archive-test",
+      "source_crop": "design/assets/v1/slices/archive-test.png",
+      "vector": "design/assets/v1/svg/light/archive-test.svg",
+      "runtime": true,
+      "review": "已改：圆角增大，勾号收窄。"
+    },
+    {
+      "id": "v1/archive",
+      "source_crop": "design/assets/v1/slices/brand-extract.png",
+      "vector": "design/assets/v1/svg/light/archive.svg",
+      "runtime": true,
+      "review": "已改：拉链改为细齿；保留文件折角。大图中的 ZIP 微字样未重建。"
+    },
+    {
+      "id": "v1/arrow-right",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/arrow-right.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/check",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/check.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/chevron-down",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/chevron-down.svg",
+      "runtime": true,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/chevron-right",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/chevron-right.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/chevron-up",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/chevron-up.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/close",
+      "source_crop": "design/assets/v1/slices/close.png",
+      "vector": "design/assets/v1/svg/light/close.svg",
+      "runtime": true,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/completed",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/completed.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/external-open",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/external-open.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/extract",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/extract.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/file-code",
+      "source_crop": "design/assets/v1/slices/file-code.png",
+      "vector": "design/assets/v1/svg/light/file-code.svg",
+      "runtime": true,
+      "review": "已改：边框变细、内符号收窄；保留可缩放路径。"
+    },
+    {
+      "id": "v1/file-markdown",
+      "source_crop": "design/assets/v1/slices/file-markdown.png",
+      "vector": "design/assets/v1/svg/light/file-markdown.svg",
+      "runtime": true,
+      "review": "已改：边框变细，字形大小与下箭头重新平衡。"
+    },
+    {
+      "id": "v1/file-pdf",
+      "source_crop": "design/assets/v1/slices/file-pdf.png",
+      "vector": "design/assets/v1/svg/light/file-pdf.svg",
+      "runtime": true,
+      "review": "已改：PDF 字母曲线、纸张圆角、折角与红色渐变。"
+    },
+    {
+      "id": "v1/file-text",
+      "source_crop": "design/assets/v1/slices/file-text.png",
+      "vector": "design/assets/v1/svg/light/file-text.svg",
+      "runtime": true,
+      "review": "已改：纸张轮廓与内文线分开闭合，降低描边并补圆角。"
+    },
+    {
+      "id": "v1/folder",
+      "source_crop": "design/assets/v1/slices/folder.png",
+      "vector": "design/assets/v1/svg/light/folder.svg",
+      "runtime": true,
+      "review": "已改：硬直角和厚描边 → 圆角、分层蓝色文件夹。"
+    },
+    {
+      "id": "v1/maximize",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/maximize.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/minimize",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/minimize.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/more",
+      "source_crop": "design/assets/v1/slices/more.png",
+      "vector": "design/assets/v1/svg/light/more.svg",
+      "runtime": true,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/new",
+      "source_crop": "design/assets/v1/slices/new.png",
+      "vector": "design/assets/v1/svg/light/new.svg",
+      "runtime": true,
+      "review": "已改：圆角增大，加号收窄。"
+    },
+    {
+      "id": "v1/open",
+      "source_crop": "design/assets/v1/slices/open.png",
+      "vector": "design/assets/v1/svg/light/open.svg",
+      "runtime": true,
+      "review": "已改：斜口展开文件夹 → 正面圆角文件夹；横向前缘和底部轮廓恢复。"
+    },
+    {
+      "id": "v1/search",
+      "source_crop": "design/assets/v1/slices/search.png",
+      "vector": "design/assets/v1/svg/light/search.svg",
+      "runtime": true,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/settings",
+      "source_crop": "design/assets/v1/slices/settings.png",
+      "vector": "design/assets/v1/svg/light/settings.svg",
+      "runtime": true,
+      "review": "已改：六边形外框 → 带圆角齿槽的齿轮。"
+    },
+    {
+      "id": "v1/sort-ascending",
+      "source_crop": null,
+      "vector": "design/assets/v1/svg/light/sort-ascending.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v1/sort",
+      "source_crop": "design/assets/v1/slices/sort.png",
+      "vector": "design/assets/v1/svg/light/sort.svg",
+      "runtime": false,
+      "review": "已改：四条横线 → 原稿三条横线。"
+    },
+    {
+      "id": "v1/view-grid",
+      "source_crop": "design/assets/v1/slices/view-grid.png",
+      "vector": "design/assets/v1/svg/light/view-grid.svg",
+      "runtime": false,
+      "review": "已改：四格收窄，恢复留白。"
+    },
+    {
+      "id": "v1/view-list",
+      "source_crop": "design/assets/v1/slices/view-list.png",
+      "vector": "design/assets/v1/svg/light/view-list.svg",
+      "runtime": true,
+      "review": "已改：移除原稿没有的三个圆点，保留三条横线；选中底色由控件绘制。"
+    },
+    {
+      "id": "v2/archive-add",
+      "source_crop": "design/hifi/v2/slices/create-archive.png",
+      "vector": "design/hifi/v2/svg/light/archive-add.svg",
+      "runtime": false,
+      "review": "已改：细拉链、圆角纸张、加号徽标保持透明边界内。"
+    },
+    {
+      "id": "v2/archive-warning",
+      "source_crop": "design/hifi/v2/slices/overwrite-archive.png",
+      "vector": "design/hifi/v2/svg/light/archive-warning.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/clock",
+      "source_crop": null,
+      "vector": "design/hifi/v2/svg/light/clock.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/document-conflict",
+      "source_crop": "design/hifi/v2/slices/conflict-document.png",
+      "vector": "design/hifi/v2/svg/light/document-conflict.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/document-download",
+      "source_crop": "design/hifi/v2/slices/progress-document.png",
+      "vector": "design/hifi/v2/svg/light/document-download.svg",
+      "runtime": true,
+      "review": "已改：圆角纸张、独立折角、居中的短箭头。"
+    },
+    {
+      "id": "v2/document-warning",
+      "source_crop": "design/hifi/v2/slices/partial-document.png",
+      "vector": "design/hifi/v2/svg/light/document-warning.svg",
+      "runtime": false,
+      "review": "已改：圆角纸张、独立折角、居中的圆形警告。三角警告使用独立 document-conflict。"
+    },
+    {
+      "id": "v2/image-amber",
+      "source_crop": "design/hifi/v2/slices/image-amber.png",
+      "vector": "design/hifi/v2/svg/light/image-amber.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/image-file",
+      "source_crop": "design/hifi/v2/slices/image-blue.png",
+      "vector": "design/hifi/v2/svg/light/image-file.svg",
+      "runtime": true,
+      "review": "已改：浅蓝纸张、山形与太阳；琥珀色图片改用独立 image-amber。"
+    },
+    {
+      "id": "v2/info",
+      "source_crop": null,
+      "vector": "design/hifi/v2/svg/light/info.svg",
+      "runtime": true,
+      "review": "已改：采用提示文字的次要色，避免旧图标过黑。无独立原稿切片。"
+    },
+    {
+      "id": "v2/remove",
+      "source_crop": "design/hifi/v2/slices/remove-row.png",
+      "vector": "design/hifi/v2/svg/light/remove.svg",
+      "runtime": false,
+      "review": "已改：浅灰外圈与深色减号分开着色。"
+    },
+    {
+      "id": "v2/settings-tile",
+      "source_crop": "design/hifi/v2/slices/settings-gear.png",
+      "vector": "design/hifi/v2/svg/light/settings-tile.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/spinner",
+      "source_crop": "design/hifi/v2/slices/stopping-spinner.png",
+      "vector": "design/hifi/v2/svg/light/spinner.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/status-partial-success",
+      "source_crop": "design/hifi/v2/slices/partial-success.png",
+      "vector": "design/hifi/v2/svg/light/status-partial-success.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/status-skipped",
+      "source_crop": "design/hifi/v2/slices/partial-skipped.png",
+      "vector": "design/hifi/v2/svg/light/status-skipped.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/status-stopped",
+      "source_crop": "design/hifi/v2/slices/cancelled-large.png",
+      "vector": "design/hifi/v2/svg/light/status-stopped.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/status-success",
+      "source_crop": "design/hifi/v2/slices/success-large.png",
+      "vector": "design/hifi/v2/svg/light/status-success.svg",
+      "runtime": false,
+      "review": "保留绿色完成状态；部分失败计数使用独立蓝色 status-partial-success。"
+    },
+    {
+      "id": "v2/status-warning",
+      "source_crop": "design/hifi/v2/slices/partial-warning.png",
+      "vector": "design/hifi/v2/svg/light/status-warning.svg",
+      "runtime": false,
+      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+    },
+    {
+      "id": "v2/theme-system",
+      "source_crop": "design/hifi/v2/slices/theme-system.png",
+      "vector": "design/hifi/v2/svg/light/theme-system.svg",
+      "runtime": false,
+      "review": "已改：右侧深蓝、浅色标题栏、两个窗口圆点与细边框。"
+    }
+  ]
+}

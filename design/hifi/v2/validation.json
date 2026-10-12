@@ -2,8 +2,8 @@
   "status": "passed",
   "boards": 8,
   "source_crops": 24,
-  "svg_files": 28,
-  "transparent_pngs": 84,
+  "svg_files": 36,
+  "transparent_pngs": 108,
   "checks": [
     "Source and asset hashes match",
     "Crops are in bounds and pixel-identical",

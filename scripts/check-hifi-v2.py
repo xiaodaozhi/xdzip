@@ -54,7 +54,7 @@ def main():
                 assert low == 0 and high > 0, entry['id']
         else:
             raise AssertionError(f'Unknown asset kind: {kind}')
-    assert (crops, vectors, rasters) == (24, 28, 84)
+    assert (crops, vectors, rasters) == (24, 36, 108)
     assert (ROOT / manifest['shared_asset_base'] / 'manifest.json').exists()
     report = {
         'status': 'passed', 'boards': 8, 'source_crops': crops,
