@@ -1,6 +1,6 @@
 # 视觉复核与修正：布局、排版、主题
 
-本轮对照已确认的 [v1 主窗口](../../design/assets/v1/sources/main-light.png)、[v2 任务窗口](../../design/hifi/v2/screens/03-progress.png)与[逻辑尺寸规范](../visual/tokens.json)，修正现有 Qt 界面的可量化差异。产品 UI 源版本为 `90a9b72`；采集工具补充最小窗口与 200% 字号组合。历史证据不覆盖，先前状态见[顶部修正](header-review.md)及[初次严格复核](visual-audit-review.md)。
+本轮对照已确认的 [v1 主窗口](../../design/hifi/v1/screens/main-light.png)、[v2 任务窗口](../../design/hifi/v2/screens/03-progress.png)与[逻辑尺寸规范](../visual/tokens.json)，修正现有 Qt 界面的可量化差异。产品 UI 源版本为 `90a9b72`；采集工具补充最小窗口与 200% 字号组合。历史证据不覆盖，先前状态见[顶部修正](header-review.md)及[初次严格复核](visual-audit-review.md)。
 
 **结论：本地 46 项量化检查通过，完整设计还原仍未完成。** 这些检查覆盖已有组件的几何、字号、对齐、主题与响应式行为，不是“视觉还原率”，也不代替尚未实现的功能页面验收。
 

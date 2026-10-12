@@ -6,7 +6,7 @@
       "id": "slice/brand-titlebar",
       "file": "slices/brand-titlebar.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         136,
         44,
@@ -25,7 +25,7 @@
       "id": "slice/brand-extract",
       "file": "slices/brand-extract.png",
       "kind": "original-pixel-crop",
-      "source": "sources/extract-macos.png",
+      "source": "../../hifi/v1/screens/extract-macos.png",
       "rect": [
         125,
         136,
@@ -44,7 +44,7 @@
       "id": "slice/folder",
       "file": "slices/folder.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         302,
@@ -63,7 +63,7 @@
       "id": "slice/file-pdf",
       "file": "slices/file-pdf.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         626,
@@ -82,7 +82,7 @@
       "id": "slice/file-text",
       "file": "slices/file-text.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         398,
         694,
@@ -101,7 +101,7 @@
       "id": "slice/file-code",
       "file": "slices/file-code.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         760,
@@ -120,7 +120,7 @@
       "id": "slice/file-markdown",
       "file": "slices/file-markdown.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         829,
@@ -139,7 +139,7 @@
       "id": "slice/photo-lake-preview",
       "file": "slices/photo-lake-preview.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1198,
         241,
@@ -158,7 +158,7 @@
       "id": "slice/photo-lake-thumbnail",
       "file": "slices/photo-lake-thumbnail.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         494,
@@ -177,7 +177,7 @@
       "id": "slice/photo-sunrise-thumbnail",
       "file": "slices/photo-sunrise-thumbnail.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         397,
         560,
@@ -196,7 +196,7 @@
       "id": "slice/open",
       "file": "slices/open.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         48,
         111,
@@ -215,7 +215,7 @@
       "id": "slice/new",
       "file": "slices/new.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         174,
         111,
@@ -234,7 +234,7 @@
       "id": "slice/archive-test",
       "file": "slices/archive-test.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         317,
         110,
@@ -253,7 +253,7 @@
       "id": "slice/more",
       "file": "slices/more.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         448,
         111,
@@ -272,7 +272,7 @@
       "id": "slice/search",
       "file": "slices/search.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         920,
         111,
@@ -291,7 +291,7 @@
       "id": "slice/settings",
       "file": "slices/settings.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1515,
         43,
@@ -310,7 +310,7 @@
       "id": "slice/view-list",
       "file": "slices/view-list.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1000,
         182,
@@ -329,7 +329,7 @@
       "id": "slice/view-grid",
       "file": "slices/view-grid.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1065,
         185,
@@ -348,7 +348,7 @@
       "id": "slice/sort",
       "file": "slices/sort.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1114,
         185,
@@ -367,7 +367,7 @@
       "id": "slice/close",
       "file": "slices/close.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         1524,
         192,
@@ -386,7 +386,7 @@
       "id": "slice/check-selected",
       "file": "slices/check-selected.png",
       "kind": "original-pixel-crop",
-      "source": "sources/main-light.png",
+      "source": "../../hifi/v1/screens/main-light.png",
       "rect": [
         337,
         501,
@@ -405,7 +405,7 @@
       "id": "slice/success",
       "file": "slices/success.png",
       "kind": "original-pixel-crop",
-      "source": "sources/extract-macos.png",
+      "source": "../../hifi/v1/screens/extract-macos.png",
       "rect": [
         141,
         501,
@@ -424,7 +424,7 @@
       "id": "slice/radio-selected",
       "file": "slices/radio-selected.png",
       "kind": "original-pixel-crop",
-      "source": "sources/extract-macos.png",
+      "source": "../../hifi/v1/screens/extract-macos.png",
       "rect": [
         142,
         654,
@@ -443,7 +443,7 @@
       "id": "slice/radio-unselected",
       "file": "slices/radio-unselected.png",
       "kind": "original-pixel-crop",
-      "source": "sources/extract-macos.png",
+      "source": "../../hifi/v1/screens/extract-macos.png",
       "rect": [
         142,
         934,

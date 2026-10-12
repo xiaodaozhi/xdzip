@@ -7,6 +7,8 @@ The HTML builder separately checks generated page anchors. Code fences are ignor
 from pathlib import Path
 import json
 import re
+import subprocess
+import sys
 from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,10 +36,10 @@ def main():
             json.loads(path.read_text())
         except (ValueError, UnicodeError) as error:
             failures.append(f'{path.relative_to(ROOT)}: {error}')
-    for name in ['xdzip-main-light.png', 'xdzip-main-dark.png', 'xdzip-extract-sheet.png']:
-        path = ROOT / 'docs/visual' / name
-        if not path.is_file() or path.read_bytes()[:8] != b'\x89PNG\r\n\x1a\n':
-            failures.append(f'Invalid or missing visual: {name}')
+    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-hifi-gallery.py'), '--check'],
+                            capture_output=True, text=True)
+    if result.returncode:
+        failures.append('High-fidelity catalog/gallery: ' + (result.stderr or result.stdout).strip())
     print(json.dumps({'markdown_documents': len(documents), 'local_file_links': links,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))
     raise SystemExit(bool(failures))

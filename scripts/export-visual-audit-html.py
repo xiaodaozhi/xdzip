@@ -22,7 +22,7 @@ body = subprocess.run(['pandoc', '--from=gfm', '--to=html5', str(REPORT)],
 comparisons = '''<section class="comparisons"><h2>原始设计图 / 实际 Qt 截图</h2>
 <p>图片分别等比适应列宽，保留原始外框与背景；此处用于观察结构，精确差值以正文的坐标测量为准。</p>
 <h3>主窗口</h3><div class="pair">
-<figure><figcaption>v1 高保真原稿</figcaption><img src="../../design/assets/v1/sources/main-light.png" alt="主窗口设计原稿"></figure>
+<figure><figcaption>v1 高保真原稿</figcaption><img src="../../design/hifi/v1/screens/main-light.png" alt="主窗口设计原稿"></figure>
 <figure><figcaption>64bf2fe 实际 Qt 渲染</figcaption><img src="visual-audit/browser-light.png" alt="主窗口实际截图"></figure></div>
 <h3>任务窗口</h3><div class="pair">
 <figure><figcaption>v2 高保真原稿</figcaption><img src="../../design/hifi/v2/screens/03-progress.png" alt="任务窗口设计原稿"></figure>

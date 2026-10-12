@@ -1,6 +1,6 @@
 # xdzip 仓库工作约定
 
-开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；视觉基线位于 docs/visual。框架选型变更须通过架构决策流程。
+开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范与 tokens 位于 docs/visual。框架选型变更须通过架构决策流程。
 
 M1 产品骨架已完成开发与三平台自动化验证，按工作清单推进产品实现。阶段状态以开发就绪评审和验收证据为准。
 

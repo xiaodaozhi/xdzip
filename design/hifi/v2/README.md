@@ -2,7 +2,7 @@
 
 状态：整体视觉方向已认可，进入细节修订；不等于逐像素或原生实现验收通过。沿用 v1 高保真主窗口和独立解压窗口的视觉语言。本包使用生成式图像完成视觉稿，未以 HTML 页面渲染替代设计稿。HTML 仅为离线图片画廊。
 
-[打开设计画廊](index.html) · [图板总览 PNG](preview/boards.png) · [新增素材总览 PNG](preview/assets.png) · [功能状态契约](../../../docs/ux/hifi-state-spec.md)
+[全部高保真原稿](../README.md) · [统一图片画廊](../index.html) · [打开 v2 画廊](index.html) · [图板总览 PNG](preview/boards.png) · [新增素材总览 PNG](preview/assets.png) · [功能状态契约](../../../docs/ux/hifi-state-spec.md)
 
 ## 图板
 
@@ -17,7 +17,7 @@
 | [07 创建覆盖确认](screens/07-create-overwrite.png) | C02 覆盖准入 | 返回修改、使用新名称、替换并创建 |
 | [08 平台对照](screens/08-platforms.png) | T01 Windows 浅色 / Linux 深色 | 同一任务语义，按平台更换标题栏和主题 |
 
-共 8 张原始图板、11 个窗口画面、9 类功能状态。平台对照是共享窗口装饰规则示例，并非每个平台每个状态都有独立绘制。主窗口与解压确认继续使用 [v1 原稿](../../assets/v1/README.md)。
+共 8 张原始图板、11 个窗口画面、9 类功能状态。平台对照是共享窗口装饰规则示例，并非每个平台每个状态都有独立绘制。主窗口与解压确认继续使用 [v1 原稿](../README.md#主界面与解压确认)。
 
 ## 切图与资产
 

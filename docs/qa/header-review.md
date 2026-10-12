@@ -1,6 +1,6 @@
 # 主窗口顶部结构修正
 
-基线：`design/assets/v1/sources/main-light.png` 的品牌/标签上行与独立工具栏下行；逻辑尺寸采用 `docs/visual/tokens.json`。生成式图片不是逐像素布局规范。
+基线：`design/hifi/v1/screens/main-light.png` 的品牌/标签上行与独立工具栏下行；逻辑尺寸采用 `docs/visual/tokens.json`。生成式图片不是逐像素布局规范。
 
 ## 已实现
 

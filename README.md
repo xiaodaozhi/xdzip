@@ -4,14 +4,14 @@
 
 **当前阶段：M1 产品骨架已完成开发与自动化验证，可进行一次性人工验收。三平台构建通过，提供 Apple Silicon 开发 app；实际压缩/解压尚未实现。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
-![xdzip 已确认的浅色主窗口设计](docs/visual/xdzip-main-light.png)
+![xdzip 已确认的浅色主窗口设计](design/hifi/v1/screens/main-light.png)
 
 ## 从这里开始
 
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
 - [可交互设计原型](design/prototype/README.md)：解压、新建、任务、异常流程与需求标注。
-- [已确认的视觉设计](docs/visual/README.md)：浅色、深色、解压面板与设计参数。
+- [高保真设计统一入口](design/hifi/README.md)：当前主界面、操作窗口、历史提案与设计参数。
 - [M1 完整验收入口](docs/qa/m1-acceptance.md)：三平台检查和 Apple Silicon 开发构建。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
@@ -27,6 +27,6 @@ Rust 核心独立于 Qt；内置格式通过源码接口扩展，第三方扩展
 
 ## 仓库现状
 
-`docs/design/` 为规范源文档，`docs/visual/` 为已确认视觉资产，`docs/engineering/` 为工程准备，`docs/planning/` 为阶段和风险，`docs/qa/` 为验收计划，`.github/` 为协作模板。文档构建工具仅用于生成 HTML，不构成产品代码。
+`docs/design/` 为规范源文档，`design/hifi/` 为高保真原稿，`docs/visual/` 为视觉规范，`docs/engineering/` 为工程准备，`docs/planning/` 为阶段和风险，`docs/qa/` 为验收计划，`.github/` 为协作模板。文档构建工具仅用于生成 HTML，不构成产品代码。
 
 项目原创内容采用 [Apache License 2.0](LICENSE)，详情见 [许可证说明](docs/engineering/licensing.md)。Qt、编解码器和其他依赖分别遵守自身许可证；当前私有仓库保持原有可见性。
