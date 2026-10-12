@@ -2,6 +2,8 @@
 
 基线：`design/hifi/v1/screens/main-light.png` 的品牌/标签上行与独立工具栏下行；逻辑尺寸采用 `docs/visual/tokens.json`。生成式图片不是逐像素布局规范。
 
+后续工具栏按钮比例与禁用样式修正见[工具栏复核](toolbar-review.md)；本页保留历史截图和参数。
+
 ## 已实现
 
 - `ArchiveTabs`：48 px 常规高度，品牌、当前真实归档名称、外观菜单。单会话阶段只显示当前标签；不伪造第二个归档、关闭标签或新增会话操作。

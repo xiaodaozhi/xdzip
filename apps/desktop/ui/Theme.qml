@@ -21,16 +21,21 @@ QtObject {
     readonly property color progressStart: dark ? "#428FFF" : "#2788FF"
     readonly property color progressEnd: dark ? "#4165DB" : "#0757FA"
     readonly property color inspector: dark ? "#20232A" : "#FFFFFF"
+    readonly property color accentDisabled: dark ? "#465B91" : "#7087CB"
     readonly property real bodySize: 14 * fontScale
     readonly property real tableSize: 13 * fontScale
     readonly property real secondarySize: 12 * fontScale
     readonly property real panelTitleSize: 20 * fontScale
+    readonly property real toolbarSize: 16 * fontScale
     readonly property int gutter: 24
     readonly property int gap: 12
     readonly property int iconSize: 20
     readonly property int controlRadius: 8
     readonly property int panelRadius: 12
     readonly property int buttonHeight: 36
+    readonly property int toolbarButtonHeight: 40
+    readonly property int toolbarIconSize: 24
+    readonly property int toolbarRadius: 6
     readonly property int rowHeight: 40
     readonly property int sidebarWidth: 220
     readonly property int inspectorWidth: 280

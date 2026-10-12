@@ -18,6 +18,8 @@ for key, value in tokens['type'].items():
     lines.append(f'    readonly property real {key}Size: {value} * fontScale')
 for name, value in [('gutter',24), ('gap',12), ('iconSize',20), ('controlRadius',tokens['radius']['control']),
                     ('panelRadius',tokens['radius']['panel']), ('buttonHeight',tokens['size']['button']),
+                    ('toolbarButtonHeight',tokens['size']['toolbarButton']),
+                    ('toolbarIconSize',tokens['size']['toolbarIcon']), ('toolbarRadius',tokens['radius']['toolbar']),
                     ('rowHeight',tokens['size']['row']), ('sidebarWidth',tokens['size']['sidebar']),
                     ('inspectorWidth',tokens['size']['inspector']),
                     ('inspectorCollapseWidth',tokens['size']['inspectorCollapseWidth'])]:

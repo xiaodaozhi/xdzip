@@ -6,41 +6,68 @@ Button {
     id: root
     property string asset: ""
     property bool primary: false
+    property bool toolbarStyle: false
+    // Reserved presentation for the unavailable extraction action; no dropdown is activated.
+    property bool splitIndicator: false
     property string explanation: text
-    implicitHeight: Math.max(36, label.implicitHeight + 12)
-    implicitWidth: contentItem.implicitWidth + 24
-    leftPadding: 12
-    rightPadding: 12
-    topPadding: 6
-    bottomPadding: 6
+    readonly property real glyphSize: toolbarStyle ? Theme.toolbarIconSize : 18
+    implicitHeight: Math.max(toolbarStyle ? Theme.toolbarButtonHeight : 36, label.implicitHeight + (toolbarStyle ? 16 : 12))
+    implicitWidth: Math.max(toolbarStyle && !text.length ? Theme.toolbarButtonHeight : 0, contentItem.implicitWidth + leftPadding + rightPadding)
+    leftPadding: primary && toolbarStyle ? 20 : toolbarStyle ? 8 : 12
+    rightPadding: splitIndicator ? 60 : leftPadding
+    topPadding: 0
+    bottomPadding: 0
     hoverEnabled: true
     Accessible.name: text
+    Accessible.description: explanation
     ToolTip.visible: hovered && explanation.length > 0
     ToolTip.text: explanation
     contentItem: RowLayout {
-        spacing: 8
-        opacity: root.enabled ? 1 : 0.45
+        spacing: root.toolbarStyle ? 10 : 8
         Image {
+            objectName: "actionIcon"
             visible: root.asset.length > 0
             source: root.asset.length ? "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + root.asset + ".png" : ""
-            Layout.preferredWidth: 18
-            Layout.preferredHeight: 18
+            Layout.preferredWidth: root.glyphSize
+            Layout.preferredHeight: root.glyphSize
+            opacity: root.enabled ? 1 : 0.6
         }
         Text {
             id: label
+            objectName: "actionLabel"
             visible: text.length > 0
             text: root.text
             textFormat: Text.PlainText
-            font.pixelSize: Theme.bodySize
-            color: root.primary ? Theme.accentText : Theme.text
+            font.pixelSize: root.toolbarStyle ? Theme.toolbarSize : Theme.bodySize
+            font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
+            color: root.primary ? Theme.accentText : root.enabled ? Theme.text : Theme.textSecondary
             verticalAlignment: Text.AlignVCenter
         }
     }
     background: Rectangle {
-        radius: Theme.controlRadius
-        color: root.primary ? Theme.accent : root.down || root.hovered ? Theme.sidebar : "transparent"
-        opacity: root.enabled ? 1 : 0.55
+        objectName: "actionBackground"
+        radius: root.toolbarStyle ? Theme.toolbarRadius : Theme.controlRadius
+        color: root.primary ? (root.enabled ? Theme.accent : Theme.accentDisabled) : root.down ? Theme.selection : root.hovered ? Theme.sidebar : "transparent"
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.accent
+    }
+    Rectangle {
+        visible: root.splitIndicator
+        anchors.right: parent.right
+        anchors.rightMargin: 40
+        width: 1
+        height: parent.height
+        color: Theme.accentText
+        opacity: 0.3
+    }
+    Image {
+        objectName: "actionSplitIndicator"
+        visible: root.splitIndicator
+        anchors.right: parent.right
+        anchors.rightMargin: 11
+        anchors.verticalCenter: parent.verticalCenter
+        width: 18
+        height: 18
+        source: visible ? "qrc:/xdzip/assets/primary-chevron.png" : ""
     }
 }

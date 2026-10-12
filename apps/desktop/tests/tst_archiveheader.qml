@@ -33,16 +33,19 @@ Item {
             return [
                 {
                     tag: "normal",
-                    scale: 1
+                    scale: 1,
+                    width: 1280
                 },
                 {
                     tag: "large",
-                    scale: 2
+                    scale: 2,
+                    width: 1040
                 }
             ];
         }
         function test_controls_align_and_fit(data) {
             Ui.Theme.fontScale = data.scale;
+            toolbar.width = data.width;
             const open = findChild(toolbar, "archiveOpen");
             const search = findChild(toolbar, "archiveSearch");
             // Font changes and RowLayout polishing complete on different frames on Cocoa.
@@ -55,6 +58,19 @@ Item {
             verify(op.x + open.width < sp.x);
             verify(sp.x + search.width < toolbar.width);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
+            const extract = findChild(toolbar, "archiveExtract");
+            tryCompare(extract, "height", toolbar.controlHeight);
+            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 15.5);
+            const icon = findChild(open, "actionIcon");
+            const label = findChild(open, "actionLabel");
+            tryVerify(() => Math.abs(icon.mapToItem(open, 0, icon.height / 2).y - open.height / 2) < 0.5);
+            tryVerify(() => Math.abs(label.mapToItem(open, 0, label.height / 2).y - open.height / 2) < 0.5);
+            compare(icon.width, 24);
+            compare(label.font.pixelSize, 16 * data.scale);
+            verify(!extract.enabled);
+            verify(findChild(extract, "actionSplitIndicator").visible);
+            compare(findChild(extract, "actionLabel").opacity, 1);
+            compare(findChild(extract, "actionBackground").opacity, 1);
         }
         function test_real_action_and_search() {
             const open = findChild(toolbar, "archiveOpen");

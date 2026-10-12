@@ -25,6 +25,7 @@
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
 | M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |
 | 视觉修正复核 | [布局、排版、主题修正与新截图](qa/visual-refinement.md) |
+| 工具栏按钮修正 | [原稿对照与实际截图](qa/toolbar-review.md) |
 | 顶部结构修正 | [实施说明与实际截图](qa/header-review.md) |
 | 视觉严格复核 | [设计与实现差异报告](qa/visual-audit-review.md)、[运行时量化检查表](qa/visual-audit/measurements.md) |
 | 实现进展 | [领域与 Qt 组件验证](qa/foundation-components.md)、[任务窗实际截图与对照](qa/task-visual-review.md)、[开发预览](../apps/desktop/README.md) |
