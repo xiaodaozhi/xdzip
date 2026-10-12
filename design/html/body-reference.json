@@ -1,5 +1,5 @@
 {
-  "source": "design/hifi/v1/screens/main-light.png",
+  "source": "design/hifi/screens/main-light.png",
   "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
   "source_size": [
     1586,
@@ -667,7 +667,7 @@
   },
   "independent_measurements": {
     "left_and_list": {
-      "source": "design/hifi/v1/screens/main-light.png",
+      "source": "design/hifi/screens/main-light.png",
       "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
       "source_size": [
         1586,
@@ -1941,7 +1941,7 @@
       "pre_change_screenshot_commit": "d544c2cdf88ce58c3afb227416f202a9cdbf488f"
     },
     "preview_and_status": {
-      "source": "design/hifi/v1/screens/main-light.png",
+      "source": "design/hifi/screens/main-light.png",
       "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
       "current_capture": "design/html/screenshots/01-main-light.png",
       "current_sha256": "88fd475fbe71c9099421090d5ea236b7f22e8fe4fd33259fb1c2adee73225823",

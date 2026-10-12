@@ -150,7 +150,7 @@ def main():
             shutil.copyfile(source, destination)
             files[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
     inputs = ['apps/desktop/ui/' + p.name for p in (ROOT / 'apps/desktop/ui').glob('*.qml')]
-    inputs += ['design/hifi/v1/screens/main-light.png', 'design/hifi/v2/screens/03-progress.png', 'docs/visual/tokens.json']
+    inputs += ['design/hifi/screens/main-light.png', 'design/hifi/screens/progress.png', 'docs/visual/tokens.json']
     environment = {key: light[key] for key in ['os', 'architecture', 'qt', 'platform', 'requestedQuickBackend', 'dpr']}
     report = dict(status='differences_found' if any(c['passed'] is False for c in checks) else 'incomplete' if any(c['passed'] is None for c in checks) else 'measured_checks_pass', environment=environment,
                   product_commit=args.product_commit or subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True, encoding='utf-8').strip(), checks=checks,
@@ -160,7 +160,7 @@ def main():
     # Manually identified raster boundaries, +/- 2 source pixels. Width-only normalization
     # preserves aspect ratio; it is not an instruction to stretch the art to fit the app.
     report['art_reference'] = {
-        'source': 'design/hifi/v2/screens/03-progress.png',
+        'source': 'design/hifi/screens/progress.png',
         'content_rect_xyxy': [85, 114, 1361, 1036],
         'boundary_uncertainty_source_px': 2,
         'scale_to_760_content_width': 760 / 1276,

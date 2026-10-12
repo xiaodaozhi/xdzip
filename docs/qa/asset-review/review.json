@@ -1,327 +1,881 @@
 {
   "status": "visual-review-with-known-differences",
+  "source_library": "design/assets",
   "assets": [
     {
-      "id": "v1/app-mark",
-      "source_crop": "design/assets/v1/slices/brand-titlebar.png",
-      "vector": "design/assets/v1/svg/light/app-mark.svg",
-      "runtime": true,
-      "review": "已分离：标题栏品牌为圆角方形，压缩文件为折角纸张，不再共用同一轮廓。"
-    },
-    {
-      "id": "v1/archive-test",
-      "source_crop": "design/assets/v1/slices/archive-test.png",
-      "vector": "design/assets/v1/svg/light/archive-test.svg",
-      "runtime": true,
-      "review": "已改：圆角增大，勾号收窄。"
-    },
-    {
-      "id": "v1/archive",
-      "source_crop": "design/assets/v1/slices/brand-extract.png",
-      "vector": "design/assets/v1/svg/light/archive.svg",
-      "runtime": true,
-      "review": "已改：拉链改为细齿；保留文件折角。大图中的 ZIP 微字样未重建。"
-    },
-    {
-      "id": "v1/arrow-right",
+      "id": "activity",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/arrow-right.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/activity.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/check",
+      "id": "app-mark",
+      "source_crop": "design/assets/reference/brand-titlebar.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/app-mark.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "标题栏圆角品牌与折角压缩文件保持不同轮廓。"
+    },
+    {
+      "id": "archive-add",
+      "source_crop": "design/assets/reference/create-archive.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/archive-add.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "archive-test",
+      "source_crop": "design/assets/reference/archive-test.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/archive-test.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "archive-warning",
+      "source_crop": "design/assets/reference/overwrite-archive.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/archive-warning.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "archive",
+      "source_crop": "design/assets/reference/brand-extract.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": "docs/qa/asset-review/before/archive.svg",
+      "historical_sha256": "b311b38de981c353c876da0ce52f00d137151d8da9e9d8ae03905513762eee1b",
+      "vector": "design/assets/svg/light/archive.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "列表压缩文件保留细拉链、折角和渐变；大图细节单独对照。"
+    },
+    {
+      "id": "arrow-right",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/check.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/arrow-right.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/chevron-down",
+      "id": "check",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/chevron-down.svg",
-      "runtime": true,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/check.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/chevron-right",
+      "id": "chevron-down",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/chevron-right.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/chevron-down.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/chevron-up",
+      "id": "chevron-right",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/chevron-up.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/chevron-right.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/close",
-      "source_crop": "design/assets/v1/slices/close.png",
-      "vector": "design/assets/v1/svg/light/close.svg",
-      "runtime": true,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
-    },
-    {
-      "id": "v1/completed",
+      "id": "chevron-up",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/completed.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/chevron-up.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/external-open",
+      "id": "clock",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/external-open.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/clock.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/extract",
+      "id": "close",
+      "source_crop": "design/assets/reference/close.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/close.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "completed",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/extract.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/completed.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/file-code",
-      "source_crop": "design/assets/v1/slices/file-code.png",
-      "vector": "design/assets/v1/svg/light/file-code.svg",
+      "id": "document-conflict",
+      "source_crop": "design/assets/reference/conflict-document.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/document-conflict.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "document-download",
+      "source_crop": "design/assets/reference/progress-document.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/document-download.svg",
       "runtime": true,
-      "review": "已改：边框变细、内符号收窄；保留可缩放路径。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/file-markdown",
-      "source_crop": "design/assets/v1/slices/file-markdown.png",
-      "vector": "design/assets/v1/svg/light/file-markdown.svg",
-      "runtime": true,
-      "review": "已改：边框变细，字形大小与下箭头重新平衡。"
+      "id": "document-warning",
+      "source_crop": "design/assets/reference/partial-document.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/document-warning.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "圆形提示与三角冲突分别使用 document-warning 和 document-conflict。"
     },
     {
-      "id": "v1/file-pdf",
-      "source_crop": "design/assets/v1/slices/file-pdf.png",
-      "vector": "design/assets/v1/svg/light/file-pdf.svg",
-      "runtime": true,
-      "review": "已改：PDF 字母曲线、纸张圆角、折角与红色渐变。"
-    },
-    {
-      "id": "v1/file-text",
-      "source_crop": "design/assets/v1/slices/file-text.png",
-      "vector": "design/assets/v1/svg/light/file-text.svg",
-      "runtime": true,
-      "review": "已改：纸张轮廓与内文线分开闭合，降低描边并补圆角。"
-    },
-    {
-      "id": "v1/folder",
-      "source_crop": "design/assets/v1/slices/folder.png",
-      "vector": "design/assets/v1/svg/light/folder.svg",
-      "runtime": true,
-      "review": "已改：硬直角和厚描边 → 圆角、分层蓝色文件夹。"
-    },
-    {
-      "id": "v1/maximize",
+      "id": "external-open",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/maximize.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/external-open.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/minimize",
+      "id": "extract",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/minimize.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/extract.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v1/more",
-      "source_crop": "design/assets/v1/slices/more.png",
-      "vector": "design/assets/v1/svg/light/more.svg",
+      "id": "file-code",
+      "source_crop": "design/assets/reference/file-code.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/file-code.svg",
       "runtime": true,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "纸张边框与代码符号在素材源中校准，界面不再缩放内部路径。"
     },
     {
-      "id": "v1/new",
-      "source_crop": "design/assets/v1/slices/new.png",
-      "vector": "design/assets/v1/svg/light/new.svg",
+      "id": "file-markdown",
+      "source_crop": "design/assets/reference/file-markdown.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/file-markdown.svg",
       "runtime": true,
-      "review": "已改：圆角增大，加号收窄。"
+      "html_registered": true,
+      "review": "Markdown 字形与下箭头在素材源中平衡，界面不再改变描边。"
     },
     {
-      "id": "v1/open",
-      "source_crop": "design/assets/v1/slices/open.png",
-      "vector": "design/assets/v1/svg/light/open.svg",
+      "id": "file-pdf",
+      "source_crop": "design/assets/reference/file-pdf.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/file-pdf.svg",
       "runtime": true,
-      "review": "已改：斜口展开文件夹 → 正面圆角文件夹；横向前缘和底部轮廓恢复。"
+      "html_registered": true,
+      "review": "PDF 纸张圆角、白折角和红色边缘从素材源表达，不在界面中横向拉伸。"
     },
     {
-      "id": "v1/search",
-      "source_crop": "design/assets/v1/slices/search.png",
-      "vector": "design/assets/v1/svg/light/search.svg",
+      "id": "file-text",
+      "source_crop": "design/assets/reference/file-text.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/file-text.svg",
       "runtime": true,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "折角纸张、短首行和三条正文线在矢量源中定义。"
     },
     {
-      "id": "v1/settings",
-      "source_crop": "design/assets/v1/slices/settings.png",
-      "vector": "design/assets/v1/svg/light/settings.svg",
+      "id": "folder",
+      "source_crop": "design/assets/reference/folder.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": "docs/qa/asset-review/before/folder.svg",
+      "historical_sha256": "deca0671a4a91e4bca2fe7b1bf9df25336f8b10c0b4316a2f5d0f3d6076361aa",
+      "vector": "design/assets/svg/light/folder.svg",
       "runtime": true,
-      "review": "已改：六边形外框 → 带圆角齿槽的齿轮。"
+      "html_registered": true,
+      "review": "目录采用横向轮廓；透明画布与纸张相同，可见高度按视觉重量校准。"
     },
     {
-      "id": "v1/sort-ascending",
+      "id": "image-amber",
+      "source_crop": "design/assets/reference/image-amber.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/image-amber.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "image-file",
+      "source_crop": "design/assets/reference/image-blue.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/image-file.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "图片类型图标采用透明矢量；照片缩略图是另一类演示资源。"
+    },
+    {
+      "id": "info",
       "source_crop": null,
-      "vector": "design/assets/v1/svg/light/sort-ascending.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
-    },
-    {
-      "id": "v1/sort",
-      "source_crop": "design/assets/v1/slices/sort.png",
-      "vector": "design/assets/v1/svg/light/sort.svg",
-      "runtime": false,
-      "review": "已改：四条横线 → 原稿三条横线。"
-    },
-    {
-      "id": "v1/view-grid",
-      "source_crop": "design/assets/v1/slices/view-grid.png",
-      "vector": "design/assets/v1/svg/light/view-grid.svg",
-      "runtime": false,
-      "review": "已改：四格收窄，恢复留白。"
-    },
-    {
-      "id": "v1/view-list",
-      "source_crop": "design/assets/v1/slices/view-list.png",
-      "vector": "design/assets/v1/svg/light/view-list.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/info.svg",
       "runtime": true,
-      "review": "已改：移除原稿没有的三个圆点，保留三条横线；选中底色由控件绘制。"
+      "html_registered": true,
+      "review": "信息图标使用次要色；没有独立原稿切片。"
     },
     {
-      "id": "v2/archive-add",
-      "source_crop": "design/hifi/v2/slices/create-archive.png",
-      "vector": "design/hifi/v2/svg/light/archive-add.svg",
-      "runtime": false,
-      "review": "已改：细拉链、圆角纸张、加号徽标保持透明边界内。"
-    },
-    {
-      "id": "v2/archive-warning",
-      "source_crop": "design/hifi/v2/slices/overwrite-archive.png",
-      "vector": "design/hifi/v2/svg/light/archive-warning.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
-    },
-    {
-      "id": "v2/clock",
+      "id": "maximize",
       "source_crop": null,
-      "vector": "design/hifi/v2/svg/light/clock.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/maximize.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/document-conflict",
-      "source_crop": "design/hifi/v2/slices/conflict-document.png",
-      "vector": "design/hifi/v2/svg/light/document-conflict.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
-    },
-    {
-      "id": "v2/document-download",
-      "source_crop": "design/hifi/v2/slices/progress-document.png",
-      "vector": "design/hifi/v2/svg/light/document-download.svg",
-      "runtime": true,
-      "review": "已改：圆角纸张、独立折角、居中的短箭头。"
-    },
-    {
-      "id": "v2/document-warning",
-      "source_crop": "design/hifi/v2/slices/partial-document.png",
-      "vector": "design/hifi/v2/svg/light/document-warning.svg",
-      "runtime": false,
-      "review": "已改：圆角纸张、独立折角、居中的圆形警告。三角警告使用独立 document-conflict。"
-    },
-    {
-      "id": "v2/image-amber",
-      "source_crop": "design/hifi/v2/slices/image-amber.png",
-      "vector": "design/hifi/v2/svg/light/image-amber.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
-    },
-    {
-      "id": "v2/image-file",
-      "source_crop": "design/hifi/v2/slices/image-blue.png",
-      "vector": "design/hifi/v2/svg/light/image-file.svg",
-      "runtime": true,
-      "review": "已改：浅蓝纸张、山形与太阳；琥珀色图片改用独立 image-amber。"
-    },
-    {
-      "id": "v2/info",
+      "id": "minimize",
       "source_crop": null,
-      "vector": "design/hifi/v2/svg/light/info.svg",
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/minimize.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "moon",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/moon.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "more",
+      "source_crop": "design/assets/reference/more.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/more.svg",
       "runtime": true,
-      "review": "已改：采用提示文字的次要色，避免旧图标过黑。无独立原稿切片。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/remove",
-      "source_crop": "design/hifi/v2/slices/remove-row.png",
-      "vector": "design/hifi/v2/svg/light/remove.svg",
-      "runtime": false,
-      "review": "已改：浅灰外圈与深色减号分开着色。"
+      "id": "new",
+      "source_crop": "design/assets/reference/new.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/new.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/settings-tile",
-      "source_crop": "design/hifi/v2/slices/settings-gear.png",
-      "vector": "design/hifi/v2/svg/light/settings-tile.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "id": "open",
+      "source_crop": "design/assets/reference/open.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": "docs/qa/asset-review/before/open.svg",
+      "historical_sha256": "f64340e4b0c877ee711f11a8b5e8fe9e2adcd1e213f8ded680dfc31a95aa7d9d",
+      "vector": "design/assets/svg/light/open.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "使用正面圆角文件夹与横向前缘。"
     },
     {
-      "id": "v2/spinner",
-      "source_crop": "design/hifi/v2/slices/stopping-spinner.png",
-      "vector": "design/hifi/v2/svg/light/spinner.svg",
+      "id": "panel",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/panel.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/status-partial-success",
-      "source_crop": "design/hifi/v2/slices/partial-success.png",
-      "vector": "design/hifi/v2/svg/light/status-partial-success.svg",
+      "id": "plus",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/plus.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/status-skipped",
-      "source_crop": "design/hifi/v2/slices/partial-skipped.png",
-      "vector": "design/hifi/v2/svg/light/status-skipped.svg",
+      "id": "remove",
+      "source_crop": "design/assets/reference/remove-row.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/remove.svg",
       "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/status-stopped",
-      "source_crop": "design/hifi/v2/slices/cancelled-large.png",
-      "vector": "design/hifi/v2/svg/light/status-stopped.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "id": "search",
+      "source_crop": "design/assets/reference/search.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/search.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/status-success",
-      "source_crop": "design/hifi/v2/slices/success-large.png",
-      "vector": "design/hifi/v2/svg/light/status-success.svg",
+      "id": "settings-tile",
+      "source_crop": "design/assets/reference/settings-gear.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/settings-tile.svg",
       "runtime": false,
-      "review": "保留绿色完成状态；部分失败计数使用独立蓝色 status-partial-success。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/status-warning",
-      "source_crop": "design/hifi/v2/slices/partial-warning.png",
-      "vector": "design/hifi/v2/svg/light/status-warning.svg",
-      "runtime": false,
-      "review": "本次保留；相邻图用于人工核对，不表示逐像素验收通过。"
+      "id": "settings",
+      "source_crop": "design/assets/reference/settings.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": "docs/qa/asset-review/before/settings.svg",
+      "historical_sha256": "024cc4707e003a12098be48a50cdd396c99c8605967ba5f367e454eab5d6923b",
+      "vector": "design/assets/svg/light/settings.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     },
     {
-      "id": "v2/theme-system",
-      "source_crop": "design/hifi/v2/slices/theme-system.png",
-      "vector": "design/hifi/v2/svg/light/theme-system.svg",
+      "id": "shield",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/shield.svg",
       "runtime": false,
-      "review": "已改：右侧深蓝、浅色标题栏、两个窗口圆点与细边框。"
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "sort-ascending",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/sort-ascending.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "sort",
+      "source_crop": "design/assets/reference/sort.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/sort.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "spinner",
+      "source_crop": "design/assets/reference/stopping-spinner.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/spinner.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "status-partial-success",
+      "source_crop": "design/assets/reference/partial-success.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/status-partial-success.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "status-skipped",
+      "source_crop": "design/assets/reference/partial-skipped.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/status-skipped.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "status-stopped",
+      "source_crop": "design/assets/reference/cancelled-large.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/status-stopped.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "status-success",
+      "source_crop": "design/assets/reference/success-large.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/status-success.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "status-warning",
+      "source_crop": "design/assets/reference/partial-warning.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/status-warning.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "sun",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/sun.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "task-list",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/task-list.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "theme-system",
+      "source_crop": "design/assets/reference/theme-system.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/theme-system.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "view-grid",
+      "source_crop": "design/assets/reference/view-grid.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/view-grid.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
+    },
+    {
+      "id": "view-list",
+      "source_crop": "design/assets/reference/view-list.png",
+      "source_kind": "baked-background-reference",
+      "historical_vector": "docs/qa/asset-review/before/view-list.svg",
+      "historical_sha256": "ed5e59c083c35c47da729cb7745642bddedbc5173dd66cd3288dd3e06d048608",
+      "vector": "design/assets/svg/light/view-list.svg",
+      "runtime": true,
+      "html_registered": true,
+      "review": "列表视图是纯横线；任务列表的圆点使用独立 task-list 图标。"
+    },
+    {
+      "id": "warning",
+      "source_crop": null,
+      "source_kind": "no-independent-crop",
+      "historical_vector": null,
+      "historical_sha256": null,
+      "vector": "design/assets/svg/light/warning.svg",
+      "runtime": false,
+      "html_registered": true,
+      "review": "相邻原稿用于人工检查轮廓；透明重建不表示恢复了原图图层或完成逐像素验收。"
     }
+  ],
+  "file_icon_geometry": [
+    {
+      "id": "folder",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.0,
+        4.333,
+        18.0,
+        15.333
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 15,
+      "svg_sha256": "0c63e04c241cc50c434771318ca651f086138a714059bfcfbb9d4c1230f16906",
+      "raster_sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d"
+    },
+    {
+      "id": "file-pdf",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.333,
+        1.0,
+        19.333,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "92751345058956f7fb808b6c1533dff55dcdeada7d879702b2a7954684fdf353",
+      "raster_sha256": "b42c7800885cc0cf9e78ccbccf88c5076eb1ac4be860accbb75e1cbf0b8da42a"
+    },
+    {
+      "id": "file-text",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.667,
+        1.0,
+        16.667,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "f4c34447e170a9959a03c7170a0004be6a48954269d19e9ce44b0b4678318aba",
+      "raster_sha256": "2954c4aa100313267966315d6d5e43151566d9bc20679a88cc89590f58b70901"
+    },
+    {
+      "id": "file-code",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.0,
+        1.0,
+        20.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "1cc29fc9885110fd92beb89c4c39de260ffe95b0182b50ef02b50b133ab66e93",
+      "raster_sha256": "ba1b86fb627d260e0acc302a5330f09a6a24319db38bdbe4e71d17a9306a502f"
+    },
+    {
+      "id": "file-markdown",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.0,
+        1.0,
+        20.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "0a80fe63e2aeb70501e4c4f5ea969805d6f29779beebb1cd3c09b4a43d3d0dde",
+      "raster_sha256": "ba9a0fb2b584ed79079348f860d4ebc2d15a4907b122e6c5dae3dd19addc6ca6"
+    },
+    {
+      "id": "image-file",
+      "theme": "light",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.0,
+        1.0,
+        18.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "eca9349f277c5e95434ebcfa8472fd9c1c16a56c926bca8adaf3528484816af7",
+      "raster_sha256": "e7bf0776d62b991b3dbffd31b5a7ffbe5ebf0dbd74e97834c02c317ea2165529"
+    },
+    {
+      "id": "folder",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.0,
+        4.333,
+        18.0,
+        15.333
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 15,
+      "svg_sha256": "bd6af26ba12fde9805dcba5ca1e7953d93d7de9ffd7d5e0d0e7eb73edecaab5a",
+      "raster_sha256": "8839f0ffb5fdf864b47b9af7abd38bf9e7c6c951067d4c4b88be4a665a36222d"
+    },
+    {
+      "id": "file-pdf",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.333,
+        1.0,
+        19.333,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "b9506304413bfb13b6d04fae4135d135c1380b09aeb3218b0facfc9844313fe8",
+      "raster_sha256": "b42c7800885cc0cf9e78ccbccf88c5076eb1ac4be860accbb75e1cbf0b8da42a"
+    },
+    {
+      "id": "file-text",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.667,
+        1.0,
+        16.667,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "269343e716bba9acfad12f43576c4d008ac573caa17806b74834ec72a1a4f18b",
+      "raster_sha256": "441e5875b62404726e8fa146ad86ac9e3ff3a900cbf7a216603076baabe6a7e6"
+    },
+    {
+      "id": "file-code",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.0,
+        1.0,
+        20.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "d4b0321775eca274973bed664e92b1c0fc8a2418aee2d5a6343c57abb7c3845a",
+      "raster_sha256": "09c38ea627ff3346761a7e2fd3dae2e3d9b5123c034a72263e31838d778d636a"
+    },
+    {
+      "id": "file-markdown",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        2.0,
+        1.0,
+        20.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "1ba1fbb841db51362fa4f80c1db47b8a7a19a5a5e14652eb2bc01a1e082e8e2e",
+      "raster_sha256": "a06136f6096f171fcc6597a4b751952e9f114fc73c9b047bf8a738e43e71a400"
+    },
+    {
+      "id": "image-file",
+      "theme": "dark",
+      "canvas": [
+        24,
+        24
+      ],
+      "visible_bounds_alpha_gt32": [
+        3.0,
+        1.0,
+        18.0,
+        22.0
+      ],
+      "visible_center": [
+        12.0,
+        12.0
+      ],
+      "accepted_visible_height": 22,
+      "svg_sha256": "d5c8cdbeff36fe777064753e0114a1c519bd276f06ece3895b2b8d92e00e9ddc",
+      "raster_sha256": "e7bf0776d62b991b3dbffd31b5a7ffbe5ebf0dbd74e97834c02c317ea2165529"
+    }
+  ],
+  "display_check": {
+    "shared_svg_canvas": [
+      24,
+      24
+    ],
+    "file_icon_frame": [
+      48,
+      48
+    ],
+    "inspection_sizes": [
+      24,
+      48,
+      72
+    ],
+    "per_icon_css_transform": false
+  },
+  "remaining_visual_differences": [
+    "Source hero illustrations include soft baked shadows not present in transparent SVGs",
+    "Archive hero ZIP micro-lettering has not been reconstructed",
+    "Image mountain motifs and gear corner curves are simplified compared with the source",
+    "Source gradients, optical textures and antialiased curves are not exact recovered layers"
+  ],
+  "limits": [
+    "Baked references are not runtime alpha layers",
+    "Bounds checks do not prove pixel-perfect visual fidelity",
+    "Chromium captures do not replace native Qt renderer acceptance"
   ]
 }

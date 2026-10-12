@@ -31,14 +31,14 @@ def main():
         title = html.escape(screen['title'])
         source = html.escape(screen['file'], quote=True)
         groups[screen['group']].append(
-            f'<figure><figcaption>{html.escape(screen["version"])} · {title}</figcaption>'
+            f'<figure><figcaption>{title}</figcaption>'
             f'<a href="{source}"><img src="{source}" alt="{title}" loading="lazy"></a></figure>')
     page = '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip · 高保真设计总览</title>
 <style>*{box-sizing:border-box}body{margin:auto;max-width:1200px;padding:24px;background:#f5f5f3;color:#20232a;font:16px/1.7 system-ui,sans-serif}a{color:#2455cd}nav{display:flex;flex-wrap:wrap;gap:16px}figure{margin:28px 0;padding:16px;background:white;border:1px solid #dcdfe3;border-radius:12px}figcaption{font-weight:600;margin-bottom:12px}img{display:block;width:100%;height:auto}summary{cursor:pointer;font-size:22px;font-weight:600}.note{padding:16px;background:#e9eefb;border-radius:8px}@media(max-width:600px){body{padding:16px}figure{padding:8px}h1{font-size:26px}}</style></head><body>
 <h1>xdzip 高保真设计总览</h1><p>当前主界面与操作窗口的原稿入口。下方展示原始设计图片，HTML 仅用于浏览，不是界面原型。</p>
-<nav><a href="#current">当前视觉参考</a><a href="../html/index.html">HTML 高保真界面</a><a href="README.md">目录与版本说明</a><a href="../../docs/visual/tokens.json">颜色尺寸规范</a><a href="../assets/v1/index.html">v1 切图素材</a><a href="v2/assets.html">v2 切图素材</a></nav>
-<p class="note">当前基线由 v1 主窗口、独立解压确认及 v2 补充状态共同构成。当前 v1 主窗口的同版本深色稿尚缺；历史深色图不能视为其对应版本。生成式图像不等于逐像素规范或已实现功能。</p>
+<nav><a href="#current">当前视觉参考</a><a href="../html/index.html">HTML 高保真界面</a><a href="README.md">目录与用途说明</a><a href="../../docs/visual/tokens.json">颜色尺寸规范</a><a href="../assets/index.html">统一素材库</a></nav>
+<p class="note">主窗口、独立解压确认及各操作状态共用一套视觉基线。完整原稿在此展示，图标、示例照片与原像素对照切片统一从素材库查看。当前主窗口的完整深色原稿尚缺；生成式图像不等于逐像素规范或已实现功能。</p>
 <h2 id="current">当前视觉参考</h2>''' + ''.join(groups['current']) + '''
 <footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。实际实现截图保存在 <a href="../../docs/qa/navigation-sorting.md">验收文档</a>。</p></footer></body></html>
 '''

@@ -1,46 +1,17 @@
 "use strict";
 // Design-only state machine: all file operations use in-memory fixtures.
 // This prototype never reads archives, writes files, or uploads user content.
-const paths = {
-    archive: "M5 3h10l4 4v14H5z M14 3v5h5 M10 4v2m0 2v2m0 2v2m0 2v3h3v-3z",
-    folder: "M3 7V5h6l2 2h10v13H3z",
-    folderOpen: "M3 8V5h6l2 2h10v3 M3 10h19l-3 10H2z",
-    file: "M5 3h9l5 5v13H5z M14 3v6h5",
-    image: "M4 3h16v18H4z M4 16l5-5 5 6 3-3 3 4 M15 7h.01",
-    pdf: "M5 3h9l5 5v13H5z M14 3v6h5 M8 13h8 M8 16h6",
-    search: "m20 20-5-5 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0",
-    plus: "M12 5v14 M5 12h14",
-    close: "m6 6 12 12 M6 18 18 6",
-    chevronDown: "m6 9 6 6 6-6",
-    chevronUp: "m6 15 6-6 6 6",
-    chevronRight: "m9 6 6 6-6 6",
-    extract: "M12 3v12 m-5-5 5 5 5-5 M4 15v6h16v-6",
-    shield: "m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z m-4 9 3 3 5-6",
-    panel: "M3 4h18v16H3z M15 4v16",
-    activity: "M3 12h4l3-7 4 14 3-7h4",
-    settings:
-        "M9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
-    sort: "M7 4v16 m-3-3 3 3 3-3 M14 5h7 M14 10h5 M14 15h3",
-    sun: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1 1 M18 18l1 1 M5 19l1-1 M18 6l1-1",
-    moon: "M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10",
-    check: "m5 12 4 4 10-10",
-    warning: "m12 3 10 18H2z M12 9v5 M12 17h.01",
-    layers: "m12 3 10 5-10 5L2 8z M2 12l10 5 10-5 M2 16l10 5 10-5",
-    arrow: "M4 12h15 m-5-5 5 5-5 5",
-    clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v6h4",
-};
 // Icons come from the same reviewed SVG sources as Qt; no second hand-drawn set.
 const assetNames = {folderOpen: "open", file: "file-text", pdf: "file-pdf", image: "image-file", code: "file-code", markdown: "file-markdown", chevronDown: "chevron-down", chevronUp: "chevron-up", chevronRight: "chevron-right", arrow: "arrow-right", layers: "folder"};
 let iconInstance = 0;
 const icon = (name, cls = "") => {
     const key = assetNames[name] || name;
     const theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-    const source = window.XDZIP_ASSETS.icons[theme][key];
-    if (source) {
-        const prefix = `icon-${++iconInstance}-`;
-        return source.replace(/id="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`).replace("<svg ", `<svg class="${cls}" data-asset="${key}" aria-hidden="true" `);
-    }
-    return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.file}"/></svg>`;
+    const source = window.XDZIP_ASSETS?.icons?.[theme]?.[key];
+    // A missing shared asset is a packaging error, not permission to draw a substitute.
+    if (!source) throw new Error(`Missing xdzip icon asset: ${theme}/${key}`);
+    const prefix = `icon-${++iconInstance}-`;
+    return source.replace(/id="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`).replace("<svg ", `<svg class="${cls}" data-asset="${key}" aria-hidden="true" `);
 };
 const photo = (key, cls = "") => `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"} · 设计示例图片">`;
 const $ = (s) => document.querySelector(s);

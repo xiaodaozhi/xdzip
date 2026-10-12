@@ -1,8 +1,8 @@
 # 素材轮廓与实际引用复核
 
-基线为已确认的 [v1 主窗口](../../design/hifi/v1/screens/main-light.png)和 [v2 状态稿](../../design/hifi/v2/README.md)。本次修正的是素材源及引用，不表示整个界面已完成视觉还原。
+基线为已确认的 [主窗口](../../design/hifi/screens/main-light.png)和 [操作状态稿](../../design/hifi/README.md)。本次修正的是素材源及引用，不表示整个界面已完成视觉还原。
 
-[46 类图标的离线逐项对照](asset-review/index.html) · [主要错误前后对照](asset-review/comparison.png) · [Qt 浅色实际截图](asset-review/browser-light.png) · [Qt 深色实际截图](asset-review/browser-dark.png)
+[当前共享图标逐项对照](asset-review/index.html) · [统一素材库](../../design/assets/index.html) · [素材合并与尺寸规范](asset-consolidation.md) · [历史主要错误前后对照](asset-review/comparison.png) · [历史 Qt 浅色实际截图](asset-review/browser-light.png) · [历史 Qt 深色实际截图](asset-review/browser-dark.png)
 
 ## 已确认的问题与修复
 
@@ -34,3 +34,5 @@
 - 主界面的字体、布局、标题栏及缺失功能仍是独立工作；素材修复不会自动消除这些差异。
 
 后续界面修正以同一尺寸的原稿、素材和 Qt 截图三方对照推进；先修正轮廓，再校准显示尺寸和控件间距。不再以文件数量、透明通道检查或测试通过替代视觉核对。
+
+素材目录于 2026-10-12 合并；本文原稿链接指向当前位置。历史截图、测量数值及 JSON 输入记录保持原样，旧路径可通过[迁移清单](../../design/assets/migration.json)或当时 Git 提交追溯。

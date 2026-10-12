@@ -1,0 +1,2610 @@
+{
+  "baseline_commit": "c9c265a4de98b4c2df71519dc52135229988c2f0",
+  "purpose": "历史验收记录中的路径映射；旧哈希仅描述基线，不代表修订后的透明图标。",
+  "paths": [
+    {
+      "previous": "design/hifi/v1/screens/main-light.png",
+      "current": "design/hifi/screens/main-light.png",
+      "previous_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v1/screens/extract-macos.png",
+      "current": "design/hifi/screens/extract-macos.png",
+      "previous_sha256": "e21f7e9b90e4b2076618cf6c1d0d00e00f8696d21d722bc152b43b06699218f0",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/01-create.png",
+      "current": "design/hifi/screens/create.png",
+      "previous_sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/02-conflict.png",
+      "current": "design/hifi/screens/conflict.png",
+      "previous_sha256": "29681423821a03f3f1c422c01ec8cc009140f817e07f8bc8b0597a662ce7ca0e",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/03-progress.png",
+      "current": "design/hifi/screens/progress.png",
+      "previous_sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/04-partial-result.png",
+      "current": "design/hifi/screens/partial-result.png",
+      "previous_sha256": "056a8570e21226c29ef2ced8a0ea646a7b6988ab3f2c83d6add350695a8269df",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/05-settings.png",
+      "current": "design/hifi/screens/settings.png",
+      "previous_sha256": "78ce04944d9610d8d1f5a873e488b8ed1fa78a0e34bc8516dc218397939fd6b0",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/06-task-states.png",
+      "current": "design/hifi/screens/task-states.png",
+      "previous_sha256": "618667d2f46760e9d926707a713294f2467d9d50f9043d88f0b99d7e1b47fe13",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/07-create-overwrite.png",
+      "current": "design/hifi/screens/create-overwrite.png",
+      "previous_sha256": "422706e66533e42e3c3ecda80e810d95ca4669edfee6fc6bd4eebdf41bcd7fa9",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/screens/08-platforms.png",
+      "current": "design/hifi/screens/platforms.png",
+      "previous_sha256": "7feb1bf4b03252e43063396f56bdfed1548db306241e578d8210a30c700bd297",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/app-mark.svg",
+      "current": "design/assets/svg/dark/app-mark.svg",
+      "previous_sha256": "3b871108c3d91cee15df33af269ee63b67f5420b54fe6413422e455a59050b13",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/archive-test.svg",
+      "current": "design/assets/svg/dark/archive-test.svg",
+      "previous_sha256": "1b2ba2f3aae26f12cae9c3ebb80abf9c87e299670921f2af8c094169cd1f0fa9",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/archive.svg",
+      "current": "design/assets/svg/dark/archive.svg",
+      "previous_sha256": "992b491aeca9b95555f1577f005b3c0b30b79cc05dbdd03cbb7d7acb3f30bee1",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/arrow-right.svg",
+      "current": "design/assets/svg/dark/arrow-right.svg",
+      "previous_sha256": "cae115f9f297b51192666641aaef3f4054b3bd03e2dab63590d18e83e1e36718",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/check.svg",
+      "current": "design/assets/svg/dark/check.svg",
+      "previous_sha256": "807368e3eb7a4ef6cc10b83df9adfdd9361f065b3db789cc2ddc0380354edb9c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/chevron-down.svg",
+      "current": "design/assets/svg/dark/chevron-down.svg",
+      "previous_sha256": "52044d22e3704d44ceb31b62cf050200e8539fcff745daafe725fa1668b7fa88",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/chevron-right.svg",
+      "current": "design/assets/svg/dark/chevron-right.svg",
+      "previous_sha256": "2388010ca4961fb0f4ec619f10cbf47645e00bc8c77fbcb6291da60ab635dcaf",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/chevron-up.svg",
+      "current": "design/assets/svg/dark/chevron-up.svg",
+      "previous_sha256": "6b83219dee0ee4ebdec3f6d8f62c91f886555be542355318c11a15109a8973ef",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/close.svg",
+      "current": "design/assets/svg/dark/close.svg",
+      "previous_sha256": "7d92024bd00d588b3ba5820d80f65cb180468df1bb56c2c11d778a9e346313e8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/completed.svg",
+      "current": "design/assets/svg/dark/completed.svg",
+      "previous_sha256": "9264de3b064a25dba3a7ff991dcb8c0cf75d64f0beca75fef28fb25c135b0a1a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/external-open.svg",
+      "current": "design/assets/svg/dark/external-open.svg",
+      "previous_sha256": "4f21452611008fcfadc7ea8d2a222aa31181281a4a4fe08f95177ff4534654d7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/extract.svg",
+      "current": "design/assets/svg/dark/extract.svg",
+      "previous_sha256": "ac5e735a7c879ba102cc2b5da0bb1a8ff71d3b463796077716de9ddf49185393",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/file-code.svg",
+      "current": "design/assets/svg/dark/file-code.svg",
+      "previous_sha256": "62f7747aaecc7e64a029d33501c66cc72989d805ef4e23857065c60907635490",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/file-markdown.svg",
+      "current": "design/assets/svg/dark/file-markdown.svg",
+      "previous_sha256": "913adaa55b0fb8d656f7b52a9ccf7189a0daac3c21f4d3178cd02a654c25a79b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/file-pdf.svg",
+      "current": "design/assets/svg/dark/file-pdf.svg",
+      "previous_sha256": "f7998a9963f92ef55874c595134fac39b01efb285f5d61a246cbccd03d321d50",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/file-text.svg",
+      "current": "design/assets/svg/dark/file-text.svg",
+      "previous_sha256": "02d3bc505d7b3f305f877ac8ff85492df3f83443694dcf1336a956f98b27c8bf",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/folder.svg",
+      "current": "design/assets/svg/dark/folder.svg",
+      "previous_sha256": "259da448dd1fbc330e3635d16d153f0bbb87153d55ba1acbd44ae08b8179ae2e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/maximize.svg",
+      "current": "design/assets/svg/dark/maximize.svg",
+      "previous_sha256": "900e8935657bffa474432aa87fa430d0546481878ef30c85c846b6384151208c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/minimize.svg",
+      "current": "design/assets/svg/dark/minimize.svg",
+      "previous_sha256": "bf1630251aa3b4adcb73ca48ec6181e645e2a57868e2bae2576d00a20aa7b5ef",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/more.svg",
+      "current": "design/assets/svg/dark/more.svg",
+      "previous_sha256": "459cc38d14978c4646b2676cf64cd206945ed0f5837bca120a38c02292b15e0b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/new.svg",
+      "current": "design/assets/svg/dark/new.svg",
+      "previous_sha256": "fbdadea948e541e8877ffbb9d2319ae47eac7413ebe21bf65619bc2cd08618bc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/open.svg",
+      "current": "design/assets/svg/dark/open.svg",
+      "previous_sha256": "4929301fb4987f19cb03b538c41201d2639082ad1377835bffcc585fe276f589",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/search.svg",
+      "current": "design/assets/svg/dark/search.svg",
+      "previous_sha256": "2c70d9daeb7552cc9b2c66dc1645fd6a41b43f75b91a73c82daf993bcfcde267",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/settings.svg",
+      "current": "design/assets/svg/dark/settings.svg",
+      "previous_sha256": "051ec692684a4921884a3fa0a5e1e0acf5772c58af4a74171d93e4f0813ff2d5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/sort-ascending.svg",
+      "current": "design/assets/svg/dark/sort-ascending.svg",
+      "previous_sha256": "642dc0558f2a2baa94bc2e876d13eed698820a5901315568e2a0909c4a7b760a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/sort.svg",
+      "current": "design/assets/svg/dark/sort.svg",
+      "previous_sha256": "90ac542d11b2531143d5334d66816e63e931ba210bc222d369dbeb4a58143c93",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/task-list.svg",
+      "current": "design/assets/svg/dark/task-list.svg",
+      "previous_sha256": "14b4bd397ced676d3864ae8333ecec71166a1e46f0b20dec393a985be5301be4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/view-grid.svg",
+      "current": "design/assets/svg/dark/view-grid.svg",
+      "previous_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/dark/view-list.svg",
+      "current": "design/assets/svg/dark/view-list.svg",
+      "previous_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/app-mark.svg",
+      "current": "design/assets/svg/light/app-mark.svg",
+      "previous_sha256": "06abdf96487b60cc939291a1b2f5bfea5929eed30b8f0ad9e82b804b2e7e6080",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/archive-test.svg",
+      "current": "design/assets/svg/light/archive-test.svg",
+      "previous_sha256": "628c3969cf636cd890d0a023f298f67474e38260027ecda36588c7b9dfff668d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/archive.svg",
+      "current": "design/assets/svg/light/archive.svg",
+      "previous_sha256": "1d35f31e4b4545d41933dfd57f6241d9e547a24d4e55331d2bb0a7d17439584e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/arrow-right.svg",
+      "current": "design/assets/svg/light/arrow-right.svg",
+      "previous_sha256": "b979b34bfd12f6c9ead0a31b39f900ffb1858c0becdc5631fcfce3aa3fe77c86",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/check.svg",
+      "current": "design/assets/svg/light/check.svg",
+      "previous_sha256": "d657e12d854ea307d8bf85957d1fcd62beddf095a412308c3d20e79847de918a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/chevron-down.svg",
+      "current": "design/assets/svg/light/chevron-down.svg",
+      "previous_sha256": "773d54f171b412cc47c88e2faf75b1577dfd74455b9fee5c9f2ee60e8d647936",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/chevron-right.svg",
+      "current": "design/assets/svg/light/chevron-right.svg",
+      "previous_sha256": "230e977ba11768eb489b854a848163fc30b67b24fbed53dd80b1012c70b15c85",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/chevron-up.svg",
+      "current": "design/assets/svg/light/chevron-up.svg",
+      "previous_sha256": "b8c4c284a75c9673d9d8766d553ad73ecb3e86c5014141f1575fd7242cf3aed8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/close.svg",
+      "current": "design/assets/svg/light/close.svg",
+      "previous_sha256": "a3c0c8c3105e0811db4cd356fc2882c112ff8048b4386036d1acea7a7ca63fe3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/completed.svg",
+      "current": "design/assets/svg/light/completed.svg",
+      "previous_sha256": "54bd69a385c249b74173a1079f9cce7f4ab0d5813d62c239ef024157df852e87",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/external-open.svg",
+      "current": "design/assets/svg/light/external-open.svg",
+      "previous_sha256": "5c918818ba4acfbdf5ac24acbf422c8c2d8110a779920a0ae23b5ad8ef14ab72",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/extract.svg",
+      "current": "design/assets/svg/light/extract.svg",
+      "previous_sha256": "aeb6afb26bc209babce99ce135079cb0b9a9a04becee0f2fe4d6f92b0cae166d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/file-code.svg",
+      "current": "design/assets/svg/light/file-code.svg",
+      "previous_sha256": "1e6bafec656ede491770f41d7fd25ec8a3aed525b955ab795c296ea72f62fff2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/file-markdown.svg",
+      "current": "design/assets/svg/light/file-markdown.svg",
+      "previous_sha256": "783c9442d2c87fa9c70a6cbbff5340ed6f28c264675ca3cc0ec4149ef7900b14",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/file-pdf.svg",
+      "current": "design/assets/svg/light/file-pdf.svg",
+      "previous_sha256": "78d37c8766258d2e1556daab182c2c8c10b63b04ff1272f28129e4527a3cf9f7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/file-text.svg",
+      "current": "design/assets/svg/light/file-text.svg",
+      "previous_sha256": "56c722032eb18bb25685362b80bda8eb0343c2fce5604700c2ae0f3d0ebff81a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/folder.svg",
+      "current": "design/assets/svg/light/folder.svg",
+      "previous_sha256": "54dc1f8b2d3173d963a58e81fc1125d99144e48ed5e941d718af7cdfbc5c19aa",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/maximize.svg",
+      "current": "design/assets/svg/light/maximize.svg",
+      "previous_sha256": "1dff402f7ec9f7f205e3e8e1b7a3b318cd9b3c7b5d54d58afc18be7fc7bf8c07",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/minimize.svg",
+      "current": "design/assets/svg/light/minimize.svg",
+      "previous_sha256": "66a3a8fa9a4eb48d70a86ab467f8bc0d271c328657bb065a2297e5f600336d45",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/more.svg",
+      "current": "design/assets/svg/light/more.svg",
+      "previous_sha256": "91eb9fd7fabd91be4dc264b22cce85e99ec246992c0cb2c87e66551df992d97d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/new.svg",
+      "current": "design/assets/svg/light/new.svg",
+      "previous_sha256": "e32a59e5456db3ed9f1b49fb0ff9213ec499f37a78a804a9d9f4cd6b744aeadd",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/open.svg",
+      "current": "design/assets/svg/light/open.svg",
+      "previous_sha256": "9b394e3e2b0166b73658284f9082ae87ed3897fd186616830b15442bae57434c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/search.svg",
+      "current": "design/assets/svg/light/search.svg",
+      "previous_sha256": "d784a5819e28a18cb8a354123c80e45ab9d60494fe95336d4117eccc1ac88d7c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/settings.svg",
+      "current": "design/assets/svg/light/settings.svg",
+      "previous_sha256": "34d944341072bb16301e56764848b6355188c9d093f1db2b112159b72d44ad50",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/sort-ascending.svg",
+      "current": "design/assets/svg/light/sort-ascending.svg",
+      "previous_sha256": "3aee344055cd05c9abc5c664f27e9311c6d0e1aa3ee29e44318cc71cedfb4d97",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/sort.svg",
+      "current": "design/assets/svg/light/sort.svg",
+      "previous_sha256": "6bb281ed8a4b16728cb0be4c5e00123654e01f389433619d161a4f3606be76ce",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/task-list.svg",
+      "current": "design/assets/svg/light/task-list.svg",
+      "previous_sha256": "b4e281ff37f323dde1954486f5e3d39be99433df8485119097bb0de267a7df78",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/view-grid.svg",
+      "current": "design/assets/svg/light/view-grid.svg",
+      "previous_sha256": "0bc0f6f85b1955a781b43f04bc72d278d1f028243a3f1d40c906ee76d175ce66",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/svg/light/view-list.svg",
+      "current": "design/assets/svg/light/view-list.svg",
+      "previous_sha256": "965787c40ab286971e9fabb8be5ed483a48618ca6ce69e7ccd54a13ff6f9187d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/app-mark@1x.png",
+      "current": "design/assets/png/dark/app-mark@1x.png",
+      "previous_sha256": "a617ea0fc34ce0e63b1b2c3e61477f8c49cb850b8c1f342102fa3de4b0e0fa7f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/app-mark@2x.png",
+      "current": "design/assets/png/dark/app-mark@2x.png",
+      "previous_sha256": "8af857676407bda41164f7f33dabe1bf23ebff81ba381902a73b4e4f5ece2950",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/app-mark@3x.png",
+      "current": "design/assets/png/dark/app-mark@3x.png",
+      "previous_sha256": "52f6401ea0f39594336ab9a7bfb22b9775b159c17a9711efe33b0a4fc3dee614",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive-test@1x.png",
+      "current": "design/assets/png/dark/archive-test@1x.png",
+      "previous_sha256": "cb9ed3596a459555d0f2b757ac01980a275715075cd5f5eb5c85f88381ab5a03",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive-test@2x.png",
+      "current": "design/assets/png/dark/archive-test@2x.png",
+      "previous_sha256": "f0cb37e437ca87b1538b8e07beec31b33991088710606523fcc4c47ae0cb7e37",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive-test@3x.png",
+      "current": "design/assets/png/dark/archive-test@3x.png",
+      "previous_sha256": "8ec5b2135a85bedc9417365986661101c662699122038b8dc73cfa2cfa41f705",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive@1x.png",
+      "current": "design/assets/png/dark/archive@1x.png",
+      "previous_sha256": "71f50dc4d6df5beb9b10cabf145f4abc7d8086edb8a6cfa9eacabdab279a8e59",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive@2x.png",
+      "current": "design/assets/png/dark/archive@2x.png",
+      "previous_sha256": "d21d7eaef9a9d68cf48f8222d4cbe3f8b15d6ed1c619628317d27c1489f9a3a6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/archive@3x.png",
+      "current": "design/assets/png/dark/archive@3x.png",
+      "previous_sha256": "28663b808892c4e48c53b48ed64040089bc594497681e1f5023a3fcaa316b92d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/arrow-right@1x.png",
+      "current": "design/assets/png/dark/arrow-right@1x.png",
+      "previous_sha256": "157891384952bab5a72e2df3ad5670ee60d3a84e8e2e22bc3fa9ef168467d1de",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/arrow-right@2x.png",
+      "current": "design/assets/png/dark/arrow-right@2x.png",
+      "previous_sha256": "562776ccbf4c670b1384e4dc197f6db726b9d36f6e00011325330ebb03c1baee",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/arrow-right@3x.png",
+      "current": "design/assets/png/dark/arrow-right@3x.png",
+      "previous_sha256": "7a021cad0edc0aa3289032677b2e458097d7391371e57eb2089acc56fbc8f284",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/check@1x.png",
+      "current": "design/assets/png/dark/check@1x.png",
+      "previous_sha256": "25add3143475f2f73a41c30e35da03ad7595d4b7edd891c94d3f591153ead56f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/check@2x.png",
+      "current": "design/assets/png/dark/check@2x.png",
+      "previous_sha256": "f6b3ae2c5ba179773cd40707efea8729d7cb110f752d5bc8cc3efa2ee4793098",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/check@3x.png",
+      "current": "design/assets/png/dark/check@3x.png",
+      "previous_sha256": "5938a7b328362b132c2de6f23a0fcf13db9765b07c27c7cccff293add68c932c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-down@1x.png",
+      "current": "design/assets/png/dark/chevron-down@1x.png",
+      "previous_sha256": "f6b417d93c5aefef0ddd1bca3d5846718e4cc1bb1fe6674c7be7f869aa28fc73",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-down@2x.png",
+      "current": "design/assets/png/dark/chevron-down@2x.png",
+      "previous_sha256": "75551b2eca83b4a79d8620dc67d5999ade5a3c3c63a7978af5a6f889c004077f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-down@3x.png",
+      "current": "design/assets/png/dark/chevron-down@3x.png",
+      "previous_sha256": "34d5d2f82df57087e067be4b90ab4c8fed6850170b22febd31e697d32b39d50c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-right@1x.png",
+      "current": "design/assets/png/dark/chevron-right@1x.png",
+      "previous_sha256": "02925722cf7439ac9cbd3c2c99a483c476863f653e67e64e34459096b2eb3665",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-right@2x.png",
+      "current": "design/assets/png/dark/chevron-right@2x.png",
+      "previous_sha256": "815715072970dd9ccdf125d41d18f80f0e63c0688296a4575c5fa8b993e1ba3b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-right@3x.png",
+      "current": "design/assets/png/dark/chevron-right@3x.png",
+      "previous_sha256": "4e690bec6c6cd5daa9ecfdb704e1f444625d85cd9d056f5b82be5ea6989dc734",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-up@1x.png",
+      "current": "design/assets/png/dark/chevron-up@1x.png",
+      "previous_sha256": "4fb159b5eb335689ff30bc5d9ed5cb2abb2d3cc7a86a90b3349325e893f9c5d0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-up@2x.png",
+      "current": "design/assets/png/dark/chevron-up@2x.png",
+      "previous_sha256": "2461f9566395d5bfb048cc10251cb14377f7f92a387eaf1841a462d07f347a3f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/chevron-up@3x.png",
+      "current": "design/assets/png/dark/chevron-up@3x.png",
+      "previous_sha256": "d471e915f659c79bfbe44be36f3fb8209b6a664d318506abfe5e5ae7c02a17e6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/close@1x.png",
+      "current": "design/assets/png/dark/close@1x.png",
+      "previous_sha256": "1bb3b471e4f9a5528f5f8612565d42d5a677a2c44148b7e2d630e6fe7579ed9c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/close@2x.png",
+      "current": "design/assets/png/dark/close@2x.png",
+      "previous_sha256": "9c092e1059d5bfac3c0aacb409629d237c8f3819a08800250933a91f5fafc53c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/close@3x.png",
+      "current": "design/assets/png/dark/close@3x.png",
+      "previous_sha256": "976aeb16a8eefa883815d433ffc35a21a86208b3eabd4e6022ca2861c0cbe612",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/completed@1x.png",
+      "current": "design/assets/png/dark/completed@1x.png",
+      "previous_sha256": "13b94ee661f4d212d4917d419b59d0b278bee9f7dd491987a51ff488cf3def02",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/completed@2x.png",
+      "current": "design/assets/png/dark/completed@2x.png",
+      "previous_sha256": "949556a383e5a120acc94fc10ce6332d912f59ce0cae819da0f23de8bd54937a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/completed@3x.png",
+      "current": "design/assets/png/dark/completed@3x.png",
+      "previous_sha256": "0d0ffb12a97636a0e4519e284fa3b856bdc5d6692e552e9d60a40a9ab9970172",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/external-open@1x.png",
+      "current": "design/assets/png/dark/external-open@1x.png",
+      "previous_sha256": "36102337fe162bd6c2ffeab921d2962dfddf25c9cc9e10b9f87d2ee6d6246712",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/external-open@2x.png",
+      "current": "design/assets/png/dark/external-open@2x.png",
+      "previous_sha256": "9e5fa0755b09ebe52b567c4828800b72e2a9b85686ce62b7078a510d1f1f1207",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/external-open@3x.png",
+      "current": "design/assets/png/dark/external-open@3x.png",
+      "previous_sha256": "9e7e5be177cdaefd5bea72e262f283594672f35c394bdaf58d1fe46a80ca27b7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/extract@1x.png",
+      "current": "design/assets/png/dark/extract@1x.png",
+      "previous_sha256": "f6716adf4972148fb7ec00914c0b466302567205935ab47d86dfd94be02c8b14",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/extract@2x.png",
+      "current": "design/assets/png/dark/extract@2x.png",
+      "previous_sha256": "4a927fa120c9e29b0f56303dd8a10d33aba0e72a69cecb83d10ac7896a0ac998",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/extract@3x.png",
+      "current": "design/assets/png/dark/extract@3x.png",
+      "previous_sha256": "00dccc1263421c15c30dce0c9f042d74962f39a27fd5f09ffa17e96f854d1bbf",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-code@1x.png",
+      "current": "design/assets/png/dark/file-code@1x.png",
+      "previous_sha256": "ab892848c2c0479d932fc7b5b72c88c804c0799f001853b6467051f29de98602",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-code@2x.png",
+      "current": "design/assets/png/dark/file-code@2x.png",
+      "previous_sha256": "c68dace8d392169c38538de4d3c042a27e552b821f48ab4c57ba6c7eed53f560",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-code@3x.png",
+      "current": "design/assets/png/dark/file-code@3x.png",
+      "previous_sha256": "0877d4dd013de11e7645f0a8764875251469499c622af61f4db94e48a66a7101",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-markdown@1x.png",
+      "current": "design/assets/png/dark/file-markdown@1x.png",
+      "previous_sha256": "cf05b1f4760ec3e17b07e87c524c7477cab0bede8e996c56563682a9503c10c5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-markdown@2x.png",
+      "current": "design/assets/png/dark/file-markdown@2x.png",
+      "previous_sha256": "00bdd8daf2e99db1b22d700ac7d45cfdba8c4e90d94fba072826ab7d8d9a58de",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-markdown@3x.png",
+      "current": "design/assets/png/dark/file-markdown@3x.png",
+      "previous_sha256": "a0f08179780dd251ed96587f937355468b746ba7a0e47ee4b0e6e33db817d438",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-pdf@1x.png",
+      "current": "design/assets/png/dark/file-pdf@1x.png",
+      "previous_sha256": "5fffa0741deaa81e8d971f33f9f1348c5df619bf4e384feda7fc24d823dfa81b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-pdf@2x.png",
+      "current": "design/assets/png/dark/file-pdf@2x.png",
+      "previous_sha256": "0858380b1cecd302a6fcd33173ca9a7a61375a11acb34e9ae88ae1de9bdf5491",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-pdf@3x.png",
+      "current": "design/assets/png/dark/file-pdf@3x.png",
+      "previous_sha256": "1e39509ebb1291ffe830c717987d24d4d5ba0ae6d208d7c82226d30e3ca33954",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-text@1x.png",
+      "current": "design/assets/png/dark/file-text@1x.png",
+      "previous_sha256": "072b09049770b517cd84220faff9fc6cb676e5b63a0a232bb7ed43cc41fda117",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-text@2x.png",
+      "current": "design/assets/png/dark/file-text@2x.png",
+      "previous_sha256": "6cd26756952c449df4b07591e0007177acd6710f96fe8f0e871ffb5c32c0f8c4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/file-text@3x.png",
+      "current": "design/assets/png/dark/file-text@3x.png",
+      "previous_sha256": "62293dce39f01e6aee2f7a56aa94ccac77354bb5f06b62ae2d8e84743e35a9f4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/folder@1x.png",
+      "current": "design/assets/png/dark/folder@1x.png",
+      "previous_sha256": "412613ee385fdaa99d2fd8c48f76264480546022d832affbd3e32b00f2fcaf9d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/folder@2x.png",
+      "current": "design/assets/png/dark/folder@2x.png",
+      "previous_sha256": "1d22f93ca0a63d83d3fa75ea450917d8354e0df09bda871441505c0458846b61",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/folder@3x.png",
+      "current": "design/assets/png/dark/folder@3x.png",
+      "previous_sha256": "544b721db357dcaab17568c4c308344306ad6b1d8db1086b52a001dd2eb4c4b0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/maximize@1x.png",
+      "current": "design/assets/png/dark/maximize@1x.png",
+      "previous_sha256": "274828a7b8dfedd99068ca08a17c7955f5abfc77d286c416986240231076d608",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/maximize@2x.png",
+      "current": "design/assets/png/dark/maximize@2x.png",
+      "previous_sha256": "31611f721bf7b8465bbbfb19f9f6f7fc3b8b5612e08297e9432eb18ed487462f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/maximize@3x.png",
+      "current": "design/assets/png/dark/maximize@3x.png",
+      "previous_sha256": "21837c4c941e7cc82456248c17d91ea5de61f27540e267879b2fa0e2d28d5bd4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/minimize@1x.png",
+      "current": "design/assets/png/dark/minimize@1x.png",
+      "previous_sha256": "ae6791daf0516f310c27af695657478fae4355185be391eab35c3cf3dc67a8e5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/minimize@2x.png",
+      "current": "design/assets/png/dark/minimize@2x.png",
+      "previous_sha256": "8372691f3b55087048d90d696ad869546e9c40585539bddc6bf7c47332cb344f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/minimize@3x.png",
+      "current": "design/assets/png/dark/minimize@3x.png",
+      "previous_sha256": "b137a032bdbad504f9af797c027fc068e0d95b7e3d9a31d2eae870921e585387",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/more@1x.png",
+      "current": "design/assets/png/dark/more@1x.png",
+      "previous_sha256": "d08e0e941a9c49ae4efed36b860b4e3e27b023a678a8be5df7a8f87fdad970c2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/more@2x.png",
+      "current": "design/assets/png/dark/more@2x.png",
+      "previous_sha256": "a0cca26a62c26659cbfbd971c2da3602a38878ffae7766376cae9c07380f7844",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/more@3x.png",
+      "current": "design/assets/png/dark/more@3x.png",
+      "previous_sha256": "a42f3e7776bc66bcd1d46e1f4e06d0632ae2e186c7bf3847aea15aa97b727cf2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/new@1x.png",
+      "current": "design/assets/png/dark/new@1x.png",
+      "previous_sha256": "8e77960d9ed00c9d7c63b278251e329c0f4d7cdae35bec669433f9ba8d2ce485",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/new@2x.png",
+      "current": "design/assets/png/dark/new@2x.png",
+      "previous_sha256": "98ca06eb01edaf258b5aeba9056af7a8a9340bc592b5bd35067c97a96b46aa25",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/new@3x.png",
+      "current": "design/assets/png/dark/new@3x.png",
+      "previous_sha256": "57c6d434cd3ddba92e5abab4c79eda0d80d042b3ea9cc22f71367a1050fac1f7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/open@1x.png",
+      "current": "design/assets/png/dark/open@1x.png",
+      "previous_sha256": "58c8bb2247e7861df64b0fde56ecacff0a6072da8921bbdb7a1f7e4697c6a594",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/open@2x.png",
+      "current": "design/assets/png/dark/open@2x.png",
+      "previous_sha256": "e941756ac19bcf8f18fd0efdc1777d9b964588bb42798a25f3a22ae20583abde",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/open@3x.png",
+      "current": "design/assets/png/dark/open@3x.png",
+      "previous_sha256": "24f82f95e80b74d74611b4346406de9fe759ecb971e2fd9cdc5b7d71baab97bd",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/search@1x.png",
+      "current": "design/assets/png/dark/search@1x.png",
+      "previous_sha256": "162c4afad49bc81b7db63f593fdcdf49a94a8447eb9068d90f226876c6798814",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/search@2x.png",
+      "current": "design/assets/png/dark/search@2x.png",
+      "previous_sha256": "863edf5d3d590eabb58e8dddfaccde6e2694ef3aee41ed4c098d5244e36bc703",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/search@3x.png",
+      "current": "design/assets/png/dark/search@3x.png",
+      "previous_sha256": "34f8c50b3fe69247c71a8e383e5bba0fef83c939f7a3e46f7def1481fb324da3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/settings@1x.png",
+      "current": "design/assets/png/dark/settings@1x.png",
+      "previous_sha256": "6f1e8a0fc4e1282367e294f2b6c4257137189d5d230736a362247ce70047a3a2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/settings@2x.png",
+      "current": "design/assets/png/dark/settings@2x.png",
+      "previous_sha256": "635be241f466f8ed161e8c0aedf6d51eebc396459612c3a2eedeb9b8b2df5176",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/settings@3x.png",
+      "current": "design/assets/png/dark/settings@3x.png",
+      "previous_sha256": "5e4ebb4c3b669519ff68734fc1fc644bb46df0ea1170ee5ba25fd428d9ef1fe8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort-ascending@1x.png",
+      "current": "design/assets/png/dark/sort-ascending@1x.png",
+      "previous_sha256": "e9d8fd0aa3d0d97460bb0c9f23b8cf35a9dbd465a08e598860dcba63858c9079",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort-ascending@2x.png",
+      "current": "design/assets/png/dark/sort-ascending@2x.png",
+      "previous_sha256": "69cfa66f7ac7ec2a79b43ab531e7f04668b71841ac4dbaeb8aa5452a0e336aad",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort-ascending@3x.png",
+      "current": "design/assets/png/dark/sort-ascending@3x.png",
+      "previous_sha256": "9dd290fb0346662b92821cbb3498544a03435b89cace0c83171c184749614479",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort@1x.png",
+      "current": "design/assets/png/dark/sort@1x.png",
+      "previous_sha256": "b17a64ce4731d3c9c894c0dae2b12dcf825ed68f4b3e4be43f85059d17a48d71",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort@2x.png",
+      "current": "design/assets/png/dark/sort@2x.png",
+      "previous_sha256": "4878e49878184e49c440d244d1905e27d28b44c1a54f63e5c0714b05d932b134",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/sort@3x.png",
+      "current": "design/assets/png/dark/sort@3x.png",
+      "previous_sha256": "af64db02dbff454c50cba9041811cc0386d43a169dffb862a49f5ed9ffe77159",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/task-list@1x.png",
+      "current": "design/assets/png/dark/task-list@1x.png",
+      "previous_sha256": "e66ddbe98d756232f62f8f971b4d7e2c83a901a4408cb23bb770ee176bdfa961",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/task-list@2x.png",
+      "current": "design/assets/png/dark/task-list@2x.png",
+      "previous_sha256": "faba391a12dd9a470c2ade697c6a5bd823b39480e711ab9b4f036677f2bc34fe",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/task-list@3x.png",
+      "current": "design/assets/png/dark/task-list@3x.png",
+      "previous_sha256": "c8c62d610e9a566aa6d959d7dc32431c56f52a1ab963f690ed995306e75689a7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-grid@1x.png",
+      "current": "design/assets/png/dark/view-grid@1x.png",
+      "previous_sha256": "e23d22bb7ca8573d4214eacb0114bc3fcbd171c775383ee3a455c4a6e4bc70bd",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-grid@2x.png",
+      "current": "design/assets/png/dark/view-grid@2x.png",
+      "previous_sha256": "290f7d743970b5b00046d740063bdef2f19a063528318ea4f214fad278d0fc67",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-grid@3x.png",
+      "current": "design/assets/png/dark/view-grid@3x.png",
+      "previous_sha256": "ca068132a673d711879482e705f2d0765386807798e321d53dc3b5d39eafb6c3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-list@1x.png",
+      "current": "design/assets/png/dark/view-list@1x.png",
+      "previous_sha256": "9f410fced3dfdf30917fb28dad77c140c62b6c6287ac2366a3bbd6e281f1f994",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-list@2x.png",
+      "current": "design/assets/png/dark/view-list@2x.png",
+      "previous_sha256": "87c87940494f943a238f92b93777ce6075d6833062ee834d8b5c9774313829cc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/dark/view-list@3x.png",
+      "current": "design/assets/png/dark/view-list@3x.png",
+      "previous_sha256": "9117fc176deaeeb03b00ca3725e7920548c6883c45e5514aad380e624eefb545",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/app-mark@1x.png",
+      "current": "design/assets/png/light/app-mark@1x.png",
+      "previous_sha256": "a617ea0fc34ce0e63b1b2c3e61477f8c49cb850b8c1f342102fa3de4b0e0fa7f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/app-mark@2x.png",
+      "current": "design/assets/png/light/app-mark@2x.png",
+      "previous_sha256": "8af857676407bda41164f7f33dabe1bf23ebff81ba381902a73b4e4f5ece2950",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/app-mark@3x.png",
+      "current": "design/assets/png/light/app-mark@3x.png",
+      "previous_sha256": "52f6401ea0f39594336ab9a7bfb22b9775b159c17a9711efe33b0a4fc3dee614",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive-test@1x.png",
+      "current": "design/assets/png/light/archive-test@1x.png",
+      "previous_sha256": "dbc8a926dae941dd07e8fbfcff4c6dfddff12ab0fceba125828d5d7ac18868c1",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive-test@2x.png",
+      "current": "design/assets/png/light/archive-test@2x.png",
+      "previous_sha256": "b1096169e849dd88d865bf27f85ca0f0edf07bf7f94c02d49c6a747693f1cc92",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive-test@3x.png",
+      "current": "design/assets/png/light/archive-test@3x.png",
+      "previous_sha256": "9a949c1e7762fb86ffa2e4347568deb7809ef66e44c9db07c8e0cc4b1b9e9c46",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive@1x.png",
+      "current": "design/assets/png/light/archive@1x.png",
+      "previous_sha256": "71f50dc4d6df5beb9b10cabf145f4abc7d8086edb8a6cfa9eacabdab279a8e59",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive@2x.png",
+      "current": "design/assets/png/light/archive@2x.png",
+      "previous_sha256": "d21d7eaef9a9d68cf48f8222d4cbe3f8b15d6ed1c619628317d27c1489f9a3a6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/archive@3x.png",
+      "current": "design/assets/png/light/archive@3x.png",
+      "previous_sha256": "28663b808892c4e48c53b48ed64040089bc594497681e1f5023a3fcaa316b92d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/arrow-right@1x.png",
+      "current": "design/assets/png/light/arrow-right@1x.png",
+      "previous_sha256": "2ad4a455e421c0ca167b1876c271f89460c768aab8ad13fc1666e9e9a03d69e1",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/arrow-right@2x.png",
+      "current": "design/assets/png/light/arrow-right@2x.png",
+      "previous_sha256": "fa9f504bb6559ecd3e4903f22831e3d914a8b554164cf2ea84d962ea7e81ffdb",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/arrow-right@3x.png",
+      "current": "design/assets/png/light/arrow-right@3x.png",
+      "previous_sha256": "b1866c39b673b9df72914936c0b33288d959355ae5bf3fcde66d031297fdf489",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/check@1x.png",
+      "current": "design/assets/png/light/check@1x.png",
+      "previous_sha256": "1da1b7789180ce4bef11f24c40258c2ffe3739392990bb0aae39c61ac6bf9e53",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/check@2x.png",
+      "current": "design/assets/png/light/check@2x.png",
+      "previous_sha256": "5937ee23a20f95e04f78294268aed9ea32c697b3ee3217080d131a2f536f19a2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/check@3x.png",
+      "current": "design/assets/png/light/check@3x.png",
+      "previous_sha256": "9e64e127c655557292236d59b55377658ecc310c77b6387f9637d613a8d7aa68",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-down@1x.png",
+      "current": "design/assets/png/light/chevron-down@1x.png",
+      "previous_sha256": "0593103e2adf18b4af406a0fbae79fd6ee48788b34b6adf8c7babd7d879e7f87",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-down@2x.png",
+      "current": "design/assets/png/light/chevron-down@2x.png",
+      "previous_sha256": "a4a478a50880dd195f32656b618d55595218462fe6400714bf0cd4e454eb3e2b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-down@3x.png",
+      "current": "design/assets/png/light/chevron-down@3x.png",
+      "previous_sha256": "4a570f3bfeeea22bcd69a16394114dfe068d27a9957bd8018da5dba67af78790",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-right@1x.png",
+      "current": "design/assets/png/light/chevron-right@1x.png",
+      "previous_sha256": "9929bd12d477d9e38013b12347a40fcbc0f197aac4f05745c11df7a1673054d4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-right@2x.png",
+      "current": "design/assets/png/light/chevron-right@2x.png",
+      "previous_sha256": "191a928c2d2401f5dfc6cc90d0605245a351db116b41c2399ed4e8802a03bf8f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-right@3x.png",
+      "current": "design/assets/png/light/chevron-right@3x.png",
+      "previous_sha256": "e31b65743cc53b0d306cd9a73f8c73a4aa9cc0b9cde8a2337a87a18e7a5cf033",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-up@1x.png",
+      "current": "design/assets/png/light/chevron-up@1x.png",
+      "previous_sha256": "dd347d219e8277fcba9080894e7a9499104c1e1918a2ff1246a90186bd4c486c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-up@2x.png",
+      "current": "design/assets/png/light/chevron-up@2x.png",
+      "previous_sha256": "6e575a0acc274bfbdd18340adbc2a71fd13c3fab49fa756a85d17d5c521fc98c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/chevron-up@3x.png",
+      "current": "design/assets/png/light/chevron-up@3x.png",
+      "previous_sha256": "7f865b14b16dc94962d520607b546dde6f94faad50f653b8d557550ff1479f67",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/close@1x.png",
+      "current": "design/assets/png/light/close@1x.png",
+      "previous_sha256": "fc5869a92f3ae0aeb508ab72993214dec783d88b07f1bbb6e68d8e95a5f6a310",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/close@2x.png",
+      "current": "design/assets/png/light/close@2x.png",
+      "previous_sha256": "f3f1ef24199b3ef3dcc6a4c8fc623a8c4b332c4428b3fd78076cc10add38f12a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/close@3x.png",
+      "current": "design/assets/png/light/close@3x.png",
+      "previous_sha256": "342b5ecb21a1e1093333db2afea4549c4d0c485f292b8ace732f200a0e6ce881",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/completed@1x.png",
+      "current": "design/assets/png/light/completed@1x.png",
+      "previous_sha256": "acfbbdc392e450fb55d1e45e03e37a61495d928e81905c595068a3dcfdd7e533",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/completed@2x.png",
+      "current": "design/assets/png/light/completed@2x.png",
+      "previous_sha256": "d9c2593fec42739b3a0446174b7dbb0287f9d1d3d78235b1fdaa26427615a1b5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/completed@3x.png",
+      "current": "design/assets/png/light/completed@3x.png",
+      "previous_sha256": "1450778648a5da85254a238f454f36fa79568c186038eeb690be590c3553a9ed",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/external-open@1x.png",
+      "current": "design/assets/png/light/external-open@1x.png",
+      "previous_sha256": "51a67e74e2f0095eae5a218de843acc6745053a96c20a0a35348b662563ac9fa",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/external-open@2x.png",
+      "current": "design/assets/png/light/external-open@2x.png",
+      "previous_sha256": "62113c8c7f69daa6b37450a67b9f02a84e7d0353a948bc908659ec1b6a3ebb8e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/external-open@3x.png",
+      "current": "design/assets/png/light/external-open@3x.png",
+      "previous_sha256": "a99431fb7a50118d940f2f64a78c5968be2e0653510f44eeed3d96df36c3cd37",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/extract@1x.png",
+      "current": "design/assets/png/light/extract@1x.png",
+      "previous_sha256": "d67167863e42057774427ebd8fcab3c745ed82a5beb79e5e58f045479bf1aebe",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/extract@2x.png",
+      "current": "design/assets/png/light/extract@2x.png",
+      "previous_sha256": "5275495f39186c77821130fd5d51a0b0ce8b26fd2a0e8671f8e62194d233f87f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/extract@3x.png",
+      "current": "design/assets/png/light/extract@3x.png",
+      "previous_sha256": "b10ba13b7ed187a45c4d304cced533c1751765385e6df980c2d84a66f4805723",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-code@1x.png",
+      "current": "design/assets/png/light/file-code@1x.png",
+      "previous_sha256": "bd3f2a81a02e276d9e0e854799f9a2050d7f9e1e6c57fa0a5d2f0ab87c484662",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-code@2x.png",
+      "current": "design/assets/png/light/file-code@2x.png",
+      "previous_sha256": "8e5794fa24413393117ec0c60aecdea8774e1042833543994a34685e4ef204a2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-code@3x.png",
+      "current": "design/assets/png/light/file-code@3x.png",
+      "previous_sha256": "9d4635614093ebebf7869fff8814f11afb35b36f9a2e8357d940be720a39760b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-markdown@1x.png",
+      "current": "design/assets/png/light/file-markdown@1x.png",
+      "previous_sha256": "a4d2c543d68b70ef15629a89082dc07e79449508946ac80867cb038c98c1c126",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-markdown@2x.png",
+      "current": "design/assets/png/light/file-markdown@2x.png",
+      "previous_sha256": "9761ce50df848e5988ca73f94e93b5a03b57c5d6bb2bea4994b4eea728347672",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-markdown@3x.png",
+      "current": "design/assets/png/light/file-markdown@3x.png",
+      "previous_sha256": "cf77e7890cf1a56bb76cc360de12fba83ebce5cbd5f51da6d8796d4ffa525a12",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-pdf@1x.png",
+      "current": "design/assets/png/light/file-pdf@1x.png",
+      "previous_sha256": "5fffa0741deaa81e8d971f33f9f1348c5df619bf4e384feda7fc24d823dfa81b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-pdf@2x.png",
+      "current": "design/assets/png/light/file-pdf@2x.png",
+      "previous_sha256": "0858380b1cecd302a6fcd33173ca9a7a61375a11acb34e9ae88ae1de9bdf5491",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-pdf@3x.png",
+      "current": "design/assets/png/light/file-pdf@3x.png",
+      "previous_sha256": "1e39509ebb1291ffe830c717987d24d4d5ba0ae6d208d7c82226d30e3ca33954",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-text@1x.png",
+      "current": "design/assets/png/light/file-text@1x.png",
+      "previous_sha256": "09401447c3b9d14265a575304143f9c724f5fca0065a132db6298f946c6921b4",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-text@2x.png",
+      "current": "design/assets/png/light/file-text@2x.png",
+      "previous_sha256": "3afaf4e97d361f2180f343e68099df18db84cc6d7dcc4bdab23f4f71f095a988",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/file-text@3x.png",
+      "current": "design/assets/png/light/file-text@3x.png",
+      "previous_sha256": "ea0ed837802f7c24557f41391224cbb644eb2f116532d01716ba00902c7b7a58",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/folder@1x.png",
+      "current": "design/assets/png/light/folder@1x.png",
+      "previous_sha256": "412613ee385fdaa99d2fd8c48f76264480546022d832affbd3e32b00f2fcaf9d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/folder@2x.png",
+      "current": "design/assets/png/light/folder@2x.png",
+      "previous_sha256": "1d22f93ca0a63d83d3fa75ea450917d8354e0df09bda871441505c0458846b61",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/folder@3x.png",
+      "current": "design/assets/png/light/folder@3x.png",
+      "previous_sha256": "544b721db357dcaab17568c4c308344306ad6b1d8db1086b52a001dd2eb4c4b0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/maximize@1x.png",
+      "current": "design/assets/png/light/maximize@1x.png",
+      "previous_sha256": "f17f311d64d7ea11b55668f6375bbff264def96a87367333e2270fa7f2e17a7a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/maximize@2x.png",
+      "current": "design/assets/png/light/maximize@2x.png",
+      "previous_sha256": "38afa3973ae67d5e99b2a8124c0d2fb49f9326de66512cdfc529045a169e26cc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/maximize@3x.png",
+      "current": "design/assets/png/light/maximize@3x.png",
+      "previous_sha256": "479def585d0b6ab772642e31db03f75c5c1bd1980d0e46449dc04ec654315f8c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/minimize@1x.png",
+      "current": "design/assets/png/light/minimize@1x.png",
+      "previous_sha256": "24f3b6b2901744b1af71ec71381ac1934082164ba22e09ea214985c92e4dc175",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/minimize@2x.png",
+      "current": "design/assets/png/light/minimize@2x.png",
+      "previous_sha256": "fff3ece6a2c3112a70aff5cc00be796c62767d8dd05356c029a6b065e458755d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/minimize@3x.png",
+      "current": "design/assets/png/light/minimize@3x.png",
+      "previous_sha256": "0a1582740b92c8cefe87b90bf6834af862b3ce83371329ca00902b29b3134022",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/more@1x.png",
+      "current": "design/assets/png/light/more@1x.png",
+      "previous_sha256": "faf2ae7beea5f479e00172919bf0371ee8fbcaed90509dc9bf60b4a1696cb93d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/more@2x.png",
+      "current": "design/assets/png/light/more@2x.png",
+      "previous_sha256": "3f8eb24947c9216241333dfa09a6bb36275f3cadae2811f9c5a995e5e98e7795",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/more@3x.png",
+      "current": "design/assets/png/light/more@3x.png",
+      "previous_sha256": "41d05edcc49d6896a53f56e0af2d99775dace819e1b91b0825e5cc72e27cc471",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/new@1x.png",
+      "current": "design/assets/png/light/new@1x.png",
+      "previous_sha256": "19b4e1ee23da583d7b14ed0e2d351f894fcdc44e20f6a7b7a777dae2cc0fd3b6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/new@2x.png",
+      "current": "design/assets/png/light/new@2x.png",
+      "previous_sha256": "44944ea2e50cde20a795d6aac4df9b2dbe7d992f1df1e4085fcf93206e9be96b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/new@3x.png",
+      "current": "design/assets/png/light/new@3x.png",
+      "previous_sha256": "20cb1c355f90027c653df2101df5f9de7ae82eae0c33a6bbb0c49cd01b09393c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/open@1x.png",
+      "current": "design/assets/png/light/open@1x.png",
+      "previous_sha256": "f69b779374df3440f87a7799947efc7146f95cad5f149dc4fa74666169c59e1f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/open@2x.png",
+      "current": "design/assets/png/light/open@2x.png",
+      "previous_sha256": "9fdd9ca9127fec121c047a202c9df49782ae8444a91736b302cb82ec13413c70",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/open@3x.png",
+      "current": "design/assets/png/light/open@3x.png",
+      "previous_sha256": "960b263e70648b8a1875267e709b3b165e9d6fb26ea5094fd4cc368a60ebfcbd",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/search@1x.png",
+      "current": "design/assets/png/light/search@1x.png",
+      "previous_sha256": "9fb5381bf74228b2188d8132f2b1443185727d1ee332a73c73b4990f6792148f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/search@2x.png",
+      "current": "design/assets/png/light/search@2x.png",
+      "previous_sha256": "ae8a39cb76fa79697c8a4d11f83f33d57a33c3a4d35c41969f89b7cb48175ec3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/search@3x.png",
+      "current": "design/assets/png/light/search@3x.png",
+      "previous_sha256": "67ff3d4126ffba3db105fe84df2524286b648e331f7421045ac6ec3468133b10",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/settings@1x.png",
+      "current": "design/assets/png/light/settings@1x.png",
+      "previous_sha256": "b61fe05e6eb5afdbd4375e2f6a2c561c4f87b6c4ecc946cb1f03363b6badeea2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/settings@2x.png",
+      "current": "design/assets/png/light/settings@2x.png",
+      "previous_sha256": "25a5c600478f495cc76ad8263d97c0db4274a2d1026dd52320739f3ccbd1dfaa",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/settings@3x.png",
+      "current": "design/assets/png/light/settings@3x.png",
+      "previous_sha256": "d955fdf93f40202abbcceb607090b9c05f2c2feefefc70117edde6e6abbf1f15",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort-ascending@1x.png",
+      "current": "design/assets/png/light/sort-ascending@1x.png",
+      "previous_sha256": "0c611fb83cd4e3df5efe3a9862f4e37894a81ce34154bc2192f5a1e2b4d522b2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort-ascending@2x.png",
+      "current": "design/assets/png/light/sort-ascending@2x.png",
+      "previous_sha256": "02bd989ead0e1ac3588047dbf79895fd2b6df7d7ddba9fb9015f6a65e30ea1e5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort-ascending@3x.png",
+      "current": "design/assets/png/light/sort-ascending@3x.png",
+      "previous_sha256": "2d18abba2924643faada0a589e7cb16d76a0e72c7cbf6ad5cd32dc6d33a8b66c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort@1x.png",
+      "current": "design/assets/png/light/sort@1x.png",
+      "previous_sha256": "7d1531c637fc2d64e2bb1961d9cb6488cd19968598a2409b3d6fc9adec88d04a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort@2x.png",
+      "current": "design/assets/png/light/sort@2x.png",
+      "previous_sha256": "ac3c4d17694160e476b77ad1bc9fe8a259c82b70cafa2052d2276097ec3299c8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/sort@3x.png",
+      "current": "design/assets/png/light/sort@3x.png",
+      "previous_sha256": "f75f27af38617639261ed3de4ec97f16b54c49d41d306e0c2baca6e16149b13d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/task-list@1x.png",
+      "current": "design/assets/png/light/task-list@1x.png",
+      "previous_sha256": "e5e2c6ed3fb58110b332df151c7b5fd72dcba5373cd47568a891043564b10e19",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/task-list@2x.png",
+      "current": "design/assets/png/light/task-list@2x.png",
+      "previous_sha256": "9a9321125b2611b5f08075b7a721ef88ce827ce100d2022f1337f11d87743386",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/task-list@3x.png",
+      "current": "design/assets/png/light/task-list@3x.png",
+      "previous_sha256": "9ceebe27f47e5d2876f07afe119fdd9a704b34f9f96d1986430c48ac726b123f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-grid@1x.png",
+      "current": "design/assets/png/light/view-grid@1x.png",
+      "previous_sha256": "50a2cb0bdcfb2194257eae316a06bd62290062f636cf63dba66f3ff6f0039257",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-grid@2x.png",
+      "current": "design/assets/png/light/view-grid@2x.png",
+      "previous_sha256": "b6144fceaf1c7e3aee2a4f0bed3e1c99f4ec15e97ac678f5c54a8668532f046e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-grid@3x.png",
+      "current": "design/assets/png/light/view-grid@3x.png",
+      "previous_sha256": "cdd43af08c421fa70c52bf47a850fe16d2f090960a3b229b49c2c3264b6e5285",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-list@1x.png",
+      "current": "design/assets/png/light/view-list@1x.png",
+      "previous_sha256": "540e0bac6b01687b88781b66f3ced0ba26503d6801a63ef88b37bea65367779f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-list@2x.png",
+      "current": "design/assets/png/light/view-list@2x.png",
+      "previous_sha256": "570f230a0689c505d1d911653ff9f37011670152860b6647f27d1cd96c2e8bed",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/png/light/view-list@3x.png",
+      "current": "design/assets/png/light/view-list@3x.png",
+      "previous_sha256": "0ed4c410cc6ec82115987164ec8981a3b681258b7c9b00c6a12d8822bcd129bc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/assets/v1/slices/archive-test.png",
+      "current": "design/assets/reference/archive-test.png",
+      "previous_sha256": "8fc42fb6b38d4aef8dfac148099fe4cd0007fee9f52bb94f708e178056a5804a",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/brand-extract.png",
+      "current": "design/assets/reference/brand-extract.png",
+      "previous_sha256": "acb5f29c9d728a15d26412612718c966e660a1417f5fe763080e3260e9b728d9",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/brand-titlebar.png",
+      "current": "design/assets/reference/brand-titlebar.png",
+      "previous_sha256": "5e5ce42d82b22461f2f18a3cd6654f036beab876fd4eafbda737978e1f9fbaba",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/check-selected.png",
+      "current": "design/assets/reference/check-selected.png",
+      "previous_sha256": "d8a0ad6ac14b5b8751dd4f29e225176ec79949cb4eb9b695e1c798d0f4218ca1",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/close.png",
+      "current": "design/assets/reference/close.png",
+      "previous_sha256": "0f1ebf73397ee5be21015f059eb0406dec5a517376d4d4895ad7e9a56ed16d64",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/file-code.png",
+      "current": "design/assets/reference/file-code.png",
+      "previous_sha256": "a7a8348d2fdde54bd15ab812e8d535a23e23276d4796aa51bb204abce9f3e5ee",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/file-markdown.png",
+      "current": "design/assets/reference/file-markdown.png",
+      "previous_sha256": "113d0f81d624931e20521092c347c81392008f57c1a50cc52cbe7995bd7c186f",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/file-pdf.png",
+      "current": "design/assets/reference/file-pdf.png",
+      "previous_sha256": "d1151d24acfa6c2b0ac723467db46bbb3d1003219739c102d5858ddd2676b31b",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/file-text.png",
+      "current": "design/assets/reference/file-text.png",
+      "previous_sha256": "7772795c2683c0272da7be16095b0581c3928febcadc70c50da198682efd4a5b",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/folder.png",
+      "current": "design/assets/reference/folder.png",
+      "previous_sha256": "13e41bde2b7cec8ccb4e5d26033193f399ce837fd97a9117da81a6336bc7c64a",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/more.png",
+      "current": "design/assets/reference/more.png",
+      "previous_sha256": "d25585dee23489956f4c3877d2ba4d02451924c3401593af62371d0d637bcc71",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/new.png",
+      "current": "design/assets/reference/new.png",
+      "previous_sha256": "f88f7df6b891faad20f309cbe90bd29e10edff0ead4436b0c3f6e2b0bd2c1079",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/open.png",
+      "current": "design/assets/reference/open.png",
+      "previous_sha256": "754dc10811436fca963a488a1d35fcbe6810947d0a4335d51ec04133ce6e29a4",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/photo-lake-preview.png",
+      "current": "design/assets/demo/photo-lake-preview.png",
+      "previous_sha256": "2683e327141d74778422cc2e23f053d69b04eca2063dd60ebf017f50dcf57b3f",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/photo-lake-thumbnail.png",
+      "current": "design/assets/demo/photo-lake-thumbnail.png",
+      "previous_sha256": "aa08051f95e79dd9b53edac1f11756804b2b91456513ac9e12eb4b0672c8d8a6",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/photo-sunrise-thumbnail.png",
+      "current": "design/assets/demo/photo-sunrise-thumbnail.png",
+      "previous_sha256": "4bc90f2c981f5007c0d61a2bb489cea77fbb23fdb013f9bcbbf876f95876d38b",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/radio-selected.png",
+      "current": "design/assets/reference/radio-selected.png",
+      "previous_sha256": "73a2d918a2a3297b9c4c8f58199af8cd63b6fc9a020762343f0d49c578c5b4b4",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/radio-unselected.png",
+      "current": "design/assets/reference/radio-unselected.png",
+      "previous_sha256": "1f86d4c39b9b5d78879aef4831b0a7c4e376355d7fedbc07251b88b7cfa28eac",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/search.png",
+      "current": "design/assets/reference/search.png",
+      "previous_sha256": "b421c3e48411047ec913074a6dce35485a77ceedc47e2aa50cb3c3ab97194173",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/settings.png",
+      "current": "design/assets/reference/settings.png",
+      "previous_sha256": "eb23cb206ad311110869455064645b9d4b539c6c4429a660a127d08ccc3897ca",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/sort.png",
+      "current": "design/assets/reference/sort.png",
+      "previous_sha256": "22017cb1d881cdfb2dc27ce8507fe9a325a9d4f0da7b014a4a29dc4408b61647",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/success.png",
+      "current": "design/assets/reference/success.png",
+      "previous_sha256": "28ca5ee99307dabb73260c86a62d5af26d65977529c2c535053ad673e33b40cb",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/view-grid.png",
+      "current": "design/assets/reference/view-grid.png",
+      "previous_sha256": "9fad51b16734c528d3c937a51612632c21525986d5093ea349e040ad56b7e0d0",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/assets/v1/slices/view-list.png",
+      "current": "design/assets/reference/view-list.png",
+      "previous_sha256": "7ddeaaed5aef2cedeb91ad30a3e2f9994039627edc8b05527801e3d4d2e1463b",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/archive-add.svg",
+      "current": "design/assets/svg/dark/archive-add.svg",
+      "previous_sha256": "16a10471e5c1f7b12bf8d6148ec4c6482fc9b2098a0dcdf897f3c589637df4dd",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/archive-warning.svg",
+      "current": "design/assets/svg/dark/archive-warning.svg",
+      "previous_sha256": "72d63edaac121f076432124340b3ae5fb4b7ce89c3c67deb89835b4cf8cb1e8f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/clock.svg",
+      "current": "design/assets/svg/dark/clock.svg",
+      "previous_sha256": "44dd02220dff777df7c2c550ee8389926b41a00ed8c1675b15ab8e765625c41f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/document-conflict.svg",
+      "current": "design/assets/svg/dark/document-conflict.svg",
+      "previous_sha256": "60f5d54ad57b051830a385c9dc532ab6a9a627884502f77985a81a1124055393",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/document-download.svg",
+      "current": "design/assets/svg/dark/document-download.svg",
+      "previous_sha256": "3c20cb5b86fc4ed201d09ee774d1cb7e4826fb593ff1c7869c41dcbc1edc48bb",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/document-warning.svg",
+      "current": "design/assets/svg/dark/document-warning.svg",
+      "previous_sha256": "7b785ed8b9ed5e78878ed1b972f7b087740b6d7eb4931cb687089c4bf93df34e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/image-amber.svg",
+      "current": "design/assets/svg/dark/image-amber.svg",
+      "previous_sha256": "2ce3f30de781dbb302e5b15145bb6fd74ab0600a09b9c7ca399fb0d867bb038d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/image-file.svg",
+      "current": "design/assets/svg/dark/image-file.svg",
+      "previous_sha256": "b8c070753d270fb690567e18693b8b3992a8f78516db7b0c3e0dbf35d6132927",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/info.svg",
+      "current": "design/assets/svg/dark/info.svg",
+      "previous_sha256": "c7c9d963dacc6599ac119ad0e19387ff553d49bcac83d89cefcd251cc89b8bc3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/remove.svg",
+      "current": "design/assets/svg/dark/remove.svg",
+      "previous_sha256": "abd539e5971de6b971725bb0183bb79b0ee8c28f4e14f4911b8618b2436a6765",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/settings-tile.svg",
+      "current": "design/assets/svg/dark/settings-tile.svg",
+      "previous_sha256": "f3626d33c54539f5e01858d739d230226ab74ca80bf74d034ffb09fc5211586d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/spinner.svg",
+      "current": "design/assets/svg/dark/spinner.svg",
+      "previous_sha256": "8a5443b4a1aa1c060348896dd580f51b7da51bf0dbf5292e5754f76550401c04",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/status-partial-success.svg",
+      "current": "design/assets/svg/dark/status-partial-success.svg",
+      "previous_sha256": "b1ab5d92469b3cc9b105e374b42acc0364a151d5daf795ceac7cb2f0f88b8f4c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/status-skipped.svg",
+      "current": "design/assets/svg/dark/status-skipped.svg",
+      "previous_sha256": "a49a46534a1cb5d2d993c36efcf7433ed56319431439dc7b9aaf0186f3329ec7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/status-stopped.svg",
+      "current": "design/assets/svg/dark/status-stopped.svg",
+      "previous_sha256": "a12aab0c781724bf8513924d59f77f2ed27f2d4f273f7777b01088294392f526",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/status-success.svg",
+      "current": "design/assets/svg/dark/status-success.svg",
+      "previous_sha256": "53977819f6707a148fcb0592bd703edba484d14de22e1fc833d8f64592ed8b05",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/status-warning.svg",
+      "current": "design/assets/svg/dark/status-warning.svg",
+      "previous_sha256": "31986c5e49a2f868643f3880736fad001de7dc46b1a7d34864395571cedd7db5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/dark/theme-system.svg",
+      "current": "design/assets/svg/dark/theme-system.svg",
+      "previous_sha256": "2b3368989e77aa01903fbca762aae90a785e358005c9bbbe37cd5cc1e1b358cb",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/archive-add.svg",
+      "current": "design/assets/svg/light/archive-add.svg",
+      "previous_sha256": "b7b4515dc3a514a5e734770e0a9ea4113cbed37d827ea6e4046c4d11e03fb89b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/archive-warning.svg",
+      "current": "design/assets/svg/light/archive-warning.svg",
+      "previous_sha256": "22453e6a3ba5133a1d99be3d45aee3afed887d44494b8dbc11ef8f3889ecfcf6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/clock.svg",
+      "current": "design/assets/svg/light/clock.svg",
+      "previous_sha256": "c51136c1f2ebee4d383593a0f9ad23326068d564686cfd58ca06b4a09e9b571d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/document-conflict.svg",
+      "current": "design/assets/svg/light/document-conflict.svg",
+      "previous_sha256": "455f42aac78b05340cdeac71809b0ca3343e60b2d6b99132e0cbdc6e1eaf7f3f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/document-download.svg",
+      "current": "design/assets/svg/light/document-download.svg",
+      "previous_sha256": "3b5067caa9446bbd00aff47217c4be7c113463c17cbab8e3adecada617d7c98e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/document-warning.svg",
+      "current": "design/assets/svg/light/document-warning.svg",
+      "previous_sha256": "253601fbcb440e03d1b2f918e91145de085bb8eba659a3badb4c36b976fe6a17",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/image-amber.svg",
+      "current": "design/assets/svg/light/image-amber.svg",
+      "previous_sha256": "cf3e6a1edbc4932faac5986db0294a417bfd6caf8c37e5362993fc19dd14349e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/image-file.svg",
+      "current": "design/assets/svg/light/image-file.svg",
+      "previous_sha256": "d8109b60dfbff823a62cdff83ff9c497e4ddfd2312cc181ced957387ca734388",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/info.svg",
+      "current": "design/assets/svg/light/info.svg",
+      "previous_sha256": "49c7ea5c206e1c48d6ec3415fa1cf6b13111eab6868ea7021ee65123b4a6aee3",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/remove.svg",
+      "current": "design/assets/svg/light/remove.svg",
+      "previous_sha256": "e85d91f986b9111dafceb7a0934296843d5833f539a704779066f086f7d8a82b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/settings-tile.svg",
+      "current": "design/assets/svg/light/settings-tile.svg",
+      "previous_sha256": "06e2bdd04cc2bc8e73054ff862cea93ffec63249e0378f3234c19d9fc21cd84b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/spinner.svg",
+      "current": "design/assets/svg/light/spinner.svg",
+      "previous_sha256": "fa915dd74cadc11270c72c4c36f2d0abaedcb582c29b95d7363249678f0601ea",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/status-partial-success.svg",
+      "current": "design/assets/svg/light/status-partial-success.svg",
+      "previous_sha256": "38879ea5ab5b9a23dd0624790d2926d566823a6eebb810ad0cd6333c0c563671",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/status-skipped.svg",
+      "current": "design/assets/svg/light/status-skipped.svg",
+      "previous_sha256": "f37b7593ae549a8863dedcd73b90384eb7f1ea8a4a414ad4433383c05ca8621e",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/status-stopped.svg",
+      "current": "design/assets/svg/light/status-stopped.svg",
+      "previous_sha256": "89e59c3b17ba9abe8ac8c54257022d07ebda4d23bfdf9691d0c4d990dbb6e8b7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/status-success.svg",
+      "current": "design/assets/svg/light/status-success.svg",
+      "previous_sha256": "fcbb13c9f3710018c7e124e167792ed02b024c7449c76679aa8671fce983fb99",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/status-warning.svg",
+      "current": "design/assets/svg/light/status-warning.svg",
+      "previous_sha256": "7fd3516060e501acc0acfb39909902fee126ce0acd8038fde7f803e61b019a6f",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/svg/light/theme-system.svg",
+      "current": "design/assets/svg/light/theme-system.svg",
+      "previous_sha256": "cbd4b6ebbd2c7da4e1826ffa322e119512c112ed2a3ba79e1bc2d26adf932cc0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-add@1x.png",
+      "current": "design/assets/png/dark/archive-add@1x.png",
+      "previous_sha256": "67eef1689683c886a95b884636e1cdba179b667a5b5759ff2ec1df6782cbee72",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-add@2x.png",
+      "current": "design/assets/png/dark/archive-add@2x.png",
+      "previous_sha256": "bd09062e5fac9d2a260db5add5db0584b839a540a9b6da2b0ff758653dd04bee",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-add@3x.png",
+      "current": "design/assets/png/dark/archive-add@3x.png",
+      "previous_sha256": "c82784a82ed22de2ec1e85372bda1271cf42ad95f88b1e286032f16c3247660d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-warning@1x.png",
+      "current": "design/assets/png/dark/archive-warning@1x.png",
+      "previous_sha256": "51c6f9ca748db148ff4e50dc29d8fe0d34e0b13594ece72ca4cf0947912d7a36",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-warning@2x.png",
+      "current": "design/assets/png/dark/archive-warning@2x.png",
+      "previous_sha256": "c00d435970c8abd12a5b28f9d3216bc203ed09f2d0f8f9ae0259746346e256a5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/archive-warning@3x.png",
+      "current": "design/assets/png/dark/archive-warning@3x.png",
+      "previous_sha256": "4d5faf89289eb6539aad2ea4bf204ee446e1d1edcc1e70478f0a8b88c8aed639",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/clock@1x.png",
+      "current": "design/assets/png/dark/clock@1x.png",
+      "previous_sha256": "3b4c216aafa7b570f24d6fe1de91dbfc740cae1286bbb0f7e4fafd7fe65c8eac",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/clock@2x.png",
+      "current": "design/assets/png/dark/clock@2x.png",
+      "previous_sha256": "2b279bfa8fb709c3d956e4073d8bb3760f74f028e11189ddca533e0ee5eeb745",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/clock@3x.png",
+      "current": "design/assets/png/dark/clock@3x.png",
+      "previous_sha256": "86623197319b1a6efa9047c86d519bb7c1cf9ac781e01af0449c0ca7ea1a5e2d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-conflict@1x.png",
+      "current": "design/assets/png/dark/document-conflict@1x.png",
+      "previous_sha256": "8fc2ff8cad6375c2ff72353abbf56ab5e527ce86f41749398c388b3a10875dce",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-conflict@2x.png",
+      "current": "design/assets/png/dark/document-conflict@2x.png",
+      "previous_sha256": "3be7ca4b4adfa9e1363f519a71fa4d0d5d8519ef0e0798cffbf9b22852d9a243",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-conflict@3x.png",
+      "current": "design/assets/png/dark/document-conflict@3x.png",
+      "previous_sha256": "ef0450f7ca0af3a839247e1aac4ad6abd556d7f7ce3fdfa7e4dabdf283070317",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-download@1x.png",
+      "current": "design/assets/png/dark/document-download@1x.png",
+      "previous_sha256": "6f6fbb2c1beece08d6b20a9a2eeb15b6acda74d80bbed5ea7011f6db9adaffbe",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-download@2x.png",
+      "current": "design/assets/png/dark/document-download@2x.png",
+      "previous_sha256": "2e48b5522a5e059c1390c777a15c542ebd30eaa27632b8a4f077e0dea661bba6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-download@3x.png",
+      "current": "design/assets/png/dark/document-download@3x.png",
+      "previous_sha256": "4a72c4dec2ebba7d29708e0220a7035f725b112357c25c58ca51ab594ca6f23a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-warning@1x.png",
+      "current": "design/assets/png/dark/document-warning@1x.png",
+      "previous_sha256": "73ed16f54a1989238ce7bfe94d90949978b7cf71deae8ea7b54ee35e59012320",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-warning@2x.png",
+      "current": "design/assets/png/dark/document-warning@2x.png",
+      "previous_sha256": "2435a395d65f0929d473e14c78c064a85afbab7f1e8b3c7c11697729301eef0c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/document-warning@3x.png",
+      "current": "design/assets/png/dark/document-warning@3x.png",
+      "previous_sha256": "f53cdddb140116aba34f86b25c578b874e0aa1325e7a9df87643447b8f094625",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-amber@1x.png",
+      "current": "design/assets/png/dark/image-amber@1x.png",
+      "previous_sha256": "53289b2c8bb1d14ce5cba2382bb65675a54a5ff6f75358ae148bac9953262e06",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-amber@2x.png",
+      "current": "design/assets/png/dark/image-amber@2x.png",
+      "previous_sha256": "78a6437fd82e30fd5a81ceb67c3bfd5b25832a1fe9ab9fb6e4fa4169ae9c6dd0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-amber@3x.png",
+      "current": "design/assets/png/dark/image-amber@3x.png",
+      "previous_sha256": "3dd557185fcafd2b6dc25f98449d0b9c1147a14711ea23761b07dbf6004f4ad0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-file@1x.png",
+      "current": "design/assets/png/dark/image-file@1x.png",
+      "previous_sha256": "d120c5c0dbe0ab623db7234df015fcad7f71c64def51a9209dc9de020fed2dc7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-file@2x.png",
+      "current": "design/assets/png/dark/image-file@2x.png",
+      "previous_sha256": "f05daeca272d00b465ca10628d70728ff2b42f6d72736e7051dc9a811a50e0f2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/image-file@3x.png",
+      "current": "design/assets/png/dark/image-file@3x.png",
+      "previous_sha256": "a212cf82143259cc565631acbb4865751621b85c5f6e931d5744affb6b7e31e0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/info@1x.png",
+      "current": "design/assets/png/dark/info@1x.png",
+      "previous_sha256": "bf5d73612f65ba5c8c9efec9d45facf722184b16ee5a77413f5cc9332fa09e51",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/info@2x.png",
+      "current": "design/assets/png/dark/info@2x.png",
+      "previous_sha256": "e8ff53f8cafcc7c6d947ada0194be8d95c97dfd96a18a021c68855ae401ecbab",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/info@3x.png",
+      "current": "design/assets/png/dark/info@3x.png",
+      "previous_sha256": "64ffcca6211e5a5b9229ec327baa6567ace9102717c5b13b6d01298469471d54",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/remove@1x.png",
+      "current": "design/assets/png/dark/remove@1x.png",
+      "previous_sha256": "de3a09da78bc9de4c3156c1acc1f7c7e7e5e0c42a0e92128c42406549801eda0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/remove@2x.png",
+      "current": "design/assets/png/dark/remove@2x.png",
+      "previous_sha256": "29e306d9ad6ba4ebd8568522d637f077beb201553345f053438c09407a497dad",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/remove@3x.png",
+      "current": "design/assets/png/dark/remove@3x.png",
+      "previous_sha256": "bd4b632f7b19902478d711ebdb656ef6cb4e8d45503cf4f3dfa478a87549d4bc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/settings-tile@1x.png",
+      "current": "design/assets/png/dark/settings-tile@1x.png",
+      "previous_sha256": "35fc777e403fa913b860f11c7760885326951234beb3356421a0d06a8e0e1328",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/settings-tile@2x.png",
+      "current": "design/assets/png/dark/settings-tile@2x.png",
+      "previous_sha256": "3be52771dcc01a2e801d606008327b0044fb8d11d5d582f57c786edab7b3ec50",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/settings-tile@3x.png",
+      "current": "design/assets/png/dark/settings-tile@3x.png",
+      "previous_sha256": "006d785fcb0acf8e05ba7a7e981a94c478303ec3b4ac159864a445fe41c02ec8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/spinner@1x.png",
+      "current": "design/assets/png/dark/spinner@1x.png",
+      "previous_sha256": "8b011d42a68da720c7c0c7d12990ccfcee61a466e9b12c3170a9dcd2a2458e06",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/spinner@2x.png",
+      "current": "design/assets/png/dark/spinner@2x.png",
+      "previous_sha256": "4a0cf39033a6f8a0a2a4355163358a7b764c3caeb766dd1bf4fec6410a3af890",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/spinner@3x.png",
+      "current": "design/assets/png/dark/spinner@3x.png",
+      "previous_sha256": "f95417b014b7d284c6eba5c8c30fd26c637a61511594c2a9079f30dd1c47c352",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-partial-success@1x.png",
+      "current": "design/assets/png/dark/status-partial-success@1x.png",
+      "previous_sha256": "89c154e61128de91059c0be3335c61f2c4432027d85165cecf6a3ba2e8d64078",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-partial-success@2x.png",
+      "current": "design/assets/png/dark/status-partial-success@2x.png",
+      "previous_sha256": "13e224a7acf34a7e88cfddeafe8e2923a6036b96d17d05c74636899ffb2b30b1",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-partial-success@3x.png",
+      "current": "design/assets/png/dark/status-partial-success@3x.png",
+      "previous_sha256": "5913bc28d0dd7916ba74aeab5a9ebe7eb936c456811a44beaea9ab2af3a96426",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-skipped@1x.png",
+      "current": "design/assets/png/dark/status-skipped@1x.png",
+      "previous_sha256": "4c83cc7e3859c11933b4ec1b8b5c701a0f079e759a1c1fd3678bf0f9b704d0d9",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-skipped@2x.png",
+      "current": "design/assets/png/dark/status-skipped@2x.png",
+      "previous_sha256": "72872e60bb4a3c1e226612ddf4b4ff8ccfa2eff3736f0a22a2c0d478df21c979",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-skipped@3x.png",
+      "current": "design/assets/png/dark/status-skipped@3x.png",
+      "previous_sha256": "80749e4cafbbe6af964638fdc092c7e4721d4a3242af50eacb05e744d01336e0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-stopped@1x.png",
+      "current": "design/assets/png/dark/status-stopped@1x.png",
+      "previous_sha256": "9d3101a657c3cdf451646585e9e87ca4252b4159bbd7d2fdbd5a40da93451c4d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-stopped@2x.png",
+      "current": "design/assets/png/dark/status-stopped@2x.png",
+      "previous_sha256": "17d9ad56e21dc7983c6a2f80949b6738c43456db8e2c0cceb02f7717631f1c74",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-stopped@3x.png",
+      "current": "design/assets/png/dark/status-stopped@3x.png",
+      "previous_sha256": "3e58b3075800c2ad2a6b72039c1c01f8a4b0ad358c795ada64c74c50350b4b55",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-success@1x.png",
+      "current": "design/assets/png/dark/status-success@1x.png",
+      "previous_sha256": "57d49d7f2bf5681fe4c5577d6afacd8902cbf7ff0671353b6c4cd081bb9b20f2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-success@2x.png",
+      "current": "design/assets/png/dark/status-success@2x.png",
+      "previous_sha256": "a2d4836f3cc740ffa3f44a2462b7cb549253e16eb8234216bc518fb872d2467b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-success@3x.png",
+      "current": "design/assets/png/dark/status-success@3x.png",
+      "previous_sha256": "737d24d66d8e2e7fd6028e94d581673a2ba25b3c183cfb749455095cbef8bf14",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-warning@1x.png",
+      "current": "design/assets/png/dark/status-warning@1x.png",
+      "previous_sha256": "04e0a0b6948ad3020c75953d531e563bcea2e821bcdb528e8e31e04db7adfa33",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-warning@2x.png",
+      "current": "design/assets/png/dark/status-warning@2x.png",
+      "previous_sha256": "5aa9fa20b4afa18329941ab5db824ff52f71cf5c807f4caeb1eb07e5b49fe4d0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/status-warning@3x.png",
+      "current": "design/assets/png/dark/status-warning@3x.png",
+      "previous_sha256": "a52e34da9320e6e6b21f9957ed7b712fe3497bd08e9a381071d3e6244756ab05",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/theme-system@1x.png",
+      "current": "design/assets/png/dark/theme-system@1x.png",
+      "previous_sha256": "0899cbadb78fcb8902573aaa1e92823bdeb7dc8560d004de2c1715a48cf29a8d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/theme-system@2x.png",
+      "current": "design/assets/png/dark/theme-system@2x.png",
+      "previous_sha256": "483b50d726981af2c302dd15ddcb2842874065f30b349cc6ab7bbbabe034a96d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/dark/theme-system@3x.png",
+      "current": "design/assets/png/dark/theme-system@3x.png",
+      "previous_sha256": "fdf2edb8b04f01bc74a3dc2ea39fd3bd692163d827722b3a1b5a3daa1fa63916",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-add@1x.png",
+      "current": "design/assets/png/light/archive-add@1x.png",
+      "previous_sha256": "67eef1689683c886a95b884636e1cdba179b667a5b5759ff2ec1df6782cbee72",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-add@2x.png",
+      "current": "design/assets/png/light/archive-add@2x.png",
+      "previous_sha256": "bd09062e5fac9d2a260db5add5db0584b839a540a9b6da2b0ff758653dd04bee",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-add@3x.png",
+      "current": "design/assets/png/light/archive-add@3x.png",
+      "previous_sha256": "c82784a82ed22de2ec1e85372bda1271cf42ad95f88b1e286032f16c3247660d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-warning@1x.png",
+      "current": "design/assets/png/light/archive-warning@1x.png",
+      "previous_sha256": "51c6f9ca748db148ff4e50dc29d8fe0d34e0b13594ece72ca4cf0947912d7a36",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-warning@2x.png",
+      "current": "design/assets/png/light/archive-warning@2x.png",
+      "previous_sha256": "c00d435970c8abd12a5b28f9d3216bc203ed09f2d0f8f9ae0259746346e256a5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/archive-warning@3x.png",
+      "current": "design/assets/png/light/archive-warning@3x.png",
+      "previous_sha256": "4d5faf89289eb6539aad2ea4bf204ee446e1d1edcc1e70478f0a8b88c8aed639",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/clock@1x.png",
+      "current": "design/assets/png/light/clock@1x.png",
+      "previous_sha256": "8fc42c76e59cb2bd0a1fb70462a1b4d3cc561a5bdde27ca6a1760b4c2457d9dc",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/clock@2x.png",
+      "current": "design/assets/png/light/clock@2x.png",
+      "previous_sha256": "0093cf06dccb3ad2123471f8a67f3459ec9e62e78583ae3d20596d670eca032d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/clock@3x.png",
+      "current": "design/assets/png/light/clock@3x.png",
+      "previous_sha256": "f3ec4511ebe2edc4d02ab77601ad885a72c9e5429c00a1581bdde1c53efceaa7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-conflict@1x.png",
+      "current": "design/assets/png/light/document-conflict@1x.png",
+      "previous_sha256": "8fc2ff8cad6375c2ff72353abbf56ab5e527ce86f41749398c388b3a10875dce",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-conflict@2x.png",
+      "current": "design/assets/png/light/document-conflict@2x.png",
+      "previous_sha256": "3be7ca4b4adfa9e1363f519a71fa4d0d5d8519ef0e0798cffbf9b22852d9a243",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-conflict@3x.png",
+      "current": "design/assets/png/light/document-conflict@3x.png",
+      "previous_sha256": "ef0450f7ca0af3a839247e1aac4ad6abd556d7f7ce3fdfa7e4dabdf283070317",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-download@1x.png",
+      "current": "design/assets/png/light/document-download@1x.png",
+      "previous_sha256": "6f6fbb2c1beece08d6b20a9a2eeb15b6acda74d80bbed5ea7011f6db9adaffbe",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-download@2x.png",
+      "current": "design/assets/png/light/document-download@2x.png",
+      "previous_sha256": "2e48b5522a5e059c1390c777a15c542ebd30eaa27632b8a4f077e0dea661bba6",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-download@3x.png",
+      "current": "design/assets/png/light/document-download@3x.png",
+      "previous_sha256": "4a72c4dec2ebba7d29708e0220a7035f725b112357c25c58ca51ab594ca6f23a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-warning@1x.png",
+      "current": "design/assets/png/light/document-warning@1x.png",
+      "previous_sha256": "73ed16f54a1989238ce7bfe94d90949978b7cf71deae8ea7b54ee35e59012320",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-warning@2x.png",
+      "current": "design/assets/png/light/document-warning@2x.png",
+      "previous_sha256": "2435a395d65f0929d473e14c78c064a85afbab7f1e8b3c7c11697729301eef0c",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/document-warning@3x.png",
+      "current": "design/assets/png/light/document-warning@3x.png",
+      "previous_sha256": "f53cdddb140116aba34f86b25c578b874e0aa1325e7a9df87643447b8f094625",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-amber@1x.png",
+      "current": "design/assets/png/light/image-amber@1x.png",
+      "previous_sha256": "53289b2c8bb1d14ce5cba2382bb65675a54a5ff6f75358ae148bac9953262e06",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-amber@2x.png",
+      "current": "design/assets/png/light/image-amber@2x.png",
+      "previous_sha256": "78a6437fd82e30fd5a81ceb67c3bfd5b25832a1fe9ab9fb6e4fa4169ae9c6dd0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-amber@3x.png",
+      "current": "design/assets/png/light/image-amber@3x.png",
+      "previous_sha256": "3dd557185fcafd2b6dc25f98449d0b9c1147a14711ea23761b07dbf6004f4ad0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-file@1x.png",
+      "current": "design/assets/png/light/image-file@1x.png",
+      "previous_sha256": "d120c5c0dbe0ab623db7234df015fcad7f71c64def51a9209dc9de020fed2dc7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-file@2x.png",
+      "current": "design/assets/png/light/image-file@2x.png",
+      "previous_sha256": "f05daeca272d00b465ca10628d70728ff2b42f6d72736e7051dc9a811a50e0f2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/image-file@3x.png",
+      "current": "design/assets/png/light/image-file@3x.png",
+      "previous_sha256": "a212cf82143259cc565631acbb4865751621b85c5f6e931d5744affb6b7e31e0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/info@1x.png",
+      "current": "design/assets/png/light/info@1x.png",
+      "previous_sha256": "f6697aa4f9d9c9cdd9c1a46d6586bf04f9f0b8e1d11c487a35225c76b6d3a235",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/info@2x.png",
+      "current": "design/assets/png/light/info@2x.png",
+      "previous_sha256": "cc2023732005536e9b23b10f60f9f22978812629aedcca25044e59e48a1e7d53",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/info@3x.png",
+      "current": "design/assets/png/light/info@3x.png",
+      "previous_sha256": "67065b2945efe04fbe0fe1c0e4371ea9cfed67fc73559a43cd3a234b02948c5a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/remove@1x.png",
+      "current": "design/assets/png/light/remove@1x.png",
+      "previous_sha256": "842a1de3a7a973681320d611ef6229b5a72844e8517c7b6530f755eb21014424",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/remove@2x.png",
+      "current": "design/assets/png/light/remove@2x.png",
+      "previous_sha256": "4af311795d56e6a8568a3f359ec86603d69d16de5e2b795bd1f643218a74a328",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/remove@3x.png",
+      "current": "design/assets/png/light/remove@3x.png",
+      "previous_sha256": "6eeba1b4805fe2dbe3fe74c7f5f9a4459c81b5abae7d9806ea754c01ff81bba0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/settings-tile@1x.png",
+      "current": "design/assets/png/light/settings-tile@1x.png",
+      "previous_sha256": "35fc777e403fa913b860f11c7760885326951234beb3356421a0d06a8e0e1328",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/settings-tile@2x.png",
+      "current": "design/assets/png/light/settings-tile@2x.png",
+      "previous_sha256": "3be52771dcc01a2e801d606008327b0044fb8d11d5d582f57c786edab7b3ec50",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/settings-tile@3x.png",
+      "current": "design/assets/png/light/settings-tile@3x.png",
+      "previous_sha256": "006d785fcb0acf8e05ba7a7e981a94c478303ec3b4ac159864a445fe41c02ec8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/spinner@1x.png",
+      "current": "design/assets/png/light/spinner@1x.png",
+      "previous_sha256": "c473fa15f8dd3e9147ed777648511a376a2abbb3c1d4f1cf702548d2016cfa5b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/spinner@2x.png",
+      "current": "design/assets/png/light/spinner@2x.png",
+      "previous_sha256": "12cbf01940e01abc452760aee27d24140687a6b1d8b5f46daef31ab6fbda223d",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/spinner@3x.png",
+      "current": "design/assets/png/light/spinner@3x.png",
+      "previous_sha256": "9d8bb24b22cf02ac41bb1a66579538bb035fa22859390b6bc9a1d691b8e04a42",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-partial-success@1x.png",
+      "current": "design/assets/png/light/status-partial-success@1x.png",
+      "previous_sha256": "89c154e61128de91059c0be3335c61f2c4432027d85165cecf6a3ba2e8d64078",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-partial-success@2x.png",
+      "current": "design/assets/png/light/status-partial-success@2x.png",
+      "previous_sha256": "13e224a7acf34a7e88cfddeafe8e2923a6036b96d17d05c74636899ffb2b30b1",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-partial-success@3x.png",
+      "current": "design/assets/png/light/status-partial-success@3x.png",
+      "previous_sha256": "5913bc28d0dd7916ba74aeab5a9ebe7eb936c456811a44beaea9ab2af3a96426",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-skipped@1x.png",
+      "current": "design/assets/png/light/status-skipped@1x.png",
+      "previous_sha256": "541b15a69754a35fd67cd44791e23aeef75d7a0515d60ab8b69215616a32d0e5",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-skipped@2x.png",
+      "current": "design/assets/png/light/status-skipped@2x.png",
+      "previous_sha256": "3efbe1e81070f8463198b63d28525e5e3f8f4ab38468294e69ff29e62a7c09d7",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-skipped@3x.png",
+      "current": "design/assets/png/light/status-skipped@3x.png",
+      "previous_sha256": "e3abd56124feb56b6b4138c747d4e510b540e3d7e0aff0fe1db0ca24dfe1093a",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-stopped@1x.png",
+      "current": "design/assets/png/light/status-stopped@1x.png",
+      "previous_sha256": "b4b59e53e2fc5e2a5954c5bd07fc460d0107a9ee83936bdc59cc7389009d1731",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-stopped@2x.png",
+      "current": "design/assets/png/light/status-stopped@2x.png",
+      "previous_sha256": "d77bd19b591f94922c9a6927c0162cc339929c41e4f3f350b23d148522a05597",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-stopped@3x.png",
+      "current": "design/assets/png/light/status-stopped@3x.png",
+      "previous_sha256": "906f881e8f043fe0dc9acc6fcbc22c9272dd0247de83572d6ebf88b526ec7a72",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-success@1x.png",
+      "current": "design/assets/png/light/status-success@1x.png",
+      "previous_sha256": "57d49d7f2bf5681fe4c5577d6afacd8902cbf7ff0671353b6c4cd081bb9b20f2",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-success@2x.png",
+      "current": "design/assets/png/light/status-success@2x.png",
+      "previous_sha256": "a2d4836f3cc740ffa3f44a2462b7cb549253e16eb8234216bc518fb872d2467b",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-success@3x.png",
+      "current": "design/assets/png/light/status-success@3x.png",
+      "previous_sha256": "737d24d66d8e2e7fd6028e94d581673a2ba25b3c183cfb749455095cbef8bf14",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-warning@1x.png",
+      "current": "design/assets/png/light/status-warning@1x.png",
+      "previous_sha256": "04e0a0b6948ad3020c75953d531e563bcea2e821bcdb528e8e31e04db7adfa33",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-warning@2x.png",
+      "current": "design/assets/png/light/status-warning@2x.png",
+      "previous_sha256": "5aa9fa20b4afa18329941ab5db824ff52f71cf5c807f4caeb1eb07e5b49fe4d0",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/status-warning@3x.png",
+      "current": "design/assets/png/light/status-warning@3x.png",
+      "previous_sha256": "a52e34da9320e6e6b21f9957ed7b712fe3497bd08e9a381071d3e6244756ab05",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/theme-system@1x.png",
+      "current": "design/assets/png/light/theme-system@1x.png",
+      "previous_sha256": "5a06ec8ae7c8c6c657920fb90254eadc04f9a9c4f730e316f98ad094591ee1cf",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/theme-system@2x.png",
+      "current": "design/assets/png/light/theme-system@2x.png",
+      "previous_sha256": "e0c4f488a3443fa8854558dae209b84898faaa24d4662c7851110ef214f029b8",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/png/light/theme-system@3x.png",
+      "current": "design/assets/png/light/theme-system@3x.png",
+      "previous_sha256": "dc93d566d79ed6d8799944028c040d2fa100b41f60aaf309b8f535c7d174b3fb",
+      "preserved_bytes": false
+    },
+    {
+      "previous": "design/hifi/v2/slices/cancelled-large.png",
+      "current": "design/assets/reference/cancelled-large.png",
+      "previous_sha256": "a6fe60ce385f77b3952091c752153daa2d3bbc93a37a448793fc53882cae93b9",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/conflict-document.png",
+      "current": "design/assets/reference/conflict-document.png",
+      "previous_sha256": "b2f9e444963358ad29511207d32ca999ca5d2beca86b813e30e56b2ac5231bbc",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/conflict-pdf.png",
+      "current": "design/assets/reference/conflict-pdf.png",
+      "previous_sha256": "c3c5ff0f472eaa37d920ace33a65e883ec50c8e54abbb204de16474ae5093525",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/conflict-warning.png",
+      "current": "design/assets/reference/conflict-warning.png",
+      "previous_sha256": "e39d7330ef9aa3299215c4cda60c6b2725376c338e60b26056feee7994ff73ad",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/create-archive.png",
+      "current": "design/assets/reference/create-archive.png",
+      "previous_sha256": "e81ccbd3990edc0cd3754056ea9f8092bc42c4600f807a2853986d837ff2882f",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/existing-archive.png",
+      "current": "design/assets/reference/existing-archive.png",
+      "previous_sha256": "8cb25a2a7b46b246c7f50029fdcba5443e8c6fd98ff8ba2648d7532e44698f72",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/image-amber.png",
+      "current": "design/assets/reference/image-amber.png",
+      "previous_sha256": "7d081211cf499bcbc6bc9c694a5f9640010ef48f6355be533ba52ed668db6b2e",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/image-blue.png",
+      "current": "design/assets/reference/image-blue.png",
+      "previous_sha256": "96fea759fd9497f249acafe4fd2650a0a77f2616f0592b224038f5692d07fc63",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/linux-document.png",
+      "current": "design/assets/reference/linux-document.png",
+      "previous_sha256": "1f88eea038664bb4e17fa1065953957df36b1f38d106dc65f74fed58634d8da1",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/overwrite-archive.png",
+      "current": "design/assets/reference/overwrite-archive.png",
+      "previous_sha256": "5517e1f051d1f0de6a5303f0663937c0f7bbf67ec1a67f5a751584097e5300cc",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/partial-document.png",
+      "current": "design/assets/reference/partial-document.png",
+      "previous_sha256": "ffeb66427e27a5379149998ac30ae47555e6fde3b9245ad0d4c6338e56cfacf3",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/partial-skipped.png",
+      "current": "design/assets/reference/partial-skipped.png",
+      "previous_sha256": "ff4cbd5c9795555c928638273a499d995e15ea798e733d25e892cd288ffb6ef6",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/partial-success.png",
+      "current": "design/assets/reference/partial-success.png",
+      "previous_sha256": "e832b7efdd4deeac382f205ad16c9d69e80c4cbd983e4ed42e2e3cb73915b420",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/partial-warning.png",
+      "current": "design/assets/reference/partial-warning.png",
+      "previous_sha256": "d86f03738187c59d89035394d1041b0c4a490f6324d4976299ce7cf01ed8e767",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/progress-document.png",
+      "current": "design/assets/reference/progress-document.png",
+      "previous_sha256": "8377e48918849497adac99e81323b9c1f004ba3476428cc4b1a55f5d7bc3fca0",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/progress-image.png",
+      "current": "design/assets/reference/progress-image.png",
+      "previous_sha256": "aa646cfb095aacdfa6c7c954241fbcac83e418dff14e1581064d5e5b8164117b",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/remove-row.png",
+      "current": "design/assets/reference/remove-row.png",
+      "previous_sha256": "54de61fd8a879ae78c0891b92ad8fd46ce27904168a3e6b8b515ed74848df49d",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/settings-gear.png",
+      "current": "design/assets/reference/settings-gear.png",
+      "previous_sha256": "8e9a4344d4af471c73845e5fe51cae2e42750db078a9736c0430ed63c3b33698",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/stopping-spinner.png",
+      "current": "design/assets/reference/stopping-spinner.png",
+      "previous_sha256": "2c86abf654e46eef764841984193c449fb7878564d0ba08fa2ba8be3750a543c",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/success-large.png",
+      "current": "design/assets/reference/success-large.png",
+      "previous_sha256": "f4aa23cf79a7129e13e43c08bc12bf60c6c20cd720ef85bbb6f05f21fdafafba",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/theme-dark.png",
+      "current": "design/assets/reference/theme-dark.png",
+      "previous_sha256": "d04f3b951901201451b83113e2737b4b864585a890e6d4efad489503da5d3557",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/theme-light.png",
+      "current": "design/assets/reference/theme-light.png",
+      "previous_sha256": "ca602e10578f376db50dae68fb7adf43b49ab4dd78928e7d637b0b0d379795ac",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/theme-system.png",
+      "current": "design/assets/reference/theme-system.png",
+      "previous_sha256": "c766e3f1f479c320fd8fbdf725d9323b76ff8753f1729876105fa9a5d22bf713",
+      "preserved_bytes": true
+    },
+    {
+      "previous": "design/hifi/v2/slices/windows-document.png",
+      "current": "design/assets/reference/windows-document.png",
+      "previous_sha256": "11d7862c9c8461270f4f7bbf6bf4a049999c618f6427313427e9c5d622597da9",
+      "preserved_bytes": true
+    }
+  ]
+}

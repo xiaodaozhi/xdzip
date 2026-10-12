@@ -47,6 +47,7 @@ Rectangle {
                     width: 64
                     height: 64
                     source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
+                    fillMode: Image.PreserveAspectFit
                 }
             }
             Text {

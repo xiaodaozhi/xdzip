@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "artifact": "dist/xdzip-assets.html",
+  "sha256": "6053a34b96951b656a9c8a22e70bcca553c3abddb1099eeb29d154847bad0362",
+  "cases": [
+    {
+      "viewport_width": 390,
+      "images": 351,
+      "allLoaded": true,
+      "cards": 54,
+      "overflow": 0,
+      "allEmbedded": true,
+      "external_requests": [],
+      "page_errors": []
+    },
+    {
+      "viewport_width": 1280,
+      "images": 351,
+      "allLoaded": true,
+      "cards": 54,
+      "overflow": 0,
+      "allEmbedded": true,
+      "external_requests": [],
+      "page_errors": []
+    }
+  ],
+  "source_manifest_sha256": "0a873324b336da24255768e966b14bbe33ef1e5c0df7dd8af5f3315389bcea7c"
+}

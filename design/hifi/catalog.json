@@ -1,78 +1,66 @@
 {
-  "version": 1,
-  "notes": "当前视觉参考：v1 主窗口与解压确认、v2 操作状态。废弃提案已删除，历史由 Git 保存。",
+  "notes": "完整高保真原稿按功能平铺保存，SHA-256固定原稿；统一切片与透明运行素材位于design/assets。历史路径见../assets/migration.json。",
   "screens": [
     {
-      "file": "v1/screens/main-light.png",
+      "file": "screens/main-light.png",
       "title": "主窗口 · 浅色",
       "group": "current",
-      "version": "v1",
-      "previous_path": "design/assets/v1/sources/main-light.png",
       "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9"
     },
     {
-      "file": "v1/screens/extract-macos.png",
+      "file": "screens/extract-macos.png",
       "title": "解压确认 · macOS 独立窗口",
       "group": "current",
-      "version": "v1",
-      "previous_path": "design/assets/v1/sources/extract-macos.png",
       "sha256": "e21f7e9b90e4b2076618cf6c1d0d00e00f8696d21d722bc152b43b06699218f0"
     },
     {
-      "file": "v2/screens/01-create.png",
+      "file": "screens/create.png",
       "title": "新建归档",
       "group": "current",
-      "version": "v2",
       "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72"
     },
     {
-      "file": "v2/screens/02-conflict.png",
+      "file": "screens/conflict.png",
       "title": "重名冲突",
       "group": "current",
-      "version": "v2",
       "sha256": "29681423821a03f3f1c422c01ec8cc009140f817e07f8bc8b0597a662ce7ca0e"
     },
     {
-      "file": "v2/screens/03-progress.png",
+      "file": "screens/progress.png",
       "title": "任务进度",
       "group": "current",
-      "version": "v2",
       "sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387"
     },
     {
-      "file": "v2/screens/04-partial-result.png",
+      "file": "screens/partial-result.png",
       "title": "部分失败",
       "group": "current",
-      "version": "v2",
       "sha256": "056a8570e21226c29ef2ced8a0ea646a7b6988ab3f2c83d6add350695a8269df"
     },
     {
-      "file": "v2/screens/05-settings.png",
+      "file": "screens/settings.png",
       "title": "设置",
       "group": "current",
-      "version": "v2",
       "sha256": "78ce04944d9610d8d1f5a873e488b8ed1fa78a0e34bc8516dc218397939fd6b0"
     },
     {
-      "file": "v2/screens/06-task-states.png",
+      "file": "screens/task-states.png",
       "title": "任务状态",
       "group": "current",
-      "version": "v2",
       "sha256": "618667d2f46760e9d926707a713294f2467d9d50f9043d88f0b99d7e1b47fe13"
     },
     {
-      "file": "v2/screens/07-create-overwrite.png",
+      "file": "screens/create-overwrite.png",
       "title": "创建覆盖确认",
       "group": "current",
-      "version": "v2",
       "sha256": "422706e66533e42e3c3ecda80e810d95ca4669edfee6fc6bd4eebdf41bcd7fa9"
     },
     {
-      "file": "v2/screens/08-platforms.png",
+      "file": "screens/platforms.png",
       "title": "Windows / Linux 平台对照",
       "group": "current",
-      "version": "v2",
       "sha256": "7feb1bf4b03252e43063396f56bdfed1548db306241e578d8210a30c700bd297"
     }
-  ]
+  ],
+  "schema_version": 1
 }

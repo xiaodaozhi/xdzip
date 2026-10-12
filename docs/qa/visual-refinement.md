@@ -1,6 +1,6 @@
 # 视觉复核与修正：布局、排版、主题
 
-本轮对照已确认的 [v1 主窗口](../../design/hifi/v1/screens/main-light.png)、[v2 任务窗口](../../design/hifi/v2/screens/03-progress.png)与[逻辑尺寸规范](../visual/tokens.json)，修正现有 Qt 界面的可量化差异。产品 UI 源版本为 `90a9b72`；采集工具补充最小窗口与 200% 字号组合。历史证据不覆盖，先前状态见[顶部修正](header-review.md)及[初次严格复核](visual-audit-review.md)。
+本轮对照已确认的 [主窗口](../../design/hifi/screens/main-light.png)、[任务窗口](../../design/hifi/screens/progress.png)与[逻辑尺寸规范](../visual/tokens.json)，修正现有 Qt 界面的可量化差异。产品 UI 源版本为 `90a9b72`；采集工具补充最小窗口与 200% 字号组合。历史证据不覆盖，先前状态见[顶部修正](header-review.md)及[初次严格复核](visual-audit-review.md)。
 
 **结论：本地 46 项量化检查通过，完整设计还原仍未完成。** 这些检查覆盖已有组件的几何、字号、对齐、主题与响应式行为，不是“视觉还原率”，也不代替尚未实现的功能页面验收。
 
@@ -97,3 +97,5 @@
 | 平台原生外观 | macOS 标题栏融合沿用已有适配 | 最新 macOS、Retina DPR 2、GPU、全屏和拖动需实机验收 |
 
 图片与尺寸 token 有冲突时，本轮按明确的逻辑尺寸实现，图片用于结构、层级和视觉方向。未将剩余功能差异隐藏，也未把已通过的测量项目等同于完整视觉验收。
+
+素材目录于 2026-10-12 合并；本文原稿链接指向当前位置。历史截图、测量数值及 JSON 输入记录保持原样，旧路径可通过[迁移清单](../../design/assets/migration.json)或当时 Git 提交追溯。

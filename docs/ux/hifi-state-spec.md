@@ -1,6 +1,6 @@
 # 下一阶段高保真状态与实现契约
 
-对应 [v2 交付](../../design/hifi/v2/README.md)。状态编号延续原型映射，补充 C02、T02、R02、R03，不另造业务协议。需求 P03/P04/P05/P06/P07/P08/P11/P15；验收仍对照 AC-03/04/05/06/07/08/11/14。
+对应 [操作状态原稿](../../design/hifi/README.md) 和 [统一素材库](../../design/assets/README.md)。状态编号延续原型映射，补充 C02、T02、R02、R03，不另造业务协议。需求 P03/P04/P05/P06/P07/P08/P11/P15；验收仍对照 AC-03/04/05/06/07/08/11/14。
 
 ## 画面与任务语义
 
@@ -49,13 +49,13 @@
 
 | 使用位置 | 新增素材 | 共享 / 动态部分 |
 | --- | --- | --- |
-| 新建标题、添加输入 | archive-add、image-file、remove | v1 folder、file-pdf、new |
-| 冲突、部分失败 | document-warning、status-warning、info | v1 file-pdf；比较卡与文本由 QML 绘制 |
+| 新建标题、添加输入 | archive-add、image-file、remove | folder、file-pdf、new |
+| 冲突、部分失败 | document-warning、status-warning、info | file-pdf；比较卡与文本由 QML 绘制 |
 | 运行进度 | document-download、image-file、info | 进度条与数字动态绘制 |
 | 成功、跳过、取消、停止 | status-success、status-skipped、status-stopped、spinner、clock | spinner 旋转由 Qt 控件处理 |
-| 设置 | settings-tile、theme-system | 主题预览、开关、数字输入为组件；v1 settings 用于小图标 |
+| 设置 | settings-tile、theme-system | 主题预览、开关、数字输入为组件；settings 用于小图标 |
 
-位图源切片仅供对照；透明矢量/PNG 为重建候选，不能混称原稿图层。24 像素逻辑网格的 2×/3× PNG 保持相同显示尺寸。深色 SVG 是素材适配，完整深色行为仍需 Qt 实机与对比度检查。
+素材统一位于 `design/assets/`。`reference/` 保留原像素切片，用于外观对照；`svg/` 和 `png/` 为透明运行素材，不能混称原稿图层。全部 SVG 使用 24×24 画布，PNG 导出 24×24、48×48、72×72；各倍率保持相同逻辑显示尺寸。HTML 文件列表采用 48×48 源空间槽位，Qt 文件列表采用 18×18 逻辑像素槽位。PDF、文本、代码与 Markdown 图标共用中心与 22 像素可见高度，保留不同的轮廓宽度；文件夹在相同画布内居中。深色 SVG 是素材适配，完整深色行为仍需 Qt 实机与对比度检查。
 
 ## 进入 Qt 实施前的复核
 

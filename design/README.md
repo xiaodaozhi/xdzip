@@ -1,36 +1,35 @@
 # xdzip 设计交付目录
 
-**HTML 界面从 [html/index.html](html/index.html) 打开；已确认图片从 [hifi/index.html](hifi/index.html) 查看。** 二者各有职责，不是两套任选的视觉标准。HTML 按原稿实现，差异记录在 [HTML 交付说明](html/README.md)。
+**HTML 界面从 [html/index.html](html/index.html) 打开，完整原稿从 [hifi/index.html](hifi/index.html) 查看，素材统一从 [assets/index.html](assets/index.html) 查看。** 三个入口分别负责实现、视觉依据和共用素材；历史迭代由 Git 保存，不再按交付批次拆目录。
 
-| 目录 | 内容 | 当前使用者 | 是否保留 |
-| --- | --- | --- | --- |
-| `html/` | 可操作的 HTML 高保真界面、审阅入口、截图 | 浏览器审阅、离线交付、后续 Qt 对照 | 保留；唯一 HTML 界面源 |
-| `hifi/v1/screens/` | 已确认主窗口和解压确认原图 | HTML、Qt、素材复核 | 保留；仍是当前原稿 |
-| `hifi/v2/screens/` | 新建、冲突、任务、结果、设置等八张补充状态稿 | HTML、Qt、功能状态规范 | 保留；补充 v1，不替代 v1 |
-| `assets/fonts/` | HTML 离线字体子集、OFL许可及来源清单 | 固定浏览器复核的字形与文字度量 | 保留；仅用于 HTML |
-| `assets/v1/svg/` | 主窗口与通用图标的矢量源 | HTML 直接嵌入；PNG 导出源 | 保留 |
-| `assets/v1/png/` | 浅深色、1×/2×/3× PNG 导出 | Qt 当前引用 3×；其他倍率属于素材交付 | 保留 |
-| `assets/v1/slices/` | 原稿图标对照切片与示例照片 | 视觉核对；HTML 示例图片 | 保留；带背景图标不可进入 Qt |
-| `assets/v1/preview/` | 自动生成的素材总览 | 素材审阅 | 保留；不是额外设计标准 |
-| `hifi/v2/svg/`、`png/`、`slices/`、`preview/` | 操作窗口补充素材及其对照 | Qt 信息/文件图标、HTML 状态展示、素材审阅 | 保留；目录位置沿用 v2 包，跨包用途见清单 |
+| 目录 | 内容 | 当前用途 |
+| --- | --- | --- |
+| `html/` | 可编辑 HTML/CSS、审阅工具、截图与测量基准 | 浏览器审阅、离线交付、Qt 实现对照；唯一 HTML 界面源 |
+| `hifi/screens/` | 主窗口、解压确认及八张操作状态原稿 | 原稿展示、独立视觉测量；十张图片保持原始字节 |
+| `hifi/catalog.json`、`hifi/index.html` | 原稿用途、SHA-256 与统一画廊 | 查找完整设计稿、校验图片完整性 |
+| `assets/svg/light/`、`assets/svg/dark/` | 统一透明矢量图标源 | HTML 直接嵌入；Qt PNG 的唯一生成源 |
+| `assets/png/light/`、`assets/png/dark/` | 相同图标的 1×/2×/3× 透明导出 | Qt 引用 3× 文件并按逻辑尺寸显示；其他倍率用于素材交付 |
+| `assets/reference/` | 45 张保留原像素的外观对照切片 | 素材画廊中与透明图标相邻复核；包含原稿背景，不作为产品图标 |
+| `assets/demo/` | 三张湖景、日出示例照片 | HTML 文件缩略图与预览示例 |
+| `assets/fonts/` | HTML 离线字体子集、OFL 许可与来源清单 | 固定浏览器字形与文字度量；Qt 继续采用平台字体 |
+| `assets/preview/` | 自动生成的素材总览 | 统一审阅，不另定义视觉标准 |
+| `assets/manifest.json` | 素材来源、画布、透明性、倍率与 SHA-256 | 生成器、资源集成检查与素材画廊的共用清单 |
 
-`hifi/` 的 catalog 和画廊统一索引当前十张原稿；素材 manifest 记录来源、尺寸、类型与哈希。目录中的 `v1/v2` 表示交付来源，不表示“v1 已作废”。
+原来分散在 `assets` 和 `hifi` 的图标已经合入同一素材库。HTML 载入两种主题的共用 SVG 和三张示例照片；Qt 的 37 个资源别名引用其中 34 张不同 PNG。原稿对照切片也完整保留，并与运行图标区分用途。
 
-## 已删除或替换
+## 图标尺寸
 
-- `hifi/archive/early/`：未采用的三张早期提案已删除。
-- `assets/v1/brand/`：未采用的生成式品牌母图及五种导出已删除，当前品牌使用共享 `app-mark` 矢量。
-- `assets/v1/sources/`：原稿迁移后留下的空目录已删除。
-- `prototype/`：功能逻辑迁入 `html/` 并重做视觉；旧目录不再保留。
-- 旧原型截图：被新的 HTML 实际渲染截图替换，避免作为当前效果误用。
+所有透明图标使用 `viewBox="0 0 24 24"`，PNG 导出为 24×24、48×48、72×72。PDF、文本、代码和 Markdown 图标共用中心与 22 像素可见高度，保留各类型的轮廓宽度和内部样式；文件夹保留 15 像素高的横向形状，在相同画布内居中。HTML 使用统一的 48×48 源空间槽位，Qt 文件列表使用统一的 18×18 逻辑像素槽位，不再逐类型放大或平移图标。
 
-历史版本通过 Git 追溯，不在设计目录另存一套废弃交付。删除不影响已确认原稿和 Qt 运行素材。
+原像素对照切片保留各自裁切矩形，因此其物理尺寸不同；其尺寸不用于设置运行时图标大小。调整 SVG 后重新导出 PNG，HTML 与 Qt 才能保持同一图形。
 
 ## 更新顺序
 
-1. 视觉依据更新 `hifi` 原稿清单；不能修改原稿来掩盖实现差异。
-2. 图标修改 SVG 生成器，导出两种主题和多倍率 PNG，并查看相邻原稿对照。
-3. 运行 `python scripts/build-html-design.py`，同步 HTML 共用素材并生成 `dist/xdzip-hifi-design.html`。
-4. 运行 `python scripts/check-html-design.py` 验证浏览器交互；另做原稿对照，不把测试通过当作视觉相似度。
+1. 新增完整原稿放入 `hifi/screens/`，更新原稿清单；不能修改原稿来掩盖实现差异。
+2. 图标修改统一生成器，导出两种主题及多倍率 PNG，在素材画廊与原稿切片逐项核对。
+3. 运行 `python scripts/build-html-design.py`，同步 HTML 共用素材并生成离线交付。
+4. 运行素材、资源集成与 HTML 检查，再查看实际渲染。交互或结构检查通过不等于视觉验收通过。
+
+未采用的品牌母图、早期提案、旧原型与重复素材交付目录已删除。历史 QA 报告保留当时的截图、数值与哈希；旧输入路径通过素材迁移清单或对应 Git 提交追溯。
 
 Qt 实际截图在 `docs/qa/`，HTML 截图在 `html/screenshots/`；两者都不是原稿。

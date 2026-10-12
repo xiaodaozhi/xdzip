@@ -17,6 +17,8 @@ ApplicationWindow {
     property bool integratedTitlebar: false
     property string searchSession: ""
     property bool darkMode: false
+    // File and directory icons share one logical slot; artwork retains its aspect ratio.
+    readonly property int entryIconSize: 18
     onDarkModeChanged: Theme.dark = darkMode
     visible: true
     title: reader.title.length ? reader.title + " — xdzip" : "xdzip"
@@ -186,8 +188,9 @@ ApplicationWindow {
                             spacing: 12
                             Image {
                                 source: root.fileIcon("", true)
-                                Layout.preferredWidth: 18
-                                Layout.preferredHeight: 18
+                                Layout.preferredWidth: root.entryIconSize
+                                Layout.preferredHeight: root.entryIconSize
+                                fillMode: Image.PreserveAspectFit
                             }
                             Text {
                                 Layout.fillWidth: true
@@ -279,8 +282,9 @@ ApplicationWindow {
                                 spacing: 8
                                 Image {
                                     source: root.fileIcon("", true)
-                                    Layout.preferredWidth: 18
-                                    Layout.preferredHeight: 18
+                                    Layout.preferredWidth: root.entryIconSize
+                                    Layout.preferredHeight: root.entryIconSize
+                                    fillMode: Image.PreserveAspectFit
                                 }
                                 Text {
                                     Layout.fillWidth: true
@@ -504,9 +508,10 @@ ApplicationWindow {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 42
                                 anchors.verticalCenter: parent.verticalCenter
-                                width: 18
-                                height: 18
+                                width: root.entryIconSize
+                                height: root.entryIconSize
                                 source: root.fileIcon(cell.display, cell.isDirectory)
+                                fillMode: Image.PreserveAspectFit
                             }
                             Text {
                                 anchors.fill: parent

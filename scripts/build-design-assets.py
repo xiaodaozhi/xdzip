@@ -1,90 +1,200 @@
 #!/usr/bin/env python3
-"""Export design assets; these tools do not form part of the product runtime."""
-from pathlib import Path
-import subprocess, json, hashlib, html
-root = Path(__file__).resolve().parents[1] / 'design/assets/v1'
-assets = []
+"""Build the one canonical asset library; never regenerate approved artwork."""
+from __future__ import annotations
 
-def run(*args):
-    subprocess.run(args, check=True, capture_output=True)
-crops = {'brand-titlebar': ('main-light', 136, 44, 31, 37), 'brand-extract': ('extract-macos', 125, 136, 104, 122), 'folder': ('main-light', 397, 302, 42, 41), 'file-pdf': ('main-light', 397, 626, 44, 50), 'file-text': ('main-light', 398, 694, 43, 49), 'file-code': ('main-light', 397, 760, 47, 48), 'file-markdown': ('main-light', 397, 829, 47, 51), 'photo-lake-preview': ('main-light', 1198, 241, 351, 277), 'photo-lake-thumbnail': ('main-light', 397, 494, 45, 45), 'photo-sunrise-thumbnail': ('main-light', 397, 560, 45, 46), 'open': ('main-light', 48, 111, 32, 32), 'new': ('main-light', 174, 111, 28, 32), 'archive-test': ('main-light', 317, 110, 34, 34), 'more': ('main-light', 448, 111, 31, 31), 'search': ('main-light', 920, 111, 32, 32), 'settings': ('main-light', 1515, 43, 36, 34), 'view-list': ('main-light', 1000, 182, 46, 40), 'view-grid': ('main-light', 1065, 185, 28, 30), 'sort': ('main-light', 1114, 185, 36, 30), 'close': ('main-light', 1524, 192, 28, 27), 'check-selected': ('main-light', 337, 501, 30, 31), 'success': ('extract-macos', 141, 501, 43, 43), 'radio-selected': ('extract-macos', 142, 654, 42, 42), 'radio-unselected': ('extract-macos', 142, 934, 42, 43)}
-for name, (source, x, y, w, h) in crops.items():
-    target = root / 'slices' / f'{name}.png'
-    run('magick', str(root / '../../hifi/v1/screens' / f'{source}.png'), '-crop', f'{w}x{h}+{x}+{y}', '+repage', str(target))
-    assets.append(dict(id='slice/' + name, file=str(target.relative_to(root)), kind='original-pixel-crop', source='../../hifi/v1/screens/' + source + '.png', rect=[x, y, w, h], size=[w, h], background='baked source pixels; not transparent', usage='visual-reference' if not name.startswith('photo') else 'demo-image-only'))
-paths = {'open': 'M3 8V5.5A2 2 0 0 1 5 3.5h4.2L12 6h7a2 2 0 0 1 2 2v10.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z M3 9h18',
- 'new': 'M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z M12 8v8 M8 12h8',
- 'archive-test': 'M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z M7.5 12l3 3 6-6',
- 'search': 'M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0 M15 15l6 6',
- 'close': 'M6 6l12 12 M18 6L6 18',
- 'chevron-down': 'M6 9l6 6 6-6',
- 'chevron-right': 'M9 6l6 6-6 6',
- 'chevron-up': 'M6 15l6-6 6 6',
- 'check': 'M5 12l4 4L19 6',
- 'arrow-right': 'M4 12h16 M14 6l6 6-6 6',
- 'extract': 'M12 3v12 M7 10l5 5 5-5 M4 15v6h16v-6',
- 'view-list': 'M5 6h14 M5 12h14 M5 18h14',
- 'view-grid': 'M4 4h6v6H4Z M14 4h6v6h-6Z M4 14h6v6H4Z M14 14h6v6h-6Z',
- 'sort': 'M5 5v14 M2 16l3 3 3-3 M12 6h9 M12 12h6 M12 18h3',
- 'sort-ascending': 'M12 20V4 M6 10l6-6 6 6',
- 'completed': 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M7 12l3 3 7-7',
- 'external-open': 'M14 3h7v7 M21 3L10 14 M10 5H4v16h16v-6',
- 'minimize': 'M5 12h14',
- 'maximize': 'M5 5h14v14H5z',
- 'settings': 'M10 3.2c0-.7.5-1.2 1.2-1.2h1.6c.7 0 1.2.5 1.2 1.2v1.3l1.9 1.1 1.1-.6c.6-.4 1.3-.2 1.7.4l.8 '
-             '1.4c.4.6.2 1.3-.4 1.7l-1.1.6v2.2l1.1.6c.6.4.8 1.1.4 1.7l-.8 1.4c-.4.6-1.1.8-1.7.4l-1.1-.6-1.9 '
-             '1.1v1.3c0 .7-.5 1.2-1.2 1.2h-1.6c-.7 '
-             '0-1.2-.5-1.2-1.2v-1.3l-1.9-1.1-1.1.6c-.6.4-1.3.2-1.7-.4l-.8-1.4c-.4-.6-.2-1.3.4-1.7l1.1-.6V9.1L4.9 '
-             '8.5c-.6-.4-.8-1.1-.4-1.7l.8-1.4c.4-.6 1.1-.8 1.7-.4l1.1.6L10 4.5Z M15 10.2a3 3 0 1 1-6 0 3 3 0 '
-             '0 1 6 0'}
-colored = {'folder': '<defs><linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#64b8ff"/><stop '
-           'offset="1" stop-color="#429cff"/></linearGradient></defs><path fill="#1761ff" stroke="#1761ff" '
-           'stroke-width="1" d="M3.5 4.5h5.3l2.8 2.6h8.9a1 1 0 0 1 1 1v11.4a1 1 0 0 1-1 1h-17a1 1 0 0 '
-           '1-1-1v-14a1 1 0 0 1 1-1Z"/><rect x="2.5" y="8" width="19" height="12.5" rx="1.2" fill="url(#f)" '
-           'stroke="#267dff" stroke-width="1"/>',
- 'archive': '<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#409cff"/><stop '
-            'offset="1" stop-color="#164fff"/></linearGradient></defs><path fill="url(#a)" stroke="none" '
-            'd="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path fill="#1650da" '
-            'stroke="none" d="M14 2v4a2 2 0 0 0 2 2h4Z"/><path stroke="white" stroke-width=".8" d="M11 '
-            '3.5v11 M10 4h2 M11 6h2 M10 8h2 M11 10h2 M10 12h2"/><rect x="10.1" y="14.5" width="3.2" '
-            'height="4.5" rx=".8" fill="none" stroke="white" stroke-width="1"/>',
- # Source text document has one short header line and three full body lines.
- 'file-text': '<path fill="{paper}" stroke="{muted}" stroke-width="1.2" d="M6 2h8l5 5v13.5a1.5 1.5 0 0 1-1.5 '
-              '1.5H6a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 6 2Z"/><path stroke="{muted}" '
-              'stroke-width="1.2" d="M14 2v5h5 M7.5 7.5h4.7 M7.5 10.4h8 M7.5 13.4h8 M7.5 16.3h8"/>',
- 'file-code': '<rect x="3" y="2" width="18" height="20" rx="2.5" fill="{paper}" stroke="{muted}" '
-              'stroke-width="1"/><path d="m8.5 9-3 3 3 3m7-6 3 3-3 3m-2.2-7-2.6 8"/>',
- 'file-markdown': '<rect x="3" y="2" width="18" height="20" rx="2.5" fill="{paper}" stroke="{muted}" '
-                  'stroke-width="1"/><path d="M6 15V9l3 4 3-4v6m5-6v6m-2-2 2 2 2-2"/>',
- 'file-pdf': '<defs><linearGradient id="p" x2="0" y2="1"><stop stop-color="#ff393e"/><stop offset="1" '
-             'stop-color="#ed121c"/></linearGradient></defs><path fill="url(#p)" stroke="none" d="M6 2h8l5 '
-             '5v13.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5v-17A1.5 1.5 0 0 1 6 2Z"/><path '
-             'fill="white" stroke="none" d="M14 2v5h5Z"/><g stroke="white" stroke-width=".9" '
-             'stroke-linejoin="round"><path d="M7 18v-5h1.3a1.3 1.3 0 0 1 0 2.6H7 M11 13h.9a1.6 1.6 0 0 1 '
-             '1.6 1.6v1.8a1.6 1.6 0 0 1-1.6 1.6H11Z M16 18v-5h2 M16 15.4h1.6"/></g>',
- # Three bullet-and-line rows distinguish the task drawer from the view-list glyph.
- # At a 32px UI slot, its visible footprint is approximately 22 by 18px.
- 'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6" r=".8"/><circle cx="4" cy="12" r=".8"/>'
-              '<circle cx="4" cy="18" r=".8"/></g><path d="M9 6h10 M9 12h10 M9 18h10"/>',
- 'more': '<circle cx="5" cy="12" r="1.5" fill="{ink}" stroke="none"/><circle cx="12" cy="12" r="1.5" '
-         'fill="{ink}" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="{ink}" stroke="none"/>',
- 'app-mark': '<defs><linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#409cff"/><stop '
-             'offset="1" stop-color="#164fff"/></linearGradient></defs><rect x="3" y="2" width="18" '
-             'height="20" rx="3" fill="url(#a)" stroke="none"/><path stroke="white" stroke-width=".8" d="M11 '
-             '3.5v11 M10 4h2 M11 6h2 M10 8h2 M11 10h2 M10 12h2"/><rect x="10.1" y="14.5" width="3.2" '
-             'height="4.5" rx=".8" fill="none" stroke="white" stroke-width="1"/>'}
-for theme, ink, paper, muted in [('light', '#20232a', '#ffffff', '#a4acbc'), ('dark', '#eceef3', '#20232a', '#8590a6')]:
-    for name in list(paths) + list(colored):
-        content = f'<path d="{paths[name]}" transform="translate(0 1.8)"/>' if name == 'settings' else f'<path d="{paths[name]}"/>' if name in paths else colored[name].replace('{paper}', paper).replace('{muted}', muted).replace('{ink}', ink)
-        svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{ink}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{content}</svg>\n'
-        target = root / 'svg' / theme / f'{name}.svg'
-        target.write_text(svg)
-        assets.append(dict(id=f'{theme}/{name}', file=str(target.relative_to(root)), kind='vector-reconstruction', logical_size=[24, 24], usage='candidate-ui-asset', theme=theme))
-        for scale in [1, 2, 3]:
-            dest = root / 'png' / theme / f'{name}@{scale}x.png'
-for a in assets:
-    a['sha256'] = hashlib.sha256((root / a['file']).read_bytes()).hexdigest()
-(root / 'manifest.json').write_text(json.dumps(dict(version=1, source_coordinate_system='physical source pixels, top-left origin; rect = x,y,width,height', assets=assets), ensure_ascii=False, indent=2) + '\n')
-cards = ''.join((f'''<div class="card"><img src="{html.escape(a['file'])}"><b>{html.escape(a['id'])}</b><small>{a['kind']}</small></div>''' for a in assets if a['kind'] == 'original-pixel-crop' or a['id'].startswith('light/')))
-(root / 'index.html').write_text('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip 素材切图</title><style>body{margin:0;padding:32px;background:#f4f5f7;color:#20232a;font:14px system-ui}h1{font-size:28px}p{line-height:1.8;max-width:850px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.card{background:white;border:1px solid #dde1e9;border-radius:12px;padding:18px;display:flex;align-items:center;flex-direction:column;gap:14px;overflow:hidden}.card img{width:80px;height:80px;object-fit:contain;background:repeating-conic-gradient(#e7e9ed 0% 25%,#fff 0% 50%) 0/12px 12px}.card b{font-size:12px;overflow-wrap:anywhere}.card small{color:#6a7180;font-size:10px}a{color:#315fea}</style><h1>xdzip · 素材切图 v1</h1><p><a href="../../hifi/index.html">查看完整高保真原稿</a> · <a href="../../../docs/qa/asset-review/index.html">逐项对照原稿与修正素材</a></p><p>原像素切片保留背景，用于对照；矢量为重建素材，并非原图图层。PNG 提供 1× / 2× / 3×，SVG 提供浅色与深色版本。系统窗口按钮由平台绘制。<a href="manifest.json">素材清单与坐标</a></p><div class="grid">' + cards + '</div></html>')
-print(json.dumps({'original_crops': len(crops), 'vector_designs': len(paths) + len(colored), 'svg_files': len(list((root / 'svg').rglob('*.svg'))), 'png_files': len(list(root.rglob('*.png')))}))
+import hashlib
+import argparse
+import html
+import json
+import shutil
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+from PIL import Image
+from asset_definitions import (
+    CONTROL_PATHS, CROPS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
+    REFERENCES, STATE_SHAPES, file_shapes, hero_shapes,
+)
+
+REPO = Path(__file__).resolve().parents[1]
+ROOT = REPO / 'design/assets'
+CANVAS = [24, 24]
+THEMES = ('light', 'dark')
+GRADIENTS = ('<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c1edff"/>'
+             '<stop offset="1" stop-color="#85d3fb"/></linearGradient>'
+             '<linearGradient id="blue" x2="0" y2="1"><stop stop-color="#5bb5ff"/>'
+             '<stop offset=".6" stop-color="#327dff"/><stop offset="1" stop-color="#1758f2"/>'
+             '</linearGradient><linearGradient id="amber-warning" x2="0" y2="1">'
+             '<stop stop-color="#ffc838"/><stop offset="1" stop-color="#f88618"/></linearGradient>'
+             '<linearGradient id="amber-conflict" x2="0" y2="1"><stop stop-color="#fff0c8"/>'
+             '<stop offset="1" stop-color="#ffd178"/></linearGradient>'
+             '<linearGradient id="amber-archive" x2="0" y2="1"><stop stop-color="#ffd353"/>'
+             '<stop offset="1" stop-color="#ffaf30"/></linearGradient>'
+             '<linearGradient id="amber-image" x2="0" y2="1"><stop stop-color="#ffe5b4"/>'
+             '<stop offset="1" stop-color="#ffd188"/></linearGradient></defs>')
+GROUPS = {
+    'file': {'folder', 'file-pdf', 'file-text', 'file-code', 'file-markdown', 'image-file', 'image-amber'},
+    'brand': {'app-mark', 'archive'},
+    'illustration': {'archive-add', 'document-download', 'document-warning', 'document-conflict',
+                     'archive-warning', 'settings-tile'},
+    'status': {'status-warning', 'status-success', 'status-skipped', 'status-stopped',
+               'status-partial-success', 'spinner', 'info', 'remove', 'clock', 'theme-system'},
+}
+GROUP_TITLES = {'brand': '品牌与归档', 'file': '文件与目录', 'tool': '工具栏与导航',
+                'status': '任务状态', 'illustration': '操作窗口插图'}
+
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def category(name: str) -> str:
+    return next((key for key, names in GROUPS.items() if name in names), 'tool')
+
+
+def aliases() -> dict[tuple[str, str], list[str]]:
+    """Read actual Qt aliases; stable names survive the directory migration."""
+    result: dict[tuple[str, str], list[str]] = {}
+    for node in ET.parse(REPO / 'apps/desktop/ui.qrc').iter('file'):
+        if node.text and node.text.endswith('.png'):
+            name = Path(node.text).stem.split('@')[0]
+            theme = Path(node.text).parent.name
+            assert theme in THEMES, f'Unexpected runtime icon directory: {node.text}'
+            result.setdefault((theme, name), []).append(node.attrib.get('alias', node.text))
+    return result
+
+
+def crop_entries(check: bool = False) -> list[dict]:
+    entries = []
+    for name, (source, rect) in CROPS.items():
+        folder = 'demo' if name.startswith('photo-') else 'reference'
+        target = ROOT / folder / f'{name}.png'
+        source_path = REPO / 'design/hifi/screens' / f'{source}.png'
+        x, y, width, height = rect
+        with Image.open(source_path) as source_image:
+            pixels = source_image.convert('RGBA').crop((x, y, x + width, y + height))
+        # Preserve the encoding and hashes of existing cuts. A clean build uses
+        # Pillow; integrity depends on pixels, never on a PNG encoder's bytes.
+        if target.exists():
+            with Image.open(target) as existing:
+                if existing.convert('RGBA').tobytes() != pixels.tobytes() or existing.size != pixels.size:
+                    raise ValueError(f'Recorded source crop changed: {target.relative_to(ROOT)}')
+        else:
+            if check:
+                raise ValueError(f'Missing source crop: {target.relative_to(ROOT)}')
+            pixels.save(target)
+        entries.append({
+            'id': f'{folder}/{name}', 'file': str(target.relative_to(ROOT)),
+            'kind': 'original-pixel-crop', 'source': f'../hifi/screens/{source}.png',
+            'source_sha256': digest(source_path), 'rect': rect, 'size': [width, height],
+            'usage': 'demo-image-only' if folder == 'demo' else 'visual-reference-only',
+            'background': 'baked original pixels; no recovered transparency',
+            'sha256': digest(target),
+        })
+    return entries
+
+
+def svg_entries(check: bool = False) -> list[dict]:
+    entries = []
+    qt_aliases = aliases()
+    for theme in THEMES:
+        ink, paper, muted = (('#20232a', '#ffffff', '#a4acbc') if theme == 'light'
+                            else ('#eceef3', '#20232a', '#8590a6'))
+        state_muted, track = (('#788399', '#e2e6ee') if theme == 'light' else ('#9aa8c2', '#404958'))
+        main_shapes = MAIN_SHAPES | file_shapes(theme)
+        state_shapes = STATE_SHAPES | hero_shapes()
+        definitions = CONTROL_PATHS | EXTRA_CONTROL_PATHS
+        for name in sorted(set(definitions) | set(main_shapes) | set(state_shapes)):
+            if name in definitions:
+                transform = ' transform="translate(0 1.8)"' if name == 'settings' else ''
+                content = f'<path d="{definitions[name]}"{transform}/>'
+            elif name in main_shapes:
+                content = main_shapes[name].replace('{paper}', paper).replace('{muted}', muted).replace('{ink}', ink)
+            else:
+                content = GRADIENTS + state_shapes[name].replace('{paper}', paper).replace('{muted}', state_muted).replace('{track}', track)
+            svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" '
+                   f'fill="none" stroke="{ink}" stroke-width="1.5" stroke-linecap="round" '
+                   f'stroke-linejoin="round">{content}</svg>\n')
+            target = ROOT / 'svg' / theme / f'{name}.svg'
+            if check:
+                if not target.is_file() or target.read_text() != svg:
+                    raise ValueError(f'Stale SVG definition: {target.relative_to(ROOT)}')
+            else:
+                target.write_text(svg)
+            entry = {
+                'id': f'{theme}/{name}', 'file': str(target.relative_to(ROOT)),
+                'kind': 'vector-reconstruction', 'logical_size': CANVAS, 'canvas': CANVAS,
+                'theme': theme, 'category': category(name), 'usage': 'runtime-and-design',
+                'runtime_usage': {'html': 'registered in the shared design library',
+                                  'qt_aliases': qt_aliases.get((theme, name), [])},
+                'sha256': digest(target),
+            }
+            if name in REFERENCES:
+                entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
+            if name in FILE_OPTICAL_SPECS:
+                entry['optical_spec'] = FILE_OPTICAL_SPECS[name] | {'bounds_include_stroke': True}
+            entries.append(entry)
+    return entries
+
+
+def gallery(entries: list[dict]) -> str:
+    """Show production geometry at fixed sizes beside independently cut source pixels."""
+    vectors = [item for item in entries if item['kind'] == 'vector-reconstruction' and item['theme'] == 'light']
+    sections = []
+    for group in ('brand', 'file', 'tool', 'status', 'illustration'):
+        cards = []
+        for item in vectors:
+            if item['category'] != group:
+                continue
+            name = item['id'].split('/')[1]
+            label = html.escape(name)
+            crop = (f'<img width="48" height="48" src="{item["source_reference"]}" alt="原稿：{label}">'
+                    if 'source_reference' in item else '<span class="missing">无独立切片</span>')
+            qt_count = len(item['runtime_usage']['qt_aliases'])
+            cards.append(f'''<article class="card" data-name="{label}"><header><b>{label}</b><span>{f'浅色 Qt {qt_count} 引用' if qt_count else 'HTML 素材库 / 可复用'}</span></header><div class="comparison"><div class="source"><small>原稿参考</small><div class="sample">{crop}</div></div><div><small>浅色 · 48 px</small><div class="sample"><img width="48" height="48" src="svg/light/{label}.svg" alt="{label} 浅色"></div></div><div><small>深色 · 48 px</small><div class="sample dark"><img width="48" height="48" src="svg/dark/{label}.svg" alt="{label} 深色"></div></div></div><div class="exports"><span>透明导出</span>{''.join(f'<div><img width="{24 * scale}" height="{24 * scale}" src="png/light/{label}@{scale}x.png" alt="{label} {scale} 倍"><small>{24 * scale} × {24 * scale}</small></div>' for scale in (1, 2, 3))}</div></article>''')
+        sections.append(f'<section id="{group}"><h2>{GROUP_TITLES[group]}</h2><div class="grid">{"".join(cards)}</div></section>')
+    cut_cards = ''.join(f'<figure><div><img src="{item["file"]}" alt="{html.escape(item["id"])}"></div><figcaption>{html.escape(Path(item["file"]).stem)}<small>{item["size"][0]} × {item["size"][1]} 原像素</small></figcaption></figure>' for item in entries if item['kind'] == 'original-pixel-crop')
+    styles = '''*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f9;color:#222a3b;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1240px;margin:auto;padding:40px 24px}h1{font-size:32px;letter-spacing:-.6px;margin:0 0 12px}h2{font-size:21px;margin:32px 0 16px}p{line-height:1.85;color:#647089;max-width:920px}a{color:#245ce9}nav{display:flex;gap:18px;flex-wrap:wrap;padding:18px 0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #e0e5ef;border-radius:14px;padding:18px;box-shadow:0 2px 8px #22335304}.card header{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:18px}.card header b{font-size:13px}.card header span{font-size:10px;white-space:nowrap;color:#68758d}.comparison{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}small{display:block;font-size:10px;color:#78849a;line-height:1.5}.sample{height:72px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #e7ebf3;border-radius:9px;margin-top:8px}.sample img{display:block;object-fit:contain}.sample.dark{background:#222a37;border-color:#222a37}.source .sample{background:#f1f3f7}.missing{font-size:9px;color:#9aa4b7}.exports{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf0f5;padding-top:16px;margin-top:16px;min-height:102px}.exports>span{font-size:10px;line-height:1.6;color:#8993a6;max-width:30px}.exports>div{display:flex;flex-direction:column;align-items:center;gap:7px}.exports img{object-fit:contain;display:block;background:repeating-conic-gradient(#e9edf4 0% 25%,#fff 0% 50%) 0/8px 8px}.references{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.references figure{margin:0;background:white;border:1px solid #e0e5ef;border-radius:10px;padding:14px;text-align:center}.references figure>div{height:110px;display:grid;place-items:center}.references img{max-width:100%;max-height:100px;object-fit:contain}.references figcaption{font-size:11px;overflow-wrap:anywhere;margin-top:14px}.banner{border-left:3px solid #2d6bfa;padding:3px 16px;background:#eef3fd;border-radius:0 8px 8px 0}.banner p{margin:8px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.references{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){main{padding:26px 14px}.grid{grid-template-columns:1fr}.references{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:26px}}'''
+    return ('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>xdzip · 统一素材库</title><style>' + styles + '</style><main><h1>xdzip · 统一素材库</h1>'
+            '<p>一套命名、一份清单、一组透明画布。54 类共享图标提供浅色 / 深色 SVG 与 1× / 2× / 3× PNG；原稿参考和演示照片集中保存。</p>'
+            '<p><a href="../hifi/index.html">完整高保真原稿</a> · <a href="../html/index.html">HTML 高保真界面</a> · '
+            '<a href="../../docs/qa/asset-review/index.html">逐项质量复核</a> · <a href="manifest.json">资产清单</a></p>'
+            '<div class="banner"><p>每个运行图标均使用 24 × 24 逻辑画布；下列浅深色对照固定显示为 48 × 48。文档可见高度一致，目录保留自然横向比例。原稿栏包含背景，只用于核对造型；透明运行素材来自独立矢量重建。</p></div>'
+            '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
+            '<a href="#references">原像素参考</a></nav>' + ''.join(sections) +
+            '<section id="references"><h2>原像素参考与演示照片</h2><p>45 张原稿参考保留原始背景和不同裁剪矩形；3 张演示照片保留源分辨率。它们的物理尺寸由原稿区域决定，不能作为图标控件的尺寸。</p><div class="references">' + cut_cards + '</div></section></main></html>\n')
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true', help='Verify generated SVGs and gallery without rewriting files')
+    args = parser.parse_args()
+    for folder in ('reference', 'demo', 'svg/light', 'svg/dark', 'png/light', 'png/dark', 'preview'):
+        (ROOT / folder).mkdir(parents=True, exist_ok=True)
+    entries = crop_entries(args.check) + svg_entries(args.check)
+    manifest = {
+        'schema_version': 2, 'status': 'canonical-runtime-and-design-library',
+        'coordinate_system': 'source physical pixels, top-left origin; rect = x,y,width,height',
+        'icon_geometry': {'canvas': CANVAS, 'raster_scales': [1, 2, 3],
+                          'visible_bounds_threshold': 'alpha > 8; pixel edges divided by scale',
+                          'file_optical_specs': FILE_OPTICAL_SPECS},
+        'license': 'Apache-2.0; fonts/ is independently licensed under OFL-1.1',
+        'assets': entries,
+    }
+    if args.check:
+        recorded = {item['file']: item for item in json.loads((ROOT / 'manifest.json').read_text())['assets']}
+        for item in entries:
+            assert all(recorded[item['file']].get(key) == value for key, value in item.items()), item['file']
+        assert (ROOT / 'index.html').read_text() == gallery(entries), 'Stale asset gallery'
+        assert (ROOT / 'LICENSE').read_bytes() == (REPO / 'LICENSE').read_bytes()
+    else:
+        (ROOT / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+        (ROOT / 'index.html').write_text(gallery(entries))
+        shutil.copyfile(REPO / 'LICENSE', ROOT / 'LICENSE')
+    print(json.dumps({'source_crops': len(CROPS), 'icon_designs': len(entries[48:]) // 2,
+                      'svg_files': len(entries[48:]), 'root': str(ROOT.relative_to(REPO))}))
+
+
+if __name__ == '__main__':
+    main()

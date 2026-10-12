@@ -12,45 +12,45 @@
     <file>ui/Browser.qml</file>
     <file>ui/InspectorPanel.qml</file>
     <file>ui/PreflightWindow.qml</file>
-    <file alias="assets/info-light.png">../../design/hifi/v2/png/light/info@3x.png</file>
-    <file alias="assets/info-dark.png">../../design/hifi/v2/png/dark/info@3x.png</file>
-    <file alias="assets/document-download.png">../../design/hifi/v2/png/light/document-download@3x.png</file>
-    <file alias="assets/file-text.png">../../design/assets/v1/png/light/file-text@3x.png</file>
-    <file alias="assets/app-mark.png">../../design/assets/v1/png/light/app-mark@3x.png</file>
-    <file alias="assets/archive.png">../../design/assets/v1/png/light/archive@3x.png</file>
-    <file alias="assets/folder.png">../../design/assets/v1/png/light/folder@3x.png</file>
-    <file alias="assets/image-file.png">../../design/hifi/v2/png/light/image-file@3x.png</file>
+    <file alias="assets/info-light.png">../../design/assets/png/light/info@3x.png</file>
+    <file alias="assets/info-dark.png">../../design/assets/png/dark/info@3x.png</file>
+    <file alias="assets/document-download.png">../../design/assets/png/light/document-download@3x.png</file>
+    <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
+    <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/archive.png">../../design/assets/png/light/archive@3x.png</file>
+    <file alias="assets/folder.png">../../design/assets/png/light/folder@3x.png</file>
+    <file alias="assets/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
     <file>ui/ArchiveAction.qml</file>
     <file>ui/ArchiveTabs.qml</file>
     <file>ui/ArchiveToolbar.qml</file>
-    <file alias="assets/light/open.png">../../design/assets/v1/png/light/open@3x.png</file>
-    <file alias="assets/light/new.png">../../design/assets/v1/png/light/new@3x.png</file>
-    <file alias="assets/light/archive-test.png">../../design/assets/v1/png/light/archive-test@3x.png</file>
-    <file alias="assets/light/more.png">../../design/assets/v1/png/light/more@3x.png</file>
-    <file alias="assets/light/settings.png">../../design/assets/v1/png/light/settings@3x.png</file>
-    <file alias="assets/light/search.png">../../design/assets/v1/png/light/search@3x.png</file>
-    <file alias="assets/dark/open.png">../../design/assets/v1/png/dark/open@3x.png</file>
-    <file alias="assets/dark/new.png">../../design/assets/v1/png/dark/new@3x.png</file>
-    <file alias="assets/dark/archive-test.png">../../design/assets/v1/png/dark/archive-test@3x.png</file>
-    <file alias="assets/dark/more.png">../../design/assets/v1/png/dark/more@3x.png</file>
-    <file alias="assets/dark/settings.png">../../design/assets/v1/png/dark/settings@3x.png</file>
-    <file alias="assets/dark/search.png">../../design/assets/v1/png/dark/search@3x.png</file>
-    <file alias="assets/light/folder.png">../../design/assets/v1/png/light/folder@3x.png</file>
-    <file alias="assets/light/file-text.png">../../design/assets/v1/png/light/file-text@3x.png</file>
-    <file alias="assets/light/file-code.png">../../design/assets/v1/png/light/file-code@3x.png</file>
-    <file alias="assets/light/file-markdown.png">../../design/assets/v1/png/light/file-markdown@3x.png</file>
-    <file alias="assets/light/file-pdf.png">../../design/assets/v1/png/light/file-pdf@3x.png</file>
-    <file alias="assets/light/close.png">../../design/assets/v1/png/light/close@3x.png</file>
-    <file alias="assets/light/view-list.png">../../design/assets/v1/png/light/view-list@3x.png</file>
-    <file alias="assets/dark/folder.png">../../design/assets/v1/png/dark/folder@3x.png</file>
-    <file alias="assets/dark/file-text.png">../../design/assets/v1/png/dark/file-text@3x.png</file>
-    <file alias="assets/dark/file-code.png">../../design/assets/v1/png/dark/file-code@3x.png</file>
-    <file alias="assets/dark/file-markdown.png">../../design/assets/v1/png/dark/file-markdown@3x.png</file>
-    <file alias="assets/dark/file-pdf.png">../../design/assets/v1/png/dark/file-pdf@3x.png</file>
-    <file alias="assets/dark/close.png">../../design/assets/v1/png/dark/close@3x.png</file>
-    <file alias="assets/dark/view-list.png">../../design/assets/v1/png/dark/view-list@3x.png</file>
-    <file alias="assets/light/image-file.png">../../design/hifi/v2/png/light/image-file@3x.png</file>
-    <file alias="assets/dark/image-file.png">../../design/hifi/v2/png/dark/image-file@3x.png</file>
-    <file alias="assets/primary-chevron.png">../../design/assets/v1/png/dark/chevron-down@3x.png</file>
+    <file alias="assets/light/open.png">../../design/assets/png/light/open@3x.png</file>
+    <file alias="assets/light/new.png">../../design/assets/png/light/new@3x.png</file>
+    <file alias="assets/light/archive-test.png">../../design/assets/png/light/archive-test@3x.png</file>
+    <file alias="assets/light/more.png">../../design/assets/png/light/more@3x.png</file>
+    <file alias="assets/light/settings.png">../../design/assets/png/light/settings@3x.png</file>
+    <file alias="assets/light/search.png">../../design/assets/png/light/search@3x.png</file>
+    <file alias="assets/dark/open.png">../../design/assets/png/dark/open@3x.png</file>
+    <file alias="assets/dark/new.png">../../design/assets/png/dark/new@3x.png</file>
+    <file alias="assets/dark/archive-test.png">../../design/assets/png/dark/archive-test@3x.png</file>
+    <file alias="assets/dark/more.png">../../design/assets/png/dark/more@3x.png</file>
+    <file alias="assets/dark/settings.png">../../design/assets/png/dark/settings@3x.png</file>
+    <file alias="assets/dark/search.png">../../design/assets/png/dark/search@3x.png</file>
+    <file alias="assets/light/folder.png">../../design/assets/png/light/folder@3x.png</file>
+    <file alias="assets/light/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
+    <file alias="assets/light/file-code.png">../../design/assets/png/light/file-code@3x.png</file>
+    <file alias="assets/light/file-markdown.png">../../design/assets/png/light/file-markdown@3x.png</file>
+    <file alias="assets/light/file-pdf.png">../../design/assets/png/light/file-pdf@3x.png</file>
+    <file alias="assets/light/close.png">../../design/assets/png/light/close@3x.png</file>
+    <file alias="assets/light/view-list.png">../../design/assets/png/light/view-list@3x.png</file>
+    <file alias="assets/dark/folder.png">../../design/assets/png/dark/folder@3x.png</file>
+    <file alias="assets/dark/file-text.png">../../design/assets/png/dark/file-text@3x.png</file>
+    <file alias="assets/dark/file-code.png">../../design/assets/png/dark/file-code@3x.png</file>
+    <file alias="assets/dark/file-markdown.png">../../design/assets/png/dark/file-markdown@3x.png</file>
+    <file alias="assets/dark/file-pdf.png">../../design/assets/png/dark/file-pdf@3x.png</file>
+    <file alias="assets/dark/close.png">../../design/assets/png/dark/close@3x.png</file>
+    <file alias="assets/dark/view-list.png">../../design/assets/png/dark/view-list@3x.png</file>
+    <file alias="assets/light/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
+    <file alias="assets/dark/image-file.png">../../design/assets/png/dark/image-file@3x.png</file>
+    <file alias="assets/primary-chevron.png">../../design/assets/png/dark/chevron-down@3x.png</file>
   </qresource>
 </RCC>

@@ -1,0 +1,61 @@
+{
+  "status": "passed",
+  "source_manifest": "design/assets/manifest.json",
+  "source_manifest_sha256": "0a873324b336da24255768e966b14bbe33ef1e5c0df7dd8af5f3315389bcea7c",
+  "qt": "6.8.2",
+  "platform": "Linux offscreen, software backend, x86_64",
+  "capture_sizes": [
+    {
+      "file": "file-icons-light.png",
+      "size": [
+        660,
+        320
+      ],
+      "sha256": "2fe50cf17991130b9534b00b12cdc52c65dac801f2b5f9926931a251bd13bdaa"
+    },
+    {
+      "file": "file-icons-dark.png",
+      "size": [
+        660,
+        320
+      ],
+      "sha256": "fb2a992dd6211aed3c5b55e56e9a228840c2346f64fe3db05510b1f69554e620"
+    }
+  ],
+  "image_ready": 36,
+  "logical_slots": [
+    18,
+    32,
+    48
+  ],
+  "types": [
+    "folder",
+    "file-pdf",
+    "file-text",
+    "file-code",
+    "file-markdown",
+    "image-file"
+  ],
+  "ctest": {
+    "passed": 6,
+    "failed": 0
+  },
+  "consumer_xml": {
+    "file": "file-icons-test.xml",
+    "sha256": "76610c79659203fedc3f693cb5f3a194e1d8328ed9bf0bc11bd049e300fca5a1",
+    "passed": 4,
+    "failed": 0
+  },
+  "checks": [
+    "Canonical manifest and real QRC PNG provenance",
+    "Rebuilt Qt QRC and consumer applications after final hero-color revisions",
+    "All 36 themed images report Image.Ready",
+    "Shared square slots and PreserveAspectFit",
+    "Final Qt light/dark captures open as valid PNGs",
+    "13 invalid asset/HTML selector mutations previously rejected; unchanged checker and selector rules"
+  ],
+  "limits": [
+    "Qt resource and icon-consumer evidence; no whole-window design approval",
+    "Offscreen rendering does not validate native OS window decorations"
+  ]
+}

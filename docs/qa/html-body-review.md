@@ -2,7 +2,7 @@
 
 日期：2026-10-12。范围为主窗口工具栏下方：左侧归档信息和目录树、路径导航、文件列表与选择状态、右侧预览和底部状态栏。本轮校准 HTML 设计与共享素材，不代表 Qt 产品已经完成相同布局修正。
 
-使用 [已确认浅色主窗口原稿](../../design/hifi/v1/screens/main-light.png) 和 [正文独立测量基准](../../design/html/body-reference.json)。原稿 SHA-256 固定为 `90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9`，不能通过替换原稿或从 CSS 反推锚点来使检查通过。
+使用 [已确认浅色主窗口原稿](../../design/hifi/screens/main-light.png) 和 [正文独立测量基准](../../design/html/body-reference.json)。原稿 SHA-256 固定为 `90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9`，不能通过替换原稿或从 CSS 反推锚点来使检查通过。
 
 - [同尺寸内容区域对照](html-body/index.html)：原稿、修复前、修复后、透明叠加、像素差异；手机可单独查看左侧栏、列表、预览及状态栏。
 - [完整上下对照](html-body/comparison.png)：上为原稿，下为 HTML，裁切坐标相同。
@@ -58,3 +58,5 @@ python scripts/build-html-body-review.py
 原稿是生成图片，原始字体家族、字重及光影参数未知。离线固定字体减少不同设备的宽度漂移，不能证明使用了原稿的原始字体。几何和孤立图标检查通过也不等于整页像素完全一致；必须结合同尺寸叠加与逐区域证据复核。
 
 [HTML design review 工作流](../../.github/workflows/html-design.yml) 已接入正文检查、离线区域复核生成和报告上传。实际执行结果以运行记录与 `measurements.json` 为准；本说明不将几何验收扩大为完整像素还原或原生产品验收。
+
+素材目录于 2026-10-12 合并；本文原稿链接指向当前位置。历史截图、测量数值及 JSON 输入记录保持原样，旧路径可通过[迁移清单](../../design/assets/migration.json)或当时 Git 提交追溯。

@@ -6,7 +6,7 @@ M1 的运行时、构建与生命周期通过，不代表高保真还原通过�
 
 ## 证据与判定方法
 
-- 主窗口采用较新的 [v1 主稿](../../design/hifi/v1/screens/main-light.png)，任务窗采用 [v2 进度稿](../../design/hifi/v2/screens/03-progress.png)。旧 docs/visual 图片为视觉方向参考，不能和新版混作同一个像素基线。
+- 主窗口采用较新的 [主窗口原稿](../../design/hifi/screens/main-light.png)，任务窗采用 [任务进度原稿](../../design/hifi/screens/progress.png)。旧 docs/visual 图片为视觉方向参考，不能和新版混作同一个像素基线。
 - 参数以 [tokens.json](../visual/tokens.json) 和 [视觉说明](../visual/README.md) 为当前实现建议。它们仍标记 proposed，部分比例与生成图不相同；本报告明确区分“相对现有参数的偏差”和“相对图片的视觉差异”，不悄悄择优判定。
 - 实际应用：Linux x86_64、Qt 6.8.2、offscreen/software、DPR=1。测试读取自建 normal.zip，内容是真实 ZIP 元数据；任务窗口仍为明确标记的示例。中文走系统字体回退，QFontInfo 主字体为 DejaVu Sans，不能据此断言所有中文字形使用该字体。
 - 采集每个 Qt 可视项的窗口坐标、大小、文字、实际解析字号、字重、基线、颜色与图标路径；11 组原始截图及坐标见 [证据目录](visual-audit/measurements.json)。PNG 是直接 grabWindow 输出，未合成或补绘。
@@ -129,9 +129,9 @@ AppButton 使用 `max(36, contentItem.implicitHeight + 12×2)`，本机中文内
 
 ## 5. 操作窗口和覆盖范围
 
-当前 [解压预检实际窗口](visual-audit/preflight-light.png)是只读检查报告，**不是** [独立解压确认设计](../../design/hifi/v1/screens/extract-macos.png)的实现。缺少目标选择、范围、冲突策略、完成后动作和提交入口，不能以“都是弹窗”作等价对照。
+当前 [解压预检实际窗口](visual-audit/preflight-light.png)是只读检查报告，**不是** [独立解压确认设计](../../design/hifi/screens/extract-macos.png)的实现。缺少目标选择、范围、冲突策略、完成后动作和提交入口，不能以“都是弹窗”作等价对照。
 
-新建、重名冲突、部分失败、设置、成功/停止/取消结果、创建覆盖确认等 v2 状态也没有完整可操作实现，应登记为“未实现”，不是“已还原且暂时没有数据”。任务窗是示例组件，没有接入真实解压任务。
+新建、重名冲突、部分失败、设置、成功/停止/取消结果、创建覆盖确认等操作状态也没有完整可操作实现，应登记为“未实现”，不是“已还原且暂时没有数据”。任务窗是示例组件，没有接入真实解压任务。
 
 操作窗口使用独立 QQuickWindow、transientParent 和非模态 Qt.Window，未绘制仿 macOS 交通灯；这符合架构方向。实际 macOS 原生标题栏按钮间距、SF/PingFang 回退、Retina 像素、阴影、焦点及 Windows/Linux 桌面装饰，本环境不能测量，保留为未验证。CI 原生启动通过也不能替代这些视觉检查。
 
@@ -157,3 +157,5 @@ XDZIP_VISUAL_AUDIT=/absolute/path/to/xdzip/.cache/visual-audit ./xdzip-browser-t
 执行 `python3 scripts/export-visual-audit-html.py` 可生成 dist/xdzip-visual-audit.html，依赖 pandoc 与 lxml。所有图片内嵌，手机可离线阅读；坐标附件链接指向 GitHub，需要仓库访问权限。
 
 本轮完整 CTest 6/6 通过，采集用例 3/3 通过；它们证明采集和功能测试可运行，**不改变视觉一致性不通过的结论**。
+
+素材目录于 2026-10-12 合并；本文原稿链接指向当前位置。历史截图、测量数值及 JSON 输入记录保持原样，旧路径可通过[迁移清单](../../design/assets/migration.json)或当时 Git 提交追溯。

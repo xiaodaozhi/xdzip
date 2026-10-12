@@ -1,6 +1,6 @@
 {
   "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
-  "source": "design/hifi/v1/screens/main-light.png",
+  "source": "design/hifi/screens/main-light.png",
   "viewport": [
     1588,
     1000
@@ -14,7 +14,7 @@
   ],
   "font": "Xdzip Design Sans SC embedded variable subset",
   "source_measurements": {
-    "source": "design/hifi/v1/screens/main-light.png",
+    "source": "design/hifi/screens/main-light.png",
     "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
     "source_size": [
       1586,
@@ -682,7 +682,7 @@
     },
     "independent_measurements": {
       "left_and_list": {
-        "source": "design/hifi/v1/screens/main-light.png",
+        "source": "design/hifi/screens/main-light.png",
         "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
         "source_size": [
           1586,
@@ -1956,7 +1956,7 @@
         "pre_change_screenshot_commit": "d544c2cdf88ce58c3afb227416f202a9cdbf488f"
       },
       "preview_and_status": {
-        "source": "design/hifi/v1/screens/main-light.png",
+        "source": "design/hifi/screens/main-light.png",
         "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
         "current_capture": "design/html/screenshots/01-main-light.png",
         "current_sha256": "88fd475fbe71c9099421090d5ea236b7f22e8fe4fd33259fb1c2adee73225823",
@@ -2711,9 +2711,9 @@
         29
       ],
       "actual": [
-        56,
-        347,
-        35,
+        55,
+        348,
+        36,
         30
       ],
       "maximum_delta_px": 1,
@@ -2731,11 +2731,11 @@
       ],
       "actual": [
         80,
-        406,
-        35,
+        407,
+        36,
         30
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 2,
       "tolerance_px": 2,
       "passed": true
     },
@@ -2750,11 +2750,11 @@
       ],
       "actual": [
         80,
-        468,
-        35,
+        469,
+        36,
         30
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 2,
       "tolerance_px": 2,
       "passed": true
     },
@@ -2769,8 +2769,8 @@
       ],
       "actual": [
         80,
-        529,
-        35,
+        530,
+        36,
         30
       ],
       "maximum_delta_px": 1,
@@ -2806,12 +2806,12 @@
         31
       ],
       "actual": [
-        400,
-        306,
-        34,
-        29
+        401,
+        305,
+        36,
+        30
       ],
-      "maximum_delta_px": 2,
+      "maximum_delta_px": 1,
       "tolerance_px": 2,
       "passed": true
     },
@@ -2998,7 +2998,7 @@
       "actual": [
         400,
         629,
-        37,
+        38,
         44
       ],
       "maximum_delta_px": 1,
@@ -3015,12 +3015,12 @@
         43
       ],
       "actual": [
-        403,
+        402,
         696,
-        32,
-        45
+        34,
+        44
       ],
-      "maximum_delta_px": 2,
+      "maximum_delta_px": 1,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3034,12 +3034,12 @@
         44
       ],
       "actual": [
-        400,
+        399,
         764,
-        39,
+        40,
         44
       ],
-      "maximum_delta_px": 2,
+      "maximum_delta_px": 1,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3072,12 +3072,12 @@
         17
       ],
       "actual": [
-        406,
+        405,
         778,
-        27,
-        17
+        28,
+        16
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 2,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3092,11 +3092,11 @@
       ],
       "actual": [
         407,
-        847,
+        848,
         26,
-        16
+        13
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 2,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3161,7 +3161,7 @@
         18
       ],
       "actual": [
-        135,
+        136,
         413,
         61,
         18
@@ -3246,7 +3246,7 @@
         20
       ],
       "actual": [
-        463,
+        460,
         508,
         89,
         20

@@ -1,6 +1,6 @@
 # 任务窗口视觉对照与修订
 
-2026-10-11，基于 [03 任务进度高保真稿](../../design/hifi/v2/screens/03-progress.png) 修订 Qt 开发预览。
+2026-10-11，基于 [03 任务进度高保真稿](../../design/hifi/screens/progress.png) 修订 Qt 开发预览。
 
 ## 实际截图
 
@@ -36,3 +36,5 @@
 ## 验证
 
 QML 静态检查、token 生成一致性、本地 CTest 4/4 通过。组件测试增加普通底栏同行/完整可见、未知总量无填充/无总量数字、文件名纯文本显示；保留关闭不取消、重开、图标可加载、提示行对齐和大字号实际点击测试。截图由 `tst_taskwindow.qml` 保存，复现见 [组件指南](../../apps/desktop/README.md)。远端状态以 main 的 Qt components 工作流为准。
+
+素材目录于 2026-10-12 合并；本文原稿链接指向当前位置。历史截图、测量数值及 JSON 输入记录保持原样，旧路径可通过[迁移清单](../../design/assets/migration.json)或当时 Git 提交追溯。

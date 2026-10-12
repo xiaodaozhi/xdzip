@@ -1,0 +1,905 @@
+{
+  "status": "passed",
+  "asset_entries": 480,
+  "source_crops": 48,
+  "svg_files": 108,
+  "vector_png_files": 324,
+  "optical_checks": [
+    {
+      "file": "png/light/file-code@1x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-code@2x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-code@3x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-markdown@1x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-markdown@2x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-markdown@3x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-pdf@1x.png",
+      "bounds": [
+        2.0,
+        0.0,
+        22.0,
+        24.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 1.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-pdf@2x.png",
+      "bounds": [
+        2.5,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-pdf@3x.png",
+      "bounds": [
+        2.3333,
+        1.0,
+        21.6667,
+        23.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 0.1667,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-text@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.75,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-text@2x.png",
+      "bounds": [
+        3.5,
+        1.0,
+        20.5,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/file-text@3x.png",
+      "bounds": [
+        3.6667,
+        1.0,
+        20.3333,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.0833,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/folder@1x.png",
+      "bounds": [
+        3.0,
+        4.0,
+        21.0,
+        20.0
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.5,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/folder@2x.png",
+      "bounds": [
+        3.0,
+        4.5,
+        21.0,
+        19.5
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/folder@3x.png",
+      "bounds": [
+        3.0,
+        4.3333,
+        21.0,
+        19.6667
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-amber@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-amber@2x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.7,
+      "tolerance": 0.75,
+      "center": [
+        12.25,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-amber@3x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-file@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-file@2x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.7,
+      "tolerance": 0.75,
+      "center": [
+        12.25,
+        12.0
+      ]
+    },
+    {
+      "file": "png/light/image-file@3x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-code@1x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-code@2x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-code@3x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-markdown@1x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-markdown@2x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-markdown@3x.png",
+      "bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "expected": [
+        2,
+        1,
+        22,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-pdf@1x.png",
+      "bounds": [
+        2.0,
+        0.0,
+        22.0,
+        24.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 1.0,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-pdf@2x.png",
+      "bounds": [
+        2.5,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 0.0,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-pdf@3x.png",
+      "bounds": [
+        2.3333,
+        1.0,
+        21.6667,
+        23.0
+      ],
+      "expected": [
+        2.5,
+        1,
+        21.5,
+        23
+      ],
+      "max_edge_error": 0.1667,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-text@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.75,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-text@2x.png",
+      "bounds": [
+        3.5,
+        1.0,
+        20.5,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/file-text@3x.png",
+      "bounds": [
+        3.6667,
+        1.0,
+        20.3333,
+        23.0
+      ],
+      "expected": [
+        3.75,
+        1,
+        20.25,
+        23
+      ],
+      "max_edge_error": 0.0833,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/folder@1x.png",
+      "bounds": [
+        3.0,
+        4.0,
+        21.0,
+        20.0
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.5,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/folder@2x.png",
+      "bounds": [
+        3.0,
+        4.5,
+        21.0,
+        19.5
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.75,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/folder@3x.png",
+      "bounds": [
+        3.0,
+        4.3333,
+        21.0,
+        19.6667
+      ],
+      "expected": [
+        3.25,
+        4.5,
+        20.75,
+        19.5
+      ],
+      "max_edge_error": 0.25,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-amber@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-amber@2x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.7,
+      "tolerance": 0.75,
+      "center": [
+        12.25,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-amber@3x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-file@1x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 1.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-file@2x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.5,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.7,
+      "tolerance": 0.75,
+      "center": [
+        12.25,
+        12.0
+      ]
+    },
+    {
+      "file": "png/dark/image-file@3x.png",
+      "bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "expected": [
+        3.2,
+        1,
+        20.8,
+        23
+      ],
+      "max_edge_error": 0.2,
+      "tolerance": 0.5,
+      "center": [
+        12.0,
+        12.0
+      ]
+    }
+  ],
+  "checks": [
+    "Unique assets exist and match SHA-256",
+    "48 source crops match recorded original pixels",
+    "108 safe SVGs share the 24×24 canvas",
+    "324 transparent exports have 24/48/72-pixel canvases",
+    "SVG paint references resolve to unique local definitions",
+    "42 file/folder theme-and-scale exports satisfy fixed optical bounds and center",
+    "Generated SVGs, asset metadata and gallery match canonical definitions"
+  ],
+  "limits": [
+    "Independent visual comparison remains necessary",
+    "No native Qt renderer validation in this script",
+    "Reference crops contain baked backgrounds and cannot ship as transparent icons"
+  ]
+}

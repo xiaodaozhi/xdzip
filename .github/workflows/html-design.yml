@@ -4,6 +4,9 @@ on:
     paths:
       - 'design/**'
       - 'scripts/*html*'
+      - 'scripts/*asset*'
+      - 'docs/qa/asset-review/**'
+      - 'docs/qa/asset-consumers/**'
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
@@ -13,6 +16,9 @@ on:
     paths:
       - 'design/**'
       - 'scripts/*html*'
+      - 'scripts/*asset*'
+      - 'docs/qa/asset-review/**'
+      - 'docs/qa/asset-consumers/**'
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
@@ -35,6 +41,9 @@ jobs:
         run: |
           export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           .venv-design/bin/python design/assets/fonts/build-subset.py --check
+          .venv-design/bin/python scripts/check-design-assets.py
+          .venv-design/bin/python scripts/check-asset-integration.py
+          .venv-design/bin/python scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
           .venv-design/bin/python scripts/build-html-design.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
@@ -57,6 +66,9 @@ jobs:
           path: |
             docs/qa/html-header/
             docs/qa/html-body/
+            docs/qa/asset-review/
+            docs/qa/asset-consumers/
+            design/assets/validation.json
             dist/html-preview-review/
             dist/html-reference-review/
             dist/html-design-review/
@@ -66,5 +78,6 @@ jobs:
             dist/xdzip-hifi-design.html
             dist/xdzip-hifi-design-1to1.html
             dist/xdzip-scale-review.html
+            dist/xdzip-assets.html
           if-no-files-found: error
           retention-days: 14

@@ -22,12 +22,12 @@ SOURCE_WINDOW = [20, 30, 1548, 940]
 NORMAL_SCALE = LOGICAL_WIDTH / SOURCE_WINDOW[2]
 # Approved source paths are independent of the reviewer implementation.
 SOURCES = {
-    "main": "design/hifi/v1/screens/main-light.png",
-    "extract": "design/hifi/v1/screens/extract-macos.png",
-    "create": "design/hifi/v2/screens/01-create.png",
-    "progress": "design/hifi/v2/screens/03-progress.png",
-    "conflict": "design/hifi/v2/screens/02-conflict.png",
-    "settings": "design/hifi/v2/screens/05-settings.png",
+    "main": "design/hifi/screens/main-light.png",
+    "extract": "design/hifi/screens/extract-macos.png",
+    "create": "design/hifi/screens/create.png",
+    "progress": "design/hifi/screens/progress.png",
+    "conflict": "design/hifi/screens/conflict.png",
+    "settings": "design/hifi/screens/settings.png",
 }
 VIEWS = [*SOURCES, "empty", "damaged"]
 ZOOMS = ["fit", "1", "pixels"]

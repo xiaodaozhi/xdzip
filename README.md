@@ -4,14 +4,14 @@
 
 **当前阶段：M1 产品骨架已完成开发与自动化验证，可进行一次性人工验收。三平台构建通过，提供 Apple Silicon 开发 app；实际压缩/解压尚未实现。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
-![xdzip 已确认的浅色主窗口设计](design/hifi/v1/screens/main-light.png)
+![xdzip 已确认的浅色主窗口设计](design/hifi/screens/main-light.png)
 
 ## 从这里开始
 
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
 - [HTML 高保真设计](design/html/index.html)：可操作界面、原稿对照和独立窗口预览；[目录职责](design/README.md)。
-- [高保真设计统一入口](design/hifi/README.md)：当前主界面、操作窗口、历史提案与设计参数。
+- [高保真设计统一入口](design/hifi/README.md)：当前主界面、操作窗口与设计参数；图标和原像素切片在[统一素材库](design/assets/index.html)。
 - [M1 完整验收入口](docs/qa/m1-acceptance.md)：三平台检查和 Apple Silicon 开发构建。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
