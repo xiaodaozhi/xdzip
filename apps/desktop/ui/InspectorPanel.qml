@@ -11,32 +11,45 @@ Rectangle {
     property bool showCloseAction: true
     signal closeRequested
     color: Theme.inspector
+    PaneHeader {
+        id: header
+        objectName: "inspectorPaneHeader"
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        height: implicitHeight
+        Text {
+            objectName: "inspectorPaneTitle"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            text: qsTr("条目详情")
+            font.pixelSize: Theme.bodySize
+            font.bold: true
+            color: Theme.text
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+        }
+        ArchiveAction {
+            objectName: "inspectorClose"
+            visible: panel.showCloseAction
+            asset: "close"
+            Accessible.name: qsTr("关闭条目详情")
+            explanation: Accessible.name
+            onClicked: panel.closeRequested()
+        }
+    }
     ScrollView {
-        anchors.fill: parent
-        anchors.margins: 16
+        anchors.top: header.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
+        anchors.bottomMargin: 16
         contentWidth: availableWidth
         ColumnLayout {
             width: parent.width
             spacing: 16
-            RowLayout {
-                Layout.fillWidth: true
-                Text {
-                    Layout.fillWidth: true
-                    text: qsTr("条目详情")
-                    font.pixelSize: Theme.panelTitleSize
-                    font.bold: true
-                    color: Theme.text
-                    wrapMode: Text.Wrap
-                }
-                ArchiveAction {
-                    objectName: "inspectorClose"
-                    visible: panel.showCloseAction
-                    asset: "close"
-                    Accessible.name: qsTr("关闭条目详情")
-                    explanation: Accessible.name
-                    onClicked: panel.closeRequested()
-                }
-            }
             Rectangle {
                 Layout.fillWidth: true
                 implicitHeight: width * 0.8

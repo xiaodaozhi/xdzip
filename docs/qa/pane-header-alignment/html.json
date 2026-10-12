@@ -1,0 +1,217 @@
+{
+  "status": "passed",
+  "source_hashes": {
+    "design/html/hifi.css": "0193076ae9d42a2776a8e15abc39cb83d572e36cc419c1be7d976852296fbceb",
+    "design/html/app.js": "8bbb1e66655ef88b5669a77abb0614df807f530b8d3e49ed565f2879cbb3accb"
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "selected": [
+        "lake"
+      ],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "theme": "light",
+      "selected": [
+        "guide"
+      ],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "theme": "light",
+      "selected": [],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "theme": "dark",
+      "selected": [
+        "lake"
+      ],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "theme": "dark",
+      "selected": [
+        "guide"
+      ],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "theme": "dark",
+      "selected": [],
+      "left": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "18px",
+        "lineHeight": "27px"
+      },
+      "right": {
+        "top": 167,
+        "height": 69,
+        "center": 201.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "leftTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      },
+      "rightTitle": {
+        "top": 185.5,
+        "height": 28,
+        "center": 199.5,
+        "fontSize": "20px",
+        "lineHeight": "28px"
+      }
+    },
+    {
+      "case": "long-details-scrolled",
+      "leftTop": 167,
+      "rightTop": 167,
+      "scrollTop": 986
+    }
+  ],
+  "page_errors": [],
+  "external_requests": []
+}

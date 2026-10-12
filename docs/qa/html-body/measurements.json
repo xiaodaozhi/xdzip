@@ -337,9 +337,22 @@
         "name": "预览关闭图标",
         "region": [
           1522,
+          187,
+          28,
+          33
+        ],
+        "previous_region": [
+          1522,
           192,
           28,
           28
+        ],
+        "design_revision": "pane-header-alignment",
+        "target_ink_rect": [
+          1529,
+          194.5,
+          14,
+          14
         ]
       },
       {
@@ -2374,6 +2387,24 @@
         "scale": 1.2571428571428571,
         "other_source_anchors": "unchanged",
         "source_comparison": "record-only for the five folder silhouettes; retain original source values and tolerance"
+      },
+      "pane-header-alignment": {
+        "reason": "预览标题栏与面包屑同高、同字号、同垂直中心；不替换原稿，旧关闭图标位置保留为独立对照。",
+        "header_height": 69,
+        "title_font_size": 20,
+        "title_line_height": 28,
+        "title_optical_offset_y": -2,
+        "close_center_y": 201.5,
+        "preview_image_top": 241
+      }
+    },
+    "dom_center_revisions": {
+      ".inspector-head .icon-button": {
+        "design_revision": "pane-header-alignment",
+        "target": [
+          1536,
+          201.5
+        ]
       }
     }
   },
@@ -2806,7 +2837,7 @@
       "passed": true
     },
     {
-      "kind": "DOM center",
+      "kind": "source center (design revised)",
       "name": ".inspector-head .icon-button",
       "expected": [
         1536,
@@ -2814,7 +2845,21 @@
       ],
       "actual": [
         1536.0,
-        206.0
+        201.5
+      ],
+      "review_only": true,
+      "design_revision": "pane-header-alignment"
+    },
+    {
+      "kind": "revised design center",
+      "name": ".inspector-head .icon-button",
+      "expected": [
+        1536,
+        201.5
+      ],
+      "actual": [
+        1536.0,
+        201.5
       ],
       "maximum_delta_px": 0.0,
       "tolerance_px": 2,
@@ -3092,7 +3137,7 @@
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "预览关闭图标",
       "expected": [
         1529,
@@ -3102,11 +3147,31 @@
       ],
       "actual": [
         1529,
-        199,
+        195,
         14,
         14
       ],
-      "maximum_delta_px": 0,
+      "review_only": true,
+      "maximum_delta_px": 4,
+      "design_revision": "pane-header-alignment",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "预览关闭图标",
+      "expected": [
+        1529,
+        194.5,
+        14,
+        14
+      ],
+      "actual": [
+        1529,
+        195,
+        14,
+        14
+      ],
+      "maximum_delta_px": 0.5,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3500,9 +3565,9 @@
       ],
       "actual": [
         1202,
-        196,
-        90,
-        21
+        191,
+        78,
+        19
       ],
       "review_only": true
     },

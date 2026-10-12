@@ -456,7 +456,7 @@ function renderEmpty(list) {
 function renderInspector(chosen) {
     if (state.archiveState !== "ready") {
         $("#inspector").innerHTML =
-            `<div class="inspector-head">归档信息</div><div class="file-emblem">${icon("archive")}</div><h2>北境旅行.zip</h2><p class="inspector-footnote">${state.archiveState === "empty" ? "目录已读取，归档中没有可解压的文件。" : "目录信息未就绪，暂时无法展示文件属性。"}</p>`;
+            `<div class="inspector-head"><span>归档信息</span></div><div class="file-emblem">${icon("archive")}</div><h2>北境旅行.zip</h2><p class="inspector-footnote">${state.archiveState === "empty" ? "目录已读取，归档中没有可解压的文件。" : "目录信息未就绪，暂时无法展示文件属性。"}</p>`;
         return;
     }
     const multi = chosen.length > 1,

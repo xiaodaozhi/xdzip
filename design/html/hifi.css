@@ -2,6 +2,7 @@
    The outer reviewer scales this whole artboard; it does not reflow desktop UI. */
 :root { --font:"Xdzip Design Sans SC",sans-serif; --canvas:#f7f8fa; --surface:#fff; --sidebar:#f5f6f8; --text:#141827; --secondary:#626b86; --border:#e3e7ef; --accent:#1956ff; --accent-ink:#1956ff; --accent-hover:#1048e8; --selection:#e7edff; --row-height:66px; }
 :root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#4277ff; --accent-ink:#8aafff; --selection:#30436a; }
+:root { --pane-header-height:69px; --pane-header-font-size:20px; --pane-header-line-height:28px; --pane-header-text-offset:-2px; }
 /* An embedded artboard has no document-level scrolling. Its table, inspector,
    and operation windows retain their own scroll containers; standalone pages
    still scroll normally when opened in a smaller browser window. */
@@ -401,8 +402,10 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
 }
 .storage-heading strong { font-size:18px; font-weight:400; color:var(--secondary); }
 .storage-bar { order:3; height:11px; margin:11px 0 0; }
-.location { height:69px; padding:0 26px 0 22px; }
-.location #breadcrumbs { font-size:20px; line-height:28px; gap:11.5px; transform:translateY(-2px); }
+.location,.inspector-head { height:var(--pane-header-height); min-height:var(--pane-header-height); }
+.location { padding:0 26px 0 22px; }
+.location #breadcrumbs,.inspector-head>span { font-size:var(--pane-header-font-size); line-height:var(--pane-header-line-height); transform:translateY(var(--pane-header-text-offset)); }
+.location #breadcrumbs { gap:11.5px; }
 .location #breadcrumbs button { padding:0; }
 .location #breadcrumbs>span:last-child { font-weight:600; }
 .breadcrumb-separator { font-size:21px; color:var(--secondary); }
@@ -499,9 +502,9 @@ tbody tr.selected td { background:var(--selection); border-bottom-color:transpar
 tbody tr.selected td:first-child { border-radius:20px 0 0 20px / 8px 0 0 8px; background-clip:padding-box; border-left:12px solid transparent; padding-left:15px; }
 tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; background-clip:padding-box; border-right:12px solid transparent; padding-right:0; }
 .selection-hint { display:none; }
-.inspector { width:390px; min-width:390px; min-height:0; padding:24px 18px 24px 20px; border-left:1px solid var(--border); display:flex; flex-direction:column; }
-.inspector-head { font-size:23px; line-height:30px; font-weight:600; margin-bottom:20px; flex-shrink:0; color:var(--text); }
-.inspector-head>span { margin-left:3px; transform:translateY(-1px); }
+.inspector { width:390px; min-width:390px; min-height:0; padding:0 18px 24px 20px; border-left:1px solid var(--border); display:flex; flex-direction:column; }
+.inspector-head { font-size:var(--pane-header-font-size); line-height:var(--pane-header-line-height); font-weight:600; margin-bottom:5px; flex-shrink:0; color:var(--text); position:sticky; top:0; z-index:1; background:var(--surface); }
+.inspector-head>span { margin-left:3px; }
 .inspector-head .icon-button { width:26px; height:30px; padding:0; }
 .inspector-head .icon-button { color:var(--text); }
 .inspector-head .icon-button svg { width:26px; height:26px; }

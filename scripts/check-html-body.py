@@ -156,7 +156,18 @@ def main():
                 locator = page.locator(selector)
                 rect = locator.bounding_box() if locator.count() else None
                 actual = [rect['x'] + rect['width'] / 2, rect['y'] + rect['height'] / 2] if rect else None
-                record_geometry(measurements, failures, 'DOM center', selector, expected, actual, tolerance)
+                revision = spec.get('dom_center_revisions', {}).get(selector)
+                kind = 'DOM center'
+                if revision:
+                    if revision['design_revision'] not in spec.get('design_revisions', {}):
+                        failures.append(f'{selector}: unrecorded center revision')
+                        continue
+                    measurements.append({'kind': 'source center (design revised)', 'name': selector,
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'design_revision': revision['design_revision']})
+                    expected = revision['target']
+                    kind = 'revised design center'
+                record_geometry(measurements, failures, kind, selector, expected, actual, tolerance)
             shot = Image.open(io.BytesIO(page.screenshot())).convert('RGB')
             save_images(args.output, original, shot, review_regions(spec))
             for item in spec.get('ink_regions', []):
@@ -257,8 +268,8 @@ def main():
         raise SystemExit('\n'.join(failures))
     strict = sum('passed' in measurement for measurement in measurements)
     contours = sum(measurement['kind'] == 'type contour (review only)' for measurement in measurements)
-    revisions = sum(measurement['kind'] == 'revised design ink' for measurement in measurements)
-    print(f'{strict} strict body checks passed ({revisions} explicit design revisions); '
+    revisions = sum(measurement['kind'] in ('revised design ink', 'revised design center') for measurement in measurements)
+    print(f'{strict} strict body checks passed ({revisions} authored geometry checks); '
           f'{contours} type contours recorded for review')
 
 

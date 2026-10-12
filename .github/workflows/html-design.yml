@@ -13,6 +13,8 @@ on:
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
+      - 'docs/qa/pane-header-alignment*'
+      - 'docs/qa/pane-header-alignment/**'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
   pull_request:
@@ -28,6 +30,8 @@ on:
       - 'docs/qa/html-header/**'
       - 'docs/qa/html-body/**'
       - 'docs/qa/html-body-review.md'
+      - 'docs/qa/pane-header-alignment*'
+      - 'docs/qa/pane-header-alignment/**'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
 permissions:
@@ -73,6 +77,8 @@ jobs:
           path: |
             docs/qa/html-header/
             docs/qa/html-body/
+            docs/qa/pane-header-alignment.md
+            docs/qa/pane-header-alignment/
             docs/qa/html-scrollbars/
             docs/qa/asset-review/
             docs/qa/asset-consumers/

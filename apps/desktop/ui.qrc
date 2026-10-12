@@ -11,6 +11,7 @@
     <file>ui/Preview.qml</file>
     <file>ui/Browser.qml</file>
     <file>ui/InspectorPanel.qml</file>
+    <file>ui/PaneHeader.qml</file>
     <file>ui/PreflightWindow.qml</file>
     <file alias="assets/info-light.png">../../design/assets/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/assets/png/dark/info@3x.png</file>

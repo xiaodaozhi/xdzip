@@ -321,17 +321,19 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 0
-                RowLayout {
+                PaneHeader {
+                    objectName: "filePaneHeader"
                     Layout.fillWidth: true
-                    Layout.margins: 16
-                    spacing: 12
                     Text {
+                        objectName: "filePaneTitle"
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         text: reader.title.length ? reader.title + "  /  " + (reader.location.length ? reader.location : qsTr("全部文件")) : qsTr("打开 ZIP，先浏览内容")
                         textFormat: Text.PlainText
                         font.pixelSize: Theme.bodySize
                         color: Theme.text
                         elide: Text.ElideMiddle
+                        verticalAlignment: Text.AlignVCenter
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"

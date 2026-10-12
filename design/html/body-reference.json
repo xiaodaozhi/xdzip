@@ -322,9 +322,22 @@
       "name": "预览关闭图标",
       "region": [
         1522,
+        187,
+        28,
+        33
+      ],
+      "previous_region": [
+        1522,
         192,
         28,
         28
+      ],
+      "design_revision": "pane-header-alignment",
+      "target_ink_rect": [
+        1529,
+        194.5,
+        14,
+        14
       ]
     },
     {
@@ -2359,6 +2372,24 @@
       "scale": 1.2571428571428571,
       "other_source_anchors": "unchanged",
       "source_comparison": "record-only for the five folder silhouettes; retain original source values and tolerance"
+    },
+    "pane-header-alignment": {
+      "reason": "预览标题栏与面包屑同高、同字号、同垂直中心；不替换原稿，旧关闭图标位置保留为独立对照。",
+      "header_height": 69,
+      "title_font_size": 20,
+      "title_line_height": 28,
+      "title_optical_offset_y": -2,
+      "close_center_y": 201.5,
+      "preview_image_top": 241
+    }
+  },
+  "dom_center_revisions": {
+    ".inspector-head .icon-button": {
+      "design_revision": "pane-header-alignment",
+      "target": [
+        1536,
+        201.5
+      ]
     }
   }
 }
