@@ -40,6 +40,10 @@ def main():
                             capture_output=True, text=True)
     if result.returncode:
         failures.append('High-fidelity catalog/gallery: ' + (result.stderr or result.stdout).strip())
+    result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-directory-tree-delivery.py'), '--check'],
+                            capture_output=True, text=True)
+    if result.returncode:
+        failures.append('Directory-tree design delivery: ' + (result.stderr or result.stdout).strip())
     print(json.dumps({'markdown_documents': len(documents), 'local_file_links': links,
                       'json_files': len(json_files), 'failures': failures}, ensure_ascii=False, indent=2))
     raise SystemExit(bool(failures))

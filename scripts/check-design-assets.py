@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from PIL import Image
+from directory_tree_assets import TREE_CUTS, component_reference_coverage, tree_shapes
 from asset_definitions import (
     CONTROL_PATHS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
     STATE_SHAPES, file_shapes, hero_shapes, revised_status_shapes, supplemental_shapes,
@@ -81,7 +82,8 @@ def check_reference_coverage(manifest: dict, by_file: dict) -> list[dict]:
     assert len(coverage) == len(references) == 45, 'Incomplete reference coverage'
     assert {item['reference'] for item in coverage} == references, 'Untracked reference coverage'
     assert {entry['file'] for entry in manifest['assets']
-            if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == references
+            if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == (
+                references | {f'reference/{name}.png' for name in TREE_CUTS})
     checked = []
     for item in coverage:
         reference = item['reference']
@@ -139,7 +141,7 @@ def main() -> None:
     definitions = {theme: set(CONTROL_PATHS) | set(EXTRA_CONTROL_PATHS) | set(MAIN_SHAPES)
                    | set(STATE_SHAPES) | set(file_shapes(theme)) | set(hero_shapes())
                    | set(revised_status_shapes(theme)) | set(supplemental_shapes(theme))
-                   | set(brand_shapes(theme)) for theme in THEMES}
+                   | set(brand_shapes(theme)) | set(tree_shapes(theme)) for theme in THEMES}
     assert definitions['light'] == definitions['dark'], 'Theme semantic names differ'
     names = definitions['light']
     assert SUPPLEMENTAL_NAMES | {'app-mark', 'archive', 'archive-grey'} <= names, 'Missing new semantic/brand icons'
@@ -160,6 +162,8 @@ def main() -> None:
             assert digest(source) == entry['source_sha256'], entry['source']
             x, y, width, height = entry['rect']
             with Image.open(source) as original, Image.open(path) as crop:
+                assert min(x, y) >= 0 and min(width, height) > 0
+                assert x + width <= original.width and y + height <= original.height, entry['file']
                 assert crop.size == (width, height)
                 assert crop.convert('RGBA').tobytes() == original.convert('RGBA').crop((x, y, x + width, y + height)).tobytes()
             assert entry['usage'] in ('visual-reference-only', 'demo-image-only')
@@ -223,7 +227,7 @@ def main() -> None:
             raise AssertionError(f'Unknown asset kind: {kind}')
     counts = {kind: sum(item['kind'] == kind for item in manifest['assets'])
               for kind in ('original-pixel-crop', 'vector-reconstruction', 'vector-rasterization')}
-    assert counts == {'original-pixel-crop': 48, 'vector-reconstruction': len(names) * 2,
+    assert counts == {'original-pixel-crop': 48 + len(TREE_CUTS), 'vector-reconstruction': len(names) * 2,
                       'vector-rasterization': len(names) * 6}, counts
     assert {entry['file'] for entry in manifest['assets'] if entry['kind'] in BRAND_KINDS} == set(brand_specs)
     for theme in THEMES:
@@ -236,15 +240,30 @@ def main() -> None:
         assert {entry['file'] for entry in manifest['assets']
                 if entry['kind'] == 'vector-rasterization' and entry['theme'] == theme} == raster_files
     coverage = check_reference_coverage(manifest, by_file)
+    components = manifest.get('component_reference_coverage', [])
+    assert components == component_reference_coverage(), 'Incomplete component reference coverage'
+    for component in components:
+        assert component['reference'] in by_file
+        assert component['integration_status'] == 'design-ready-awaiting-html-and-qt-integration'
+        for icon in component['icon_names']:
+            for theme in THEMES:
+                assert f'svg/{theme}/{icon}.svg' in by_file
+                assert all(f'png/{theme}/{icon}@{scale}x.png' in by_file for scale in (1, 2, 3))
+        for key in ('spec', 'geometry_spec'):
+            target = (ROOT / component[key]).resolve()
+            assert target.is_relative_to(ROOT.parents[1]) and target.is_file(), component[key]
+    subprocess.run([sys.executable, str(Path(__file__).with_name('check-directory-tree-assets.py'))], check=True)
     report = {
-        'status': 'passed', 'asset_entries': len(manifest['assets']), 'source_crops': 48,
+        'status': 'passed', 'asset_entries': len(manifest['assets']), 'source_crops': counts['original-pixel-crop'],
         'svg_files': counts['vector-reconstruction'], 'vector_png_files': counts['vector-rasterization'],
         'shared_icon_names': len(names), 'brand_exports': len(brand_specs),
         'reference_checks': len(coverage), 'optical_checks': optical_checks, 'reference_coverage': coverage,
-        'checks': ['Unique assets exist and match SHA-256', '48 source crops match recorded original pixels',
+        'component_reference_checks': len(components),
+        'checks': ['Unique assets exist and match SHA-256', f'{counts["original-pixel-crop"]} source crops match recorded original pixels',
                    f'{counts["vector-reconstruction"]} safe SVGs share the 24×24 canvas',
                    f'{counts["vector-rasterization"]} transparent exports have 24/48/72-pixel canvases',
                    f'{len(coverage)} references map to exact semantic SVGs or explicitly native controls',
+                   f'{len(components)} component cuts declare shared icons or dynamic native geometry',
                    f'{len(brand_specs)} brand exports pass their platform-format validator and source hashes',
                    'SVG paint references resolve to unique local definitions',
                    f'{len(optical_checks)} file/folder theme-and-scale exports satisfy fixed optical bounds and center',

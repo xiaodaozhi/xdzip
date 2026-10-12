@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "offline_browser_cases": [
+    {
+      "width": 1280,
+      "content": 1280,
+      "images": 43,
+      "broken": [],
+      "boards": 3,
+      "cuts": 26,
+      "external_requests": 0
+    },
+    {
+      "width": 390,
+      "content": 390,
+      "images": 43,
+      "broken": [],
+      "boards": 3,
+      "cuts": 26,
+      "external_requests": 0
+    },
+    {
+      "width": 320,
+      "content": 320,
+      "images": 43,
+      "broken": [],
+      "boards": 3,
+      "cuts": 26,
+      "external_requests": 0
+    }
+  ],
+  "zip_members": 93,
+  "zip_hash_checks": 92,
+  "scope": "Static design and asset delivery; no live directory-tree behavior tested"
+}

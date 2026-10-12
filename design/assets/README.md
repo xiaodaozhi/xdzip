@@ -4,15 +4,21 @@
 
 | 路径 | 数量 / 规格 | 用途 |
 | --- | --- | --- |
-| `svg/light`、`svg/dark` | 每主题 68 类；全部 24×24 透明画布 | HTML 和 Qt 共用的界面矢量源 |
-| `png/light`、`png/dark` | 每主题 204 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
-| `reference` | 45 张 PNG；保留源区域物理尺寸 | 原像素参考，保留背景，不作为透明运行图标 |
+| `svg/light`、`svg/dark` | 每主题 72 类；全部 24×24 透明画布 | HTML 和 Qt 共用的界面矢量源 |
+| `png/light`、`png/dark` | 每主题 216 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
+| `reference` | 71 张 PNG（45 既有图标参考 + 26 目录树 B）；保留源区域物理尺寸 | 原像素参考，保留背景，不作为透明运行图标 |
 | `demo` | 3 张照片；保留原始切片分辨率 | HTML 示例缩略图及预览；产品预览服务提供真实图像 |
 | `brand` | 26 项；应用与 ZIP 文档母版、平台格式及设计参考 | 系统应用图标、界面品牌和后续安装器的文件图标素材 |
 | `preview` | 1 张素材联系表 | 本次生成的审核预览，不进入产品包 |
 | [fonts](fonts/README.md) | Noto 派生设计字体与 OFL-1.1 | HTML 设计的稳定排版，不进入 Qt 产品字体 |
-| [manifest.json](manifest.json) | 统一资产与 45 张参考的覆盖台账 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用；总数以本清单为准 |
+| [manifest.json](manifest.json) | 统一资产、45 张图标参考与 26 张组件切片的覆盖台账 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用；总数以本清单为准 |
 | [validation.json](validation.json) | 生成一致性与资产检查 | 检查结果和仍需人工 / 原生核对的范围 |
+
+## 目录树 B 设计交付
+
+[专用 HTML 画廊](../hifi/directory-tree.html)与[交互规格](../../docs/ux/directory-tree.md)集中说明 26 张 `reference/tree-*.png` 的来源、逻辑尺寸和动态绘制职责。新增分支圆点、实心信息 / 警告及分段转轮四种素材使用统一 24 单位画布；八张浅深色 SVG 与 24 张透明 PNG 已导出，尚未接入目录树消费者。文件夹与箭头复用既有图形；连接线、行状态与文字由组件绘制。
+
+主清单新增 `component_reference_coverage`，逐项记录共享图标 / 动态组件 / 动态几何及待接入状态；原有 `reference_coverage` 的 45 张图标映射保持独立语义。新增切片全部与确认稿原像素相等，旧十张图板、45 张参考和三张照片保持原字节。
 
 ## 一份矢量源
 
@@ -44,7 +50,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 ## 原稿与参考的关系
 
-所有 10 张整幅原稿位于 `design/hifi/screens`。45 张参考切片和 3 张演示照片保留迁移前的 PNG 文件字节；来源矩形、原稿 SHA-256 和切片 SHA-256 均在清单中。原稿区域的不同大小来自裁剪坐标，不能据此给图标控件设置不同尺寸。
+十张页面原稿与三张目录树组件图板位于 `design/hifi/screens`。45 张参考切片和 3 张演示照片保留迁移前的 PNG 文件字节；来源矩形、原稿 SHA-256 和切片 SHA-256 均在清单中。原稿区域的不同大小来自裁剪坐标，不能据此给图标控件设置不同尺寸。
 
 原稿没有可恢复的 alpha 图层，参考切片的白底、淡蓝选中背景和阴影属于原像素。它们供独立对照，不进行全局去白，也不伪称为透明运行图层。只有独立重建的 SVG 与对应透明 PNG 用于运行图标。
 
@@ -60,6 +66,7 @@ python3 scripts/build-design-assets.py
 python3 scripts/render-design-assets.py
 python3 scripts/check-design-assets.py
 python3 scripts/check-asset-integration.py
+python3 scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
 # Embed the existing gallery images for offline / mobile review.
 python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
 ```

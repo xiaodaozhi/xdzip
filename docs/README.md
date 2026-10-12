@@ -22,6 +22,7 @@
 | 持续集成与发布 | [CI 策略](engineering/ci-policy.md)、[发布流程](engineering/release-runbook.md) |
 | 项目执行 | [工作清单](planning/backlog.md)、[风险与决策](planning/risks.md)、[就绪评审](planning/readiness.md) |
 | 解压预检 | [阶段契约](engineering/extraction-preflight.md)、[测试与实际窗口](qa/extraction-preflight.md) |
+| 目录树 B 设计交付 | [正式设计与接入规格](ux/directory-tree.md)、[逻辑参数](visual/directory-tree.json)、[图板与切图 HTML](../design/hifi/directory-tree.html)、[交付复核](qa/directory-tree.md) |
 | 目录导航与排序 | [实现、实际截图与验收](qa/navigation-sorting.md) |
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
 | M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |

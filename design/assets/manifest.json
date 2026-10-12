@@ -878,6 +878,351 @@
       "note": "Named reconstruction preserves this reference's semantic role; it is not a recovered alpha layer."
     }
   ],
+  "component_reference_coverage": [
+    {
+      "reference": "reference/tree-folder.png",
+      "component": "directory-tree",
+      "title": "目录图标",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-disclosure-expanded.png",
+      "component": "directory-tree",
+      "title": "展开箭头",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "chevron-down"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-disclosure-collapsed.png",
+      "component": "directory-tree",
+      "title": "折叠箭头",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "chevron-right"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-guides-nested.png",
+      "component": "directory-tree",
+      "title": "多级连接线区域",
+      "implementation": "native-geometry",
+      "icon_names": [],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-current-indicator.png",
+      "component": "directory-tree",
+      "title": "当前目录左侧标记",
+      "implementation": "native-geometry",
+      "icon_names": [],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-collapsed.png",
+      "component": "directory-tree",
+      "title": "有子目录 · 已折叠",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-right"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-expanded.png",
+      "component": "directory-tree",
+      "title": "有子目录 · 已展开",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-down",
+        "chevron-right"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-leaf.png",
+      "component": "directory-tree",
+      "title": "非空叶子目录",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-empty.png",
+      "component": "directory-tree",
+      "title": "显式空目录",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-current.png",
+      "component": "directory-tree",
+      "title": "当前目录",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-down"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-hover.png",
+      "component": "directory-tree",
+      "title": "悬停",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-row-focus.png",
+      "component": "directory-tree",
+      "title": "键盘焦点",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-right"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-name-tooltip.png",
+      "component": "directory-tree",
+      "title": "名称与完整路径提示",
+      "implementation": "native-geometry",
+      "icon_names": [],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-deep-hierarchy.png",
+      "component": "directory-tree",
+      "title": "深层级与横向滚动",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-down",
+        "chevron-right"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-large-type.png",
+      "component": "directory-tree",
+      "title": "大字号",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-down"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-loading.png",
+      "component": "directory-tree",
+      "title": "正在读取完整索引",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "tree-spinner"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-empty-archive.png",
+      "component": "directory-tree",
+      "title": "空归档",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-root-files.png",
+      "component": "directory-tree",
+      "title": "只有根目录文件",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-nav-limit.png",
+      "component": "directory-tree",
+      "title": "目录索引超限",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "tree-info"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-read-failed.png",
+      "component": "directory-tree",
+      "title": "读取失败",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "tree-warning"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-hidden-current.png",
+      "component": "directory-tree",
+      "title": "收起当前目录的祖先",
+      "implementation": "native-component",
+      "icon_names": [
+        "folder",
+        "chevron-right",
+        "tree-active-branch"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-active-branch.png",
+      "component": "directory-tree",
+      "title": "隐藏当前目录的分支圆点",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "tree-active-branch"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-skeleton.png",
+      "component": "directory-tree",
+      "title": "索引读取骨架",
+      "implementation": "native-geometry",
+      "icon_names": [],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
+    },
+    {
+      "reference": "reference/tree-loading-glyph.png",
+      "component": "directory-tree",
+      "title": "读取状态图标",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "tree-spinner"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-info-glyph.png",
+      "component": "directory-tree",
+      "title": "目录超限提示图标",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "tree-info"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    },
+    {
+      "reference": "reference/tree-error-glyph.png",
+      "component": "directory-tree",
+      "title": "读取失败提示图标",
+      "implementation": "shared-svg",
+      "icon_names": [
+        "tree-warning"
+      ],
+      "spec": "../../docs/ux/directory-tree.md",
+      "geometry_spec": "../../docs/visual/directory-tree.json",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
+    }
+  ],
   "assets": [
     {
       "id": "reference/brand-titlebar",
@@ -19401,6 +19746,1494 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "72ac3e7b37426ac225febb820df7cf818ac3669d839e36ad7e4e9beaa5a146ca"
+    },
+    {
+      "id": "reference/tree-folder",
+      "file": "reference/tree-folder.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        140,
+        660,
+        82,
+        70
+      ],
+      "size": [
+        82,
+        70
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "449408ef05b1275812764fe0cb78dbb24843cfb97b0cb61fd14e2387a309ee04"
+    },
+    {
+      "id": "reference/tree-disclosure-expanded",
+      "file": "reference/tree-disclosure-expanded.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        93,
+        681,
+        30,
+        28
+      ],
+      "size": [
+        30,
+        28
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6003ab438f0f419bd5451fc45fe8bdf732aa7936eaee5cfd5235cf78a443fff7"
+    },
+    {
+      "id": "reference/tree-disclosure-collapsed",
+      "file": "reference/tree-disclosure-collapsed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        194,
+        842,
+        31,
+        39
+      ],
+      "size": [
+        31,
+        39
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "f763a2ed6c6c5045433d074986528db862f2aaf5f93cb4f1cfd22bbbdfb36994"
+    },
+    {
+      "id": "reference/tree-guides-nested",
+      "file": "reference/tree-guides-nested.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        100,
+        812,
+        126,
+        165
+      ],
+      "size": [
+        126,
+        165
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "ba980bb208f658846650509dfe3f445b293fe18f43faca40d699dc107b4fb64e"
+    },
+    {
+      "id": "reference/tree-current-indicator",
+      "file": "reference/tree-current-indicator.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        60,
+        557,
+        18,
+        91
+      ],
+      "size": [
+        18,
+        91
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e6d8c07c0cc8b123e9637f3b72c27273b438226fd429024e15589848cf3eef1a"
+    },
+    {
+      "id": "reference/tree-row-collapsed",
+      "file": "reference/tree-row-collapsed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        290,
+        455,
+        110
+      ],
+      "size": [
+        455,
+        110
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5257b2e51f0a84269d607b4e1d6c7aab3f4af25818ded388063910bf92ad2dab"
+    },
+    {
+      "id": "reference/tree-row-expanded",
+      "file": "reference/tree-row-expanded.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        540,
+        291,
+        452,
+        245
+      ],
+      "size": [
+        452,
+        245
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5b254d8056536e9139b3048b0492317f72e5b3dfb1283335853406a474cfa56a"
+    },
+    {
+      "id": "reference/tree-row-leaf",
+      "file": "reference/tree-row-leaf.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        735,
+        455,
+        95
+      ],
+      "size": [
+        455,
+        95
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "a91faa3b53906901832a4e5990f3386fa043f52bd27dc91f433d87518cbca9c6"
+    },
+    {
+      "id": "reference/tree-row-empty",
+      "file": "reference/tree-row-empty.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        831,
+        455,
+        98
+      ],
+      "size": [
+        455,
+        98
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6898f0c5742d5f2dddbb7a83c2e08aade42840a490fa5baf1e11220e1afb6686"
+    },
+    {
+      "id": "reference/tree-row-current",
+      "file": "reference/tree-row-current.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        537,
+        729,
+        457,
+        76
+      ],
+      "size": [
+        457,
+        76
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5f599676db7429904cff0bdc36ef419d12db6c2519b91d0c5248e9c9d2876680"
+    },
+    {
+      "id": "reference/tree-row-hover",
+      "file": "reference/tree-row-hover.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        538,
+        815,
+        456,
+        77
+      ],
+      "size": [
+        456,
+        77
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "ec741d3cfe3192340bee3c7784e35d337baad1ce79f901781618024771c8e762"
+    },
+    {
+      "id": "reference/tree-row-focus",
+      "file": "reference/tree-row-focus.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        538,
+        899,
+        456,
+        76
+      ],
+      "size": [
+        456,
+        76
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5442156a4d89ad24676b70403392f5756e9f9991ef7e35dba9e53ab9d114320b"
+    },
+    {
+      "id": "reference/tree-name-tooltip",
+      "file": "reference/tree-name-tooltip.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        125,
+        1319,
+        361,
+        83
+      ],
+      "size": [
+        361,
+        83
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "b02ffb2de354693e1be1f321ac8a4253398e7ccf89f5a546d059f45ba9258b8f"
+    },
+    {
+      "id": "reference/tree-deep-hierarchy",
+      "file": "reference/tree-deep-hierarchy.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        1171,
+        455,
+        265
+      ],
+      "size": [
+        455,
+        265
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0d7ce15785d708520fca4dddff43dd0de0fdd071dd6d0bf28427d7744becba6c"
+    },
+    {
+      "id": "reference/tree-large-type",
+      "file": "reference/tree-large-type.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        540,
+        1170,
+        452,
+        156
+      ],
+      "size": [
+        452,
+        156
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "984a531c52713f14eca938fe835ea29bb389a7f132787e6b9e1a88ca04304abf"
+    },
+    {
+      "id": "reference/tree-loading",
+      "file": "reference/tree-loading.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        224,
+        420,
+        371
+      ],
+      "size": [
+        420,
+        371
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e7fd05fd1ae53fbf320bd2c7fa47082b2f7365256a4f95d35787995b103d9d0c"
+    },
+    {
+      "id": "reference/tree-empty-archive",
+      "file": "reference/tree-empty-archive.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        225,
+        423,
+        370
+      ],
+      "size": [
+        423,
+        370
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "a226778788db307bc6124f5144fc127862cbca0643514959eeccd866a7b3a348"
+    },
+    {
+      "id": "reference/tree-root-files",
+      "file": "reference/tree-root-files.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        730,
+        420,
+        281
+      ],
+      "size": [
+        420,
+        281
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "2b845d4de93a61133e4cff0b427313e3b0ce75ce3cf2c0a3ad575f6796566dcc"
+    },
+    {
+      "id": "reference/tree-nav-limit",
+      "file": "reference/tree-nav-limit.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        730,
+        423,
+        281
+      ],
+      "size": [
+        423,
+        281
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "11aea84dd1a845e92bb0995968f229d54dbd1e3cd89c3325f712849c6917e0e6"
+    },
+    {
+      "id": "reference/tree-read-failed",
+      "file": "reference/tree-read-failed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        1143,
+        420,
+        294
+      ],
+      "size": [
+        420,
+        294
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0de817954020cba8cb9f46a07924d1e3d0507b7d9062750271f10cfd7dd8b520"
+    },
+    {
+      "id": "reference/tree-hidden-current",
+      "file": "reference/tree-hidden-current.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        1143,
+        423,
+        287
+      ],
+      "size": [
+        423,
+        287
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "37031b8f5897f555c5d18fb0a3cdac060b28b660b7f792b12dd3b3e1789e8c46"
+    },
+    {
+      "id": "reference/tree-active-branch",
+      "file": "reference/tree-active-branch.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        873,
+        1293,
+        24,
+        24
+      ],
+      "size": [
+        24,
+        24
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "dbe3fe1d243fece2d1cc876ae316c7f7eec7a5a749bdf8a50ce33252e5df29a7"
+    },
+    {
+      "id": "reference/tree-skeleton",
+      "file": "reference/tree-skeleton.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        92,
+        458,
+        274,
+        121
+      ],
+      "size": [
+        274,
+        121
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6ae0ff247d805d2d4ccdafbdbf9a1864a46bceb1a96f87bbaf43515d3166d305"
+    },
+    {
+      "id": "reference/tree-loading-glyph",
+      "file": "reference/tree-loading-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        93,
+        411,
+        38,
+        38
+      ],
+      "size": [
+        38,
+        38
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e8645bb633d1f19b0f15644faa4db1723c658b12d5322c6a8587f25d052b2ab5"
+    },
+    {
+      "id": "reference/tree-info-glyph",
+      "file": "reference/tree-info-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        577,
+        920,
+        37,
+        37
+      ],
+      "size": [
+        37,
+        37
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0c72401d5ec3c0445a2693ed4f53251bdea9100dd5e29e29079330703f3ed9e1"
+    },
+    {
+      "id": "reference/tree-error-glyph",
+      "file": "reference/tree-error-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        92,
+        1340,
+        40,
+        40
+      ],
+      "size": [
+        40,
+        40
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "8632dfb70413f164ebd959c627c46e2e798916cfc687f88a0ba65c4cf7a8c0c1"
+    },
+    {
+      "id": "light/tree-active-branch",
+      "file": "svg/light/tree-active-branch.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "source_reference": "reference/tree-active-branch.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-info",
+      "file": "svg/light/tree-info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "source_reference": "reference/tree-info-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-spinner",
+      "file": "svg/light/tree-spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "source_reference": "reference/tree-loading-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-warning",
+      "file": "svg/light/tree-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "source_reference": "reference/tree-error-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-active-branch",
+      "file": "svg/dark/tree-active-branch.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
+      "source_reference": "reference/tree-active-branch.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-info",
+      "file": "svg/dark/tree-info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
+      "source_reference": "reference/tree-info-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-spinner",
+      "file": "svg/dark/tree-spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
+      "source_reference": "reference/tree-loading-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-warning",
+      "file": "svg/dark/tree-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
+      "source_reference": "reference/tree-error-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/light/tree-active-branch@1x",
+      "file": "png/light/tree-active-branch@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "442abf408469f7b8d46732ed05f189f3baadefc97f08c7309912546c7d2ac3b0"
+    },
+    {
+      "id": "raster/light/tree-active-branch@2x",
+      "file": "png/light/tree-active-branch@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d2831b60400c9ea8cc41faee8d74c70cf75d2ed58bffc3ee0a8ee301ce320468"
+    },
+    {
+      "id": "raster/light/tree-active-branch@3x",
+      "file": "png/light/tree-active-branch@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "0956e9bdd1d0a36c5e4e6614e12762e95b96ad2eebadf00eaa08abe3d9cb5131"
+    },
+    {
+      "id": "raster/light/tree-info@1x",
+      "file": "png/light/tree-info@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "39722869af0c3325a820040cedaf77c6c1c7dd49d9931d35d7c464bdc0c4a4d9"
+    },
+    {
+      "id": "raster/light/tree-info@2x",
+      "file": "png/light/tree-info@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "33cff17b6b0c7be37a770181c671718c97f86cdec6c985c8a7b2a96d1cfd1792"
+    },
+    {
+      "id": "raster/light/tree-info@3x",
+      "file": "png/light/tree-info@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "3620c0289dd3ff0b7a50a063f10df08d5c89283396ce0b30559ce4fa71b622a2"
+    },
+    {
+      "id": "raster/light/tree-spinner@1x",
+      "file": "png/light/tree-spinner@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "37833d7dd123bbf6437288e22907d7a347f5be1f9fb4899a311e997a9c249114"
+    },
+    {
+      "id": "raster/light/tree-spinner@2x",
+      "file": "png/light/tree-spinner@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "580a308360cf636d74a474f66f1d23198bc62aee341ff4eb4c042db3da9f7b75"
+    },
+    {
+      "id": "raster/light/tree-spinner@3x",
+      "file": "png/light/tree-spinner@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "710e4c5c273ee8f788164f9fd966be306aae0b907252b47a3f5950f2f8c73e80"
+    },
+    {
+      "id": "raster/light/tree-warning@1x",
+      "file": "png/light/tree-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d56f1d29494c57a1be90ff8aedc493cf11a1f10b772f380184a3c87c8de29b83"
+    },
+    {
+      "id": "raster/light/tree-warning@2x",
+      "file": "png/light/tree-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.5,
+        22.0,
+        20.5
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "2c5f701c8f42dd64c7e7599facf13879666309c1184e4ba46cf6ef8f8d706cdb"
+    },
+    {
+      "id": "raster/light/tree-warning@3x",
+      "file": "png/light/tree-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
+    },
+    {
+      "id": "raster/dark/tree-active-branch@1x",
+      "file": "png/dark/tree-active-branch@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/tree-active-branch.svg",
+      "source_sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d96f6acbc56dc067f06e2c1f6fda8f655e320f75c66172bc36fa42b2c6efe2da"
+    },
+    {
+      "id": "raster/dark/tree-active-branch@2x",
+      "file": "png/dark/tree-active-branch@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/tree-active-branch.svg",
+      "source_sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "de0ab280488c32cdbfc31f35017b6b7602996ccc580e9f34e07e2822270d22fc"
+    },
+    {
+      "id": "raster/dark/tree-active-branch@3x",
+      "file": "png/dark/tree-active-branch@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/tree-active-branch.svg",
+      "source_sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "bad122661a28f90158d7a79e01631eae2acdc8d72cf24a362d0d09dfa024b3f8"
+    },
+    {
+      "id": "raster/dark/tree-info@1x",
+      "file": "png/dark/tree-info@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-info.svg",
+      "source_sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "210183d46c46f90f8c7a9b6ae68dc488d501032684e7845bbaf1276782036666"
+    },
+    {
+      "id": "raster/dark/tree-info@2x",
+      "file": "png/dark/tree-info@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-info.svg",
+      "source_sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8a345c5d86214655da0388901bb348c142db306abaece7a68ee28e36fcb3f5c5"
+    },
+    {
+      "id": "raster/dark/tree-info@3x",
+      "file": "png/dark/tree-info@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-info.svg",
+      "source_sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "6a35dbed34d8c5a0accfa3011556033b86d2439aad1d67a3426373c52d255bb9"
+    },
+    {
+      "id": "raster/dark/tree-spinner@1x",
+      "file": "png/dark/tree-spinner@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-spinner.svg",
+      "source_sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "7336b44d97634ad9362753b08baa2f1bf851236cebdb9dc3937602bee670267b"
+    },
+    {
+      "id": "raster/dark/tree-spinner@2x",
+      "file": "png/dark/tree-spinner@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-spinner.svg",
+      "source_sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "deb0464960e123dd89751fb6b7d809c1ad0fe8bc1d60f2e188e7e1530d62ea2e"
+    },
+    {
+      "id": "raster/dark/tree-spinner@3x",
+      "file": "png/dark/tree-spinner@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-spinner.svg",
+      "source_sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "76067751b9fcc5c7d7d7827d0dc64a8446c5381ebe76647e6da90d6430a381b9"
+    },
+    {
+      "id": "raster/dark/tree-warning@1x",
+      "file": "png/dark/tree-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-warning.svg",
+      "source_sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d56f1d29494c57a1be90ff8aedc493cf11a1f10b772f380184a3c87c8de29b83"
+    },
+    {
+      "id": "raster/dark/tree-warning@2x",
+      "file": "png/dark/tree-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-warning.svg",
+      "source_sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
+      "visible_bounds": [
+        2.0,
+        2.5,
+        22.0,
+        20.5
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "2c5f701c8f42dd64c7e7599facf13879666309c1184e4ba46cf6ef8f8d706cdb"
+    },
+    {
+      "id": "raster/dark/tree-warning@3x",
+      "file": "png/dark/tree-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/tree-warning.svg",
+      "source_sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
     }
   ]
 }

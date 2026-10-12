@@ -1,10 +1,10 @@
 {
   "status": "passed",
-  "asset_entries": 618,
-  "source_crops": 48,
-  "svg_files": 136,
-  "vector_png_files": 408,
-  "shared_icon_names": 68,
+  "asset_entries": 676,
+  "source_crops": 74,
+  "svg_files": 144,
+  "vector_png_files": 432,
+  "shared_icon_names": 72,
   "brand_exports": 26,
   "reference_checks": 45,
   "optical_checks": [
@@ -1254,12 +1254,14 @@
       ]
     }
   ],
+  "component_reference_checks": 26,
   "checks": [
     "Unique assets exist and match SHA-256",
-    "48 source crops match recorded original pixels",
-    "136 safe SVGs share the 24×24 canvas",
-    "408 transparent exports have 24/48/72-pixel canvases",
+    "74 source crops match recorded original pixels",
+    "144 safe SVGs share the 24×24 canvas",
+    "432 transparent exports have 24/48/72-pixel canvases",
     "45 references map to exact semantic SVGs or explicitly native controls",
+    "26 component cuts declare shared icons or dynamic native geometry",
     "26 brand exports pass their platform-format validator and source hashes",
     "SVG paint references resolve to unique local definitions",
     "42 file/folder theme-and-scale exports satisfy fixed optical bounds and center",

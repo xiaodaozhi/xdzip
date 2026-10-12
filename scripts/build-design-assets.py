@@ -17,6 +17,7 @@ from asset_definitions import (
     supplemental_shapes,
 )
 from brand_assets import brand_export_specs, brand_shapes
+from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_reference_coverage, tree_shapes
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO / 'design/assets'
@@ -43,7 +44,7 @@ GROUPS = {
     'status': {'status-warning', 'status-success', 'status-skipped', 'status-stopped',
                'status-partial-success', 'spinner', 'info', 'remove', 'clock', 'theme-system',
                'theme-light', 'theme-dark', 'cancelled-large', 'check-selected', 'success',
-               'radio-selected', 'radio-unselected', 'conflict-warning'},
+               'radio-selected', 'radio-unselected', 'conflict-warning', 'tree-spinner', 'tree-info', 'tree-warning'},
 }
 GROUP_TITLES = {'brand': '品牌与归档', 'file': '文件与目录', 'tool': '工具栏与导航',
                 'status': '任务状态', 'illustration': '操作窗口插图'}
@@ -111,7 +112,7 @@ def svg_entries(check: bool = False) -> list[dict]:
         ink, paper, muted = (('#20232a', '#ffffff', '#a4acbc') if theme == 'light'
                             else ('#eceef3', '#20232a', '#8590a6'))
         state_muted, track = (('#788399', '#e2e6ee') if theme == 'light' else ('#9aa8c2', '#404958'))
-        main_shapes = MAIN_SHAPES | file_shapes(theme) | brand_shapes(theme)
+        main_shapes = MAIN_SHAPES | file_shapes(theme) | brand_shapes(theme) | tree_shapes(theme)
         state_shapes = STATE_SHAPES | hero_shapes() | revised_status_shapes(theme)
         supplemental = supplemental_shapes(theme)
         definitions = CONTROL_PATHS | EXTRA_CONTROL_PATHS
@@ -146,6 +147,10 @@ def svg_entries(check: bool = False) -> list[dict]:
                 entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
                 if name in ('app-mark', 'archive', 'archive-grey'):
                     entry['reference_relation'] = 'historical-design-reference'
+            if name in TREE_ICON_REFERENCES:
+                entry['source_reference'] = f'reference/{TREE_ICON_REFERENCES[name]}.png'
+                entry['component'] = 'directory-tree'
+                entry['integration_status'] = 'design-ready-awaiting-html-and-qt-integration'
             if name in ('app-mark', 'archive', 'archive-grey'):
                 brand_source = 'brand/xdzip.svg' if name == 'app-mark' else 'brand/xdzip-zip.svg'
                 entry['brand_source'] = brand_source
@@ -189,7 +194,7 @@ def brand_entries() -> list[dict]:
 def reference_coverage() -> list[dict]:
     """Account for every preserved reference with an explicit semantic mapping."""
     entries = []
-    for reference in sorted(name for name in CROPS if not name.startswith('photo-')):
+    for reference in sorted(name for name in CROPS if not name.startswith('photo-') and name not in TREE_CUTS):
         icons = sorted((name for name, source in REFERENCES.items() if source == reference),
                        key=lambda name: (name != reference, name))
         if not icons:
@@ -236,8 +241,16 @@ def gallery(entries: list[dict]) -> str:
             cards.append(f'''<article class="card" id="icon-{label}" data-name="{label}"><header><b>{label}</b><span>{f'浅色 Qt {qt_count} 引用' if qt_count else 'HTML 素材库 / 可复用'}</span></header><div class="comparison"><div class="source"><small>{reference_caption}</small><div class="sample">{crop}</div></div><div><small>浅色 · 48 px</small><div class="sample"><img width="48" height="48" src="svg/light/{label}.svg" alt="{label} 浅色"></div></div><div><small>深色 · 48 px</small><div class="sample dark"><img width="48" height="48" src="svg/dark/{label}.svg" alt="{label} 深色"></div></div></div><div class="exports"><span>透明导出</span>{''.join(f'<div><img width="{24 * scale}" height="{24 * scale}" src="png/light/{label}@{scale}x.png" alt="{label} {scale} 倍"><small>{24 * scale} × {24 * scale}</small></div>' for scale in (1, 2, 3))}</div></article>''')
         sections.append(f'<section id="{group}"><h2>{GROUP_TITLES[group]}</h2><div class="grid">{"".join(cards)}</div></section>')
     cut_cards = []
+    component_cards = []
+    components = {item['reference']: item for item in component_reference_coverage()}
     for item in entries:
         if item['kind'] != 'original-pixel-crop':
+            continue
+        component = components.get(item['file'])
+        if component:
+            labels = {'shared-svg': '共享透明图标', 'native-component': '动态组件', 'native-geometry': '动态几何'}
+            links = ''.join(f'<a href="#icon-{html.escape(name)}">{html.escape(name)}</a> ' for name in component['icon_names'])
+            component_cards.append(f'<figure><a href="{item["file"]}"><img src="{item["file"]}" alt="{html.escape(component["title"])}"></a><figcaption>{html.escape(component["title"])}<small>{html.escape(Path(item["file"]).stem)} · {item["size"][0]} × {item["size"][1]} 原像素</small><small>{labels[component["implementation"]]} · 待接入 HTML / Qt</small><small>{links}</small></figcaption></figure>')
             continue
         record = coverage.get(item['file'])
         links = (''.join(f'<a href="#icon-{html.escape(name)}">{html.escape(name)}</a> '
@@ -257,7 +270,7 @@ def gallery(entries: list[dict]) -> str:
         platform_cards.append(f'<figure class="platform-card"><div>{preview}</div><figcaption><a href="{item["file"]}">{name}</a><small>{html.escape(item["kind"])} · {dimensions}</small></figcaption></figure>')
     platform_section = ('<section id="platform-brand"><h2>应用图标与平台导出</h2><p>品牌母版、已确认参考及各平台图标统一纳入这份清单。平台图标使用对应格式和物理分辨率，界面小图标继续使用 24 × 24 共享画布。</p><div class="platform-grid">'
                         + ''.join(platform_cards) + '</div></section>')
-    styles = '''*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f9;color:#222a3b;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1240px;margin:auto;padding:40px 24px}h1{font-size:32px;letter-spacing:-.6px;margin:0 0 12px}h2{font-size:21px;margin:32px 0 16px}p{line-height:1.85;color:#647089;max-width:920px}a{color:#245ce9}nav{display:flex;gap:18px;flex-wrap:wrap;padding:18px 0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #e0e5ef;border-radius:14px;padding:18px;box-shadow:0 2px 8px #22335304}.card header{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:18px}.card header b{font-size:13px}.card header span{font-size:10px;white-space:nowrap;color:#68758d}.comparison{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}small{display:block;font-size:10px;color:#78849a;line-height:1.5}.sample{height:72px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #e7ebf3;border-radius:9px;margin-top:8px}.sample img{display:block;object-fit:contain}.sample.dark{background:#222a37;border-color:#222a37}.source .sample{background:#f1f3f7}.missing{font-size:9px;color:#9aa4b7}.exports{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf0f5;padding-top:16px;margin-top:16px;min-height:102px}.exports>span{font-size:10px;line-height:1.6;color:#8993a6;max-width:30px}.exports>div{display:flex;flex-direction:column;align-items:center;gap:7px}.exports img{object-fit:contain;display:block;background:repeating-conic-gradient(#e9edf4 0% 25%,#fff 0% 50%) 0/8px 8px}.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.platform-card{margin:0;padding:20px;background:white;border:1px solid #e0e5ef;border-radius:14px;text-align:center}.platform-card>div{height:180px;display:grid;place-items:center}.platform-card img{object-fit:contain}.platform-card figcaption{font-size:12px;margin-top:16px}.format{font-size:26px;font-weight:650;color:#3975f0}.references{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.references figure{margin:0;background:white;border:1px solid #e0e5ef;border-radius:10px;padding:14px;text-align:center}.references figure>div{height:110px;display:grid;place-items:center}.references img{max-width:100%;max-height:100px;object-fit:contain}.references figcaption{font-size:11px;overflow-wrap:anywhere;margin-top:14px}.banner{border-left:3px solid #2d6bfa;padding:3px 16px;background:#eef3fd;border-radius:0 8px 8px 0}.banner p{margin:8px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.references{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){main{padding:26px 14px}.grid{grid-template-columns:1fr}.references{grid-template-columns:repeat(2,minmax(0,1fr))}h1{font-size:26px}}'''
+    styles = '''*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f9;color:#222a3b;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1240px;margin:auto;padding:40px 24px}h1{font-size:32px;letter-spacing:-.6px;margin:0 0 12px}h2{font-size:21px;margin:32px 0 16px}p{line-height:1.85;color:#647089;max-width:920px}a{color:#245ce9}nav{display:flex;gap:18px;flex-wrap:wrap;padding:18px 0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #e0e5ef;border-radius:14px;padding:18px;box-shadow:0 2px 8px #22335304}.card header{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:18px}.card header b{font-size:13px}.card header span{font-size:10px;white-space:nowrap;color:#68758d}.comparison{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}small{display:block;font-size:10px;color:#78849a;line-height:1.5}.sample{height:72px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #e7ebf3;border-radius:9px;margin-top:8px}.sample img{display:block;object-fit:contain}.sample.dark{background:#222a37;border-color:#222a37}.source .sample{background:#f1f3f7}.missing{font-size:9px;color:#9aa4b7}.exports{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf0f5;padding-top:16px;margin-top:16px;min-height:102px}.exports>span{font-size:10px;line-height:1.6;color:#8993a6;max-width:30px}.exports>div{display:flex;flex-direction:column;align-items:center;gap:7px}.exports img{object-fit:contain;display:block;background:repeating-conic-gradient(#e9edf4 0% 25%,#fff 0% 50%) 0/8px 8px}.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.platform-card{margin:0;padding:20px;background:white;border:1px solid #e0e5ef;border-radius:14px;text-align:center}.platform-card>div{height:180px;display:grid;place-items:center}.platform-card img{object-fit:contain}.platform-card figcaption{font-size:12px;margin-top:16px}.format{font-size:26px;font-weight:650;color:#3975f0}.references{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.references figure{margin:0;background:white;border:1px solid #e0e5ef;border-radius:10px;padding:14px;text-align:center}.references figure>div{height:110px;display:grid;place-items:center}.references img{max-width:100%;max-height:100px;object-fit:contain}.references figcaption{font-size:11px;overflow-wrap:anywhere;margin-top:14px}.component-cuts{grid-template-columns:repeat(2,minmax(0,1fr))}.component-cuts img{max-height:320px;max-width:100%;object-fit:contain}.component-cuts figure>a{display:grid;place-items:center;min-height:90px}.banner{border-left:3px solid #2d6bfa;padding:3px 16px;background:#eef3fd;border-radius:0 8px 8px 0}.banner p{margin:8px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.references{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){main{padding:26px 14px}.grid{grid-template-columns:1fr}.references{grid-template-columns:repeat(2,minmax(0,1fr))}.component-cuts{grid-template-columns:1fr}h1{font-size:26px}}'''
     return ('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>xdzip · 统一素材库</title><style>' + styles + '</style><main><h1>xdzip · 统一素材库</h1>'
             f'<p>一套命名、一份清单、一组透明画布。{len(vectors)} 类共享图标提供浅色 / 深色 SVG 与 1× / 2× / 3× PNG；原稿参考和演示照片集中保存。</p>'
@@ -265,7 +278,8 @@ def gallery(entries: list[dict]) -> str:
             '<a href="../../docs/qa/asset-review/index.html">逐项质量复核</a> · <a href="manifest.json">资产清单</a></p>'
             '<div class="banner"><p>每个运行图标均使用 24 × 24 逻辑画布；下列浅深色对照固定显示为 48 × 48。文档可见高度一致，目录保留自然横向比例。原稿栏包含背景，只用于核对造型；透明运行素材来自独立矢量重建。</p></div>'
             '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
-            '<a href="#platform-brand">平台品牌导出</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section +
+            '<a href="#platform-brand">平台品牌导出</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section +
+            f'<section id="directory-tree"><h2>目录树 B · {len(component_cards)} 张原稿切图</h2><p><a href="../hifi/index.html#components">三张正式图板</a> · <a href="../../docs/ux/directory-tree.md">交互与接入规范</a> · <a href="../../docs/visual/directory-tree.json">精确逻辑尺寸</a>。切片保留原始背景与裁剪尺寸，用于评审；动态行、连接线、提示和状态不作为整块控件贴图。文件夹与箭头复用统一资源；新增分支圆点、实心信息 / 警告和分段转轮已导出浅深色与三种倍率，当前尚未接入目录树界面。</p><div class="component-cuts references">' + ''.join(component_cards) + '</div></section>' +
             '<section id="references"><h2>原像素参考与演示照片</h2><p>45 张原稿参考保留原始背景和不同裁剪矩形，每项都有对应的独立命名 SVG；3 张演示照片保留源分辨率。下方链接可直接查看对应素材。两张历史品牌参考保留原像素，当前标识采用独立修订的品牌母版。</p><div class="references">' + ''.join(cut_cards) + '</div></section></main></html>\n')
 
 
@@ -284,12 +298,14 @@ def main() -> None:
                           'file_optical_specs': FILE_OPTICAL_SPECS},
         'license': 'Apache-2.0; fonts/ is independently licensed under OFL-1.1',
         'reference_coverage': reference_coverage(),
+        'component_reference_coverage': component_reference_coverage(),
         'assets': entries,
     }
     if args.check:
         existing = json.loads((ROOT / 'manifest.json').read_text())
         recorded = {item['file']: item for item in existing['assets']}
         assert existing['reference_coverage'] == reference_coverage(), 'Stale reference coverage ledger'
+        assert existing['component_reference_coverage'] == component_reference_coverage(), 'Stale component reference coverage'
         for item in entries:
             assert all(recorded[item['file']].get(key) == value for key, value in item.items()), item['file']
         assert (ROOT / 'index.html').read_text() == gallery(entries), 'Stale asset gallery'

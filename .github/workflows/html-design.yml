@@ -6,6 +6,8 @@ on:
       - 'scripts/*html*'
       - 'scripts/*asset*'
       - 'scripts/*brand*'
+      - 'scripts/*directory-tree*'
+      - 'docs/visual/directory-tree.json'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
       - 'docs/qa/brand-and-assets*'
@@ -23,6 +25,8 @@ on:
       - 'scripts/*html*'
       - 'scripts/*asset*'
       - 'scripts/*brand*'
+      - 'scripts/*directory-tree*'
+      - 'docs/visual/directory-tree.json'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
       - 'docs/qa/brand-and-assets*'
@@ -55,6 +59,8 @@ jobs:
           .venv-design/bin/python scripts/check-brand-corners.py --render
           .venv-design/bin/python scripts/check-asset-integration.py
           .venv-design/bin/python scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
+          .venv-design/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
+          .venv-design/bin/python scripts/check-directory-tree-delivery.py
           .venv-design/bin/python scripts/build-html-design.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
@@ -86,6 +92,11 @@ jobs:
             docs/qa/brand-and-assets/
             design/assets/brand/
             design/assets/validation.json
+            design/assets/reference/tree-*.png
+            design/hifi/screens/directory-tree*.png
+            docs/qa/directory-tree/
+            docs/ux/directory-tree.md
+            docs/visual/directory-tree.json
             dist/html-preview-review/
             dist/html-reference-review/
             dist/html-design-review/
@@ -96,5 +107,7 @@ jobs:
             dist/xdzip-hifi-design-1to1.html
             dist/xdzip-scale-review.html
             dist/xdzip-assets.html
+            dist/xdzip-directory-tree.html
+            dist/xdzip-directory-tree.zip
           if-no-files-found: error
           retention-days: 14

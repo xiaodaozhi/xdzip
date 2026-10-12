@@ -2,7 +2,7 @@
 
 [完整图片画廊](index.html) · [原稿清单与 SHA-256](catalog.json) · [统一素材库](../assets/index.html) · [颜色尺寸规范](../../docs/visual/tokens.json)
 
-十张已确认高保真原稿统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。图片是生成式设计稿，功能边界和精确几何仍以对应规范为准。
+十张页面原稿与三张目录树 B 组件图板统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。图片是生成式设计稿，功能边界和精确几何仍以对应规范为准。
 
 ## 主界面与解压确认
 
@@ -28,6 +28,16 @@
 | [Windows / Linux 平台对照](screens/platforms.png) | 平台窗口装饰示例 |
 
 操作、关闭与恢复行为见 [功能状态契约](../../docs/ux/hifi-state-spec.md)。原稿中的静态进度、计数和示例路径不作为真实运行结果。
+
+## 目录树 B 组件修订
+
+| 原稿 | 定义范围 |
+| --- | --- |
+| [多级展开](screens/directory-tree.png) | 独立箭头槽、多级连接线、同层对齐 |
+| [节点与交互状态](screens/directory-tree-states.png) | 折叠 / 展开、空 / 非空叶子、当前 / 悬停 / 焦点、长名称、大字号 |
+| [空态与导航边界](screens/directory-tree-boundaries.png) | 读取、空归档、根文件、超限、失败、隐藏当前目录 |
+
+[集中查看图板与切图](directory-tree.html) · [交互与接入规格](../../docs/ux/directory-tree.md) · [逻辑参数](../../docs/visual/directory-tree.json) · [实际交付检查](../../docs/qa/directory-tree.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML / Qt 目录树接入仍待完成。
 
 ## 原稿与素材的职责
 

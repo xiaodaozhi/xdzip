@@ -1,0 +1,237 @@
+{
+  "source_commit": "5e989fb557d0cee80217cba7f4d82f23c46ffbb8",
+  "files": [
+    {
+      "file": "design/hifi/screens/main-light.png",
+      "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9"
+    },
+    {
+      "file": "design/hifi/screens/extract-macos.png",
+      "sha256": "e21f7e9b90e4b2076618cf6c1d0d00e00f8696d21d722bc152b43b06699218f0"
+    },
+    {
+      "file": "design/hifi/screens/create.png",
+      "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72"
+    },
+    {
+      "file": "design/hifi/screens/conflict.png",
+      "sha256": "29681423821a03f3f1c422c01ec8cc009140f817e07f8bc8b0597a662ce7ca0e"
+    },
+    {
+      "file": "design/hifi/screens/progress.png",
+      "sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387"
+    },
+    {
+      "file": "design/hifi/screens/partial-result.png",
+      "sha256": "056a8570e21226c29ef2ced8a0ea646a7b6988ab3f2c83d6add350695a8269df"
+    },
+    {
+      "file": "design/hifi/screens/settings.png",
+      "sha256": "78ce04944d9610d8d1f5a873e488b8ed1fa78a0e34bc8516dc218397939fd6b0"
+    },
+    {
+      "file": "design/hifi/screens/task-states.png",
+      "sha256": "618667d2f46760e9d926707a713294f2467d9d50f9043d88f0b99d7e1b47fe13"
+    },
+    {
+      "file": "design/hifi/screens/create-overwrite.png",
+      "sha256": "422706e66533e42e3c3ecda80e810d95ca4669edfee6fc6bd4eebdf41bcd7fa9"
+    },
+    {
+      "file": "design/hifi/screens/platforms.png",
+      "sha256": "7feb1bf4b03252e43063396f56bdfed1548db306241e578d8210a30c700bd297"
+    },
+    {
+      "file": "design/assets/reference/brand-titlebar.png",
+      "sha256": "5e5ce42d82b22461f2f18a3cd6654f036beab876fd4eafbda737978e1f9fbaba"
+    },
+    {
+      "file": "design/assets/reference/brand-extract.png",
+      "sha256": "acb5f29c9d728a15d26412612718c966e660a1417f5fe763080e3260e9b728d9"
+    },
+    {
+      "file": "design/assets/reference/folder.png",
+      "sha256": "13e41bde2b7cec8ccb4e5d26033193f399ce837fd97a9117da81a6336bc7c64a"
+    },
+    {
+      "file": "design/assets/reference/file-pdf.png",
+      "sha256": "d1151d24acfa6c2b0ac723467db46bbb3d1003219739c102d5858ddd2676b31b"
+    },
+    {
+      "file": "design/assets/reference/file-text.png",
+      "sha256": "7772795c2683c0272da7be16095b0581c3928febcadc70c50da198682efd4a5b"
+    },
+    {
+      "file": "design/assets/reference/file-code.png",
+      "sha256": "a7a8348d2fdde54bd15ab812e8d535a23e23276d4796aa51bb204abce9f3e5ee"
+    },
+    {
+      "file": "design/assets/reference/file-markdown.png",
+      "sha256": "113d0f81d624931e20521092c347c81392008f57c1a50cc52cbe7995bd7c186f"
+    },
+    {
+      "file": "design/assets/demo/photo-lake-preview.png",
+      "sha256": "2683e327141d74778422cc2e23f053d69b04eca2063dd60ebf017f50dcf57b3f"
+    },
+    {
+      "file": "design/assets/demo/photo-lake-thumbnail.png",
+      "sha256": "aa08051f95e79dd9b53edac1f11756804b2b91456513ac9e12eb4b0672c8d8a6"
+    },
+    {
+      "file": "design/assets/demo/photo-sunrise-thumbnail.png",
+      "sha256": "4bc90f2c981f5007c0d61a2bb489cea77fbb23fdb013f9bcbbf876f95876d38b"
+    },
+    {
+      "file": "design/assets/reference/open.png",
+      "sha256": "754dc10811436fca963a488a1d35fcbe6810947d0a4335d51ec04133ce6e29a4"
+    },
+    {
+      "file": "design/assets/reference/new.png",
+      "sha256": "f88f7df6b891faad20f309cbe90bd29e10edff0ead4436b0c3f6e2b0bd2c1079"
+    },
+    {
+      "file": "design/assets/reference/archive-test.png",
+      "sha256": "8fc42fb6b38d4aef8dfac148099fe4cd0007fee9f52bb94f708e178056a5804a"
+    },
+    {
+      "file": "design/assets/reference/more.png",
+      "sha256": "d25585dee23489956f4c3877d2ba4d02451924c3401593af62371d0d637bcc71"
+    },
+    {
+      "file": "design/assets/reference/search.png",
+      "sha256": "b421c3e48411047ec913074a6dce35485a77ceedc47e2aa50cb3c3ab97194173"
+    },
+    {
+      "file": "design/assets/reference/settings.png",
+      "sha256": "eb23cb206ad311110869455064645b9d4b539c6c4429a660a127d08ccc3897ca"
+    },
+    {
+      "file": "design/assets/reference/view-list.png",
+      "sha256": "7ddeaaed5aef2cedeb91ad30a3e2f9994039627edc8b05527801e3d4d2e1463b"
+    },
+    {
+      "file": "design/assets/reference/view-grid.png",
+      "sha256": "9fad51b16734c528d3c937a51612632c21525986d5093ea349e040ad56b7e0d0"
+    },
+    {
+      "file": "design/assets/reference/sort.png",
+      "sha256": "22017cb1d881cdfb2dc27ce8507fe9a325a9d4f0da7b014a4a29dc4408b61647"
+    },
+    {
+      "file": "design/assets/reference/close.png",
+      "sha256": "0f1ebf73397ee5be21015f059eb0406dec5a517376d4d4895ad7e9a56ed16d64"
+    },
+    {
+      "file": "design/assets/reference/check-selected.png",
+      "sha256": "d8a0ad6ac14b5b8751dd4f29e225176ec79949cb4eb9b695e1c798d0f4218ca1"
+    },
+    {
+      "file": "design/assets/reference/success.png",
+      "sha256": "28ca5ee99307dabb73260c86a62d5af26d65977529c2c535053ad673e33b40cb"
+    },
+    {
+      "file": "design/assets/reference/radio-selected.png",
+      "sha256": "73a2d918a2a3297b9c4c8f58199af8cd63b6fc9a020762343f0d49c578c5b4b4"
+    },
+    {
+      "file": "design/assets/reference/radio-unselected.png",
+      "sha256": "1f86d4c39b9b5d78879aef4831b0a7c4e376355d7fedbc07251b88b7cfa28eac"
+    },
+    {
+      "file": "design/assets/reference/create-archive.png",
+      "sha256": "e81ccbd3990edc0cd3754056ea9f8092bc42c4600f807a2853986d837ff2882f"
+    },
+    {
+      "file": "design/assets/reference/image-blue.png",
+      "sha256": "96fea759fd9497f249acafe4fd2650a0a77f2616f0592b224038f5692d07fc63"
+    },
+    {
+      "file": "design/assets/reference/image-amber.png",
+      "sha256": "7d081211cf499bcbc6bc9c694a5f9640010ef48f6355be533ba52ed668db6b2e"
+    },
+    {
+      "file": "design/assets/reference/remove-row.png",
+      "sha256": "54de61fd8a879ae78c0891b92ad8fd46ce27904168a3e6b8b515ed74848df49d"
+    },
+    {
+      "file": "design/assets/reference/conflict-document.png",
+      "sha256": "b2f9e444963358ad29511207d32ca999ca5d2beca86b813e30e56b2ac5231bbc"
+    },
+    {
+      "file": "design/assets/reference/conflict-pdf.png",
+      "sha256": "c3c5ff0f472eaa37d920ace33a65e883ec50c8e54abbb204de16474ae5093525"
+    },
+    {
+      "file": "design/assets/reference/conflict-warning.png",
+      "sha256": "e39d7330ef9aa3299215c4cda60c6b2725376c338e60b26056feee7994ff73ad"
+    },
+    {
+      "file": "design/assets/reference/progress-document.png",
+      "sha256": "8377e48918849497adac99e81323b9c1f004ba3476428cc4b1a55f5d7bc3fca0"
+    },
+    {
+      "file": "design/assets/reference/progress-image.png",
+      "sha256": "aa646cfb095aacdfa6c7c954241fbcac83e418dff14e1581064d5e5b8164117b"
+    },
+    {
+      "file": "design/assets/reference/partial-document.png",
+      "sha256": "ffeb66427e27a5379149998ac30ae47555e6fde3b9245ad0d4c6338e56cfacf3"
+    },
+    {
+      "file": "design/assets/reference/partial-success.png",
+      "sha256": "e832b7efdd4deeac382f205ad16c9d69e80c4cbd983e4ed42e2e3cb73915b420"
+    },
+    {
+      "file": "design/assets/reference/partial-skipped.png",
+      "sha256": "ff4cbd5c9795555c928638273a499d995e15ea798e733d25e892cd288ffb6ef6"
+    },
+    {
+      "file": "design/assets/reference/partial-warning.png",
+      "sha256": "d86f03738187c59d89035394d1041b0c4a490f6324d4976299ce7cf01ed8e767"
+    },
+    {
+      "file": "design/assets/reference/settings-gear.png",
+      "sha256": "8e9a4344d4af471c73845e5fe51cae2e42750db078a9736c0430ed63c3b33698"
+    },
+    {
+      "file": "design/assets/reference/theme-system.png",
+      "sha256": "c766e3f1f479c320fd8fbdf725d9323b76ff8753f1729876105fa9a5d22bf713"
+    },
+    {
+      "file": "design/assets/reference/theme-light.png",
+      "sha256": "ca602e10578f376db50dae68fb7adf43b49ab4dd78928e7d637b0b0d379795ac"
+    },
+    {
+      "file": "design/assets/reference/theme-dark.png",
+      "sha256": "d04f3b951901201451b83113e2737b4b864585a890e6d4efad489503da5d3557"
+    },
+    {
+      "file": "design/assets/reference/success-large.png",
+      "sha256": "f4aa23cf79a7129e13e43c08bc12bf60c6c20cd720ef85bbb6f05f21fdafafba"
+    },
+    {
+      "file": "design/assets/reference/stopping-spinner.png",
+      "sha256": "2c86abf654e46eef764841984193c449fb7878564d0ba08fa2ba8be3750a543c"
+    },
+    {
+      "file": "design/assets/reference/cancelled-large.png",
+      "sha256": "a6fe60ce385f77b3952091c752153daa2d3bbc93a37a448793fc53882cae93b9"
+    },
+    {
+      "file": "design/assets/reference/overwrite-archive.png",
+      "sha256": "5517e1f051d1f0de6a5303f0663937c0f7bbf67ec1a67f5a751584097e5300cc"
+    },
+    {
+      "file": "design/assets/reference/existing-archive.png",
+      "sha256": "8cb25a2a7b46b246c7f50029fdcba5443e8c6fd98ff8ba2648d7532e44698f72"
+    },
+    {
+      "file": "design/assets/reference/windows-document.png",
+      "sha256": "11d7862c9c8461270f4f7bbf6bf4a049999c618f6427313427e9c5d622597da9"
+    },
+    {
+      "file": "design/assets/reference/linux-document.png",
+      "sha256": "1f88eea038664bb4e17fa1065953957df36b1f38d106dc65f74fed58634d8da1"
+    }
+  ]
+}

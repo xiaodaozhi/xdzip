@@ -6,6 +6,7 @@ These definitions describe reconstructed assets, never recovered alpha layers.
 """
 
 import math
+from directory_tree_assets import TREE_CUTS
 
 # These bounds include the outer stroke. Canvas alignment belongs to the asset,
 # so consumers can use one 24-unit viewBox and never stretch individual types.
@@ -355,6 +356,8 @@ CROPS = {'brand-titlebar': ('main-light', [136, 44, 31, 37]),
  'existing-archive': ('create-overwrite', [165, 504, 117, 138]),
  'windows-document': ('platforms', [139, 123, 77, 88]),
  'linux-document': ('platforms', [136, 852, 80, 89])}
+
+CROPS.update({name: (source, rect) for name, (source, rect, _, _, _) in TREE_CUTS.items()})
 
 CONTROL_PATHS = {'open': 'M3 8V5.5A2 2 0 0 1 5 3.5h4.2L12 6h7a2 2 0 0 1 2 2v10.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z M3 9h18',
  'new': 'M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Z M12 8v8 M8 12h8',
