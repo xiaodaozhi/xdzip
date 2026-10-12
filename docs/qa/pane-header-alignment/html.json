@@ -1,8 +1,8 @@
 {
   "status": "passed",
   "source_hashes": {
-    "design/html/hifi.css": "0193076ae9d42a2776a8e15abc39cb83d572e36cc419c1be7d976852296fbceb",
-    "design/html/app.js": "8bbb1e66655ef88b5669a77abb0614df807f530b8d3e49ed565f2879cbb3accb"
+    "design/html/hifi.css": "c2b3e8432a44ce416bc937f8f7aa91ab7b64dcfeffabc7923855a2ba28106465",
+    "design/html/app.js": "1f0f1ed5e751c7d416a61e49c61ff292ff50ceb8a27b8c3ba7e86fbbe10b6750"
   },
   "checks": [
     {
@@ -209,7 +209,7 @@
       "case": "long-details-scrolled",
       "leftTop": 167,
       "rightTop": 167,
-      "scrollTop": 986
+      "scrollTop": 1098
     }
   ],
   "page_errors": [],

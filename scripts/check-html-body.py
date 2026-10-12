@@ -149,7 +149,18 @@ def main():
                 locator = page.locator(selector)
                 rect = locator.bounding_box() if locator.count() else None
                 actual = [rect[key] for key in ['x', 'y', 'width', 'height']] if rect else None
-                record_geometry(measurements, failures, 'DOM rect', selector, expected, actual, tolerance)
+                revision = spec.get('dom_rect_revisions', {}).get(selector)
+                kind = 'DOM rect'
+                if revision:
+                    if revision['design_revision'] not in spec.get('design_revisions', {}):
+                        failures.append(f'{selector}: unrecorded rect revision')
+                        continue
+                    measurements.append({'kind': 'source rect (design revised)', 'name': selector,
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'design_revision': revision['design_revision']})
+                    expected = revision['target']
+                    kind = 'revised design rect'
+                record_geometry(measurements, failures, kind, selector, expected, actual, tolerance)
             for selector, target in spec.get('dom_center_targets', {}).items():
                 expected, tolerance = normalize_target(target, 'center', args.center_tolerance)
                 tolerance = spec.get('dom_center_tolerances', {}).get(selector, tolerance)
@@ -201,7 +212,18 @@ def main():
             for item in spec.get('color_samples', []):
                 point = tuple(item['point'])
                 expected, actual = original.getpixel(point), shot.getpixel(point)
-                record_geometry(measurements, failures, 'RGB sample', item['name'], expected, actual,
+                revision = item.get('design_revision')
+                kind = 'RGB sample'
+                if revision:
+                    if revision not in spec.get('design_revisions', {}):
+                        failures.append(f'{item["name"]}: unrecorded color sample revision')
+                        continue
+                    measurements.append({'kind': 'source RGB sample (design revised)', 'name': item['name'],
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'point': list(point), 'design_revision': revision})
+                    actual = shot.getpixel(tuple(item['target_point']))
+                    kind = 'revised design RGB sample'
+                record_geometry(measurements, failures, kind, item['name'], expected, actual,
                                 item.get('tolerance', 6))
             for selector, expected in spec.get('text_targets', {}).items():
                 values = page.locator(selector).all_text_contents()
@@ -268,8 +290,8 @@ def main():
         raise SystemExit('\n'.join(failures))
     strict = sum('passed' in measurement for measurement in measurements)
     contours = sum(measurement['kind'] == 'type contour (review only)' for measurement in measurements)
-    revisions = sum(measurement['kind'] in ('revised design ink', 'revised design center') for measurement in measurements)
-    print(f'{strict} strict body checks passed ({revisions} authored geometry checks); '
+    revisions = sum(measurement['kind'].startswith('revised design ') for measurement in measurements)
+    print(f'{strict} strict body checks passed ({revisions} authored revision checks); '
           f'{contours} type contours recorded for review')
 
 

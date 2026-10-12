@@ -344,10 +344,13 @@
       "name": "预览解压图标",
       "region": [
         1301,
-        826,
+        821,
         35,
-        36
-      ]
+        41
+      ],
+      "previous_region": [1301, 826, 35, 36],
+      "design_revision": "preview-table-top-alignment",
+      "target_ink_rect": [1306, 827, 23, 23]
     },
     {
       "name": "读取完成圆勾",
@@ -649,7 +652,9 @@
         1300,
         626
       ],
-      "tolerance": 6
+      "tolerance": 6,
+      "design_revision": "preview-table-top-alignment",
+      "target_point": [1300, 621]
     },
     {
       "name": "预览按钮上边框",
@@ -657,7 +662,9 @@
         1300,
         815
       ],
-      "tolerance": 3
+      "tolerance": 3,
+      "design_revision": "preview-table-top-alignment",
+      "target_point": [1300, 810]
     },
     {
       "name": "状态栏底色",
@@ -2373,6 +2380,13 @@
       "other_source_anchors": "unchanged",
       "source_comparison": "record-only for the five folder silhouettes; retain original source values and tolerance"
     },
+    "preview-table-top-alignment": {
+      "reason": "预览图与文件列表表头顶边对齐，去掉标题栏下方5px额外间距；图片尺寸和内部间距保持，后续内容自然上移。原稿与旧位置继续保留作独立对照。",
+      "previous_image_top": 241,
+      "image_top": 236,
+      "content_translation_y": -5,
+      "image_size": [351, 277]
+    },
     "pane-header-alignment": {
       "reason": "预览标题栏与面包屑同高、同字号、同垂直中心；不替换原稿，旧关闭图标位置保留为独立对照。",
       "header_height": 69,
@@ -2381,6 +2395,16 @@
       "title_optical_offset_y": -2,
       "close_center_y": 201.5,
       "preview_image_top": 241
+    }
+  },
+  "dom_rect_revisions": {
+    ".photo-preview": {
+      "design_revision": "preview-table-top-alignment",
+      "target": [1198, 236, 351, 277]
+    },
+    "#inspector-extract": {
+      "design_revision": "preview-table-top-alignment",
+      "target": [1201, 810, 347, 57]
     }
   },
   "dom_center_revisions": {

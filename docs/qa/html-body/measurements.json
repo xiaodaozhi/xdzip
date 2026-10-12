@@ -359,9 +359,22 @@
         "name": "预览解压图标",
         "region": [
           1301,
+          821,
+          35,
+          41
+        ],
+        "previous_region": [
+          1301,
           826,
           35,
           36
+        ],
+        "design_revision": "preview-table-top-alignment",
+        "target_ink_rect": [
+          1306,
+          827,
+          23,
+          23
         ]
       },
       {
@@ -664,7 +677,12 @@
           1300,
           626
         ],
-        "tolerance": 6
+        "tolerance": 6,
+        "design_revision": "preview-table-top-alignment",
+        "target_point": [
+          1300,
+          621
+        ]
       },
       {
         "name": "预览按钮上边框",
@@ -672,7 +690,12 @@
           1300,
           815
         ],
-        "tolerance": 3
+        "tolerance": 3,
+        "design_revision": "preview-table-top-alignment",
+        "target_point": [
+          1300,
+          810
+        ]
       },
       {
         "name": "状态栏底色",
@@ -2388,6 +2411,16 @@
         "other_source_anchors": "unchanged",
         "source_comparison": "record-only for the five folder silhouettes; retain original source values and tolerance"
       },
+      "preview-table-top-alignment": {
+        "reason": "预览图与文件列表表头顶边对齐，去掉标题栏下方5px额外间距；图片尺寸和内部间距保持，后续内容自然上移。原稿与旧位置继续保留作独立对照。",
+        "previous_image_top": 241,
+        "image_top": 236,
+        "content_translation_y": -5,
+        "image_size": [
+          351,
+          277
+        ]
+      },
       "pane-header-alignment": {
         "reason": "预览标题栏与面包屑同高、同字号、同垂直中心；不替换原稿，旧关闭图标位置保留为独立对照。",
         "header_height": 69,
@@ -2396,6 +2429,26 @@
         "title_optical_offset_y": -2,
         "close_center_y": 201.5,
         "preview_image_top": 241
+      }
+    },
+    "dom_rect_revisions": {
+      ".photo-preview": {
+        "design_revision": "preview-table-top-alignment",
+        "target": [
+          1198,
+          236,
+          351,
+          277
+        ]
+      },
+      "#inspector-extract": {
+        "design_revision": "preview-table-top-alignment",
+        "target": [
+          1201,
+          810,
+          347,
+          57
+        ]
       }
     },
     "dom_center_revisions": {
@@ -2780,7 +2833,7 @@
       "passed": true
     },
     {
-      "kind": "DOM rect",
+      "kind": "source rect (design revised)",
       "name": ".photo-preview",
       "expected": [
         1198,
@@ -2790,7 +2843,25 @@
       ],
       "actual": [
         1198,
-        241,
+        236,
+        351,
+        277
+      ],
+      "review_only": true,
+      "design_revision": "preview-table-top-alignment"
+    },
+    {
+      "kind": "revised design rect",
+      "name": ".photo-preview",
+      "expected": [
+        1198,
+        236,
+        351,
+        277
+      ],
+      "actual": [
+        1198,
+        236,
         351,
         277
       ],
@@ -2799,7 +2870,7 @@
       "passed": true
     },
     {
-      "kind": "DOM rect",
+      "kind": "source rect (design revised)",
       "name": "#inspector-extract",
       "expected": [
         1201,
@@ -2809,7 +2880,25 @@
       ],
       "actual": [
         1201,
-        815,
+        810,
+        347,
+        57
+      ],
+      "review_only": true,
+      "design_revision": "preview-table-top-alignment"
+    },
+    {
+      "kind": "revised design rect",
+      "name": "#inspector-extract",
+      "expected": [
+        1201,
+        810,
+        347,
+        57
+      ],
+      "actual": [
+        1201,
+        810,
         347,
         57
       ],
@@ -3176,7 +3265,7 @@
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "预览解压图标",
       "expected": [
         1306,
@@ -3186,7 +3275,27 @@
       ],
       "actual": [
         1307,
-        832,
+        827,
+        23,
+        24
+      ],
+      "review_only": true,
+      "maximum_delta_px": 5,
+      "design_revision": "preview-table-top-alignment",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "预览解压图标",
+      "expected": [
+        1306,
+        827,
+        23,
+        23
+      ],
+      "actual": [
+        1307,
+        827,
         23,
         24
       ],
@@ -3582,7 +3691,7 @@
       ],
       "actual": [
         1202,
-        541,
+        536,
         120,
         26
       ],
@@ -3599,7 +3708,7 @@
       ],
       "actual": [
         1202,
-        583,
+        578,
         87,
         17
       ],
@@ -3616,7 +3725,7 @@
       ],
       "actual": [
         1204,
-        649,
+        644,
         34,
         16
       ],
@@ -3633,7 +3742,7 @@
       ],
       "actual": [
         1439,
-        651,
+        646,
         104,
         13
       ],
@@ -3650,7 +3759,7 @@
       ],
       "actual": [
         1441,
-        765,
+        760,
         101,
         18
       ],
@@ -3759,7 +3868,27 @@
       "passed": true
     },
     {
-      "kind": "RGB sample",
+      "kind": "source RGB sample (design revised)",
+      "name": "预览属性分隔线",
+      "expected": [
+        236,
+        239,
+        243
+      ],
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "review_only": true,
+      "point": [
+        1300,
+        626
+      ],
+      "design_revision": "preview-table-top-alignment"
+    },
+    {
+      "kind": "revised design RGB sample",
       "name": "预览属性分隔线",
       "expected": [
         236,
@@ -3776,7 +3905,27 @@
       "passed": true
     },
     {
-      "kind": "RGB sample",
+      "kind": "source RGB sample (design revised)",
+      "name": "预览按钮上边框",
+      "expected": [
+        191,
+        194,
+        203
+      ],
+      "actual": [
+        255,
+        255,
+        255
+      ],
+      "review_only": true,
+      "point": [
+        1300,
+        815
+      ],
+      "design_revision": "preview-table-top-alignment"
+    },
+    {
+      "kind": "revised design RGB sample",
       "name": "预览按钮上边框",
       "expected": [
         191,

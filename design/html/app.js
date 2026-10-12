@@ -264,6 +264,16 @@ function renderTree() {
         .querySelectorAll("button")
         .forEach((b) => (b.onclick = () => choosePath(b.dataset.path)));
 }
+function syncInspectorContentOffset() {
+    // Search notices occupy a row above the table; preserve the shared content edge.
+    const notice = $("#search-notice");
+    const style = getComputedStyle(notice);
+    const offset = notice.hidden
+        ? 0
+        : notice.getBoundingClientRect().height +
+          parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+    $("#inspector").style.setProperty("--pane-content-offset", `${offset}px`);
+}
 function render() {
     renderTree();
     const list = visibleEntries(),
@@ -387,6 +397,7 @@ function render() {
                 : "目录信息未就绪";
     }
     renderEmpty(list);
+    syncInspectorContentOffset();
     renderInspector(chosen);
     updateTaskCount();
     if (!state.modal)
@@ -1155,6 +1166,9 @@ function scenario(value) {
 }
 $("#app-brand").innerHTML = icon("app-mark") + '<span class="brand-label">xdzip</span>';
 hydrate();
+// Font loading and wrapping may change a search notice after its first render.
+const previewLayoutObserver = new ResizeObserver(syncInspectorContentOffset);
+previewLayoutObserver.observe($("#search-notice"));
 setTheme("light");
 if (innerWidth <= 1050) $("#inspector").classList.add("collapsed-narrow");
 $("#scenario").onchange = (e) => scenario(e.target.value);
