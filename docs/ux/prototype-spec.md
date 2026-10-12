@@ -1,6 +1,6 @@
 # v0.1 交互原型与功能映射
 
-状态：可交互设计验证稿。源文件在 [design/prototype](../../design/prototype/README.md)，入口为 [index.html](../../design/prototype/index.html)。Figma 工作稿保留为历史探索；当前功能与状态细化在仓库内继续。
+状态：可交互设计验证稿。源文件在 [design/html](../../design/html/README.md)，入口为 [index.html](../../design/html/index.html)。Figma 工作稿保留为历史探索；当前功能与状态细化在仓库内继续。
 
 ## 已覆盖流程
 
@@ -54,7 +54,7 @@ ZIP 显示 Store/Deflate，Store 隐藏级别；TAR 隐藏算法和级别；TAR.
 
 ## 验证与剩余边界
 
-浏览器验证脚本为 scripts/check-prototype.py，检查实际点击流程、统计、禁用条件、格式联动、异常恢复、手机溢出以及单文件离线运行。报告随导出的原型包提供；浏览器验证仅使用 Chromium。
+浏览器验证脚本为 scripts/check-html-design.py，检查实际点击流程、统计、禁用条件、格式联动、异常恢复、手机溢出以及单文件离线运行。报告随导出的原型包提供；浏览器验证仅使用 Chromium。
 
 仍需后续设计/实现验证：多归档标签、多任务调度、拖放、逐平台系统选择器与菜单、完整读屏、200% 字体缩放、更多文件类型与数量、正式后端授权/路径竞态/配额/CRC/持久化。当前设置只保存在内存，不跨启动持久化；主题跟随系统在选择时解析，尚未演示运行中的系统主题变化。
 

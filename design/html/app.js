@@ -29,19 +29,20 @@ const paths = {
     arrow: "M4 12h15 m-5-5 5 5-5 5",
     clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v6h4",
 };
-// Filled document marks distinguish file kinds without relying on color alone.
-const marks = {
-    folder: '<path fill="#8bb6ee" stroke="none" d="M2 5a2 2 0 0 1 2-2h5l3 3h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/><path fill="#5592df" stroke="none" d="M2 9h20v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"/>',
-    archive:
-        '<rect x="3" y="2" width="18" height="20" rx="4" fill="#4169df" stroke="none"/><path stroke="white" d="M10 4h3m-2 3h3m-4 3h3m-2 3h3m-4 3h4v4h-4z"/>',
-    pdf: '<path fill="#fbe8e8" stroke="#d97272" d="M5 2h9l5 5v15H5z M14 2v6h5"/><path stroke="#cc5353" d="M8 12h8m-8 3h8m-8 3h5"/>',
-    file: '<path fill="var(--surface)" stroke="#8f9aaa" d="M5 2h9l5 5v15H5z M14 2v6h5 M8 12h8m-8 3h8m-8 3h5"/>',
-    code: '<path stroke="#8193b1" d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 20"/>',
-    markdown:
-        '<rect x="2" y="5" width="20" height="14" rx="2" stroke="#8193b1"/><path stroke="#8193b1" d="M5 16V8l4 4 4-4v8m5-8v8m-2-2 2 2 2-2"/>',
+// Icons come from the same reviewed SVG sources as Qt; no second hand-drawn set.
+const assetNames = {folderOpen: "open", file: "file-text", pdf: "file-pdf", image: "image-file", code: "file-code", markdown: "file-markdown", chevronDown: "chevron-down", chevronUp: "chevron-up", chevronRight: "chevron-right", arrow: "arrow-right", layers: "folder"};
+let iconInstance = 0;
+const icon = (name, cls = "") => {
+    const key = assetNames[name] || name;
+    const theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    const source = window.XDZIP_ASSETS.icons[theme][key];
+    if (source) {
+        const prefix = `icon-${++iconInstance}-`;
+        return source.replace(/id="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`).replace("<svg ", `<svg class="${cls}" data-asset="${key}" aria-hidden="true" `);
+    }
+    return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.file}"/></svg>`;
 };
-const icon = (name, cls = "") =>
-    `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${marks[name] || `<path d="${paths[name] || paths.file}"/>`}</svg>`;
+const photo = (key, cls = "") => `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"} · 设计示例图片">`;
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
     String(s).replace(
@@ -102,8 +103,8 @@ const archiveBytes = files.reduce((n, f) => n + f.size, 0),
 const state = {
     path: "",
     query: "",
-    selected: new Set(),
-    sort: 1,
+    selected: new Set(["lake"]),
+    sort: 0,
     anchor: null,
     scenario: "normal",
     archiveState: "ready",
@@ -264,7 +265,7 @@ function renderTree() {
     const counts = (id) =>
         files.filter((f) => (id ? f.parent === id : true)).length;
     $("#tree").innerHTML =
-        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>全部文件</span><small>${files.length}</small></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name.slice(3)}</span><small>${counts(f.id)}</small></button>`).join("")}`;
+        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>全部文件</span><small>${files.length}</small></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name}</span><small>${counts(f.id)}</small></button>`).join("")}`;
     $("#tree")
         .querySelectorAll("button")
         .forEach((b) => (b.onclick = () => choosePath(b.dataset.path)));
@@ -294,14 +295,14 @@ function render() {
     $("#breadcrumbs").innerHTML =
         `<button data-home>北境旅行.zip</button>${icon("chevronRight")}<span>${state.query ? "搜索结果" : state.path ? byId.get(state.path).name : "全部文件"}</span>`;
     $("#breadcrumbs [data-home]").onclick = () => choosePath("");
-    $("#entry-count").textContent = `${list.length} 项`;
+    $("#entry-count").textContent = `${state.path || state.query ? list.length : files.length} 项`;
     $("#search-notice").hidden = !state.query;
     $("#search-notice").textContent =
         `当前归档中找到 ${list.length} 项 · 搜索结果不等同于全部归档`;
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
-                `<tr tabindex="0" data-id="${e.id}" class="${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name">${icon(fileIcon(e), fileIcon(e))}<span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${e.folder ? "文件夹" : esc(e.type)}</td><td class="date-col">2026/10/08</td></tr>`,
+                `<tr tabindex="0" data-id="${e.id}" class="${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}<span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${e.folder ? "文件夹" : esc(e.type.replace(" 图像", "").replace(" 文档", "").replace("文本文件", "文本").replace(" 文件", ""))}</td><td class="date-col">2026/10/08</td></tr>`,
         )
         .join("");
     $("#file-rows")
@@ -469,10 +470,10 @@ function renderInspector(chosen) {
             ? chosen.reduce((n, e) => n + e.compressed, 0)
             : compressedBytes;
     $("#inspector").innerHTML =
-        `<div class="inspector-head"><span>${chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div><div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}<span>${multi ? "MULTIPLE FILES" : single ? single.name.split(".").pop().toUpperCase() : "ZIP ARCHIVE"}</span></div><h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : "北境旅行.zip"}</h2><span class="type-label">${multi ? "多个类型 · 已选择" : single ? single.type : "ZIP 压缩文件 · Deflate"}</span><dl class="property-list">${[
+        `<div class="inspector-head"><span>${single?.type.includes("JPEG") ? "文件预览" : chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div>${single && ["lake", "sunrise"].includes(single.id) ? `<div class="photo-preview">${photo(single.id === "lake" ? "lake-preview" : "sunrise")}</div>` : `<div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}</div>`}<h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : "北境旅行.zip"}</h2><span class="type-label">${multi ? "多个类型 · 已选择" : single ? single.type : "ZIP 压缩文件 · Deflate"}</span><dl class="property-list">${[
             ["原始大小", bytes(size)],
             ["压缩后", bytes(packed)],
-            ["压缩方式", "Deflate"],
+            [single?.type.includes("JPEG") ? "尺寸" : "压缩方式", single?.type.includes("JPEG") ? "6000 × 4000" : "Deflate"],
             ["修改日期", "2026/10/08"],
             [
                 "位置",
@@ -481,13 +482,14 @@ function renderInspector(chosen) {
                     : "归档根目录",
             ],
         ]
+            .filter(([label]) => !single?.type.includes("JPEG") || label !== "位置")
             .map(
                 ([a, b]) =>
                     `<div class="property"><dt>${a}</dt><dd>${esc(b)}</dd></div>`,
             )
             .join(
                 "",
-            )}</dl><button id="inspector-extract" class="button" ${state.archiveState !== "ready" ? "disabled" : ""}>${icon("extract")}${chosen.length ? "解压所选文件" : "全部解压"}</button><p class="inspector-footnote">文件内容保留在压缩包中。只有开始解压后，才会写入目标位置。</p>`;
+            )}</dl><button id="inspector-extract" class="button" ${state.archiveState !== "ready" ? "disabled" : ""}>${icon("external-open")}${single ? "解压此文件" : chosen.length ? "解压所选文件" : "全部解压"}</button><p class="inspector-footnote">文件内容保留在压缩包中。只有开始解压后，才会写入目标位置。</p>`;
     $("#hide-inspector").onclick = () => ($("#inspector").hidden = true);
     $("#inspector-extract").onclick = () =>
         showExtract(chosen.length ? "selected" : "all");
@@ -518,10 +520,11 @@ function dialog(html, kind, spec, focus) {
     const template = document.createElement("template");
     template.innerHTML = html;
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
-    el.innerHTML = windowChrome(title, kind === "progress") + html;
+    el.innerHTML = windowChrome(kind === "progress" ? "解压进度" : title, kind === "progress") + html;
     el.setAttribute("aria-label", title);
-    el.style.left = el.style.top = el.style.margin = "";
+    el.style.left = el.style.top = el.style.margin = el.style.transform = "";
     state.modal = kind;
+    el.dataset.kind = kind;
     setSpec(spec);
     // Decision windows block only their owner; task details/settings remain modeless.
     const modeless = ["progress", "settings", "result"].includes(kind);
@@ -539,6 +542,7 @@ function dialog(html, kind, spec, focus) {
         bar.setPointerCapture(event.pointerId);
         bar.onpointermove = (move) => {
             el.style.margin = "0";
+            el.style.transform = "none";
             el.style.left = `${Math.max(0, Math.min(innerWidth - rect.width, move.clientX - dx))}px`;
             el.style.top = `${Math.max(0, Math.min(innerHeight - 44, move.clientY - dy))}px`;
         };
@@ -644,24 +648,24 @@ function showExtract(scope = "selected", retryFiles = null) {
         header(
             "解压文件",
             `北境旅行.zip · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
-            "extract",
+            "archive",
         ) +
-            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">目标文件夹<span>仅在确认后写入</span></label><div class="input-row"><input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : "下载"}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group"><div class="field-label">解压范围</div><div class="scope-box">${
+            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row"><input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : "下载"}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group"><div class="field-label">解压范围</div><div class="scope-box">${
                 scope !== "all"
                     ? `<label class="radio-row"><input type="radio" name="scope" value="${scope}" checked><span>${scope === "results" ? "当前搜索结果" : scope === "retry" ? "失败或未完成项" : "所选文件"}</span><small>${count} 项 · ${bytes(sum)}</small></label><div class="scope-files">${chosen
                           .slice(0, 3)
                           .map(
                               (e) =>
-                                  `${esc(e.name)}<span style="float:right">${bytes(e.size)}</span>`,
+                                  `<div class="scope-file">${["lake", "sunrise"].includes(e.id) ? photo(e.id) : icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${bytes(e.size)}</span></div>`,
                           )
                           .join(
-                              "<br>",
+                              "",
                           )}${count > 3 ? `<br>另有 ${count - 3} 个文件` : ""}</div>`
                     : ""
-            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">遇到重名文件时</label><select id="conflict-policy" class="field-select"><option value="ask">询问我如何处理</option value="rename">自动改名，保留两个版本</option><option value="skip">跳过已有文件</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">遇到重名文件时</label><select id="conflict-policy" class="field-select"><option value="ask">询问我如何处理</option><option value="rename">自动改名，保留两个版本</option><option value="skip">跳过已有文件</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
             footer(
                 cancelButton() +
-                    `<button id="start-extract" class="button primary">开始解压 ${icon("arrow")}</button>`,
+                    `<button id="start-extract" class="button primary">开始解压</button>`,
             ),
         "extract",
         "E01",
@@ -780,16 +784,12 @@ function showProgress() {
                 ? "正在创建压缩文件"
                 : t.status === "stopping"
                   ? "正在停止任务"
-                  : "正在解压文件",
-            `${t.kind === "create" ? "旅行资料" : "北境旅行.zip"} → ${esc(t.target)}`,
-            t.kind === "create" ? "archive" : "extract",
+                  : "正在解压",
+            `${t.kind === "create" ? "旅行资料" : "北境旅行.zip"}`,
+            t.kind === "create" ? "archive-add" : "document-download",
             false,
         ) +
-            `<div class="modal-content"><div class="progress-head"><strong id="progress-value">${t.progress}%</strong><span id="progress-phase">正在准备</span></div><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="notice"><span id="progress-file"></span><br><span class="field-note">${t.kind === "create" ? "归档完成校验后统一保存。取消不会替换已有归档。" : "文件通过校验后才发布。取消会保留已完成的文件。"}</span></div></div>` +
-            footer(
-                `<button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button ${t.status === "stopping" ? "" : "danger"}" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button>`,
-                "后台处理",
-            ),
+            `<div class="modal-content"><section class="path-card"><h2>解压到</h2><div>${icon("folder")}<span>${esc(t.target)}</span></div></section><section class="progress-card"><div class="progress-line"><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><strong id="progress-value">${t.progress}%</strong></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="task-metrics"><div><span>速度</span><strong>6.2 MB/s</strong></div><div><span>预计剩余</span><strong>约 5 秒</strong></div><div><span>当前阶段</span><strong id="progress-phase">正在准备</strong></div></div></section><section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon("image-file")}</span><span id="progress-file"></span></div></section><p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p></div><footer class="modal-footer"><span class="info-line">${icon("info")}关闭此窗口后，任务仍会继续。</span><button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button></footer>`,
         "progress",
         "T01",
         "#background-task",
@@ -807,6 +807,7 @@ function updateProgress() {
             Math.floor((t.progress / 100) * t.items.length),
         );
     $("#progress-value").textContent = t.progress + "%";
+    $("#progress-fill").style.transition = t.reviewPaused ? "none" : "";
     $("#progress-fill").style.width = t.progress + "%";
     $(".progress-track").setAttribute("aria-valuenow", t.progress);
     $("#progress-phase").textContent =
@@ -821,8 +822,9 @@ function updateProgress() {
         `${bytes(Math.round((total * t.progress) / 100))} / ${bytes(total)}`;
     $("#progress-count").textContent =
         `${Math.floor((t.progress / 100) * t.items.length)} / ${t.items.length} 项`;
+    $("#progress-file-icon").innerHTML = icon(fileIcon(t.items[done]));
     $("#progress-file").textContent =
-        (t.status === "stopping" ? "停止中：" : "正在处理：") +
+        (t.status === "stopping" ? "停止中：" : "") +
         t.items[done].name;
 }
 function runTimer() {
@@ -1099,6 +1101,7 @@ function setTheme(theme) {
         (theme === "system" &&
             matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.dataset.theme = dark ? "dark" : "light";
+    document.querySelectorAll("svg[data-asset]").forEach(el => { el.outerHTML = icon(el.dataset.asset, el.getAttribute("class") || ""); });
     $("#theme").innerHTML = icon(dark ? "sun" : "moon");
     $("#theme").setAttribute(
         "aria-label",
@@ -1137,7 +1140,7 @@ function scenario(value) {
     if (["conflict", "permission", "disk", "source", "cancel"].includes(value))
         showExtract("selected");
 }
-$("#app-brand").innerHTML = icon("archive") + "xdzip";
+$("#app-brand").innerHTML = icon("app-mark") + "xdzip";
 hydrate();
 setTheme("light");
 if (innerWidth <= 1050) $("#inspector").classList.add("collapsed-narrow");
@@ -1153,6 +1156,10 @@ $("#reset").onclick = () => {
     $("#scenario").value = "normal";
     scenario("normal");
 };
+$("#title-settings").onclick = showSettings;
+$("#test-archive").onclick = () => toast("设计演示：归档测试通过，30 个文件可读取。");
+$("#more-actions").onclick = () => { $("#spec").hidden = !$("#spec").hidden; };
+$("#grid-view").onclick = () => toast("网格视图待单独设计；当前展示已确认的列表视图。");
 $("#open").onclick = openPicker;
 $("#new-tab").onclick = openPicker;
 $("#close-archive").onclick = showWelcome;
@@ -1211,7 +1218,7 @@ $("#select-all").onchange = (e) => {
     render();
 };
 $("#sort-name").onclick = $("#sort-direction").onclick = () => {
-    state.sort *= -1;
+    state.sort = state.sort === 1 ? -1 : 1;
     render();
 };
 $("#tasks").onclick = showTask;
@@ -1219,8 +1226,7 @@ $("#settings").onclick = showSettings;
 $("#platform").onchange = (event) => {
     document.body.dataset.platform = event.target.value;
     if ($("#modal").open) closeModal();
-    $(".search-field kbd").textContent =
-        event.target.value === "macos" ? "⌘ F" : "Ctrl F";
+    $("#search").setAttribute("aria-keyshortcuts", event.target.value === "macos" ? "Meta+F" : "Control+F");
 };
 $("#modal").addEventListener("cancel", (event) => {
     event.preventDefault();
@@ -1267,3 +1273,23 @@ document.addEventListener("keydown", (e) => {
     }
 });
 render();
+
+// Public review API: UI demonstrations only, no file IO or codecs.
+window.XdzipDesign = {
+    open(view) {
+        if (state.task?.reviewPaused) state.task = null;
+        if ($("#modal").open) closeModal();
+        if (view === "main") { state.selected = new Set(["lake"]); render(); return; }
+        if (view === "extract") { state.selected = new Set(["lake", "sunrise", "guide"]); render(); showExtract("selected"); }
+        else if (view === "create") showCreate();
+        else if (view === "settings") showSettings();
+        else if (view === "progress") { showExtract("all"); startTask(files, "extract"); clearInterval(timer); state.task.progress = 60; state.task.reviewPaused = true; updateProgress(); }
+        else scenario(view);
+    },
+    theme: setTheme,
+    platform(value) { document.body.dataset.platform = value; },
+};
+const reviewQuery = new URLSearchParams(location.search);
+if (reviewQuery.get("standalone") === "1") document.body.dataset.standalone = "true";
+if (reviewQuery.has("platform")) window.XdzipDesign.platform(reviewQuery.get("platform"));
+if (reviewQuery.has("view")) window.XdzipDesign.open(reviewQuery.get("view"));

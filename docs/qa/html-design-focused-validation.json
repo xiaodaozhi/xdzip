@@ -1,0 +1,12 @@
+{
+  "scope": "Chromium offline HTML review, not native Qt validation",
+  "method": "Blocked network requests; loaded bundled HTML; inspected progress geometry and SVG IDs; opened independent browser popup",
+  "ratio": 0.5999909769008662,
+  "infoX": [
+    123,
+    123
+  ],
+  "uniqueSvgIds": true,
+  "popup": true,
+  "errors": []
+}

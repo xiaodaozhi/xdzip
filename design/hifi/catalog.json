@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notes": "v1 主窗口与 v2 操作状态共同构成当前视觉参考；历史提案不作为对应深色基线。",
+  "notes": "当前视觉参考：v1 主窗口与解压确认、v2 操作状态。废弃提案已删除，历史由 Git 保存。",
   "screens": [
     {
       "file": "v1/screens/main-light.png",
@@ -73,30 +73,6 @@
       "group": "current",
       "version": "v2",
       "sha256": "7feb1bf4b03252e43063396f56bdfed1548db306241e578d8210a30c700bd297"
-    },
-    {
-      "file": "archive/early/screens/xdzip-main-light.png",
-      "title": "早期浅色主窗口",
-      "group": "historical",
-      "version": "early",
-      "previous_path": "docs/visual/xdzip-main-light.png",
-      "sha256": "0a3df9ca8c1aab6675de93b3a44b9c68fb8de92c27aa907753b88e83dd5ec97b"
-    },
-    {
-      "file": "archive/early/screens/xdzip-main-dark.png",
-      "title": "早期深色主窗口",
-      "group": "historical",
-      "version": "early",
-      "previous_path": "docs/visual/xdzip-main-dark.png",
-      "sha256": "576e7604e1a693d1185ef160b9e6decd65e19ce7f9071dfa88078bc3e6ba60de"
-    },
-    {
-      "file": "archive/early/screens/xdzip-extract-sheet.png",
-      "title": "早期解压面板",
-      "group": "historical",
-      "version": "early",
-      "previous_path": "docs/visual/xdzip-extract-sheet.png",
-      "sha256": "26bfaf0970672a723d280bdd9e4c83a6d9ed3d81fa2e1e30789d823ea2d38fe8"
     }
   ]
 }

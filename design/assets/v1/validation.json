@@ -1,6 +1,6 @@
 {
   "status": "passed",
-  "asset_entries": 253,
+  "asset_entries": 248,
   "source_crops": 24,
   "svg_files": 56,
   "vector_png_files": 168,
@@ -12,7 +12,7 @@
   ],
   "limits": [
     "No Qt renderer validation",
-    "Reconstructed vectors and generated brand asset are not exact original layers",
+    "Reconstructed vectors are not exact original layers",
     "No native OS window controls exported as production bitmaps"
   ]
 }

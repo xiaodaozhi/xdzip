@@ -12,7 +12,7 @@
 | 素材修正 | [问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [v2 图板与素材](../design/hifi/v2/README.md)、[功能状态契约](ux/hifi-state-spec.md) |
-| 交互原型 | [使用说明](../design/prototype/README.md)、[功能映射](ux/prototype-spec.md) |
+| HTML 高保真设计 | [使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |
 | Figma 功能设计 | [文件、画板索引与待修项](ux/figma-design.md) |
 | 未绘制页面和异常流程 | [交互补充](ux/interaction-spec.md) |
 | 开发与仓库约定 | [开发指南](engineering/development.md)、[目录规划](engineering/repository-layout.md) |

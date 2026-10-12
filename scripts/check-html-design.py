@@ -2,7 +2,7 @@
 """Exercise the design prototype in Chromium; archive operations remain simulated.
 
 Requires Playwright and a Chromium executable. Screenshots and reports are written
-under dist/prototype-review. This is not a product codec or platform safety test.
+under dist/html-design-review. This is not a product codec or platform safety test.
 """
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -13,8 +13,8 @@ import os
 from playwright.sync_api import sync_playwright, expect
 
 PROJECT = Path(__file__).resolve().parents[1]
-ROOT = PROJECT / 'design/prototype'
-OUTPUT = PROJECT / 'dist/prototype-review'
+ROOT = PROJECT / 'design/html'
+OUTPUT = PROJECT / 'dist/html-design-review'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 if os.environ.get('XDZIP_FONTCONFIG_FILE'):
     os.environ['FONTCONFIG_FILE'] = os.environ['XDZIP_FONTCONFIG_FILE']
@@ -23,9 +23,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_args):
         pass
 
-server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(PROJECT)))
 Thread(target=server.serve_forever, daemon=True).start()
 url = f'http://127.0.0.1:{server.server_port}/'
+canvas_url = url + 'design/html/canvas.html'
 checks, errors, external = [], [], []
 
 def record(name):
@@ -36,7 +37,7 @@ def screenshot(page, name):
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'), headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
-    context = browser.new_context(viewport={'width': 1500, 'height': 1000}, locale='zh-CN')
+    context = browser.new_context(viewport={'width': 1588, 'height': 1440}, locale='zh-CN')
     def route_request(route):
         if route.request.url.startswith(url):
             route.continue_()
@@ -47,7 +48,9 @@ with sync_playwright() as p:
     page = context.new_page()
     page.on('pageerror', lambda error: errors.append(str(error)))
     try:
-        page.goto(url)
+        page.goto(canvas_url)
+        page.add_style_tag(content=".reviewbar{display:flex} #settings{display:flex}")
+        page.evaluate("state.selected.clear(); render();")
         expect(page.locator('#file-rows tr')).to_have_count(9)
         expect(page.locator('#extract-label')).to_have_text('全部解压')
         page.locator('[data-id=lake] input').check()
@@ -155,19 +158,17 @@ with sync_playwright() as p:
         screenshot(page, '11-settings-dark')
         page.keyboard.press('Escape')
         page.locator('#theme').click()
-        page.set_viewport_size({'width':390,'height':844})
-        page.locator('#scenario').select_option('normal')
-        screenshot(page, '12-mobile-browser')
-        page.locator('[data-id=lake] input').check()
-        page.locator('[data-id=sunrise] input').check()
-        page.locator('[data-id=guide] input').check()
-        page.locator('#extract').click()
-        screenshot(page, '13-mobile-extract')
-        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
-        assert page.locator('#modal').evaluate('(n) => n.scrollWidth <= n.clientWidth + 1')
-        record('390 px mobile review has no horizontal page or dialog overflow')
-        page.keyboard.press('Escape')
-        page.set_viewport_size({'width':1500,'height':1000})
+        mobile = context.new_page()
+        mobile.set_viewport_size({'width':390,'height':844})
+        mobile.goto(url + 'design/html/index.html')
+        mobile.wait_for_function('document.querySelector("#design-frame").contentWindow.XdzipDesign')
+        screenshot(mobile, '12-mobile-browser')
+        mobile.locator('#view').select_option('extract')
+        screenshot(mobile, '13-mobile-extract')
+        assert mobile.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+        expect(mobile.frame_locator('#design-frame').locator('#start-extract')).to_be_visible()
+        mobile.close()
+        record('390 px review scales the desktop artboard without page overflow')
         page.locator('#scenario').select_option('conflict')
         page.locator('#start-extract').click()
         page.locator('#skip-conflict').click()
@@ -248,14 +249,14 @@ with sync_playwright() as p:
         page.locator('.os-close').click()
         record('Closing a conflict window cancels safely rather than implicitly overwriting or skipping')
         # Check the distributable HTML itself, with every network request blocked.
-        bundled = (PROJECT/'dist/xdzip-interactive-design.html').read_text()
+        bundled = (PROJECT/'dist/xdzip-hifi-design.html').read_text()
         offline = context.new_page()
         offline.on('pageerror', lambda error: errors.append(str(error)))
         offline.route('**/*', lambda route: route.abort())
         offline.set_content(bundled)
-        expect(offline.locator('#file-rows tr')).to_have_count(9)
-        offline.locator('#create').click()
-        expect(offline.locator('#start-create')).to_be_enabled()
+        expect(offline.frame_locator('#design-frame').locator('#file-rows tr')).to_have_count(9)
+        offline.locator('#view').select_option('create')
+        expect(offline.frame_locator('#design-frame').locator('#start-create')).to_be_enabled()
         offline.close()
         record('Single-file distributable initializes and opens creation without network access')
         assert not errors, errors

@@ -14,8 +14,11 @@ jobs:
         run: |
           python3 scripts/check-docs.py
           python3 scripts/check-asset-integration.py
+          python3 scripts/build-html-design.py --check
           python3 scripts/generate-qml-theme.py --check
-      - name: Check prototype JavaScript syntax
-        run: node --check design/prototype/app.js
+      - name: Check HTML design JavaScript syntax
+        run: |
+          node --check design/html/app.js
+          node --check design/html/review.js
       - name: Check whitespace
         run: git diff-tree --check HEAD

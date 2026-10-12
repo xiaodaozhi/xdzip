@@ -29,13 +29,9 @@
 
 [v2 交付说明与素材](v2/README.md) · [功能状态契约](../../docs/ux/hifi-state-spec.md)
 
-## 历史提案
+## 已清理的内容
 
-以下仅用于追溯早期视觉方向，不是当前 v1 主稿的浅深配套版本：
-
-- [早期浅色主窗口](archive/early/screens/xdzip-main-light.png)
-- [早期深色主窗口](archive/early/screens/xdzip-main-dark.png)
-- [早期解压面板](archive/early/screens/xdzip-extract-sheet.png)
+不再采用的早期三张提案已从工作目录删除，通过 Git 历史追溯。当前原稿没有删除。
 
 ## 目录职责与维护
 

@@ -4,8 +4,10 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="color-scheme" content="light dark" />
-        <title>xdzip · 交互设计原型</title>
+        <title>xdzip · 高保真界面</title>
         <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="hifi.css" />
+        <script defer src="assets.js"></script>
         <script defer src="app.js"></script>
     </head>
     <body data-platform="macos">
@@ -65,6 +67,7 @@
                             <span data-icon="close"></span>
                         </button>
                     </div>
+                    <div class="archive-tab inactive" aria-label="其他归档示例"><span data-icon="archive"></span><span>项目素材.zip</span><span data-icon="close"></span></div>
                     <button
                         id="new-tab"
                         class="icon-button"
@@ -73,35 +76,31 @@
                         <span data-icon="plus"></span>
                     </button>
                     <div class="title-space"></div>
-                    <span class="local-label"
-                        ><span data-icon="shield"></span>本地处理</span
-                    >
+                    <button id="title-settings" class="icon-button" aria-label="设置"><span data-icon="settings"></span></button>
                 </header>
                 <div class="toolbar">
                     <button id="open" class="button">
                         <span data-icon="folderOpen"></span>打开</button
                     ><button id="create" class="button">
-                        <span data-icon="plus"></span>新建
+                        <span data-icon="new"></span>新建
                     </button>
                     <div class="toolbar-divider"></div>
-                    <button id="properties-toggle" class="button quiet">
-                        <span data-icon="panel"></span>详情
-                    </button>
+                    <button id="test-archive" class="button"><span data-icon="archive-test"></span>测试</button>
+                    <button id="more-actions" class="icon-button" aria-label="更多操作"><span data-icon="more"></span></button>
                     <div class="toolbar-space"></div>
                     <div class="search-field">
                         <span data-icon="search"></span
                         ><input
                             id="search"
                             type="search"
-                            placeholder="搜索此压缩文件"
-                            aria-label="搜索此压缩文件"
+                            placeholder="搜索压缩包中的文件"
+                            aria-label="搜索压缩包中的文件"
                             autocomplete="off"
-                        /><kbd>⌘ F</kbd>
+                        />
                     </div>
                     <div class="split-button">
                         <button id="extract" class="button primary">
-                            <span data-icon="extract"></span
-                            ><span id="extract-label">全部解压</span></button
+                            <span id="extract-label">全部解压</span></button
                         ><button
                             id="extract-menu-button"
                             aria-label="选择解压范围"
@@ -121,13 +120,13 @@
                 <div class="workspace">
                     <aside class="sidebar">
                         <div class="archive-card">
-                            <div class="archive-logo" data-icon="archive"></div>
+                            <span class="archive-caption">ARCHIVE</span>
                             <div>
                                 <strong>北境旅行.zip</strong
                                 ><span id="archive-info">ZIP 归档</span>
                             </div>
                         </div>
-                        <p class="section-label">归档目录</p>
+
                         <nav id="tree" aria-label="归档目录"></nav>
                         <div class="sidebar-bottom">
                             <div class="storage-heading">
@@ -153,8 +152,8 @@
                         <div class="location">
                             <div id="breadcrumbs"></div>
                             <div class="file-tools">
-                                <span id="entry-count"></span
-                                ><button
+                                <button id="properties-toggle" class="icon-button" aria-label="切换详情面板"><span data-icon="panel"></span></button><span id="entry-count"></span
+                                ><button class="icon-button view-active" aria-label="列表视图"><span data-icon="view-list"></span></button><button id="grid-view" class="icon-button" aria-label="网格视图"><span data-icon="view-grid"></span></button><button
                                     id="sort-direction"
                                     class="icon-button"
                                     aria-label="切换排序方向"
@@ -217,7 +216,7 @@
                     <span id="selection-status"></span
                     ><span class="status-spacer"></span
                     ><span class="read-status"
-                        ><i></i><span id="read-status">目录已读取</span></span
+                        ><span data-icon="completed"></span><span id="read-status">目录已读取</span></span
                     ><button id="tasks">
                         <span data-icon="activity"></span
                         ><span id="task-count">任务 0</span></button
