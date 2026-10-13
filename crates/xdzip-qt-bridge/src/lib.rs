@@ -24,6 +24,12 @@ mod ffi {
         CloseSession,
         Snapshot,
     }
+    struct MetadataLimits {
+        entries: u64,
+        directories: u64,
+        directory_bytes: u64,
+        rows_per_batch: u64,
+    }
     struct Command {
         kind: CommandKind,
         session: u64,
@@ -31,6 +37,9 @@ mod ffi {
         directory: String,
         text: String,
         offset: u64,
+        query: u64,
+        generation: u64,
+        revision: u64,
         sort: u8,
         selected: Vec<u64>,
     }
@@ -78,6 +87,9 @@ mod ffi {
         offset: u64,
         total: u64,
         archive_total: u64,
+        query: u64,
+        generation: u64,
+        revision: u64,
         rows: Vec<Row>,
         directories: Vec<Directory>,
         replace_directories: bool,
@@ -89,6 +101,8 @@ mod ffi {
         type Runtime;
         type CommandClient;
         type EventReceiver;
+        fn metadata_limits() -> MetadataLimits;
+        fn sum_declared_sizes(values: &[u64]) -> String;
         fn new_runtime() -> Result<Box<Runtime>>;
         fn take_client(self: &mut Runtime) -> Result<Box<CommandClient>>;
         fn take_receiver(self: &mut Runtime) -> Result<Box<EventReceiver>>;
@@ -97,6 +111,26 @@ mod ffi {
         fn shutdown(self: &CommandClient) -> u64;
         fn next_event(self: &mut EventReceiver) -> Event;
     }
+}
+/// Read-only resource admission shared with the Qt receiver; no filesystem work.
+pub fn metadata_limits() -> ffi::MetadataLimits {
+    ffi::MetadataLimits {
+        entries: xdzip_codec_api::MAX_ENTRIES as u64,
+        directories: xdzip_runtime::navigation::MAX_DIRECTORIES as u64,
+        directory_bytes: xdzip_runtime::navigation::MAX_DIRECTORY_BYTES as u64,
+        rows_per_batch: 128,
+    }
+}
+/// Exact bounded metadata aggregation, without I/O or retaining the borrowed slice.
+pub fn sum_declared_sizes(values: &[u64]) -> String {
+    if values.len() > xdzip_codec_api::MAX_ENTRIES {
+        return String::new();
+    }
+    values
+        .iter()
+        .map(|&value| u128::from(value))
+        .sum::<u128>()
+        .to_string()
 }
 /// Temporary owner. Each independent handle may be transferred once.
 pub struct Runtime {
@@ -167,6 +201,9 @@ impl CommandClient {
                 directory: command.directory,
                 text: command.text,
                 offset: command.offset,
+                query: command.query,
+                generation: command.generation,
+                revision: command.revision,
                 sort: command.sort,
             },
             ffi::CommandKind::Preflight => {
@@ -209,6 +246,9 @@ impl EventReceiver {
             offset: 0,
             total: 0,
             archive_total: 0,
+            query: 0,
+            generation: 0,
+            revision: 0,
             rows: Vec::new(),
             directories: Vec::new(),
             replace_directories: false,
@@ -233,6 +273,7 @@ impl EventReceiver {
                 offset,
                 total,
                 archive_total,
+                key,
                 rows,
                 navigation,
                 navigation_limited,
@@ -242,6 +283,9 @@ impl EventReceiver {
                 event.offset = offset;
                 event.total = total;
                 event.archive_total = archive_total;
+                event.query = key.query.get();
+                event.generation = key.generation.get();
+                event.revision = key.revision.get();
                 event.replace_directories = navigation.is_some();
                 event.navigation_limited = navigation_limited;
                 event.directories = navigation
@@ -323,6 +367,15 @@ impl EventReceiver {
 mod tests {
     use super::*;
     #[test]
+    fn metadata_summary_is_exact_above_64_bits_and_bounded() {
+        assert_eq!(sum_declared_sizes(&[]), "0");
+        assert_eq!(
+            sum_declared_sizes(&[u64::MAX, u64::MAX]),
+            "36893488147419103230"
+        );
+        assert!(sum_declared_sizes(&vec![0; xdzip_codec_api::MAX_ENTRIES + 1]).is_empty());
+    }
+    #[test]
     fn unique_handles_foreign_bounds_and_shutdown() {
         let mut runtime = new_runtime().unwrap();
         let client = runtime.take_client().unwrap();
@@ -331,6 +384,9 @@ mod tests {
         assert!(runtime.take_receiver().is_err());
         drop(runtime);
         let invalid = ffi::Command {
+            query: 0,
+            generation: 0,
+            revision: 0,
             kind: ffi::CommandKind::Open,
             session: 0,
             path: "x".repeat(4097),

@@ -42,7 +42,7 @@ pub fn inspect(
     control: &Cancellation,
 ) -> Result<Report, ScanError> {
     control.check()?;
-    if rows.len() > 10_000 || selected.is_empty() || selected.len() > 128 {
+    if rows.len() > xdzip_codec_api::MAX_ENTRIES || selected.is_empty() || selected.len() > 128 {
         return Err(ScanError::Limit);
     }
     let ids: BTreeSet<_> = selected.iter().copied().collect();

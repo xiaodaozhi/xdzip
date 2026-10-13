@@ -56,50 +56,47 @@ impl Archive {
         sort: u8,
         control: &Cancellation,
     ) -> Result<(usize, Vec<ListingRow<'_>>), ScanError> {
-        if !text.is_empty() {
-            let (total, entries) =
-                self.browse_sorted(directory, text, offset, limit, sort, control)?;
-            return Ok((
-                total,
-                entries.into_iter().map(ListingRow::Physical).collect(),
-            ));
-        }
         control.check()?;
         let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
-        if directory.len() > 4096 || sort > 12 {
+        let rows = self.listing_rows(directory, text, sort, control)?;
+        let total = rows.len();
+        if offset > total as u64 {
             return Err(ScanError::Limit);
         }
-        let prefix = self.directory_prefix(directory)?;
-        let mut rows = Vec::new();
-        for entry in &self.rows {
-            control.check()?;
-            let Some(tail) = entry.raw_name.strip_prefix(prefix) else {
-                continue;
-            };
-            let tail = tail.strip_suffix(b"/").unwrap_or(tail);
-            if !tail.is_empty() && !tail.contains(&b'/') {
-                rows.push(ListingRow::Physical(entry));
-            }
+        Ok((
+            total,
+            rows.into_iter()
+                .skip(request.offset() as usize)
+                .take(usize::from(request.limit()))
+                .collect(),
+        ))
+    }
+
+    pub(crate) fn listing_rows(
+        &self,
+        directory: &str,
+        text: &str,
+        sort: u8,
+        control: &Cancellation,
+    ) -> Result<Vec<ListingRow<'_>>, ScanError> {
+        if directory.len() > 21 || text.len() > 1024 || sort > 12 {
+            return Err(ScanError::Limit);
         }
-        if let Some(nodes) = &self.directories {
-            for node in nodes {
-                control.check()?;
-                let Some(tail) = node.path.as_bytes().strip_prefix(prefix) else {
-                    continue;
-                };
-                let tail = tail.strip_suffix(b"/").unwrap_or(tail);
-                if tail.is_empty() || tail.contains(&b'/') {
-                    continue;
-                }
-                // Explicit records (including duplicates) retain their physical identities.
-                if !rows.iter().any(|row| {
-                    matches!(row, ListingRow::Physical(e)
-                    if e.directory && !e.warning && e.raw_name == node.path.as_bytes())
-                }) {
-                    rows.push(ListingRow::Directory(node));
-                }
-            }
-        }
+        let mut rows = if !text.is_empty() {
+            self.matching_physical(directory, text, control)?
+                .into_iter()
+                .map(ListingRow::Physical)
+                .collect::<Vec<_>>()
+        } else {
+            let prefix = self.directory_prefix(directory)?;
+            self.index
+                .children
+                .get(prefix)
+                .into_iter()
+                .flatten()
+                .map(|row| row.resolve(self))
+                .collect()
+        };
         if sort == 9 {
             rows.sort_by_cached_key(|row| (row.type_key(), row.stable_key()));
         } else if sort == 10 {
@@ -123,17 +120,10 @@ impl Archive {
             });
         }
         control.check()?;
-        let total = rows.len();
-        if total > 10000 || offset > total as u64 {
+        if rows.len() > xdzip_codec_api::MAX_ENTRIES {
             return Err(ScanError::Limit);
         }
-        Ok((
-            total,
-            rows.into_iter()
-                .skip(request.offset() as usize)
-                .take(usize::from(request.limit()))
-                .collect(),
-        ))
+        Ok(rows)
     }
 }
 
@@ -235,6 +225,12 @@ mod tests {
         })
         .collect();
         archive.directories = Some(crate::navigation::build(&archive.rows, &control).unwrap());
+        archive.index = crate::index::DirectoryIndex::build(
+            &archive.rows,
+            archive.directories.as_deref(),
+            &control,
+        )
+        .unwrap();
         let (total, root) = archive.listing_sorted("", "", 0, 128, 0, &control).unwrap();
         assert_eq!(total, 4);
         assert_eq!(

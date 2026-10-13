@@ -160,7 +160,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: StandardKey.Find
-        enabled: reader.ready && !reader.busy
+        enabled: reader.queryAvailable
         onActivated: toolbar.focusSearch()
     }
     Shortcut {
@@ -386,7 +386,8 @@ ApplicationWindow {
             id: toolbar
             Layout.fillWidth: true
             canOpen: reader.runtimeAvailable && !reader.busy
-            canSearch: reader.ready && !reader.busy
+            canSelect: reader.ready && !reader.busy
+            canSearch: reader.queryAvailable
             canInspect: reader.ready && !reader.busy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onOpenRequested: reader.chooseArchive()
@@ -485,7 +486,7 @@ ApplicationWindow {
                         implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
                         leftPadding: Theme.mainUnits(12)
                         rightPadding: Theme.mainUnits(12)
-                        enabled: reader.ready && !reader.busy
+                        enabled: reader.queryAvailable
                         onClicked: reader.showRoot()
                         Accessible.name: qsTr("根目录")
                         background: Rectangle {
@@ -574,7 +575,7 @@ ApplicationWindow {
                                 event.accepted = true;
                             }
                         }
-                        enabled: reader.ready && !reader.busy
+                        enabled: reader.queryAvailable
                         columnWidthProvider: function (column) {
                             let extent = width;
                             for (let row = 0; row < rows; ++row) {
@@ -770,7 +771,7 @@ ApplicationWindow {
                     Breadcrumb {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        available: reader.ready && !reader.busy
+                        available: reader.queryAvailable
                         entries: reader.title.length ? [
                             {
                                 id: "",
@@ -856,7 +857,7 @@ ApplicationWindow {
                         glyphSize: Theme.mainUnits(28)
                         Accessible.name: qsTr("排序方式")
                         explanation: Accessible.name
-                        enabled: reader.ready && !reader.busy
+                        enabled: reader.queryAvailable
                         onClicked: {
                             const p = mapToItem(root.contentItem, width, height);
                             sortMenu.popup(root.contentItem, p.x - sortMenu.width, p.y + Theme.mainPopupGap);
@@ -903,24 +904,24 @@ ApplicationWindow {
                                 color: Theme.text
                                 font.pixelSize: Theme.mainHeaderSize
                                 activeFocusOnTab: true
-                                enabled: reader.ready && !reader.busy
+                                enabled: reader.queryAvailable
                                 Accessible.role: Accessible.Button
                                 Accessible.name: modelData + (reader.sortOrder === (index < 3 ? index * 2 + 1 : index * 2 + 3) ? qsTr("，升序") : reader.sortOrder === (index < 3 ? index * 2 + 2 : index * 2 + 4) ? qsTr("，降序") : "")
-                                Accessible.onPressAction: if (reader.ready && !reader.busy)
+                                Accessible.onPressAction: if (reader.queryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onReturnPressed: if (reader.ready && !reader.busy)
+                                Keys.onReturnPressed: if (reader.queryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onEnterPressed: if (reader.ready && !reader.busy)
+                                Keys.onEnterPressed: if (reader.queryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onSpacePressed: if (reader.ready && !reader.busy)
+                                Keys.onSpacePressed: if (reader.queryAvailable)
                                     reader.sortByColumn(index)
                                 TapHandler {
-                                    enabled: reader.ready && !reader.busy
+                                    enabled: reader.queryAvailable
                                     onTapped: reader.sortByColumn(columnHeader.index)
                                 }
                                 TapHandler {
                                     acceptedButtons: Qt.RightButton
-                                    enabled: reader.ready && !reader.busy
+                                    enabled: reader.queryAvailable
                                     onTapped: function (eventPoint) {
                                         const position = columnHeader.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
                                         sortMenu.popup(position.x, position.y);

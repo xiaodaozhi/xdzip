@@ -6,6 +6,7 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     required property bool canOpen
+    property bool canSelect: canSearch
     required property bool canSearch
     required property bool canInspect
     required property bool hasSelection
@@ -121,12 +122,12 @@ Rectangle {
                     CommandMenuItem {
                         text: qsTr("全选当前目录")
                         shortcutLabel: Qt.platform.os === "osx" ? "⌘A" : "Ctrl+A"
-                        enabled: root.canSearch
+                        enabled: root.canSelect
                         onTriggered: root.selectAllRequested()
                     }
                     CommandMenuItem {
                         text: qsTr("取消选择")
-                        enabled: root.hasSelection && root.canSearch
+                        enabled: root.hasSelection && root.canSelect
                         onTriggered: root.clearSelectionRequested()
                     }
                     CommandMenuSeparator {}

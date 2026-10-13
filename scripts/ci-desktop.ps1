@@ -1,4 +1,4 @@
-# Native M1 product build, lifecycle tests and developer-review artifacts.
+# Native M2 product build, lifecycle tests and developer-review artifacts.
 $ErrorActionPreference = 'Stop'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
@@ -52,8 +52,15 @@ New-Item -ItemType Directory -Force 'dist/review' | Out-Null
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
-Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'rootListingAndReviewedInteractions', 'renderRealArchive')
+Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'rootListingAndReviewedInteractions', 'm2LargeArchiveLatestQueryAndSourceChange', 'renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
+Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'dist/review/m2-qt-performance.json')
+Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')
+Invoke-Checked cargo @('build', '--release', '-p', 'xdzip-m2-probe')
+$m2Probe = if ($IsWindows) { 'target/release/xdzip-m2-probe.exe' } else { 'target/release/xdzip-m2-probe' }
+$m2Report = & $m2Probe 'build/desktop/m2-shuffled.zip'
+if ($LASTEXITCODE -ne 0) { throw 'M2 core benchmark failed' }
+$m2Report | Set-Content 'dist/review/m2-core-performance.json'
 Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
 Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit/fidelity.json')
 # Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
@@ -69,7 +76,7 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'dist/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review'
-Copy-Item 'docs/qa/m1-acceptance.md' 'dist/review/README.md'
+Copy-Item 'docs/qa/m2-acceptance.md' 'dist/review/README.md'
 Invoke-Checked python @('scripts/collect-notices.py', 'dist/review/notices')
 Invoke-Checked git @('archive', '--format=tar', '-o', 'dist/review/xdzip-source.tar', 'HEAD')
 if ($IsMacOS) {
@@ -108,5 +115,5 @@ if ($IsMacOS) {
     Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'dist/review/xdzip-linux-qt6.8.2'
 }
 $commit = & git rev-parse HEAD
-@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; distribution = 'M1 developer review; not a signed public release' } |
+@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; distribution = 'M2 ZIP/ZIP64 metadata developer review; not a signed public release' } |
     ConvertTo-Json | Set-Content 'dist/review/build.json'

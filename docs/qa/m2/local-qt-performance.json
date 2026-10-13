@@ -1,0 +1,16 @@
+{
+  "os": "Linux",
+  "architecture": "x86_64",
+  "qpa": "offscreen",
+  "renderer": "software",
+  "metrics": {
+    "open_ms": 878,
+    "rows": 100000,
+    "delegates": 55,
+    "full_sort_ms": 648
+  },
+  "elapsed_s": 2.846584344020812,
+  "peak_rss_kib": 217988,
+  "returncode": 0,
+  "passed": true
+}

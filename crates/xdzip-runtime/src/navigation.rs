@@ -3,9 +3,9 @@ use std::collections::BTreeMap;
 use xdzip_codec_api::{Cancellation, Entry, ScanError};
 
 /// Maximum navigation nodes; exceeding this disables the tree, never publishes a partial tree.
-pub const MAX_DIRECTORIES: usize = 2048;
+pub const MAX_DIRECTORIES: usize = 32_768;
 /// Aggregate UTF-8 path and label bytes in one navigation snapshot.
-pub const MAX_DIRECTORY_BYTES: usize = 1024 * 1024;
+pub const MAX_DIRECTORY_BYTES: usize = 4 * 1024 * 1024;
 /// Maximum hierarchy depth supported by the navigation view.
 pub const MAX_DIRECTORY_DEPTH: usize = 64;
 
@@ -153,8 +153,8 @@ mod tests {
         assert_eq!(build(&rows, &control).unwrap().len(), MAX_DIRECTORIES);
         rows.push(entry(3000, "overflow/f", false));
         assert!(matches!(build(&rows, &control), Err(ScanError::Limit)));
-        let rows: Vec<_> = (0..300)
-            .map(|n| entry(n + 1, &format!("{}-{n}/f", "x".repeat(4000)), false))
+        let rows: Vec<_> = (0..MAX_DIRECTORY_BYTES / 8000 + 1)
+            .map(|n| entry(n as u64 + 1, &format!("{}-{n}/f", "x".repeat(4000)), false))
             .collect();
         assert!(matches!(build(&rows, &control), Err(ScanError::Limit)));
         assert_eq!(

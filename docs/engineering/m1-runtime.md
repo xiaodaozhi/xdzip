@@ -6,7 +6,7 @@ M1 范围以 design/12 为准：产品骨架、双句柄、事件/背压、关�
 
 `xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 生成 ABI 胶水是唯一 unsafe 边界。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
 
-M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；本阶段单会话、串行 GUI pending 请求，完整 M2 查询代际协议没有伪装成已实现。跨会话请求返回 stale_session。
+M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；本阶段单会话、串行 GUI pending 请求，M2 已增补完整查询 ID、GUI 代际和快照修订，见 [M2 契约](m2-readonly.md)。跨会话请求返回 stale_session。
 
 GUI 普通准入使用 try_lock，不等待队列空间，校验路径 4 KiB、搜索 1 KiB、选择 128 项、目录 ID 21 字节、排序码 0–12。拒绝不消耗 ID，Busy 可重试。取消有独立最多 128 项控制通道和自己的 Finished 确认；确认不保证目标尚未完成。关闭保留独立、幂等 RequestId，预留最后一个可用 ID，即使正常 ID 耗尽或队列满也可关闭。
 
@@ -18,9 +18,9 @@ Qt 控制器仅保留一个待准入命令。短暂 Busy 在事件循环中以 1
 - Rust 数据事件累计字符串预算 8 MiB，超过预算暂停发布；取消/关闭可唤醒等待并改发 cancelled 终态。单事件超限返回 resource_limit。
 - Qt mailbox 最多 256 个事件、8 MiB 字符串，其中普通数据最多 128 个位置，其余为终态/控制保留；不会为每条 Rust 事件生成一个 Qt callback。
 - 一个通知链按每轮最多 32 个事件、约 4 ms 的时间预算 drain，未结束则投递下一轮；单事件处理不可抢占。队列空时不再调度，接收线程由条件变量阻塞。
-- Open 的 Page 额外携带完整有界目录索引（至多 2,048 节点、名称和前缀共 1 MiB），由 `replace_directories` 标识替换；空索引也明确替换。Browse 不重复发送索引，`navigation_limited` 明确索引降级。Rust 计入名称和前缀字节，Qt mailbox 还计入桥接生成的节点/父 ID 字符串；节点容器和深度另设上限。只有对应请求的成功 Finished 后才一起应用新页面与目录模型。
+- Open 的 Page 额外携带完整有界目录索引（至多 32,768 节点、名称和前缀共 4 MiB），由 `replace_directories` 标识替换；空索引也明确替换。Browse 不重复发送索引，`navigation_limited` 明确索引降级。Rust 计入名称和前缀字节，Qt mailbox 还计入桥接生成的节点/父 ID 字符串；节点容器和深度另设上限。只有对应请求的成功 Finished 后才一起应用新页面与目录模型。
 - Page 的 `total` 是当前列表行数，`archive_total` 独立保留物理归档记录数。普通浏览只列当前目录的直属文件和目录，搜索递归返回物理匹配。缺少显式记录的目录使用 `navigation_id` 和 `physical=false`；Qt 行键为 `dN`，原始物理 ID 保持独立，虚拟节点不可提交 Preflight。完整路径保留在行元数据中，显示名称按普通浏览／搜索分别使用 basename／全路径。
-- 字符串预算不等于 RSS：容器、快照、转换中的单个事件另有空间，但条目和页大小始终有界。当前页仍为 128 项、归档扫描仍为 10,000 项。
+- 字符串预算不等于 RSS：容器、快照、转换中的单个事件另有空间，但条目和页大小始终有界。当前页仍为 128 项、归档扫描仍为 100,000 项。
 
 控制与普通事件交替取出，避免持续取消确认使普通终态饥饿。递增 sequence 在交付时分配；Qt 丢弃旧序号，控制确认和过期 request_id 不修改当前视图。
 
@@ -37,3 +37,5 @@ QObject 提前销毁时，关闭 mailbox、唤醒接收线程、停止服务；�
 ## 验证与构建
 
 见 [M1 验收说明](../qa/m1-acceptance.md)。Rust 核心测试不需要 Qt；Qt 窗口、模型、压力和关闭用例在三平台原生构建运行。macOS 构建明确验证 arm64 并部署为含 Qt 的开发 app；Windows 生成部署目录，Linux 验收二进制需同版 Qt。它们不是签名公证或完整首版发行。
+
+M2 的初始查询分配不可变结果身份，后续批次必须匹配全部 QueryKey 字段与参数；Qt 取消旧请求并合并最新意图，序列与请求 ID 的既有检查仍保留。单批另外限制名称 64 KiB，不重复过滤／排序。M1 历史验收不据此重写为当时已经具备 M2。

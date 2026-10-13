@@ -69,7 +69,18 @@ endif()
 if(BUILD_TESTING)
     add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h)
     target_include_directories(xdzip-browser-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip")
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    set(XDZIP_M2_FIXTURE "${CMAKE_CURRENT_BINARY_DIR}/m2-flat.zip")
+    add_custom_command(OUTPUT "${XDZIP_M2_FIXTURE}"
+        COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" --output "${XDZIP_M2_FIXTURE}"
+        DEPENDS "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" VERBATIM)
+    set(XDZIP_M2_HIERARCHICAL "${CMAKE_CURRENT_BINARY_DIR}/m2-hierarchical.zip")
+    add_custom_command(OUTPUT "${XDZIP_M2_HIERARCHICAL}"
+        COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" --output "${XDZIP_M2_HIERARCHICAL}" --hierarchical
+        DEPENDS "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" VERBATIM)
+    add_custom_target(xdzip-m2-fixtures DEPENDS "${XDZIP_M2_FIXTURE}" "${XDZIP_M2_HIERARCHICAL}")
+    add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
+    target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-ui-resources xdzip-reader-rust
         Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests)

@@ -18,3 +18,7 @@
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
 Qt components 通过 scripts/ci-desktop.ps1 在三平台安装固定 Qt 6.8.2，构建真实浏览应用、执行 qmllint 与 6 组 CTest，将并发生命周期套件重复 10 次。macOS/Windows 部署 Qt 后清除开发搜索路径，用原生 cocoa/windows 平台插件执行启动/关闭冒烟检查。上传同提交源代码、许可通知、截图、日志和 build.json；开发包保存 14 天，不作为正式签名发行。离屏截图不证明 GPU、输入法或辅助功能的人工验收已完成。
+
+M2 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。工件命名为 xdzip-m2-平台-架构；它们仍是未公证的开发验收包。
+
+检查直接 main 推送时使用 `/actions/runs?head_sha=...`，核对 push 事件；连接器 `fetch_commit_workflow_runs` 仅筛选 PR 事件，空结果不表示没有自动运行。

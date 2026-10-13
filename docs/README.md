@@ -10,6 +10,7 @@
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
 | 素材修正 | [新品牌与遗漏素材](qa/brand-and-assets.md)、[实际图标与页面预览](qa/brand-and-assets/index.html)、[统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
+| M2 完整只读浏览 | [阶段验收与构建](qa/m2-acceptance.md)、[资源和查询契约](engineering/m2-readonly.md) |
 | 文件类型排序 | [目录优先、无后缀文件与双向排序回归](qa/type-sort.md) |
 | 根目录与文件项交互 | [Qt／HTML 同步整改与验收](qa/root-directory-interactions.md)、[实际图片审阅](qa/root-directory-interactions/index.html) |
 | 操作窗口与任务状态素材 | [正常尺寸、footer 字号与扁平圆盘验收](qa/operation-windows.md) |

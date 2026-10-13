@@ -9,11 +9,13 @@
 #include <QPointer>
 #include <QTime>
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid()
                ? 0
-               : static_cast<int>(m_rows.size()); // bounded by the admitted 10,000-row snapshot
+               : static_cast<int>(m_rows.size()); // bounded by the admitted 100,000-row snapshot
 }
 int ArchiveTableModel::columnCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : 5;
@@ -50,6 +52,7 @@ QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
     m_rows = std::move(rows);
+    ++m_selectionRevision;
     m_selected.clear();
     endResetModel();
 }
@@ -61,6 +64,7 @@ void ArchiveTableModel::select(int row) {
     const auto *item = rowAt(row);
     if (!item)
         return;
+    ++m_selectionRevision;
     if (m_selected.contains(item->id))
         m_selected.remove(item->id);
     else
@@ -76,10 +80,12 @@ void ArchiveTableModel::selectOnly(int row) {
     const auto *item = rowAt(row);
     if (!item)
         return;
+    ++m_selectionRevision;
     m_selected = {item->id};
     emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
 }
 void ArchiveTableModel::selectAll(bool selected) {
+    ++m_selectionRevision;
     m_selected.clear();
     if (selected)
         for (const auto &item : m_rows)
@@ -90,6 +96,7 @@ void ArchiveTableModel::selectAll(bool selected) {
 void ArchiveTableModel::selectRange(int first, int last) {
     if (!rowAt(first) || !rowAt(last))
         return;
+    ++m_selectionRevision;
     m_selected.clear();
     for (int row = std::min(first, last); row <= std::max(first, last); ++row)
         m_selected.insert(m_rows.at(row).id);
@@ -112,6 +119,7 @@ BrowserController::BrowserController(QObject *parent)
     connect(m_connection.get(), &RuntimeConnection::disconnected, this, [this](bool graceful) {
         m_busy = false;
         m_pending = 0;
+        m_deferredQuery.reset();
         m_waiting.reset();
         m_admissionRetry.stop();
         if (!graceful) {
@@ -154,6 +162,8 @@ QString BrowserController::explain(const QString &code) {
         return tr("归档元数据超过本阶段的读取限额。");
     if (code == "unsupported_feature")
         return tr("暂不支持此归档的分卷或 ZIP64 索引。");
+    if (code == "stale_query")
+        return tr("查询结果已过期，请重试");
     if (code == "source_changed")
         return tr("读取期间源文件发生变化，请重新打开。");
     if (code == "source_io")
@@ -221,24 +231,37 @@ void BrowserController::showRowDetail(int row) {
                 {"status", item->status},       {"attention", item->attention},
                 {"directory", item->directory}, {"id", item->id}};
 }
+void BrowserController::updateSelectionSummary() const {
+    if (m_summaryRevision == m_model.selectionRevision())
+        return;
+    m_summaryRevision = m_model.selectionRevision();
+    m_summaryPhysical = true;
+    std::vector<std::uint64_t> sizes;
+    sizes.reserve(static_cast<std::size_t>(m_model.selectedCount()));
+    for (int row = 0; row < m_model.rowCount(); ++row) {
+        if (!m_model.isSelected(row))
+            continue;
+        const auto *item = m_model.rowAt(row);
+        if (!item->physical) {
+            m_summaryPhysical = false;
+            m_summaryBytes = QStringLiteral("—");
+            return;
+        }
+        sizes.push_back(item->cells[1].toULongLong());
+    }
+    const auto sum = xdzip::reader::sum_declared_sizes(
+        rust::Slice<const std::uint64_t>(sizes.data(), sizes.size()));
+    m_summaryBytes = QString::fromUtf8(sum.data(), static_cast<qsizetype>(sum.size()));
+}
 bool BrowserController::canPreflight() const {
     if (m_model.selectedCount() == 0 || m_model.selectedCount() > 128)
         return false;
-    for (int row = 0; row < m_model.rowCount(); ++row)
-        if (m_model.isSelected(row) && !m_model.rowAt(row)->physical)
-            return false;
-    return true;
+    updateSelectionSummary();
+    return m_summaryPhysical;
 }
 QString BrowserController::selectedBytes() const {
-    // Sum only the bounded visible selection; never imply an archive-wide total.
-    quint64 bytes = 0;
-    for (int row = 0; row < m_model.rowCount(); ++row)
-        if (m_model.isSelected(row)) {
-            if (!m_model.rowAt(row)->physical)
-                return QStringLiteral("—");
-            bytes += m_model.rowAt(row)->cells[1].toULongLong();
-        }
-    return QString::number(bytes);
+    updateSelectionSummary();
+    return m_summaryBytes;
 }
 void BrowserController::closeArchive() {
     if (m_busy || !m_ready || !runtimeAvailable())
@@ -345,7 +368,7 @@ void BrowserController::replaceDirectories(const QList<DirectoryRow> &rows) {
     m_directories.setColumnCount(1);
     m_navigationWidth = 160;
     QHash<QString, int> depths;
-    // Rust emits parents before children, at most 2,048 nodes and 64 levels.
+    // Rust emits parents before children, at most 32,768 nodes and 64 levels.
     for (const auto &row : rows) {
         auto *parent = row.parent.isEmpty() ? m_directories.invisibleRootItem()
                                             : m_directoryItems.value(row.parent, nullptr);
@@ -389,7 +412,7 @@ QStringList BrowserController::directoryAncestors(const QString &id) const {
     return ancestors;
 }
 void BrowserController::navigateDirectory(const QString &id) {
-    if (m_busy || !m_ready || m_closing)
+    if (!m_ready || m_closing || m_result.preflight)
         return;
     const auto *item = m_directoryItems.value(id, nullptr);
     if (!item)
@@ -399,21 +422,21 @@ void BrowserController::navigateDirectory(const QString &id) {
     start({}, 0);
 }
 void BrowserController::sortByColumn(int column) {
-    if (m_busy || !m_ready || m_closing || column < -1 || column > 4)
+    if (!m_ready || m_closing || m_result.preflight || column < -1 || column > 4)
         return;
     const int ascending = column < 3 ? column * 2 + 1 : column == 3 ? 9 : 11;
     m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
     start({}, 0);
 }
 void BrowserController::showRoot() {
-    if (m_busy || !m_ready)
+    if (!m_ready || m_closing || m_result.preflight)
         return;
     m_directory.clear();
     m_location.clear();
     start({}, 0);
 }
 void BrowserController::search(const QString &text) {
-    if (m_busy || !m_ready || text.toUtf8().size() > 1024)
+    if (!m_ready || m_closing || m_result.preflight || text.toUtf8().size() > 1024)
         return;
     m_search = text;
     start({}, 0);
@@ -437,6 +460,7 @@ void BrowserController::restoreQuery() {
     m_sort = m_committedQuery.sort;
 }
 void BrowserController::cancel() {
+    m_deferredQuery.reset();
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();
@@ -453,6 +477,7 @@ bool BrowserController::requestClose() {
     if (m_connection->stopped())
         return true;
     m_closing = true;
+    m_deferredQuery.reset();
     m_admissionRetry.stop();
     m_waiting.reset();
     m_preflightReport.clear();
@@ -472,8 +497,34 @@ void BrowserController::start(const QString &path, int offset) {
     command.text = rust::String(m_search.toStdString());
     command.offset = static_cast<std::uint64_t>(offset);
     command.sort = static_cast<std::uint8_t>(m_sort);
+    if (!path.isEmpty())
+        m_generation = 0;
+    if (m_generation == std::numeric_limits<quint64>::max()) {
+        m_message = explain("resource_limit");
+        emit changed();
+        return;
+    }
+    command.generation = ++m_generation;
+    const QueryState criteria{m_directory, m_location, m_search, m_sort};
+    if (m_busy) {
+        m_deferredQuery.emplace(DeferredQuery{std::move(command), criteria});
+        if (m_waiting) {
+            m_admissionRetry.stop();
+            m_waiting.reset();
+            auto latest = std::move(*m_deferredQuery);
+            m_deferredQuery.reset();
+            submit(std::move(latest.command));
+            m_result.criteria = latest.criteria;
+            m_result.generation = m_generation;
+        } else if (m_pending)
+            m_connection->cancel(m_pending);
+        emit changed();
+        return;
+    }
     m_detail.clear();
     submit(std::move(command));
+    m_result.criteria = criteria;
+    m_result.generation = m_generation;
 }
 void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_preflightReport.clear();
@@ -542,18 +593,34 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
     if (event.kind == EventKind::Page) {
-        if (event.archive_total > 10000 || event.total > 10000 || event.offset > event.total ||
-            event.rows.size() > 128 || event.directories.size() > 2048 ||
+        if (m_deferredQuery)
+            return; // superseded generation never adds rows or commits
+        const auto limits = xdzip::reader::metadata_limits();
+        if (event.query == 0 || event.revision == 0 || event.generation != m_result.generation ||
+            (m_result.query &&
+             (event.query != m_result.query || event.revision != m_result.revision ||
+              QString::number(event.session) != m_result.session))) {
+            m_result.error = "stale_query";
+            return;
+        }
+        if (event.archive_total > limits.entries || event.total > limits.entries ||
+            event.offset > event.total || event.rows.size() > limits.rows_per_batch ||
+            event.directories.size() > limits.directories ||
             event.offset + event.rows.size() > event.total ||
             (event.rows.empty() && event.offset < event.total) ||
             event.offset != static_cast<quint64>(m_result.rows.size())) {
             m_result.error = "resource_limit";
             return;
         }
+        if (!m_result.query) {
+            m_result.query = event.query;
+            m_result.revision = event.revision;
+            m_result.rows.reserve(static_cast<qsizetype>(event.total));
+        }
         m_result.replaceDirectories = m_result.replaceDirectories || event.replace_directories;
         m_result.navigationLimited = event.navigation_limited;
         for (const auto &node : event.directories) {
-            if (node.count > 10000) {
+            if (node.count > limits.entries) {
                 m_result.error = "resource_limit";
                 return;
             }
@@ -577,7 +644,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 status << tr("需检查");
             const auto path = text(row.name);
             auto name = path;
-            if (m_search.isEmpty()) {
+            if (m_result.criteria.search.isEmpty()) {
                 while (name.endsWith('/'))
                     name.chop(1);
                 name = name.section('/', -1);
@@ -637,6 +704,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Finished) {
         m_busy = false;
         m_pending = 0;
+        if (m_deferredQuery && text(event.error) != "source_changed") {
+            auto latest = std::move(*m_deferredQuery);
+            m_deferredQuery.reset();
+            submit(std::move(latest.command));
+            m_result.criteria = latest.criteria;
+            m_result.generation = m_generation;
+            return;
+        }
+        m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
         if (!m_hasPayload && m_result.error.isEmpty())
@@ -648,10 +724,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             xdzip::reader::Command command{};
             command.kind = xdzip::reader::CommandKind::Browse;
             command.session = m_result.session.toULongLong();
-            command.directory = rust::String(m_directory.toStdString());
-            command.text = rust::String(m_search.toStdString());
+            command.directory = rust::String(m_result.criteria.directory.toStdString());
+            command.text = rust::String(m_result.criteria.search.toStdString());
+            command.query = m_result.query;
+            command.generation = m_result.generation;
+            command.revision = m_result.revision;
             command.offset = static_cast<std::uint64_t>(m_result.rows.size());
-            command.sort = static_cast<std::uint8_t>(m_sort);
+            command.sort = static_cast<std::uint8_t>(m_result.criteria.sort);
             auto accumulated = std::move(m_result);
             submit(std::move(command));
             m_result = std::move(accumulated);
@@ -681,9 +760,16 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (alive)
                 emit preflightReady();
         } else {
+            if (!m_result.error.isEmpty() && m_ready && !m_result.replaceDirectories &&
+                m_result.error != "source_changed" && m_result.error != "stale_session" &&
+                m_result.error != "runtime_unavailable") {
+                restoreQuery();
+                m_result = {};
+                emit changed();
+                return;
+            }
             m_ready = m_result.error.isEmpty();
-            m_committedQuery =
-                m_ready ? QueryState{m_directory, m_location, m_search, m_sort} : QueryState{};
+            m_committedQuery = m_ready ? m_result.criteria : QueryState{};
             restoreQuery();
             if (m_result.replaceDirectories)
                 m_archiveTotal = m_ready ? m_result.archiveTotal : 0;

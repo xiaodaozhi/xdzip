@@ -5,7 +5,8 @@ use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex, MutexGuard, TryLockError};
 use std::thread::{self, JoinHandle};
 use xdzip_codec_api::Cancellation;
-use xdzip_domain::identity::EntryId;
+use xdzip_domain::identity::{EntryId, QueryGeneration, QueryId, SnapshotRevision};
+use xdzip_domain::query::QueryKey;
 
 /// Maximum accepted normal requests not yet delivered to the receiver as finished.
 pub const MAX_OUTSTANDING: usize = 128;
@@ -26,7 +27,13 @@ pub enum Command {
         text: String,
         /// Offset within the immutable result.
         offset: u64,
-        /// Full-result sort code: 0 physical; pairs 1..8 name/size/packed/method.
+        /// Query ID of an immutable continuation; zero starts a new query.
+        query: u64,
+        /// UI intent generation; zero asks the internal client to allocate one.
+        generation: u64,
+        /// Immutable scan version for a continuation.
+        revision: u64,
+        /// Full-result sort code: 0 physical; pairs 1..12 select name/size/packed/method/type/date.
         sort: u8,
     },
     /// Inspect selected physical records without writing.
@@ -87,6 +94,8 @@ pub enum Payload {
     Page {
         /// Session identity checked before acting.
         session: u64,
+        /// Complete query result identity.
+        key: QueryKey,
         /// Offset within the immutable result.
         offset: u64,
         /// Listing rows matching this query, including implicit navigation directories.
@@ -236,7 +245,13 @@ pub struct Receiver {
 /// Start one product worker and return independently owned command and receive handles.
 pub fn start() -> std::io::Result<(Client, Receiver)> {
     let mut archive = None;
-    spawn(move |command, control| execute(&mut archive, command, control))
+    spawn(move |command, control| {
+        let result = execute(&mut archive, command, control);
+        if matches!(result, Err("source_changed")) {
+            archive = None;
+        }
+        result
+    })
 }
 fn spawn<F>(mut handler: F) -> std::io::Result<(Client, Receiver)>
 where
@@ -486,62 +501,105 @@ fn execute(
         xdzip_codec_api::ScanError::Cancelled => "cancelled",
         xdzip_codec_api::ScanError::SourceChanged => "source_changed",
     };
-    let (session, directory, text, offset, sort, replace_navigation) = match command {
-        Command::Snapshot => {
-            return Ok(Payload::Snapshot(
-                archive.as_ref().map_or(0, |a| a.key().session.get()),
-            ));
-        }
-        Command::Open(path) => {
-            *archive = None;
-            let opened = Archive::open(Path::new(&path), control).map_err(fail)?;
-            let session = opened.key().session.get();
-            *archive = Some(opened);
-            (session, String::new(), String::new(), 0, 0, true)
-        }
-        Command::Browse {
-            session,
-            directory,
-            text,
-            offset,
-            sort,
-        } => (session, directory, text, offset, sort, false),
-        Command::Preflight { session, selected } => {
-            let archive = archive
-                .as_ref()
-                .filter(|a| a.key().session.get() == session)
-                .ok_or("stale_session")?;
-            return archive
-                .preflight(&selected, control)
-                .map(Payload::Preflight)
-                .map_err(fail);
-        }
-        Command::CloseSession(session) => {
-            if archive
-                .as_ref()
-                .is_none_or(|a| a.key().session.get() != session)
-            {
-                return Err("stale_session");
+    let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
+        match command {
+            Command::Snapshot => {
+                return Ok(Payload::Snapshot(
+                    archive.as_ref().map_or(0, |a| a.key().session.get()),
+                ));
             }
-            *archive = None;
-            return Ok(Payload::Snapshot(0));
-        }
-    };
+            Command::Open(path) => {
+                *archive = None;
+                let opened = Archive::open(Path::new(&path), control).map_err(fail)?;
+                let session = opened.key().session.get();
+                *archive = Some(opened);
+                (session, String::new(), String::new(), 0, 0, 0, 1, 0, true)
+            }
+            Command::Browse {
+                session,
+                directory,
+                text,
+                offset,
+                sort,
+                query,
+                generation,
+                revision,
+            } => (
+                session, directory, text, offset, sort, query, generation, revision, false,
+            ),
+            Command::Preflight { session, selected } => {
+                let archive = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return archive
+                    .preflight(&selected, control)
+                    .map(Payload::Preflight)
+                    .map_err(fail);
+            }
+            Command::CloseSession(session) => {
+                if archive
+                    .as_ref()
+                    .is_none_or(|a| a.key().session.get() != session)
+                {
+                    return Err("stale_session");
+                }
+                *archive = None;
+                return Ok(Payload::Snapshot(0));
+            }
+        };
     let archive = archive
-        .as_ref()
+        .as_mut()
         .filter(|a| a.key().session.get() == session)
         .ok_or("stale_session")?;
-    let (total, rows) = archive
-        .listing_sorted(&directory, &text, offset, 128, sort, control)
-        .map_err(fail)?;
+    let archive_total = archive.len() as u64;
+    let navigation = replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec());
+    let navigation_limited = archive.directories().is_none();
+    let generation = if generation == 0 {
+        archive
+            .cached_query
+            .as_ref()
+            .map_or(Some(1), |cache| cache.key.generation.get().checked_add(1))
+            .ok_or("resource_limit")?
+    } else {
+        generation
+    };
+    let expected = if query == 0 {
+        None
+    } else {
+        Some(QueryKey {
+            session: archive.key().session,
+            query: QueryId::try_from(query).map_err(|_| "stale_query")?,
+            generation: QueryGeneration::try_from(generation).map_err(|_| "stale_query")?,
+            revision: SnapshotRevision::try_from(revision).map_err(|_| "stale_query")?,
+        })
+    };
+    let page = archive
+        .query_page(
+            crate::query::QueryRequest {
+                directory: &directory,
+                text: &text,
+                sort,
+                offset,
+                expected,
+                generation,
+            },
+            control,
+        )
+        .map_err(|error| match error {
+            crate::query::QueryError::Scan(error) => fail(error),
+            crate::query::QueryError::Stale => "stale_query",
+        })?;
     Ok(Payload::Page {
         session,
+        key: page.key,
         offset,
-        total: total as u64,
-        archive_total: archive.rows.len() as u64,
-        navigation: replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec()),
-        navigation_limited: archive.directories().is_none(),
-        rows: rows
+        total: page.total as u64,
+        archive_total,
+        navigation,
+        navigation_limited,
+        rows: page
+            .rows
             .into_iter()
             .map(|listing| match listing {
                 crate::listing::ListingRow::Physical(entry) => Row {
@@ -647,6 +705,12 @@ mod tests {
     fn byte_backpressure_does_not_block_control_or_shutdown() {
         let (client, receiver) = spawn(|_, _| {
             Ok(Payload::Page {
+                key: QueryKey {
+                    session: 1.try_into().unwrap(),
+                    query: 1.try_into().unwrap(),
+                    generation: 1.try_into().unwrap(),
+                    revision: 1.try_into().unwrap(),
+                },
                 navigation: None,
                 navigation_limited: false,
                 session: 1,
@@ -777,6 +841,9 @@ mod tests {
             Payload::Finished("")
         ));
         submit(&client, || Command::Browse {
+            query: 0,
+            generation: 0,
+            revision: 0,
             session,
             directory: "d1".into(),
             text: String::new(),
@@ -802,6 +869,9 @@ mod tests {
         ));
         assert_eq!(
             client.submit(Command::Browse {
+                query: 0,
+                generation: 0,
+                revision: 0,
                 session,
                 directory: String::new(),
                 text: String::new(),
@@ -811,6 +881,9 @@ mod tests {
             Err(Rejection::Invalid)
         );
         let stale = submit(&client, || Command::Browse {
+            query: 0,
+            generation: 0,
+            revision: 0,
             sort: 0,
             session: session + 1,
             directory: String::new(),

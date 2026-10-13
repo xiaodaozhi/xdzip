@@ -1,7 +1,10 @@
 //! First read-only session service. Called only on a bounded background worker.
+mod index;
 pub mod listing;
 pub mod navigation;
+pub mod query;
 pub mod service;
+mod source;
 use std::fs::File;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -14,7 +17,10 @@ static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 
 /// Immutable metadata snapshot backed by an owned read-only source handle.
 pub struct Archive {
-    _source: File,
+    source: source::Source,
+    index: index::DirectoryIndex,
+    cached_query: Option<query::QuerySnapshot>,
+    next_query: u64,
     rows: Vec<Entry>,
     key: QueryKey,
     directories: Option<Vec<navigation::Directory>>,
@@ -32,12 +38,12 @@ impl Archive {
         if !before.is_file() {
             return Err(ScanError::Io);
         }
-        let rows = ZipCodec.scan(&mut source, control, ScanLimits::default())?;
+        let version = source::SourceVersion::read(&before)?;
+        let scanned = ZipCodec.scan(&mut source, control, ScanLimits::default());
         control.check()?;
-        let after = source.metadata().map_err(|_| ScanError::Io)?;
-        if before.len() != after.len() || before.modified().ok() != after.modified().ok() {
-            return Err(ScanError::SourceChanged);
-        }
+        let source = source::Source::new(source, path.to_owned(), version);
+        source.validate()?;
+        let rows = scanned?;
         let next = NEXT_SESSION
             .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
             .map_err(|_| ScanError::Limit)?;
@@ -53,9 +59,13 @@ impl Archive {
             Err(error) => return Err(error),
         };
         control.check()?;
+        let index = index::DirectoryIndex::build(&rows, directories.as_deref(), control)?;
         Ok(Self {
             directories,
-            _source: source,
+            source,
+            index,
+            cached_query: None,
+            next_query: 0,
             rows,
             key,
         })
@@ -82,7 +92,10 @@ impl Archive {
         selected: &[xdzip_domain::identity::EntryId],
         control: &Cancellation,
     ) -> Result<xdzip_extract_plan::Report, ScanError> {
-        xdzip_extract_plan::inspect(&self.rows, selected, control)
+        self.source.validate()?;
+        let result = xdzip_extract_plan::inspect(&self.rows, selected, control)?;
+        self.source.validate()?;
+        Ok(result)
     }
     /// Filter an immutable snapshot by an explicit safe directory and literal name text.
     /// Directory scope includes descendants; it never resolves a host filesystem path.
@@ -113,22 +126,10 @@ impl Archive {
         if directory.len() > 4096 || text.len() > 1024 || sort > 12 {
             return Err(ScanError::Limit);
         }
-        let prefix = self.directory_prefix(directory)?;
-        let needle = text.to_lowercase();
-        let mut rows = Vec::new();
-        for entry in &self.rows {
-            control.check()?;
-            if !entry.raw_name.starts_with(prefix)
-                || (!prefix.is_empty() && entry.raw_name == prefix)
-                || (!needle.is_empty() && !entry.display_name.to_lowercase().contains(&needle))
-            {
-                continue;
-            }
-            rows.push(entry);
-        }
+        let mut rows = self.matching_physical(directory, text, control)?;
         let count = rows.len();
         if sort != 0 {
-            // Sorting is bounded by the admitted 10,000 records. Check cancellation on
+            // Sorting is bounded by the admitted 100,000 records. Check cancellation on
             // both sides; changing comparator behavior during cancellation is invalid.
             control.check()?;
             if sort == 9 {
@@ -168,6 +169,27 @@ impl Archive {
                 .collect(),
         ))
     }
+    fn matching_physical(
+        &self,
+        directory: &str,
+        text: &str,
+        control: &Cancellation,
+    ) -> Result<Vec<&Entry>, ScanError> {
+        let prefix = self.directory_prefix(directory)?;
+        let needle = text.to_lowercase();
+        let mut rows = Vec::new();
+        for entry in &self.rows {
+            control.check()?;
+            if entry.raw_name.starts_with(prefix)
+                && (prefix.is_empty() || entry.raw_name != prefix)
+                && (needle.is_empty() || entry.display_name.to_lowercase().contains(&needle))
+            {
+                rows.push(entry);
+            }
+        }
+        Ok(rows)
+    }
+
     fn directory_prefix(&self, directory: &str) -> Result<&[u8], ScanError> {
         let prefix = if directory.is_empty() {
             &[][..]
@@ -175,7 +197,12 @@ impl Archive {
             let id = id.parse::<u64>().map_err(|_| ScanError::Invalid)?;
             self.directories
                 .as_ref()
-                .and_then(|nodes| nodes.iter().find(|node| node.id == id))
+                .and_then(|nodes| {
+                    id.checked_sub(1)
+                        .and_then(|at| usize::try_from(at).ok())
+                        .and_then(|at| nodes.get(at))
+                        .filter(|node| node.id == id)
+                })
                 .ok_or(ScanError::Invalid)?
                 .path
                 .as_bytes()
@@ -183,8 +210,12 @@ impl Archive {
             let id = directory.parse::<u64>().map_err(|_| ScanError::Invalid)?;
             let entry = self
                 .rows
-                .iter()
-                .find(|entry| entry.id.get() == id)
+                .get(
+                    id.checked_sub(1)
+                        .and_then(|at| usize::try_from(at).ok())
+                        .ok_or(ScanError::Invalid)?,
+                )
+                .filter(|entry| entry.id.get() == id)
                 .filter(|entry| entry.directory && !entry.warning && entry.raw_name.ends_with(b"/"))
                 .ok_or(ScanError::Invalid)?;
             entry.raw_name.as_slice()

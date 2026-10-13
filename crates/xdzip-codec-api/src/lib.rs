@@ -25,7 +25,10 @@ impl Cancellation {
     }
 }
 
-/// Bounded development-stage admission, deliberately below the future full index budget.
+/// Physical-record admission shared by codecs, indexes and the native model.
+pub const MAX_ENTRIES: usize = 100_000;
+
+/// Bounded M2 metadata admission; sizes never grant payload decode capability.
 #[derive(Clone, Copy)]
 pub struct ScanLimits {
     /// Maximum physical records, including duplicates and directories.
@@ -34,16 +37,19 @@ pub struct ScanLimits {
     pub name_bytes: usize,
     /// Aggregate raw filename allocation budget.
     pub total_name_bytes: usize,
+    /// Aggregate escaped display-name allocation budget.
+    pub display_name_bytes: usize,
     /// Total input bytes read, including repeated reads and the end-record search.
     pub read_bytes: u64,
 }
 impl Default for ScanLimits {
     fn default() -> Self {
         Self {
-            entries: 10_000,
+            entries: MAX_ENTRIES,
             name_bytes: 4096,
-            total_name_bytes: 4 * 1024 * 1024,
-            read_bytes: 16 * 1024 * 1024,
+            total_name_bytes: 16 * 1024 * 1024,
+            display_name_bytes: 16 * 1024 * 1024,
+            read_bytes: 64 * 1024 * 1024,
         }
     }
 }
@@ -80,7 +86,7 @@ pub enum ScanError {
     Io,
     /// Invalid or inconsistent archive metadata.
     Invalid,
-    /// Archive feature not admitted by this slice (e.g. multi-volume or ZIP64).
+    /// Archive feature not admitted by this slice (e.g. multi-volume).
     Unsupported,
     /// A resource admission limit was reached.
     Limit,

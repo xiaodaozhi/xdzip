@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
+#include <limits>
 #include <memory>
 
 // Transport batches are bounded; Qt commits a complete query of at most 10,000 rows.
@@ -41,6 +42,9 @@ class ArchiveTableModel final : public QAbstractTableModel {
     QStringList selectedIds() const {
         return m_selected.values();
     }
+    quint64 selectionRevision() const {
+        return m_selectionRevision;
+    }
     int selectedCount() const {
         return m_selected.size();
     }
@@ -48,6 +52,7 @@ class ArchiveTableModel final : public QAbstractTableModel {
   private:
     QList<BrowserRow> m_rows;
     QSet<QString> m_selected;
+    quint64 m_selectionRevision = 0;
 };
 
 class BrowserController : public QObject {
@@ -68,6 +73,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString location READ location NOTIFY changed)
     Q_PROPERTY(bool runtimeAvailable READ runtimeAvailable NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool queryAvailable READ queryAvailable NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
@@ -103,6 +109,9 @@ class BrowserController : public QObject {
     Q_INVOKABLE void sortByColumn(int column);
     bool runtimeAvailable() const {
         return !m_closing && !m_faulted && !m_connection->stopped();
+    }
+    bool queryAvailable() const {
+        return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession;
     }
     bool busy() const {
         return m_busy;
@@ -167,6 +176,10 @@ class BrowserController : public QObject {
         QString id, parent, name, path;
         int count = 0;
     };
+    struct QueryState {
+        QString directory, location, search;
+        int sort = 0;
+    };
     struct Result {
         bool preflight = false;
         bool closeSession = false;
@@ -177,17 +190,25 @@ class BrowserController : public QObject {
         bool navigationLimited = false;
         QString error;
         QString session;
+        QueryState criteria;
+        quint64 query = 0, generation = 0, revision = 0;
         int total = 0;
         int archiveTotal = 0;
         int offset = 0;
     };
-    struct QueryState {
-        QString directory, location, search;
-        int sort = 0;
+    struct DeferredQuery {
+        xdzip::reader::Command command;
+        QueryState criteria;
     };
+    std::optional<DeferredQuery> m_deferredQuery;
+    quint64 m_generation = 0;
     QueryState m_committedQuery;
     void restoreQuery();
     void showRowDetail(int row);
+    void updateSelectionSummary() const;
+    mutable quint64 m_summaryRevision = std::numeric_limits<quint64>::max();
+    mutable QString m_summaryBytes;
+    mutable bool m_summaryPhysical = true;
     void start(const QString &path, int offset);
     static QString explain(const QString &code);
     void replaceDirectories(const QList<DirectoryRow> &rows);

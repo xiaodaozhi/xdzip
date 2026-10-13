@@ -1,4 +1,5 @@
 //! Bounded central-directory scanning. No payload decoding, CRC claim or extraction.
+mod admission;
 use std::io::{Read, Seek, SeekFrom};
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ReadSource, ScanError, ScanLimits};
 use xdzip_domain::identity::EntryId;
@@ -61,7 +62,10 @@ impl MetadataCodec for ZipCodec {
         };
         let result = scan(&mut reader, control, limits);
         // Preserve host budget/cancellation errors even if the parser wraps its I/O error.
-        result.map_err(|error| reader.failure.unwrap_or(error))
+        match reader.failure {
+            Some(error) => Err(error),
+            None => result,
+        }
     }
 }
 
@@ -76,39 +80,15 @@ fn scan(
     if archive.entries_hint() > limits.entries as u64 {
         return Err(ScanError::Limit);
     }
-    // Explicitly restrict this initial slice to single-volume, non-ZIP64 archives.
-    // This admission gate uses the parser's validated EOCD location, not a second signature search.
-    use rawzip::ReaderAt;
-    let mut end = [0; 22];
-    archive
-        .get_ref()
-        .read_exact_at(&mut end, archive.eocd_offset())
-        .map_err(|_| ScanError::Invalid)?;
-    if end[4..8] != [0; 4]
-        || end[8..10] != end[10..12]
-        || end[10..12] == [255; 2]
-        || end[12..16] == [255; 4]
-        || end[16..20] == [255; 4]
-    {
-        return Err(ScanError::Unsupported);
-    }
+    // The parser owns ZIP/ZIP64 decoding; this gate admits one physical volume.
+    admission::single_volume(&archive)?;
     let mut iterator = archive.entries(&mut buffer);
     let mut rows = Vec::new();
     let mut name_bytes = 0_usize;
+    let mut display_bytes = 0_usize;
     while let Some(record) = iterator.next_entry().map_err(|_| ScanError::Invalid)? {
         control.check()?;
-        let disk_offset = record
-            .central_directory_offset()
-            .checked_add(34)
-            .ok_or(ScanError::Invalid)?;
-        let mut disk = [0; 2];
-        archive
-            .get_ref()
-            .read_exact_at(&mut disk, disk_offset)
-            .map_err(|_| ScanError::Invalid)?;
-        if disk != [0; 2] {
-            return Err(ScanError::Unsupported);
-        }
+        admission::entry_disk(&archive, &record)?;
         let name = record.file_path().as_bytes();
         name_bytes = name_bytes.checked_add(name.len()).ok_or(ScanError::Limit)?;
         if rows.len() >= limits.entries
@@ -132,6 +112,12 @@ fn scan(
                 })
                 .collect(),
         };
+        display_bytes = display_bytes
+            .checked_add(display.len())
+            .ok_or(ScanError::Limit)?;
+        if display_bytes > limits.display_name_bytes {
+            return Err(ScanError::Limit);
+        }
         // Inspect declared Unix type directly: synthesized modes may combine the
         // default regular type with a trailing-slash directory hint.
         let unix_type = matches!(record.version_made_by().creator_system().as_u8(), 3 | 19)
@@ -207,12 +193,73 @@ fn validated_dos(value: rawzip::time::DosDateTime) -> u32 {
 }
 
 #[cfg(test)]
+#[path = "../../../tests/support/zip64.rs"]
+mod zip64_fixture;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use std::io::Cursor;
     const NORMAL: &[u8] = include_bytes!("../../../tests/fixtures/zip/normal.zip");
     fn scan_bytes(bytes: &[u8], limits: ScanLimits) -> Result<Vec<Entry>, ScanError> {
         ZipCodec.scan(&mut Cursor::new(bytes), &Cancellation::default(), limits)
+    }
+    #[test]
+    fn classic_zip_accepts_the_exact_65535_record_boundary() {
+        let bytes = zip64_fixture::classic(u16::MAX as usize);
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert_eq!(rows.len(), u16::MAX as usize);
+    }
+    #[test]
+    fn zip64_hundred_thousand_records_and_exact_64_bit_sizes() {
+        let bytes = zip64_fixture::archive(xdzip_codec_api::MAX_ENTRIES);
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert_eq!(rows.len(), 100_000);
+        assert_eq!(rows.last().unwrap().id.get(), 100_000);
+        assert_eq!(rows.last().unwrap().display_name, "item-099999.txt");
+        assert!(matches!(
+            scan_bytes(
+                &bytes,
+                ScanLimits {
+                    entries: 99_999,
+                    ..Default::default()
+                }
+            ),
+            Err(ScanError::Limit)
+        ));
+        let bytes = zip64_fixture::declared_sizes((1 << 54) + 7, (1 << 53) + 3, 0);
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert_eq!(
+            (rows[0].size, rows[0].packed_size),
+            ((1 << 54) + 7, (1 << 53) + 3)
+        );
+    }
+    #[test]
+    fn zip64_malformed_and_split_volumes_fail_closed() {
+        let bytes = zip64_fixture::archive(1);
+        let mut split = bytes.clone();
+        let len = split.len();
+        split[len - 26..len - 22].copy_from_slice(&2u32.to_le_bytes());
+        assert!(matches!(
+            scan_bytes(&split, ScanLimits::default()),
+            Err(ScanError::Unsupported)
+        ));
+        let split = zip64_fixture::declared_sizes(1, 1, 1);
+        assert!(matches!(
+            scan_bytes(&split, ScanLimits::default()),
+            Err(ScanError::Unsupported)
+        ));
+        let mut broken = bytes.clone();
+        broken[len - 94] = 43;
+        assert!(scan_bytes(&broken, ScanLimits::default()).is_err());
+        let mut missing = bytes.clone();
+        missing[len - 42..len - 38].fill(0);
+        assert!(scan_bytes(&missing, ScanLimits::default()).is_err());
+        let limited = ScanLimits {
+            display_name_bytes: 1,
+            ..Default::default()
+        };
+        assert!(matches!(scan_bytes(&bytes, limited), Err(ScanError::Limit)));
     }
     #[test]
     fn physical_duplicates_unicode_and_declared_methods_survive() {

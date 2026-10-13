@@ -3,6 +3,8 @@
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QClipboard>
+#include <QElapsedTimer>
+#include <QFile>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
@@ -243,6 +245,106 @@ class BrowserTest : public QObject {
                  QStringList({"item-alpha/", "item-folder.ZIP/", "item-README", "item-LICENSE",
                               "item-duplicate", "item-duplicate", "item-implicit/item-child",
                               "item-image.JPG", "item-image.jpeg", "item-last.ZIP"}));
+        controller->requestClose();
+        QTRY_VERIFY(!controller->runtimeAvailable());
+    }
+    void m2LargeArchiveLatestQueryAndSourceChange() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QElapsedTimer elapsed;
+        elapsed.start();
+        controller->openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 20000);
+        const auto openMilliseconds = elapsed.elapsed();
+        const auto capturePath = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        if (!capturePath.isEmpty()) {
+            QVERIFY(QDir().mkpath(capturePath));
+            QVERIFY(visual_audit::save(window, capturePath, "m2-large-flat"));
+        }
+        QCOMPARE(controller->total(), 100000);
+        QCOMPARE(controller->archiveTotal(), 100000);
+        QCOMPARE(controller->entries()->rowCount(), 100000);
+        QCOMPARE(controller->entries()->data(controller->entries()->index(99999, 0)).toString(),
+                 "item-099999.txt");
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTest::qWait(50);
+        int delegates = 0;
+        const auto countDelegates = [&delegates](auto &&self, QQuickItem *item) -> void {
+            if (item->objectName().startsWith("entry-") && item->objectName().count('-') == 2)
+                ++delegates;
+            for (auto *child : item->childItems())
+                self(self, child);
+        };
+        countDelegates(countDelegates, window->contentItem());
+        QVERIFY(delegates > 0 && delegates < 512);
+        controller->selectAll(true);
+        QCOMPARE(controller->selectedCount(), 100000);
+        QVERIFY(!controller->canPreflight());
+        QCOMPARE(controller->selectedBytes(), "0");
+        elapsed.restart();
+        controller->sortByColumn(0);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
+        const auto sortMilliseconds = elapsed.elapsed();
+        QCOMPARE(controller->total(), 100000);
+        QCOMPARE(controller->selectedCount(), 0);
+        controller->selectAll(true);
+        controller->search("099998");
+        controller->search("099997");
+        controller->search("099999");
+        controller->sortByColumn(0);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QCOMPARE(controller->total(), 1);
+        QCOMPARE(controller->selectedCount(), 0);
+        QCOMPARE(controller->sortOrder(), 2);
+        QCOMPARE(controller->entries()->data(controller->entries()->index(0, 0)).toString(),
+                 "item-099999.txt");
+        if (!capturePath.isEmpty())
+            QVERIFY(visual_audit::save(window, capturePath, "m2-latest-query"));
+        controller->openPath(QStringLiteral(XDZIP_M2_HIERARCHICAL));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 20000);
+        QCOMPARE(controller->total(), 100);
+        QCOMPARE(controller->archiveTotal(), 100000);
+        controller->navigateDirectory("d1");
+        controller->navigateDirectory("d2");
+        controller->showRoot();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QCOMPARE(controller->total(), 100);
+        QCOMPARE(controller->location(), "");
+        controller->navigateDirectory("d100");
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QCOMPARE(controller->total(), 1000);
+        if (!capturePath.isEmpty())
+            QVERIFY(visual_audit::save(window, capturePath, "m2-directory"));
+        QCOMPARE(controller->entries()->data(controller->entries()->index(0, 0)).toString(),
+                 "item-099000.txt");
+        controller->search("099999");
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QCOMPARE(controller->entries()->data(controller->entries()->index(0, 0)).toString(),
+                 "folder-099/item-099999.txt");
+        qInfo().noquote()
+            << QString("M2_QT_METRICS open_ms=%1 rows=100000 delegates=%2 full_sort_ms=%3")
+                   .arg(openMilliseconds)
+                   .arg(delegates)
+                   .arg(sortMilliseconds);
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto path = owned.filePath("source.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/normal.zip"), path));
+        controller->openPath(path);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QFile changed(path);
+        QVERIFY(changed.open(QIODevice::Append));
+        QCOMPARE(changed.write("x"), 1);
+        changed.close();
+        controller->search("notes");
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(!controller->ready());
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        QVERIFY(controller->message().contains(QString::fromUtf8("源文件")));
         controller->requestClose();
         QTRY_VERIFY(!controller->runtimeAvailable());
     }
@@ -776,11 +878,11 @@ class BrowserTest : public QObject {
         for (int column : {3, 4}) {
             auto *header = item(column == 3 ? "sort-column-3" : "sort-column-4");
             click(header);
+            QTRY_COMPARE(controller->sortOrder(), column == 3 ? 9 : 11);
             QTRY_VERIFY(!controller->busy());
-            QCOMPARE(controller->sortOrder(), column == 3 ? 9 : 11);
             click(header);
+            QTRY_COMPARE(controller->sortOrder(), column == 3 ? 10 : 12);
             QTRY_VERIFY(!controller->busy());
-            QCOMPARE(controller->sortOrder(), column == 3 ? 10 : 12);
         }
         for (const auto &[buttonName, menuName] :
              {std::pair{"browserSortMenuButton", "browserSortMenu"},
