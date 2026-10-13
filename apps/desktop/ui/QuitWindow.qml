@@ -9,7 +9,7 @@ OperationWindow {
     signal waitRequested()
     signal cancelAndQuitRequested()
     width: Theme.operationDefaultWidth
-    height: Theme.fontScale > 1.35 ? 540 : 270
+    requestedHeight: Theme.fontScale > 1.35 ? 540 : 270
     title: qsTr("退出 xdzip")
     ColumnLayout {
         anchors.fill: parent; spacing: 0

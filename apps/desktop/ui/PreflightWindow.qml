@@ -9,7 +9,7 @@ OperationWindow {
     title: qsTr("xdzip · 解压预检")
     property var report: ({})
     width: Theme.operationDefaultWidth
-    height: Math.min(620, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(620, Screen.desktopAvailableHeight - 80)
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 24

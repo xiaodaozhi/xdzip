@@ -7,7 +7,7 @@ OperationWindow {
     id: root
     objectName: "taskWindow"
     width: Theme.operationProgressWidth
-    height: Math.min(Theme.operationProgressClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Theme.operationProgressClientHeight, Screen.desktopAvailableHeight - 80)
     property bool sampleData: false
     title: sampleData ? qsTr("解压任务 · 示例数据 — xdzip") : qsTr("解压任务 — xdzip")
     allowMinimize: true

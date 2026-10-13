@@ -4,6 +4,8 @@ Window {
     id: root
     required property Window owner
     property bool allowMinimize: false
+    // Constraints depend on requested geometry, never the constrained height.
+    property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
     transientParent: owner
     modality: Qt.NonModal
     // Keep native decorations on every platform; never draw macOS traffic lights.
@@ -12,11 +14,11 @@ Window {
     color: Theme.surface
     visible: false
     width: Theme.operationDefaultWidth
-    height: Math.min(720, Screen.desktopAvailableHeight - 80)
+    height: requestedHeight
     minimumWidth: width
     maximumWidth: width
-    minimumHeight: height
-    maximumHeight: height
+    minimumHeight: requestedHeight
+    maximumHeight: requestedHeight
 
     function present() {
         // Reopening preserves view state and uses the owner's current display.

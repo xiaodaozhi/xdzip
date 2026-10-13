@@ -6,6 +6,7 @@
 #include <QClipboard>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
@@ -40,6 +41,26 @@ static bool visibleImagesReady(QQuickItem *item) {
         if (!visibleImagesReady(child))
             return false;
     return true;
+}
+
+// Diagnose only owned fixture directories; never emit their absolute paths.
+static bool checkedTarget(BrowserController *controller, const QString &fixturePath) {
+    const bool valid = controller->targetCheck().value("valid").toBool();
+    if (valid)
+        return true;
+    qWarning().noquote() << "Owned target check:"
+                         << controller->targetCheck().value("error").toString();
+#ifdef Q_OS_WIN
+    QProcess acl;
+    const auto quoted = QString(fixturePath).replace("'", "''");
+    acl.start("powershell",
+              {"-NoProfile", "-Command", "(Get-Acl -LiteralPath '" + quoted + "').Sddl"});
+    if (acl.waitForFinished(5000) && acl.exitCode() == 0)
+        qWarning().noquote() << "Owned fixture ACL:" << acl.readAllStandardOutput();
+#else
+    Q_UNUSED(fixturePath)
+#endif
+    return false;
 }
 
 class BrowserTest : public QObject {
@@ -78,7 +99,8 @@ class BrowserTest : public QObject {
         targetField->setProperty("text", target.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkTarget(target.path());
-        QTRY_VERIFY(!controller->busy() && controller->targetCheck().value("valid").toBool());
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(checkedTarget(controller, target.path()));
         auto *start = findVisual(extract->contentItem(), "startExtract");
         QVERIFY(start);
         QTRY_VERIFY(start->isEnabled());
@@ -123,7 +145,8 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(!controller->busy());
         targetField->setProperty("text", target.path());
         controller->checkTarget(target.path());
-        QTRY_VERIFY(!controller->busy() && controller->targetCheck().value("valid").toBool());
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(checkedTarget(controller, target.path()));
         QVERIFY(capture(extract, "extract-options"));
         controller->startExtraction(target.path(), true, false, 0, false, false);
         QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 1 &&
@@ -181,7 +204,8 @@ class BrowserTest : public QObject {
             QTRY_VERIFY(controller.ready() && !controller.busy());
             controller.prepareExtraction(true);
             controller.checkTarget(target.path());
-            QTRY_VERIFY(!controller.busy() && controller.targetCheck().value("valid").toBool());
+            QTRY_VERIFY(!controller.busy());
+            QVERIFY(checkedTarget(&controller, target.path()));
             controller.startExtraction(target.path(), true, false, policy, false, false);
         };
         start("crc_bad.zip", 3);

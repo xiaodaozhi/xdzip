@@ -11,7 +11,7 @@ OperationWindow {
     property var targetState: controller.targetCheck
     property bool allFiles: true
     width: Theme.operationExtractWidth
-    height: Math.min(Theme.operationExtractClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Theme.operationExtractClientHeight, Screen.desktopAvailableHeight - 80)
     title: qsTr("解压文件 — xdzip")
     function configure() {
         allFiles = Boolean(intent.all);

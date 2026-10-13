@@ -10,7 +10,7 @@ OperationWindow {
     required property var sizeFormatter
     signal decision(int policy, bool all)
     width: Theme.operationDefaultWidth
-    height: Math.min(583, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(583, Screen.desktopAvailableHeight - 80)
     title: qsTr("文件已存在 — xdzip")
     ColumnLayout {
         anchors.fill: parent; spacing: 0
