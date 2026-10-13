@@ -596,6 +596,9 @@ ApplicationWindow {
                             required property var continuationFlags
                             required property bool lastSibling
                             required property int nodeDepth
+                            property bool inReusePool: false
+                            TableView.onPooled: inReusePool = true
+                            TableView.onReused: inReusePool = false
                             readonly property bool hiddenCurrentBranch: reader.directoryId !== nodeId && !expanded && reader.directoryAncestors(reader.directoryId).includes(nodeId)
                             objectName: "directory-" + nodeId
                             implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))

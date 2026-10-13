@@ -15,6 +15,8 @@
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
+    if (item->property("inReusePool").toBool())
+        return nullptr;
     if (item->objectName() == name)
         return item;
     for (auto *child : item->childItems()) {
@@ -352,6 +354,7 @@ class BrowserTest : public QObject {
             disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
                 .toPoint());
         QTRY_VERIFY(!marker->isVisible());
+        QTRY_COMPARE(treeView->property("rows").toInt(), 4);
         // Collapse/reopen reuses delegates. Assert the rendered hierarchy, not merely
         // the expansion flag, before capturing or allowing a later frame to hide drift.
         for (int cycle = 0; cycle < 8; ++cycle) {
@@ -376,11 +379,13 @@ class BrowserTest : public QObject {
                     return true;
                 };
                 QVERIFY(clickParent());
+                QTRY_COMPARE(treeView->property("rows").toInt(), 3);
                 QTRY_VERIFY([&] {
                     auto *collapsed = findVisual(window->contentItem(), "directory-d2");
                     return !collapsed || !collapsed->isVisible();
                 }());
                 QVERIFY(clickParent());
+                QTRY_COMPARE(treeView->property("rows").toInt(), 4);
             }
         }
         if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT")) {

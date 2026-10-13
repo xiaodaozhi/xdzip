@@ -49,6 +49,8 @@ python scripts/export-qt-fidelity.py
 
 macOS ARM64 的后续复测捕获一次折叠／展开后的 0 像素子目录缩进，16 像素门槛保持不变。目录缩进和连接线改为绑定完整模型中稳定的 `nodeDepth`，避免复用行的瞬时 `depth` 决定几何。回归每次重新定位当前节点，等待折叠节点退出可见树，再以真实点击展开；连续八次直接检查父子图标位置，避免测试误用复用前的控件指针。采集同时记录模型深度和 TreeView 深度；CI 失败时也保留已有证据。
 
+采集器额外排除 `TableView.onPooled` 标记的非显示条目；Qt 的复用池可以裁掉条目而不改变 `QQuickItem::isVisible()`，不能只凭该属性把旧坐标算成当前 UI。展开／折叠还验证实际可见模型行数为 4／3，防止把池中残留对象误判成可见子目录。几何门槛没有放宽。
+
 CI 在 Linux、Windows、macOS ARM64 上运行同一截图采集与独立 gate，并继续执行十次生命周期复测、macOS/Windows 部署后原生启动检查。原始场景 JSON 保留在每次 CI artifact 的 `visual-audit/`，仓库保存审阅截图、摘要和哈希。
 
 ```sh

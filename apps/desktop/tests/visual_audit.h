@@ -19,6 +19,10 @@
 // screenshots are untouched grabWindow output and may have a different physical DPR.
 namespace visual_audit {
 inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "0") {
+    // TableView can cull pooled delegates without changing QQuickItem::isVisible().
+    // They are not painted, so their old model identities cannot be measured as UI.
+    if (item->property("inReusePool").toBool())
+        return;
     const auto position = item->mapToScene(QPointF());
     QJsonObject node{{"path", path},
                      {"class", item->metaObject()->className()},
