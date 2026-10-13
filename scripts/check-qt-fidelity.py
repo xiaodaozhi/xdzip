@@ -82,6 +82,8 @@ def audit(directory):
         record('paneTitles.centerY', center(left_title), center(right_title), .5)
         record('paneTitles.baseline', left_title['y'] + left_title['baselineOffset'],
                right_title['y'] + right_title['baselineOffset'], .5)
+        breadcrumb = within(left, lambda n: n['class'].startswith('QQuickText') and n.get('text') == '北境旅行.zip')
+        record('breadcrumb.archiveNameFits', breadcrumb['width'] + .01 >= breadcrumb['implicitWidth'], True)
         preview = named('previewContent')
         record('preview.top', preview['y'], named('fileTableHeader')['y'], .01)
         record('preview.height', preview['height'], geometry['previewHeight'])

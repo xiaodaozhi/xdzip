@@ -33,7 +33,8 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
                      {"height", item->height()},
                      {"visible", item->isVisible()},
                      {"clip", item->clip()},
-                     {"baselineOffset", item->baselineOffset()}};
+                     {"baselineOffset", item->baselineOffset()},
+                     {"implicitWidth", item->implicitWidth()}};
     for (const auto *key :
          {"text", "color", "source", "radius", "horizontalAlignment", "verticalAlignment",
           "contentWidth", "contentHeight", "opacity", "leftPadding", "rightPadding", "nodeDepth",

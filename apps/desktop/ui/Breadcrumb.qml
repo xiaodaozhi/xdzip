@@ -26,7 +26,7 @@ RowLayout {
             required property var modelData
             required property int index
             Layout.fillWidth: modelData.current
-            Layout.preferredWidth: Math.min(240 * Theme.fontScale, button.implicitWidth + (index > 0 ? 18 : 0))
+            Layout.preferredWidth: Math.min(240 * Theme.fontScale, Math.ceil(button.implicitWidth) + (index > 0 ? 18 : 0))
             Layout.maximumWidth: modelData.current ? 500 : modelData.more ? 32 : 240 * Theme.fontScale
             spacing: 8
             Text {
@@ -38,7 +38,8 @@ RowLayout {
             ToolButton {
                 id: button
                 Layout.fillWidth: true
-                implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
+                // Layout rounding must not elide an otherwise fitting archive name on Cocoa.
+                implicitWidth: Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding
                 Layout.fillHeight: true
                 padding: 2
                 enabled: root.available && !segment.modelData.current
