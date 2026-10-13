@@ -542,7 +542,8 @@ void BrowserController::checkTarget(const QString &path) {
         m_extractionIntent.value("session") != m_session)
         return;
     if (QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
-        m_targetCheck = {{"valid", false}, {"error", explain("invalid_path")}};
+        m_targetCheck = {
+            {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
         emit extractionChanged();
         return;
     }
@@ -991,6 +992,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (m_result.targetCheck)
                 m_targetCheck = {{"path", m_checkedTarget},
                                  {"valid", m_result.error.isEmpty()},
+                                 {"errorCode", m_result.error},
                                  {"error", m_message},
                                  {"leftovers", QString::number(m_result.leftovers)}};
             else

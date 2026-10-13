@@ -3,6 +3,7 @@ use crate::Archive;
 mod tasks;
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard, TryLockError};
 use std::thread::{self, JoinHandle};
 use xdzip_codec_api::Cancellation;
@@ -250,6 +251,7 @@ impl Default for State {
 struct Shared {
     state: Mutex<State>,
     changed: Condvar,
+    admission_closed: AtomicBool,
 }
 impl Shared {
     fn lock(&self) -> MutexGuard<'_, State> {
@@ -269,6 +271,9 @@ impl Shared {
                 id
             }
         };
+        // A closed service must not appear transiently busy while workers finish.
+        // Publish closure while holding the same lock as the authoritative state.
+        self.admission_closed.store(true, Ordering::Release);
         for control in state.outstanding.values() {
             control.cancel();
         }
@@ -316,6 +321,7 @@ where
     let shared = Arc::new(Shared {
         state: Mutex::new(State::default()),
         changed: Condvar::new(),
+        admission_closed: AtomicBool::new(false),
     });
     let task_shared = Arc::clone(&shared);
     let task_worker = thread::Builder::new()
@@ -430,9 +436,18 @@ impl Client {
             return Err(Rejection::Invalid);
         }
         let bytes = command.bytes();
+        if self.0.admission_closed.load(Ordering::Acquire) {
+            return Err(Rejection::Closed);
+        }
         let mut state = match self.0.state.try_lock() {
             Ok(state) => state,
-            Err(TryLockError::WouldBlock) => return Err(Rejection::Busy),
+            Err(TryLockError::WouldBlock) => {
+                return Err(if self.0.admission_closed.load(Ordering::Acquire) {
+                    Rejection::Closed
+                } else {
+                    Rejection::Busy
+                });
+            }
             Err(TryLockError::Poisoned(_)) => panic!("runtime mutex poisoned"),
         };
         if state.shutdown.is_some() || !state.receiver_alive {
@@ -785,6 +800,9 @@ mod tests {
         let shutdown = client.shutdown();
         assert_eq!(client.shutdown(), shutdown);
         assert_eq!(client.submit(Command::Snapshot), Err(Rejection::Closed));
+        let held = client.0.lock();
+        assert_eq!(client.submit(Command::Snapshot), Err(Rejection::Closed));
+        drop(held);
         release.send(()).unwrap();
         let events = drain(receiver);
         for id in ids.into_iter().chain([cancel]) {

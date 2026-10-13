@@ -37,6 +37,7 @@ $env:PATH = "$qtBin$([IO.Path]::PathSeparator)$env:PATH"
 if ($IsLinux) { $env:LD_LIBRARY_PATH = Join-Path $qtPrefix 'lib' }
 $env:QT_QPA_PLATFORM = 'offscreen'
 $env:QT_QUICK_BACKEND = 'software'
+$env:XDZIP_CI_POWERSHELL = (Get-Process -Id $PID).Path
 Invoke-Checked rustup @('toolchain', 'install', '1.99.0', '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy')
 Invoke-Checked rustc @('-vV')
 $cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', "-DCMAKE_PREFIX_PATH=$qtPrefix")

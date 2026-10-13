@@ -49,14 +49,16 @@ static bool checkedTarget(BrowserController *controller, const QString &fixtureP
     if (valid)
         return true;
     qWarning().noquote() << "Owned target check:"
-                         << controller->targetCheck().value("error").toString();
+                         << controller->targetCheck().value("errorCode").toString();
 #ifdef Q_OS_WIN
     QProcess acl;
     const auto quoted = QString(fixturePath).replace("'", "''");
-    acl.start("powershell",
-              {"-NoProfile", "-Command", "(Get-Acl -LiteralPath '" + quoted + "').Sddl"});
+    const auto shell = qEnvironmentVariable("XDZIP_CI_POWERSHELL", "powershell.exe");
+    acl.start(shell, {"-NoProfile", "-Command", "(Get-Acl -LiteralPath '" + quoted + "').Sddl"});
     if (acl.waitForFinished(5000) && acl.exitCode() == 0)
         qWarning().noquote() << "Owned fixture ACL:" << acl.readAllStandardOutput();
+    else
+        qWarning() << "Owned fixture ACL probe:" << acl.error() << acl.exitCode();
 #else
     Q_UNUSED(fixturePath)
 #endif

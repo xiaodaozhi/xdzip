@@ -290,6 +290,7 @@ mod tests {
         let shared = Shared {
             state: Mutex::new(State::default()),
             changed: Condvar::new(),
+            admission_closed: AtomicBool::new(false),
         };
         let input =
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/stored.zip");
