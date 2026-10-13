@@ -242,6 +242,7 @@ with sync_playwright() as p:
         expect(page.locator('#task-count')).to_contain_text('已结束', timeout=9000)
         expect(page.locator('#modal')).not_to_be_visible()
         page.locator('#tasks').click()
+        page.locator('[data-command=task-details]').click()
         expect(page.locator('.result-hero h2')).to_contain_text('完成')
         page.locator('.os-close').click()
         record('Closing task details preserves the task; background completion does not steal focus; results reopen')

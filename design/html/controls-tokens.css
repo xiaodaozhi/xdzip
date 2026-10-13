@@ -3,6 +3,12 @@
   --ui-source-factor: 1.51171875;
   --main-density: 0.8;
   --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));
+  --operation-source-factor: 1.209375;
+  --operation-extract-density: 0.8;
+  --operation-progress-density: 0.8;
+  --operation-footer-font-size: calc(15px * var(--ui-source-factor));
+  --operation-footer-note-size: calc(13px * var(--ui-source-factor));
+  --operation-footer-icon-size: calc(16px * var(--ui-source-factor));
   --ui-menu-width: calc(240px * var(--ui-source-factor));
   --ui-menu-min-width: calc(208px * var(--ui-source-factor));
   --ui-menu-row-height: calc(32px * var(--ui-source-factor));

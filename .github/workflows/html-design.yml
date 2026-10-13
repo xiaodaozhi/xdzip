@@ -81,6 +81,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-references.py
           .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-density.py
+          .venv-design/bin/python scripts/check-html-operation-ui.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
       - name: Compare body anchors and build offline regional review
@@ -113,6 +114,8 @@ jobs:
             docs/qa/directory-tree/
             docs/ux/directory-tree.md
             docs/visual/directory-tree.json
+            dist/html-operation-review/
+            dist/flat-status-validation.json
             dist/html-preview-review/
             dist/html-reference-review/
             dist/html-design-review/

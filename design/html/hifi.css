@@ -552,7 +552,7 @@ dialog { width:740px; max-height:940px; border:1px solid var(--border); border-r
 .result-counts b { font-size:26px; }
 .progress-head strong { font-size:36px; }
 .progress-track { height:12px; }
-.progress-current { font-size:17px; }
+.progress-current { font-size:calc(17px * var(--operation-progress-density)); }
 .settings-row { font-size:19px; min-height:70px; }
 .settings-theme { border:0; padding:0; margin:0 0 22px; min-width:0; }
 .settings-theme legend { font-size:19px; font-weight:500; padding:0; margin-bottom:14px; }
@@ -606,68 +606,78 @@ body[data-standalone="true"] dialog { position:relative; inset:auto; margin:24px
 #spec { position:fixed; bottom:30px; left:340px; width:800px; z-index:150; }
 /* Extraction plan: original card hierarchy, full-size independent artboard. */
 dialog { max-height:calc(100vh - 48px); overflow:auto; }
-dialog[data-kind="extract"] { width:928px; }
-dialog[data-kind="extract"] .modal-header { padding:32px 36px 24px; gap:30px; }
-dialog[data-kind="extract"] .modal-symbol { width:106px; height:122px; }
-dialog[data-kind="extract"] .modal-symbol svg { width:100px; height:120px; }
-dialog[data-kind="extract"] .modal-header h1 { font-size:38px; }
-dialog[data-kind="extract"] .modal-header p { font-size:24px; }
-dialog[data-kind="extract"] .field-group { padding:22px 24px; border:1px solid var(--border); border-radius:12px; background:linear-gradient(var(--canvas),var(--surface)); margin:0 0 16px; }
-dialog[data-kind="extract"] .field-label { font-size:24px; font-weight:600; }
-dialog[data-kind="extract"] .text-input,dialog[data-kind="extract"] .field-select { font-size:24px; height:62px; background:var(--surface); }
-dialog[data-kind="extract"] .check-label { font-size:24px; }
-dialog[data-kind="extract"] .field-note { font-size:21px; }
+dialog[data-kind="extract"] { width:calc(928px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-header { padding:calc(32px * var(--operation-extract-density)) calc(36px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); gap:calc(30px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-symbol { width:calc(106px * var(--operation-extract-density)); height:calc(122px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-symbol svg { width:calc(100px * var(--operation-extract-density)); height:calc(120px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-header h1 { font-size:calc(38px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-header p { font-size:calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .field-group { padding:calc(22px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); border:calc(1px * var(--operation-extract-density)) solid var(--border); border-radius:calc(12px * var(--operation-extract-density)); background:linear-gradient(var(--canvas),var(--surface)); margin:0 0 calc(16px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .field-label { font-size:calc(24px * var(--operation-extract-density)); font-weight:600; }
+dialog[data-kind="extract"] .text-input,dialog[data-kind="extract"] .field-select { font-size:calc(24px * var(--operation-extract-density)); height:calc(62px * var(--operation-extract-density)); background:var(--surface); }
+dialog[data-kind="extract"] .check-label { font-size:calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .field-note { font-size:calc(21px * var(--operation-extract-density)); }
 #target-preview { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
 dialog[data-kind="extract"] .scope-box { padding:0; border:0; background:transparent; }
-dialog[data-kind="extract"] .radio-row { padding:12px 0; font-size:24px; background:none; }
-dialog[data-kind="extract"] .radio-row small { font-size:22px; }
-dialog[data-kind="extract"] .scope-files { margin:0 0 10px 48px; padding:0; border:1px solid var(--border); border-radius:9px; font-size:24px; }
-.scope-file { display:flex; align-items:center; gap:18px; height:68px; padding:8px 16px; border-bottom:1px solid var(--border); }
+dialog[data-kind="extract"] .radio-row { padding:calc(12px * var(--operation-extract-density)) 0; font-size:calc(24px * var(--operation-extract-density)); background:none; }
+dialog[data-kind="extract"] .radio-row small { font-size:calc(22px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .scope-files { margin:0 0 calc(10px * var(--operation-extract-density)) calc(48px * var(--operation-extract-density)); padding:0; border:calc(1px * var(--operation-extract-density)) solid var(--border); border-radius:calc(9px * var(--operation-extract-density)); font-size:calc(24px * var(--operation-extract-density)); }
+.scope-file { display:flex; align-items:center; gap:calc(18px * var(--operation-extract-density)); height:calc(68px * var(--operation-extract-density)); padding:calc(8px * var(--operation-extract-density)) calc(16px * var(--operation-extract-density)); border-bottom:calc(1px * var(--operation-extract-density)) solid var(--border); }
 .scope-file:last-child { border:0; }
-.scope-file>img,.scope-file>svg { width:46px; height:46px; border-radius:5px; }
-.scope-file>span:last-child { margin-left:auto; color:var(--secondary); font-size:22px; }
-dialog[data-kind="extract"] input[type="checkbox"],dialog[data-kind="extract"] input[type="radio"] { width:30px; height:30px; }
-dialog[data-kind="extract"] .button { min-height:60px; font-size:24px; }
-dialog[data-kind="extract"] .modal-footer { padding:20px 36px; min-height:100px; }
-dialog[data-kind="extract"] .modal-footer .button { min-width:145px; }
-dialog[data-kind="extract"] .ready-label { font-size:22px; }
+.scope-file>img,.scope-file>svg { width:calc(46px * var(--operation-extract-density)); height:calc(46px * var(--operation-extract-density)); border-radius:calc(5px * var(--operation-extract-density)); }
+.scope-file>span:last-child { margin-left:auto; color:var(--secondary); font-size:calc(22px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] input[type="checkbox"],dialog[data-kind="extract"] input[type="radio"] { width:calc(30px * var(--operation-extract-density)); height:calc(30px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .button { min-height:calc(60px * var(--operation-extract-density)); font-size:calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-footer { padding:calc(20px * var(--operation-extract-density)) calc(36px * var(--operation-extract-density)); min-height:calc(100px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .modal-footer .button { min-width:calc(145px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .ready-label { font-size:calc(22px * var(--operation-extract-density)); }
 body[data-standalone="true"] dialog { margin:60px auto; }
 /* Progress card and both info rows share one icon/text alignment contract. */
-dialog[data-kind="progress"] { width:1278px; }
-dialog[data-kind="progress"] .modal-header { padding:30px 38px 26px; }
-dialog[data-kind="progress"] .modal-symbol { width:114px; height:108px; }
-dialog[data-kind="progress"] .modal-symbol svg { width:100px; height:112px; }
-dialog[data-kind="progress"] .modal-header h1 { font-size:38px; }
-dialog[data-kind="progress"] .modal-header p { font-size:26px; }
-dialog[data-kind="progress"] .modal-content { padding:0 38px 14px; }
-.path-card,.progress-card { border:1px solid var(--border); border-radius:12px; background:var(--canvas); padding:18px 24px; margin-bottom:18px; }
-.path-card h2 { font-size:24px; font-weight:600; margin:0 0 14px; }
-.path-card>div { display:flex; gap:18px; align-items:center; border:1px solid var(--border); background:var(--surface); border-radius:9px; padding:14px 18px; font-size:27px; min-height:70px; }
-.path-card svg { width:48px; height:48px; }
-.progress-card { padding:28px; }
-.progress-line { display:flex; align-items:center; gap:26px; }
-.progress-line .progress-track { flex:1; height:30px; border-radius:20px; margin:0; }
-.progress-line .progress-track i { border-radius:20px; background:linear-gradient(90deg,#2687ff,#0853ff); }
-#progress-value { font-size:38px; color:var(--accent); }
-.progress-current { font-size:24px; margin-top:20px; }
-.task-metrics { display:flex; margin-top:26px; padding-top:22px; border-top:1px solid var(--border); }
-.task-metrics>div { flex:1; padding-left:36px; border-left:1px solid var(--border); }
+dialog[data-kind="progress"] { width:calc(1278px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-header { padding:calc(30px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)) calc(26px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-symbol { width:calc(114px * var(--operation-progress-density)); height:calc(108px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-symbol svg { width:calc(100px * var(--operation-progress-density)); height:calc(112px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-header h1 { font-size:calc(38px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-header p { font-size:calc(26px * var(--operation-progress-density)); }
+dialog[data-kind="progress"] .modal-content { padding:0 calc(38px * var(--operation-progress-density)) calc(14px * var(--operation-progress-density)); }
+.path-card,.progress-card { border:calc(1px * var(--operation-progress-density)) solid var(--border); border-radius:calc(12px * var(--operation-progress-density)); background:var(--canvas); padding:calc(18px * var(--operation-progress-density)) calc(24px * var(--operation-progress-density)); margin-bottom:calc(18px * var(--operation-progress-density)); }
+.path-card h2 { font-size:calc(24px * var(--operation-progress-density)); font-weight:600; margin:0 0 calc(14px * var(--operation-progress-density)); }
+.path-card>div { display:flex; gap:calc(18px * var(--operation-progress-density)); align-items:center; border:calc(1px * var(--operation-progress-density)) solid var(--border); background:var(--surface); border-radius:calc(9px * var(--operation-progress-density)); padding:calc(14px * var(--operation-progress-density)) calc(18px * var(--operation-progress-density)); font-size:calc(27px * var(--operation-progress-density)); min-height:calc(70px * var(--operation-progress-density)); }
+.path-card svg { width:calc(48px * var(--operation-progress-density)); height:calc(48px * var(--operation-progress-density)); }
+.progress-card { padding:calc(28px * var(--operation-progress-density)); }
+.progress-line { display:flex; align-items:center; gap:calc(26px * var(--operation-progress-density)); }
+.progress-line .progress-track { flex:1; height:calc(30px * var(--operation-progress-density)); border-radius:calc(20px * var(--operation-progress-density)); margin:0; }
+.progress-line .progress-track i { border-radius:calc(20px * var(--operation-progress-density)); background:linear-gradient(90deg,#2687ff,#0853ff); }
+#progress-value { font-size:calc(38px * var(--operation-progress-density)); color:var(--accent); }
+.progress-current { font-size:calc(24px * var(--operation-progress-density)); margin-top:calc(20px * var(--operation-progress-density)); }
+.task-metrics { display:flex; margin-top:calc(26px * var(--operation-progress-density)); padding-top:calc(22px * var(--operation-progress-density)); border-top:calc(1px * var(--operation-progress-density)) solid var(--border); }
+.task-metrics>div { flex:1; padding-left:calc(36px * var(--operation-progress-density)); border-left:calc(1px * var(--operation-progress-density)) solid var(--border); }
 .task-metrics>div:first-child { padding-left:0; border:0; }
-.task-metrics span { display:block; font-size:23px; color:var(--secondary); }
-.task-metrics strong { display:block; font-size:28px; margin-top:8px; }
-.info-line { display:flex; align-items:center; gap:18px; margin:0; font-size:23px; color:var(--secondary); }
-.info-line svg { width:30px; height:30px; flex-shrink:0; }
-dialog[data-kind="progress"] .modal-footer { padding:18px 38px; min-height:94px; }
+.task-metrics span { display:block; font-size:calc(23px * var(--operation-progress-density)); color:var(--secondary); }
+.task-metrics strong { display:block; font-size:calc(28px * var(--operation-progress-density)); margin-top:calc(8px * var(--operation-progress-density)); }
+.info-line { display:flex; align-items:center; gap:calc(18px * var(--operation-progress-density)); margin:0; font-size:calc(23px * var(--operation-progress-density)); color:var(--secondary); }
+.info-line svg { width:calc(30px * var(--operation-progress-density)); height:calc(30px * var(--operation-progress-density)); flex-shrink:0; }
+dialog[data-kind="progress"] .modal-footer { padding:calc(18px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)); min-height:calc(94px * var(--operation-progress-density)); }
 dialog[data-kind="progress"] .modal-footer .info-line { margin-right:auto; }
-dialog[data-kind="progress"] .modal-footer button { font-size:23px; min-width:180px; height:58px; }
+dialog[data-kind="progress"] .modal-footer button { font-size:calc(23px * var(--operation-progress-density)); min-width:calc(180px * var(--operation-progress-density)); height:calc(58px * var(--operation-progress-density)); }
 body[data-standalone="true"] dialog { position:fixed; left:50%; top:60px; right:auto; bottom:auto; margin:0; transform:translateX(-50%); max-height:calc(100vh - 100px); }
 dialog[data-kind="extract"] .scope-files { max-height:none; overflow:visible; }
-.path-card h2 { line-height:30px; margin-bottom:12px; }
-.path-card>div { padding:10px 18px; min-height:66px; }
-.path-card svg { width:44px; height:44px; }
+.path-card h2 { line-height:calc(30px * var(--operation-progress-density)); margin-bottom:calc(12px * var(--operation-progress-density)); }
+.path-card>div { padding:calc(10px * var(--operation-progress-density)) calc(18px * var(--operation-progress-density)); min-height:calc(66px * var(--operation-progress-density)); }
+.path-card svg { width:calc(44px * var(--operation-progress-density)); height:calc(44px * var(--operation-progress-density)); }
 #progress-value { line-height:1.2; }
-.progress-current { line-height:32px; margin-top:16px; }
-.task-metrics { margin-top:22px; padding-top:18px; }
-.task-metrics span { line-height:30px; }
-.task-metrics strong { line-height:36px; margin-top:8px; }
-.info-line { line-height:32px; }
+.progress-current { line-height:calc(32px * var(--operation-progress-density)); margin-top:calc(16px * var(--operation-progress-density)); }
+.task-metrics { margin-top:calc(22px * var(--operation-progress-density)); padding-top:calc(18px * var(--operation-progress-density)); }
+.task-metrics span { line-height:calc(30px * var(--operation-progress-density)); }
+.task-metrics strong { line-height:calc(36px * var(--operation-progress-density)); margin-top:calc(8px * var(--operation-progress-density)); }
+.info-line { line-height:calc(32px * var(--operation-progress-density)); }
+/* Footer text uses logical sizes at either main or independent review density.
+   Explicit selectors replace the old 10/12 px footer overrides. */
+:root:has(body[data-standalone="true"]) { --ui-source-factor:var(--operation-source-factor); }
+dialog[data-kind] .modal-footer { font-size:var(--operation-footer-font-size); }
+dialog[data-kind] .modal-footer .button { font-size:var(--operation-footer-font-size); }
+dialog[data-kind] .modal-footer .ready-label,
+dialog[data-kind] .modal-footer .info-line { font-size:var(--operation-footer-note-size); line-height:1.5; }
+dialog[data-kind] .modal-footer svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); flex-shrink:0; }
+/* Both progress hints share the same icon slot and text edge. */
+dialog[data-kind="progress"] .info-line svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); }

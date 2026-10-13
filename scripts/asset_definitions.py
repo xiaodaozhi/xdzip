@@ -128,19 +128,13 @@ def hero_shapes():
     }
 
 
-def status_disc(name, highlight, body, shade, mark, radius=10):
-    """A transparent result medallion with source-like light and a fine rim."""
-    return (
-        f'<defs><radialGradient id="{name}-disc" cx=".27" cy=".2" r=".86">'
-        f'<stop stop-color="{highlight}"/><stop offset=".48" stop-color="{body}"/>'
-        f'<stop offset="1" stop-color="{shade}"/></radialGradient></defs>'
-        f'<circle cx="12" cy="12" r="{radius}" fill="url(#{name}-disc)" stroke="none"/>'
-        f'<circle cx="12" cy="12" r="{radius - .27:.2f}" fill="none" '
-        f'stroke="{shade}" stroke-opacity=".48" stroke-width=".38"/>'
-        '<path d="M5.8 6.35a8.45 8.45 0 0 1 10.8-1.5" '
-        'stroke="white" stroke-opacity=".17" stroke-width=".28"/>'
-        + mark
-    )
+FLAT_STATUS_ICONS = frozenset({'status-success', 'status-partial-success', 'status-warning',
+                               'status-skipped', 'status-stopped', 'cancelled-large', 'success'})
+
+
+def status_disc(fill, mark, radius=10):
+    """A solid, flat semantic disc; no rim, lighting, shading or shadow."""
+    return f'<circle cx="12" cy="12" r="{radius}" fill="{fill}" stroke="none"/>' + mark
 
 
 def warning_mark():
@@ -257,12 +251,12 @@ def supplemental_shapes(theme):
         'existing-archive': existing_archive,
         'windows-document': platform_document('windows-document', False),
         'linux-document': platform_document('linux-document', True),
-        'cancelled-large': status_disc('cancelled-large', '#a8b2c3', '#7c899e', '#637189',
-                                      '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="#ffffff" stroke="none"/>', radius=10.2),
+        'cancelled-large': status_disc('#7c899e' if theme == 'light' else '#93a6c2',
+                                      '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="#ffffff" stroke="none"/>'),
         'check-selected': gradient('check-selected-box', '#2b7aff', '#1751ff')
                           + '<rect x="2.5" y="2.5" width="19" height="19" rx="2.5" fill="url(#check-selected-box)" stroke="none"/>'
                           + '<path d="m6.8 12.2 3.35 3.35 7.1-7.55" stroke="white" stroke-width="1.85"/>',
-        'success': status_disc('success', '#56ae63', '#329345', '#247737',
+        'success': status_disc('#329345',
                                '<path d="m7.85 12 2.7 2.7 5.6-5.6" stroke="white" stroke-width="1.7"/>'),
         'radio-selected': '<circle cx="12" cy="12" r="9.2" stroke="#1d63ff" stroke-width="1.45"/>'
                           '<circle cx="12" cy="12" r="5.4" fill="#1d63ff" stroke="none"/>',
@@ -291,17 +285,17 @@ SUPPLEMENTAL_ROLES = {
 
 
 def revised_status_shapes(theme):
-    """Source-specific result discs and the source's open, blue-gray spinner."""
+    """Flat result discs and the source's open, blue-gray spinner."""
     white_check = '<path stroke="white" stroke-width="1.7" d="m7.85 12 2.7 2.7 5.6-5.6"/>'
-    skipped = ('#bac2d1', '#949daf', '#7f8a9f') if theme == 'light' else ('#bac6db', '#9eacc2', '#8192ac')
-    stopped = ('#a8b2c3', '#7c899e', '#637189') if theme == 'light' else ('#bcc8dd', '#93a6c2', '#7185a3')
+    skipped = '#949daf' if theme == 'light' else '#9eacc2'
+    stopped = '#7c899e' if theme == 'light' else '#93a6c2'
     track = '#e2e6ef' if theme == 'light' else '#475269'
     return {
-        'status-success': status_disc('status-success', '#55c342', '#31ad27', '#238e1c', white_check),
-        'status-partial-success': status_disc('status-partial-success', '#4695ff', '#1367ff', '#034cdb', white_check),
-        'status-skipped': status_disc('status-skipped', *skipped, '<path stroke="white" stroke-width="1.7" d="M7.65 12h8.7"/>'),
-        'status-stopped': status_disc('status-stopped', *stopped, '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="white" stroke="none"/>'),
-        'status-warning': status_disc('status-warning', '#ffd36b', '#f3aa0a', '#df8e00',
+        'status-success': status_disc('#31ad27', white_check),
+        'status-partial-success': status_disc('#1367ff', white_check),
+        'status-skipped': status_disc(skipped, '<path stroke="white" stroke-width="1.7" d="M7.65 12h8.7"/>'),
+        'status-stopped': status_disc(stopped, '<rect x="8.1" y="8.1" width="7.8" height="7.8" rx=".85" fill="white" stroke="none"/>'),
+        'status-warning': status_disc('#f3aa0a',
                                       warning_mark()),
         'spinner': '<defs><linearGradient id="spinner-active" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#607bb5"/><stop offset="1" stop-color="#63709e"/></linearGradient></defs>'
                    f'<path d="M12 3a9 9 0 1 0 0 18" stroke="{track}" stroke-width="2.5"/>'

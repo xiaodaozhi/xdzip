@@ -1,0 +1,19 @@
+{
+  "inputs": {
+    "docs/visual/layout-scale.json": "c90c13fbd6c1f4eb21c596a7200eb19c5cb1d21f233b3cafe9aa798742ea565f",
+    "docs/visual/status-icons.json": "66e88b880bb1f6c0a049169b472502d13bdb9c6e7ac389bc18264bf10a36555d",
+    "design/html/hifi.css": "6273c9336f72b57b1b1be47c89b853030b342c36976b17efd67c005cfba3c34a",
+    "scripts/asset_definitions.py": "abfce052ead7b31b79e95204db54eb5e143ca0eca94b5648ccd0116f7b38c49a",
+    "scripts/check-html-operation-ui.py": "6c5d49e745811820344d48ef952818f28072692f52cf9f7c30c26683638f7ca3"
+  },
+  "captures": {
+    "conflict.png": "04398d64fa1a56570b55accac05c29413e1df3197a0e80145d2fa49320f3da7c",
+    "flat-status.png": "f3ce592e7d79dd0d83f3372b12e5afa0933c0aef555a18854435843efcba3407",
+    "progress.png": "52c6c71f4ff33e4c9de97989a64b85a8e98d724c970d3f93a7946c45c72140f9",
+    "extract.png": "5cc54d6d3d0fc9ea112816744a1bf5365952057d9d6e6beb349fca160d54377b",
+    "settings.png": "7b009ed99a4f0e843f7fd6fb736da4951a5f71818ed056984f4ace07b8596df7",
+    "result.png": "f44858320f1689a7ddbaa0b1af57143ad0d7a26e6d7eee82e5696ebafc762cf1",
+    "create.png": "477acda69bda6365e57b9298f89a66d9f2bf3ea1d3fb157a84c5542b2c22d489"
+  },
+  "method": "Actual Chromium dialog captures; shared SVG geometry and PNG RGBA sampled separately"
+}

@@ -78,3 +78,7 @@ python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-a
 画廊是直接展示当前运行素材的复核入口。结构 / 坐标检查不代表与原稿逐像素一致；独立视觉对照、Qt 的真实渲染和目标系统窗口验收分别记录，不能相互替代。
 
 项目原创素材与工具采用 [Apache-2.0](LICENSE)。字体单独按 `fonts/OFL.txt` 的 OFL-1.1 交付；不包含第三方图标集合。
+
+## 扁平任务状态圆盘
+
+完成、部分完成、警告、跳过、停止、取消和校验通过改用纯色圆盘与白色标记；没有渐变、高光、外圈或阴影。色值与几何以 [status-icons.json](../../docs/visual/status-icons.json) 为准。浅深主题与三档透明 PNG 从同一 SVG 定义生成；画廊的原稿列保留历史外观，运行图标使用当前扁平导出。

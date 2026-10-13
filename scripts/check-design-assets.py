@@ -128,6 +128,7 @@ def check_reference_coverage(manifest: dict, by_file: dict) -> list[dict]:
 
 
 def main() -> None:
+    subprocess.run([sys.executable, str(Path(__file__).with_name('check-flat-status-assets.py'))], check=True)
     # A changed definition must be exported before manifest hashes can pass.
     subprocess.run([sys.executable, str(Path(__file__).with_name('build-design-assets.py')), '--check'],
                    check=True, stdout=subprocess.DEVNULL)

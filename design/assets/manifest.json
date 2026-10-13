@@ -2191,6 +2191,526 @@
       "sha256": "1f88eea038664bb4e17fa1065953957df36b1f38d106dc65f74fed58634d8da1"
     },
     {
+      "id": "reference/tree-folder",
+      "file": "reference/tree-folder.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        140,
+        660,
+        82,
+        70
+      ],
+      "size": [
+        82,
+        70
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "449408ef05b1275812764fe0cb78dbb24843cfb97b0cb61fd14e2387a309ee04"
+    },
+    {
+      "id": "reference/tree-disclosure-expanded",
+      "file": "reference/tree-disclosure-expanded.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        93,
+        681,
+        30,
+        28
+      ],
+      "size": [
+        30,
+        28
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6003ab438f0f419bd5451fc45fe8bdf732aa7936eaee5cfd5235cf78a443fff7"
+    },
+    {
+      "id": "reference/tree-disclosure-collapsed",
+      "file": "reference/tree-disclosure-collapsed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        194,
+        842,
+        31,
+        39
+      ],
+      "size": [
+        31,
+        39
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "f763a2ed6c6c5045433d074986528db862f2aaf5f93cb4f1cfd22bbbdfb36994"
+    },
+    {
+      "id": "reference/tree-guides-nested",
+      "file": "reference/tree-guides-nested.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        100,
+        812,
+        126,
+        165
+      ],
+      "size": [
+        126,
+        165
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "ba980bb208f658846650509dfe3f445b293fe18f43faca40d699dc107b4fb64e"
+    },
+    {
+      "id": "reference/tree-current-indicator",
+      "file": "reference/tree-current-indicator.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree.png",
+      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
+      "rect": [
+        60,
+        557,
+        18,
+        91
+      ],
+      "size": [
+        18,
+        91
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e6d8c07c0cc8b123e9637f3b72c27273b438226fd429024e15589848cf3eef1a"
+    },
+    {
+      "id": "reference/tree-row-collapsed",
+      "file": "reference/tree-row-collapsed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        290,
+        455,
+        110
+      ],
+      "size": [
+        455,
+        110
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5257b2e51f0a84269d607b4e1d6c7aab3f4af25818ded388063910bf92ad2dab"
+    },
+    {
+      "id": "reference/tree-row-expanded",
+      "file": "reference/tree-row-expanded.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        540,
+        291,
+        452,
+        245
+      ],
+      "size": [
+        452,
+        245
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5b254d8056536e9139b3048b0492317f72e5b3dfb1283335853406a474cfa56a"
+    },
+    {
+      "id": "reference/tree-row-leaf",
+      "file": "reference/tree-row-leaf.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        735,
+        455,
+        95
+      ],
+      "size": [
+        455,
+        95
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "a91faa3b53906901832a4e5990f3386fa043f52bd27dc91f433d87518cbca9c6"
+    },
+    {
+      "id": "reference/tree-row-empty",
+      "file": "reference/tree-row-empty.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        831,
+        455,
+        98
+      ],
+      "size": [
+        455,
+        98
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6898f0c5742d5f2dddbb7a83c2e08aade42840a490fa5baf1e11220e1afb6686"
+    },
+    {
+      "id": "reference/tree-row-current",
+      "file": "reference/tree-row-current.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        537,
+        729,
+        457,
+        76
+      ],
+      "size": [
+        457,
+        76
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5f599676db7429904cff0bdc36ef419d12db6c2519b91d0c5248e9c9d2876680"
+    },
+    {
+      "id": "reference/tree-row-hover",
+      "file": "reference/tree-row-hover.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        538,
+        815,
+        456,
+        77
+      ],
+      "size": [
+        456,
+        77
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "ec741d3cfe3192340bee3c7784e35d337baad1ce79f901781618024771c8e762"
+    },
+    {
+      "id": "reference/tree-row-focus",
+      "file": "reference/tree-row-focus.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        538,
+        899,
+        456,
+        76
+      ],
+      "size": [
+        456,
+        76
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "5442156a4d89ad24676b70403392f5756e9f9991ef7e35dba9e53ab9d114320b"
+    },
+    {
+      "id": "reference/tree-name-tooltip",
+      "file": "reference/tree-name-tooltip.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        125,
+        1319,
+        361,
+        83
+      ],
+      "size": [
+        361,
+        83
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "b02ffb2de354693e1be1f321ac8a4253398e7ccf89f5a546d059f45ba9258b8f"
+    },
+    {
+      "id": "reference/tree-deep-hierarchy",
+      "file": "reference/tree-deep-hierarchy.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        35,
+        1171,
+        455,
+        265
+      ],
+      "size": [
+        455,
+        265
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0d7ce15785d708520fca4dddff43dd0de0fdd071dd6d0bf28427d7744becba6c"
+    },
+    {
+      "id": "reference/tree-large-type",
+      "file": "reference/tree-large-type.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-states.png",
+      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
+      "rect": [
+        540,
+        1170,
+        452,
+        156
+      ],
+      "size": [
+        452,
+        156
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "984a531c52713f14eca938fe835ea29bb389a7f132787e6b9e1a88ca04304abf"
+    },
+    {
+      "id": "reference/tree-loading",
+      "file": "reference/tree-loading.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        224,
+        420,
+        371
+      ],
+      "size": [
+        420,
+        371
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e7fd05fd1ae53fbf320bd2c7fa47082b2f7365256a4f95d35787995b103d9d0c"
+    },
+    {
+      "id": "reference/tree-empty-archive",
+      "file": "reference/tree-empty-archive.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        225,
+        423,
+        370
+      ],
+      "size": [
+        423,
+        370
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "a226778788db307bc6124f5144fc127862cbca0643514959eeccd866a7b3a348"
+    },
+    {
+      "id": "reference/tree-root-files",
+      "file": "reference/tree-root-files.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        730,
+        420,
+        281
+      ],
+      "size": [
+        420,
+        281
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "2b845d4de93a61133e4cff0b427313e3b0ce75ce3cf2c0a3ad575f6796566dcc"
+    },
+    {
+      "id": "reference/tree-nav-limit",
+      "file": "reference/tree-nav-limit.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        730,
+        423,
+        281
+      ],
+      "size": [
+        423,
+        281
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "11aea84dd1a845e92bb0995968f229d54dbd1e3cd89c3325f712849c6917e0e6"
+    },
+    {
+      "id": "reference/tree-read-failed",
+      "file": "reference/tree-read-failed.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        58,
+        1143,
+        420,
+        294
+      ],
+      "size": [
+        420,
+        294
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0de817954020cba8cb9f46a07924d1e3d0507b7d9062750271f10cfd7dd8b520"
+    },
+    {
+      "id": "reference/tree-hidden-current",
+      "file": "reference/tree-hidden-current.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        547,
+        1143,
+        423,
+        287
+      ],
+      "size": [
+        423,
+        287
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "37031b8f5897f555c5d18fb0a3cdac060b28b660b7f792b12dd3b3e1789e8c46"
+    },
+    {
+      "id": "reference/tree-active-branch",
+      "file": "reference/tree-active-branch.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        873,
+        1293,
+        24,
+        24
+      ],
+      "size": [
+        24,
+        24
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "dbe3fe1d243fece2d1cc876ae316c7f7eec7a5a749bdf8a50ce33252e5df29a7"
+    },
+    {
+      "id": "reference/tree-skeleton",
+      "file": "reference/tree-skeleton.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        92,
+        458,
+        274,
+        121
+      ],
+      "size": [
+        274,
+        121
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "6ae0ff247d805d2d4ccdafbdbf9a1864a46bceb1a96f87bbaf43515d3166d305"
+    },
+    {
+      "id": "reference/tree-loading-glyph",
+      "file": "reference/tree-loading-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        93,
+        411,
+        38,
+        38
+      ],
+      "size": [
+        38,
+        38
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "e8645bb633d1f19b0f15644faa4db1723c658b12d5322c6a8587f25d052b2ab5"
+    },
+    {
+      "id": "reference/tree-info-glyph",
+      "file": "reference/tree-info-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        577,
+        920,
+        37,
+        37
+      ],
+      "size": [
+        37,
+        37
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "0c72401d5ec3c0445a2693ed4f53251bdea9100dd5e29e29079330703f3ed9e1"
+    },
+    {
+      "id": "reference/tree-error-glyph",
+      "file": "reference/tree-error-glyph.png",
+      "kind": "original-pixel-crop",
+      "source": "../hifi/screens/directory-tree-boundaries.png",
+      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
+      "rect": [
+        92,
+        1340,
+        40,
+        40
+      ],
+      "size": [
+        40,
+        40
+      ],
+      "usage": "visual-reference-only",
+      "background": "baked original pixels; no recovered transparency",
+      "sha256": "8632dfb70413f164ebd959c627c46e2e798916cfc687f88a0ba65c4cf7a8c0c1"
+    },
+    {
       "id": "light/activity",
       "file": "svg/light/activity.svg",
       "kind": "vector-reconstruction",
@@ -2459,14 +2979,16 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "0bcd7025f3245104cd90f911504b8fd8052ac89cc1a9f0e1fe464c3ed430326d",
+      "sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/cancelled-large.png",
       "role": "task-result-illustration",
       "visible_bounds": [
-        1.6667,
-        1.6667,
-        22.3333,
-        22.3333
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
@@ -3899,7 +4421,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "e0e060cdc9ebc1a4b807e65139560404872e572cb312822be3e8da180286c555",
+      "sha256": "6da833b3bb7eb849f9f968337006fa2357a3121ad81462355662ca188566620a",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-success.png",
       "visible_bounds": [
         2.0,
@@ -3928,7 +4452,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "ad6fed13f5fe5b04417aa5dcd5c2340a2581e31113e5ce49d0f7816efc955e13",
+      "sha256": "dc05f75960a94129463cd5ab10abc0d13a4aeeb88b425784d6066049849bd2fb",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-skipped.png",
       "visible_bounds": [
         2.0,
@@ -3957,7 +4483,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "ada5485fad48c53ed5f030b2a4737cb7035aa2d001ebda57658f3032cba2bc88",
+      "sha256": "8de5b741a48b6286e34c78cd80221f3cc6e215004b85ada70a4f95a2b2e0fc49",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/cancelled-large.png",
       "visible_bounds": [
         2.0,
@@ -3986,7 +4514,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "bd3d7460390bfcc245cedd031828f19980927010f8860e7e172569e1851249b3",
+      "sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/success-large.png",
       "visible_bounds": [
         2.0,
@@ -4015,7 +4545,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "1361047e60beada23f71325ffc25a3d1429cb3f5185e34a798e971b3ccc30902",
+      "sha256": "c798aa3e99bea0daee33dfdf13dc6ab221c5628d4e2dab8871b205de9944ae58",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-warning.png",
       "visible_bounds": [
         2.0,
@@ -4044,7 +4576,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "6f24ed4f971d74f4d989a056a0b5db80efc5a0a892e24c3f2a2753f8f70454c0",
+      "sha256": "3d6944616968f8b8fbd7ed4978b51a786f300dc932720b7a75a07de4526703c0",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/success.png",
       "role": "validation-state-illustration",
       "visible_bounds": [
@@ -4204,6 +4738,132 @@
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
     {
+      "id": "light/tree-active-branch",
+      "file": "svg/light/tree-active-branch.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/tree-active-branch.png"
+        ]
+      },
+      "sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "source_reference": "reference/tree-active-branch.png",
+      "component": "directory-tree",
+      "integration_status": "html-and-qt-consumer",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-info",
+      "file": "svg/light/tree-info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "source_reference": "reference/tree-info-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-spinner",
+      "file": "svg/light/tree-spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "source_reference": "reference/tree-loading-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/tree-warning",
+      "file": "svg/light/tree-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "source_reference": "reference/tree-error-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
       "id": "light/view-grid",
       "file": "svg/light/view-grid.svg",
       "kind": "vector-reconstruction",
@@ -4235,6 +4895,37 @@
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
     {
+      "id": "light/view-grid-selected",
+      "file": "svg/light/view-grid-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/view-grid-selected.png"
+        ]
+      },
+      "sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "source_reference": "reference/view-grid.png",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
       "id": "light/view-list",
       "file": "svg/light/view-list.svg",
       "kind": "vector-reconstruction",
@@ -4256,6 +4947,37 @@
         ]
       },
       "sha256": "965787c40ab286971e9fabb8be5ed483a48618ca6ce69e7ccd54a13ff6f9187d",
+      "source_reference": "reference/view-list.png",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/view-list-selected",
+      "file": "svg/light/view-list-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/view-list-selected.png"
+        ]
+      },
+      "sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
       "source_reference": "reference/view-list.png",
       "visible_bounds": [
         4.0,
@@ -4590,14 +5312,16 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "69b8d5ed5b215bb2f9e383e814f9f37692d1ee4ab759ab2ea2584de7d92a8bc6",
+      "sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/cancelled-large.png",
       "role": "task-result-illustration",
       "visible_bounds": [
-        1.6667,
-        1.6667,
-        22.3333,
-        22.3333
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
@@ -6026,7 +6750,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "27806059270a7843f2c0b2c609f3299e1e960eef8b2279b37727c9bb230e0e50",
+      "sha256": "d795bdf4044da3e0595a8fceb752f23b4b0fcdc63a306df49bf5787fa02e745b",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-success.png",
       "visible_bounds": [
         2.0,
@@ -6055,7 +6781,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "b102657e5f0fe58a59841dac23c39f5040dbf8d5601d686bb83ba730fb7e894d",
+      "sha256": "3dab1ca52d1fa5fa67711cad97145d519a3ad6fa848557b23a97d9ea070008f5",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-skipped.png",
       "visible_bounds": [
         2.0,
@@ -6084,7 +6812,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "a681971559ceb6ae35c21515dab5675b73ba4bdb429df7da63c8229267b84781",
+      "sha256": "c3d607f30425bb13ac2b999d17b67521fde59d4615ec23715d75dcbc274d1cda",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/cancelled-large.png",
       "visible_bounds": [
         2.0,
@@ -6113,7 +6843,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "47904b5ebe2c452ed77025e4c01dfca8eaeca8d2b34dd9ddc62d55281da10984",
+      "sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/success-large.png",
       "visible_bounds": [
         2.0,
@@ -6142,7 +6874,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "7bd8655b3bc77f7d5d6f9d3d443010e4b7a4d9117bc1fec283e98f6835de787c",
+      "sha256": "ff31bb258ce71676dc741463e0539b3d99a927439ca4d5f0a58ac65899d02250",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/partial-warning.png",
       "visible_bounds": [
         2.0,
@@ -6171,7 +6905,9 @@
         "html": "registered in the shared design library",
         "qt_aliases": []
       },
-      "sha256": "4a6d1bfe825bfabedb84cbce2cc256400272cbc14716c697b95db36152e0a409",
+      "sha256": "a0392bc881e0ddd7adf396d8fb0a0393b7ef12675e8ddea554211d6cbbd58ba0",
+      "visual_revision": "flat-task-status",
+      "style": "solid-disc-with-white-mark",
       "source_reference": "reference/success.png",
       "role": "validation-state-illustration",
       "visible_bounds": [
@@ -6331,6 +7067,132 @@
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
     {
+      "id": "dark/tree-active-branch",
+      "file": "svg/dark/tree-active-branch.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/tree-active-branch.png"
+        ]
+      },
+      "sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
+      "source_reference": "reference/tree-active-branch.png",
+      "component": "directory-tree",
+      "integration_status": "html-and-qt-consumer",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-info",
+      "file": "svg/dark/tree-info.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
+      "source_reference": "reference/tree-info-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-spinner",
+      "file": "svg/dark/tree-spinner.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
+      "source_reference": "reference/tree-loading-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/tree-warning",
+      "file": "svg/dark/tree-warning.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "status",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": []
+      },
+      "sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
+      "source_reference": "reference/tree-error-glyph.png",
+      "component": "directory-tree",
+      "integration_status": "design-resource-status-consumer-pending",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
       "id": "dark/view-grid",
       "file": "svg/dark/view-grid.svg",
       "kind": "vector-reconstruction",
@@ -6362,6 +7224,37 @@
       "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
     },
     {
+      "id": "dark/view-grid-selected",
+      "file": "svg/dark/view-grid-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/view-grid-selected.png"
+        ]
+      },
+      "sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
+      "source_reference": "reference/view-grid.png",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
       "id": "dark/view-list",
       "file": "svg/dark/view-list.svg",
       "kind": "vector-reconstruction",
@@ -6383,6 +7276,37 @@
         ]
       },
       "sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
+      "source_reference": "reference/view-list.png",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/view-list-selected",
+      "file": "svg/dark/view-list-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/view-list-selected.png"
+        ]
+      },
+      "sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
       "source_reference": "reference/view-list.png",
       "visible_bounds": [
         4.0,
@@ -7758,15 +8682,15 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/cancelled-large.svg",
-      "source_sha256": "0bcd7025f3245104cd90f911504b8fd8052ac89cc1a9f0e1fe464c3ed430326d",
+      "source_sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
       "visible_bounds": [
-        1.0,
-        1.0,
-        23.0,
-        23.0
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "f8e44a475f342e31193a23b93f7641d2b8f2840bd59c11ce5f9899db60a322ac"
+      "sha256": "eb62cc4a16c220b5a29068609d1857ba7cd80c5890344255cbaf511596f7a181"
     },
     {
       "id": "raster/light/cancelled-large@2x",
@@ -7788,15 +8712,15 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/cancelled-large.svg",
-      "source_sha256": "0bcd7025f3245104cd90f911504b8fd8052ac89cc1a9f0e1fe464c3ed430326d",
+      "source_sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
       "visible_bounds": [
-        1.5,
-        1.5,
-        22.5,
-        22.5
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "05120c16e85bad409109ba73be6fb9eca02b0558dd9f96bc6885e4ae0db4310a"
+      "sha256": "2df1aa63b45f102cd4fc307a4dd7ecb1c7385e4e6d6eb2c22d000c8ea47c67ba"
     },
     {
       "id": "raster/light/cancelled-large@3x",
@@ -7818,15 +8742,15 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/cancelled-large.svg",
-      "source_sha256": "0bcd7025f3245104cd90f911504b8fd8052ac89cc1a9f0e1fe464c3ed430326d",
+      "source_sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
       "visible_bounds": [
-        1.6667,
-        1.6667,
-        22.3333,
-        22.3333
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a42d39b7aecd669e57412ce3df2042540b2ef7ef6d1053cc22c4da79c3084ec7"
+      "sha256": "a54123ff86e9696ef05c880ba52eb91d51e7fea0043b2050c9fb943489dab416"
     },
     {
       "id": "raster/light/check@1x",
@@ -12081,7 +13005,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-partial-success.svg",
-      "source_sha256": "e0e060cdc9ebc1a4b807e65139560404872e572cb312822be3e8da180286c555",
+      "source_sha256": "6da833b3bb7eb849f9f968337006fa2357a3121ad81462355662ca188566620a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12089,7 +13013,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "cc2be40bca75d1e25a007da1db192ee38a44ff0dd237e9efbab9436af4cd2ed0"
+      "sha256": "897d21ab1ff9f4882a7c2d3be78ecc7782b77d137107803b8a165f90984d5940"
     },
     {
       "id": "raster/light/status-partial-success@2x",
@@ -12111,7 +13035,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-partial-success.svg",
-      "source_sha256": "e0e060cdc9ebc1a4b807e65139560404872e572cb312822be3e8da180286c555",
+      "source_sha256": "6da833b3bb7eb849f9f968337006fa2357a3121ad81462355662ca188566620a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12119,7 +13043,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "1d51872a0922021a64e10228b5a6fd9f30eef2d9a8533d8cab2123e81e30f2b9"
+      "sha256": "e0a7d72a4bc257a9223a53a85eb8dbaf4e285978dfc371281024f75ee2b308c9"
     },
     {
       "id": "raster/light/status-partial-success@3x",
@@ -12141,7 +13065,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-partial-success.svg",
-      "source_sha256": "e0e060cdc9ebc1a4b807e65139560404872e572cb312822be3e8da180286c555",
+      "source_sha256": "6da833b3bb7eb849f9f968337006fa2357a3121ad81462355662ca188566620a",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12149,7 +13073,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7a4498184b8d99abdd79ed94ecf56b87722cbbe4f141c10d6055fc0811ddb17b"
+      "sha256": "d7ba01e5ba240c2d1028ca057a21d5c965fc26da8f84bed79c22d218a28c6cd2"
     },
     {
       "id": "raster/light/status-skipped@1x",
@@ -12171,7 +13095,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-skipped.svg",
-      "source_sha256": "ad6fed13f5fe5b04417aa5dcd5c2340a2581e31113e5ce49d0f7816efc955e13",
+      "source_sha256": "dc05f75960a94129463cd5ab10abc0d13a4aeeb88b425784d6066049849bd2fb",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12179,7 +13103,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "224c4c90a81e4b8385894e61f7ef5b5871f46c38420f2504ed780199445c86d0"
+      "sha256": "56255a2f3273bed0feb2ca275ae455a01eecefcfcccd8f67edbb500d69d5a8e2"
     },
     {
       "id": "raster/light/status-skipped@2x",
@@ -12201,7 +13125,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-skipped.svg",
-      "source_sha256": "ad6fed13f5fe5b04417aa5dcd5c2340a2581e31113e5ce49d0f7816efc955e13",
+      "source_sha256": "dc05f75960a94129463cd5ab10abc0d13a4aeeb88b425784d6066049849bd2fb",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12209,7 +13133,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "49cb6712590405f64e7d2860e8330b76d33cbcebda1b5e79e739097e4f49ff1e"
+      "sha256": "673de42a4aac25934759154e29c7e21d641acc2065d0b55095e35c57bb3b7d26"
     },
     {
       "id": "raster/light/status-skipped@3x",
@@ -12231,7 +13155,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-skipped.svg",
-      "source_sha256": "ad6fed13f5fe5b04417aa5dcd5c2340a2581e31113e5ce49d0f7816efc955e13",
+      "source_sha256": "dc05f75960a94129463cd5ab10abc0d13a4aeeb88b425784d6066049849bd2fb",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12239,7 +13163,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "9cc31812713e2b31c6a30e2c1ddfec81e72266cae288535b0f232989601ede8d"
+      "sha256": "f44b89bb4b0fef9e3eef885088a47f0f4cc68297e66c2ae1bf4c86e9026460a4"
     },
     {
       "id": "raster/light/status-stopped@1x",
@@ -12261,7 +13185,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-stopped.svg",
-      "source_sha256": "ada5485fad48c53ed5f030b2a4737cb7035aa2d001ebda57658f3032cba2bc88",
+      "source_sha256": "8de5b741a48b6286e34c78cd80221f3cc6e215004b85ada70a4f95a2b2e0fc49",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12269,7 +13193,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a2ad6b5f8d08ebb6b3986bff9e4d36761b364d42e48275ee4d17e0d03579573c"
+      "sha256": "eb62cc4a16c220b5a29068609d1857ba7cd80c5890344255cbaf511596f7a181"
     },
     {
       "id": "raster/light/status-stopped@2x",
@@ -12291,7 +13215,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-stopped.svg",
-      "source_sha256": "ada5485fad48c53ed5f030b2a4737cb7035aa2d001ebda57658f3032cba2bc88",
+      "source_sha256": "8de5b741a48b6286e34c78cd80221f3cc6e215004b85ada70a4f95a2b2e0fc49",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12299,7 +13223,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "2f966ab861aaf717e33501973f8c598e388a376fe59a787ad68fa89bb105b52c"
+      "sha256": "2df1aa63b45f102cd4fc307a4dd7ecb1c7385e4e6d6eb2c22d000c8ea47c67ba"
     },
     {
       "id": "raster/light/status-stopped@3x",
@@ -12321,7 +13245,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-stopped.svg",
-      "source_sha256": "ada5485fad48c53ed5f030b2a4737cb7035aa2d001ebda57658f3032cba2bc88",
+      "source_sha256": "8de5b741a48b6286e34c78cd80221f3cc6e215004b85ada70a4f95a2b2e0fc49",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12329,7 +13253,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "ef9e1663602ea5125aa4ab22a61ec185225b6c200dca0a2d1ebf462cb67d2fa4"
+      "sha256": "a54123ff86e9696ef05c880ba52eb91d51e7fea0043b2050c9fb943489dab416"
     },
     {
       "id": "raster/light/status-success@1x",
@@ -12351,7 +13275,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-success.svg",
-      "source_sha256": "bd3d7460390bfcc245cedd031828f19980927010f8860e7e172569e1851249b3",
+      "source_sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12359,7 +13283,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "e1d9bbe36bcf166654576b3d8ac79666b2fef69e3a6a0240dbc99a1c5bbf6d8a"
+      "sha256": "ead57e0b2dd86b3da7438b7440c034ba0c6e2d8203ff6e0caa6351d2c79c23f5"
     },
     {
       "id": "raster/light/status-success@2x",
@@ -12381,7 +13305,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-success.svg",
-      "source_sha256": "bd3d7460390bfcc245cedd031828f19980927010f8860e7e172569e1851249b3",
+      "source_sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12389,7 +13313,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a0e396a6c774d592304eefafbe756a70dfcde2ce219905d39ba95d5509985280"
+      "sha256": "51ebf2e7357954301e3efd6067f49caa78a1aba9b64cbdd5cd4fdc9b636dc1f4"
     },
     {
       "id": "raster/light/status-success@3x",
@@ -12411,7 +13335,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-success.svg",
-      "source_sha256": "bd3d7460390bfcc245cedd031828f19980927010f8860e7e172569e1851249b3",
+      "source_sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12419,7 +13343,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a1191d01a129c69d039607cd2acb43cb89f6cca37850b8a64095687ad56bda03"
+      "sha256": "307d68133ecada8e2c2d3ec70816f3dba75a0440fe56c4722b2f2b2195764bf3"
     },
     {
       "id": "raster/light/status-warning@1x",
@@ -12441,7 +13365,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-warning.svg",
-      "source_sha256": "1361047e60beada23f71325ffc25a3d1429cb3f5185e34a798e971b3ccc30902",
+      "source_sha256": "c798aa3e99bea0daee33dfdf13dc6ab221c5628d4e2dab8871b205de9944ae58",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12449,7 +13373,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "00405418b790815dd3838d023272f6cb5ae9a6a17c418715d0f84d02d10cf9d7"
+      "sha256": "bdebe40b80a406e19fa39d90780578444a7590e1cf264d9ba6757e6c77b74359"
     },
     {
       "id": "raster/light/status-warning@2x",
@@ -12471,7 +13395,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-warning.svg",
-      "source_sha256": "1361047e60beada23f71325ffc25a3d1429cb3f5185e34a798e971b3ccc30902",
+      "source_sha256": "c798aa3e99bea0daee33dfdf13dc6ab221c5628d4e2dab8871b205de9944ae58",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12479,7 +13403,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "14d8fe645d9ea4faee34095df64dce28ea6cc1ef84fb072c4d9b95523026ea41"
+      "sha256": "aa85384ad6885f5f2eb143eed4ad234e8503e552a23d80bf0aecf41147f693f3"
     },
     {
       "id": "raster/light/status-warning@3x",
@@ -12501,7 +13425,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/status-warning.svg",
-      "source_sha256": "1361047e60beada23f71325ffc25a3d1429cb3f5185e34a798e971b3ccc30902",
+      "source_sha256": "c798aa3e99bea0daee33dfdf13dc6ab221c5628d4e2dab8871b205de9944ae58",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12509,7 +13433,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8c3f9a5dcb214de9a75f40165341a98e93d9f19efacbb57359436d4ed6b9d45c"
+      "sha256": "059346397a224fc80aa6e3fc6607ac9da05258900a789f57f8ba17033049d9cd"
     },
     {
       "id": "raster/light/success@1x",
@@ -12531,7 +13455,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/success.svg",
-      "source_sha256": "6f24ed4f971d74f4d989a056a0b5db80efc5a0a892e24c3f2a2753f8f70454c0",
+      "source_sha256": "3d6944616968f8b8fbd7ed4978b51a786f300dc932720b7a75a07de4526703c0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12539,7 +13463,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "83c2c71d1f9c6c615af4270135a107377c2955e94bb6a98f555a9ff6a4d8d5f0"
+      "sha256": "05366300ae7efd56edc8b8ecf76033c43512ab8466e56250c5ac9ffca556ced1"
     },
     {
       "id": "raster/light/success@2x",
@@ -12561,7 +13485,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/success.svg",
-      "source_sha256": "6f24ed4f971d74f4d989a056a0b5db80efc5a0a892e24c3f2a2753f8f70454c0",
+      "source_sha256": "3d6944616968f8b8fbd7ed4978b51a786f300dc932720b7a75a07de4526703c0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12569,7 +13493,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "ed6af2bd71d23c3e96a1d2ccac27e1822b2c43f2a83ee3298bd73e35f1553015"
+      "sha256": "542c66df66caf52bf20659b8a81a828f39eac87609cf6dac1c45657ee7e4caae"
     },
     {
       "id": "raster/light/success@3x",
@@ -12591,7 +13515,7 @@
       "theme": "light",
       "category": "status",
       "source": "svg/light/success.svg",
-      "source_sha256": "6f24ed4f971d74f4d989a056a0b5db80efc5a0a892e24c3f2a2753f8f70454c0",
+      "source_sha256": "3d6944616968f8b8fbd7ed4978b51a786f300dc932720b7a75a07de4526703c0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -12599,7 +13523,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "57c082ef32f0f6062dd9009b192ed8c30f0b9327c282e74a3b1a3a2a808afc93"
+      "sha256": "e700a6fe6ac716f2e6c26898ede6514a1a760f5412b34f868ef125135217571b"
     },
     {
       "id": "raster/light/sun@1x",
@@ -13052,6 +13976,366 @@
       "sha256": "f7dffbba88c1f1edfac5189c8df636f5f765711a6b72ca8087846ef8194befb4"
     },
     {
+      "id": "raster/light/tree-active-branch@1x",
+      "file": "png/light/tree-active-branch@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "442abf408469f7b8d46732ed05f189f3baadefc97f08c7309912546c7d2ac3b0"
+    },
+    {
+      "id": "raster/light/tree-active-branch@2x",
+      "file": "png/light/tree-active-branch@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d2831b60400c9ea8cc41faee8d74c70cf75d2ed58bffc3ee0a8ee301ce320468"
+    },
+    {
+      "id": "raster/light/tree-active-branch@3x",
+      "file": "png/light/tree-active-branch@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/tree-active-branch.svg",
+      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
+      "visible_bounds": [
+        9.0,
+        9.0,
+        15.0,
+        15.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "0956e9bdd1d0a36c5e4e6614e12762e95b96ad2eebadf00eaa08abe3d9cb5131"
+    },
+    {
+      "id": "raster/light/tree-info@1x",
+      "file": "png/light/tree-info@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "39722869af0c3325a820040cedaf77c6c1c7dd49d9931d35d7c464bdc0c4a4d9"
+    },
+    {
+      "id": "raster/light/tree-info@2x",
+      "file": "png/light/tree-info@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "33cff17b6b0c7be37a770181c671718c97f86cdec6c985c8a7b2a96d1cfd1792"
+    },
+    {
+      "id": "raster/light/tree-info@3x",
+      "file": "png/light/tree-info@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-info.svg",
+      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "3620c0289dd3ff0b7a50a063f10df08d5c89283396ce0b30559ce4fa71b622a2"
+    },
+    {
+      "id": "raster/light/tree-spinner@1x",
+      "file": "png/light/tree-spinner@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "37833d7dd123bbf6437288e22907d7a347f5be1f9fb4899a311e997a9c249114"
+    },
+    {
+      "id": "raster/light/tree-spinner@2x",
+      "file": "png/light/tree-spinner@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "580a308360cf636d74a474f66f1d23198bc62aee341ff4eb4c042db3da9f7b75"
+    },
+    {
+      "id": "raster/light/tree-spinner@3x",
+      "file": "png/light/tree-spinner@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-spinner.svg",
+      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "710e4c5c273ee8f788164f9fd966be306aae0b907252b47a3f5950f2f8c73e80"
+    },
+    {
+      "id": "raster/light/tree-warning@1x",
+      "file": "png/light/tree-warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "d56f1d29494c57a1be90ff8aedc493cf11a1f10b772f380184a3c87c8de29b83"
+    },
+    {
+      "id": "raster/light/tree-warning@2x",
+      "file": "png/light/tree-warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.5,
+        22.0,
+        20.5
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "2c5f701c8f42dd64c7e7599facf13879666309c1184e4ba46cf6ef8f8d706cdb"
+    },
+    {
+      "id": "raster/light/tree-warning@3x",
+      "file": "png/light/tree-warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/tree-warning.svg",
+      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
+      "visible_bounds": [
+        2.0,
+        2.3333,
+        22.0,
+        20.6667
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
+    },
+    {
       "id": "raster/light/view-grid@1x",
       "file": "png/light/view-grid@1x.png",
       "kind": "vector-rasterization",
@@ -13142,6 +14426,96 @@
       "sha256": "cdd43af08c421fa70c52bf47a850fe16d2f090960a3b229b49c2c3264b6e5285"
     },
     {
+      "id": "raster/light/view-grid-selected@1x",
+      "file": "png/light/view-grid-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "005c87be8049f94558039989f99e4c78507e0dd06e6fa6571f1dc245a607c1d3"
+    },
+    {
+      "id": "raster/light/view-grid-selected@2x",
+      "file": "png/light/view-grid-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "03cd878d02193eb0bd74c2eb37894985f8638936690bf7aa8c8317e218f3a356"
+    },
+    {
+      "id": "raster/light/view-grid-selected@3x",
+      "file": "png/light/view-grid-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "cf002c6209e738d604be8a953bce03002809a1370d3625ed0c2787f2c5eb8a83"
+    },
+    {
       "id": "raster/light/view-list@1x",
       "file": "png/light/view-list@1x.png",
       "kind": "vector-rasterization",
@@ -13230,6 +14604,96 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "0ed4c410cc6ec82115987164ec8981a3b681258b7c9b00c6a12d8822bcd129bc"
+    },
+    {
+      "id": "raster/light/view-list-selected@1x",
+      "file": "png/light/view-list-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c07258e48f82f805d6849f87d766abe19c2ee2a9397c84a5327e7811746ec635"
+    },
+    {
+      "id": "raster/light/view-list-selected@2x",
+      "file": "png/light/view-list-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "739721c74436b6cdc6957dc89e88e0cfa76b75d5db426c60a1b85ddb2e98b265"
+    },
+    {
+      "id": "raster/light/view-list-selected@3x",
+      "file": "png/light/view-list-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "b33372fab7c4ddb6b1282f00f87d5c2965bbed156ceed9648538e34769fd7a5f"
     },
     {
       "id": "raster/light/warning@1x",
@@ -14151,15 +15615,15 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/cancelled-large.svg",
-      "source_sha256": "69b8d5ed5b215bb2f9e383e814f9f37692d1ee4ab759ab2ea2584de7d92a8bc6",
+      "source_sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
       "visible_bounds": [
-        1.0,
-        1.0,
-        23.0,
-        23.0
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "f8e44a475f342e31193a23b93f7641d2b8f2840bd59c11ce5f9899db60a322ac"
+      "sha256": "04cd2ee7594cb3530d5236066ca4dc70a1274875ba18eba5f0db6c5d7bbf86e2"
     },
     {
       "id": "raster/dark/cancelled-large@2x",
@@ -14181,15 +15645,15 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/cancelled-large.svg",
-      "source_sha256": "69b8d5ed5b215bb2f9e383e814f9f37692d1ee4ab759ab2ea2584de7d92a8bc6",
+      "source_sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
       "visible_bounds": [
-        1.5,
-        1.5,
-        22.5,
-        22.5
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "05120c16e85bad409109ba73be6fb9eca02b0558dd9f96bc6885e4ae0db4310a"
+      "sha256": "6e907c0be00fdacc227a7a5eb15faf27a0250d9f4593bf329b38c352e8bb1370"
     },
     {
       "id": "raster/dark/cancelled-large@3x",
@@ -14211,15 +15675,15 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/cancelled-large.svg",
-      "source_sha256": "69b8d5ed5b215bb2f9e383e814f9f37692d1ee4ab759ab2ea2584de7d92a8bc6",
+      "source_sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
       "visible_bounds": [
-        1.6667,
-        1.6667,
-        22.3333,
-        22.3333
+        2.0,
+        2.0,
+        22.0,
+        22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a42d39b7aecd669e57412ce3df2042540b2ef7ef6d1053cc22c4da79c3084ec7"
+      "sha256": "b2b2d35eeaec0793365462c6ff6c0c2c16d0216200de1986c624f7482e055d1f"
     },
     {
       "id": "raster/dark/check@1x",
@@ -18474,7 +19938,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-partial-success.svg",
-      "source_sha256": "27806059270a7843f2c0b2c609f3299e1e960eef8b2279b37727c9bb230e0e50",
+      "source_sha256": "d795bdf4044da3e0595a8fceb752f23b4b0fcdc63a306df49bf5787fa02e745b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18482,7 +19946,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "cc2be40bca75d1e25a007da1db192ee38a44ff0dd237e9efbab9436af4cd2ed0"
+      "sha256": "897d21ab1ff9f4882a7c2d3be78ecc7782b77d137107803b8a165f90984d5940"
     },
     {
       "id": "raster/dark/status-partial-success@2x",
@@ -18504,7 +19968,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-partial-success.svg",
-      "source_sha256": "27806059270a7843f2c0b2c609f3299e1e960eef8b2279b37727c9bb230e0e50",
+      "source_sha256": "d795bdf4044da3e0595a8fceb752f23b4b0fcdc63a306df49bf5787fa02e745b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18512,7 +19976,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "1d51872a0922021a64e10228b5a6fd9f30eef2d9a8533d8cab2123e81e30f2b9"
+      "sha256": "e0a7d72a4bc257a9223a53a85eb8dbaf4e285978dfc371281024f75ee2b308c9"
     },
     {
       "id": "raster/dark/status-partial-success@3x",
@@ -18534,7 +19998,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-partial-success.svg",
-      "source_sha256": "27806059270a7843f2c0b2c609f3299e1e960eef8b2279b37727c9bb230e0e50",
+      "source_sha256": "d795bdf4044da3e0595a8fceb752f23b4b0fcdc63a306df49bf5787fa02e745b",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18542,7 +20006,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "7a4498184b8d99abdd79ed94ecf56b87722cbbe4f141c10d6055fc0811ddb17b"
+      "sha256": "d7ba01e5ba240c2d1028ca057a21d5c965fc26da8f84bed79c22d218a28c6cd2"
     },
     {
       "id": "raster/dark/status-skipped@1x",
@@ -18564,7 +20028,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-skipped.svg",
-      "source_sha256": "b102657e5f0fe58a59841dac23c39f5040dbf8d5601d686bb83ba730fb7e894d",
+      "source_sha256": "3dab1ca52d1fa5fa67711cad97145d519a3ad6fa848557b23a97d9ea070008f5",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18572,7 +20036,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "d632070958a5610f87bb3433949e3b6dc172ad98821317cea797d53ac76a568b"
+      "sha256": "38d7a682ceeb68519c74caa634ae4e5f440c03a9fc75e89153207da5a054dde4"
     },
     {
       "id": "raster/dark/status-skipped@2x",
@@ -18594,7 +20058,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-skipped.svg",
-      "source_sha256": "b102657e5f0fe58a59841dac23c39f5040dbf8d5601d686bb83ba730fb7e894d",
+      "source_sha256": "3dab1ca52d1fa5fa67711cad97145d519a3ad6fa848557b23a97d9ea070008f5",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18602,7 +20066,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "92dae95ed225a113a0cbf73fb5d242fc3f1c70b33ce6ff40c59ee85bb23d6b79"
+      "sha256": "ae79f5d8ef1157c9aa17bef40d8852222373e09d780437d3aeeac15e6097d8ab"
     },
     {
       "id": "raster/dark/status-skipped@3x",
@@ -18624,7 +20088,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-skipped.svg",
-      "source_sha256": "b102657e5f0fe58a59841dac23c39f5040dbf8d5601d686bb83ba730fb7e894d",
+      "source_sha256": "3dab1ca52d1fa5fa67711cad97145d519a3ad6fa848557b23a97d9ea070008f5",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18632,7 +20096,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "9dd4bf89344d4f6abe5b2755fc3318a78c579cb6f689a0d142171288a122673d"
+      "sha256": "5387e99f6b82c83d541a179635fac1b91c1f7018f84ee8c62f2dc062c79e5f39"
     },
     {
       "id": "raster/dark/status-stopped@1x",
@@ -18654,7 +20118,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-stopped.svg",
-      "source_sha256": "a681971559ceb6ae35c21515dab5675b73ba4bdb429df7da63c8229267b84781",
+      "source_sha256": "c3d607f30425bb13ac2b999d17b67521fde59d4615ec23715d75dcbc274d1cda",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18662,7 +20126,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a5f0ebf8700f8f7bb5e2b4a1865fe47a7d19e62c5bfa95697471b919950328a3"
+      "sha256": "04cd2ee7594cb3530d5236066ca4dc70a1274875ba18eba5f0db6c5d7bbf86e2"
     },
     {
       "id": "raster/dark/status-stopped@2x",
@@ -18684,7 +20148,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-stopped.svg",
-      "source_sha256": "a681971559ceb6ae35c21515dab5675b73ba4bdb429df7da63c8229267b84781",
+      "source_sha256": "c3d607f30425bb13ac2b999d17b67521fde59d4615ec23715d75dcbc274d1cda",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18692,7 +20156,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "38485869df5e62f589dea2151e1029cb976bf3506ee11f4a79f4324294ba3d61"
+      "sha256": "6e907c0be00fdacc227a7a5eb15faf27a0250d9f4593bf329b38c352e8bb1370"
     },
     {
       "id": "raster/dark/status-stopped@3x",
@@ -18714,7 +20178,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-stopped.svg",
-      "source_sha256": "a681971559ceb6ae35c21515dab5675b73ba4bdb429df7da63c8229267b84781",
+      "source_sha256": "c3d607f30425bb13ac2b999d17b67521fde59d4615ec23715d75dcbc274d1cda",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18722,7 +20186,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "18a5fd8b70d6dc84496ff76e3044fac00dca2a7079de616b76a6d087a27b7ace"
+      "sha256": "b2b2d35eeaec0793365462c6ff6c0c2c16d0216200de1986c624f7482e055d1f"
     },
     {
       "id": "raster/dark/status-success@1x",
@@ -18744,7 +20208,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-success.svg",
-      "source_sha256": "47904b5ebe2c452ed77025e4c01dfca8eaeca8d2b34dd9ddc62d55281da10984",
+      "source_sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18752,7 +20216,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "e1d9bbe36bcf166654576b3d8ac79666b2fef69e3a6a0240dbc99a1c5bbf6d8a"
+      "sha256": "ead57e0b2dd86b3da7438b7440c034ba0c6e2d8203ff6e0caa6351d2c79c23f5"
     },
     {
       "id": "raster/dark/status-success@2x",
@@ -18774,7 +20238,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-success.svg",
-      "source_sha256": "47904b5ebe2c452ed77025e4c01dfca8eaeca8d2b34dd9ddc62d55281da10984",
+      "source_sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18782,7 +20246,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a0e396a6c774d592304eefafbe756a70dfcde2ce219905d39ba95d5509985280"
+      "sha256": "51ebf2e7357954301e3efd6067f49caa78a1aba9b64cbdd5cd4fdc9b636dc1f4"
     },
     {
       "id": "raster/dark/status-success@3x",
@@ -18804,7 +20268,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-success.svg",
-      "source_sha256": "47904b5ebe2c452ed77025e4c01dfca8eaeca8d2b34dd9ddc62d55281da10984",
+      "source_sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18812,7 +20276,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a1191d01a129c69d039607cd2acb43cb89f6cca37850b8a64095687ad56bda03"
+      "sha256": "307d68133ecada8e2c2d3ec70816f3dba75a0440fe56c4722b2f2b2195764bf3"
     },
     {
       "id": "raster/dark/status-warning@1x",
@@ -18834,7 +20298,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-warning.svg",
-      "source_sha256": "7bd8655b3bc77f7d5d6f9d3d443010e4b7a4d9117bc1fec283e98f6835de787c",
+      "source_sha256": "ff31bb258ce71676dc741463e0539b3d99a927439ca4d5f0a58ac65899d02250",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18842,7 +20306,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "00405418b790815dd3838d023272f6cb5ae9a6a17c418715d0f84d02d10cf9d7"
+      "sha256": "bdebe40b80a406e19fa39d90780578444a7590e1cf264d9ba6757e6c77b74359"
     },
     {
       "id": "raster/dark/status-warning@2x",
@@ -18864,7 +20328,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-warning.svg",
-      "source_sha256": "7bd8655b3bc77f7d5d6f9d3d443010e4b7a4d9117bc1fec283e98f6835de787c",
+      "source_sha256": "ff31bb258ce71676dc741463e0539b3d99a927439ca4d5f0a58ac65899d02250",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18872,7 +20336,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "14d8fe645d9ea4faee34095df64dce28ea6cc1ef84fb072c4d9b95523026ea41"
+      "sha256": "aa85384ad6885f5f2eb143eed4ad234e8503e552a23d80bf0aecf41147f693f3"
     },
     {
       "id": "raster/dark/status-warning@3x",
@@ -18894,7 +20358,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/status-warning.svg",
-      "source_sha256": "7bd8655b3bc77f7d5d6f9d3d443010e4b7a4d9117bc1fec283e98f6835de787c",
+      "source_sha256": "ff31bb258ce71676dc741463e0539b3d99a927439ca4d5f0a58ac65899d02250",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18902,7 +20366,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "8c3f9a5dcb214de9a75f40165341a98e93d9f19efacbb57359436d4ed6b9d45c"
+      "sha256": "059346397a224fc80aa6e3fc6607ac9da05258900a789f57f8ba17033049d9cd"
     },
     {
       "id": "raster/dark/success@1x",
@@ -18924,7 +20388,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/success.svg",
-      "source_sha256": "4a6d1bfe825bfabedb84cbce2cc256400272cbc14716c697b95db36152e0a409",
+      "source_sha256": "a0392bc881e0ddd7adf396d8fb0a0393b7ef12675e8ddea554211d6cbbd58ba0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18932,7 +20396,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "83c2c71d1f9c6c615af4270135a107377c2955e94bb6a98f555a9ff6a4d8d5f0"
+      "sha256": "05366300ae7efd56edc8b8ecf76033c43512ab8466e56250c5ac9ffca556ced1"
     },
     {
       "id": "raster/dark/success@2x",
@@ -18954,7 +20418,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/success.svg",
-      "source_sha256": "4a6d1bfe825bfabedb84cbce2cc256400272cbc14716c697b95db36152e0a409",
+      "source_sha256": "a0392bc881e0ddd7adf396d8fb0a0393b7ef12675e8ddea554211d6cbbd58ba0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18962,7 +20426,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "ed6af2bd71d23c3e96a1d2ccac27e1822b2c43f2a83ee3298bd73e35f1553015"
+      "sha256": "542c66df66caf52bf20659b8a81a828f39eac87609cf6dac1c45657ee7e4caae"
     },
     {
       "id": "raster/dark/success@3x",
@@ -18984,7 +20448,7 @@
       "theme": "dark",
       "category": "status",
       "source": "svg/dark/success.svg",
-      "source_sha256": "4a6d1bfe825bfabedb84cbce2cc256400272cbc14716c697b95db36152e0a409",
+      "source_sha256": "a0392bc881e0ddd7adf396d8fb0a0393b7ef12675e8ddea554211d6cbbd58ba0",
       "visible_bounds": [
         2.0,
         2.0,
@@ -18992,7 +20456,7 @@
         22.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "57c082ef32f0f6062dd9009b192ed8c30f0b9327c282e74a3b1a3a2a808afc93"
+      "sha256": "e700a6fe6ac716f2e6c26898ede6514a1a760f5412b34f868ef125135217571b"
     },
     {
       "id": "raster/dark/sun@1x",
@@ -19445,1498 +20909,6 @@
       "sha256": "f7dffbba88c1f1edfac5189c8df636f5f765711a6b72ca8087846ef8194befb4"
     },
     {
-      "id": "raster/dark/view-grid@1x",
-      "file": "png/dark/view-grid@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-grid.svg",
-      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
-      "visible_bounds": [
-        3.0,
-        3.0,
-        21.0,
-        21.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "e23d22bb7ca8573d4214eacb0114bc3fcbd171c775383ee3a455c4a6e4bc70bd"
-    },
-    {
-      "id": "raster/dark/view-grid@2x",
-      "file": "png/dark/view-grid@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-grid.svg",
-      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
-      "visible_bounds": [
-        3.0,
-        3.0,
-        21.0,
-        21.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "290f7d743970b5b00046d740063bdef2f19a063528318ea4f214fad278d0fc67"
-    },
-    {
-      "id": "raster/dark/view-grid@3x",
-      "file": "png/dark/view-grid@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-grid.svg",
-      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
-      "visible_bounds": [
-        3.0,
-        3.0,
-        21.0,
-        21.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "ca068132a673d711879482e705f2d0765386807798e321d53dc3b5d39eafb6c3"
-    },
-    {
-      "id": "raster/dark/view-list@1x",
-      "file": "png/dark/view-list@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-list.svg",
-      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "9f410fced3dfdf30917fb28dad77c140c62b6c6287ac2366a3bbd6e281f1f994"
-    },
-    {
-      "id": "raster/dark/view-list@2x",
-      "file": "png/dark/view-list@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-list.svg",
-      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "87c87940494f943a238f92b93777ce6075d6833062ee834d8b5c9774313829cc"
-    },
-    {
-      "id": "raster/dark/view-list@3x",
-      "file": "png/dark/view-list@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/view-list.svg",
-      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "9117fc176deaeeb03b00ca3725e7920548c6883c45e5514aad380e624eefb545"
-    },
-    {
-      "id": "raster/dark/warning@1x",
-      "file": "png/dark/warning@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/warning.svg",
-      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
-      "visible_bounds": [
-        1.0,
-        2.0,
-        23.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "fc2f97abeb894435a2b6d0eb13dcf671b2232f071d8232230c2c2a9beeb41777"
-    },
-    {
-      "id": "raster/dark/warning@2x",
-      "file": "png/dark/warning@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/warning.svg",
-      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
-      "visible_bounds": [
-        1.0,
-        2.0,
-        23.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "dc383cad3148951583da49e70edff79ab5d3a31984006538933c200ef8e09b32"
-    },
-    {
-      "id": "raster/dark/warning@3x",
-      "file": "png/dark/warning@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "dark",
-      "category": "tool",
-      "source": "svg/dark/warning.svg",
-      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
-      "visible_bounds": [
-        1.0,
-        2.0,
-        23.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "06013d45a9a4fa912acc0c8cfdaab14eeadae7dae60a561478246881a256f93b"
-    },
-    {
-      "id": "raster/dark/windows-document@1x",
-      "file": "png/dark/windows-document@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "dark",
-      "category": "illustration",
-      "source": "svg/dark/windows-document.svg",
-      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
-      "visible_bounds": [
-        3.0,
-        1.0,
-        21.0,
-        23.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "2593b71a3011d32592e00eb60a1f92720bb7c32308b1d12accde35bbf6a88059"
-    },
-    {
-      "id": "raster/dark/windows-document@2x",
-      "file": "png/dark/windows-document@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "dark",
-      "category": "illustration",
-      "source": "svg/dark/windows-document.svg",
-      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
-      "visible_bounds": [
-        3.0,
-        1.0,
-        21.0,
-        23.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "c3f56e879281f01e3797f70687ff39cac923819c32ca27661cfdeb4dbfaa4cbf"
-    },
-    {
-      "id": "raster/dark/windows-document@3x",
-      "file": "png/dark/windows-document@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "dark",
-      "category": "illustration",
-      "source": "svg/dark/windows-document.svg",
-      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
-      "visible_bounds": [
-        3.0,
-        1.0,
-        21.0,
-        23.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "72ac3e7b37426ac225febb820df7cf818ac3669d839e36ad7e4e9beaa5a146ca"
-    },
-    {
-      "id": "reference/tree-folder",
-      "file": "reference/tree-folder.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree.png",
-      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
-      "rect": [
-        140,
-        660,
-        82,
-        70
-      ],
-      "size": [
-        82,
-        70
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "449408ef05b1275812764fe0cb78dbb24843cfb97b0cb61fd14e2387a309ee04"
-    },
-    {
-      "id": "reference/tree-disclosure-expanded",
-      "file": "reference/tree-disclosure-expanded.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree.png",
-      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
-      "rect": [
-        93,
-        681,
-        30,
-        28
-      ],
-      "size": [
-        30,
-        28
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "6003ab438f0f419bd5451fc45fe8bdf732aa7936eaee5cfd5235cf78a443fff7"
-    },
-    {
-      "id": "reference/tree-disclosure-collapsed",
-      "file": "reference/tree-disclosure-collapsed.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree.png",
-      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
-      "rect": [
-        194,
-        842,
-        31,
-        39
-      ],
-      "size": [
-        31,
-        39
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "f763a2ed6c6c5045433d074986528db862f2aaf5f93cb4f1cfd22bbbdfb36994"
-    },
-    {
-      "id": "reference/tree-guides-nested",
-      "file": "reference/tree-guides-nested.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree.png",
-      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
-      "rect": [
-        100,
-        812,
-        126,
-        165
-      ],
-      "size": [
-        126,
-        165
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "ba980bb208f658846650509dfe3f445b293fe18f43faca40d699dc107b4fb64e"
-    },
-    {
-      "id": "reference/tree-current-indicator",
-      "file": "reference/tree-current-indicator.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree.png",
-      "source_sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
-      "rect": [
-        60,
-        557,
-        18,
-        91
-      ],
-      "size": [
-        18,
-        91
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "e6d8c07c0cc8b123e9637f3b72c27273b438226fd429024e15589848cf3eef1a"
-    },
-    {
-      "id": "reference/tree-row-collapsed",
-      "file": "reference/tree-row-collapsed.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        35,
-        290,
-        455,
-        110
-      ],
-      "size": [
-        455,
-        110
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "5257b2e51f0a84269d607b4e1d6c7aab3f4af25818ded388063910bf92ad2dab"
-    },
-    {
-      "id": "reference/tree-row-expanded",
-      "file": "reference/tree-row-expanded.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        540,
-        291,
-        452,
-        245
-      ],
-      "size": [
-        452,
-        245
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "5b254d8056536e9139b3048b0492317f72e5b3dfb1283335853406a474cfa56a"
-    },
-    {
-      "id": "reference/tree-row-leaf",
-      "file": "reference/tree-row-leaf.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        35,
-        735,
-        455,
-        95
-      ],
-      "size": [
-        455,
-        95
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "a91faa3b53906901832a4e5990f3386fa043f52bd27dc91f433d87518cbca9c6"
-    },
-    {
-      "id": "reference/tree-row-empty",
-      "file": "reference/tree-row-empty.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        35,
-        831,
-        455,
-        98
-      ],
-      "size": [
-        455,
-        98
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "6898f0c5742d5f2dddbb7a83c2e08aade42840a490fa5baf1e11220e1afb6686"
-    },
-    {
-      "id": "reference/tree-row-current",
-      "file": "reference/tree-row-current.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        537,
-        729,
-        457,
-        76
-      ],
-      "size": [
-        457,
-        76
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "5f599676db7429904cff0bdc36ef419d12db6c2519b91d0c5248e9c9d2876680"
-    },
-    {
-      "id": "reference/tree-row-hover",
-      "file": "reference/tree-row-hover.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        538,
-        815,
-        456,
-        77
-      ],
-      "size": [
-        456,
-        77
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "ec741d3cfe3192340bee3c7784e35d337baad1ce79f901781618024771c8e762"
-    },
-    {
-      "id": "reference/tree-row-focus",
-      "file": "reference/tree-row-focus.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        538,
-        899,
-        456,
-        76
-      ],
-      "size": [
-        456,
-        76
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "5442156a4d89ad24676b70403392f5756e9f9991ef7e35dba9e53ab9d114320b"
-    },
-    {
-      "id": "reference/tree-name-tooltip",
-      "file": "reference/tree-name-tooltip.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        125,
-        1319,
-        361,
-        83
-      ],
-      "size": [
-        361,
-        83
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "b02ffb2de354693e1be1f321ac8a4253398e7ccf89f5a546d059f45ba9258b8f"
-    },
-    {
-      "id": "reference/tree-deep-hierarchy",
-      "file": "reference/tree-deep-hierarchy.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        35,
-        1171,
-        455,
-        265
-      ],
-      "size": [
-        455,
-        265
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "0d7ce15785d708520fca4dddff43dd0de0fdd071dd6d0bf28427d7744becba6c"
-    },
-    {
-      "id": "reference/tree-large-type",
-      "file": "reference/tree-large-type.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-states.png",
-      "source_sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
-      "rect": [
-        540,
-        1170,
-        452,
-        156
-      ],
-      "size": [
-        452,
-        156
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "984a531c52713f14eca938fe835ea29bb389a7f132787e6b9e1a88ca04304abf"
-    },
-    {
-      "id": "reference/tree-loading",
-      "file": "reference/tree-loading.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        58,
-        224,
-        420,
-        371
-      ],
-      "size": [
-        420,
-        371
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "e7fd05fd1ae53fbf320bd2c7fa47082b2f7365256a4f95d35787995b103d9d0c"
-    },
-    {
-      "id": "reference/tree-empty-archive",
-      "file": "reference/tree-empty-archive.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        547,
-        225,
-        423,
-        370
-      ],
-      "size": [
-        423,
-        370
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "a226778788db307bc6124f5144fc127862cbca0643514959eeccd866a7b3a348"
-    },
-    {
-      "id": "reference/tree-root-files",
-      "file": "reference/tree-root-files.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        58,
-        730,
-        420,
-        281
-      ],
-      "size": [
-        420,
-        281
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "2b845d4de93a61133e4cff0b427313e3b0ce75ce3cf2c0a3ad575f6796566dcc"
-    },
-    {
-      "id": "reference/tree-nav-limit",
-      "file": "reference/tree-nav-limit.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        547,
-        730,
-        423,
-        281
-      ],
-      "size": [
-        423,
-        281
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "11aea84dd1a845e92bb0995968f229d54dbd1e3cd89c3325f712849c6917e0e6"
-    },
-    {
-      "id": "reference/tree-read-failed",
-      "file": "reference/tree-read-failed.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        58,
-        1143,
-        420,
-        294
-      ],
-      "size": [
-        420,
-        294
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "0de817954020cba8cb9f46a07924d1e3d0507b7d9062750271f10cfd7dd8b520"
-    },
-    {
-      "id": "reference/tree-hidden-current",
-      "file": "reference/tree-hidden-current.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        547,
-        1143,
-        423,
-        287
-      ],
-      "size": [
-        423,
-        287
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "37031b8f5897f555c5d18fb0a3cdac060b28b660b7f792b12dd3b3e1789e8c46"
-    },
-    {
-      "id": "reference/tree-active-branch",
-      "file": "reference/tree-active-branch.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        873,
-        1293,
-        24,
-        24
-      ],
-      "size": [
-        24,
-        24
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "dbe3fe1d243fece2d1cc876ae316c7f7eec7a5a749bdf8a50ce33252e5df29a7"
-    },
-    {
-      "id": "reference/tree-skeleton",
-      "file": "reference/tree-skeleton.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        92,
-        458,
-        274,
-        121
-      ],
-      "size": [
-        274,
-        121
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "6ae0ff247d805d2d4ccdafbdbf9a1864a46bceb1a96f87bbaf43515d3166d305"
-    },
-    {
-      "id": "reference/tree-loading-glyph",
-      "file": "reference/tree-loading-glyph.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        93,
-        411,
-        38,
-        38
-      ],
-      "size": [
-        38,
-        38
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "e8645bb633d1f19b0f15644faa4db1723c658b12d5322c6a8587f25d052b2ab5"
-    },
-    {
-      "id": "reference/tree-info-glyph",
-      "file": "reference/tree-info-glyph.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        577,
-        920,
-        37,
-        37
-      ],
-      "size": [
-        37,
-        37
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "0c72401d5ec3c0445a2693ed4f53251bdea9100dd5e29e29079330703f3ed9e1"
-    },
-    {
-      "id": "reference/tree-error-glyph",
-      "file": "reference/tree-error-glyph.png",
-      "kind": "original-pixel-crop",
-      "source": "../hifi/screens/directory-tree-boundaries.png",
-      "source_sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
-      "rect": [
-        92,
-        1340,
-        40,
-        40
-      ],
-      "size": [
-        40,
-        40
-      ],
-      "usage": "visual-reference-only",
-      "background": "baked original pixels; no recovered transparency",
-      "sha256": "8632dfb70413f164ebd959c627c46e2e798916cfc687f88a0ba65c4cf7a8c0c1"
-    },
-    {
-      "id": "light/tree-active-branch",
-      "file": "svg/light/tree-active-branch.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/light/tree-active-branch.png"
-        ]
-      },
-      "sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
-      "source_reference": "reference/tree-active-branch.png",
-      "component": "directory-tree",
-      "integration_status": "html-and-qt-consumer",
-      "visible_bounds": [
-        9.0,
-        9.0,
-        15.0,
-        15.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "light/tree-info",
-      "file": "svg/light/tree-info.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
-      "source_reference": "reference/tree-info-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "light/tree-spinner",
-      "file": "svg/light/tree-spinner.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
-      "source_reference": "reference/tree-loading-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "light/tree-warning",
-      "file": "svg/light/tree-warning.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
-      "source_reference": "reference/tree-error-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.3333,
-        22.0,
-        20.6667
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/tree-active-branch",
-      "file": "svg/dark/tree-active-branch.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/dark/tree-active-branch.png"
-        ]
-      },
-      "sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
-      "source_reference": "reference/tree-active-branch.png",
-      "component": "directory-tree",
-      "integration_status": "html-and-qt-consumer",
-      "visible_bounds": [
-        9.0,
-        9.0,
-        15.0,
-        15.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/tree-info",
-      "file": "svg/dark/tree-info.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
-      "source_reference": "reference/tree-info-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/tree-spinner",
-      "file": "svg/dark/tree-spinner.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
-      "source_reference": "reference/tree-loading-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/tree-warning",
-      "file": "svg/dark/tree-warning.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "status",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": []
-      },
-      "sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
-      "source_reference": "reference/tree-error-glyph.png",
-      "component": "directory-tree",
-      "integration_status": "design-resource-status-consumer-pending",
-      "visible_bounds": [
-        2.0,
-        2.3333,
-        22.0,
-        20.6667
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "raster/light/tree-active-branch@1x",
-      "file": "png/light/tree-active-branch@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/tree-active-branch.svg",
-      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
-      "visible_bounds": [
-        9.0,
-        9.0,
-        15.0,
-        15.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "442abf408469f7b8d46732ed05f189f3baadefc97f08c7309912546c7d2ac3b0"
-    },
-    {
-      "id": "raster/light/tree-active-branch@2x",
-      "file": "png/light/tree-active-branch@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/tree-active-branch.svg",
-      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
-      "visible_bounds": [
-        9.0,
-        9.0,
-        15.0,
-        15.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "d2831b60400c9ea8cc41faee8d74c70cf75d2ed58bffc3ee0a8ee301ce320468"
-    },
-    {
-      "id": "raster/light/tree-active-branch@3x",
-      "file": "png/light/tree-active-branch@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/tree-active-branch.svg",
-      "source_sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
-      "visible_bounds": [
-        9.0,
-        9.0,
-        15.0,
-        15.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "0956e9bdd1d0a36c5e4e6614e12762e95b96ad2eebadf00eaa08abe3d9cb5131"
-    },
-    {
-      "id": "raster/light/tree-info@1x",
-      "file": "png/light/tree-info@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-info.svg",
-      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "39722869af0c3325a820040cedaf77c6c1c7dd49d9931d35d7c464bdc0c4a4d9"
-    },
-    {
-      "id": "raster/light/tree-info@2x",
-      "file": "png/light/tree-info@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-info.svg",
-      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "33cff17b6b0c7be37a770181c671718c97f86cdec6c985c8a7b2a96d1cfd1792"
-    },
-    {
-      "id": "raster/light/tree-info@3x",
-      "file": "png/light/tree-info@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-info.svg",
-      "source_sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "3620c0289dd3ff0b7a50a063f10df08d5c89283396ce0b30559ce4fa71b622a2"
-    },
-    {
-      "id": "raster/light/tree-spinner@1x",
-      "file": "png/light/tree-spinner@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-spinner.svg",
-      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "37833d7dd123bbf6437288e22907d7a347f5be1f9fb4899a311e997a9c249114"
-    },
-    {
-      "id": "raster/light/tree-spinner@2x",
-      "file": "png/light/tree-spinner@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-spinner.svg",
-      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "580a308360cf636d74a474f66f1d23198bc62aee341ff4eb4c042db3da9f7b75"
-    },
-    {
-      "id": "raster/light/tree-spinner@3x",
-      "file": "png/light/tree-spinner@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-spinner.svg",
-      "source_sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "710e4c5c273ee8f788164f9fd966be306aae0b907252b47a3f5950f2f8c73e80"
-    },
-    {
-      "id": "raster/light/tree-warning@1x",
-      "file": "png/light/tree-warning@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-warning.svg",
-      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        21.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "d56f1d29494c57a1be90ff8aedc493cf11a1f10b772f380184a3c87c8de29b83"
-    },
-    {
-      "id": "raster/light/tree-warning@2x",
-      "file": "png/light/tree-warning@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-warning.svg",
-      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
-      "visible_bounds": [
-        2.0,
-        2.5,
-        22.0,
-        20.5
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "2c5f701c8f42dd64c7e7599facf13879666309c1184e4ba46cf6ef8f8d706cdb"
-    },
-    {
-      "id": "raster/light/tree-warning@3x",
-      "file": "png/light/tree-warning@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/tree-warning.svg",
-      "source_sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
-      "visible_bounds": [
-        2.0,
-        2.3333,
-        22.0,
-        20.6667
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
-    },
-    {
       "id": "raster/dark/tree-active-branch@1x",
       "file": "png/dark/tree-active-branch@1x.png",
       "kind": "vector-rasterization",
@@ -21297,132 +21269,8 @@
       "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
     },
     {
-      "id": "light/view-grid-selected",
-      "file": "svg/light/view-grid-selected.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/light/view-grid-selected.png"
-        ]
-      },
-      "sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
-      "source_reference": "reference/view-grid.png",
-      "visible_bounds": [
-        3.0,
-        3.0,
-        21.0,
-        21.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "light/view-list-selected",
-      "file": "svg/light/view-list-selected.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "light",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/light/view-list-selected.png"
-        ]
-      },
-      "sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
-      "source_reference": "reference/view-list.png",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/view-grid-selected",
-      "file": "svg/dark/view-grid-selected.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/dark/view-grid-selected.png"
-        ]
-      },
-      "sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
-      "source_reference": "reference/view-grid.png",
-      "visible_bounds": [
-        3.0,
-        3.0,
-        21.0,
-        21.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "dark/view-list-selected",
-      "file": "svg/dark/view-list-selected.svg",
-      "kind": "vector-reconstruction",
-      "logical_size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "theme": "dark",
-      "category": "tool",
-      "usage": "runtime-and-design",
-      "runtime_usage": {
-        "html": "registered in the shared design library",
-        "qt_aliases": [
-          "assets/dark/view-list-selected.png"
-        ]
-      },
-      "sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
-      "source_reference": "reference/view-list.png",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
-    },
-    {
-      "id": "raster/light/view-grid-selected@1x",
-      "file": "png/light/view-grid-selected@1x.png",
+      "id": "raster/dark/view-grid@1x",
+      "file": "png/dark/view-grid@1x.png",
       "kind": "vector-rasterization",
       "size": [
         24,
@@ -21437,10 +21285,10 @@
         24
       ],
       "scale": 1,
-      "theme": "light",
+      "theme": "dark",
       "category": "tool",
-      "source": "svg/light/view-grid-selected.svg",
-      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "source": "svg/dark/view-grid.svg",
+      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
       "visible_bounds": [
         3.0,
         3.0,
@@ -21448,11 +21296,11 @@
         21.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "005c87be8049f94558039989f99e4c78507e0dd06e6fa6571f1dc245a607c1d3"
+      "sha256": "e23d22bb7ca8573d4214eacb0114bc3fcbd171c775383ee3a455c4a6e4bc70bd"
     },
     {
-      "id": "raster/light/view-grid-selected@2x",
-      "file": "png/light/view-grid-selected@2x.png",
+      "id": "raster/dark/view-grid@2x",
+      "file": "png/dark/view-grid@2x.png",
       "kind": "vector-rasterization",
       "size": [
         48,
@@ -21467,10 +21315,10 @@
         24
       ],
       "scale": 2,
-      "theme": "light",
+      "theme": "dark",
       "category": "tool",
-      "source": "svg/light/view-grid-selected.svg",
-      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "source": "svg/dark/view-grid.svg",
+      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
       "visible_bounds": [
         3.0,
         3.0,
@@ -21478,11 +21326,11 @@
         21.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "03cd878d02193eb0bd74c2eb37894985f8638936690bf7aa8c8317e218f3a356"
+      "sha256": "290f7d743970b5b00046d740063bdef2f19a063528318ea4f214fad278d0fc67"
     },
     {
-      "id": "raster/light/view-grid-selected@3x",
-      "file": "png/light/view-grid-selected@3x.png",
+      "id": "raster/dark/view-grid@3x",
+      "file": "png/dark/view-grid@3x.png",
       "kind": "vector-rasterization",
       "size": [
         72,
@@ -21497,10 +21345,10 @@
         24
       ],
       "scale": 3,
-      "theme": "light",
+      "theme": "dark",
       "category": "tool",
-      "source": "svg/light/view-grid-selected.svg",
-      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "source": "svg/dark/view-grid.svg",
+      "source_sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
       "visible_bounds": [
         3.0,
         3.0,
@@ -21508,97 +21356,7 @@
         21.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "cf002c6209e738d604be8a953bce03002809a1370d3625ed0c2787f2c5eb8a83"
-    },
-    {
-      "id": "raster/light/view-list-selected@1x",
-      "file": "png/light/view-list-selected@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/view-list-selected.svg",
-      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "c07258e48f82f805d6849f87d766abe19c2ee2a9397c84a5327e7811746ec635"
-    },
-    {
-      "id": "raster/light/view-list-selected@2x",
-      "file": "png/light/view-list-selected@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/view-list-selected.svg",
-      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "739721c74436b6cdc6957dc89e88e0cfa76b75d5db426c60a1b85ddb2e98b265"
-    },
-    {
-      "id": "raster/light/view-list-selected@3x",
-      "file": "png/light/view-list-selected@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "tool",
-      "source": "svg/light/view-list-selected.svg",
-      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
-      "visible_bounds": [
-        4.0,
-        5.0,
-        20.0,
-        19.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "b33372fab7c4ddb6b1282f00f87d5c2965bbed156ceed9648538e34769fd7a5f"
+      "sha256": "ca068132a673d711879482e705f2d0765386807798e321d53dc3b5d39eafb6c3"
     },
     {
       "id": "raster/dark/view-grid-selected@1x",
@@ -21691,6 +21449,96 @@
       "sha256": "116525f7642206c24dcdfc8fb1fd95b21e46fb8cbcb68f6ff99254cf74d26ac7"
     },
     {
+      "id": "raster/dark/view-list@1x",
+      "file": "png/dark/view-list@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list.svg",
+      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "9f410fced3dfdf30917fb28dad77c140c62b6c6287ac2366a3bbd6e281f1f994"
+    },
+    {
+      "id": "raster/dark/view-list@2x",
+      "file": "png/dark/view-list@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list.svg",
+      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "87c87940494f943a238f92b93777ce6075d6833062ee834d8b5c9774313829cc"
+    },
+    {
+      "id": "raster/dark/view-list@3x",
+      "file": "png/dark/view-list@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list.svg",
+      "source_sha256": "4d3d0abd10e02555b556f081fcffd1cfbc1e1ee6f3c8e9d9b27b4b28da1e7079",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "9117fc176deaeeb03b00ca3725e7920548c6883c45e5514aad380e624eefb545"
+    },
+    {
       "id": "raster/dark/view-list-selected@1x",
       "file": "png/dark/view-list-selected@1x.png",
       "kind": "vector-rasterization",
@@ -21779,6 +21627,186 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "15f71b5f9b667ca66433249cb85fab2d3860dab86abdc10e69f5f7b2f3bac754"
+    },
+    {
+      "id": "raster/dark/warning@1x",
+      "file": "png/dark/warning@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/warning.svg",
+      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
+      "visible_bounds": [
+        1.0,
+        2.0,
+        23.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "fc2f97abeb894435a2b6d0eb13dcf671b2232f071d8232230c2c2a9beeb41777"
+    },
+    {
+      "id": "raster/dark/warning@2x",
+      "file": "png/dark/warning@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/warning.svg",
+      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
+      "visible_bounds": [
+        1.0,
+        2.0,
+        23.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "dc383cad3148951583da49e70edff79ab5d3a31984006538933c200ef8e09b32"
+    },
+    {
+      "id": "raster/dark/warning@3x",
+      "file": "png/dark/warning@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/warning.svg",
+      "source_sha256": "cf2f8726b4eb5cd9bf0f96956117225c724f661a6ddebcc4a3547e3f72d7b377",
+      "visible_bounds": [
+        1.0,
+        2.0,
+        23.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "06013d45a9a4fa912acc0c8cfdaab14eeadae7dae60a561478246881a256f93b"
+    },
+    {
+      "id": "raster/dark/windows-document@1x",
+      "file": "png/dark/windows-document@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/windows-document.svg",
+      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
+      "visible_bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "2593b71a3011d32592e00eb60a1f92720bb7c32308b1d12accde35bbf6a88059"
+    },
+    {
+      "id": "raster/dark/windows-document@2x",
+      "file": "png/dark/windows-document@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/windows-document.svg",
+      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
+      "visible_bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c3f56e879281f01e3797f70687ff39cac923819c32ca27661cfdeb4dbfaa4cbf"
+    },
+    {
+      "id": "raster/dark/windows-document@3x",
+      "file": "png/dark/windows-document@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/windows-document.svg",
+      "source_sha256": "6a0a8f532b95b40ca9653d329ca5b54e3de7e3f493540b93cf1a951028c76988",
+      "visible_bounds": [
+        3.0,
+        1.0,
+        21.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "72ac3e7b37426ac225febb820df7cf818ac3669d839e36ad7e4e9beaa5a146ca"
     }
   ]
 }

@@ -117,6 +117,17 @@ def main():
                                         frame.locator('.window').screenshot(path=str(OUTPUT / f'{kind}.png'))
                                 page.keyboard.press('Escape')
                                 expect(frame.locator('.ui-menu')).to_have_count(0)
+                                operation_ratio = spec['operation']['source_to_logical'][0] / spec['operation']['source_to_logical'][1]
+                                for view in ['extract', 'progress', 'settings']:
+                                    page.locator('#view').select_option(view)
+                                    expect(child.locator('dialog[open]')).to_have_attribute('data-kind', view)
+                                    check(tag + '/operation width ' + view, child.locator('dialog[open]').bounding_box()['width'], spec['operation']['logical_widths'].get(view, spec['operation']['logical_widths']['default']), 1)
+                                    for selector, expected in [('.modal-footer .button', spec['operation']['footer']['fontSize']), ('.modal-footer .ready-label,.modal-footer .info-line', spec['operation']['footer']['noteSize'])]:
+                                        fonts = child.locator('dialog[open] ' + selector).evaluate_all('(nodes)=>nodes.map(n=>parseFloat(getComputedStyle(n).fontSize))')
+                                        for i, size in enumerate(fonts):
+                                            check(tag + f'/operation footer {view}/{selector}/{i}', size * operation_ratio, expected)
+                                page.locator('#view').select_option('main')
+                                expect(child.locator('#file-rows tr')).to_have_count(9)
                         finally:
                             context.close()
             finally:

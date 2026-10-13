@@ -24,6 +24,13 @@ def main():
                     f'  --ui-source-factor: {source_factor};',
                     f'  --main-density: {layout["main"]["density"]};',
                     '  --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));']
+    operation_ratio = layout['operation']['source_to_logical']
+    declarations.append(f'  --operation-source-factor: {operation_ratio[1] / operation_ratio[0]};')
+    for kind, density in layout['operation']['oversized_source_density'].items():
+        declarations.append(f'  --operation-{kind}-density: {density};')
+    for name, value in layout['operation']['footer'].items():
+        key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
+        declarations.append(f'  --operation-footer-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in tokens['size'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --ui-{key}: calc({value}px * var(--ui-source-factor));')

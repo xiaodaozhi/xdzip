@@ -12,7 +12,7 @@ from pathlib import Path
 
 from PIL import Image
 from asset_definitions import (
-    CONTROL_PATHS, CROPS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
+    CONTROL_PATHS, CROPS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, FLAT_STATUS_ICONS, MAIN_SHAPES,
     REFERENCES, STATE_SHAPES, SUPPLEMENTAL_ROLES, file_shapes, hero_shapes, revised_status_shapes,
     supplemental_shapes,
 )
@@ -125,7 +125,7 @@ def svg_entries(check: bool = False) -> list[dict]:
             elif name in supplemental:
                 content = supplemental[name]
             else:
-                content = GRADIENTS + state_shapes[name].replace('{paper}', paper).replace('{muted}', state_muted).replace('{track}', track)
+                content = ('' if name in FLAT_STATUS_ICONS else GRADIENTS) + state_shapes[name].replace('{paper}', paper).replace('{muted}', state_muted).replace('{track}', track)
             stroke_ink = ('#1956ff' if theme == 'light' else '#8aafff') if name in ('view-list-selected', 'view-grid-selected') else ink
             svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" '
                    f'fill="none" stroke="{stroke_ink}" stroke-width="1.5" stroke-linecap="round" '
@@ -144,6 +144,9 @@ def svg_entries(check: bool = False) -> list[dict]:
                                   'qt_aliases': qt_aliases.get((theme, name), [])},
                 'sha256': digest(target),
             }
+            if name in FLAT_STATUS_ICONS:
+                entry['visual_revision'] = 'flat-task-status'
+                entry['style'] = 'solid-disc-with-white-mark'
             if name in REFERENCES:
                 entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
                 if name in ('app-mark', 'archive', 'archive-grey'):
@@ -238,9 +241,10 @@ def gallery(entries: list[dict]) -> str:
                     f'<img width="48" height="48" src="{item["brand_source"]}" alt="品牌母版：{label}">'
                     if 'brand_source' in item else '<span class="missing">无独立切片</span>')
             qt_count = len(item['runtime_usage']['qt_aliases'])
-            reference_caption = ('历史设计参考' if item.get('reference_relation') == 'historical-design-reference' else
+            reference_caption = ('历史设计参考' if item.get('reference_relation') == 'historical-design-reference' or item.get('visual_revision') == 'flat-task-status' else
                                  '当前品牌母版' if 'brand_source' in item else '原稿参考')
-            cards.append(f'''<article class="card" id="icon-{label}" data-name="{label}"><header><b>{label}</b><span>{f'浅色 Qt {qt_count} 引用' if qt_count else 'HTML 素材库 / 可复用'}</span></header><div class="comparison"><div class="source"><small>{reference_caption}</small><div class="sample">{crop}</div></div><div><small>浅色 · 48 px</small><div class="sample"><img width="48" height="48" src="svg/light/{label}.svg" alt="{label} 浅色"></div></div><div><small>深色 · 48 px</small><div class="sample dark"><img width="48" height="48" src="svg/dark/{label}.svg" alt="{label} 深色"></div></div></div><div class="exports"><span>透明导出</span>{''.join(f'<div><img width="{24 * scale}" height="{24 * scale}" src="png/light/{label}@{scale}x.png" alt="{label} {scale} 倍"><small>{24 * scale} × {24 * scale}</small></div>' for scale in (1, 2, 3))}</div></article>''')
+            revision_note = '<small>当前修订：纯色扁平圆盘；原稿仅作历史对照。</small>' if name in FLAT_STATUS_ICONS else ''
+            cards.append(f'''<article class="card" id="icon-{label}" data-name="{label}"><header><b>{label}</b><span>{f'浅色 Qt {qt_count} 引用' if qt_count else 'HTML 素材库 / 可复用'}</span></header>{revision_note}<div class="comparison"><div class="source"><small>{reference_caption}</small><div class="sample">{crop}</div></div><div><small>浅色 · 48 px</small><div class="sample"><img width="48" height="48" src="svg/light/{label}.svg" alt="{label} 浅色"></div></div><div><small>深色 · 48 px</small><div class="sample dark"><img width="48" height="48" src="svg/dark/{label}.svg" alt="{label} 深色"></div></div></div><div class="exports"><span>透明导出</span>{''.join(f'<div><img width="{24 * scale}" height="{24 * scale}" src="png/light/{label}@{scale}x.png" alt="{label} {scale} 倍"><small>{24 * scale} × {24 * scale}</small></div>' for scale in (1, 2, 3))}</div></article>''')
         sections.append(f'<section id="{group}"><h2>{GROUP_TITLES[group]}</h2><div class="grid">{"".join(cards)}</div></section>')
     cut_cards = []
     component_cards = []

@@ -37,7 +37,21 @@
       1280,
       1548
     ],
-    "density": 1
+    "density": 1,
+    "oversized_source_density": {
+      "extract": 0.8,
+      "progress": 0.8
+    },
+    "footer": {
+      "fontSize": 15,
+      "noteSize": 13,
+      "iconSize": 16
+    },
+    "logical_widths": {
+      "default": 612,
+      "extract": 614,
+      "progress": 846
+    }
   },
   "controls": {
     "density": 1,

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "style": "flat-solid-disc",
+  "canvas": [
+    24,
+    24
+  ],
+  "rules": [
+    "Single uniform fill; white semantic mark",
+    "No gradients, lighting, rim, shadow or filter",
+    "Transparent 24/48/72 PNG exports; glyph proportions preserved"
+  ],
+  "icons": {
+    "status-success": {
+      "light": "#31ad27",
+      "dark": "#31ad27",
+      "radius": 10
+    },
+    "status-partial-success": {
+      "light": "#1367ff",
+      "dark": "#1367ff",
+      "radius": 10
+    },
+    "status-warning": {
+      "light": "#f3aa0a",
+      "dark": "#f3aa0a",
+      "radius": 10
+    },
+    "status-skipped": {
+      "light": "#949daf",
+      "dark": "#9eacc2",
+      "radius": 10
+    },
+    "status-stopped": {
+      "light": "#7c899e",
+      "dark": "#93a6c2",
+      "radius": 10
+    },
+    "cancelled-large": {
+      "light": "#7c899e",
+      "dark": "#93a6c2",
+      "radius": 10
+    },
+    "success": {
+      "light": "#329345",
+      "dark": "#329345",
+      "radius": 10
+    }
+  }
+}
