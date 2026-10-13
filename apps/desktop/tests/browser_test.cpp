@@ -352,6 +352,37 @@ class BrowserTest : public QObject {
             disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
                 .toPoint());
         QTRY_VERIFY(!marker->isVisible());
+        // Collapse/reopen reuses delegates. Assert the rendered hierarchy, not merely
+        // the expansion flag, before capturing or allowing a later frame to hide drift.
+        for (int cycle = 0; cycle < 8; ++cycle) {
+            QTRY_VERIFY([&] {
+                auto *parentIcon = findVisual(window->contentItem(), "directoryFolder-d1");
+                auto *childIcon = findVisual(window->contentItem(), "directoryFolder-d2");
+                return parentIcon && childIcon && childIcon->isVisible() &&
+                       qAbs(childIcon->mapToScene(QPointF()).x() -
+                            parentIcon->mapToScene(QPointF()).x() - 16) < 0.5;
+            }());
+            if (cycle < 7) {
+                // TreeView may pool even the parent delegate during relayout; locate
+                // the current identity again instead of clicking a stale QObject.
+                auto clickParent = [&] {
+                    auto *button = findVisual(window->contentItem(), "directoryDisclosure-d1");
+                    if (!button)
+                        return false;
+                    QTest::mouseClick(
+                        window, Qt::LeftButton, Qt::NoModifier,
+                        button->mapToScene(QPointF(button->width() / 2, button->height() / 2))
+                            .toPoint());
+                    return true;
+                };
+                QVERIFY(clickParent());
+                QTRY_VERIFY([&] {
+                    auto *collapsed = findVisual(window->contentItem(), "directory-d2");
+                    return !collapsed || !collapsed->isVisible();
+                }());
+                QVERIFY(clickParent());
+            }
+        }
         if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT")) {
             const auto directory = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
             QVERIFY(QDir().mkpath(directory));

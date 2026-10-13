@@ -595,13 +595,14 @@ ApplicationWindow {
                             required property string fullPath
                             required property var continuationFlags
                             required property bool lastSibling
+                            required property int nodeDepth
                             readonly property bool hiddenCurrentBranch: reader.directoryId !== nodeId && !expanded && reader.directoryAncestors(reader.directoryId).includes(nodeId)
                             objectName: "directory-" + nodeId
                             implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))
                             implicitWidth: directoryTree.width
                             indentation: Theme.treeDepthIndent
                             leftMargin: 0
-                            leftPadding: Theme.treeContentLeftInset + depth * Theme.treeDepthIndent + Theme.treeDisclosureHitWidth * Theme.fontScale
+                            leftPadding: Theme.treeContentLeftInset + nodeDepth * Theme.treeDepthIndent + Theme.treeDisclosureHitWidth * Theme.fontScale
                             topPadding: 0
                             bottomPadding: 0
                             rightPadding: 8
@@ -609,7 +610,7 @@ ApplicationWindow {
                             indicator: ToolButton {
                                 id: directoryDisclosure
                                 objectName: "directoryDisclosure-" + directoryNode.nodeId
-                                x: Theme.treeContentLeftInset + directoryNode.depth * Theme.treeDepthIndent
+                                x: Theme.treeContentLeftInset + directoryNode.nodeDepth * Theme.treeDepthIndent
                                 y: (directoryNode.height - height) / 2
                                 width: Theme.treeDisclosureHitWidth * Theme.fontScale
                                 height: Theme.treeDisclosureHitMinHeight * Theme.fontScale
@@ -690,8 +691,8 @@ ApplicationWindow {
                                     }
                                 }
                                 Rectangle {
-                                    visible: directoryNode.depth > 0
-                                    x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + (directoryNode.depth - 1) * Theme.treeDepthIndent
+                                    visible: directoryNode.nodeDepth > 0
+                                    x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + (directoryNode.nodeDepth - 1) * Theme.treeDepthIndent
                                     width: 1
                                     height: directoryNode.lastSibling ? directoryNode.height / 2 : directoryNode.height
                                     color: Theme.treeGuideColor

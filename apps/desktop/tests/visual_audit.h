@@ -32,7 +32,8 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
                      {"baselineOffset", item->baselineOffset()}};
     for (const auto *key :
          {"text", "color", "source", "radius", "horizontalAlignment", "verticalAlignment",
-          "contentWidth", "contentHeight", "opacity", "leftPadding", "rightPadding"}) {
+          "contentWidth", "contentHeight", "opacity", "leftPadding", "rightPadding", "nodeDepth",
+          "depth", "row", "expanded"}) {
         const auto value = item->property(key);
         if (value.isValid())
             node[key] = QJsonValue::fromVariant(value);

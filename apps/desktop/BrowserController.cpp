@@ -98,7 +98,8 @@ BrowserController::BrowserController(QObject *parent)
                                     {Qt::UserRole + 1, "entryCount"},
                                     {Qt::UserRole + 2, "fullPath"},
                                     {Qt::UserRole + 3, "continuationFlags"},
-                                    {Qt::UserRole + 4, "lastSibling"}});
+                                    {Qt::UserRole + 4, "lastSibling"},
+                                    {Qt::UserRole + 5, "nodeDepth"}});
     m_admissionRetry.setSingleShot(true);
     connect(&m_admissionRetry, &QTimer::timeout, this, &BrowserController::attemptSubmission);
     m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
@@ -341,10 +342,12 @@ void BrowserController::replaceDirectories(const QList<DirectoryRow> &rows) {
         item->setData(row.id, Qt::UserRole);
         item->setData(row.count, Qt::UserRole + 1);
         item->setData(row.path, Qt::UserRole + 2);
+        const int depth = depths.value(row.parent, -1) + 1;
+        // Bind indentation to stable model identity, not TreeView's recycled row state.
+        item->setData(depth, Qt::UserRole + 5);
         parent->appendRow(item);
         m_directoryItems.insert(row.id, item);
         m_directoryPaths.insert(row.path, row.id);
-        const int depth = depths.value(row.parent, -1) + 1;
         depths.insert(row.id, depth);
         m_navigationWidth = qMax(m_navigationWidth, 160 + depth * 16);
     }
