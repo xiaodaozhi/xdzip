@@ -14,6 +14,14 @@
 
 应用型 Rust workspace 提交 Cargo.lock。新增原生库和网络下载 build script 需专门审查；禁用未使用 features。弃用或漏洞无修复时按实际可达性决定升级、替换或关闭能力，记录原因。
 
+## Windows 来源身份
+
+M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `file::information(&File)` 安全封装，比较卷序列号与文件索引。长度、修改／创建时间无法可靠检测 NTFS 同名替换；标准库对应文件索引接口尚非稳定 API，自行写 Win32 unsafe 会扩大审查范围。因此复用锁文件已有的库，不新增包版本。
+
+来源为 crates.io／[BurntSushi/winapi-util](https://github.com/BurntSushi/winapi-util)，许可选择 MIT（上游 MIT 或 Unlicense 双许可）。Windows 传递依赖为已锁定的 windows-sys 0.61.2、windows-link 0.2.1，均为 MIT 或 Apache-2.0；仅启用上游声明的 Win32 模块，禁用默认特性，无 build script、外部原生构建或网络下载。非 Windows 目标不编译这条运行依赖。上游安全封装借用有效 File 句柄，系统调用失败使旧来源失效；不跨 FFI 传递这个句柄，不将身份检查当作安全写入授权。
+
+版本来源、特性、原生编译行为已检查；Windows GNU 目标类型检查已通过，原生 Windows 回归必须覆盖保留修改时间的同名／同大小替换。上游为小型 Win32 安全封装项目，升级由锁文件和原生回归约束，未做独立维护或安全审计。2026-10-13 的 OSV 精确版本查询未返回这三个包的已知公告，见 [查询记录](../qa/m2/windows-dependency-advisories.json)；这不是无漏洞证明。开发包继续收集所有上游许可证。
+
 ## HTML 复核字体与工具
 
 采用官方 Noto Sans SC 2.004-H2 的离线可变子集，替代审阅设备的系统回退字体。固定 Google Fonts 提交、原始及衍生哈希、版权和 OFL-1.1 许可见 [材料清单](../../design/assets/fonts/manifest.json)。HTML 仅加载约128KB WOFF2，含400–750字重；无外部服务、传递运行依赖或原生编译。保留系统字体方案会导致跨平台文字度量不同，因此审阅稿采用随包字体。覆盖已检查，未知生成原稿字体仍不能证明匹配；未实施独立漏洞审计。字体上游持续维护，固定版本需随维护情况复核。

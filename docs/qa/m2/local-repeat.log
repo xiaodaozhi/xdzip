@@ -1,0 +1,26 @@
+Internal ctest changing into directory: /tmp/xdzip-brand-ui
+Test project /tmp/xdzip-brand-ui
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.44 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.52 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.43 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.39 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.52 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.36 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.43 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.47 sec
+    Start 4: qt_zip_browser
+    Test #4: qt_zip_browser ...................   Passed    6.57 sec
+    Start 4: qt_zip_browser
+1/1 Test #4: qt_zip_browser ...................   Passed    6.63 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  64.76 sec

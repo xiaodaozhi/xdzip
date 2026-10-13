@@ -291,7 +291,6 @@ mod tests {
         let old = path.with_extension("old");
         std::fs::rename(&path, &old).unwrap();
         std::fs::write(&path, &bytes).unwrap();
-        #[cfg(unix)]
         {
             let modified = std::fs::metadata(&old).unwrap().modified().unwrap();
             std::fs::File::options()

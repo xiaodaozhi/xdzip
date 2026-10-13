@@ -29,3 +29,5 @@ Rust 工作区、Clippy、QML 检查及本地 5 组 CTest 已通过。新增回�
 ## CI 状态纠正
 
 此前“main 未触发 CI”的说明有误：连接器按提交查询的工具只返回 PR 事件。完整运行列表确认 main push 正常触发。旧提交 `70a84e2` 的 Windows、Linux、HTML 和核心检查通过，macOS 表头测试有异步时序失败；现改为等待真实排序意图到达及查询完成，新提交结果必须单独核验。
+
+M2 首次提交 `1bbdfe2` 的 Linux Qt 构建通过，Windows 核心发现同名同大小替换的身份遗漏，Windows 测量因 GUI 可执行文件 stdout 缺失而未取得日志，macOS 完整套件在第 8 次重复运行碰到外层 30 秒上限。补充 Windows 句柄身份及保留修改时间的回归，测量改用 QTest 显式文件日志，完整套件上限改为 120 秒并记录用例入口；各断言的局部截止时间不放宽。修正提交需重新取得三平台结果。本地连续 10 次生命周期回归见 [日志](m2/local-repeat.log)，两份大归档的 Python 独立校验见 [记录](m2/local-interop.json)。

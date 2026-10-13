@@ -83,8 +83,10 @@ if(BUILD_TESTING)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-ui-resources xdzip-reader-rust
         Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Test)
-    add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests)
-    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 30)
+    add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1)
+    # Whole-suite ceiling includes large scans and many event-loop waits. Individual
+    # QTRY assertions keep their own deadlines; a slow host must report the assertion.
+    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 120)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
 endif()
 foreach(target xdzip-browser xdzip-browser-tests)

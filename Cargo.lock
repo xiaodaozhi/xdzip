@@ -347,6 +347,7 @@ dependencies = [
 name = "xdzip-runtime"
 version = "0.1.0"
 dependencies = [
+ "winapi-util",
  "xdzip-codec-api",
  "xdzip-codec-zip",
  "xdzip-domain",

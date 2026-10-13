@@ -10,5 +10,7 @@ xdzip-extract-plan = { path = "../xdzip-extract-plan" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
+[target.'cfg(windows)'.dependencies]
+winapi-util = { version = "=0.1.11", default-features = false }
 [lints]
 workspace = true

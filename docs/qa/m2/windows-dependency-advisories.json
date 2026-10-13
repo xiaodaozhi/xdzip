@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-13",
+  "source": "https://api.osv.dev/v1/query",
+  "packages": [
+    {
+      "name": "winapi-util",
+      "version": "0.1.11",
+      "advisories": []
+    },
+    {
+      "name": "windows-sys",
+      "version": "0.61.2",
+      "advisories": []
+    },
+    {
+      "name": "windows-link",
+      "version": "0.2.1",
+      "advisories": []
+    }
+  ]
+}

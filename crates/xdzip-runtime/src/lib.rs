@@ -38,7 +38,7 @@ impl Archive {
         if !before.is_file() {
             return Err(ScanError::Io);
         }
-        let version = source::SourceVersion::read(&before)?;
+        let version = source::SourceVersion::read(&source)?;
         let scanned = ZipCodec.scan(&mut source, control, ScanLimits::default());
         control.check()?;
         let source = source::Source::new(source, path.to_owned(), version);
