@@ -390,6 +390,9 @@ MAIN_SHAPES = {'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6"
  'more': '<circle cx="5" cy="12" r="1.5" fill="{ink}" stroke="none"/><circle cx="12" cy="12" r="1.5" '
          'fill="{ink}" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="{ink}" stroke="none"/>'}
 
+# Selected view glyphs reuse the exact outlines; only the semantic ink changes.
+EXTRA_CONTROL_PATHS.update({name + '-selected': CONTROL_PATHS[name] for name in ('view-list', 'view-grid')})
+
 STATE_SHAPES = {'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></g>',
  'remove': '<circle cx="12" cy="12" r="9" stroke="{track}"/><path d="M8 12h8"/>',
  'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>'}
@@ -430,3 +433,4 @@ REFERENCES = {'app-mark': 'brand-titlebar',
 
 # Every previously unmapped source has its own named reconstruction.
 REFERENCES.update({name: name for name in SUPPLEMENTAL_ROLES})
+REFERENCES.update({'view-list-selected': 'view-list', 'view-grid-selected': 'view-grid'})

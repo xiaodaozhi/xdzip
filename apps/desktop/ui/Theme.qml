@@ -145,7 +145,7 @@ QtObject {
     readonly property real mainExtractWidth: 151.31782946
     readonly property real mainSplitWidth: 40.51679587
     readonly property real mainToolbarRightInset: 14.05684755
-    readonly property real mainToolbarLeftInset: 19.84496124
+    readonly property real mainToolbarLeftInset: 19.01808786
     readonly property real mainPreviewHeight: 229.04392765
     readonly property real mainPreviewRadius: 7.44186047
     readonly property real mainArchiveCardHeight: 139.74160207
@@ -159,6 +159,18 @@ QtObject {
     readonly property real mainViewButtonHeight: 33.07493540
     readonly property real mainViewIconSize: 21.49870801
     readonly property real mainNameHeaderInset: 71.93798450
+    readonly property real mainToolbarActionWidth: 90.95607235
+    readonly property real mainToolbarActionInset: 3.30749354
+    readonly property real mainToolbarOpenGap: 12.40310078
+    readonly property real mainToolbarNewGap: 7.44186047
+    readonly property real mainToolbarSeparatorGap: 18.19121447
+    readonly property real mainToolbarTestGap: 16.12403101
+    readonly property real mainToolbarMoreWidth: 33.07493540
+    readonly property real mainToolbarTextGap: 10.74935401
+    readonly property real mainSearchTextInset: 42.17054264
+    readonly property real mainSearchIconInset: 14.05684755
+    readonly property real mainSearchIconSize: 20.67183463
+    readonly property real mainToolbarGroupGap: 10.74935401
     readonly property real mainTableSize: 16 * fontScale
     readonly property real mainHeaderSize: 15 * fontScale
     readonly property real mainPaneTitleSize: 17 * fontScale

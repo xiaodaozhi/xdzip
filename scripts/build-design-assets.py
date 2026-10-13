@@ -126,8 +126,9 @@ def svg_entries(check: bool = False) -> list[dict]:
                 content = supplemental[name]
             else:
                 content = GRADIENTS + state_shapes[name].replace('{paper}', paper).replace('{muted}', state_muted).replace('{track}', track)
+            stroke_ink = ('#1956ff' if theme == 'light' else '#8aafff') if name in ('view-list-selected', 'view-grid-selected') else ink
             svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" '
-                   f'fill="none" stroke="{ink}" stroke-width="1.5" stroke-linecap="round" '
+                   f'fill="none" stroke="{stroke_ink}" stroke-width="1.5" stroke-linecap="round" '
                    f'stroke-linejoin="round">{content}</svg>\n')
             target = ROOT / 'svg' / theme / f'{name}.svg'
             if check:

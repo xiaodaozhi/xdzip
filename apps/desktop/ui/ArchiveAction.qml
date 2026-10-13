@@ -26,7 +26,7 @@ Button {
         text: root.explanation
     }
     contentItem: RowLayout {
-        spacing: root.toolbarStyle ? 10 : 8
+        spacing: root.toolbarStyle ? Theme.mainToolbarTextGap : 8
         Image {
             objectName: "actionIcon"
             visible: root.asset.length > 0

@@ -54,7 +54,7 @@
     "extractWidth": 183,
     "splitWidth": 49,
     "toolbarRightInset": 17,
-    "toolbarLeftInset": 24,
+    "toolbarLeftInset": 23,
     "previewHeight": 277,
     "previewRadius": 9,
     "archiveCardHeight": 169,
@@ -67,7 +67,19 @@
     "viewButtonWidth": 47,
     "viewButtonHeight": 40,
     "viewIconSize": 26,
-    "nameHeaderInset": 87
+    "nameHeaderInset": 87,
+    "toolbarActionWidth": 110,
+    "toolbarActionInset": 4,
+    "toolbarOpenGap": 15,
+    "toolbarNewGap": 9,
+    "toolbarSeparatorGap": 22,
+    "toolbarTestGap": 19.5,
+    "toolbarMoreWidth": 40,
+    "toolbarTextGap": 13,
+    "searchTextInset": 51,
+    "searchIconInset": 17,
+    "searchIconSize": 25,
+    "toolbarGroupGap": 13
   },
   "source_type": {
     "table": 19,
@@ -122,5 +134,10 @@
     "Single real archive session; no decorative second tab. Plus opens/replaces an archive and says so.",
     "Image preview, archive-wide totals and modification time are not supplied by the current metadata bridge; unsupported data stays explicit.",
     "Large font and narrow-window layouts reflow; 1280-wide default is the calibrated baseline."
-  ]
+  ],
+  "toolbar_icon_source_x": {
+    "archiveOpen": 27,
+    "archiveNew": 152,
+    "archiveTest": 298
+  }
 }

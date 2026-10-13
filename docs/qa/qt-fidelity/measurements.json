@@ -1504,6 +1504,13 @@
       "passed": true
     },
     {
+      "name": "main-light/toolbar.searchX",
+      "actual": 732.01808786,
+      "expected": 732.609819121447,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
       "name": "main-light/toolbar.centerY",
       "actual": 81.08527132,
       "expected": 81.08527132,
@@ -1522,6 +1529,34 @@
       "actual": 26.45994832,
       "expected": 26.459948320413435,
       "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveOpen.iconX",
+      "actual": 22.3255814,
+      "expected": 22.325581395348834,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveNew.iconX",
+      "actual": 125.3255814,
+      "expected": 125.68475452196381,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveTest.iconX",
+      "actual": 246.3255814,
+      "expected": 246.40826873385012,
+      "tolerance": 1,
       "passed": true
     },
     {
@@ -3023,6 +3058,13 @@
       "passed": true
     },
     {
+      "name": "main-dark/toolbar.searchX",
+      "actual": 732.01808786,
+      "expected": 732.609819121447,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
       "name": "main-dark/toolbar.centerY",
       "actual": 81.08527132,
       "expected": 81.08527132,
@@ -3041,6 +3083,34 @@
       "actual": 26.45994832,
       "expected": 26.459948320413435,
       "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveOpen.iconX",
+      "actual": 22.3255814,
+      "expected": 22.325581395348834,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveNew.iconX",
+      "actual": 125.3255814,
+      "expected": 125.68475452196381,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveTest.iconX",
+      "actual": 246.3255814,
+      "expected": 246.40826873385012,
+      "tolerance": 1,
       "passed": true
     },
     {
@@ -4542,6 +4612,13 @@
       "passed": true
     },
     {
+      "name": "main-integrated-layout/toolbar.searchX",
+      "actual": 732.01808786,
+      "expected": 732.609819121447,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
       "name": "main-integrated-layout/toolbar.centerY",
       "actual": 81.08527132,
       "expected": 81.08527132,
@@ -4560,6 +4637,34 @@
       "actual": 26.45994832,
       "expected": 26.459948320413435,
       "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveOpen.iconX",
+      "actual": 22.3255814,
+      "expected": 22.325581395348834,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveNew.iconX",
+      "actual": 125.3255814,
+      "expected": 125.68475452196381,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveTest.iconX",
+      "actual": 246.3255814,
+      "expected": 246.40826873385012,
+      "tolerance": 1,
       "passed": true
     },
     {
@@ -4598,7 +4703,7 @@
       "passed": true
     }
   ],
-  "passed": 653,
+  "passed": 668,
   "failed": 0,
   "exceptions": [
     "New logo and directory tree B supersede those parts of the original main artwork.",

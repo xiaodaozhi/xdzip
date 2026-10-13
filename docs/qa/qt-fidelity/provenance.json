@@ -1,12 +1,12 @@
 {
-  "after-dark.png": "29f7346d224736568f450d0384ec88bac0f133c7bbcdbd223496ab86fedab181",
-  "after-light.png": "8e22debaed88f1c93f3290c2bf7761477ccfd3389921e5ea81143528ee902641",
-  "after-normal.png": "edac58da2bbc2baf13e4f53459cd867b16895a4193edc27526f99fabb26e3704",
+  "after-dark.png": "3d59431318a0183513f3619426371bc5af69fdf355671dc6d3e2672648e98044",
+  "after-light.png": "891cb84c0a67e0e1bd15ace17615a09c3761d9e357c31a6dff433a03856a7ce3",
+  "after-normal.png": "b4f4196916a95bf803fbeeabeb171d79a067997fbc919d6eb7b110781bd06b7a",
   "before-macos.png": "1e057072ed100254756f38f5b7ab0f3f43e90bf2507bc6961d05deba8f3b6fec",
-  "context-menu.png": "aa5f88f9b77700edb5604f4eef943d7b2c8c2918a6b8aca9aaf1ce673d4936c0",
+  "context-menu.png": "c9f7295f6f901a81eda8898269cc6720b28a5c7a8655c907e643e042337c1584",
   "html-baseline.png": "a739aa25bba59c914521f57540639cc47695d6a964a5b127be0ba927a1f99ac0",
-  "integrated-layout.png": "71b43aa86b7d6f98329c86ea52b24f64735ba1d577f5355c1547de84942c3c50",
-  "large-type.png": "2bffd677519bd9ba9b68d57ddf7271f9b792ca7d25d1dd2c28e7fab07273c980",
+  "integrated-layout.png": "ef2c098593fad26aea718cc9cee9a778e878dc83b2444908bf6489cd792c62fd",
+  "large-type.png": "0fc9c7f29b10d31cd2ae642943cdf237dc726330ae9ff884ebab0f58d2c2a419",
   "environment": {
     "os": "Debian GNU/Linux 13 (trixie)",
     "architecture": "x86_64",

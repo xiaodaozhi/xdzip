@@ -830,14 +830,17 @@
       "reference": "reference/view-grid.png",
       "role": "shared-icon-source-reference",
       "icon_names": [
-        "view-grid"
+        "view-grid",
+        "view-grid-selected"
       ],
       "svg_files": {
         "light": [
-          "svg/light/view-grid.svg"
+          "svg/light/view-grid.svg",
+          "svg/light/view-grid-selected.svg"
         ],
         "dark": [
-          "svg/dark/view-grid.svg"
+          "svg/dark/view-grid.svg",
+          "svg/dark/view-grid-selected.svg"
         ]
       },
       "implementation": "shared-svg",
@@ -847,14 +850,17 @@
       "reference": "reference/view-list.png",
       "role": "shared-icon-source-reference",
       "icon_names": [
-        "view-list"
+        "view-list",
+        "view-list-selected"
       ],
       "svg_files": {
         "light": [
-          "svg/light/view-list.svg"
+          "svg/light/view-list.svg",
+          "svg/light/view-list-selected.svg"
         ],
         "dark": [
-          "svg/dark/view-list.svg"
+          "svg/dark/view-list.svg",
+          "svg/dark/view-list-selected.svg"
         ]
       },
       "implementation": "shared-svg",
@@ -2201,7 +2207,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/activity.png"
+        ]
       },
       "sha256": "8920b545b1b25e993ae414b8f7257638864a9eabb43bf0f6eaa18fda540e801a",
       "visible_bounds": [
@@ -2686,7 +2694,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/completed.png"
+        ]
       },
       "sha256": "54bd69a385c249b74173a1079f9cce7f4ab0d5813d62c239ef024157df852e87",
       "visible_bounds": [
@@ -2893,7 +2903,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/external-open.png"
+        ]
       },
       "sha256": "5c918818ba4acfbdf5ac24acbf422c8c2d8110a779920a0ae23b5ad8ef14ab72",
       "visible_bounds": [
@@ -2921,7 +2933,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/extract.png"
+        ]
       },
       "sha256": "aeb6afb26bc209babce99ce135079cb0b9a9a04becee0f2fe4d6f92b0cae166d",
       "visible_bounds": [
@@ -3495,7 +3509,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/panel.png"
+        ]
       },
       "sha256": "51661d0765ea2f2e8b7a405b5eff934a4b681191c968acf5f04edb9d9a046245",
       "visible_bounds": [
@@ -3523,7 +3539,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/plus.png"
+        ]
       },
       "sha256": "00a55708b9d7d161f3d66100dceb8070749e1dac8d68ae1e2dca9f9f611ce346",
       "visible_bounds": [
@@ -3789,7 +3807,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/sort.png"
+        ]
       },
       "sha256": "6bb281ed8a4b16728cb0be4c5e00123654e01f389433619d161a4f3606be76ce",
       "source_reference": "reference/sort.png",
@@ -3818,7 +3838,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/sort-ascending.png"
+        ]
       },
       "sha256": "3aee344055cd05c9abc5c664f27e9311c6d0e1aa3ee29e44318cc71cedfb4d97",
       "visible_bounds": [
@@ -4078,7 +4100,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/task-list.png"
+        ]
       },
       "sha256": "b4e281ff37f323dde1954486f5e3d39be99433df8485119097bb0de267a7df78",
       "visible_bounds": [
@@ -4196,7 +4220,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/view-grid.png"
+        ]
       },
       "sha256": "0bc0f6f85b1955a781b43f04bc72d278d1f028243a3f1d40c906ee76d175ce66",
       "source_reference": "reference/view-grid.png",
@@ -4314,7 +4340,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/activity.png"
+        ]
       },
       "sha256": "d0d2162124c5ac28ab161bc63e6885527f06cc721cffb746b41f19cf76af8ece",
       "visible_bounds": [
@@ -4798,7 +4826,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/completed.png"
+        ]
       },
       "sha256": "9264de3b064a25dba3a7ff991dcb8c0cf75d64f0beca75fef28fb25c135b0a1a",
       "visible_bounds": [
@@ -5003,7 +5033,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/external-open.png"
+        ]
       },
       "sha256": "4f21452611008fcfadc7ea8d2a222aa31181281a4a4fe08f95177ff4534654d7",
       "visible_bounds": [
@@ -5031,7 +5063,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/extract.png"
+        ]
       },
       "sha256": "ac5e735a7c879ba102cc2b5da0bb1a8ff71d3b463796077716de9ddf49185393",
       "visible_bounds": [
@@ -5602,7 +5636,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/panel.png"
+        ]
       },
       "sha256": "c056ebb8f05fd79277b3da3e24d28442df12d221bfb7150fee24c577f962637a",
       "visible_bounds": [
@@ -5630,7 +5666,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/plus.png"
+        ]
       },
       "sha256": "7170e5bfb4d6f14582d8dde5edadd70bb75c751b11930075d61b971e06aea463",
       "visible_bounds": [
@@ -5896,7 +5934,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/sort.png"
+        ]
       },
       "sha256": "90ac542d11b2531143d5334d66816e63e931ba210bc222d369dbeb4a58143c93",
       "source_reference": "reference/sort.png",
@@ -5925,7 +5965,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/sort-ascending.png"
+        ]
       },
       "sha256": "642dc0558f2a2baa94bc2e876d13eed698820a5901315568e2a0909c4a7b760a",
       "visible_bounds": [
@@ -6185,7 +6227,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/task-list.png"
+        ]
       },
       "sha256": "14b4bd397ced676d3864ae8333ecec71166a1e46f0b20dec393a985be5301be4",
       "visible_bounds": [
@@ -6303,7 +6347,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/view-grid.png"
+        ]
       },
       "sha256": "554a0c2d37ef6bb20f4a542eb07d71db3bdbfacd008f2f83608f965044d2857f",
       "source_reference": "reference/view-grid.png",
@@ -21249,6 +21295,490 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "1abf25269d343f63edee54c9ab0017be66803db4a09500ef50bc32224827a5e4"
+    },
+    {
+      "id": "light/view-grid-selected",
+      "file": "svg/light/view-grid-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/view-grid-selected.png"
+        ]
+      },
+      "sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "source_reference": "reference/view-grid.png",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "light/view-list-selected",
+      "file": "svg/light/view-list-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "light",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/light/view-list-selected.png"
+        ]
+      },
+      "sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "source_reference": "reference/view-list.png",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/view-grid-selected",
+      "file": "svg/dark/view-grid-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/view-grid-selected.png"
+        ]
+      },
+      "sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
+      "source_reference": "reference/view-grid.png",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "dark/view-list-selected",
+      "file": "svg/dark/view-list-selected.svg",
+      "kind": "vector-reconstruction",
+      "logical_size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "theme": "dark",
+      "category": "tool",
+      "usage": "runtime-and-design",
+      "runtime_usage": {
+        "html": "registered in the shared design library",
+        "qt_aliases": [
+          "assets/dark/view-list-selected.png"
+        ]
+      },
+      "sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
+      "source_reference": "reference/view-list.png",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+    },
+    {
+      "id": "raster/light/view-grid-selected@1x",
+      "file": "png/light/view-grid-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "005c87be8049f94558039989f99e4c78507e0dd06e6fa6571f1dc245a607c1d3"
+    },
+    {
+      "id": "raster/light/view-grid-selected@2x",
+      "file": "png/light/view-grid-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "03cd878d02193eb0bd74c2eb37894985f8638936690bf7aa8c8317e218f3a356"
+    },
+    {
+      "id": "raster/light/view-grid-selected@3x",
+      "file": "png/light/view-grid-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-grid-selected.svg",
+      "source_sha256": "d8dd1424b174fac437ecd516e96f657dcb1eb04eef188dc4f830ee8d80af6e89",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "cf002c6209e738d604be8a953bce03002809a1370d3625ed0c2787f2c5eb8a83"
+    },
+    {
+      "id": "raster/light/view-list-selected@1x",
+      "file": "png/light/view-list-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c07258e48f82f805d6849f87d766abe19c2ee2a9397c84a5327e7811746ec635"
+    },
+    {
+      "id": "raster/light/view-list-selected@2x",
+      "file": "png/light/view-list-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "739721c74436b6cdc6957dc89e88e0cfa76b75d5db426c60a1b85ddb2e98b265"
+    },
+    {
+      "id": "raster/light/view-list-selected@3x",
+      "file": "png/light/view-list-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "tool",
+      "source": "svg/light/view-list-selected.svg",
+      "source_sha256": "77eed511f6c6197f7d146771661153a0d1de192acda97ac4d3fa5652751378cc",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "b33372fab7c4ddb6b1282f00f87d5c2965bbed156ceed9648538e34769fd7a5f"
+    },
+    {
+      "id": "raster/dark/view-grid-selected@1x",
+      "file": "png/dark/view-grid-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-grid-selected.svg",
+      "source_sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "ad3f237cd22c0c7fd7d1b35c040aaef6e238b424f07202f37b56e1a65a84022e"
+    },
+    {
+      "id": "raster/dark/view-grid-selected@2x",
+      "file": "png/dark/view-grid-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-grid-selected.svg",
+      "source_sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "5c70d27215c07ef67db25d72493f903be43ec3c7ee8dbd0355cc5825764a030e"
+    },
+    {
+      "id": "raster/dark/view-grid-selected@3x",
+      "file": "png/dark/view-grid-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-grid-selected.svg",
+      "source_sha256": "472b0ac1c9860ef83aa4bbf13576db84588ccb938b79724471554d15c49a6370",
+      "visible_bounds": [
+        3.0,
+        3.0,
+        21.0,
+        21.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "116525f7642206c24dcdfc8fb1fd95b21e46fb8cbcb68f6ff99254cf74d26ac7"
+    },
+    {
+      "id": "raster/dark/view-list-selected@1x",
+      "file": "png/dark/view-list-selected@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list-selected.svg",
+      "source_sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8a49303a5072be095bf9a4c3090ff9abc7b8e3a0e040b908c282da89308f5716"
+    },
+    {
+      "id": "raster/dark/view-list-selected@2x",
+      "file": "png/dark/view-list-selected@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list-selected.svg",
+      "source_sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "61f8fae5d009f23b6d436f7f6de2b49e35420527334a35340fe761681ba39c1b"
+    },
+    {
+      "id": "raster/dark/view-list-selected@3x",
+      "file": "png/dark/view-list-selected@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "tool",
+      "source": "svg/dark/view-list-selected.svg",
+      "source_sha256": "34e3a23a5261d35dbb6881b0e0424a35a45b7aa1c09a3a815b99db1c4b9c2b94",
+      "visible_bounds": [
+        4.0,
+        5.0,
+        20.0,
+        19.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "15f71b5f9b667ca66433249cb85fab2d3860dab86abdc10e69f5f7b2f3bac754"
     }
   ]
 }

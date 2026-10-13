@@ -36,16 +36,20 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: Theme.mainToolbarLeftInset
         anchors.rightMargin: Theme.mainToolbarRightInset
-        spacing: 12
+        spacing: Math.round(Theme.mainToolbarGroupGap)
         RowLayout {
             Layout.preferredHeight: root.controlHeight
-            spacing: 22
+            spacing: 0
             ArchiveAction {
                 id: openAction
                 toolbarStyle: true
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveOpen"
+                Layout.preferredWidth: Math.max(Theme.mainToolbarActionWidth, implicitWidth)
+                Layout.rightMargin: Math.floor(Theme.mainToolbarOpenGap)
+                leftPadding: Theme.mainToolbarActionInset
+                rightPadding: 0
                 text: qsTr("打开")
                 asset: "open"
                 enabled: root.canOpen
@@ -56,6 +60,10 @@ Rectangle {
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveNew"
+                Layout.preferredWidth: Math.max(Theme.mainToolbarActionWidth, implicitWidth)
+                Layout.rightMargin: Math.floor(Theme.mainToolbarNewGap)
+                leftPadding: Theme.mainToolbarActionInset
+                rightPadding: 0
                 text: qsTr("新建")
                 asset: "new"
                 enabled: false
@@ -63,17 +71,20 @@ Rectangle {
             }
             Rectangle {
                 Layout.preferredWidth: 1
-                Layout.preferredHeight: 24
+                Layout.preferredHeight: Theme.mainToolbarIconSize
                 color: Theme.border
-                Layout.leftMargin: 4
-                Layout.rightMargin: 0
+                Layout.leftMargin: Theme.mainToolbarActionInset
+                Layout.rightMargin: Theme.mainToolbarSeparatorGap
             }
             ArchiveAction {
                 toolbarStyle: true
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveTest"
-                leftPadding: 0
+                Layout.preferredWidth: Math.max(Theme.mainToolbarActionWidth, implicitWidth)
+                Layout.rightMargin: Theme.mainToolbarTestGap
+                leftPadding: Theme.mainToolbarActionInset
+                rightPadding: 0
                 text: qsTr("测试")
                 asset: "archive-test"
                 enabled: false
@@ -84,6 +95,9 @@ Rectangle {
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveMore"
+                Layout.preferredWidth: Theme.mainToolbarMoreWidth
+                leftPadding: Theme.mainToolbarActionInset
+                rightPadding: Theme.mainToolbarActionInset
                 asset: "more"
                 Accessible.name: qsTr("更多归档操作")
                 explanation: qsTr("更多归档操作")
@@ -140,7 +154,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.maximumWidth: Theme.mainSearchWidth
             implicitHeight: Math.max(Theme.mainToolbarControlHeight, contentHeight + 12)
-            leftPadding: 42
+            leftPadding: Theme.mainSearchTextInset
             rightPadding: text.length ? 42 : 12
             font.pixelSize: Theme.mainToolbarSize
             placeholderText: qsTr("搜索压缩包中的文件")
@@ -161,10 +175,10 @@ Rectangle {
             }
             Image {
                 anchors.left: parent.left
-                anchors.leftMargin: 12
+                anchors.leftMargin: Theme.mainSearchIconInset
                 anchors.verticalCenter: parent.verticalCenter
-                width: Theme.toolbarIconSize
-                height: Theme.toolbarIconSize
+                width: Theme.mainSearchIconSize
+                height: Theme.mainSearchIconSize
                 source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "search.png"
             }
             ToolButton {

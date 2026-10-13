@@ -93,5 +93,9 @@
     <file alias="assets/light/sort-ascending.png">../../design/assets/png/light/sort-ascending@3x.png</file>
     <file alias="assets/dark/sort-ascending.png">../../design/assets/png/dark/sort-ascending@3x.png</file>
     <file alias="assets/primary-chevron.png">../../design/assets/png/dark/chevron-down@3x.png</file>
+    <file alias="assets/light/view-list-selected.png">../../design/assets/png/light/view-list-selected@3x.png</file>
+    <file alias="assets/dark/view-list-selected.png">../../design/assets/png/dark/view-list-selected@3x.png</file>
+    <file alias="assets/light/view-grid-selected.png">../../design/assets/png/light/view-grid-selected@3x.png</file>
+    <file alias="assets/dark/view-grid-selected.png">../../design/assets/png/dark/view-grid-selected@3x.png</file>
   </qresource>
 </RCC>

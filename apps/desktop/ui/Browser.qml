@@ -808,7 +808,7 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "browserViewMenuButton"
-                        asset: "view-list"
+                        asset: root.viewMode === "list" ? "view-list-selected" : "view-list"
                         Layout.preferredWidth: Theme.mainViewButtonWidth
                         leftPadding: 8
                         rightPadding: 8
@@ -823,7 +823,7 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "browserGridButton"
-                        asset: "view-grid"
+                        asset: root.viewMode === "grid" ? "view-grid-selected" : "view-grid"
                         leftPadding: 5
                         rightPadding: 5
                         selected: root.viewMode === "grid"
