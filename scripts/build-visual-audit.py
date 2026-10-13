@@ -82,9 +82,11 @@ def main():
         check(scene + ' 分栏标题栏高差', left['height'] - right['height'], 0, 'shared PaneHeader', .5)
         check(scene + ' 标题文字中心 Y 差', left_title['y'] + left_title['height'] / 2 - right_title['y'] - right_title['height'] / 2, 0, 'Text.AlignVCenter', .5)
         check(scene + ' 标题文字基线差', left_title['y'] + left_title['baselineOffset'] - right_title['y'] - right_title['baselineOffset'], 0, 'same pane title baseline', .5)
+        caption = one(scene, lambda n: n['name'] == 'archiveCaption')
+        check(scene + ' 档案标题中心 Y 差', caption['y'] + caption['height'] / 2 - left_title['y'] - left_title['height'] / 2, 0, '档案标题与面包屑共享垂直中心', .5)
         for title, node in [('面包屑', left_title), ('详情标题', right_title)]:
             check(scene + ' ' + title + '声明字号', node['fontPixelSize'], pane_size * scale, '同一分栏标题字号')
-    name = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n.get('text') == '旅行/')
+    name = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n.get('text') == '旅行')
     check('列表正文字号', name['resolvedPixelSize'], round(reference['source_type']['table'] * reference['logical_width'] / reference['source_window'][2]), 'tokens.type.table')
     check('按钮正文字号', label('browser-light', button['text'])['resolvedPixelSize'], round(reference['source_type']['toolbar'] * reference['logical_width'] / reference['source_window'][2]), 'tokens.type.toolbar')
     header = label('browser-light', '名称')
@@ -118,7 +120,7 @@ def main():
         for scene in ['browser-light', 'browser-large-type']:
             for column in [1, 2]:
                 cell = one(scene, lambda n: n['name'] == f'entry-1-{column}')
-                number = one(scene, lambda n: n['path'].startswith(cell['path'] + '/') and n['class'].startswith('QQuickText') and n.get('text') == ('12 B' if column == 1 else '15 B'))
+                number = one(scene, lambda n: n['path'].startswith(cell['path'] + '/') and n['class'].startswith('QQuickText') and n.get('text') == '5 B')
                 check(f'{scene} 数字列 {column} 右对齐', number['horizontalAlignment'], 'AlignRight', 'Text.AlignRight')
                 check(f'{scene} 数字列 {column} 文字可容纳', number['contentWidth'] <= number['width'], True, 'not elided')
         narrow = captures['browser-request-minimum']

@@ -11,7 +11,7 @@
 | 工具栏 | CommandButton、IconButton、SplitButton | 打开、新建、测试、更多、解压主动作与范围菜单；鼠标 / 键盘使用同一命令入口 |
 | 搜索 | SearchField、清除动作、范围提示 | 输入法组合期间不提交；当前目录范围搜索，清空不改变目录；快捷键聚焦 |
 | 归档摘要 | ArchiveSummary、格式徽章、统计条 | 就绪、读取、空内容、读取失败分别显示，不用未知值冒充零 |
-| 目录导航 | DirectoryTree、DirectoryRow、Disclosure、连接线 | 多级展开、叶子空箭头槽、当前 / 焦点独立、完整路径提示、祖先收起标记、目录右键动作 |
+| 目录导航 | DirectoryTree、DirectoryRow、Disclosure、连接线 | 多级展开、叶子空箭头槽、当前 / 焦点独立、可访问完整路径、祖先收起标记、目录右键动作 |
 | 文件区域标题 | PaneHeader、Breadcrumb、ViewToggle | 路径分级返回、列表 / 网格切换、排序菜单；共享行高和垂直中心 |
 | 列表与网格 | EntryView、SelectableEntry、复选框、SortHeader | 单选、多选、范围选择、全选、清除、反选、方向键；文件夹进入，文件查看属性 |
 | 文件右键 | ContextMenu、CommandMenuItem、Submenu | 保留已有多选；右击未选中项先单选该项；按当前选择启用解压、属性、复制名称 / 路径、目录导航 |
@@ -60,3 +60,5 @@
 功能覆盖、实际截图和仍未接入的后端能力记录在[实际复核文档](../qa/main-window-components.md)。静态图板、浏览器行为验证、Qt 运行验证分别说明，不能相互替代。
 
 Qt 菜单明确使用 `Popup.Item` 消费共享委托，保证 AppKit 不忽略自定义样式；操作窗口继续采用独立顶层窗口。`CommandTooltip` 使用同一提示参数与纯文本，避免把归档名称解释为富文本；菜单获得焦点时隐藏提示。共享 JSON 的八位颜色采用 CSS RGBA，QML 生成器转换为 QColor ARGB，颜色与透明度一起验证。
+
+目录树悬停没有浮动 tooltip，其他按钮与禁用操作仍按共享延时提供提示。根目录和普通子目录只列直属文件与文件夹，搜索递归当前范围；普通名称显示末级名称，搜索显示完整路径。列表悬停覆盖整行，网格有固定左右留白及悬停／选中复选框，菜单使用四周柔和阴影并与调用按钮留 4 逻辑像素。[本次同步验收](../qa/root-directory-interactions.md)记录真实交互及缩放。

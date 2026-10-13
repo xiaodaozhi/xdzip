@@ -10,8 +10,7 @@
     background: var(--ui-menu-surface);
     color: var(--ui-menu-text);
     box-shadow:
-        0 10px 30px var(--ui-menu-shadow),
-        0 2px 8px var(--ui-menu-shadow);
+        0 var(--ui-menu-shadow-offset-y) calc(2 * var(--ui-menu-shadow-radius)) var(--ui-menu-shadow);
     font: var(--ui-menu-label-size) / 1.4 var(--font);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -173,13 +172,14 @@
 }
 .grid-entries {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
-    padding: 18px;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, calc(var(--main-grid-cell-width) - var(--main-grid-gap)));
+    padding: calc(8px * var(--tree-source-factor)) var(--main-grid-inset) var(--main-grid-inset);
+    gap: var(--main-grid-gap);
 }
 .grid-entry {
     min-width: 0;
-    min-height: 160px;
+    position: relative;
+    min-height: calc(var(--main-grid-cell-height) - var(--main-grid-gap));
     padding: 14px;
     border: 1px solid var(--border);
     border-radius: var(--ui-menu-radius);
@@ -205,8 +205,8 @@
 .grid-entry .entry-icon,
 .grid-entry .entry-icon svg,
 .grid-entry .entry-photo {
-    width: 64px;
-    height: 64px;
+    width: var(--main-grid-icon-size);
+    height: var(--main-grid-icon-size);
 }
 .grid-entry .entry-photo {
     object-fit: cover;
@@ -224,11 +224,17 @@
     color: var(--secondary);
 }
 .grid-entry input {
-    align-self: flex-start;
+    position: absolute;
+    left: var(--main-grid-checkbox-inset);
+    top: var(--main-grid-checkbox-inset);
+    visibility: hidden;
+    pointer-events: none;
+    margin: 0;
 }
 .view-grid-active .table-scroll {
     overflow: auto;
 }
+.grid-entry:hover input,.grid-entry.selected input,.grid-entry:focus-visible input { visibility: visible; pointer-events: auto; }
 .view-grid-active table {
     display: none;
 }
@@ -351,10 +357,10 @@
     position: absolute;
     z-index: 0;
     pointer-events: none;
-    left: calc((24px + var(--guide-depth) * 16px) * var(--tree-source-factor));
+    left: calc((24px + var(--guide-depth) * 16px) * var(--tree-source-factor) - var(--tree-guide-stroke) / 2);
     top: 0;
     bottom: 0;
-    width: 1px;
+    width: var(--tree-guide-stroke);
     background: var(--border);
 }
 .tree-guide-parent::after {

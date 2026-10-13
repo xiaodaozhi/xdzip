@@ -61,6 +61,8 @@ impl Command {
 pub struct Row {
     /// Physical identity, retained through view filtering.
     pub id: u64,
+    /// Nonzero only for an implicit directory; id is then zero, never an EntryId.
+    pub navigation_id: u64,
     /// Escaped display text.
     pub name: String,
     /// Declared original bytes.
@@ -87,8 +89,10 @@ pub enum Payload {
         session: u64,
         /// Offset within the immutable result.
         offset: u64,
-        /// Physical records matching this query.
+        /// Listing rows matching this query, including implicit navigation directories.
         total: u64,
+        /// Complete physical record count, independent of the current directory.
+        archive_total: u64,
         /// At most 128 owned display rows.
         rows: Vec<Row>,
         /// Complete bounded navigation, sent only when opening a new session.
@@ -528,26 +532,42 @@ fn execute(
         .filter(|a| a.key().session.get() == session)
         .ok_or("stale_session")?;
     let (total, rows) = archive
-        .browse_sorted(&directory, &text, offset, 128, sort, control)
+        .listing_sorted(&directory, &text, offset, 128, sort, control)
         .map_err(fail)?;
     Ok(Payload::Page {
         session,
         offset,
         total: total as u64,
+        archive_total: archive.rows.len() as u64,
         navigation: replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec()),
         navigation_limited: archive.directories().is_none(),
         rows: rows
             .into_iter()
-            .map(|entry| Row {
-                id: entry.id.get(),
-                name: entry.display_name.clone(),
-                size: entry.size,
-                packed_size: entry.packed_size,
-                method: entry.method,
-                modified_dos: entry.modified_dos,
-                directory: entry.directory,
-                encrypted: entry.encrypted,
-                warning: entry.warning,
+            .map(|listing| match listing {
+                crate::listing::ListingRow::Physical(entry) => Row {
+                    id: entry.id.get(),
+                    navigation_id: 0,
+                    name: entry.display_name.clone(),
+                    size: entry.size,
+                    packed_size: entry.packed_size,
+                    method: entry.method,
+                    modified_dos: entry.modified_dos,
+                    directory: entry.directory,
+                    encrypted: entry.encrypted,
+                    warning: entry.warning,
+                },
+                crate::listing::ListingRow::Directory(node) => Row {
+                    id: 0,
+                    navigation_id: node.id,
+                    name: node.path.clone(),
+                    size: 0,
+                    packed_size: 0,
+                    method: 0,
+                    modified_dos: 0,
+                    directory: true,
+                    encrypted: false,
+                    warning: false,
+                },
             })
             .collect(),
     })
@@ -632,8 +652,10 @@ mod tests {
                 session: 1,
                 offset: 0,
                 total: 1,
+                archive_total: 1,
                 rows: vec![Row {
                     id: 1,
+                    navigation_id: 0,
                     name: "x".repeat(MAX_EVENT_BYTES / 2),
                     size: 0,
                     packed_size: 0,
@@ -743,7 +765,7 @@ mod tests {
                 navigation_limited,
                 ..
             } => {
-                assert_eq!(rows.len(), 5);
+                assert_eq!(rows.len(), 4);
                 assert!(!navigation_limited);
                 assert_eq!(navigation.unwrap().len(), 1);
                 session

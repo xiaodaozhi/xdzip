@@ -121,7 +121,7 @@ Rectangle {
         CommandMenu {
             id: appearance
             x: parent.width - width
-            y: parent.height
+            y: parent.height + Theme.mainPopupGap
             CommandMenuItem {
                 text: Theme.dark ? qsTr("切换浅色外观") : qsTr("切换深色外观")
                 onTriggered: root.themeRequested()

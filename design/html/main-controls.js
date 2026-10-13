@@ -722,7 +722,7 @@ window.XdzipMain = (() => {
                         state.view === "grid"
                             ? Math.max(
                                   1,
-                                  Math.floor($("#file-grid").clientWidth / 169),
+                                  getComputedStyle($("#file-grid")).gridTemplateColumns.trim().split(/\s+/).length,
                               )
                             : 1;
                 const offset = {
@@ -790,7 +790,7 @@ window.XdzipMain = (() => {
                 ? list
                       .map(
                           (entry) =>
-                              `<div class="grid-entry ${state.selected.has(entry.id) ? "selected" : ""}" tabindex="0" data-id="${entry.id}" role="option" aria-selected="${state.selected.has(entry.id)}"><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(entry.name)}" ${state.selected.has(entry.id) ? "checked" : ""}><span class="entry-icon">${["lake", "sunrise"].includes(entry.id) ? photo(entry.id, "entry-photo") : icon(fileIcon(entry))}</span><span class="grid-entry-name" data-tooltip="${esc(entry.name)}">${esc(entry.name)}</span><small>${entry.folder ? "文件夹" : bytes(entry.size)}</small></div>`,
+                              `<div class="grid-entry ${state.selected.has(entry.id) ? "selected" : ""}" tabindex="0" data-id="${entry.id}" role="option" aria-selected="${state.selected.has(entry.id)}"><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(entry.name)}" ${state.selected.has(entry.id) ? "checked" : ""}><span class="entry-icon">${["lake", "sunrise"].includes(entry.id) ? photo(entry.id, "entry-photo") : icon(fileIcon(entry))}</span><span class="grid-entry-name" data-tooltip="${esc(entry.name)}">${esc(displayEntryName(entry))}</span><small>${entry.folder ? "文件夹" : bytes(entry.size)}</small></div>`,
                       )
                       .join("")
                 : "";
@@ -888,7 +888,7 @@ window.XdzipMain = (() => {
         const tree = $("#tree");
         tree.setAttribute("role", "tree");
         if (!ready()) {
-            tree.innerHTML = `<div class="tree-row tree-root active" role="treeitem" aria-disabled="true" tabindex="-1"><span class="tree-root-icon">${icon("folder")}</span><span class="tree-label">全部文件</span></div>${state.archiveState === "loading" ? '<p class="tree-notice">正在读取完整目录…</p>' : state.archiveState === "empty" ? '<p class="tree-notice">没有子目录</p>' : '<p class="tree-notice">目录信息未就绪</p>'}`;
+            tree.innerHTML = `<div class="tree-row tree-root active" role="treeitem" aria-disabled="true" tabindex="-1"><span class="tree-root-icon">${icon("folder")}</span><span class="tree-label">根目录</span></div>${state.archiveState === "loading" ? '<p class="tree-notice">正在读取完整目录…</p>' : state.archiveState === "empty" ? '<p class="tree-notice">没有子目录</p>' : '<p class="tree-notice">目录信息未就绪</p>'}`;
             return;
         }
         const visible = visibleDirectories();
@@ -899,7 +899,7 @@ window.XdzipMain = (() => {
             parent = byId.get(parent)?.parent;
         }
         tree.innerHTML =
-            `<div class="tree-row tree-root ${!state.path ? "active" : ""}" data-directory="" role="treeitem" aria-label="全部文件，${files.length} 个文件" aria-level="1" aria-selected="${!state.path}" tabindex="${state.treeFocus ? -1 : 0}"><span class="tree-root-icon">${icon("folder")}</span><span class="tree-label">全部文件</span></div>` +
+            `<div class="tree-row tree-root ${!state.path ? "active" : ""}" data-directory="" role="treeitem" aria-label="根目录，${entries.filter(entry => entry.parent === "").length} 项" aria-level="1" aria-selected="${!state.path}" tabindex="${state.treeFocus ? -1 : 0}"><span class="tree-root-icon">${icon("folder")}</span><span class="tree-label">根目录</span></div>` +
             `<div class="tree-scroll"><div class="tree-hierarchy">${visible
                 .map(({ node, depth, last, continuations }) => {
                     const hasChildren = folders.some(
@@ -922,7 +922,7 @@ window.XdzipMain = (() => {
                                   .join("") +
                               `<i class="tree-guide-parent ${last ? "tree-guide-last" : ""}" style="--guide-depth:${depth - 1}"></i>`
                             : "";
-                    return `<div class="tree-row ${current ? "active" : ""}" data-directory="${node.id}" role="treeitem" aria-label="${esc(node.name)}，${files.filter(file => withinDirectory(file, node.id)).length} 个文件" aria-level="${depth + 1}" aria-selected="${current}" ${hasChildren ? `aria-expanded="${expanded}"` : ""} tabindex="${state.treeFocus === node.id ? 0 : -1}" style="--tree-depth:${depth}">${guides}<button class="tree-disclosure" tabindex="-1" data-toggle="${node.id}" aria-label="${expanded ? "收起" : "展开"} ${esc(node.name)}" ${hasChildren ? "" : 'disabled aria-hidden="true"'}>${hasChildren ? icon(expanded ? "chevron-down" : "chevron-right") : ""}</button><span class="tree-folder">${icon("folder")}</span><span class="tree-label" data-tooltip="${esc(directoryPath(node.id).join(" / "))}">${esc(node.name)}</span>${marker ? `<span class="tree-branch-marker" aria-label="当前目录位于此分支">${icon("tree-active-branch")}</span>` : ""}</div>`;
+                    return `<div class="tree-row ${current ? "active" : ""}" data-directory="${node.id}" role="treeitem" aria-label="${esc(node.name)}，${files.filter(file => withinDirectory(file, node.id)).length} 个文件" aria-level="${depth + 1}" aria-selected="${current}" ${hasChildren ? `aria-expanded="${expanded}"` : ""} tabindex="${state.treeFocus === node.id ? 0 : -1}" style="--tree-depth:${depth}">${guides}<button class="tree-disclosure" tabindex="-1" data-toggle="${node.id}" aria-label="${expanded ? "收起" : "展开"} ${esc(node.name)}" ${hasChildren ? "" : 'disabled aria-hidden="true"'}>${hasChildren ? icon(expanded ? "chevron-down" : "chevron-right") : ""}</button><span class="tree-folder">${icon("folder")}</span><span class="tree-label">${esc(node.name)}</span>${marker ? `<span class="tree-branch-marker" aria-label="当前目录位于此分支">${icon("tree-active-branch")}</span>` : ""}</div>`;
                 })
                 .join("")}</div></div>`;
         tree.querySelectorAll("[data-directory]").forEach((row) => {
@@ -1027,7 +1027,7 @@ window.XdzipMain = (() => {
             items: [
                 {
                     id: "directory-open",
-                    label: id ? "进入目录" : "全部文件",
+                    label: id ? "进入目录" : "根目录",
                     icon: "folder",
                     run: () => choosePath(id),
                 },

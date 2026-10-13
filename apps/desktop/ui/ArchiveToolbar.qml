@@ -105,7 +105,7 @@ Rectangle {
                 onClicked: more.open()
                 CommandMenu {
                     id: more
-                    y: parent.height
+                    y: parent.height + Theme.mainPopupGap
                     objectName: "archiveMoreMenu"
                     CommandMenuItem {
                         text: qsTr("按归档顺序排列")
@@ -244,7 +244,7 @@ Rectangle {
                     id: scopes
                     objectName: "archiveExtractMenu"
                     x: parent.width - width
-                    y: parent.height
+                    y: parent.height + Theme.mainPopupGap
                     CommandMenuItem {
                         text: qsTr("全部解压")
                         enabled: false

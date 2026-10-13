@@ -71,8 +71,9 @@ Button {
         anchors.rightMargin: Theme.mainSplitWidth
         width: 1
         height: parent.height
-        color: Theme.accentText
-        opacity: 0.3
+        objectName: "actionSplitDivider"
+        color: Theme.dark ? Theme.border : Theme.accentText
+        opacity: Theme.dark ? 1 : 0.3
     }
     Image {
         objectName: "actionSplitIndicator"

@@ -41,6 +41,8 @@ for key, value in controls['light'].items():
     lines.append(f'    readonly property color {key}: dark ? "{qt_color(controls["dark"][key])}" : "{qt_color(value)}"')
 for key, value in controls['size'].items():
     lines.append(f'    readonly property real {key}: {value} * fontScale')
+for key, value in controls['shadow'].items():
+    lines.append(f'    readonly property real menuShadow{key[0].upper() + key[1:]}: {value}')
 for key, value in controls['motion'].items():
     if isinstance(value, int) and not isinstance(value, bool):
         lines.append(f'    readonly property int {key}: {value}')

@@ -28,6 +28,15 @@
   --main-breadcrumb-height: calc(28px * var(--ui-source-factor));
   --main-popup-gap: calc(4px * var(--ui-source-factor));
   --main-tree-trailing-inset: calc(16px * var(--ui-source-factor));
+  --main-grid-inset: calc(16px * var(--ui-source-factor));
+  --main-grid-checkbox-inset: calc(8px * var(--ui-source-factor));
+  --main-grid-cell-width: calc(144px * var(--ui-source-factor));
+  --main-grid-cell-height: calc(124px * var(--ui-source-factor));
+  --main-grid-gap: calc(12px * var(--ui-source-factor));
+  --main-grid-icon-size: calc(40px * var(--ui-source-factor));
+  --ui-menu-shadow-radius: calc(12px * var(--ui-source-factor));
+  --ui-menu-shadow-offset-y: calc(4px * var(--ui-source-factor));
+  --ui-menu-shadow-layers: 12;
   --tree-sidebar-default-width: calc(193.15762273901808px * var(--ui-source-factor));
   --tree-row-min-height: calc(32.0px * var(--ui-source-factor));
   --tree-row-outer-inset: calc(6.4px * var(--ui-source-factor));

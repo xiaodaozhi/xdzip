@@ -326,6 +326,8 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
     border-bottom:1px solid var(--border);
 }
 .archive-card .archive-caption {
+    position:relative;
+    top:calc((var(--pane-header-height) - 22px) / 2 - 26px);
     display:block;
     font-size:15.25px;
     line-height:22px;
@@ -406,6 +408,7 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
 .file-tools .icon-button:not(.view-active) { color:var(--text); }
 #sort-direction svg { width:34px; height:34px; transform:none; }
 #properties-toggle { display:none; }
+.window:has(.inspector[hidden]) #properties-toggle { display:grid; place-items:center; }
 .table-scroll { padding:0; }
 table { font-size:19px; border-collapse:separate; border-spacing:0; width:100%; border:0; }
 th {
@@ -681,3 +684,6 @@ dialog[data-kind] .modal-footer .info-line { font-size:var(--operation-footer-no
 dialog[data-kind] .modal-footer svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); flex-shrink:0; }
 /* Both progress hints share the same icon slot and text edge. */
 dialog[data-kind="progress"] .info-line svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); }
+
+:root[data-theme="dark"] #extract-menu-button { border-left-color:var(--border); }
+tbody tr:hover:not(.selected) td { background:var(--ui-control-hover); }

@@ -36,6 +36,8 @@ mod ffi {
     }
     struct Row {
         id: String,
+        navigation_id: String,
+        physical: bool,
         name: String,
         size: u64,
         packed_size: u64,
@@ -75,6 +77,7 @@ mod ffi {
         session: u64,
         offset: u64,
         total: u64,
+        archive_total: u64,
         rows: Vec<Row>,
         directories: Vec<Directory>,
         replace_directories: bool,
@@ -205,6 +208,7 @@ impl EventReceiver {
             session: 0,
             offset: 0,
             total: 0,
+            archive_total: 0,
             rows: Vec::new(),
             directories: Vec::new(),
             replace_directories: false,
@@ -228,6 +232,7 @@ impl EventReceiver {
                 session,
                 offset,
                 total,
+                archive_total,
                 rows,
                 navigation,
                 navigation_limited,
@@ -236,6 +241,7 @@ impl EventReceiver {
                 event.session = session;
                 event.offset = offset;
                 event.total = total;
+                event.archive_total = archive_total;
                 event.replace_directories = navigation.is_some();
                 event.navigation_limited = navigation_limited;
                 event.directories = navigation
@@ -256,7 +262,17 @@ impl EventReceiver {
                 event.rows = rows
                     .into_iter()
                     .map(|row| ffi::Row {
-                        id: row.id.to_string(),
+                        id: if row.id == 0 {
+                            format!("d{}", row.navigation_id)
+                        } else {
+                            row.id.to_string()
+                        },
+                        navigation_id: if row.navigation_id == 0 {
+                            String::new()
+                        } else {
+                            format!("d{}", row.navigation_id)
+                        },
+                        physical: row.id != 0,
                         name: row.name,
                         size: row.size,
                         packed_size: row.packed_size,

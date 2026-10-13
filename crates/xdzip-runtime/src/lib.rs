@@ -1,4 +1,5 @@
 //! First read-only session service. Called only on a bounded background worker.
+pub mod listing;
 pub mod navigation;
 pub mod service;
 use std::fs::File;
@@ -112,26 +113,7 @@ impl Archive {
         if directory.len() > 4096 || text.len() > 1024 || sort > 12 {
             return Err(ScanError::Limit);
         }
-        let prefix = if directory.is_empty() {
-            &[][..]
-        } else if let Some(id) = directory.strip_prefix('d') {
-            let id = id.parse::<u64>().map_err(|_| ScanError::Invalid)?;
-            self.directories
-                .as_ref()
-                .and_then(|nodes| nodes.iter().find(|node| node.id == id))
-                .ok_or(ScanError::Invalid)?
-                .path
-                .as_bytes()
-        } else {
-            let id = directory.parse::<u64>().map_err(|_| ScanError::Invalid)?;
-            let entry = self
-                .rows
-                .iter()
-                .find(|entry| entry.id.get() == id)
-                .filter(|entry| entry.directory && !entry.warning && entry.raw_name.ends_with(b"/"))
-                .ok_or(ScanError::Invalid)?;
-            entry.raw_name.as_slice()
-        };
+        let prefix = self.directory_prefix(directory)?;
         let needle = text.to_lowercase();
         let mut rows = Vec::new();
         for entry in &self.rows {
@@ -184,6 +166,29 @@ impl Archive {
                 .take(usize::from(request.limit()))
                 .collect(),
         ))
+    }
+    fn directory_prefix(&self, directory: &str) -> Result<&[u8], ScanError> {
+        let prefix = if directory.is_empty() {
+            &[][..]
+        } else if let Some(id) = directory.strip_prefix('d') {
+            let id = id.parse::<u64>().map_err(|_| ScanError::Invalid)?;
+            self.directories
+                .as_ref()
+                .and_then(|nodes| nodes.iter().find(|node| node.id == id))
+                .ok_or(ScanError::Invalid)?
+                .path
+                .as_bytes()
+        } else {
+            let id = directory.parse::<u64>().map_err(|_| ScanError::Invalid)?;
+            let entry = self
+                .rows
+                .iter()
+                .find(|entry| entry.id.get() == id)
+                .filter(|entry| entry.directory && !entry.warning && entry.raw_name.ends_with(b"/"))
+                .ok_or(ScanError::Invalid)?;
+            entry.raw_name.as_slice()
+        };
+        Ok(prefix)
     }
     /// Return at most 256 references without copying the complete index.
     pub fn page(&self, offset: u64, limit: u64) -> Result<&[Entry], ScanError> {

@@ -45,7 +45,7 @@ RowLayout {
                 padding: 2
                 enabled: root.available && !segment.modelData.current
                 Accessible.name: segment.modelData.more ? qsTr("显示上级目录") : segment.modelData.label
-                onClicked: segment.modelData.more ? hiddenMenu.popup() : root.activated(segment.modelData.id)
+                onClicked: segment.modelData.more ? hiddenMenu.popup(button, 0, button.height + Theme.mainPopupGap) : root.activated(segment.modelData.id)
                 contentItem: Text {
                     objectName: segment.modelData.current ? "filePaneTitle" : ""
                     text: segment.modelData.label

@@ -11,7 +11,9 @@
 #include <algorithm>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
-    return parent.isValid() ? 0 : static_cast<int>(m_rows.size()); // bounded by 128
+    return parent.isValid()
+               ? 0
+               : static_cast<int>(m_rows.size()); // bounded by the admitted 10,000-row snapshot
 }
 int ArchiveTableModel::columnCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : 5;
@@ -33,6 +35,8 @@ QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
         return row.navigable;
     if (role == Qt::UserRole + 4)
         return row.status;
+    if (role == Qt::UserRole + 6)
+        return true;
     if (role == Qt::UserRole + 5)
         return row.attention;
     return {};
@@ -41,7 +45,7 @@ QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
     return {{Qt::DisplayRole, "display"},      {Qt::UserRole, "entryId"},
             {Qt::UserRole + 1, "isDirectory"}, {Qt::UserRole + 2, "chosen"},
             {Qt::UserRole + 3, "canNavigate"}, {Qt::UserRole + 4, "entryStatus"},
-            {Qt::UserRole + 5, "attention"}};
+            {Qt::UserRole + 5, "attention"},   {Qt::UserRole + 6, "canSelect"}};
 }
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
@@ -217,12 +221,23 @@ void BrowserController::showRowDetail(int row) {
                 {"status", item->status},       {"attention", item->attention},
                 {"directory", item->directory}, {"id", item->id}};
 }
+bool BrowserController::canPreflight() const {
+    if (m_model.selectedCount() == 0 || m_model.selectedCount() > 128)
+        return false;
+    for (int row = 0; row < m_model.rowCount(); ++row)
+        if (m_model.isSelected(row) && !m_model.rowAt(row)->physical)
+            return false;
+    return true;
+}
 QString BrowserController::selectedBytes() const {
     // Sum only the bounded visible selection; never imply an archive-wide total.
     quint64 bytes = 0;
     for (int row = 0; row < m_model.rowCount(); ++row)
-        if (m_model.isSelected(row))
+        if (m_model.isSelected(row)) {
+            if (!m_model.rowAt(row)->physical)
+                return QStringLiteral("—");
             bytes += m_model.rowAt(row)->cells[1].toULongLong();
+        }
     return QString::number(bytes);
 }
 void BrowserController::closeArchive() {
@@ -288,7 +303,8 @@ void BrowserController::copySelection(bool includeArchivePath) {
     for (int row = 0; row < m_model.rowCount(); ++row) {
         if (!m_model.isSelected(row))
             continue;
-        const auto &display = m_model.rowAt(row)->cells[0];
+        const auto *item = m_model.rowAt(row);
+        const auto display = item->path.isEmpty() ? item->cells[0] : item->path;
         QString name = display;
         while (name.endsWith('/'))
             name.chop(1);
@@ -303,8 +319,9 @@ void BrowserController::enterDirectory(int row) {
     const auto *item = m_model.rowAt(row);
     if (!item || !item->navigable)
         return;
-    m_directory = m_directoryPaths.value(item->cells[0], item->id);
-    m_location = item->cells[0];
+    m_directory = item->navigationId.isEmpty() ? m_directoryPaths.value(item->path, item->id)
+                                               : item->navigationId;
+    m_location = item->path;
     start({}, 0);
 }
 QVariantList BrowserController::breadcrumbs() const {
@@ -388,7 +405,7 @@ void BrowserController::sortByColumn(int column) {
     m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
     start({}, 0);
 }
-void BrowserController::showAll() {
+void BrowserController::showRoot() {
     if (m_busy || !m_ready)
         return;
     m_directory.clear();
@@ -402,6 +419,8 @@ void BrowserController::search(const QString &text) {
     start({}, 0);
 }
 void BrowserController::inspectSelection() {
+    if (!canPreflight())
+        return;
     if (m_busy || !m_ready || m_closing || m_model.selectedCount() == 0)
         return;
     xdzip::reader::Command command{};
@@ -523,8 +542,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
     if (event.kind == EventKind::Page) {
-        if (event.total > 10000 || event.offset > event.total || event.rows.size() > 128 ||
-            event.directories.size() > 2048 || event.offset + event.rows.size() > event.total ||
+        if (event.archive_total > 10000 || event.total > 10000 || event.offset > event.total ||
+            event.rows.size() > 128 || event.directories.size() > 2048 ||
+            event.offset + event.rows.size() > event.total ||
             (event.rows.empty() && event.offset < event.total) ||
             event.offset != static_cast<quint64>(m_result.rows.size())) {
             m_result.error = "resource_limit";
@@ -541,6 +561,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                          text(node.path), static_cast<int>(node.count)});
         }
         m_result.total = static_cast<int>(event.total);
+        m_result.archiveTotal = static_cast<int>(event.archive_total);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {
@@ -554,7 +575,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 status << tr("加密");
             if (row.warning)
                 status << tr("需检查");
-            const auto name = text(row.name);
+            const auto path = text(row.name);
+            auto name = path;
+            if (m_search.isEmpty()) {
+                while (name.endsWith('/'))
+                    name.chop(1);
+                name = name.section('/', -1);
+            }
             auto type = row.directory ? tr("文件夹") : QFileInfo(name).suffix().toUpper();
             if (type == QStringLiteral("JPG"))
                 type = QStringLiteral("JPEG");
@@ -566,14 +593,18 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
             const auto modified = date.isValid() && time.isValid() ? date.toString("yyyy/MM/dd")
                                                                    : QStringLiteral("—");
-            m_result.rows.append({text(row.id),
-                                  {text(row.name), QString::number(row.size),
-                                   QString::number(row.packed_size), type, modified},
-                                  row.directory,
-                                  row.directory && !row.warning,
-                                  method,
-                                  status.isEmpty() ? tr("元数据") : status.join(" · "),
-                                  row.warning || row.encrypted});
+            m_result.rows.append(
+                {text(row.id),
+                 {name, row.physical ? QString::number(row.size) : QString{},
+                  row.physical ? QString::number(row.packed_size) : QString{}, type, modified},
+                 row.directory,
+                 row.directory && !row.warning,
+                 row.physical ? method : QStringLiteral("—"),
+                 status.isEmpty() ? tr("元数据") : status.join(" · "),
+                 row.warning || row.encrypted,
+                 path,
+                 text(row.navigation_id),
+                 row.physical});
         }
         m_hasPayload = true;
     } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {
@@ -655,7 +686,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 m_ready ? QueryState{m_directory, m_location, m_search, m_sort} : QueryState{};
             restoreQuery();
             if (m_result.replaceDirectories)
-                m_archiveTotal = m_ready ? m_result.total : 0;
+                m_archiveTotal = m_ready ? m_result.archiveTotal : 0;
             if (!m_ready || m_result.replaceDirectories)
                 replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
             m_navigationLimited = m_ready && m_result.navigationLimited;

@@ -63,6 +63,9 @@ QtObject {
     readonly property real tooltipMaxWidth: 320 * fontScale
     readonly property real tooltipPadding: 8 * fontScale
     readonly property real focusWidth: 2 * fontScale
+    readonly property real menuShadowRadius: 12
+    readonly property real menuShadowOffsetY: 4
+    readonly property real menuShadowLayers: 12
     readonly property int hoverDelayMs: 450
     readonly property int submenuDelayMs: 120
     readonly property int tooltipDurationMs: 7000
@@ -124,6 +127,12 @@ QtObject {
     readonly property real mainBreadcrumbHeight: 28
     readonly property real mainPopupGap: 4
     readonly property real mainTreeTrailingInset: 16
+    readonly property real mainGridInset: 16
+    readonly property real mainGridCheckboxInset: 8
+    readonly property real mainGridCellWidth: 144
+    readonly property real mainGridCellHeight: 124
+    readonly property real mainGridGap: 12
+    readonly property real mainGridIconSize: 40
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

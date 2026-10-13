@@ -90,6 +90,7 @@ ApplicationWindow {
     }
     // Human-readable display only; exact integer strings remain in the model.
     function formatSize(value: string): string {
+        if (!/^\d+$/.test(value)) return "—";
         const size = Number(value);
         if (size < 1024)
             return value + " B";
@@ -184,13 +185,13 @@ ApplicationWindow {
         id: directoryMenu
         objectName: "browserDirectoryMenu"
         CommandMenuItem {
-            text: root.contextDirectoryId.length ? qsTr("进入目录") : qsTr("全部文件")
+            text: root.contextDirectoryId.length ? qsTr("进入目录") : qsTr("根目录")
             enabled: reader.ready && !reader.busy
             onTriggered: {
                 if (root.contextDirectoryId.length)
                     reader.navigateDirectory(root.contextDirectoryId);
                 else
-                    reader.showAll();
+                    reader.showRoot();
             }
         }
         CommandMenuItem {
@@ -209,7 +210,7 @@ ApplicationWindow {
                 if (root.contextDirectoryId.length)
                     reader.navigateDirectory(root.contextDirectoryId);
                 else
-                    reader.showAll();
+                    reader.showRoot();
             }
         }
     }
@@ -308,7 +309,7 @@ ApplicationWindow {
         }
         CommandMenuItem {
             text: qsTr("解压元数据预检")
-            enabled: root.contextAvailable && reader.selectedCount > 0
+            enabled: root.contextAvailable && reader.canPreflight
             onTriggered: reader.inspectSelection()
         }
         CommandMenuSeparator {}
@@ -386,7 +387,7 @@ ApplicationWindow {
             Layout.fillWidth: true
             canOpen: reader.runtimeAvailable && !reader.busy
             canSearch: reader.ready && !reader.busy
-            canInspect: reader.ready && !reader.busy && reader.selectedCount > 0
+            canInspect: reader.ready && !reader.busy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onOpenRequested: reader.chooseArchive()
             onInspectRequested: reader.inspectSelection()
@@ -427,8 +428,9 @@ ApplicationWindow {
                         Text {
                             id: archiveCaption
                             x: Theme.mainUnits(8)
-                            y: Theme.mainUnits(26)
-                            text: "ARCHIVE"
+                            objectName: "archiveCaption"
+                            y: (fileHeader.height - height) / 2
+                            text: qsTr("档案文件")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainArchiveCaptionSize
                         }
@@ -484,8 +486,8 @@ ApplicationWindow {
                         leftPadding: Theme.mainUnits(12)
                         rightPadding: Theme.mainUnits(12)
                         enabled: reader.ready && !reader.busy
-                        onClicked: reader.showAll()
-                        Accessible.name: qsTr("全部文件")
+                        onClicked: reader.showRoot()
+                        Accessible.name: qsTr("根目录")
                         background: Rectangle {
                             radius: Theme.mainControlRadius
                             topLeftRadius: 0
@@ -512,7 +514,7 @@ ApplicationWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: qsTr("全部文件")
+                                text: qsTr("根目录")
                                 elide: Text.ElideRight
                                 color: Theme.text
                                 font.pixelSize: Theme.mainBodySize
@@ -668,24 +670,7 @@ ApplicationWindow {
                                 }
                             }
                             Accessible.name: nodeName + qsTr("，%1 条记录").arg(entryCount)
-                            ToolTip {
-                                visible: directoryNode.hovered
-                                width: Math.min(360, implicitWidth)
-                                contentItem: Text {
-                                    text: directoryNode.fullPath
-                                    textFormat: Text.PlainText
-                                    color: Theme.text
-                                    font.pixelSize: Theme.secondarySize
-                                    wrapMode: Text.WrapAnywhere
-                                    maximumLineCount: 8
-                                    elide: Text.ElideMiddle
-                                }
-                                background: Rectangle {
-                                    color: Theme.surface
-                                    border.color: Theme.border
-                                    radius: Theme.controlRadius
-                                }
-                            }
+                            Accessible.description: directoryNode.fullPath
                             background: Rectangle {
                                 radius: Theme.mainControlRadius
                                 topLeftRadius: 0
@@ -708,15 +693,16 @@ ApplicationWindow {
                                         required property bool modelData
                                         required property int index
                                         visible: modelData
-                                        x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + index * Theme.treeDepthIndent
+                                        x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth * Theme.fontScale / 2 + index * Theme.treeDepthIndent - width / 2
                                         width: 1
                                         height: directoryNode.height
                                         color: Theme.treeGuideColor
                                     }
                                 }
                                 Rectangle {
+                                    objectName: "directoryParentGuide-" + directoryNode.nodeId
                                     visible: directoryNode.nodeDepth > 0
-                                    x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + (directoryNode.nodeDepth - 1) * Theme.treeDepthIndent
+                                    x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth * Theme.fontScale / 2 + (directoryNode.nodeDepth - 1) * Theme.treeDepthIndent - width / 2
                                     width: 1
                                     height: directoryNode.lastSibling ? directoryNode.height / 2 : directoryNode.height
                                     color: Theme.treeGuideColor
@@ -761,7 +747,7 @@ ApplicationWindow {
                     Text {
                         Layout.fillWidth: true
                         visible: reader.navigationLimited
-                        text: qsTr("目录数量或层级超出显示限额，仍可使用全部文件和搜索。")
+                        text: qsTr("目录数量或层级超出显示限额，仍可浏览根目录或搜索后代。")
                         wrapMode: Text.Wrap
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
@@ -778,6 +764,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 spacing: 0
                 PaneHeader {
+                    id: fileHeader
                     objectName: "filePaneHeader"
                     Layout.fillWidth: true
                     Breadcrumb {
@@ -793,7 +780,7 @@ ApplicationWindow {
                             ...(reader.breadcrumbs.length ? reader.breadcrumbs : [
                                     {
                                         id: "",
-                                        label: qsTr("全部文件"),
+                                        label: qsTr("根目录"),
                                         current: true
                                     }
                                 ])] : [
@@ -807,7 +794,7 @@ ApplicationWindow {
                             if (nodeId.length)
                                 reader.navigateDirectory(nodeId);
                             else
-                                reader.showAll();
+                                reader.showRoot();
                         }
                     }
                     Text {
@@ -816,6 +803,7 @@ ApplicationWindow {
                         font.pixelSize: Theme.mainSummarySize
                     }
                     ArchiveAction {
+                        id: viewButton
                         objectName: "browserViewMenuButton"
                         Layout.minimumWidth: Theme.mainIconButtonSize
                         Layout.preferredWidth: Theme.mainIconButtonSize
@@ -833,7 +821,7 @@ ApplicationWindow {
                         onClicked: root.viewMode = "list"
                         TapHandler {
                             acceptedButtons: Qt.RightButton
-                            onTapped: viewMenu.popup()
+                            onTapped: viewMenu.popup(viewButton, 0, viewButton.height + Theme.mainPopupGap)
                         }
                     }
                     ArchiveAction {
@@ -876,6 +864,12 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"
+                        Layout.minimumWidth: Theme.mainIconButtonSize
+                        Layout.preferredWidth: Theme.mainIconButtonSize
+                        Layout.maximumWidth: Theme.mainIconButtonSize
+                        Layout.minimumHeight: Theme.mainIconButtonSize
+                        Layout.preferredHeight: Theme.mainIconButtonSize
+                        Layout.maximumHeight: Theme.mainIconButtonSize
                         visible: !root.inspectorVisible
                         asset: "panel"
                         Accessible.name: qsTr("显示文件预览与属性")
@@ -962,7 +956,7 @@ ApplicationWindow {
                                     enabled: reader.ready && !reader.busy && reader.entries.rowCount() > 0
                                     checkState: reader.selectedCount === 0 ? Qt.Unchecked : reader.selectedCount === reader.entries.rowCount() ? Qt.Checked : Qt.PartiallyChecked
                                     nextCheckState: () => checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
-                                    Accessible.name: qsTr("选择当前页全部文件")
+                                    Accessible.name: qsTr("选择当前目录全部文件")
                                     onClicked: reader.selectAll(checkState === Qt.Checked)
                                 }
                             }
@@ -985,6 +979,12 @@ ApplicationWindow {
                         visible: root.viewMode === "list"
                         anchors.fill: parent
                         clip: true
+                        property int hoveredRow: -1
+                        HoverHandler {
+                            enabled: root.viewMode === "list"
+                            onPointChanged: table.hoveredRow = table.cellAtPosition(point.position, true).y
+                            onHoveredChanged: if (!hovered) table.hoveredRow = -1
+                        }
                         model: reader.entries
                         function columnSize(column: int): real {
                             const scale = Math.max(1, Theme.fontScale);
@@ -1023,6 +1023,7 @@ ApplicationWindow {
                             required property bool chosen
                             required property string entryId
                             required property bool canNavigate
+                            required property bool canSelect
                             required property string entryStatus
                             required property bool attention
                             objectName: "entry-" + row + "-" + column
@@ -1032,13 +1033,14 @@ ApplicationWindow {
                             implicitHeight: table.scaledRowHeight
                             color: Theme.surface
                             Rectangle {
+                                objectName: "entryBand-" + cell.row + "-" + cell.column
                                 anchors.fill: parent
                                 anchors.leftMargin: cell.column === 0 ? Theme.mainUnits(8) : 0
                                 anchors.rightMargin: cell.column === 4 ? Theme.mainUnits(8) : 0
                                 anchors.topMargin: 2
                                 anchors.bottomMargin: 2
                                 radius: cell.column === 0 || cell.column === 4 ? Theme.mainControlRadius : 0
-                                color: cell.chosen ? Theme.selection : hover.hovered ? Theme.canvas : Theme.surface
+                                color: cell.chosen ? Theme.selection : table.hoveredRow === cell.row ? Theme.controlHover : Theme.surface
                                 // Square the interior edge so adjacent cells form one continuous rounded band.
                                 Rectangle {
                                     visible: cell.column === 0 || cell.column === 4
@@ -1094,7 +1096,7 @@ ApplicationWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.alignWhenCentered: false
                                 checked: cell.chosen
-                                enabled: reader.runtimeAvailable && !reader.busy
+                                enabled: cell.canSelect && reader.runtimeAvailable && !reader.busy
                                 Accessible.name: cell.display
                                 onClicked: reader.selectRow(cell.row)
                             }
@@ -1143,11 +1145,14 @@ ApplicationWindow {
                         id: grid
                         objectName: "archiveGrid"
                         anchors.fill: parent
+                        anchors.leftMargin: Theme.mainGridInset
+                        anchors.rightMargin: Theme.mainGridInset
+                        anchors.topMargin: Theme.mainUnits(8)
                         visible: root.viewMode === "grid"
                         model: root.viewMode === "grid" ? reader.entries : null
                         clip: true
-                        cellWidth: Math.max(Theme.mainUnits(150), Theme.mainBodySize * 10 + Theme.mainUnits(16))
-                        cellHeight: Math.max(Theme.mainUnits(146), Theme.mainBodySize * 3 + Theme.mainUnits(104))
+                        cellWidth: Math.max(Theme.mainGridCellWidth, Theme.mainBodySize * 10 + Theme.mainUnits(16))
+                        cellHeight: Math.max(Theme.mainGridCellHeight, Theme.mainBodySize * 3 + Theme.mainGridIconSize * Theme.fontScale + Theme.mainUnits(32))
                         ScrollBar.vertical: ScrollBar {}
                         delegate: Rectangle {
                             id: gridEntry
@@ -1157,12 +1162,13 @@ ApplicationWindow {
                             required property bool chosen
                             required property string entryId
                             required property bool canNavigate
+                            required property bool canSelect
                             objectName: "grid-entry-" + index
                             required property string entryStatus
                             Accessible.name: display
                             Accessible.description: entryStatus
-                            width: grid.cellWidth - 12
-                            height: grid.cellHeight - 12
+                            width: grid.cellWidth - Theme.mainGridGap
+                            height: grid.cellHeight - Theme.mainGridGap
                             radius: Theme.mainControlRadius
                             color: gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
                             border.color: gridEntry.activeFocus ? Theme.accent : Theme.border
@@ -1183,14 +1189,26 @@ ApplicationWindow {
                                 }
                                 onDoubleClicked: reader.enterDirectory(gridEntry.index)
                             }
+                            SelectionCheck {
+                                objectName: "gridSelection-" + gridEntry.index
+                                anchors.left: parent.left
+                                anchors.top: parent.top
+                                anchors.margins: Theme.mainGridCheckboxInset
+                                z: 2
+                                visible: gridEntry.canSelect && (gridHover.hovered || gridEntry.chosen)
+                                checked: gridEntry.chosen
+                                enabled: reader.runtimeAvailable && !reader.busy
+                                Accessible.name: qsTr("选择 %1").arg(gridEntry.display)
+                                onClicked: reader.selectRow(gridEntry.index)
+                            }
                             ColumnLayout {
                                 anchors.fill: parent
                                 anchors.margins: Theme.mainUnits(12)
                                 spacing: Theme.mainUnits(8)
                                 Image {
                                     Layout.alignment: Qt.AlignHCenter
-                                    Layout.preferredWidth: Theme.mainUnits(48)
-                                    Layout.preferredHeight: Theme.mainUnits(48)
+                                    Layout.preferredWidth: Theme.mainGridIconSize * Theme.fontScale
+                                    Layout.preferredHeight: Theme.mainGridIconSize * Theme.fontScale
                                     source: root.fileIcon(gridEntry.display, gridEntry.isDirectory)
                                     fillMode: Image.PreserveAspectFit
                                 }

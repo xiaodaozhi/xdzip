@@ -1,0 +1,79 @@
+{
+  "capture_state": "modified working tree, before commit",
+  "base_commit": "532d636c646b2d2f5ebd32feb17e982cdb1fc08a",
+  "qt": {
+    "version": "6.8.2",
+    "os": "Linux x86_64",
+    "platform": "offscreen",
+    "renderer": "software",
+    "dpr": [
+      1,
+      1.25,
+      2
+    ]
+  },
+  "html": {
+    "browser": "Chromium",
+    "page_zoom": [
+      1,
+      1.25
+    ],
+    "dpr": [
+      1,
+      1.25,
+      2
+    ],
+    "method": "private Xvfb and XTest actual Ctrl+0/Ctrl+="
+  },
+  "source_sha256": {
+    "apps/desktop/BrowserController.cpp": "74da291fed010a1f6059f908bad64e8b88348a034648428065996bec8f981d90",
+    "apps/desktop/BrowserController.h": "f422798530a0ca6d44cdf8cbf9b8a942232713f0f94d4ba87a06e12f3d0863f5",
+    "apps/desktop/tests/browser_test.cpp": "74d5388d048d36585ee4991f2f947ba2603cae71156525f640815d937b76af6b",
+    "apps/desktop/ui/AppButton.qml": "410b1377226a5384bd22bfe4aa2eb075f202eab263b512ab16a486952b7e376a",
+    "apps/desktop/ui/ArchiveAction.qml": "95001f3d548bc16a392bc166f61d091dd9dfc87dccc83feea51da60112f58dcd",
+    "apps/desktop/ui/ArchiveTabs.qml": "469dbcb10a7e05f6d0ef98e2caffd055ff0c619119c160d660078b79b835d10b",
+    "apps/desktop/ui/ArchiveToolbar.qml": "da5e055e8c80fe94cb0f1898d3b47475c41b8e904d8bc16d553336ad0072bf91",
+    "apps/desktop/ui/Breadcrumb.qml": "a0c3c293b264d98b39582670d5244e4766b42f5bafce338b608d440d5d2a990e",
+    "apps/desktop/ui/Browser.qml": "dba30019c2f126a688c4f4ea4fb72713edd61021f7941fa204e316018aa069c4",
+    "apps/desktop/ui/CommandMenu.qml": "53de2bfffc95a24df61a78208fbf6c10c4fef1c60718793001ea7bc879680b96",
+    "apps/desktop/ui/CommandMenuItem.qml": "12b4cbefdacd3c2b69d48d51bb1539271dc87e1e06aa4d9df35493c9ade97405",
+    "apps/desktop/ui/CommandMenuSeparator.qml": "9cc7a6789c672e8d683274b26890e1cc53c087d38097f6f5e1e1a6abcfb58e09",
+    "apps/desktop/ui/CommandTooltip.qml": "913b14c1cb25f973f5fe17f7c1ab93a17c525a59aab119ee6f18dbc3b4f513f3",
+    "apps/desktop/ui/InfoRow.qml": "d30b2dbce21cbb6344566c22d7bcc42bda0a272ead947e9dfa6c013c851fc637",
+    "apps/desktop/ui/InspectorPanel.qml": "49746ca5f2a1d9630fe254fb49cb487455e2e01f79509a64e9844c0e8698e7d4",
+    "apps/desktop/ui/OperationWindow.qml": "aa6ff466633fd5a8dcd5923e0e5f95e7fdec932515dcdfe2431b70bf201cb047",
+    "apps/desktop/ui/PaneHeader.qml": "4ae095ea8ea3af0992468eb27e98c3c95bd87e713dddd3b9895cab08ffa0873e",
+    "apps/desktop/ui/PreflightWindow.qml": "dd59e55f8cf22a03a00d0cff69b2c22d35dd9d9642d0646b6f7d3b4440349594",
+    "apps/desktop/ui/Preview.qml": "4c6f336b0a6945a22dc303c9a538ffc62460c943c0128fe609f9b1b2b9273bbc",
+    "apps/desktop/ui/SelectionCheck.qml": "a06df2d41658d2fbe311ac46c11e73b9e5294df64a641dd3c313cf1a7404f66d",
+    "apps/desktop/ui/TaskMetric.qml": "517cd461177e624960a478766c619e2b9357bbafa66880e905293e41f40ea5e2",
+    "apps/desktop/ui/TaskPathCard.qml": "4ebf1e97d73bbadbe073afe5ab79ca9e97c2e6c3b925ef2b126298837df6cb8f",
+    "apps/desktop/ui/TaskWindow.qml": "a82182e4cea45c06e087b6e3130f68bdfccfe3be5efbcc81deb35a0275e9a5cf",
+    "apps/desktop/ui/Theme.qml": "047dc04b31b2efe2bd3c11ac6234b2a23a407b44de48e4f904f134cb13fb3287",
+    "crates/xdzip-qt-bridge/src/lib.rs": "a0d9e8cdb179844528ef7f810e1af56a8837c32e1fe07a9cb202303a7ebdd5e7",
+    "crates/xdzip-runtime/src/lib.rs": "d37f9482dfbb5b8b73b556874c8fdef7eb91fde84aa281a36cedb52661391e49",
+    "crates/xdzip-runtime/src/listing.rs": "4925d56b2edd1636ed16060ab43354b769d2f5bde6ef0ebf88db5063c5676c1a",
+    "crates/xdzip-runtime/src/service.rs": "5dfd70d5c6bff9a467c4ff4b2c1c1cceea5aafa4bdd2100688ec674caa193abe",
+    "design/html/app.js": "fdb5185c22a9af3ad32ab595c2161de8233a31b21106973c7bf486d72273cc6c",
+    "design/html/assets.js": "b84c7fdcd4542be51620854108536d34351e8ea690620b2f6011b0dda46afbd2",
+    "design/html/canvas.html": "a72594e4f119bd812b376049dad0de1b3abd086ecc9f55353eb34200359466a1",
+    "design/html/components.css": "b24889e7075c74174d0a584cbafb194f7ab4f109547ab51ece473c2db2a8d058",
+    "design/html/components.html": "c6d35d326403e534ab8ae87b3763bdc5e0fcc0ac5e3c956b635e15179936de32",
+    "design/html/components.js": "d1a6c3578cb93c889bcac37dae391da08a749ca8ad7a7cbd243309dbcb5b75ff",
+    "design/html/controls-tokens.css": "e59fa73251cf680df291266d9abea132aee16ccb316868caee5ecfc39cb2b0e6",
+    "design/html/controls-tokens.js": "abfda80c3009f074a5dcc9ef2e4116274675a8444980b8bd0ee2a60b063c348f",
+    "design/html/controls.css": "3808a5af77cb3e077f6735e48dd58d4573f32ad92a5fad4fad1c72617849d0e5",
+    "design/html/controls.js": "cde85ed4db4e6cf5385253ce551b7675b2fc57546b4a11952e8b10245824b56c",
+    "design/html/display-spec.js": "cd1b28963095311c7f375409dfbf7124d9988f830e18362a8bda7fe9888c4218",
+    "design/html/hifi.css": "94ded1f310cf50e68da721ea9e6f9a7f9e2c0e3ae168c0481c1e7b049b509e32",
+    "design/html/index.html": "e855bfd84ffb419f02c583a9ced7e5e37976a8bb848eebb07c79c438e8f6a3c9",
+    "design/html/main-controls.js": "f21453154e86d02f9cfecdf0a34803f808f5fbe4af46f03bf352cfd519df5cfa",
+    "design/html/review.css": "c9e943aab5daba6c100224ac71fc40ba1c96beb386b65d91031568c36dadd64d",
+    "design/html/review.js": "74edc3b7db37e87697361af8133b7a326e1a32c38566675bcd132d56a0f90ef5",
+    "design/html/styles.css": "c43fd97f2f90b627fa135075edfee5ef89f897390e7fe987409e4fa62c986840",
+    "docs/visual/controls.json": "e8cf971e822d70c7c7642181eec2963eecd5e655435e3a72a3dde75cb7e4b968",
+    "docs/visual/directory-tree.json": "e1d9c612f53faa58ecdde411988813432c5396fb84a61016c732a58944314ebf",
+    "docs/visual/layout-scale.json": "ced827c9206e471f75bd22b855acd964882efe33b8446f6bd09385265f6fd0a3",
+    "scripts/html_interaction_contract.py": "b483148a3f1fcea6dba8ed8d04c614151cbbdffeb34091b96c94ffcfd7507a36"
+  }
+}

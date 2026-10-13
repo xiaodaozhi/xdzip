@@ -135,6 +135,14 @@ class BrowserTest : public QObject {
         QVERIFY(controller.busy());
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         QVERIFY(controller.ready());
+        QCOMPARE(controller.total(), 1);
+        QCOMPARE(controller.archiveTotal(), 270);
+        QCOMPARE(controller.entries()->data(controller.entries()->index(0, 0)).toString(),
+                 "folder");
+        controller.selectRow(0);
+        QVERIFY(!controller.canPreflight());
+        controller.enterDirectory(0);
+        QTRY_VERIFY(!controller.busy());
         QCOMPARE(controller.total(), 270);
         QCOMPARE(controller.entries()->rowCount(), 270);
         const auto session = controller.sessionId();
@@ -159,7 +167,7 @@ class BrowserTest : public QObject {
         controller.selectRow(2);
         controller.selectRow(3);
         QCOMPARE(controller.selectedCount(), 2);
-        QCOMPARE(controller.detail().value("id").toString(), "4");
+        QCOMPARE(controller.detail().value("id").toString(), "5");
         controller.selectRow(2);
         QCOMPARE(controller.selectedCount(), 1);
         controller.enterDirectory(0);
@@ -168,7 +176,7 @@ class BrowserTest : public QObject {
         QCOMPARE(controller.selectedCount(), 0);
         QVERIFY(controller.detail().isEmpty());
         QCOMPARE(controller.location(), QString::fromUtf8("旅行/"));
-        controller.showAll();
+        controller.showRoot();
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         controller.search("NOTES");
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
@@ -182,7 +190,7 @@ class BrowserTest : public QObject {
         QCOMPARE(controller.total(), 0);
         controller.search("");
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
-        QCOMPARE(controller.total(), 5);
+        QCOMPARE(controller.total(), 4);
     }
     void completeNavigationAndGlobalSort() {
         BrowserController controller;
@@ -225,6 +233,9 @@ class BrowserTest : public QObject {
         QVERIFY(controller.ready());
         QVERIFY(controller.navigationLimited());
         QCOMPARE(tree->rowCount(), 0);
+        QCOMPARE(controller.total(), 0);
+        controller.search("file");
+        QTRY_VERIFY(!controller.busy());
         QCOMPARE(controller.total(), 1);
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/empty.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
@@ -241,7 +252,7 @@ class BrowserTest : public QObject {
         controller.selectRow(3);
         controller.selectForContext(2);
         QCOMPARE(controller.selectedCount(), 2);
-        QCOMPARE(controller.detail().value("id").toString(), "3");
+        QCOMPARE(controller.detail().value("id").toString(), "4");
         controller.selectForContext(0);
         QCOMPARE(controller.selectedCount(), 1);
         controller.copySelection(false);
@@ -254,7 +265,7 @@ class BrowserTest : public QObject {
         controller.copySelection(false);
         QCOMPARE(QGuiApplication::clipboard()->text().split('\n').size(), 3);
         controller.selectAll(true);
-        QCOMPARE(controller.selectedCount(), 5);
+        QCOMPARE(controller.selectedCount(), 4);
         controller.selectAll(false);
         QCOMPARE(controller.selectedCount(), 0);
         QVERIFY(controller.detail().isEmpty());
@@ -267,6 +278,8 @@ class BrowserTest : public QObject {
         QCOMPARE(controller.selectedCount(), 2);
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/pages.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
+        controller.enterDirectory(0);
+        QTRY_VERIFY(!controller.busy());
         controller.selectAll(true);
         QCOMPARE(controller.selectedCount(), 270);
         controller.selectAll(false);
@@ -408,18 +421,18 @@ class BrowserTest : public QObject {
         BrowserController controller;
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
+        controller.selectRow(1);
         controller.selectRow(2);
-        controller.selectRow(3);
         QSignalSpy completed(&controller, &BrowserController::preflightReady);
         controller.inspectSelection();
         QTRY_COMPARE_WITH_TIMEOUT(completed.count(), 1, 5000);
         QCOMPARE(controller.selectedCount(), 2);
-        QCOMPARE(controller.entries()->rowCount(), 5);
+        QCOMPARE(controller.entries()->rowCount(), 4);
         QCOMPARE(controller.preflightReport().value("entries").toString(), "2");
         QCOMPARE(controller.preflightReport().value("findingCount").toString(), "1");
-        controller.selectRow(2);
+        controller.selectRow(1);
         QVERIFY(controller.preflightReport().isEmpty());
-        controller.selectRow(3);
+        controller.selectRow(2);
         controller.selectRow(0);
         controller.inspectSelection();
         QTRY_COMPARE_WITH_TIMEOUT(completed.count(), 2, 5000);
@@ -496,7 +509,7 @@ class BrowserTest : public QObject {
         controller.openPath(path);
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         QVERIFY(controller.ready());
-        QCOMPARE(controller.total(), 5);
+        QCOMPARE(controller.total(), 4);
     }
     void closeDuringReadRemainsAsynchronous() {
         BrowserController controller;
@@ -506,6 +519,137 @@ class BrowserTest : public QObject {
         QTRY_COMPARE_WITH_TIMEOUT(closed.count(), 1, 5000);
         QVERIFY(!controller.busy());
         QVERIFY(controller.requestClose());
+    }
+    void rootListingAndReviewedInteractions() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/tree-layout.zip"));
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(controller->total(), 2);
+        QCOMPARE(controller->archiveTotal(), 2);
+        QCOMPARE(controller->entries()->data(controller->entries()->index(0, 0)).toString(),
+                 "GitHub Desktop.app");
+        controller->selectOnlyRow(0);
+        QVERIFY(!controller->canPreflight());
+        controller->copySelection(true);
+        QCOMPARE(QGuiApplication::clipboard()->text(), "GitHub Desktop.app/");
+        controller->selectAll(false);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto item = [window](const char *name) {
+            return findVisual(window->contentItem(), QString::fromLatin1(name));
+        };
+        const auto click = [window](QQuickItem *target) {
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint());
+        };
+        auto *caption = item("archiveCaption");
+        auto *title = item("filePaneTitle");
+        QCOMPARE(caption->property("text").toString(), QString::fromUtf8("档案文件"));
+        QVERIFY(qAbs(caption->mapToScene(QPointF(0, caption->height() / 2)).y() -
+                     title->mapToScene(QPointF(0, title->height() / 2)).y()) < .5);
+        auto *cell = item("entry-0-0");
+        QTest::mouseMove(window, cell->mapToScene(QPointF(100, cell->height() / 2)).toPoint());
+        for (int column = 0; column < 5; ++column) {
+            auto *band = findVisual(window->contentItem(), QString("entryBand-0-%1").arg(column));
+            QVERIFY(band);
+            QTRY_COMPARE(band->property("color").value<QColor>(), QColor("#EDF2FF"));
+        }
+        const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        if (!captures.isEmpty())
+            QVERIFY(QDir().mkpath(captures));
+        if (!captures.isEmpty())
+            QVERIFY(visual_audit::save(window, captures, "root-row-hover"));
+        auto *tree = item("directoryTree");
+        QVERIFY(tree);
+        QVERIFY(QMetaObject::invokeMethod(tree, "expandRecursively", Q_ARG(int, 0), Q_ARG(int, 2)));
+        QQuickItem *guide = nullptr, *disclosure = nullptr;
+        QTRY_VERIFY((guide = item("directoryParentGuide-d2")));
+        QTRY_VERIFY((disclosure = item("directoryDisclosure-d1")));
+        QVERIFY(qAbs(guide->mapToScene(QPointF(guide->width() / 2, 0)).x() -
+                     disclosure->mapToScene(QPointF(disclosure->width() / 2, 0)).x()) < .01);
+        QQmlComponent scaleSettings(&engine);
+        scaleSettings.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+            "QtObject { property real scale: 1; onScaleChanged: Ui.Theme.fontScale = scale }",
+            QUrl());
+        std::unique_ptr<QObject> scaling(scaleSettings.create());
+        QVERIFY(scaling);
+        scaling->setProperty("scale", 2);
+        QTRY_VERIFY(qAbs(caption->mapToScene(QPointF(0, caption->height() / 2)).y() -
+                         title->mapToScene(QPointF(0, title->height() / 2)).y()) < .5);
+        QTRY_VERIFY(qAbs(guide->mapToScene(QPointF(guide->width() / 2, 0)).x() -
+                         disclosure->mapToScene(QPointF(disclosure->width() / 2, 0)).x()) < .01);
+        scaling->setProperty("scale", 1);
+        click(item("inspectorClose"));
+        QQuickItem *toggle = nullptr;
+        QTRY_VERIFY((toggle = item("inspectorToggle")) && toggle->isVisible());
+        QCOMPARE(toggle->width(), 28.0);
+        QCOMPARE(toggle->height(), 28.0);
+        click(item("browserGridButton"));
+        QQuickItem *card = nullptr, *check = nullptr;
+        QTRY_VERIFY((card = item("grid-entry-0")));
+        QTRY_VERIFY((check = item("gridSelection-0")));
+        auto *grid = item("archiveGrid");
+        QVERIFY(qAbs(grid->x() - 16) < .01);
+        QTest::mouseMove(window, item("archiveOpen")->mapToScene(QPointF(10, 10)).toPoint());
+        QTRY_VERIFY(!check->isVisible());
+        QTest::mouseMove(window, card->mapToScene(QPointF(40, 40)).toPoint());
+        QTRY_VERIFY(check->isVisible());
+        click(check);
+        QTRY_COMPARE(controller->selectedCount(), 1);
+        QTest::mouseMove(window, item("archiveOpen")->mapToScene(QPointF(10, 10)).toPoint());
+        QTRY_VERIFY(check->isVisible());
+        if (!captures.isEmpty())
+            QVERIFY(visual_audit::save(window, captures, "root-grid-selected"));
+        window->setProperty("darkMode", true);
+        QTRY_COMPARE(item("actionSplitDivider")->property("color").value<QColor>(),
+                     QColor("#363D4B"));
+        window->setProperty("darkMode", false);
+        click(item("browserViewMenuButton"));
+        auto *more = item("archiveMore");
+        QTest::mouseMove(window, more->mapToScene(QPointF(10, 10)).toPoint());
+        const QImage before = window->grabWindow();
+        click(more);
+        auto *menu = window->findChild<QObject *>("archiveMoreMenu");
+        QVERIFY(menu);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto *content = menu->property("contentItem").value<QQuickItem *>();
+        auto *background = menu->property("background").value<QQuickItem *>();
+        QVERIFY(background);
+        auto *shadow = findVisual(background, "menuShadowLayer-0");
+        QVERIFY(shadow && shadow->x() < 0 && shadow->width() > background->width());
+        const auto top =
+            content->mapToScene(QPointF()).y() - menu->property("topPadding").toDouble();
+        QVERIFY(qAbs(top - more->mapToScene(QPointF(0, more->height())).y() - 4) < .1);
+        const auto center = background->mapToScene(QPointF(-4, background->height() / 2));
+        const QImage after = window->grabWindow();
+        const auto pixel = QPoint(qRound(center.x() * after.width() / window->width()),
+                                  qRound(center.y() * after.height() / window->height()));
+        QVERIFY(after.valid(pixel));
+        QVERIFY(after.pixelColor(pixel) != before.pixelColor(pixel));
+        if (!captures.isEmpty())
+            QVERIFY(visual_audit::save(window, captures, "root-menu-shadow"));
+        QTest::keyClick(window, Qt::Key_Escape);
+        controller->enterDirectory(0);
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(controller->entries()->data(controller->entries()->index(0, 0)).toString(),
+                 "Contents");
+        controller->showRoot();
+        QTRY_VERIFY(!controller->busy());
+        controller->search("file.txt");
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(controller->total(), 1);
+        QVERIFY(controller->entries()
+                    ->data(controller->entries()->index(0, 0))
+                    .toString()
+                    .contains("GitHub Desktop.app/Contents/Resources/"));
+        controller->requestClose();
+        QTRY_VERIFY(!controller->runtimeAvailable());
     }
     void reviewedMainControlsAndMenus() {
         QQmlApplicationEngine engine;
@@ -562,11 +706,13 @@ class BrowserTest : public QObject {
         controller->enterDirectory(0);
         QTRY_VERIFY(!controller->busy());
         QTRY_COMPARE(grid->mapToScene(QPointF()), fixedGrid);
-        controller->showAll();
+        controller->showRoot();
         QTRY_VERIFY(!controller->busy());
         click(grid);
         QTRY_VERIFY(!item("fileTableHeader")->isVisible());
         const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        if (!captures.isEmpty())
+            QVERIFY(QDir().mkpath(captures));
         if (!captures.isEmpty())
             QVERIFY(visual_audit::save(window, captures, "review-grid"));
         click(item("browserViewMenuButton"));
@@ -725,18 +871,18 @@ class BrowserTest : public QObject {
         QCOMPARE(window->property("accentTextColor").value<QColor>(), QColor(Qt::white));
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
-        QCOMPARE(controller->total(), 5);
+        QCOMPARE(controller->total(), 4);
         QCOMPARE(controller->entries()
                      ->data(controller->entries()->index(1, 0), Qt::DisplayRole)
                      .toString(),
-                 QString::fromUtf8("旅行/说明.txt"));
+                 QString::fromUtf8("notes.txt"));
         QVERIFY(QTest::qWaitForWindowExposed(window));
         QQuickItem *cell = nullptr;
         QTRY_VERIFY((cell = findVisual(window->contentItem(), "entry-1-0")));
         const auto point = cell->mapToScene(QPointF(120, 24)).toPoint();
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
         QTRY_COMPARE(controller->selectedCount(), 1);
-        QCOMPARE(controller->detail().value("id").toString(), "2");
+        QCOMPARE(controller->detail().value("id").toString(), "3");
         auto *selection = findVisual(cell, "entrySelection");
         QVERIFY(selection);
         const auto checkPoint =

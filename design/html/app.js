@@ -289,12 +289,19 @@ function withinDirectory(entry, directory) {
     }
     return false;
 }
+function archivePath(entry) {
+    const segments = [entry.name];
+    let parent = entry.parent;
+    while (parent) { const node = byId.get(parent); if (!node) break; segments.unshift(node.name); parent = node.parent; }
+    return segments.join("/") + (entry.folder ? "/" : "");
+}
+function displayEntryName(entry) { return state.query ? archivePath(entry) : entry.name; }
 function visibleEntries() {
     if (state.archiveState !== "ready") return [];
     const list = entries.filter((entry) =>
         state.query
             ? withinDirectory(entry, state.path) &&
-              entry.name.toLowerCase().includes(state.query.toLowerCase())
+              archivePath(entry).toLowerCase().includes(state.query.toLowerCase())
             : entry.parent === state.path,
     );
     if (state.sort)
@@ -340,13 +347,13 @@ function renderTree() {
     if (window.XdzipMain) return window.XdzipMain.renderTree();
     if (state.archiveState !== "ready") {
         $("#tree").innerHTML =
-            `<button class="tree-item active" disabled>${icon("layers")}<span>全部文件</span><small>${state.archiveState === "empty" ? "0" : "—"}</small></button>`;
+            `<button class="tree-item active" disabled>${icon("layers")}<span>根目录</span><small>${state.archiveState === "empty" ? "0" : "—"}</small></button>`;
         return;
     }
     const counts = (id) =>
         files.filter((f) => (id ? f.parent === id : true)).length;
     $("#tree").innerHTML =
-        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>全部文件</span></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name}</span></button>`).join("")}`;
+        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>根目录</span></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name}</span></button>`).join("")}`;
     $("#tree")
         .querySelectorAll("button")
         .forEach((b) => (b.onclick = () => choosePath(b.dataset.path)));
@@ -404,7 +411,7 @@ function render() {
                           : `<span aria-current="page">${esc(node.name)}</span>`,
                   )
                   .join(separator)
-            : "<span>全部文件</span>") +
+            : "<span>根目录</span>") +
         (state.query
             ? separator + '<span aria-current="page">搜索结果</span>'
             : "");
@@ -416,14 +423,14 @@ function render() {
                 (button.onclick = () => choosePath(button.dataset.breadcrumb)),
         );
     $("#entry-count").textContent =
-        `${state.path || state.query ? list.length : files.length} 项`;
+        `${list.length} 项`;
     $("#search-notice").hidden = !state.query;
     $("#search-notice").textContent =
         `当前${state.path ? "目录及后代" : "归档"}中找到 ${list.length} 项 · 搜索结果不等同于全部归档`;
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
-                `<tr tabindex="0" data-id="${e.id}" class="${e.folder ? "folder-row " : ""}${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name"><span class="entry-icon">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}</span><span title="${esc(e.name)}">${esc(e.name)}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${esc(displayType(e))}</td><td class="date-col">${esc(e.modified)}</td></tr>`,
+                `<tr tabindex="0" data-id="${e.id}" class="${e.folder ? "folder-row " : ""}${state.selected.has(e.id) ? "selected" : ""}" aria-selected="${state.selected.has(e.id)}"><td><input type="checkbox" tabindex="-1" aria-label="选择 ${esc(e.name)}" ${state.selected.has(e.id) ? "checked" : ""}></td><td><div class="entry-name"><span class="entry-icon">${["lake", "sunrise"].includes(e.id) ? photo(e.id, "entry-photo") : icon(fileIcon(e), fileIcon(e))}</span><span title="${esc(e.name)}">${esc(displayEntryName(e))}</span></div></td><td>${e.folder ? "—" : bytes(e.size)}</td><td>${e.folder ? "—" : bytes(e.compressed)}</td><td class="type-col">${esc(displayType(e))}</td><td class="date-col">${esc(e.modified)}</td></tr>`,
         )
         .join("");
     $("#file-rows")

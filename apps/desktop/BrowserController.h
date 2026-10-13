@@ -19,6 +19,9 @@ struct BrowserRow {
     QString method;
     QString status;
     bool attention = false;
+    QString path;
+    QString navigationId;
+    bool physical = true;
 };
 class ArchiveTableModel final : public QAbstractTableModel {
     Q_OBJECT
@@ -60,6 +63,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap preflightReport READ preflightReport NOTIFY changed)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
+    Q_PROPERTY(bool canPreflight READ canPreflight NOTIFY changed)
     Q_PROPERTY(QString selectedBytes READ selectedBytes NOTIFY changed)
     Q_PROPERTY(QString location READ location NOTIFY changed)
     Q_PROPERTY(bool runtimeAvailable READ runtimeAvailable NOTIFY changed)
@@ -131,6 +135,7 @@ class BrowserController : public QObject {
         return m_model.selectedCount();
     }
     QString selectedBytes() const;
+    bool canPreflight() const;
     QString location() const {
         return m_location;
     }
@@ -145,7 +150,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE void selectAll(bool selected);
     Q_INVOKABLE void copySelection(bool includeArchivePath);
     Q_INVOKABLE void enterDirectory(int row);
-    Q_INVOKABLE void showAll();
+    Q_INVOKABLE void showRoot();
     Q_INVOKABLE void search(const QString &text);
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void chooseArchive();
@@ -173,6 +178,7 @@ class BrowserController : public QObject {
         QString error;
         QString session;
         int total = 0;
+        int archiveTotal = 0;
         int offset = 0;
     };
     struct QueryState {

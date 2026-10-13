@@ -34,12 +34,21 @@ Menu {
             returnFocusItem.forceActiveFocus(Qt.PopupFocusReason);
     }
     background: Item {
-        Rectangle {
-            anchors.fill: parent
-            anchors.topMargin: 3
-            anchors.bottomMargin: -3
-            radius: Theme.menuRadius + 2
-            color: Theme.menuShadow
+        // Soft rounded layers work on the software renderer as well as the GPU.
+        Repeater {
+            model: Theme.menuShadowLayers
+            Rectangle {
+                required property int index
+                readonly property real spread: Theme.menuShadowRadius * (1 - index / Theme.menuShadowLayers)
+                objectName: "menuShadowLayer-" + index
+                x: -spread
+                y: Theme.menuShadowOffsetY - spread
+                width: parent.width + spread * 2
+                height: parent.height + spread * 2
+                radius: Theme.menuRadius + spread
+                color: Theme.menuShadow
+                opacity: 1 / Theme.menuShadowLayers
+            }
         }
         Rectangle {
             anchors.fill: parent

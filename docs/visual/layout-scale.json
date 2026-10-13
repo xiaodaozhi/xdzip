@@ -29,7 +29,13 @@
       "toolbarContentGap": 6,
       "breadcrumbHeight": 28,
       "popupGap": 4,
-      "treeTrailingInset": 16
+      "treeTrailingInset": 16,
+      "gridInset": 16,
+      "gridCheckboxInset": 8,
+      "gridCellWidth": 144,
+      "gridCellHeight": 124,
+      "gridGap": 12,
+      "gridIconSize": 40
     }
   },
   "operation": {
