@@ -1,0 +1,24 @@
+{
+  "files": 64,
+  "output_bytes": 33554432,
+  "decoded_bytes": 33554432,
+  "written_bytes": 33554432,
+  "committed_bytes": 33554432,
+  "created_directories": 8,
+  "open_ms": 0.232,
+  "extract_ms": 26.481,
+  "verification_ms": 25.168,
+  "delivered_task_snapshots": 3,
+  "peak_rss_kib": 2312,
+  "independent_byte_check": true,
+  "os": "Linux",
+  "architecture": "x86_64",
+  "fixture": {
+    "files": 64,
+    "output_bytes": 33554432,
+    "input_bytes": 158870,
+    "sha256": "5307ecc5b105cff2939605b6fd1cf17bff09cec73316c45acb57614142f40a91"
+  },
+  "profile": "release",
+  "scope": "64 Deflate files / 8 directories, actual decode+fsync+publication; single CI run, warm-cache effects possible"
+}

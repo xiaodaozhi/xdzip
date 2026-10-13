@@ -228,3 +228,71 @@ fn commit_cancellation_has_explicit_linearization_and_never_claims_rollback() {
     assert!(target.0.join("照片/说明.txt").is_file());
     assert!(!target.0.join("data.bin").exists());
 }
+
+#[test]
+fn partial_disk_full_write_never_replaces_an_existing_destination() {
+    let target = Target::new();
+    let a = archive("deflate.zip");
+    let path = target.0.join("说明.txt");
+    std::fs::write(&path, b"old safe bytes").unwrap();
+    let mut options = target.options();
+    options.conflict = ConflictPolicy::Overwrite;
+    execute::inject_disk_full(Some(2));
+    let done = execute(&a, options, &Control::default(), |_| {});
+    execute::inject_disk_full(None);
+    assert_eq!(done.error, "disk_full");
+    assert_eq!(done.written_bytes, 2);
+    assert_eq!(done.committed_files, 0);
+    assert_eq!(std::fs::read(path).unwrap(), b"old safe bytes");
+    assert!(!done.cleanup_warning);
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 1);
+}
+#[test]
+fn source_changed_at_commit_boundary_preserves_existing_destination() {
+    let target = Target::new();
+    let source = Target::new();
+    let path = source.0.join("source.zip");
+    std::fs::copy(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/deflate.zip"),
+        &path,
+    )
+    .unwrap();
+    let a = Archive::open(&path, &Cancellation::default()).unwrap();
+    std::fs::write(target.0.join("说明.txt"), b"old safe bytes").unwrap();
+    let mut options = target.options();
+    options.conflict = ConflictPolicy::Overwrite;
+    let done = execute(&a, options, &Control::default(), |s| {
+        if s.status == Status::Committing {
+            std::fs::write(&path, b"changed before publication").unwrap();
+        }
+    });
+    assert_eq!(done.error, "source_changed");
+    assert_eq!(done.committed_files, 0);
+    assert_eq!(
+        std::fs::read(target.0.join("说明.txt")).unwrap(),
+        b"old safe bytes"
+    );
+    assert!(!done.cleanup_warning);
+}
+
+#[test]
+fn every_terminal_outcome_rejects_late_control_requests() {
+    for (fixture, status) in [
+        ("deflate.zip", Status::Succeeded),
+        ("crc_bad.zip", Status::Failed),
+    ] {
+        let target = Target::new();
+        let a = archive(fixture);
+        let c = Control::default();
+        let done = execute(&a, target.options(), &c, |_| {});
+        assert_eq!(done.status, status);
+        assert!(!c.cancel());
+    }
+    let target = Target::new();
+    let a = archive("deflate.zip");
+    let c = Control::default();
+    c.cancel();
+    let done = execute(&a, target.options(), &c, |_| {});
+    assert_eq!(done.status, Status::Cancelled);
+    assert!(!c.cancel());
+}

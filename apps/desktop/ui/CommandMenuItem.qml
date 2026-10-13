@@ -19,7 +19,8 @@ MenuItem {
     rightPadding: Theme.menuLabelInset
     topPadding: 4
     bottomPadding: 4
-    font.pixelSize: Theme.menuLabelSize
+    property real labelSize: Theme.menuLabelSize
+    font.pixelSize: labelSize
     Accessible.name: text
     Accessible.description: enabled ? "" : disabledReason
     indicator: null
@@ -52,7 +53,7 @@ MenuItem {
                 text: root.text
                 textFormat: Text.PlainText
                 color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
-                font.pixelSize: Theme.menuLabelSize
+                font.pixelSize: root.labelSize
                 elide: Text.ElideRight
             }
             Text {

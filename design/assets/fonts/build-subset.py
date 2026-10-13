@@ -34,6 +34,13 @@ def current_characters() -> set[int]:
         source = path.read_text(encoding="utf-8")
         codepoints.update(ord(character) for character in source if ord(character) >= 0x20)
         codepoints.update(int(value, 16) for value in re.findall(r"\\u([0-9a-fA-F]{4})", source))
+    # Visible QML/C++ labels share the same metrics as HTML; do not rely on platform
+    # fallback for newly implemented operation windows.
+    paths = list((ROOT / "apps/desktop/ui").glob("*.qml")) + [ROOT / "apps/desktop/BrowserController.cpp"]
+    for path in paths:
+        source = path.read_text(encoding="utf-8")
+        for label in re.findall(r'(?:qsTr|\btr)\("((?:[^"\\]|\\.)*)"\)', source):
+            codepoints.update(ord(c) for c in label if ord(c) >= 0x20)
     return codepoints
 
 

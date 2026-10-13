@@ -26,7 +26,7 @@ impl Default for Control {
     }
 }
 impl Control {
-    /// Request cancellation. False means the last publication already completed.
+    /// Request cancellation. False means the task outcome is already fixed.
     pub fn cancel(&self) -> bool {
         loop {
             let old = self.gate.load(Ordering::Acquire);
@@ -102,6 +102,11 @@ impl Control {
             }
             Err(_) => Err("cancelled"),
         }
+    }
+    pub(crate) fn mark_terminal(&self) {
+        // Failure and cancellation also close control admission after cleanup.
+        // Otherwise a late cancel could replace an undelivered terminal snapshot.
+        self.gate.store(4, Ordering::Release);
     }
     pub(crate) fn complete(&self) -> Result<(), &'static str> {
         match self

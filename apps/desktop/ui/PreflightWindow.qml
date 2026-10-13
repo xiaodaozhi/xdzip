@@ -8,7 +8,7 @@ OperationWindow {
     objectName: "preflightWindow"
     title: qsTr("xdzip · 解压预检")
     property var report: ({})
-    width: 700
+    width: Theme.operationDefaultWidth
     height: Math.min(620, Screen.desktopAvailableHeight - 80)
     ColumnLayout {
         anchors.fill: parent
@@ -80,9 +80,9 @@ OperationWindow {
         Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.border }
         Text {
             Layout.fillWidth: true
-            text: qsTr("尚未校验文件内容，也未检查目标磁盘。安全写入与解码链路完成前，不能开始解压。")
+            text: qsTr("此报告仅检查元数据；开始解压后逐文件验证内容与目标，完整校验后才提交。")
             wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: Theme.bodySize
         }
-        AppButton { Layout.alignment: Qt.AlignRight; text: qsTr("返回浏览"); primary: true; onClicked: root.close() }
+        AppButton { labelSize: Theme.operationFooterFontSize; Layout.alignment: Qt.AlignRight; text: qsTr("返回浏览"); primary: true; onClicked: root.close() }
     }
 }

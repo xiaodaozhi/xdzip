@@ -17,6 +17,42 @@ ApplicationWindow {
     property bool integratedTitlebar: false
     property string searchSession: ""
     property bool darkMode: false
+    property string activeTaskId: ""
+    property var taskSnapshot: ({})
+    property bool waitBeforeExit: false
+    property bool allowExit: false
+    function phaseLabel(status: string): string {
+        return ({queued: qsTr("等待开始"), preparing: qsTr("检查目标与归档"), running: qsTr("解码与写入"),
+                 waiting: qsTr("等待处理重名"), committing: qsTr("提交完整文件"), cancelling: qsTr("停止与清理"),
+                 cleaning: qsTr("清理暂存"), succeeded: qsTr("完成"), failed: qsTr("失败"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
+    }
+    function showTask(id: string) {
+        activeTaskId = id;
+        taskSnapshot = reader.tasks.find(t => t.id === id) || {};
+        taskWindow.present();
+        if (taskSnapshot.promptId) conflictWindow.present();
+    }
+    function taskFraction(): real {
+        const t = taskSnapshot;
+        if (t.status === "succeeded") return 1;
+        const bytes = Number(t.declaredBytes || 0);
+        const files = Number(t.files || 0);
+        return Math.min(.99, bytes ? Number(t.decodedBytes || 0) / bytes : files ?
+            (Number(t.committedFiles || 0) + Number(t.skippedFiles || 0)) / files : 0);
+    }
+    function averageSpeed(): string {
+        const seconds = Number(taskSnapshot.elapsedMs || 0) / 1000;
+        if (taskSnapshot.terminal && seconds < 2) return "—";
+        return seconds >= 2 && Number(taskSnapshot.writtenBytes || 0) > 0 ?
+            formatSize(String(Math.round(Number(taskSnapshot.writtenBytes) / seconds))) + "/s" : qsTr("等待估算");
+    }
+    function remainingTime(): string {
+        const t = taskSnapshot;
+        const seconds = Number(t.elapsedMs || 0) / 1000;
+        const written = Number(t.writtenBytes || 0);
+        if (seconds < 2 || !written || t.status !== "running") return "—";
+        return qsTr("约 %1 秒").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
+    }
     property string viewMode: "list"
     property var contextEntry: ({})
     property string contextDirectoryId: ""
@@ -34,6 +70,7 @@ ApplicationWindow {
             inspectorWindow.requestActivate();
         } else {
             inspectorWindow.close();
+            extractWindow.close(); taskWindow.close(); conflictWindow.close(); quitWindow.close();
             root.inspectorRequested = !root.inspectorVisible;
         }
     }
@@ -65,6 +102,11 @@ ApplicationWindow {
     title: reader.title.length ? reader.title + " — xdzip" : "xdzip"
     color: Theme.surface
     onClosing: function (close) {
+        if (reader.activeTaskCount > 0 && !root.allowExit) {
+            close.accepted = false;
+            quitWindow.present();
+            return;
+        }
         close.accepted = reader.requestClose();
         if (close.accepted) {
             preflightWindow.close();
@@ -73,20 +115,7 @@ ApplicationWindow {
     }
 
     function fileIcon(name: string, directory: bool): string {
-        const suffix = name.toLowerCase().split(".").pop();
-        // Extension hints only; content detection belongs to the archive service.
-        let kind = "file-text";
-        if (directory)
-            kind = "folder";
-        else if (suffix === "pdf")
-            kind = "file-pdf";
-        else if (suffix === "md")
-            kind = "file-markdown";
-        else if (["jpg", "jpeg", "png", "gif", "webp", "avif", "heic"].includes(suffix))
-            kind = "image-file";
-        else if (["js", "ts", "rs", "cpp", "h", "json", "xml", "gpx", "py"].includes(suffix))
-            kind = "file-code";
-        return "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + kind + ".png";
+        return AssetLibrary.fileIcon(name, directory, false);
     }
     // Human-readable display only; exact integer strings remain in the model.
     function formatSize(value: string): string {
@@ -105,6 +134,14 @@ ApplicationWindow {
         objectName: "browserController"
         onReadyToClose: root.close()
         onPreflightReady: preflightWindow.present()
+        onExtractionReady: extractWindow.configure()
+        onExtractionStarted: id => { extractWindow.close(); root.showTask(id); }
+        onTasksChanged: {
+            root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
+            if (root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
+            if (!root.taskSnapshot.promptId) conflictWindow.close();
+            if (root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
+        }
         onChanged: {
             if (busy || root.contextEntry.session !== sessionId) {
                 entryMenu.close();
@@ -121,6 +158,41 @@ ApplicationWindow {
                 toolbar.clearSearch();
             }
         }
+    }
+    ExtractWindow { id: extractWindow; owner: root; controller: reader }
+    TaskWindow {
+        id: taskWindow
+        owner: root
+        archiveName: root.taskSnapshot.archive || reader.extractionIntent.archive || ""
+        destination: root.taskSnapshot.target || reader.extractionIntent.target || ""
+        currentFile: root.taskSnapshot.current || qsTr("正在准备…")
+        fraction: root.taskFraction()
+        totalKnown: !!root.taskSnapshot.status
+        stopping: ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
+        taskStatus: root.taskSnapshot.status || "queued"
+        phaseSummary: root.phaseLabel(taskStatus)
+        errorSummary: root.taskSnapshot.error || ""
+        cleanupWarning: root.taskSnapshot.cleanupWarning || false
+        outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
+        processedSummary: qsTr("已写入 %1 · 已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
+        fileCountSummary: qsTr("%1 / %2 个文件 · 跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        resultSummary: qsTr("完成 %1 个文件 · 跳过 %2 · 创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
+        speedSummary: root.averageSpeed()
+        remainingSummary: root.remainingTime()
+        onCancelRequested: reader.cancelTask(root.activeTaskId)
+        onOpenOutputRequested: reader.openOutput(root.activeTaskId)
+        onConflictRequested: conflictWindow.present()
+    }
+    ConflictWindow {
+        id: conflictWindow
+        owner: root; task: root.taskSnapshot; sizeFormatter: root.formatSize
+        onDecision: (policy, all) => { if (reader.decideTask(root.activeTaskId, root.taskSnapshot.promptId || "", policy, all)) conflictWindow.close(); }
+    }
+    QuitWindow {
+        id: quitWindow
+        owner: root
+        onWaitRequested: { root.waitBeforeExit = true; close(); }
+        onCancelAndQuitRequested: { stopping = true; root.allowExit = true; reader.requestClose(); }
     }
     PreflightWindow {
         id: preflightWindow
@@ -150,6 +222,8 @@ ApplicationWindow {
             selectionCount: reader.selectedCount
             sizeFormatter: root.formatSize
             iconForFile: root.fileIcon
+            canExtract: reader.ready && !reader.busy
+            onExtractRequested: id => reader.prepareExtraction(false, [id])
             onCloseRequested: inspectorWindow.close()
         }
     }
@@ -199,6 +273,11 @@ ApplicationWindow {
             enabled: reader.ready && !reader.busy && root.contextDirectoryHasChildren
             disabledReason: qsTr("该节点没有子目录")
             onTriggered: directoryTree.toggleExpanded(root.contextDirectoryRow)
+        }
+        CommandMenuItem {
+            text: qsTr("解压此目录")
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.prepareExtraction(!root.contextDirectoryId.length, root.contextDirectoryId.length ? [root.contextDirectoryId] : [])
         }
         CommandMenuSeparator {}
         CommandMenuItem {
@@ -328,8 +407,8 @@ ApplicationWindow {
         CommandMenuSeparator {}
         CommandMenuItem {
             text: qsTr("解压所选")
-            enabled: false
-            disabledReason: qsTr("安全写入层尚未实现；可先执行元数据预检")
+            enabled: root.contextAvailable && reader.selectedCount > 0
+            onTriggered: reader.prepareExtraction(false)
         }
     }
     CommandMenu {
@@ -392,6 +471,7 @@ ApplicationWindow {
             hasSelection: reader.selectedCount > 0
             onOpenRequested: reader.chooseArchive()
             onInspectRequested: reader.inspectSelection()
+            onExtractRequested: all => reader.prepareExtraction(all)
             onResetSortRequested: reader.sortByColumn(-1)
             onSearchRequested: query => reader.search(query)
             onSelectAllRequested: reader.selectAll(true)
@@ -466,7 +546,7 @@ ApplicationWindow {
                                 }
                             }
                             Text {
-                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("只读浏览")
+                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("安全 ZIP 解压")
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.mainSummarySize
                             }
@@ -754,7 +834,7 @@ ApplicationWindow {
                         font.pixelSize: Theme.mainSecondarySize
                     }
                     Text {
-                        text: qsTr("只读浏览")
+                        text: qsTr("安全 ZIP 解压")
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
                     }
@@ -1268,7 +1348,7 @@ ApplicationWindow {
                         }
                         Text {
                             Layout.fillWidth: true
-                            text: reader.message.length ? reader.message : qsTr("选择 ZIP 文件查看真实目录。当前支持只读浏览，不写出文件。")
+                            text: reader.message.length ? reader.message : qsTr("选择 ZIP 文件浏览内容，并解压到指定目录。")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainBodySize
                             wrapMode: Text.Wrap
@@ -1294,6 +1374,8 @@ ApplicationWindow {
                 selectionCount: reader.selectedCount
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
+                canExtract: reader.ready && !reader.busy
+                onExtractRequested: id => reader.prepareExtraction(false, [id])
                 onCloseRequested: root.inspectorRequested = false
             }
         }
@@ -1322,8 +1404,8 @@ ApplicationWindow {
                 ArchiveAction {
                     objectName: "browserTasks"
                     asset: "task-list"
-                    text: qsTr("任务 %1").arg(reader.busy ? 1 : 0)
-                    explanation: qsTr("查看当前读取任务")
+                    text: qsTr("任务 %1").arg(reader.activeTaskCount)
+                    explanation: qsTr("查看后台解压任务")
                     onClicked: taskMenu.open()
                     CommandMenu {
                         id: taskMenu
@@ -1331,12 +1413,22 @@ ApplicationWindow {
                         x: parent.width - width
                         y: -implicitHeight - Theme.mainPopupGap
                         CommandMenuItem {
-                            text: reader.busy ? qsTr("正在读取归档元数据") : qsTr("暂无后台任务")
+                            text: qsTr("暂无解压任务")
+                            visible: reader.tasks.length === 0
                             enabled: false
                         }
+                        Repeater {
+                            model: reader.tasks
+                            CommandMenuItem {
+                                required property var modelData
+                                text: qsTr("任务 %1 · %2").arg(modelData.id).arg(root.phaseLabel(modelData.status))
+                                onTriggered: root.showTask(modelData.id)
+                            }
+                        }
+                        CommandMenuSeparator { visible: reader.busy }
                         CommandMenuItem {
                             text: qsTr("取消读取")
-                            enabled: reader.busy
+                            visible: reader.busy
                             onTriggered: reader.cancel()
                         }
                     }

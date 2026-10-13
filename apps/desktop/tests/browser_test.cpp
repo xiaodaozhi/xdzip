@@ -1,3 +1,4 @@
+#include "AppQuitGuard.h"
 #include "BrowserController.h"
 #include "UiFont.h"
 #include "visual_audit.h"
@@ -39,6 +40,156 @@ class BrowserTest : public QObject {
     }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void m3ExtractionWindowsAndRealOutput() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->entries()->rowCount(), 3);
+        controller->selectAll(true);
+        controller->prepareExtraction(false);
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(extract);
+        QTRY_VERIFY(extract->isVisible());
+        QCOMPARE(extract->width(), 614);
+        auto *targetField = findVisual(extract->contentItem(), "extractTarget");
+        QVERIFY(targetField);
+        targetField->setProperty("text", target.path());
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetCheck().value("valid").toBool());
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        QVERIFY(start);
+        QTRY_VERIFY(start->isEnabled());
+        // Test the explicit action without opening a desktop file manager on CI.
+        controller->startExtraction(target.path(), false, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->tasks().isEmpty() &&
+                                     controller->tasks().first().toMap().value("terminal").toBool(),
+                                 10000);
+        auto result = controller->tasks().first().toMap();
+        QCOMPARE(result.value("status").toString(), "succeeded");
+        QCOMPARE(result.value("committedFiles").toString(), "3");
+        QCOMPARE(result.value("skippedFiles").toString(), "0");
+        QVERIFY(QFile::exists(target.filePath(QStringLiteral("照片/说明.txt"))));
+        QFile binary(target.filePath("data.bin"));
+        QVERIFY(binary.open(QIODevice::ReadOnly));
+        const auto data = binary.readAll();
+        QCOMPARE(data.size(), 262144);
+        for (qsizetype i = 0; i < data.size(); ++i)
+            QCOMPARE(static_cast<unsigned char>(data[i]), static_cast<unsigned char>(i % 256));
+        binary.close();
+        QCOMPARE(controller->entries()->rowCount(), 3);
+        QCOMPARE(controller->selectedCount(), 3);
+        auto *task = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(task);
+        QTRY_VERIFY(task->isVisible());
+        QCOMPARE(task->width(), 846);
+        QVERIFY(!(task->flags() & Qt::FramelessWindowHint));
+        QCOMPARE(task->transientParent(), window);
+        const auto button = findVisual(task->contentItem(), "cancelButton");
+        QVERIFY(button);
+        QVERIFY(!button->isVisible());
+        const auto capture = [&](QQuickWindow *w, const QString &name) {
+            if (qEnvironmentVariableIsEmpty("XDZIP_M3_VISUAL_AUDIT"))
+                return true;
+            const auto directory = qEnvironmentVariable("XDZIP_M3_VISUAL_AUDIT");
+            return QDir().mkpath(directory) && visual_audit::save(w, directory, name);
+        };
+        QVERIFY(capture(task, "task-success"));
+        controller->prepareExtraction(true);
+        QTRY_VERIFY(extract->isVisible());
+        QTRY_VERIFY(!controller->busy());
+        targetField->setProperty("text", target.path());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetCheck().value("valid").toBool());
+        QVERIFY(capture(extract, "extract-options"));
+        controller->startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 1 &&
+                                     controller->tasks().first().toMap().value("status") ==
+                                         "waiting",
+                                 10000);
+        result = controller->tasks().first().toMap();
+        const auto taskId = result.value("id").toString();
+        const auto prompt = result.value("promptId").toString();
+        QVERIFY(
+            !controller->decideTask(taskId, QString::number(prompt.toULongLong() + 1), 3, false));
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        QVERIFY(conflict);
+        QTRY_VERIFY(conflict->isVisible());
+        QCOMPARE(conflict->width(), 612);
+        QVERIFY(capture(conflict, "conflict"));
+        QVERIFY(capture(task, "task-waiting"));
+        conflict->close();
+        task->close();
+        QCOMPARE(controller->activeTaskCount(), 1);
+        AppQuitGuard guard;
+        guard.controller = controller;
+        guard.window = window;
+        QEvent quitEvent(QEvent::Quit);
+        QVERIFY(guard.eventFilter(nullptr, &quitEvent));
+        QVERIFY(window->isVisible());
+        QCOMPARE(controller->activeTaskCount(), 1);
+        auto *quit = window->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(quit);
+        QTRY_VERIFY(quit->isVisible());
+        QVERIFY(capture(quit, "quit"));
+        quit->close();
+        controller->closeArchive();
+        QTRY_VERIFY(!controller->ready() && !controller->busy());
+        // A task retains its input authority after its browser session is closed.
+        QVERIFY(controller->decideTask(taskId, prompt, 1, true));
+        QVERIFY(!controller->decideTask(taskId, prompt, 3, false));
+        QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("skippedFiles").toString(), "3");
+        QCOMPARE(controller->tasks().first().toMap().value("committedFiles").toString(), "0");
+        controller->requestClose();
+    }
+    void m3IntegrityFailurePreservesDestinationAndCancelEndsWaiting() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        const auto leaf = target.filePath(QStringLiteral("说明.txt"));
+        QFile old(leaf);
+        QVERIFY(old.open(QIODevice::WriteOnly));
+        old.write("old important file");
+        old.close();
+        BrowserController controller;
+        const auto start = [&](const QString &fixture, int policy) {
+            controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/") + fixture);
+            QTRY_VERIFY(controller.ready() && !controller.busy());
+            controller.prepareExtraction(true);
+            controller.checkTarget(target.path());
+            QTRY_VERIFY(!controller.busy() && controller.targetCheck().value("valid").toBool());
+            controller.startExtraction(target.path(), true, false, policy, false, false);
+        };
+        start("crc_bad.zip", 3);
+        QTRY_VERIFY(!controller.tasks().isEmpty() &&
+                    controller.tasks().first().toMap().value("terminal").toBool());
+        QCOMPARE(controller.tasks().first().toMap().value("errorCode").toString(),
+                 "integrity_error");
+        QVERIFY(old.open(QIODevice::ReadOnly));
+        QCOMPARE(old.readAll(), QByteArray("old important file"));
+        old.close();
+        start("deflate.zip", 0);
+        QTRY_VERIFY(controller.activeTaskCount() == 1 &&
+                    controller.tasks().first().toMap().value("status") == "waiting");
+        controller.cancelTask(controller.tasks().first().toMap().value("id").toString());
+        QTRY_COMPARE(controller.activeTaskCount(), 0);
+        QCOMPARE(controller.tasks().first().toMap().value("status").toString(), "cancelled");
+        QVERIFY(old.open(QIODevice::ReadOnly));
+        QCOMPARE(old.readAll(), QByteArray("old important file"));
+        old.close();
+        QCOMPARE(QDir(target.path())
+                     .entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden)
+                     .size(),
+                 1);
+        controller.requestClose();
     }
     void mailboxBackpressureShutdownAndIdle() {
         RuntimeConnection connection;

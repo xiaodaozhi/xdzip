@@ -807,6 +807,7 @@ function showExtract(scope = "selected", retryFiles = null) {
         policy: "ask",
         same: true,
         open: true,
+        allowHighRatio: false,
     };
     const chosen = scopeFiles(scope);
     if (!chosen.length) {
@@ -833,7 +834,7 @@ function showExtract(scope = "selected", retryFiles = null) {
                               "",
                           )}${count > 3 ? `<br>另有 ${count - 3} 个文件` : ""}</div>`
                     : ""
-            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">遇到重名文件时</label><select id="conflict-policy" class="field-select"><option value="ask">询问我如何处理</option><option value="rename">自动改名，保留两个版本</option><option value="skip">跳过已有文件</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">遇到重名文件时</label><select id="conflict-policy" class="field-select"><option value="ask">询问我如何处理</option><option value="rename">自动改名，保留两个版本</option><option value="skip">跳过已有文件</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label><label class="check-label"><input id="allow-high-ratio" type="checkbox">允许高压缩比文件（仍受字节限额约束）</label></div>` +
             footer(
                 cancelButton() +
                     `<button id="start-extract" class="button primary">开始解压</button>`,
@@ -855,7 +856,7 @@ function showExtract(scope = "selected", retryFiles = null) {
             `${icon(denied ? "status-warning" : "success")}<span>${
                 denied
                     ? "此位置不可写，请更改目标文件夹。"
-                    : "目标位置可用 · 可用空间 126 GB"
+                    : "目标位置可用（示例检查）"
             }</span>`;
         $("#start-extract").disabled = denied;
     };
@@ -878,6 +879,7 @@ function showExtract(scope = "selected", retryFiles = null) {
         const range = $("input[name=scope]:checked").value;
         state.plan.policy = $("#conflict-policy").value;
         state.plan.open = $("#open-after").checked;
+        state.plan.allowHighRatio = $("#allow-high-ratio").checked;
         startTask(scopeFiles(range), "extract");
     };
     check();

@@ -94,11 +94,14 @@ mod ffi {
         elapsed_ms: u64,
         error: String,
         cleanup_warning: bool,
+        outcome_uncertain: bool,
         leftovers: u64,
         prompt_id: u64,
         prompt_name: String,
         existing_bytes: u64,
         incoming_bytes: u64,
+        existing_modified: String,
+        incoming_modified_dos: u32,
         overwrite_allowed: bool,
     }
     enum EventKind {
@@ -474,11 +477,14 @@ fn empty_task() -> ffi::TaskSnapshot {
         elapsed_ms: 0,
         error: String::new(),
         cleanup_warning: false,
+        outcome_uncertain: false,
         leftovers: 0,
         prompt_id: 0,
         prompt_name: String::new(),
         existing_bytes: 0,
         incoming_bytes: 0,
+        existing_modified: String::new(),
+        incoming_modified_dos: 0,
         overwrite_allowed: false,
     }
 }
@@ -501,11 +507,17 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
         elapsed_ms: s.elapsed_ms,
         error: s.error,
         cleanup_warning: s.cleanup_warning,
+        outcome_uncertain: s.outcome_uncertain,
         leftovers: s.leftovers,
         prompt_id: prompt.as_ref().map_or(0, |p| p.id),
         prompt_name: prompt.as_ref().map_or(String::new(), |p| p.name.clone()),
         existing_bytes: prompt.as_ref().map_or(0, |p| p.existing_bytes),
         incoming_bytes: prompt.as_ref().map_or(0, |p| p.incoming_bytes),
+        existing_modified: prompt
+            .as_ref()
+            .and_then(|p| p.existing_modified)
+            .map_or(String::new(), |n| n.to_string()),
+        incoming_modified_dos: prompt.as_ref().map_or(0, |p| p.incoming_modified_dos),
         overwrite_allowed: prompt.as_ref().is_some_and(|p| p.overwrite_allowed),
     }
 }

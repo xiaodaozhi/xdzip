@@ -3,6 +3,10 @@ import QtQuick.Layouts
 
 RowLayout {
     id: root
+    property url iconSource: Theme.dark ? "qrc:/xdzip/assets/info-dark.png" : "qrc:/xdzip/assets/info-light.png"
+    property real lineFactor: 1.5
+    property real labelSize: Theme.secondarySize
+    property real iconSize: Theme.iconSize
     required property string text
     readonly property alias iconItem: icon
     readonly property alias labelItem: label
@@ -10,11 +14,11 @@ RowLayout {
 
     Image {
         id: icon
-        Layout.preferredWidth: Theme.iconSize
-        Layout.preferredHeight: Theme.iconSize
+        Layout.preferredWidth: root.iconSize
+        Layout.preferredHeight: root.iconSize
         Layout.alignment: Qt.AlignVCenter
-        source: Theme.dark ? "qrc:/xdzip/assets/info-dark.png" : "qrc:/xdzip/assets/info-light.png"
-        sourceSize: Qt.size(Theme.iconSize * Screen.devicePixelRatio, Theme.iconSize * Screen.devicePixelRatio)
+        source: root.iconSource
+        sourceSize: Qt.size(root.iconSize * Screen.devicePixelRatio, root.iconSize * Screen.devicePixelRatio)
         Accessible.ignored: true
     }
     Text {
@@ -24,7 +28,9 @@ RowLayout {
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
         color: Theme.textSecondary
-        font.pixelSize: Theme.secondarySize
+        font.pixelSize: root.labelSize
+        lineHeight: Math.round(root.labelSize * root.lineFactor)
+        lineHeightMode: Text.FixedHeight
         Accessible.role: Accessible.StaticText
         Accessible.name: text
     }

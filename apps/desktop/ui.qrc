@@ -7,6 +7,15 @@
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>
     <file>ui/TaskWindow.qml</file>
+    <file>ui/OperationCheck.qml</file>
+    <file>ui/OperationField.qml</file>
+    <file>ui/OperationSelect.qml</file>
+    <file>ui/OperationFooter.qml</file>
+    <file>ui/OperationHero.qml</file>
+    <file>ui/AssetLibrary.qml</file>
+    <file>ui/ExtractWindow.qml</file>
+    <file>ui/ConflictWindow.qml</file>
+    <file>ui/QuitWindow.qml</file>
     <file>ui/TaskPathCard.qml</file>
     <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
@@ -16,7 +25,7 @@
     <file>ui/PreflightWindow.qml</file>
     <file alias="assets/info-light.png">../../design/assets/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/assets/png/dark/info@3x.png</file>
-    <file alias="assets/document-download.png">../../design/assets/png/light/document-download@3x.png</file>
+    <file alias="assets/document-download.png">../../design/assets/png/light/document-download@9x.png</file>
     <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
     <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
     <file alias="assets/app-icon.png">../../design/assets/brand/xdzip.png</file>
@@ -97,5 +106,31 @@
     <file alias="assets/dark/view-list-selected.png">../../design/assets/png/dark/view-list-selected@3x.png</file>
     <file alias="assets/light/view-grid-selected.png">../../design/assets/png/light/view-grid-selected@3x.png</file>
     <file alias="assets/dark/view-grid-selected.png">../../design/assets/png/dark/view-grid-selected@3x.png</file>
+    <file alias="assets/light/success-large.png">../../design/assets/png/light/status-success@9x.png</file>
+    <file alias="assets/dark/success-large.png">../../design/assets/png/dark/status-success@9x.png</file>
+    <file alias="assets/success-large.png">../../design/assets/png/light/status-success@9x.png</file>
+    <file alias="assets/light/cancelled-large.png">../../design/assets/png/light/cancelled-large@9x.png</file>
+    <file alias="assets/dark/cancelled-large.png">../../design/assets/png/dark/cancelled-large@9x.png</file>
+    <file alias="assets/cancelled-large.png">../../design/assets/png/light/cancelled-large@9x.png</file>
+    <file alias="assets/light/partial-warning.png">../../design/assets/png/light/conflict-warning@9x.png</file>
+    <file alias="assets/dark/partial-warning.png">../../design/assets/png/dark/conflict-warning@9x.png</file>
+    <file alias="assets/partial-warning.png">../../design/assets/png/light/conflict-warning@9x.png</file>
+    <file alias="assets/light/conflict-document.png">../../design/assets/png/light/document-conflict@9x.png</file>
+    <file alias="assets/dark/conflict-document.png">../../design/assets/png/dark/document-conflict@9x.png</file>
+    <file alias="assets/conflict-document.png">../../design/assets/png/light/document-conflict@9x.png</file>
+    <file alias="assets/light/file-text-large.png">../../design/assets/png/light/file-text@9x.png</file>
+    <file alias="assets/light/file-code-large.png">../../design/assets/png/light/file-code@9x.png</file>
+    <file alias="assets/light/file-pdf-large.png">../../design/assets/png/light/file-pdf@9x.png</file>
+    <file alias="assets/light/file-markdown-large.png">../../design/assets/png/light/file-markdown@9x.png</file>
+    <file alias="assets/light/image-file-large.png">../../design/assets/png/light/image-file@9x.png</file>
+    <file alias="assets/light/image-amber-large.png">../../design/assets/png/light/image-amber@9x.png</file>
+    <file alias="assets/light/folder-large.png">../../design/assets/png/light/folder@9x.png</file>
+    <file alias="assets/dark/file-text-large.png">../../design/assets/png/dark/file-text@9x.png</file>
+    <file alias="assets/dark/file-code-large.png">../../design/assets/png/dark/file-code@9x.png</file>
+    <file alias="assets/dark/file-pdf-large.png">../../design/assets/png/dark/file-pdf@9x.png</file>
+    <file alias="assets/dark/file-markdown-large.png">../../design/assets/png/dark/file-markdown@9x.png</file>
+    <file alias="assets/dark/image-file-large.png">../../design/assets/png/dark/image-file@9x.png</file>
+    <file alias="assets/dark/image-amber-large.png">../../design/assets/png/dark/image-amber@9x.png</file>
+    <file alias="assets/dark/folder-large.png">../../design/assets/png/dark/folder@9x.png</file>
   </qresource>
 </RCC>

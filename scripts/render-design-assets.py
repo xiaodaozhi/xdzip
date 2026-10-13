@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export all canonical SVGs on transparent, fixed 24/48/72-pixel canvases."""
+"""Export all canonical SVGs on transparent, fixed 24/48/72-pixel canvases and selected 216-pixel operation artwork."""
 from __future__ import annotations
 
 import base64
@@ -41,6 +41,7 @@ def embedded_gallery() -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--hero-only', action='store_true', help='Export only high-resolution operation artwork from existing canonical SVGs')
     parser.add_argument('--standalone', type=Path, help='Export a self-contained HTML asset gallery')
     parser.add_argument('--gallery-only', action='store_true', help='Export existing assets without rasterizing them again')
     args = parser.parse_args()
@@ -53,7 +54,10 @@ def main() -> None:
         os.environ['FONTCONFIG_FILE'] = os.environ['XDZIP_FONTCONFIG_FILE']
     manifest = json.loads((ROOT / 'manifest.json').read_text())
     vectors = [entry for entry in manifest['assets'] if entry['kind'] == 'vector-reconstruction']
-    manifest['assets'] = [entry for entry in manifest['assets'] if entry['kind'] != 'vector-rasterization']
+    hero = json.loads((ROOT.parents[1] / 'docs/visual/operation-assets.json').read_text())
+    hero_names = set(hero['icons'])
+    manifest['assets'] = [entry for entry in manifest['assets'] if entry['kind'] != 'vector-rasterization'
+                          or args.hero_only and entry['scale'] != hero['scale']]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
@@ -61,7 +65,10 @@ def main() -> None:
         page = browser.new_page()
         for entry in vectors:
             source = ROOT / entry['file']
-            for scale in (1, 2, 3):
+            scales = (hero['scale'],) if args.hero_only else (1, 2, 3) + ((hero['scale'],) if source.stem in hero_names else ())
+            if args.hero_only and source.stem not in hero_names:
+                continue
+            for scale in scales:
                 size = 24 * scale
                 page.set_viewport_size({'width': size, 'height': size})
                 page.set_content('<style>html,body{margin:0;background:transparent}svg{width:100vw;height:100vh;display:block}</style>' + source.read_text())
@@ -82,16 +89,17 @@ def main() -> None:
                 if scale == 3:
                     entry['visible_bounds'] = bounds
                     entry['visible_bounds_measurement'] = '3x Chromium raster, alpha > 8, divided by scale'
-        page.set_viewport_size({'width': 1200, 'height': 1000})
-        page.set_content(embedded_gallery())
-        page.evaluate('Promise.all([...document.images].map(image => image.decode()))')
-        page.screenshot(path=str(ROOT / 'preview/asset-contact-sheet.png'), full_page=True)
+        if not args.hero_only:
+            page.set_viewport_size({'width': 1200, 'height': 1000})
+            page.set_content(embedded_gallery())
+            page.evaluate('Promise.all([...document.images].map(image => image.decode()))')
+            page.screenshot(path=str(ROOT / 'preview/asset-contact-sheet.png'), full_page=True)
         browser.close()
     (ROOT / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     if args.standalone:
         export_gallery(args.standalone)
-    print(json.dumps({'transparent_pngs': len(vectors) * 3, 'source_icon_designs': len(vectors) // 2,
-                      'scales': [1, 2, 3], 'visible_bounds_recorded': True}))
+    print(json.dumps({'transparent_pngs': sum(e['kind'] == 'vector-rasterization' for e in manifest['assets']), 'source_icon_designs': len(vectors) // 2,
+                      'scales': [1, 2, 3, 9], 'visible_bounds_recorded': True}))
 
 
 def export_gallery(output: Path) -> None:

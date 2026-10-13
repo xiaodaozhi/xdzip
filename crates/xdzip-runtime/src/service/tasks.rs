@@ -30,11 +30,14 @@ impl Queue {
 }
 impl Shared {
     pub(super) fn enqueue_task(&self, job: extraction::Job) -> Result<u64, &'static str> {
+        let bytes = job.retained_bytes();
         let mut state = self.lock();
         if state.shutdown.is_some() || !state.receiver_alive {
             return Err("runtime_closed");
         }
-        let bytes = job.retained_bytes();
+        if bytes > 64 * 1024 * 1024 {
+            return Err("resource_limit");
+        }
         if state.tasks.controls.len() >= extraction::MAX_TASKS
             || state.tasks.retained.values().sum::<usize>() + bytes > 64 * 1024 * 1024
         {
@@ -52,10 +55,21 @@ impl Shared {
         self.changed.notify_all();
         Ok(id)
     }
-    fn publish_task(&self, snapshot: Snapshot) {
+    fn publish_task(&self, mut snapshot: Snapshot) {
         let mut state = self.lock();
         if !state.receiver_alive {
             return;
+        }
+        if !snapshot.status.terminal()
+            && snapshot.status != Status::Cleaning
+            && state
+                .tasks
+                .controls
+                .get(&snapshot.id)
+                .is_some_and(|c| c.cancel.check().is_err())
+        {
+            snapshot.status = Status::Cancelling;
+            snapshot.prompt = None;
         }
         // Fixed maximum 32 tasks and <=16KiB names/target per snapshot; no event-per-chunk growth.
         state.tasks.latest.insert(snapshot.id, snapshot.clone());
@@ -82,15 +96,34 @@ pub(super) fn worker(shared: Arc<Shared>) {
         };
         let mut fallback = extraction::initial(&job, id);
         if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            extraction::run(job, id, &control, &mut |s| shared.publish_task(s));
+            let mut last_progress = std::time::Instant::now();
+            extraction::run(job, id, &control, &mut |s| {
+                if matches!(s.status, Status::Running | Status::Committing) {
+                    if last_progress.elapsed() < std::time::Duration::from_millis(100) {
+                        return;
+                    }
+                    last_progress = std::time::Instant::now();
+                }
+                // Prompt, cancellation, cleanup and final outcome bypass progress throttling.
+                shared.publish_task(s);
+            });
         }))
         .is_err()
         {
             shared.stop(false);
+            fallback = shared
+                .lock()
+                .tasks
+                .latest
+                .get(&id)
+                .cloned()
+                .unwrap_or(fallback);
             fallback.status = Status::Failed;
-            fallback.error = "runtime_unavailable".into();
+            fallback.outcome_uncertain = true;
+            fallback.error = "task_abandoned".into();
             // Unwind drops private stages. A panic is not proof of successful cleanup.
             fallback.cleanup_warning = true;
+            control.mark_terminal();
             shared.publish_task(fallback);
             let mut state = shared.lock();
             state.failed = true;
@@ -104,11 +137,27 @@ pub(super) fn worker(shared: Arc<Shared>) {
 impl Client {
     /// Independent task cancellation; accepted tasks survive closing their source session.
     pub fn cancel_task(&self, id: u64) -> Result<(), Rejection> {
-        let state = self.0.lock();
+        let mut state = self.0.lock();
+        if state
+            .tasks
+            .latest
+            .get(&id)
+            .is_some_and(|s| s.status.terminal())
+        {
+            return Ok(());
+        }
         let Some(control) = state.tasks.controls.get(&id) else {
             return Err(Rejection::Invalid);
         };
-        control.cancel();
+        if control.cancel()
+            && let Some(mut current) = state.tasks.latest.get(&id).cloned()
+        {
+            current.status = Status::Cancelling;
+            current.prompt = None;
+            state.tasks.latest.insert(id, current.clone());
+            state.tasks.pending.insert(id, current);
+            self.0.changed.notify_all();
+        }
         Ok(())
     }
     /// Resolve the currently waiting prompt, rejecting stale or duplicate responses.

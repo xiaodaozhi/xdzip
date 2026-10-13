@@ -11,7 +11,7 @@
 #include <limits>
 #include <memory>
 
-// Transport batches are bounded; Qt commits a complete query of at most 10,000 rows.
+// Transport batches are bounded; Qt commits a complete query of at most 100,000 rows.
 struct BrowserRow {
     QString id;
     QStringList cells;
@@ -80,6 +80,10 @@ class BrowserController : public QObject {
     Q_PROPERTY(int total READ total NOTIFY changed)
     Q_PROPERTY(int archiveTotal READ archiveTotal NOTIFY changed)
     Q_PROPERTY(int offset READ offset NOTIFY changed)
+    Q_PROPERTY(QVariantMap extractionIntent READ extractionIntent NOTIFY extractionChanged)
+    Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
+    Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
+    Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(QString sessionId READ sessionId NOTIFY changed)
   public:
     explicit BrowserController(QObject *parent = nullptr);
@@ -111,7 +115,8 @@ class BrowserController : public QObject {
         return !m_closing && !m_faulted && !m_connection->stopped();
     }
     bool queryAvailable() const {
-        return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession;
+        return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession &&
+               !m_result.extraction && !m_result.targetCheck;
     }
     bool busy() const {
         return m_busy;
@@ -151,6 +156,23 @@ class BrowserController : public QObject {
     QVariantMap preflightReport() const {
         return m_preflightReport;
     }
+    QVariantMap extractionIntent() const {
+        return m_extractionIntent;
+    }
+    QVariantMap targetCheck() const {
+        return m_targetCheck;
+    }
+    QVariantList tasks() const;
+    int activeTaskCount() const;
+    Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
+    Q_INVOKABLE QString chooseTarget(const QString &initial);
+    Q_INVOKABLE void checkTarget(const QString &path);
+    Q_INVOKABLE bool targetMatches(const QString &path) const;
+    Q_INVOKABLE void startExtraction(const QString &target, bool all, bool createFolder,
+                                     int conflict, bool allowHighRatio, bool openAfter);
+    Q_INVOKABLE void cancelTask(const QString &id);
+    Q_INVOKABLE bool decideTask(const QString &id, const QString &prompt, int policy, bool all);
+    Q_INVOKABLE void openOutput(const QString &id);
     Q_INVOKABLE void inspectSelection();
     Q_INVOKABLE void selectRow(int row);
     Q_INVOKABLE void selectOnlyRow(int row);
@@ -170,6 +192,10 @@ class BrowserController : public QObject {
     void changed();
     void readyToClose();
     void preflightReady();
+    void extractionChanged();
+    void extractionReady();
+    void extractionStarted(const QString &task);
+    void tasksChanged();
 
   private:
     struct DirectoryRow {
@@ -182,6 +208,10 @@ class BrowserController : public QObject {
     };
     struct Result {
         bool preflight = false;
+        bool extraction = false;
+        bool targetCheck = false;
+        QString taskId;
+        quint64 leftovers = 0;
         bool closeSession = false;
         QVariantMap report;
         QList<BrowserRow> rows;
@@ -237,6 +267,12 @@ class BrowserController : public QObject {
     bool m_ready = false;
     bool m_closing = false;
     bool m_faulted = false;
+    QVariantMap m_extractionIntent, m_targetCheck;
+    QStringList m_extractionSelectors;
+    QString m_extractionDirectory, m_sourcePath, m_checkedTarget;
+    QMap<quint64, QVariantMap> m_tasks;
+    QSet<quint64> m_openAfterTasks;
+    bool m_pendingOpenAfter = false;
     QVariantMap m_preflightReport;
     QVariantMap m_detail;
     QString m_directory;

@@ -161,3 +161,46 @@ fn broad_write_permissions_are_refused_before_staging() {
         Err(OutputError::UnsafeTarget)
     ));
 }
+
+#[test]
+fn crashed_private_stage_is_reported_and_never_auto_removed() {
+    const VARIABLE: &str = "XDZIP_OWNED_CRASH_TARGET";
+    if let Some(path) = std::env::var_os(VARIABLE) {
+        let root = std::path::PathBuf::from(path);
+        let source = fs::File::open(root.join("source.zip")).unwrap();
+        let grant = Grant::open(&root, FileIdentity::read(&source).unwrap()).unwrap();
+        let mut workspace = grant.workspace(70).unwrap();
+        let mut stage = workspace.stage().unwrap();
+        stage.write_all(b"uncommitted crash bytes").unwrap();
+        // Exit without running RAII destructors; this owned child is the crash fixture.
+        std::process::exit(73);
+    }
+    let root = Owned::new();
+    fs::write(root.0.join("source.zip"), b"source must stay intact").unwrap();
+    let result = std::process::Command::new(std::env::current_exe().unwrap())
+        .args([
+            "--exact",
+            "tests::crashed_private_stage_is_reported_and_never_auto_removed",
+        ])
+        .env(VARIABLE, &root.0)
+        .output()
+        .unwrap();
+    assert_eq!(result.status.code(), Some(73));
+    let grant = root.grant();
+    assert_eq!(grant.leftover_count().unwrap(), 1);
+    let crashed = fs::read_dir(&root.0)
+        .unwrap()
+        .filter_map(Result::ok)
+        .find(|e| e.file_name().to_string_lossy().starts_with(".xdzip-work-"))
+        .unwrap()
+        .path();
+    assert!(crashed.join("transaction").is_file());
+    assert_eq!(
+        fs::read(crashed.join("1.part")).unwrap(),
+        b"uncommitted crash bytes"
+    );
+    // Starting and cleaning a new transaction preserves the previous one.
+    grant.workspace(71).unwrap().cleanup().unwrap();
+    assert_eq!(grant.leftover_count().unwrap(), 1);
+    assert!(!root.0.join("result.txt").exists());
+}

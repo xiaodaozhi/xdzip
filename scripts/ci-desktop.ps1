@@ -1,4 +1,4 @@
-# Native M2 product build, lifecycle tests and developer-review artifacts.
+# Native M3 product build, lifecycle tests and developer-review artifacts.
 $ErrorActionPreference = 'Stop'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
@@ -54,6 +54,13 @@ $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'rootListingAndReviewedInteractions', 'm2LargeArchiveLatestQueryAndSourceChange', 'renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
+$env:XDZIP_M3_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m3-operations'
+Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
+Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
+Copy-Item -Recurse 'build/desktop/m3-operations' 'dist/review/m3-operations'
+Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
+$m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
+Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'dist/review/m3-core-performance.json')
 Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'dist/review/m2-qt-performance.json')
 Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')
 Invoke-Checked cargo @('build', '--release', '-p', 'xdzip-m2-probe')
@@ -115,5 +122,5 @@ if ($IsMacOS) {
     Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'dist/review/xdzip-linux-qt6.8.2'
 }
 $commit = & git rev-parse HEAD
-@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; distribution = 'M2 ZIP/ZIP64 metadata developer review; not a signed public release' } |
+@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; distribution = 'M3 ZIP Store/Deflate safe extraction developer review; independent security audit and signed public release pending' } |
     ConvertTo-Json | Set-Content 'dist/review/build.json'

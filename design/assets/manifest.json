@@ -98,7 +98,8 @@
           12
         ]
       }
-    }
+    },
+    "hero_raster_scale": 9
   },
   "license": "Apache-2.0; fonts/ is independently licensed under OFL-1.1",
   "reference_coverage": [
@@ -2977,7 +2978,10 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/cancelled-large.png",
+          "assets/cancelled-large.png"
+        ]
       },
       "sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
       "visual_revision": "flat-task-status",
@@ -3276,7 +3280,10 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/partial-warning.png",
+          "assets/partial-warning.png"
+        ]
       },
       "sha256": "e62f54826df22fd345f1222cbf6a5838a798d885808d18e15963fab651fee58a",
       "source_reference": "reference/conflict-warning.png",
@@ -3306,7 +3313,10 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/conflict-document.png",
+          "assets/conflict-document.png"
+        ]
       },
       "sha256": "0a58249793e2095af2ee54fe439131d2f62622276ce1d6c4a9076f5f44040ca6",
       "source_reference": "reference/conflict-document.png",
@@ -3486,7 +3496,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/light/file-code.png"
+          "assets/light/file-code.png",
+          "assets/light/file-code-large.png"
         ]
       },
       "sha256": "1cc29fc9885110fd92beb89c4c39de260ffe95b0182b50ef02b50b133ab66e93",
@@ -3530,7 +3541,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/light/file-markdown.png"
+          "assets/light/file-markdown.png",
+          "assets/light/file-markdown-large.png"
         ]
       },
       "sha256": "0a80fe63e2aeb70501e4c4f5ea969805d6f29779beebb1cd3c09b4a43d3d0dde",
@@ -3574,7 +3586,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/light/file-pdf.png"
+          "assets/light/file-pdf.png",
+          "assets/light/file-pdf-large.png"
         ]
       },
       "sha256": "92751345058956f7fb808b6c1533dff55dcdeada7d879702b2a7954684fdf353",
@@ -3619,7 +3632,8 @@
         "html": "registered in the shared design library",
         "qt_aliases": [
           "assets/file-text.png",
-          "assets/light/file-text.png"
+          "assets/light/file-text.png",
+          "assets/light/file-text-large.png"
         ]
       },
       "sha256": "f4c34447e170a9959a03c7170a0004be6a48954269d19e9ce44b0b4678318aba",
@@ -3664,7 +3678,8 @@
         "html": "registered in the shared design library",
         "qt_aliases": [
           "assets/folder.png",
-          "assets/light/folder.png"
+          "assets/light/folder.png",
+          "assets/light/folder-large.png"
         ]
       },
       "sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
@@ -3707,7 +3722,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/image-amber-large.png"
+        ]
       },
       "sha256": "3b2302832a28e6c185815cadd5f67899fa8d3570e793891be58b76859fb03544",
       "source_reference": "reference/image-amber.png",
@@ -3751,7 +3768,8 @@
         "html": "registered in the shared design library",
         "qt_aliases": [
           "assets/image-file.png",
-          "assets/light/image-file.png"
+          "assets/light/image-file.png",
+          "assets/light/image-file-large.png"
         ]
       },
       "sha256": "eca9349f277c5e95434ebcfa8472fd9c1c16a56c926bca8adaf3528484816af7",
@@ -4512,7 +4530,10 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/success-large.png",
+          "assets/success-large.png"
+        ]
       },
       "sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
       "visual_revision": "flat-task-status",
@@ -5310,7 +5331,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/cancelled-large.png"
+        ]
       },
       "sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
       "visual_revision": "flat-task-status",
@@ -5610,7 +5633,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/partial-warning.png"
+        ]
       },
       "sha256": "0796bc79dd37e6e69b8c2f81d9619517172b9f762e5e926c87a4ed21a31d430d",
       "source_reference": "reference/conflict-warning.png",
@@ -5640,7 +5665,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/conflict-document.png"
+        ]
       },
       "sha256": "c5bd8f0e9bafbc2375a22690ec730d66410bff1ec8cd73842f2def88fab1af04",
       "source_reference": "reference/conflict-document.png",
@@ -5818,7 +5845,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/file-code.png"
+          "assets/dark/file-code.png",
+          "assets/dark/file-code-large.png"
         ]
       },
       "sha256": "d4b0321775eca274973bed664e92b1c0fc8a2418aee2d5a6343c57abb7c3845a",
@@ -5862,7 +5890,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/file-markdown.png"
+          "assets/dark/file-markdown.png",
+          "assets/dark/file-markdown-large.png"
         ]
       },
       "sha256": "1ba1fbb841db51362fa4f80c1db47b8a7a19a5a5e14652eb2bc01a1e082e8e2e",
@@ -5906,7 +5935,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/file-pdf.png"
+          "assets/dark/file-pdf.png",
+          "assets/dark/file-pdf-large.png"
         ]
       },
       "sha256": "b9506304413bfb13b6d04fae4135d135c1380b09aeb3218b0facfc9844313fe8",
@@ -5950,7 +5980,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/file-text.png"
+          "assets/dark/file-text.png",
+          "assets/dark/file-text-large.png"
         ]
       },
       "sha256": "269343e716bba9acfad12f43576c4d008ac573caa17806b74834ec72a1a4f18b",
@@ -5994,7 +6025,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/folder.png"
+          "assets/dark/folder.png",
+          "assets/dark/folder-large.png"
         ]
       },
       "sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
@@ -6037,7 +6069,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/image-amber-large.png"
+        ]
       },
       "sha256": "59aecb8c722b538f81d4f25bc6b55519be211bddb7bef937b2125b1f98946f19",
       "source_reference": "reference/image-amber.png",
@@ -6080,7 +6114,8 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
-          "assets/dark/image-file.png"
+          "assets/dark/image-file.png",
+          "assets/dark/image-file-large.png"
         ]
       },
       "sha256": "d5c8cdbeff36fe777064753e0114a1c519bd276f06ece3895b2b8d92e00e9ddc",
@@ -6841,7 +6876,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/success-large.png"
+        ]
       },
       "sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
       "visual_revision": "flat-task-status",
@@ -21807,6 +21844,908 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "72ac3e7b37426ac225febb820df7cf818ac3669d839e36ad7e4e9beaa5a146ca"
+    },
+    {
+      "id": "raster/light/cancelled-large@9x",
+      "file": "png/light/cancelled-large@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/cancelled-large.svg",
+      "source_sha256": "37ddd4af1fbc5e07889c45dba5f6e51956dc2ff598784a5a24bd75098cff35e2",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "4c7f3a8c4d283a38dccd036f0699450dbb4a3b36086a22388c548027f8571ae4"
+    },
+    {
+      "id": "raster/light/conflict-warning@9x",
+      "file": "png/light/conflict-warning@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/conflict-warning.svg",
+      "source_sha256": "e62f54826df22fd345f1222cbf6a5838a798d885808d18e15963fab651fee58a",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8047c828021d8e7c660852c4462f7a1404d9756312e4569c1246efaac18ccaae"
+    },
+    {
+      "id": "raster/light/document-conflict@9x",
+      "file": "png/light/document-conflict@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "illustration",
+      "source": "svg/light/document-conflict.svg",
+      "source_sha256": "0a58249793e2095af2ee54fe439131d2f62622276ce1d6c4a9076f5f44040ca6",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        20.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "52e779730c1c011b2251010fbaac17824c2bee864757d94dca47f7bb60871d74"
+    },
+    {
+      "id": "raster/light/document-download@9x",
+      "file": "png/light/document-download@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "illustration",
+      "source": "svg/light/document-download.svg",
+      "source_sha256": "41bc54cf180bbcd750f8b3172d97bf5c3a1e842d132a89d54d85bbba37fc19cf",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        20.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8e3995835ec9a69116aeb7796871fc828a46cd0aa836347c71f97c98353863b9"
+    },
+    {
+      "id": "raster/light/file-code@9x",
+      "file": "png/light/file-code@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/file-code.svg",
+      "source_sha256": "1cc29fc9885110fd92beb89c4c39de260ffe95b0182b50ef02b50b133ab66e93",
+      "visible_bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "0532e7ff69070533580cb6de7d8b3696bb48a41958b37aca0b02957bfed8e92e",
+      "optical_spec": {
+        "bounds": [
+          2,
+          1,
+          22,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/file-markdown@9x",
+      "file": "png/light/file-markdown@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/file-markdown.svg",
+      "source_sha256": "0a80fe63e2aeb70501e4c4f5ea969805d6f29779beebb1cd3c09b4a43d3d0dde",
+      "visible_bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "83cae449f7d6591c90988276747147eb0e47678a763667beab80db2cc2d2e2f5",
+      "optical_spec": {
+        "bounds": [
+          2,
+          1,
+          22,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/file-pdf@9x",
+      "file": "png/light/file-pdf@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/file-pdf.svg",
+      "source_sha256": "92751345058956f7fb808b6c1533dff55dcdeada7d879702b2a7954684fdf353",
+      "visible_bounds": [
+        2.4444,
+        1.0,
+        21.5556,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "91ba901a743f4302c5a10ca795280d2df4069345a08048d1eaea847f712006fe",
+      "optical_spec": {
+        "bounds": [
+          2.5,
+          1,
+          21.5,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/file-text@9x",
+      "file": "png/light/file-text@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/file-text.svg",
+      "source_sha256": "f4c34447e170a9959a03c7170a0004be6a48954269d19e9ce44b0b4678318aba",
+      "visible_bounds": [
+        3.6667,
+        1.0,
+        20.3333,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "7e2e8952e659a837c5355fda9c3cfad4a3740aeede2cac66f4f76cc1c81e93fb",
+      "optical_spec": {
+        "bounds": [
+          3.75,
+          1,
+          20.25,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/folder@9x",
+      "file": "png/light/folder@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/folder.svg",
+      "source_sha256": "6c8b3ef9248979f22d61605e471f99f8edd0d1c2e44c299c0836a4681c850cc0",
+      "visible_bounds": [
+        1.0,
+        2.5556,
+        23.0,
+        21.4444
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "36fe424e05be50e57ace278e6e115c1f5858ddcf1f5049a736008c80e2ae1903",
+      "optical_spec": {
+        "bounds": [
+          1,
+          2.571429,
+          23,
+          21.428571
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/image-amber@9x",
+      "file": "png/light/image-amber@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/image-amber.svg",
+      "source_sha256": "3b2302832a28e6c185815cadd5f67899fa8d3570e793891be58b76859fb03544",
+      "visible_bounds": [
+        3.1111,
+        1.0,
+        20.8889,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "82ec8feacc98c2fa6e91f08abfdf23ea6d2c518058c7229c126befddbdaf5f0a",
+      "optical_spec": {
+        "bounds": [
+          3.2,
+          1,
+          20.8,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/image-file@9x",
+      "file": "png/light/image-file@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "file",
+      "source": "svg/light/image-file.svg",
+      "source_sha256": "eca9349f277c5e95434ebcfa8472fd9c1c16a56c926bca8adaf3528484816af7",
+      "visible_bounds": [
+        3.1111,
+        1.0,
+        20.8889,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c27badf06f234c21cbf0901690a9e91c1b28b5118aab96d53ab96c4f42d52874",
+      "optical_spec": {
+        "bounds": [
+          3.2,
+          1,
+          20.8,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/light/status-success@9x",
+      "file": "png/light/status-success@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/status-success.svg",
+      "source_sha256": "06a44bbc18ee8e30d25f571358e61ad375b09ef999bfb1055f595b6a8e0fcd3b",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "9aece79fc8b00e30618f8758e845d446b8f112aa08bbc81bfb9d5b830d262bbd"
+    },
+    {
+      "id": "raster/dark/cancelled-large@9x",
+      "file": "png/dark/cancelled-large@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/cancelled-large.svg",
+      "source_sha256": "5ba47c0f5accc22a57e0e05c1ed229bc621a2351c86fa0f82f6c6a71ba322b21",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8572c36f864d8dea2f1366b6b2478cee2f4d887a962d021e4300d7dde84427ff"
+    },
+    {
+      "id": "raster/dark/conflict-warning@9x",
+      "file": "png/dark/conflict-warning@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/conflict-warning.svg",
+      "source_sha256": "0796bc79dd37e6e69b8c2f81d9619517172b9f762e5e926c87a4ed21a31d430d",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8047c828021d8e7c660852c4462f7a1404d9756312e4569c1246efaac18ccaae"
+    },
+    {
+      "id": "raster/dark/document-conflict@9x",
+      "file": "png/dark/document-conflict@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/document-conflict.svg",
+      "source_sha256": "c5bd8f0e9bafbc2375a22690ec730d66410bff1ec8cd73842f2def88fab1af04",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        20.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "52e779730c1c011b2251010fbaac17824c2bee864757d94dca47f7bb60871d74"
+    },
+    {
+      "id": "raster/dark/document-download@9x",
+      "file": "png/dark/document-download@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/document-download.svg",
+      "source_sha256": "74f7b3bb0a532815ec437a3ff586974a7918708266b13d094eb5470d9b748238",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        20.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8e3995835ec9a69116aeb7796871fc828a46cd0aa836347c71f97c98353863b9"
+    },
+    {
+      "id": "raster/dark/file-code@9x",
+      "file": "png/dark/file-code@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/file-code.svg",
+      "source_sha256": "d4b0321775eca274973bed664e92b1c0fc8a2418aee2d5a6343c57abb7c3845a",
+      "visible_bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "1fc435aa12e6bbf70bb179d7f92e84a8b3243c342f09e3a0ebadc931aec843c1",
+      "optical_spec": {
+        "bounds": [
+          2,
+          1,
+          22,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/file-markdown@9x",
+      "file": "png/dark/file-markdown@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/file-markdown.svg",
+      "source_sha256": "1ba1fbb841db51362fa4f80c1db47b8a7a19a5a5e14652eb2bc01a1e082e8e2e",
+      "visible_bounds": [
+        2.0,
+        1.0,
+        22.0,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "6e9de09ad1b1784cc67807955194b953665bf4bdf03503ffb5f43a9f840cf6a8",
+      "optical_spec": {
+        "bounds": [
+          2,
+          1,
+          22,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/file-pdf@9x",
+      "file": "png/dark/file-pdf@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/file-pdf.svg",
+      "source_sha256": "b9506304413bfb13b6d04fae4135d135c1380b09aeb3218b0facfc9844313fe8",
+      "visible_bounds": [
+        2.4444,
+        1.0,
+        21.5556,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "91ba901a743f4302c5a10ca795280d2df4069345a08048d1eaea847f712006fe",
+      "optical_spec": {
+        "bounds": [
+          2.5,
+          1,
+          21.5,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/file-text@9x",
+      "file": "png/dark/file-text@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/file-text.svg",
+      "source_sha256": "269343e716bba9acfad12f43576c4d008ac573caa17806b74834ec72a1a4f18b",
+      "visible_bounds": [
+        3.6667,
+        1.0,
+        20.3333,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "8f46e757166f8684d0e1d9fcf47b82ea86545ab66c7abb1690b5ff31a5add63a",
+      "optical_spec": {
+        "bounds": [
+          3.75,
+          1,
+          20.25,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/folder@9x",
+      "file": "png/dark/folder@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/folder.svg",
+      "source_sha256": "265c51bc7a5b9659d3cf04fc92840c7add02ed07b2d754f3d5588d446b1bd9e1",
+      "visible_bounds": [
+        1.0,
+        2.5556,
+        23.0,
+        21.4444
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "36fe424e05be50e57ace278e6e115c1f5858ddcf1f5049a736008c80e2ae1903",
+      "optical_spec": {
+        "bounds": [
+          1,
+          2.571429,
+          23,
+          21.428571
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/image-amber@9x",
+      "file": "png/dark/image-amber@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/image-amber.svg",
+      "source_sha256": "59aecb8c722b538f81d4f25bc6b55519be211bddb7bef937b2125b1f98946f19",
+      "visible_bounds": [
+        3.1111,
+        1.0,
+        20.8889,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "82ec8feacc98c2fa6e91f08abfdf23ea6d2c518058c7229c126befddbdaf5f0a",
+      "optical_spec": {
+        "bounds": [
+          3.2,
+          1,
+          20.8,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/image-file@9x",
+      "file": "png/dark/image-file@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "file",
+      "source": "svg/dark/image-file.svg",
+      "source_sha256": "d5c8cdbeff36fe777064753e0114a1c519bd276f06ece3895b2b8d92e00e9ddc",
+      "visible_bounds": [
+        3.1111,
+        1.0,
+        20.8889,
+        23.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "c27badf06f234c21cbf0901690a9e91c1b28b5118aab96d53ab96c4f42d52874",
+      "optical_spec": {
+        "bounds": [
+          3.2,
+          1,
+          20.8,
+          23
+        ],
+        "center": [
+          12,
+          12
+        ],
+        "bounds_include_stroke": true
+      }
+    },
+    {
+      "id": "raster/dark/status-success@9x",
+      "file": "png/dark/status-success@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/status-success.svg",
+      "source_sha256": "d9b2f20ac246ec0c5c6a7a5e2582911852f41957d052f77b5c578b5efad4310d",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "9aece79fc8b00e30618f8758e845d446b8f112aa08bbc81bfb9d5b830d262bbd"
     }
   ]
 }

@@ -10,6 +10,8 @@ Rectangle {
     required property var iconForFile
     property int selectionCount: 0
     property bool showCloseAction: true
+    property bool canExtract: false
+    signal extractRequested(string id)
     signal closeRequested
     color: Theme.inspector
     Rectangle {
@@ -179,8 +181,9 @@ Rectangle {
                 implicitHeight: Math.max(Theme.mainUnits(47), Theme.mainHeaderSize * 1.6 + Theme.mainUnits(16))
                 asset: "external-open"
                 text: qsTr("解压此文件")
-                enabled: false
-                explanation: qsTr("安全解压写入尚未实现")
+                enabled: panel.canExtract && Boolean(panel.detail.id)
+                explanation: qsTr("解压当前焦点条目")
+                onClicked: panel.extractRequested(String(panel.detail.id))
                 background: Rectangle {
                     radius: Theme.mainUnits(6)
                     color: Theme.surface

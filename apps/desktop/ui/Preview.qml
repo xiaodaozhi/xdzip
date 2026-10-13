@@ -61,6 +61,7 @@ ApplicationWindow {
     }
     TaskWindow {
         id: task
+        sampleData: true
         owner: root
         archiveName: qsTr("北境旅行.zip")
         destination: qsTr("下载 / 北境旅行")

@@ -75,13 +75,10 @@ impl Options {
             && (self.all || !self.selected.is_empty())
     }
     pub(crate) fn bytes(&self) -> usize {
-        self.target.len()
-            + self.directory.len()
-            + self
-                .selected
-                .iter()
-                .map(|id| id.len() + std::mem::size_of::<String>())
-                .sum::<usize>()
+        self.target.capacity()
+            + self.directory.capacity()
+            + self.selected.capacity() * std::mem::size_of::<String>()
+            + self.selected.iter().map(String::capacity).sum::<usize>()
     }
 }
 /// Execution state; terminal states are published only after staging cleanup.
@@ -140,6 +137,10 @@ pub struct Prompt {
     pub existing_bytes: u64,
     /// Incoming declared bytes, not yet verified.
     pub incoming_bytes: u64,
+    /// Existing filesystem modification time in Unix seconds, if representable.
+    pub existing_modified: Option<u64>,
+    /// Incoming ZIP local DOS date/time; no timezone is inferred.
+    pub incoming_modified_dos: u32,
     /// False when replacing would overwrite the selected archive.
     pub overwrite_allowed: bool,
 }
@@ -178,6 +179,8 @@ pub struct Snapshot {
     pub error: String,
     /// Cleanup could not remove all known staging objects.
     pub cleanup_warning: bool,
+    /// A runtime panic prevents proving exact final publication counts.
+    pub outcome_uncertain: bool,
     /// Possible previous private workspaces found at the target; never auto-deleted.
     pub leftovers: u64,
     /// Present only for the latest outstanding conflict.

@@ -12,6 +12,33 @@ QtObject {
     readonly property int mainWindowHeight: 622
     readonly property int mainMinimumWidth: 832
     readonly property int mainMinimumHeight: 544
+    readonly property int operationDefaultWidth: 612
+    readonly property int operationExtractWidth: 614
+    readonly property int operationProgressWidth: 846
+    readonly property real operationFooterFontSize: 15 * fontScale
+    readonly property real operationFooterNoteSize: 13 * fontScale
+    readonly property real operationFooterIconSize: 16 * fontScale
+    readonly property real operationBodySize: 16 * fontScale
+    readonly property real operationTitleSize: 25 * fontScale
+    readonly property real operationNoteSize: 14 * fontScale
+    readonly property real operationMetricLabelSize: 15 * fontScale
+    readonly property real operationMetricValueSize: 19 * fontScale
+    readonly property real operationGutter: 24
+    readonly property real operationFieldHeight: 41
+    readonly property real operationFieldRadius: 8
+    readonly property real operationCardInset: 16
+    readonly property real operationCardGap: 12
+    readonly property real operationExtractContentInset: 30
+    readonly property real operationProgressContentInset: 25
+    readonly property real operationHeaderHeight: 108
+    readonly property real operationFooterHeight: 64
+    readonly property real operationProgressTrackHeight: 20
+    readonly property real operationPathRowHeight: 46
+    readonly property real operationPathFontSize: 18 * fontScale
+    readonly property real operationControlIndicatorSize: 20 * fontScale
+    readonly property real operationControlGap: 10
+    readonly property real operationExtractClientHeight: 866
+    readonly property real operationProgressClientHeight: 612
     readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
     readonly property color surface: dark ? "#22262F" : "#FFFFFF"
     readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"

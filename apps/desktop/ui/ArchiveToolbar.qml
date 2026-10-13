@@ -10,6 +10,7 @@ Rectangle {
     required property bool canSearch
     required property bool canInspect
     required property bool hasSelection
+    signal extractRequested(bool all)
     signal openRequested
     signal resetSortRequested
     signal inspectRequested
@@ -222,8 +223,9 @@ Rectangle {
                 objectName: "archiveExtract"
                 primary: true
                 splitIndicator: true
-                explanation: qsTr("解压功能尚未实现")
-                enabled: false
+                explanation: qsTr("选择目标和冲突策略后开始解压")
+                enabled: root.canSearch && root.canSelect
+                onClicked: root.extractRequested(!root.hasSelection)
             }
             ToolButton {
                 id: scopeButton
@@ -248,13 +250,14 @@ Rectangle {
                     y: parent.height + Theme.mainPopupGap
                     CommandMenuItem {
                         text: qsTr("全部解压")
-                        enabled: false
-                        disabledReason: qsTr("安全写入层尚未实现")
+                        enabled: root.canSearch && root.canSelect
+                        onTriggered: root.extractRequested(true)
                     }
                     CommandMenuItem {
                         text: qsTr("解压所选")
-                        enabled: false
-                        disabledReason: qsTr("安全写入层尚未实现")
+                        enabled: root.canSearch && root.canSelect && root.hasSelection
+                        disabledReason: qsTr("先选择文件或目录")
+                        onTriggered: root.extractRequested(false)
                     }
                     CommandMenuSeparator {}
                     CommandMenuItem {

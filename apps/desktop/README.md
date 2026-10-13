@@ -1,6 +1,6 @@
 # Qt 开发应用与组件预览
 
-`xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、内部批次读取、取消读取、当前目录多选、显式/隐式目录树、名称搜索及全结果排序；不解压或创建归档。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
+`xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、内部批次读取、取消读取、当前目录多选、显式/隐式目录树、名称搜索及全结果排序；并支持真实 Store／Deflate 安全解压，创建归档仍待后续实现。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
 
 `xdzip-ui-preview` 提供独立任务详情窗、共用提示行、按钮和主题 token；不是可用的压缩工具。入口始终标识“组件开发预览”，任务数据固定来自本地示例，不访问文件或连接诊断桥接。不用动画或计时器伪装真实压缩进度。
 
@@ -45,3 +45,5 @@ Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/
 主窗口共用 `CommandMenu`、菜单项 / 分隔线、`Breadcrumb` 以及按钮状态参数。更多 / 范围 / 排序 / 视图 / 条目 / 目录 / 空白菜单调用真实只读能力；不可执行的新建、写入和 CRC 保持禁用。列表与网格共用索引和选择，右键保留已有多选，Shift 范围依赖稳定 ID，全选覆盖完整当前查询，复制使用系统剪贴板。详见[组件与交互复核](../../docs/qa/main-window-components.md)。
 
 M2 支持单卷 ZIP／ZIP64 最多十万条物理元数据；列表委托虚拟化，查询排序只执行一次，快速搜索／目录切换只提交最新意图。源变化需重新打开。实际核心与 Qt 测量、三平台状态及 Apple Silicon 开发包见 [M2 验收](../../docs/qa/m2-acceptance.md)。
+
+M3 解压从工具栏、文件右键菜单或详情面板进入；检查目标后开始，重名处理只适用于普通文件。任务窗关闭后仍可从状态栏重新打开；Cmd+Q 与窗口关闭共用等待／取消退出流程。详情见 [M3 契约](../../docs/engineering/m3-extraction.md)。

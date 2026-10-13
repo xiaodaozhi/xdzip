@@ -11,7 +11,7 @@ Window {
            | (allowMinimize ? Qt.WindowMinimizeButtonHint : 0)
     color: Theme.surface
     visible: false
-    width: 760
+    width: Theme.operationDefaultWidth
     height: Math.min(720, Screen.desktopAvailableHeight - 80)
     minimumWidth: width
     maximumWidth: width

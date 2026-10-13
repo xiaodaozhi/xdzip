@@ -67,7 +67,7 @@ Item {
             tryVerify(() => Math.abs(label.mapToItem(open, 0, label.height / 2).y - open.height / 2) < 0.5);
             verify(Math.abs(icon.width - 32 * 1024 / 1548) < 0.01);
             compare(label.font.pixelSize, 12 * data.scale);
-            verify(!extract.enabled);
+            verify(extract.enabled);
             verify(findChild(extract, "actionSplitIndicator").visible);
             compare(findChild(extract, "actionLabel").opacity, 1);
             compare(findChild(extract, "actionBackground").opacity, 1);

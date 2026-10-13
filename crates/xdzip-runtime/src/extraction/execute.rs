@@ -56,6 +56,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         elapsed_ms: 0,
         error: String::new(),
         cleanup_warning: false,
+        outcome_uncertain: false,
         leftovers: 0,
         prompt: None,
     }
@@ -92,9 +93,9 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
-        let mut decoder = ZipCodec
-            .open_payload(source.file(), &job.rows, &control.cancel)
-            .map_err(decoding)?;
+        let opened = ZipCodec.open_payload(source.file(), &job.rows, &control.cancel);
+        job.source.validate().map_err(|_| "source_changed")?;
+        let mut decoder = opened.map_err(decoding)?;
         let mut policy = job.options.conflict;
         let mut prompt_id = 0u64;
         for planned in &job.planned {
@@ -119,6 +120,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 decoder
                     .decode(entry, &mut sink, &control.cancel)
                     .map_err(decoding)?;
+                job.source.validate().map_err(|_| "source_changed")?;
                 target.ensure_directory(&planned.path).map_err(output)?;
                 continue;
             }
@@ -135,6 +137,13 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                         name: entry.display_name.clone(),
                         existing_bytes: existing.version.length,
                         incoming_bytes: entry.size,
+                        existing_modified: existing
+                            .version
+                            .modified
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .ok()
+                            .map(|d| d.as_secs()),
+                        incoming_modified_dos: entry.modified_dos,
                         overwrite_allowed: !existing.source_protected,
                     });
                     emit(&mut stats, start, publish);
@@ -160,6 +169,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     ConflictPolicy::Ask => return Err("invalid_decision"),
                 }
             }
+            stats.current = path.display();
             emit(&mut stats, start, publish);
             let mut stage = workspace.stage().map_err(output)?;
             let mut meter = Meter {
@@ -178,17 +188,28 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             // Source mutation takes precedence over a derivative CRC/header failure.
             job.source.validate().map_err(|_| "source_changed")?;
             decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))?;
+            if actual != entry.size {
+                return Err("integrity_error");
+            }
             control.begin_commit()?;
             stats.status = Status::Committing;
             emit(&mut stats, start, publish);
-            let committed = workspace.commit(stage, &path, overwrite.as_ref());
+            let committed = job
+                .source
+                .validate()
+                .map_err(|_| "source_changed")
+                .and_then(|_| {
+                    workspace
+                        .commit(stage, &path, overwrite.as_ref())
+                        .map_err(output)
+                });
             let cancelled = control.end_commit(false);
             if let Ok(receipt) = &committed {
                 stats.committed_files += 1;
                 stats.committed_bytes += actual;
                 stats.cleanup_warning |= receipt.cleanup_warning;
             }
-            committed.map_err(output)?;
+            committed?;
             cancelled?;
         }
         control.complete()
@@ -212,6 +233,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         Err(_) => Status::Failed,
     };
     stats.error = result.err().unwrap_or_default().into();
+    control.mark_terminal();
     emit(&mut stats, start, publish);
 }
 fn fresh_name(
@@ -236,6 +258,8 @@ fn fresh_name(
     }
     Err("rename_limit")
 }
+#[cfg(test)]
+thread_local! { static TEST_WRITE_LIMIT: std::cell::Cell<Option<u64>> = const { std::cell::Cell::new(None) }; }
 /// Meter before write and account partial writes. A quota cannot be raised by a declaration.
 struct Meter<'a, W: Write> {
     writer: W,
@@ -277,12 +301,29 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
             if self.control.cancel.check().is_err() {
                 return Err(DecodeError::Cancelled);
             }
-            match self.writer.write(rest) {
+            #[cfg(test)]
+            let remaining = TEST_WRITE_LIMIT.with(|limit| limit.get());
+            #[cfg(test)]
+            if remaining == Some(0) {
+                self.error = Some("disk_full");
+                return Err(DecodeError::Output);
+            }
+            #[cfg(test)]
+            let request = &rest[..remaining.map_or(rest.len(), |n| rest.len().min(n as usize))];
+            #[cfg(not(test))]
+            let request = rest;
+            match self.writer.write(request) {
                 Ok(0) => {
                     self.error = Some("output_io");
                     return Err(DecodeError::Output);
                 }
                 Ok(n) => {
+                    #[cfg(test)]
+                    TEST_WRITE_LIMIT.with(|limit| {
+                        if let Some(remaining) = limit.get() {
+                            limit.set(Some(remaining - n as u64));
+                        }
+                    });
                     self.stats.written_bytes += n as u64;
                     rest = &rest[n..];
                 }
@@ -304,6 +345,11 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
         Ok(())
     }
 }
+#[cfg(test)]
+pub(super) fn inject_disk_full(bytes: Option<u64>) {
+    TEST_WRITE_LIMIT.with(|limit| limit.set(bytes));
+}
+
 #[cfg(test)]
 mod meter_tests {
     use super::*;

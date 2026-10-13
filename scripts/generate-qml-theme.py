@@ -31,6 +31,13 @@ for name, value in zip(['mainWindowWidth', 'mainWindowHeight'], layout['main']['
     lines.append(f'    readonly property int {name}: {value}')
 for name, value in zip(['mainMinimumWidth', 'mainMinimumHeight'], layout['main']['minimum_window']):
     lines.append(f'    readonly property int {name}: {value}')
+for key, value in layout['operation']['logical_widths'].items():
+    lines.append(f'    readonly property int operation{key.title()}Width: {value}')
+for key, value in layout['operation']['footer'].items():
+    lines.append(f'    readonly property real operationFooter{key[0].upper() + key[1:]}: {value} * fontScale')
+for key, value in layout['operation']['components'].items():
+    suffix = ' * fontScale' if key.endswith('Size') else ''
+    lines.append(f'    readonly property real operation{key[0].upper() + key[1:]}: {value}{suffix}')
 for key, value in tokens['light'].items():
     lines.append(f'    readonly property color {key}: dark ? "{qt_color(tokens["dark"][key])}" : "{qt_color(value)}"')
 for key, value in tokens['type'].items():

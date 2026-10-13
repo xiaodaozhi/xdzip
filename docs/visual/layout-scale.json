@@ -57,6 +57,29 @@
       "default": 612,
       "extract": 614,
       "progress": 846
+    },
+    "components": {
+      "bodySize": 16,
+      "titleSize": 25,
+      "noteSize": 14,
+      "metricLabelSize": 15,
+      "metricValueSize": 19,
+      "gutter": 24,
+      "fieldHeight": 41,
+      "fieldRadius": 8,
+      "cardInset": 16,
+      "cardGap": 12,
+      "extractContentInset": 30,
+      "progressContentInset": 25,
+      "headerHeight": 108,
+      "footerHeight": 64,
+      "progressTrackHeight": 20,
+      "pathRowHeight": 46,
+      "pathFontSize": 18,
+      "controlIndicatorSize": 20,
+      "controlGap": 10,
+      "extractClientHeight": 866,
+      "progressClientHeight": 612
     }
   },
   "controls": {

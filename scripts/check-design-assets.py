@@ -191,7 +191,9 @@ def main() -> None:
                 assert entry.get('source_revision') == 'current-logo', entry['file']
         elif kind == 'vector-rasterization':
             scale = entry['scale']
-            assert scale in (1, 2, 3)
+            assert scale in (1, 2, 3, 9)
+            if scale == 9:
+                assert Path(entry['source']).stem in {'document-download', 'status-success', 'cancelled-large', 'conflict-warning', 'document-conflict', 'file-text', 'file-code', 'file-pdf', 'file-markdown', 'image-file', 'image-amber', 'folder'}
             assert entry['canvas'] == entry['logical_size'] == [24, 24]
             assert entry['source'] in by_file
             assert by_file[entry['source']]['kind'] == 'vector-reconstruction'
@@ -229,11 +231,12 @@ def main() -> None:
     counts = {kind: sum(item['kind'] == kind for item in manifest['assets'])
               for kind in ('original-pixel-crop', 'vector-reconstruction', 'vector-rasterization')}
     assert counts == {'original-pixel-crop': 48 + len(TREE_CUTS), 'vector-reconstruction': len(names) * 2,
-                      'vector-rasterization': len(names) * 6}, counts
+                      'vector-rasterization': len(names) * 6 + 24}, counts
     assert {entry['file'] for entry in manifest['assets'] if entry['kind'] in BRAND_KINDS} == set(brand_specs)
     for theme in THEMES:
         vector_files = {f'svg/{theme}/{name}.svg' for name in names}
         raster_files = {f'png/{theme}/{name}@{scale}x.png' for name in names for scale in (1, 2, 3)}
+        raster_files |= {f'png/{theme}/{name}@9x.png' for name in ['document-download', 'status-success', 'cancelled-large', 'conflict-warning', 'document-conflict', 'file-text', 'file-code', 'file-pdf', 'file-markdown', 'image-file', 'image-amber', 'folder']}
         assert {str(path.relative_to(ROOT)) for path in (ROOT / 'svg' / theme).glob('*.svg')} == vector_files
         assert {str(path.relative_to(ROOT)) for path in (ROOT / 'png' / theme).glob('*.png')} == raster_files
         assert {entry['file'] for entry in manifest['assets']
@@ -262,7 +265,7 @@ def main() -> None:
         'component_reference_checks': len(components),
         'checks': ['Unique assets exist and match SHA-256', f'{counts["original-pixel-crop"]} source crops match recorded original pixels',
                    f'{counts["vector-reconstruction"]} safe SVGs share the 24×24 canvas',
-                   f'{counts["vector-rasterization"]} transparent exports have 24/48/72-pixel canvases',
+                   f'{counts["vector-rasterization"]} transparent exports have 24/48/72-pixel canvases, plus 24 high-resolution 216-pixel operation/file exports',
                    f'{len(coverage)} references map to exact semantic SVGs or explicitly native controls',
                    f'{len(components)} component cuts declare shared icons or dynamic native geometry',
                    f'{len(brand_specs)} brand exports pass their platform-format validator and source hashes',

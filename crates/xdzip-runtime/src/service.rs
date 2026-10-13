@@ -77,8 +77,12 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
-            Self::Open(path) | Self::CheckTarget { path, .. } => {
-                !path.is_empty() && path.len() <= 4096 && !path.contains('\0')
+            Self::Open(path) => !path.is_empty() && path.len() <= 4096 && !path.contains('\0'),
+            Self::CheckTarget { path, .. } => {
+                !path.is_empty()
+                    && path.len() <= 4096
+                    && !path.contains('\0')
+                    && Path::new(path).is_absolute()
             }
             Self::Browse {
                 directory,
@@ -425,6 +429,7 @@ impl Client {
         if !command.bounded() {
             return Err(Rejection::Invalid);
         }
+        let bytes = command.bytes();
         let mut state = match self.0.state.try_lock() {
             Ok(state) => state,
             Err(TryLockError::WouldBlock) => return Err(Rejection::Busy),
@@ -434,7 +439,7 @@ impl Client {
             return Err(Rejection::Closed);
         }
         if state.outstanding.len() >= MAX_OUTSTANDING
-            || state.command_bytes + command.bytes() > MAX_EVENT_BYTES
+            || state.command_bytes + bytes > MAX_EVENT_BYTES
         {
             return Err(Rejection::Busy);
         }
@@ -445,7 +450,7 @@ impl Client {
         let id = state.last_id;
         let control = Arc::new(Cancellation::default());
         state.outstanding.insert(id, Arc::clone(&control));
-        state.command_bytes += command.bytes();
+        state.command_bytes += bytes;
         state.commands.push_back(Pending {
             id,
             command,

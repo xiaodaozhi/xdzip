@@ -2,7 +2,7 @@
 
 现代、轻量、可扩展的跨平台压缩文件管理工具。
 
-**当前阶段：M2 ZIP／ZIP64 只读浏览已完成开发与三平台自动化验证，提供 Apple Silicon 开发 app，可进行一次性桌面人工验收。支持十万条元数据、版本化查询与源变化检测；实际压缩/解压尚未实现。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
+**当前阶段：M3 安全 ZIP 解压已接通，正在完成三平台自动化验收。支持 Store/Deflate、解压所选或全部、重名处理、真实进度、取消与异步退出；开发包不作为正式签名发行。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
 ![xdzip 已确认的浅色主窗口设计](design/hifi/screens/main-light.png)
 
@@ -19,7 +19,7 @@
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。
 
-开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务；尚不执行压缩或解压。
+开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务。`xdzip-browser` 已执行真实 ZIP 解压，创建归档、TAR/GZIP 与加密格式仍待后续实现。边界见 [M3 实现契约](docs/engineering/m3-extraction.md)。
 
 ## 产品方向
 

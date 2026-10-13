@@ -1,3 +1,4 @@
+#include "AppQuitGuard.h"
 #include "BrowserController.h"
 #include "UiFont.h"
 #include <QApplication>
@@ -15,14 +16,6 @@ void integrateMacTitlebar(QQuickWindow *window);
 bool verifyMacTitlebar(QQuickWindow *window);
 #endif
 
-// Platform Quit (including Cmd+Q) must use the same asynchronous shutdown as window close.
-class QuitGuard final : public QObject {
-  public:
-    QPointer<BrowserController> controller;
-    bool eventFilter(QObject *, QEvent *event) override {
-        return event->type() == QEvent::Quit && controller && !controller->requestClose();
-    }
-};
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
     application.setApplicationName(QStringLiteral("xdzip"));
@@ -45,7 +38,8 @@ int main(int argc, char *argv[]) {
     auto *controller = engine.rootObjects().first()->findChild<BrowserController *>();
     if (!controller)
         return 1;
-    QuitGuard guard;
+    AppQuitGuard guard;
+    guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     guard.controller = controller;
     application.installEventFilter(&guard);
     QObject::connect(controller, &BrowserController::readyToClose, &application,
