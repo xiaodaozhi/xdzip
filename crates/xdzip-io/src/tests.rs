@@ -162,6 +162,58 @@ fn broad_write_permissions_are_refused_before_staging() {
     ));
 }
 
+#[cfg(windows)]
+#[test]
+fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_not() {
+    // Modify only newly owned fixtures through the system ACL tool, not product
+    // FFI. Native filesystem checks exercise effective and inherited grants.
+    fn world_access(root: &Owned, rights: &str) {
+        let tool =
+            PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32/icacls.exe");
+        let result = std::process::Command::new(tool)
+            .arg(&root.0)
+            .arg("/grant:r")
+            .arg(format!("*S-1-1-0:(OI)(CI){rights}"))
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "owned ACL setup: {:?}",
+            result.status.code()
+        );
+    }
+    let root = Owned::new();
+    world_access(&root, "(RA,RC,S)");
+    let grant = root.grant();
+    let mut workspace = grant.workspace(90).unwrap();
+    let mut staged = workspace.stage().unwrap();
+    staged.write_all(b"verified private bytes").unwrap();
+    workspace
+        .commit(staged, &path("private.txt"), None)
+        .unwrap();
+    workspace.cleanup().unwrap();
+    assert_eq!(
+        fs::read(root.0.join("private.txt")).unwrap(),
+        b"verified private bytes"
+    );
+    drop(grant);
+    // RD also grants directory enumeration. W, D, WDAC and generic F must all
+    // reject before creating a staging directory or touching any existing bytes.
+    for rights in ["(RD)", "(W)", "(D)", "(WDAC)", "(F)"] {
+        let root = Owned::new();
+        let source = root.0.join("source.zip");
+        fs::write(&source, b"protected old bytes").unwrap();
+        let id = FileIdentity::read(&File::open(&source).unwrap()).unwrap();
+        world_access(&root, rights);
+        assert!(matches!(
+            Grant::open(&root.0, id),
+            Err(OutputError::UnsafeTarget)
+        ));
+        assert_eq!(fs::read(&source).unwrap(), b"protected old bytes");
+        assert_eq!(fs::read_dir(&root.0).unwrap().count(), 1);
+    }
+}
+
 #[test]
 fn crashed_private_stage_is_reported_and_never_auto_removed() {
     const VARIABLE: &str = "XDZIP_OWNED_CRASH_TARGET";

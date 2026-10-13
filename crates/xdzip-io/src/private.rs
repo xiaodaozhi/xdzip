@@ -44,6 +44,9 @@ mod windows {
     use windows_sys::Win32::Foundation::LocalFree;
     use windows_sys::Win32::Security::Authorization::{GetSecurityInfo, SE_FILE_OBJECT};
     use windows_sys::Win32::Security::*;
+    use windows_sys::Win32::Storage::FileSystem::{
+        FILE_READ_ATTRIBUTES, READ_CONTROL, SYNCHRONIZE,
+    };
     use windows_sys::Win32::System::SystemServices::{
         ACCESS_ALLOWED_ACE_TYPE, ACCESS_DENIED_ACE_TYPE,
     };
@@ -171,13 +174,17 @@ mod windows {
             if unsafe { GetLengthSid(sid) } > u32::from(header.AceSize) - 8 {
                 return Err(OutputError::UnsafeTarget);
             }
-            // Both effective and inherit-only grants matter: a broad inherited
-            // grant would expose the newly created private workspace as well.
+            // Both effective and inherit-only grants matter. Qt's private
+            // directories retain metadata-only access for Everyone: these rights
+            // cannot enumerate names, read bytes, create/delete or change a DACL.
+            // Content access and any write/unknown bit remain fail-closed, including
+            // generic rights (do not expand them to a permissive interpretation).
             let trusted = unsafe { EqualSid(sid, user_sid) != 0 }
                 || allowed
                     .iter()
                     .any(|known| unsafe { EqualSid(sid, known.as_ptr().cast_mut().cast()) != 0 });
-            if !trusted && unsafe { (*entry).Mask } != 0 {
+            let metadata_only = FILE_READ_ATTRIBUTES | READ_CONTROL | SYNCHRONIZE;
+            if !trusted && unsafe { (*entry).Mask } & !metadata_only != 0 {
                 return Err(OutputError::UnsafeTarget);
             }
         }
