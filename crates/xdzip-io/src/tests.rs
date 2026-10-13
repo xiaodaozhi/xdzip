@@ -2,16 +2,22 @@ use super::*;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use xdzip_domain::path::PortablePath;
 
 pub(crate) struct Owned(pub(crate) PathBuf);
 impl Owned {
     pub(crate) fn new() -> Self {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        // macOS clock ticks can repeat across parallel tests. Time is a label,
+        // not uniqueness; the process-local counter separates owned fixtures.
+        let serial = NEXT.fetch_add(1, Ordering::Relaxed);
         let nonce = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let path = std::env::temp_dir().join(format!("xdzip-io-{}-{nonce}", std::process::id()));
+        let path =
+            std::env::temp_dir().join(format!("xdzip-io-{}-{nonce}-{serial}", std::process::id()));
         fs::create_dir(&path).unwrap();
         Self(path)
     }

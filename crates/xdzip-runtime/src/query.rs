@@ -168,6 +168,7 @@ mod zip64_fixture;
 mod tests {
     use super::*;
     use std::path::PathBuf;
+    use std::sync::atomic::{AtomicU64, Ordering};
     struct Owned(PathBuf);
     impl Drop for Owned {
         fn drop(&mut self) {
@@ -175,12 +176,16 @@ mod tests {
         }
     }
     fn owned(bytes: &[u8]) -> (Owned, PathBuf) {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let serial = NEXT.fetch_add(1, Ordering::Relaxed);
         let nonce = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root =
-            std::env::temp_dir().join(format!("xdzip-m2-query-{}-{nonce}", std::process::id()));
+        let root = std::env::temp_dir().join(format!(
+            "xdzip-m2-query-{}-{nonce}-{serial}",
+            std::process::id()
+        ));
         std::fs::create_dir(&root).unwrap();
         let path = root.join("archive.zip");
         std::fs::write(&path, bytes).unwrap();
