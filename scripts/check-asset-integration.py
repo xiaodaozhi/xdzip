@@ -204,7 +204,11 @@ def check_html(base, assets, html_root):
         attributes.feed(page.read_text())
     names = set(attributes.names) | set(aliases.values())
     dynamic_calls = []
-    for args in call_arguments(source, 'icon'):
+    adapter = (html_root / 'main-controls.js').read_text()
+    names.update(re.findall(r'\bicon\s*:\s*[\"\']([\w-]+)[\"\']', adapter))
+    renderer = (html_root / 'controls.js').read_text()
+    names.update(re.findall(r'\brenderIcon\(\s*[\"\']([\w-]+)[\"\']', renderer))
+    for args in call_arguments(source + '\n' + adapter, 'icon'):
         argument = args[0]
         names.update(selected_values(argument))
         if not QUOTED.fullmatch(argument):

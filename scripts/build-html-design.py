@@ -64,7 +64,8 @@ def main():
         print('HTML shared assets match reviewed SVGs and source photos')
         return
     (SOURCE / 'assets.js').write_text(generated)
-    canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css'], ['assets.js', 'app.js'])
+    canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css', 'controls-tokens.css', 'controls.css'],
+                         ['assets.js', 'controls-tokens.js', 'controls.js', 'app.js', 'main-controls.js'])
     references = {}
     source_root = ROOT / 'design/hifi'
     catalog = json.loads((source_root / 'catalog.json').read_text())
@@ -75,6 +76,7 @@ def main():
         references['../hifi/' + entry['file']] = data_url(path)
     review = inline_html('index.html', [FONT_STYLESHEET, 'review.css'], [])
     review = review.replace('<script defer src="review.js"></script>', '')
+    review = review.replace('href="components.html"', 'href="xdzip-components.html"')
     review = review.replace('src="canvas.html"', 'src="about:blank"')
     config = 'window.XDZIP_CANVAS=' + json.dumps(canvas, ensure_ascii=False) + ';window.XDZIP_REFERENCES=' + json.dumps(references) + ';'
     review = review.replace('<script defer src="display-spec.js"></script>', '')
@@ -85,6 +87,10 @@ def main():
     output.write_text(review)
     # Give the corrected logical-size delivery a distinct download name.
     output.with_name('xdzip-hifi-design-1to1.html').write_text(review)
+    components = inline_html('components.html', [FONT_STYLESHEET, 'controls-tokens.css', 'controls.css', 'components.css'],
+                             ['assets.js', 'controls-tokens.js', 'controls.js', 'components.js'])
+    components = components.replace('</body>', license_notice + '</body>')
+    output.with_name('xdzip-components.html').write_text(components)
     print(f'{output}: {output.stat().st_size} bytes; no external runtime assets')
 
 

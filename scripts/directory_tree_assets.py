@@ -74,7 +74,10 @@ def component_reference_coverage():
         'title': title, 'implementation': implementation, 'icon_names': icons,
         'spec': '../../docs/ux/directory-tree.md',
         'geometry_spec': '../../docs/visual/directory-tree.json',
-        'integration_status': 'design-ready-awaiting-html-and-qt-integration',
+        'integration_status': ('design-reference-only' if name in {
+            'tree-loading', 'tree-nav-limit', 'tree-read-failed', 'tree-skeleton',
+            'tree-loading-glyph', 'tree-info-glyph', 'tree-error-glyph'}
+            else 'core-interactions-integrated'),
         'note': ('原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。'
                  if implementation == 'shared-svg' else
                  '原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。'),

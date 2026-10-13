@@ -47,12 +47,6 @@
         49,
         28
       ],
-      "#tree>.tree-item:first-child": [
-        31,
-        336,
-        270,
-        53
-      ],
       ".storage-bar": [
         41,
         879,
@@ -142,6 +136,12 @@
         915,
         1548,
         55
+      ],
+      "#tree>.tree-root": [
+        31,
+        336,
+        270,
+        53
       ]
     },
     "dom_center_targets": {
@@ -166,18 +166,24 @@
           47,
           40
         ],
-        "design_revision": "folder-optical-balance",
+        "design_revision": "directory-tree-B",
         "target_ink_rect": [
-          51,
-          343.642858,
-          44,
-          37.714284
+          46.5203125,
+          350.4453125,
+          22.171875,
+          19.484375
         ],
         "authored_display_frame": [
-          49,
-          338.5,
-          48,
-          48
+          45.5125,
+          348.09375,
+          24.1875,
+          24.1875
+        ],
+        "target_region": [
+          43,
+          346,
+          29,
+          29
         ]
       },
       {
@@ -195,18 +201,24 @@
           44,
           40
         ],
-        "design_revision": "folder-optical-balance",
+        "design_revision": "directory-tree-B",
         "target_ink_rect": [
-          76,
-          403.392858,
-          44,
-          37.714284
+          75.5453125,
+          403.6578125,
+          22.171875,
+          19.484375
         ],
         "authored_display_frame": [
-          74,
-          398.25,
-          48,
-          48
+          74.5375,
+          401.30625,
+          24.1875,
+          24.1875
+        ],
+        "target_region": [
+          72,
+          399,
+          29,
+          29
         ]
       },
       {
@@ -224,18 +236,24 @@
           44,
           40
         ],
-        "design_revision": "folder-optical-balance",
+        "design_revision": "directory-tree-B",
         "target_ink_rect": [
-          76,
-          464.892858,
-          44,
-          37.714284
+          75.5453125,
+          452.0328125,
+          22.171875,
+          19.484375
         ],
         "authored_display_frame": [
-          74,
-          459.75,
-          48,
-          48
+          74.5375,
+          449.68125,
+          24.1875,
+          24.1875
+        ],
+        "target_region": [
+          72,
+          447,
+          29,
+          29
         ]
       },
       {
@@ -253,18 +271,24 @@
           44,
           40
         ],
-        "design_revision": "folder-optical-balance",
+        "design_revision": "directory-tree-B",
         "target_ink_rect": [
-          76,
-          526.392858,
-          44,
-          37.714284
+          75.5453125,
+          500.4078125,
+          22.171875,
+          19.484375
         ],
         "authored_display_frame": [
-          74,
-          521.25,
-          48,
-          48
+          74.5375,
+          498.05625,
+          24.1875,
+          24.1875
+        ],
+        "target_region": [
+          72,
+          496,
+          29,
+          29
         ]
       },
       {
@@ -274,6 +298,25 @@
           410,
           18,
           25
+        ],
+        "design_revision": "directory-tree-B",
+        "authored_display_frame": [
+          49.140625,
+          402.515625,
+          21.76875,
+          21.76875
+        ],
+        "target_region": [
+          47,
+          400,
+          26,
+          26
+        ],
+        "target_ink_rect": [
+          56.396875,
+          407.05078125,
+          7.25625,
+          12.6984375
         ]
       },
       {
@@ -2429,6 +2472,12 @@
         "title_optical_offset_y": -2,
         "close_center_y": 201.5,
         "preview_image_top": 241
+      },
+      "directory-tree-B": {
+        "reason": "目录树 B 已确认组件替换旧主稿目录行；40/20/18/14/12 逻辑参数来自 docs/visual/directory-tree.json，原始主稿与比较保留。",
+        "source": "docs/visual/directory-tree.json",
+        "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
+        "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
       }
     },
     "dom_rect_revisions": {
@@ -2448,6 +2497,16 @@
           810,
           347,
           57
+        ]
+      },
+      "#tree>.tree-root": {
+        "design_revision": "directory-tree-B",
+        "original_selector": "#tree>.tree-item:first-child",
+        "target": [
+          31,
+          336,
+          270,
+          48.375
         ]
       }
     },
@@ -2580,25 +2639,6 @@
         265,
         49,
         28
-      ],
-      "maximum_delta_px": 0,
-      "tolerance_px": 2,
-      "passed": true
-    },
-    {
-      "kind": "DOM rect",
-      "name": "#tree>.tree-item:first-child",
-      "expected": [
-        31,
-        336,
-        270,
-        53
-      ],
-      "actual": [
-        31,
-        336,
-        270,
-        53
       ],
       "maximum_delta_px": 0,
       "tolerance_px": 2,
@@ -2926,6 +2966,43 @@
       "passed": true
     },
     {
+      "kind": "source rect (design revised)",
+      "name": "#tree>.tree-root",
+      "expected": [
+        31,
+        336,
+        270,
+        53
+      ],
+      "actual": [
+        31,
+        336,
+        270,
+        48.375
+      ],
+      "review_only": true,
+      "design_revision": "directory-tree-B"
+    },
+    {
+      "kind": "revised design rect",
+      "name": "#tree>.tree-root",
+      "expected": [
+        31,
+        336,
+        270,
+        48.375
+      ],
+      "actual": [
+        31,
+        336,
+        270,
+        48.375
+      ],
+      "maximum_delta_px": 0,
+      "tolerance_px": 2,
+      "passed": true
+    },
+    {
       "kind": "source center (design revised)",
       "name": ".inspector-head .icon-button",
       "expected": [
@@ -2964,32 +3041,32 @@
         29
       ],
       "actual": [
-        51,
-        344,
-        44,
-        38
+        47,
+        350,
+        23,
+        20
       ],
       "review_only": true,
-      "maximum_delta_px": 9,
-      "design_revision": "folder-optical-balance",
+      "maximum_delta_px": 13,
+      "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
     {
       "kind": "revised design ink",
       "name": "根目录文件夹",
       "expected": [
-        51,
-        343.642858,
-        44,
-        37.714284
+        46.5203125,
+        350.4453125,
+        22.171875,
+        19.484375
       ],
       "actual": [
-        51,
-        344,
-        44,
-        38
+        47,
+        350,
+        23,
+        20
       ],
-      "maximum_delta_px": 0.3571420000000103,
+      "maximum_delta_px": 0.828125,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3005,30 +3082,30 @@
       "actual": [
         76,
         403,
-        44,
-        38
+        23,
+        20
       ],
       "review_only": true,
-      "maximum_delta_px": 10,
-      "design_revision": "folder-optical-balance",
+      "maximum_delta_px": 11,
+      "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
     {
       "kind": "revised design ink",
       "name": "照片目录文件夹",
       "expected": [
-        76,
-        403.392858,
-        44,
-        37.714284
+        75.5453125,
+        403.6578125,
+        22.171875,
+        19.484375
       ],
       "actual": [
         76,
         403,
-        44,
-        38
+        23,
+        20
       ],
-      "maximum_delta_px": 0.3928579999999897,
+      "maximum_delta_px": 0.828125,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3043,31 +3120,31 @@
       ],
       "actual": [
         76,
-        465,
-        44,
-        38
+        458,
+        23,
+        51
       ],
       "review_only": true,
-      "maximum_delta_px": 9,
-      "design_revision": "folder-optical-balance",
+      "maximum_delta_px": 21,
+      "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
     {
       "kind": "revised design ink",
       "name": "文档目录文件夹",
       "expected": [
-        76,
-        464.892858,
-        44,
-        37.714284
+        75.5453125,
+        452.0328125,
+        22.171875,
+        19.484375
       ],
       "actual": [
         76,
-        465,
-        44,
-        38
+        452,
+        23,
+        20
       ],
-      "maximum_delta_px": 0.28571600000000075,
+      "maximum_delta_px": 0.828125,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3080,38 +3157,33 @@
         35,
         30
       ],
-      "actual": [
-        76,
-        526,
-        44,
-        38
-      ],
+      "actual": null,
       "review_only": true,
-      "maximum_delta_px": 9,
-      "design_revision": "folder-optical-balance",
+      "maximum_delta_px": null,
+      "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
     {
       "kind": "revised design ink",
       "name": "地图目录文件夹",
       "expected": [
-        76,
-        526.392858,
-        44,
-        37.714284
+        75.5453125,
+        500.4078125,
+        22.171875,
+        19.484375
       ],
       "actual": [
         76,
-        526,
-        44,
-        38
+        500,
+        23,
+        20
       ],
-      "maximum_delta_px": 0.39285800000004656,
+      "maximum_delta_px": 0.828125,
       "tolerance_px": 2,
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "首个目录展开箭头",
       "expected": [
         51,
@@ -3120,12 +3192,32 @@
         13
       ],
       "actual": [
-        51,
-        415,
-        8,
-        14
+        56,
+        410,
+        7,
+        10
       ],
-      "maximum_delta_px": 1,
+      "review_only": true,
+      "maximum_delta_px": 5,
+      "design_revision": "directory-tree-B",
+      "original_tolerance_px": 2
+    },
+    {
+      "kind": "revised design ink",
+      "name": "首个目录展开箭头",
+      "expected": [
+        56.396875,
+        407.05078125,
+        7.25625,
+        12.6984375
+      ],
+      "actual": [
+        56,
+        408,
+        7,
+        12
+      ],
+      "maximum_delta_px": 0.94921875,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3520,10 +3612,10 @@
         19
       ],
       "actual": [
-        111,
+        104,
         353,
-        78,
-        19
+        42,
+        16
       ],
       "review_only": true
     },
@@ -3537,10 +3629,10 @@
         14
       ],
       "actual": [
-        270,
-        358,
-        18,
-        13
+        276,
+        356,
+        15,
+        11
       ],
       "review_only": true
     },
@@ -3554,10 +3646,10 @@
         18
       ],
       "actual": [
-        136,
-        413,
-        61,
-        18
+        132,
+        407,
+        32,
+        16
       ],
       "review_only": true
     },
@@ -3842,11 +3934,11 @@
         254
       ],
       "actual": [
-        225,
-        232,
+        230,
+        237,
         255
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 6,
       "tolerance_px": 6,
       "passed": true
     },

@@ -20,8 +20,10 @@ Button {
     hoverEnabled: true
     Accessible.name: text
     Accessible.description: explanation
-    ToolTip.visible: hovered && explanation.length > 0
-    ToolTip.text: explanation
+    CommandTooltip {
+        requested: root.hovered && !root.down
+        text: root.explanation
+    }
     contentItem: RowLayout {
         spacing: root.toolbarStyle ? 10 : 8
         Image {
@@ -49,7 +51,7 @@ Button {
     background: Rectangle {
         objectName: "actionBackground"
         radius: root.toolbarStyle ? Theme.toolbarRadius : Theme.controlRadius
-        color: root.primary ? (root.enabled ? Theme.accent : Theme.accentDisabled) : root.down ? Theme.selection : root.hovered ? Theme.sidebar : "transparent"
+        color: root.primary ? (!root.enabled ? Theme.accentDisabled : root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : "transparent"
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.accent
     }

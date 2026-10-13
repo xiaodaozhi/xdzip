@@ -27,6 +27,72 @@ QtObject {
     readonly property real secondarySize: 12 * fontScale
     readonly property real panelTitleSize: 20 * fontScale
     readonly property real toolbarSize: 16 * fontScale
+    readonly property color controlHover: dark ? "#2B374C" : "#EDF2FF"
+    readonly property color controlPressed: dark ? "#34435C" : "#E0E8FF"
+    readonly property color menuHover: dark ? "#34435C" : "#E8EEFF"
+    readonly property color menuBorder: dark ? "#3B465B" : "#DDE3EF"
+    readonly property color menuText: dark ? "#ECEEF3" : "#20232A"
+    readonly property color menuSecondary: dark ? "#A2A8B4" : "#626874"
+    readonly property color menuDisabled: dark ? "#758196" : "#959DAA"
+    readonly property color menuSurface: dark ? "#242C3A" : "#FFFFFF"
+    readonly property color menuDanger: dark ? "#FFA0AD" : "#B93848"
+    readonly property color menuShadow: dark ? "#66000000" : "#291B2943"
+    readonly property color tooltipSurface: dark ? "#E3EBF9" : "#202B41"
+    readonly property color tooltipText: dark ? "#182030" : "#FFFFFF"
+    readonly property real menuWidth: 240 * fontScale
+    readonly property real menuMinWidth: 208 * fontScale
+    readonly property real menuRowHeight: 32 * fontScale
+    readonly property real menuPadding: 6 * fontScale
+    readonly property real menuRadius: 8 * fontScale
+    readonly property real menuGap: 4 * fontScale
+    readonly property real menuIconSize: 18 * fontScale
+    readonly property real menuLabelSize: 13 * fontScale
+    readonly property real menuShortcutSize: 12 * fontScale
+    readonly property real menuLabelInset: 8 * fontScale
+    readonly property real menuViewportInset: 8 * fontScale
+    readonly property real tooltipMaxWidth: 320 * fontScale
+    readonly property real tooltipPadding: 8 * fontScale
+    readonly property real focusWidth: 2 * fontScale
+    readonly property int hoverDelayMs: 450
+    readonly property int submenuDelayMs: 120
+    readonly property int tooltipDurationMs: 7000
+    readonly property int typeaheadResetMs: 650
+    readonly property int pressTransitionMs: 90
+    readonly property real treeSidebarDefaultWidth: 220
+    readonly property real treeRowMinHeight: 40
+    readonly property real treeRowOuterInset: 8
+    readonly property real treeContentLeftInset: 12
+    readonly property real treeContentRightInset: 12
+    readonly property real treeDepthIndent: 16
+    readonly property real treeDisclosureHitWidth: 24
+    readonly property real treeDisclosureHitMinHeight: 24
+    readonly property real treeDisclosureGlyphCanvas: 18
+    readonly property real treeFolderCanvas: 20
+    readonly property real treeIconLabelGap: 8
+    readonly property real treeLabelCountGap: 8
+    readonly property real treeCountMinWidth: 32
+    readonly property real treeBranchMarkerCanvas: 24
+    readonly property real treeBranchMarkerVisibleDiameter: 6
+    readonly property real treeBranchCountGap: 4
+    readonly property real treeSelectionIndicatorWidth: 3
+    readonly property real treeSelectionRadius: 8
+    readonly property real treeFocusStroke: 2
+    readonly property real treeGuideStroke: 1
+    readonly property real treeBodyFontSize: 14
+    readonly property real treeCountFontSize: 12
+    readonly property real treeTooltipMaxWidth: 360
+    readonly property real treeTooltipMaxHeight: 240
+    readonly property real treeStatusGlyphCanvas: 20
+    readonly property color treeSurfaceColor: dark ? "#17191E" : "#F7F9FC"
+    readonly property color treeTextColor: dark ? "#ECEEF3" : "#20232A"
+    readonly property color treeSecondaryColor: dark ? "#A2A8B4" : "#626874"
+    readonly property color treeSelectionColor: dark ? "#293754" : "#E6EDFF"
+    readonly property color treeHoverColor: dark ? "#222B39" : "#EDF1F7"
+    readonly property color treeFocusColor: dark ? "#78A6FF" : "#1674FF"
+    readonly property color treeCurrentIndicatorColor: dark ? "#78A6FF" : "#1674FF"
+    readonly property color treeGuideColor: dark ? "#3A4658" : "#D4DBE6"
+    readonly property color treeBranchDotColor: dark ? "#78A6FF" : "#1674FF"
+    readonly property color treeSkeletonColor: dark ? "#323E50" : "#DAE2EE"
     readonly property int gutter: 24
     readonly property int gap: 12
     readonly property int iconSize: 20

@@ -165,13 +165,13 @@ def package(path, page, files):
             ledger.append(record)
         extras = {
             'xdzip-directory-tree.html': standalone(page),
-            'README.txt': 'xdzip 目录树 B 设计与素材交付\n打开 xdzip-directory-tree.html 查看全部内嵌图片。\n正式图板与切片保留原像素；组件行、连接线和文字动态绘制。\n规格位于 docs/ux/directory-tree.md 与 docs/visual/directory-tree.json。\n包外辅助 Markdown 链接已转换为仓库链接，正文不变。\nHTML / Qt 目录树改造尚未接入。\n原创内容采用 Apache-2.0，见 LICENSE。\n',
+            'README.txt': 'xdzip 目录树 B 设计与素材交付\n打开 xdzip-directory-tree.html 查看全部内嵌图片。\n正式图板与切片保留原像素；组件行、连接线和文字动态绘制。\n规格位于 docs/ux/directory-tree.md 与 docs/visual/directory-tree.json。\n包外辅助 Markdown 链接已转换为仓库链接，正文不变。\nHTML 示例与 Qt 只读树已接入核心交互；边界提示图标与骨架仍待接入。\n原创内容采用 Apache-2.0，见 LICENSE。\n',
         }
         for name, content in extras.items():
             payload = content.encode('utf-8')
             archive.writestr(name, payload)
             ledger.append({'file': name, 'sha256': hashlib.sha256(payload).hexdigest()})
-        archive.writestr('handoff-manifest.json', json.dumps({'status': 'design-ready-awaiting-html-and-qt-integration', 'files': ledger}, ensure_ascii=False, indent=2) + '\n')
+        archive.writestr('handoff-manifest.json', json.dumps({'status': 'core-interactions-integrated', 'files': ledger}, ensure_ascii=False, indent=2) + '\n')
 
 
 def main():

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "component": "directory-tree",
   "name": "B · 层级引导目录树",
-  "status": "design-ready-awaiting-html-and-qt-integration",
+  "status": "core-interactions-integrated",
   "units": "Qt logical pixels / CSS pixels in the normalized 1280-wide design window",
   "coordinate_note": "图板是放大的视觉说明，不存在适用于三张图板的共同缩放系数；下列值是组件落地尺寸，不是对图片像素的测量。切片的 source physical rect 单独记入资产清单。",
   "base_tokens": "tokens.json",
@@ -286,14 +286,11 @@
     "new_session": "discard expansion, focus, current node IDs and branch markers from the previous session"
   },
   "integration": {
-    "existing_contract": "../engineering/readonly-browser.md",
-    "existing_qt": "../../apps/desktop/ui/Browser.qml",
-    "pending": [
-      "B row visuals and native guides",
-      "count and marker pinning while horizontal scrolling",
-      "hidden-current branch indication and focus recovery",
-      "HTML recursive component/state fixtures",
-      "actual-render alignment, contrast and accessible keyboard validation"
+    "html": "Recursive example tree, guide lines, pinned counts, disclosure, current/focus separation, collapsed-current marker and directory context menu",
+    "qt": "Complete real read-only index, guide roles, pinned counts, disclosure, keyboard navigation, collapsed-current marker and directory context menu",
+    "remaining": [
+      "Boundary notice glyphs and skeleton are design resources; no new loading skeleton or error-card consumer",
+      "Full dark component board and manual native screen-reader/HiDPI review remain pending"
     ]
   },
   "coordinate_mapping": {

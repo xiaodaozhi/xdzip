@@ -8,8 +8,13 @@
         <link rel="stylesheet" href="../assets/fonts/fonts.css" />
         <link rel="stylesheet" href="styles.css" />
         <link rel="stylesheet" href="hifi.css" />
+        <link rel="stylesheet" href="controls-tokens.css" />
+        <link rel="stylesheet" href="controls.css" />
         <script defer src="assets.js"></script>
+        <script defer src="controls-tokens.js"></script>
+        <script defer src="controls.js"></script>
         <script defer src="app.js"></script>
+        <script defer src="main-controls.js"></script>
     </head>
     <body data-platform="macos">
         <div class="reviewbar">
@@ -101,6 +106,7 @@
                             aria-label="搜索压缩包中的文件"
                             autocomplete="off"
                         />
+                        <button id="search-clear" class="icon-button" aria-label="清空搜索" data-tooltip="清空搜索 · Esc" hidden><span data-icon="close"></span></button>
                     </div>
                     <div class="split-button">
                         <button id="extract" class="button primary">
@@ -112,13 +118,6 @@
                         >
                             <span data-icon="chevronDown"></span>
                         </button>
-                        <div id="extract-menu" class="dropdown" hidden>
-                            <button data-extract="all">全部解压</button
-                            ><button data-extract="selected">解压所选</button
-                            ><button data-extract="results">
-                                解压搜索结果
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <div class="workspace">
@@ -157,7 +156,7 @@
                             <div id="breadcrumbs"></div>
                             <div class="file-tools">
                                 <button id="properties-toggle" class="icon-button" aria-label="切换详情面板"><span data-icon="panel"></span></button><span id="entry-count"></span
-                                ><button class="icon-button view-active" aria-label="列表视图"><span data-icon="view-list"></span></button><button id="grid-view" class="icon-button" aria-label="网格视图"><span data-icon="view-grid"></span></button><button
+                                ><button id="list-view" class="icon-button view-active" aria-label="列表视图" aria-pressed="true"><span data-icon="view-list"></span></button><button id="grid-view" class="icon-button" aria-label="网格视图" aria-pressed="false"><span data-icon="view-grid"></span></button><button
                                     id="sort-direction"
                                     class="icon-button"
                                     aria-label="切换排序方向"
@@ -190,14 +189,15 @@
                                                 ></span>
                                             </button>
                                         </th>
-                                        <th>原始大小</th>
-                                        <th>压缩后</th>
-                                        <th class="type-col">类型</th>
-                                        <th class="date-col">修改日期</th>
+                                        <th><button class="sort-header" data-sort="size">原始大小</button></th>
+                                        <th><button class="sort-header" data-sort="compressed">压缩后</button></th>
+                                        <th class="type-col"><button class="sort-header" data-sort="type">类型</button></th>
+                                        <th class="date-col"><button class="sort-header" data-sort="modified">修改日期</button></th>
                                     </tr>
                                 </thead>
                                 <tbody id="file-rows"></tbody>
                             </table>
+                            <div id="file-grid" class="grid-entries" aria-label="文件网格" hidden></div>
                             <div
                                 id="empty-state"
                                 class="empty-state"

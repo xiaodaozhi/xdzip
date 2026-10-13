@@ -8,6 +8,8 @@ on:
       - 'scripts/*brand*'
       - 'scripts/*directory-tree*'
       - 'docs/visual/directory-tree.json'
+      - 'docs/visual/controls.json'
+      - 'scripts/generate-control-tokens.py'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
       - 'docs/qa/brand-and-assets*'
@@ -27,6 +29,8 @@ on:
       - 'scripts/*brand*'
       - 'scripts/*directory-tree*'
       - 'docs/visual/directory-tree.json'
+      - 'docs/visual/controls.json'
+      - 'scripts/generate-control-tokens.py'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
       - 'docs/qa/brand-and-assets*'
@@ -62,6 +66,8 @@ jobs:
           .venv-design/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
           .venv-design/bin/python scripts/check-directory-tree-delivery.py
           .venv-design/bin/python scripts/build-html-design.py
+          .venv-design/bin/python scripts/generate-control-tokens.py --check
+          .venv-design/bin/python scripts/check-html-controls.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
           .venv-design/bin/python scripts/check-html-references.py
@@ -109,5 +115,11 @@ jobs:
             dist/xdzip-assets.html
             dist/xdzip-directory-tree.html
             dist/xdzip-directory-tree.zip
+            docs/qa/main-window-components.md
+            docs/qa/main-window-components/
+            docs/ux/main-window-components.md
+            docs/visual/controls.json
+            dist/html-controls-review/
+            dist/xdzip-components.html
           if-no-files-found: error
           retention-days: 14

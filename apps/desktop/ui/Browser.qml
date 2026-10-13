@@ -17,8 +17,49 @@ ApplicationWindow {
     property bool integratedTitlebar: false
     property string searchSession: ""
     property bool darkMode: false
+    property string viewMode: "list"
+    property var contextEntry: ({})
+    property string contextDirectoryId: ""
+    property int contextDirectoryRow: -1
+    property bool contextDirectoryHasChildren: false
+    property bool contextDirectoryExpanded: false
+    property bool pendingDirectorySearchFocus: false
+    readonly property bool contextAvailable: reader.ready && !reader.busy && contextEntry.session === reader.sessionId
     // File and directory icons share one logical slot; artwork retains its aspect ratio.
     readonly property int entryIconSize: 18
+    function toggleInspector() {
+        if (root.width < Theme.inspectorCollapseWidth) {
+            inspectorWindow.show();
+            inspectorWindow.raise();
+            inspectorWindow.requestActivate();
+        } else {
+            inspectorWindow.close();
+            root.inspectorRequested = !root.inspectorVisible;
+        }
+    }
+    function selectWithModifiers(row, modifiers) {
+        if (modifiers & Qt.ShiftModifier)
+            reader.selectRangeTo(row);
+        else if (modifiers & (Qt.ControlModifier | Qt.MetaModifier))
+            reader.selectRow(row);
+        else
+            reader.selectOnlyRow(row);
+    }
+    function entryMenuAt(item, row, entryId, directory, navigable, x, y) {
+        if (!reader.ready || reader.busy)
+            return;
+        root.contextEntry = {
+            row: row,
+            id: entryId,
+            directory: directory,
+            navigable: navigable,
+            session: reader.sessionId
+        };
+        reader.selectForContext(row);
+        item.forceActiveFocus(Qt.MouseFocusReason);
+        const point = item.mapToItem(root.contentItem, x, y);
+        entryMenu.popup(point.x, point.y);
+    }
     onDarkModeChanged: Theme.dark = darkMode
     visible: true
     title: reader.title.length ? reader.title + " — xdzip" : "xdzip"
@@ -64,6 +105,14 @@ ApplicationWindow {
         onReadyToClose: root.close()
         onPreflightReady: preflightWindow.present()
         onChanged: {
+            if (busy || root.contextEntry.session !== sessionId) {
+                entryMenu.close();
+                directoryMenu.close();
+            }
+            if (!busy && root.pendingDirectorySearchFocus) {
+                root.pendingDirectorySearchFocus = false;
+                toolbar.focusSearch();
+            }
             if (!preflightReport.entries && !preflightReport.error)
                 preflightWindow.close();
             if (sessionId !== root.searchSession) {
@@ -107,6 +156,204 @@ ApplicationWindow {
         enabled: reader.runtimeAvailable && !reader.busy
         onActivated: reader.chooseArchive()
     }
+    Shortcut {
+        sequence: StandardKey.Find
+        enabled: reader.ready && !reader.busy
+        onActivated: toolbar.focusSearch()
+    }
+    Shortcut {
+        sequence: StandardKey.SelectAll
+        enabled: reader.ready && !reader.busy
+        onActivated: reader.selectAllOnPage(true)
+    }
+    Shortcut {
+        sequences: [StandardKey.Copy]
+        enabled: reader.ready && !reader.busy && reader.selectedCount > 0
+        onActivated: {
+            entryMenu.close();
+            reader.copySelection(false);
+        }
+    }
+    CommandMenu {
+        id: directoryMenu
+        objectName: "browserDirectoryMenu"
+        CommandMenuItem {
+            text: root.contextDirectoryId.length ? qsTr("进入目录") : qsTr("全部文件")
+            enabled: reader.ready && !reader.busy
+            onTriggered: {
+                if (root.contextDirectoryId.length)
+                    reader.navigateDirectory(root.contextDirectoryId);
+                else
+                    reader.showAll();
+            }
+        }
+        CommandMenuItem {
+            text: root.contextDirectoryExpanded ? qsTr("收起子目录") : qsTr("展开子目录")
+            enabled: reader.ready && !reader.busy && root.contextDirectoryHasChildren
+            disabledReason: qsTr("该节点没有子目录")
+            onTriggered: directoryTree.toggleExpanded(root.contextDirectoryRow)
+        }
+        CommandMenuSeparator {}
+        CommandMenuItem {
+            text: qsTr("在此目录中搜索")
+            asset: "search"
+            enabled: reader.ready && !reader.busy
+            onTriggered: {
+                root.pendingDirectorySearchFocus = true;
+                if (root.contextDirectoryId.length)
+                    reader.navigateDirectory(root.contextDirectoryId);
+                else
+                    reader.showAll();
+            }
+        }
+    }
+    CommandMenu {
+        id: sortMenu
+        objectName: "browserSortMenu"
+        CommandMenuItem {
+            text: qsTr("名称")
+            checkable: true
+            checked: reader.sortOrder === 1 || reader.sortOrder === 2
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(0)
+        }
+        CommandMenuItem {
+            text: qsTr("原始大小")
+            checkable: true
+            checked: reader.sortOrder === 3 || reader.sortOrder === 4
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(1)
+        }
+        CommandMenuItem {
+            text: qsTr("压缩后")
+            checkable: true
+            checked: reader.sortOrder === 5 || reader.sortOrder === 6
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(2)
+        }
+        CommandMenuItem {
+            text: qsTr("压缩方法")
+            checkable: true
+            checked: reader.sortOrder === 7 || reader.sortOrder === 8
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(3)
+        }
+        CommandMenuSeparator {}
+        CommandMenuItem {
+            text: qsTr("按归档顺序排列")
+            checkable: true
+            checked: reader.sortOrder === 0
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(-1)
+        }
+    }
+    CommandMenu {
+        id: viewMenu
+        objectName: "browserViewMenu"
+        title: qsTr("视图")
+        CommandMenuItem {
+            text: qsTr("列表视图")
+            checkable: true
+            checked: root.viewMode === "list"
+            onTriggered: root.viewMode = "list"
+        }
+        CommandMenuItem {
+            text: qsTr("网格视图")
+            checkable: true
+            checked: root.viewMode === "grid"
+            onTriggered: root.viewMode = "grid"
+        }
+        CommandMenuSeparator {}
+        CommandMenuItem {
+            text: qsTr("文件详情")
+            checkable: true
+            checked: root.inspectorVisible || inspectorWindow.visible
+            onTriggered: root.toggleInspector()
+        }
+    }
+    CommandMenu {
+        id: entryMenu
+        objectName: "browserEntryMenu"
+        CommandMenuItem {
+            objectName: "contextEnterDirectory"
+            text: qsTr("进入目录")
+            asset: "folder"
+            visible: Boolean(root.contextEntry.directory)
+            enabled: root.contextAvailable && Boolean(root.contextEntry.navigable)
+            disabledReason: qsTr("该条目不具有可导航的安全目录身份")
+            onTriggered: reader.enterDirectory(root.contextEntry.row)
+        }
+        CommandMenuItem {
+            objectName: "contextProperties"
+            text: qsTr("文件属性")
+            enabled: root.contextAvailable
+            onTriggered: {
+                reader.selectForContext(root.contextEntry.row);
+                if (!root.inspectorVisible)
+                    root.toggleInspector();
+            }
+        }
+        CommandMenuItem {
+            text: qsTr("解压元数据预检")
+            enabled: root.contextAvailable && reader.selectedCount > 0
+            onTriggered: reader.inspectSelection()
+        }
+        CommandMenuSeparator {}
+        CommandMenuItem {
+            objectName: "contextCopyName"
+            text: qsTr("复制名称")
+            shortcutLabel: Qt.platform.os === "osx" ? "⌘C" : "Ctrl+C"
+            enabled: root.contextAvailable && reader.selectedCount > 0
+            onTriggered: reader.copySelection(false)
+        }
+        CommandMenuItem {
+            text: qsTr("复制归档内路径")
+            enabled: root.contextAvailable && reader.selectedCount > 0
+            onTriggered: reader.copySelection(true)
+        }
+        CommandMenuSeparator {}
+        CommandMenuItem {
+            text: qsTr("解压所选")
+            enabled: false
+            disabledReason: qsTr("安全写入层尚未实现；可先执行元数据预检")
+        }
+    }
+    CommandMenu {
+        id: emptyMenu
+        objectName: "browserBackgroundMenu"
+        CommandMenuItem {
+            text: qsTr("全选当前页")
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.selectAllOnPage(true)
+        }
+        CommandMenuItem {
+            text: qsTr("取消选择")
+            enabled: reader.ready && !reader.busy && reader.selectedCount > 0
+            onTriggered: reader.selectAllOnPage(false)
+        }
+        CommandMenuSeparator {}
+        CommandMenu {
+            title: qsTr("视图")
+            CommandMenuItem {
+                text: qsTr("列表视图")
+                checkable: true
+                checked: root.viewMode === "list"
+                onTriggered: root.viewMode = "list"
+            }
+            CommandMenuItem {
+                text: qsTr("网格视图")
+                checkable: true
+                checked: root.viewMode === "grid"
+                onTriggered: root.viewMode = "grid"
+            }
+        }
+        CommandMenuItem {
+            text: qsTr("文件详情")
+            checkable: true
+            checked: root.inspectorVisible || inspectorWindow.visible
+            onTriggered: root.toggleInspector()
+        }
+    }
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -128,6 +375,10 @@ ApplicationWindow {
             onInspectRequested: reader.inspectSelection()
             onResetSortRequested: reader.sortByColumn(-1)
             onSearchRequested: query => reader.search(query)
+            onSelectAllRequested: reader.selectAllOnPage(true)
+            onClearSelectionRequested: reader.selectAllOnPage(false)
+            onDetailsRequested: root.toggleInspector()
+            onThemeRequested: root.darkMode = !root.darkMode
         }
         RowLayout {
             Layout.fillWidth: true
@@ -171,8 +422,9 @@ ApplicationWindow {
                     }
                     Button {
                         id: allFiles
+                        objectName: "directoryRoot"
                         Layout.fillWidth: true
-                        implicitHeight: Math.max(40, Theme.bodySize * 1.6 + 16)
+                        implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))
                         leftPadding: 12
                         rightPadding: 12
                         enabled: reader.ready && !reader.busy
@@ -180,16 +432,24 @@ ApplicationWindow {
                         Accessible.name: qsTr("全部文件")
                         background: Rectangle {
                             radius: Theme.controlRadius
-                            color: reader.location.length === 0 ? Theme.selection : allFiles.hovered ? Theme.canvas : "transparent"
+                            color: reader.location.length === 0 ? Theme.treeSelectionColor : allFiles.hovered ? Theme.treeHoverColor : "transparent"
                             border.width: allFiles.activeFocus ? 2 : 0
                             border.color: Theme.accent
+                            Rectangle {
+                                visible: reader.location.length === 0
+                                width: 3
+                                height: parent.height - 6
+                                y: 3
+                                radius: 2
+                                color: Theme.accent
+                            }
                         }
                         contentItem: RowLayout {
-                            spacing: 12
+                            spacing: Theme.treeIconLabelGap
                             Image {
                                 source: root.fileIcon("", true)
-                                Layout.preferredWidth: root.entryIconSize
-                                Layout.preferredHeight: root.entryIconSize
+                                Layout.preferredWidth: Theme.treeFolderCanvas * Theme.fontScale
+                                Layout.preferredHeight: Theme.treeFolderCanvas * Theme.fontScale
                                 fillMode: Image.PreserveAspectFit
                             }
                             Text {
@@ -199,6 +459,33 @@ ApplicationWindow {
                                 color: Theme.text
                                 font.pixelSize: Theme.bodySize
                                 font.bold: true
+                            }
+                            Text {
+                                text: reader.ready ? reader.archiveTotal : "—"
+                                color: Theme.textSecondary
+                                font.pixelSize: Theme.secondarySize
+                            }
+                        }
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: function (eventPoint) {
+                                root.contextDirectoryId = "";
+                                root.contextDirectoryRow = -1;
+                                root.contextDirectoryHasChildren = false;
+                                root.contextDirectoryExpanded = false;
+                                const position = allFiles.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
+                                directoryMenu.popup(position.x, position.y);
+                            }
+                        }
+                        Keys.onPressed: function (event) {
+                            if (event.key === Qt.Key_Menu || event.key === Qt.Key_F10 && event.modifiers & Qt.ShiftModifier) {
+                                root.contextDirectoryId = "";
+                                root.contextDirectoryRow = -1;
+                                root.contextDirectoryHasChildren = false;
+                                root.contextDirectoryExpanded = false;
+                                const position = allFiles.mapToItem(root.contentItem, 0, allFiles.height);
+                                directoryMenu.popup(position.x, position.y);
+                                event.accepted = true;
                             }
                         }
                     }
@@ -216,6 +503,22 @@ ApplicationWindow {
                         }
                         Keys.onReturnPressed: activateCurrentDirectory()
                         Keys.onEnterPressed: activateCurrentDirectory()
+                        Keys.onPressed: function (event) {
+                            if (event.key === Qt.Key_Menu || event.key === Qt.Key_F10 && event.modifiers & Qt.ShiftModifier) {
+                                const row = directoryTree.currentRow;
+                                const index = directoryTree.index(row, 0);
+                                if (row < 0 || !reader.ready || reader.busy)
+                                    return;
+                                root.contextDirectoryId = reader.directories.data(index, Qt.UserRole);
+                                root.contextDirectoryRow = row;
+                                root.contextDirectoryHasChildren = reader.directories.rowCount(index) > 0;
+                                root.contextDirectoryExpanded = directoryTree.isExpanded(row);
+                                const item = directoryTree.itemAtCell(Qt.point(0, row));
+                                const position = (item || directoryTree).mapToItem(root.contentItem, 0, item ? item.height : 0);
+                                directoryMenu.popup(position.x, position.y);
+                                event.accepted = true;
+                            }
+                        }
                         enabled: reader.ready && !reader.busy
                         columnWidthProvider: function (column) {
                             return Math.max(width, reader.navigationWidth * Math.max(1, Theme.fontScale));
@@ -241,18 +544,58 @@ ApplicationWindow {
                             required property string nodeId
                             required property int entryCount
                             required property string fullPath
+                            required property var continuationFlags
+                            required property bool lastSibling
+                            readonly property bool hiddenCurrentBranch: reader.directoryId !== nodeId && !expanded && reader.directoryAncestors(reader.directoryId).includes(nodeId)
                             objectName: "directory-" + nodeId
-                            implicitHeight: Math.ceil(Math.max(40, Theme.bodySize * 1.6 + 16))
+                            implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))
                             implicitWidth: directoryTree.width
-                            indentation: 16
+                            indentation: Theme.treeDepthIndent
                             leftMargin: 0
+                            leftPadding: Theme.treeContentLeftInset + depth * Theme.treeDepthIndent + Theme.treeDisclosureHitWidth * Theme.fontScale
                             topPadding: 0
                             bottomPadding: 0
                             rightPadding: 8
                             palette.windowText: Theme.textSecondary
+                            indicator: ToolButton {
+                                id: directoryDisclosure
+                                objectName: "directoryDisclosure-" + directoryNode.nodeId
+                                x: Theme.treeContentLeftInset + directoryNode.depth * Theme.treeDepthIndent
+                                y: (directoryNode.height - height) / 2
+                                width: Theme.treeDisclosureHitWidth * Theme.fontScale
+                                height: Theme.treeDisclosureHitMinHeight * Theme.fontScale
+                                padding: (Theme.treeDisclosureHitWidth - Theme.treeDisclosureGlyphCanvas) / 2 * Theme.fontScale
+                                visible: directoryNode.hasChildren
+                                Accessible.name: directoryNode.expanded ? qsTr("收起目录") : qsTr("展开目录")
+                                contentItem: Image {
+                                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (directoryNode.expanded ? "chevron-down.png" : "chevron-right.png")
+                                    fillMode: Image.PreserveAspectFit
+                                }
+                                background: Rectangle {
+                                    radius: 4
+                                    color: directoryDisclosure.down ? Theme.controlPressed : directoryDisclosure.hovered ? Theme.controlHover : "transparent"
+                                }
+                                onClicked: {
+                                    const index = directoryTree.index(directoryNode.row, 0);
+                                    directoryTree.toggleExpanded(directoryNode.row);
+                                    directoryTree.selectionModel.setCurrentIndex(index, ItemSelectionModel.NoUpdate);
+                                    directoryTree.forceActiveFocus(Qt.MouseFocusReason);
+                                }
+                            }
                             onClicked: reader.navigateDirectory(nodeId)
                             Keys.onReturnPressed: reader.navigateDirectory(nodeId)
                             Keys.onEnterPressed: reader.navigateDirectory(nodeId)
+                            TapHandler {
+                                acceptedButtons: Qt.RightButton
+                                onTapped: function (eventPoint) {
+                                    root.contextDirectoryId = directoryNode.nodeId;
+                                    root.contextDirectoryRow = directoryNode.row;
+                                    root.contextDirectoryHasChildren = directoryNode.hasChildren;
+                                    root.contextDirectoryExpanded = directoryNode.expanded;
+                                    const position = directoryNode.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
+                                    directoryMenu.popup(position.x, position.y);
+                                }
+                            }
                             Accessible.name: nodeName + qsTr("，%1 条记录").arg(entryCount)
                             ToolTip {
                                 visible: directoryNode.hovered
@@ -274,27 +617,82 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: Theme.controlRadius
-                                color: reader.directoryId === directoryNode.nodeId ? Theme.selection : directoryNode.hovered ? Theme.canvas : "transparent"
+                                color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : "transparent"
                                 border.width: directoryNode.activeFocus || (directoryTree.activeFocus && directoryNode.current) ? 2 : 0
                                 border.color: Theme.accent
+                                Rectangle {
+                                    visible: reader.directoryId === directoryNode.nodeId
+                                    width: 3
+                                    height: parent.height - 6
+                                    y: 3
+                                    radius: 2
+                                    color: Theme.accent
+                                }
+                                Repeater {
+                                    model: directoryNode.continuationFlags
+                                    Rectangle {
+                                        required property bool modelData
+                                        required property int index
+                                        visible: modelData
+                                        x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + index * Theme.treeDepthIndent
+                                        width: 1
+                                        height: directoryNode.height
+                                        color: Theme.treeGuideColor
+                                    }
+                                }
+                                Rectangle {
+                                    visible: directoryNode.depth > 0
+                                    x: Theme.treeContentLeftInset + Theme.treeDisclosureHitWidth / 2 + (directoryNode.depth - 1) * Theme.treeDepthIndent
+                                    width: 1
+                                    height: directoryNode.lastSibling ? directoryNode.height / 2 : directoryNode.height
+                                    color: Theme.treeGuideColor
+                                    Rectangle {
+                                        y: directoryNode.lastSibling ? parent.height : directoryNode.height / 2
+                                        width: 10
+                                        height: 1
+                                        color: Theme.treeGuideColor
+                                    }
+                                }
                             }
                             contentItem: RowLayout {
                                 spacing: 8
                                 Image {
+                                    objectName: "directoryFolder-" + directoryNode.nodeId
                                     source: root.fileIcon("", true)
-                                    Layout.preferredWidth: root.entryIconSize
-                                    Layout.preferredHeight: root.entryIconSize
+                                    Layout.preferredWidth: Theme.treeFolderCanvas * Theme.fontScale
+                                    Layout.preferredHeight: Theme.treeFolderCanvas * Theme.fontScale
                                     fillMode: Image.PreserveAspectFit
                                 }
                                 Text {
                                     Layout.fillWidth: true
+                                    Layout.rightMargin: countOverlay.width
                                     text: directoryNode.nodeName
                                     textFormat: Text.PlainText
                                     elide: Text.ElideRight
                                     color: Theme.text
                                     font.pixelSize: Theme.bodySize
                                 }
+                            }
+                            Rectangle {
+                                id: countOverlay
+                                x: Math.max(0, Math.min(directoryNode.width - width, directoryTree.contentX + directoryTree.width - width))
+                                width: Math.max(32 * Theme.fontScale, countText.implicitWidth + 12) + (directoryNode.hiddenCurrentBranch ? 24 : 0)
+                                height: directoryNode.height
+                                color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : Theme.treeSurfaceColor
+                                Image {
+                                    objectName: "directoryBranchMarker-" + directoryNode.nodeId
+                                    anchors.left: parent.left
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 24
+                                    height: 24
+                                    visible: directoryNode.hiddenCurrentBranch
+                                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "tree-active-branch.png"
+                                }
                                 Text {
+                                    id: countText
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 8
+                                    anchors.verticalCenter: parent.verticalCenter
                                     text: directoryNode.entryCount
                                     color: Theme.textSecondary
                                     font.pixelSize: Theme.secondarySize
@@ -324,32 +722,54 @@ ApplicationWindow {
                 PaneHeader {
                     objectName: "filePaneHeader"
                     Layout.fillWidth: true
-                    Text {
-                        objectName: "filePaneTitle"
+                    Breadcrumb {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        text: reader.title.length ? reader.title + "  /  " + (reader.location.length ? reader.location : qsTr("全部文件")) : qsTr("打开 ZIP，先浏览内容")
-                        textFormat: Text.PlainText
-                        font.pixelSize: Theme.bodySize
-                        color: Theme.text
-                        elide: Text.ElideMiddle
-                        verticalAlignment: Text.AlignVCenter
+                        available: reader.ready && !reader.busy
+                        entries: reader.title.length ? [
+                            {
+                                id: "",
+                                label: reader.title,
+                                current: false
+                            },
+                            ...(reader.breadcrumbs.length ? reader.breadcrumbs : [
+                                    {
+                                        id: "",
+                                        label: qsTr("全部文件"),
+                                        current: true
+                                    }
+                                ])] : [
+                            {
+                                id: "",
+                                label: qsTr("打开 ZIP，先浏览内容"),
+                                current: true
+                            }
+                        ]
+                        onActivated: function (nodeId) {
+                            if (nodeId.length)
+                                reader.navigateDirectory(nodeId);
+                            else
+                                reader.showAll();
+                        }
+                    }
+                    ArchiveAction {
+                        objectName: "browserViewMenuButton"
+                        asset: "view-list"
+                        Accessible.name: qsTr("视图")
+                        onClicked: viewMenu.popup()
+                    }
+                    ArchiveAction {
+                        objectName: "browserSortMenuButton"
+                        text: qsTr("排序")
+                        enabled: reader.ready && !reader.busy
+                        onClicked: sortMenu.popup()
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"
                         text: qsTr("详情")
                         Accessible.name: root.inspectorVisible ? qsTr("隐藏条目详情") : qsTr("显示条目详情")
                         explanation: Accessible.name
-                        onClicked: {
-                            if (root.width < Theme.inspectorCollapseWidth) {
-                                inspectorWindow.show();
-                                inspectorWindow.raise();
-                                inspectorWindow.requestActivate();
-                            } else {
-                                inspectorWindow.close();
-                                root.inspectorRequested = !root.inspectorVisible;
-                            }
-                        }
+                        onClicked: root.toggleInspector()
                     }
                 }
                 Rectangle {
@@ -387,6 +807,14 @@ ApplicationWindow {
                                     enabled: columnHeader.index < 4 && reader.ready && !reader.busy
                                     onTapped: reader.sortByColumn(columnHeader.index)
                                 }
+                                TapHandler {
+                                    acceptedButtons: Qt.RightButton
+                                    enabled: reader.ready && !reader.busy
+                                    onTapped: function (eventPoint) {
+                                        const position = columnHeader.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
+                                        sortMenu.popup(position.x, position.y);
+                                    }
+                                }
                                 Rectangle {
                                     anchors.fill: parent
                                     color: "transparent"
@@ -408,8 +836,17 @@ ApplicationWindow {
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        onClicked: function (mouse) {
+                            const point = mapToItem(root.contentItem, mouse.x, mouse.y);
+                            emptyMenu.popup(point.x, point.y);
+                        }
+                    }
                     TableView {
                         id: table
+                        visible: root.viewMode === "list"
                         anchors.fill: parent
                         clip: true
                         model: reader.entries
@@ -441,6 +878,8 @@ ApplicationWindow {
                             required property int column
                             required property bool isDirectory
                             required property bool chosen
+                            required property string entryId
+                            required property bool canNavigate
                             objectName: "entry-" + row + "-" + column
                             implicitWidth: 100
                             implicitHeight: table.scaledRowHeight
@@ -465,10 +904,31 @@ ApplicationWindow {
                             HoverHandler {
                                 id: hover
                             }
-                            TapHandler {
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.busy
-                                onSingleTapped: reader.selectRow(cell.row)
-                                onDoubleTapped: reader.enterDirectory(cell.row)
+                                onClicked: function (mouse) {
+                                    if (mouse.button === Qt.RightButton)
+                                        root.entryMenuAt(cell, cell.row, cell.entryId, cell.isDirectory, cell.canNavigate, mouse.x, mouse.y);
+                                    else {
+                                        root.selectWithModifiers(cell.row, mouse.modifiers);
+                                        cell.forceActiveFocus(Qt.MouseFocusReason);
+                                    }
+                                }
+                                onDoubleClicked: reader.enterDirectory(cell.row)
+                            }
+                            Keys.onPressed: function (event) {
+                                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                                    root.entryMenuAt(cell, cell.row, cell.entryId, cell.isDirectory, cell.canNavigate, 0, cell.height);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    reader.enterDirectory(cell.row);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Space) {
+                                    reader.selectRow(cell.row);
+                                    event.accepted = true;
+                                }
                             }
                             Rectangle {
                                 anchors.bottom: parent.bottom
@@ -526,6 +986,93 @@ ApplicationWindow {
                                 elide: Text.ElideRight
                                 font.pixelSize: Theme.tableSize
                                 color: Theme.text
+                            }
+                        }
+                    }
+                    GridView {
+                        id: grid
+                        objectName: "archiveGrid"
+                        anchors.fill: parent
+                        visible: root.viewMode === "grid"
+                        model: root.viewMode === "grid" ? reader.entries : null
+                        clip: true
+                        cellWidth: Math.max(150, Theme.bodySize * 10 + 16)
+                        cellHeight: Math.max(146, Theme.bodySize * 3 + 104)
+                        ScrollBar.vertical: ScrollBar {}
+                        delegate: Rectangle {
+                            id: gridEntry
+                            required property int index
+                            required property string display
+                            required property bool isDirectory
+                            required property bool chosen
+                            required property string entryId
+                            required property bool canNavigate
+                            objectName: "grid-entry-" + index
+                            width: grid.cellWidth - 12
+                            height: grid.cellHeight - 12
+                            radius: Theme.controlRadius
+                            color: gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
+                            border.color: gridEntry.activeFocus ? Theme.accent : Theme.border
+                            HoverHandler {
+                                id: gridHover
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                enabled: reader.runtimeAvailable && !reader.busy
+                                onClicked: function (mouse) {
+                                    if (mouse.button === Qt.RightButton)
+                                        root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId, gridEntry.isDirectory, gridEntry.canNavigate, mouse.x, mouse.y);
+                                    else {
+                                        root.selectWithModifiers(gridEntry.index, mouse.modifiers);
+                                        gridEntry.forceActiveFocus(Qt.MouseFocusReason);
+                                    }
+                                }
+                                onDoubleClicked: reader.enterDirectory(gridEntry.index)
+                            }
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.margins: 12
+                                spacing: 8
+                                Image {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.preferredWidth: 48
+                                    Layout.preferredHeight: 48
+                                    source: root.fileIcon(gridEntry.display, gridEntry.isDirectory)
+                                    fillMode: Image.PreserveAspectFit
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: gridEntry.display
+                                    textFormat: Text.PlainText
+                                    horizontalAlignment: Text.AlignHCenter
+                                    font.pixelSize: Theme.bodySize
+                                    color: Theme.text
+                                    elide: Text.ElideRight
+                                }
+                            }
+                            Keys.onPressed: function (event) {
+                                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                                    root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId, gridEntry.isDirectory, gridEntry.canNavigate, 0, gridEntry.height);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    reader.enterDirectory(gridEntry.index);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Space) {
+                                    reader.selectRow(gridEntry.index);
+                                    event.accepted = true;
+                                } else if ([Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down].includes(event.key)) {
+                                    const columns = Math.max(1, Math.floor(grid.width / grid.cellWidth));
+                                    const delta = event.key === Qt.Key_Left ? -1 : event.key === Qt.Key_Right ? 1 : event.key === Qt.Key_Up ? -columns : columns;
+                                    grid.currentIndex = Math.max(0, Math.min(grid.count - 1, gridEntry.index + delta));
+                                    if (grid.currentItem)
+                                        grid.currentItem.forceActiveFocus(Qt.TabFocusReason);
+                                    event.accepted = true;
+                                }
+                            }
+                            CommandTooltip {
+                                requested: gridHover.hovered
+                                text: gridEntry.display
                             }
                         }
                     }

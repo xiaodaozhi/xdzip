@@ -1,0 +1,419 @@
+/* Shared state treatment. Closed controls keep the calibrated main artboard. */
+.ui-menu {
+    position: fixed;
+    z-index: 10000;
+    width: var(--ui-menu-width);
+    min-width: 0;
+    padding: var(--ui-menu-padding);
+    border: 1px solid var(--ui-menu-border);
+    border-radius: var(--ui-menu-radius);
+    background: var(--ui-menu-surface);
+    color: var(--ui-menu-text);
+    box-shadow:
+        0 10px 30px var(--ui-menu-shadow),
+        0 2px 8px var(--ui-menu-shadow);
+    font: var(--ui-menu-label-size) / 1.4 var(--font);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.ui-menu-item {
+    display: grid;
+    grid-template-columns: var(--ui-menu-icon-size) minmax(0, 1fr) auto var(
+            --ui-menu-icon-size
+        );
+    gap: var(--ui-menu-label-inset);
+    width: 100%;
+    min-height: var(--ui-menu-row-height);
+    padding: 4px var(--ui-menu-label-inset);
+    border: 0;
+    border-radius: calc(var(--ui-menu-radius) * 0.6);
+    color: var(--ui-menu-text);
+    text-align: left;
+    font: inherit;
+    align-items: center;
+    background: transparent;
+    cursor: default;
+    outline: 0;
+}
+.ui-menu-item:focus {
+    background: var(--ui-menu-hover);
+}
+.ui-menu-item:active:not([aria-disabled="true"]) {
+    background: var(--ui-control-pressed);
+}
+.ui-menu-item[aria-disabled="true"] {
+    color: var(--ui-menu-disabled);
+    background: transparent;
+}
+.ui-menu-danger:not([aria-disabled="true"]) {
+    color: var(--ui-menu-danger);
+}
+.ui-menu-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ui-menu-reason {
+    display: block;
+    margin-top: 2px;
+    color: var(--ui-menu-secondary);
+    font-size: var(--ui-menu-shortcut-size);
+}
+.ui-menu-symbol,
+.ui-menu-arrow {
+    display: grid;
+    place-items: center;
+}
+.ui-menu-symbol svg,
+.ui-menu-arrow svg {
+    width: var(--ui-menu-icon-size);
+    height: var(--ui-menu-icon-size);
+}
+.ui-menu-item[aria-disabled="true"] svg {
+    opacity: 0.45;
+}
+.ui-menu-shortcut {
+    font-size: var(--ui-menu-shortcut-size);
+    color: var(--ui-menu-secondary);
+    white-space: nowrap;
+}
+.ui-menu-separator {
+    height: 1px;
+    background: var(--ui-menu-border);
+    margin: var(--ui-menu-padding) var(--ui-menu-label-inset);
+}
+.ui-tooltip {
+    position: fixed;
+    z-index: 11000;
+    max-width: var(--ui-tooltip-max-width);
+    padding: var(--ui-tooltip-padding);
+    border-radius: calc(var(--ui-menu-radius) * 0.65);
+    background: var(--ui-tooltip-surface);
+    color: var(--ui-tooltip-text);
+    font: var(--ui-menu-shortcut-size) / 1.5 var(--font);
+    box-shadow: 0 4px 14px var(--ui-menu-shadow);
+    pointer-events: none;
+    white-space: pre-wrap;
+}
+@media (hover: hover) {
+    .button:not(.primary):not(.danger):hover:not(:disabled),
+    .icon-button:hover:not(:disabled),
+    .header-icon:hover:not(:disabled),
+    .tab-close:hover:not(:disabled) {
+        background: var(--ui-control-hover);
+    }
+}
+.button:not(.primary):not(.danger):active:not(:disabled),
+.icon-button:active:not(:disabled),
+.header-icon:active:not(:disabled),
+.tab-close:active:not(:disabled) {
+    background: var(--ui-control-pressed);
+}
+.button.primary:active:not(:disabled),
+#extract-menu-button:active:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 82%, black);
+}
+.button.primary:disabled {
+    background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+    color: var(--secondary);
+    opacity: 1;
+}
+.button:focus-visible,
+.icon-button:focus-visible,
+.header-icon:focus-visible,
+.tab-close:focus-visible,
+.archive-tab:focus-visible {
+    outline: var(--ui-focus-width) solid var(--accent);
+    outline-offset: -3px;
+}
+.archive-tab {
+    cursor: default;
+}
+#search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 5px;
+}
+#search-clear[hidden] {
+    display: none;
+}
+#search-clear svg {
+    width: 18px;
+    height: 18px;
+}
+.search-field:has(#search-clear:not([hidden])) input {
+    padding-right: 48px;
+}
+.archive-tab.inactive:hover {
+    background: var(--ui-control-hover);
+}
+.archive-tab.inactive:active {
+    background: var(--ui-control-pressed);
+}
+.archive-tabs {
+    min-width: 0;
+}
+#sort-name,
+.sort-header {
+    color: inherit;
+    font: inherit;
+    border: 0;
+    padding: 0;
+    min-height: 26px;
+}
+.sort-header {
+    display: block;
+    width: 100%;
+    text-align: inherit;
+}
+.grid-entries {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    padding: 18px;
+    gap: 12px;
+}
+.grid-entry {
+    min-width: 0;
+    min-height: 160px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--ui-menu-radius);
+    color: var(--text);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+}
+.grid-entry.selected {
+    background: var(--selection);
+    border-color: var(--accent);
+}
+.grid-entry:hover {
+    background: var(--ui-control-hover);
+}
+.grid-entry:focus-visible {
+    outline: var(--ui-focus-width) solid var(--accent);
+    outline-offset: -3px;
+}
+.grid-entry .entry-icon,
+.grid-entry .entry-icon svg,
+.grid-entry .entry-photo {
+    width: 64px;
+    height: 64px;
+}
+.grid-entry .entry-photo {
+    object-fit: cover;
+    border-radius: 6px;
+}
+.grid-entry .grid-entry-name {
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.grid-entry small {
+    font-size: 14px;
+    color: var(--secondary);
+}
+.grid-entry input {
+    align-self: flex-start;
+}
+.view-grid-active .table-scroll {
+    overflow: auto;
+}
+.view-grid-active table {
+    display: none;
+}
+#tree {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+.tree-scroll {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    flex: 1;
+    margin-top: calc(4px * var(--ui-source-factor));
+}
+.tree-hierarchy {
+    width: max-content;
+    min-width: 100%;
+}
+.tree-row {
+    --tree-depth: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: var(--tree-row-min-height);
+    min-height: var(--tree-row-min-height);
+    min-width: 100%;
+    padding-left: calc(
+        (12px + var(--tree-depth) * 16px) * var(--ui-source-factor)
+    );
+    border-radius: var(--tree-selection-radius);
+    gap: var(--tree-icon-label-gap);
+    font-size: var(--tree-body-font-size);
+    line-height: 1.6;
+    cursor: default;
+    color: var(--text);
+}
+.tree-row:hover {
+    background: var(--tree-hover-color);
+}
+.tree-row.active {
+    background: var(--tree-selection-color);
+}
+.tree-row.active::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    width: calc(3px * var(--ui-source-factor));
+    background: var(--accent);
+    border-radius: 3px;
+}
+.tree-row:focus-visible {
+    outline: var(--ui-focus-width) solid var(--accent);
+    outline-offset: -2px;
+}
+.tree-row .tree-label {
+    min-width: 0;
+    flex: 1;
+    max-width: calc(160px * var(--ui-source-factor));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tree-root {
+    width: 100%;
+    flex-shrink: 0;
+}
+.tree-root .tree-label {
+    font-weight: 600;
+}
+.tree-folder,
+.tree-root-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: var(--tree-folder-canvas);
+    height: var(--tree-folder-canvas);
+}
+.tree-folder svg,
+.tree-root-icon svg {
+    width: 100%;
+    height: 100%;
+}
+.tree-disclosure {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: var(--tree-disclosure-hit-width);
+    height: var(--tree-disclosure-hit-min-height);
+    padding: 0;
+    margin-right: calc(-8px * var(--ui-source-factor));
+    border-radius: 4px;
+}
+.tree-disclosure svg {
+    width: var(--tree-disclosure-glyph-canvas);
+    height: var(--tree-disclosure-glyph-canvas);
+}
+.tree-disclosure:disabled {
+    opacity: 1;
+    cursor: default;
+}
+.tree-count {
+    border-radius: 0 var(--tree-selection-radius) var(--tree-selection-radius) 0;
+    position: sticky;
+    right: 0;
+    min-width: calc(56px * var(--ui-source-factor));
+    height: 100%;
+    margin-left: auto;
+    padding-right: calc(8px * var(--ui-source-factor));
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: calc(4px * var(--ui-source-factor));
+    background: var(--tree-surface-color);
+    font-size: var(--tree-count-font-size);
+    color: var(--secondary);
+    font-variant-numeric: tabular-nums;
+}
+.tree-row:hover .tree-count {
+    background: var(--tree-hover-color);
+}
+.tree-row.active .tree-count {
+    background: var(--tree-selection-color);
+}
+.tree-branch-marker {
+    display: grid;
+    width: var(--tree-disclosure-hit-width);
+    height: var(--tree-disclosure-hit-min-height);
+}
+.tree-branch-marker svg {
+    width: 100%;
+    height: 100%;
+}
+.tree-guide-parent,
+.tree-guide-continue {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    left: calc((24px + var(--guide-depth) * 16px) * var(--ui-source-factor));
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+}
+.tree-guide-parent::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: calc(10px * var(--ui-source-factor));
+    height: 1px;
+    background: var(--border);
+}
+.tree-guide-parent.tree-guide-last {
+    bottom: 50%;
+}
+.tree-guide-parent.tree-guide-last::after {
+    top: 100%;
+}
+.tree-notice {
+    font-size: var(--tree-count-font-size);
+    color: var(--secondary);
+    padding: 10px;
+}
+.archive-test-results {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+.archive-test-results progress {
+    width: 100%;
+    accent-color: var(--accent);
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-menu,
+    .ui-menu-item,
+    .button,
+    .icon-button,
+    .header-icon {
+        transition: none !important;
+    }
+}

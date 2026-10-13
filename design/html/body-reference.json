@@ -32,12 +32,6 @@
       49,
       28
     ],
-    "#tree>.tree-item:first-child": [
-      31,
-      336,
-      270,
-      53
-    ],
     ".storage-bar": [
       41,
       879,
@@ -127,6 +121,12 @@
       915,
       1548,
       55
+    ],
+    "#tree>.tree-root": [
+      31,
+      336,
+      270,
+      53
     ]
   },
   "dom_center_targets": {
@@ -151,18 +151,24 @@
         47,
         40
       ],
-      "design_revision": "folder-optical-balance",
+      "design_revision": "directory-tree-B",
       "target_ink_rect": [
-        51,
-        343.642858,
-        44,
-        37.714284
+        46.5203125,
+        350.4453125,
+        22.171875,
+        19.484375
       ],
       "authored_display_frame": [
-        49,
-        338.5,
-        48,
-        48
+        45.5125,
+        348.09375,
+        24.1875,
+        24.1875
+      ],
+      "target_region": [
+        43,
+        346,
+        29,
+        29
       ]
     },
     {
@@ -180,18 +186,24 @@
         44,
         40
       ],
-      "design_revision": "folder-optical-balance",
+      "design_revision": "directory-tree-B",
       "target_ink_rect": [
-        76,
-        403.392858,
-        44,
-        37.714284
+        75.5453125,
+        403.6578125,
+        22.171875,
+        19.484375
       ],
       "authored_display_frame": [
-        74,
-        398.25,
-        48,
-        48
+        74.5375,
+        401.30625,
+        24.1875,
+        24.1875
+      ],
+      "target_region": [
+        72,
+        399,
+        29,
+        29
       ]
     },
     {
@@ -209,18 +221,24 @@
         44,
         40
       ],
-      "design_revision": "folder-optical-balance",
+      "design_revision": "directory-tree-B",
       "target_ink_rect": [
-        76,
-        464.892858,
-        44,
-        37.714284
+        75.5453125,
+        452.0328125,
+        22.171875,
+        19.484375
       ],
       "authored_display_frame": [
-        74,
-        459.75,
-        48,
-        48
+        74.5375,
+        449.68125,
+        24.1875,
+        24.1875
+      ],
+      "target_region": [
+        72,
+        447,
+        29,
+        29
       ]
     },
     {
@@ -238,18 +256,24 @@
         44,
         40
       ],
-      "design_revision": "folder-optical-balance",
+      "design_revision": "directory-tree-B",
       "target_ink_rect": [
-        76,
-        526.392858,
-        44,
-        37.714284
+        75.5453125,
+        500.4078125,
+        22.171875,
+        19.484375
       ],
       "authored_display_frame": [
-        74,
-        521.25,
-        48,
-        48
+        74.5375,
+        498.05625,
+        24.1875,
+        24.1875
+      ],
+      "target_region": [
+        72,
+        496,
+        29,
+        29
       ]
     },
     {
@@ -259,6 +283,25 @@
         410,
         18,
         25
+      ],
+      "design_revision": "directory-tree-B",
+      "authored_display_frame": [
+        49.140625,
+        402.515625,
+        21.76875,
+        21.76875
+      ],
+      "target_region": [
+        47,
+        400,
+        26,
+        26
+      ],
+      "target_ink_rect": [
+        56.396875,
+        407.05078125,
+        7.25625,
+        12.6984375
       ]
     },
     {
@@ -348,9 +391,19 @@
         35,
         41
       ],
-      "previous_region": [1301, 826, 35, 36],
+      "previous_region": [
+        1301,
+        826,
+        35,
+        36
+      ],
       "design_revision": "preview-table-top-alignment",
-      "target_ink_rect": [1306, 827, 23, 23]
+      "target_ink_rect": [
+        1306,
+        827,
+        23,
+        23
+      ]
     },
     {
       "name": "读取完成圆勾",
@@ -654,7 +707,10 @@
       ],
       "tolerance": 6,
       "design_revision": "preview-table-top-alignment",
-      "target_point": [1300, 621]
+      "target_point": [
+        1300,
+        621
+      ]
     },
     {
       "name": "预览按钮上边框",
@@ -664,7 +720,10 @@
       ],
       "tolerance": 3,
       "design_revision": "preview-table-top-alignment",
-      "target_point": [1300, 810]
+      "target_point": [
+        1300,
+        810
+      ]
     },
     {
       "name": "状态栏底色",
@@ -2385,7 +2444,10 @@
       "previous_image_top": 241,
       "image_top": 236,
       "content_translation_y": -5,
-      "image_size": [351, 277]
+      "image_size": [
+        351,
+        277
+      ]
     },
     "pane-header-alignment": {
       "reason": "预览标题栏与面包屑同高、同字号、同垂直中心；不替换原稿，旧关闭图标位置保留为独立对照。",
@@ -2395,16 +2457,42 @@
       "title_optical_offset_y": -2,
       "close_center_y": 201.5,
       "preview_image_top": 241
+    },
+    "directory-tree-B": {
+      "reason": "目录树 B 已确认组件替换旧主稿目录行；40/20/18/14/12 逻辑参数来自 docs/visual/directory-tree.json，原始主稿与比较保留。",
+      "source": "docs/visual/directory-tree.json",
+      "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
+      "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
     }
   },
   "dom_rect_revisions": {
     ".photo-preview": {
       "design_revision": "preview-table-top-alignment",
-      "target": [1198, 236, 351, 277]
+      "target": [
+        1198,
+        236,
+        351,
+        277
+      ]
     },
     "#inspector-extract": {
       "design_revision": "preview-table-top-alignment",
-      "target": [1201, 810, 347, 57]
+      "target": [
+        1201,
+        810,
+        347,
+        57
+      ]
+    },
+    "#tree>.tree-root": {
+      "design_revision": "directory-tree-B",
+      "original_selector": "#tree>.tree-item:first-child",
+      "target": [
+        31,
+        336,
+        270,
+        48.375
+      ]
     }
   },
   "dom_center_revisions": {

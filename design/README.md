@@ -1,5 +1,7 @@
 # xdzip 设计交付目录
 
+[可操作组件页](html/components.html)与[功能覆盖](../docs/qa/main-window-components.md)提供菜单、按钮状态和主窗口行为复核。
+
 **HTML 界面从 [html/index.html](html/index.html) 打开，完整原稿从 [hifi/index.html](hifi/index.html) 查看，素材统一从 [assets/index.html](assets/index.html) 查看。** 三个入口分别负责实现、视觉依据和共用素材；历史迭代由 Git 保存，不再按交付批次拆目录。
 
 | 目录 | 内容 | 当前用途 |
@@ -18,7 +20,7 @@
 
 原来分散在 `assets` 和 `hifi` 的图标已经合入同一素材库。HTML 载入两种主题的共用 SVG 和三张示例照片，Qt 引用同源透明 PNG；实际资源别名见素材清单。原稿对照切片也完整保留，并与运行图标区分用途。
 
-目录树 B 的多级展开、交互与边界图板已经归档，切图、共享分支圆点与状态图标及[接入规格](../docs/ux/directory-tree.md)同步交付；[专用 HTML](hifi/directory-tree.html)可集中查看。HTML 与 Qt 的目录树改造仍待接入。
+目录树 B 的多级展开、交互与边界图板已经归档，切图、共享分支圆点与状态图标及[接入规格](../docs/ux/directory-tree.md)同步交付；[专用 HTML](hifi/directory-tree.html)可集中查看。HTML 示例与 Qt 只读树已接入核心交互；专用边界提示和骨架资源仍待接入。
 
 ## 图标尺寸
 

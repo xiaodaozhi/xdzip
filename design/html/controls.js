@@ -1,0 +1,413 @@
+"use strict";
+// Reusable input mechanics. Commands and archive state belong to the host.
+// Menus use live DOM controls, never baked screenshots or document-level overlays.
+window.XdzipControls = (() => {
+    const tokens = window.XDZIP_CONTROL_TOKENS;
+    let renderIcon = () => "",
+        active = null,
+        hoverTimer = null;
+    let tooltipTimer = null,
+        tooltip = null,
+        tooltipOwner = null,
+        previousDescription = null,
+        serial = 0;
+    const sourceScale = () =>
+        parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue(
+                "--ui-source-factor",
+            ),
+        ) || 1;
+    const available = (item) => !item.disabled && item.type !== "separator";
+    const focusable = (level) =>
+        [...level.element.querySelectorAll(":scope > .ui-menu-item")].filter(
+            (node) => node.getAttribute("aria-disabled") !== "true",
+        );
+    function scrollSnapshot(trigger) {
+        const snapshot = new Map();
+        for (
+            let node = trigger;
+            node instanceof Element;
+            node = node.parentElement
+        )
+            snapshot.set(node, [node.scrollLeft, node.scrollTop]);
+        const root = document.scrollingElement;
+        if (root) snapshot.set(root, [root.scrollLeft, root.scrollTop]);
+        return snapshot;
+    }
+
+    function restoreOrigin(origin) {
+        const target = typeof origin === "function" ? origin() : origin;
+        if (target?.isConnected) target.focus({ preventScroll: true });
+    }
+    function hideTooltip() {
+        clearTimeout(tooltipTimer);
+        tooltip?.remove();
+        if (tooltipOwner) {
+            if (previousDescription)
+                tooltipOwner.setAttribute(
+                    "aria-describedby",
+                    previousDescription,
+                );
+            else tooltipOwner.removeAttribute("aria-describedby");
+        }
+        previousDescription = null;
+        tooltip = tooltipOwner = null;
+    }
+    function close({ restoreFocus = true } = {}) {
+        if (!active) return;
+        const previous = active;
+        active = null;
+        clearTimeout(hoverTimer);
+        clearTimeout(previous.typeTimer);
+        previous.levels.forEach((level) => level.element.remove());
+        if (previous.trigger?.isConnected)
+            previous.trigger.setAttribute("aria-expanded", "false");
+        if (restoreFocus) restoreOrigin(previous.origin);
+        previous.onClose?.();
+    }
+    function position(element, anchor, point, submenu = false) {
+        const inset = tokens.size.menuViewportInset * sourceScale();
+        const gap = tokens.size.menuGap * sourceScale();
+        element.style.maxHeight = `${Math.max(80, innerHeight - inset * 2)}px`;
+        element.style.maxWidth = `${Math.max(120, innerWidth - inset * 2)}px`;
+        const box = element.getBoundingClientRect();
+        let x = point ? point.x : submenu ? anchor.right + gap : anchor.left;
+        let y = point ? point.y : submenu ? anchor.top : anchor.bottom + gap;
+        if (x + box.width > innerWidth - inset)
+            x = submenu
+                ? anchor.left - box.width - gap
+                : innerWidth - inset - box.width;
+        if (y + box.height > innerHeight - inset)
+            y =
+                point || submenu
+                    ? innerHeight - inset - box.height
+                    : anchor.top - box.height - gap;
+        element.style.left = `${Math.max(inset, x)}px`;
+        element.style.top = `${Math.max(inset, y)}px`;
+    }
+    function truncate(levelIndex) {
+        if (!active) return;
+        active.levels
+            .splice(levelIndex + 1)
+            .forEach((level) => level.element.remove());
+        active.levels[levelIndex].element
+            .querySelectorAll('[aria-haspopup="menu"]')
+            .forEach((node) => node.setAttribute("aria-expanded", "false"));
+    }
+    function submenu(levelIndex, node, item, keyboard) {
+        if (!active || !available(item)) return;
+        truncate(levelIndex);
+        const level = build(
+            item.children,
+            item.label,
+            active.levels[levelIndex].element.parentElement,
+        );
+        level.parentItem = node;
+        active.levels.push(level);
+        node.setAttribute("aria-expanded", "true");
+        position(level.element, node.getBoundingClientRect(), null, true);
+        if (keyboard) focusable(level)[0]?.focus();
+    }
+    function activate(levelIndex, node, item) {
+        if (!active || !available(item)) return;
+        if (item.children) return submenu(levelIndex, node, item, true);
+        const callback = item.run;
+        close();
+        callback?.(); // The host rechecks capability and current archive identity.
+    }
+    function build(items, label, owner) {
+        const element = document.createElement("div");
+        element.className = "ui-menu";
+        element.id = `xdzip-menu-${++serial}`;
+        element.setAttribute("role", "menu");
+        element.setAttribute("aria-label", label);
+        const level = { element, items };
+        items.forEach((item) => {
+            if (item.type === "separator") {
+                const separator = document.createElement("div");
+                separator.className = "ui-menu-separator";
+                separator.setAttribute("role", "separator");
+                element.append(separator);
+                return;
+            }
+            const node = document.createElement("button");
+            node.type = "button";
+            node.className = `ui-menu-item${item.danger ? " ui-menu-danger" : ""}`;
+            node.tabIndex = -1;
+            node.dataset.command = item.id || "";
+            Object.entries(item.data || {}).forEach(([key, value]) => {
+                node.dataset[key] = String(value);
+            });
+            node.setAttribute(
+                "role",
+                item.type === "radio"
+                    ? "menuitemradio"
+                    : item.type === "checkbox"
+                      ? "menuitemcheckbox"
+                      : "menuitem",
+            );
+            node.setAttribute("aria-disabled", String(Boolean(item.disabled)));
+            if (item.type === "radio" || item.type === "checkbox")
+                node.setAttribute(
+                    "aria-checked",
+                    String(Boolean(item.checked)),
+                );
+            if (item.children) {
+                node.setAttribute("aria-haspopup", "menu");
+                node.setAttribute("aria-expanded", "false");
+            }
+            if (item.reason) {
+                node.setAttribute("aria-description", item.reason);
+                node.dataset.tooltip = item.reason;
+            }
+            const symbol = document.createElement("span");
+            symbol.className = "ui-menu-symbol";
+            symbol.innerHTML = item.checked
+                ? renderIcon("check")
+                : item.icon
+                  ? renderIcon(item.icon)
+                  : "";
+            const text = document.createElement("span");
+            text.className = "ui-menu-label";
+            text.textContent = item.label;
+            if (item.disabled && item.reason) {
+                const reason = document.createElement("small");
+                reason.className = "ui-menu-reason";
+                reason.textContent = item.reason;
+                text.append(reason);
+            }
+            const shortcut = document.createElement("span");
+            shortcut.className = "ui-menu-shortcut";
+            shortcut.textContent = item.shortcut || "";
+            shortcut.setAttribute("aria-hidden", "true");
+            const arrow = document.createElement("span");
+            arrow.className = "ui-menu-arrow";
+            arrow.innerHTML = item.children ? renderIcon("chevron-right") : "";
+            node.append(symbol, text, shortcut, arrow);
+            node.addEventListener("pointerenter", () => {
+                clearTimeout(hoverTimer);
+                if (!active) return;
+                const index = active.levels.indexOf(level);
+                if (index < 0) return;
+                if (available(item)) node.focus({ preventScroll: true });
+                hoverTimer = setTimeout(
+                    () =>
+                        item.children
+                            ? submenu(index, node, item, false)
+                            : truncate(index),
+                    tokens.motion.submenuDelayMs,
+                );
+            });
+            node.addEventListener("click", (event) => {
+                event.stopPropagation();
+                if (active) activate(active.levels.indexOf(level), node, item);
+            });
+            element.append(node);
+        });
+        element.addEventListener("pointerenter", () =>
+            clearTimeout(hoverTimer),
+        );
+        element.addEventListener("keydown", (event) => {
+            if (!active || event.isComposing) return;
+            const index = active.levels.indexOf(level);
+            const nodes = focusable(level),
+                current = nodes.indexOf(document.activeElement);
+            const selected = level.items.find(
+                (item) =>
+                    item.id &&
+                    item.id === document.activeElement?.dataset.command,
+            );
+            if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+                event.preventDefault();
+                const next =
+                    event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? nodes.length - 1
+                          : (current +
+                                (event.key === "ArrowDown" ? 1 : -1) +
+                                nodes.length) %
+                            nodes.length;
+                nodes[next]?.focus();
+            } else if (event.key === "ArrowRight" && selected?.children) {
+                event.preventDefault();
+                submenu(index, document.activeElement, selected, true);
+            } else if (event.key === "ArrowLeft" || event.key === "Escape") {
+                event.preventDefault();
+                if (index > 0) {
+                    const parent = level.parentItem;
+                    truncate(index - 1);
+                    parent.focus();
+                } else close();
+            } else if (["Enter", " "].includes(event.key)) {
+                event.preventDefault();
+                if (selected) activate(index, document.activeElement, selected);
+            } else if (event.key === "Tab") {
+                close();
+            } else if (
+                event.key.length === 1 &&
+                !event.ctrlKey &&
+                !event.metaKey &&
+                !event.altKey
+            ) {
+                event.preventDefault();
+                clearTimeout(active.typeTimer);
+                active.typeahead += event.key.toLocaleLowerCase();
+                const sequence = [
+                    ...nodes.slice(current + 1),
+                    ...nodes.slice(0, current + 1),
+                ];
+                sequence
+                    .find((node) =>
+                        node
+                            .querySelector(".ui-menu-label")
+                            .textContent.toLocaleLowerCase()
+                            .startsWith(active.typeahead),
+                    )
+                    ?.focus();
+                active.typeTimer = setTimeout(() => {
+                    if (active) active.typeahead = "";
+                }, tokens.motion.typeaheadResetMs);
+            }
+            // Menu input must not activate global shortcuts or the file row beneath it.
+            event.stopPropagation();
+        });
+        owner.append(element);
+        return level;
+    }
+    function open({
+        trigger,
+        items,
+        label,
+        point,
+        origin = trigger,
+        owner = document.body,
+        id,
+        onClose,
+        suppressTouchRelease = false,
+    }) {
+        if (active?.trigger === trigger && !point) return close();
+        close({ restoreFocus: false });
+        hideTooltip();
+        if (!items.length) return;
+        active = {
+            trigger,
+            origin,
+            levels: [],
+            typeahead: "",
+            onClose,
+            scrollPositions: scrollSnapshot(trigger),
+            touchReleaseUntil: suppressTouchRelease ? Date.now() + 700 : 0,
+        };
+        const level = build(items, label, owner);
+        if (id) level.element.id = id;
+        active.levels.push(level);
+        if (trigger?.isConnected) {
+            trigger.setAttribute("aria-haspopup", "menu");
+            trigger.setAttribute("aria-expanded", "true");
+            trigger.setAttribute("aria-controls", level.element.id);
+        }
+        position(level.element, trigger?.getBoundingClientRect(), point);
+        focusable(level)[0]?.focus({ preventScroll: true });
+    }
+    function queueTooltip(target) {
+        hideTooltip();
+        if (!target?.dataset.tooltip || (active && !target.closest(".ui-menu")))
+            return;
+        tooltipTimer = setTimeout(() => {
+            if (!target.isConnected) return;
+            tooltipOwner = target;
+            previousDescription = target.getAttribute("aria-describedby");
+            tooltip = document.createElement("div");
+            tooltip.className = "ui-tooltip";
+            tooltip.id = `xdzip-tooltip-${++serial}`;
+            tooltip.setAttribute("role", "tooltip");
+            tooltip.textContent = target.dataset.tooltip;
+            (target.closest("dialog[open]") || document.body).append(tooltip);
+            target.setAttribute(
+                "aria-describedby",
+                [previousDescription, tooltip.id].filter(Boolean).join(" "),
+            );
+            position(tooltip, target.getBoundingClientRect());
+            tooltipTimer = setTimeout(
+                hideTooltip,
+                tokens.motion.tooltipDurationMs,
+            );
+        }, tokens.motion.hoverDelayMs);
+    }
+    document.addEventListener(
+        "pointerdown",
+        (event) => {
+            if (
+                active &&
+                !event.target.closest(".ui-menu") &&
+                !active.trigger?.contains(event.target)
+            )
+                close({ restoreFocus: false });
+            hideTooltip();
+        },
+        true,
+    );
+    document.addEventListener(
+        "click",
+        (event) => {
+            if (
+                active?.touchReleaseUntil > Date.now() &&
+                (event.pointerType === "touch" ||
+                    event.sourceCapabilities?.firesTouchEvents)
+            ) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                active.touchReleaseUntil = 0;
+            }
+        },
+        true,
+    );
+    document.addEventListener("pointerover", (event) =>
+        queueTooltip(event.target.closest("[data-tooltip]")),
+    );
+    document.addEventListener("pointerout", (event) => {
+        if (!event.relatedTarget?.closest?.("[data-tooltip]")) hideTooltip();
+    });
+    document.addEventListener("focusin", (event) => {
+        if (!event.target.closest(".ui-menu"))
+            queueTooltip(event.target.closest("[data-tooltip]"));
+    });
+    document.addEventListener("focusout", hideTooltip);
+    document.addEventListener(
+        "scroll",
+        (event) => {
+            if (event.target.closest?.(".ui-menu")) return;
+            const node =
+                event.target === document
+                    ? document.scrollingElement
+                    : event.target;
+            const initial = active?.scrollPositions.get(node);
+            // A scroll dispatched after opening may belong to the preceding click's
+            // scroll-into-view. Close only when its position actually changed.
+            if (
+                !initial ||
+                initial[0] !== node.scrollLeft ||
+                initial[1] !== node.scrollTop
+            )
+                close({ restoreFocus: false });
+            hideTooltip();
+        },
+        true,
+    );
+    window.addEventListener("resize", () => {
+        close({ restoreFocus: false });
+        hideTooltip();
+    });
+    return {
+        open,
+        close,
+        hideTooltip,
+        configure(options) {
+            renderIcon = options.icon;
+        },
+        get isOpen() {
+            return Boolean(active);
+        },
+    };
+})();

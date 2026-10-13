@@ -1,22 +1,43 @@
 "use strict";
 // The reviewer owns artboard navigation; embedded documents keep a fixed canvas.
 // Comparing window identities also works when an offline srcdoc has an opaque origin.
-if (window.parent !== window) document.documentElement.dataset.embeddedCanvas = "true";
+if (window.parent !== window)
+    document.documentElement.dataset.embeddedCanvas = "true";
 // Design-only state machine: all file operations use in-memory fixtures.
 // This prototype never reads archives, writes files, or uploads user content.
 // Icons come from the same reviewed SVG sources as Qt; no second hand-drawn set.
-const assetNames = {folderOpen: "open", file: "file-text", pdf: "file-pdf", image: "image-file", code: "file-code", markdown: "file-markdown", chevronDown: "chevron-down", chevronUp: "chevron-up", chevronRight: "chevron-right", arrow: "arrow-right", layers: "folder"};
+const assetNames = {
+    folderOpen: "open",
+    file: "file-text",
+    pdf: "file-pdf",
+    image: "image-file",
+    code: "file-code",
+    markdown: "file-markdown",
+    chevronDown: "chevron-down",
+    chevronUp: "chevron-up",
+    chevronRight: "chevron-right",
+    arrow: "arrow-right",
+    layers: "folder",
+};
 let iconInstance = 0;
 const icon = (name, cls = "") => {
     const key = assetNames[name] || name;
-    const theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    const theme =
+        document.documentElement.dataset.theme === "dark" ? "dark" : "light";
     const source = window.XDZIP_ASSETS?.icons?.[theme]?.[key];
     // A missing shared asset is a packaging error, not permission to draw a substitute.
     if (!source) throw new Error(`Missing xdzip icon asset: ${theme}/${key}`);
     const prefix = `icon-${++iconInstance}-`;
-    return source.replace(/id="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`).replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`).replace("<svg ", `<svg class="${cls}" data-asset="${key}" aria-hidden="true" `);
+    return source
+        .replace(/id="([^"]+)"/g, (_, id) => `id="${prefix}${id}"`)
+        .replace(/url\(#([^)]+)\)/g, (_, id) => `url(#${prefix}${id})`)
+        .replace(
+            "<svg ",
+            `<svg class="${cls}" data-asset="${key}" aria-hidden="true" `,
+        );
 };
-const photo = (key, cls = "") => `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"} · 设计示例图片">`;
+const photo = (key, cls = "") =>
+    `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"} · 设计示例图片">`;
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
     String(s).replace(
@@ -39,7 +60,7 @@ const bytes = (n) =>
           : n >= 1000
             ? `${Math.round(n / 1000)} KB`
             : `${n} B`;
-const folders = [
+const rootFolders = [
     { id: "photos", name: "01 照片", parent: "", folder: true },
     { id: "documents", name: "02 文档", parent: "", folder: true },
     { id: "maps", name: "03 地图", parent: "", folder: true },
@@ -59,7 +80,7 @@ const roots = [
     type,
     parent: "",
 }));
-const children = folders.flatMap((f, fi) =>
+const children = rootFolders.flatMap((f, fi) =>
     Array.from({ length: [12, 8, 4][fi] }, (_, i) => ({
         id: `${f.id}-${i}`,
         parent: f.id,
@@ -69,7 +90,36 @@ const children = folders.flatMap((f, fi) =>
         type: ["JPEG 图像", "PDF 文档", "GPX 文件"][fi],
     })),
 );
-const entries = [...folders, ...roots, ...children],
+let folders = [
+    ...rootFolders,
+    { id: "ice", name: "冰川湖", parent: "photos", folder: true },
+    { id: "shore", name: "湖岸步道", parent: "ice", folder: true },
+    { id: "shore-sub", name: "沿湖照片", parent: "shore", folder: true },
+    { id: "snow", name: "雪山远景", parent: "ice", folder: true },
+    { id: "sunrise-dir", name: "山间日出", parent: "photos", folder: true },
+    {
+        id: "sunrise-sub",
+        name: "日出照片",
+        parent: "sunrise-dir",
+        folder: true,
+    },
+    { id: "other-photos", name: "其他照片", parent: "photos", folder: true },
+    { id: "docs-sub", name: "旅行资料", parent: "documents", folder: true },
+];
+for (const entry of children) {
+    const number = Number(entry.id.split("-").pop());
+    if (entry.parent === "photos")
+        entry.parent =
+            number < 3
+                ? "shore-sub"
+                : number < 6
+                  ? "snow"
+                  : number < 10
+                    ? "sunrise-sub"
+                    : "other-photos";
+    else if (entry.parent === "documents") entry.parent = "docs-sub";
+}
+let entries = [...folders, ...roots, ...children],
     files = entries.filter((e) => !e.folder),
     byId = new Map(entries.map((e) => [e.id, e]));
 // Demo timestamps follow the approved scene; every entry keeps its own metadata.
@@ -84,19 +134,34 @@ const sceneDates = {
     route: "2026/10/03",
     readme: "2026/10/01",
 };
-for (const entry of entries) entry.modified = sceneDates[entry.id] || "2026/10/08";
-const typeAbbreviations = { jpg: "JPEG", pdf: "PDF", txt: "TXT", gpx: "GPX", md: "MD" };
+for (const entry of entries)
+    entry.modified = sceneDates[entry.id] || "2026/10/08";
+const typeAbbreviations = {
+    jpg: "JPEG",
+    pdf: "PDF",
+    txt: "TXT",
+    gpx: "GPX",
+    md: "MD",
+};
 const imagePropertyOrder = ["尺寸", "原始大小", "压缩后", "修改日期"];
-const displayType = (entry) => entry.folder
-    ? "文件夹"
-    : typeAbbreviations[entry.name.split(".").pop()] || entry.type.replace(" 文件", "");
-const archiveBytes = files.reduce((n, f) => n + f.size, 0),
+const displayType = (entry) =>
+    entry.folder
+        ? "文件夹"
+        : typeAbbreviations[entry.name.split(".").pop()] ||
+          entry.type.replace(" 文件", "");
+let archiveBytes = files.reduce((n, f) => n + f.size, 0),
     compressedBytes = files.reduce((n, f) => n + f.compressed, 0);
 const state = {
     path: "",
     query: "",
     selected: new Set(["lake"]),
     sort: 0,
+    sortKey: "name",
+    view: "list",
+    expanded: new Set(),
+    treeFocus: "",
+    archiveTitle: "北境旅行.zip",
+    activeTab: "travel",
     anchor: null,
     scenario: "normal",
     archiveState: "ready",
@@ -119,7 +184,7 @@ const specs = {
     B02: [
         "搜索与选择",
         "P02 / P03 · AC-02 / AC-03",
-        "搜索覆盖当前归档，忽略当前目录范围；结果显示来源路径。无选择时全部解压始终指整个归档。",
+        "搜索覆盖当前目录及其后代；结果显示来源路径。无选择时全部解压始终指整个归档。",
         "选择解压所选、全部归档或显式的搜索结果范围。清空搜索恢复原目录。",
         "输入法组合期间不提交查询。切换列表清除选择，避免隐藏选择造成范围误解。",
     ],
@@ -183,7 +248,8 @@ function hydrate() {
         .querySelectorAll("[data-icon]")
         .forEach((n) => (n.innerHTML = icon(n.dataset.icon)));
     // The inactive archive has its own reviewed artwork, rather than a CSS recolor.
-    $(".archive-tab.inactive .tab-icon").innerHTML = icon("archive-grey");
+    const inactive = $(".archive-tab.inactive .tab-icon");
+    if (inactive) inactive.innerHTML = icon("archive-grey");
 }
 function toast(text) {
     $("#toast").textContent = text;
@@ -208,27 +274,49 @@ function selectedFiles(ids = state.selected) {
         if (!e) continue;
         if (e.folder)
             files
-                .filter((x) => x.parent === id)
+                .filter((x) => withinDirectory(x, id))
                 .forEach((x) => found.set(x.id, x));
         else found.set(id, e);
     }
     return [...found.values()];
 }
+function withinDirectory(entry, directory) {
+    if (!directory) return true;
+    let parent = entry.parent;
+    while (parent) {
+        if (parent === directory) return true;
+        parent = byId.get(parent)?.parent || "";
+    }
+    return false;
+}
 function visibleEntries() {
     if (state.archiveState !== "ready") return [];
-    return entries
-        .filter((e) =>
-            state.query
-                ? e.name.toLowerCase().includes(state.query.toLowerCase())
-                : e.parent === state.path,
-        )
-        .sort(
-            (a, b) =>
-                Number(b.folder) - Number(a.folder) ||
-                state.sort *
-                    a.name.localeCompare(b.name, "zh-CN", { numeric: true }),
-        );
+    const list = entries.filter((entry) =>
+        state.query
+            ? withinDirectory(entry, state.path) &&
+              entry.name.toLowerCase().includes(state.query.toLowerCase())
+            : entry.parent === state.path,
+    );
+    if (state.sort)
+        list.sort((a, b) => {
+            const grouping = Number(b.folder) - Number(a.folder);
+            if (grouping) return grouping;
+            const key = state.sortKey;
+            const compared =
+                key === "size" || key === "compressed"
+                    ? (a[key] || 0) - (b[key] || 0)
+                    : String(a[key] || "").localeCompare(
+                          String(b[key] || ""),
+                          "zh-CN",
+                          { numeric: true },
+                      );
+            return (
+                compared * state.sort || entries.indexOf(a) - entries.indexOf(b)
+            );
+        });
+    return list;
 }
+
 function fileIcon(e) {
     return e.folder
         ? "folder"
@@ -244,13 +332,12 @@ function fileIcon(e) {
 }
 function choosePath(path) {
     state.path = path;
-    state.query = "";
     state.selected.clear();
     state.anchor = null;
-    $("#search").value = "";
     render();
 }
 function renderTree() {
+    if (window.XdzipMain) return window.XdzipMain.renderTree();
     if (state.archiveState !== "ready") {
         $("#tree").innerHTML =
             `<button class="tree-item active" disabled>${icon("layers")}<span>全部文件</span><small>${state.archiveState === "empty" ? "0" : "—"}</small></button>`;
@@ -271,14 +358,17 @@ function syncInspectorContentOffset() {
     const offset = notice.hidden
         ? 0
         : notice.getBoundingClientRect().height +
-          parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+          parseFloat(style.marginTop) +
+          parseFloat(style.marginBottom);
     $("#inspector").style.setProperty("--pane-content-offset", `${offset}px`);
 }
 function render() {
+    XdzipControls.close({ restoreFocus: false });
     renderTree();
     const list = visibleEntries(),
         chosen = selectedFiles(),
         sum = chosen.reduce((n, f) => n + f.size, 0);
+    $(".archive-card strong").textContent = state.archiveTitle;
     $("#archive-info").textContent = bytes(compressedBytes);
     $("#original-size").textContent = bytes(archiveBytes);
     $("#compressed-size").textContent = bytes(compressedBytes);
@@ -287,22 +377,49 @@ function render() {
     $("#saving-bar").style.width = saving + "%";
     if (state.archiveState !== "ready") {
         $("#archive-info").textContent =
-            state.archiveState === "empty"
-                ? "空归档"
-                : "元数据未就绪";
+            state.archiveState === "empty" ? "空归档" : "元数据未就绪";
         $("#original-size").textContent =
             state.archiveState === "empty" ? "0 B" : "未知";
         $("#compressed-size").textContent = "未知";
         $("#saving").textContent = "—";
         $("#saving-bar").style.width = "0%";
     }
+    const pathNodes = [];
+    let breadcrumbId = state.path;
+    while (breadcrumbId && byId.has(breadcrumbId)) {
+        const node = byId.get(breadcrumbId);
+        pathNodes.unshift(node);
+        breadcrumbId = node.parent;
+    }
+    const separator =
+        '<span class="breadcrumb-separator" aria-hidden="true">/</span>';
     $("#breadcrumbs").innerHTML =
-        `<button data-home>北境旅行.zip</button><span class="breadcrumb-separator" aria-hidden="true">/</span><span>${state.query ? "搜索结果" : state.path ? byId.get(state.path).name : "全部文件"}</span>`;
+        `<button data-home>${esc(state.archiveTitle)}</button>` +
+        separator +
+        (pathNodes.length
+            ? pathNodes
+                  .map((node, index) =>
+                      index < pathNodes.length - 1 || state.query
+                          ? `<button data-breadcrumb="${node.id}" data-tooltip="${esc(node.name)}">${esc(node.name)}</button>`
+                          : `<span aria-current="page">${esc(node.name)}</span>`,
+                  )
+                  .join(separator)
+            : "<span>全部文件</span>") +
+        (state.query
+            ? separator + '<span aria-current="page">搜索结果</span>'
+            : "");
     $("#breadcrumbs [data-home]").onclick = () => choosePath("");
-    $("#entry-count").textContent = `${state.path || state.query ? list.length : files.length} 项`;
+    $("#breadcrumbs")
+        .querySelectorAll("[data-breadcrumb]")
+        .forEach(
+            (button) =>
+                (button.onclick = () => choosePath(button.dataset.breadcrumb)),
+        );
+    $("#entry-count").textContent =
+        `${state.path || state.query ? list.length : files.length} 项`;
     $("#search-notice").hidden = !state.query;
     $("#search-notice").textContent =
-        `当前归档中找到 ${list.length} 项 · 搜索结果不等同于全部归档`;
+        `当前${state.path ? "目录及后代" : "归档"}中找到 ${list.length} 项 · 搜索结果不等同于全部归档`;
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
@@ -374,8 +491,22 @@ function render() {
     all.disabled = !list.length;
     $("#sort-name [data-icon]").innerHTML = icon("sort-ascending");
     $("#sort-name [data-icon]").classList.toggle("descending", state.sort < 0);
-    $("#sort-name").setAttribute("aria-label", state.sort === 0 ? "按名称升序排序" : "切换名称排序方向");
-    $("#sort-name").closest("th").setAttribute("aria-sort", state.sort === 0 ? "none" : state.sort < 0 ? "descending" : "ascending");
+    $("#sort-name [data-icon]").style.visibility =
+        state.sort && state.sortKey === "name" ? "visible" : "hidden";
+    $("#sort-name").setAttribute(
+        "aria-label",
+        state.sort === 0 ? "按名称升序排序" : "切换名称排序方向",
+    );
+    $("#sort-name")
+        .closest("th")
+        .setAttribute(
+            "aria-sort",
+            state.sort === 0
+                ? "none"
+                : state.sort < 0
+                  ? "descending"
+                  : "ascending",
+        );
     $("#extract-label").textContent = chosen.length ? "解压所选" : "全部解压";
     $("#extract").disabled = state.archiveState !== "ready";
     $("#extract-menu-button").disabled = state.archiveState !== "ready";
@@ -396,6 +527,7 @@ function render() {
                 ? "0 个文件 · 0 个文件夹"
                 : "目录信息未就绪";
     }
+    window.XdzipMain?.sync(list);
     renderEmpty(list);
     syncInspectorContentOffset();
     renderInspector(chosen);
@@ -467,7 +599,7 @@ function renderEmpty(list) {
 function renderInspector(chosen) {
     if (state.archiveState !== "ready") {
         $("#inspector").innerHTML =
-            `<div class="inspector-head"><span>归档信息</span></div><div class="file-emblem">${icon("archive")}</div><h2>北境旅行.zip</h2><p class="inspector-footnote">${state.archiveState === "empty" ? "目录已读取，归档中没有可解压的文件。" : "目录信息未就绪，暂时无法展示文件属性。"}</p>`;
+            `<div class="inspector-head"><span>归档信息</span></div><div class="file-emblem">${icon("archive")}</div><h2>${esc(state.archiveTitle)}</h2><p class="inspector-footnote">${state.archiveState === "empty" ? "目录已读取，归档中没有可解压的文件。" : "目录信息未就绪，暂时无法展示文件属性。"}</p>`;
         return;
     }
     const multi = chosen.length > 1,
@@ -479,10 +611,13 @@ function renderInspector(chosen) {
             ? chosen.reduce((n, e) => n + e.compressed, 0)
             : compressedBytes;
     $("#inspector").innerHTML =
-        `<div class="inspector-head"><span>${single?.type.includes("JPEG") ? "文件预览" : chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div>${single && ["lake", "sunrise"].includes(single.id) ? `<div class="photo-preview">${photo(single.id === "lake" ? "lake-preview" : "sunrise")}</div>` : `<div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}</div>`}<h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : "北境旅行.zip"}</h2><span class="type-label">${multi ? "多个类型 · 已选择" : single ? single.type : "ZIP 压缩文件 · Deflate"}</span><dl class="property-list">${[
+        `<div class="inspector-head"><span>${single?.type.includes("JPEG") ? "文件预览" : chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div>${single && ["lake", "sunrise"].includes(single.id) ? `<div class="photo-preview">${photo(single.id === "lake" ? "lake-preview" : "sunrise")}</div>` : `<div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}</div>`}<h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : esc(state.archiveTitle)}</h2><span class="type-label">${multi ? "多个类型 · 已选择" : single ? single.type : "ZIP 压缩文件 · Deflate"}</span><dl class="property-list">${[
             ["原始大小", bytes(size)],
             ["压缩后", bytes(packed)],
-            [single?.type.includes("JPEG") ? "尺寸" : "压缩方式", single?.type.includes("JPEG") ? "6000 × 4000" : "Deflate"],
+            [
+                single?.type.includes("JPEG") ? "尺寸" : "压缩方式",
+                single?.type.includes("JPEG") ? "6000 × 4000" : "Deflate",
+            ],
             ["修改日期", single?.modified || "2026/10/08"],
             [
                 "位置",
@@ -491,9 +626,15 @@ function renderInspector(chosen) {
                     : "归档根目录",
             ],
         ]
-            .filter(([label]) => !single?.type.includes("JPEG") || label !== "位置")
-            .sort((a, b) => single?.type.includes("JPEG")
-                ? imagePropertyOrder.indexOf(a[0]) - imagePropertyOrder.indexOf(b[0]) : 0)
+            .filter(
+                ([label]) => !single?.type.includes("JPEG") || label !== "位置",
+            )
+            .sort((a, b) =>
+                single?.type.includes("JPEG")
+                    ? imagePropertyOrder.indexOf(a[0]) -
+                      imagePropertyOrder.indexOf(b[0])
+                    : 0,
+            )
             .map(
                 ([a, b]) =>
                     `<div class="property"><dt>${a}</dt><dd${a === "修改日期" ? ' class="modified-value"' : ""}>${esc(b)}</dd></div>`,
@@ -503,12 +644,26 @@ function renderInspector(chosen) {
             )}</dl><button id="inspector-extract" class="button" ${state.archiveState !== "ready" ? "disabled" : ""}>${icon("external-open")}${single ? "解压此文件" : chosen.length ? "解压所选文件" : "全部解压"}</button><p class="inspector-footnote">文件内容保留在压缩包中。只有开始解压后，才会写入目标位置。</p>`;
     $("#hide-inspector").onclick = () => ($("#inspector").hidden = true);
     $("#inspector-extract").onclick = () =>
-        showExtract(chosen.length ? "selected" : "all");
+        window.XdzipMain?.dispatch(
+            chosen.length ? "extract-selected" : "extract-all",
+        );
+    if (window.XdzipMain)
+        $("#inspector-extract").disabled =
+            !window.XdzipMain.commands[
+                chosen.length ? "extract-selected" : "extract-all"
+            ].enabled();
 }
 function updateTaskCount() {
-    $("#task-count").textContent = state.task
-        ? `任务 ${["running", "stopping", "conflict"].includes(state.task.status) ? "1" : "· 已结束"}`
-        : "任务 0";
+    const running =
+        Number(
+            state.task &&
+                ["running", "stopping", "conflict"].includes(state.task.status),
+        ) + Number(state.testJob?.status === "running");
+    $("#task-count").textContent = running
+        ? `任务 ${running}`
+        : state.task || state.testJob
+          ? "任务 · 已结束"
+          : "任务 0";
 }
 // Web chrome is a design simulation. Production uses separate QQuickWindows.
 function windowClose() {
@@ -525,20 +680,31 @@ function windowChrome(title, taskView) {
     return `<div class="os-titlebar">${mac ? controls : taskView ? icon(document.body.dataset.platform === "windows" ? "windows-document" : "linux-document") : icon("app-mark")}<span class="os-title">${esc(title)}</span>${mac ? '<span class="os-balance"></span>' : controls}</div>`;
 }
 function dialog(html, kind, spec, focus) {
+    XdzipControls.close({ restoreFocus: false });
+    XdzipControls.hideTooltip();
     const el = $("#modal");
     returnFocus = el.open ? returnFocus : document.activeElement;
     if (el.open) el.close();
     const template = document.createElement("template");
     template.innerHTML = html;
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
-    el.innerHTML = windowChrome(kind === "progress" ? "解压进度" : title, kind === "progress") + html;
+    el.innerHTML =
+        windowChrome(
+            kind === "progress" ? "解压进度" : title,
+            ["progress", "archive-test"].includes(kind),
+        ) + html;
     el.setAttribute("aria-label", title);
     el.style.left = el.style.top = el.style.margin = el.style.transform = "";
     state.modal = kind;
     el.dataset.kind = kind;
     setSpec(spec);
     // Decision windows block only their owner; task details/settings remain modeless.
-    const modeless = ["progress", "settings", "result"].includes(kind);
+    const modeless = [
+        "progress",
+        "settings",
+        "result",
+        "archive-test",
+    ].includes(kind);
     el.dataset.modeless = String(modeless);
     if (modeless) el.show();
     else el.showModal();
@@ -567,7 +733,14 @@ function closeModal() {
     if ($("#modal").open) $("#modal").close();
     state.modal = null;
     render();
-    if (returnFocus?.isConnected) returnFocus.focus();
+    const restored = returnFocus?.isConnected
+        ? returnFocus
+        : returnFocus?.id
+          ? document.getElementById(returnFocus.id)
+          : returnFocus?.dataset.id
+            ? window.XdzipMain?.entryNode(returnFocus.dataset.id)
+            : null;
+    restored?.focus({ preventScroll: true });
 }
 function header(title, subtitle, ico = "archive") {
     return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
@@ -584,31 +757,9 @@ function bindClose() {
         .forEach((b) => (b.onclick = closeModal));
 }
 function openPicker() {
-    dialog(
-        header(
-            "打开压缩文件",
-            "原生文件选择器的设计替身 · 仅提供示例归档",
-            "folderOpen",
-        ) +
-            `<div class="modal-content"><p class="field-note">正式产品在这里调用系统文件选择器。原型不会读取设备上的文件。</p><div class="field-group"><button class="button" id="pick-sample">${icon("archive")}北境旅行.zip</button></div></div>` +
-            footer(cancelButton(), "仅使用示例数据"),
-        "picker",
-        "B01",
-        "#pick-sample",
-    );
-    bindClose();
-    $("#pick-sample").onclick = () => {
-        state.archiveState = "ready";
-        state.path = "";
-        state.query = "";
-        state.selected.clear();
-        state.scenario = "normal";
-        $("#scenario").value = "normal";
-        $("#search").value = "";
-        $("#welcome").hidden = true;
-        closeModal();
-    };
+    window.XdzipMain.dispatch("open");
 }
+
 function showWelcome() {
     state.selected.clear();
     $("#welcome").hidden = false;
@@ -616,6 +767,7 @@ function showWelcome() {
         `<div class="brand-tile">${icon("archive")}</div><h1>压缩文件，一目了然。</h1><p>先查看内容，再决定解压哪些文件。</p><div class="welcome-actions"><button class="button primary" id="welcome-open">${icon("folderOpen")}打开压缩文件</button><button class="button" id="welcome-create">${icon("plus")}新建压缩文件</button></div><small>ZIP · TAR · TAR.GZ / 所有处理均在本机完成</small>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
+    render();
     setSpec("B01");
 }
 function scopeFiles(scope) {
@@ -630,7 +782,8 @@ function finalTarget() {
         .trim()
         .replace(/[\/]+$/, "");
     const same = $("#same-folder")?.checked;
-    return base + (same && !base.endsWith("北境旅行") ? " / 北境旅行" : "");
+    const folder = state.archiveTitle.replace(/\.[^.]+$/, "");
+    return base + (same && !base.endsWith(folder) ? " / " + folder : "");
 }
 function showExtract(scope = "selected", retryFiles = null) {
     if (
@@ -643,7 +796,7 @@ function showExtract(scope = "selected", retryFiles = null) {
     state.scope = scope;
     state.plan = {
         retryFiles,
-        target: "下载 / 北境旅行",
+        target: "下载 / " + state.archiveTitle.replace(/\.[^.]+$/, ""),
         policy: "ask",
         same: true,
         open: true,
@@ -658,7 +811,7 @@ function showExtract(scope = "selected", retryFiles = null) {
     dialog(
         header(
             "解压文件",
-            `北境旅行.zip · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
+            `${esc(state.archiveTitle)} · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
             "archive",
         ) +
             `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row"><input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : "下载"}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group"><div class="field-label">解压范围</div><div class="scope-box">${
@@ -691,9 +844,12 @@ function showExtract(scope = "selected", retryFiles = null) {
         $("#target-preview").textContent = "最终位置：" + state.plan.target;
         $("#target-valid").className =
             "field-note " + (denied ? "error" : "success");
-        $("#target-valid").innerHTML = `${icon(denied ? "status-warning" : "success")}<span>${denied
-            ? "此位置不可写，请更改目标文件夹。"
-            : "目标位置可用 · 可用空间 126 GB"}</span>`;
+        $("#target-valid").innerHTML =
+            `${icon(denied ? "status-warning" : "success")}<span>${
+                denied
+                    ? "此位置不可写，请更改目标文件夹。"
+                    : "目标位置可用 · 可用空间 126 GB"
+            }</span>`;
         $("#start-extract").disabled = denied;
     };
     $("#target-base").oninput = check;
@@ -720,6 +876,7 @@ function showExtract(scope = "selected", retryFiles = null) {
     check();
 }
 function startTask(items, kind) {
+    window.XdzipMain?.resetJobs();
     clearInterval(timer);
     state.task = {
         kind,
@@ -731,6 +888,7 @@ function startTask(items, kind) {
         open: kind === "extract" && state.plan.open,
         skipped: [],
         renamed: false,
+        archiveTitle: state.archiveTitle,
         createdAt: Date.now(),
         result: null,
     };
@@ -751,7 +909,12 @@ function showConflict() {
         e = t.items.find((f) => f.id === "guide") || t.items[0];
     t.conflictEntry = e;
     dialog(
-        header("目标位置已有同名文件", "请选择要保留的版本", "document-conflict", false) +
+        header(
+            "目标位置已有同名文件",
+            "请选择要保留的版本",
+            "document-conflict",
+            false,
+        ) +
             `<div class="modal-content"><div class="conflict-name">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}${esc(e.name)}</div><div class="comparison"><div><span class="comparison-artwork">${icon(fileIcon(e))}</span><label>已有文件</label><strong>${bytes(Math.round(e.size * 0.875))}</strong><small>2026/10/01 · 09:42</small></div><div><span class="comparison-artwork">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}</span><label>压缩包中的文件</label><strong>${bytes(e.size)}</strong><small>2026/10/08 · 14:32</small></div></div><label class="check-label"><input id="apply-conflict-all" type="checkbox">对本次任务后续同类冲突应用此选择</label><div class="notice warning"><span class="notice-artwork">${icon("conflict-warning")}</span><span>覆盖会替换已有文件内容。选择“自动改名”可以保留两个版本。</span></div></div>` +
             footer(
                 `<button class="button" id="skip-conflict">跳过</button><button class="button primary" id="rename-conflict">自动改名</button><button class="button danger" id="overwrite-conflict">覆盖文件</button>`,
@@ -796,11 +959,15 @@ function showProgress() {
                 : t.status === "stopping"
                   ? "正在停止任务"
                   : "正在解压",
-            `${t.kind === "create" ? "旅行资料" : "北境旅行.zip"}`,
-            t.status === "stopping" ? "spinner"
-                : t.kind === "create" ? "archive-add"
-                  : document.body.dataset.platform === "windows" ? "windows-document"
-                    : document.body.dataset.platform === "linux" ? "linux-document"
+            `${t.kind === "create" ? "旅行资料" : t.archiveTitle || "北境旅行.zip"}`,
+            t.status === "stopping"
+                ? "spinner"
+                : t.kind === "create"
+                  ? "archive-add"
+                  : document.body.dataset.platform === "windows"
+                    ? "windows-document"
+                    : document.body.dataset.platform === "linux"
+                      ? "linux-document"
                       : "document-download",
             false,
         ) +
@@ -837,10 +1004,13 @@ function updateProgress() {
         `${bytes(Math.round((total * t.progress) / 100))} / ${bytes(total)}`;
     $("#progress-count").textContent =
         `${Math.floor((t.progress / 100) * t.items.length)} / ${t.items.length} 项`;
-    $("#progress-file-icon").innerHTML = icon(t.items[done].type.includes("JPEG") ? "progress-image" : fileIcon(t.items[done]));
+    $("#progress-file-icon").innerHTML = icon(
+        t.items[done].type.includes("JPEG")
+            ? "progress-image"
+            : fileIcon(t.items[done]),
+    );
     $("#progress-file").textContent =
-        (t.status === "stopping" ? "停止中：" : "") +
-        t.items[done].name;
+        (t.status === "stopping" ? "停止中：" : "") + t.items[done].name;
 }
 function runTimer() {
     clearInterval(timer);
@@ -920,8 +1090,12 @@ function showResult() {
     dialog(
         header(
             "任务结果",
-            created ? "新建压缩文件" : "北境旅行.zip",
-            ok ? "status-success" : cancel ? "cancelled-large" : "document-warning",
+            created ? "新建压缩文件" : esc(t.archiveTitle),
+            ok
+                ? "status-success"
+                : cancel
+                  ? "cancelled-large"
+                  : "document-warning",
         ) +
             `<div class="modal-content"><div class="result-hero"><div class="result-icon">${icon(ok ? "status-success" : cancel ? "cancelled-large" : "document-warning")}</div><h2>${title}</h2><p>${ok ? (created ? "归档已完成校验并保存。" : "所选内容已处理完成。") : created ? "临时归档未发布，原有文件保持不变。" : "已经完成的文件会保留，不会因本次停止而删除。"}</p></div><div class="result-counts"><div><b>${successCount}</b><span>${icon("status-partial-success")}${created ? "已创建归档" : "成功文件"}</span></div><div><b>${created ? 0 : t.skipped.length}</b><span>${icon("status-skipped")}跳过</span></div><div><b>${failedCount}</b><span>${icon(cancel ? "status-stopped" : "status-warning")}${cancel ? "未完成" : "失败"}</span></div></div>${!ok ? `<div class="notice ${cancel ? "" : "error"}">${cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足。释放空间或选择其他位置后重试。"}</div>` : ""}<div class="result-destination">${icon("folder")}<span>${esc(t.target)}</span></div>${t.renamed ? `<p class="field-note">重名文件已改名为 ${esc(t.conflictEntry.name.replace(/(\.[^.]+)$/, " (2)$1"))}</p>` : ""}<details><summary class="details-title">查看处理明细</summary><div class="result-list">${t.completed.map((e) => `<div><span>${esc(e.name)}</span><span>已完成</span></div>`).join("")}${t.failed.map((e) => `<div class="bad"><span>${esc(e.name)}</span><span>${cancel ? "未完成" : "失败"}</span></div>`).join("")}${t.skipped.map((id) => `<div><span>${esc(byId.get(id).name)}</span><span>已跳过</span></div>`).join("")}</div></details></div>` +
             footer(
@@ -988,9 +1162,14 @@ function showCreate() {
             $("#create-name").value.trim() &&
             $("#create-destination").value.trim();
         $("#start-create").disabled = !valid;
-        $("#create-valid").innerHTML = `${icon(valid ? "success" : "status-warning")}<span>${valid
-            ? "预检通过 · " + state.createItems.length + " 个文件 · 目标可写"
-            : "请添加输入文件，并填写名称与保存位置。"}</span>`;
+        $("#create-valid").innerHTML =
+            `${icon(valid ? "success" : "status-warning")}<span>${
+                valid
+                    ? "预检通过 · " +
+                      state.createItems.length +
+                      " 个文件 · 目标可写"
+                    : "请添加输入文件，并填写名称与保存位置。"
+            }</span>`;
         $("#create-valid").className =
             "field-note " + (valid ? "success" : "error");
     };
@@ -1096,7 +1275,8 @@ function showSettings() {
     bindClose();
     $(`input[name="setting-theme"][value="${state.theme}"]`).checked = true;
     $("#setting-theme").onchange = (e) => {
-        if (e.target.matches('input[name="setting-theme"]')) setTheme(e.target.value);
+        if (e.target.matches('input[name="setting-theme"]'))
+            setTheme(e.target.value);
     };
     $("#setting-density").onchange = (e) => {
         document.documentElement.style.setProperty(
@@ -1112,20 +1292,37 @@ function showSettings() {
         toast("最近记录已清空，原文件未被删除。");
 }
 function setTheme(theme) {
+    XdzipControls.close({ restoreFocus: false });
     state.theme = theme;
     const dark =
         theme === "dark" ||
         (theme === "system" &&
             matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.dataset.theme = dark ? "dark" : "light";
-    const tick = window.XDZIP_ASSETS.icons[dark ? "dark" : "light"].check.replace(/stroke="[^"]*"/, 'stroke="white"');
-    document.documentElement.style.setProperty("--checkbox-tick", `url("data:image/svg+xml,${encodeURIComponent(tick)}")`);
-    document.documentElement.style.setProperty("--checkbox-selected", `url("data:image/svg+xml,${encodeURIComponent(icon("check-selected"))}")`);
-    document.documentElement.style.setProperty("--radio-selected", `url("data:image/svg+xml,${encodeURIComponent(icon("radio-selected"))}")`);
-    document.documentElement.style.setProperty("--radio-unselected", `url("data:image/svg+xml,${encodeURIComponent(icon("radio-unselected"))}")`);
+    const tick = window.XDZIP_ASSETS.icons[
+        dark ? "dark" : "light"
+    ].check.replace(/stroke="[^"]*"/, 'stroke="white"');
+    document.documentElement.style.setProperty(
+        "--checkbox-tick",
+        `url("data:image/svg+xml,${encodeURIComponent(tick)}")`,
+    );
+    document.documentElement.style.setProperty(
+        "--checkbox-selected",
+        `url("data:image/svg+xml,${encodeURIComponent(icon("check-selected"))}")`,
+    );
+    document.documentElement.style.setProperty(
+        "--radio-selected",
+        `url("data:image/svg+xml,${encodeURIComponent(icon("radio-selected"))}")`,
+    );
+    document.documentElement.style.setProperty(
+        "--radio-unselected",
+        `url("data:image/svg+xml,${encodeURIComponent(icon("radio-unselected"))}")`,
+    );
     const selectedTheme = $(`input[name="setting-theme"][value="${theme}"]`);
     if (selectedTheme) selectedTheme.checked = true;
-    document.querySelectorAll("svg[data-asset]").forEach(el => { el.outerHTML = icon(el.dataset.asset, el.getAttribute("class") || ""); });
+    document.querySelectorAll("svg[data-asset]").forEach((el) => {
+        el.outerHTML = icon(el.dataset.asset, el.getAttribute("class") || "");
+    });
     $("#theme").innerHTML = icon(dark ? "sun" : "moon");
     $("#theme").setAttribute(
         "aria-label",
@@ -1136,6 +1333,7 @@ function scenario(value) {
     clearInterval(timer);
     clearTimeout(loadTimer);
     state.task = null;
+    window.XdzipMain?.resetJobs();
     state.scenario = value;
     state.selected.clear();
     state.path = "";
@@ -1164,7 +1362,8 @@ function scenario(value) {
     if (["conflict", "permission", "disk", "source", "cancel"].includes(value))
         showExtract("selected");
 }
-$("#app-brand").innerHTML = icon("app-mark") + '<span class="brand-label">xdzip</span>';
+$("#app-brand").innerHTML =
+    icon("app-mark") + '<span class="brand-label">xdzip</span>';
 hydrate();
 // Font loading and wrapping may change a search notice after its first render.
 const previewLayoutObserver = new ResizeObserver(syncInspectorContentOffset);
@@ -1184,10 +1383,7 @@ $("#reset").onclick = () => {
     scenario("normal");
 };
 $("#title-settings").onclick = showSettings;
-$("#close-example-tab").onclick = () => toast("项目素材.zip 是多标签外观示例，当前演示仅提供一个归档会话。");
-$("#test-archive").onclick = () => toast("设计演示：归档测试通过，30 个文件可读取。");
-$("#more-actions").onclick = () => { $("#spec").hidden = !$("#spec").hidden; };
-$("#grid-view").onclick = () => toast("网格视图待单独设计；当前展示已确认的列表视图。");
+
 $("#open").onclick = openPicker;
 $("#new-tab").onclick = openPicker;
 $("#close-archive").onclick = showWelcome;
@@ -1201,30 +1397,8 @@ $("#properties-toggle").onclick = () => {
 };
 $("#extract").onclick = () =>
     showExtract(state.selected.size ? "selected" : "all");
-$("#extract-menu-button").onclick = () => {
-    const n = $("#extract-menu");
-    n.hidden = !n.hidden;
-    $("#extract-menu-button").setAttribute("aria-expanded", String(!n.hidden));
-};
-$("#extract-menu")
-    .querySelectorAll("button")
-    .forEach(
-        (b) =>
-            (b.onclick = () => {
-                $("#extract-menu").hidden = true;
-                $("#extract-menu-button").setAttribute(
-                    "aria-expanded",
-                    "false",
-                );
-                showExtract(b.dataset.extract);
-            }),
-    );
-document.addEventListener("click", (e) => {
-    if (!e.target.closest(".split-button")) {
-        $("#extract-menu").hidden = true;
-        $("#extract-menu-button").setAttribute("aria-expanded", "false");
-    }
-});
+// Shared menus, command state and contextual selection are installed by main-controls.js.
+
 let composing = false;
 const query = () => {
     if (composing) return;
@@ -1254,13 +1428,17 @@ $("#settings").onclick = showSettings;
 $("#platform").onchange = (event) => {
     document.body.dataset.platform = event.target.value;
     if ($("#modal").open) closeModal();
-    $("#search").setAttribute("aria-keyshortcuts", event.target.value === "macos" ? "Meta+F" : "Control+F");
+    $("#search").setAttribute(
+        "aria-keyshortcuts",
+        event.target.value === "macos" ? "Meta+F" : "Control+F",
+    );
 };
 $("#modal").addEventListener("cancel", (event) => {
     event.preventDefault();
     windowClose();
 });
 document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented || e.isComposing || XdzipControls.isOpen) return;
     if (
         e.key === "Escape" &&
         $("#modal").open &&
@@ -1271,7 +1449,7 @@ document.addEventListener("keydown", (e) => {
         return;
     }
     if (e.key === "Escape" && !$("#modal").open) {
-        $("#extract-menu").hidden = true;
+        XdzipControls.close();
         if (document.activeElement === $("#search")) {
             $("#search").value = "";
             query();
@@ -1309,11 +1487,14 @@ window.XdzipDesign = {
         if ($("#modal").open) closeModal();
         // Artboard changes restore the ready demo fixture after an error scene.
         // Active user-started demo tasks retain their own background state.
-        if (["main", "extract", "create", "settings", "progress"].includes(view)) {
+        if (
+            ["main", "extract", "create", "settings", "progress"].includes(view)
+        ) {
             state.archiveState = "ready";
             state.scenario = "normal";
         }
         if (view === "main") {
+            window.XdzipMain?.openSample("travel");
             state.path = "";
             state.query = "";
             $("#search").value = "";
@@ -1321,30 +1502,65 @@ window.XdzipDesign = {
             render();
             return;
         }
-        if (view === "extract") { state.selected = new Set(["lake", "sunrise", "guide"]); render(); showExtract("selected"); }
-        else if (view === "create") showCreate();
+        if (view === "extract") {
+            state.selected = new Set(["lake", "sunrise", "guide"]);
+            render();
+            showExtract("selected");
+        } else if (view === "create") showCreate();
         else if (view === "settings") showSettings();
-        else if (view === "progress") { showExtract("all"); startTask(files, "extract"); clearInterval(timer); state.task.progress = 60; state.task.reviewPaused = true; updateProgress(); }
-        else scenario(view);
+        else if (view === "progress") {
+            showExtract("all");
+            startTask(files, "extract");
+            clearInterval(timer);
+            state.task.progress = 60;
+            state.task.reviewPaused = true;
+            updateProgress();
+        } else scenario(view);
     },
     theme: setTheme,
-    platform(value) { document.body.dataset.platform = value; },
+    platform(value) {
+        document.body.dataset.platform = value;
+    },
 };
+window.XdzipControls.configure({ icon });
 const reviewQuery = new URLSearchParams(location.search);
-if (reviewQuery.get("standalone") === "1") document.body.dataset.standalone = "true";
-if (reviewQuery.has("platform")) window.XdzipDesign.platform(reviewQuery.get("platform"));
+if (reviewQuery.get("standalone") === "1")
+    document.body.dataset.standalone = "true";
+if (reviewQuery.has("platform"))
+    window.XdzipDesign.platform(reviewQuery.get("platform"));
 if (reviewQuery.has("view")) window.XdzipDesign.open(reviewQuery.get("view"));
 
 // Only the containing review page may configure this demonstration canvas.
-window.addEventListener("message", event => {
+window.addEventListener("message", (event) => {
     const config = event.data;
-    if (event.source !== window.parent || config?.type !== "xdzip-review-configure") return;
-    if (!["main", "extract", "create", "progress", "conflict", "settings", "empty", "damaged"].includes(config.view)
-        || !["macos", "windows", "linux"].includes(config.platform)
-        || !["light", "dark"].includes(config.theme)) return;
-    document.body.dataset.standalone = ["main", "empty", "damaged"].includes(config.view) ? "false" : "true";
+    if (
+        event.source !== window.parent ||
+        config?.type !== "xdzip-review-configure"
+    )
+        return;
+    if (
+        ![
+            "main",
+            "extract",
+            "create",
+            "progress",
+            "conflict",
+            "settings",
+            "empty",
+            "damaged",
+        ].includes(config.view) ||
+        !["macos", "windows", "linux"].includes(config.platform) ||
+        !["light", "dark"].includes(config.theme)
+    )
+        return;
+    document.body.dataset.standalone = ["main", "empty", "damaged"].includes(
+        config.view,
+    )
+        ? "false"
+        : "true";
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);
 });
-if (window.parent !== window) window.parent.postMessage({type: "xdzip-review-ready"}, "*");
+if (window.parent !== window)
+    window.parent.postMessage({ type: "xdzip-review-ready" }, "*");

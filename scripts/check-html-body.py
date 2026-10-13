@@ -184,7 +184,7 @@ def main():
             for item in spec.get('ink_regions', []):
                 mode = item.get('mode', 'dark')
                 expected = painted_bounds(original, item['region'], mode)
-                actual = painted_bounds(shot, item['region'], mode)
+                actual = painted_bounds(shot, item.get('target_region', item['region']), mode)
                 if expected is None:
                     failures.append(f'{item["name"]}: source ink region is empty; remeasure it')
                     continue
@@ -193,10 +193,11 @@ def main():
                     if revision not in spec.get('design_revisions', {}):
                         failures.append(f'{item["name"]}: unrecorded design revision {revision}')
                         continue
+                    source_actual = painted_bounds(shot, item['region'], mode)
                     measurements.append({
                         'kind': 'source ink (design revised)', 'name': item['name'],
-                        'expected': expected, 'actual': actual, 'review_only': True,
-                        'maximum_delta_px': None if actual is None else max(abs(a - b) for a, b in zip(actual, expected)),
+                        'expected': expected, 'actual': source_actual, 'review_only': True,
+                        'maximum_delta_px': None if source_actual is None else max(abs(a - b) for a, b in zip(source_actual, expected)),
                         'design_revision': revision,
                         'original_tolerance_px': item.get('tolerance', args.ink_tolerance),
                     })

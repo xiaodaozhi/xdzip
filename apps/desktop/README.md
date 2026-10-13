@@ -41,3 +41,5 @@ Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/
 选中条目后可点击“解压预检”，在独立原生窗口查看展开计数、声明大小和路径/冲突问题；不写出文件。详见 [预检契约](../../docs/engineering/extraction-preflight.md)。
 
 浏览应用已接入正式双句柄运行时、专用事件线程与有界 mailbox；窗口关闭与 Cmd+Q 均等待异步 shutdown 屏障。诊断探针不承担产品请求。
+
+主窗口共用 `CommandMenu`、菜单项 / 分隔线、`Breadcrumb` 以及按钮状态参数。更多 / 范围 / 排序 / 视图 / 条目 / 目录 / 空白菜单调用真实只读能力；不可执行的新建、写入和 CRC 保持禁用。列表与网格共用索引和选择，右键保留已有多选，Shift 范围依赖稳定 ID，全选限定本页，复制使用系统剪贴板。详见[组件与交互复核](../../docs/qa/main-window-components.md)。

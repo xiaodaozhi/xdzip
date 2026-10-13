@@ -13,6 +13,14 @@ Rectangle {
     signal resetSortRequested
     signal inspectRequested
     signal searchRequested(string query)
+    signal selectAllRequested
+    signal clearSelectionRequested
+    signal detailsRequested
+    signal themeRequested
+    function focusSearch() {
+        searchField.forceActiveFocus(Qt.ShortcutFocusReason);
+        searchField.selectAll();
+    }
     function clearSearch() {
         searchField.clear();
     }
@@ -50,6 +58,7 @@ Rectangle {
                 text: qsTr("新建")
                 asset: "new"
                 enabled: false
+                explanation: qsTr("创建归档尚未实现")
             }
             Rectangle {
                 Layout.preferredWidth: 1
@@ -67,6 +76,7 @@ Rectangle {
                 text: qsTr("测试")
                 asset: "archive-test"
                 enabled: false
+                explanation: qsTr("CRC 校验尚未实现")
             }
             ArchiveAction {
                 toolbarStyle: true
@@ -77,18 +87,41 @@ Rectangle {
                 Accessible.name: qsTr("更多归档操作")
                 explanation: qsTr("更多归档操作")
                 onClicked: more.open()
-                Menu {
+                CommandMenu {
                     id: more
                     y: parent.height
-                    MenuItem {
+                    objectName: "archiveMoreMenu"
+                    CommandMenuItem {
                         text: qsTr("按归档顺序排列")
                         enabled: root.canSearch
                         onTriggered: root.resetSortRequested()
                     }
-                    MenuItem {
+                    CommandMenuItem {
                         text: qsTr("解压元数据预检")
                         enabled: root.canInspect
                         onTriggered: root.inspectRequested()
+                    }
+                    CommandMenuSeparator {}
+                    CommandMenuItem {
+                        text: qsTr("全选当前页")
+                        shortcutLabel: Qt.platform.os === "osx" ? "⌘A" : "Ctrl+A"
+                        enabled: root.canSearch
+                        onTriggered: root.selectAllRequested()
+                    }
+                    CommandMenuItem {
+                        text: qsTr("取消选择")
+                        enabled: root.hasSelection && root.canSearch
+                        onTriggered: root.clearSelectionRequested()
+                    }
+                    CommandMenuSeparator {}
+                    CommandMenuItem {
+                        text: qsTr("文件详情")
+                        enabled: root.canSearch
+                        onTriggered: root.detailsRequested()
+                    }
+                    CommandMenuItem {
+                        text: Theme.dark ? qsTr("浅色外观") : qsTr("深色外观")
+                        onTriggered: root.themeRequested()
                     }
                 }
             }
@@ -107,7 +140,7 @@ Rectangle {
             Layout.maximumWidth: 360
             implicitHeight: Math.max(Theme.toolbarButtonHeight, contentHeight + 16)
             leftPadding: 42
-            rightPadding: 12
+            rightPadding: text.length ? 42 : 12
             font.pixelSize: Theme.toolbarSize
             placeholderText: qsTr("搜索压缩包中的文件")
             maximumLength: 256
@@ -133,17 +166,88 @@ Rectangle {
                 height: Theme.toolbarIconSize
                 source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "search.png"
             }
+            ToolButton {
+                id: searchClear
+                objectName: "archiveSearchClear"
+                visible: searchField.text.length > 0
+                anchors.right: parent.right
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
+                width: 28
+                height: 28
+                Accessible.name: qsTr("清空搜索")
+                onClicked: {
+                    searchField.clear();
+                    root.searchRequested("");
+                    searchField.forceActiveFocus();
+                }
+                contentItem: Image {
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "close.png"
+                    fillMode: Image.PreserveAspectFit
+                }
+                padding: 5
+                background: Rectangle {
+                    radius: 4
+                    color: searchClear.down ? Theme.controlPressed : searchClear.hovered ? Theme.controlHover : "transparent"
+                }
+            }
         }
-        ArchiveAction {
-            toolbarStyle: true
+        Item {
+            Layout.preferredWidth: extractAction.implicitWidth
             Layout.minimumHeight: root.controlHeight
             Layout.maximumHeight: root.controlHeight
-            text: root.hasSelection ? qsTr("解压所选") : qsTr("全部解压")
-            objectName: "archiveExtract"
-            primary: true
-            splitIndicator: true
-            explanation: qsTr("解压功能尚未实现")
-            enabled: false
+            implicitHeight: root.controlHeight
+            ArchiveAction {
+                id: extractAction
+                anchors.fill: parent
+                toolbarStyle: true
+                text: root.hasSelection ? qsTr("解压所选") : qsTr("全部解压")
+                objectName: "archiveExtract"
+                primary: true
+                splitIndicator: true
+                explanation: qsTr("解压功能尚未实现")
+                enabled: false
+            }
+            ToolButton {
+                id: scopeButton
+                objectName: "archiveExtractMenuButton"
+                anchors.right: parent.right
+                width: 40
+                height: parent.height
+                enabled: root.canSearch
+                Accessible.name: qsTr("解压范围与可用操作")
+                contentItem: Item {}
+                background: Rectangle {
+                    radius: Theme.toolbarRadius
+                    color: scopeButton.down ? "#30FFFFFF" : scopeButton.hovered ? "#18FFFFFF" : "transparent"
+                    border.width: scopeButton.activeFocus ? 2 : 0
+                    border.color: Theme.accentInk
+                }
+                onClicked: scopes.open()
+                CommandMenu {
+                    id: scopes
+                    objectName: "archiveExtractMenu"
+                    x: parent.width - width
+                    y: parent.height
+                    CommandMenuItem {
+                        text: qsTr("全部解压")
+                        enabled: false
+                        disabledReason: qsTr("安全写入层尚未实现")
+                    }
+                    CommandMenuItem {
+                        text: qsTr("解压所选")
+                        enabled: false
+                        disabledReason: qsTr("安全写入层尚未实现")
+                    }
+                    CommandMenuSeparator {}
+                    CommandMenuItem {
+                        text: qsTr("解压元数据预检")
+                        enabled: root.canInspect
+                        disabledReason: qsTr("先选择条目")
+                        onTriggered: root.inspectRequested()
+                    }
+                }
+            }
         }
     }
     Rectangle {

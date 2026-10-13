@@ -889,7 +889,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -902,7 +902,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -915,7 +915,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -926,7 +926,7 @@
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -937,7 +937,7 @@
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -951,7 +951,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -966,7 +966,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -979,7 +979,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -992,7 +992,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1006,7 +1006,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1019,7 +1019,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1033,7 +1033,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1044,7 +1044,7 @@
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1059,7 +1059,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1073,7 +1073,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1087,7 +1087,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1100,7 +1100,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1113,7 +1113,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1127,7 +1127,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1141,7 +1141,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1156,7 +1156,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1169,7 +1169,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "core-interactions-integrated",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -1180,7 +1180,7 @@
       "icon_names": [],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片仅用于对照；文字、状态、连接线和背景由界面动态绘制。"
     },
     {
@@ -1193,7 +1193,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -1206,7 +1206,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     },
     {
@@ -1219,7 +1219,7 @@
       ],
       "spec": "../../docs/ux/directory-tree.md",
       "geometry_spec": "../../docs/visual/directory-tree.json",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-reference-only",
       "note": "原像素切片保留背景；对应共享矢量用于图标，尺寸由组件规格决定。"
     }
   ],
@@ -2479,7 +2479,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/check.png"
+        ]
       },
       "sha256": "d657e12d854ea307d8bf85957d1fcd62beddf095a412308c3d20e79847de918a",
       "visible_bounds": [
@@ -2537,7 +2539,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/chevron-down.png"
+        ]
       },
       "sha256": "773d54f171b412cc47c88e2faf75b1577dfd74455b9fee5c9f2ee60e8d647936",
       "visible_bounds": [
@@ -2565,7 +2569,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/chevron-right.png"
+        ]
       },
       "sha256": "230e977ba11768eb489b854a848163fc30b67b24fbed53dd80b1012c70b15c85",
       "visible_bounds": [
@@ -4584,7 +4590,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/check.png"
+        ]
       },
       "sha256": "807368e3eb7a4ef6cc10b83df9adfdd9361f065b3db789cc2ddc0380354edb9c",
       "visible_bounds": [
@@ -4643,6 +4651,7 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
+          "assets/dark/chevron-down.png",
           "assets/primary-chevron.png"
         ]
       },
@@ -4672,7 +4681,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/chevron-right.png"
+        ]
       },
       "sha256": "2388010ca4961fb0f4ec619f10cbf47645e00bc8c77fbcb6291da60ab635dcaf",
       "visible_bounds": [
@@ -20284,12 +20295,14 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/tree-active-branch.png"
+        ]
       },
       "sha256": "ba0c95a0a853057721853093ffb41e4cb211920691aaf1e52e7c15796ed60926",
       "source_reference": "reference/tree-active-branch.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "html-and-qt-consumer",
       "visible_bounds": [
         9.0,
         9.0,
@@ -20320,7 +20333,7 @@
       "sha256": "239b0990d4d5bafd1296f1b2ebac6af9c8af6850f6bc2891e9f3d33deac2e31e",
       "source_reference": "reference/tree-info-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.0,
@@ -20351,7 +20364,7 @@
       "sha256": "24d19a5caf524faaccefe97d86f923833c8c4ce64846c0e7770f84d82399d003",
       "source_reference": "reference/tree-loading-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.0,
@@ -20382,7 +20395,7 @@
       "sha256": "c5d4a2cd702c72d46982604ca9dd422c6ccc8a66df9d10c46eefd946cb142a04",
       "source_reference": "reference/tree-error-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.3333,
@@ -20408,12 +20421,14 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/tree-active-branch.png"
+        ]
       },
       "sha256": "a7b03a22bbf1776c1e1a399efa5ca34b4e8a5dd5cc58a98c4d2811d61e31a10a",
       "source_reference": "reference/tree-active-branch.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "html-and-qt-consumer",
       "visible_bounds": [
         9.0,
         9.0,
@@ -20444,7 +20459,7 @@
       "sha256": "0ff7df2c0f81cc4253a7dfae96480859c64f93d725b23a6899d272e08ec58dfd",
       "source_reference": "reference/tree-info-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.0,
@@ -20475,7 +20490,7 @@
       "sha256": "17115a7b871178d43bdbadd4bd65b69dd53e5b41d2218e5706fe2183bbe3cf12",
       "source_reference": "reference/tree-loading-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.0,
@@ -20506,7 +20521,7 @@
       "sha256": "e7727a305d550183d75d6e5c5e3c4a33179159dab92b3127394114d040f5be5b",
       "source_reference": "reference/tree-error-glyph.png",
       "component": "directory-tree",
-      "integration_status": "design-ready-awaiting-html-and-qt-integration",
+      "integration_status": "design-resource-status-consumer-pending",
       "visible_bounds": [
         2.0,
         2.3333,

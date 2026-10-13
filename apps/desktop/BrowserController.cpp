@@ -1,9 +1,12 @@
 #include "BrowserController.h"
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
+#include <QClipboard>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QPointer>
+#include <algorithm>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
     return parent.isValid() ? 0 : static_cast<int>(m_rows.size()); // bounded by 128
@@ -24,13 +27,16 @@ QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
         return row.directory;
     if (role == Qt::UserRole + 2)
         return m_selected.contains(row.id);
+    if (role == Qt::UserRole + 3)
+        return row.navigable;
     return {};
 }
 QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
     return {{Qt::DisplayRole, "display"},
             {Qt::UserRole, "entryId"},
             {Qt::UserRole + 1, "isDirectory"},
-            {Qt::UserRole + 2, "chosen"}};
+            {Qt::UserRole + 2, "chosen"},
+            {Qt::UserRole + 3, "canNavigate"}};
 }
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
@@ -53,13 +59,43 @@ void ArchiveTableModel::select(int row) {
     emit dataChanged(index(row, 0), index(row, 4), {Qt::UserRole + 2});
 }
 
+bool ArchiveTableModel::isSelected(int row) const {
+    const auto *item = rowAt(row);
+    return item && m_selected.contains(item->id);
+}
+void ArchiveTableModel::selectOnly(int row) {
+    const auto *item = rowAt(row);
+    if (!item)
+        return;
+    m_selected = {item->id};
+    emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
+}
+void ArchiveTableModel::selectAll(bool selected) {
+    m_selected.clear();
+    if (selected)
+        for (const auto &item : m_rows)
+            m_selected.insert(item.id);
+    if (!m_rows.empty())
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
+}
+void ArchiveTableModel::selectRange(int first, int last) {
+    if (!rowAt(first) || !rowAt(last))
+        return;
+    m_selected.clear();
+    for (int row = std::min(first, last); row <= std::max(first, last); ++row)
+        m_selected.insert(m_rows.at(row).id);
+    emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
+}
+
 BrowserController::BrowserController(QObject *parent)
     : QObject(parent), m_model(this), m_directories(this),
       m_connection(std::make_unique<RuntimeConnection>(this)) {
     m_directories.setItemRoleNames({{Qt::DisplayRole, "nodeName"},
                                     {Qt::UserRole, "nodeId"},
                                     {Qt::UserRole + 1, "entryCount"},
-                                    {Qt::UserRole + 2, "fullPath"}});
+                                    {Qt::UserRole + 2, "fullPath"},
+                                    {Qt::UserRole + 3, "continuationFlags"},
+                                    {Qt::UserRole + 4, "lastSibling"}});
     m_admissionRetry.setSingleShot(true);
     connect(&m_admissionRetry, &QTimer::timeout, this, &BrowserController::attemptSubmission);
     m_connection->setConsumer([this](const xdzip::reader::Event &event) { receive(event); });
@@ -162,6 +198,18 @@ void BrowserController::selectRow(int row) {
     const auto *item = m_model.rowAt(row);
     if (!item)
         return;
+    m_selectionAnchor = item->id;
+    m_model.select(row);
+    showRowDetail(row);
+    m_preflightReport.clear();
+    emit changed();
+}
+void BrowserController::showRowDetail(int row) {
+    const auto *item = m_model.rowAt(row);
+    if (!item || m_model.selectedCount() == 0) {
+        m_detail.clear();
+        return;
+    }
     m_detail = {{"name", item->cells[0]},
                 {"size", item->cells[1]},
                 {"packed", item->cells[2]},
@@ -169,9 +217,70 @@ void BrowserController::selectRow(int row) {
                 {"status", item->cells[4]},
                 {"directory", item->directory},
                 {"id", item->id}};
-    m_model.select(row);
+}
+void BrowserController::selectOnlyRow(int row) {
+    if (m_busy || !m_ready || !m_model.rowAt(row))
+        return;
+    m_selectionAnchor = m_model.rowAt(row)->id;
+    m_model.selectOnly(row);
+    showRowDetail(row);
     m_preflightReport.clear();
     emit changed();
+}
+void BrowserController::selectRangeTo(int row) {
+    if (m_busy || !m_ready || !m_model.rowAt(row))
+        return;
+    int anchor = row;
+    bool foundAnchor = false;
+    for (int index = 0; index < m_model.rowCount(); ++index)
+        if (m_model.rowAt(index)->id == m_selectionAnchor) {
+            anchor = index;
+            foundAnchor = true;
+            break;
+        }
+    if (!foundAnchor)
+        m_selectionAnchor = m_model.rowAt(row)->id;
+    m_model.selectRange(anchor, row);
+    showRowDetail(row);
+    m_preflightReport.clear();
+    emit changed();
+}
+void BrowserController::selectForContext(int row) {
+    if (m_busy || !m_ready || !m_model.rowAt(row))
+        return;
+    if (!m_model.isSelected(row)) {
+        selectOnlyRow(row);
+        return;
+    }
+    // Context menus preserve an existing batch selection; the clicked item owns
+    // the detail focus, while the batch commands retain the complete ID set.
+    showRowDetail(row);
+    emit changed();
+}
+void BrowserController::selectAllOnPage(bool selected) {
+    if (m_busy || !m_ready)
+        return;
+    m_model.selectAll(selected);
+    m_selectionAnchor.clear();
+    m_detail.clear();
+    m_preflightReport.clear();
+    emit changed();
+}
+void BrowserController::copySelection(bool includeArchivePath) {
+    if (m_busy || !m_ready)
+        return;
+    QStringList names;
+    for (int row = 0; row < m_model.rowCount(); ++row) {
+        if (!m_model.isSelected(row))
+            continue;
+        const auto &display = m_model.rowAt(row)->cells[0];
+        QString name = display;
+        while (name.endsWith('/'))
+            name.chop(1);
+        names.append(includeArchivePath ? display : name.section('/', -1));
+    }
+    if (!names.empty())
+        QGuiApplication::clipboard()->setText(names.join('\n'));
 }
 void BrowserController::enterDirectory(int row) {
     if (m_busy || !m_ready)
@@ -182,6 +291,20 @@ void BrowserController::enterDirectory(int row) {
     m_directory = m_directoryPaths.value(item->cells[0], item->id);
     m_location = item->cells[0];
     start({}, 0);
+}
+QVariantList BrowserController::breadcrumbs() const {
+    QVariantList result;
+    auto *item = m_directoryItems.value(m_directory, nullptr);
+    // The complete index is bounded to 64 levels. These are presentation names,
+    // not host filesystem paths or additional archive queries.
+    while (item) {
+        result.prepend(
+            QVariantMap{{"id", item->data(Qt::UserRole)},
+                        {"label", item->text()},
+                        {"current", item->data(Qt::UserRole).toString() == m_directory}});
+        item = item->parent();
+    }
+    return result;
 }
 void BrowserController::replaceDirectories(const QList<DirectoryRow> &rows) {
     m_directoryItems.clear();
@@ -208,6 +331,28 @@ void BrowserController::replaceDirectories(const QList<DirectoryRow> &rows) {
         depths.insert(row.id, depth);
         m_navigationWidth = qMax(m_navigationWidth, 160 + depth * 16);
     }
+    // Presentation flags are derived only after the complete bounded tree exists.
+    // They encode guide continuity, not format or output-path logic.
+    for (auto *item : m_directoryItems) {
+        const auto *parent = item->parent() ? item->parent() : m_directories.invisibleRootItem();
+        item->setData(item->row() == parent->rowCount() - 1, Qt::UserRole + 4);
+        QVariantList continuations;
+        auto *ancestor = item->parent();
+        while (ancestor && ancestor->parent()) {
+            continuations.prepend(ancestor->row() < ancestor->parent()->rowCount() - 1);
+            ancestor = ancestor->parent();
+        }
+        item->setData(continuations, Qt::UserRole + 3);
+    }
+}
+QStringList BrowserController::directoryAncestors(const QString &id) const {
+    QStringList ancestors;
+    const auto *item = m_directoryItems.value(id, nullptr);
+    while (item && item->parent()) {
+        item = item->parent();
+        ancestors.append(item->data(Qt::UserRole).toString());
+    }
+    return ancestors;
 }
 void BrowserController::navigateDirectory(const QString &id) {
     if (m_busy || !m_ready || m_closing)
@@ -443,9 +588,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_committedQuery =
                 m_ready ? QueryState{m_directory, m_location, m_search, m_sort} : QueryState{};
             restoreQuery();
+            if (m_result.replaceDirectories)
+                m_archiveTotal = m_ready ? m_result.total : 0;
             if (!m_ready || m_result.replaceDirectories)
                 replaceDirectories(m_ready ? m_result.directories : QList<DirectoryRow>{});
             m_navigationLimited = m_ready && m_result.navigationLimited;
+            m_selectionAnchor.clear();
             m_model.replace(m_ready ? std::move(m_result.rows) : QList<BrowserRow>{});
             m_detail.clear();
             m_total = m_ready ? m_result.total : 0;

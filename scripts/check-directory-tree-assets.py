@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the directory-tree handoff, not unimplemented UI interactions."""
+"""Validate directory-tree assets and their truthful consumer inventory."""
 from __future__ import annotations
 
 import hashlib
@@ -35,7 +35,7 @@ def main():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == item['sha256']
         with Image.open(path) as original:
             assert original.size == (1024, 1536), item['file']
-        assert item['status'] == 'approved-design-awaiting-integration'
+        assert item['status'] == 'approved-design-with-core-interactions'
 
     records = {item['file']: item for item in manifest['assets']}
     cuts = manifest['component_reference_coverage']
@@ -61,7 +61,7 @@ def main():
         assert len(circles) == 1
         assert {key: circles[0].get(key) for key in ('cx', 'cy', 'r', 'fill')} == {
             'cx': '12', 'cy': '12', 'r': '3', 'fill': color}
-        assert records[name]['runtime_usage']['qt_aliases'] == []
+        assert records[name]['runtime_usage']['qt_aliases'] == [f'assets/{theme}/tree-active-branch.png']
         for scale in (1, 2, 3):
             with Image.open(ASSETS / f'png/{theme}/tree-active-branch@{scale}x.png') as image:
                 assert image.size == (24 * scale, 24 * scale)
@@ -106,7 +106,7 @@ def main():
                 'long_name', 'deep_hierarchy', 'large_type', 'loading', 'empty_archive',
                 'root_files_only', 'navigation_limited', 'read_failed', 'hidden_current'}
     assert required <= set(spec['states']), 'Missing handoff state'
-    assert spec['status'] == 'design-ready-awaiting-html-and-qt-integration'
+    assert spec['status'] == 'core-interactions-integrated'
     display = (ROOT / 'design/html/display-spec.js').read_text()
     ratio = re.search(r'sourceToLogical:\s*(\d+)\s*/\s*(\d+)', display)
     assert ratio and spec['coordinate_mapping']['source_to_logical_ratio'] == [int(ratio[1]), int(ratio[2])]
@@ -123,8 +123,8 @@ def main():
                    'Counts, leaf arrows and hidden-current sample are internally consistent'],
         'coordinate_conversion': 'Qt logical values and HTML source values map to the same 1280-wide design size',
         'integration_status': spec['status'],
-        'limits': ['No HTML or Qt directory-tree redesign is implemented by this delivery',
-                   'State specifications do not prove live keyboard or screen-reader behavior',
+        'limits': ['Boundary notice glyphs and skeleton remain design resources',
+                   'Asset checks do not prove live keyboard or screen-reader behavior; see the component interaction review',
                    'Light boards do not constitute a complete dark component board'],
     }
     (REPORT_ROOT / 'validation.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')

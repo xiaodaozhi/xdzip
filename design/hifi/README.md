@@ -37,7 +37,7 @@
 | [节点与交互状态](screens/directory-tree-states.png) | 折叠 / 展开、空 / 非空叶子、当前 / 悬停 / 焦点、长名称、大字号 |
 | [空态与导航边界](screens/directory-tree-boundaries.png) | 读取、空归档、根文件、超限、失败、隐藏当前目录 |
 
-[集中查看图板与切图](directory-tree.html) · [交互与接入规格](../../docs/ux/directory-tree.md) · [逻辑参数](../../docs/visual/directory-tree.json) · [实际交付检查](../../docs/qa/directory-tree.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML / Qt 目录树接入仍待完成。
+[集中查看图板与切图](directory-tree.html) · [交互与接入规格](../../docs/ux/directory-tree.md) · [逻辑参数](../../docs/visual/directory-tree.json) · [实际交付检查](../../docs/qa/directory-tree.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML 示例与 Qt 只读目录树已接入核心交互，边界提示 / 骨架、完整深色图板与人工辅助功能验收仍待后续完成。
 
 ## 原稿与素材的职责
 

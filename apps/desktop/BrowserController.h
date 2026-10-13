@@ -28,6 +28,10 @@ class ArchiveTableModel final : public QAbstractTableModel {
     void replace(QList<BrowserRow> rows);
     const BrowserRow *rowAt(int row) const;
     void select(int row);
+    bool isSelected(int row) const;
+    void selectOnly(int row);
+    void selectAll(bool selected);
+    void selectRange(int first, int last);
     QStringList selectedIds() const {
         return m_selected.values();
     }
@@ -46,6 +50,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
     Q_PROPERTY(QAbstractItemModel *directories READ directories CONSTANT)
     Q_PROPERTY(QString directoryId READ directoryId NOTIFY changed)
+    Q_PROPERTY(QVariantList breadcrumbs READ breadcrumbs NOTIFY changed)
     Q_PROPERTY(bool navigationLimited READ navigationLimited NOTIFY changed)
     Q_PROPERTY(int navigationWidth READ navigationWidth NOTIFY changed)
     Q_PROPERTY(int sortOrder READ sortOrder NOTIFY changed)
@@ -59,6 +64,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString title READ title NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(int total READ total NOTIFY changed)
+    Q_PROPERTY(int archiveTotal READ archiveTotal NOTIFY changed)
     Q_PROPERTY(int offset READ offset NOTIFY changed)
     Q_PROPERTY(QString sessionId READ sessionId NOTIFY changed)
   public:
@@ -73,6 +79,7 @@ class BrowserController : public QObject {
     QString directoryId() const {
         return m_directory;
     }
+    QVariantList breadcrumbs() const;
     bool navigationLimited() const {
         return m_navigationLimited;
     }
@@ -83,6 +90,7 @@ class BrowserController : public QObject {
         return m_sort;
     }
     Q_INVOKABLE void navigateDirectory(const QString &id);
+    Q_INVOKABLE QStringList directoryAncestors(const QString &id) const;
     // Columns 0..3 toggle ascending/descending; -1 restores archive order.
     Q_INVOKABLE void sortByColumn(int column);
     bool runtimeAvailable() const {
@@ -102,6 +110,9 @@ class BrowserController : public QObject {
     }
     int total() const {
         return m_total;
+    }
+    int archiveTotal() const {
+        return m_archiveTotal;
     }
     int offset() const {
         return m_offset;
@@ -123,6 +134,11 @@ class BrowserController : public QObject {
     }
     Q_INVOKABLE void inspectSelection();
     Q_INVOKABLE void selectRow(int row);
+    Q_INVOKABLE void selectOnlyRow(int row);
+    Q_INVOKABLE void selectRangeTo(int row);
+    Q_INVOKABLE void selectForContext(int row);
+    Q_INVOKABLE void selectAllOnPage(bool selected);
+    Q_INVOKABLE void copySelection(bool includeArchivePath);
     Q_INVOKABLE void enterDirectory(int row);
     Q_INVOKABLE void showAll();
     Q_INVOKABLE void search(const QString &text);
@@ -159,10 +175,13 @@ class BrowserController : public QObject {
     };
     QueryState m_committedQuery;
     void restoreQuery();
+    void showRowDetail(int row);
     void start(const QString &path, int offset);
     static QString explain(const QString &code);
     void replaceDirectories(const QList<DirectoryRow> &rows);
     ArchiveTableModel m_model;
+    QString m_selectionAnchor;
+    int m_archiveTotal = 0;
     QStandardItemModel m_directories;
     QHash<QString, QStandardItem *> m_directoryItems;
     QHash<QString, QString> m_directoryPaths;

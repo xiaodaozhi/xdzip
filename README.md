@@ -11,6 +11,7 @@
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
 - [HTML 高保真设计](design/html/index.html)：可操作界面、原稿对照和独立窗口预览；[目录职责](design/README.md)。
+- [主窗口组件与交互](design/html/components.html)：共享菜单、按钮状态和键盘操作；[功能覆盖与验证](docs/qa/main-window-components.md)。
 - [高保真设计统一入口](design/hifi/README.md)：当前主界面、操作窗口与设计参数；图标和原像素切片在[统一素材库](design/assets/index.html)。
 - [M1 完整验收入口](docs/qa/m1-acceptance.md)：三平台检查和 Apple Silicon 开发构建。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
@@ -29,4 +30,4 @@ Rust 核心独立于 Qt；内置格式通过源码接口扩展，第三方扩展
 
 `docs/design/` 为规范源文档，`design/hifi/` 为高保真原稿，`docs/visual/` 为视觉规范，`docs/engineering/` 为工程准备，`docs/planning/` 为阶段和风险，`docs/qa/` 为验收计划，`.github/` 为协作模板。文档构建工具仅用于生成 HTML，不构成产品代码。
 
-项目原创内容采用 [Apache License 2.0](LICENSE)，详情见 [许可证说明](docs/engineering/licensing.md)。Qt、编解码器和其他依赖分别遵守自身许可证；当前私有仓库保持原有可见性。
+项目原创内容采用 [Apache License 2.0](LICENSE)，详情见 [许可证说明](docs/engineering/licensing.md)。Qt、编解码器和其他依赖分别遵守自身许可证。

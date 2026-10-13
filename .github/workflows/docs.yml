@@ -17,9 +17,13 @@ jobs:
           python3 scripts/check-brand-corners.py
           python3 scripts/build-html-design.py --check
           python3 scripts/generate-qml-theme.py --check
+          python3 scripts/generate-control-tokens.py --check
       - name: Check HTML design JavaScript syntax
         run: |
           node --check design/html/app.js
           node --check design/html/review.js
+          node --check design/html/controls.js
+          node --check design/html/main-controls.js
+          node --check design/html/components.js
       - name: Check whitespace
         run: git diff-tree --check HEAD

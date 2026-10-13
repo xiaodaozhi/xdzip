@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
@@ -81,10 +80,10 @@ Rectangle {
             Accessible.name: qsTr("外观设置")
             explanation: qsTr("外观设置")
             onClicked: appearance.open()
-            Menu {
+            CommandMenu {
                 id: appearance
                 y: parent.height
-                MenuItem {
+                CommandMenuItem {
                     text: Theme.dark ? qsTr("切换浅色外观") : qsTr("切换深色外观")
                     onTriggered: root.themeRequested()
                 }

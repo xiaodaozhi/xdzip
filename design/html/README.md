@@ -1,6 +1,6 @@
 # xdzip HTML 高保真设计
 
-[打开审阅入口](index.html) · [源像素测量画布](canvas.html) · [设计目录职责](../README.md) · [已确认图片](../hifi/index.html)
+[打开审阅入口](index.html) · [组件与交互](components.html) · [源像素测量画布](canvas.html) · [设计目录职责](../README.md) · [已确认图片](../hifi/index.html)
 
 本交付以主窗口、解压确认及操作状态原稿为视觉依据，完整原稿统一位于 `design/hifi/screens/`。主界面采用可编辑 HTML/CSS，操作和状态由示例数据驱动。图标从与 Qt 相同的 `design/assets/svg/` 源生成，照片来自 `design/assets/demo/`；原像素图标切片集中在 `design/assets/reference/`，用于外观对照。
 
@@ -29,6 +29,10 @@
 | hifi.css | 按当前原稿校准的画布、间距、字号、卡片和窗口样式 |
 | header-reference.json、body-reference.json | 从原稿独立测量的顶部与内容区域锚点，不从 CSS 自动生成 |
 | app.js | 内存示例数据和操作状态，不含压缩库 |
+| controls.js、controls.css | 共享菜单、键盘、定位、焦点、提示及按钮状态，不持有归档数据 |
+| main-controls.js | 主窗口命令、上下文和独立示例会话适配器 |
+| components.html、components.js、components.css | 使用共享实现的可操作组件审阅页 |
+| controls-tokens.js、controls-tokens.css | 从共享控件及目录树规范生成，不手工维护第二份尺寸 |
 | assets.js | 自动生成的共享素材，修改 SVG 后重新生成，不手改 |
 | screenshots/ | 本次 HTML 实际渲染结果，不是设计原图或 Qt 截图 |
 
@@ -57,3 +61,7 @@
 工具栏下方采用同样流程，查看 [内容区域说明](../../docs/qa/html-body-review.md)、[逐区域对照](../../docs/qa/html-body/index.html) 和 [测量证据](../../docs/qa/html-body/measurements.json)。执行 `python scripts/check-html-body.py`、`python scripts/build-html-body-review.py` 后生成 `dist/xdzip-body-review.html`。同尺寸裁切包括侧栏、列表、预览和状态栏；手机可逐区域检查。几何与隔离图标采用 2 px 容差，文字轮廓只记录，不据此宣称整页像素一致。
 
 原稿选中一项但全选框为空、节省标注 26% 但示意条约填 56% 的两处静态矛盾，HTML 分别保留半选状态和实际 26% 比例。它们是有记录的功能语义例外。本轮正文校准仍属于 HTML 设计交付，不表示 Qt 产品同步完成。
+
+主窗口[组件与交互契约](../../docs/ux/main-window-components.md)同时覆盖外观与行为。多归档示例、真实网格、各字段排序、递归目录、条目 / 空白 / 表头 / 标签右键、解压范围、更多 / 视图子菜单、快捷键、提示和焦点恢复已接入。按钮使用普通、悬停、按下、焦点、禁用及忙碌状态；完整性检查明确为演示任务，没有执行 CRC。压缩 / 解压仍使用示例进度。
+
+运行 `python3 scripts/check-html-controls.py` 验证主窗口交互并生成浅深色、三种平台外观和手机组件截图。单文件 `dist/xdzip-components.html` 可离线打开，[复核文档](../../docs/qa/main-window-components.md)区分 HTML 演示与 Qt 只读功能。

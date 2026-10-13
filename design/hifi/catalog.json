@@ -65,7 +65,7 @@
       "file": "screens/directory-tree.png",
       "title": "目录树 B · 多级展开",
       "group": "component",
-      "status": "approved-design-awaiting-integration",
+      "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",
       "sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
       "component": "directory-tree"
@@ -74,7 +74,7 @@
       "file": "screens/directory-tree-states.png",
       "title": "目录树 B · 节点与交互状态",
       "group": "component",
-      "status": "approved-design-awaiting-integration",
+      "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",
       "sha256": "1e8b25a43a3deb5927e6b2db30fbd416b0bacb48ecc6ecfdeab1969ff4da89f8",
       "component": "directory-tree"
@@ -83,7 +83,7 @@
       "file": "screens/directory-tree-boundaries.png",
       "title": "目录树 B · 空态与导航边界",
       "group": "component",
-      "status": "approved-design-awaiting-integration",
+      "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",
       "sha256": "33f7e003a8b275d74e7f9491a4ffc9246eb45ddb4adbd1f077600dc406bbfb98",
       "component": "directory-tree"

@@ -29,6 +29,19 @@
     <file>ui/ArchiveAction.qml</file>
     <file>ui/ArchiveTabs.qml</file>
     <file>ui/ArchiveToolbar.qml</file>
+    <file>ui/CommandMenu.qml</file>
+    <file>ui/Breadcrumb.qml</file>
+    <file>ui/CommandMenuItem.qml</file>
+    <file>ui/CommandMenuSeparator.qml</file>
+    <file>ui/CommandTooltip.qml</file>
+    <file alias="assets/light/check.png">../../design/assets/png/light/check@3x.png</file>
+    <file alias="assets/dark/check.png">../../design/assets/png/dark/check@3x.png</file>
+    <file alias="assets/light/chevron-right.png">../../design/assets/png/light/chevron-right@3x.png</file>
+    <file alias="assets/dark/chevron-right.png">../../design/assets/png/dark/chevron-right@3x.png</file>
+    <file alias="assets/light/chevron-down.png">../../design/assets/png/light/chevron-down@3x.png</file>
+    <file alias="assets/dark/chevron-down.png">../../design/assets/png/dark/chevron-down@3x.png</file>
+    <file alias="assets/light/tree-active-branch.png">../../design/assets/png/light/tree-active-branch@3x.png</file>
+    <file alias="assets/dark/tree-active-branch.png">../../design/assets/png/dark/tree-active-branch@3x.png</file>
     <file alias="assets/light/open.png">../../design/assets/png/light/open@3x.png</file>
     <file alias="assets/light/new.png">../../design/assets/png/light/new@3x.png</file>
     <file alias="assets/light/archive-test.png">../../design/assets/png/light/archive-test@3x.png</file>

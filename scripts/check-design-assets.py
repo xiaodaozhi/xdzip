@@ -244,7 +244,7 @@ def main() -> None:
     assert components == component_reference_coverage(), 'Incomplete component reference coverage'
     for component in components:
         assert component['reference'] in by_file
-        assert component['integration_status'] == 'design-ready-awaiting-html-and-qt-integration'
+        assert component['integration_status'] in {'core-interactions-integrated', 'design-reference-only'}
         for icon in component['icon_names']:
             for theme in THEMES:
                 assert f'svg/{theme}/{icon}.svg' in by_file

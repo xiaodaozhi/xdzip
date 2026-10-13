@@ -103,3 +103,7 @@ HTML 照片预览从分栏标题下边缘直接开始，顶边与文件列表表
 系统应用图标接入 Qt 窗口、macOS app bundle、Windows 可执行资源以及 Linux 桌面启动项 / hicolor 图标目录。ZIP 文档平台格式用于后续安装器及文件关联；当前不注册默认应用或文件关联，不增加双击打开或运行中接收文件的行为。平台接入和实际验证见 [品牌与素材复核](../qa/brand-and-assets.md)。
 
 主题、成功、取消、冲突及进度缺图从原像素参考补齐为独立语义素材；取消大图使用方形停止符号，系统主题保留完整窗口结构。实际主题选择仍由原生单选输入表达，素材只负责外观。此次新增与修订素材的生成检查、目标平台显示和原稿差异分别记录，既有验收不能代替本轮结果。
+
+## 可操作控件规范
+
+[controls.json](controls.json)定义菜单四列、行高、圆角、颜色、焦点和提示时序；[directory-tree.json](directory-tree.json)定义目录层级。两份规格生成 HTML 控件参数和 QML Theme，通过检查避免手工复制尺寸与主题。主稿的逻辑 / 源像素比例从 `display-spec.js` 读取；[组件审阅页](../../design/html/components.html)采用 1:1 逻辑尺寸，主画布仍使用源坐标。功能清单与输入契约在[主窗口组件说明](../ux/main-window-components.md)，真实渲染与行为在[复核记录](../qa/main-window-components.md)。
