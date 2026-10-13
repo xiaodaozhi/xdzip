@@ -123,6 +123,9 @@ mod windows {
             WinLocalSystemSid,
             WinBuiltinAdministratorsSid,
             WinCreatorOwnerSid,
+            // OWNER RIGHTS applies to the object's owner, checked separately
+            // below; it never makes an unrelated owner trusted.
+            WinCreatorOwnerRightsSid,
         ] {
             let mut sid = vec![0u32; 17];
             let mut length = 68;

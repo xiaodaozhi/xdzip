@@ -173,13 +173,13 @@ fn broad_write_permissions_are_refused_before_staging() {
 fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_not() {
     // Modify only newly owned fixtures through the system ACL tool, not product
     // FFI. Native filesystem checks exercise effective and inherited grants.
-    fn world_access(root: &Owned, rights: &str) {
+    fn grant_access(root: &Owned, sid: &str, rights: &str) {
         let tool =
             PathBuf::from(std::env::var_os("SystemRoot").unwrap()).join("System32/icacls.exe");
         let result = std::process::Command::new(tool)
             .arg(&root.0)
             .arg("/grant:r")
-            .arg(format!("*S-1-1-0:(OI)(CI){rights}"))
+            .arg(format!("*{sid}:(OI)(CI){rights}"))
             .output()
             .unwrap();
         assert!(
@@ -189,17 +189,20 @@ fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_n
         );
     }
     let root = Owned::new();
-    world_access(&root, "(RA,RC,S)");
+    grant_access(&root, "S-1-1-0", "(RA,RC,S)");
+    // OWNER RIGHTS is a dynamic reference to the already trusted object owner.
+    // Exercise inheritance on real stage files and newly created output parents.
+    grant_access(&root, "S-1-3-4", "(F)");
     let grant = root.grant();
     let mut workspace = grant.workspace(90).unwrap();
     let mut staged = workspace.stage().unwrap();
     staged.write_all(b"verified private bytes").unwrap();
     workspace
-        .commit(staged, &path("private.txt"), None)
+        .commit(staged, &path("nested/private.txt"), None)
         .unwrap();
     workspace.cleanup().unwrap();
     assert_eq!(
-        fs::read(root.0.join("private.txt")).unwrap(),
+        fs::read(root.0.join("nested/private.txt")).unwrap(),
         b"verified private bytes"
     );
     drop(grant);
@@ -210,7 +213,8 @@ fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_n
         let source = root.0.join("source.zip");
         fs::write(&source, b"protected old bytes").unwrap();
         let id = FileIdentity::read(&File::open(&source).unwrap()).unwrap();
-        world_access(&root, rights);
+        grant_access(&root, "S-1-3-4", "(F)");
+        grant_access(&root, "S-1-1-0", rights);
         assert!(matches!(
             Grant::open(&root.0, id),
             Err(OutputError::UnsafeTarget)
