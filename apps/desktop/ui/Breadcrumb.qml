@@ -25,18 +25,20 @@ RowLayout {
             id: segment
             required property var modelData
             required property int index
-            Layout.fillWidth: !modelData.more
-            Layout.maximumWidth: modelData.current ? 500 : modelData.more ? 32 : 200
+            Layout.fillWidth: modelData.current
+            Layout.preferredWidth: Math.min(240 * Theme.fontScale, button.implicitWidth + (index > 0 ? 18 : 0))
+            Layout.maximumWidth: modelData.current ? 500 : modelData.more ? 32 : 240 * Theme.fontScale
             spacing: 8
             Text {
                 visible: segment.index > 0
                 text: "/"
-                font.pixelSize: Theme.bodySize
+                font.pixelSize: Theme.mainPaneTitleSize
                 color: Theme.textSecondary
             }
             ToolButton {
                 id: button
                 Layout.fillWidth: true
+                implicitWidth: contentItem.implicitWidth + leftPadding + rightPadding
                 Layout.fillHeight: true
                 padding: 2
                 enabled: root.available && !segment.modelData.current
@@ -47,7 +49,7 @@ RowLayout {
                     text: segment.modelData.label
                     textFormat: Text.PlainText
                     color: segment.modelData.current ? Theme.text : Theme.textSecondary
-                    font.pixelSize: Theme.bodySize
+                    font.pixelSize: Theme.mainPaneTitleSize
                     font.bold: segment.modelData.current
                     elide: Text.ElideMiddle
                     verticalAlignment: Text.AlignVCenter

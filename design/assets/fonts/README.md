@@ -1,8 +1,8 @@
-# HTML 设计复核字体
+# HTML 与 Qt 共用界面字体
 
 `xdzip-design-sans-sc.woff2` 是官方 **Noto Sans SC** 的小型可变字体子集，家族名为 **Xdzip Design Sans SC**。它用于固定 HTML 设计稿的字形、字重和文字宽度，覆盖当前界面、示例数据、ASCII 及常用界面标点，支持 400–750 的真实可变字重。文件由 `build-subset.py` 生成，不能手工编辑。
 
-此字体仅用于 HTML 设计复核；Qt 产品的平台字体规范不受影响。高保真原稿是生成图片，无法确认其中的原始字体。使用固定字体能消除 HTML 在不同设备上使用不同回退字体造成的度量漂移，不能据此宣称其字形与原稿完全相同。不同浏览器和操作系统仍可能采用不同的抗锯齿方式。
+Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 258 KiB。`export-qt.py` 保持字形、可变字重和度量不变，`UiFont.h` 在应用与测试加载相同家族；子集以外的归档名称仍由系统回退，不宣称覆盖所有语言。高保真原稿是生成图片，无法确认其中的原始字体；统一字体不能据此宣称字形与原稿完全相同，平台抗锯齿仍有差异。
 
 ## 文件
 
@@ -10,6 +10,8 @@
 | --- | --- |
 | `fonts.css` | `@font-face` 声明；界面样式另行设置家族名 |
 | `xdzip-design-sans-sc.woff2` | 实际用于 HTML 的离线字体 |
+| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `593241e2917d3a0f3bc6037e65ce2a8e9ee20fe966f9c768db17537269d982b9` |
+| `export-qt.py` | 导出 TTF；`--check` 检查是否与当前 WOFF2 完全对应 |
 | `OFL.txt` | 上游原文版权及 SIL Open Font License 1.1 |
 | `manifest.json` | 固定来源、原始及子集 SHA-256、覆盖字符、字重和工具版本 |
 | `validation.json` | 当前子集在 Chromium 中加载的实际字体及重复生成证据 |
@@ -36,6 +38,8 @@ https://raw.githubusercontent.com/google/fonts/a85815a42757630ce188fdad368c2dfc4
 python -m pip install -r design/assets/fonts/requirements.txt
 python design/assets/fonts/build-subset.py /tmp/NotoSansSC.ttf
 python design/assets/fonts/build-subset.py --check
+python design/assets/fonts/export-qt.py
+python design/assets/fonts/export-qt.py --check
 ```
 
 生成过程校验原始文件哈希，收集 `design/html/` 中 HTML、CSS、JavaScript 的文字（排除生成的图标登记文件 `assets.js`），保留常用标点和 ASCII，将可变字重范围限制为 400–750，然后通过 FontTools 与 Brotli 导出 WOFF2。检查过程验证字体、许可哈希、字重范围和当前界面的字形覆盖。增加界面文字时如检查发现缺字，应重新生成子集及单文件 HTML。

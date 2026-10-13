@@ -60,13 +60,13 @@ Item {
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
             const extract = findChild(toolbar, "archiveExtract");
             tryCompare(extract, "height", toolbar.controlHeight);
-            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 15.5);
+            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 14);
             const icon = findChild(open, "actionIcon");
             const label = findChild(open, "actionLabel");
             tryVerify(() => Math.abs(icon.mapToItem(open, 0, icon.height / 2).y - open.height / 2) < 0.5);
             tryVerify(() => Math.abs(label.mapToItem(open, 0, label.height / 2).y - open.height / 2) < 0.5);
-            compare(icon.width, 24);
-            compare(label.font.pixelSize, 16 * data.scale);
+            verify(Math.abs(icon.width - 32 * 1280 / 1548) < 0.01);
+            compare(label.font.pixelSize, 15 * data.scale);
             verify(!extract.enabled);
             verify(findChild(extract, "actionSplitIndicator").visible);
             compare(findChild(extract, "actionLabel").opacity, 1);

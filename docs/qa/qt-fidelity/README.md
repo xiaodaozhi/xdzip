@@ -1,0 +1,64 @@
+# Qt 主窗口设计一致性验收
+
+日期：2026-10-13。依据先冻结基准、统一倍率、逐区测量、修正、截图复验的流程校准 Qt；本次截图来自真实只读 ZIP 运行时。
+
+## 依据与误差规则
+
+[冻结基准](../../visual/qt-main-reference.json)来自 `05d4100` 的已验收 HTML 和 [高保真原稿](../../../design/hifi/screens/main-light.png)。主窗口原稿范围为 `[20,30,1548,940]`，统一换算比例 `1280/1548`，保留纵横比。旧原稿、HTML 基线的 SHA-256 必须与冻结文件相符，不修改原稿来迁就实现。
+
+独立脚本 [check-qt-fidelity.py](../../../scripts/check-qt-fidelity.py)不读取 Qt tokens：直接比较实际 Qt 场景坐标与冻结测量。结构边界允许 1 逻辑像素取整误差；两分栏标题高度、预览与表头顶边必须完全共线；文字／图标中心容差 0.5；字号使用 Qt 必需的整数 pixelSize，并保留原始小数目标。正常主窗口 1280×777，不能用浏览器或系统缩放制造一致假象。
+
+## 修正结果
+
+| 项目 | 修正前 Qt | 冻结目标 | 修正后 Qt |
+| --- | --- | --- | --- |
+| 主窗口客户区 | 1280×820 | 1280×777.26 | 1280×777 |
+| 侧栏宽 | 220 | 241.45 | 241 |
+| 预览栏宽 | 280 | 322.48 | 322 |
+| 目录／文件行高 | 40／40 | 53.75／55.81 | 53.75／55.81 |
+| 列表图标槽 | 18×18 | 39.69×39.69 | 39.69×39.69 |
+| 文件名 | 13 | 15.71 | 16 |
+| 列头／工具栏文字 | 旧各自参数 | 14.88 | 15 |
+| 分栏标题高／字号 | 68／14 | 57.05／16.54 | 57／17 |
+| 正常浅色强调色 | #365FE8 | #1956FF | #1956FF |
+
+标签恢复宽度、文字间距、凹圆弧衔接、关闭与加号垂直中心及右侧设置位置。文件列表大小列标题和内容同边右对齐；类型列同边左对齐。预览从表头顶边开始。搜索、主按钮、普通动作共用垂直中心。页码仅在超过一页时出现，底部恢复选择字节数、读取状态和任务入口。所有运行图标仍来自统一透明素材库，没有引入原稿背景切片。
+
+HTML 和 Qt 共用同源字体，Qt 的 263,796 字节 TTF 由已审阅 WOFF2 无损导出；子集之外的文件名称仍使用系统回退。原稿是生成图片，不能据此确认其具体字体，也不把抗锯齿差异算作几何偏差。
+
+## 实际证据
+
+- [修正后浅色 Qt](after-light.png)、[深色 Qt](after-dark.png)、[同 normal.zip 数据的修正后截图](after-normal.png)。环境见 [provenance.json](provenance.json)：Linux x86_64、Qt 6.8.2、offscreen/software、DPR 1；不是 macOS 实机截图。
+- [修正前 macOS ARM64 离屏截图](before-macos.png)，对应 [CI 38344582875](https://github.com/xiaodaozhi/xdzip/actions/runs/38344582875) 与 [构建信息](before-build.json)。前后使用不同平台时，字体栅格化不可直接当作回归分数。
+- [冻结 HTML 截图](html-baseline.png)及[实测](html-baseline-metrics.json)。旧品牌／旧树的高保真原稿仅用来比对未修订区域，新品牌与目录树 B 继续有效。
+- [集成标题栏布局](integrated-layout.png)在离屏测试中启用预留交通灯位置，只验证客户区布局，不绘制假交通灯，不当成 Cocoa 原生窗口装饰证据。
+- [200% 字号最小窗口](large-type.png)、[右键菜单与网格](context-menu.png)；窗口尺寸、字号和内容差异均保留。
+- [独立完整量测](measurements.json)：三个实际场景共 653 条约束通过；共享组件检查另有 72 条通过。数字描述检查项数量，不是视觉还原百分比。
+
+生成可在手机查看的单文件叠加对照页：
+
+```sh
+python scripts/export-qt-fidelity.py
+```
+
+输出 `dist/xdzip-qt-fidelity.html`。可以切换完整窗口、顶部、列表、侧栏和预览，选择 100% 逻辑尺寸或屏幕自适应，拖动透明度叠加 Qt／HTML／原稿。截图原字节嵌入，并附带字体许可。
+
+## 行为与自动化
+
+本地五组 CTest 全部通过，QML lint 无警告。真实归档测试覆盖关闭标签后清空会话但保持窗口／运行时存活、重新打开得到新会话、三态全选、所选字节数、真实类型与未知日期。既有目录展开、分页排序、选择／范围选择、上下文菜单、键盘子菜单、浅深主题、200% 字号、独立详情和预检窗口继续通过。
+
+CI 在 Linux、Windows、macOS ARM64 上运行同一截图采集与独立 gate，并继续执行十次生命周期复测、macOS/Windows 部署后原生启动检查。原始场景 JSON 保留在每次 CI artifact 的 `visual-audit/`，仓库保存审阅截图、摘要和哈希。
+
+```sh
+XDZIP_VISUAL_AUDIT=build/desktop/visual-audit build/desktop/apps/desktop/xdzip-browser-tests \
+  treeExpansionAndColumnInteraction realContextMenusAndGrid mainWindowFidelityAndSessionClose renderRealArchive
+python scripts/check-qt-fidelity.py --input build/desktop/visual-audit --output build/desktop/fidelity.json
+```
+
+## 保留的差异与验收边界
+
+1. Qt 读取九条自建样本记录；设计图中是 30 条示例。归档大小、选中大小与日期不能照抄。修改日期暂显示 `—`，类型基于后缀提示，压缩方法保留在详情和排序菜单。
+2. 图片解码和内容预览尚未实现，预览位置显示明确的不可用说明与类型图标；未使用示例山水照片伪装实际内容。创建、CRC 校验、安全解压仍禁用。
+3. 当前运行时只有一个归档会话；关闭是真操作，加号打开并替换现有会话；不添加不能切换的第二个标签。
+4. 原生系统标题栏、最新 macOS 桌面焦点／窗口按钮和字体回退仍需要平台桌面验收。离屏截图通过不能替代这一项。
+5. 深色完整高保真主稿尚未冻结。本轮深色验收限定为同布局、同素材主题、字号和可读性；白字主强调色采用 #3264E9 达到正文对比度，不宣称与不存在的深色原稿完全相同。

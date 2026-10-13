@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "UiFont.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QClipboard>
@@ -7,6 +8,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QTimer>
 #include <QtTest>
 #include <thread>
@@ -28,6 +30,7 @@ class BrowserTest : public QObject {
     void initTestCase() {
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
+        QVERIFY(installUiFont());
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
     void cleanup() {
@@ -409,7 +412,7 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->selectedCount(), 0);
         auto *viewButton = findVisual(window->contentItem(), "browserViewMenuButton");
         QVERIFY(viewButton);
-        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier,
+        QTest::mouseClick(window, Qt::RightButton, Qt::NoModifier,
                           viewButton->mapToScene(QPointF(12, 12)).toPoint());
         auto *viewMenu = window->findChild<QObject *>("browserViewMenu");
         QVERIFY(viewMenu);
@@ -451,6 +454,72 @@ class BrowserTest : public QObject {
         QVERIFY(!controller.busy());
         QVERIFY(controller.requestClose());
     }
+    void mainWindowFidelityAndSessionClose() {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const auto archivePath = directory.filePath(QString::fromUtf8("北境旅行.zip"));
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), archivePath));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(archivePath);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QCOMPARE(controller->total(), 9);
+        controller->selectOnlyRow(3);
+        QCOMPARE(controller->detail().value("type").toString(), "PNG");
+        QCOMPARE(controller->detail().value("modified").toString(), QString::fromUtf8("—"));
+        QVERIFY(controller->selectedBytes().toULongLong() > 0);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures, "main-light"));
+            window->setProperty("darkMode", true);
+            QVERIFY(visual_audit::save(window, captures, "main-dark"));
+            window->setProperty("darkMode", false);
+            // Layout evidence only: native Cocoa window buttons are not drawn by Qt.
+            window->setProperty("integratedTitlebar", true);
+            QVERIFY(visual_audit::save(window, captures, "main-integrated-layout"));
+        }
+        auto *all = findVisual(window->contentItem(), "selectPage");
+        QVERIFY(all);
+        const auto selectPoint =
+            all->mapToScene(QPointF(all->width() / 2, all->height() / 2)).toPoint();
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, selectPoint);
+        QTRY_COMPARE(controller->selectedCount(), 9);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, selectPoint);
+        QTRY_COMPARE(controller->selectedCount(), 0);
+        const auto session = controller->sessionId();
+        auto *close = findVisual(window->contentItem(), "archiveTabClose");
+        QVERIFY(close);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            close->mapToScene(QPointF(close->width() / 2, close->height() / 2)).toPoint());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && !controller->ready(), 5000);
+        QVERIFY(controller->sessionId().isEmpty());
+        QVERIFY(controller->runtimeAvailable());
+        QCOMPARE(controller->total(), 0);
+        QCOMPARE(controller->selectedBytes(), "0");
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        QVERIFY(window->isVisible());
+        controller->openPath(archivePath);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QVERIFY(controller->sessionId() != session);
+        QCOMPARE(controller->total(), 9);
+        // Restoring the design's columns must not hide the existing review state.
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/unsafe-names.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        controller->selectOnlyRow(0);
+        QVERIFY(controller->detail().value("attention").toBool());
+        QVERIFY(
+            controller->detail().value("status").toString().contains(QString::fromUtf8("需检查")));
+        QVERIFY(controller->entries()
+                    ->data(controller->entries()->index(0, 0), Qt::UserRole + 5)
+                    .toBool());
+    }
     void renderRealArchive() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -473,7 +542,11 @@ class BrowserTest : public QObject {
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
         QTRY_COMPARE(controller->selectedCount(), 1);
         QCOMPARE(controller->detail().value("id").toString(), "2");
-        const auto checkPoint = cell->mapToScene(QPointF(20, 24)).toPoint();
+        auto *selection = findVisual(cell, "entrySelection");
+        QVERIFY(selection);
+        const auto checkPoint =
+            selection->mapToScene(QPointF(selection->width() / 2, selection->height() / 2))
+                .toPoint();
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, checkPoint);
         QTRY_COMPARE(controller->selectedCount(), 0);
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, checkPoint);

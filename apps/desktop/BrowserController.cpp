@@ -29,14 +29,17 @@ QVariant ArchiveTableModel::data(const QModelIndex &index, int role) const {
         return m_selected.contains(row.id);
     if (role == Qt::UserRole + 3)
         return row.navigable;
+    if (role == Qt::UserRole + 4)
+        return row.status;
+    if (role == Qt::UserRole + 5)
+        return row.attention;
     return {};
 }
 QHash<int, QByteArray> ArchiveTableModel::roleNames() const {
-    return {{Qt::DisplayRole, "display"},
-            {Qt::UserRole, "entryId"},
-            {Qt::UserRole + 1, "isDirectory"},
-            {Qt::UserRole + 2, "chosen"},
-            {Qt::UserRole + 3, "canNavigate"}};
+    return {{Qt::DisplayRole, "display"},      {Qt::UserRole, "entryId"},
+            {Qt::UserRole + 1, "isDirectory"}, {Qt::UserRole + 2, "chosen"},
+            {Qt::UserRole + 3, "canNavigate"}, {Qt::UserRole + 4, "entryStatus"},
+            {Qt::UserRole + 5, "attention"}};
 }
 void ArchiveTableModel::replace(QList<BrowserRow> rows) {
     beginResetModel();
@@ -210,13 +213,27 @@ void BrowserController::showRowDetail(int row) {
         m_detail.clear();
         return;
     }
-    m_detail = {{"name", item->cells[0]},
-                {"size", item->cells[1]},
-                {"packed", item->cells[2]},
-                {"method", item->cells[3]},
-                {"status", item->cells[4]},
-                {"directory", item->directory},
-                {"id", item->id}};
+    m_detail = {{"name", item->cells[0]},       {"size", item->cells[1]},
+                {"packed", item->cells[2]},     {"type", item->cells[3]},
+                {"modified", item->cells[4]},   {"method", item->method},
+                {"status", item->status},       {"attention", item->attention},
+                {"directory", item->directory}, {"id", item->id}};
+}
+QString BrowserController::selectedBytes() const {
+    // Sum only the bounded visible selection; never imply an archive-wide total.
+    quint64 bytes = 0;
+    for (int row = 0; row < m_model.rowCount(); ++row)
+        if (m_model.isSelected(row))
+            bytes += m_model.rowAt(row)->cells[1].toULongLong();
+    return QString::number(bytes);
+}
+void BrowserController::closeArchive() {
+    if (m_busy || !m_ready || !runtimeAvailable())
+        return;
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::CloseSession;
+    command.session = m_session.toULongLong();
+    submit(std::move(command));
 }
 void BrowserController::selectOnlyRow(int row) {
     if (m_busy || !m_ready || !m_model.rowAt(row))
@@ -443,6 +460,7 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_preflightReport.clear();
     m_result = {};
     m_result.preflight = preflight;
+    m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
     m_message = preflight ? tr("正在检查所选条目…") : tr("正在读取归档目录…");
@@ -534,14 +552,26 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 status << tr("加密");
             if (row.warning)
                 status << tr("需检查");
-            m_result.rows.append(
-                {text(row.id),
-                 {text(row.name), QString::number(row.size), QString::number(row.packed_size),
-                  method, status.isEmpty() ? tr("元数据") : status.join(" · ")},
-                 row.directory,
-                 row.directory && !row.warning});
+            const auto name = text(row.name);
+            auto type = row.directory ? tr("文件夹") : QFileInfo(name).suffix().toUpper();
+            if (type == QStringLiteral("JPG"))
+                type = QStringLiteral("JPEG");
+            if (type.isEmpty())
+                type = tr("文件");
+            // Presentation type is inferred from the displayed suffix, not content sniffing.
+            // Modification time is absent from this bridge; do not invent a date.
+            m_result.rows.append({text(row.id),
+                                  {text(row.name), QString::number(row.size),
+                                   QString::number(row.packed_size), type, QStringLiteral("—")},
+                                  row.directory,
+                                  row.directory && !row.warning,
+                                  method,
+                                  status.isEmpty() ? tr("元数据") : status.join(" · "),
+                                  row.warning || row.encrypted});
         }
         m_hasPayload = true;
+    } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {
+        m_hasPayload = event.session == 0;
     } else if (event.kind == EventKind::Preflight) {
         const auto &report = event.report;
         const QHash<QString, QString> reasons = {
@@ -575,7 +605,21 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
         m_message = explain(m_result.error);
-        if (m_result.preflight) {
+        if (m_result.closeSession && m_result.error.isEmpty()) {
+            m_ready = false;
+            m_title.clear();
+            m_session.clear();
+            m_committedQuery = {};
+            restoreQuery();
+            m_total = m_archiveTotal = m_offset = 0;
+            m_selectionAnchor.clear();
+            m_model.replace({});
+            replaceDirectories({});
+            m_detail.clear();
+            m_preflightReport.clear();
+            m_result = {};
+            emit changed();
+        } else if (m_result.preflight) {
             m_preflightReport =
                 m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
             m_result = {};

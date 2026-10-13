@@ -1,3 +1,4 @@
+#include "../UiFont.h"
 #include <QQmlEngine>
 #include <QQuickStyle>
 #include <QResource>
@@ -9,6 +10,11 @@ class Setup : public QObject {
     Setup() {
         QQuickStyle::setStyle(QStringLiteral("Basic"));
         Q_INIT_RESOURCE(ui);
+    }
+  public slots:
+    void applicationAvailable() {
+        if (!installUiFont())
+            qFatal("Unable to load UI font");
     }
 };
 QUICK_TEST_MAIN_WITH_SETUP(xdzip_ui, Setup)

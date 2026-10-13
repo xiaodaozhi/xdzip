@@ -8,7 +8,7 @@ import Xdzip.Native
 ApplicationWindow {
     id: root
     width: 1280
-    height: 820
+    height: 777
     minimumWidth: 1040
     minimumHeight: 680
     readonly property color accentTextColor: Theme.accentText
@@ -26,7 +26,7 @@ ApplicationWindow {
     property bool pendingDirectorySearchFocus: false
     readonly property bool contextAvailable: reader.ready && !reader.busy && contextEntry.session === reader.sessionId
     // File and directory icons share one logical slot; artwork retains its aspect ratio.
-    readonly property int entryIconSize: 18
+    readonly property real entryIconSize: Theme.mainFileIconSize
     function toggleInspector() {
         if (root.width < Theme.inspectorCollapseWidth) {
             inspectorWindow.show();
@@ -146,6 +146,7 @@ ApplicationWindow {
             showCloseAction: false
             anchors.fill: parent
             detail: reader.detail
+            selectionCount: reader.selectedCount
             sizeFormatter: root.formatSize
             iconForFile: root.fileIcon
             onCloseRequested: inspectorWindow.close()
@@ -160,6 +161,11 @@ ApplicationWindow {
         sequence: StandardKey.Find
         enabled: reader.ready && !reader.busy
         onActivated: toolbar.focusSearch()
+    }
+    Shortcut {
+        sequences: [StandardKey.Close]
+        enabled: reader.ready && !reader.busy
+        onActivated: reader.closeArchive()
     }
     Shortcut {
         sequence: StandardKey.SelectAll
@@ -361,6 +367,10 @@ ApplicationWindow {
             Layout.fillWidth: true
             archiveTitle: reader.title
             integratedTitlebar: root.integratedTitlebar
+            canOpen: reader.runtimeAvailable && !reader.busy
+            canClose: reader.ready && !reader.busy
+            onOpenRequested: reader.chooseArchive()
+            onCloseRequested: reader.closeArchive()
             onThemeRequested: root.darkMode = !root.darkMode
             onDragRequested: root.startSystemMove()
         }
@@ -386,39 +396,78 @@ ApplicationWindow {
             spacing: 0
             Rectangle {
                 objectName: "archiveSidebar"
-                Layout.preferredWidth: Theme.sidebarWidth
-                Layout.minimumWidth: Theme.sidebarWidth
-                Layout.maximumWidth: Theme.sidebarWidth
+                Layout.preferredWidth: Math.round(Theme.sidebarWidth)
+                Layout.minimumWidth: Math.round(Theme.sidebarWidth)
+                Layout.maximumWidth: Math.round(Theme.sidebarWidth)
                 Layout.fillHeight: true
                 color: Theme.sidebar
+                Rectangle {
+                    anchors.right: parent.right
+                    width: 1
+                    height: parent.height
+                    color: Theme.border
+                }
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
-                    spacing: 16
-                    Text {
-                        text: "ARCHIVE"
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.secondarySize
-                        font.letterSpacing: 1.5
-                    }
-                    Text {
+                    anchors.leftMargin: Theme.mainTreeOuterInset
+                    anchors.rightMargin: Theme.mainTreeOuterInset
+                    anchors.bottomMargin: Theme.mainContentInset
+                    spacing: 0
+                    Item {
+                        id: archiveCard
                         Layout.fillWidth: true
-                        text: reader.title.length ? reader.title : qsTr("尚未打开归档")
-                        textFormat: Text.PlainText
-                        elide: Text.ElideMiddle
-                        font.pixelSize: Theme.panelTitleSize
-                        font.bold: true
-                        color: Theme.text
-                    }
-                    Text {
-                        text: "ZIP  ·  " + qsTr("只读浏览")
-                        color: Theme.accentInk
-                        font.pixelSize: Theme.secondarySize
-                    }
-                    Rectangle {
-                        Layout.fillWidth: true
-                        implicitHeight: 1
-                        color: Theme.border
+                        implicitHeight: Math.max(Theme.mainArchiveCardHeight, archiveSummary.y + archiveSummary.height + 32)
+                        Text {
+                            id: archiveCaption
+                            x: 8
+                            y: 26
+                            text: "ARCHIVE"
+                            color: Theme.textSecondary
+                            font.pixelSize: Theme.mainArchiveCaptionSize
+                        }
+                        Text {
+                            id: archiveTitle
+                            objectName: "sidebarArchiveName"
+                            x: 8
+                            y: archiveCaption.y + archiveCaption.height + 7
+                            width: parent.width - 16
+                            text: reader.title.length ? reader.title : qsTr("尚未打开归档")
+                            textFormat: Text.PlainText
+                            elide: Text.ElideMiddle
+                            font.pixelSize: Theme.mainArchiveTitleSize
+                            font.weight: Font.DemiBold
+                            color: Theme.text
+                        }
+                        RowLayout {
+                            id: archiveSummary
+                            x: 8
+                            y: archiveTitle.y + archiveTitle.height + 8
+                            spacing: 12
+                            Rectangle {
+                                implicitWidth: 40
+                                implicitHeight: Math.max(24, Theme.mainSummarySize * 1.6)
+                                radius: 5
+                                color: Theme.selection
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "ZIP"
+                                    font.pixelSize: Theme.mainSummarySize
+                                    color: Theme.accentInk
+                                }
+                            }
+                            Text {
+                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("只读浏览")
+                                color: Theme.textSecondary
+                                font.pixelSize: Theme.mainSummarySize
+                            }
+                        }
+                        Rectangle {
+                            x: 8
+                            width: parent.width - 16
+                            y: parent.height - 16
+                            height: 1
+                            color: Theme.border
+                        }
                     }
                     Button {
                         id: allFiles
@@ -752,59 +801,94 @@ ApplicationWindow {
                                 reader.showAll();
                         }
                     }
+                    Text {
+                        text: reader.ready ? qsTr("%1 项").arg(reader.total) : ""
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.mainSummarySize
+                    }
                     ArchiveAction {
                         objectName: "browserViewMenuButton"
                         asset: "view-list"
-                        Accessible.name: qsTr("视图")
-                        onClicked: viewMenu.popup()
+                        Layout.preferredWidth: Theme.mainViewButtonWidth
+                        leftPadding: 8
+                        rightPadding: 8
+                        selected: root.viewMode === "list"
+                        Accessible.name: qsTr("列表视图")
+                        explanation: Accessible.name
+                        onClicked: root.viewMode = "list"
+                        TapHandler {
+                            acceptedButtons: Qt.RightButton
+                            onTapped: viewMenu.popup()
+                        }
+                    }
+                    ArchiveAction {
+                        objectName: "browserGridButton"
+                        asset: "view-grid"
+                        leftPadding: 5
+                        rightPadding: 5
+                        selected: root.viewMode === "grid"
+                        Accessible.name: qsTr("网格视图")
+                        explanation: Accessible.name
+                        onClicked: root.viewMode = "grid"
                     }
                     ArchiveAction {
                         objectName: "browserSortMenuButton"
-                        text: qsTr("排序")
+                        asset: "sort"
+                        leftPadding: 2
+                        rightPadding: 2
+                        glyphSize: 28
+                        Accessible.name: qsTr("排序方式")
+                        explanation: Accessible.name
                         enabled: reader.ready && !reader.busy
                         onClicked: sortMenu.popup()
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"
-                        text: qsTr("详情")
-                        Accessible.name: root.inspectorVisible ? qsTr("隐藏条目详情") : qsTr("显示条目详情")
+                        visible: !root.inspectorVisible
+                        asset: "panel"
+                        Accessible.name: qsTr("显示文件预览与属性")
                         explanation: Accessible.name
                         onClicked: root.toggleInspector()
                     }
                 }
                 Rectangle {
+                    objectName: "fileTableHeader"
                     Layout.fillWidth: true
-                    implicitHeight: Math.max(36, Theme.secondarySize * 1.6 + 12)
+                    implicitHeight: Math.round(Math.max(Theme.mainTableHeaderHeight, Theme.mainHeaderSize * 1.6 + 12))
                     color: Theme.canvas
                     clip: true
                     Row {
                         x: -table.contentX
                         Repeater {
-                            model: [qsTr("名称"), qsTr("原始大小"), qsTr("压缩后"), qsTr("方法"), qsTr("标记")]
+                            model: [qsTr("名称"), qsTr("原始大小"), qsTr("压缩后"), qsTr("类型"), qsTr("修改日期")]
                             Text {
                                 id: columnHeader
                                 required property string modelData
                                 required property int index
                                 width: table.columnSize(index)
                                 height: parent.parent.height
-                                leftPadding: index === 0 ? 72 : 12
-                                rightPadding: 12
+                                leftPadding: table.columnLeftInset(index, true)
+                                rightPadding: table.columnRightInset(index)
                                 horizontalAlignment: index === 1 || index === 2 ? Text.AlignRight : Text.AlignLeft
                                 verticalAlignment: Text.AlignVCenter
                                 objectName: "sort-column-" + index
                                 text: modelData
-                                color: Theme.textSecondary
-                                font.pixelSize: Theme.secondarySize
-                                activeFocusOnTab: index < 4
-                                enabled: index === 4 || (reader.ready && !reader.busy)
-                                Accessible.role: index < 4 ? Accessible.Button : Accessible.StaticText
+                                color: Theme.text
+                                font.pixelSize: Theme.mainHeaderSize
+                                activeFocusOnTab: index < 3
+                                enabled: index >= 3 || (reader.ready && !reader.busy)
+                                Accessible.role: index < 3 ? Accessible.Button : Accessible.StaticText
                                 Accessible.name: modelData + (reader.sortOrder === index * 2 + 1 ? qsTr("，升序") : reader.sortOrder === index * 2 + 2 ? qsTr("，降序") : "")
-                                Accessible.onPressAction: reader.sortByColumn(index)
-                                Keys.onReturnPressed: reader.sortByColumn(index)
-                                Keys.onEnterPressed: reader.sortByColumn(index)
-                                Keys.onSpacePressed: reader.sortByColumn(index)
+                                Accessible.onPressAction: if (index < 3)
+                                    reader.sortByColumn(index)
+                                Keys.onReturnPressed: if (index < 3)
+                                    reader.sortByColumn(index)
+                                Keys.onEnterPressed: if (index < 3)
+                                    reader.sortByColumn(index)
+                                Keys.onSpacePressed: if (index < 3)
+                                    reader.sortByColumn(index)
                                 TapHandler {
-                                    enabled: columnHeader.index < 4 && reader.ready && !reader.busy
+                                    enabled: columnHeader.index < 3 && reader.ready && !reader.busy
                                     onTapped: reader.sortByColumn(columnHeader.index)
                                 }
                                 TapHandler {
@@ -823,11 +907,30 @@ ApplicationWindow {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: columnHeader.index === 0 ? 52 : columnHeader.index < 3 ? 4 : parent.width - 20
+                                    x: columnHeader.index === 0 ? Theme.mainNameHeaderInset + 44 * Theme.fontScale : 4
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
-                                    visible: reader.sortOrder > 0 && Math.floor((reader.sortOrder - 1) / 2) === columnHeader.index
+                                    visible: columnHeader.index < 3 && reader.sortOrder > 0 && Math.floor((reader.sortOrder - 1) / 2) === columnHeader.index
                                     color: Theme.accentInk
-                                    font.pixelSize: Theme.secondarySize
+                                    font.pixelSize: Theme.mainHeaderSize
+                                }
+                                Rectangle {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: 1
+                                    height: 22
+                                    visible: columnHeader.index < 4
+                                    color: Theme.border
+                                }
+                                SelectionCheck {
+                                    objectName: "selectPage"
+                                    visible: columnHeader.index === 0
+                                    x: Theme.mainCheckboxInset
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    enabled: reader.ready && !reader.busy && reader.entries.rowCount() > 0
+                                    checkState: reader.selectedCount === 0 ? Qt.Unchecked : reader.selectedCount === reader.entries.rowCount() ? Qt.Checked : Qt.PartiallyChecked
+                                    nextCheckState: () => checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
+                                    Accessible.name: qsTr("选择当前页全部文件")
+                                    onClicked: reader.selectAllOnPage(checkState === Qt.Checked)
                                 }
                             }
                         }
@@ -852,11 +955,18 @@ ApplicationWindow {
                         model: reader.entries
                         function columnSize(column: int): real {
                             const scale = Math.max(1, Theme.fontScale);
-                            return column === 0 ? Math.max(240, width - 400 * scale) : 100 * scale;
+                            const other = [Theme.mainOriginalColumnWidth, Theme.mainPackedColumnWidth, Theme.mainTypeColumnWidth, Theme.mainDateColumnWidth];
+                            return column === 0 ? Math.max(250, width - other.reduce((a, b) => a + b, 0) * scale) : other[column - 1] * scale;
+                        }
+                        function columnLeftInset(column, header) {
+                            return column === 0 ? (header ? Theme.mainNameHeaderInset : Theme.mainNameTextInset) : column === 3 ? Theme.mainTypeColumnInset : column === 4 ? Theme.mainDateColumnInset : 0;
+                        }
+                        function columnRightInset(column) {
+                            return column === 1 ? Theme.mainOriginalColumnInset : column === 2 ? Theme.mainPackedColumnInset : 0;
                         }
                         columnWidthProvider: columnSize
                         onWidthChanged: forceLayout()
-                        readonly property real scaledRowHeight: Math.ceil(Math.max(Theme.rowHeight, Theme.tableSize * 1.6 + 16))
+                        readonly property real scaledRowHeight: Math.max(Theme.mainFolderRowHeight, Theme.mainTableSize * 1.6 + 16)
                         onScaledRowHeightChanged: forceLayout()
                         Connections {
                             target: Theme
@@ -865,7 +975,7 @@ ApplicationWindow {
                             }
                         }
                         rowHeightProvider: function (row) {
-                            return table.scaledRowHeight;
+                            return Math.max(reader.entries.data(reader.entries.index(row, 0), Qt.UserRole + 1) ? Theme.mainFolderRowHeight : Theme.mainFileRowHeight, table.scaledRowHeight);
                         }
                         ScrollBar.vertical: ScrollBar {}
                         ScrollBar.horizontal: ScrollBar {
@@ -880,7 +990,11 @@ ApplicationWindow {
                             required property bool chosen
                             required property string entryId
                             required property bool canNavigate
+                            required property string entryStatus
+                            required property bool attention
                             objectName: "entry-" + row + "-" + column
+                            Accessible.name: display
+                            Accessible.description: entryStatus
                             implicitWidth: 100
                             implicitHeight: table.scaledRowHeight
                             color: Theme.surface
@@ -937,28 +1051,13 @@ ApplicationWindow {
                                 color: Theme.border
                                 opacity: 0.45
                             }
-                            CheckBox {
+                            SelectionCheck {
                                 id: entryCheck
+                                objectName: "entrySelection"
                                 visible: cell.column === 0
-                                width: 40
-                                height: parent.height
-                                indicator: Rectangle {
-                                    x: 12
-                                    y: (entryCheck.height - 18) / 2
-                                    width: 18
-                                    height: 18
-                                    radius: 4
-                                    color: entryCheck.checked ? Theme.accent : Theme.surface
-                                    border.color: entryCheck.activeFocus ? Theme.accent : Theme.border
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "✓"
-                                        color: Theme.accentText
-                                        visible: entryCheck.checked
-                                    }
-                                }
                                 Keys.onReturnPressed: reader.enterDirectory(cell.row)
                                 anchors.left: parent.left
+                                anchors.leftMargin: Theme.mainCheckboxInset
                                 anchors.verticalCenter: parent.verticalCenter
                                 checked: cell.chosen
                                 enabled: reader.runtimeAvailable && !reader.busy
@@ -968,7 +1067,7 @@ ApplicationWindow {
                             Image {
                                 visible: cell.column === 0
                                 anchors.left: parent.left
-                                anchors.leftMargin: 42
+                                anchors.leftMargin: Theme.mainNameIconInset
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: root.entryIconSize
                                 height: root.entryIconSize
@@ -977,15 +1076,30 @@ ApplicationWindow {
                             }
                             Text {
                                 anchors.fill: parent
-                                anchors.leftMargin: cell.column === 0 ? 72 : 12
-                                anchors.rightMargin: 12
+                                anchors.leftMargin: table.columnLeftInset(cell.column, false)
+                                anchors.rightMargin: cell.column === 0 && cell.attention ? 24 : table.columnRightInset(cell.column)
                                 text: cell.column === 1 || cell.column === 2 ? (cell.isDirectory ? "—" : root.formatSize(cell.display)) : cell.display
                                 horizontalAlignment: cell.column === 1 || cell.column === 2 ? Text.AlignRight : Text.AlignLeft
                                 textFormat: Text.PlainText
                                 verticalAlignment: Text.AlignVCenter
                                 elide: Text.ElideRight
-                                font.pixelSize: Theme.tableSize
+                                font.pixelSize: Theme.mainTableSize
                                 color: Theme.text
+                            }
+                            Text {
+                                anchors.right: parent.right
+                                anchors.rightMargin: 8
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: cell.column === 0 && cell.attention
+                                text: "!"
+                                font.pixelSize: Theme.mainTableSize
+                                font.bold: true
+                                color: Theme.menuDanger
+                                Accessible.name: cell.entryStatus
+                            }
+                            CommandTooltip {
+                                requested: hover.hovered && cell.column === 0
+                                text: cell.display + "\n" + cell.entryStatus
                             }
                         }
                     }
@@ -1008,6 +1122,9 @@ ApplicationWindow {
                             required property string entryId
                             required property bool canNavigate
                             objectName: "grid-entry-" + index
+                            required property string entryStatus
+                            Accessible.name: display
+                            Accessible.description: entryStatus
                             width: grid.cellWidth - 12
                             height: grid.cellHeight - 12
                             radius: Theme.controlRadius
@@ -1072,7 +1189,7 @@ ApplicationWindow {
                             }
                             CommandTooltip {
                                 requested: gridHover.hovered
-                                text: gridEntry.display
+                                text: gridEntry.display + "\n" + gridEntry.entryStatus
                             }
                         }
                     }
@@ -1112,6 +1229,7 @@ ApplicationWindow {
                 }
                 RowLayout {
                     Layout.fillWidth: true
+                    visible: reader.ready && reader.total > 128
                     Layout.margins: 16
                     spacing: 8
                     Text {
@@ -1133,61 +1251,78 @@ ApplicationWindow {
                     }
                 }
             }
-            Rectangle {
-                visible: root.inspectorVisible
-                Layout.fillHeight: true
-                implicitWidth: 1
-                color: Theme.border
-            }
             InspectorPanel {
                 objectName: "archiveInspector"
                 visible: root.inspectorVisible
-                Layout.preferredWidth: Theme.inspectorWidth
-                Layout.minimumWidth: Theme.inspectorWidth
-                Layout.maximumWidth: Theme.inspectorWidth
+                Layout.preferredWidth: Math.round(Theme.inspectorWidth)
+                Layout.minimumWidth: Math.round(Theme.inspectorWidth)
+                Layout.maximumWidth: Math.round(Theme.inspectorWidth)
                 Layout.fillHeight: true
                 detail: reader.detail
+                selectionCount: reader.selectedCount
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
                 onCloseRequested: root.inspectorRequested = false
             }
         }
         Rectangle {
+            objectName: "browserStatus"
             Layout.fillWidth: true
-            implicitHeight: 1
-            color: Theme.border
-        }
-        GridLayout {
-            Layout.fillWidth: true
-            Layout.margins: 12
-            columns: 3
-            uniformCellWidths: true
-            columnSpacing: 24
-            rowSpacing: 8
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("本页已选择 %1 项").arg(reader.selectedCount)
-                color: Theme.textSecondary
-                font.pixelSize: Theme.secondarySize
+            implicitHeight: Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + 16))
+            color: Theme.surface
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: Theme.border
             }
-            Text {
-                Layout.fillWidth: true
-                text: reader.busy ? qsTr("正在处理…") : reader.ready ? qsTr("目录已读取") : qsTr("等待打开归档")
-                horizontalAlignment: parent.columns === 3 ? Text.AlignHCenter : Text.AlignLeft
-                color: Theme.textSecondary
-                font.pixelSize: Theme.secondarySize
-            }
-            Text {
-                Layout.fillWidth: true
-                text: qsTr("只读浏览")
-                horizontalAlignment: parent.columns === 3 ? Text.AlignRight : Text.AlignLeft
-                color: Theme.textSecondary
-                font.pixelSize: Theme.secondarySize
-                HoverHandler {
-                    id: readOnlyHover
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.mainContentInset
+                anchors.rightMargin: Theme.mainContentInset
+                spacing: 8
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? " · " + root.formatSize(reader.selectedBytes) : "")
+                    color: Theme.textSecondary
+                    font.pixelSize: Theme.mainStatusSize
+                    elide: Text.ElideRight
                 }
-                ToolTip.visible: readOnlyHover.hovered
-                ToolTip.text: qsTr("开发版：解压、新建与校验尚未实现")
+                ArchiveAction {
+                    objectName: "browserTasks"
+                    asset: "task-list"
+                    text: qsTr("任务 %1").arg(reader.busy ? 1 : 0)
+                    explanation: qsTr("查看当前读取任务")
+                    onClicked: taskMenu.popup()
+                    CommandMenu {
+                        id: taskMenu
+                        x: parent.width - width
+                        y: -height
+                        CommandMenuItem {
+                            text: reader.busy ? qsTr("正在读取归档元数据") : qsTr("暂无后台任务")
+                            enabled: false
+                        }
+                        CommandMenuItem {
+                            text: qsTr("取消读取")
+                            enabled: reader.busy
+                            onTriggered: reader.cancel()
+                        }
+                    }
+                }
+            }
+            RowLayout {
+                x: parent.width / 2 - 50
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 9
+                Image {
+                    Layout.preferredWidth: 22
+                    Layout.preferredHeight: 22
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.busy ? "activity.png" : "completed.png")
+                }
+                Text {
+                    text: reader.busy ? qsTr("正在读取…") : reader.ready ? qsTr("目录已读取") : qsTr("等待打开归档")
+                    color: Theme.textSecondary
+                    font.pixelSize: Theme.mainStatusSize
+                }
             }
         }
     }

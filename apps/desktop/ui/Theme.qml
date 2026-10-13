@@ -5,28 +5,28 @@ import QtQuick
 QtObject {
     property bool dark: false
     property real fontScale: 1.0
-    readonly property color canvas: dark ? "#101114" : "#F5F5F3"
-    readonly property color surface: dark ? "#1D2026" : "#FFFFFF"
-    readonly property color sidebar: dark ? "#17191E" : "#F0F1EF"
-    readonly property color text: dark ? "#ECEEF3" : "#20232A"
-    readonly property color textSecondary: dark ? "#A2A8B4" : "#626874"
-    readonly property color border: dark ? "#30343C" : "#DCDFE3"
-    readonly property color accent: dark ? "#4165DB" : "#365FE8"
+    readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
+    readonly property color surface: dark ? "#22262F" : "#FFFFFF"
+    readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"
+    readonly property color text: dark ? "#F0F2F8" : "#141827"
+    readonly property color textSecondary: dark ? "#A7B0C7" : "#626B86"
+    readonly property color border: dark ? "#363D4B" : "#E3E7EF"
+    readonly property color accent: dark ? "#3264E9" : "#1956FF"
     readonly property color accentText: dark ? "#FFFFFF" : "#FFFFFF"
-    readonly property color selection: dark ? "#293754" : "#E8EEFF"
-    readonly property color accentInk: dark ? "#9DB4FF" : "#365FE8"
+    readonly property color selection: dark ? "#30436A" : "#E7EDFF"
+    readonly property color accentInk: dark ? "#8AAFFF" : "#1956FF"
     readonly property color taskPanel: dark ? "#202630" : "#F5F8FC"
     readonly property color taskBorder: dark ? "#343E4E" : "#DFE6F1"
     readonly property color taskTrack: dark ? "#384353" : "#DFE4ED"
     readonly property color progressStart: dark ? "#428FFF" : "#2788FF"
     readonly property color progressEnd: dark ? "#4165DB" : "#0757FA"
-    readonly property color inspector: dark ? "#20232A" : "#FFFFFF"
+    readonly property color inspector: dark ? "#22262F" : "#FFFFFF"
     readonly property color accentDisabled: dark ? "#465B91" : "#7087CB"
     readonly property real bodySize: 14 * fontScale
-    readonly property real tableSize: 13 * fontScale
+    readonly property real tableSize: 16 * fontScale
     readonly property real secondarySize: 12 * fontScale
     readonly property real panelTitleSize: 20 * fontScale
-    readonly property real toolbarSize: 16 * fontScale
+    readonly property real toolbarSize: 15 * fontScale
     readonly property color controlHover: dark ? "#2B374C" : "#EDF2FF"
     readonly property color controlPressed: dark ? "#34435C" : "#E0E8FF"
     readonly property color menuHover: dark ? "#34435C" : "#E8EEFF"
@@ -83,27 +83,93 @@ QtObject {
     readonly property real treeTooltipMaxWidth: 360
     readonly property real treeTooltipMaxHeight: 240
     readonly property real treeStatusGlyphCanvas: 20
-    readonly property color treeSurfaceColor: dark ? "#17191E" : "#F7F9FC"
-    readonly property color treeTextColor: dark ? "#ECEEF3" : "#20232A"
-    readonly property color treeSecondaryColor: dark ? "#A2A8B4" : "#626874"
-    readonly property color treeSelectionColor: dark ? "#293754" : "#E6EDFF"
+    readonly property color treeSurfaceColor: dark ? "#1D2129" : "#F7F9FC"
+    readonly property color treeTextColor: dark ? "#F0F2F8" : "#141827"
+    readonly property color treeSecondaryColor: dark ? "#A7B0C7" : "#626B86"
+    readonly property color treeSelectionColor: dark ? "#30436A" : "#E6EDFF"
     readonly property color treeHoverColor: dark ? "#222B39" : "#EDF1F7"
     readonly property color treeFocusColor: dark ? "#78A6FF" : "#1674FF"
     readonly property color treeCurrentIndicatorColor: dark ? "#78A6FF" : "#1674FF"
     readonly property color treeGuideColor: dark ? "#3A4658" : "#D4DBE6"
     readonly property color treeBranchDotColor: dark ? "#78A6FF" : "#1674FF"
     readonly property color treeSkeletonColor: dark ? "#323E50" : "#DAE2EE"
-    readonly property int gutter: 24
-    readonly property int gap: 12
-    readonly property int iconSize: 20
-    readonly property int controlRadius: 8
-    readonly property int panelRadius: 12
-    readonly property int buttonHeight: 36
-    readonly property int toolbarButtonHeight: 40
-    readonly property int toolbarIconSize: 24
-    readonly property int toolbarRadius: 6
-    readonly property int rowHeight: 40
-    readonly property int sidebarWidth: 220
-    readonly property int inspectorWidth: 280
-    readonly property int inspectorCollapseWidth: 1160
+    readonly property real gutter: 24
+    readonly property real gap: 12
+    readonly property real iconSize: 20
+    readonly property real controlRadius: 8
+    readonly property real panelRadius: 12
+    readonly property real buttonHeight: 36
+    readonly property real toolbarButtonHeight: 42.17054263565891
+    readonly property real toolbarIconSize: 26.459948320413435
+    readonly property real toolbarRadius: 6
+    readonly property real rowHeight: 53.74677002583979
+    readonly property real sidebarWidth: 241.4470284237726
+    readonly property real inspectorWidth: 322.48062015503876
+    readonly property real inspectorCollapseWidth: 1160
+    readonly property real mainTitleHeight: 47.95865633
+    readonly property real mainToolbarHeight: 65.32299742
+    readonly property real mainToolbarControlHeight: 42.17054264
+    readonly property real mainSidebarWidth: 241.44702842
+    readonly property real mainInspectorWidth: 322.48062016
+    readonly property real mainPaneHeaderHeight: 57.05426357
+    readonly property real mainTableHeaderHeight: 42.17054264
+    readonly property real mainFolderRowHeight: 53.74677003
+    readonly property real mainFileRowHeight: 55.81395349
+    readonly property real mainFileIconSize: 39.68992248
+    readonly property real mainPhotoSize: 36.38242894
+    readonly property real mainCheckboxSize: 19.84496124
+    readonly property real mainNameIconInset: 68.63049096
+    readonly property real mainNameTextInset: 121.55038760
+    readonly property real mainCheckboxInset: 22.32558140
+    readonly property real mainOriginalColumnWidth: 97.57105943
+    readonly property real mainPackedColumnWidth: 94.26356589
+    readonly property real mainTypeColumnWidth: 108.32041344
+    readonly property real mainDateColumnWidth: 143.04909561
+    readonly property real mainOriginalColumnInset: 21.49870801
+    readonly property real mainPackedColumnInset: 18.19121447
+    readonly property real mainTypeColumnInset: 23.15245478
+    readonly property real mainDateColumnInset: 18.19121447
+    readonly property real mainStatusHeight: 45.47803618
+    readonly property real mainContentInset: 16.53746770
+    readonly property real mainPaneInset: 18.19121447
+    readonly property real mainInspectorLeftInset: 16.53746770
+    readonly property real mainInspectorRightInset: 14.88372093
+    readonly property real mainTabWidth: 203.41085271
+    readonly property real mainTabHeight: 40.51679587
+    readonly property real mainTabTopInset: 7.44186047
+    readonly property real mainTabIconSize: 23.15245478
+    readonly property real mainTabCloseSize: 23.15245478
+    readonly property real mainTabTextGap: 7.44186047
+    readonly property real mainToolbarIconSize: 26.45994832
+    readonly property real mainSearchWidth: 371.26614987
+    readonly property real mainExtractWidth: 151.31782946
+    readonly property real mainSplitWidth: 40.51679587
+    readonly property real mainToolbarRightInset: 14.05684755
+    readonly property real mainToolbarLeftInset: 19.84496124
+    readonly property real mainPreviewHeight: 229.04392765
+    readonly property real mainPreviewRadius: 7.44186047
+    readonly property real mainArchiveCardHeight: 139.74160207
+    readonly property real mainTreeOuterInset: 9.09560724
+    readonly property real mainTabFirstMacX: 225.73643411
+    readonly property real mainTabFirstOtherX: 152.97157623
+    readonly property real mainBrandMacX: 97.57105943
+    readonly property real mainSettingsSize: 33.07493540
+    readonly property real mainSettingsRightInset: 13.22997416
+    readonly property real mainViewButtonWidth: 38.86304910
+    readonly property real mainViewButtonHeight: 33.07493540
+    readonly property real mainViewIconSize: 21.49870801
+    readonly property real mainNameHeaderInset: 71.93798450
+    readonly property real mainTableSize: 16 * fontScale
+    readonly property real mainHeaderSize: 15 * fontScale
+    readonly property real mainPaneTitleSize: 17 * fontScale
+    readonly property real mainToolbarSize: 15 * fontScale
+    readonly property real mainTabSize: 16 * fontScale
+    readonly property real mainBrandSize: 18 * fontScale
+    readonly property real mainArchiveTitleSize: 20 * fontScale
+    readonly property real mainArchiveCaptionSize: 13 * fontScale
+    readonly property real mainSummarySize: 15 * fontScale
+    readonly property real mainDetailTitleSize: 21 * fontScale
+    readonly property real mainDetailTypeSize: 16 * fontScale
+    readonly property real mainPropertySize: 15 * fontScale
+    readonly property real mainStatusSize: 15 * fontScale
 }

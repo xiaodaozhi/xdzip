@@ -59,6 +59,7 @@ jobs:
         run: |
           export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           .venv-design/bin/python design/assets/fonts/build-subset.py --check
+          .venv-design/bin/python design/assets/fonts/export-qt.py --check
           .venv-design/bin/python scripts/check-design-assets.py
           .venv-design/bin/python scripts/check-brand-corners.py --render
           .venv-design/bin/python scripts/check-asset-integration.py

@@ -25,4 +25,5 @@ for package in metadata['packages']:
         shutil.copyfile(notice, target / notice.name)
     inventory.append({k: package[k] for k in ('name', 'version', 'license', 'repository')})
 shutil.copytree(root / 'third_party/qt', out / 'Qt-6.8.2', dirs_exist_ok=True)
+shutil.copyfile(root / 'design/assets/fonts/OFL.txt', out / 'Xdzip-Design-Sans-SC-OFL.txt')
 (out / 'rust-dependencies.json').write_text(json.dumps(inventory, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

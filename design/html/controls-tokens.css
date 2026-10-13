@@ -53,8 +53,8 @@
   --ui-tooltip-surface: #202B41;
   --ui-tooltip-text: #FFFFFF;
   --tree-surface-color: #F7F9FC;
-  --tree-text-color: #20232A;
-  --tree-secondary-color: #626874;
+  --tree-text-color: #141827;
+  --tree-secondary-color: #626B86;
   --tree-selection-color: #E6EDFF;
   --tree-hover-color: #EDF1F7;
   --tree-focus-color: #1674FF;
@@ -76,10 +76,10 @@
   --ui-menu-shadow: #00000066;
   --ui-tooltip-surface: #E3EBF9;
   --ui-tooltip-text: #182030;
-  --tree-surface-color: #17191E;
-  --tree-text-color: #ECEEF3;
-  --tree-secondary-color: #A2A8B4;
-  --tree-selection-color: #293754;
+  --tree-surface-color: #1D2129;
+  --tree-text-color: #F0F2F8;
+  --tree-secondary-color: #A7B0C7;
+  --tree-selection-color: #30436A;
   --tree-hover-color: #222B39;
   --tree-focus-color: #78A6FF;
   --tree-current-indicator-color: #78A6FF;

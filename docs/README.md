@@ -26,6 +26,7 @@
 | 目录树 B 设计交付 | [正式设计与接入规格](ux/directory-tree.md)、[逻辑参数](visual/directory-tree.json)、[图板与切图 HTML](../design/hifi/directory-tree.html)、[交付复核](qa/directory-tree.md) |
 | 目录导航与排序 | [实现、实际截图与验收](qa/navigation-sorting.md) |
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
+| Qt 与设计一致性 | [冻结基准、修正截图与差异清单](qa/qt-fidelity/README.md) |
 | M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |
 | 视觉修正复核 | [布局、排版、主题修正与新截图](qa/visual-refinement.md) |
 | 工具栏按钮修正 | [原稿对照与实际截图](qa/toolbar-review.md) |

@@ -11,6 +11,8 @@ args = parser.parse_args()
 tokens = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
 controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
 tree = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
+main = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
+main_scale = main['logical_width'] / main['source_window'][2]
 
 
 def qt_color(value):
@@ -52,7 +54,13 @@ for name, value in [('gutter',24), ('gap',12), ('iconSize',20), ('controlRadius'
                     ('rowHeight',tokens['size']['row']), ('sidebarWidth',tokens['size']['sidebar']),
                     ('inspectorWidth',tokens['size']['inspector']),
                     ('inspectorCollapseWidth',tokens['size']['inspectorCollapseWidth'])]:
-    lines.append(f'    readonly property int {name}: {value}')
+    lines.append(f'    readonly property real {name}: {value}')
+for key, value in main['source_geometry'].items():
+    name = 'main' + key[0].upper() + key[1:]
+    lines.append(f'    readonly property real {name}: {value * main_scale:.8f}')
+for key, value in main['source_type'].items():
+    name = 'main' + key[0].upper() + key[1:] + 'Size'
+    lines.append(f'    readonly property real {name}: {int(value * main_scale + .5)} * fontScale')
 lines += ['}', '']
 output = '\n'.join(lines)
 path = ROOT / 'apps/desktop/ui/Theme.qml'

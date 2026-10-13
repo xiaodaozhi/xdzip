@@ -1,5 +1,5 @@
 {
-  "purpose": "Deterministic font metrics for the offline HTML design review; not a Qt product font",
+  "purpose": "Shared HTML and Qt UI font metrics; native TTF exported without outline or metric changes",
   "upstream": {
     "repository": "https://github.com/google/fonts",
     "commit": "a85815a42757630ce188fdad368c2dfc444d4773",

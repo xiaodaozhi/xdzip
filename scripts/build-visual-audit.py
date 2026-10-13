@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Summarize opt-in Qt geometry captures; failed visual checks remain explicit findings.
 
-This compares logical geometry to the repository tokens, not unrelated screenshot pixels.
-Generated design art is a separate, approximate visual reference, never a golden image.
+This checks shared component behavior. The independent main-window acceptance gate is
+check-qt-fidelity.py, which uses frozen HTML/source measurements rather than Qt tokens.
 """
 import argparse
 import hashlib
@@ -32,6 +32,9 @@ def main():
     args = parser.parse_args()
     captures = {p.stem: json.loads(p.read_text(encoding='utf-8')) for p in sorted(args.input.glob('*.json'))}
     tokens = json.loads((ROOT / 'docs/visual/tokens.json').read_text(encoding='utf-8'))
+    reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
+    scale = reference['logical_width'] / reference['source_window'][2]
+    pane_size = round(reference['source_type']['paneTitle'] * scale)
     checks = []
 
     def one(scene, predicate):
@@ -43,7 +46,7 @@ def main():
     def label(scene, text):
         return one(scene, lambda n: n['class'].startswith('QQuickText') and n.get('text') == text)
 
-    def check(title, actual, expected, source, tolerance=0):
+    def check(title, actual, expected, source, tolerance=.01):
         if '字号' in title and (actual <= 0 or expected <= 0):
             # QFontInfo may not resolve a font in a platform's offscreen backend. A -1
             # sentinel is missing evidence, not a negative font size or a visual failure.
@@ -61,15 +64,15 @@ def main():
         check('主窗口 ' + field, light[field], expected, 'tokens.size')
     sidebar = one('browser-light', lambda n: n['name'] == 'archiveSidebar' or (n.get('color') == tokens['light']['sidebar'].lower() and n['height'] > 500))
     inspector = one('browser-light', lambda n: n['name'] == 'archiveInspector' or (n['class'] == 'QQuickRectangle' and n['x'] > 1000 and n['height'] > 500 and n['width'] > 200))
-    check('侧栏宽度', sidebar['width'], tokens['size']['sidebar'], 'tokens.size.sidebar')
-    check('详情栏宽度', inspector['width'], tokens['size']['inspector'], 'tokens.size.inspector')
+    check('侧栏宽度', sidebar['width'], round(tokens['size']['sidebar']), 'logical pixel rounding')
+    check('详情栏宽度', inspector['width'], round(tokens['size']['inspector']), 'logical pixel rounding')
     row = one('browser-light', lambda n: n['name'] == 'entry-0-0')
     check('列表行高', row['height'], tokens['size']['row'], 'tokens.size.row')
     button = one('browser-light', lambda n: n['name'] == 'archiveOpen' or (n['class'].startswith('AppButton') and n.get('text') == '打开归档'))
     check('工具栏按钮高度', button['height'], tokens['size']['toolbarButton'], 'tokens.size.toolbarButton')
     search = one('browser-light', lambda n: n['name'] == 'archiveSearch')
     check('搜索框高度', search['height'], tokens['size']['toolbarButton'], 'tokens.size.toolbarButton')
-    check('详情面板标题字号', label('browser-light', '条目详情')['resolvedPixelSize'], tokens['type']['body'], 'tokens.type.body：与面包屑共用字号')
+    check('详情面板标题字号', label('browser-light', '文件预览')['resolvedPixelSize'], pane_size, 'qt-main-reference.source_type.paneTitle')
     for scene, scale in [('browser-light', 1), ('browser-dark', 1), ('browser-large-type', 2)]:
         left = one(scene, lambda n: n['name'] == 'filePaneHeader')
         right = one(scene, lambda n: n['name'] == 'inspectorPaneHeader')
@@ -80,14 +83,14 @@ def main():
         check(scene + ' 标题文字中心 Y 差', left_title['y'] + left_title['height'] / 2 - right_title['y'] - right_title['height'] / 2, 0, 'Text.AlignVCenter', .5)
         check(scene + ' 标题文字基线差', left_title['y'] + left_title['baselineOffset'] - right_title['y'] - right_title['baselineOffset'], 0, 'same pane title baseline', .5)
         for title, node in [('面包屑', left_title), ('详情标题', right_title)]:
-            check(scene + ' ' + title + '声明字号', node['fontPixelSize'], tokens['type']['body'] * scale, 'Theme.bodySize：QFont pixelSize property')
+            check(scene + ' ' + title + '声明字号', node['fontPixelSize'], pane_size * scale, '同一分栏标题字号')
     name = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n.get('text') == '旅行/')
     check('列表正文字号', name['resolvedPixelSize'], tokens['type']['table'], 'tokens.type.table')
     check('按钮正文字号', label('browser-light', button['text'])['resolvedPixelSize'], tokens['type']['toolbar'], 'tokens.type.toolbar')
     header = label('browser-light', '名称')
-    check('名称表头与文件名起点差', name['x'] - header['x'] - header['leftPadding'], 0, 'same column alignment', .5)
-    icon = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n['class'] == 'QQuickImage')
-    check('列表图标容器网格', icon['width'], 18, 'visual/README 建议 18 px；不等于可见墨迹尺寸')
+    check('名称表头与文件名起点差', name['x'] - header['x'] - header['leftPadding'], 60 * 1280 / 1548, '冻结 HTML：名称表头位于图标区', 1)
+    icon = one('browser-light', lambda n: n['path'].startswith(row['path'] + '/') and n['class'] == 'QQuickImage' and n['width'] > 30)
+    check('列表图标容器网格', icon['width'], 48 * 1280 / 1548, 'qt-main-reference.source_geometry.fileIconSize', .5)
     dark_inspector = one('browser-dark', lambda n: n['path'] == inspector['path'])
     check('深色详情栏背景', dark_inspector['color'], tokens['dark']['inspector'].lower(), 'tokens.dark.inspector')
     for scene in ['task-light', 'task-dark', 'task-large-type']:
@@ -102,14 +105,14 @@ def main():
     values = [label('task-light', t) for t in ['6.2 MB/s', '约 5 秒', '写入文件']]
     baselines = [n['y'] + n['baselineOffset'] for n in values]
     check('任务三列数值基线极差', max(baselines) - min(baselines), 0, '同排数字基线对齐', .5)
-    for text in [button['text'], '条目详情']:
+    for text in [button['text'], '文件预览']:
         check('200% 字号：' + text, label('browser-large-type', text)['resolvedPixelSize'], label('browser-light', text)['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
     # Archive names also appear in tabs; select the sidebar by its horizontal region.
     archive_name = lambda scene: one(scene, lambda n: n['class'].startswith('QQuickText') and n.get('text') == 'normal.zip' and n['x'] < 100)
     check('200% 字号：侧栏归档名', archive_name('browser-large-type')['resolvedPixelSize'], archive_name('browser-light')['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
     search_large = one('browser-large-type', lambda n: n['name'] == 'archiveSearch')
     check('200% 字号：搜索输入', search_large['resolvedPixelSize'], search['resolvedPixelSize'] * 2, 'Theme.fontScale 传播')
-    large_header = one('browser-large-type', lambda n: n.get('text') == '原始大小' and n.get('leftPadding') in [12, 14])
+    large_header = one('browser-large-type', lambda n: n['name'] == 'sort-column-1')
     check('200% 表头文字可容纳', large_header['contentWidth'] <= large_header['width'] - large_header['leftPadding'], True, 'contentWidth <= width - leftPadding')
     if any(n['name'] == 'archiveInspector' for n in captures['browser-light']['nodes']):
         for scene in ['browser-light', 'browser-large-type']:
@@ -140,7 +143,7 @@ def main():
         check('目录树父子缩进', child['x'] - parent['x'], 16, 'tree indentation', .5)
         check('目录树同层文字起点差', sibling['x'] - parent['x'], 0, 'same-depth alignment', .5)
         node = one(scene, lambda n: n['name'] == 'directory-d2')
-        check('目录树行高', node['height'], tokens['size']['row'], 'tokens.size.row')
+        check('目录树行高', node['height'], 40, 'directory-tree.json: normal row')
         icon = one(scene, lambda n: n['name'] == 'directoryFolder-d2')
         check('目录树图标网格', icon['width'], 20, 'directory-tree.json: 20 px folder container')
         check('目录树图文间距', child['x'] - icon['x'] - icon['width'], 8, 'tree spacing', .5)

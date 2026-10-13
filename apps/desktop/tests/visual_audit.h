@@ -91,7 +91,7 @@ inline bool capture(QQmlEngine &engine, QQuickWindow *browser) {
     browser->setProperty("darkMode", true);
     ok &= save(browser, directory, "browser-dark");
     browser->setProperty("darkMode", false);
-    browser->resize(1280, 820);
+    browser->resize(1280, 777);
     ok &= save(browser, directory, "browser-1280");
     browser->resize(browser->minimumWidth(), browser->minimumHeight());
     ok &= save(browser, directory, "browser-minimum");

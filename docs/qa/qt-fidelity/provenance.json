@@ -1,0 +1,18 @@
+{
+  "after-dark.png": "29f7346d224736568f450d0384ec88bac0f133c7bbcdbd223496ab86fedab181",
+  "after-light.png": "8e22debaed88f1c93f3290c2bf7761477ccfd3389921e5ea81143528ee902641",
+  "after-normal.png": "edac58da2bbc2baf13e4f53459cd867b16895a4193edc27526f99fabb26e3704",
+  "before-macos.png": "1e057072ed100254756f38f5b7ab0f3f43e90bf2507bc6961d05deba8f3b6fec",
+  "context-menu.png": "aa5f88f9b77700edb5604f4eef943d7b2c8c2918a6b8aca9aaf1ce673d4936c0",
+  "html-baseline.png": "a739aa25bba59c914521f57540639cc47695d6a964a5b127be0ba927a1f99ac0",
+  "integrated-layout.png": "71b43aa86b7d6f98329c86ea52b24f64735ba1d577f5355c1547de84942c3c50",
+  "large-type.png": "2bffd677519bd9ba9b68d57ddf7271f9b792ca7d25d1dd2c28e7fab07273c980",
+  "environment": {
+    "os": "Debian GNU/Linux 13 (trixie)",
+    "architecture": "x86_64",
+    "qt": "6.8.2",
+    "platform": "offscreen",
+    "dpr": 1,
+    "requestedQuickBackend": "software"
+  }
+}

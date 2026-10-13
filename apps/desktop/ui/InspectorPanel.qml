@@ -8,9 +8,15 @@ Rectangle {
     required property var detail
     required property var sizeFormatter
     required property var iconForFile
+    property int selectionCount: 0
     property bool showCloseAction: true
     signal closeRequested
     color: Theme.inspector
+    Rectangle {
+        width: 1
+        height: parent.height
+        color: Theme.border
+    }
     PaneHeader {
         id: header
         objectName: "inspectorPaneHeader"
@@ -18,13 +24,15 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         height: implicitHeight
+        leftInset: Theme.mainInspectorLeftInset
+        rightInset: Theme.mainInspectorRightInset
         Text {
             objectName: "inspectorPaneTitle"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("条目详情")
-            font.pixelSize: Theme.bodySize
-            font.bold: true
+            text: qsTr("文件预览")
+            font.pixelSize: Theme.mainPaneTitleSize
+            font.weight: Font.DemiBold
             color: Theme.text
             elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
@@ -32,82 +40,146 @@ Rectangle {
         ArchiveAction {
             objectName: "inspectorClose"
             visible: panel.showCloseAction
+            leftPadding: 0
+            rightPadding: 0
             asset: "close"
-            Accessible.name: qsTr("关闭条目详情")
+            Accessible.name: qsTr("关闭文件预览与属性")
             explanation: Accessible.name
             onClicked: panel.closeRequested()
         }
     }
     ScrollView {
+        id: scroll
         anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.leftMargin: 16
-        anchors.rightMargin: 16
-        anchors.bottomMargin: 16
+        anchors.leftMargin: Theme.mainInspectorLeftInset
+        anchors.rightMargin: Theme.mainInspectorRightInset
+        anchors.bottomMargin: 20
         contentWidth: availableWidth
         ColumnLayout {
-            width: parent.width
-            spacing: 16
+            width: scroll.availableWidth
+            spacing: 0
             Rectangle {
+                objectName: "previewContent"
                 Layout.fillWidth: true
-                implicitHeight: width * 0.8
-                radius: 12
+                implicitHeight: Math.round(Theme.mainPreviewHeight)
+                radius: Theme.mainPreviewRadius
                 color: Theme.canvas
-                Image {
+                border.color: Theme.border
+                ColumnLayout {
                     anchors.centerIn: parent
-                    width: 64
-                    height: 64
-                    source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
-                    fillMode: Image.PreserveAspectFit
+                    width: parent.width - 32
+                    spacing: 14
+                    Image {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredWidth: 64
+                        Layout.preferredHeight: 64
+                        source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
+                        fillMode: Image.PreserveAspectFit
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: panel.detail.id ? qsTr("此类型暂不支持内容预览") : qsTr("选择文件查看属性")
+                        font.pixelSize: Theme.mainPropertySize
+                        color: Theme.textSecondary
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                    }
                 }
             }
             Text {
                 Layout.fillWidth: true
-                text: panel.detail.name || qsTr("选择条目查看详情")
+                Layout.topMargin: 14
+                text: panel.selectionCount > 1 ? qsTr("已选择 %1 项").arg(panel.selectionCount) : panel.detail.name || qsTr("未选择文件")
                 textFormat: Text.PlainText
                 wrapMode: Text.WrapAnywhere
-                font.pixelSize: Theme.panelTitleSize
-                font.bold: true
+                font.pixelSize: Theme.mainDetailTitleSize
+                font.weight: Font.DemiBold
                 color: Theme.text
+            }
+            Text {
+                Layout.fillWidth: true
+                Layout.topMargin: 6
+                text: panel.selectionCount > 1 ? qsTr("以下为当前焦点条目的属性") : panel.detail.type ? panel.detail.type + (panel.detail.directory ? "" : qsTr(" 文件")) : qsTr("归档内条目")
+                color: Theme.textSecondary
+                font.pixelSize: Theme.mainDetailTypeSize
+                wrapMode: Text.Wrap
             }
             Rectangle {
                 Layout.fillWidth: true
+                Layout.topMargin: 20
+                Layout.bottomMargin: 14
                 implicitHeight: 1
                 color: Theme.border
             }
+            Text {
+                visible: panel.detail.attention || false
+                Layout.fillWidth: true
+                Layout.bottomMargin: visible ? 8 : 0
+                text: panel.detail.status || ""
+                textFormat: Text.PlainText
+                wrapMode: Text.Wrap
+                font.pixelSize: Theme.mainPropertySize
+                color: Theme.menuDanger
+            }
             Repeater {
-                model: [qsTr("原始大小"), qsTr("压缩后"), qsTr("压缩方法"), qsTr("条目标记"), qsTr("记录 ID")]
+                model: [
+                    {
+                        label: qsTr("原始大小"),
+                        value: panel.detail.size ? panel.sizeFormatter(panel.detail.size) : "—"
+                    },
+                    {
+                        label: qsTr("压缩后"),
+                        value: panel.detail.packed ? panel.sizeFormatter(panel.detail.packed) : "—"
+                    },
+                    {
+                        label: qsTr("修改日期"),
+                        value: panel.detail.modified || "—"
+                    },
+                    {
+                        label: qsTr("压缩方法"),
+                        value: panel.detail.method || "—"
+                    }
+                ]
                 GridLayout {
+                    required property var modelData
                     columns: Theme.fontScale > 1.3 ? 1 : 2
                     rowSpacing: 4
-                    columnSpacing: 12
-                    required property string modelData
-                    required property int index
+                    columnSpacing: 10
                     Layout.fillWidth: true
+                    Layout.minimumHeight: Math.max(32, Theme.mainPropertySize * 1.6 + 8)
                     Text {
-                        text: parent.modelData
+                        text: parent.modelData.label
                         color: Theme.textSecondary
-                        font.pixelSize: Theme.secondarySize
+                        font.pixelSize: Theme.mainPropertySize
                     }
                     Text {
                         Layout.fillWidth: true
-                        text: [panel.detail.size ? panel.sizeFormatter(panel.detail.size) : "—", panel.detail.packed ? panel.sizeFormatter(panel.detail.packed) : "—", panel.detail.method || "—", panel.detail.status || "—", panel.detail.id || "—"][parent.index]
+                        text: parent.modelData.value
                         textFormat: Text.PlainText
                         wrapMode: Text.WrapAnywhere
                         horizontalAlignment: Text.AlignRight
                         color: Theme.text
-                        font.pixelSize: Theme.secondarySize
+                        font.pixelSize: Theme.mainPropertySize
                     }
                 }
             }
-            Text {
+            ArchiveAction {
+                objectName: "inspectorExtract"
                 Layout.fillWidth: true
-                text: qsTr("此处显示目录元数据。文件内容尚未读取或校验。")
-                wrapMode: Text.Wrap
-                color: Theme.textSecondary
-                font.pixelSize: Theme.secondarySize
+                Layout.topMargin: 22
+                implicitHeight: Math.max(47, Theme.mainHeaderSize * 1.6 + 16)
+                asset: "external-open"
+                text: qsTr("解压此文件")
+                enabled: false
+                explanation: qsTr("安全解压写入尚未实现")
+                background: Rectangle {
+                    radius: 6
+                    color: Theme.surface
+                    border.color: Theme.border
+                }
             }
         }
     }

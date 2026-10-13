@@ -7,14 +7,15 @@ Button {
     property string asset: ""
     property bool primary: false
     property bool toolbarStyle: false
+    property bool selected: false
     // Reserved presentation for the unavailable extraction action; no dropdown is activated.
     property bool splitIndicator: false
     property string explanation: text
-    readonly property real glyphSize: toolbarStyle ? Theme.toolbarIconSize : 18
-    implicitHeight: Math.max(toolbarStyle ? Theme.toolbarButtonHeight : 36, label.implicitHeight + (toolbarStyle ? 16 : 12))
+    property real glyphSize: toolbarStyle ? Theme.mainToolbarIconSize : Theme.mainViewIconSize
+    implicitHeight: Math.max(toolbarStyle ? Theme.mainToolbarControlHeight : Theme.mainViewButtonHeight, label.implicitHeight + (toolbarStyle ? 12 : 8))
     implicitWidth: Math.max(toolbarStyle && !text.length ? Theme.toolbarButtonHeight : 0, contentItem.implicitWidth + leftPadding + rightPadding)
     leftPadding: primary && toolbarStyle ? 20 : toolbarStyle ? 8 : 12
-    rightPadding: splitIndicator ? 60 : leftPadding
+    rightPadding: splitIndicator ? Theme.mainSplitWidth + 12 : leftPadding
     topPadding: 0
     bottomPadding: 0
     hoverEnabled: true
@@ -42,7 +43,7 @@ Button {
             visible: text.length > 0
             text: root.text
             textFormat: Text.PlainText
-            font.pixelSize: root.toolbarStyle ? Theme.toolbarSize : Theme.bodySize
+            font.pixelSize: root.toolbarStyle ? Theme.mainToolbarSize : Theme.mainHeaderSize
             font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
             color: root.primary ? Theme.accentText : root.enabled ? Theme.text : Theme.textSecondary
             verticalAlignment: Text.AlignVCenter
@@ -51,14 +52,14 @@ Button {
     background: Rectangle {
         objectName: "actionBackground"
         radius: root.toolbarStyle ? Theme.toolbarRadius : Theme.controlRadius
-        color: root.primary ? (!root.enabled ? Theme.accentDisabled : root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : "transparent"
+        color: root.primary ? (!root.enabled ? Theme.accentDisabled : root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.accent
     }
     Rectangle {
         visible: root.splitIndicator
         anchors.right: parent.right
-        anchors.rightMargin: 40
+        anchors.rightMargin: Theme.mainSplitWidth
         width: 1
         height: parent.height
         color: Theme.accentText

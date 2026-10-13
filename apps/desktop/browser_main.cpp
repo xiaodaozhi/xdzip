@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "UiFont.h"
 #include <QApplication>
 #include <QEvent>
 #include <QIcon>
@@ -27,6 +28,8 @@ int main(int argc, char *argv[]) {
     application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     Q_INIT_RESOURCE(ui);
+    if (!installUiFont())
+        return 5;
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
     QQmlApplicationEngine engine;
     QObject::connect(

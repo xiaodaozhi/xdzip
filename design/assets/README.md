@@ -10,7 +10,7 @@
 | `demo` | 3 张照片；保留原始切片分辨率 | HTML 示例缩略图及预览；产品预览服务提供真实图像 |
 | `brand` | 26 项；应用与 ZIP 文档母版、平台格式及设计参考 | 系统应用图标、界面品牌和后续安装器的文件图标素材 |
 | `preview` | 1 张素材联系表 | 本次生成的审核预览，不进入产品包 |
-| [fonts](fonts/README.md) | Noto 派生设计字体与 OFL-1.1 | HTML 设计的稳定排版，不进入 Qt 产品字体 |
+| [fonts](fonts/README.md) | Noto 派生界面字体与 OFL-1.1 | HTML WOFF2 与同源 Qt TTF；子集外字形使用系统回退 |
 | [manifest.json](manifest.json) | 统一资产、45 张图标参考与 26 张组件切片的覆盖台账 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用；总数以本清单为准 |
 | [validation.json](validation.json) | 生成一致性与资产检查 | 检查结果和仍需人工 / 原生核对的范围 |
 

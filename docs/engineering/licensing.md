@@ -10,4 +10,4 @@ Qt 动态链接仍需逐模块确认 LGPL/GPL/商业条款；后端、图标、�
 
 首个 ZIP 元数据后端采用 MIT 许可 rawzip，版本与通知见 [准入记录](zip-metadata-admission.md)。项目原创许可仍为 Apache-2.0。
 
-HTML 设计复核字体采用官方 Noto Sans SC 的衍生子集，许可为 OFL-1.1。家族名、固定来源、版本与哈希见 [字体材料清单](../../design/assets/fonts/manifest.json)；完整许可为 [OFL.txt](../../design/assets/fonts/OFL.txt)。字体及其衍生字体不适用项目 Apache-2.0；离线 HTML 同时包含字体二进制与完整通知。字体仅用于设计复核，不改变 Qt 产品字体决策。
+HTML 与 Qt 界面字体采用官方 Noto Sans SC 的衍生子集，许可为 OFL-1.1。家族名、固定来源、版本与哈希见 [字体材料清单](../../design/assets/fonts/manifest.json)和[原生 TTF 导出](../../design/assets/fonts/README.md)；完整许可为 [OFL.txt](../../design/assets/fonts/OFL.txt)。字体及其衍生字体不适用项目 Apache-2.0；离线 HTML 包含字体二进制与完整通知，Qt 分发包的 notices 包含同一 OFL 原文。产品未引入完整上游 CJK 字体。

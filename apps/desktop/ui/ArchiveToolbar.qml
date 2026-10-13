@@ -25,20 +25,21 @@ Rectangle {
         searchField.clear();
     }
     color: Theme.surface
-    // An even row height keeps the 24 px icons centered on whole pixels on every host.
-    readonly property real controlHeight: 2 * Math.ceil(Math.max(openAction.implicitHeight, searchField.implicitHeight) / 2)
-    implicitHeight: controlHeight + 24
+    // Keep source-measured logical geometry at 100%; grow for accessible text sizes.
+    readonly property real controlHeight: Math.max(Theme.mainToolbarControlHeight, openAction.implicitHeight, searchField.implicitHeight)
+    implicitHeight: Math.round(controlHeight + Theme.mainToolbarHeight - Theme.mainToolbarControlHeight)
     RowLayout {
         id: actions
         height: root.controlHeight
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.margins: 16
+        anchors.leftMargin: Theme.mainToolbarLeftInset
+        anchors.rightMargin: Theme.mainToolbarRightInset
         spacing: 12
         RowLayout {
             Layout.preferredHeight: root.controlHeight
-            spacing: 20
+            spacing: 22
             ArchiveAction {
                 id: openAction
                 toolbarStyle: true
@@ -134,14 +135,14 @@ Rectangle {
             Layout.minimumHeight: root.controlHeight
             Layout.maximumHeight: root.controlHeight
             objectName: "archiveSearch"
-            Layout.preferredWidth: Math.max(220, Math.min(360, root.width * 0.3))
+            Layout.preferredWidth: Theme.mainSearchWidth
             Layout.minimumWidth: 180
             Layout.fillWidth: true
-            Layout.maximumWidth: 360
-            implicitHeight: Math.max(Theme.toolbarButtonHeight, contentHeight + 16)
+            Layout.maximumWidth: Theme.mainSearchWidth
+            implicitHeight: Math.max(Theme.mainToolbarControlHeight, contentHeight + 12)
             leftPadding: 42
             rightPadding: text.length ? 42 : 12
-            font.pixelSize: Theme.toolbarSize
+            font.pixelSize: Theme.mainToolbarSize
             placeholderText: qsTr("搜索压缩包中的文件")
             maximumLength: 256
             enabled: root.canSearch
@@ -193,7 +194,7 @@ Rectangle {
             }
         }
         Item {
-            Layout.preferredWidth: extractAction.implicitWidth
+            Layout.preferredWidth: Math.max(Theme.mainExtractWidth, extractAction.implicitWidth)
             Layout.minimumHeight: root.controlHeight
             Layout.maximumHeight: root.controlHeight
             implicitHeight: root.controlHeight
@@ -212,7 +213,7 @@ Rectangle {
                 id: scopeButton
                 objectName: "archiveExtractMenuButton"
                 anchors.right: parent.right
-                width: 40
+                width: Theme.mainSplitWidth
                 height: parent.height
                 enabled: root.canSearch
                 Accessible.name: qsTr("解压范围与可用操作")

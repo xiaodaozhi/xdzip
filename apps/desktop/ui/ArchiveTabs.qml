@@ -6,88 +6,35 @@ Rectangle {
     id: root
     required property string archiveTitle
     property bool integratedTitlebar: false
+    property bool canOpen: true
+    property bool canClose: false
     signal themeRequested
     signal dragRequested
+    signal openRequested
+    signal closeRequested
     color: Theme.canvas
-    implicitHeight: Math.max(48, Theme.bodySize + 24)
-    // Only the background starts native window movement; controls retain their own input.
+    implicitHeight: Math.round(Math.max(Theme.mainTitleHeight, Theme.mainTabSize * 1.6 + 20))
     DragHandler {
         target: null
         onActiveChanged: if (active)
             root.dragRequested()
     }
     RowLayout {
-        anchors.fill: parent
-        anchors.leftMargin: root.integratedTitlebar ? 96 : 24
-        anchors.rightMargin: 16
-        spacing: 16
+        id: brand
+        x: root.integratedTitlebar ? Theme.mainBrandMacX : 20
+        height: root.height
+        spacing: 8
         Image {
             source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "app-mark.png"
-            Layout.preferredWidth: 24
-            Layout.preferredHeight: 24
+            Layout.preferredWidth: 30
+            Layout.preferredHeight: 30
             fillMode: Image.PreserveAspectFit
         }
         Text {
             text: "xdzip"
-            font.pixelSize: Theme.panelTitleSize
-            font.bold: true
+            font.pixelSize: Theme.mainBrandSize
+            font.weight: Font.DemiBold
             color: Theme.text
-            Layout.rightMargin: 24
-        }
-        Rectangle {
-            objectName: "activeArchiveTab"
-            Layout.preferredWidth: 240
-            Layout.fillHeight: true
-            Layout.topMargin: 8
-            color: Theme.surface
-            radius: 8
-            border.color: Theme.border
-            Accessible.role: Accessible.PageTab
-            Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
-            Rectangle {
-                anchors.bottom: parent.bottom
-                width: parent.width
-                height: 8
-                color: Theme.surface
-            }
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 8
-                Image {
-                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive.png"
-                    Layout.preferredWidth: 18
-                    Layout.preferredHeight: 18
-                    fillMode: Image.PreserveAspectFit
-                }
-                Text {
-                    Layout.fillWidth: true
-                    text: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
-                    textFormat: Text.PlainText
-                    elide: Text.ElideMiddle
-                    font.pixelSize: Theme.bodySize
-                    font.bold: true
-                    color: Theme.text
-                }
-            }
-        }
-        // Multiple sessions and closing a session require runtime support; no decorative fake tabs.
-        Item {
-            Layout.fillWidth: true
-        }
-        ArchiveAction {
-            asset: "settings"
-            Accessible.name: qsTr("外观设置")
-            explanation: qsTr("外观设置")
-            onClicked: appearance.open()
-            CommandMenu {
-                id: appearance
-                y: parent.height
-                CommandMenuItem {
-                    text: Theme.dark ? qsTr("切换浅色外观") : qsTr("切换深色外观")
-                    onTriggered: root.themeRequested()
-                }
-            }
         }
     }
     Rectangle {
@@ -95,5 +42,119 @@ Rectangle {
         width: parent.width
         height: 1
         color: Theme.border
+    }
+    Rectangle {
+        id: tab
+        objectName: "activeArchiveTab"
+        x: root.integratedTitlebar ? Theme.mainTabFirstMacX : Math.max(Theme.mainTabFirstOtherX, brand.x + brand.width + 24)
+        y: Theme.mainTabTopInset
+        width: Math.max(Theme.mainTabWidth, Theme.mainTabWidth * Math.min(1.5, Theme.fontScale))
+        height: root.height - y
+        color: Theme.surface
+        radius: 7.5
+        border.color: Theme.border
+        Accessible.role: Accessible.PageTab
+        Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+        Rectangle {
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: parent.radius
+            color: Theme.surface
+        }
+        // Concave shoulders join the active tab to the toolbar surface.
+        Repeater {
+            model: [-1, 1]
+            Item {
+                required property int modelData
+                x: modelData < 0 ? -7 : tab.width
+                y: tab.height - height
+                width: 7
+                height: 7
+                clip: true
+                Rectangle {
+                    anchors.fill: parent
+                    color: Theme.surface
+                }
+                Rectangle {
+                    x: parent.modelData < 0 ? -7 : 0
+                    y: -7
+                    width: 14
+                    height: 14
+                    radius: 7
+                    color: Theme.canvas
+                    border.color: Theme.border
+                }
+            }
+        }
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 15
+            anchors.rightMargin: 9
+            spacing: Theme.mainTabTextGap
+            Image {
+                source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive.png"
+                Layout.preferredWidth: Theme.mainTabIconSize
+                Layout.preferredHeight: Theme.mainTabIconSize
+                fillMode: Image.PreserveAspectFit
+            }
+            Text {
+                Layout.fillWidth: true
+                text: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+                textFormat: Text.PlainText
+                elide: Text.ElideMiddle
+                font.pixelSize: Theme.mainTabSize
+                font.weight: Font.DemiBold
+                color: Theme.text
+            }
+            ArchiveAction {
+                objectName: "archiveTabClose"
+                visible: root.archiveTitle.length > 0
+                Layout.preferredWidth: Theme.mainTabCloseSize
+                Layout.preferredHeight: Theme.mainTabCloseSize
+                leftPadding: 0
+                rightPadding: 0
+                glyphSize: 20
+                asset: "close"
+                enabled: root.canClose
+                Accessible.name: qsTr("关闭当前归档")
+                explanation: Accessible.name
+                onClicked: root.closeRequested()
+            }
+        }
+    }
+    ArchiveAction {
+        objectName: "archiveNewTab"
+        x: tab.x + tab.width + 10
+        y: tab.y + (tab.height - height) / 2
+        width: 36
+        height: 32
+        glyphSize: 26
+        asset: "plus"
+        enabled: root.canOpen
+        Accessible.name: qsTr("打开归档")
+        explanation: qsTr("打开归档；当前版本替换现有会话")
+        onClicked: root.openRequested()
+    }
+    ArchiveAction {
+        objectName: "archiveSettings"
+        anchors.right: parent.right
+        anchors.rightMargin: Theme.mainSettingsRightInset
+        anchors.verticalCenter: parent.verticalCenter
+        width: Theme.mainSettingsSize
+        height: Theme.mainSettingsSize
+        glyphSize: Theme.mainToolbarIconSize
+        asset: "settings"
+        Accessible.name: qsTr("外观设置")
+        explanation: Accessible.name
+        onClicked: appearance.open()
+        CommandMenu {
+            id: appearance
+            x: parent.width - width
+            y: parent.height
+            CommandMenuItem {
+                text: Theme.dark ? qsTr("切换浅色外观") : qsTr("切换深色外观")
+                onTriggered: root.themeRequested()
+            }
+        }
     }
 }

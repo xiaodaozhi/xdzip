@@ -91,7 +91,7 @@ def main() -> None:
     font.save(OUTPUT)
     verify(TTFont(OUTPUT))
     manifest = {
-        "purpose": "Deterministic font metrics for the offline HTML design review; not a Qt product font",
+        "purpose": "Shared HTML and Qt UI font metrics; native TTF exported without outline or metric changes",
         "upstream": {
             "repository": "https://github.com/google/fonts",
             "commit": UPSTREAM_COMMIT,
