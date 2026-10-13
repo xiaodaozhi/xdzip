@@ -368,7 +368,7 @@ class BrowserTest : public QObject {
                 auto *childIcon = findVisual(window->contentItem(), "directoryFolder-d2");
                 return parentIcon && childIcon && childIcon->isVisible() &&
                        qAbs(childIcon->mapToScene(QPointF()).x() -
-                            parentIcon->mapToScene(QPointF()).x() - 16) < 0.5;
+                            parentIcon->mapToScene(QPointF()).x() - 12.8) < 0.5;
             }());
             if (cycle < 7) {
                 QVERIFY(clickParent());
@@ -510,6 +510,37 @@ class BrowserTest : public QObject {
         QVERIFY(controller->selectedBytes().toULongLong() > 0);
         QVERIFY(QTest::qWaitForWindowExposed(window));
         const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
+        auto *more = findVisual(window->contentItem(), "archiveMore");
+        QVERIFY(more);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            more->mapToScene(QPointF(more->width() / 2, more->height() / 2)).toPoint());
+        auto *dropdown = window->findChild<QObject *>("archiveMoreMenu");
+        QVERIFY(dropdown);
+        QTRY_VERIFY(dropdown->property("visible").toBool());
+        QCOMPARE(dropdown->property("width").toDouble(), 240.0);
+        QCOMPARE(dropdown->property("font").value<QFont>().pixelSize(), 13);
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures, "main-dropdown"));
+        }
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(!dropdown->property("visible").toBool());
+        auto *entry = findVisual(window->contentItem(), "entry-3-0");
+        QVERIFY(entry);
+        QTest::mouseClick(window, Qt::RightButton, Qt::NoModifier,
+                          entry->mapToScene(QPointF(100, entry->height() / 2)).toPoint());
+        auto *context = window->findChild<QObject *>("browserEntryMenu");
+        QVERIFY(context);
+        QTRY_VERIFY(context->property("visible").toBool());
+        QCOMPARE(context->property("width").toDouble(), 240.0);
+        auto *properties = window->findChild<QQuickItem *>("contextProperties");
+        QVERIFY(properties);
+        QCOMPARE(properties->property("font").value<QFont>().pixelSize(), 13);
+        if (!captures.isEmpty())
+            QVERIFY(visual_audit::save(window, captures, "main-context"));
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(!context->property("visible").toBool());
         if (!captures.isEmpty()) {
             QVERIFY(QDir().mkpath(captures));
             QVERIFY(visual_audit::save(window, captures, "main-light"));
@@ -613,7 +644,7 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->selectedCount(), 1);
         QVERIFY(visual_audit::capture(engine, window));
         // Hiding/reopening details must preserve the actual archive selection.
-        window->resize(1280, 820);
+        window->resize(1024, 622);
         auto *inspector = findVisual(window->contentItem(), "archiveInspector");
         auto *toggle = findVisual(window->contentItem(), "inspectorToggle");
         QVERIFY(inspector && toggle);
@@ -627,7 +658,7 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(!inspector->isVisible());
         QVERIFY(QMetaObject::invokeMethod(toggle, "clicked"));
         QTRY_VERIFY(inspector->isVisible());
-        window->resize(1040, 680);
+        window->resize(832, 544);
         QTRY_VERIFY(!inspector->isVisible());
         QVERIFY(QMetaObject::invokeMethod(toggle, "clicked"));
         auto *detailsWindow = window->findChild<QQuickWindow *>("inspectorWindow");
@@ -636,7 +667,7 @@ class BrowserTest : public QObject {
         QCOMPARE(detailsWindow->transientParent(), window);
         QCOMPARE(detailsWindow->modality(), Qt::NonModal);
         QVERIFY(!detailsWindow->flags().testFlag(Qt::FramelessWindowHint));
-        QCOMPARE(window->width(), 1040);
+        QCOMPARE(window->width(), 832);
         QCOMPARE(controller->selectedCount(), 1);
         if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT"))
             QVERIFY(visual_audit::save(detailsWindow, qEnvironmentVariable("XDZIP_VISUAL_AUDIT"),

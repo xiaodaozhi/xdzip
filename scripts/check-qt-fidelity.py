@@ -14,8 +14,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def audit(directory):
     reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text(encoding='utf-8'))
+    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))
     scale = reference['logical_width'] / reference['source_window'][2]
     geometry = {key: value * scale for key, value in reference['source_geometry'].items()}
+    title = layout['main']['titlebar']
+    geometry.update(titleHeight=title['height'], tabHeight=title['tab_height'], tabTopInset=title['tab_vertical_inset'])
+    title_delta = title['height'] - round(reference['source_geometry']['titleHeight'] * scale)
     sizes = {key: round(value * scale) for key, value in reference['source_type'].items()}
     checks = []
 
@@ -54,11 +58,19 @@ def audit(directory):
             return n['y'] + n['height'] / 2
 
         record('window.width', data['width'], reference['logical_width'], 0)
+        record('image.logicalWidth', data['imageWidth'] / data['dpr'], data['width'], 1 / data['dpr'])
+        record('image.logicalHeight', data['imageHeight'] / data['dpr'], data['height'], 1 / data['dpr'])
         record('window.height', data['height'], reference['source_window'][3] * scale)
         for name, rectangle in reference['anchors'].items():
             node = named(name)
             for field, expected in zip(['x', 'y', 'width', 'height'], rectangle):
-                record(f'{name}.{field}', node[field], expected * scale)
+                target = expected * scale
+                if name != 'browserStatus':
+                    if field == 'y':
+                        target += title_delta
+                    elif field == 'height' and name in ['archiveSidebar', 'archiveInspector']:
+                        target -= title_delta
+                record(f'{name}.{field}', node[field], target)
 
         left, right = named('filePaneHeader'), named('inspectorPaneHeader')
         for field in ['y', 'height']:
@@ -75,7 +87,7 @@ def audit(directory):
         record('preview.height', preview['height'], geometry['previewHeight'])
         record('preview.left', preview['x'] - named('archiveInspector')['x'], geometry['inspectorLeftInset'])
         extract = named('inspectorExtract')
-        record('preview.actionFits', extract['y'] + extract['height'] <= named('browserStatus')['y'] - 16, True)
+        record('preview.actionFits', extract['y'] + extract['height'] <= named('browserStatus')['y'] - geometry['contentInset'], True)
 
         for row_index in range(9):
             row = named(f'entry-{row_index}-0')
@@ -126,13 +138,42 @@ def audit(directory):
         tab = named('activeArchiveTab')
         record('tab.width', tab['width'], geometry['tabWidth'], .05)
         record('tab.top', tab['y'], geometry['tabTopInset'], .05)
+        record('tab.height', tab['height'], title['tab_height'], .05)
+        record('tab.bottomInset', title['height'] - tab['y'] - tab['height'], title['tab_vertical_inset'], .05)
+        record('tab.titleCenter', center(tab), title['height'] / 2, .05)
+        record('tab.settingsCenter', center(named('archiveSettings')), center(tab), .5)
         tab_x = geometry['tabFirstMacX' if scene == 'main-integrated-layout' else 'tabFirstOtherX']
         record('tab.left', tab['x'], tab_x, .05)
         settings = named('archiveSettings')
         record('settings.right', data['width'] - settings['x'] - settings['width'], geometry['settingsRightInset'], .05)
 
+    # Check the composed proportions, not just unrelated main/menu token values.
+    for scene in ['main-dropdown', 'main-context']:
+        data = json.loads((directory / f'{scene}.json').read_text(encoding='utf-8'))
+        nodes = [n for n in data['nodes'] if n['visible']]
+        popups = [n for n in nodes if n['class'] == 'QQuickPopupItem']
+        if len(popups) != 1:
+            raise ValueError(f'{scene}: expected one actual menu popup')
+        popup = popups[0]
+        check(scene + '/window.width', data['width'], 1024, 0)
+        check(scene + '/menu.width', popup['width'], 240, .01)
+        check(scene + '/menu.font', popup['fontPixelSize'], 13, 0)
+        check(scene + '/menu.fitsX', popup['x'] >= 0 and popup['x'] + popup['width'] <= data['width'], True)
+        check(scene + '/menu.fitsY', popup['y'] >= 0 and popup['y'] + popup['height'] <= data['height'], True)
+        proportion = popup['fontPixelSize'] / sizes['table']
+        low, high = layout['verification']['menu_to_table_font_ratio']
+        check(scene + '/menu.tableFontRatio', low <= proportion <= high, True)
+        content = next(n for n in nodes if n['name'] == 'xdzipCommandMenuContent')
+        check(scene + '/menu.paddingLeft', content['x'] - popup['x'], 6, .01)
+        check(scene + '/menu.paddingTop', content['y'] - popup['y'], 6, .01)
+        items = [n for n in nodes if n['class'].startswith('CommandMenuItem') and n['height'] > 0]
+        for index, item in enumerate(items):
+            check(f'{scene}/item{index}.font', item['fontPixelSize'], 13, 0)
+            check(f'{scene}/item{index}.minimumHeight', item['height'] >= 32, True)
+        check(scene + '/menu.firstItemTop', min(n['y'] for n in items), content['y'], .01)
+
     return dict(reference=reference['source_commit'], scale=scale,
-                method='Frozen HTML/art geometry at 1280 CSS/Qt logical pixels; integer structural boundaries; QFont integer pixel sizes.',
+                method='Frozen source geometry normalized to 1024 logical pixels; explicit 48px floating titlebar revision; integer structural boundaries and QFont sizes.',
                 environments=environments, checks=checks,
                 passed=sum(c['passed'] for c in checks), failed=sum(not c['passed'] for c in checks),
                 exceptions=reference['intentional_exceptions'])

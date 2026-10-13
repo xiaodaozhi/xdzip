@@ -10,7 +10,7 @@
 <label>缩放<select id="zoom"><option value="fit">适应屏幕</option><option value="1">100% · 设计尺寸</option><option value="pixels">原稿像素 1:1</option></select></label>
 <button id="reference-toggle" aria-expanded="false">对照原稿</button><button id="separate">独立预览窗口</button>
 </nav>
-<p class="notice">可操作的设计演示，使用示例数据。正常设计尺寸为 1280 px 主窗口逻辑宽度；“原稿像素 1:1”用于逐像素复核。HTML 与原稿共用缩放倍率，手机默认适应屏幕。HTML 预览不执行压缩解压，系统窗口外观用于说明 Qt 的独立窗口规范。</p>
+<p class="notice">可操作的设计演示，使用示例数据。正常设计尺寸为 1024 px 主窗口逻辑宽度；“原稿像素 1:1”用于逐像素复核。HTML 与原稿共用缩放倍率，手机默认适应屏幕。HTML 预览不执行压缩解压，系统窗口外观用于说明 Qt 的独立窗口规范。</p>
 <main><section id="viewport" class="canvas-viewport" aria-label="HTML 界面"><div id="scaled" class="scaled-canvas"><iframe id="design-frame" title="xdzip 可操作高保真画布" src="canvas.html"></iframe></div></section><section id="reference" hidden><h2>已确认原稿</h2><p id="reference-message" role="status">原稿与 HTML 独立展示；图片没有覆盖在界面上。</p><div id="reference-viewport" class="canvas-viewport"><div id="reference-scaled" class="scaled-canvas"><img hidden id="reference-image" alt="当前界面的已确认高保真原稿"></div></div></section></main>
 <footer><span id="status" role="status">正在加载设计画布…</span><a href="README.md">交付范围与差异</a></footer>
 </body></html>

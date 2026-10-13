@@ -7,10 +7,10 @@ import Xdzip.Native
 
 ApplicationWindow {
     id: root
-    width: 1280
-    height: 777
-    minimumWidth: 1040
-    minimumHeight: 680
+    width: Theme.mainWindowWidth
+    height: Theme.mainWindowHeight
+    minimumWidth: Theme.mainMinimumWidth
+    minimumHeight: Theme.mainMinimumHeight
     readonly property color accentTextColor: Theme.accentText
     property bool inspectorRequested: true
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
@@ -416,11 +416,11 @@ ApplicationWindow {
                     Item {
                         id: archiveCard
                         Layout.fillWidth: true
-                        implicitHeight: Math.max(Theme.mainArchiveCardHeight, archiveSummary.y + archiveSummary.height + 32)
+                        implicitHeight: Math.max(Theme.mainArchiveCardHeight, archiveSummary.y + archiveSummary.height + Theme.mainUnits(32))
                         Text {
                             id: archiveCaption
-                            x: 8
-                            y: 26
+                            x: Theme.mainUnits(8)
+                            y: Theme.mainUnits(26)
                             text: "ARCHIVE"
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainArchiveCaptionSize
@@ -428,9 +428,9 @@ ApplicationWindow {
                         Text {
                             id: archiveTitle
                             objectName: "sidebarArchiveName"
-                            x: 8
-                            y: archiveCaption.y + archiveCaption.height + 7
-                            width: parent.width - 16
+                            x: Theme.mainUnits(8)
+                            y: archiveCaption.y + archiveCaption.height + Theme.mainUnits(7)
+                            width: parent.width - Theme.mainUnits(16)
                             text: reader.title.length ? reader.title : qsTr("尚未打开归档")
                             textFormat: Text.PlainText
                             elide: Text.ElideMiddle
@@ -440,13 +440,13 @@ ApplicationWindow {
                         }
                         RowLayout {
                             id: archiveSummary
-                            x: 8
-                            y: archiveTitle.y + archiveTitle.height + 8
-                            spacing: 12
+                            x: Theme.mainUnits(8)
+                            y: archiveTitle.y + archiveTitle.height + Theme.mainUnits(8)
+                            spacing: Theme.mainUnits(12)
                             Rectangle {
-                                implicitWidth: 40
-                                implicitHeight: Math.max(24, Theme.mainSummarySize * 1.6)
-                                radius: 5
+                                implicitWidth: Theme.mainUnits(40)
+                                implicitHeight: Math.max(Theme.mainUnits(24), Theme.mainSummarySize * 1.6)
+                                radius: Theme.mainUnits(5)
                                 color: Theme.selection
                                 Text {
                                     anchors.centerIn: parent
@@ -462,9 +462,9 @@ ApplicationWindow {
                             }
                         }
                         Rectangle {
-                            x: 8
-                            width: parent.width - 16
-                            y: parent.height - 16
+                            x: Theme.mainUnits(8)
+                            width: parent.width - Theme.mainUnits(16)
+                            y: parent.height - Theme.mainUnits(16)
                             height: 1
                             color: Theme.border
                         }
@@ -473,22 +473,22 @@ ApplicationWindow {
                         id: allFiles
                         objectName: "directoryRoot"
                         Layout.fillWidth: true
-                        implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))
-                        leftPadding: 12
-                        rightPadding: 12
+                        implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
+                        leftPadding: Theme.mainUnits(12)
+                        rightPadding: Theme.mainUnits(12)
                         enabled: reader.ready && !reader.busy
                         onClicked: reader.showAll()
                         Accessible.name: qsTr("全部文件")
                         background: Rectangle {
-                            radius: Theme.controlRadius
+                            radius: Theme.mainControlRadius
                             color: reader.location.length === 0 ? Theme.treeSelectionColor : allFiles.hovered ? Theme.treeHoverColor : "transparent"
                             border.width: allFiles.activeFocus ? 2 : 0
                             border.color: Theme.accent
                             Rectangle {
                                 visible: reader.location.length === 0
-                                width: 3
-                                height: parent.height - 6
-                                y: 3
+                                width: Theme.mainUnits(3)
+                                height: parent.height - Theme.mainUnits(6)
+                                y: Theme.mainUnits(3)
                                 radius: 2
                                 color: Theme.accent
                             }
@@ -506,13 +506,13 @@ ApplicationWindow {
                                 text: qsTr("全部文件")
                                 elide: Text.ElideRight
                                 color: Theme.text
-                                font.pixelSize: Theme.bodySize
+                                font.pixelSize: Theme.mainBodySize
                                 font.bold: true
                             }
                             Text {
                                 text: reader.ready ? reader.archiveTotal : "—"
                                 color: Theme.textSecondary
-                                font.pixelSize: Theme.secondarySize
+                                font.pixelSize: Theme.mainSecondarySize
                             }
                         }
                         TapHandler {
@@ -570,7 +570,7 @@ ApplicationWindow {
                         }
                         enabled: reader.ready && !reader.busy
                         columnWidthProvider: function (column) {
-                            return Math.max(width, reader.navigationWidth * Math.max(1, Theme.fontScale));
+                            return Math.max(width, reader.navigationWidth * Theme.mainDensity * Math.max(1, Theme.fontScale));
                         }
                         onWidthChanged: forceLayout()
                         Connections {
@@ -601,14 +601,14 @@ ApplicationWindow {
                             TableView.onReused: inReusePool = false
                             readonly property bool hiddenCurrentBranch: reader.directoryId !== nodeId && !expanded && reader.directoryAncestors(reader.directoryId).includes(nodeId)
                             objectName: "directory-" + nodeId
-                            implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + 16, Theme.treeDisclosureHitMinHeight * Theme.fontScale + 16))
+                            implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
                             implicitWidth: directoryTree.width
                             indentation: Theme.treeDepthIndent
                             leftMargin: 0
                             leftPadding: Theme.treeContentLeftInset + nodeDepth * Theme.treeDepthIndent + Theme.treeDisclosureHitWidth * Theme.fontScale
                             topPadding: 0
                             bottomPadding: 0
-                            rightPadding: 8
+                            rightPadding: Theme.mainUnits(8)
                             palette.windowText: Theme.textSecondary
                             indicator: ToolButton {
                                 id: directoryDisclosure
@@ -625,7 +625,7 @@ ApplicationWindow {
                                     fillMode: Image.PreserveAspectFit
                                 }
                                 background: Rectangle {
-                                    radius: 4
+                                    radius: Theme.mainUnits(4)
                                     color: directoryDisclosure.down ? Theme.controlPressed : directoryDisclosure.hovered ? Theme.controlHover : "transparent"
                                 }
                                 onClicked: {
@@ -669,15 +669,15 @@ ApplicationWindow {
                                 }
                             }
                             background: Rectangle {
-                                radius: Theme.controlRadius
+                                radius: Theme.mainControlRadius
                                 color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : "transparent"
                                 border.width: directoryNode.activeFocus || (directoryTree.activeFocus && directoryNode.current) ? 2 : 0
                                 border.color: Theme.accent
                                 Rectangle {
                                     visible: reader.directoryId === directoryNode.nodeId
-                                    width: 3
-                                    height: parent.height - 6
-                                    y: 3
+                                    width: Theme.mainUnits(3)
+                                    height: parent.height - Theme.mainUnits(6)
+                                    y: Theme.mainUnits(3)
                                     radius: 2
                                     color: Theme.accent
                                 }
@@ -701,14 +701,14 @@ ApplicationWindow {
                                     color: Theme.treeGuideColor
                                     Rectangle {
                                         y: directoryNode.lastSibling ? parent.height : directoryNode.height / 2
-                                        width: 10
+                                        width: Theme.mainUnits(10)
                                         height: 1
                                         color: Theme.treeGuideColor
                                     }
                                 }
                             }
                             contentItem: RowLayout {
-                                spacing: 8
+                                spacing: Theme.mainUnits(8)
                                 Image {
                                     objectName: "directoryFolder-" + directoryNode.nodeId
                                     source: root.fileIcon("", true)
@@ -723,32 +723,32 @@ ApplicationWindow {
                                     textFormat: Text.PlainText
                                     elide: Text.ElideRight
                                     color: Theme.text
-                                    font.pixelSize: Theme.bodySize
+                                    font.pixelSize: Theme.mainBodySize
                                 }
                             }
                             Rectangle {
                                 id: countOverlay
                                 x: Math.max(0, Math.min(directoryNode.width - width, directoryTree.contentX + directoryTree.width - width))
-                                width: Math.max(32 * Theme.fontScale, countText.implicitWidth + 12) + (directoryNode.hiddenCurrentBranch ? 24 : 0)
+                                width: Math.max(Theme.treeCountMinWidth * Theme.fontScale, countText.implicitWidth + Theme.mainUnits(12)) + (directoryNode.hiddenCurrentBranch ? Theme.treeBranchMarkerCanvas : 0)
                                 height: directoryNode.height
                                 color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : Theme.treeSurfaceColor
                                 Image {
                                     objectName: "directoryBranchMarker-" + directoryNode.nodeId
                                     anchors.left: parent.left
                                     anchors.verticalCenter: parent.verticalCenter
-                                    width: 24
-                                    height: 24
+                                    width: Theme.mainUnits(24)
+                                    height: Theme.mainUnits(24)
                                     visible: directoryNode.hiddenCurrentBranch
                                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "tree-active-branch.png"
                                 }
                                 Text {
                                     id: countText
                                     anchors.right: parent.right
-                                    anchors.rightMargin: 8
+                                    anchors.rightMargin: Theme.mainUnits(8)
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: directoryNode.entryCount
                                     color: Theme.textSecondary
-                                    font.pixelSize: Theme.secondarySize
+                                    font.pixelSize: Theme.mainSecondarySize
                                 }
                             }
                         }
@@ -759,12 +759,12 @@ ApplicationWindow {
                         text: qsTr("目录数量或层级超出显示限额，仍可使用全部文件和搜索。")
                         wrapMode: Text.Wrap
                         color: Theme.textSecondary
-                        font.pixelSize: Theme.secondarySize
+                        font.pixelSize: Theme.mainSecondarySize
                     }
                     Text {
                         text: qsTr("只读浏览")
                         color: Theme.textSecondary
-                        font.pixelSize: Theme.secondarySize
+                        font.pixelSize: Theme.mainSecondarySize
                     }
                 }
             }
@@ -814,8 +814,8 @@ ApplicationWindow {
                         objectName: "browserViewMenuButton"
                         asset: root.viewMode === "list" ? "view-list-selected" : "view-list"
                         Layout.preferredWidth: Theme.mainViewButtonWidth
-                        leftPadding: 8
-                        rightPadding: 8
+                        leftPadding: Theme.mainUnits(8)
+                        rightPadding: Theme.mainUnits(8)
                         selected: root.viewMode === "list"
                         Accessible.name: qsTr("列表视图")
                         explanation: Accessible.name
@@ -828,8 +828,8 @@ ApplicationWindow {
                     ArchiveAction {
                         objectName: "browserGridButton"
                         asset: root.viewMode === "grid" ? "view-grid-selected" : "view-grid"
-                        leftPadding: 5
-                        rightPadding: 5
+                        leftPadding: Theme.mainUnits(5)
+                        rightPadding: Theme.mainUnits(5)
                         selected: root.viewMode === "grid"
                         Accessible.name: qsTr("网格视图")
                         explanation: Accessible.name
@@ -840,7 +840,7 @@ ApplicationWindow {
                         asset: "sort"
                         leftPadding: 2
                         rightPadding: 2
-                        glyphSize: 28
+                        glyphSize: Theme.mainUnits(28)
                         Accessible.name: qsTr("排序方式")
                         explanation: Accessible.name
                         enabled: reader.ready && !reader.busy
@@ -858,7 +858,7 @@ ApplicationWindow {
                 Rectangle {
                     objectName: "fileTableHeader"
                     Layout.fillWidth: true
-                    implicitHeight: Math.round(Math.max(Theme.mainTableHeaderHeight, Theme.mainHeaderSize * 1.6 + 12))
+                    implicitHeight: Math.round(Math.max(Theme.mainTableHeaderHeight, Theme.mainHeaderSize * 1.6 + Theme.mainUnits(12)))
                     color: Theme.canvas
                     clip: true
                     Row {
@@ -911,7 +911,7 @@ ApplicationWindow {
                                 }
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: columnHeader.index === 0 ? Theme.mainNameHeaderInset + 44 * Theme.fontScale : 4
+                                    x: columnHeader.index === 0 ? Theme.mainNameHeaderInset + Theme.mainUnits(44) * Theme.fontScale : Theme.mainUnits(4)
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
                                     visible: columnHeader.index < 3 && reader.sortOrder > 0 && Math.floor((reader.sortOrder - 1) / 2) === columnHeader.index
                                     color: Theme.accentInk
@@ -921,7 +921,7 @@ ApplicationWindow {
                                     anchors.right: parent.right
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: 1
-                                    height: 22
+                                    height: Theme.mainUnits(22)
                                     visible: columnHeader.index < 4
                                     color: Theme.border
                                 }
@@ -960,7 +960,7 @@ ApplicationWindow {
                         function columnSize(column: int): real {
                             const scale = Math.max(1, Theme.fontScale);
                             const other = [Theme.mainOriginalColumnWidth, Theme.mainPackedColumnWidth, Theme.mainTypeColumnWidth, Theme.mainDateColumnWidth];
-                            return column === 0 ? Math.max(250, width - other.reduce((a, b) => a + b, 0) * scale) : other[column - 1] * scale;
+                            return column === 0 ? Math.max(Theme.mainUnits(250), width - other.reduce((a, b) => a + b, 0) * scale) : other[column - 1] * scale;
                         }
                         function columnLeftInset(column, header) {
                             return column === 0 ? (header ? Theme.mainNameHeaderInset : Theme.mainNameTextInset) : column === 3 ? Theme.mainTypeColumnInset : column === 4 ? Theme.mainDateColumnInset : 0;
@@ -970,7 +970,7 @@ ApplicationWindow {
                         }
                         columnWidthProvider: columnSize
                         onWidthChanged: forceLayout()
-                        readonly property real scaledRowHeight: Math.max(Theme.mainFolderRowHeight, Theme.mainTableSize * 1.6 + 16)
+                        readonly property real scaledRowHeight: Math.max(Theme.mainFolderRowHeight, Theme.mainTableSize * 1.6 + Theme.mainUnits(16))
                         onScaledRowHeightChanged: forceLayout()
                         Connections {
                             target: Theme
@@ -999,16 +999,16 @@ ApplicationWindow {
                             objectName: "entry-" + row + "-" + column
                             Accessible.name: display
                             Accessible.description: entryStatus
-                            implicitWidth: 100
+                            implicitWidth: Theme.mainUnits(100)
                             implicitHeight: table.scaledRowHeight
                             color: Theme.surface
                             Rectangle {
                                 anchors.fill: parent
-                                anchors.leftMargin: cell.column === 0 ? 8 : 0
-                                anchors.rightMargin: cell.column === 4 ? 8 : 0
+                                anchors.leftMargin: cell.column === 0 ? Theme.mainUnits(8) : 0
+                                anchors.rightMargin: cell.column === 4 ? Theme.mainUnits(8) : 0
                                 anchors.topMargin: 2
                                 anchors.bottomMargin: 2
-                                radius: cell.column === 0 || cell.column === 4 ? Theme.controlRadius : 0
+                                radius: cell.column === 0 || cell.column === 4 ? Theme.mainControlRadius : 0
                                 color: cell.chosen ? Theme.selection : hover.hovered ? Theme.canvas : Theme.surface
                                 // Square the interior edge so adjacent cells form one continuous rounded band.
                                 Rectangle {
@@ -1063,16 +1063,19 @@ ApplicationWindow {
                                 anchors.left: parent.left
                                 anchors.leftMargin: Theme.mainCheckboxInset
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.alignWhenCentered: false
                                 checked: cell.chosen
                                 enabled: reader.runtimeAvailable && !reader.busy
                                 Accessible.name: cell.display
                                 onClicked: reader.selectRow(cell.row)
                             }
                             Image {
+                                objectName: "entryIcon"
                                 visible: cell.column === 0
                                 anchors.left: parent.left
                                 anchors.leftMargin: Theme.mainNameIconInset
                                 anchors.verticalCenter: parent.verticalCenter
+                                anchors.alignWhenCentered: false
                                 width: root.entryIconSize
                                 height: root.entryIconSize
                                 source: root.fileIcon(cell.display, cell.isDirectory)
@@ -1081,7 +1084,7 @@ ApplicationWindow {
                             Text {
                                 anchors.fill: parent
                                 anchors.leftMargin: table.columnLeftInset(cell.column, false)
-                                anchors.rightMargin: cell.column === 0 && cell.attention ? 24 : table.columnRightInset(cell.column)
+                                anchors.rightMargin: cell.column === 0 && cell.attention ? Theme.mainUnits(24) : table.columnRightInset(cell.column)
                                 text: cell.column === 1 || cell.column === 2 ? (cell.isDirectory ? "—" : root.formatSize(cell.display)) : cell.display
                                 horizontalAlignment: cell.column === 1 || cell.column === 2 ? Text.AlignRight : Text.AlignLeft
                                 textFormat: Text.PlainText
@@ -1092,7 +1095,7 @@ ApplicationWindow {
                             }
                             Text {
                                 anchors.right: parent.right
-                                anchors.rightMargin: 8
+                                anchors.rightMargin: Theme.mainUnits(8)
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: cell.column === 0 && cell.attention
                                 text: "!"
@@ -1114,8 +1117,8 @@ ApplicationWindow {
                         visible: root.viewMode === "grid"
                         model: root.viewMode === "grid" ? reader.entries : null
                         clip: true
-                        cellWidth: Math.max(150, Theme.bodySize * 10 + 16)
-                        cellHeight: Math.max(146, Theme.bodySize * 3 + 104)
+                        cellWidth: Math.max(Theme.mainUnits(150), Theme.mainBodySize * 10 + Theme.mainUnits(16))
+                        cellHeight: Math.max(Theme.mainUnits(146), Theme.mainBodySize * 3 + Theme.mainUnits(104))
                         ScrollBar.vertical: ScrollBar {}
                         delegate: Rectangle {
                             id: gridEntry
@@ -1131,7 +1134,7 @@ ApplicationWindow {
                             Accessible.description: entryStatus
                             width: grid.cellWidth - 12
                             height: grid.cellHeight - 12
-                            radius: Theme.controlRadius
+                            radius: Theme.mainControlRadius
                             color: gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
                             border.color: gridEntry.activeFocus ? Theme.accent : Theme.border
                             HoverHandler {
@@ -1153,12 +1156,12 @@ ApplicationWindow {
                             }
                             ColumnLayout {
                                 anchors.fill: parent
-                                anchors.margins: 12
-                                spacing: 8
+                                anchors.margins: Theme.mainUnits(12)
+                                spacing: Theme.mainUnits(8)
                                 Image {
                                     Layout.alignment: Qt.AlignHCenter
-                                    Layout.preferredWidth: 48
-                                    Layout.preferredHeight: 48
+                                    Layout.preferredWidth: Theme.mainUnits(48)
+                                    Layout.preferredHeight: Theme.mainUnits(48)
                                     source: root.fileIcon(gridEntry.display, gridEntry.isDirectory)
                                     fillMode: Image.PreserveAspectFit
                                 }
@@ -1167,7 +1170,7 @@ ApplicationWindow {
                                     text: gridEntry.display
                                     textFormat: Text.PlainText
                                     horizontalAlignment: Text.AlignHCenter
-                                    font.pixelSize: Theme.bodySize
+                                    font.pixelSize: Theme.mainBodySize
                                     color: Theme.text
                                     elide: Text.ElideRight
                                 }
@@ -1207,19 +1210,19 @@ ApplicationWindow {
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, 460)
                         visible: reader.busy || !reader.ready || reader.total === 0
-                        spacing: 16
+                        spacing: Theme.mainUnits(16)
                         Text {
                             Layout.fillWidth: true
                             text: reader.busy ? qsTr("正在读取…") : reader.ready ? qsTr("没有匹配的条目") : qsTr("浏览归档，无需先解压")
                             color: Theme.text
-                            font.pixelSize: Theme.panelTitleSize
+                            font.pixelSize: Theme.mainPanelTitleSize
                             horizontalAlignment: Text.AlignHCenter
                         }
                         Text {
                             Layout.fillWidth: true
                             text: reader.message.length ? reader.message : qsTr("选择 ZIP 文件查看真实目录。当前支持只读浏览，不写出文件。")
                             color: Theme.textSecondary
-                            font.pixelSize: Theme.bodySize
+                            font.pixelSize: Theme.mainBodySize
                             wrapMode: Text.Wrap
                             horizontalAlignment: Text.AlignHCenter
                         }
@@ -1234,21 +1237,23 @@ ApplicationWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     visible: reader.ready && reader.total > 128
-                    Layout.margins: 16
-                    spacing: 8
+                    Layout.margins: Theme.mainUnits(16)
+                    spacing: Theme.mainUnits(8)
                     Text {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         text: reader.ready ? qsTr("共 %1 项 · 当前 %2–%3").arg(reader.total).arg(reader.total ? reader.offset + 1 : 0).arg(Math.min(reader.offset + 128, reader.total)) : qsTr("尚未打开归档")
                         color: Theme.textSecondary
-                        font.pixelSize: Theme.secondarySize
+                        font.pixelSize: Theme.mainSecondarySize
                     }
                     AppButton {
+                        density: Theme.mainDensity
                         text: qsTr("上一页")
                         enabled: reader.ready && !reader.busy && reader.offset > 0
                         onClicked: reader.fetchPage(Math.max(0, reader.offset - 128))
                     }
                     AppButton {
+                        density: Theme.mainDensity
                         text: qsTr("下一页")
                         enabled: reader.ready && !reader.busy && reader.offset + 128 < reader.total
                         onClicked: reader.fetchPage(reader.offset + 128)
@@ -1272,7 +1277,7 @@ ApplicationWindow {
         Rectangle {
             objectName: "browserStatus"
             Layout.fillWidth: true
-            implicitHeight: Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + 16))
+            implicitHeight: Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + Theme.mainUnits(16)))
             color: Theme.surface
             Rectangle {
                 width: parent.width
@@ -1283,7 +1288,7 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.leftMargin: Theme.mainContentInset
                 anchors.rightMargin: Theme.mainContentInset
-                spacing: 8
+                spacing: Theme.mainUnits(8)
                 Text {
                     Layout.fillWidth: true
                     text: qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? " · " + root.formatSize(reader.selectedBytes) : "")
@@ -1314,12 +1319,12 @@ ApplicationWindow {
                 }
             }
             RowLayout {
-                x: parent.width / 2 - 50
+                x: parent.width / 2 - Theme.mainUnits(50)
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 9
+                spacing: Theme.mainUnits(9)
                 Image {
-                    Layout.preferredWidth: 22
-                    Layout.preferredHeight: 22
+                    Layout.preferredWidth: Theme.mainUnits(22)
+                    Layout.preferredHeight: Theme.mainUnits(22)
                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.busy ? "activity.png" : "completed.png")
                 }
                 Text {

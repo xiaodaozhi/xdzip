@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "source_commit": "05d410066eee723969f584b9ef77ef6f87a0ccd8",
   "source": "design/hifi/screens/main-light.png",
   "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
@@ -11,8 +11,8 @@
     1548,
     940
   ],
-  "logical_width": 1280,
-  "method": "Frozen source/HTML measurements, independent of Qt. Source coordinates map by 1280/1548. QFont pixelSize is integer: round text targets, record original fractional targets. Original image bytes are immutable.",
+  "logical_width": 1024,
+  "method": "Frozen source/HTML measurements, independent of Qt. Density correction treats the previous 1280 logical width as 125%; multiply by 0.8 to obtain 1024/1548. Original source image and historical HTML bytes remain immutable. Round Qt font targets after conversion.",
   "geometry_tolerance": 1.0,
   "source_geometry": {
     "titleHeight": 58,
@@ -133,7 +133,8 @@
     "Native system window decorations require Cocoa/Win32 desktop evidence, not offscreen screenshots.",
     "Single real archive session; no decorative second tab. Plus opens/replaces an archive and says so.",
     "Image preview, archive-wide totals and modification time are not supplied by the current metadata bridge; unsupported data stays explicit.",
-    "Large font and narrow-window layouts reflow; 1280-wide default is the calibrated baseline."
+    "Large font and narrow-window layouts reflow; 1024-wide default is the calibrated baseline.",
+    "Floating capsule titlebar uses layout-scale.json: height48, tab32, equal8 insets. Original source title anchors remain archived; top-anchored content shifts by the explicit title delta."
   ],
   "toolbar_icon_source_x": {
     "archiveOpen": 27,

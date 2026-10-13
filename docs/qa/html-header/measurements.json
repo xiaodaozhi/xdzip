@@ -29,15 +29,15 @@
       "selector": ".archive-tab:not(.inactive)",
       "expected": [
         293,
-        39,
+        43.09375,
         246,
-        49
+        48.375
       ],
       "actual": [
         293,
-        39,
+        43.09375,
         246,
-        49
+        48.375
       ],
       "maximum_delta_px": 0
     },
@@ -45,16 +45,16 @@
       "kind": "DOM rect",
       "selector": ".archive-tab.inactive",
       "expected": [
-        542,
-        39,
+        547,
+        43.09375,
         262,
-        49
+        48.375
       ],
       "actual": [
-        542,
-        39,
+        547,
+        43.09375,
         262,
-        49
+        48.375
       ],
       "maximum_delta_px": 0
     },
@@ -63,13 +63,13 @@
       "selector": ".search-field",
       "expected": [
         906,
-        101,
+        116.5625,
         449,
         51
       ],
       "actual": [
         906,
-        101,
+        116.5625,
         449,
         51
       ],
@@ -80,13 +80,13 @@
       "selector": ".split-button",
       "expected": [
         1368,
-        101,
+        116.5625,
         183,
         51
       ],
       "actual": [
         1368,
-        101,
+        116.5625,
         183,
         51
       ],
@@ -97,11 +97,11 @@
       "selector": "#close-archive svg",
       "expected": [
         513.5,
-        63.5
+        67.28125
       ],
       "actual": [
         513.0,
-        63.5
+        67.28125
       ],
       "maximum_delta_px": 0.5
     },
@@ -109,12 +109,12 @@
       "kind": "DOM center",
       "selector": "#close-example-tab svg",
       "expected": [
-        778.5,
-        63.5
+        783.5,
+        67.28125
       ],
       "actual": [
-        778.0,
-        63.5
+        783.0,
+        67.28125
       ],
       "maximum_delta_px": 0.5
     },
@@ -122,12 +122,12 @@
       "kind": "DOM center",
       "selector": "#new-tab svg",
       "expected": [
-        835.5,
-        62.5
+        845.5,
+        67.28125
       ],
       "actual": [
-        835.5,
-        62.5
+        845.5,
+        67.28125
       ],
       "maximum_delta_px": 0.0
     },
@@ -136,11 +136,11 @@
       "selector": "#title-settings svg",
       "expected": [
         1532,
-        61
+        67.28125
       ],
       "actual": [
         1532.0,
-        61.0
+        67.28125
       ],
       "maximum_delta_px": 0.0
     },
@@ -149,120 +149,30 @@
       "name": "extract-chevron",
       "expected": [
         1520,
-        123,
+        138.5625,
         12,
         7
       ],
       "actual": [
         1520,
-        123,
+        139,
         12,
         7
       ],
-      "maximum_delta_px": 0
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (538, 85)",
-      "expected": [
-        255,
-        255,
-        255
-      ],
-      "actual": [
-        255,
-        255,
-        255
-      ],
-      "maximum_delta_rgb": 0
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (538, 86)",
-      "expected": [
-        254,
-        254,
-        254
-      ],
-      "actual": [
-        255,
-        255,
-        255
-      ],
-      "maximum_delta_rgb": 1
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (539, 83)",
-      "expected": [
-        226,
-        229,
-        234
-      ],
-      "actual": [
-        227,
-        231,
-        239
-      ],
-      "maximum_delta_rgb": 5
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (540, 84)",
-      "expected": [
-        228,
-        230,
-        235
-      ],
-      "actual": [
-        227,
-        231,
-        239
-      ],
-      "maximum_delta_rgb": 4
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (541, 85)",
-      "expected": [
-        226,
-        230,
-        234
-      ],
-      "actual": [
-        227,
-        231,
-        239
-      ],
-      "maximum_delta_rgb": 5
-    },
-    {
-      "kind": "shoulder sample RGB",
-      "name": "right shoulder (542, 86)",
-      "expected": [
-        224,
-        228,
-        233
-      ],
-      "actual": [
-        227,
-        231,
-        239
-      ],
-      "maximum_delta_rgb": 6
+      "maximum_delta_px": 0.4375
     },
     {
       "kind": "painted ink",
       "name": "active-close",
       "expected": [
         508,
-        58,
+        61.78125,
         11,
         11
       ],
       "actual": [
         508,
-        59,
+        62,
         10,
         10
       ],
@@ -272,14 +182,14 @@
       "kind": "painted ink",
       "name": "inactive-close",
       "expected": [
-        773,
-        58,
+        778,
+        61.78125,
         11,
         11
       ],
       "actual": [
-        773,
-        59,
+        778,
+        62,
         10,
         10
       ],
@@ -289,14 +199,14 @@
       "kind": "painted ink",
       "name": "plus",
       "expected": [
-        827,
-        54,
+        837,
+        58.28125,
         18,
         18
       ],
       "actual": [
-        828,
-        55,
+        838,
+        59,
         16,
         16
       ],
@@ -307,47 +217,47 @@
       "name": "settings",
       "expected": [
         1521,
-        50,
+        55.78125,
         22,
         23
       ],
       "actual": [
         1521,
-        50,
+        56,
         22,
-        23
+        22
       ],
-      "maximum_delta_px": 0
+      "maximum_delta_px": 1
     },
     {
       "kind": "painted ink",
       "name": "open",
       "expected": [
         50,
-        115,
+        130.5625,
         26,
         24
       ],
       "actual": [
         50,
-        115,
+        131,
         26,
         24
       ],
-      "maximum_delta_px": 0
+      "maximum_delta_px": 0.4375
     },
     {
       "kind": "painted ink",
       "name": "new",
       "expected": [
         176,
-        114,
+        129.5625,
         26,
         26
       ],
       "actual": [
         175,
-        114,
+        130,
         26,
         26
       ],
@@ -358,13 +268,13 @@
       "name": "test",
       "expected": [
         322,
-        114,
+        129.5625,
         26,
         26
       ],
       "actual": [
         321,
-        114,
+        130,
         26,
         26
       ],
@@ -375,13 +285,13 @@
       "name": "more",
       "expected": [
         452,
-        125,
+        140.5625,
         23,
         4
       ],
       "actual": [
         453,
-        125,
+        141,
         22,
         4
       ],
@@ -396,12 +306,8 @@
         54,
         22
       ],
-      "actual": [
-        178,
-        52,
-        55,
-        22
-      ]
+      "actual": null,
+      "note": "Floating capsule supersedes archived title text positions"
     },
     {
       "kind": "type contour (review only)",
@@ -412,12 +318,8 @@
         113,
         21
       ],
-      "actual": [
-        350,
-        55,
-        112,
-        21
-      ]
+      "actual": null,
+      "note": "Floating capsule supersedes archived title text positions"
     },
     {
       "kind": "type contour (review only)",
@@ -428,12 +330,8 @@
         107,
         21
       ],
-      "actual": [
-        599,
-        55,
-        108,
-        20
-      ]
+      "actual": null,
+      "note": "Floating capsule supersedes archived title text positions"
     }
   ],
   "page_errors": [],

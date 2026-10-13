@@ -26,7 +26,7 @@
 - 菜单参数检查同时验证 CSS RGBA 到 QColor ARGB 的透明度转换；共享提示保持原始纯文本，菜单聚焦时隐藏。
 - 原有十幅页面、45 张参考切片和三张照片共 58 个文件保持原始 SHA-256。新控件不重新绘制这些已确认图片。
 
-行为报告和实际图片存放在[证据目录](main-window-components/)。完整离线文件为 `dist/xdzip-hifi-design.html` 与 `dist/xdzip-components.html`；组件页使用 1:1 逻辑像素，主窗口通过已声明的 1280 / 1548 转换显示。HTML 保留主稿 292 源像素的外层侧栏（约 241.45 逻辑像素），Qt 默认侧栏为 220；本轮统一 B 的内部行和图标参数，未将两种消费者的整窗截图宣称为像素一致。
+行为报告和实际图片存放在[证据目录](main-window-components/)。完整离线文件为 `dist/xdzip-hifi-design.html` 与 `dist/xdzip-components.html`；组件页使用 1:1 逻辑像素，主窗口当前通过已声明的 1024 / 1548 转换显示；菜单保持正常逻辑尺寸，侧栏约 193.16，Qt 取整为 193。当前尺寸和比例以[正常密度验收](ui-density/README.md)为准；本页保留组件行为的覆盖记录。
 
 ![实际 HTML 文件右键菜单](main-window-components/main-context-light.png)
 

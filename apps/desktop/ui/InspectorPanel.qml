@@ -56,7 +56,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.leftMargin: Theme.mainInspectorLeftInset
         anchors.rightMargin: Theme.mainInspectorRightInset
-        anchors.bottomMargin: 20
+        anchors.bottomMargin: Theme.mainUnits(20)
         contentWidth: availableWidth
         ColumnLayout {
             width: scroll.availableWidth
@@ -70,12 +70,12 @@ Rectangle {
                 border.color: Theme.border
                 ColumnLayout {
                     anchors.centerIn: parent
-                    width: parent.width - 32
-                    spacing: 14
+                    width: parent.width - Theme.mainUnits(32)
+                    spacing: Theme.mainUnits(14)
                     Image {
                         Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredWidth: 64
-                        Layout.preferredHeight: 64
+                        Layout.preferredWidth: Theme.mainUnits(64)
+                        Layout.preferredHeight: Theme.mainUnits(64)
                         source: panel.iconForFile(panel.detail.name || "", panel.detail.directory || false)
                         fillMode: Image.PreserveAspectFit
                     }
@@ -91,7 +91,7 @@ Rectangle {
             }
             Text {
                 Layout.fillWidth: true
-                Layout.topMargin: 14
+                Layout.topMargin: Theme.mainUnits(14)
                 text: panel.selectionCount > 1 ? qsTr("已选择 %1 项").arg(panel.selectionCount) : panel.detail.name || qsTr("未选择文件")
                 textFormat: Text.PlainText
                 wrapMode: Text.WrapAnywhere
@@ -101,7 +101,7 @@ Rectangle {
             }
             Text {
                 Layout.fillWidth: true
-                Layout.topMargin: 6
+                Layout.topMargin: Theme.mainUnits(6)
                 text: panel.selectionCount > 1 ? qsTr("以下为当前焦点条目的属性") : panel.detail.type ? panel.detail.type + (panel.detail.directory ? "" : qsTr(" 文件")) : qsTr("归档内条目")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.mainDetailTypeSize
@@ -109,15 +109,15 @@ Rectangle {
             }
             Rectangle {
                 Layout.fillWidth: true
-                Layout.topMargin: 20
-                Layout.bottomMargin: 14
+                Layout.topMargin: Theme.mainUnits(16)
+                Layout.bottomMargin: Theme.mainUnits(10)
                 implicitHeight: 1
                 color: Theme.border
             }
             Text {
                 visible: panel.detail.attention || false
                 Layout.fillWidth: true
-                Layout.bottomMargin: visible ? 8 : 0
+                Layout.bottomMargin: visible ? Theme.mainUnits(8) : 0
                 text: panel.detail.status || ""
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
@@ -146,10 +146,10 @@ Rectangle {
                 GridLayout {
                     required property var modelData
                     columns: Theme.fontScale > 1.3 ? 1 : 2
-                    rowSpacing: 4
-                    columnSpacing: 10
+                    rowSpacing: Theme.mainUnits(4)
+                    columnSpacing: Theme.mainUnits(10)
                     Layout.fillWidth: true
-                    Layout.minimumHeight: Math.max(32, Theme.mainPropertySize * 1.6 + 8)
+                    Layout.minimumHeight: Math.max(Theme.mainUnits(32), Theme.mainPropertySize * 1.6 + Theme.mainUnits(8))
                     Text {
                         text: parent.modelData.label
                         color: Theme.textSecondary
@@ -169,14 +169,14 @@ Rectangle {
             ArchiveAction {
                 objectName: "inspectorExtract"
                 Layout.fillWidth: true
-                Layout.topMargin: 22
-                implicitHeight: Math.max(47, Theme.mainHeaderSize * 1.6 + 16)
+                Layout.topMargin: Theme.mainUnits(12)
+                implicitHeight: Math.max(Theme.mainUnits(47), Theme.mainHeaderSize * 1.6 + Theme.mainUnits(16))
                 asset: "external-open"
                 text: qsTr("解压此文件")
                 enabled: false
                 explanation: qsTr("安全解压写入尚未实现")
                 background: Rectangle {
-                    radius: 6
+                    radius: Theme.mainUnits(6)
                     color: Theme.surface
                     border.color: Theme.border
                 }

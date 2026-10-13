@@ -1,0 +1,5121 @@
+{
+  "reference": "05d410066eee723969f584b9ef77ef6f87a0ccd8",
+  "scale": 0.661498708010336,
+  "method": "Frozen source geometry normalized to 1024 logical pixels; explicit 48px floating titlebar revision; integer structural boundaries and QFont sizes.",
+  "environments": {
+    "main-light": {
+      "os": "Debian GNU/Linux 13 (trixie)",
+      "architecture": "x86_64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "dpr": 2
+    },
+    "main-dark": {
+      "os": "Debian GNU/Linux 13 (trixie)",
+      "architecture": "x86_64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "dpr": 2
+    },
+    "main-integrated-layout": {
+      "os": "Debian GNU/Linux 13 (trixie)",
+      "architecture": "x86_64",
+      "qt": "6.8.2",
+      "platform": "offscreen",
+      "dpr": 2
+    }
+  },
+  "checks": [
+    {
+      "name": "frozen/source",
+      "actual": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+      "expected": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "frozen/html_capture",
+      "actual": "a739aa25bba59c914521f57540639cc47695d6a964a5b127be0ba927a1f99ac0",
+      "expected": "a739aa25bba59c914521f57540639cc47695d6a964a5b127be0ba927a1f99ac0",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/window.width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/image.logicalWidth",
+      "actual": 1024.0,
+      "expected": 1024,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/image.logicalHeight",
+      "actual": 622.0,
+      "expected": 622,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/window.height",
+      "actual": 622,
+      "expected": 621.8087855297158,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveSidebar.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveSidebar.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveSidebar.width",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveSidebar.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneHeader.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneHeader.height",
+      "actual": 46,
+      "expected": 45.64341085271318,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveInspector.x",
+      "actual": 766,
+      "expected": 766.015503875969,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveInspector.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveInspector.width",
+      "actual": 258,
+      "expected": 257.984496124031,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveInspector.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/fileTableHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/fileTableHeader.y",
+      "actual": 147,
+      "expected": 146.2687338501292,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/fileTableHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/fileTableHeader.height",
+      "actual": 34,
+      "expected": 33.736434108527135,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/browserStatus.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/browserStatus.y",
+      "actual": 585,
+      "expected": 585.4263565891473,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/browserStatus.width",
+      "actual": 1024,
+      "expected": 1024.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/browserStatus.height",
+      "actual": 37,
+      "expected": 36.382428940568474,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/paneHeaders.y",
+      "actual": 101,
+      "expected": 101,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-light/paneHeaders.height",
+      "actual": 46,
+      "expected": 46,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/filePaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/inspectorPaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/inspectorPaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/paneTitles.centerY",
+      "actual": 124.0,
+      "expected": 124.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/paneTitles.baseline",
+      "actual": 129.578125,
+      "expected": 129.578125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/preview.top",
+      "actual": 147,
+      "expected": 147,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-light/preview.height",
+      "actual": 183,
+      "expected": 183.23514211886305,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/preview.left",
+      "actual": 13.229974159999983,
+      "expected": 13.22997416020672,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/preview.actionFits",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.iconCenterY",
+      "actual": 202.0,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.textCenterY",
+      "actual": 202.49870801,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row0.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.iconCenterY",
+      "actual": 244.99741602,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.textCenterY",
+      "actual": 245.49612403,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row1.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.iconCenterY",
+      "actual": 287.99483204,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.textCenterY",
+      "actual": 288.49354005,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row2.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.iconCenterY",
+      "actual": 331.99224806,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.textCenterY",
+      "actual": 332.31782945500004,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row3.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.iconCenterY",
+      "actual": 376.64341085,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.textCenterY",
+      "actual": 376.968992245,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row4.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.iconCenterY",
+      "actual": 421.29457364,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.textCenterY",
+      "actual": 421.62015503500004,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row5.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.iconCenterY",
+      "actual": 465.94573643,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.textCenterY",
+      "actual": 466.271317825,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row6.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.iconCenterY",
+      "actual": 510.59689922,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.textCenterY",
+      "actual": 510.92248061500004,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row7.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.iconCenterY",
+      "actual": 555.24806201,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.textCenterY",
+      "actual": 555.573643405,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/row8.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/header0.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/header0.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/header1.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/header1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/header2.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/header2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/header3.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/header3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/header4.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/header4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.controlHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.searchHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.searchWidth",
+      "actual": 297,
+      "expected": 297.0129198966408,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.searchX",
+      "actual": 585.21447028,
+      "expected": 586.0878552971576,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.centerY",
+      "actual": 74.868217055,
+      "expected": 74.868217055,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-light/toolbar.iconSize",
+      "actual": 21.16795866,
+      "expected": 21.16795865633075,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveOpen.iconX",
+      "actual": 17.86046511,
+      "expected": 17.86046511627907,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveNew.iconX",
+      "actual": 99.86046511,
+      "expected": 100.54780361757106,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/archiveTest.iconX",
+      "actual": 196.86046511,
+      "expected": 197.1266149870801,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.closePlusCenterY",
+      "actual": 24.260981909999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.width",
+      "actual": 162.72868217,
+      "expected": 162.72868217054264,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.top",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.bottomInset",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.titleCenter",
+      "actual": 24.0,
+      "expected": 24.0,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.settingsCenter",
+      "actual": 24.229974159999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-light/tab.left",
+      "actual": 122.37726098,
+      "expected": 122.37726098191214,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-light/settings.right",
+      "actual": 10.583979330000002,
+      "expected": 10.583979328165375,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/window.width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/image.logicalWidth",
+      "actual": 1024.0,
+      "expected": 1024,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/image.logicalHeight",
+      "actual": 622.0,
+      "expected": 622,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/window.height",
+      "actual": 622,
+      "expected": 621.8087855297158,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveSidebar.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveSidebar.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveSidebar.width",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveSidebar.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneHeader.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneHeader.height",
+      "actual": 46,
+      "expected": 45.64341085271318,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveInspector.x",
+      "actual": 766,
+      "expected": 766.015503875969,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveInspector.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveInspector.width",
+      "actual": 258,
+      "expected": 257.984496124031,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveInspector.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/fileTableHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/fileTableHeader.y",
+      "actual": 147,
+      "expected": 146.2687338501292,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/fileTableHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/fileTableHeader.height",
+      "actual": 34,
+      "expected": 33.736434108527135,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/browserStatus.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/browserStatus.y",
+      "actual": 585,
+      "expected": 585.4263565891473,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/browserStatus.width",
+      "actual": 1024,
+      "expected": 1024.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/browserStatus.height",
+      "actual": 37,
+      "expected": 36.382428940568474,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/paneHeaders.y",
+      "actual": 101,
+      "expected": 101,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dark/paneHeaders.height",
+      "actual": 46,
+      "expected": 46,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/filePaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/inspectorPaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/inspectorPaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/paneTitles.centerY",
+      "actual": 124.0,
+      "expected": 124.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/paneTitles.baseline",
+      "actual": 129.578125,
+      "expected": 129.578125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/preview.top",
+      "actual": 147,
+      "expected": 147,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dark/preview.height",
+      "actual": 183,
+      "expected": 183.23514211886305,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/preview.left",
+      "actual": 13.229974159999983,
+      "expected": 13.22997416020672,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/preview.actionFits",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.iconCenterY",
+      "actual": 202.0,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.textCenterY",
+      "actual": 202.49870801,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row0.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.iconCenterY",
+      "actual": 244.99741602,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.textCenterY",
+      "actual": 245.49612403,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row1.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.iconCenterY",
+      "actual": 287.99483204,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.textCenterY",
+      "actual": 288.49354005,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row2.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.iconCenterY",
+      "actual": 331.99224806,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.textCenterY",
+      "actual": 332.31782945500004,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row3.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.iconCenterY",
+      "actual": 376.64341085,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.textCenterY",
+      "actual": 376.968992245,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row4.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.iconCenterY",
+      "actual": 421.29457364,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.textCenterY",
+      "actual": 421.62015503500004,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row5.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.iconCenterY",
+      "actual": 465.94573643,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.textCenterY",
+      "actual": 466.271317825,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row6.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.iconCenterY",
+      "actual": 510.59689922,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.textCenterY",
+      "actual": 510.92248061500004,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row7.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.iconCenterY",
+      "actual": 555.24806201,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.textCenterY",
+      "actual": 555.573643405,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/row8.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header0.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header0.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header1.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header2.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header3.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header4.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/header4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.controlHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.searchHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.searchWidth",
+      "actual": 297,
+      "expected": 297.0129198966408,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.searchX",
+      "actual": 585.21447028,
+      "expected": 586.0878552971576,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.centerY",
+      "actual": 74.868217055,
+      "expected": 74.868217055,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dark/toolbar.iconSize",
+      "actual": 21.16795866,
+      "expected": 21.16795865633075,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveOpen.iconX",
+      "actual": 17.86046511,
+      "expected": 17.86046511627907,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveNew.iconX",
+      "actual": 99.86046511,
+      "expected": 100.54780361757106,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/archiveTest.iconX",
+      "actual": 196.86046511,
+      "expected": 197.1266149870801,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.closePlusCenterY",
+      "actual": 24.260981909999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.width",
+      "actual": 162.72868217,
+      "expected": 162.72868217054264,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.top",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.bottomInset",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.titleCenter",
+      "actual": 24.0,
+      "expected": 24.0,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.settingsCenter",
+      "actual": 24.229974159999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-dark/tab.left",
+      "actual": 122.37726098,
+      "expected": 122.37726098191214,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dark/settings.right",
+      "actual": 10.583979330000002,
+      "expected": 10.583979328165375,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/window.width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/image.logicalWidth",
+      "actual": 1024.0,
+      "expected": 1024,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/image.logicalHeight",
+      "actual": 622.0,
+      "expected": 622,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/window.height",
+      "actual": 622,
+      "expected": 621.8087855297158,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveSidebar.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveSidebar.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveSidebar.width",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveSidebar.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneHeader.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneHeader.height",
+      "actual": 46,
+      "expected": 45.64341085271318,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveInspector.x",
+      "actual": 766,
+      "expected": 766.015503875969,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveInspector.y",
+      "actual": 101,
+      "expected": 100.62532299741602,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveInspector.width",
+      "actual": 258,
+      "expected": 257.984496124031,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveInspector.height",
+      "actual": 484,
+      "expected": 484.8010335917313,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/fileTableHeader.x",
+      "actual": 193,
+      "expected": 193.1576227390181,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/fileTableHeader.y",
+      "actual": 147,
+      "expected": 146.2687338501292,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/fileTableHeader.width",
+      "actual": 573,
+      "expected": 572.8578811369509,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/fileTableHeader.height",
+      "actual": 34,
+      "expected": 33.736434108527135,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/browserStatus.x",
+      "actual": 0,
+      "expected": 0.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/browserStatus.y",
+      "actual": 585,
+      "expected": 585.4263565891473,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/browserStatus.width",
+      "actual": 1024,
+      "expected": 1024.0,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/browserStatus.height",
+      "actual": 37,
+      "expected": 36.382428940568474,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/paneHeaders.y",
+      "actual": 101,
+      "expected": 101,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/paneHeaders.height",
+      "actual": 46,
+      "expected": 46,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/filePaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/inspectorPaneTitle.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/inspectorPaneTitle.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/paneTitles.centerY",
+      "actual": 124.0,
+      "expected": 124.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/paneTitles.baseline",
+      "actual": 129.578125,
+      "expected": 129.578125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/preview.top",
+      "actual": 147,
+      "expected": 147,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/preview.height",
+      "actual": 183,
+      "expected": 183.23514211886305,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/preview.left",
+      "actual": 13.229974159999983,
+      "expected": 13.22997416020672,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/preview.actionFits",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.iconCenterY",
+      "actual": 202.0,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.textCenterY",
+      "actual": 202.49870801,
+      "expected": 202.49870801,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row0.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.iconCenterY",
+      "actual": 244.99741602,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.textCenterY",
+      "actual": 245.49612403,
+      "expected": 245.49612403,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row1.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.height",
+      "actual": 42.99741602,
+      "expected": 42.997416020671835,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.iconCenterY",
+      "actual": 287.99483204,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.textCenterY",
+      "actual": 288.49354005,
+      "expected": 288.49354005,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row2.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.iconCenterY",
+      "actual": 331.99224806,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.textCenterY",
+      "actual": 332.31782945500004,
+      "expected": 332.31782945500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row3.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.iconCenterY",
+      "actual": 376.64341085,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.textCenterY",
+      "actual": 376.968992245,
+      "expected": 376.968992245,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row4.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.iconCenterY",
+      "actual": 421.29457364,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.textCenterY",
+      "actual": 421.62015503500004,
+      "expected": 421.62015503500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row5.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.iconCenterY",
+      "actual": 465.94573643,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.textCenterY",
+      "actual": 466.271317825,
+      "expected": 466.271317825,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row6.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.iconCenterY",
+      "actual": 510.59689922,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.textCenterY",
+      "actual": 510.92248061500004,
+      "expected": 510.92248061500004,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row7.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.height",
+      "actual": 44.65116279,
+      "expected": 44.651162790697676,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.iconWidth",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.iconHeight",
+      "actual": 31.75193798,
+      "expected": 31.751937984496124,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.iconInset",
+      "actual": 54.90439276000001,
+      "expected": 54.90439276485788,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.nameInset",
+      "actual": 97.24031007999997,
+      "expected": 97.24031007751938,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.iconCenterY",
+      "actual": 555.24806201,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.textCenterY",
+      "actual": 555.573643405,
+      "expected": 555.573643405,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.family",
+      "actual": "Xdzip Design Sans SC",
+      "expected": "Xdzip Design Sans SC",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.canonicalIcon",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col1.edge",
+      "actual": 472.29457364,
+      "expected": 472.29457363999995,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col2.edge",
+      "actual": 550.35142118,
+      "expected": 550.35142118,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col3.edge",
+      "actual": 583.42635658,
+      "expected": 583.42635658,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/row8.col4.edge",
+      "actual": 666.1136950899999,
+      "expected": 666.1136950899999,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header0.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header0.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header1.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header1.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header2.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header2.alignment",
+      "actual": "AlignRight",
+      "expected": "AlignRight",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header3.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header3.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header4.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/header4.alignment",
+      "actual": "AlignLeft",
+      "expected": "AlignLeft",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.controlHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.searchHeight",
+      "actual": 33.73643411,
+      "expected": 33.736434108527135,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.searchWidth",
+      "actual": 297,
+      "expected": 297.0129198966408,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.searchX",
+      "actual": 585.21447028,
+      "expected": 586.0878552971576,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.centerY",
+      "actual": 74.868217055,
+      "expected": 74.868217055,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.font",
+      "actual": 12,
+      "expected": 12,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/toolbar.iconSize",
+      "actual": 21.16795866,
+      "expected": 21.16795865633075,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/view.selectedAsset",
+      "actual": "view-list-selected.png",
+      "expected": "view-list-selected.png",
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveOpen.iconX",
+      "actual": 17.86046511,
+      "expected": 17.86046511627907,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveNew.iconX",
+      "actual": 99.86046511,
+      "expected": 100.54780361757106,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/archiveTest.iconX",
+      "actual": 196.86046511,
+      "expected": 197.1266149870801,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.closePlusCenterY",
+      "actual": 24.260981909999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.width",
+      "actual": 162.72868217,
+      "expected": 162.72868217054264,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.top",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.bottomInset",
+      "actual": 8,
+      "expected": 8,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.titleCenter",
+      "actual": 24.0,
+      "expected": 24.0,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.settingsCenter",
+      "actual": 24.229974159999998,
+      "expected": 24.0,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/tab.left",
+      "actual": 180.58914729,
+      "expected": 180.5891472868217,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-integrated-layout/settings.right",
+      "actual": 10.583979330000002,
+      "expected": 10.583979328165375,
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/window.width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.fitsX",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.fitsY",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.tableFontRatio",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.paddingLeft",
+      "actual": 6.0,
+      "expected": 6,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.paddingTop",
+      "actual": 6.0,
+      "expected": 6,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item0.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item0.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item1.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item1.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item2.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item2.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item3.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item3.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item4.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item4.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item5.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/item5.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-dropdown/menu.firstItemTop",
+      "actual": 97.73643411,
+      "expected": 97.73643411,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-context/window.width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.fitsX",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.fitsY",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.tableFontRatio",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.paddingLeft",
+      "actual": 6,
+      "expected": 6,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.paddingTop",
+      "actual": 6,
+      "expected": 6,
+      "tolerance": 0.01,
+      "passed": true
+    },
+    {
+      "name": "main-context/item0.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/item0.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/item1.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/item1.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/item2.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/item2.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/item3.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/item3.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/item4.font",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 0,
+      "passed": true
+    },
+    {
+      "name": "main-context/item4.minimumHeight",
+      "actual": true,
+      "expected": true,
+      "tolerance": null,
+      "passed": true
+    },
+    {
+      "name": "main-context/menu.firstItemTop",
+      "actual": 338,
+      "expected": 338,
+      "tolerance": 0.01,
+      "passed": true
+    }
+  ],
+  "passed": 726,
+  "failed": 0,
+  "exceptions": [
+    "New logo and directory tree B supersede those parts of the original main artwork.",
+    "Native system window decorations require Cocoa/Win32 desktop evidence, not offscreen screenshots.",
+    "Single real archive session; no decorative second tab. Plus opens/replaces an archive and says so.",
+    "Image preview, archive-wide totals and modification time are not supplied by the current metadata bridge; unsupported data stays explicit.",
+    "Large font and narrow-window layouts reflow; 1024-wide default is the calibrated baseline."
+  ]
+}

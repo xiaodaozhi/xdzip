@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "units": "CSS pixels / Qt device-independent pixels; physical screenshot pixels are divided by DPR",
+  "main": {
+    "previous_logical_width": 1280,
+    "density": 0.8,
+    "logical_window": [
+      1024,
+      622
+    ],
+    "minimum_window": [
+      832,
+      544
+    ],
+    "inspector_collapse_width": 928,
+    "source_to_logical": [
+      1024,
+      1548
+    ],
+    "titlebar": {
+      "height": 48,
+      "tab_height": 32,
+      "tab_vertical_inset": 8,
+      "tab_radius": 16,
+      "style": "floating capsule"
+    }
+  },
+  "operation": {
+    "source_to_logical": [
+      1280,
+      1548
+    ],
+    "density": 1
+  },
+  "controls": {
+    "density": 1,
+    "source": "controls.json",
+    "menu_width": 240,
+    "menu_row_min_height": 32,
+    "menu_font_size": 13
+  },
+  "rounding": {
+    "window_and_structural_boundaries": "nearest integer",
+    "qt_font_pixel_size": "nearest integer after density conversion, before accessibility font scale",
+    "geometry_tolerance": 1,
+    "alignment_tolerance": 0.5
+  },
+  "verification": {
+    "browser_zoom": [
+      1,
+      1.25
+    ],
+    "device_pixel_ratio": [
+      1,
+      1.25,
+      2
+    ],
+    "review_zoom": 1,
+    "menu_to_table_font_ratio": [
+      0.95,
+      1.1
+    ]
+  }
+}

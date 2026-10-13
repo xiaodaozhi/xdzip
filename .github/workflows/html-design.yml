@@ -9,6 +9,9 @@ on:
       - 'scripts/*directory-tree*'
       - 'docs/visual/directory-tree.json'
       - 'docs/visual/controls.json'
+      - 'docs/visual/layout-scale.json'
+      - 'scripts/generate-display-spec.py'
+      - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
@@ -30,6 +33,9 @@ on:
       - 'scripts/*directory-tree*'
       - 'docs/visual/directory-tree.json'
       - 'docs/visual/controls.json'
+      - 'docs/visual/layout-scale.json'
+      - 'scripts/generate-display-spec.py'
+      - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
       - 'docs/qa/asset-review/**'
       - 'docs/qa/asset-consumers/**'
@@ -67,12 +73,14 @@ jobs:
           .venv-design/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
           .venv-design/bin/python scripts/check-directory-tree-delivery.py
           .venv-design/bin/python scripts/build-html-design.py
+          .venv-design/bin/python scripts/generate-display-spec.py --check
           .venv-design/bin/python scripts/generate-control-tokens.py --check
           .venv-design/bin/python scripts/check-html-controls.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
           .venv-design/bin/python scripts/check-html-references.py
           .venv-design/bin/python scripts/check-html-scale.py
+          .venv-design/bin/python scripts/check-html-density.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
       - name: Compare body anchors and build offline regional review
@@ -93,6 +101,7 @@ jobs:
             docs/qa/pane-header-alignment.md
             docs/qa/pane-header-alignment/
             docs/qa/html-scrollbars/
+            dist/ui-density/
             docs/qa/asset-review/
             docs/qa/asset-consumers/
             docs/qa/brand-and-assets.md

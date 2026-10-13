@@ -259,7 +259,7 @@
     min-height: var(--tree-row-min-height);
     min-width: 100%;
     padding-left: calc(
-        (12px + var(--tree-depth) * 16px) * var(--ui-source-factor)
+        (12px + var(--tree-depth) * 16px) * var(--tree-source-factor)
     );
     border-radius: var(--tree-selection-radius);
     gap: var(--tree-icon-label-gap);
@@ -280,7 +280,7 @@
     top: 3px;
     bottom: 3px;
     left: 0;
-    width: calc(3px * var(--ui-source-factor));
+    width: calc(3px * var(--tree-source-factor));
     background: var(--accent);
     border-radius: 3px;
 }
@@ -291,7 +291,7 @@
 .tree-row .tree-label {
     min-width: 0;
     flex: 1;
-    max-width: calc(160px * var(--ui-source-factor));
+    max-width: calc(160px * var(--tree-source-factor));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -323,7 +323,7 @@
     width: var(--tree-disclosure-hit-width);
     height: var(--tree-disclosure-hit-min-height);
     padding: 0;
-    margin-right: calc(-8px * var(--ui-source-factor));
+    margin-right: calc(-8px * var(--tree-source-factor));
     border-radius: 4px;
 }
 .tree-disclosure svg {
@@ -338,14 +338,14 @@
     border-radius: 0 var(--tree-selection-radius) var(--tree-selection-radius) 0;
     position: sticky;
     right: 0;
-    min-width: calc(56px * var(--ui-source-factor));
+    min-width: calc(56px * var(--tree-source-factor));
     height: 100%;
     margin-left: auto;
-    padding-right: calc(8px * var(--ui-source-factor));
+    padding-right: calc(8px * var(--tree-source-factor));
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: calc(4px * var(--ui-source-factor));
+    gap: calc(4px * var(--tree-source-factor));
     background: var(--tree-surface-color);
     font-size: var(--tree-count-font-size);
     color: var(--secondary);
@@ -371,7 +371,7 @@
     position: absolute;
     z-index: 0;
     pointer-events: none;
-    left: calc((24px + var(--guide-depth) * 16px) * var(--ui-source-factor));
+    left: calc((24px + var(--guide-depth) * 16px) * var(--tree-source-factor));
     top: 0;
     bottom: 0;
     width: 1px;
@@ -382,7 +382,7 @@
     position: absolute;
     left: 0;
     top: 50%;
-    width: calc(10px * var(--ui-source-factor));
+    width: calc(10px * var(--tree-source-factor));
     height: 1px;
     background: var(--border);
 }

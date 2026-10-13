@@ -11,14 +11,16 @@
     const referenceViewport = document.querySelector("#reference-viewport");
     const current = id => document.querySelector(`#${id}`).value;
     const number = value => Number(value.toFixed(2));
+    const isMainView = () => ["main","empty","damaged"].includes(current("view"));
+    const logicalScale = () => isMainView() ? displaySpec.sourceToLogical : displaySpec.operationSourceToLogical;
 
     // Source-image pixels are measurement coordinates. Normal presentation uses
     // explicit CSS logical dimensions; devicePixelRatio never changes this ratio.
     function sourceScale() {
         const [width] = displaySpec.views[current("view")].size;
         if (current("zoom") === "pixels") return 1;
-        if (current("zoom") === "fit") return Math.min(displaySpec.sourceToLogical, viewport.clientWidth / width);
-        return displaySpec.sourceToLogical;
+        if (current("zoom") === "fit") return Math.min(logicalScale(), viewport.clientWidth / width);
+        return logicalScale();
     }
 
     function fit() {
@@ -34,13 +36,13 @@
             wrapper.style.width = `${width * scale}px`;
             wrapper.style.height = `${height * scale}px`;
         }
-        const windowView = ["main","empty","damaged"].includes(current("view"));
+        const windowView = isMainView();
         const [, ,windowWidth,windowHeight] = displaySpec.sourceWindow;
         const dimensions = windowView ? [windowWidth,windowHeight] : [width,height];
-        const logical = dimensions.map(value => number(value * displaySpec.sourceToLogical));
+        const logical = dimensions.map(value => number(value * logicalScale()));
         const mode = current("zoom") === "pixels" ? "原稿像素 1:1" : current("zoom") === "fit" ? "适应屏幕" : "100% 设计尺寸";
         const theme = current("theme") === "dark" ? "深色适配（无对应完整主稿）" : "浅色";
-        document.querySelector("#status").textContent = `${current("platform")} · ${theme} · 设计${windowView ? "窗口" : "图板"} ${logical.join(" × ")} CSS px · ${mode} · 当前 ${number(scale / displaySpec.sourceToLogical * 100)}% 设计倍率（${number(scale * 100)}% 原稿像素）`;
+        document.querySelector("#status").textContent = `${current("platform")} · ${theme} · 设计${windowView ? "窗口" : "图板"} ${logical.join(" × ")} CSS px · ${mode} · 当前 ${number(scale / logicalScale() * 100)}% 审阅倍率 · DPR ${window.devicePixelRatio}（${number(scale * 100)}% 原稿坐标）`;
     }
 
     function updateReference() {

@@ -34,12 +34,12 @@ Item {
                 {
                     tag: "normal",
                     scale: 1,
-                    width: 1280
+                    width: 1024
                 },
                 {
                     tag: "large",
                     scale: 2,
-                    width: 1040
+                    width: 832
                 }
             ];
         }
@@ -60,13 +60,13 @@ Item {
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
             const extract = findChild(toolbar, "archiveExtract");
             tryCompare(extract, "height", toolbar.controlHeight);
-            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 14);
+            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 11);
             const icon = findChild(open, "actionIcon");
             const label = findChild(open, "actionLabel");
             tryVerify(() => Math.abs(icon.mapToItem(open, 0, icon.height / 2).y - open.height / 2) < 0.5);
             tryVerify(() => Math.abs(label.mapToItem(open, 0, label.height / 2).y - open.height / 2) < 0.5);
-            verify(Math.abs(icon.width - 32 * 1280 / 1548) < 0.01);
-            compare(label.font.pixelSize, 15 * data.scale);
+            verify(Math.abs(icon.width - 32 * 1024 / 1548) < 0.01);
+            compare(label.font.pixelSize, 12 * data.scale);
             verify(!extract.enabled);
             verify(findChild(extract, "actionSplitIndicator").visible);
             compare(findChild(extract, "actionLabel").opacity, 1);

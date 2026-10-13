@@ -107,10 +107,10 @@ def main():
                 'root_files_only', 'navigation_limited', 'read_failed', 'hidden_current'}
     assert required <= set(spec['states']), 'Missing handoff state'
     assert spec['status'] == 'core-interactions-integrated'
-    display = (ROOT / 'design/html/display-spec.js').read_text()
-    ratio = re.search(r'sourceToLogical:\s*(\d+)\s*/\s*(\d+)', display)
-    assert ratio and spec['coordinate_mapping']['source_to_logical_ratio'] == [int(ratio[1]), int(ratio[2])]
-    source_to_logical = int(ratio[1]) / int(ratio[2])
+    layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+    ratio = layout['main']['source_to_logical']
+    assert spec['coordinate_mapping']['source_to_logical_ratio'] == ratio
+    source_to_logical = ratio[0] / ratio[1]
     for example in spec['coordinate_mapping']['examples']:
         assert abs(example['source_css'] * source_to_logical - example['logical']) < 1e-9
     report = {
@@ -121,7 +121,7 @@ def main():
         'checks': ['Original files keep their SHA-256', 'Every cut matches its exact bounded source rectangle',
                    'Six-unit marker is centered on every shared canvas',
                    'Counts, leaf arrows and hidden-current sample are internally consistent'],
-        'coordinate_conversion': 'Qt logical values and HTML source values map to the same 1280-wide design size',
+        'coordinate_conversion': 'Qt logical values and HTML source values map to the same 1024-wide design size',
         'integration_status': spec['status'],
         'limits': ['Boundary notice glyphs and skeleton remain design resources',
                    'Asset checks do not prove live keyboard or screen-reader behavior; see the component interaction review',

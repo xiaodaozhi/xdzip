@@ -143,6 +143,9 @@ def main():
             loaded_font = page.evaluate('[...document.fonts].some(f => f.family === "Xdzip Design Sans SC" && f.status === "loaded")')
             if not loaded_font:
                 failures.append('Embedded comparison font did not load')
+            # Approved floating-title revision moves top-anchored content; footer stays fixed.
+            layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+            title_delta = layout['main']['titlebar']['height'] * 1548 / 1024 - 57
             for selector, target in spec.get('dom_rect_targets', {}).items():
                 expected, tolerance = normalize_target(target, 'rect', args.rect_tolerance)
                 tolerance = spec.get('dom_rect_tolerances', {}).get(selector, tolerance)
@@ -160,6 +163,11 @@ def main():
                                          'design_revision': revision['design_revision']})
                     expected = revision['target']
                     kind = 'revised design rect'
+                expected = list(expected)
+                if selector not in ['.storage-bar', '.statusbar']:
+                    expected[1] += title_delta
+                    if len(expected) == 4 and selector in ['.sidebar', '.files-pane', '.inspector']:
+                        expected[3] -= title_delta
                 record_geometry(measurements, failures, kind, selector, expected, actual, tolerance)
             for selector, target in spec.get('dom_center_targets', {}).items():
                 expected, tolerance = normalize_target(target, 'center', args.center_tolerance)
@@ -178,13 +186,24 @@ def main():
                                          'design_revision': revision['design_revision']})
                     expected = revision['target']
                     kind = 'revised design center'
+                expected = list(expected)
+                if selector not in ['.storage-bar', '.statusbar']:
+                    expected[1] += title_delta
+                    if len(expected) == 4 and selector in ['.sidebar', '.files-pane', '.inspector']:
+                        expected[3] -= title_delta
                 record_geometry(measurements, failures, kind, selector, expected, actual, tolerance)
             shot = Image.open(io.BytesIO(page.screenshot())).convert('RGB')
             save_images(args.output, original, shot, review_regions(spec))
             for item in spec.get('ink_regions', []):
                 mode = item.get('mode', 'dark')
                 expected = painted_bounds(original, item['region'], mode)
-                actual = painted_bounds(shot, item.get('target_region', item['region']), mode)
+                region = list(item.get('target_region', item['region']))
+                moving = item['region'][1] < 915
+                if moving:
+                    region[1] += title_delta
+                actual = painted_bounds(shot, region, mode)
+                if moving and expected:
+                    expected[1] += title_delta
                 if expected is None:
                     failures.append(f'{item["name"]}: source ink region is empty; remeasure it')
                     continue
@@ -202,7 +221,7 @@ def main():
                         'original_tolerance_px': item.get('tolerance', args.ink_tolerance),
                     })
                     record_geometry(measurements, failures, 'revised design ink', item['name'],
-                                    item['target_ink_rect'], actual, item.get('tolerance', args.ink_tolerance))
+                                    [v + title_delta if i == 1 and moving else v for i, v in enumerate(item['target_ink_rect'])], actual, item.get('tolerance', args.ink_tolerance))
                 else:
                     record_geometry(measurements, failures, 'painted ink', item['name'], expected, actual,
                                     item.get('tolerance', args.ink_tolerance))
@@ -224,6 +243,10 @@ def main():
                                          'point': list(point), 'design_revision': revision})
                     actual = shot.getpixel(tuple(item['target_point']))
                     kind = 'revised design RGB sample'
+                sample = list(item.get('target_point', item['point']))
+                if sample[1] < 915:
+                    sample[1] += title_delta
+                actual = shot.getpixel(tuple(round(v) for v in sample))
                 record_geometry(measurements, failures, kind, item['name'], expected, actual,
                                 item.get('tolerance', 6))
             for selector, expected in spec.get('text_targets', {}).items():

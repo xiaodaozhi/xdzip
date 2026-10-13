@@ -1,0 +1,1109 @@
+{
+  "method": "Private Xvfb + XTest native Ctrl+0/Ctrl+=; actual Chromium page zoom, no CSS zoom or pinch emulation.",
+  "checks": [
+    {
+      "name": "DPR1-page1/effective DPR",
+      "actual": 1,
+      "expected": 1,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/main width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/main height",
+      "actual": 621.8125,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/title height",
+      "actual": 48,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/tab height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/tab top gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/tab bottom gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/center #close-archive",
+      "actual": 256.6796875,
+      "expected": 256.671875,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/center #close-example-tab",
+      "actual": 256.6796875,
+      "expected": 256.671875,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/center #new-tab",
+      "actual": 256.6796875,
+      "expected": 256.671875,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/center #title-settings",
+      "actual": 256.6796875,
+      "expected": 256.671875,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/dropdown width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/context width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/context first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/effective DPR",
+      "actual": 1.25,
+      "expected": 1.25,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/main width",
+      "actual": 1023.9999752044678,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/main height",
+      "actual": 621.8000183105469,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/title height",
+      "actual": 48,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/tab height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/tab top gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/tab bottom gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/center #close-archive",
+      "actual": 278.36875915527344,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/center #close-example-tab",
+      "actual": 278.36875915527344,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/center #new-tab",
+      "actual": 278.36875915527344,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/center #title-settings",
+      "actual": 278.36875915527344,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/dropdown width",
+      "actual": 239.99996948242188,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/context width",
+      "actual": 240.00003051757812,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/context first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/effective DPR",
+      "actual": 1.25,
+      "expected": 1.25,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/main width",
+      "actual": 1023.9999752044678,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/main height",
+      "actual": 621.8000030517578,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/title height",
+      "actual": 48,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/tab height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/tab top gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/tab bottom gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/center #close-archive",
+      "actual": 255.96875762939453,
+      "expected": 255.97500610351562,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/center #close-example-tab",
+      "actual": 255.96875762939453,
+      "expected": 255.97500610351562,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/center #new-tab",
+      "actual": 255.96875762939453,
+      "expected": 255.97500610351562,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/center #title-settings",
+      "actual": 255.96875762939453,
+      "expected": 255.97500610351562,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/dropdown width",
+      "actual": 239.99996948242188,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/context width",
+      "actual": 240.00003051757812,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/context first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/effective DPR",
+      "actual": 1.5625,
+      "expected": 1.5625,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/main width",
+      "actual": 1023.9999809265137,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/main height",
+      "actual": 621.8099822998047,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/title height",
+      "actual": 47.99998474121094,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/tab height",
+      "actual": 31.989990234375,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/tab top gap",
+      "actual": 8.000015258789062,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/tab bottom gap",
+      "actual": 8.009979248046875,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/center #close-archive",
+      "actual": 277.7799835205078,
+      "expected": 277.7899856567383,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/center #close-example-tab",
+      "actual": 277.7799835205078,
+      "expected": 277.7899856567383,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/center #new-tab",
+      "actual": 277.7799835205078,
+      "expected": 277.7899856567383,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/center #title-settings",
+      "actual": 277.7899932861328,
+      "expected": 277.7899856567383,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/dropdown width",
+      "actual": 239.99002075195312,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/context width",
+      "actual": 239.98995971679688,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/context first row height",
+      "actual": 31.989990234375,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/effective DPR",
+      "actual": 2,
+      "expected": 2,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/main width",
+      "actual": 1024,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/main height",
+      "actual": 621.8125,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/title height",
+      "actual": 48,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/tab height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/tab top gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/tab bottom gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/center #close-archive",
+      "actual": 256.703125,
+      "expected": 256.703125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/center #close-example-tab",
+      "actual": 256.703125,
+      "expected": 256.703125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/center #new-tab",
+      "actual": 256.69921875,
+      "expected": 256.703125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/center #title-settings",
+      "actual": 256.69921875,
+      "expected": 256.703125,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/dropdown width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/context width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/context first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/effective DPR",
+      "actual": 2.5,
+      "expected": 2.5,
+      "tolerance": 0.001,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/main width",
+      "actual": 1024.000072479248,
+      "expected": 1024,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/main height",
+      "actual": 621.8125,
+      "expected": 621.8087855297158,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/title height",
+      "actual": 48,
+      "expected": 48,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/tab height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/tab top gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/tab bottom gap",
+      "actual": 8.0,
+      "expected": 8,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/center #close-archive",
+      "actual": 278.37188720703125,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/center #close-example-tab",
+      "actual": 278.37188720703125,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/center #new-tab",
+      "actual": 278.37501525878906,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/center #title-settings",
+      "actual": 278.37501525878906,
+      "expected": 278.375,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/table font",
+      "actual": 12.568475452196383,
+      "expected": 12.568475452196383,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/dropdown width",
+      "actual": 240.00003051757812,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/dropdown font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/dropdown menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/dropdown first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/submenu width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/submenu font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/submenu menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/submenu first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/context width",
+      "actual": 240,
+      "expected": 240,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/context font",
+      "actual": 12.999971059431525,
+      "expected": 13,
+      "tolerance": 0.06,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/context menu/table font ratio",
+      "actual": 1.0343315789473684,
+      "expected": [
+        0.95,
+        1.1
+      ],
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/context first row height",
+      "actual": 32,
+      "expected": 32,
+      "tolerance": 0.06,
+      "passed": true
+    }
+  ],
+  "environments": [
+    {
+      "case": "DPR1-page1",
+      "base_dpr": 1,
+      "browser_zoom": 1,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 1,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    },
+    {
+      "case": "DPR1-page1.25",
+      "base_dpr": 1,
+      "browser_zoom": 1.25,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 1.25,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    },
+    {
+      "case": "DPR1.25-page1",
+      "base_dpr": 1.25,
+      "browser_zoom": 1,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 1.25,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    },
+    {
+      "case": "DPR1.25-page1.25",
+      "base_dpr": 1.25,
+      "browser_zoom": 1.25,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 1.5625,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    },
+    {
+      "case": "DPR2-page1",
+      "base_dpr": 2,
+      "browser_zoom": 1,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 2,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    },
+    {
+      "case": "DPR2-page1.25",
+      "base_dpr": 2,
+      "browser_zoom": 1.25,
+      "dpr_source": "Chromium --force-device-scale-factor",
+      "effective_dpr": 2.5,
+      "review_zoom": "1",
+      "pinch_zoom": 1
+    }
+  ],
+  "page_errors": [],
+  "external_requests": [],
+  "passed": 144,
+  "failed": 0
+}

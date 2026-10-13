@@ -17,7 +17,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "dist/html-scale-review"
-LOGICAL_WIDTH = 1280
+LOGICAL_WIDTH = 1024
 SOURCE_WINDOW = [20, 30, 1548, 940]
 NORMAL_SCALE = LOGICAL_WIDTH / SOURCE_WINDOW[2]
 # Approved source paths are independent of the reviewer implementation.
@@ -188,9 +188,10 @@ def main():
                       reference_visible=True, boundary_height=None):
         metrics = page.evaluate(METRICS)
         size = report["sources"][view]["size"] if view in SOURCES else report["sources"]["main"]["size"]
-        scale = 1 if zoom == "pixels" else NORMAL_SCALE
+        view_scale = NORMAL_SCALE if view in ["main", "empty", "damaged"] else 1280 / 1548
+        scale = 1 if zoom == "pixels" else view_scale
         if zoom == "fit":
-            scale = min(NORMAL_SCALE, metrics["viewportWidth"] / size[0])
+            scale = min(view_scale, metrics["viewportWidth"] / size[0])
         expected = [size[0] * scale, size[1] * scale]
         prefix = f"{mode}/{width}/DPR{dpr}/{view}/{zoom}" + ("/popup" if popup else "")
         if boundary_height is not None:
@@ -230,7 +231,7 @@ def main():
             checks["main window visible"] = metrics["windowVisible"] and metrics["standalone"] == "false"
             checks["all four window edges inside canvas"] = metrics["windowInsideCanvas"]
             if zoom == "1":
-                checks["normal window width 1280"] = abs(actual_window[2] - LOGICAL_WIDTH) <= TOLERANCE
+                checks["normal window width 1024"] = abs(actual_window[2] - LOGICAL_WIDTH) <= TOLERANCE
             if zoom == "pixels":
                 checks["raw window width 1548"] = abs(actual_window[2] - SOURCE_WINDOW[2]) <= TOLERANCE
             if view != "main":
@@ -407,7 +408,7 @@ def main():
                                     check("normal screenshot layers have equal pixel dimensions", actual.size == source.size,
                                           actual=list(actual.size), reference=list(source.size))
                                 report["normal_evidence"] = {"source_canvas_css": [1586 * NORMAL_SCALE, 992 * NORMAL_SCALE],
-                                                             "window_css": [1280, 940 * NORMAL_SCALE],
+                                                             "window_css": [1024, 940 * NORMAL_SCALE],
                                                              "screenshot_px": list(actual.size)}
                             context.close()
                     # A separate wide reviewer keeps the scrollbar stress cases

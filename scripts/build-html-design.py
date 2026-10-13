@@ -65,7 +65,7 @@ def main():
         return
     (SOURCE / 'assets.js').write_text(generated)
     canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css', 'controls-tokens.css', 'controls.css'],
-                         ['assets.js', 'controls-tokens.js', 'controls.js', 'app.js', 'main-controls.js'])
+                         ['assets.js', 'display-spec.js', 'controls-tokens.js', 'controls.js', 'app.js', 'main-controls.js'])
     references = {}
     source_root = ROOT / 'design/hifi'
     catalog = json.loads((source_root / 'catalog.json').read_text())

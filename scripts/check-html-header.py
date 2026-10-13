@@ -58,13 +58,27 @@ with sync_playwright() as playwright:
         page.evaluate('document.fonts.ready')
         assert page.evaluate('document.fonts.check(\'600 20px "Xdzip Design Sans SC"\', "北境旅行.zip")')
         assert page.evaluate('[...document.fonts].some(f => f.family === "Xdzip Design Sans SC" && f.status === "loaded")')
+        layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+        title = layout['main']['titlebar']
+        factor = 1548 / 1024
+        title_delta = title['height'] * factor - 57
+        center_y = 31 + title['height'] * factor / 2
         for selector, expected in spec['dom_rect_targets'].items():
+            expected = list(expected)
+            if selector.startswith('.archive-tab'):
+                expected[1] = center_y - title['tab_height'] * factor / 2
+                expected[3] = title['tab_height'] * factor
+                if selector == '.archive-tab.inactive':
+                    expected[0] += 5
+            elif selector != '.window':
+                expected[1] += title_delta
             rect = page.locator(selector).bounding_box()
             actual = [rect[key] for key in ['x', 'y', 'width', 'height']]
             delta = max(abs(a - b) for a, b in zip(actual, expected))
             measurements.append({'kind':'DOM rect', 'selector':selector, 'expected':expected, 'actual':actual, 'maximum_delta_px':delta})
             assert delta <= 1, measurements[-1]
         for selector, expected in spec['dom_center_targets'].items():
+            expected = [expected[0] + (5 if selector == '#close-example-tab svg' else 10 if selector == '#new-tab svg' else 0), center_y]
             rect = page.locator(selector).bounding_box()
             actual = [rect['x'] + rect['width']/2, rect['y'] + rect['height']/2]
             delta = max(abs(a - b) for a, b in zip(actual, expected))
@@ -75,36 +89,43 @@ with sync_playwright() as playwright:
         arrow = spec['extract_chevron']
         expected = white_ink_bounds(original, arrow['region'])
         assert expected == arrow['white_ink_bounds'], 'Chevron reference requires remeasurement'
-        actual = white_ink_bounds(shot, arrow['region'])
+        region = list(arrow['region'])
+        region[1] += round(title_delta)
+        actual = white_ink_bounds(shot, region)
+        expected[1] += title_delta
         delta = max(abs(a-b) for a,b in zip(actual,expected))
         measurements.append({'kind':'painted white ink', 'name':'extract-chevron',
             'expected':expected, 'actual':actual, 'maximum_delta_px':delta})
         assert delta <= 1, measurements[-1]
-        for sample in spec['active_right_shoulder']['pixel_samples']:
-            point = tuple(sample['point'])
-            expected = list(original.getpixel(point))
-            assert expected == sample['source_rgb'], 'Shoulder reference requires remeasurement'
-            actual = list(shot.getpixel(point))
-            delta = max(abs(a-b) for a,b in zip(actual,expected))
-            measurements.append({'kind':'shoulder sample RGB', 'name':f'right shoulder {point}',
-                'expected':expected, 'actual':actual, 'maximum_delta_rgb':delta})
-            assert delta <= spec['active_right_shoulder']['rgb_tolerance'], measurements[-1]
+        # Capsule geometry supersedes the archived concave shoulder, without rewriting source pixels.
+        for selector in ['.archive-tab:not(.inactive)', '.archive-tab.inactive']:
+            radius = page.locator(selector).evaluate('(n)=>parseFloat(getComputedStyle(n).borderTopLeftRadius)')
+            assert abs(radius - title['tab_radius'] * factor) < .05
+            assert page.locator(selector).evaluate('(n)=>getComputedStyle(n,"::before").content') in ['none', 'normal']
         for name, region in {'active-close':[501,52,26,26], 'inactive-close':[766,52,26,26],
                              'plus':[820,45,32,34], 'settings':[1514,44,36,35],
                              'open':[45,108,36,38], 'new':[170,108,36,38],
                              'test':[316,108,36,38], 'more':[446,117,34,20]}.items():
-            expected, actual = ink_bounds(original, region), ink_bounds(shot, region)
+            expected = ink_bounds(original, region)
+            target_region = list(region)
+            dx = 5 if name == 'inactive-close' else 10 if name == 'plus' else 0
+            dy = title_delta if name in ['open', 'new', 'test', 'more'] else center_y - (expected[1] + expected[3] / 2)
+            target_region[0] += dx
+            target_region[1] += round(dy)
+            actual = ink_bounds(shot, target_region)
+            expected[0] += dx
+            expected[1] += dy
             delta = max(abs(a - b) for a, b in zip(actual, expected))
             measurements.append({'kind':'painted ink', 'name':name, 'expected':expected, 'actual':actual, 'maximum_delta_px':delta})
             assert delta <= 2, measurements[-1]
-        crop = (20,30,1568,167)
+        crop = (20,30,1568,round(167 + title_delta))
         reference, implementation = original.crop(crop), shot.crop(crop)
         reference.save(OUTPUT / 'reference.png')
         implementation.save(OUTPUT / 'after.png')
         Image.blend(reference, implementation, .5).save(OUTPUT / 'overlay.png')
         ImageChops.difference(reference, implementation).save(OUTPUT / 'difference.png')
-        comparison = Image.new('RGB', (1548, 290), '#e2e6ed')
-        comparison.paste(reference, (0,0)); comparison.paste(implementation, (0,153))
+        comparison = Image.new('RGB', (1548, reference.height * 2 + 16), '#e2e6ed')
+        comparison.paste(reference, (0,0)); comparison.paste(implementation, (0,reference.height + 16))
         comparison.save(OUTPUT / 'comparison.png')
         for name, box in {'tabs':(268,0,854,60), 'settings':(1472,0,1548,137),
                           'tab-right-shoulder':(504,37,548,68),
@@ -118,7 +139,7 @@ with sync_playwright() as playwright:
         for name, region in {'brand':[173,44,69,38], 'active-label':[345,48,138,33],
                              'inactive-label':[594,48,136,33]}.items():
             measurements.append({'kind':'type contour (review only)', 'name':name,
-                'expected':ink_bounds(original, region), 'actual':ink_bounds(shot, region)})
+                'expected':ink_bounds(original, region), 'actual':None, 'note':'Floating capsule supersedes archived title text positions'})
         # Verify actual handlers and close the popup before changing platform state.
         page.locator('#extract-menu-button').click()
         assert page.locator('#extract-menu').is_visible()

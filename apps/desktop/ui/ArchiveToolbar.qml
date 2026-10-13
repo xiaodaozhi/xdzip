@@ -150,12 +150,12 @@ Rectangle {
             Layout.maximumHeight: root.controlHeight
             objectName: "archiveSearch"
             Layout.preferredWidth: Theme.mainSearchWidth
-            Layout.minimumWidth: 180
+            Layout.minimumWidth: Theme.mainUnits(180)
             Layout.fillWidth: true
             Layout.maximumWidth: Theme.mainSearchWidth
-            implicitHeight: Math.max(Theme.mainToolbarControlHeight, contentHeight + 12)
+            implicitHeight: Math.max(Theme.mainToolbarControlHeight, contentHeight + Theme.mainUnits(12))
             leftPadding: Theme.mainSearchTextInset
-            rightPadding: text.length ? 42 : 12
+            rightPadding: text.length ? Theme.mainUnits(42) : Theme.mainUnits(12)
             font.pixelSize: Theme.mainToolbarSize
             placeholderText: qsTr("搜索压缩包中的文件")
             maximumLength: 256
@@ -170,7 +170,7 @@ Rectangle {
             Accessible.name: placeholderText
             background: Rectangle {
                 color: Theme.canvas
-                radius: Theme.toolbarRadius
+                radius: Theme.mainToolbarRadius
                 border.color: searchField.activeFocus ? Theme.accent : Theme.border
             }
             Image {
@@ -186,10 +186,10 @@ Rectangle {
                 objectName: "archiveSearchClear"
                 visible: searchField.text.length > 0
                 anchors.right: parent.right
-                anchors.rightMargin: 8
+                anchors.rightMargin: Theme.mainUnits(8)
                 anchors.verticalCenter: parent.verticalCenter
-                width: 28
-                height: 28
+                width: Theme.mainUnits(28)
+                height: Theme.mainUnits(28)
                 Accessible.name: qsTr("清空搜索")
                 onClicked: {
                     searchField.clear();
@@ -202,7 +202,7 @@ Rectangle {
                 }
                 padding: 5
                 background: Rectangle {
-                    radius: 4
+                    radius: Theme.mainUnits(4)
                     color: searchClear.down ? Theme.controlPressed : searchClear.hovered ? Theme.controlHover : "transparent"
                 }
             }
@@ -233,7 +233,7 @@ Rectangle {
                 Accessible.name: qsTr("解压范围与可用操作")
                 contentItem: Item {}
                 background: Rectangle {
-                    radius: Theme.toolbarRadius
+                    radius: Theme.mainToolbarRadius
                     color: scopeButton.down ? "#30FFFFFF" : scopeButton.hovered ? "#18FFFFFF" : "transparent"
                     border.width: scopeButton.activeFocus ? 2 : 0
                     border.color: Theme.accentInk

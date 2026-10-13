@@ -96,16 +96,16 @@ inline bool capture(QQmlEngine &engine, QQuickWindow *browser) {
     browser->setProperty("darkMode", true);
     ok &= save(browser, directory, "browser-dark");
     browser->setProperty("darkMode", false);
-    browser->resize(1280, 777);
-    ok &= save(browser, directory, "browser-1280");
+    browser->resize(1024, 622);
+    ok &= save(browser, directory, "browser-normal");
     browser->resize(browser->minimumWidth(), browser->minimumHeight());
     ok &= save(browser, directory, "browser-minimum");
-    browser->resize(1040, 680); // records whether the requested design minimum is attainable
-    ok &= save(browser, directory, "browser-request-1040");
-    browser->resize(1360, 740);
+    browser->resize(832, 544); // records whether the requested design minimum is attainable
+    ok &= save(browser, directory, "browser-request-minimum");
+    browser->resize(1088, 592);
     scaling->setProperty("scale", 2.0);
     ok &= save(browser, directory, "browser-large-type");
-    browser->resize(1040, 680);
+    browser->resize(832, 544);
     ok &= save(browser, directory, "browser-large-minimum");
     scaling->setProperty("scale", 1.0);
 

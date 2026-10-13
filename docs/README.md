@@ -10,6 +10,7 @@
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
 | 素材修正 | [新品牌与遗漏素材](qa/brand-and-assets.md)、[实际图标与页面预览](qa/brand-and-assets/index.html)、[统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
+| 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json)、[100%／125% 与高 DPR 实测](qa/ui-density/README.md) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [页面与操作状态原稿](../design/hifi/README.md)、[统一素材库](../design/assets/index.html)、[功能状态契约](ux/hifi-state-spec.md) |
 | HTML 高保真设计 | [分栏标题对齐](qa/pane-header-alignment.md)、[展示尺寸复核](qa/html-scale-review.md)、[顶部对照复核](qa/html-header-review.md)、[内容区域复核](qa/html-body-review.md)、[复核方法](visual/html-fidelity.md)、[使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |
@@ -26,7 +27,7 @@
 | 目录树 B 设计交付 | [正式设计与接入规格](ux/directory-tree.md)、[逻辑参数](visual/directory-tree.json)、[图板与切图 HTML](../design/hifi/directory-tree.html)、[交付复核](qa/directory-tree.md) |
 | 目录导航与排序 | [实现、实际截图与验收](qa/navigation-sorting.md) |
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
-| Qt 与设计一致性 | [冻结基准、修正截图与差异清单](qa/qt-fidelity/README.md) |
+| Qt 与设计一致性 | [当前正常密度与菜单比例](qa/ui-density/README.md)、[前期校准历史](qa/qt-fidelity/README.md) |
 | M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |
 | 视觉修正复核 | [布局、排版、主题修正与新截图](qa/visual-refinement.md) |
 | 工具栏按钮修正 | [原稿对照与实际截图](qa/toolbar-review.md) |

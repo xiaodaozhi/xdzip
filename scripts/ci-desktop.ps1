@@ -56,6 +56,17 @@ Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContext
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
 Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit/fidelity.json')
+# Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
+foreach ($density in @('1.25', '2')) {
+    $env:QT_SCALE_FACTOR = $density
+    $capturePath = "build/desktop/visual-audit-dpr$density"
+    $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) $capturePath
+    Invoke-Checked $browserTests @('mainWindowFidelityAndSessionClose')
+    Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', $capturePath, '--output', "dist/review/fidelity-dpr$density.json")
+    Copy-Item -Recurse $capturePath "dist/review/visual-audit-dpr$density"
+}
+Remove-Item Env:QT_SCALE_FACTOR
+Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'dist/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review'
 Copy-Item 'docs/qa/m1-acceptance.md' 'dist/review/README.md'

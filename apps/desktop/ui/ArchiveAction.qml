@@ -12,10 +12,10 @@ Button {
     property bool splitIndicator: false
     property string explanation: text
     property real glyphSize: toolbarStyle ? Theme.mainToolbarIconSize : Theme.mainViewIconSize
-    implicitHeight: Math.max(toolbarStyle ? Theme.mainToolbarControlHeight : Theme.mainViewButtonHeight, label.implicitHeight + (toolbarStyle ? 12 : 8))
+    implicitHeight: Math.max(toolbarStyle ? Theme.mainToolbarControlHeight : Theme.mainViewButtonHeight, label.implicitHeight + (toolbarStyle ? Theme.mainUnits(12) : Theme.mainUnits(8)))
     implicitWidth: Math.max(toolbarStyle && !text.length ? Theme.toolbarButtonHeight : 0, contentItem.implicitWidth + leftPadding + rightPadding)
-    leftPadding: primary && toolbarStyle ? 20 : toolbarStyle ? 8 : 12
-    rightPadding: splitIndicator ? Theme.mainSplitWidth + 12 : leftPadding
+    leftPadding: primary && toolbarStyle ? Theme.mainUnits(20) : toolbarStyle ? Theme.mainUnits(8) : Theme.mainUnits(12)
+    rightPadding: splitIndicator ? Theme.mainSplitWidth + Theme.mainUnits(12) : leftPadding
     topPadding: 0
     bottomPadding: 0
     hoverEnabled: true
@@ -26,7 +26,7 @@ Button {
         text: root.explanation
     }
     contentItem: RowLayout {
-        spacing: root.toolbarStyle ? Theme.mainToolbarTextGap : 8
+        spacing: root.toolbarStyle ? Theme.mainToolbarTextGap : Theme.mainUnits(8)
         Image {
             objectName: "actionIcon"
             visible: root.asset.length > 0
@@ -51,7 +51,7 @@ Button {
     }
     background: Rectangle {
         objectName: "actionBackground"
-        radius: root.toolbarStyle ? Theme.toolbarRadius : Theme.controlRadius
+        radius: root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
         color: root.primary ? (!root.enabled ? Theme.accentDisabled : root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.accent
@@ -69,10 +69,10 @@ Button {
         objectName: "actionSplitIndicator"
         visible: root.splitIndicator
         anchors.right: parent.right
-        anchors.rightMargin: 11
+        anchors.rightMargin: Theme.mainUnits(11)
         anchors.verticalCenter: parent.verticalCenter
-        width: 18
-        height: 18
+        width: Theme.mainUnits(18)
+        height: Theme.mainUnits(18)
         source: visible ? "qrc:/xdzip/assets/primary-chevron.png" : ""
     }
 }

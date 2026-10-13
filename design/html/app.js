@@ -1523,7 +1523,13 @@ window.XdzipDesign = {
     },
 };
 window.XdzipControls.configure({ icon });
+function setCanvasLogicalScale(view) {
+    const spec = window.XDZIP_DISPLAY_SPEC;
+    const main = ["main", "empty", "damaged"].includes(view);
+    document.documentElement.style.setProperty("--ui-source-factor", 1 / (main ? spec.sourceToLogical : spec.operationSourceToLogical));
+}
 const reviewQuery = new URLSearchParams(location.search);
+setCanvasLogicalScale(reviewQuery.get("view") || "main");
 if (reviewQuery.get("standalone") === "1")
     document.body.dataset.standalone = "true";
 if (reviewQuery.has("platform"))
@@ -1558,6 +1564,7 @@ window.addEventListener("message", (event) => {
     )
         ? "false"
         : "true";
+    setCanvasLogicalScale(config.view);
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);

@@ -15,7 +15,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .window { width:1548px; height:940px; min-height:940px; border-radius:14px; box-shadow:0 8px 26px #1e2a4010; }
 /* Source-space anchors are recorded independently in header-reference.json. */
 .titlebar {
-    height:57px;
+    height:calc(48px * var(--ui-source-factor));
     padding:0 15px 0 20px;
     display:grid;
     grid-template-columns:68px 128px auto 1fr 40px;
@@ -52,10 +52,10 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
     gap:9px;
     margin:0;
     letter-spacing:0;
-    transform:translateY(2.5px);
+    transform:none;
 }
 .app-brand>.brand-label {
-    transform:translateY(-3px);
+    transform:none;
 }
 .app-brand>svg {
     width:36px;
@@ -66,10 +66,10 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .archive-tabs {
     grid-column:3;
     display:flex;
-    height:49px;
+    height:calc(32px * var(--ui-source-factor));
     align-items:center;
-    align-self:end;
-    gap:3px;
+    align-self:center;
+    gap:8px;
     z-index:1;
 }
 .archive-tab {
@@ -81,36 +81,19 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
     flex-shrink:0;
     width:246px;
     min-width:0;
-    height:49px;
+    height:calc(32px * var(--ui-source-factor));
     padding:0 11px 0 18px;
     gap:9px;
     font-size:19.5px;
     line-height:28px;
     font-weight:600;
     border:1px solid var(--border);
-    border-bottom-color:var(--surface);
-    border-radius:9px 9px 0 0;
+    border-radius:calc(16px * var(--ui-source-factor));
     background:var(--surface);
     box-shadow:0 -1px 3px #24345208;
 }
 .archive-tab:not(.inactive) {
     z-index:1;
-}
-.archive-tab:not(.inactive)::before,.archive-tab:not(.inactive)::after {
-    content:"";
-    position:absolute;
-    bottom:-1px;
-    width:9px;
-    height:9px;
-    pointer-events:none;
-}
-.archive-tab:not(.inactive)::before {
-    left:-9px;
-    background:radial-gradient(circle at 0 0,transparent 7px,var(--border) 7px,var(--border) 8px,var(--surface) 8px);
-}
-.archive-tab:not(.inactive)::after {
-    right:-9px;
-    background:radial-gradient(circle at 100% 0,transparent 7.75px,var(--border) 8.25px,var(--border) 8.75px,var(--surface) 9.25px);
 }
 .tab-icon {
     display:flex;
@@ -127,7 +110,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 }
 .tab-label {
     letter-spacing:.2px;
-    transform:translateY(.25px);
+    transform:none;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -164,7 +147,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 }
 .archive-tab.inactive .tab-label {
     letter-spacing:0;
-    transform:translateY(-1px);
+    transform:none;
 }
 .archive-tab.inactive .tab-icon {
     transform:translateX(-1.5px);
@@ -186,7 +169,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 }
 #new-tab {
     margin-left:8.5px;
-    transform:translateY(-1px);
+    transform:none;
 }
 #new-tab svg {
     display:block;
@@ -195,7 +178,7 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 }
 #title-settings {
     grid-column:5;
-    transform:translateY(1.5px);
+    transform:none;
 }
 #title-settings svg {
     display:block;
@@ -372,7 +355,7 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
 }
 .tree-item.active { color:var(--text); background:linear-gradient(var(--selection),color-mix(in srgb,var(--selection) 96.5%,var(--accent))); }
 .tree-item>svg { width:48px; height:48px; flex-shrink:0; }
-.tree-item>span { transform:translateY(-1px); }
+.tree-item>span { transform:none; }
 .tree-item.child { height:56.5px; padding:0 12px; font-size:19px; }
 .tree-item.child>svg:first-child { width:24px; height:26px; margin-right:-6px; color:var(--text); }
 .tree-item small { font-size:18px; font-weight:400; }
@@ -518,7 +501,7 @@ tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; bac
 .property-list { margin:18px 1px 23px 3px; padding-top:13px; border-top:1px solid color-mix(in srgb,var(--border) 70%,var(--surface)); flex-shrink:0; }
 .property { display:flex; justify-content:space-between; margin:0; padding:6px 0; line-height:26px; font-size:18px; }
 .property dt { color:var(--secondary); flex-shrink:0; transform:translate(2px,-3px); }
-.property dd { margin:0 4px 0 0; min-width:0; overflow-wrap:anywhere; transform:translateY(-3px); }
+.property dd { margin:0 4px 0 0; min-width:0; overflow-wrap:anywhere; transform:none; }
 .property .modified-value { letter-spacing:1px; transform:translateY(-2px); }
 .inspector>.button { width:calc(100% - 4px); min-height:57px; height:57px; margin:0 1px 0 3px; padding:0 20px; font-size:20px; gap:14px; border-radius:7px; border-color:#bfc2cb; flex-shrink:0; }
 .inspector>.button svg { width:30px; height:30px; }
@@ -529,14 +512,14 @@ tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; bac
 .statusbar { height:54px; padding:0 20px; font-size:18px; line-height:28px; flex-shrink:0; background:var(--surface); position:relative; }
 .status-spacer { display:none; }
 #selection-status { width:auto; font-size:19px; transform:translateY(-2px); }
-.read-status { position:absolute; left:713px; font-size:18.5px; line-height:28px; gap:9px; transform:translateY(-1px); }
-.read-status>span:last-child { transform:translateY(-1px); }
+.read-status { position:absolute; left:713px; font-size:18.5px; line-height:28px; gap:9px; transform:none; }
+.read-status>span:last-child { transform:none; }
 .read-status>span:first-child svg { width:32px; height:32px; }
 #tasks { margin-left:auto; font-size:19px; line-height:28px; gap:14px; height:40px; padding:0 6px 0 8px; }
-#task-count { transform:translateY(-1px); }
-#tasks>span:first-child svg { width:32px; height:32px; transform:translateY(-1px); }
+#task-count { transform:none; }
+#tasks>span:first-child svg { width:32px; height:32px; transform:none; }
 #tasks .task-chevron { margin-left:4px; }
-#tasks .task-chevron svg { width:20px; height:20px; transform:translateY(-1px); }
+#tasks .task-chevron svg { width:20px; height:20px; transform:none; }
 #settings { display:none; }
 /* Independent operation-window artboards retain their own system titlebars. */
 dialog { width:740px; max-height:940px; border:1px solid var(--border); border-radius:18px; font-size:18px; padding:0; }

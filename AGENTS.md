@@ -2,6 +2,8 @@
 
 开始前阅读 README.md、docs/README.md 和当前任务涉及的规范。当前基线为 Qt Quick + 薄 C++ + Rust；高保真原稿统一位于 design/hifi；视觉规范与 tokens 位于 docs/visual。框架选型变更须通过架构决策流程。
 
+界面创作与修正必须先读 docs/visual/design-standard.md、docs/visual/design-workflow.md；密度与单位以 docs/visual/layout-scale.json 为准。主窗口和菜单必须同时测量比例，不得把 DPR、浏览器缩放或截图物理像素写入组件逻辑尺寸。
+
 M1 产品骨架已完成开发与三平台自动化验证，按工作清单推进产品实现。阶段状态以开发就绪评审和验收证据为准。
 
 - 保持领域和格式逻辑独立于 Qt；QML 只表达界面状态和用户意图。
