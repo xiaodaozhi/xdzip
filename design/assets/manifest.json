@@ -4319,7 +4319,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/shield.png"
+        ]
       },
       "sha256": "cbf381da717c0123708172a91090461e54a67ad01f4c884b40116884e4b60d29",
       "visible_bounds": [
@@ -6665,7 +6667,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/shield.png"
+        ]
       },
       "sha256": "adc7c2f1812300371c8241527fdf222d7d3f9396c339f021e21d1af3bdd080c3",
       "visible_bounds": [

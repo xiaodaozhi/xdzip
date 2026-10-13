@@ -27,6 +27,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force 'dist/review/diagnostics' | Out-Null
+          if (Test-Path 'build/desktop/apps/desktop/browser-tests.log') { Copy-Item 'build/desktop/apps/desktop/browser-tests.log' 'dist/review/diagnostics/' }
           if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') { Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review/diagnostics/' }
           if (Test-Path 'build/desktop/visual-audit') { Copy-Item -Recurse 'build/desktop/visual-audit' 'dist/review/diagnostics/' }
       - name: Upload review build and evidence

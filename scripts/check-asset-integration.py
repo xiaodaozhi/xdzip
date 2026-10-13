@@ -181,7 +181,11 @@ def check_qt(base, assets, qrc):
         scale = entry.get('scale')
         require(logical_size == [24, 24] and vector.get('logical_size') == logical_size,
                 f'Runtime icon logical size must be 24×24: {node.text}')
-        require(scale in (1, 2, 3) and entry['size'] == [24 * scale, 24 * scale],
+        large = scale == 9 and Path(entry['source']).stem in {
+            'document-download', 'status-success', 'cancelled-large', 'conflict-warning',
+            'document-conflict', 'file-text', 'file-code', 'file-pdf', 'file-markdown',
+            'image-file', 'image-amber', 'folder'}
+        require((scale in (1, 2, 3) or large) and entry['size'] == [24 * scale, 24 * scale],
                 f'Invalid icon raster scale: {node.text}')
         require(png_dimensions(path) == entry['size'],
                 f'Runtime PNG dimensions differ from manifest: {node.text}')

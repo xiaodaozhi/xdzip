@@ -29,6 +29,19 @@ static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
     return nullptr;
 }
 
+// Missing images can leave layout dimensions intact. Verify the actual resource state.
+static bool visibleImagesReady(QQuickItem *item) {
+    if (!item->isVisible())
+        return true;
+    if (QString::fromLatin1(item->metaObject()->className()).startsWith("QQuickImage") &&
+        !item->property("source").toUrl().isEmpty() && item->property("status").toInt() != 1)
+        return false;
+    for (auto *child : item->childItems())
+        if (!visibleImagesReady(child))
+            return false;
+    return true;
+}
+
 class BrowserTest : public QObject {
     Q_OBJECT
   private slots:
@@ -58,6 +71,7 @@ class BrowserTest : public QObject {
         auto *extract = window->findChild<QQuickWindow *>("extractWindow");
         QVERIFY(extract);
         QTRY_VERIFY(extract->isVisible());
+        QTRY_VERIFY(visibleImagesReady(extract->contentItem()));
         QCOMPARE(extract->width(), 614);
         auto *targetField = findVisual(extract->contentItem(), "extractTarget");
         QVERIFY(targetField);
@@ -90,6 +104,7 @@ class BrowserTest : public QObject {
         auto *task = window->findChild<QQuickWindow *>("taskWindow");
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible());
+        QTRY_VERIFY(visibleImagesReady(task->contentItem()));
         QCOMPARE(task->width(), 846);
         QVERIFY(!(task->flags() & Qt::FramelessWindowHint));
         QCOMPARE(task->transientParent(), window);
@@ -123,6 +138,7 @@ class BrowserTest : public QObject {
         auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
         QVERIFY(conflict);
         QTRY_VERIFY(conflict->isVisible());
+        QTRY_VERIFY(visibleImagesReady(conflict->contentItem()));
         QCOMPARE(conflict->width(), 612);
         QVERIFY(capture(conflict, "conflict"));
         QVERIFY(capture(task, "task-waiting"));

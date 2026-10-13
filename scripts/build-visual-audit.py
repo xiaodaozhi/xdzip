@@ -102,7 +102,7 @@ def main():
         labels = [label(scene, h['text']) for h in hints]
         check(scene + ' 提示图标中心 X 差', (images[0]['x'] + images[0]['width'] / 2) - (images[1]['x'] + images[1]['width'] / 2), 0, '两行提示对齐约束', .5)
         check(scene + ' 提示文字起点 X 差', labels[0]['x'] - labels[1]['x'], 0, '两行提示对齐约束', .5)
-    headings = [label('task-light', t) for t in ['速度', '预计剩余', '当前阶段']]
+    headings = [label('task-light', t) for t in ['平均写入', '预计剩余', '当前阶段']]
     check('任务三列标题 Y 极差', max(n['y'] for n in headings) - min(n['y'] for n in headings), 0, '同排标题顶边对齐', .5)
     values = [label('task-light', t) for t in ['6.2 MB/s', '约 5 秒', '写入文件']]
     baselines = [n['y'] + n['baselineOffset'] for n in values]

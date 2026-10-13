@@ -132,5 +132,7 @@
     <file alias="assets/dark/image-file-large.png">../../design/assets/png/dark/image-file@9x.png</file>
     <file alias="assets/dark/image-amber-large.png">../../design/assets/png/dark/image-amber@9x.png</file>
     <file alias="assets/dark/folder-large.png">../../design/assets/png/dark/folder@9x.png</file>
+    <file alias="assets/light/shield.png">../../design/assets/png/light/shield@3x.png</file>
+    <file alias="assets/dark/shield.png">../../design/assets/png/dark/shield@3x.png</file>
   </qresource>
 </RCC>
