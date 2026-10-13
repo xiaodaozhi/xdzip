@@ -13,7 +13,7 @@
     "Six-unit marker is centered on every shared canvas",
     "Counts, leaf arrows and hidden-current sample are internally consistent"
   ],
-  "coordinate_conversion": "Qt logical values and HTML source values map to the same 1280-wide design size",
+  "coordinate_conversion": "Qt logical values and HTML source values map to the same 1024-wide design size",
   "integration_status": "core-interactions-integrated",
   "limits": [
     "Boundary notice glyphs and skeleton remain design resources",
