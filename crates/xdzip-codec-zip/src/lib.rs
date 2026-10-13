@@ -160,6 +160,7 @@ fn scan(
             size: record.uncompressed_size_hint(),
             packed_size: record.compressed_size_hint(),
             method: record.compression_method().as_u16(),
+            modified_dos: validated_dos(record.last_modified_dos()),
             encrypted: record.flags().is_encrypted(),
             warning,
         });
@@ -189,6 +190,22 @@ fn escape_display(text: &str) -> String {
     output
 }
 
+// rawzip's component accessors clamp invalid values. Preserve only valid raw
+// local timestamps; never turn an absent/invalid ZIP date into an invented date.
+fn validated_dos(value: rawzip::time::DosDateTime) -> u32 {
+    let date = value.packed_date();
+    let time = value.packed_time();
+    if ((date >> 5) & 15) != u16::from(value.month())
+        || (date & 31) != u16::from(value.day())
+        || (time >> 11) != u16::from(value.hour())
+        || ((time >> 5) & 63) != u16::from(value.minute())
+        || (time & 31) * 2 != u16::from(value.second())
+    {
+        return 0;
+    }
+    u32::from(date) << 16 | u32::from(time)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -208,6 +225,18 @@ mod tests {
         assert_eq!(rows[4].size, 0);
         assert!(rows[0].directory);
         assert!(!rows[0].warning);
+    }
+    #[test]
+    fn local_dos_date_preserves_valid_bits_and_rejects_invalid_components() {
+        let rows = scan_bytes(NORMAL, ScanLimits::default()).unwrap();
+        assert_eq!(rows[0].modified_dos, ((46u32 << 9) | (1 << 5) | 1) << 16);
+        let mut bytes = NORMAL.to_vec();
+        let central = bytes.windows(4).position(|w| w == b"PK\x01\x02").unwrap();
+        bytes[central + 14..central + 16].copy_from_slice(&0u16.to_le_bytes());
+        assert_eq!(
+            scan_bytes(&bytes, ScanLimits::default()).unwrap()[0].modified_dos,
+            0
+        );
     }
     #[test]
     fn empty_is_valid_but_truncation_and_count_mismatch_are_not_ready() {

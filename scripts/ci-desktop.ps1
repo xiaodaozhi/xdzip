@@ -52,7 +52,7 @@ New-Item -ItemType Directory -Force 'dist/review' | Out-Null
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
-Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'renderRealArchive')
+Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
 Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit/fidelity.json')

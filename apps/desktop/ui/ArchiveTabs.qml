@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
+    objectName: "archiveTitlebar"
     required property string archiveTitle
     property bool integratedTitlebar: false
     property bool canOpen: true

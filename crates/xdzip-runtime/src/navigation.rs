@@ -111,6 +111,7 @@ mod tests {
             size: 0,
             packed_size: 0,
             method: 0,
+            modified_dos: 0,
             encrypted: false,
             warning,
         }

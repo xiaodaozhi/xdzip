@@ -23,6 +23,13 @@
       "tab_vertical_inset": 8,
       "tab_radius": 16,
       "style": "floating capsule"
+    },
+    "interaction": {
+      "iconButtonSize": 28,
+      "toolbarContentGap": 6,
+      "breadcrumbHeight": 28,
+      "popupGap": 4,
+      "treeTrailingInset": 16
     }
   },
   "operation": {

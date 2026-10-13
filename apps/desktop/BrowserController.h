@@ -10,7 +10,7 @@
 #include <QtQml/qqmlregistration.h>
 #include <memory>
 
-// Only one bounded page crosses to Qt. The complete metadata index remains in Rust.
+// Transport batches are bounded; Qt commits a complete query of at most 10,000 rows.
 struct BrowserRow {
     QString id;
     QStringList cells;
@@ -95,7 +95,7 @@ class BrowserController : public QObject {
     }
     Q_INVOKABLE void navigateDirectory(const QString &id);
     Q_INVOKABLE QStringList directoryAncestors(const QString &id) const;
-    // Columns 0..3 toggle ascending/descending; -1 restores archive order.
+    // Columns 0..4 toggle ascending/descending; -1 restores archive order.
     Q_INVOKABLE void sortByColumn(int column);
     bool runtimeAvailable() const {
         return !m_closing && !m_faulted && !m_connection->stopped();
@@ -142,7 +142,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE void selectOnlyRow(int row);
     Q_INVOKABLE void selectRangeTo(int row);
     Q_INVOKABLE void selectForContext(int row);
-    Q_INVOKABLE void selectAllOnPage(bool selected);
+    Q_INVOKABLE void selectAll(bool selected);
     Q_INVOKABLE void copySelection(bool includeArchivePath);
     Q_INVOKABLE void enterDirectory(int row);
     Q_INVOKABLE void showAll();
@@ -150,7 +150,6 @@ class BrowserController : public QObject {
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void chooseArchive();
     Q_INVOKABLE void closeArchive();
-    Q_INVOKABLE void fetchPage(int offset);
     Q_INVOKABLE void cancel();
     Q_INVOKABLE bool requestClose();
   signals:

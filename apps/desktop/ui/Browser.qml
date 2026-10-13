@@ -170,7 +170,7 @@ ApplicationWindow {
     Shortcut {
         sequence: StandardKey.SelectAll
         enabled: reader.ready && !reader.busy
-        onActivated: reader.selectAllOnPage(true)
+        onActivated: reader.selectAll(true)
     }
     Shortcut {
         sequences: [StandardKey.Copy]
@@ -238,11 +238,18 @@ ApplicationWindow {
             onTriggered: reader.sortByColumn(2)
         }
         CommandMenuItem {
-            text: qsTr("压缩方法")
+            text: qsTr("类型")
             checkable: true
-            checked: reader.sortOrder === 7 || reader.sortOrder === 8
+            checked: reader.sortOrder === 9 || reader.sortOrder === 10
             enabled: reader.ready && !reader.busy
             onTriggered: reader.sortByColumn(3)
+        }
+        CommandMenuItem {
+            text: qsTr("修改日期")
+            checkable: true
+            checked: reader.sortOrder === 11 || reader.sortOrder === 12
+            enabled: reader.ready && !reader.busy
+            onTriggered: reader.sortByColumn(4)
         }
         CommandMenuSeparator {}
         CommandMenuItem {
@@ -328,14 +335,14 @@ ApplicationWindow {
         id: emptyMenu
         objectName: "browserBackgroundMenu"
         CommandMenuItem {
-            text: qsTr("全选当前页")
+            text: qsTr("全选当前目录")
             enabled: reader.ready && !reader.busy
-            onTriggered: reader.selectAllOnPage(true)
+            onTriggered: reader.selectAll(true)
         }
         CommandMenuItem {
             text: qsTr("取消选择")
             enabled: reader.ready && !reader.busy && reader.selectedCount > 0
-            onTriggered: reader.selectAllOnPage(false)
+            onTriggered: reader.selectAll(false)
         }
         CommandMenuSeparator {}
         CommandMenu {
@@ -385,8 +392,8 @@ ApplicationWindow {
             onInspectRequested: reader.inspectSelection()
             onResetSortRequested: reader.sortByColumn(-1)
             onSearchRequested: query => reader.search(query)
-            onSelectAllRequested: reader.selectAllOnPage(true)
-            onClearSelectionRequested: reader.selectAllOnPage(false)
+            onSelectAllRequested: reader.selectAll(true)
+            onClearSelectionRequested: reader.selectAll(false)
             onDetailsRequested: root.toggleInspector()
             onThemeRequested: root.darkMode = !root.darkMode
         }
@@ -481,14 +488,16 @@ ApplicationWindow {
                         Accessible.name: qsTr("全部文件")
                         background: Rectangle {
                             radius: Theme.mainControlRadius
+                            topLeftRadius: 0
+                            bottomLeftRadius: 0
                             color: reader.location.length === 0 ? Theme.treeSelectionColor : allFiles.hovered ? Theme.treeHoverColor : "transparent"
-                            border.width: allFiles.activeFocus ? 2 : 0
+                            border.width: 0
                             border.color: Theme.accent
                             Rectangle {
-                                visible: reader.location.length === 0
+                                visible: reader.location.length === 0 || allFiles.activeFocus
                                 width: Theme.mainUnits(3)
-                                height: parent.height - Theme.mainUnits(6)
-                                y: Theme.mainUnits(3)
+                                height: parent.height
+                                y: 0
                                 radius: 2
                                 color: Theme.accent
                             }
@@ -508,11 +517,6 @@ ApplicationWindow {
                                 color: Theme.text
                                 font.pixelSize: Theme.mainBodySize
                                 font.bold: true
-                            }
-                            Text {
-                                text: reader.ready ? reader.archiveTotal : "—"
-                                color: Theme.textSecondary
-                                font.pixelSize: Theme.mainSecondarySize
                             }
                         }
                         TapHandler {
@@ -570,8 +574,22 @@ ApplicationWindow {
                         }
                         enabled: reader.ready && !reader.busy
                         columnWidthProvider: function (column) {
-                            return Math.max(width, reader.navigationWidth * Theme.mainDensity * Math.max(1, Theme.fontScale));
+                            let extent = width;
+                            for (let row = 0; row < rows; ++row) {
+                                const node = index(row, 0);
+                                const depth = reader.directories.data(node, Qt.UserRole + 5);
+                                const name = reader.directories.data(node, Qt.DisplayRole);
+                                extent = Math.max(extent, Theme.treeContentLeftInset + depth * Theme.treeDepthIndent + Theme.treeDisclosureHitWidth * Theme.fontScale + Theme.treeFolderCanvas * Theme.fontScale + Theme.treeIconLabelGap + treeTextMetrics.advanceWidth(name) + Theme.mainTreeTrailingInset);
+                            }
+                            return Math.ceil(extent);
                         }
+                        FontMetrics {
+                            id: treeTextMetrics
+                            font.family: "Xdzip Design Sans SC"
+                            font.pixelSize: Theme.mainBodySize
+                        }
+                        onExpanded: forceLayout()
+                        onCollapsed: forceLayout()
                         onWidthChanged: forceLayout()
                         Connections {
                             target: Theme
@@ -670,14 +688,17 @@ ApplicationWindow {
                             }
                             background: Rectangle {
                                 radius: Theme.mainControlRadius
+                                topLeftRadius: 0
+                                bottomLeftRadius: 0
                                 color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : "transparent"
-                                border.width: directoryNode.activeFocus || (directoryTree.activeFocus && directoryNode.current) ? 2 : 0
+                                border.width: 0
                                 border.color: Theme.accent
                                 Rectangle {
-                                    visible: reader.directoryId === directoryNode.nodeId
+                                    visible: reader.directoryId === directoryNode.nodeId || (directoryNode.activeFocus && directoryNode.current)
+                                    x: directoryTree.contentX
                                     width: Theme.mainUnits(3)
-                                    height: parent.height - Theme.mainUnits(6)
-                                    y: Theme.mainUnits(3)
+                                    height: parent.height
+                                    y: 0
                                     radius: 2
                                     color: Theme.accent
                                 }
@@ -718,7 +739,7 @@ ApplicationWindow {
                                 }
                                 Text {
                                     Layout.fillWidth: true
-                                    Layout.rightMargin: countOverlay.width
+                                    Layout.rightMargin: directoryNode.hiddenCurrentBranch ? Theme.treeBranchMarkerCanvas : 0
                                     text: directoryNode.nodeName
                                     textFormat: Text.PlainText
                                     elide: Text.ElideRight
@@ -726,30 +747,14 @@ ApplicationWindow {
                                     font.pixelSize: Theme.mainBodySize
                                 }
                             }
-                            Rectangle {
-                                id: countOverlay
-                                x: Math.max(0, Math.min(directoryNode.width - width, directoryTree.contentX + directoryTree.width - width))
-                                width: Math.max(Theme.treeCountMinWidth * Theme.fontScale, countText.implicitWidth + Theme.mainUnits(12)) + (directoryNode.hiddenCurrentBranch ? Theme.treeBranchMarkerCanvas : 0)
-                                height: directoryNode.height
-                                color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : Theme.treeSurfaceColor
-                                Image {
-                                    objectName: "directoryBranchMarker-" + directoryNode.nodeId
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: Theme.mainUnits(24)
-                                    height: Theme.mainUnits(24)
-                                    visible: directoryNode.hiddenCurrentBranch
-                                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "tree-active-branch.png"
-                                }
-                                Text {
-                                    id: countText
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: Theme.mainUnits(8)
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: directoryNode.entryCount
-                                    color: Theme.textSecondary
-                                    font.pixelSize: Theme.mainSecondarySize
-                                }
+                            Image {
+                                objectName: "directoryBranchMarker-" + directoryNode.nodeId
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: Theme.treeBranchMarkerCanvas
+                                height: width
+                                visible: directoryNode.hiddenCurrentBranch
+                                source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "tree-active-branch.png"
                             }
                         }
                     }
@@ -812,8 +817,14 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "browserViewMenuButton"
+                        Layout.minimumWidth: Theme.mainIconButtonSize
+                        Layout.preferredWidth: Theme.mainIconButtonSize
+                        Layout.maximumWidth: Theme.mainIconButtonSize
+                        Layout.minimumHeight: Theme.mainIconButtonSize
+                        Layout.preferredHeight: Theme.mainIconButtonSize
+                        Layout.maximumHeight: Theme.mainIconButtonSize
+                        Layout.alignment: Qt.AlignVCenter
                         asset: root.viewMode === "list" ? "view-list-selected" : "view-list"
-                        Layout.preferredWidth: Theme.mainViewButtonWidth
                         leftPadding: Theme.mainUnits(8)
                         rightPadding: Theme.mainUnits(8)
                         selected: root.viewMode === "list"
@@ -827,6 +838,13 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "browserGridButton"
+                        Layout.minimumWidth: Theme.mainIconButtonSize
+                        Layout.preferredWidth: Theme.mainIconButtonSize
+                        Layout.maximumWidth: Theme.mainIconButtonSize
+                        Layout.minimumHeight: Theme.mainIconButtonSize
+                        Layout.preferredHeight: Theme.mainIconButtonSize
+                        Layout.maximumHeight: Theme.mainIconButtonSize
+                        Layout.alignment: Qt.AlignVCenter
                         asset: root.viewMode === "grid" ? "view-grid-selected" : "view-grid"
                         leftPadding: Theme.mainUnits(5)
                         rightPadding: Theme.mainUnits(5)
@@ -837,6 +855,13 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "browserSortMenuButton"
+                        Layout.minimumWidth: Theme.mainIconButtonSize
+                        Layout.preferredWidth: Theme.mainIconButtonSize
+                        Layout.maximumWidth: Theme.mainIconButtonSize
+                        Layout.minimumHeight: Theme.mainIconButtonSize
+                        Layout.preferredHeight: Theme.mainIconButtonSize
+                        Layout.maximumHeight: Theme.mainIconButtonSize
+                        Layout.alignment: Qt.AlignVCenter
                         asset: "sort"
                         leftPadding: 2
                         rightPadding: 2
@@ -844,7 +869,10 @@ ApplicationWindow {
                         Accessible.name: qsTr("排序方式")
                         explanation: Accessible.name
                         enabled: reader.ready && !reader.busy
-                        onClicked: sortMenu.popup()
+                        onClicked: {
+                            const p = mapToItem(root.contentItem, width, height);
+                            sortMenu.popup(root.contentItem, p.x - sortMenu.width, p.y + Theme.mainPopupGap);
+                        }
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"
@@ -857,6 +885,7 @@ ApplicationWindow {
                 }
                 Rectangle {
                     objectName: "fileTableHeader"
+                    visible: root.viewMode === "list"
                     Layout.fillWidth: true
                     implicitHeight: Math.round(Math.max(Theme.mainTableHeaderHeight, Theme.mainHeaderSize * 1.6 + Theme.mainUnits(12)))
                     color: Theme.canvas
@@ -879,20 +908,20 @@ ApplicationWindow {
                                 text: modelData
                                 color: Theme.text
                                 font.pixelSize: Theme.mainHeaderSize
-                                activeFocusOnTab: index < 3
-                                enabled: index >= 3 || (reader.ready && !reader.busy)
-                                Accessible.role: index < 3 ? Accessible.Button : Accessible.StaticText
-                                Accessible.name: modelData + (reader.sortOrder === index * 2 + 1 ? qsTr("，升序") : reader.sortOrder === index * 2 + 2 ? qsTr("，降序") : "")
-                                Accessible.onPressAction: if (index < 3)
+                                activeFocusOnTab: true
+                                enabled: reader.ready && !reader.busy
+                                Accessible.role: Accessible.Button
+                                Accessible.name: modelData + (reader.sortOrder === (index < 3 ? index * 2 + 1 : index * 2 + 3) ? qsTr("，升序") : reader.sortOrder === (index < 3 ? index * 2 + 2 : index * 2 + 4) ? qsTr("，降序") : "")
+                                Accessible.onPressAction: if (reader.ready && !reader.busy)
                                     reader.sortByColumn(index)
-                                Keys.onReturnPressed: if (index < 3)
+                                Keys.onReturnPressed: if (reader.ready && !reader.busy)
                                     reader.sortByColumn(index)
-                                Keys.onEnterPressed: if (index < 3)
+                                Keys.onEnterPressed: if (reader.ready && !reader.busy)
                                     reader.sortByColumn(index)
-                                Keys.onSpacePressed: if (index < 3)
+                                Keys.onSpacePressed: if (reader.ready && !reader.busy)
                                     reader.sortByColumn(index)
                                 TapHandler {
-                                    enabled: columnHeader.index < 3 && reader.ready && !reader.busy
+                                    enabled: reader.ready && !reader.busy
                                     onTapped: reader.sortByColumn(columnHeader.index)
                                 }
                                 TapHandler {
@@ -913,7 +942,7 @@ ApplicationWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     x: columnHeader.index === 0 ? Theme.mainNameHeaderInset + Theme.mainUnits(44) * Theme.fontScale : Theme.mainUnits(4)
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
-                                    visible: columnHeader.index < 3 && reader.sortOrder > 0 && Math.floor((reader.sortOrder - 1) / 2) === columnHeader.index
+                                    visible: reader.sortOrder > 0 && (reader.sortOrder < 9 ? Math.floor((reader.sortOrder - 1) / 2) : Math.floor((reader.sortOrder - 3) / 2)) === columnHeader.index
                                     color: Theme.accentInk
                                     font.pixelSize: Theme.mainHeaderSize
                                 }
@@ -934,7 +963,7 @@ ApplicationWindow {
                                     checkState: reader.selectedCount === 0 ? Qt.Unchecked : reader.selectedCount === reader.entries.rowCount() ? Qt.Checked : Qt.PartiallyChecked
                                     nextCheckState: () => checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
                                     Accessible.name: qsTr("选择当前页全部文件")
-                                    onClicked: reader.selectAllOnPage(checkState === Qt.Checked)
+                                    onClicked: reader.selectAll(checkState === Qt.Checked)
                                 }
                             }
                         }
@@ -1234,31 +1263,6 @@ ApplicationWindow {
                         }
                     }
                 }
-                RowLayout {
-                    Layout.fillWidth: true
-                    visible: reader.ready && reader.total > 128
-                    Layout.margins: Theme.mainUnits(16)
-                    spacing: Theme.mainUnits(8)
-                    Text {
-                        Layout.fillWidth: true
-                        wrapMode: Text.Wrap
-                        text: reader.ready ? qsTr("共 %1 项 · 当前 %2–%3").arg(reader.total).arg(reader.total ? reader.offset + 1 : 0).arg(Math.min(reader.offset + 128, reader.total)) : qsTr("尚未打开归档")
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.mainSecondarySize
-                    }
-                    AppButton {
-                        density: Theme.mainDensity
-                        text: qsTr("上一页")
-                        enabled: reader.ready && !reader.busy && reader.offset > 0
-                        onClicked: reader.fetchPage(Math.max(0, reader.offset - 128))
-                    }
-                    AppButton {
-                        density: Theme.mainDensity
-                        text: qsTr("下一页")
-                        enabled: reader.ready && !reader.busy && reader.offset + 128 < reader.total
-                        onClicked: reader.fetchPage(reader.offset + 128)
-                    }
-                }
             }
             InspectorPanel {
                 objectName: "archiveInspector"
@@ -1301,11 +1305,12 @@ ApplicationWindow {
                     asset: "task-list"
                     text: qsTr("任务 %1").arg(reader.busy ? 1 : 0)
                     explanation: qsTr("查看当前读取任务")
-                    onClicked: taskMenu.popup()
+                    onClicked: taskMenu.open()
                     CommandMenu {
                         id: taskMenu
+                        objectName: "browserTaskMenu"
                         x: parent.width - width
-                        y: -height
+                        y: -implicitHeight - Theme.mainPopupGap
                         CommandMenuItem {
                             text: reader.busy ? qsTr("正在读取归档元数据") : qsTr("暂无后台任务")
                             enabled: false

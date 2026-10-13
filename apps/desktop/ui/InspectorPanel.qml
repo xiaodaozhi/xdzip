@@ -39,6 +39,12 @@ Rectangle {
         }
         ArchiveAction {
             objectName: "inspectorClose"
+            Layout.minimumWidth: Theme.mainIconButtonSize
+            Layout.maximumWidth: Theme.mainIconButtonSize
+            Layout.preferredWidth: Theme.mainIconButtonSize
+            Layout.minimumHeight: Theme.mainIconButtonSize
+            Layout.maximumHeight: Theme.mainIconButtonSize
+            Layout.preferredHeight: Theme.mainIconButtonSize
             visible: panel.showCloseAction
             leftPadding: 0
             rightPadding: 0

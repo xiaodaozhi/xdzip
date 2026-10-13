@@ -40,6 +40,7 @@ mod ffi {
         size: u64,
         packed_size: u64,
         method: u16,
+        modified_dos: u32,
         directory: bool,
         encrypted: bool,
         warning: bool,
@@ -152,7 +153,7 @@ impl CommandClient {
             || command.directory.len() > 21
             || command.text.len() > 1024
             || command.selected.len() > 128
-            || command.sort > 8
+            || command.sort > 12
         {
             return admission(Err(Rejection::Invalid));
         }
@@ -260,6 +261,7 @@ impl EventReceiver {
                         size: row.size,
                         packed_size: row.packed_size,
                         method: row.method,
+                        modified_dos: row.modified_dos,
                         directory: row.directory,
                         encrypted: row.encrypted,
                         warning: row.warning,

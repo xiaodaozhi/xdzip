@@ -65,6 +65,8 @@ pub struct Entry {
     pub packed_size: u64,
     /// ZIP method number; listing a method does not imply decoding support.
     pub method: u16,
+    /// ZIP local DOS date/time bits; zero denotes unavailable or invalid metadata.
+    pub modified_dos: u32,
     /// Metadata encryption flag. No password is requested in this read-only slice.
     pub encrypted: bool,
     /// Suspicious name, non-UTF8 bytes, link or special record; never safe-to-extract approval.

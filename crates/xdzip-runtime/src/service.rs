@@ -50,7 +50,7 @@ impl Command {
                 text,
                 sort,
                 ..
-            } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 8,
+            } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 12,
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
             _ => true,
         }
@@ -69,6 +69,8 @@ pub struct Row {
     pub packed_size: u64,
     /// ZIP method, not an assertion of decode support.
     pub method: u16,
+    /// ZIP local DOS date/time without an inferred timezone.
+    pub modified_dos: u32,
     /// Explicit directory marker.
     pub directory: bool,
     /// Encryption metadata flag.
@@ -542,6 +544,7 @@ fn execute(
                 size: entry.size,
                 packed_size: entry.packed_size,
                 method: entry.method,
+                modified_dos: entry.modified_dos,
                 directory: entry.directory,
                 encrypted: entry.encrypted,
                 warning: entry.warning,
@@ -635,6 +638,7 @@ mod tests {
                     size: 0,
                     packed_size: 0,
                     method: 0,
+                    modified_dos: 0,
                     directory: false,
                     encrypted: false,
                     warning: false,
@@ -780,7 +784,7 @@ mod tests {
                 directory: String::new(),
                 text: String::new(),
                 offset: 0,
-                sort: 9
+                sort: 13
             }),
             Err(Rejection::Invalid)
         );

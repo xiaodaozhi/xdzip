@@ -119,6 +119,11 @@ QtObject {
     readonly property real inspectorCollapseWidth: 928
     readonly property real mainControlRadius: 6.4
     readonly property real mainToolbarRadius: 4.800000000000001
+    readonly property real mainIconButtonSize: 28
+    readonly property real mainToolbarContentGap: 6
+    readonly property real mainBreadcrumbHeight: 28
+    readonly property real mainPopupGap: 4
+    readonly property real mainTreeTrailingInset: 16
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

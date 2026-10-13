@@ -118,7 +118,7 @@ Rectangle {
                     }
                     CommandMenuSeparator {}
                     CommandMenuItem {
-                        text: qsTr("全选当前页")
+                        text: qsTr("全选当前目录")
                         shortcutLabel: Qt.platform.os === "osx" ? "⌘A" : "Ctrl+A"
                         enabled: root.canSearch
                         onTriggered: root.selectAllRequested()

@@ -37,3 +37,6 @@ struct.pack_into('<HH', wrong_count, len(normal) - 14, 6, 6)
     ('documents/readme.txt', b'document', 0), ('empty/', b'', 0),
     ('photos/../review.txt', b'review', 0)]))
 (ROOT / 'navigation-depth.zip').write_bytes(archive([('d/' * 65 + 'file.txt', b'x', 0)]))
+(ROOT / 'tree-layout.zip').write_bytes(archive([
+    ('GitHub Desktop.app/Contents/Resources/' + 'nested/' * 12 + 'file.txt', b'x', 0),
+    ('short/item.txt', b'x', 0)]))

@@ -13,3 +13,5 @@ normal.zip 含中文目录、Deflate、空文件及两个同名 notes.txt；empt
 | --- | --- | --- |
 | navigation.zip | 5 个物理条目、4 个目录节点；隐式双层目录、重复名称、空目录及需检查后代 | `00916004ff6610121ec62c0a86e07e412caa6cf28be91e003600aba462e01c3c` |
 | navigation-depth.zip | 1 个物理条目、65 层路径；目录索引完整降级，列表仍可用 | `a51d2f1c1b576a92942a946eaade300fbcd0fc25af73a19fa7bb966bf56b0530` |
+
+`tree-layout.zip` 包含一个应用包目录与 12 层子目录，用于核验可见节点宽度和折叠后的横向范围，不含第三方内容。

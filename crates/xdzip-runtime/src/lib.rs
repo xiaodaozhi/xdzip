@@ -96,7 +96,7 @@ impl Archive {
         self.browse_sorted(directory, text, offset, limit, 0, control)
     }
     /// Sort the full matching snapshot before slicing a page. Codes: 0 physical,
-    /// 1/2 name, 3/4 original size, 5/6 packed size, 7/8 method; odd ascending.
+    /// 1/2 name, 3/4 original size, 5/6 packed size, 7/8 method, 9/10 type, 11/12 local modification date; odd ascending.
     /// Names use Unicode scalar lexical order; ties retain ascending physical identity.
     pub fn browse_sorted(
         &self,
@@ -109,7 +109,7 @@ impl Archive {
     ) -> Result<(usize, Vec<&Entry>), ScanError> {
         control.check()?;
         let request = PageRequest::new(self.key, offset, limit).map_err(|_| ScanError::Limit)?;
-        if directory.len() > 4096 || text.len() > 1024 || sort > 8 {
+        if directory.len() > 4096 || text.len() > 1024 || sort > 12 {
             return Err(ScanError::Limit);
         }
         let prefix = if directory.is_empty() {
@@ -149,20 +149,29 @@ impl Archive {
             // Sorting is bounded by the admitted 10,000 records. Check cancellation on
             // both sides; changing comparator behavior during cancellation is invalid.
             control.check()?;
-            rows.sort_unstable_by(|a, b| {
-                let order = match sort {
-                    1 | 2 => a.display_name.cmp(&b.display_name),
-                    3 | 4 => a.size.cmp(&b.size),
-                    5 | 6 => a.packed_size.cmp(&b.packed_size),
-                    _ => a.method.cmp(&b.method),
-                };
-                let order = if sort.is_multiple_of(2) {
-                    order.reverse()
-                } else {
-                    order
-                };
-                order.then_with(|| a.id.get().cmp(&b.id.get()))
-            });
+            if sort == 9 {
+                rows.sort_by_cached_key(|entry| (entry_type(entry), entry.id.get()));
+            } else if sort == 10 {
+                rows.sort_by_cached_key(|entry| {
+                    (std::cmp::Reverse(entry_type(entry)), entry.id.get())
+                });
+            } else {
+                rows.sort_unstable_by(|a, b| {
+                    let order = match sort {
+                        1 | 2 => a.display_name.cmp(&b.display_name),
+                        3 | 4 => a.size.cmp(&b.size),
+                        5 | 6 => a.packed_size.cmp(&b.packed_size),
+                        7 | 8 => a.method.cmp(&b.method),
+                        _ => a.modified_dos.cmp(&b.modified_dos),
+                    };
+                    let order = if sort.is_multiple_of(2) {
+                        order.reverse()
+                    } else {
+                        order
+                    };
+                    order.then_with(|| a.id.get().cmp(&b.id.get()))
+                });
+            }
             control.check()?;
         }
         if offset > count as u64 {
@@ -187,6 +196,20 @@ impl Archive {
             .saturating_add(usize::from(request.limit()))
             .min(self.rows.len());
         Ok(&self.rows[start..end])
+    }
+}
+
+// Match the displayed extension category; directory identity is independent of its suffix.
+fn entry_type(entry: &Entry) -> String {
+    if entry.directory {
+        return String::new();
+    }
+    let name = entry.display_name.rsplit('/').next().unwrap_or_default();
+    let extension = name.rsplit_once('.').map_or("", |(_, extension)| extension);
+    if extension.eq_ignore_ascii_case("jpg") {
+        "JPEG".to_owned()
+    } else {
+        extension.to_uppercase()
     }
 }
 
@@ -224,12 +247,37 @@ mod tests {
                 .browse_sorted("d999", "", 0, 128, 0, &control)
                 .is_err()
         );
-        assert!(archive.browse_sorted("", "", 0, 128, 9, &control).is_err());
+        assert!(archive.browse_sorted("", "", 0, 128, 13, &control).is_err());
         control.cancel();
         assert!(matches!(
             archive.browse_sorted("", "", 0, 128, 2, &control),
             Err(ScanError::Cancelled)
         ));
+    }
+    #[test]
+    fn type_and_local_date_sort_both_directions_keep_identity_ties() {
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip");
+        let control = Cancellation::default();
+        let mut archive = Archive::open(&path, &control).unwrap();
+        archive.rows[2].display_name = "same.ZIP".into();
+        archive.rows[3].display_name = "same.jpg".into();
+        archive.rows[2].modified_dos = 200;
+        archive.rows[3].modified_dos = 100;
+        for (order, first) in [(9, 4), (10, 3), (11, 4), (12, 3)] {
+            let (_, rows) = archive
+                .browse_sorted("", "same", 0, 128, order, &control)
+                .unwrap();
+            assert_eq!(rows[0].id.get(), first);
+            assert_eq!(rows.len(), 2);
+        }
+        archive.rows[2].modified_dos = 100;
+        for order in [11, 12] {
+            let (_, rows) = archive
+                .browse_sorted("", "same", 0, 128, order, &control)
+                .unwrap();
+            assert_eq!(rows.iter().map(|r| r.id.get()).collect::<Vec<_>>(), [3, 4]);
+        }
     }
     #[test]
     fn numeric_sort_is_exact_and_duplicate_names_keep_stable_physical_ties() {

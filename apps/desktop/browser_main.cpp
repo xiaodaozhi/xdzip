@@ -12,6 +12,7 @@
 
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
+bool verifyMacTitlebar(QQuickWindow *window);
 #endif
 
 // Platform Quit (including Cmd+Q) must use the same asynchronous shutdown as window close.
@@ -58,7 +59,15 @@ int main(int argc, char *argv[]) {
             return 3;
 #endif
         // Exercise startup, real receiver wakeup and shutdown, not just QML construction.
-        QTimer::singleShot(0, &application, &QApplication::quit);
+        QTimer::singleShot(500, &application, [&application, &engine] {
+#ifdef Q_OS_MACOS
+            if (!verifyMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()))) {
+                QCoreApplication::exit(6);
+                return;
+            }
+#endif
+            application.quit();
+        });
         QTimer::singleShot(10000, &application, [] { QCoreApplication::exit(2); });
     } else if (application.arguments().size() == 2) {
         const auto path = application.arguments().at(1);

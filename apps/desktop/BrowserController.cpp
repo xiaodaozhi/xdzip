@@ -2,10 +2,12 @@
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QClipboard>
+#include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QPointer>
+#include <QTime>
 #include <algorithm>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
@@ -191,11 +193,6 @@ void BrowserController::openPath(const QString &path) {
     replaceDirectories({});
     start(path, 0);
 }
-void BrowserController::fetchPage(int offset) {
-    if (m_busy || !m_ready || m_closing || offset < 0 || offset >= m_total)
-        return;
-    start({}, offset);
-}
 void BrowserController::selectRow(int row) {
     if (m_busy || !m_ready)
         return;
@@ -275,7 +272,7 @@ void BrowserController::selectForContext(int row) {
     showRowDetail(row);
     emit changed();
 }
-void BrowserController::selectAllOnPage(bool selected) {
+void BrowserController::selectAll(bool selected) {
     if (m_busy || !m_ready)
         return;
     m_model.selectAll(selected);
@@ -385,9 +382,9 @@ void BrowserController::navigateDirectory(const QString &id) {
     start({}, 0);
 }
 void BrowserController::sortByColumn(int column) {
-    if (m_busy || !m_ready || m_closing || column < -1 || column > 3)
+    if (m_busy || !m_ready || m_closing || column < -1 || column > 4)
         return;
-    const int ascending = column * 2 + 1;
+    const int ascending = column < 3 ? column * 2 + 1 : column == 3 ? 9 : 11;
     m_sort = column == -1 ? 0 : (m_sort == ascending ? ascending + 1 : ascending);
     start({}, 0);
 }
@@ -527,11 +524,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return;
     if (event.kind == EventKind::Page) {
         if (event.total > 10000 || event.offset > event.total || event.rows.size() > 128 ||
-            event.directories.size() > 2048) {
+            event.directories.size() > 2048 || event.offset + event.rows.size() > event.total ||
+            (event.rows.empty() && event.offset < event.total) ||
+            event.offset != static_cast<quint64>(m_result.rows.size())) {
             m_result.error = "resource_limit";
             return;
         }
-        m_result.replaceDirectories = event.replace_directories;
+        m_result.replaceDirectories = m_result.replaceDirectories || event.replace_directories;
         m_result.navigationLimited = event.navigation_limited;
         for (const auto &node : event.directories) {
             if (node.count > 10000) {
@@ -542,7 +541,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                          text(node.path), static_cast<int>(node.count)});
         }
         m_result.total = static_cast<int>(event.total);
-        m_result.offset = static_cast<int>(event.offset);
+        m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {
             const auto method = row.method == 0   ? QStringLiteral("Store")
@@ -561,11 +560,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 type = QStringLiteral("JPEG");
             if (type.isEmpty())
                 type = tr("文件");
-            // Presentation type is inferred from the displayed suffix, not content sniffing.
-            // Modification time is absent from this bridge; do not invent a date.
+            // DOS values describe archive-local wall time, with no timezone information.
+            const auto packed = row.modified_dos;
+            const QDate date(1980 + (packed >> 25), (packed >> 21) & 15, (packed >> 16) & 31);
+            const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
+            const auto modified = date.isValid() && time.isValid() ? date.toString("yyyy/MM/dd")
+                                                                   : QStringLiteral("—");
             m_result.rows.append({text(row.id),
                                   {text(row.name), QString::number(row.size),
-                                   QString::number(row.packed_size), type, QStringLiteral("—")},
+                                   QString::number(row.packed_size), type, modified},
                                   row.directory,
                                   row.directory && !row.warning,
                                   method,
@@ -607,6 +610,22 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.error = text(event.error);
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
+        // Fetch bounded transport batches until the current query is complete. The model
+        // commits once, preserving row identity and avoiding visible paging or partial sorts.
+        if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
+            m_result.rows.size() < m_result.total) {
+            xdzip::reader::Command command{};
+            command.kind = xdzip::reader::CommandKind::Browse;
+            command.session = m_result.session.toULongLong();
+            command.directory = rust::String(m_directory.toStdString());
+            command.text = rust::String(m_search.toStdString());
+            command.offset = static_cast<std::uint64_t>(m_result.rows.size());
+            command.sort = static_cast<std::uint8_t>(m_sort);
+            auto accumulated = std::move(m_result);
+            submit(std::move(command));
+            m_result = std::move(accumulated);
+            return;
+        }
         m_message = explain(m_result.error);
         if (m_result.closeSession && m_result.error.isEmpty()) {
             m_ready = false;

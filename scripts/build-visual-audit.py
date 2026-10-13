@@ -150,8 +150,8 @@ def main():
         check('目录树文字与行中心 Y 差', child['y'] + child['height'] / 2 - node['y'] - node['height'] / 2, 0, 'row content centered', .5)
         check('目录树图标与行中心 Y 差', icon['y'] + icon['height'] / 2 - node['y'] - node['height'] / 2, 0, 'row content centered', .5)
         tree = one(scene, lambda n: n['name'] == 'directoryTree')
-        count = one(scene, lambda n: n['path'].startswith(node['path'] + '/') and n.get('text') == '2')
-        check('目录树计数完整显示', count['x'] + count['width'] <= tree['x'] + tree['width'], True, 'count fits tree viewport')
+        counts = [n for n in captures[scene]['nodes'] if n['visible'] and n['path'].startswith(node['path'] + '/') and n.get('text') == '2']
+        check('目录树不显示文件数', len(counts), 0, 'count-free tree selection revision')
     for theme in ['light', 'dark']:
         for foreground, background in [('text', 'surface'), ('textSecondary', 'surface'), ('accentText', 'accent')]:
             a, b = sorted([luminance(tokens[theme][foreground]), luminance(tokens[theme][background])])

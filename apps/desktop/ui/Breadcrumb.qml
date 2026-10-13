@@ -40,7 +40,8 @@ RowLayout {
                 Layout.fillWidth: true
                 // Layout rounding must not elide an otherwise fitting archive name on Cocoa.
                 implicitWidth: Math.ceil(contentItem.implicitWidth) + leftPadding + rightPadding
-                Layout.fillHeight: true
+                Layout.preferredHeight: Math.max(Theme.mainBreadcrumbHeight, Theme.mainPaneTitleSize * 1.6 + 6)
+                Layout.alignment: Qt.AlignVCenter
                 padding: 2
                 enabled: root.available && !segment.modelData.current
                 Accessible.name: segment.modelData.more ? qsTr("显示上级目录") : segment.modelData.label
