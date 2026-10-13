@@ -35,7 +35,8 @@ Rectangle {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: Theme.mainToolbarLeftInset
-        anchors.rightMargin: Theme.mainToolbarRightInset
+        // Enlarged text can round intrinsic widths upward; preserve the outer inset.
+        anchors.rightMargin: Theme.fontScale > 1 ? Math.ceil(Theme.mainToolbarRightInset) : Theme.mainToolbarRightInset
         spacing: Math.round(Theme.mainToolbarGroupGap)
         RowLayout {
             Layout.preferredHeight: root.controlHeight

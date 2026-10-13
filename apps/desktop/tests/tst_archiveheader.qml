@@ -60,7 +60,7 @@ Item {
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
             const extract = findChild(toolbar, "archiveExtract");
             tryCompare(extract, "height", toolbar.controlHeight);
-            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 11);
+            tryVerify(() => extract.mapToItem(toolbar, extract.width, 0).x <= toolbar.width - 11, 5000, "Extract right=" + extract.mapToItem(toolbar, extract.width, 0).x + "; toolbar=" + toolbar.width);
             const icon = findChild(open, "actionIcon");
             const label = findChild(open, "actionLabel");
             tryVerify(() => Math.abs(icon.mapToItem(open, 0, icon.height / 2).y - open.height / 2) < 0.5);
