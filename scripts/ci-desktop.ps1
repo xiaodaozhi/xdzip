@@ -84,7 +84,7 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'dist/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review'
-Copy-Item 'docs/qa/m2-acceptance.md' 'dist/review/README.md'
+Copy-Item 'docs/engineering/developer-build.md' 'dist/review/README.md'
 Invoke-Checked python @('scripts/collect-notices.py', 'dist/review/notices')
 Invoke-Checked git @('archive', '--format=tar', '-o', 'dist/review/xdzip-source.tar', 'HEAD')
 if ($IsMacOS) {
