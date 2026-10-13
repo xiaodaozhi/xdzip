@@ -111,6 +111,27 @@ def main():
         expect(page.locator('th:nth-child(3)')).to_have_attribute('aria-sort', 'descending')
         checks.append('List/grid share entries and selection; header context and click share sorting state')
 
+        # Owned extensionless records must not share the directory group.
+        page.evaluate('''() => {
+            for (let i=0;i<2;i++) {
+                const entry={id:`type-regression-${i}`,parent:'',name:'LICENSE',type:'文件',size:1,compressed:1,modified:'2026/10/13'};
+                files.push(entry); entries.push(entry); byId.set(entry.id,entry);
+            }
+            render();
+        }''')
+        for direction in ['ascending', 'descending']:
+            page.locator('[data-sort=type]').click()
+            expect(page.locator('th:nth-child(5)')).to_have_attribute('aria-sort', direction)
+            rows = page.evaluate('''() => [...document.querySelectorAll('#file-rows tr')].map(row=>({id:row.dataset.id,folder:Boolean(byId.get(row.dataset.id).folder)}))''')
+            assert [row['id'] for row in rows[:3]] == ['photos', 'documents', 'maps']
+            assert all(not row['folder'] for row in rows[3:])
+            assert [row['id'] for row in rows if row['id'].startswith('type-regression-')] == ['type-regression-0', 'type-regression-1']
+        page.evaluate('''() => {
+            files.splice(files.length-2,2); entries.splice(entries.length-2,2);
+            byId.delete('type-regression-0'); byId.delete('type-regression-1'); render();
+        }''')
+        checks.append('Type header: directories precede extensionless files in both directions; duplicate ties keep identity order')
+
         saved = page.evaluate('({selected:[...state.selected],sort:state.sort,sortKey:state.sortKey})')
         page.locator('[data-tab=project]').click()
         expect(page.locator('#file-rows tr')).to_have_count(2)

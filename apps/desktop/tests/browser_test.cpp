@@ -192,6 +192,60 @@ class BrowserTest : public QObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         QCOMPARE(controller.total(), 4);
     }
+    void typeHeaderSortGroupsDirectoriesBeforeExtensionlessFiles() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/type-order.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *header = findVisual(window->contentItem(), "sort-column-3");
+        QVERIFY(header);
+        const auto click = [window, header] {
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                header->mapToScene(QPointF(header->width() / 2, header->height() / 2)).toPoint());
+        };
+        const auto names = [controller] {
+            QStringList result;
+            for (int row = 0; row < controller->entries()->rowCount(); ++row)
+                result.append(
+                    controller->entries()->data(controller->entries()->index(row, 0)).toString());
+            return result;
+        };
+        click();
+        QTRY_VERIFY(controller->sortOrder() == 9 && !controller->busy());
+        QCOMPARE(names(),
+                 QStringList({"item-alpha", "item-folder.ZIP", "item-implicit", "item-README",
+                              "item-LICENSE", "item-duplicate", "item-duplicate", "item-image.JPG",
+                              "item-image.jpeg", "item-last.ZIP"}));
+        QCOMPARE(controller->entries()->data(controller->entries()->index(2, 3)).toString(),
+                 QString::fromUtf8("文件夹"));
+        QCOMPARE(controller->entries()->data(controller->entries()->index(3, 3)).toString(),
+                 QString::fromUtf8("文件"));
+        click();
+        QTRY_VERIFY(controller->sortOrder() == 10 && !controller->busy());
+        QCOMPARE(names(),
+                 QStringList({"item-alpha", "item-folder.ZIP", "item-implicit", "item-last.ZIP",
+                              "item-image.JPG", "item-image.jpeg", "item-README", "item-LICENSE",
+                              "item-duplicate", "item-duplicate"}));
+        controller->search("item");
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(names(),
+                 QStringList({"item-alpha/", "item-folder.ZIP/", "item-last.ZIP", "item-image.JPG",
+                              "item-image.jpeg", "item-README", "item-LICENSE", "item-duplicate",
+                              "item-duplicate", "item-implicit/item-child"}));
+        click();
+        QTRY_VERIFY(controller->sortOrder() == 9 && !controller->busy());
+        QCOMPARE(names(),
+                 QStringList({"item-alpha/", "item-folder.ZIP/", "item-README", "item-LICENSE",
+                              "item-duplicate", "item-duplicate", "item-implicit/item-child",
+                              "item-image.JPG", "item-image.jpeg", "item-last.ZIP"}));
+        controller->requestClose();
+        QTRY_VERIFY(!controller->runtimeAvailable());
+    }
     void completeNavigationAndGlobalSort() {
         BrowserController controller;
         QAbstractItemModelTester modelCheck(controller.directories(),

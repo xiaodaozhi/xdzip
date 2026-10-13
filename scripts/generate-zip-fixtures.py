@@ -40,3 +40,12 @@ struct.pack_into('<HH', wrong_count, len(normal) - 14, 6, 6)
 (ROOT / 'tree-layout.zip').write_bytes(archive([
     ('GitHub Desktop.app/Contents/Resources/' + 'nested/' * 12 + 'file.txt', b'x', 0),
     ('short/item.txt', b'x', 0)]))
+
+# Interleave extensionless files, explicit directories and an implicit parent.
+(ROOT / 'type-order.zip').write_bytes(archive([
+    ('item-README', b'x', 0), ('item-alpha/', b'', 0),
+    ('item-LICENSE', b'x', 0), ('item-folder.ZIP/', b'', 0),
+    ('item-duplicate', b'x', 0), ('item-duplicate', b'y', 0),
+    ('item-implicit/item-child', b'x', 0),
+    ('item-image.JPG', b'x', 0), ('item-image.jpeg', b'x', 0),
+    ('item-last.ZIP', b'x', 0)]))

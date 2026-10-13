@@ -132,10 +132,11 @@ impl Archive {
             // both sides; changing comparator behavior during cancellation is invalid.
             control.check()?;
             if sort == 9 {
-                rows.sort_by_cached_key(|entry| (entry_type(entry), entry.id.get()));
+                rows.sort_by_cached_key(|entry| (entry_type_key(entry), entry.id.get()));
             } else if sort == 10 {
                 rows.sort_by_cached_key(|entry| {
-                    (std::cmp::Reverse(entry_type(entry)), entry.id.get())
+                    let (file, category) = entry_type_key(entry);
+                    (file, std::cmp::Reverse(category), entry.id.get())
                 });
             } else {
                 rows.sort_unstable_by(|a, b| {
@@ -204,7 +205,12 @@ impl Archive {
     }
 }
 
-// Match the displayed extension category; directory identity is independent of its suffix.
+// Keep directory identity separate from the extension category and translated labels.
+// Only the category is reversed for descending type order; directories remain first.
+fn entry_type_key(entry: &Entry) -> (bool, String) {
+    (!entry.directory, entry_type(entry))
+}
+
 fn entry_type(entry: &Entry) -> String {
     if entry.directory {
         return String::new();

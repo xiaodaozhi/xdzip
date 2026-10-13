@@ -1,5 +1,5 @@
 //! Current-directory listings keep virtual navigation separate from physical records.
-use crate::{Archive, entry_type, navigation::Directory};
+use crate::{Archive, entry_type_key, navigation::Directory};
 use xdzip_codec_api::{Cancellation, Entry, ScanError};
 use xdzip_domain::query::PageRequest;
 
@@ -25,10 +25,10 @@ impl ListingRow<'_> {
             Self::Directory(node) => (1, node.id),
         }
     }
-    fn kind(&self) -> String {
+    fn type_key(&self) -> (bool, String) {
         match self {
-            Self::Physical(entry) => entry_type(entry),
-            Self::Directory(_) => String::new(),
+            Self::Physical(entry) => entry_type_key(entry),
+            Self::Directory(_) => (false, String::new()),
         }
     }
     fn number(&self, sort: u8) -> u64 {
@@ -101,9 +101,12 @@ impl Archive {
             }
         }
         if sort == 9 {
-            rows.sort_by_cached_key(|row| (row.kind(), row.stable_key()));
+            rows.sort_by_cached_key(|row| (row.type_key(), row.stable_key()));
         } else if sort == 10 {
-            rows.sort_by_cached_key(|row| (std::cmp::Reverse(row.kind()), row.stable_key()));
+            rows.sort_by_cached_key(|row| {
+                let (file, category) = row.type_key();
+                (file, std::cmp::Reverse(category), row.stable_key())
+            });
         } else if sort != 0 {
             rows.sort_unstable_by(|a, b| {
                 let order = if sort <= 2 {
@@ -138,6 +141,68 @@ impl Archive {
 mod tests {
     use super::*;
     use std::path::Path;
+
+    #[test]
+    fn type_sort_keeps_directories_first_in_both_directions_and_search() {
+        let control = Cancellation::default();
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/type-order.zip");
+        let archive = Archive::open(&path, &control).unwrap();
+        for query in ["", "item"] {
+            let directories = if query.is_empty() {
+                vec!["item-alpha/", "item-folder.ZIP/", "item-implicit/"]
+            } else {
+                vec!["item-alpha/", "item-folder.ZIP/"]
+            };
+            let mut extensionless = vec![
+                "item-README",
+                "item-LICENSE",
+                "item-duplicate",
+                "item-duplicate",
+            ];
+            if !query.is_empty() {
+                extensionless.push("item-implicit/item-child");
+            }
+            for order in [9, 10] {
+                let mut expected = directories.clone();
+                if order == 9 {
+                    expected.extend(extensionless.iter().copied());
+                    expected.extend(["item-image.JPG", "item-image.jpeg", "item-last.ZIP"]);
+                } else {
+                    expected.extend(["item-last.ZIP", "item-image.JPG", "item-image.jpeg"]);
+                    expected.extend(extensionless.iter().copied());
+                }
+                let (total, rows) = archive
+                    .listing_sorted("", query, 0, 128, order, &control)
+                    .unwrap();
+                assert_eq!(total, 10);
+                assert_eq!(
+                    rows.iter().map(ListingRow::path).collect::<Vec<_>>(),
+                    expected
+                );
+                // Equal categories retain physical identity order in both directions.
+                let duplicate_ids = rows
+                    .iter()
+                    .filter_map(|row| match row {
+                        ListingRow::Physical(entry) if entry.display_name == "item-duplicate" => {
+                            Some(entry.id.get())
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>();
+                assert_eq!(duplicate_ids, [5, 6]);
+                // Group the complete result before splitting transport batches.
+                let mut batched = Vec::new();
+                for offset in [0, 3, 6, 9] {
+                    let (_, page) = archive
+                        .listing_sorted("", query, offset, 3, order, &control)
+                        .unwrap();
+                    batched.extend(page.iter().map(|row| row.path().to_owned()));
+                }
+                assert_eq!(batched, expected);
+            }
+        }
+    }
 
     #[test]
     fn direct_children_implicit_parents_duplicates_and_recursive_search() {

@@ -306,7 +306,7 @@ function visibleEntries() {
     );
     if (state.sort)
         list.sort((a, b) => {
-            const grouping = Number(b.folder) - Number(a.folder);
+            const grouping = Number(Boolean(b.folder)) - Number(Boolean(a.folder));
             if (grouping) return grouping;
             const key = state.sortKey;
             const compared =
