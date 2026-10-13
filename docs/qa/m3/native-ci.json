@@ -1,0 +1,98 @@
+{
+  "date": "2026-10-13",
+  "implementation_commit": "a97d24843cbd263c84358b7e16db1ef84531fde2",
+  "runs": [
+    {
+      "id": 38450239736,
+      "name": "Documentation",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239736"
+    },
+    {
+      "id": 38450239636,
+      "name": "Foundation probes",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239636"
+    },
+    {
+      "id": 38450239808,
+      "name": "Qt components",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239808"
+    }
+  ],
+  "foundation_jobs": [
+    {
+      "id": 115478963259,
+      "name": "cpp-format",
+      "conclusion": "success"
+    },
+    {
+      "id": 115478963294,
+      "name": "bridge (ubuntu-24.04)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115478963430,
+      "name": "bridge (windows-2022)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115478963501,
+      "name": "bridge (macos-14)",
+      "conclusion": "success"
+    }
+  ],
+  "qt_jobs": [
+    {
+      "id": 115478965028,
+      "name": "native-qt (macos-14)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115478965237,
+      "name": "native-qt (windows-2022)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115478965444,
+      "name": "native-qt (ubuntu-24.04)",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11840540318,
+      "name": "xdzip-m3-Windows-X64",
+      "size_in_bytes": 135819956,
+      "digest": "sha256:5f0282b188a1c84f5d193afe0c98ad5ff3a7d0f7e84d719fa6d3225ae9c3e5eb",
+      "expires_at": "2026-10-27T18:57:22Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239808/artifacts/11840540318"
+    },
+    {
+      "id": 11840198943,
+      "name": "xdzip-m3-macOS-ARM64",
+      "size_in_bytes": 116862488,
+      "digest": "sha256:d69851a68b1b229e8ee14c72f5ea56457afe6b9d9930cdcc4f85d876558191a5",
+      "expires_at": "2026-10-27T18:58:53Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239808/artifacts/11840198943"
+    },
+    {
+      "id": 11839409762,
+      "name": "xdzip-m3-Linux-X64",
+      "size_in_bytes": 67863250,
+      "digest": "sha256:c721859af2cecbf64fd858bdeeb3910f779d60e6ce0439bf4d6a0b97288e69d8",
+      "expires_at": "2026-10-27T18:55:43Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38450239808/artifacts/11839409762"
+    }
+  ],
+  "html_design": {
+    "implementation_commit": "48953d6ee5c3c38162e599d080d27ffea238a7af",
+    "run": 38441838509,
+    "conclusion": "success",
+    "scope": "Complete HTML design/asset change; later product fixes do not change HTML application code."
+  }
+}

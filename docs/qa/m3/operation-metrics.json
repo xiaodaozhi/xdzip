@@ -1,0 +1,371 @@
+{
+  "passed": 51,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "extract-options/logical width",
+      "actual": 614,
+      "expected": 614,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/title size",
+      "actual": 25,
+      "expected": 25,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/capture width divided by DPR",
+      "actual": 614.0,
+      "expected": 614,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/capture height divided by DPR",
+      "actual": 720.0,
+      "expected": 720,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/取消/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/取消/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/取消/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/取消/action height",
+      "actual": 40,
+      "expected": 40,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/取消/action minimum width",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/开始解压/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/开始解压/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/开始解压/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/开始解压/action height",
+      "actual": 40,
+      "expected": 40,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "extract-options/开始解压/action minimum width",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/logical width",
+      "actual": 846,
+      "expected": 845,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/title size",
+      "actual": 25,
+      "expected": 25,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/capture width divided by DPR",
+      "actual": 846.0,
+      "expected": 846,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/capture height divided by DPR",
+      "actual": 612.0,
+      "expected": 612,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/返回浏览/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/返回浏览/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/返回浏览/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/返回浏览/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/处理重名文件/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/处理重名文件/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/处理重名文件/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/处理重名文件/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/取消任务/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/取消任务/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/取消任务/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/取消任务/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/hint text left edges",
+      "actual": 53,
+      "expected": 53,
+      "tolerance": 0.5,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/body hint size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/footer hint size",
+      "actual": 13,
+      "expected": 13,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/实际耗时取决于文件与磁盘状态。/visible without scroll",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "task-waiting/关闭此窗口后，任务仍会继续。/visible without scroll",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/logical width",
+      "actual": 612,
+      "expected": 612,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/title size",
+      "actual": 25,
+      "expected": 25,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/capture width divided by DPR",
+      "actual": 612.0,
+      "expected": 612,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/capture height divided by DPR",
+      "actual": 583.0,
+      "expected": 583,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/跳过/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/跳过/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/跳过/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/跳过/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/自动改名/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/自动改名/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/自动改名/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/自动改名/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/覆盖文件/footer size",
+      "actual": 15,
+      "expected": 15,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/覆盖文件/inside right edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/覆盖文件/inside bottom edge",
+      "actual": true,
+      "expected": true,
+      "tolerance": 1,
+      "passed": true
+    },
+    {
+      "name": "conflict/覆盖文件/action height",
+      "actual": 38,
+      "expected": 38,
+      "tolerance": 1,
+      "passed": true
+    }
+  ],
+  "source": "Frozen HTML logical metrics; actual Qt JSON and unedited captures",
+  "limits": [
+    "Qt captures use owned fixture data, different from the illustrated photo archive",
+    "System window decorations follow the target OS and are not included in grabWindow",
+    "This check does not certify identical glyph contours or desktop appearance"
+  ],
+  "qt_capture_receipt": "qt/receipt.json",
+  "html_reference": "html-operation-metrics.json"
+}

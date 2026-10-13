@@ -50,4 +50,4 @@
 
 所有“计划/候选/待验证”必须保持标记，不能因文档进入主分支就改写为已实现。设计调整同时更新受影响文档与需求追踪矩阵；重大变化追加 ADR。HTML 为派生阅读材料，修改 Markdown 后重新构建。
 
-M3 开发中：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录](qa/m3-acceptance.md)。
+M3 安全解压：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录](qa/m3-acceptance.md)、[Qt／HTML／原稿对照](qa/m3/index.html)。

@@ -1,6 +1,6 @@
 # CI 与合入策略
 
-已配置 Documentation、Foundation probes 和 Qt components 三组工作流，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品与开发验收包。具体执行证据见 [M1 验收入口](../qa/m1-acceptance.md)。下表定义按变更类型执行的门槛，未实现的安全 I/O、格式写入及正式发布检查在对应阶段接入。
+已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流和 HTML design review，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品与开发验收包。最新解压实现证据见 [M3 验收入口](../qa/m3-acceptance.md)。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，创建格式及正式发布检查仍按阶段接入。
 
 | 变更 | 必需检查 |
 | --- | --- |
@@ -19,6 +19,8 @@ Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo
 
 Qt components 通过 scripts/ci-desktop.ps1 在三平台安装固定 Qt 6.8.2，构建真实浏览应用、执行 qmllint 与 6 组 CTest，将并发生命周期套件重复 10 次。macOS/Windows 部署 Qt 后清除开发搜索路径，用原生 cocoa/windows 平台插件执行启动/关闭冒烟检查。上传同提交源代码、许可通知、截图、日志和 build.json；开发包保存 14 天，不作为正式签名发行。离屏截图不证明 GPU、输入法或辅助功能的人工验收已完成。
 
-M2 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。工件命名为 xdzip-m2-平台-架构；它们仍是未公证的开发验收包。
+M2 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。当前 M3 工件命名为 xdzip-m3-平台-架构；它们仍是未公证的开发验收包。
 
 检查直接 main 推送时使用 `/actions/runs?head_sha=...`，核对 push 事件；连接器 `fetch_commit_workflow_runs` 仅筛选 PR 事件，空结果不表示没有自动运行。
+
+M3 额外执行真实解压、冲突、取消等待、关闭源会话后继续任务和退出决定的 Qt 流程；测量 64 个 Deflate 文件／32 MiB 实际输出并独立复核全部字节。核心覆盖 CRC、流终止、描述符、源／目标变化、链接、ACL、提交竞争、清理及磁盘写失败。磁盘满为可重复的部分写入故障注入，不冒充真实填满设备。Windows 权限回归直接修改新建自有夹具的 ACL，目录枚举、内容读取、写入、删除与 ACL 修改均保持拒绝。
