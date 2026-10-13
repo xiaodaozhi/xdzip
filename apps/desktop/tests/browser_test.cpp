@@ -492,7 +492,9 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->entries()->data(controller->entries()->index(99999, 0)).toString(),
                  "item-099999.txt");
         QVERIFY(QTest::qWaitForWindowExposed(window));
-        QTest::qWait(50);
+        // Model publication and TableView incubation are distinct events. Wait
+        // for a real visible cell, not a fixed 50ms delay on a shared runner.
+        QTRY_VERIFY_WITH_TIMEOUT(findVisual(window->contentItem(), "entry-0-0"), 5000);
         int delegates = 0;
         const auto countDelegates = [&delegates](auto &&self, QQuickItem *item) -> void {
             if (item->objectName().startsWith("entry-") && item->objectName().count('-') == 2)
