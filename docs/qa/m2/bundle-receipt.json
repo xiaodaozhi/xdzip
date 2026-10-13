@@ -1,0 +1,13 @@
+{
+  "implementation_commit": "a40dc72259d5f87f3c20b4fd9c35ba8a068d45c5",
+  "artifact_id": 11819103766,
+  "artifact_sha256": "b775e29c925468a62e7fbf736d6b2beb6c6a2c3a97892ae2ba91b76466e9ee4b",
+  "app_zip_sha256": "a7006a5f6d3857f49f56d1bd8604c85b1a5b74d68f9a1dee893c6b9165b3bbb5",
+  "app_zip_bytes": 51926914,
+  "executable_format": "Mach-O 64-bit ARM64",
+  "bundle_identifier": "org.xdzip.desktop",
+  "native_ci": "success",
+  "signature_check": "codesign --verify --deep --strict passed in CI",
+  "launch_check": "deployed Cocoa smoke passed in CI",
+  "minimum_macos_deployment": "14.0.0"
+}

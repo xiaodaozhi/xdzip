@@ -3,14 +3,14 @@ Test project /tmp/xdzip-brand-ui
     Start 1: bridge_ownership_shutdown
 1/5 Test #1: bridge_ownership_shutdown ........   Passed    0.00 sec
     Start 2: qt_preview_load
-2/5 Test #2: qt_preview_load ..................   Passed    0.07 sec
+2/5 Test #2: qt_preview_load ..................   Passed    0.08 sec
     Start 3: qt_task_components
-3/5 Test #3: qt_task_components ...............   Passed    0.73 sec
+3/5 Test #3: qt_task_components ...............   Passed    0.68 sec
     Start 4: qt_zip_browser
-4/5 Test #4: qt_zip_browser ...................   Passed    9.45 sec
+4/5 Test #4: qt_zip_browser ...................   Passed    6.47 sec
     Start 5: qt_browser_load
-5/5 Test #5: qt_browser_load ..................   Passed    0.71 sec
+5/5 Test #5: qt_browser_load ..................   Passed    0.70 sec
 
 100% tests passed, 0 tests failed out of 5
 
-Total Test time (real) =  10.97 sec
+Total Test time (real) =   7.94 sec

@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-13",
+  "implementation_commit": "a40dc72259d5f87f3c20b4fd9c35ba8a068d45c5",
+  "runs": [
+    {
+      "id": 38406278000,
+      "name": "Documentation",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406278000"
+    },
+    {
+      "id": 38406277351,
+      "name": "Qt components",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406277351"
+    },
+    {
+      "id": 38406277005,
+      "name": "Foundation probes",
+      "event": "push",
+      "conclusion": "success",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406277005"
+    }
+  ],
+  "qt_jobs": [
+    {
+      "id": 115326600905,
+      "name": "native-qt (ubuntu-24.04)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115326601270,
+      "name": "native-qt (windows-2022)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115326601525,
+      "name": "native-qt (macos-14)",
+      "conclusion": "success"
+    }
+  ],
+  "foundation_jobs": [
+    {
+      "id": 115326600354,
+      "name": "bridge (ubuntu-24.04)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115326600439,
+      "name": "bridge (macos-14)",
+      "conclusion": "success"
+    },
+    {
+      "id": 115326600607,
+      "name": "cpp-format",
+      "conclusion": "success"
+    },
+    {
+      "id": 115326600729,
+      "name": "bridge (windows-2022)",
+      "conclusion": "success"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11819103766,
+      "name": "xdzip-m2-macOS-ARM64",
+      "size_in_bytes": 115692639,
+      "digest": "sha256:b775e29c925468a62e7fbf736d6b2beb6c6a2c3a97892ae2ba91b76466e9ee4b",
+      "expires_at": "2026-10-27T13:43:19Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406277351/artifacts/11819103766"
+    },
+    {
+      "id": 11817214725,
+      "name": "xdzip-m2-Windows-X64",
+      "size_in_bytes": 134738221,
+      "digest": "sha256:1be2502ec1873e7d0164724ed541424dc5d80be465f4a59c512771c09356cd55",
+      "expires_at": "2026-10-27T13:40:14Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406277351/artifacts/11817214725"
+    },
+    {
+      "id": 11816799807,
+      "name": "xdzip-m2-Linux-X64",
+      "size_in_bytes": 66587841,
+      "digest": "sha256:308009b1fd1fbedc542c07ff4719fe5ee70d66def9f78b9264e007e129c773cc",
+      "expires_at": "2026-10-27T13:39:05Z",
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38406277351/artifacts/11816799807"
+    }
+  ]
+}
