@@ -9,8 +9,12 @@ MenuItem {
     property string shortcutLabel: ""
     property string disabledReason: ""
     property bool dangerous: false
+    property bool commandVisible: true
+    visible: commandVisible
     implicitWidth: Theme.menuWidth - Theme.menuPadding * 2
-    implicitHeight: Math.max(Theme.menuRowHeight, contentItem.implicitHeight + 8)
+    // Do not use effective visible: closing the popup also hides every normal item.
+    // ListView still lays out omitted commands unless their height is zero.
+    implicitHeight: commandVisible ? Math.max(Theme.menuRowHeight, contentItem.implicitHeight + 8) : 0
     leftPadding: Theme.menuLabelInset
     rightPadding: Theme.menuLabelInset
     topPadding: 4

@@ -338,23 +338,28 @@ class BrowserTest : public QObject {
                      ->data(controller->entries()->index(0, 0), Qt::UserRole)
                      .toString(),
                  "2");
-        auto *disclosure = findVisual(window->contentItem(), "directoryDisclosure-d1");
-        QVERIFY(disclosure);
-        QTest::mouseClick(
-            window, Qt::LeftButton, Qt::NoModifier,
-            disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
-                .toPoint());
+        // Any relayout can reuse even the parent delegate for another model identity.
+        auto clickParent = [&] {
+            auto *button = findVisual(window->contentItem(), "directoryDisclosure-d1");
+            if (!button)
+                return false;
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+            return true;
+        };
+        QVERIFY(clickParent());
+        QTRY_COMPARE(treeView->property("rows").toInt(), 3);
         QCOMPARE(controller->directoryId(), "d2");
         QCOMPARE(controller->location(), "photos/2026/");
-        auto *marker = findVisual(window->contentItem(), "directoryBranchMarker-d1");
-        QVERIFY(marker);
-        QTRY_VERIFY(marker->isVisible());
-        QTest::mouseClick(
-            window, Qt::LeftButton, Qt::NoModifier,
-            disclosure->mapToScene(QPointF(disclosure->width() / 2, disclosure->height() / 2))
-                .toPoint());
-        QTRY_VERIFY(!marker->isVisible());
+        auto branchMarkerVisible = [&] {
+            auto *marker = findVisual(window->contentItem(), "directoryBranchMarker-d1");
+            return marker && marker->isVisible();
+        };
+        QTRY_VERIFY(branchMarkerVisible());
+        QVERIFY(clickParent());
         QTRY_COMPARE(treeView->property("rows").toInt(), 4);
+        QTRY_VERIFY(!branchMarkerVisible());
         // Collapse/reopen reuses delegates. Assert the rendered hierarchy, not merely
         // the expansion flag, before capturing or allowing a later frame to hide drift.
         for (int cycle = 0; cycle < 8; ++cycle) {
@@ -366,18 +371,6 @@ class BrowserTest : public QObject {
                             parentIcon->mapToScene(QPointF()).x() - 16) < 0.5;
             }());
             if (cycle < 7) {
-                // TreeView may pool even the parent delegate during relayout; locate
-                // the current identity again instead of clicking a stale QObject.
-                auto clickParent = [&] {
-                    auto *button = findVisual(window->contentItem(), "directoryDisclosure-d1");
-                    if (!button)
-                        return false;
-                    QTest::mouseClick(
-                        window, Qt::LeftButton, Qt::NoModifier,
-                        button->mapToScene(QPointF(button->width() / 2, button->height() / 2))
-                            .toPoint());
-                    return true;
-                };
                 QVERIFY(clickParent());
                 QTRY_COMPARE(treeView->property("rows").toInt(), 3);
                 QTRY_VERIFY([&] {
@@ -437,6 +430,13 @@ class BrowserTest : public QObject {
                           cell->mapToScene(QPointF(80, cell->height() / 2)).toPoint());
         QTRY_VERIFY(menu->property("visible").toBool());
         QCOMPARE(controller->selectedCount(), 2);
+        auto *enterDirectory = window->findChild<QQuickItem *>("contextEnterDirectory");
+        auto *properties = window->findChild<QQuickItem *>("contextProperties");
+        QVERIFY(enterDirectory);
+        QVERIFY(properties);
+        QVERIFY(!enterDirectory->isVisible());
+        QTRY_COMPARE(enterDirectory->height(), 0);
+        QTRY_COMPARE(properties->y(), 0);
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!menu->property("visible").toBool());
         cell->forceActiveFocus();

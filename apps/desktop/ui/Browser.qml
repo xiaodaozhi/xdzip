@@ -284,7 +284,7 @@ ApplicationWindow {
             objectName: "contextEnterDirectory"
             text: qsTr("进入目录")
             asset: "folder"
-            visible: Boolean(root.contextEntry.directory)
+            commandVisible: Boolean(root.contextEntry.directory)
             enabled: root.contextAvailable && Boolean(root.contextEntry.navigable)
             disabledReason: qsTr("该条目不具有可导航的安全目录身份")
             onTriggered: reader.enterDirectory(root.contextEntry.row)
