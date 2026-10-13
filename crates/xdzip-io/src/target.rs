@@ -203,7 +203,7 @@ impl Grant {
         let id = FileIdentity::read(&file).map_err(failure)?;
         let mut workspace = Workspace {
             grant: Arc::clone(self),
-            dir,
+            dir: Some(dir),
             identity: id,
             name,
             journal: None,
@@ -215,7 +215,7 @@ impl Grant {
         let mut options = private_options();
         options.write(true).create_new(true);
         let journal = workspace
-            .dir
+            .dir()
             .open_with("transaction", &options)
             .map_err(failure)?
             .into_std();
@@ -281,7 +281,7 @@ fn private_options() -> OpenOptions {
 /// Private transaction owner. Cleanup targets only known objects with matching identities.
 pub struct Workspace {
     grant: Arc<Grant>,
-    dir: Dir,
+    dir: Option<Dir>,
     identity: FileIdentity,
     name: String,
     journal: Option<File>,
@@ -297,6 +297,9 @@ pub struct CommitReceipt {
     pub cleanup_warning: bool,
 }
 impl Workspace {
+    fn dir(&self) -> &Dir {
+        self.dir.as_ref().expect("workspace already cleaned")
+    }
     fn record(&mut self, text: &str) -> Result<(), OutputError> {
         let file = self.journal.as_mut().ok_or(OutputError::Io)?;
         file.write_all(text.as_bytes()).map_err(failure)?;
@@ -309,14 +312,14 @@ impl Workspace {
         let mut options = private_options();
         options.write(true).read(true).create_new(true);
         let file = self
-            .dir
+            .dir()
             .open_with(&name, &options)
             .map_err(failure)?
             .into_std();
         let identity = FileIdentity::read(&file).map_err(failure)?;
         Ok(Stage {
             file: Some(file),
-            dir: self.dir.try_clone().map_err(failure)?,
+            dir: self.dir().try_clone().map_err(failure)?,
             identity,
             name,
             published: false,
@@ -364,12 +367,12 @@ impl Workspace {
             {
                 return Err(OutputError::TargetChanged);
             }
-            self.dir
+            self.dir()
                 .rename(&stage.name, &parent.dir, leaf)
                 .map_err(failure)?;
             stage.published = true;
         } else {
-            self.dir
+            self.dir()
                 .hard_link(&stage.name, &parent.dir, leaf)
                 .map_err(failure)?;
         }
@@ -384,16 +387,19 @@ impl Workspace {
         self.clean()
     }
     fn clean(&mut self) -> Result<(), OutputError> {
+        if self.dir.is_none() {
+            return Ok(());
+        }
         self.journal.take();
         // An unremoved staging file or unknown object requires recovery evidence.
         // Keep the journal and never recursively delete an unfamiliar tree.
-        for item in self.dir.entries().map_err(failure)? {
+        for item in self.dir().entries().map_err(failure)? {
             if item.map_err(failure)?.file_name() != "transaction" {
                 return Err(OutputError::Io);
             }
         }
         if let Some(identity) = self.journal_identity.take() {
-            remove_known(&self.dir, "transaction", identity)?;
+            remove_known(self.dir(), "transaction", identity)?;
         }
         let current = self
             .grant
@@ -403,7 +409,19 @@ impl Workspace {
         if FileIdentity::read(&directory_file(&current)?).map_err(failure)? != self.identity {
             return Err(OutputError::TargetChanged);
         }
-        self.grant.dir.remove_dir(&self.name).map_err(failure)
+        // Windows capability directories intentionally omit FILE_SHARE_DELETE.
+        // Close both handles before removing this verified empty private directory.
+        drop(current);
+        let dir = self.dir.take().expect("workspace live");
+        #[cfg(windows)]
+        {
+            dir.remove_open_dir().map_err(failure)
+        }
+        #[cfg(not(windows))]
+        {
+            drop(dir);
+            self.grant.dir.remove_dir(&self.name).map_err(failure)
+        }
     }
 }
 impl Drop for Workspace {
@@ -511,11 +529,30 @@ mod race_tests {
         let from = root.0.join("safe");
         let moved = root.0.join("old-safe");
         let external = outside.0.clone();
+        let blocked = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let seen = Arc::clone(&blocked);
         workspace.before_publish = Some(Box::new(move || {
-            fs::rename(&from, &moved).unwrap();
-            link_directory(&external, &from);
+            match fs::rename(&from, &moved) {
+                Ok(()) => link_directory(&external, &from),
+                #[cfg(windows)]
+                Err(e) if e.raw_os_error() == Some(32) => {
+                    seen.store(true, Ordering::Relaxed);
+                }
+                Err(e) => panic!("parent attack fixture failed: {e}"),
+            }
+            #[cfg(not(windows))]
+            let _ = seen;
         }));
-        assert!(workspace.commit(stage, &target, None).is_err());
+        let commit = workspace.commit(stage, &target, None);
+        if blocked.load(Ordering::Relaxed) {
+            assert!(commit.is_ok());
+            assert_eq!(
+                fs::read(root.0.join("safe/important.txt")).unwrap(),
+                b"verified replacement"
+            );
+        } else {
+            assert!(commit.is_err());
+        }
         assert_eq!(
             fs::read(outside.0.join("important.txt")).unwrap(),
             b"external original"
