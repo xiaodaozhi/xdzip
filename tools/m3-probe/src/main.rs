@@ -23,10 +23,19 @@ fn submit(
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
+    if args == ["--native-temp-base"] {
+        // Measurement fixtures use the same platform location as Rust/Qt
+        // filesystem regressions; Python may choose a different shared CI TMP.
+        let base = std::env::temp_dir();
+        println!("{}", base.to_str().ok_or("non-UTF-8 temporary base")?);
+        return Ok(());
+    }
     if args.len() != 2 {
         return Err("provide owned ZIP and empty output directory".into());
     }
-    let target = Path::new(&args[1]).canonicalize()?;
+    // Preserve the selected object for the nofollow grant; canonicalize would
+    // erase a directory link before the output layer can reject it.
+    let target = std::path::absolute(Path::new(&args[1]))?;
     if target.read_dir()?.next().is_some() {
         return Err("output must be empty".into());
     }

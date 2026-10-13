@@ -9,4 +9,6 @@ python3 scripts/measure-m3-core.py --binary target/release/xdzip-m3-probe --outp
 
 脚本创建并清理自己的临时目录。探针直接调用时要求提供自有 ZIP 样本及明确的空目录，输出实际文件；不会自行删除所给目标。压缩样本只写入 build／临时目录，不进入 git。
 
+自有夹具位于探针报告的原生临时目录基址，与 Rust／Qt 文件系统回归一致；Windows 继承私有父目录的 ACL，不用 Python 版本相关的 0700 权限合成。输出仍通过实际 Grant 权限检查。CLI 保留所选路径，不用 canonicalize 消除链接；失败报告只包含稳定错误码和计数，原生权限诊断仅用于新建自有目标。
+
 报告中的解压时间包括安全目标检查、解码、fsync、冲突判断、提交和私有清理；独立内容验证时间另列。Linux 读取进程 VmHWM，macOS 通过 `/usr/bin/time -l` 读取峰值 RSS，Windows 此项为未测量。只记录单次原生／本地环境，缓存、共享 runner 和文件系统会影响结果，不作为性能承诺。
