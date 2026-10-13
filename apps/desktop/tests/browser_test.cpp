@@ -248,6 +248,34 @@ class BrowserTest : public QObject {
         controller->requestClose();
         QTRY_VERIFY(!controller->runtimeAvailable());
     }
+    void sourceChangeDuringPreflightInvalidatesSnapshot() {
+        QTemporaryDir owned;
+        const auto path = owned.filePath("preflight.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/normal.zip"), path));
+        BrowserController controller;
+        QSignalSpy report(&controller, &BrowserController::preflightReady);
+        controller.openPath(path);
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.selectOnlyRow(1);
+        QVERIFY(controller.canPreflight());
+        QFile changed(path);
+        QVERIFY(changed.open(QIODevice::Append));
+        QCOMPARE(changed.write("changed"), 7);
+        changed.close();
+        controller.inspectSelection();
+        QTRY_COMPARE(report.count(), 1);
+        QVERIFY(!controller.busy());
+        QVERIFY(!controller.ready());
+        QCOMPARE(controller.total(), 0);
+        QCOMPARE(controller.archiveTotal(), 0);
+        QCOMPARE(controller.entries()->rowCount(), 0);
+        QCOMPARE(controller.directories()->rowCount(), 0);
+        QCOMPARE(controller.selectedCount(), 0);
+        QVERIFY(controller.detail().isEmpty());
+        QVERIFY(controller.preflightReport().contains("error"));
+        controller.requestClose();
+        QTRY_VERIFY(!controller.runtimeAvailable());
+    }
     void m2LargeArchiveLatestQueryAndSourceChange() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -820,9 +848,13 @@ class BrowserTest : public QObject {
             return findVisual(window->contentItem(), QString::fromLatin1(name));
         };
         const auto click = [window](QQuickItem *target) {
-            QTest::mouseClick(
-                window, Qt::LeftButton, Qt::NoModifier,
-                target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint());
+            const auto point =
+                target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint();
+            // Move before pressing, as a real pointer does. This lets hovered
+            // controls dismiss their tooltips before the next hit test.
+            QTest::mouseMove(window, point);
+            QCoreApplication::processEvents();
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
         };
         for (const auto *name : {"archiveNewTab", "archiveSettings", "browserViewMenuButton",
                                  "browserGridButton", "browserSortMenuButton", "inspectorClose"}) {
@@ -871,12 +903,20 @@ class BrowserTest : public QObject {
             QVERIFY(QDir().mkpath(captures));
         if (!captures.isEmpty())
             QVERIFY(visual_audit::save(window, captures, "review-grid"));
+        QSignalSpy frames(window, &QQuickWindow::afterAnimating);
         click(item("browserViewMenuButton"));
         // Visibility changes synchronously; the layout and hit-test tree update on the next frame.
         QTRY_VERIFY(item("fileTableHeader")->isVisible());
-        QTest::qWait(50);
+        frames.clear();
+        window->requestUpdate();
+        QTRY_VERIFY(frames.count() > 0);
         for (int column : {3, 4}) {
             auto *header = item(column == 3 ? "sort-column-3" : "sort-column-4");
+            QVERIFY(header && header->isVisible() && header->width() > 0);
+            const auto point =
+                header->mapToScene(QPointF(header->width() / 2, header->height() / 2));
+            auto *bar = item("fileTableHeader");
+            QVERIFY(bar->contains(bar->mapFromScene(point)));
             click(header);
             QTRY_COMPARE(controller->sortOrder(), column == 3 ? 9 : 11);
             QTRY_VERIFY(!controller->busy());

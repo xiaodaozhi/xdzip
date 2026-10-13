@@ -459,6 +459,18 @@ void BrowserController::restoreQuery() {
     m_search = m_committedQuery.search;
     m_sort = m_committedQuery.sort;
 }
+void BrowserController::invalidateSnapshot() {
+    m_ready = false;
+    m_committedQuery = {};
+    restoreQuery();
+    m_total = m_archiveTotal = m_offset = 0;
+    m_session.clear();
+    m_navigationLimited = false;
+    m_selectionAnchor.clear();
+    m_model.replace({});
+    replaceDirectories({});
+    m_detail.clear();
+}
 void BrowserController::cancel() {
     m_deferredQuery.reset();
     if (m_waiting) {
@@ -754,6 +766,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         } else if (m_result.preflight) {
             m_preflightReport =
                 m_result.error.isEmpty() ? m_result.report : QVariantMap{{"error", m_message}};
+            if (m_result.error == "source_changed" || m_result.error == "stale_session" ||
+                m_result.error == "runtime_unavailable")
+                invalidateSnapshot();
             m_result = {};
             QPointer<BrowserController> alive(this);
             emit changed();
@@ -768,8 +783,14 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 emit changed();
                 return;
             }
-            m_ready = m_result.error.isEmpty();
-            m_committedQuery = m_ready ? m_result.criteria : QueryState{};
+            if (!m_result.error.isEmpty()) {
+                invalidateSnapshot();
+                m_result = {};
+                emit changed();
+                return;
+            }
+            m_ready = true;
+            m_committedQuery = m_result.criteria;
             restoreQuery();
             if (m_result.replaceDirectories)
                 m_archiveTotal = m_ready ? m_result.archiveTotal : 0;

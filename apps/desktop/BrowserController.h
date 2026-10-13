@@ -204,6 +204,7 @@ class BrowserController : public QObject {
     quint64 m_generation = 0;
     QueryState m_committedQuery;
     void restoreQuery();
+    void invalidateSnapshot();
     void showRowDetail(int row);
     void updateSelectionSummary() const;
     mutable quint64 m_summaryRevision = std::numeric_limits<quint64>::max();
