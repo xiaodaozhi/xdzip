@@ -1,0 +1,756 @@
+{
+  "date": "2026-10-13",
+  "provider": "OSV precise-version queries",
+  "results": [
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "adler2"
+        },
+        "version": "2.0.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "ambient-authority"
+        },
+        "version": "0.0.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "anyhow"
+        },
+        "version": "1.0.104"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "bitflags"
+        },
+        "version": "2.13.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "cap-fs-ext"
+        },
+        "version": "4.0.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "cap-primitives"
+        },
+        "version": "4.0.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "cap-std"
+        },
+        "version": "4.0.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "cfg-if"
+        },
+        "version": "1.0.5"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "crc32fast"
+        },
+        "version": "1.5.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "errno"
+        },
+        "version": "0.3.14"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "flate2"
+        },
+        "version": "1.1.10"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "foldhash"
+        },
+        "version": "0.1.5"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "fs-set-times"
+        },
+        "version": "0.20.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "getrandom"
+        },
+        "version": "0.4.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "hashbrown"
+        },
+        "version": "0.15.5"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "heck"
+        },
+        "version": "0.5.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "id-arena"
+        },
+        "version": "2.3.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "io-extras"
+        },
+        "version": "0.19.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "io-lifetimes"
+        },
+        "version": "2.0.4"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "io-lifetimes"
+        },
+        "version": "3.0.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "ipnet"
+        },
+        "version": "2.12.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "itoa"
+        },
+        "version": "1.0.18"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "leb128fmt"
+        },
+        "version": "0.1.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "libc"
+        },
+        "version": "0.2.190"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "linux-raw-sys"
+        },
+        "version": "0.12.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "log"
+        },
+        "version": "0.4.34"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "maybe-owned"
+        },
+        "version": "0.3.4"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "memchr"
+        },
+        "version": "2.8.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "miniz_oxide"
+        },
+        "version": "0.9.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "once_cell"
+        },
+        "version": "1.21.4"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "prettyplease"
+        },
+        "version": "0.2.37"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "r-efi"
+        },
+        "version": "6.0.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "rustix"
+        },
+        "version": "1.1.5"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "rustix-linux-procfs"
+        },
+        "version": "0.1.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "semver"
+        },
+        "version": "1.0.28"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "serde_json"
+        },
+        "version": "1.0.154"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "simd-adler32"
+        },
+        "version": "0.3.10"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "syn"
+        },
+        "version": "2.0.119"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "tinyvec"
+        },
+        "version": "1.13.3"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "unicode-normalization"
+        },
+        "version": "0.1.25"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "unicode-xid"
+        },
+        "version": "0.2.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wasip2"
+        },
+        "version": "1.0.4+wasi-0.2.12"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wasip3"
+        },
+        "version": "0.4.0+wasi-0.3.0-rc-2026-01-06"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wasm-encoder"
+        },
+        "version": "0.244.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wasm-metadata"
+        },
+        "version": "0.244.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wasmparser"
+        },
+        "version": "0.244.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows-sys"
+        },
+        "version": "0.59.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows-sys"
+        },
+        "version": "0.60.2"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows-targets"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows-targets"
+        },
+        "version": "0.53.5"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_aarch64_gnullvm"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_aarch64_gnullvm"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_aarch64_msvc"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_aarch64_msvc"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_gnu"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_gnu"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_gnullvm"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_gnullvm"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_msvc"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_i686_msvc"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_gnu"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_gnu"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_gnullvm"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_gnullvm"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_msvc"
+        },
+        "version": "0.52.6"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "windows_x86_64_msvc"
+        },
+        "version": "0.53.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "winx"
+        },
+        "version": "0.36.4"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-bindgen"
+        },
+        "version": "0.51.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-bindgen"
+        },
+        "version": "0.57.1"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-bindgen-core"
+        },
+        "version": "0.51.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-bindgen-rust"
+        },
+        "version": "0.51.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-bindgen-rust-macro"
+        },
+        "version": "0.51.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-component"
+        },
+        "version": "0.244.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "wit-parser"
+        },
+        "version": "0.244.0"
+      },
+      "response": {}
+    },
+    {
+      "query": {
+        "package": {
+          "ecosystem": "crates.io",
+          "name": "zmij"
+        },
+        "version": "1.0.23"
+      },
+      "response": {}
+    }
+  ]
+}

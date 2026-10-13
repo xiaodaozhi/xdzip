@@ -1,4 +1,5 @@
 //! First read-only session service. Called only on a bounded background worker.
+pub mod extraction;
 mod index;
 pub mod listing;
 pub mod navigation;
@@ -7,6 +8,7 @@ pub mod service;
 mod source;
 use std::fs::File;
 use std::path::Path;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ScanError, ScanLimits};
 use xdzip_codec_zip::ZipCodec;
@@ -21,7 +23,7 @@ pub struct Archive {
     index: index::DirectoryIndex,
     cached_query: Option<query::QuerySnapshot>,
     next_query: u64,
-    rows: Vec<Entry>,
+    rows: Arc<Vec<Entry>>,
     key: QueryKey,
     directories: Option<Vec<navigation::Directory>>,
 }
@@ -66,7 +68,7 @@ impl Archive {
             index,
             cached_query: None,
             next_query: 0,
-            rows,
+            rows: Arc::new(rows),
             key,
         })
     }
@@ -178,7 +180,7 @@ impl Archive {
         let prefix = self.directory_prefix(directory)?;
         let needle = text.to_lowercase();
         let mut rows = Vec::new();
-        for entry in &self.rows {
+        for entry in self.rows.iter() {
             control.check()?;
             if entry.raw_name.starts_with(prefix)
                 && (prefix.is_empty() || entry.raw_name != prefix)
@@ -302,10 +304,10 @@ mod tests {
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip");
         let control = Cancellation::default();
         let mut archive = Archive::open(&path, &control).unwrap();
-        archive.rows[2].display_name = "same.ZIP".into();
-        archive.rows[3].display_name = "same.jpg".into();
-        archive.rows[2].modified_dos = 200;
-        archive.rows[3].modified_dos = 100;
+        Arc::make_mut(&mut archive.rows)[2].display_name = "same.ZIP".into();
+        Arc::make_mut(&mut archive.rows)[3].display_name = "same.jpg".into();
+        Arc::make_mut(&mut archive.rows)[2].modified_dos = 200;
+        Arc::make_mut(&mut archive.rows)[3].modified_dos = 100;
         for (order, first) in [(9, 4), (10, 3), (11, 4), (12, 3)] {
             let (_, rows) = archive
                 .browse_sorted("", "same", 0, 128, order, &control)
@@ -313,7 +315,7 @@ mod tests {
             assert_eq!(rows[0].id.get(), first);
             assert_eq!(rows.len(), 2);
         }
-        archive.rows[2].modified_dos = 100;
+        Arc::make_mut(&mut archive.rows)[2].modified_dos = 100;
         for order in [11, 12] {
             let (_, rows) = archive
                 .browse_sorted("", "same", 0, 128, order, &control)
@@ -328,10 +330,10 @@ mod tests {
         let control = Cancellation::default();
         let mut archive = Archive::open(&path, &control).unwrap();
         // Exercise values beyond JavaScript precision without trusting display strings.
-        archive.rows[2].size = (1 << 53) + 1;
-        archive.rows[3].size = 1 << 53;
-        archive.rows[2].packed_size = u64::MAX;
-        archive.rows[3].packed_size = u64::MAX - 1;
+        Arc::make_mut(&mut archive.rows)[2].size = (1 << 53) + 1;
+        Arc::make_mut(&mut archive.rows)[3].size = 1 << 53;
+        Arc::make_mut(&mut archive.rows)[2].packed_size = u64::MAX;
+        Arc::make_mut(&mut archive.rows)[3].packed_size = u64::MAX - 1;
         for sort in [1, 2] {
             let (_, rows) = archive
                 .browse_sorted("", "notes", 0, 128, sort, &control)

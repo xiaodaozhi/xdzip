@@ -223,7 +223,8 @@ mod tests {
             encrypted: false,
             warning: false,
         })
-        .collect();
+        .collect::<Vec<_>>()
+        .into();
         archive.directories = Some(crate::navigation::build(&archive.rows, &control).unwrap());
         archive.index = crate::index::DirectoryIndex::build(
             &archive.rows,

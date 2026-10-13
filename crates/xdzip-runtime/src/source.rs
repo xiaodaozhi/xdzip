@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 use xdzip_codec_api::ScanError;
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub(crate) struct SourceVersion {
     length: u64,
     modified: SystemTime,
@@ -60,5 +60,25 @@ impl Source {
         } else {
             Ok(())
         }
+    }
+    /// Independent input cursor, checked against the original immutable scan.
+    pub fn fork(&self) -> Result<Self, ScanError> {
+        self.validate()?;
+        let file = File::open(&self.path).map_err(|_| ScanError::SourceChanged)?;
+        let source = Self::new(file, self.path.clone(), self.version.clone());
+        source.validate()?;
+        Ok(source)
+    }
+    pub fn file(&mut self) -> &mut File {
+        &mut self.file
+    }
+    pub fn identity(&self) -> Result<xdzip_io::FileIdentity, ScanError> {
+        xdzip_io::FileIdentity::read(&self.file).map_err(|_| ScanError::SourceChanged)
+    }
+    pub fn name(&self) -> &str {
+        self.path
+            .file_stem()
+            .and_then(|name| name.to_str())
+            .unwrap_or("archive")
     }
 }

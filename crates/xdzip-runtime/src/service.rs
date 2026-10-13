@@ -1,5 +1,6 @@
 //! Product command/event service. GUI admission is bounded; all archive work is worker-owned.
 use crate::Archive;
+mod tasks;
 use std::collections::{BTreeMap, VecDeque};
 use std::path::Path;
 use std::sync::{Arc, Condvar, Mutex, MutexGuard, TryLockError};
@@ -45,13 +46,40 @@ pub enum Command {
     },
     /// Release the session only if its identity still matches.
     CloseSession(u64),
+    /// Freeze a source-bound plan and queue a real heavy task.
+    Extract {
+        /// Immutable source session.
+        session: u64,
+        /// Explicit selected output intent.
+        options: crate::extraction::Options,
+    },
+    /// Validate a selected target and private staging primitives on the metadata worker.
+    CheckTarget {
+        /// Current input session, used to protect the source archive.
+        session: u64,
+        /// Explicit selected existing directory.
+        path: String,
+    },
     /// Return the current session identity without filesystem work.
     Snapshot,
 }
 impl Command {
+    fn bytes(&self) -> usize {
+        match self {
+            Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
+            Self::Browse {
+                directory, text, ..
+            } => directory.len() + text.len(),
+            Self::Preflight { selected, .. } => selected.len() * 8,
+            Self::Extract { options, .. } => options.bytes(),
+            _ => 0,
+        }
+    }
     fn bounded(&self) -> bool {
         match self {
-            Self::Open(path) => !path.is_empty() && path.len() <= 4096 && !path.contains('\0'),
+            Self::Open(path) | Self::CheckTarget { path, .. } => {
+                !path.is_empty() && path.len() <= 4096 && !path.contains('\0')
+            }
             Self::Browse {
                 directory,
                 text,
@@ -59,6 +87,7 @@ impl Command {
                 ..
             } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 12,
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
+            Self::Extract { options, .. } => options.bounded(),
             _ => true,
         }
     }
@@ -117,6 +146,12 @@ pub enum Payload {
     Finished(&'static str),
     /// All accepted requests drained, archive dropped, worker joined by receiver.
     ShutdownReady,
+    /// One accepted heavy task identity, returned before its request terminal.
+    TaskAccepted(u64),
+    /// Target staging check succeeded; number of untouched possible recovery workspaces.
+    TargetChecked(u64),
+    /// Latest coalesced actual task state, independent of query request IDs.
+    Task(crate::extraction::Snapshot),
     /// Worker panicked; the service is abandoned and pending requests fail.
     RuntimeFault,
 }
@@ -168,6 +203,9 @@ struct Pending {
 }
 struct State {
     commands: VecDeque<Pending>,
+    command_bytes: usize,
+    tasks: tasks::Queue,
+    task_turn: bool,
     events: VecDeque<(u64, Payload)>,
     controls: VecDeque<(u64, Payload)>,
     outstanding: BTreeMap<u64, Arc<Cancellation>>,
@@ -186,6 +224,9 @@ impl Default for State {
     fn default() -> Self {
         Self {
             commands: VecDeque::with_capacity(MAX_OUTSTANDING),
+            command_bytes: 0,
+            tasks: tasks::Queue::default(),
+            task_turn: false,
             events: VecDeque::with_capacity(256),
             controls: VecDeque::with_capacity(MAX_OUTSTANDING),
             outstanding: BTreeMap::new(),
@@ -227,6 +268,7 @@ impl Shared {
         for control in state.outstanding.values() {
             control.cancel();
         }
+        state.tasks.cancel_all();
         if disconnect {
             state.receiver_alive = false;
         }
@@ -240,27 +282,41 @@ pub struct Client(Arc<Shared>);
 pub struct Receiver {
     shared: Arc<Shared>,
     worker: Option<JoinHandle<()>>,
+    task_worker: Option<JoinHandle<()>>,
 }
 
 /// Start one product worker and return independently owned command and receive handles.
 pub fn start() -> std::io::Result<(Client, Receiver)> {
     let mut archive = None;
-    spawn(move |command, control| {
-        let result = execute(&mut archive, command, control);
+    spawn_with_shared(move |command, control, shared| {
+        let result = execute(&mut archive, command, control, shared);
         if matches!(result, Err("source_changed")) {
             archive = None;
         }
         result
     })
 }
+#[cfg(test)]
 fn spawn<F>(mut handler: F) -> std::io::Result<(Client, Receiver)>
 where
     F: FnMut(Command, &Cancellation) -> Result<Payload, &'static str> + Send + 'static,
+{
+    spawn_with_shared(move |command, control, _| handler(command, control))
+}
+fn spawn_with_shared<F>(mut handler: F) -> std::io::Result<(Client, Receiver)>
+where
+    F: FnMut(Command, &Cancellation, &Arc<Shared>) -> Result<Payload, &'static str>
+        + Send
+        + 'static,
 {
     let shared = Arc::new(Shared {
         state: Mutex::new(State::default()),
         changed: Condvar::new(),
     });
+    let task_shared = Arc::clone(&shared);
+    let task_worker = thread::Builder::new()
+        .name("xdzip-extract".into())
+        .spawn(move || tasks::worker(task_shared))?;
     let worker_shared = Arc::clone(&shared);
     let worker = thread::Builder::new()
         .name("xdzip-runtime".into())
@@ -270,6 +326,7 @@ where
                     let mut state = worker_shared.lock();
                     loop {
                         if let Some(pending) = state.commands.pop_front() {
+                            state.command_bytes -= pending.command.bytes();
                             break Some(pending);
                         }
                         if state.shutdown.is_some() || !state.receiver_alive {
@@ -286,7 +343,7 @@ where
                     Err("cancelled")
                 } else {
                     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        handler(pending.command, &pending.control)
+                        handler(pending.command, &pending.control, &worker_shared)
                     })) {
                         Ok(result) => result,
                         Err(_) => {
@@ -345,12 +402,20 @@ where
             let mut state = worker_shared.lock();
             state.worker_done = true;
             worker_shared.changed.notify_all();
-        })?;
+        });
+    let worker = match worker {
+        Ok(worker) => worker,
+        Err(error) => {
+            shared.stop(false);
+            return Err(error);
+        }
+    };
     Ok((
         Client(Arc::clone(&shared)),
         Receiver {
             shared,
             worker: Some(worker),
+            task_worker: Some(task_worker),
         },
     ))
 }
@@ -368,7 +433,9 @@ impl Client {
         if state.shutdown.is_some() || !state.receiver_alive {
             return Err(Rejection::Closed);
         }
-        if state.outstanding.len() >= MAX_OUTSTANDING {
+        if state.outstanding.len() >= MAX_OUTSTANDING
+            || state.command_bytes + command.bytes() > MAX_EVENT_BYTES
+        {
             return Err(Rejection::Busy);
         }
         if state.last_id >= u64::MAX - 1 {
@@ -378,6 +445,7 @@ impl Client {
         let id = state.last_id;
         let control = Arc::new(Cancellation::default());
         state.outstanding.insert(id, Arc::clone(&control));
+        state.command_bytes += command.bytes();
         state.commands.push_back(Pending {
             id,
             command,
@@ -421,7 +489,10 @@ impl Receiver {
     pub fn receive(&mut self) -> Option<Event> {
         let mut state = self.shared.lock();
         loop {
-            let item = if state.fault_pending {
+            let item = if state.task_turn && !state.tasks.pending.is_empty() {
+                state.task_turn = false;
+                state.tasks.take_event().map(|p| (0, p))
+            } else if state.fault_pending {
                 state.fault_pending = false;
                 Some((0, Payload::RuntimeFault))
             } else if state.control_turn && !state.controls.is_empty() || state.events.is_empty() {
@@ -431,7 +502,9 @@ impl Receiver {
                 state.control_turn = true;
                 state.events.pop_front()
             };
+            let item = item.or_else(|| state.tasks.take_event().map(|p| (0, p)));
             if let Some((request, payload)) = item {
+                state.task_turn = !matches!(payload, Payload::Task(_));
                 state.bytes -= payload.bytes();
                 if matches!(payload, Payload::Finished(_)) {
                     state.outstanding.remove(&request);
@@ -448,7 +521,7 @@ impl Receiver {
                 self.shared.changed.notify_all();
                 return Some(event);
             }
-            if state.worker_done {
+            if state.worker_done && state.tasks.done {
                 if state.shutdown_delivered {
                     return None;
                 }
@@ -465,6 +538,9 @@ impl Receiver {
                 drop(state);
                 if let Some(worker) = self.worker.take() {
                     worker.join().expect("runtime worker panicked");
+                }
+                if let Some(worker) = self.task_worker.take() {
+                    worker.join().expect("task worker panicked");
                 }
                 return Some(event);
             }
@@ -492,6 +568,7 @@ fn execute(
     archive: &mut Option<Archive>,
     command: Command,
     control: &Cancellation,
+    shared: &Arc<Shared>,
 ) -> Result<Payload, &'static str> {
     let fail = |error: xdzip_codec_api::ScanError| match error {
         xdzip_codec_api::ScanError::Io => "source_io",
@@ -503,6 +580,30 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::CheckTarget { session, path } => {
+                let archive = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                archive.source.validate().map_err(|_| "source_changed")?;
+                let id = archive.source.identity().map_err(|_| "source_changed")?;
+                let grant = xdzip_io::Grant::open(Path::new(&path), id).map_err(|e| match e {
+                    xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
+                    _ => "output_io",
+                })?;
+                let leftovers = grant.leftover_count().map_err(|_| "output_io")?;
+                let workspace = grant.workspace(0).map_err(|_| "output_io")?;
+                workspace.cleanup().map_err(|_| "cleanup_error")?;
+                return Ok(Payload::TargetChecked(leftovers as u64));
+            }
+            Command::Extract { session, options } => {
+                let archive = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = archive.extraction_job(options, control)?;
+                return shared.enqueue_task(job).map(Payload::TaskAccepted);
+            }
             Command::Snapshot => {
                 return Ok(Payload::Snapshot(
                     archive.as_ref().map_or(0, |a| a.key().session.get()),

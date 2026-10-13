@@ -1,0 +1,273 @@
+//! Task lane shares only short state locks and the receiver wakeup with metadata commands.
+use super::*;
+use crate::extraction::{self, ConflictPolicy, Control, Snapshot, Status};
+
+#[derive(Default)]
+pub(super) struct Queue {
+    next_id: u64,
+    retained: BTreeMap<u64, usize>,
+    jobs: VecDeque<(u64, extraction::Job, Arc<Control>)>,
+    controls: BTreeMap<u64, Arc<Control>>,
+    latest: BTreeMap<u64, Snapshot>,
+    pub(super) pending: BTreeMap<u64, Snapshot>,
+    pub done: bool,
+}
+impl Queue {
+    pub fn cancel_all(&self) {
+        for c in self.controls.values() {
+            c.cancel();
+        }
+    }
+    pub fn take_event(&mut self) -> Option<Payload> {
+        let (id, snapshot) = self.pending.pop_first()?;
+        if snapshot.status.terminal() {
+            self.controls.remove(&id);
+            self.retained.remove(&id);
+            self.latest.remove(&id);
+        }
+        Some(Payload::Task(snapshot))
+    }
+}
+impl Shared {
+    pub(super) fn enqueue_task(&self, job: extraction::Job) -> Result<u64, &'static str> {
+        let mut state = self.lock();
+        if state.shutdown.is_some() || !state.receiver_alive {
+            return Err("runtime_closed");
+        }
+        let bytes = job.retained_bytes();
+        if state.tasks.controls.len() >= extraction::MAX_TASKS
+            || state.tasks.retained.values().sum::<usize>() + bytes > 64 * 1024 * 1024
+        {
+            return Err("task_busy");
+        }
+        let id = state.tasks.next_id.checked_add(1).ok_or("resource_limit")?;
+        state.tasks.next_id = id;
+        state.tasks.retained.insert(id, bytes);
+        let control = Arc::new(Control::default());
+        let snapshot = extraction::initial(&job, id);
+        state.tasks.controls.insert(id, Arc::clone(&control));
+        state.tasks.latest.insert(id, snapshot.clone());
+        state.tasks.pending.insert(id, snapshot);
+        state.tasks.jobs.push_back((id, job, control));
+        self.changed.notify_all();
+        Ok(id)
+    }
+    fn publish_task(&self, snapshot: Snapshot) {
+        let mut state = self.lock();
+        if !state.receiver_alive {
+            return;
+        }
+        // Fixed maximum 32 tasks and <=16KiB names/target per snapshot; no event-per-chunk growth.
+        state.tasks.latest.insert(snapshot.id, snapshot.clone());
+        state.tasks.pending.insert(snapshot.id, snapshot);
+        self.changed.notify_all();
+    }
+}
+pub(super) fn worker(shared: Arc<Shared>) {
+    loop {
+        let next = {
+            let mut state = shared.lock();
+            loop {
+                if let Some(job) = state.tasks.jobs.pop_front() {
+                    break Some(job);
+                }
+                if state.shutdown.is_some() || !state.receiver_alive {
+                    break None;
+                }
+                state = shared.changed.wait(state).expect("runtime mutex poisoned");
+            }
+        };
+        let Some((id, job, control)) = next else {
+            break;
+        };
+        let mut fallback = extraction::initial(&job, id);
+        if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            extraction::run(job, id, &control, &mut |s| shared.publish_task(s));
+        }))
+        .is_err()
+        {
+            shared.stop(false);
+            fallback.status = Status::Failed;
+            fallback.error = "runtime_unavailable".into();
+            // Unwind drops private stages. A panic is not proof of successful cleanup.
+            fallback.cleanup_warning = true;
+            shared.publish_task(fallback);
+            let mut state = shared.lock();
+            state.failed = true;
+            state.fault_pending = true;
+        }
+    }
+    let mut state = shared.lock();
+    state.tasks.done = true;
+    shared.changed.notify_all();
+}
+impl Client {
+    /// Independent task cancellation; accepted tasks survive closing their source session.
+    pub fn cancel_task(&self, id: u64) -> Result<(), Rejection> {
+        let state = self.0.lock();
+        let Some(control) = state.tasks.controls.get(&id) else {
+            return Err(Rejection::Invalid);
+        };
+        control.cancel();
+        Ok(())
+    }
+    /// Resolve the currently waiting prompt, rejecting stale or duplicate responses.
+    pub fn decide_task(
+        &self,
+        id: u64,
+        prompt: u64,
+        policy: ConflictPolicy,
+        all: bool,
+    ) -> Result<(), Rejection> {
+        let state = self.0.lock();
+        let control = state.tasks.controls.get(&id).ok_or(Rejection::Invalid)?;
+        if control.decide(prompt, policy, all) {
+            Ok(())
+        } else {
+            Err(Rejection::Invalid)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::mpsc;
+    use std::time::{Duration, Instant};
+    fn submit(client: &Client, mut command: impl FnMut() -> Command) -> u64 {
+        let end = Instant::now() + Duration::from_secs(5);
+        loop {
+            match client.submit(command()) {
+                Ok(id) => return id,
+                Err(Rejection::Busy) if Instant::now() < end => thread::yield_now(),
+                other => panic!("{other:?}"),
+            }
+        }
+    }
+    #[test]
+    fn waiting_task_allows_browsing_and_session_close_then_shutdown_wakes_prompt() {
+        let target =
+            std::env::temp_dir().join(format!("xdzip-task-service-{}", std::process::id()));
+        std::fs::create_dir(&target).unwrap();
+        let input =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/stored.zip");
+        let a = Archive::open(&input, &Cancellation::default()).unwrap();
+        std::fs::write(
+            target.join(std::str::from_utf8(&a.rows[0].raw_name).unwrap()),
+            b"keep",
+        )
+        .unwrap();
+        let (client, mut receiver) = start().unwrap();
+        let (tx, rx) = mpsc::channel();
+        let recv = thread::spawn(move || {
+            while let Some(e) = receiver.receive() {
+                tx.send(e).unwrap();
+            }
+        });
+        let open = submit(&client, || Command::Open(input.to_string_lossy().into()));
+        let mut session = 0;
+        loop {
+            let e = rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            if let Payload::Page { session: s, .. } = e.payload {
+                session = s;
+            }
+            if e.request == open && matches!(e.payload, Payload::Finished("")) {
+                break;
+            }
+        }
+        assert_ne!(session, 0);
+        let options = extraction::Options {
+            target: target.to_string_lossy().into(),
+            all: true,
+            selected: vec![],
+            directory: String::new(),
+            create_folder: false,
+            conflict: ConflictPolicy::Ask,
+            allow_high_ratio: false,
+        };
+        let extract = submit(&client, || Command::Extract {
+            session,
+            options: options.clone(),
+        });
+        let mut task = 0;
+        let mut waiting = false;
+        let mut accepted = false;
+        while !waiting || !accepted {
+            let e = rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            match e.payload {
+                Payload::TaskAccepted(id) if e.request == extract => {
+                    task = id;
+                    accepted = true;
+                }
+                Payload::Task(s) if s.status == Status::Waiting => waiting = true,
+                _ => {}
+            }
+        }
+        let close = submit(&client, || Command::CloseSession(session));
+        loop {
+            let e = rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            if e.request == close && matches!(e.payload, Payload::Finished("")) {
+                break;
+            }
+        }
+        // No source session remains, but task cancellation is still independently addressable.
+        assert!(client.cancel_task(task).is_ok());
+        let shutdown = client.shutdown();
+        let mut terminal = 0;
+        let mut last = 0;
+        loop {
+            let e = rx.recv_timeout(Duration::from_secs(5)).unwrap();
+            assert!(e.sequence > last);
+            last = e.sequence;
+            if let Payload::Task(ref s) = e.payload
+                && s.id == task
+                && s.status.terminal()
+            {
+                terminal += 1;
+                assert_eq!(s.status, Status::Cancelled);
+            }
+            if matches!(e.payload, Payload::ShutdownReady) {
+                assert_eq!(e.request, shutdown);
+                break;
+            }
+        }
+        recv.join().unwrap();
+        assert_eq!(terminal, 1);
+        assert_eq!(std::fs::read_dir(&target).unwrap().count(), 1);
+        std::fs::remove_dir_all(target).unwrap();
+    }
+    #[test]
+    fn task_queue_counts_undelivered_terminals_and_command_bytes_are_bounded() {
+        let shared = Shared {
+            state: Mutex::new(State::default()),
+            changed: Condvar::new(),
+        };
+        let input =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/extract/stored.zip");
+        let a = Archive::open(&input, &Cancellation::default()).unwrap();
+        let options = extraction::Options {
+            target: std::env::temp_dir().to_string_lossy().into(),
+            all: true,
+            selected: vec![],
+            directory: String::new(),
+            create_folder: false,
+            conflict: ConflictPolicy::Ask,
+            allow_high_ratio: false,
+        };
+        for _ in 0..extraction::MAX_TASKS {
+            shared
+                .enqueue_task(
+                    a.extraction_job(options.clone(), &Cancellation::default())
+                        .unwrap(),
+                )
+                .unwrap();
+        }
+        assert_eq!(
+            shared.enqueue_task(a.extraction_job(options, &Cancellation::default()).unwrap()),
+            Err("task_busy")
+        );
+        let state = shared.lock();
+        assert_eq!(state.tasks.pending.len(), extraction::MAX_TASKS);
+        assert!(state.tasks.retained.values().sum::<usize>() <= 64 * 1024 * 1024);
+    }
+}

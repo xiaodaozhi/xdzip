@@ -23,6 +23,8 @@ mod ffi {
         Preflight,
         CloseSession,
         Snapshot,
+        Extract,
+        CheckTarget,
     }
     struct MetadataLimits {
         entries: u64,
@@ -42,6 +44,11 @@ mod ffi {
         revision: u64,
         sort: u8,
         selected: Vec<u64>,
+        selectors: Vec<String>,
+        all: bool,
+        create_folder: bool,
+        conflict: u8,
+        allow_high_ratio: bool,
     }
     struct Row {
         id: String,
@@ -70,6 +77,30 @@ mod ffi {
         finding_count: u64,
         unicode_review: bool,
     }
+    struct TaskSnapshot {
+        id: u64,
+        session: u64,
+        status: String,
+        target: String,
+        current: String,
+        files: u64,
+        declared_bytes: u64,
+        decoded_bytes: u64,
+        written_bytes: u64,
+        committed_bytes: u64,
+        committed_files: u64,
+        skipped_files: u64,
+        created_directories: u64,
+        elapsed_ms: u64,
+        error: String,
+        cleanup_warning: bool,
+        leftovers: u64,
+        prompt_id: u64,
+        prompt_name: String,
+        existing_bytes: u64,
+        incoming_bytes: u64,
+        overwrite_allowed: bool,
+    }
     enum EventKind {
         Page,
         Preflight,
@@ -78,6 +109,9 @@ mod ffi {
         ShutdownReady,
         RuntimeFault,
         End,
+        TaskAccepted,
+        TaskUpdate,
+        TargetChecked,
     }
     struct Event {
         kind: EventKind,
@@ -96,6 +130,7 @@ mod ffi {
         navigation_limited: bool,
         report: PreflightReport,
         error: String,
+        task: TaskSnapshot,
     }
     extern "Rust" {
         type Runtime;
@@ -108,6 +143,9 @@ mod ffi {
         fn take_receiver(self: &mut Runtime) -> Result<Box<EventReceiver>>;
         fn submit(self: &CommandClient, command: Command) -> Submission;
         fn cancel(self: &CommandClient, request_id: u64) -> Submission;
+        fn cancel_task(self: &CommandClient, task: u64) -> bool;
+        fn decide_task(self: &CommandClient, task: u64, prompt: u64, policy: u8, all: bool)
+        -> bool;
         fn shutdown(self: &CommandClient) -> u64;
         fn next_event(self: &mut EventReceiver) -> Event;
     }
@@ -191,6 +229,14 @@ impl CommandClient {
             || command.text.len() > 1024
             || command.selected.len() > 128
             || command.sort > 12
+            || command.selectors.len() > xdzip_codec_api::MAX_ENTRIES
+            || command.selectors.iter().any(|s| s.len() > 21)
+            || command
+                .selectors
+                .iter()
+                .map(|s| s.len() + std::mem::size_of::<String>())
+                .sum::<usize>()
+                > 4 * 1024 * 1024
         {
             return admission(Err(Rejection::Invalid));
         }
@@ -220,6 +266,29 @@ impl CommandClient {
                     selected,
                 }
             }
+            ffi::CommandKind::Extract => {
+                let Some(conflict) =
+                    xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
+                else {
+                    return admission(Err(Rejection::Invalid));
+                };
+                Command::Extract {
+                    session: command.session,
+                    options: xdzip_runtime::extraction::Options {
+                        target: command.path,
+                        all: command.all,
+                        selected: command.selectors,
+                        directory: command.directory,
+                        create_folder: command.create_folder,
+                        conflict,
+                        allow_high_ratio: command.allow_high_ratio,
+                    },
+                }
+            }
+            ffi::CommandKind::CheckTarget => Command::CheckTarget {
+                session: command.session,
+                path: command.path,
+            },
             ffi::CommandKind::CloseSession => Command::CloseSession(command.session),
             ffi::CommandKind::Snapshot => Command::Snapshot,
             _ => return admission(Err(Rejection::Invalid)),
@@ -229,6 +298,17 @@ impl CommandClient {
     /// Independent control acknowledgement; does not pretend cancellation has finished.
     pub fn cancel(&self, request_id: u64) -> ffi::Submission {
         admission(self.0.cancel(request_id))
+    }
+    /// Cancel a task without waiting for the data lane or filesystem operations.
+    pub fn cancel_task(&self, task: u64) -> bool {
+        self.0.cancel_task(task).is_ok()
+    }
+    /// Resolve only a current conflict, with explicit overwrite policy.
+    pub fn decide_task(&self, task: u64, prompt: u64, policy: u8, all: bool) -> bool {
+        let Some(policy) = xdzip_runtime::extraction::ConflictPolicy::from_code(policy) else {
+            return false;
+        };
+        self.0.decide_task(task, prompt, policy, all).is_ok()
     }
     /// Idempotently stop admission and request cooperative cancellation.
     pub fn shutdown(&self) -> u64 {
@@ -254,6 +334,7 @@ impl EventReceiver {
             replace_directories: false,
             navigation_limited: false,
             error: String::new(),
+            task: empty_task(),
             report: ffi::PreflightReport {
                 entries: 0,
                 declared_bytes: String::new(),
@@ -345,6 +426,18 @@ impl EventReceiver {
                     unicode_review: report.unicode_review,
                 };
             }
+            service::Payload::TaskAccepted(id) => {
+                event.kind = ffi::EventKind::TaskAccepted;
+                event.task.id = id;
+            }
+            service::Payload::TargetChecked(leftovers) => {
+                event.kind = ffi::EventKind::TargetChecked;
+                event.total = leftovers;
+            }
+            service::Payload::Task(task) => {
+                event.kind = ffi::EventKind::TaskUpdate;
+                event.task = task_snapshot(task);
+            }
             service::Payload::Snapshot(session) => {
                 event.kind = ffi::EventKind::Snapshot;
                 event.session = session;
@@ -360,6 +453,60 @@ impl EventReceiver {
             }
         }
         event
+    }
+}
+
+fn empty_task() -> ffi::TaskSnapshot {
+    ffi::TaskSnapshot {
+        id: 0,
+        session: 0,
+        status: String::new(),
+        target: String::new(),
+        current: String::new(),
+        files: 0,
+        declared_bytes: 0,
+        decoded_bytes: 0,
+        written_bytes: 0,
+        committed_bytes: 0,
+        committed_files: 0,
+        skipped_files: 0,
+        created_directories: 0,
+        elapsed_ms: 0,
+        error: String::new(),
+        cleanup_warning: false,
+        leftovers: 0,
+        prompt_id: 0,
+        prompt_name: String::new(),
+        existing_bytes: 0,
+        incoming_bytes: 0,
+        overwrite_allowed: false,
+    }
+}
+fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
+    let prompt = s.prompt;
+    ffi::TaskSnapshot {
+        id: s.id,
+        session: s.session,
+        status: s.status.code().into(),
+        target: s.target,
+        current: s.current,
+        files: s.files,
+        declared_bytes: s.declared_bytes,
+        decoded_bytes: s.decoded_bytes,
+        written_bytes: s.written_bytes,
+        committed_bytes: s.committed_bytes,
+        committed_files: s.committed_files,
+        skipped_files: s.skipped_files,
+        created_directories: s.created_directories,
+        elapsed_ms: s.elapsed_ms,
+        error: s.error,
+        cleanup_warning: s.cleanup_warning,
+        leftovers: s.leftovers,
+        prompt_id: prompt.as_ref().map_or(0, |p| p.id),
+        prompt_name: prompt.as_ref().map_or(String::new(), |p| p.name.clone()),
+        existing_bytes: prompt.as_ref().map_or(0, |p| p.existing_bytes),
+        incoming_bytes: prompt.as_ref().map_or(0, |p| p.incoming_bytes),
+        overwrite_allowed: prompt.as_ref().is_some_and(|p| p.overwrite_allowed),
     }
 }
 
@@ -395,6 +542,11 @@ mod tests {
             offset: 0,
             sort: 0,
             selected: Vec::new(),
+            selectors: Vec::new(),
+            all: false,
+            create_folder: false,
+            conflict: 0,
+            allow_high_ratio: false,
         };
         assert!(client.submit(invalid).status == ffi::Admission::Invalid);
         let shutdown = client.shutdown();

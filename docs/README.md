@@ -49,3 +49,5 @@
 需求编号以 design/01 为准；领域与任务以 design/03、08 为准；桥接以 design/05 为准；外部格式协议以 design/06 为草案权威；视觉以已确认稿及 tokens 为准。新增工程文档补充执行细节，不另定义相冲突的协议或安全策略。
 
 所有“计划/候选/待验证”必须保持标记，不能因文档进入主分支就改写为已实现。设计调整同时更新受影响文档与需求追踪矩阵；重大变化追加 ADR。HTML 为派生阅读材料，修改 Markdown 后重新构建。
+
+M3 开发中：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录](qa/m3-acceptance.md)。

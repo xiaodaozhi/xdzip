@@ -1,0 +1,204 @@
+//! Safe ZIP task contracts. Plans are frozen before granting any output authority.
+mod control;
+mod execute;
+mod plan;
+#[cfg(test)]
+mod tests;
+use crate::Archive;
+pub use control::Control;
+pub(crate) use execute::{initial, run};
+pub(crate) use plan::Job;
+use std::sync::Arc;
+use xdzip_codec_api::Cancellation;
+
+/// Default hard limits meter actual bytes independently of archive declarations.
+pub const MAX_FILE_BYTES: u64 = 8 * 1024 * 1024 * 1024;
+/// Per-task decompressed byte ceiling, including failed or repeated decoding.
+pub const MAX_TASK_BYTES: u64 = 20 * 1024 * 1024 * 1024;
+/// Maximum accepted tasks, including undelivered terminal snapshots.
+pub const MAX_TASKS: usize = 32;
+
+/// Existing regular-file policy. Links and source archives remain protected.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ConflictPolicy {
+    /// Ask with a fresh prompt identity and an inspected existing-file version.
+    Ask,
+    /// Leave the existing destination intact.
+    Skip,
+    /// Publish to a fresh portable suffixed name.
+    Rename,
+    /// Replace the inspected ordinary file by a whole-file rename.
+    Overwrite,
+}
+impl ConflictPolicy {
+    /// Stable UI codes; unknown values cannot become an overwrite decision.
+    pub fn from_code(value: u8) -> Option<Self> {
+        Some(match value {
+            0 => Self::Ask,
+            1 => Self::Skip,
+            2 => Self::Rename,
+            3 => Self::Overwrite,
+            _ => return None,
+        })
+    }
+}
+/// Explicit host-selected extraction intent. Archive names never supply the target root.
+#[derive(Clone, Debug)]
+pub struct Options {
+    /// Absolute existing destination directory selected in the host UI.
+    pub target: String,
+    /// Include every physical entry, independent of the current view.
+    pub all: bool,
+    /// Physical decimal IDs or d-prefixed navigation IDs, at most 100,000.
+    pub selected: Vec<String>,
+    /// Safe directory ID whose prefix is removed for selected-file output.
+    pub directory: String,
+    /// Derive one archive-named child grant under the selected directory.
+    pub create_folder: bool,
+    /// Initial ordinary-file conflict policy.
+    pub conflict: ConflictPolicy,
+    /// Permit declared ratios above 1000:1, retaining all hard byte limits.
+    pub allow_high_ratio: bool,
+}
+impl Options {
+    pub(crate) fn bounded(&self) -> bool {
+        !self.target.is_empty()
+            && self.target.len() <= 4096
+            && !self.target.contains('\0')
+            && std::path::Path::new(&self.target).is_absolute()
+            && self.directory.len() <= 21
+            && self.selected.len() <= xdzip_codec_api::MAX_ENTRIES
+            && self
+                .selected
+                .iter()
+                .all(|id| !id.is_empty() && id.len() <= 21)
+            && (self.all || !self.selected.is_empty())
+    }
+    pub(crate) fn bytes(&self) -> usize {
+        self.target.len()
+            + self.directory.len()
+            + self
+                .selected
+                .iter()
+                .map(|id| id.len() + std::mem::size_of::<String>())
+                .sum::<usize>()
+    }
+}
+/// Execution state; terminal states are published only after staging cleanup.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Status {
+    /// Accepted and waiting for the sole heavy worker.
+    Queued,
+    /// Acquiring target capabilities and format locators.
+    Preparing,
+    /// Decoding a verified admitted file.
+    Running,
+    /// Awaiting an explicit conflict response.
+    Waiting,
+    /// Publishing one complete file.
+    Committing,
+    /// Cancellation was requested; it has not yet finished.
+    Cancelling,
+    /// Closing and removing only known private staging objects.
+    Cleaning,
+    /// Every admitted file completed or was explicitly skipped.
+    Succeeded,
+    /// A stable error stopped execution; earlier committed files remain.
+    Failed,
+    /// Cancellation completed; earlier committed files remain.
+    Cancelled,
+}
+impl Status {
+    /// Stable bridge label, independent of translated UI text.
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::Queued => "queued",
+            Self::Preparing => "preparing",
+            Self::Running => "running",
+            Self::Waiting => "waiting",
+            Self::Committing => "committing",
+            Self::Cancelling => "cancelling",
+            Self::Cleaning => "cleaning",
+            Self::Succeeded => "succeeded",
+            Self::Failed => "failed",
+            Self::Cancelled => "cancelled",
+        }
+    }
+    /// Whether no more task work or prompts will be produced.
+    pub fn terminal(self) -> bool {
+        matches!(self, Self::Succeeded | Self::Failed | Self::Cancelled)
+    }
+}
+/// Versioned conflict prompt. It grants no filesystem access to the GUI.
+#[derive(Clone, Debug)]
+pub struct Prompt {
+    /// Fresh per-task response identity, never reused.
+    pub id: u64,
+    /// Safe escaped relative name.
+    pub name: String,
+    /// Existing ordinary-file bytes.
+    pub existing_bytes: u64,
+    /// Incoming declared bytes, not yet verified.
+    pub incoming_bytes: u64,
+    /// False when replacing would overwrite the selected archive.
+    pub overwrite_allowed: bool,
+}
+/// Bounded replaceable display snapshot. Counters describe actual work, not a timer simulation.
+#[derive(Clone, Debug)]
+pub struct Snapshot {
+    /// Opaque task identity across session changes.
+    pub id: u64,
+    /// Original archive session; source failures cannot invalidate a different session.
+    pub session: u64,
+    /// Current execution status.
+    pub status: Status,
+    /// Display-only output location.
+    pub target: String,
+    /// Escaped current relative filename.
+    pub current: String,
+    /// Declared admitted file count, excluding directories.
+    pub files: u64,
+    /// Declared admitted bytes, not a write authority.
+    pub declared_bytes: u64,
+    /// Actual decoded bytes accepted by the host meter.
+    pub decoded_bytes: u64,
+    /// Actual bytes successfully written into private stages.
+    pub written_bytes: u64,
+    /// Actual bytes in successfully published complete files.
+    pub committed_bytes: u64,
+    /// Published regular files.
+    pub committed_files: u64,
+    /// Explicitly skipped existing regular files.
+    pub skipped_files: u64,
+    /// Directories actually created; cancellation does not roll them back.
+    pub created_directories: u64,
+    /// Monotonic wall-clock elapsed milliseconds.
+    pub elapsed_ms: u64,
+    /// Stable error code, without OS text or arbitrary archive strings.
+    pub error: String,
+    /// Cleanup could not remove all known staging objects.
+    pub cleanup_warning: bool,
+    /// Possible previous private workspaces found at the target; never auto-deleted.
+    pub leftovers: u64,
+    /// Present only for the latest outstanding conflict.
+    pub prompt: Option<Prompt>,
+}
+impl Archive {
+    /// Freeze selectors and input identity without creating a destination object.
+    pub(crate) fn extraction_job(
+        &self,
+        options: Options,
+        cancel: &Cancellation,
+    ) -> Result<Job, &'static str> {
+        self.source.validate().map_err(|_| "source_changed")?;
+        let source = self.source.fork().map_err(|_| "source_changed")?;
+        let planned = plan::prepare(self, &options, cancel)?;
+        Ok(Job {
+            source,
+            rows: Arc::clone(&self.rows),
+            planned,
+            options,
+            session: self.key.session.get(),
+        })
+    }
+}

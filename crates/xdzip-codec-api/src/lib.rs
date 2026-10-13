@@ -1,4 +1,5 @@
-//! Internal metadata-only codec contract. No output path or extraction capability exists.
+//! Internal format contracts. Payload adapters receive input and a host-owned sink, never paths.
+pub mod payload;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};
 use xdzip_domain::identity::EntryId;
@@ -55,7 +56,7 @@ impl Default for ScanLimits {
 }
 
 /// Owned metadata of a physical record. Declared sizes are not verified payload sizes.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Entry {
     /// Stable within this immutable scan, independent of the name and view row.
     pub id: EntryId,

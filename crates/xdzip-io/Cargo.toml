@@ -1,0 +1,19 @@
+[package]
+name = "xdzip-io"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[dependencies]
+xdzip-domain = { path = "../xdzip-domain" }
+cap-std = { version = "=4.0.3", default-features = false }
+cap-fs-ext = { version = "=4.0.3", default-features = false, features = ["std"] }
+getrandom = "=0.4.2"
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "=1.1.5", default-features = false, features = ["std", "process"] }
+[target.'cfg(windows)'.dependencies]
+winapi-util = { version = "=0.1.11", default-features = false }
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_Security_Authorization", "Win32_System_Threading", "Win32_System_SystemServices", "Win32_Storage_FileSystem"] }
+[lints]
+workspace = true

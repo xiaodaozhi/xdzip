@@ -1,5 +1,6 @@
 //! Bounded central-directory scanning. No payload decoding, CRC claim or extraction.
 mod admission;
+mod payload;
 use std::io::{Read, Seek, SeekFrom};
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ReadSource, ScanError, ScanLimits};
 use xdzip_domain::identity::EntryId;
