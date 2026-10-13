@@ -78,7 +78,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let extract_ms = start.elapsed().as_secs_f64() * 1000.0;
     if result.status != xdzip_runtime::extraction::Status::Succeeded || result.cleanup_warning {
-        return Err("extraction did not finish cleanly".into());
+        // Stable task codes and counters diagnose native failures without paths.
+        return Err(format!(
+            "extraction: status={:?} error={} cleanup_warning={} committed_files={} committed_bytes={} created_directories={}",
+            result.status, result.error, result.cleanup_warning, result.committed_files,
+            result.committed_bytes, result.created_directories
+        ).into());
     }
     let shutdown = client.shutdown();
     while let Some(event) = receiver.receive() {
