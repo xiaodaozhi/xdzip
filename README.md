@@ -18,7 +18,7 @@
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。
 
-开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、本页选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务；尚不执行压缩或解压。
+开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务；尚不执行压缩或解压。
 
 ## 产品方向
 

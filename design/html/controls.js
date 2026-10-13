@@ -65,14 +65,16 @@ window.XdzipControls = (() => {
         if (restoreFocus) restoreOrigin(previous.origin);
         previous.onClose?.();
     }
-    function position(element, anchor, point, submenu = false) {
+    function position(element, anchor, point, submenu = false, placement = "bottom-start") {
         const inset = tokens.size.menuViewportInset * sourceScale();
         const gap = tokens.size.menuGap * sourceScale();
         element.style.maxHeight = `${Math.max(80, innerHeight - inset * 2)}px`;
         element.style.maxWidth = `${Math.max(120, innerWidth - inset * 2)}px`;
         const box = element.getBoundingClientRect();
-        let x = point ? point.x : submenu ? anchor.right + gap : anchor.left;
-        let y = point ? point.y : submenu ? anchor.top : anchor.bottom + gap;
+        let x = point ? point.x : submenu ? anchor.right + gap : placement.endsWith("end") ? anchor.right - box.width : anchor.left;
+        let y = point ? point.y : submenu ? anchor.top : placement.startsWith("top") ? anchor.top - box.height - gap : anchor.bottom + gap;
+        if (!point && !submenu && placement.startsWith("top") && y < inset)
+            y = anchor.bottom + gap;
         if (x + box.width > innerWidth - inset)
             x = submenu
                 ? anchor.left - box.width - gap
@@ -281,6 +283,7 @@ window.XdzipControls = (() => {
         label,
         point,
         origin = trigger,
+        placement = "bottom-start",
         owner = document.body,
         id,
         onClose,
@@ -307,7 +310,7 @@ window.XdzipControls = (() => {
             trigger.setAttribute("aria-expanded", "true");
             trigger.setAttribute("aria-controls", level.element.id);
         }
-        position(level.element, trigger?.getBoundingClientRect(), point);
+        position(level.element, trigger?.getBoundingClientRect(), point, false, placement);
         focusable(level)[0]?.focus({ preventScroll: true });
     }
     function queueTooltip(target) {

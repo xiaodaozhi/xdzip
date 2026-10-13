@@ -30,3 +30,5 @@
 本地验证：5 组 CTest、Rust workspace 测试、Clippy、729 项独立主界面检查及 72 项共享组件检查通过；DPR 1.25／2 同时检查主界面和此次交互修订。截图位于[交互验收图](qt-interaction-fixes/index.html)。
 
 macOS ARM64 原生验证：[构建 38371795584](https://github.com/xiaodaozhi/xdzip/actions/runs/38371795584)，三个 AppKit 按钮中心均为 `24.00`，与 48 高标题栏中心一致；按钮及祖先容器裁切检查通过。该证据来自 macOS 14 CI，未代替最新版 macOS 真机验收。
+
+HTML 设计稿的对应修订、截图及真实浏览器缩放检查见[HTML／Qt 同步验收](html-qt-interaction-sync.md)。

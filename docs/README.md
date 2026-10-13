@@ -10,6 +10,7 @@
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
 | 素材修正 | [新品牌与遗漏素材](qa/brand-and-assets.md)、[实际图标与页面预览](qa/brand-and-assets/index.html)、[统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
+| HTML／Qt 交互同步 | [18 项修订的对应状态及实际缩放验收](qa/html-qt-interaction-sync.md) |
 | Qt 主窗口交互修订 | [18 项问题的修正与验收](qa/qt-interaction-fixes.md) |
 | 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json)、[100%／125% 与高 DPR 实测](qa/ui-density/README.md) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |

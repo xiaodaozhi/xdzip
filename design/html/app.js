@@ -346,7 +346,7 @@ function renderTree() {
     const counts = (id) =>
         files.filter((f) => (id ? f.parent === id : true)).length;
     $("#tree").innerHTML =
-        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>全部文件</span><small>${files.length}</small></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name}</span><small>${counts(f.id)}</small></button>`).join("")}`;
+        `<button class="tree-item ${!state.path ? "active" : ""}" data-path="">${icon("layers")}<span>全部文件</span></button>${folders.map((f) => `<button class="tree-item child ${state.path === f.id ? "active" : ""}" data-path="${f.id}">${icon("chevronRight")}${icon("folder")}<span>${f.name}</span></button>`).join("")}`;
     $("#tree")
         .querySelectorAll("button")
         .forEach((b) => (b.onclick = () => choosePath(b.dataset.path)));

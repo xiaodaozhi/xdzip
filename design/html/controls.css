@@ -113,8 +113,8 @@
     background: color-mix(in srgb, var(--accent) 82%, black);
 }
 .button.primary:disabled {
-    background: color-mix(in srgb, var(--accent) 32%, var(--surface));
-    color: var(--secondary);
+    background: var(--accent);
+    color: white;
     opacity: 1;
 }
 .button:focus-visible,
@@ -261,7 +261,8 @@
     padding-left: calc(
         (12px + var(--tree-depth) * 16px) * var(--tree-source-factor)
     );
-    border-radius: var(--tree-selection-radius);
+    border-radius: 0 var(--tree-selection-radius) var(--tree-selection-radius) 0;
+    padding-right: var(--main-tree-trailing-inset);
     gap: var(--tree-icon-label-gap);
     font-size: var(--tree-body-font-size);
     line-height: 1.6;
@@ -274,24 +275,24 @@
 .tree-row.active {
     background: var(--tree-selection-color);
 }
-.tree-row.active::before {
+.tree-row.active::before,
+.tree-row:focus-visible::before {
     content: "";
     position: absolute;
-    top: 3px;
-    bottom: 3px;
-    left: 0;
-    width: calc(3px * var(--tree-source-factor));
+    top: 0;
+    bottom: 0;
+    left: var(--tree-scroll-offset, 0px);
+    width: var(--tree-selection-indicator-width);
     background: var(--accent);
-    border-radius: 3px;
+    border-radius: 0;
 }
 .tree-row:focus-visible {
-    outline: var(--ui-focus-width) solid var(--accent);
-    outline-offset: -2px;
+    outline: none;
 }
 .tree-row .tree-label {
     min-width: 0;
     flex: 1;
-    max-width: calc(160px * var(--tree-source-factor));
+    flex-shrink: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -334,31 +335,10 @@
     opacity: 1;
     cursor: default;
 }
-.tree-count {
-    border-radius: 0 var(--tree-selection-radius) var(--tree-selection-radius) 0;
-    position: sticky;
-    right: 0;
-    min-width: calc(56px * var(--tree-source-factor));
-    height: 100%;
-    margin-left: auto;
-    padding-right: calc(8px * var(--tree-source-factor));
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: calc(4px * var(--tree-source-factor));
-    background: var(--tree-surface-color);
-    font-size: var(--tree-count-font-size);
-    color: var(--secondary);
-    font-variant-numeric: tabular-nums;
-}
-.tree-row:hover .tree-count {
-    background: var(--tree-hover-color);
-}
-.tree-row.active .tree-count {
-    background: var(--tree-selection-color);
-}
 .tree-branch-marker {
     display: grid;
+    margin-left: auto;
+    flex-shrink: 0;
     width: var(--tree-disclosure-hit-width);
     height: var(--tree-disclosure-hit-min-height);
 }

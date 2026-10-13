@@ -356,7 +356,8 @@
           30,
           26
         ],
-        "mode": "blue"
+        "mode": "blue",
+        "interaction_revision": "qt-interaction-sync"
       },
       {
         "name": "网格模式图标",
@@ -374,7 +375,8 @@
           188,
           35,
           29
-        ]
+        ],
+        "interaction_revision": "qt-interaction-sync"
       },
       {
         "name": "预览关闭图标",
@@ -396,7 +398,8 @@
           194.5,
           14,
           14
-        ]
+        ],
+        "interaction_revision": "qt-interaction-sync"
       },
       {
         "name": "预览解压图标",
@@ -2478,7 +2481,8 @@
         "source": "docs/visual/directory-tree.json",
         "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
         "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
-      }
+      },
+      "qt-interaction-sync": "2026-10-13：按 layout-scale.json 同步 Qt 交互修订：固定 28 方形按钮、居中图标与预览关闭按钮；原稿像素和旧测量保留，当前几何由独立逻辑规范核验。"
     },
     "dom_rect_revisions": {
       ".photo-preview": {
@@ -2573,15 +2577,15 @@
       "name": ".sidebar",
       "expected": [
         20,
-        167,
+        182.5625,
         292,
-        748
+        732.4375
       ],
       "actual": [
         21,
-        167,
+        182.5625,
         291,
-        748
+        732.4375
       ],
       "maximum_delta_px": 1,
       "tolerance_px": 2,
@@ -2592,15 +2596,15 @@
       "name": ".files-pane",
       "expected": [
         312,
-        167,
+        182.5625,
         866,
-        748
+        732.4375
       ],
       "actual": [
         312,
-        167,
+        182.5625,
         865,
-        748
+        732.4375
       ],
       "maximum_delta_px": 1,
       "tolerance_px": 2,
@@ -2611,15 +2615,15 @@
       "name": ".inspector",
       "expected": [
         1178,
-        167,
+        182.5625,
         390,
-        748
+        732.4375
       ],
       "actual": [
         1177,
-        167,
+        182.5625,
         390,
-        748
+        732.4375
       ],
       "maximum_delta_px": 1,
       "tolerance_px": 2,
@@ -2630,13 +2634,13 @@
       "name": ".format-badge",
       "expected": [
         41,
-        265,
+        280.5625,
         49,
         28
       ],
       "actual": [
         41,
-        265,
+        280.5625,
         49,
         28
       ],
@@ -2668,13 +2672,13 @@
       "name": ".location",
       "expected": [
         312,
-        167,
+        182.5625,
         866,
         69
       ],
       "actual": [
         312,
-        167,
+        182.5625,
         865,
         69
       ],
@@ -2683,7 +2687,7 @@
       "passed": true
     },
     {
-      "kind": "DOM rect",
+      "kind": "source rect (design revised)",
       "name": ".file-tools .view-active",
       "expected": [
         1000,
@@ -2692,12 +2696,30 @@
         40
       ],
       "actual": [
-        1000,
-        181.5,
-        47,
-        40
+        1004.671875,
+        195.890625,
+        42.328125,
+        42.328125
       ],
-      "maximum_delta_px": 0.5,
+      "review_only": true,
+      "design_revision": "qt-interaction-sync"
+    },
+    {
+      "kind": "logical interaction rect",
+      "name": ".file-tools .view-active",
+      "expected": [
+        1005.665625,
+        195.8984375,
+        42.328125,
+        42.328125
+      ],
+      "actual": [
+        1004.671875,
+        195.890625,
+        42.328125,
+        42.328125
+      ],
+      "maximum_delta_px": 0.9937499999999773,
       "tolerance_px": 2,
       "passed": true
     },
@@ -2706,13 +2728,13 @@
       "name": "thead",
       "expected": [
         312,
-        236,
+        251.5625,
         866,
         51
       ],
       "actual": [
         312,
-        236,
+        251.5625,
         865,
         51
       ],
@@ -2725,13 +2747,13 @@
       "name": "thead .check-col input",
       "expected": [
         339,
-        250,
+        265.5625,
         24,
         23
       ],
       "actual": [
         339,
-        250.828125,
+        266.390625,
         24,
         24
       ],
@@ -2744,13 +2766,13 @@
       "name": "th:nth-child(3)",
       "expected": [
         642,
-        236,
+        251.5625,
         118,
         51
       ],
       "actual": [
         642,
-        236,
+        251.5625,
         118,
         51
       ],
@@ -2763,13 +2785,13 @@
       "name": "th:nth-child(4)",
       "expected": [
         760,
-        236,
+        251.5625,
         114,
         51
       ],
       "actual": [
         760,
-        236,
+        251.5625,
         114,
         51
       ],
@@ -2782,13 +2804,13 @@
       "name": "th.type-col",
       "expected": [
         874,
-        236,
+        251.5625,
         131,
         51
       ],
       "actual": [
         874,
-        236,
+        251.5625,
         131,
         51
       ],
@@ -2801,13 +2823,13 @@
       "name": "th.date-col",
       "expected": [
         1005,
-        236,
+        251.5625,
         173,
         51
       ],
       "actual": [
         1005,
-        236,
+        251.5625,
         172,
         51
       ],
@@ -2820,13 +2842,13 @@
       "name": "tr[data-id=\"photos\"] input",
       "expected": [
         340,
-        309,
+        324.5625,
         24,
         24
       ],
       "actual": [
         339,
-        307.5,
+        323.0625,
         24,
         24
       ],
@@ -2839,13 +2861,13 @@
       "name": "tr[data-id=\"lake\"] input",
       "expected": [
         339,
-        504,
+        519.5625,
         25,
         25
       ],
       "actual": [
         339,
-        503.75,
+        519.3125,
         24,
         24
       ],
@@ -2858,13 +2880,13 @@
       "name": "tr[data-id=\"lake\"] .entry-photo",
       "expected": [
         397,
-        495,
+        510.5625,
         45,
         45
       ],
       "actual": [
         397,
-        493.75,
+        509.3125,
         44,
         44
       ],
@@ -2883,7 +2905,7 @@
       ],
       "actual": [
         1198,
-        236,
+        251.5625,
         351,
         277
       ],
@@ -2895,13 +2917,13 @@
       "name": ".photo-preview",
       "expected": [
         1198,
-        236,
+        251.5625,
         351,
         277
       ],
       "actual": [
         1198,
-        236,
+        251.5625,
         351,
         277
       ],
@@ -2920,7 +2942,7 @@
       ],
       "actual": [
         1201,
-        810,
+        825.5625,
         347,
         57
       ],
@@ -2932,13 +2954,13 @@
       "name": "#inspector-extract",
       "expected": [
         1201,
-        810,
+        825.5625,
         347,
         57
       ],
       "actual": [
         1201,
-        810,
+        825.5625,
         347,
         57
       ],
@@ -2976,7 +2998,7 @@
       ],
       "actual": [
         31,
-        336,
+        351.5625,
         270,
         48.375
       ],
@@ -2988,13 +3010,13 @@
       "name": "#tree>.tree-root",
       "expected": [
         31,
-        336,
+        351.5625,
         270,
         48.375
       ],
       "actual": [
         31,
-        336,
+        351.5625,
         270,
         48.375
       ],
@@ -3010,24 +3032,24 @@
         206
       ],
       "actual": [
-        1536.0,
-        201.5
+        1527.8359375,
+        217.0546875
       ],
       "review_only": true,
-      "design_revision": "pane-header-alignment"
+      "design_revision": "qt-interaction-sync"
     },
     {
-      "kind": "revised design center",
+      "kind": "logical interaction center",
       "name": ".inspector-head .icon-button",
       "expected": [
-        1536,
-        201.5
+        1528.8359375,
+        217.0625
       ],
       "actual": [
-        1536.0,
-        201.5
+        1527.8359375,
+        217.0546875
       ],
-      "maximum_delta_px": 0.0,
+      "maximum_delta_px": 1.0,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3036,13 +3058,13 @@
       "name": "根目录文件夹",
       "expected": [
         55,
-        348,
+        363.5625,
         36,
         29
       ],
       "actual": [
         47,
-        350,
+        366,
         23,
         20
       ],
@@ -3056,13 +3078,13 @@
       "name": "根目录文件夹",
       "expected": [
         46.5203125,
-        350.4453125,
+        366.0078125,
         22.171875,
         19.484375
       ],
       "actual": [
         47,
-        350,
+        366,
         23,
         20
       ],
@@ -3075,13 +3097,13 @@
       "name": "照片目录文件夹",
       "expected": [
         80,
-        406,
+        421.5625,
         34,
         31
       ],
       "actual": [
         76,
-        403,
+        420,
         23,
         20
       ],
@@ -3095,13 +3117,13 @@
       "name": "照片目录文件夹",
       "expected": [
         75.5453125,
-        403.6578125,
+        419.2203125,
         22.171875,
         19.484375
       ],
       "actual": [
         76,
-        403,
+        420,
         23,
         20
       ],
@@ -3114,18 +3136,18 @@
       "name": "文档目录文件夹",
       "expected": [
         80,
-        467,
+        482.5625,
         35,
         30
       ],
       "actual": [
         76,
-        458,
+        468,
         23,
-        51
+        20
       ],
       "review_only": true,
-      "maximum_delta_px": 21,
+      "maximum_delta_px": 14.5625,
       "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
@@ -3134,13 +3156,13 @@
       "name": "文档目录文件夹",
       "expected": [
         75.5453125,
-        452.0328125,
+        467.5953125,
         22.171875,
         19.484375
       ],
       "actual": [
         76,
-        452,
+        468,
         23,
         20
       ],
@@ -3153,13 +3175,18 @@
       "name": "地图目录文件夹",
       "expected": [
         80,
-        530,
+        545.5625,
         35,
         30
       ],
-      "actual": null,
+      "actual": [
+        76,
+        520,
+        23,
+        17
+      ],
       "review_only": true,
-      "maximum_delta_px": null,
+      "maximum_delta_px": 25.5625,
       "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
@@ -3168,17 +3195,17 @@
       "name": "地图目录文件夹",
       "expected": [
         75.5453125,
-        500.4078125,
+        515.9703125,
         22.171875,
         19.484375
       ],
       "actual": [
         76,
-        500,
+        517,
         23,
         20
       ],
-      "maximum_delta_px": 0.828125,
+      "maximum_delta_px": 1.0296875000000227,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3187,18 +3214,18 @@
       "name": "首个目录展开箭头",
       "expected": [
         51,
-        415,
+        430.5625,
         8,
         13
       ],
       "actual": [
         56,
-        410,
+        424,
         7,
-        10
+        11
       ],
       "review_only": true,
-      "maximum_delta_px": 5,
+      "maximum_delta_px": 6.5625,
       "design_revision": "directory-tree-B",
       "original_tolerance_px": 2
     },
@@ -3207,17 +3234,17 @@
       "name": "首个目录展开箭头",
       "expected": [
         56.396875,
-        407.05078125,
+        422.61328125,
         7.25625,
         12.6984375
       ],
       "actual": [
         56,
-        408,
+        424,
         7,
         12
       ],
-      "maximum_delta_px": 0.94921875,
+      "maximum_delta_px": 1.38671875,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3226,15 +3253,15 @@
       "name": "首行文件夹",
       "expected": [
         400,
-        306,
+        321.5625,
         35,
         31
       ],
       "actual": [
         397,
-        301,
+        316,
         44,
-        38
+        30
       ],
       "review_only": true,
       "maximum_delta_px": 9,
@@ -3246,51 +3273,51 @@
       "name": "首行文件夹",
       "expected": [
         397,
-        300.642858,
+        316.205358,
         44,
         37.714284
       ],
       "actual": [
         397,
-        301,
+        316,
         44,
         38
       ],
-      "maximum_delta_px": 0.3571420000000103,
+      "maximum_delta_px": 0.28571600000000075,
       "tolerance_px": 2,
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "列表模式图标",
       "expected": [
         1012,
-        195,
+        210.5625,
         21,
         15
       ],
       "actual": [
-        1013,
-        195,
-        19,
+        1017,
+        209,
+        18,
         16
       ],
-      "maximum_delta_px": 2,
-      "tolerance_px": 2,
-      "passed": true
+      "review_only": true,
+      "design_revision": "qt-interaction-sync",
+      "validation": "check-html-density.py: logical slot dimensions and icon centers"
     },
     {
       "kind": "painted ink",
       "name": "网格模式图标",
       "expected": [
         1069,
-        193,
+        208.5625,
         18,
         19
       ],
       "actual": [
-        1069,
-        192,
+        1068,
+        207,
         20,
         20
       ],
@@ -3299,80 +3326,60 @@
       "passed": true
     },
     {
-      "kind": "painted ink",
+      "kind": "source ink (design revised)",
       "name": "排序按钮图标",
       "expected": [
         1116,
-        195,
+        210.5625,
         30,
         16
       ],
       "actual": [
-        1116,
-        195,
+        1115,
+        206,
         29,
-        16
+        22
       ],
-      "maximum_delta_px": 1,
-      "tolerance_px": 2,
-      "passed": true
+      "review_only": true,
+      "design_revision": "qt-interaction-sync",
+      "validation": "check-html-density.py: logical slot dimensions and icon centers"
     },
     {
       "kind": "source ink (design revised)",
       "name": "预览关闭图标",
       "expected": [
         1529,
-        199,
+        214.5625,
         14,
         14
       ],
       "actual": [
-        1529,
-        195,
-        14,
+        1522,
+        210,
+        13,
         14
       ],
       "review_only": true,
-      "maximum_delta_px": 4,
-      "design_revision": "pane-header-alignment",
-      "original_tolerance_px": 2
-    },
-    {
-      "kind": "revised design ink",
-      "name": "预览关闭图标",
-      "expected": [
-        1529,
-        194.5,
-        14,
-        14
-      ],
-      "actual": [
-        1529,
-        195,
-        14,
-        14
-      ],
-      "maximum_delta_px": 0.5,
-      "tolerance_px": 2,
-      "passed": true
+      "design_revision": "qt-interaction-sync",
+      "validation": "check-html-density.py: logical slot dimensions and icon centers"
     },
     {
       "kind": "source ink (design revised)",
       "name": "预览解压图标",
       "expected": [
         1306,
-        832,
+        847.5625,
         23,
         23
       ],
       "actual": [
         1307,
-        827,
+        842,
         23,
-        24
+        20
       ],
       "review_only": true,
-      "maximum_delta_px": 5,
+      "maximum_delta_px": 5.5625,
       "design_revision": "preview-table-top-alignment",
       "original_tolerance_px": 2
     },
@@ -3381,13 +3388,13 @@
       "name": "预览解压图标",
       "expected": [
         1306,
-        827,
+        842.5625,
         23,
         23
       ],
       "actual": [
         1307,
-        827,
+        842,
         23,
         24
       ],
@@ -3406,7 +3413,7 @@
       ],
       "actual": [
         737,
-        929,
+        930,
         26,
         26
       ],
@@ -3425,7 +3432,7 @@
       ],
       "actual": [
         1408,
-        933,
+        934,
         22,
         18
       ],
@@ -3444,11 +3451,11 @@
       ],
       "actual": [
         1525,
-        939,
+        940,
         12,
         6
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 2,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3457,13 +3464,13 @@
       "name": "正文内缩分隔线",
       "expected": [
         329,
-        617,
+        632.5625,
         832,
         2
       ],
       "actual": [
         329,
-        616,
+        632,
         831,
         1
       ],
@@ -3476,17 +3483,17 @@
       "name": "PDF红色轮廓",
       "expected": [
         401,
-        630,
+        645.5625,
         37,
         43
       ],
       "actual": [
         400,
-        629,
+        644,
         38,
         44
       ],
-      "maximum_delta_px": 1,
+      "maximum_delta_px": 1.5625,
       "tolerance_px": 2,
       "passed": true
     },
@@ -3495,13 +3502,13 @@
       "name": "文本文件轮廓",
       "expected": [
         402,
-        697,
+        712.5625,
         33,
         43
       ],
       "actual": [
         402,
-        696,
+        712,
         34,
         44
       ],
@@ -3514,13 +3521,13 @@
       "name": "GPX纸张轮廓",
       "expected": [
         399,
-        764,
+        779.5625,
         41,
         44
       ],
       "actual": [
         399,
-        764,
+        779,
         40,
         44
       ],
@@ -3533,13 +3540,13 @@
       "name": "Markdown纸张轮廓",
       "expected": [
         398,
-        833,
+        848.5625,
         42,
         44
       ],
       "actual": [
         399,
-        831,
+        847,
         40,
         44
       ],
@@ -3552,13 +3559,13 @@
       "name": "GPX内部符号",
       "expected": [
         406,
-        778,
+        793.5625,
         26,
         17
       ],
       "actual": [
         405,
-        778,
+        793,
         28,
         16
       ],
@@ -3571,13 +3578,13 @@
       "name": "Markdown内部符号",
       "expected": [
         407,
-        848,
+        863.5625,
         26,
         15
       ],
       "actual": [
         407,
-        848,
+        864,
         26,
         13
       ],
@@ -3595,10 +3602,10 @@
         26
       ],
       "actual": [
-        42,
-        227,
-        133,
-        25
+        41,
+        222,
+        134,
+        34
       ],
       "review_only": true
     },
@@ -3613,9 +3620,9 @@
       ],
       "actual": [
         104,
-        353,
+        368,
         42,
-        16
+        12
       ],
       "review_only": true
     },
@@ -3628,12 +3635,7 @@
         19,
         14
       ],
-      "actual": [
-        276,
-        356,
-        15,
-        11
-      ],
+      "actual": null,
       "review_only": true
     },
     {
@@ -3647,9 +3649,9 @@
       ],
       "actual": [
         132,
-        407,
+        424,
         32,
-        16
+        12
       ],
       "review_only": true
     },
@@ -3697,10 +3699,10 @@
         21
       ],
       "actual": [
-        335,
-        191,
+        339,
+        208,
         111,
-        22
+        10
       ],
       "review_only": true
     },
@@ -3714,10 +3716,10 @@
         20
       ],
       "actual": [
-        479,
-        191,
-        79,
-        19
+        487,
+        208,
+        78,
+        10
       ],
       "review_only": true
     },
@@ -3732,9 +3734,9 @@
       ],
       "actual": [
         460,
-        508,
+        523,
         89,
-        20
+        10
       ],
       "review_only": true
     },
@@ -3748,10 +3750,10 @@
         14
       ],
       "actual": [
-        675,
-        509,
-        58,
-        14
+        676,
+        525,
+        56,
+        8
       ],
       "review_only": true
     },
@@ -3766,9 +3768,9 @@
       ],
       "actual": [
         1202,
-        191,
+        208,
         78,
-        19
+        16
       ],
       "review_only": true
     },
@@ -3783,9 +3785,9 @@
       ],
       "actual": [
         1202,
-        536,
-        120,
-        26
+        552,
+        119,
+        20
       ],
       "review_only": true
     },
@@ -3800,9 +3802,9 @@
       ],
       "actual": [
         1202,
-        578,
-        87,
-        17
+        594,
+        86,
+        14
       ],
       "review_only": true
     },
@@ -3816,10 +3818,10 @@
         17
       ],
       "actual": [
-        1204,
-        644,
-        34,
-        16
+        1205,
+        660,
+        33,
+        13
       ],
       "review_only": true
     },
@@ -3834,9 +3836,9 @@
       ],
       "actual": [
         1439,
-        646,
+        665,
         104,
-        13
+        8
       ],
       "review_only": true
     },
@@ -3851,9 +3853,9 @@
       ],
       "actual": [
         1441,
-        760,
+        776,
         101,
-        18
+        14
       ],
       "review_only": true
     },
@@ -3885,7 +3887,7 @@
       ],
       "actual": [
         778,
-        933,
+        935,
         88,
         17
       ],
@@ -3902,7 +3904,7 @@
       ],
       "actual": [
         1451,
-        934,
+        935,
         51,
         17
       ],

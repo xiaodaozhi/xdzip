@@ -341,7 +341,8 @@
         30,
         26
       ],
-      "mode": "blue"
+      "mode": "blue",
+      "interaction_revision": "qt-interaction-sync"
     },
     {
       "name": "网格模式图标",
@@ -359,7 +360,8 @@
         188,
         35,
         29
-      ]
+      ],
+      "interaction_revision": "qt-interaction-sync"
     },
     {
       "name": "预览关闭图标",
@@ -381,7 +383,8 @@
         194.5,
         14,
         14
-      ]
+      ],
+      "interaction_revision": "qt-interaction-sync"
     },
     {
       "name": "预览解压图标",
@@ -2463,7 +2466,8 @@
       "source": "docs/visual/directory-tree.json",
       "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
       "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
-    }
+    },
+    "qt-interaction-sync": "2026-10-13：按 layout-scale.json 同步 Qt 交互修订：固定 28 方形按钮、居中图标与预览关闭按钮；原稿像素和旧测量保留，当前几何由独立逻辑规范核验。"
   },
   "dom_rect_revisions": {
     ".photo-preview": {

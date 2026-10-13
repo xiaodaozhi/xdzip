@@ -27,6 +27,9 @@ def main():
     for name, value in tokens['size'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --ui-{key}: calc({value}px * var(--ui-source-factor));')
+    for name, value in layout['main']['interaction'].items():
+        key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
+        declarations.append(f'  --main-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in tree['geometry'].items():
         declarations.append(f'  --tree-{name.replace("_", "-")}: calc({value}px * var(--ui-source-factor));')
     for theme in ('light', 'dark'):

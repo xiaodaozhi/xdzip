@@ -45,3 +45,5 @@ python3 scripts/check-directory-tree-delivery.py
 手机可打开离线 `xdzip-directory-tree.html` 查看三幅完整图板与原像素切片；素材画廊同样从 `design/assets/index.html#directory-tree` 查看。切片保留原背景，只用于对照；产品图标来自共享 SVG 和透明 PNG，不能把不同裁剪尺寸直接设成控件尺寸。
 
 核心消费者现已接入：连接线、固定数字、20 逻辑图标槽与隐藏当前圆点用于实际 HTML / Qt 行。实时点击与方向键证据单独记录；专用边界提示图标、骨架、完整深色图板、人工读屏和目标系统 HiDPI 仍待后续验证。此处的素材完整性检查不能替代交互检查。
+
+当前 HTML 与 Qt 行内计数、选中圆角、焦点及滚动宽度已采用 [10 月 13 日同步修订](html-qt-interaction-sync.md)。本页原图与切图证据保持历史含义；计数图板不再代表当前主窗口的行内显示。

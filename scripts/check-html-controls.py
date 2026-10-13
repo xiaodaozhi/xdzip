@@ -186,6 +186,7 @@ def main():
         page.locator('#close-archive-test').click()
         expect(page.locator('#modal')).not_to_be_visible()
         page.locator('#tasks').click()
+        page.locator('[data-command=task-details]').click()
         expect(page.locator('#modal h1')).to_contain_text('演示')
         page.locator('#cancel-archive-test').click()
         expect(page.locator('#modal h1')).to_contain_text('已取消')

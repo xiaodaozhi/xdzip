@@ -152,8 +152,22 @@ def main():
                 locator = page.locator(selector)
                 rect = locator.bounding_box() if locator.count() else None
                 actual = [rect[key] for key in ['x', 'y', 'width', 'height']] if rect else None
+                # Preserve source measurements; revised controls follow the logical interaction contract.
+                if selector in ['.file-tools .view-active', '.inspector-head .icon-button']:
+                    measurements.append({'kind': 'source rect (design revised)', 'name': selector,
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'design_revision': 'qt-interaction-sync'})
+                    factor = 1548 / 1024
+                    size = layout['main']['interaction']['iconButtonSize'] * factor
+                    header_center = 167 + 69 / 2
+                    if selector == '.file-tools .view-active':
+                        expected = [1178 - 26 - 3 * size - 2 * 6.4 * factor,
+                                    header_center - size / 2, size, size]
+                    else:
+                        expected = [1568 - 18 - size, header_center - size / 2, size, size]
+                    kind = 'logical interaction rect'
                 revision = spec.get('dom_rect_revisions', {}).get(selector)
-                kind = 'DOM rect'
+                kind = 'logical interaction rect' if selector in ['.file-tools .view-active', '.inspector-head .icon-button'] else 'DOM rect'
                 if revision:
                     if revision['design_revision'] not in spec.get('design_revisions', {}):
                         failures.append(f'{selector}: unrecorded rect revision')
@@ -175,8 +189,12 @@ def main():
                 locator = page.locator(selector)
                 rect = locator.bounding_box() if locator.count() else None
                 actual = [rect['x'] + rect['width'] / 2, rect['y'] + rect['height'] / 2] if rect else None
-                revision = spec.get('dom_center_revisions', {}).get(selector)
+                revision = None if selector == '.inspector-head .icon-button' else spec.get('dom_center_revisions', {}).get(selector)
                 kind = 'DOM center'
+                if selector == '.inspector-head .icon-button':
+                    measurements.append({'kind': 'source center (design revised)', 'name': selector, 'expected': expected, 'actual': actual, 'review_only': True, 'design_revision': 'qt-interaction-sync'})
+                    expected = [1568 - 18 - layout['main']['interaction']['iconButtonSize'] * 1548 / 1024 / 2, 167 + 69 / 2]
+                    kind = 'logical interaction center'
                 if revision:
                     if revision['design_revision'] not in spec.get('design_revisions', {}):
                         failures.append(f'{selector}: unrecorded center revision')
@@ -207,6 +225,12 @@ def main():
                 if expected is None:
                     failures.append(f'{item["name"]}: source ink region is empty; remeasure it')
                     continue
+                if item.get('interaction_revision'):
+                    measurements.append({'kind': 'source ink (design revised)', 'name': item['name'],
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'design_revision': item['interaction_revision'],
+                                         'validation': 'check-html-density.py: logical slot dimensions and icon centers'})
+                    continue
                 revision = item.get('design_revision')
                 if revision:
                     if revision not in spec.get('design_revisions', {}):
@@ -232,6 +256,12 @@ def main():
             for item in spec.get('color_samples', []):
                 point = tuple(item['point'])
                 expected, actual = original.getpixel(point), shot.getpixel(point)
+                if item.get('interaction_revision'):
+                    measurements.append({'kind': 'source ink (design revised)', 'name': item['name'],
+                                         'expected': expected, 'actual': actual, 'review_only': True,
+                                         'design_revision': item['interaction_revision'],
+                                         'validation': 'check-html-density.py: logical slot dimensions and icon centers'})
+                    continue
                 revision = item.get('design_revision')
                 kind = 'RGB sample'
                 if revision:

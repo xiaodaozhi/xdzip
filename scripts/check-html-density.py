@@ -10,6 +10,7 @@ from threading import Thread
 
 from playwright.sync_api import sync_playwright, expect
 from native_browser_zoom import isolated_display, NativeZoom
+from html_interaction_contract import verify
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / 'dist/ui-density/html'
@@ -36,7 +37,7 @@ def main():
     ratio = 1024 / 1548
 
     def check(name, actual, expected, tolerance=.06):
-        passed = abs(actual - expected) <= tolerance
+        passed = (abs(actual - expected) <= tolerance if isinstance(actual, (int, float)) and isinstance(expected, (int, float)) else actual == expected)
         checks.append(dict(name=name, actual=actual, expected=expected, tolerance=tolerance, passed=passed))
 
     try:
@@ -87,6 +88,7 @@ def main():
                                     check(tag + '/center ' + selector, box['y'] + box['height'] / 2, title_center, .5)
                                 table_font = child.locator('#file-rows [data-id=lake] .entry-name').evaluate('(n)=>parseFloat(getComputedStyle(n).fontSize)') * ratio
                                 check(tag + '/table font', table_font, 19 * ratio)
+                                verify(child, ratio, check, tag, OUTPUT if dpr == 1 and zoom == 1 else None)
                                 if dpr == 1 and zoom == 1:
                                     frame.locator('.window').screenshot(path=str(OUTPUT / 'main.png'))
                                 frame.locator('#more-actions').click()

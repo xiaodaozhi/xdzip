@@ -38,10 +38,9 @@
     "row_height": "ceil(max(32, body_font_size * font_scale * 1.6 + 12.8, 19.2 * font_scale + 12.8))",
     "glyph_slots": "disclosure = 14.4 * font_scale; folder = 16 * font_scale; branch marker uses a 19.2 canvas; hit area grows with accessibility font_scale",
     "indentation": "12.8 logical pixels at every accessibility font scale; content scrolls when the depth does not fit",
-    "count_width": "max(25.6, measured count text width) at the active count font; never elide numeric counts",
-    "count_pinning": "right-side count and branch marker occupy a reserved overlay column; only the hierarchy pane scrolls horizontally",
     "tooltip": "Plain text with full display name and archive path; wrap inside width/height budget and allow scrolling/copying for a longer path",
-    "scrollbars": "inside the directory viewport; visible only when content overflows; never around the application frame"
+    "scrollbars": "inside the directory viewport; visible only when content overflows; never around the application frame",
+    "labels": "Measure only expanded visible rows, allow horizontal scroll for full names; no reserved count column; 16 logical pixels trailing inset"
   },
   "colors": {
     "light": {
@@ -75,7 +74,7 @@
     "disclosure": "shared chevron-right/chevron-down SVG/PNG; visible only with child directories",
     "guides": "native one-unit lines from visible ancestry and last-sibling flags; no full-row textures",
     "current": "native selection background plus 2.4-unit leading indicator",
-    "focus": "native two-unit inset outline, can coexist with current/hover",
+    "focus": "Full-height leading indicator with square left corners; no four-sided outline",
     "hidden_current": "shared tree-active-branch glyph on a 19.2-unit canvas at the nearest visible collapsed ancestor",
     "text": "live, escaped plain text using platform fonts; never baked into an icon",
     "loading": "shared tree-spinner segmented glyph; rotation is driven by the live component and disabled under reduced motion",
@@ -224,13 +223,13 @@
       "cut": "tree-row-focus"
     },
     "long_name": {
-      "elide": "right",
+      "elide": "none; horizontal scroll",
       "full_path_available": true,
       "cut": "tree-name-tooltip"
     },
     "deep_hierarchy": {
       "horizontal_scroll": true,
-      "count_pinned": true,
+      "count_pinned": false,
       "cut": "tree-deep-hierarchy"
     },
     "large_type": {
@@ -287,8 +286,8 @@
     "new_session": "discard expansion, focus, current node IDs and branch markers from the previous session"
   },
   "integration": {
-    "html": "Recursive example tree, guide lines, pinned counts, disclosure, current/focus separation, collapsed-current marker and directory context menu",
-    "qt": "Complete real read-only index, guide roles, pinned counts, disclosure, keyboard navigation, collapsed-current marker and directory context menu",
+    "html": "Recursive example tree, guide lines, full labels without visual counts, disclosure, current/focus separation, collapsed-current marker and directory context menu",
+    "qt": "Complete real read-only index, guide roles, full labels without visual counts, disclosure, keyboard navigation, collapsed-current marker and directory context menu",
     "remaining": [
       "Boundary notice glyphs and skeleton are design resources; no new loading skeleton or error-card consumer",
       "Full dark component board and manual native screen-reader/HiDPI review remain pending"
@@ -321,5 +320,12 @@
         "source_css": 19.35
       }
     ]
+  },
+  "presentation": {
+    "show_counts": false,
+    "left_corners": "square",
+    "indicator_height": "full row",
+    "horizontal_extent": "visible expanded rows only",
+    "legacy_geometry_note": "count geometry fields remain for historical boards and generated compatibility; current rows have no count consumer"
   }
 }
