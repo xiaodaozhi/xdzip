@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'scripts/check-extract-fidelity.py'
+      - 'docs/visual/create-reference.json'
+      - 'docs/qa/create-controls/**'
       - 'docs/visual/extract-reference.json'
       - 'docs/qa/extract-fidelity/**'
       - 'design/**'
@@ -30,6 +32,8 @@ on:
   pull_request:
     paths:
       - 'scripts/check-extract-fidelity.py'
+      - 'docs/visual/create-reference.json'
+      - 'docs/qa/create-controls/**'
       - 'docs/visual/extract-reference.json'
       - 'docs/qa/extract-fidelity/**'
       - 'design/**'
@@ -88,6 +92,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-density.py
           .venv-design/bin/python scripts/check-html-operation-ui.py
+          .venv-design/bin/python scripts/check-html-create-controls.py
           .venv-design/bin/python scripts/check-extract-fidelity.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
@@ -110,6 +115,7 @@ jobs:
             docs/qa/pane-header-alignment/
             docs/qa/html-scrollbars/
             dist/ui-density/
+            build/create-style/html/
             docs/qa/asset-review/
             docs/qa/asset-consumers/
             docs/qa/brand-and-assets.md

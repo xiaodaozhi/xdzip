@@ -2,7 +2,7 @@
 
 # xdzip HTML 高保真设计
 
-[打开审阅入口](index.html) · [组件与交互](components.html) · [源像素测量画布](canvas.html) · [设计目录职责](../README.md) · [已确认图片](../hifi/index.html)
+[打开审阅入口](index.html)，[组件与交互](components.html)，[源像素测量画布](canvas.html)，[设计目录职责](../README.md)，[已确认图片](../hifi/index.html)
 
 本交付以主窗口、解压确认及操作状态原稿为视觉依据，完整原稿统一位于 `design/hifi/screens/`。主界面采用可编辑 HTML/CSS，操作和状态由示例数据驱动。图标从与 Qt 相同的 `design/assets/svg/` 源生成，照片来自 `design/assets/demo/`；原像素图标切片集中在 `design/assets/reference/`，用于外观对照。
 

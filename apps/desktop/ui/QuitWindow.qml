@@ -20,9 +20,9 @@ OperationWindow {
         }
         OperationFooter {
             Layout.fillWidth: true
-            AppButton { text: qsTr("返回应用"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; enabled: !root.stopping; onClicked: root.close() }
-            AppButton { text: qsTr("等待完成"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; enabled: !root.stopping; onClicked: root.waitRequested() }
-            AppButton { text: qsTr("取消并退出"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; enabled: !root.stopping; primary: true; onClicked: root.cancelAndQuitRequested() }
+            OperationFooterButton { text: qsTr("返回应用"); enabled: !root.stopping; onClicked: root.close() }
+            OperationFooterButton { text: qsTr("等待完成"); enabled: !root.stopping; onClicked: root.waitRequested() }
+            OperationFooterButton { text: qsTr("取消并退出"); enabled: !root.stopping; primary: true; onClicked: root.cancelAndQuitRequested() }
         }
     }
 }

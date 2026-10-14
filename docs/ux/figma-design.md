@@ -1,6 +1,6 @@
 # Figma 功能设计工作稿
 
-设计文件：[xdzip · v0.1 产品设计与交互规范](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF)。
+设计文件：[xdzip — v0.1 产品设计与交互规范](https://www.figma.com/design/ib4gjPbNSFNpaOI1ld3zaF)。
 
 后续功能细化在[仓库交互原型](prototype-spec.md)继续，保留本文件作为设计探索记录。
 

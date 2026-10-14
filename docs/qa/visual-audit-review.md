@@ -56,7 +56,7 @@ AppButton 使用 `max(36, contentItem.implicitHeight + 12×2)`，本机中文内
 
 ![主窗口实际浅色](visual-audit/browser-light.png)
 
-[1280×820 内容布局](visual-audit/browser-1280.png) · [当前最小窗口 1160×600](visual-audit/browser-minimum.png)。另有 [强制 1040×680 探测](visual-audit/browser-request-1040.png)：offscreen 程序调用 resize 可绕过窗口管理器约束，不能据此宣称原生最小宽度已经支持 1040。此宽度下详情栏仍保留，没有实现 <1160 自动收起。
+[1280×820 内容布局](visual-audit/browser-1280.png)，[当前最小窗口 1160×600](visual-audit/browser-minimum.png)。另有 [强制 1040×680 探测](visual-audit/browser-request-1040.png)：offscreen 程序调用 resize 可绕过窗口管理器约束，不能据此宣称原生最小宽度已经支持 1040。此宽度下详情栏仍保留，没有实现 <1160 自动收起。
 
 ## 2. 主窗口：对齐、图标与结构
 
@@ -125,7 +125,7 @@ AppButton 使用 `max(36, contentItem.implicitHeight + 12×2)`，本机中文内
 
 ![200% 字号主窗口：重叠与截断证据](visual-audit/browser-large-type.png)
 
-任务窗的 200% 采用单列与滚动，提示行仍对齐、底部动作可达；这项局部测试通过不能推广到整个应用。[任务窗上部](visual-audit/task-large-type.png) · [滚动后底部](visual-audit/task-large-type-bottom.png)。本次 fontScale 测试不是 macOS 系统缩放、Retina DPR=2 或系统辅助功能设置的替代测试。
+任务窗的 200% 采用单列与滚动，提示行仍对齐、底部动作可达；这项局部测试通过不能推广到整个应用。[任务窗上部](visual-audit/task-large-type.png)，[滚动后底部](visual-audit/task-large-type-bottom.png)。本次 fontScale 测试不是 macOS 系统缩放、Retina DPR=2 或系统辅助功能设置的替代测试。
 
 ## 5. 操作窗口和覆盖范围
 

@@ -67,9 +67,9 @@ OperationWindow {
             Layout.fillWidth: true
             contentInset: 30; verticalInset: 17; minimumFooterHeight: 74
             note: qsTr("等待你的决定"); noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
-            AppButton { objectName: "conflictSkip"; text: root.task.creating ? qsTr("取消创建") : qsTr("跳过"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; onClicked: root.decision(1, remaining.checked) }
-            AppButton { objectName: "conflictRename"; text: qsTr("自动改名"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; primary: true; onClicked: root.decision(2, remaining.checked) }
-            AppButton { objectName: "conflictOverwrite"; text: root.task.creating ? qsTr("替换归档") : qsTr("覆盖文件"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
+            OperationFooterButton { objectName: "conflictSkip"; text: root.task.creating ? qsTr("取消创建") : qsTr("跳过"); onClicked: root.decision(1, remaining.checked) }
+            OperationFooterButton { objectName: "conflictRename"; text: qsTr("自动改名"); primary: true; onClicked: root.decision(2, remaining.checked) }
+            OperationFooterButton { objectName: "conflictOverwrite"; text: root.task.creating ? qsTr("替换归档") : qsTr("覆盖文件"); dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
         }
     }
 }

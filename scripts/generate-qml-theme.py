@@ -38,6 +38,8 @@ lines.append(f'    readonly property real operationProgressDensity: {layout["ope
 lines.append(f'    readonly property real operationCreateDensity: {layout["operation"]["create_density"]}')
 for key, value in layout['operation']['footer'].items():
     lines.append(f'    readonly property real operationFooter{key[0].upper() + key[1:]}: {value} * fontScale')
+for key, value in layout['operation']['controls'].items():
+    lines.append(f'    readonly property real operationControl{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['operation']['components'].items():
     suffix = ' * fontScale' if key.endswith('Size') else ''
     lines.append(f'    readonly property real operation{key[0].upper() + key[1:]}: {value}{suffix}')

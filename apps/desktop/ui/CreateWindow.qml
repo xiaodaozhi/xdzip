@@ -20,6 +20,37 @@ OperationWindow {
     function baseName(path: string): string {
         return path.replace(/\\/g, "/").split("/").pop();
     }
+    function formatInputSize(value: var): string {
+        const bytes = Number(value || 0);
+        return bytes >= 1000000 ? (bytes / 1000000).toFixed(1) + " MB" : bytes >= 1000 ? Math.round(bytes / 1000) + " KB" : bytes + " B";
+    }
+    readonly property string inputSummary: {
+        const files = inputs.filter(item => !item.directory);
+        const directories = inputs.length - files.length;
+        const parts = [];
+        if (files.length)
+            parts.push(qsTr("%1 个文件").arg(files.length));
+        if (directories)
+            parts.push(qsTr("%1 个文件夹").arg(directories));
+        if (files.length && files.every(item => item.known))
+            parts.push(formatInputSize(files.reduce((total, item) => total + Number(item.sizeBytes || 0), 0)));
+        else if (files.length)
+            parts.push(qsTr("大小将在开始前检查"));
+        if (directories)
+            parts.push(qsTr("文件夹大小将在开始前扫描"));
+        return parts.length ? parts.join("，") : qsTr("尚未添加文件");
+    }
+    onInputsChanged: if (controller)
+        controller.inspectCreationInputs(inputs.map(item => item.path))
+    Connections {
+        target: root.controller
+        function onCreationInputsChanged() {
+            const metadata = new Map();
+            for (const item of root.controller.creationInputs)
+                metadata.set(item.path, item);
+            root.inputs = root.inputs.map(item => metadata.has(item.path) ? Object.assign({}, item, metadata.get(item.path)) : item);
+        }
+    }
     function configure() {
         if (visible) {
             present();
@@ -173,6 +204,13 @@ OperationWindow {
                                             width: inputList.width
                                             height: Math.max(Theme.operationCreateInputRowHeight, Theme.operationCreateBodySize * 1.4 + 12)
                                             color: rowHover.hovered ? Theme.controlHover : Theme.surface
+                                            Rectangle {
+                                                anchors.left: parent.left
+                                                anchors.right: parent.right
+                                                anchors.bottom: parent.bottom
+                                                height: 1
+                                                color: Theme.operationCardBorder
+                                            }
                                             HoverHandler {
                                                 id: rowHover
                                             }
@@ -193,14 +231,17 @@ OperationWindow {
                                                     color: Theme.text
                                                     Accessible.description: inputRow.modelData.path
                                                 }
-                                                AppButton {
+                                                Text {
+                                                    objectName: "createInputSize-" + inputRow.index
+                                                    visible: inputRow.modelData.known === true
+                                                    text: root.formatInputSize(inputRow.modelData.sizeBytes)
+                                                    font.pixelSize: Theme.operationCreateNoteSize
+                                                    color: Theme.textSecondary
+                                                    horizontalAlignment: Text.AlignRight
+                                                }
+                                                OperationRemoveButton {
                                                     objectName: "createRemoveInput-" + inputRow.index
-                                                    text: qsTr("移除")
-                                                    labelSize: Theme.operationCreateNoteSize
-                                                    baseHeight: 26
-                                                    minimumWidth: 44
-                                                    horizontalInset: 5
-                                                    verticalInset: 3
+                                                    entryName: inputRow.modelData.name
                                                     enabled: !root.controller.busy
                                                     onClicked: root.inputs = root.inputs.filter((_, i) => i !== inputRow.index)
                                                 }
@@ -215,7 +256,10 @@ OperationWindow {
                                         }
                                     }
                                     Text {
-                                        text: qsTr("%1 个选择项 · 目录将在开始前扫描").arg(root.inputs.length)
+                                        objectName: "createInputSummary"
+                                        Layout.fillWidth: true
+                                        wrapMode: Text.Wrap
+                                        text: root.inputSummary
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -290,13 +334,9 @@ OperationWindow {
                                                 Accessible.name: qsTr("保存目录")
                                                 onEditingFinished: root.controller.checkCreationTarget(text)
                                             }
-                                            AppButton {
+                                            OperationButton {
                                                 objectName: "createChangeTarget"
-                                                baseHeight: 28
-                                                verticalInset: 4
                                                 text: qsTr("更改")
-                                                labelSize: Theme.operationCreateBodySize
-                                                horizontalInset: 12
                                                 minimumWidth: 58
                                                 onClicked: {
                                                     const path = root.controller.chooseTarget(target.text);
@@ -357,26 +397,27 @@ OperationWindow {
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
-                                        RowLayout {
+                                        OperationSegmentedGroup {
+                                            id: formatGroup
+                                            objectName: "createFormat"
                                             Layout.fillWidth: true
-                                            spacing: 0
-                                            Repeater {
-                                                model: ["ZIP", "TAR", "TAR.GZ"]
-                                                AppButton {
-                                                    required property string modelData
-                                                    required property int index
-                                                    Layout.fillWidth: true
-                                                    Layout.preferredWidth: 1
-                                                    text: modelData
-                                                    labelSize: Theme.operationCreateBodySize
-                                                    baseHeight: 28
-                                                    verticalInset: 4
-                                                    horizontalInset: 3
-                                                    primary: index === 0
-                                                    enabled: index === 0
-                                                    explanation: index === 0 ? "" : qsTr("此格式将在后续版本提供")
+                                            accessibleLabel: qsTr("压缩格式")
+                                            options: [
+                                                {
+                                                    text: "ZIP",
+                                                    enabled: true
+                                                },
+                                                {
+                                                    text: "TAR",
+                                                    enabled: false,
+                                                    reason: qsTr("此格式将在后续版本提供")
+                                                },
+                                                {
+                                                    text: "TAR.GZ",
+                                                    enabled: false,
+                                                    reason: qsTr("此格式将在后续版本提供")
                                                 }
-                                            }
+                                            ]
                                         }
                                         Text {
                                             text: qsTr("压缩算法")
@@ -389,7 +430,7 @@ OperationWindow {
                                             Layout.fillWidth: true
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
-                                            model: ["Deflate", qsTr("Store · 不压缩")]
+                                            model: ["Deflate", qsTr("Store，不压缩")]
                                         }
                                         Text {
                                             text: qsTr("压缩级别")
@@ -442,21 +483,14 @@ OperationWindow {
             minimumFooterHeight: 52
             note: root.inputs.length ? qsTr("准备就绪") : qsTr("等待添加内容")
             noteIcon: Theme.dark ? "qrc:/xdzip/assets/dark/shield.png" : "qrc:/xdzip/assets/light/shield.png"
-            AppButton {
+            OperationFooterButton {
+                objectName: "createCancel"
                 text: qsTr("取消")
-                labelSize: Theme.operationFooterFontSize
-                baseHeight: 32
-                minimumWidth: 77
-                horizontalInset: 12
                 onClicked: root.close()
             }
-            AppButton {
+            OperationFooterButton {
                 objectName: "startCreate"
                 text: qsTr("创建压缩包")
-                labelSize: Theme.operationFooterFontSize
-                baseHeight: 32
-                minimumWidth: 101
-                horizontalInset: 12
                 primary: true
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && !root.controller.busy
                 onClicked: root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method.currentIndex === 0 ? 8 : 0, [6, 1, 9][level.currentIndex], openAfter.checked)

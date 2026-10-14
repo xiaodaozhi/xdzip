@@ -13,6 +13,7 @@ jobs:
       - name: Check documentation links and assets
         run: |
           python3 scripts/check-docs.py
+          python3 scripts/check-operation-components.py
           python3 scripts/check-asset-integration.py
           python3 scripts/check-brand-corners.py
           python3 scripts/build-html-design.py --check

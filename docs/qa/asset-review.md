@@ -2,7 +2,7 @@
 
 基线为已确认的 [主窗口](../../design/hifi/screens/main-light.png)和 [操作状态稿](../../design/hifi/README.md)。本次修正的是素材源及引用，不表示整个界面已完成视觉还原。
 
-[当前共享图标逐项对照](asset-review/index.html) · [统一素材库](../../design/assets/index.html) · [素材合并与尺寸规范](asset-consolidation.md) · [历史主要错误前后对照](asset-review/comparison.png) · [历史 Qt 浅色实际截图](asset-review/browser-light.png) · [历史 Qt 深色实际截图](asset-review/browser-dark.png)
+[当前共享图标逐项对照](asset-review/index.html)，[统一素材库](../../design/assets/index.html)，[素材合并与尺寸规范](asset-consolidation.md)，[历史主要错误前后对照](asset-review/comparison.png)，[历史 Qt 浅色实际截图](asset-review/browser-light.png)，[历史 Qt 深色实际截图](asset-review/browser-dark.png)
 
 ## 已确认的问题与修复
 

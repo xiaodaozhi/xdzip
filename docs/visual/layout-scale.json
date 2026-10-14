@@ -107,7 +107,24 @@
     },
     "extract_density": 0.8,
     "progress_density": 0.8,
-    "create_density": 0.8
+    "create_density": 0.8,
+    "controls": {
+      "radius": 5,
+      "bodyButtonHeight": 28,
+      "footerButtonHeight": 32,
+      "footerButtonMinWidth": 77,
+      "footerPrimaryMinWidth": 94,
+      "horizontalInset": 12,
+      "verticalInset": 4,
+      "fieldTextInset": 8,
+      "selectIndicatorSize": 18,
+      "selectIndicatorRightInset": 6,
+      "selectIndicatorTextGap": 8,
+      "removeHitSize": 28,
+      "removeArtworkSize": 24,
+      "segmentedHeight": 28,
+      "segmentedRadius": 5
+    }
   },
   "controls": {
     "density": 1,

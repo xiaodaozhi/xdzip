@@ -14,10 +14,12 @@ bool isPayload(const xdzip::reader::Event &event) {
     using xdzip::reader::EventKind;
     return event.kind == EventKind::Page || event.kind == EventKind::Preflight ||
            event.kind == EventKind::Snapshot || event.kind == EventKind::TaskUpdate ||
-           event.kind == EventKind::TaskAccepted || event.kind == EventKind::TargetChecked;
+           event.kind == EventKind::TaskAccepted || event.kind == EventKind::TargetChecked ||
+           event.kind == EventKind::Inputs;
 }
 std::size_t payloadBytes(const xdzip::reader::Event &event) {
     std::size_t bytes = event.error.size() + event.report.declared_bytes.size();
+    bytes += event.inputs.size() * sizeof(xdzip::reader::InputInfo);
     for (const auto &row : event.rows)
         bytes += row.name.size() + row.id.size() + row.navigation_id.size();
     for (const auto &node : event.directories)

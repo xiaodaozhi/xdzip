@@ -786,10 +786,6 @@ dialog[data-kind="create"] .text-input,
 dialog[data-kind="create"] .field-select { font-size:calc(13px * var(--ui-source-factor)); height:calc(28px * var(--ui-source-factor)); border-color:var(--operation-field-border); background:var(--surface); }
 dialog[data-kind="create"] .create-target-row { display:flex; gap:calc(8px * var(--ui-source-factor)); }
 dialog[data-kind="create"] .create-target-row .text-input { min-width:0; flex:1; }
-dialog[data-kind="create"] .create-format-tabs { display:flex; }
-dialog[data-kind="create"] .create-format-tabs>.button { flex:1; min-width:0; border-radius:0; }
-dialog[data-kind="create"] .create-format-tabs>.button:first-child { border-radius:calc(5px * var(--ui-source-factor)) 0 0 calc(5px * var(--ui-source-factor)); }
-dialog[data-kind="create"] .create-format-tabs>.button:last-child { border-radius:0 calc(5px * var(--ui-source-factor)) calc(5px * var(--ui-source-factor)) 0; }
 dialog[data-kind="create"] .field-note,
 dialog[data-kind="create"] .details-title { font-size:calc(12px * var(--ui-source-factor)); }
 dialog[data-kind="create"] .check-label { font-size:calc(13px * var(--ui-source-factor)); }
@@ -798,3 +794,42 @@ dialog[data-kind="create"] input[type="checkbox"]:checked { border:0; background
 dialog[data-kind="create"] .modal-footer { padding:calc(10px * var(--ui-source-factor)) calc(18px * var(--ui-source-factor)); min-height:calc(52px * var(--ui-source-factor)); }
 
 dialog[data-kind="create"] .modal-content .button { min-height:calc(28px * var(--ui-source-factor)); }
+
+/* Operation roles are shared; window-specific footer shape overrides are forbidden. */
+dialog[data-kind] .button { border-width:calc(1px * var(--ui-source-factor)); border-radius:var(--operation-control-radius); border-color:var(--operation-field-border); }
+dialog[data-kind] .button.danger { border-color:var(--ui-menu-danger); }
+dialog[data-kind] .button:not(.primary):not(.danger) { background:var(--operation-button-surface); }
+dialog[data-kind] .text-input,dialog[data-kind] .field-select { border-width:calc(1px * var(--ui-source-factor)); border-radius:var(--operation-control-radius); border-color:var(--operation-field-border); }
+dialog[data-kind] .ui-select-trigger { padding-left:var(--operation-control-field-text-inset); padding-right:calc(var(--operation-control-select-indicator-right-inset) - 1px * var(--ui-source-factor)); }
+dialog[data-kind] .ui-select-trigger>svg { width:var(--operation-control-select-indicator-size); height:var(--operation-control-select-indicator-size); }
+dialog[data-kind] .modal-footer .button { height:var(--operation-control-footer-button-height); min-height:var(--operation-control-footer-button-height); min-width:var(--operation-control-footer-button-min-width); border-radius:var(--operation-control-radius); padding:0 var(--operation-control-horizontal-inset); }
+dialog[data-kind] .modal-footer .button.primary { min-width:var(--operation-control-footer-primary-min-width); }
+dialog[data-kind="create"] .create-row .icon-button { background:transparent; color:var(--text); }
+dialog[data-kind="create"] .create-row .icon-button>svg { width:var(--operation-control-remove-artwork-size); height:var(--operation-control-remove-artwork-size); }
+dialog[data-kind="create"] .create-row .icon-button:hover { background:var(--ui-control-hover); }
+.operation-segmented { display:flex; align-items:stretch; height:var(--operation-control-segmented-height); min-height:var(--operation-control-segmented-height); padding:calc(1px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); border-radius:var(--operation-control-segmented-radius); background:var(--operation-card); }
+.operation-segment { position:relative; flex:1; min-width:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--text); font:inherit; }
+.operation-segment[aria-checked="true"] { background:var(--accent); color:white; border-radius:calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)); }
+.operation-segment:not([aria-checked="true"]):not(:disabled):hover { background:var(--ui-control-hover); }
+.operation-segment:disabled { color:var(--ui-menu-disabled); cursor:default; }
+.operation-segment:not(:first-child):not([aria-checked="true"])::before { content:""; position:absolute; left:0; top:0; bottom:0; width:calc(1px * var(--ui-source-factor)); background:var(--operation-field-border); }
+.operation-segment[aria-checked="true"]+ .operation-segment::before { display:none; }
+.operation-segment:focus-visible { outline:var(--ui-focus-width) solid var(--accent); outline-offset:calc(-2px * var(--ui-source-factor)); }
+
+/* Inset outline avoids fractional CSS border snapping shifting the arrow slot. */
+dialog[data-kind] .ui-select-trigger { border-width:0; box-shadow:inset 0 0 0 calc(1px * var(--ui-source-factor)) var(--operation-field-border); padding-right:var(--operation-control-select-indicator-right-inset); }
+
+/* Form label columns follow text metrics, like Qt GridLayout, not a fixed 60px slot. */
+dialog[data-kind="create"] .create-form-row { grid-template-columns:max-content minmax(0,1fr); }
+dialog[data-kind="create"] .field-group { border-width:0; box-shadow:inset 0 0 0 calc(1px * var(--ui-source-factor)) var(--operation-card-border); }
+dialog[data-kind="create"] .create-input-panel { border-width:0; box-shadow:inset 0 0 0 calc(1px * var(--ui-source-factor)) var(--operation-card-border); }
+dialog[data-kind="create"] .field-group:not(:first-child) .create-input-panel { padding:calc(8px * var(--ui-source-factor)); }
+/* Circular removal keeps the same inner hover/focus disc as OperationRemoveButton. */
+dialog[data-kind="create"] .create-row .icon-button { position:relative; }
+dialog[data-kind="create"] .create-row .icon-button::before { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:calc(18px * var(--ui-source-factor)); height:calc(18px * var(--ui-source-factor)); border-radius:50%; }
+dialog[data-kind="create"] .create-row .icon-button>svg { position:relative; }
+dialog[data-kind="create"] .create-row .icon-button:hover { background:transparent; }
+dialog[data-kind="create"] .create-row .icon-button:hover::before { background:var(--ui-control-hover); }
+dialog[data-kind="create"] .create-row .icon-button:active::before { background:var(--ui-control-pressed); }
+dialog[data-kind="create"] .create-row .icon-button:focus-visible { outline:0; }
+dialog[data-kind="create"] .create-row .icon-button:focus-visible::before { box-shadow:inset 0 0 0 var(--ui-focus-width) var(--accent); }

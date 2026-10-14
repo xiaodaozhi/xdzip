@@ -3,13 +3,13 @@
   "screens": [
     {
       "file": "screens/main-light.png",
-      "title": "主窗口 · 浅色",
+      "title": "主窗口，浅色",
       "group": "current",
       "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9"
     },
     {
       "file": "screens/extract-macos.png",
-      "title": "解压确认 · macOS 独立窗口",
+      "title": "解压确认，macOS 独立窗口",
       "group": "current",
       "sha256": "e21f7e9b90e4b2076618cf6c1d0d00e00f8696d21d722bc152b43b06699218f0"
     },
@@ -63,7 +63,7 @@
     },
     {
       "file": "screens/directory-tree.png",
-      "title": "目录树 B · 多级展开",
+      "title": "目录树 B，多级展开",
       "group": "component",
       "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",
@@ -72,7 +72,7 @@
     },
     {
       "file": "screens/directory-tree-states.png",
-      "title": "目录树 B · 节点与交互状态",
+      "title": "目录树 B，节点与交互状态",
       "group": "component",
       "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",
@@ -81,7 +81,7 @@
     },
     {
       "file": "screens/directory-tree-boundaries.png",
-      "title": "目录树 B · 空态与导航边界",
+      "title": "目录树 B，空态与导航边界",
       "group": "component",
       "status": "approved-design-with-core-interactions",
       "spec": "../../docs/ux/directory-tree.md",

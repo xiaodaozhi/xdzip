@@ -151,7 +151,7 @@ OperationWindow {
                                 objectName: "extractSelectedScope"
                                 visible: Number(root.intent.selectedCount || 0) > 0
                                 Layout.fillWidth: true; radioStyle: true
-                                text: qsTr("所选文件和目录 · %1 项").arg(root.intent.selectedCount || 0)
+                                text: qsTr("所选文件和目录，%1 项").arg(root.intent.selectedCount || 0)
                                 checked: !root.allFiles
                                 onClicked: root.allFiles = false
                             }
@@ -180,7 +180,7 @@ OperationWindow {
                                 density: root.density; spacing: 13;
                                 objectName: "extractAllScope"
                                 Layout.fillWidth: true; radioStyle: true
-                                text: qsTr("全部归档 · %1 条记录").arg(root.intent.archiveCount || 0)
+                                text: qsTr("全部归档，%1 条记录").arg(root.intent.archiveCount || 0)
                                 checked: root.allFiles
                                 onClicked: root.allFiles = true
                             }
@@ -221,10 +221,10 @@ OperationWindow {
             contentInset: root.unit(24); verticalInset: root.unit(13); minimumFooterHeight: root.unit(67)
             noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
             note: root.targetReady ? qsTr("准备就绪") : qsTr("请检查目标目录")
-            AppButton { text: qsTr("取消"); labelSize: Theme.operationFooterFontSize; baseHeight: root.unit(40); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(96); onClicked: root.close() }
-            AppButton {
+            OperationFooterButton { text: qsTr("取消"); onClicked: root.close() }
+            OperationFooterButton {
                 objectName: "startExtract"
-                text: qsTr("开始解压"); labelSize: Theme.operationFooterFontSize; baseHeight: root.unit(40); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: 101; primary: true
+                text: qsTr("开始解压"); primary: true
                 enabled: root.targetReady && !root.controller.busy && root.intent.session === root.controller.sessionId
                 onClicked: root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked)
             }

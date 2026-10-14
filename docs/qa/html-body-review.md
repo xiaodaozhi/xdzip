@@ -71,7 +71,7 @@ python scripts/build-html-body-review.py
 
 原始大小、压缩后列的标题与内容共用右对齐规则和右边距，分别为 26、22 源空间像素；类型列标题与内容共用左对齐规则和 28 源空间像素左边距。修正了高保真样式覆盖大小列表头对齐方式，以及类型列表头、内容相差 5 px 的左边距。保留列宽、分隔线、行高和数据，原稿与原像素切片保持原字节。
 
-[浅色实际截图](html-body/column-alignment.png) · [深色实际截图](html-body/column-alignment-dark.png) · [浏览器实测](html-body/column-alignment.json)
+[浅色实际截图](html-body/column-alignment.png)，[深色实际截图](html-body/column-alignment-dark.png)，[浏览器实测](html-body/column-alignment.json)
 
 浅深色及 macOS、Windows、Linux 三种 HTML 窗口装饰共六个场景，测量三列表头与全部九行内容的 180 个单元格；覆盖目录占位、KB、MB 和文件类型。原始大小、压缩后文字右边缘分别为 x734、x852，类型文字左边缘为 x902，表头与内容的布局边缘偏差均为 0。坐标为未缩放画布的 CSS 像素，使用 DOM Range 测量文字排版边缘；字形本身仍有字体固有的侧边留白。页面错误与外部请求均为零，顶部 27 项、正文 70 项及展示尺寸 391 项既有检查通过。
 
@@ -81,7 +81,7 @@ Qt 浏览器的两列大小已共用右对齐与 12 逻辑像素的右侧内距�
 
 正常浏览时，预览标题栏去掉下方 5 源空间像素的额外间距，图片顶边由 y241 移到 y236，与文件列表表头重合。图片保留 351 × 277 尺寸，文件名、属性和操作按钮按原有间距自然上移 5 px。标题栏与面包屑仍共用栏高、字号和垂直中心。
 
-[实际截图](html-body/preview-top-alignment.png) · [搜索预览](html-body/preview-top-alignment-search.png) · [浏览器实测](html-body/preview-top-alignment.json)
+[实际截图](html-body/preview-top-alignment.png)，[搜索预览](html-body/preview-top-alignment-search.png)，[浏览器实测](html-body/preview-top-alignment.json)
 
 搜索提示条出现时，预览区按提示条的实际高度和上下边距同步留出空间。`ResizeObserver` 跟踪字体加载、换行带来的尺寸变化，清空搜索后归零；不复制一套提示条高度常数。照片禁止纵向收缩，277 px 高度保持；内容增多时由预览区独立滚动，经典滚动条占用的宽度保留。
 

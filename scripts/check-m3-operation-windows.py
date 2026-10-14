@@ -37,17 +37,18 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
     check(name + '/title size', text_node(capture, title)['fontPixelSize'], round(heading['font']))
     check(name + '/capture width divided by DPR', capture['imageWidth'] / capture['dpr'], capture['width'])
     check(name + '/capture height divided by DPR', capture['imageHeight'] / capture['dpr'], capture['height'])
-    for node in capture['nodes']:
-        if node['visible'] and node['class'].startswith('AppButton') and node['y'] > capture['height'] - 120:
+    footer_buttons = [node for node in capture['nodes'] if node['visible'] and node['class'].startswith('OperationFooterButton')]
+    check(name + '/shared footer actions present', bool(footer_buttons), True)
+    for node in footer_buttons:
+        if node['visible']:
             label = text_node(capture, node['text'])
             check(name + '/' + node['text'] + '/footer size', label['fontPixelSize'], layout['footer']['fontSize'])
             check(name + '/' + node['text'] + '/inside right edge', node['x'] + node['width'] <= capture['width'] + 1, True)
             check(name + '/' + node['text'] + '/inside bottom edge', node['y'] + node['height'] <= capture['height'] + 1, True)
-            if kind in ('extract', 'progress'):
-                check(name + '/' + node['text'] + '/action height', node['height'], 32)
-                check(name + '/' + node['text'] + '/action minimum width', node['width'] >= 77, True)
-            else:
-                check(name + '/' + node['text'] + '/action height', node['height'], 38)
+            check(name + '/' + node['text'] + '/action height', node['height'], layout['controls']['footerButtonHeight'])
+            check(name + '/' + node['text'] + '/action minimum width', node['width'] >= 77, True)
+            background = next(n for n in capture['nodes'] if 'radius' in n and n['path'].startswith(node['path']+'/'))
+            check(name + '/' + node['text'] + '/action radius', background['radius'], layout['controls']['radius'], .01)
     if kind == 'progress':
         body = text_node(capture, '实际耗时取决于文件与磁盘状态。')
         footer = text_node(capture, '关闭此窗口后，任务仍会继续。')

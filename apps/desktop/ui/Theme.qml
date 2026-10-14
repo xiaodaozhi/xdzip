@@ -22,6 +22,21 @@ QtObject {
     readonly property real operationFooterFontSize: 13 * fontScale
     readonly property real operationFooterNoteSize: 12 * fontScale
     readonly property real operationFooterIconSize: 16 * fontScale
+    readonly property real operationControlRadius: 5
+    readonly property real operationControlBodyButtonHeight: 28
+    readonly property real operationControlFooterButtonHeight: 32
+    readonly property real operationControlFooterButtonMinWidth: 77
+    readonly property real operationControlFooterPrimaryMinWidth: 94
+    readonly property real operationControlHorizontalInset: 12
+    readonly property real operationControlVerticalInset: 4
+    readonly property real operationControlFieldTextInset: 8
+    readonly property real operationControlSelectIndicatorSize: 18
+    readonly property real operationControlSelectIndicatorRightInset: 6
+    readonly property real operationControlSelectIndicatorTextGap: 8
+    readonly property real operationControlRemoveHitSize: 28
+    readonly property real operationControlRemoveArtworkSize: 24
+    readonly property real operationControlSegmentedHeight: 28
+    readonly property real operationControlSegmentedRadius: 5
     readonly property real operationBodySize: 16 * fontScale
     readonly property real operationTitleSize: 25 * fontScale
     readonly property real operationNoteSize: 14 * fontScale

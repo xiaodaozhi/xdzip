@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>xdzip · M2 实际 Qt 截图</title>
+<title>xdzip — M2 实际 Qt 截图</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #f4f6fa; color: #202532; font: 16px/1.6 system-ui,sans-serif; }
@@ -14,7 +14,7 @@
   a { color: #1554ff; }
 </style>
 <main>
-  <h1>xdzip · M2 实际 Qt 截图</h1>
+  <h1>xdzip — M2 实际 Qt 截图</h1>
   <p>M2 开发与自动化验收完成。实现提交 a40dc72，三平台核心与 Qt 流程全部通过。<a href="https://github.com/xiaodaozhi/xdzip/actions/runs/38406277351/artifacts/11819103766">下载 Apple Silicon 开发工件</a>，包内 xdzip-macos-arm64.zip 解压得到 xdzip.app。</p>
   <p>十万条真实元数据、最新查询生效、来源变化使旧列表失效。macOS ARM64 CI 的 Qt 离屏完整加载实测 2.06 秒，约 55 个可见单元格委托；该场景峰值约 230 MiB。实际桌面操作与输入法仍待人工验收，真实解压属于 M3。</p>
   <p>真实 ZIP／ZIP64 数据经 Rust 运行时读取，在 Qt 6.8.2 中展示。截图环境为 Linux x86_64、offscreen / software、DPR 1；窗口逻辑尺寸 1024 × 622。这里只记录实际实现，人工验收入口见 <a href="../m2-acceptance.md">M2 验收文档</a>。</p>

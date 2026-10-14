@@ -63,6 +63,8 @@ pub enum Command {
     },
     /// Queue a whole-archive creation independent of an open archive session.
     Create(crate::creation::Options),
+    /// Read nonrecursive selection sizes for display, never creation authority.
+    InspectInputs(Vec<String>),
     /// Return the current session identity without filesystem work.
     Snapshot,
 }
@@ -76,6 +78,10 @@ impl Command {
             Self::Preflight { selected, .. } => selected.len() * 8,
             Self::Extract { options, .. } => options.bytes(),
             Self::Create(options) => options.bytes(),
+            Self::InspectInputs(paths) => paths
+                .iter()
+                .map(|p| p.len() + std::mem::size_of::<String>())
+                .sum(),
             _ => 0,
         }
     }
@@ -97,6 +103,16 @@ impl Command {
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
             Self::Extract { options, .. } => options.bounded(),
             Self::Create(options) => options.bounded(),
+            Self::InspectInputs(paths) => {
+                !paths.is_empty()
+                    && paths.len() <= 256
+                    && paths.iter().all(|p| {
+                        !p.is_empty()
+                            && p.len() <= 4096
+                            && !p.contains('\0')
+                            && Path::new(p).is_absolute()
+                    })
+            }
             _ => true,
         }
     }
@@ -125,9 +141,21 @@ pub struct Row {
     /// Metadata requiring review.
     pub warning: bool,
 }
+/// Advisory selection metadata. Creation always takes a new frozen input tree.
+#[derive(Debug)]
+pub struct InputInfo {
+    /// An ordinary file size is available; directory totals are deliberately unknown.
+    pub known: bool,
+    /// Selected leaf is a directory; no descendants were scanned.
+    pub directory: bool,
+    /// Current ordinary-file length, valid only when known.
+    pub bytes: u64,
+}
 /// The sole payload event for one accepted request. Finished follows it exactly once.
 #[derive(Debug)]
 pub enum Payload {
+    /// Metadata in the same order as the bounded selected input paths.
+    Inputs(Vec<InputInfo>),
     /// Immutable bounded page with session and offset identity.
     Page {
         /// Session identity checked before acting.
@@ -179,6 +207,7 @@ impl Payload {
                         .sum::<usize>()
             }
             Self::Preflight(report) => report.findings.len() * 64,
+            Self::Inputs(rows) => rows.len() * std::mem::size_of::<InputInfo>(),
             _ => 0,
         }
     }
@@ -604,6 +633,21 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::InspectInputs(paths) => {
+                let mut rows = Vec::with_capacity(paths.len());
+                for path in paths {
+                    control.check().map_err(|_| "cancelled")?;
+                    // Keep links visible. These lengths are display-only and cannot
+                    // authorize encoding, traversal, quota admission or publication.
+                    let metadata = std::fs::symlink_metadata(path).ok();
+                    rows.push(InputInfo {
+                        known: metadata.as_ref().is_some_and(|m| m.is_file()),
+                        directory: metadata.as_ref().is_some_and(|m| m.is_dir()),
+                        bytes: metadata.filter(|m| m.is_file()).map_or(0, |m| m.len()),
+                    });
+                }
+                return Ok(Payload::Inputs(rows));
+            }
             Command::CheckTarget { session, path } => {
                 let grant = if session == 0 {
                     xdzip_io::Grant::for_creation(Path::new(&path))
@@ -795,6 +839,66 @@ mod tests {
         });
         rx.recv_timeout(Duration::from_secs(5))
             .expect("shutdown/receiver must not deadlock")
+    }
+    #[test]
+    fn advisory_input_sizes_are_ordered_nonrecursive_and_bounded() {
+        let root = std::env::temp_dir().join(format!("xdzip-input-preview-{}", std::process::id()));
+        std::fs::create_dir(&root).unwrap();
+        struct Cleanup(std::path::PathBuf);
+        impl Drop for Cleanup {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let _cleanup = Cleanup(root.clone());
+        std::fs::write(root.join("file"), b"seven!!").unwrap();
+        std::fs::write(root.join("empty"), b"").unwrap();
+        std::fs::create_dir(root.join("directory")).unwrap();
+        std::fs::write(root.join("directory/descendant"), b"not included").unwrap();
+        let paths = ["file", "directory", "empty", "missing"]
+            .map(|name| root.join(name).to_string_lossy().into_owned())
+            .to_vec();
+        #[cfg(unix)]
+        let paths = {
+            std::os::unix::fs::symlink(root.join("file"), root.join("link")).unwrap();
+            let mut paths = paths;
+            paths.push(root.join("link").to_string_lossy().into_owned());
+            paths
+        };
+        let (client, mut receiver) = start().unwrap();
+        assert_eq!(
+            client.submit(Command::InspectInputs(vec![paths[0].clone(); 257])),
+            Err(Rejection::Invalid)
+        );
+        assert_eq!(
+            client.submit(Command::InspectInputs(vec!["relative".into()])),
+            Err(Rejection::Invalid)
+        );
+        let id = submit(&client, || Command::InspectInputs(paths.clone()));
+        let event = receiver.receive().unwrap();
+        assert_eq!(event.request, id);
+        let Payload::Inputs(rows) = event.payload else {
+            panic!("expected selection metadata")
+        };
+        assert_eq!(rows.len(), paths.len());
+        assert!(rows[0].known && !rows[0].directory);
+        assert_eq!(rows[0].bytes, 7);
+        assert!(!rows[1].known && rows[1].directory);
+        assert_eq!(rows[1].bytes, 0);
+        assert!(rows[2].known && rows[2].bytes == 0);
+        for row in &rows[3..] {
+            assert!(!row.known && !row.directory && row.bytes == 0);
+        }
+        let terminal = receiver.receive().unwrap();
+        assert_eq!(terminal.request, id);
+        assert!(matches!(terminal.payload, Payload::Finished("")));
+        client.shutdown();
+        drain(receiver);
+        assert_eq!(std::fs::read(root.join("file")).unwrap(), b"seven!!");
+        assert_eq!(
+            std::fs::read(root.join("directory/descendant")).unwrap(),
+            b"not included"
+        );
     }
     #[test]
     fn full_admission_cancel_shutdown_and_exactly_once_terminals() {

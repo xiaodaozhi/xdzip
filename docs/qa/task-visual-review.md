@@ -10,7 +10,7 @@
 
 ![深色 Qt 实现](screenshots/task-progress-dark.png)
 
-[200% 字号上部](screenshots/task-progress-large-type.png) · [滚动到底部](screenshots/task-progress-large-type-bottom.png)。
+[200% 字号上部](screenshots/task-progress-large-type.png)，[滚动到底部](screenshots/task-progress-large-type-bottom.png)。
 
 ## 本次修订
 

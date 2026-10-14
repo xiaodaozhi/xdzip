@@ -15,6 +15,7 @@
 #include <QUrl>
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 int ArchiveTableModel::rowCount(const QModelIndex &parent) const {
@@ -550,9 +551,42 @@ QString BrowserController::defaultTargetDirectory() const {
     const auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     return !path.isEmpty() && QDir(path).exists() ? path : QDir::homePath();
 }
-void BrowserController::checkCreationTarget(const QString &path) {
-    if (m_busy || !runtimeAvailable() || m_closing)
+void BrowserController::inspectCreationInputs(const QStringList &paths) {
+    const auto bounded = paths.mid(0, 256);
+    if (bounded == m_creationPreviewPaths || m_closing || !runtimeAvailable())
         return;
+    m_creationPreviewPaths = bounded;
+    m_creationInputs.clear();
+    m_creationPreviewPending =
+        !bounded.isEmpty() &&
+        std::all_of(bounded.cbegin(), bounded.cend(), [](const QString &path) {
+            return !path.contains(QChar::Null) && QString::fromUtf8(path.toUtf8()) == path;
+        });
+    emit creationInputsChanged();
+    QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+}
+void BrowserController::drainCreationUiWhenIdle() {
+    if (m_busy || m_pending || m_closing || !runtimeAvailable())
+        return;
+    if (!m_pendingCreationTarget.isEmpty()) {
+        const auto path = std::exchange(m_pendingCreationTarget, QString{});
+        checkCreationTarget(path);
+    } else if (std::exchange(m_creationPreviewPending, false)) {
+        xdzip::reader::Command command{};
+        command.kind = xdzip::reader::CommandKind::InspectInputs;
+        for (const auto &path : m_creationPreviewPaths)
+            command.inputs.push_back(rust::String(path.toStdString()));
+        submit(std::move(command));
+        m_result.previewPaths = m_creationPreviewPaths;
+    }
+}
+void BrowserController::checkCreationTarget(const QString &path) {
+    if (!runtimeAvailable() || m_closing)
+        return;
+    if (m_busy) {
+        m_pendingCreationTarget = path;
+        return;
+    }
     if (QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
         m_targetCheck = {
             {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
@@ -772,11 +806,13 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.preflight = preflight;
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract;
     m_result.creating = command.kind == xdzip::reader::CommandKind::Create;
+    m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
-    m_message = m_result.creating      ? tr("正在准备压缩任务…")
+    m_message = m_result.inputPreview  ? tr("正在读取选中文件大小…")
+                : m_result.creating    ? tr("正在准备压缩任务…")
                 : m_result.extraction  ? tr("正在准备解压任务…")
                 : m_result.targetCheck ? tr("正在检查目标目录…")
                 : preflight            ? tr("正在检查所选条目…")
@@ -926,6 +962,20 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             } else
                 m_openAfterTasks.insert(event.task.id);
         }
+    } else if (event.kind == EventKind::Inputs) {
+        if (event.inputs.size() != static_cast<std::size_t>(m_result.previewPaths.size()))
+            m_result.error = "resource_limit";
+        else {
+            for (std::size_t i = 0; i < event.inputs.size(); ++i) {
+                const auto &row = event.inputs[i];
+                m_result.inputInfo.append(
+                    QVariantMap{{"path", m_result.previewPaths.at(static_cast<qsizetype>(i))},
+                                {"known", row.known},
+                                {"directory", row.directory},
+                                {"sizeBytes", QString::number(row.bytes)}});
+            }
+        }
+        m_hasPayload = true;
     } else if (event.kind == EventKind::TargetChecked) {
         m_result.leftovers = event.total;
         m_hasPayload = true;
@@ -1004,7 +1054,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                  row.directory,
                  row.directory && !row.warning,
                  row.physical ? method : QStringLiteral("—"),
-                 status.isEmpty() ? tr("元数据") : status.join(" · "),
+                 status.isEmpty() ? tr("元数据") : status.join("，"),
                  row.warning || row.encrypted,
                  path,
                  text(row.navigation_id),
@@ -1042,6 +1092,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_busy = false;
         m_pending = 0;
         if (m_deferredQuery && text(event.error) != "source_changed") {
+            m_creationPreviewPending |= m_result.inputPreview;
             auto latest = std::move(*m_deferredQuery);
             m_deferredQuery.reset();
             submit(std::move(latest.command));
@@ -1054,6 +1105,17 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result.error = text(event.error);
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
+        if (m_result.inputPreview) {
+            if (m_result.previewPaths == m_creationPreviewPaths && m_result.error.isEmpty()) {
+                m_creationInputs = m_result.inputInfo;
+                emit creationInputsChanged();
+            }
+            m_message.clear();
+            m_result = {};
+            emit changed();
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+            return;
+        }
         // Fetch bounded transport batches until the current query is complete. The model
         // commits once, preserving row identity and avoiding visible paging or partial sorts.
         if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
@@ -1100,6 +1162,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (creating && !taskId.isEmpty())
                 emit creationStarted(taskId);
             QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
         if (m_result.closeSession && m_result.error.isEmpty()) {
@@ -1160,5 +1223,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             emit changed();
         }
         QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
     }
 }

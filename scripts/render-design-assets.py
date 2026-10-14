@@ -42,9 +42,12 @@ def embedded_gallery() -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--hero-only', action='store_true', help='Export only high-resolution operation artwork from existing canonical SVGs')
+    parser.add_argument('--icons', nargs='+', help='Export only these canonical icon names, preserving every other raster')
     parser.add_argument('--standalone', type=Path, help='Export a self-contained HTML asset gallery')
     parser.add_argument('--gallery-only', action='store_true', help='Export existing assets without rasterizing them again')
     args = parser.parse_args()
+    if args.icons and (args.hero_only or args.gallery_only):
+        parser.error('--icons cannot be combined with --hero-only or --gallery-only')
     if args.gallery_only and not args.standalone:
         parser.error('--gallery-only requires --standalone')
     if args.gallery_only:
@@ -54,10 +57,17 @@ def main() -> None:
         os.environ['FONTCONFIG_FILE'] = os.environ['XDZIP_FONTCONFIG_FILE']
     manifest = json.loads((ROOT / 'manifest.json').read_text())
     vectors = [entry for entry in manifest['assets'] if entry['kind'] == 'vector-reconstruction']
+    selected = set(args.icons or [])
+    if selected:
+        unknown = selected - {Path(entry['file']).stem for entry in vectors}
+        if unknown:
+            parser.error(f'Unknown canonical icon names: {sorted(unknown)}')
+        vectors = [entry for entry in vectors if Path(entry['file']).stem in selected]
     hero = json.loads((ROOT.parents[1] / 'docs/visual/operation-assets.json').read_text())
     hero_names = set(hero['icons'])
     manifest['assets'] = [entry for entry in manifest['assets'] if entry['kind'] != 'vector-rasterization'
-                          or args.hero_only and entry['scale'] != hero['scale']]
+                          or args.hero_only and entry['scale'] != hero['scale']
+                          or selected and Path(entry['source']).stem not in selected]
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
@@ -89,7 +99,7 @@ def main() -> None:
                 if scale == 3:
                     entry['visible_bounds'] = bounds
                     entry['visible_bounds_measurement'] = '3x Chromium raster, alpha > 8, divided by scale'
-        if not args.hero_only:
+        if not args.hero_only and not selected:
             page.set_viewport_size({'width': 1200, 'height': 1000})
             page.set_content(embedded_gallery())
             page.evaluate('Promise.all([...document.images].map(image => image.decode()))')

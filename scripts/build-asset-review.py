@@ -119,7 +119,7 @@ def file_inspection():
                          f'<img src="{embedded(src)}" alt="{name}"></span>'
                          f'<strong>{name}</strong></div>')
         sections.append(f'<section class="inspection theme-{theme}" id="fixed-{theme}">'
-                        f'<h2>{label} · 同一 48 × 48 显示槽</h2>'
+                        f'<h2>{label}，同一 48 × 48 显示槽</h2>'
                         '<p class="legend">透明画布大小一致；目录和纸张保留各自轮廓比例。'
                         '没有按类型设置缩放、位移或内部描边。</p>'
                         '<div class="frame-grid">' + ''.join(cards) + '</div></section>')
@@ -135,9 +135,9 @@ def file_inspection():
             sizes.append(f'<h3 class="size-title">SVG 显示为 {size} × {size} CSS 像素</h3>'
                          '<div class="size-grid">' + ''.join(cards) + '</div>')
         sections.append(f'<section class="inspection theme-{theme}" id="sizes-{theme}">'
-                        f'<h2>{label} · 24 / 48 / 72 尺寸检视</h2>' + ''.join(sizes)
+                        f'<h2>{label}，24 / 48 / 72 尺寸检视</h2>' + ''.join(sizes)
                         + '</section>')
-    intro = ('<h1>xdzip · 文件图标共同画布检视</h1><p><a href="index.html">返回逐项对照</a></p>'
+    intro = ('<h1>xdzip — 文件图标共同画布检视</h1><p><a href="index.html">返回逐项对照</a></p>'
              '<p class="notice">每个生产 SVG 的逻辑画布都是 24 × 24。'
              '本页把同一矢量直接显示在指定尺寸；72 像素视图用于检查曲线，'
              '不代表产品必须采用 72 逻辑像素图标。图片类型图标与真实照片缩略图分开。'
@@ -151,8 +151,8 @@ def folder_comparison():
               'file-code': 'CODE', 'file-markdown': 'MD', 'image-file': '图片'}
     sections = []
     for theme, theme_label in [('light', '浅色'), ('dark', '深色')]:
-        for previous, caption in [(True, '修订前 · 17.5 × 15'),
-                                  (False, '当前 · 22 × 18.857')]:
+        for previous, caption in [(True, '修订前，17.5 × 15'),
+                                  (False, '当前，22 × 18.857')]:
             cards = []
             for name in FILE_ICONS:
                 source = (OUT / 'before' / f'folder-list-{theme}.svg'
@@ -162,9 +162,9 @@ def folder_comparison():
                              f'<img src="{embedded(source)}" alt="{name}"></span>'
                              f'<strong>{labels[name]}</strong></div>')
             sections.append(f'<section class="inspection theme-{theme}">'
-                            f'<h2>{theme_label} · {caption}</h2>'
+                            f'<h2>{theme_label}，{caption}</h2>'
                             '<div class="frame-grid">' + ''.join(cards) + '</div></section>')
-    content = ('<h1>xdzip · 目录图标大小修订</h1><p><a href="file-icons.html">完整尺寸检视</a></p>'
+    content = ('<h1>xdzip — 目录图标大小修订</h1><p><a href="file-icons.html">完整尺寸检视</a></p>'
                '<p>所有图片使用同一 48 × 48 显示槽。只修订目录的源几何；'
                '另外五类素材完全相同，页面没有逐类型缩放。</p>' + ''.join(sections))
     return page('xdzip 目录图标大小修订', content).replace(
@@ -302,16 +302,16 @@ def main():
                         'reference_relation': 'historical-design-reference' if name in ('app-mark', 'archive', 'archive-grey') else 'appearance-reference',
                         'review': note})
         rows.append(f'<article id="{name}"><h2>{name} '
-                    f'<small>{"Qt 资源已引用" if runtime else "Qt 尚未引用"} · HTML 共享库已登记</small></h2>'
+                    f'<small>{"Qt 资源已引用" if runtime else "Qt 尚未引用"}，HTML 共享库已登记</small></h2>'
                     '<div class="comparison">' + ''.join(f'<div><b>{label}</b>{pic}</div>' for label, pic in [
-                        ('历史品牌原稿 · 含背景' if name in ('app-mark', 'archive', 'archive-grey') else '原稿参考 · 含背景', picture(crop)), ('历史重建 · 留存证据', picture(old)),
-                        ('当前透明 SVG · 浅色', picture(src)),
-                        ('当前透明 SVG · 深色', picture(ASSETS / 'svg/dark' / src.name, True))])
+                        ('历史品牌原稿，含背景' if name in ('app-mark', 'archive', 'archive-grey') else '原稿参考，含背景', picture(crop)), ('历史重建，留存证据', picture(old)),
+                        ('当前透明 SVG，浅色', picture(src)),
+                        ('当前透明 SVG，深色', picture(ASSETS / 'svg/dark' / src.name, True))])
                     + f'</div><p>{html.escape(note)}</p></article>')
-    intro = ('<h1>xdzip · 原稿与统一素材逐项对照</h1><p>'
-             '<a href="../../../design/assets/index.html">统一素材目录</a> · '
-             '<a href="file-icons.html">文件图标 24 / 48 / 72 尺寸检视</a> · '
-             '<a href="folder-before-after.html">目录大小修订</a> · '
+    intro = ('<h1>xdzip — 原稿与统一素材逐项对照</h1><p>'
+             '<a href="../../../design/assets/index.html">统一素材目录</a>，'
+             '<a href="file-icons.html">文件图标 24 / 48 / 72 尺寸检视</a>，'
+             '<a href="folder-before-after.html">目录大小修订</a>，'
              '<a href="hero-icons.html">状态大图轮廓与配色</a></p>'
              '<p class="notice">原稿切片含背景，仅作视觉参考。浅深色生产 SVG 位于同一素材库；'
              '历史重建只用于说明变化。每栏采用共同显示画布，没有逐图缩放补偿。'

@@ -1,4 +1,4 @@
-# xdzip · 开发构建与验证
+# xdzip — 开发构建与验证
 
 这是实际 ZIP 浏览、创建与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m3-acceptance.md)。签名与独立安全评审尚未达到正式发行条件。
 

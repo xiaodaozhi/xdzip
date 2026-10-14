@@ -55,3 +55,5 @@
 M3 安全解压：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录](qa/m3-acceptance.md)、[Qt／HTML／原稿对照](qa/m3/index.html)。
 
 WP-10 ZIP 创建：[输入树与整体保存契约](engineering/m4-creation.md)、[验收状态](qa/m4-acceptance.md)、[实际 Qt／HTML／原稿对照](qa/m4/index.html)。进度窗口正常密度修订见 [复核记录](qa/progress-density/README.md)。
+
+新建窗口控件修订：[原稿参数](visual/create-reference.json)、[实际截图与验收](qa/create-controls/README.md)、[HTML／Qt／原稿对照](qa/create-controls/index.html)。共享控件禁止窗口覆盖 footer 样式，信息不使用中点分隔。

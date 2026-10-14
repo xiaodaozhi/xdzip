@@ -84,6 +84,108 @@ class BrowserTest : public QObject {
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
+    void creationControlsMatchReviewedSource() {
+        QTemporaryDir input, output;
+        QVERIFY(input.isValid() && output.isValid());
+        const QStringList names{QStringLiteral("冰川湖.jpg"), QStringLiteral("山间日出.jpg"),
+                                QStringLiteral("行程手册.pdf")};
+        const QList<qint64> sizes{8400000, 6200000, 12800000};
+        QStringList paths;
+        for (int i = 0; i < names.size(); ++i) {
+            paths << input.filePath(names[i]);
+            QFile file(paths.last());
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QVERIFY(file.resize(sizes[i]));
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && create);
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths", Q_ARG(QVariant, QVariant(paths)),
+                                          Q_ARG(bool, false)));
+        // Metadata is advisory and asynchronous; wait for it rather than putting
+        // the illustrative 27.4 MB string directly into the product.
+        QTRY_COMPARE(controller->creationInputs().size(), 3);
+        auto *summary = findVisual(create->contentItem(), "createInputSummary");
+        QVERIFY(summary);
+        QTRY_COMPARE(summary->property("text").toString(), QStringLiteral("3 个文件，27.4 MB"));
+        auto *name = findVisual(create->contentItem(), "createName");
+        auto *target = findVisual(create->contentItem(), "createTarget");
+        auto *method = findVisual(create->contentItem(), "createMethod");
+        auto *remove = findVisual(create->contentItem(), "createRemoveInput-0");
+        auto *group = findVisual(create->contentItem(), "createFormat");
+        QVERIFY(name && target && method && remove && group);
+        name->setProperty("text", QStringLiteral("北境旅行.zip"));
+        target->setProperty("text", output.path());
+        controller->checkCreationTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
+        auto *tar = findVisual(create->contentItem(), "createFormat-1");
+        auto *zip = findVisual(create->contentItem(), "createFormat-0");
+        QVERIFY(zip && tar && zip->isEnabled() && !tar->isEnabled());
+        zip->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Right);
+        QCOMPARE(group->property("currentIndex").toInt(), 0);
+        name->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(create, Qt::Key_Tab);
+        const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
+        const auto capture = [&](const QString &scene) {
+            return captures.isEmpty() ||
+                   (QDir().mkpath(captures) && visual_audit::save(create, captures, scene));
+        };
+        // Clear keyboard focus for normal-state border sampling.
+        target->setProperty("focus", false);
+        create->contentItem()->forceActiveFocus();
+        QTRY_VERIFY(visibleImagesReady(create->contentItem()));
+        QVERIFY(capture("create-light"));
+        window->setProperty("darkMode", true);
+        QTRY_VERIFY(visibleImagesReady(create->contentItem()));
+        QVERIFY(capture("create-dark"));
+        window->setProperty("darkMode", false);
+        remove->forceActiveFocus(Qt::TabFocusReason);
+        QTest::qWait(20); // reveal controls in the body on a short high-DPR screen
+        create->contentItem()->forceActiveFocus();
+        QTest::mouseMove(
+            create,
+            remove->mapToScene(QPointF(remove->width() / 2, remove->height() / 2)).toPoint());
+        QTRY_VERIFY(remove->property("hovered").toBool());
+        QVERIFY(capture("create-remove-hover"));
+        name->forceActiveFocus(Qt::TabFocusReason);
+        QVERIFY(capture("create-field-focus"));
+        method->forceActiveFocus(Qt::TabFocusReason);
+        QTest::qWait(20);
+        QTest::mouseClick(
+            create, Qt::LeftButton, Qt::NoModifier,
+            method->mapToScene(QPointF(method->width() / 2, method->height() / 2)).toPoint());
+        auto *popup = method->property("popup").value<QObject *>();
+        QVERIFY(popup);
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QVERIFY(capture("create-dropdown"));
+        QTest::keyClick(create, Qt::Key_End);
+        QTest::keyClick(create, Qt::Key_Return);
+        QTRY_COMPARE(method->property("currentIndex").toInt(), 1);
+        QTRY_VERIFY(!popup->property("visible").toBool());
+        auto *level = findVisual(create->contentItem(), "createLevel");
+        QVERIFY(level && !level->isEnabled());
+        remove->forceActiveFocus(Qt::TabFocusReason);
+        QTest::qWait(20);
+        QTest::mouseClick(
+            create, Qt::LeftButton, Qt::NoModifier,
+            remove->mapToScene(QPointF(remove->width() / 2, remove->height() / 2)).toPoint());
+        QTRY_COMPARE(controller->creationInputs().size(), 2);
+        QTRY_COMPARE(summary->property("text").toString(), QStringLiteral("2 个文件，19.0 MB"));
+        // Removing an input is selection editing, never a filesystem deletion.
+        for (const auto &path : paths)
+            QVERIFY(QFileInfo::exists(path));
+        QVERIFY(capture("create-removed"));
+        create->close();
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
     void m4CreationWindowAndRoundTrip() {
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
@@ -164,6 +266,9 @@ class BrowserTest : public QObject {
         QCOMPARE(task.value("committedFiles").toString(), QString("1"));
         const auto archive = output.path() + QStringLiteral("/创建.zip");
         QVERIFY(QFileInfo::exists(archive));
+        // Job completion and advisory selection/target requests have separate
+        // lifetimes. Wait for the metadata lane before issuing a new open intent.
+        QTRY_VERIFY(!controller->busy());
         controller->openPath(archive);
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
         QCOMPARE(controller->archiveTotal(), 3);

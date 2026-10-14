@@ -12,7 +12,7 @@ OperationWindow {
     requestedHeight: Math.min(Math.round(unit(Theme.operationProgressClientHeight)), Screen.desktopAvailableHeight - 80)
     property bool creating: false
     property bool sampleData: false
-    title: sampleData ? qsTr("任务 · 示例数据 — xdzip") : creating ? qsTr("压缩任务 — xdzip") : qsTr("解压任务 — xdzip")
+    title: sampleData ? qsTr("任务，示例数据 — xdzip") : creating ? qsTr("压缩任务 — xdzip") : qsTr("解压任务 — xdzip")
     allowMinimize: true
     required property string archiveName
     required property string destination
@@ -135,10 +135,10 @@ OperationWindow {
             verticalInset: root.unit(12); minimumFooterHeight: root.unit(Theme.operationFooterHeight)
             Layout.fillWidth: true
             note: root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTr("归档已完整保存并校验。") : qsTr("已有归档保留，暂存数据已处理。")) : root.terminal ? qsTr("已提交的文件保留在目标目录。") : qsTr("关闭此窗口后，任务仍会继续。")
-            AppButton { text: root.terminal ? qsTr("关闭") : qsTr("返回浏览"); labelSize: Theme.operationFooterFontSize; baseHeight: 32; cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(119); onClicked: root.close() }
-            AppButton { visible: root.taskStatus === "waiting"; text: qsTr("处理重名文件"); labelSize: Theme.operationFooterFontSize; baseHeight: 32; cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(119); primary: true; onClicked: root.conflictRequested() }
-            AppButton { visible: root.terminal; text: root.creating && root.taskStatus === "succeeded" ? qsTr("打开压缩包") : qsTr("打开目标目录"); labelSize: Theme.operationFooterFontSize; baseHeight: 32; cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(119); onClicked: root.openOutputRequested() }
-            AppButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTr("正在停止…") : qsTr("取消任务"); labelSize: Theme.operationFooterFontSize; baseHeight: 32; cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(119); enabled: !root.stopping; onClicked: root.cancelRequested() }
+            OperationFooterButton { text: root.terminal ? qsTr("关闭") : qsTr("返回浏览"); onClicked: root.close() }
+            OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTr("处理重名文件"); primary: true; onClicked: root.conflictRequested() }
+            OperationFooterButton { visible: root.terminal; text: root.creating && root.taskStatus === "succeeded" ? qsTr("打开压缩包") : qsTr("打开目标目录"); onClicked: root.openOutputRequested() }
+            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTr("正在停止…") : qsTr("取消任务"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }
     }
 }

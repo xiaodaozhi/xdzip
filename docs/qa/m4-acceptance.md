@@ -1,4 +1,4 @@
-# WP-10 · 真实 ZIP 创建验收
+# WP-10，真实 ZIP 创建验收
 
 2026-10-14：开发与三平台自动化验收完成。实现提交为 `a69d2fd2e76ad07789aa5eeb3c5b61acb4ddc39f`。[Qt components](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053993)、[Foundation probes](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053997)、[HTML design review](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053981)和 [Documentation](https://github.com/xiaodaozhi/xdzip/actions/runs/38535054002)全部通过。[原生 CI 回执](m4/native-ci.json)记录九项任务与三平台工件身份。macOS 仅上传日志／JSON，没有 Apple Silicon 应用包；build/、target/ 和 dist/ 均不提交。桌面人工验收和独立安全审查仍单独登记。
 

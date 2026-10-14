@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>xdzip · 画布滚动条修复</title>
+<title>xdzip — 画布滚动条修复</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f3f5f8;color:#202638;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1280px;margin:auto;padding:24px}h1{font-size:25px;margin:0}h2{font-size:18px;margin:0 0 10px}p{color:#65718a}a{color:#315fd3}figure{margin:24px 0;padding:16px;background:white;border:1px solid #dce2ed;border-radius:12px}img{display:block;width:100%;height:auto;border:1px solid #e3e7ef}figcaption{color:#65718a;font-size:13px;margin-top:10px}@media(max-width:650px){main{padding:16px}h1{font-size:22px}figure{padding:10px}}
 </style>
@@ -14,6 +14,6 @@
 <figure><h2>修复后常规展示</h2><img src="main-after.png" alt="修复后完整 HTML 审阅入口，画布右侧和底部没有多余滚动条"><figcaption>真实经典滚动条开启，1858 × 1234 浏览器视口，正常设计尺寸。</figcaption></figure>
 <figure><h2>负向用例：移除修正规则</h2><img src="reproduced-root-bars.png" alt="移除画布规则后，同一版本出现经典横向和纵向滚动条"><figcaption>同一版本将画布视口缩小 1 px，并移除嵌入规则以复现问题。这是回归用例，不是历史截图。</figcaption></figure>
 <figure><h2>相同条件：保留修正规则</h2><img src="stress-fixed.png" alt="相同的画布缩小 1 像素条件下，没有根滚动条且完整窗口仍可见"><figcaption>保持相同 1 px 容错条件，根滚动条占位为零，窗口四边完整可见。</figcaption></figure>
-<p><a href="README.md">复核说明</a> · <a href="validation.json">专项测量</a> · <a href="../html-scale/index.html">尺寸与原稿对照</a></p>
+<p><a href="README.md">复核说明</a>，<a href="validation.json">专项测量</a>，<a href="../html-scale/index.html">尺寸与原稿对照</a></p>
 </main></body>
 </html>

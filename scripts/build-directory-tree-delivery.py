@@ -39,7 +39,7 @@ def generate():
         path = OUTPUT_ROOT / entry['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256']
         files.add(path)
-        boards.append(f'<figure>{image(path, entry["title"])}<figcaption>{html.escape(entry["title"])} · 1024×1536 原图</figcaption></figure>')
+        boards.append(f'<figure>{image(path, entry["title"])}<figcaption>{html.escape(entry["title"])}，1024×1536 原图</figcaption></figure>')
     cut_cards = []
     labels = {'shared-svg': '共享透明图标', 'native-component': '动态组件', 'native-geometry': '动态几何'}
     references = manifest['component_reference_coverage']
@@ -50,7 +50,7 @@ def generate():
         files.add(path)
         width, height = record['size']
         x, y, _, _ = record['rect']
-        cut_cards.append(f'<figure class="cut"><div class="cut-image">{image(path, entry["title"], width, height)}</div><figcaption>{html.escape(entry["title"])}<small>{html.escape(path.name)} · {width}×{height} 原像素</small><small>原图位置 ({x}, {y}) · {labels[entry["implementation"]]}</small></figcaption></figure>')
+        cut_cards.append(f'<figure class="cut"><div class="cut-image">{image(path, entry["title"], width, height)}</div><figcaption>{html.escape(entry["title"])}<small>{html.escape(path.name)}，{width}×{height} 原像素</small><small>原图位置 ({x}, {y})，{labels[entry["implementation"]]}</small></figcaption></figure>')
     glyph_cards = []
     icons = sorted({name for item in references for name in item['icon_names']})
     for name in icons:
@@ -82,9 +82,9 @@ def generate():
     ]
     event_rows = ''.join(f'<tr><td>{html.escape(label)}</td><td>{html.escape(note)}</td></tr>' for label, note in events)
     state_rows = ''.join(f'<tr><td>{html.escape(next(item["title"] for item in references if Path(item["reference"]).stem == state["cut"]))}</td><td><code>{html.escape(name)}</code></td></tr>' for name, state in spec['states'].items())
-    page = '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip · 目录树 B 设计交付</title>
+    page = '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip — 目录树 B 设计交付</title>
 <style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f5f7fb;color:#20232a;font:15px/1.7 system-ui,-apple-system,sans-serif}main{max-width:1100px;margin:auto;padding:32px 24px}h1{font-size:28px;margin:0 0 12px}h2{font-size:22px;margin:36px 0 16px}a{color:#245ce9}nav{display:flex;gap:16px;flex-wrap:wrap}p{max-width:900px}figure,article{margin:0;padding:16px;border:1px solid #dce3ee;background:#fff;border-radius:12px;min-width:0}figure img{display:block;max-width:100%;height:auto;margin:auto}figcaption{margin-top:12px;font-weight:600;overflow-wrap:anywhere}small{display:block;font-size:12px;font-weight:400;color:#626874;overflow-wrap:anywhere}.boards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.cuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cut-image{min-height:90px;display:grid;place-items:center}.cut-image img{max-height:360px;object-fit:contain}.icons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.glyphs{display:flex;gap:8px;margin:12px 0}.glyph{width:80px;height:80px;display:grid;place-items:center;border-radius:8px;background:repeating-conic-gradient(#eef1f6 0% 25%,white 0% 50%) 0/10px 10px}.glyph.dark{background:#202936}.glyph img{width:48px;height:48px}.note{padding:16px;background:#e9effb;border-radius:8px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;background:#fff}td,th{padding:10px 14px;border:1px solid #dce3ee;text-align:left;vertical-align:top}code{font-size:12px;overflow-wrap:anywhere}.geometry td:last-child{white-space:nowrap}@media(max-width:700px){main{padding:24px 14px}.boards,.cuts{grid-template-columns:1fr}.icons{grid-template-columns:repeat(2,minmax(0,1fr))}.boards figure{padding:8px}h1{font-size:24px}td,th{padding:8px}.geometry td:last-child{white-space:normal}}@media(max-width:360px){.icons{grid-template-columns:1fr}}</style></head><body><main>
-<h1>xdzip · 目录树 B 设计交付</h1>
+<h1>xdzip — 目录树 B 设计交付</h1>
 <p class="note">三张已确认图板、26 张原像素切片、共享透明图标与精确组件规格。设计和素材已交付，HTML / Qt 目录树改造待接入；本页仅展示原稿与素材，不模拟目录交互。</p>
 <nav><a href="#boards">正式图板</a><a href="#geometry">尺寸</a><a href="#behavior">行为与状态</a><a href="#cuts">逐项切图</a><a href="#icons">共享透明图标</a></nav>
 <p>图板是放大的视觉说明，局部卡片比例不同。下面的逻辑尺寸用于开发；切片保留物理像素和背景。原始主稿保持不变，此处只修订左侧目录组件。完整深色图板仍待补齐。</p>

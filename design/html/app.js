@@ -37,7 +37,7 @@ const icon = (name, cls = "") => {
         );
 };
 const photo = (key, cls = "") =>
-    `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"} · 设计示例图片">`;
+    `<img class="${cls}" src="${window.XDZIP_ASSETS.photos[key]}" alt="${key.startsWith("lake") ? "冰川湖" : "山间日出"}，设计示例图片">`;
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
     String(s).replace(
@@ -176,63 +176,63 @@ const state = {
 const specs = {
     B01: [
         "归档浏览",
-        "P01 / P02 / P08 · AC-01 / AC-02 / AC-08",
+        "P01 / P02 / P08，AC-01 / AC-02 / AC-08",
         "打开后只读取目录和属性，不解压内容。目录双击进入；条目用稳定 ID 选择。",
         "单击、复选、Shift 范围选择、⌘/Ctrl+A。Enter 进入文件夹或查看属性。",
         "索引未完成时禁用全部解压；空归档与无搜索结果是不同状态。",
     ],
     B02: [
         "搜索与选择",
-        "P02 / P03 · AC-02 / AC-03",
+        "P02 / P03，AC-02 / AC-03",
         "搜索覆盖当前目录及其后代；结果显示来源路径。无选择时全部解压始终指整个归档。",
         "选择解压所选、全部归档或显式的搜索结果范围。清空搜索恢复原目录。",
         "输入法组合期间不提交查询。切换列表清除选择，避免隐藏选择造成范围误解。",
     ],
     E01: [
         "解压确认",
-        "P03 / P07 · AC-03 / AC-07",
+        "P03 / P07，AC-03 / AC-07",
         "路径预览只追加一次同名目录。所选项和全部归档具有不同计数与大小。",
         "路径、范围、重名策略均可修改。权限恢复后才允许开始；Esc 取消并恢复焦点。",
         "原型只模拟预检，不代表真实权限、安全路径或文件系统验证。",
     ],
     E02: [
         "重名决策",
-        "P03 / P07 · AC-03 / AC-07",
+        "P03 / P07，AC-03 / AC-07",
         "保留已有文件，等待跳过、自动改名或覆盖。覆盖不作为默认 Enter 操作。",
         "默认焦点为跳过。决定仅针对本次任务，可选择对后续同类冲突应用。",
         "覆盖前需由正式核心再次核验目标身份；安全错误不能通过覆盖绕过。",
     ],
     T01: [
         "任务进行中",
-        "P06 / P15 · AC-06 / AC-14",
+        "P06 / P15，AC-06 / AC-14",
         "演示准备、执行、校验、停止与结果；计数对应同一任务范围。",
         "取消后先进入正在停止，再显示已保留和未完成项；返回浏览不取消任务。",
         "所有进度是示例状态，不代表真实吞吐。任务详情可再次打开。",
     ],
     R01: [
         "任务结果",
-        "P03 / P04 / P15 · AC-03 / AC-04 / AC-14",
+        "P03 / P04 / P15，AC-03 / AC-04 / AC-14",
         "成功、跳过、失败或未完成分开显示。部分完成不是全部成功。",
         "重试只包含失败或未完成项，重新进入确认流程。",
         "创建归档整体提交；取消前未发布时不算成功创建归档。",
     ],
     C01: [
         "新建压缩文件",
-        "P04 / P05 · AC-04 / AC-05",
+        "P04 / P05，AC-04 / AC-05",
         "示例输入支持添加、移除。ZIP 可选 Store/Deflate；TAR 无压缩级别，TAR.GZ 使用 GZIP。",
         "更改格式同步扩展名和参数。输入为空或名称为空时不可提交。",
         "首版不提供加密和分卷。已有目标进入独立覆盖确认，取消保留旧归档。",
     ],
     S01: [
         "设置",
-        "P08 / P11 · AC-08 / AC-11",
+        "P08 / P11，AC-08 / AC-11",
         "深浅主题和密度即时预览，最近文件记录可清空。",
         "设置仅影响设计原型；关闭返回当前浏览状态。",
         "无联网、遥测和外部扩展安装。手机布局用于审阅，不声明移动端产品。",
     ],
     X01: [
         "异常状态",
-        "P05 / P07 / P15 · AC-05 / AC-07 / AC-14",
+        "P05 / P07 / P15，AC-05 / AC-07 / AC-14",
         "区分空内容、加载、损坏、不支持、磁盘满与源变化。",
         "错误提供明确恢复入口，不能以空列表或假成功掩盖失败。",
         "使用顶部场景选择器触发；它属于设计审阅工具，不进入产品界面。",
@@ -263,7 +263,7 @@ function toast(text) {
 function setSpec(id) {
     currentSpec = id;
     const s = specs[id];
-    $("#state-label").textContent = `${id} · ${s[0]}`;
+    $("#state-label").textContent = `${id}，${s[0]}`;
     $("#spec").innerHTML =
         `<h2>${id} / ${s[0]} <small style="font-size:11px;color:var(--secondary);font-weight:400">${s[1]}</small></h2><div class="spec-grid">${["行为与范围", "交互与恢复", "验收边界"].map((x, i) => `<div><h3>${x}</h3><p>${s[i + 2]}</p></div>`).join("")}</div>`;
 }
@@ -426,7 +426,7 @@ function render() {
         `${list.length} 项`;
     $("#search-notice").hidden = !state.query;
     $("#search-notice").textContent =
-        `当前${state.path ? "目录及后代" : "归档"}中找到 ${list.length} 项 · 搜索结果不等同于全部归档`;
+        `当前${state.path ? "目录及后代" : "归档"}中找到 ${list.length} 项，搜索结果不等同于全部归档`;
     $("#file-rows").innerHTML = list
         .map(
             (e) =>
@@ -518,8 +518,8 @@ function render() {
     $("#extract").disabled = state.archiveState !== "ready";
     $("#extract-menu-button").disabled = state.archiveState !== "ready";
     $("#selection-status").textContent = chosen.length
-        ? `已选择 ${chosen.length} 项 · ${bytes(sum)}`
-        : `${files.length} 个文件 · ${folders.length} 个文件夹`;
+        ? `已选择 ${chosen.length} 项，${bytes(sum)}`
+        : `${files.length} 个文件，${folders.length} 个文件夹`;
     $("#read-status").textContent =
         state.archiveState === "loading"
             ? "正在读取目录"
@@ -531,7 +531,7 @@ function render() {
     if (state.archiveState !== "ready") {
         $("#selection-status").textContent =
             state.archiveState === "empty"
-                ? "0 个文件 · 0 个文件夹"
+                ? "0 个文件，0 个文件夹"
                 : "目录信息未就绪";
     }
     window.XdzipMain?.sync(list);
@@ -618,7 +618,7 @@ function renderInspector(chosen) {
             ? chosen.reduce((n, e) => n + e.compressed, 0)
             : compressedBytes;
     $("#inspector").innerHTML =
-        `<div class="inspector-head"><span>${single?.type.includes("JPEG") ? "文件预览" : chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div>${single && ["lake", "sunrise"].includes(single.id) ? `<div class="photo-preview">${photo(single.id === "lake" ? "lake-preview" : "sunrise")}</div>` : `<div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}</div>`}<h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : esc(state.archiveTitle)}</h2><span class="type-label">${multi ? "多个类型 · 已选择" : single ? single.type : "ZIP 压缩文件 · Deflate"}</span><dl class="property-list">${[
+        `<div class="inspector-head"><span>${single?.type.includes("JPEG") ? "文件预览" : chosen.length ? "文件属性" : "归档信息"}</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div>${single && ["lake", "sunrise"].includes(single.id) ? `<div class="photo-preview">${photo(single.id === "lake" ? "lake-preview" : "sunrise")}</div>` : `<div class="file-emblem">${icon(multi ? "layers" : single ? fileIcon(single) : "archive")}</div>`}<h2>${multi ? `${chosen.length} 个文件` : single ? esc(single.name) : esc(state.archiveTitle)}</h2><span class="type-label">${multi ? "多个类型，已选择" : single ? single.type : "ZIP 压缩文件，Deflate"}</span><dl class="property-list">${[
             ["原始大小", bytes(size)],
             ["压缩后", bytes(packed)],
             [
@@ -669,7 +669,7 @@ function updateTaskCount() {
     $("#task-count").textContent = running
         ? `任务 ${running}`
         : state.task || state.testJob
-          ? "任务 · 已结束"
+          ? "任务，已结束"
           : "任务 0";
 }
 // Web chrome is a design simulation. Production uses separate QQuickWindows.
@@ -713,6 +713,7 @@ function dialog(html, kind, spec, focus) {
     setSpec(spec);
     el.querySelectorAll("select.field-select").forEach(select => select.dataset.xdzipSelect = "true");
     XdzipControls.enhanceSelects(el);
+    XdzipControls.enhanceSegmentedGroups(el);
     // Decision windows block only their owner; task details/settings remain modeless.
     const modeless = [
         "progress",
@@ -785,7 +786,7 @@ function showWelcome() {
     state.selected.clear();
     $("#welcome").hidden = false;
     $("#welcome").innerHTML =
-        `<div class="brand-tile">${icon("archive")}</div><h1>压缩文件，一目了然。</h1><p>先查看内容，再决定解压哪些文件。</p><div class="welcome-actions"><button class="button primary" id="welcome-open">${icon("folderOpen")}打开压缩文件</button><button class="button" id="welcome-create">${icon("plus")}新建压缩文件</button></div><small>ZIP · TAR · TAR.GZ / 所有处理均在本机完成</small>`;
+        `<div class="brand-tile">${icon("archive")}</div><h1>压缩文件，一目了然。</h1><p>先查看内容，再决定解压哪些文件。</p><div class="welcome-actions"><button class="button primary" id="welcome-open">${icon("folderOpen")}打开压缩文件</button><button class="button" id="welcome-create">${icon("plus")}新建压缩文件</button></div><small>ZIP，TAR，TAR.GZ / 所有处理均在本机完成</small>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
     render();
@@ -833,12 +834,12 @@ function showExtract(scope = "selected", retryFiles = null) {
     dialog(
         header(
             "解压文件",
-            `${esc(state.archiveTitle)} · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
+            `${esc(state.archiveTitle)}，${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
             "archive",
         ) +
             `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row destination-field">${icon("folder")}<input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : esc(state.plan.target)}"><button class="button" id="change-target">更改</button></div><label class="check-label destination-check"><span class="destination-mark"><input id="same-folder" type="checkbox" checked></span><span class="destination-text">创建同名文件夹</span></label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group scope-card"><div class="field-label">解压范围</div><div class="scope-box">${
                 scope !== "all"
-                    ? `<label class="radio-row"><input type="radio" name="scope" value="${scope}" checked><span>${scope === "results" ? "当前搜索结果" : scope === "retry" ? "失败或未完成项" : "所选文件"}</span><small>${count} 项 · ${bytes(sum)}</small></label><div class="scope-files">${chosen
+                    ? `<label class="radio-row"><input type="radio" name="scope" value="${scope}" checked><span>${scope === "results" ? "当前搜索结果" : scope === "retry" ? "失败或未完成项" : "所选文件"}</span><small>${count} 项，${bytes(sum)}</small></label><div class="scope-files">${chosen
                           .slice(0, 3)
                           .map(
                               (e) =>
@@ -848,7 +849,7 @@ function showExtract(scope = "selected", retryFiles = null) {
                               "",
                           )}${count > 3 ? `<br>另有 ${count - 3} 个文件` : ""}</div>`
                     : ""
-            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">重名文件</label><select id="conflict-policy" class="field-select" data-xdzip-select><option value="ask">询问我如何处理</option><option value="skip">跳过已有文件</option><option value="rename">自动改名，保留两个版本</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label><label class="check-label"><input id="allow-high-ratio" type="checkbox">允许高压缩比文件（仍受字节限额约束）</label></div>` +
+            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项，${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">重名文件</label><select id="conflict-policy" class="field-select" data-xdzip-select><option value="ask">询问我如何处理</option><option value="skip">跳过已有文件</option><option value="rename">自动改名，保留两个版本</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label><label class="check-label"><input id="allow-high-ratio" type="checkbox">允许高压缩比文件（仍受字节限额约束）</label></div>` +
             footer(
                 cancelButton() +
                     `<button id="start-extract" class="button primary">开始解压</button>`,
@@ -946,7 +947,7 @@ function showConflict() {
             "document-conflict",
             false,
         ) +
-            `<div class="modal-content"><div class="conflict-name">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}${esc(e.name)}</div><div class="comparison"><div><span class="comparison-artwork">${icon(fileIcon(e))}</span><label>已有文件</label><strong>${bytes(Math.round(e.size * 0.875))}</strong><small>2026/10/01 · 09:42</small></div><div><span class="comparison-artwork">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}</span><label>压缩包中的文件</label><strong>${bytes(e.size)}</strong><small>2026/10/08 · 14:32</small></div></div><label class="check-label"><input id="apply-conflict-all" type="checkbox">对本次任务后续同类冲突应用此选择</label><div class="notice warning"><span class="notice-artwork">${icon("conflict-warning")}</span><span>覆盖会替换已有文件内容。选择“自动改名”可以保留两个版本。</span></div></div>` +
+            `<div class="modal-content"><div class="conflict-name">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}${esc(e.name)}</div><div class="comparison"><div><span class="comparison-artwork">${icon(fileIcon(e))}</span><label>已有文件</label><strong>${bytes(Math.round(e.size * 0.875))}</strong><small>2026/10/01，09:42</small></div><div><span class="comparison-artwork">${icon(e.type.includes("PDF") ? "conflict-pdf" : fileIcon(e))}</span><label>压缩包中的文件</label><strong>${bytes(e.size)}</strong><small>2026/10/08，14:32</small></div></div><label class="check-label"><input id="apply-conflict-all" type="checkbox">对本次任务后续同类冲突应用此选择</label><div class="notice warning"><span class="notice-artwork">${icon("conflict-warning")}</span><span>覆盖会替换已有文件内容。选择“自动改名”可以保留两个版本。</span></div></div>` +
             footer(
                 `<button class="button" id="skip-conflict">跳过</button><button class="button primary" id="rename-conflict">自动改名</button><button class="button danger" id="overwrite-conflict">覆盖文件</button>`,
                 "等待你的决定",
@@ -1178,7 +1179,7 @@ function showCreate() {
     state.createItems = [byId.get("lake"),byId.get("sunrise"),byId.get("guide")].filter(Boolean);
     dialog(
         header("新建压缩文件", "将文件整理为一个压缩包。", "archive-add") +
-        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label><div class="create-format-tabs" role="group" aria-label="压缩格式"><button id="create-format-zip" class="button primary" aria-pressed="true">ZIP</button><button class="button" id="create-format-tar" disabled title="此格式将在后续版本提供">TAR</button><button class="button" id="create-format-gzip" disabled title="此格式将在后续版本提供">TAR.GZ</button></div></div><div class="create-form-row" id="method-group"><label for="create-method">压缩算法</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store · 不压缩</option></select></div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option>均衡 (6)</option><option>快速 (1)</option><option>更小 (9)</option></select></div><p id="create-level-note" class="field-note">均衡兼顾速度与压缩率。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label>${XdzipControls.segmentedMarkup({id:"create-format",label:"压缩格式",selected:"zip",options:[{id:"create-format-zip",value:"zip",text:"ZIP"},{id:"create-format-tar",value:"tar",text:"TAR",disabled:true},{id:"create-format-gzip",value:"gzip",text:"TAR.GZ",disabled:true}]})}</div><div class="create-form-row" id="method-group"><label for="create-method">压缩算法</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store，不压缩</option></select></div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option>均衡 (6)</option><option>快速 (1)</option><option>更小 (9)</option></select></div><p id="create-level-note" class="field-note">均衡兼顾速度与压缩率。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
         footer(`<button id="cancel-modal" class="button" data-close>取消</button><button id="start-create" class="button primary">创建压缩包</button>`),
         "create", "C01", "#add-input",
     );
@@ -1192,26 +1193,32 @@ function showCreate() {
         $("#create-valid").innerHTML =
             `${icon(valid ? "success" : "status-warning")}<span>${
                 valid
-                    ? "示例检查通过 · " +
+                    ? "示例检查通过，" +
                       state.createItems.length +
-                      " 个选择项 · 目标可写（示例）"
+                      " 个选择项，目标可写（示例）"
                     : "请添加输入文件，并填写名称与保存位置。"
             }</span>`;
         $("#create-valid").className =
             "field-note " + (valid ? "success" : "error");
     };
+    const selectionSize = value => value >= 1000000 ? (value / 1000000).toFixed(1) + " MB" : value >= 1000 ? Math.round(value / 1000) + " KB" : value + " B";
     const draw = () => {
         $("#create-list").innerHTML = state.createItems.length
             ? state.createItems
                   .map(
                       (e, i) =>
-                          `<div class="create-row">${icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${bytes(e.size)}</span><button class="icon-button" data-remove="${i}" aria-label="移除 ${esc(e.name)}">${icon("close")}</button></div>`,
+                          `<div class="create-row">${icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${bytes(e.size)}</span><button class="icon-button" data-remove="${i}" aria-label="移除 ${esc(e.name)}">${icon("remove")}</button></div>`,
                   )
                   .join("")
             : '<div class="create-row">尚未添加内容</div>';
-        $("#create-size").textContent = state.createItems.length + " 个选择项 · " + bytes(
-            state.createItems.reduce((n, e) => n + e.size, 0),
-        );
+        const selectedFiles = state.createItems.filter(e => !e.folder);
+        const selectedDirectories = state.createItems.length - selectedFiles.length;
+        const summary = [];
+        if (selectedFiles.length) summary.push(selectedFiles.length + " 个文件");
+        if (selectedDirectories) summary.push(selectedDirectories + " 个文件夹");
+        if (selectedFiles.length) summary.push(selectionSize(selectedFiles.reduce((n, e) => n + e.size, 0)));
+        if (selectedDirectories) summary.push("文件夹大小将在开始前扫描");
+        $("#create-size").textContent = summary.length ? summary.join("，") : "尚未添加文件";
         $("#create-list")
             .querySelectorAll("[data-remove]")
             .forEach(

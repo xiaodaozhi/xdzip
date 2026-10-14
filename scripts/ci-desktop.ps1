@@ -66,6 +66,12 @@ Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--o
 $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m4-operations'
 Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
 Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
+Invoke-Checked python @('scripts/check-operation-components.py')
+$env:XDZIP_CREATE_CONTROLS_AUDIT = Join-Path (Get-Location) 'build/desktop/create-controls'
+Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
+Invoke-Checked python @('scripts/check-create-controls.py', '--input', 'build/desktop/create-controls', '--output', 'build/review/create-controls.json')
+Copy-Item -Recurse 'build/desktop/create-controls' 'build/review/create-controls'
+Remove-Item Env:XDZIP_CREATE_CONTROLS_AUDIT
 Copy-Item -Recurse 'build/desktop/m4-operations' 'build/review/m4-operations'
 Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', 'build/desktop/m4-operations', '--output', 'build/review/m4-operation-ui.json')
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m4-probe')
@@ -98,6 +104,11 @@ foreach ($density in @('1.25', '2')) {
     Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
     Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', $creationPath, '--output', "build/review/m4-operation-ui-dpr$density.json")
     Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
+    $stylePath = "build/desktop/create-controls-dpr$density"
+    $env:XDZIP_CREATE_CONTROLS_AUDIT = Join-Path (Get-Location) $stylePath
+    Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
+    Invoke-Checked python @('scripts/check-create-controls.py', '--input', $stylePath, '--output', "build/review/create-controls-dpr$density.json")
+    Remove-Item Env:XDZIP_CREATE_CONTROLS_AUDIT
 }
 Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT

@@ -15,5 +15,80 @@
     "Unsupported TAR/GZIP disabled; pending directory bytes are not fabricated",
     "Selected-input count and empty-state layout are functional additions",
     "Native OS titlebar is outside client bounds; body may scroll on short screens"
+  ],
+  "source_controls": {
+    "add_file_button": [
+      137,
+      345,
+      192,
+      53
+    ],
+    "file_name_field": [
+      266,
+      791,
+      670,
+      53
+    ],
+    "remove_button": [
+      886,
+      422,
+      49,
+      49
+    ],
+    "format_group": [
+      273,
+      1078,
+      663,
+      43
+    ],
+    "algorithm_select": [
+      273,
+      1135,
+      663,
+      47
+    ],
+    "footer_cancel": [
+      645,
+      1361,
+      133,
+      53
+    ],
+    "footer_primary": [
+      792,
+      1361,
+      174,
+      53
+    ]
+  },
+  "reviewed_control_contract": {
+    "button_radius": 5,
+    "field_radius": 5,
+    "footer_radius": 5,
+    "field_border": "#C9D1E0",
+    "neutral_button_border": "#C9D1E0",
+    "neutral_button_surface": "#FAFBFD",
+    "select_icon_slot": 18,
+    "select_icon_right_inset": 6,
+    "remove_hit_size": 28,
+    "remove_artwork_size": 24,
+    "format_group_height": 28,
+    "format_group_radius": 5,
+    "footer_height": 32
+  },
+  "summary_fixture": {
+    "files": 3,
+    "file_sizes": [
+      8400000,
+      6200000,
+      12800000
+    ],
+    "total_bytes": 27400000,
+    "display": "3 个文件，27.4 MB",
+    "unit": "Decimal SI for creation selection summary; sizes are read on the metadata worker"
+  },
+  "reviewed_changes": [
+    "Circular minus removal, shared borders/radii and continuous segmented radio group follow C01",
+    "Footer buttons use one role component across operation windows",
+    "Information uses commas or line breaks; original bitmaps remain immutable"
   ]
 }

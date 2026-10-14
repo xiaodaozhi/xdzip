@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "component": "directory-tree",
-  "name": "B · 层级引导目录树",
+  "name": "B，层级引导目录树",
   "status": "core-interactions-integrated",
   "units": "Qt logical pixels / CSS pixels in the normalized 1024-wide main window",
   "coordinate_note": "图板是放大的视觉说明，不存在适用于三张图板的共同缩放系数；下列值是组件落地尺寸，不是对图片像素的测量。切片的 source physical rect 单独记入资产清单。",

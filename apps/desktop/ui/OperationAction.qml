@@ -2,15 +2,10 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
-AppButton {
+OperationButton {
     id: root
     required property url actionIcon
     property real iconSize: 16
-    labelSize: Theme.operationFooterFontSize
-    baseHeight: 28
-    cornerRadius: 5
-    horizontalInset: 12
-    verticalInset: 5
     contentItem: Item {
         implicitWidth: group.implicitWidth
         implicitHeight: group.implicitHeight

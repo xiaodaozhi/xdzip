@@ -164,10 +164,10 @@ window.XdzipMain = (() => {
             tabs
                 .map(
                     (tab) =>
-                        `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭归档 · ${shortcut("W")}">${icon("close")}</button></div>`,
+                        `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭归档，${shortcut("W")}">${icon("close")}</button></div>`,
                 )
                 .join("") +
-            `<button id="new-tab" class="header-icon" aria-label="打开其他归档" data-tooltip="打开其他归档 · ${shortcut("O")}">${icon("plus")}</button>`;
+            `<button id="new-tab" class="header-icon" aria-label="打开其他归档" data-tooltip="打开其他归档，${shortcut("O")}">${icon("plus")}</button>`;
         bar.querySelectorAll("[data-tab]").forEach((node) => {
             node.onclick = (event) => {
                 if (!event.target.closest("[data-close-tab]"))
@@ -278,7 +278,7 @@ window.XdzipMain = (() => {
         dialog(
             header(
                 "打开压缩文件",
-                "系统文件选择器的设计替身 · 使用示例归档",
+                "系统文件选择器的设计替身，使用示例归档",
                 "open",
             ) +
                 `<div class="modal-content"><p class="field-note">选择下列示例验证多归档交互。</p><div class="field-group"><button id="pick-sample" class="button">${icon("archive")}北境旅行.zip</button><button id="pick-project" class="button">${icon("archive-grey")}项目素材.zip</button></div></div>` +
@@ -1088,10 +1088,10 @@ window.XdzipMain = (() => {
         const content =
             header(
                 outcome,
-                `${esc(job.title)} · 设计示例，不执行实际 CRC 校验`,
+                `${esc(job.title)}，设计示例，不执行实际 CRC 校验`,
                 "archive-test",
             ) +
-            `<div class="modal-content"><section class="archive-test-results"><progress max="100" value="${job.progress}" aria-label="演示测试进度"></progress><strong>${job.progress}% · ${Math.floor((job.total * job.progress) / 100)} / ${job.total} 条文件记录</strong><p>目录、数据读取与校验结果使用固定示例状态；真实 CRC 校验由格式模块执行。</p></section></div>` +
+            `<div class="modal-content"><section class="archive-test-results"><progress max="100" value="${job.progress}" aria-label="演示测试进度"></progress><strong>${job.progress}%，${Math.floor((job.total * job.progress) / 100)} / ${job.total} 条文件记录</strong><p>目录、数据读取与校验结果使用固定示例状态；真实 CRC 校验由格式模块执行。</p></section></div>` +
             footer(
                 `${job.status === "running" ? '<button id="cancel-archive-test" class="button">取消检查</button>' : ""}<button id="close-archive-test" class="button">${job.status === "running" ? "返回浏览" : "完成"}</button>`,
                 "设计演示",

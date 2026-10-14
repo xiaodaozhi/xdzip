@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     owner.resize(640, 480);
 
     QQuickWindow operation;
-    operation.setTitle(QStringLiteral("独立操作窗口 · 工具链验证"));
+    operation.setTitle(QStringLiteral("独立操作窗口，工具链验证"));
     operation.setTransientParent(&owner);
     operation.setModality(Qt::WindowModal);
     operation.resize(320, 240);

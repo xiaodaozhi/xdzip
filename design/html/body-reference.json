@@ -762,7 +762,7 @@
       "压缩后",
       "修改日期"
     ],
-    "#selection-status": "已选择 1 项 · 8.4 MB",
+    "#selection-status": "已选择 1 项，8.4 MB",
     "#read-status": "目录已读取",
     "#task-count": "任务 0"
   },
@@ -910,7 +910,7 @@
           "current_bounds": null,
           "current_minus_source": null,
           "uncertainty_px": 1,
-          "notes": "Current has plain ZIP · amount instead of a badge."
+          "notes": "Current has plain ZIP，amount instead of a badge."
         },
         {
           "name": "archive_divider",
@@ -2348,7 +2348,7 @@
           ]
         },
         "font_size_estimate": 18,
-        "selection_text": "已选择 1 项 · 8.4 MB",
+        "selection_text": "已选择 1 项，8.4 MB",
         "selection_visible_ink": [
           43,
           933,

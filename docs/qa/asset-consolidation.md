@@ -4,7 +4,7 @@
 
 本文保留素材合并与文件夹尺寸修订的历史复核。480 项素材、37 个 Qt 别名等检查数字对应 `05a435d` 合并基线，不覆盖后续的新品牌与补图；当前变更及验证见 [品牌与素材复核](brand-and-assets.md)。
 
-[统一素材画廊](../../design/assets/index.html) · [素材清单](../../design/assets/manifest.json) · [路径迁移记录](../../design/assets/migration.json) · [完整高保真原稿](../../design/hifi/index.html) · [HTML 实际界面](../../design/html/index.html)
+[统一素材画廊](../../design/assets/index.html)，[素材清单](../../design/assets/manifest.json)，[路径迁移记录](../../design/assets/migration.json)，[完整高保真原稿](../../design/hifi/index.html)，[HTML 实际界面](../../design/html/index.html)
 
 ## 原有素材的实际用途
 
@@ -52,7 +52,7 @@ HTML 移除逐类型 CSS 图形变换，Qt 按文件类型选择统一资源。�
 
 调整写入共享 SVG，HTML 和 Qt 同时采用；显示槽、文件名位置、目录树排版不变。424 张其他 SVG/PNG 字节完全未改，原稿及原像素切片保持原样。原稿中的旧目录墨迹现在单独记录差异，另外按新设计目标严格检查；不把新尺寸冒充原始测量或放宽其他原稿容差。
 
-[文件夹修订前后及文件类型对照](asset-review/folder-before-after.png) · [Qt 实际加载](asset-consumers/file-icons-light.png)
+[文件夹修订前后及文件类型对照](asset-review/folder-before-after.png)，[Qt 实际加载](asset-consumers/file-icons-light.png)
 
 ## 当前品牌与补图修订
 

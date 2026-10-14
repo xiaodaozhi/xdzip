@@ -177,9 +177,9 @@ ApplicationWindow {
         errorSummary: root.taskSnapshot.error || ""
         cleanupWarning: root.taskSnapshot.cleanupWarning || false
         outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
-        processedSummary: taskWindow.creating ? qsTr("已读取 %1 · 压缩后 %2").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTr("已写入 %1 · 已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
-        fileCountSummary: taskWindow.creating ? qsTr("%1 个文件 · %2").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTr("整体保存已结束") : qsTr("校验后整体保存")) : qsTr("%1 / %2 个文件 · 跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
-        resultSummary: qsTr("完成 %1 个文件 · 跳过 %2 · 创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
+        processedSummary: taskWindow.creating ? qsTr("已读取 %1，压缩后 %2").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTr("已写入 %1，已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
+        fileCountSummary: taskWindow.creating ? qsTr("%1 个文件，%2").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTr("整体保存已结束") : qsTr("校验后整体保存")) : qsTr("%1 / %2 个文件，跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        resultSummary: qsTr("完成 %1 个文件，跳过 %2，创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
         onCancelRequested: reader.cancelTask(root.activeTaskId)
@@ -1400,7 +1400,7 @@ ApplicationWindow {
                 spacing: Theme.mainUnits(8)
                 Text {
                     Layout.fillWidth: true
-                    text: qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? " · " + root.formatSize(reader.selectedBytes) : "")
+                    text: qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? "，" + root.formatSize(reader.selectedBytes) : "")
                     color: Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                     elide: Text.ElideRight
@@ -1425,7 +1425,7 @@ ApplicationWindow {
                             model: reader.tasks
                             CommandMenuItem {
                                 required property var modelData
-                                text: qsTr("任务 %1 · %2").arg(modelData.id).arg(root.phaseLabel(modelData.status))
+                                text: qsTr("任务 %1，%2").arg(modelData.id).arg(root.phaseLabel(modelData.status))
                                 onTriggered: root.showTask(modelData.id)
                             }
                         }

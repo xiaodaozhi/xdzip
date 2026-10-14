@@ -16,6 +16,8 @@ M1 产品骨架、M2 ZIP／ZIP64 只读、M3 Store／Deflate 安全解压已完�
 - 验证范围与变更匹配；文档改动检查链接和生成输出，产品改动按 CI 策略执行相关检查。
 - 不在日志、提交或 issue 中输出凭据及完整用户路径。保留工作区已有改动。
 - 默认中文设计说明，公共 API 标识使用英文；对外英文文档应与中文版本一致。
+- 文本信息使用逗号、句号或换行分隔，不使用中点。原稿与历史原始捕获保持其证据身份。
+- 操作窗口使用共享 OperationButton、OperationFooterButton、OperationFrame、OperationSelect 和 OperationSegmentedGroup；禁止在窗口中覆盖 footer 按钮的圆角、字号、颜色、描边和密度。
 
 后续开发在 main 推进；本地相关检查通过后直接推送 main，不另建 PR。共享 main 不强制推送；遇到远端新提交先同步并复验。
 

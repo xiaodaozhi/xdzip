@@ -38,6 +38,7 @@ Button {
         font.pixelSize: Math.round(root.labelSize / Theme.fontScale * root.density) * Theme.fontScale
     }
     background: Rectangle {
+        objectName: root.objectName ? root.objectName + "Background" : ""
         radius: root.cornerRadius * root.density
         color: !root.enabled ? (root.primary ? Theme.accentDisabled : root.surfaceColor) : root.dangerous ? Qt.rgba(Theme.menuDanger.r, Theme.menuDanger.g, Theme.menuDanger.b, root.down ? .2 : root.hovered ? .12 : .06) : root.primary ? (root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : root.surfaceColor
         border.color: root.activeFocus ? Theme.accent : root.dangerous ? Theme.menuDanger : root.outlineColor

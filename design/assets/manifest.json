@@ -98,8 +98,7 @@
           12
         ]
       }
-    },
-    "hero_raster_scale": 9
+    }
   },
   "license": "Apache-2.0; fonts/ is independently licensed under OFL-1.1",
   "reference_coverage": [
@@ -950,7 +949,7 @@
     {
       "reference": "reference/tree-row-collapsed.png",
       "component": "directory-tree",
-      "title": "有子目录 · 已折叠",
+      "title": "有子目录，已折叠",
       "implementation": "native-component",
       "icon_names": [
         "folder",
@@ -964,7 +963,7 @@
     {
       "reference": "reference/tree-row-expanded.png",
       "component": "directory-tree",
-      "title": "有子目录 · 已展开",
+      "title": "有子目录，已展开",
       "implementation": "native-component",
       "icon_names": [
         "folder",
@@ -4208,9 +4207,11 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/remove.png"
+        ]
       },
-      "sha256": "dfa15fc6cedfb41828811c9e7ded95def08d821e9de12806e23be0d2a6b5cad8",
+      "sha256": "3c0579816060e139381ffe26ac76e50dcdc6ea456d9ad3c3e1f9e7251d56a50b",
       "source_reference": "reference/remove-row.png",
       "visible_bounds": [
         2.0,
@@ -6565,9 +6566,11 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/remove.png"
+        ]
       },
-      "sha256": "85d6a571f147cf50fcbac4307d9b668e2645b0d5deadcd3cbdb3f4d1bad1e199",
+      "sha256": "249b6fae7bc6ec8687a47cd7dcbedbb7863716f8692f2aa89332ce6ae269fab3",
       "source_reference": "reference/remove-row.png",
       "visible_bounds": [
         2.0,
@@ -8000,6 +8003,186 @@
         "qt_aliases": [],
         "platform_resources": []
       }
+    },
+    {
+      "id": "raster/light/remove@1x",
+      "file": "png/light/remove@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/remove.svg",
+      "source_sha256": "3c0579816060e139381ffe26ac76e50dcdc6ea456d9ad3c3e1f9e7251d56a50b",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "5c1a55e6c6a90acc264ca4e599fee0f47c7388d91c8ff1178da5ee68a752d658"
+    },
+    {
+      "id": "raster/light/remove@2x",
+      "file": "png/light/remove@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/remove.svg",
+      "source_sha256": "3c0579816060e139381ffe26ac76e50dcdc6ea456d9ad3c3e1f9e7251d56a50b",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "a0feedd8aee6a6a40a584fcd1f65212ba0d524a3061ec8835425c3902ff80231"
+    },
+    {
+      "id": "raster/light/remove@3x",
+      "file": "png/light/remove@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "light",
+      "category": "status",
+      "source": "svg/light/remove.svg",
+      "source_sha256": "3c0579816060e139381ffe26ac76e50dcdc6ea456d9ad3c3e1f9e7251d56a50b",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "9a37c7579efa33868e159024b6d3dca75346f2f0505638e32690641a5641003b"
+    },
+    {
+      "id": "raster/dark/remove@1x",
+      "file": "png/dark/remove@1x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        24,
+        24
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 1,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/remove.svg",
+      "source_sha256": "249b6fae7bc6ec8687a47cd7dcbedbb7863716f8692f2aa89332ce6ae269fab3",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "edce5b8b0b4e2914e3ea44021186d109028368e8754815078addfaa51ece77f7"
+    },
+    {
+      "id": "raster/dark/remove@2x",
+      "file": "png/dark/remove@2x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        48,
+        48
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 2,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/remove.svg",
+      "source_sha256": "249b6fae7bc6ec8687a47cd7dcbedbb7863716f8692f2aa89332ce6ae269fab3",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "f75b011651db745f859cfb8d8de6486935deed1f477578f281c8eb3722ec9fbc"
+    },
+    {
+      "id": "raster/dark/remove@3x",
+      "file": "png/dark/remove@3x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        72,
+        72
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 3,
+      "theme": "dark",
+      "category": "status",
+      "source": "svg/dark/remove.svg",
+      "source_sha256": "249b6fae7bc6ec8687a47cd7dcbedbb7863716f8692f2aa89332ce6ae269fab3",
+      "visible_bounds": [
+        2.0,
+        2.0,
+        22.0,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "f8d65c6fe808d818f1ff4c099881f702c1761f7e912fbb29128e15262d8d3ec6"
     },
     {
       "id": "raster/light/activity@1x",
@@ -12323,96 +12506,6 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "d007c20c23ffe8dab2430d07c593afc045a5eebd76ce45f749b196a584f9fdeb"
-    },
-    {
-      "id": "raster/light/remove@1x",
-      "file": "png/light/remove@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/remove.svg",
-      "source_sha256": "dfa15fc6cedfb41828811c9e7ded95def08d821e9de12806e23be0d2a6b5cad8",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "842a1de3a7a973681320d611ef6229b5a72844e8517c7b6530f755eb21014424"
-    },
-    {
-      "id": "raster/light/remove@2x",
-      "file": "png/light/remove@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/remove.svg",
-      "source_sha256": "dfa15fc6cedfb41828811c9e7ded95def08d821e9de12806e23be0d2a6b5cad8",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "4af311795d56e6a8568a3f359ec86603d69d16de5e2b795bd1f643218a74a328"
-    },
-    {
-      "id": "raster/light/remove@3x",
-      "file": "png/light/remove@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "light",
-      "category": "status",
-      "source": "svg/light/remove.svg",
-      "source_sha256": "dfa15fc6cedfb41828811c9e7ded95def08d821e9de12806e23be0d2a6b5cad8",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "6eeba1b4805fe2dbe3fe74c7f5f9a4459c81b5abae7d9806ea754c01ff81bba0"
     },
     {
       "id": "raster/light/search@1x",
@@ -19256,96 +19349,6 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "547380516afbc87106241274cc2ee3f38361613e21d2f6b1b7d0311a162942d4"
-    },
-    {
-      "id": "raster/dark/remove@1x",
-      "file": "png/dark/remove@1x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        24,
-        24
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 1,
-      "theme": "dark",
-      "category": "status",
-      "source": "svg/dark/remove.svg",
-      "source_sha256": "85d6a571f147cf50fcbac4307d9b668e2645b0d5deadcd3cbdb3f4d1bad1e199",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "de3a09da78bc9de4c3156c1acc1f7c7e7e5e0c42a0e92128c42406549801eda0"
-    },
-    {
-      "id": "raster/dark/remove@2x",
-      "file": "png/dark/remove@2x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        48,
-        48
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 2,
-      "theme": "dark",
-      "category": "status",
-      "source": "svg/dark/remove.svg",
-      "source_sha256": "85d6a571f147cf50fcbac4307d9b668e2645b0d5deadcd3cbdb3f4d1bad1e199",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "29e306d9ad6ba4ebd8568522d637f077beb201553345f053438c09407a497dad"
-    },
-    {
-      "id": "raster/dark/remove@3x",
-      "file": "png/dark/remove@3x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        72,
-        72
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 3,
-      "theme": "dark",
-      "category": "status",
-      "source": "svg/dark/remove.svg",
-      "source_sha256": "85d6a571f147cf50fcbac4307d9b668e2645b0d5deadcd3cbdb3f4d1bad1e199",
-      "visible_bounds": [
-        2.0,
-        2.0,
-        22.0,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "bd4b632f7b19902478d711ebdb656ef6cb4e8d45503cf4f3dfa478a87549d4bc"
     },
     {
       "id": "raster/dark/search@1x",

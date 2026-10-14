@@ -18,7 +18,7 @@
 
 ![修正后的浅色工具栏](toolbar-review/browser-light.png)
 
-[深色实际窗口](toolbar-review/browser-dark.png) · [1040 宽、200% 字号实际窗口](toolbar-review/browser-large-minimum.png)
+[深色实际窗口](toolbar-review/browser-dark.png)，[1040 宽、200% 字号实际窗口](toolbar-review/browser-large-minimum.png)
 
 对照[修正前实际窗口](navigation-sorting/browser-light.png)，查看顶部操作行。截图来自 Qt 实际运行窗口，不含原生窗口装饰。
 

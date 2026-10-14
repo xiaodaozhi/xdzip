@@ -78,6 +78,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString title READ title NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(QString creationError READ creationError NOTIFY changed)
+    Q_PROPERTY(QVariantList creationInputs READ creationInputs NOTIFY creationInputsChanged)
     Q_PROPERTY(int total READ total NOTIFY changed)
     Q_PROPERTY(int archiveTotal READ archiveTotal NOTIFY changed)
     Q_PROPERTY(int offset READ offset NOTIFY changed)
@@ -168,6 +169,10 @@ class BrowserController : public QObject {
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
     Q_INVOKABLE QString chooseTarget(const QString &initial);
     Q_INVOKABLE QStringList chooseCreationInputs(bool directories);
+    Q_INVOKABLE void inspectCreationInputs(const QStringList &paths);
+    QVariantList creationInputs() const {
+        return m_creationInputs;
+    }
     Q_INVOKABLE QString defaultTargetDirectory() const;
     QString creationError() const {
         return m_creationError;
@@ -209,6 +214,7 @@ class BrowserController : public QObject {
     void extractionReady();
     void extractionStarted(const QString &task);
     void creationStarted(const QString &task);
+    void creationInputsChanged();
     void tasksChanged();
 
   private:
@@ -224,6 +230,9 @@ class BrowserController : public QObject {
         bool preflight = false;
         bool extraction = false;
         bool creating = false;
+        bool inputPreview = false;
+        QStringList previewPaths;
+        QVariantList inputInfo;
         bool targetCheck = false;
         QString taskId;
         quint64 leftovers = 0;
@@ -290,6 +299,11 @@ class BrowserController : public QObject {
     bool m_pendingOpenAfter = false;
     QString m_pendingCreatedOpen;
     QString m_creationError;
+    QVariantList m_creationInputs;
+    QStringList m_creationPreviewPaths;
+    bool m_creationPreviewPending = false;
+    QString m_pendingCreationTarget;
+    void drainCreationUiWhenIdle();
     void openCreatedArchiveWhenIdle();
     QVariantMap m_preflightReport;
     QVariantMap m_detail;

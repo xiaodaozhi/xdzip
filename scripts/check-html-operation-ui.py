@@ -53,6 +53,7 @@ def main():
                             width:n.getBoundingClientRect().width,
                             client:n.clientWidth, scroll:n.scrollWidth,
                             buttons:[...n.querySelectorAll('.modal-footer .button')].map(b=>parseFloat(getComputedStyle(b).fontSize)),
+                            actions:[...n.querySelectorAll('.modal-footer .button')].map(b=>({height:b.getBoundingClientRect().height,radius:parseFloat(getComputedStyle(b).borderRadius)})),
                             notes:[...n.querySelectorAll('.modal-footer .ready-label,.modal-footer .info-line')].map(b=>parseFloat(getComputedStyle(b).fontSize)),
                             footer:n.querySelector('.modal-footer').getBoundingClientRect().height
                         })''')
@@ -62,6 +63,26 @@ def main():
                         assert metrics['buttons'] and metrics['notes'], tag
                         for i, size in enumerate(metrics['buttons']):
                             check(tag+f'/footer action {i}', size * ratio, spec['footer']['fontSize'])
+                        for i, action in enumerate(metrics['actions']):
+                            check(tag+f'/footer height {i}', action['height'] * ratio, spec['controls']['footerButtonHeight'], 1)
+                            check(tag+f'/footer radius {i}', action['radius'] * ratio, spec['controls']['radius'])
+                        if kind == 'create':
+                            assert modal.locator('#create-size').inner_text() == '3 个文件，27.4 MB'
+                            group = modal.locator('#create-format')
+                            expect(group).to_have_attribute('role', 'radiogroup')
+                            radios = group.locator('[role=radio]')
+                            expect(radios).to_have_count(3)
+                            expect(radios.nth(0)).to_have_attribute('aria-checked', 'true')
+                            assert all(radios.nth(i).is_disabled() for i in [1,2])
+                            for selector in ['#create-name','#create-destination','#create-method-trigger','#create-level-trigger']:
+                                field = modal.locator(selector)
+                                shape = field.evaluate('n=>({radius:parseFloat(getComputedStyle(n).borderRadius),height:n.getBoundingClientRect().height})')
+                                check(tag+selector+'/radius',shape['radius']*ratio,spec['controls']['radius'])
+                                check(tag+selector+'/height',shape['height']*ratio,28,1)
+                            for selector in ['#create-method-trigger','#create-level-trigger']:
+                                gap = modal.locator(selector).evaluate('n=>n.getBoundingClientRect().right-n.querySelector("svg").getBoundingClientRect().right')
+                                check(tag+selector+'/right icon inset',gap*ratio,spec['controls']['selectIndicatorRightInset'],.15)
+                            check(tag+'/segment height',group.bounding_box()['height']*ratio,28,1)
                         for i, size in enumerate(metrics['notes']):
                             check(tag+f'/footer note {i}', size * ratio, spec['footer']['noteSize'])
                         if kind == 'progress':

@@ -6,7 +6,7 @@ import QtQuick.Layouts
 OperationWindow {
     id: root
     objectName: "preflightWindow"
-    title: qsTr("xdzip · 解压预检")
+    title: qsTr("xdzip — 解压预检")
     property var report: ({})
     width: Theme.operationDefaultWidth
     requestedHeight: Math.min(620, Screen.desktopAvailableHeight - 80)
@@ -77,12 +77,11 @@ OperationWindow {
                 }
             }
         }
-        Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.border }
-        Text {
+        OperationFooter {
             Layout.fillWidth: true
-            text: qsTr("此报告仅检查元数据；开始解压后逐文件验证内容与目标，完整校验后才提交。")
-            wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: Theme.bodySize
+            contentInset: 0
+            note: qsTr("此报告仅检查元数据；开始解压后逐文件验证内容与目标，完整校验后才提交。")
+            OperationFooterButton { text: qsTr("返回浏览"); primary: true; onClicked: root.close() }
         }
-        AppButton { labelSize: Theme.operationFooterFontSize; Layout.alignment: Qt.AlignRight; text: qsTr("返回浏览"); primary: true; onClicked: root.close() }
     }
 }

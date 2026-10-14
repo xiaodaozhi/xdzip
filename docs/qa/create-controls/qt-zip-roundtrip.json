@@ -1,0 +1,180 @@
+{
+  "checks": [
+    {
+      "name": "create-selected/logical width",
+      "actual": 491,
+      "expected": 491,
+      "passed": true
+    },
+    {
+      "name": "create-selected/screen-constrained logical height",
+      "actual": 736,
+      "expected": 736,
+      "passed": true
+    },
+    {
+      "name": "create-selected/DPR width",
+      "actual": 491.0,
+      "expected": 491,
+      "passed": true
+    },
+    {
+      "name": "create-selected/DPR height",
+      "actual": 736.0,
+      "expected": 736,
+      "passed": true
+    },
+    {
+      "name": "create-selected/title",
+      "actual": 20,
+      "expected": 20,
+      "passed": true
+    },
+    {
+      "name": "createName/body font",
+      "actual": 13,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "name": "createName/field height",
+      "actual": 28,
+      "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "createName/horizontal bounds",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "name": "createTarget/body font",
+      "actual": 13,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "name": "createTarget/field height",
+      "actual": 28,
+      "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "createTarget/horizontal bounds",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "name": "createMethod/body font",
+      "actual": 13,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "name": "createMethod/field height",
+      "actual": 28,
+      "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "createMethod/horizontal bounds",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "name": "createLevel/body font",
+      "actual": 13,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "name": "createLevel/field height",
+      "actual": 28,
+      "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "createLevel/horizontal bounds",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "name": "target/change center",
+      "actual": 443.0,
+      "expected": 443.0,
+      "passed": true
+    },
+    {
+      "name": "checkbox/label center",
+      "actual": 732.5,
+      "expected": 732.5,
+      "passed": true
+    },
+    {
+      "name": "footer/action height",
+      "actual": 32,
+      "expected": 32,
+      "passed": true
+    },
+    {
+      "name": "footer/action inside window",
+      "actual": true,
+      "expected": true,
+      "passed": true
+    },
+    {
+      "name": "footer/action font",
+      "actual": 13,
+      "expected": 13,
+      "passed": true
+    },
+    {
+      "name": "create-completed/logical width",
+      "actual": 677,
+      "expected": 677,
+      "passed": true
+    },
+    {
+      "name": "create-completed/screen-constrained logical height",
+      "actual": 490,
+      "expected": 490,
+      "passed": true
+    },
+    {
+      "name": "create-completed/DPR width",
+      "actual": 677.0,
+      "expected": 677,
+      "passed": true
+    },
+    {
+      "name": "create-completed/DPR height",
+      "actual": 490.0,
+      "expected": 490,
+      "passed": true
+    },
+    {
+      "name": "create-completed/title",
+      "actual": 20,
+      "expected": 20,
+      "passed": true
+    },
+    {
+      "name": "task/progress label",
+      "actual": 20,
+      "expected": 20,
+      "passed": true
+    }
+  ],
+  "passed": 28,
+  "failed": 0,
+  "scope": "Actual Qt JSON and unedited captures; reviewed HTML logical dimensions",
+  "limits": [
+    "Native window decorations are outside grabWindow",
+    "Fixture paths and content differ from illustrative hifi/HTML data",
+    "Geometry checks do not certify font contours or desktop appearance"
+  ]
+}

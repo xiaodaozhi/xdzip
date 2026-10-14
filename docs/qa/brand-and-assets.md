@@ -12,7 +12,7 @@
 
 本轮重新导出全部品牌格式，重建 Qt rcc 并运行 5 项 CTest、10 次品牌 Image.Ready 检查和真实 QIcon／64 px pixmap 探测；HTML 9 项消费检查和 9 张操作截图重新运行，顶部 27 项布局与对齐检查通过。其余 36 次文件类型加载仍保留上一轮证据，因为对应文件／目录 PNG 字节没有改变。下文记录的完整正文、尺寸与示例流程是上一轮基线；当前提交的 CI 再执行完整 HTML 检查。
 
-[当前统一素材库](../../design/assets/index.html) · [实际图标与补图预览](brand-and-assets/index.html) · [逐项原稿对照](asset-review/index.html) · [完整清单](../../design/assets/manifest.json)
+[当前统一素材库](../../design/assets/index.html)，[实际图标与补图预览](brand-and-assets/index.html)，[逐项原稿对照](asset-review/index.html)，[完整清单](../../design/assets/manifest.json)
 
 ## 应用与关联文件图标
 

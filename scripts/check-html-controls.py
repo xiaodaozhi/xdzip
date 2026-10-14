@@ -211,7 +211,7 @@ def main():
         expect(page.locator('#modal h1')).to_contain_text('演示')
         page.locator('#cancel-archive-test').click()
         expect(page.locator('#modal h1')).to_contain_text('已取消')
-        expect(page.locator('#task-count')).to_have_text('任务 · 已结束')
+        expect(page.locator('#task-count')).to_have_text('任务，已结束')
         page.locator('#close-archive-test').click()
         expect(page.locator('#test-archive')).to_be_enabled()
         checks.append('Demo integrity job: busy guard, modeless close keeps running, reopen and explicit cancellation')

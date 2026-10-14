@@ -482,10 +482,40 @@ window.XdzipControls = (() => {
             refresh();
         });
     }
+    function segmentedMarkup({id,label,options,selected}) {
+        const escape = value => String(value).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+        return `<div id="${escape(id)}" class="operation-segmented" role="radiogroup" aria-label="${escape(label)}">${options.map(option=>`<button type="button" id="${escape(option.id)}" class="operation-segment" role="radio" aria-checked="${option.value===selected}" tabindex="${option.value===selected?0:-1}" ${option.disabled?'disabled':''}>${escape(option.text)}</button>`).join("")}</div>`;
+    }
+    function enhanceSegmentedGroups(owner) {
+        owner.querySelectorAll('.operation-segmented').forEach(group=>{
+            if (group.dataset.enhanced) return;
+            group.dataset.enhanced = "true";
+            const all = [...group.querySelectorAll('[role="radio"]')];
+            function choose(button) {
+                if (button.disabled) return;
+                all.forEach(item=>{item.setAttribute('aria-checked',String(item===button));item.tabIndex=item===button?0:-1;});
+                group.dispatchEvent(new Event('change',{bubbles:true}));
+            }
+            all.forEach(button=>{
+                button.addEventListener('click',()=>choose(button));
+                button.addEventListener('keydown',event=>{
+                    if (!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+                    event.preventDefault();
+                    const available = all.filter(item=>!item.disabled);
+                    const current = available.indexOf(button);
+                    const index = event.key==='Home'?0:event.key==='End'?available.length-1:(current+(event.key==='ArrowRight'?1:-1)+available.length)%available.length;
+                    const next = available[index];
+                    if (next) {choose(next);next.focus();}
+                });
+            });
+        });
+    }
     return {
         open,
         close,
         enhanceSelects,
+        segmentedMarkup,
+        enhanceSegmentedGroups,
         hideTooltip,
         configure(options) {
             renderIcon = options.icon;

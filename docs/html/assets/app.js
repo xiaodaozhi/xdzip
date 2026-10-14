@@ -71,7 +71,7 @@
       link.className = "search-result";
       link.href = record.href;
       const title = document.createElement("strong");
-      title.textContent = `${record.title} · ${record.section}`;
+      title.textContent = `${record.title}，${record.section}`;
       const excerpt = document.createElement("p");
       excerpt.textContent = fragment(record.text, tokens[0]);
       link.append(title, excerpt);

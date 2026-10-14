@@ -26,6 +26,7 @@ mod ffi {
         Extract,
         CheckTarget,
         Create,
+        InspectInputs,
     }
     struct MetadataLimits {
         entries: u64,
@@ -74,6 +75,11 @@ mod ffi {
         path: String,
         count: u64,
     }
+    struct InputInfo {
+        known: bool,
+        directory: bool,
+        bytes: u64,
+    }
     struct PreflightReport {
         entries: u64,
         declared_bytes: String,
@@ -121,6 +127,7 @@ mod ffi {
         TaskAccepted,
         TaskUpdate,
         TargetChecked,
+        Inputs,
     }
     struct Event {
         kind: EventKind,
@@ -134,6 +141,7 @@ mod ffi {
         generation: u64,
         revision: u64,
         rows: Vec<Row>,
+        inputs: Vec<InputInfo>,
         directories: Vec<Directory>,
         replace_directories: bool,
         navigation_limited: bool,
@@ -256,6 +264,7 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         }
         let value = match command.kind {
+            ffi::CommandKind::InspectInputs => Command::InspectInputs(command.inputs),
             ffi::CommandKind::Create => {
                 let Some(conflict) =
                     xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
@@ -360,6 +369,7 @@ impl EventReceiver {
             generation: 0,
             revision: 0,
             rows: Vec::new(),
+            inputs: Vec::new(),
             directories: Vec::new(),
             replace_directories: false,
             navigation_limited: false,
@@ -455,6 +465,17 @@ impl EventReceiver {
                     finding_count: report.finding_count as u64,
                     unicode_review: report.unicode_review,
                 };
+            }
+            service::Payload::Inputs(rows) => {
+                event.kind = ffi::EventKind::Inputs;
+                event.inputs = rows
+                    .into_iter()
+                    .map(|r| ffi::InputInfo {
+                        known: r.known,
+                        directory: r.directory,
+                        bytes: r.bytes,
+                    })
+                    .collect();
             }
             service::Payload::TaskAccepted(id) => {
                 event.kind = ffi::EventKind::TaskAccepted;

@@ -53,6 +53,11 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
         node["resolvedPixelSize"] = QFontInfo(font).pixelSize();
         node["fontWeight"] = static_cast<int>(font.weight());
     }
+    for (const auto *key : {"border.color", "border.width"}) {
+        const auto value = QQmlProperty::read(item, QString::fromLatin1(key));
+        if (value.isValid())
+            node[QString::fromLatin1(key)] = QJsonValue::fromVariant(value);
+    }
     nodes.append(node);
     const auto children = item->childItems();
     for (int i = 0; i < children.size(); ++i)
