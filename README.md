@@ -2,7 +2,7 @@
 
 现代、轻量、可扩展的跨平台压缩文件管理工具。
 
-**当前阶段：WP-10 已实现真实 ZIP 创建，支持 Store／Deflate 及 1／6／9 级；与既有安全解压共用任务、冲突、取消和异步退出。自动化与桌面验收状态见各阶段记录，开发构建不作为正式签名发行。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
+**当前阶段：WP-10 已实现真实 ZIP 创建，支持 Store／Deflate、四档压缩级别、AES-256 内容加密和编号分卷；默认 2-正常压缩。与既有安全解压共用任务、冲突、取消和异步退出。自动化与桌面验收状态见各阶段记录，开发构建不作为正式签名发行。** 界面路线为 Qt Quick/QML，薄 C++ 适配层连接 Rust 核心；先浏览归档，再由用户明确选择压缩或解压。
 
 ![xdzip 已确认的浅色主窗口设计](design/hifi/screens/main-light.png)
 
@@ -21,7 +21,7 @@
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。
 
-开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务。`xdzip-browser` 已执行真实 ZIP 解压，支持从文件／目录创建 ZIP；TAR/GZIP、加密和实际内容预览仍待后续实现。创建边界见 [WP-10 契约](docs/engineering/m4-creation.md)，解压边界见 [M3 实现契约](docs/engineering/m3-extraction.md)。
+开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务。`xdzip-browser` 已执行真实 ZIP 解压，支持从文件／目录创建普通、AES-256 加密或 `.zip.001` 编号分卷 ZIP。加密／分卷归档的读取、TAR/GZIP 和实际内容预览仍待后续实现；目前加密／分卷输出可使用 7-Zip 等兼容工具打开。创建边界见 [WP-10 契约](docs/engineering/m4-creation.md)，解压边界见 [M3 实现契约](docs/engineering/m3-extraction.md)。
 
 macOS 保留原生编译与测试，不自动生成或上传 Apple Silicon 开发包。build/、target/ 和所有层级的 dist/ 均不提交到 Git；详细规则见 [CI 策略](docs/engineering/ci-policy.md)。
 
