@@ -1,0 +1,13 @@
+{
+  "base_commit": "780d7000f2a07dc8a09d4aae2966f43c29d66842",
+  "source": "Current working-tree HTML, per-view logical 100%, Chromium/Linux/DPR1",
+  "view": "create",
+  "logical_bounds": {
+    "x": 50.421875,
+    "y": 243.921875,
+    "width": 490.984375,
+    "height": 722.890625
+  },
+  "sha256": "a2e05ce35bb0e054dc0883e7b7360001411b20078b69d540535fd88c9792b72d",
+  "processing": "Native browser capture; no resampling or postprocessing"
+}

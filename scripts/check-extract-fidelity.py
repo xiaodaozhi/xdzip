@@ -129,7 +129,7 @@ def main():
                                 frame.locator('#start-extract').click()
                                 expect(modal).to_have_attribute('data-kind', 'progress')
                                 expect(page.locator('#view')).to_have_value('progress')
-                                check(tag+'/transition to progress width', modal.bounding_box()['width'], 846)
+                                check(tag+'/transition to progress width', modal.bounding_box()['width'], 677)
                         page.close()
             browser.close()
     finally:

@@ -63,6 +63,14 @@ Invoke-Checked python @('scripts/check-m3-operation-windows.py', '--input', 'bui
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
 Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
+$env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m4-operations'
+Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
+Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
+Copy-Item -Recurse 'build/desktop/m4-operations' 'build/review/m4-operations'
+Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', 'build/desktop/m4-operations', '--output', 'build/review/m4-operation-ui.json')
+Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m4-probe')
+$m4Probe = if ($IsWindows) { 'target/release/xdzip-m4-probe.exe' } else { 'target/release/xdzip-m4-probe' }
+Invoke-Checked python @('scripts/measure-m4-core.py', '--binary', $m4Probe, '--output', 'build/review/m4-core-performance.json')
 Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'build/review/m2-qt-performance.json')
 Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')
 Invoke-Checked cargo @('build', '--release', '-p', 'xdzip-m2-probe')
@@ -85,6 +93,11 @@ foreach ($density in @('1.25', '2')) {
     Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
     Invoke-Checked python @('scripts/check-m3-operation-windows.py', '--input', $operationPath, '--output', "build/review/m3-operation-ui-dpr$density.json")
     Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
+    $creationPath = "build/desktop/m4-operations-dpr$density"
+    $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) $creationPath
+    Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
+    Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', $creationPath, '--output', "build/review/m4-operation-ui-dpr$density.json")
+    Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
 }
 Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
@@ -118,7 +131,7 @@ $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
     'Native macOS validation only; no Apple Silicon developer package'
 } else {
-    'M3 ZIP Store/Deflate safe extraction developer review; independent security audit and signed public release pending'
+    'M4 ZIP Store/Deflate creation and safe extraction developer review; independent security audit and signed public release pending'
 }
 @{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
     ConvertTo-Json | Set-Content 'build/review/build.json'

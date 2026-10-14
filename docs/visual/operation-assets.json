@@ -28,6 +28,7 @@
     "image-file",
     "image-amber",
     "folder",
-    "archive"
+    "archive",
+    "archive-add"
   ]
 }

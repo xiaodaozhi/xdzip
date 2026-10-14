@@ -20,6 +20,10 @@
     <file>ui/OperationSelect.qml</file>
     <file>ui/OperationFooter.qml</file>
     <file>ui/OperationHero.qml</file>
+    <file>ui/OperationAction.qml</file>
+    <file>ui/CreateWindow.qml</file>
+    <file alias="assets/archive-add-large.png">../../design/assets/png/light/archive-add@9x.png</file>
+    <file alias="assets/dark/archive-add-large.png">../../design/assets/png/dark/archive-add@9x.png</file>
     <file>ui/AssetLibrary.qml</file>
     <file>ui/ExtractWindow.qml</file>
     <file>ui/ConflictWindow.qml</file>

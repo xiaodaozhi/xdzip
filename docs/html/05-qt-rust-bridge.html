@@ -251,8 +251,11 @@
 </div><h2 id="构建和迁移验证">8. 构建和迁移验证<a class="heading-anchor" href="#%E6%9E%84%E5%BB%BA%E5%92%8C%E8%BF%81%E7%A7%BB%E9%AA%8C%E8%AF%81" aria-label="本节链接">#</a></h2>
 <p>CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使用一个构建编排入口，明确目标 triple、Qt 架构、编译器、C++ 标准和生成头目录。不能用系统中碰巧存在的另一个 generated header。</p>
 <p>首阶段验证 macOS arm64、Windows MSVC、Linux x86_64 的最小往返、Unicode、所有权、队列满、关闭过程中 pending 页、取消优先通道和 RuntimeFault。通过后再迁移原型分页模型。cxx 依赖版本锁定在验证提交；暂不在设计中虚构一个已通过测试的版本号。</p>
+<h2 id="wp-10-当前创建切片">WP-10 当前创建切片<a class="heading-anchor" href="#wp-10-%E5%BD%93%E5%89%8D%E5%88%9B%E5%BB%BA%E5%88%87%E7%89%87" aria-label="本节链接">#</a></h2>
+<p>内部桥接增加 Create：输入路径数组、目标目录、ZIP 名称、Store／Deflate、1／6／9 级和重名策略。Qt 在 UTF-16→UTF-8 与整数窄化前拒绝非法值，Rust 再检查单路径 4 KiB、选择路径总量 4 MiB、条目数与便携文件名。CheckTarget 的 session=0 表示独立创建目标检查；非零会话仍绑定解压来源。</p>
+<p>创建与解压共用后台任务身份、取消、提示 ID、事件预算与异步退出。TaskSnapshot 增加 creating、total_known，扫描未知总量不能伪装为零字节任务；Verifying 阶段不把再次读取的校验量计入已处理输入。创建只保存完整归档一次，输入条目不能提前计为已保存。字段、错误及整体提交语义见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/m4-creation.md">WP-10 契约</a>。</p>
 </article><nav class="page-navigation" aria-label="前后文档"><a href="04-qt-quick-ui.html">← 04 Qt Quick 界面设计</a><a href="06-codec-extension-sdk.html">06 格式适配与扩展 SDK →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
-<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#决策和版本">1. 决策和版本</a><a href="#客户端和事件接收">2. 客户端和事件接收</a><a href="#统一包络">3. 统一包络</a><a href="#应用服务命令">4. 应用服务命令</a><a href="#事件">5. 事件</a><a href="#数据和所有权">6. 数据和所有权</a><a href="#错误契约">7. 错误契约</a><a href="#构建和迁移验证">8. 构建和迁移验证</a></aside></div>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#决策和版本">1. 决策和版本</a><a href="#客户端和事件接收">2. 客户端和事件接收</a><a href="#统一包络">3. 统一包络</a><a href="#应用服务命令">4. 应用服务命令</a><a href="#事件">5. 事件</a><a href="#数据和所有权">6. 数据和所有权</a><a href="#错误契约">7. 错误契约</a><a href="#构建和迁移验证">8. 构建和迁移验证</a><a href="#wp-10-当前创建切片">WP-10 当前创建切片</a></aside></div>
 <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
 <label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
 <p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>

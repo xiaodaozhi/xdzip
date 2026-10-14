@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | `svg/light`、`svg/dark` | 每主题 74 类；全部 24×24 透明画布 | HTML 和 Qt 共用的界面矢量源 |
 | `png/light`、`png/dark` | 每主题 222 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
-| `png/light/*@9x.png`、`png/dark/*@9x.png` | 每主题 13 张；216 px | 操作窗口大图标；语义清单维护在 `docs/visual/operation-assets.json` |
+| `png/light/*@9x.png`、`png/dark/*@9x.png` | 每主题 14 张；216 px | 操作窗口大图标；语义清单维护在 `docs/visual/operation-assets.json` |
 | `reference` | 71 张 PNG（45 既有图标参考 + 26 目录树 B）；保留源区域物理尺寸 | 原像素参考，保留背景，不作为透明运行图标 |
 | `demo` | 3 张照片；保留原始切片分辨率 | HTML 示例缩略图及预览；产品预览服务提供真实图像 |
 | `brand` | 26 项；应用与 ZIP 文档母版、平台格式及设计参考 | 系统应用图标、界面品牌和后续安装器的文件图标素材 |

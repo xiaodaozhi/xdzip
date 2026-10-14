@@ -3,6 +3,7 @@ import QtQuick.Layouts
 
 Item {
     id: root
+    property real density: 1
     property real labelSize: Theme.secondarySize
     property real valueSize: Theme.panelTitleSize * .9
     required property string heading
@@ -22,7 +23,7 @@ Item {
     Text {
         id: metric
         width: parent.width
-        y: headingLabel.height + 5
+        y: headingLabel.height + 5 * root.density
         text: root.value
         textFormat: Text.PlainText
         font.pixelSize: root.valueSize

@@ -1,0 +1,19 @@
+{
+  "source": "design/hifi/screens/create.png",
+  "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72",
+  "width": 1073,
+  "height": 1466,
+  "logical_width": 491,
+  "title_size": 20,
+  "body_size": 13,
+  "note_size": 12,
+  "field_height": 28,
+  "input_row_height": 38,
+  "footer_action_height": 32,
+  "reference_notes": [
+    "C01 source shapes and three cards retained; normal density policy is the explicit 0.8 correction",
+    "Unsupported TAR/GZIP disabled; pending directory bytes are not fabricated",
+    "Selected-input count and empty-state layout are functional additions",
+    "Native OS titlebar is outside client bounds; body may scroll on short screens"
+  ]
+}

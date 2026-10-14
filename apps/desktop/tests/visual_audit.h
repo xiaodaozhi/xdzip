@@ -11,6 +11,7 @@
 #include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QScreen>
 #include <QSysInfo>
 #include <QTest>
 #include <memory>
@@ -64,6 +65,7 @@ inline bool save(QQuickWindow *window, const QString &directory, const QString &
     const auto shot = window->grabWindow();
     QJsonObject data{{"width", window->width()},
                      {"height", window->height()},
+                     {"availableScreenHeight", window->screen()->availableGeometry().height()},
                      {"minimumWidth", window->minimumWidth()},
                      {"minimumHeight", window->minimumHeight()},
                      {"dpr", window->devicePixelRatio()},

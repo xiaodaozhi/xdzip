@@ -90,6 +90,8 @@ pub enum Status {
     Preparing,
     /// Decoding a verified admitted file.
     Running,
+    /// Re-reading a complete private archive before whole-file publication.
+    Verifying,
     /// Awaiting an explicit conflict response.
     Waiting,
     /// Publishing one complete file.
@@ -112,6 +114,7 @@ impl Status {
             Self::Queued => "queued",
             Self::Preparing => "preparing",
             Self::Running => "running",
+            Self::Verifying => "verifying",
             Self::Waiting => "waiting",
             Self::Committing => "committing",
             Self::Cancelling => "cancelling",
@@ -147,6 +150,10 @@ pub struct Prompt {
 /// Bounded replaceable display snapshot. Counters describe actual work, not a timer simulation.
 #[derive(Clone, Debug)]
 pub struct Snapshot {
+    /// True for whole-archive creation; false for per-file extraction.
+    pub creating: bool,
+    /// False while a creation input tree is still being scanned.
+    pub total_known: bool,
     /// Opaque task identity across session changes.
     pub id: u64,
     /// Original archive session; source failures cannot invalidate a different session.

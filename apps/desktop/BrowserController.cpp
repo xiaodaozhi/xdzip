@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QPointer>
+#include <QStandardPaths>
 #include <QTime>
 #include <QUrl>
 #include <algorithm>
@@ -172,6 +173,8 @@ QString BrowserController::explain(const QString &code) {
         {"output_conflict", tr("提交时目标文件被其他操作创建，请重新解压并选择冲突处理方式。")},
         {"unsupported_filesystem", tr("目标文件系统不支持安全提交，请选择本地磁盘目录。")},
         {"unsupported_entry", tr("所选条目包含不支持的方法、加密、编码或特殊对象。")},
+        {"unsafe_input", tr("输入含链接、特殊对象，或输出与输入相同，请重新选择。")},
+        {"input_collision", tr("输入名称在大小写或 Unicode 规范化后重名，请调整名称。")},
         {"unsafe_name", tr("所选文件名不满足安全输出规则。")},
         {"ambiguous_name", tr("归档中的文件与目录名称存在歧义，无法安全解压。")},
         {"high_ratio", tr("压缩比超过 1000:1；确认内容可信后可在选项中允许高压缩比。")},
@@ -529,9 +532,76 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     emit extractionReady();
 }
 QString BrowserController::chooseTarget(const QString &initial) {
-    return QFileDialog::getExistingDirectory(nullptr, tr("选择解压目标目录"), initial,
+    return QFileDialog::getExistingDirectory(nullptr, tr("选择目标目录"), initial,
                                              QFileDialog::ShowDirsOnly |
                                                  QFileDialog::DontResolveSymlinks);
+}
+QStringList BrowserController::chooseCreationInputs(bool directories) {
+    if (directories) {
+        const auto path = QFileDialog::getExistingDirectory(nullptr, tr("添加文件夹"), {},
+                                                            QFileDialog::ShowDirsOnly |
+                                                                QFileDialog::DontResolveSymlinks);
+        return path.isEmpty() ? QStringList{} : QStringList{path};
+    }
+    return QFileDialog::getOpenFileNames(nullptr, tr("添加文件"), {}, {}, nullptr,
+                                         QFileDialog::DontResolveSymlinks);
+}
+QString BrowserController::defaultTargetDirectory() const {
+    const auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    return !path.isEmpty() && QDir(path).exists() ? path : QDir::homePath();
+}
+void BrowserController::checkCreationTarget(const QString &path) {
+    if (m_busy || !runtimeAvailable() || m_closing)
+        return;
+    if (QString::fromUtf8(path.toUtf8()) != path || path.contains(QChar::Null)) {
+        m_targetCheck = {
+            {"valid", false}, {"errorCode", "invalid_path"}, {"error", explain("invalid_path")}};
+        emit extractionChanged();
+        return;
+    }
+    m_checkedTarget = QDir::cleanPath(path);
+    m_targetCheck = {{"path", m_checkedTarget}, {"valid", false}, {"checking", true}};
+    emit extractionChanged();
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::CheckTarget;
+    command.session = 0;
+    command.path = rust::String(m_checkedTarget.toStdString());
+    submit(std::move(command));
+}
+void BrowserController::startCreation(const QStringList &inputs, const QString &target,
+                                      const QString &name, int method, int level, bool openAfter) {
+    if (m_busy || !runtimeAvailable() || m_closing)
+        return;
+    const auto validText = [](const QString &value) {
+        return !value.contains(QChar::Null) && QString::fromUtf8(value.toUtf8()) == value;
+    };
+    if ((method != 0 && method != 8) || (level != 1 && level != 6 && level != 9) ||
+        !validText(target) || !validText(name) ||
+        std::any_of(inputs.cbegin(), inputs.cend(),
+                    [&](const QString &path) { return !validText(path); })) {
+        m_creationError = explain("invalid_path");
+        emit extractionChanged();
+        return;
+    }
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Create;
+    command.path = rust::String(QDir::cleanPath(target).toStdString());
+    command.text = rust::String(name.toStdString());
+    for (const auto &path : inputs)
+        command.inputs.push_back(rust::String(QDir::cleanPath(path).toStdString()));
+    command.method = static_cast<std::uint16_t>(method);
+    command.level = static_cast<std::uint8_t>(level);
+    command.conflict = 0;
+    m_creationError.clear();
+    m_pendingOpenAfter = openAfter;
+    submit(std::move(command));
+}
+void BrowserController::openCreatedArchiveWhenIdle() {
+    if (m_busy || m_pending || m_closing || m_pendingCreatedOpen.isEmpty())
+        return;
+    const auto path = m_pendingCreatedOpen;
+    m_pendingCreatedOpen.clear();
+    openPath(path);
 }
 bool BrowserController::targetMatches(const QString &path) const {
     return m_targetCheck.value("valid").toBool() &&
@@ -588,8 +658,16 @@ bool BrowserController::decideTask(const QString &id, const QString &prompt, int
 }
 void BrowserController::openOutput(const QString &id) {
     const auto task = m_tasks.value(id.toULongLong());
+    if (task.value("creating").toBool() && task.value("status") == "succeeded") {
+        m_pendingCreatedOpen = task.value("target").toString();
+        QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
+        return;
+    }
     if (!task.isEmpty())
-        QDesktopServices::openUrl(QUrl::fromLocalFile(task.value("target").toString()));
+        QDesktopServices::openUrl(
+            QUrl::fromLocalFile(task.value("creating").toBool()
+                                    ? QFileInfo(task.value("target").toString()).absolutePath()
+                                    : task.value("target").toString()));
 }
 void BrowserController::inspectSelection() {
     if (!canPreflight())
@@ -693,11 +771,13 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result = {};
     m_result.preflight = preflight;
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract;
+    m_result.creating = command.kind == xdzip::reader::CommandKind::Create;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
-    m_message = m_result.extraction    ? tr("正在准备解压任务…")
+    m_message = m_result.creating      ? tr("正在准备压缩任务…")
+                : m_result.extraction  ? tr("正在准备解压任务…")
                 : m_result.targetCheck ? tr("正在检查目标目录…")
                 : preflight            ? tr("正在检查所选条目…")
                                        : tr("正在读取归档目录…");
@@ -726,6 +806,8 @@ void BrowserController::attemptSubmission() {
                               : "busy";
         restoreQuery();
         m_message = explain(code);
+        if (m_result.creating)
+            m_creationError = m_message;
         emit changed();
         return;
     }
@@ -761,7 +843,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         const auto status = text(t.status);
         const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
         QVariantMap value{
-            {"archive", m_tasks.value(t.id).value("archive", m_extractionIntent.value("archive"))},
+            {"creating", t.creating},
+            {"totalKnown", t.total_known},
+            {"archive", t.creating ? QVariant(QFileInfo(text(t.target)).fileName())
+                                   : m_tasks.value(t.id).value(
+                                         "archive", m_extractionIntent.value("archive"))},
             {"id", QString::number(t.id)},
             {"session", QString::number(t.session)},
             {"status", status},
@@ -778,8 +864,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"createdDirectories", QString::number(t.created_directories)},
             {"elapsedMs", QString::number(t.elapsed_ms)},
             {"errorCode", text(t.error)},
-            {"error",
-             text(t.error) == "cancelled" ? tr("解压任务已取消。") : explain(text(t.error))},
+            {"error", text(t.error) == "cancelled" ? tr("任务已取消。") : explain(text(t.error))},
             {"cleanupWarning", t.cleanup_warning},
             {"outcomeUncertain", t.outcome_uncertain},
             {"leftovers", QString::number(t.leftovers)},
@@ -819,7 +904,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             emit changed();
         }
         if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded")
-            openOutput(QString::number(t.id));
+            QDesktopServices::openUrl(QUrl::fromLocalFile(
+                t.creating ? QFileInfo(text(t.target)).absolutePath() : text(t.target)));
         emit tasksChanged();
         return;
     }
@@ -833,7 +919,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const auto existing = m_tasks.value(event.task.id);
             if (existing.value("terminal").toBool()) {
                 if (existing.value("status") == "succeeded")
-                    openOutput(m_result.taskId);
+                    QDesktopServices::openUrl(QUrl::fromLocalFile(
+                        existing.value("creating").toBool()
+                            ? QFileInfo(existing.value("target").toString()).absolutePath()
+                            : existing.value("target").toString()));
             } else
                 m_openAfterTasks.insert(event.task.id);
         }
@@ -968,7 +1057,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         // Fetch bounded transport batches until the current query is complete. The model
         // commits once, preserving row identity and avoiding visible paging or partial sorts.
         if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
-            !m_result.extraction && !m_result.targetCheck &&
+            !m_result.extraction && !m_result.creating && !m_result.targetCheck &&
             m_result.rows.size() < m_result.total) {
             xdzip::reader::Command command{};
             command.kind = xdzip::reader::CommandKind::Browse;
@@ -986,8 +1075,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             return;
         }
         m_message = explain(m_result.error);
-        if (m_result.extraction || m_result.targetCheck) {
+        if (m_result.extraction || m_result.creating || m_result.targetCheck) {
             const bool extraction = m_result.extraction;
+            const bool creating = m_result.creating;
+            if (creating)
+                m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
             const QString taskId = m_result.taskId;
             if (m_result.targetCheck)
                 m_targetCheck = {{"path", m_checkedTarget},
@@ -1005,6 +1097,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             emit tasksChanged();
             if (extraction && !taskId.isEmpty())
                 emit extractionStarted(taskId);
+            if (creating && !taskId.isEmpty())
+                emit creationStarted(taskId);
+            QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
             return;
         }
         if (m_result.closeSession && m_result.error.isEmpty()) {
@@ -1064,5 +1159,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result = {};
             emit changed();
         }
+        QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
     }
 }

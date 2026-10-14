@@ -100,3 +100,9 @@ Rust Result 在边界转换为结构化 Error，C++ 异常不跨回 Rust。入�
 CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使用一个构建编排入口，明确目标 triple、Qt 架构、编译器、C++ 标准和生成头目录。不能用系统中碰巧存在的另一个 generated header。
 
 首阶段验证 macOS arm64、Windows MSVC、Linux x86_64 的最小往返、Unicode、所有权、队列满、关闭过程中 pending 页、取消优先通道和 RuntimeFault。通过后再迁移原型分页模型。cxx 依赖版本锁定在验证提交；暂不在设计中虚构一个已通过测试的版本号。
+
+## WP-10 当前创建切片
+
+内部桥接增加 Create：输入路径数组、目标目录、ZIP 名称、Store／Deflate、1／6／9 级和重名策略。Qt 在 UTF-16→UTF-8 与整数窄化前拒绝非法值，Rust 再检查单路径 4 KiB、选择路径总量 4 MiB、条目数与便携文件名。CheckTarget 的 session=0 表示独立创建目标检查；非零会话仍绑定解压来源。
+
+创建与解压共用后台任务身份、取消、提示 ID、事件预算与异步退出。TaskSnapshot 增加 creating、total_known，扫描未知总量不能伪装为零字节任务；Verifying 阶段不把再次读取的校验量计入已处理输入。创建只保存完整归档一次，输入条目不能提前计为已保存。字段、错误及整体提交语义见 [WP-10 契约](../engineering/m4-creation.md)。

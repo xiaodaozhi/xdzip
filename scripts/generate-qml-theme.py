@@ -34,6 +34,8 @@ for name, value in zip(['mainMinimumWidth', 'mainMinimumHeight'], layout['main']
 for key, value in layout['operation']['logical_widths'].items():
     lines.append(f'    readonly property int operation{key.title()}Width: {value}')
 lines.append(f'    readonly property real operationExtractDensity: {layout["operation"]["extract_density"]}')
+lines.append(f'    readonly property real operationProgressDensity: {layout["operation"]["progress_density"]}')
+lines.append(f'    readonly property real operationCreateDensity: {layout["operation"]["create_density"]}')
 for key, value in layout['operation']['footer'].items():
     lines.append(f'    readonly property real operationFooter{key[0].upper() + key[1:]}: {value} * fontScale')
 for key, value in layout['operation']['components'].items():

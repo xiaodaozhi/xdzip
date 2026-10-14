@@ -1,4 +1,5 @@
 //! First read-only session service. Called only on a bounded background worker.
+pub mod creation;
 pub mod extraction;
 mod index;
 pub mod listing;

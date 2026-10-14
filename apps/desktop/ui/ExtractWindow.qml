@@ -31,20 +31,7 @@ OperationWindow {
     readonly property bool targetReady: Boolean(targetState.valid) && controller.targetMatches(target.text)
     Connections {
         target: root
-        function onActiveFocusItemChanged() {
-            const item = root.activeFocusItem;
-            const flick = body.contentItem as Flickable;
-            if (!item || !flick) return;
-            let ancestor = item.parent;
-            while (ancestor && ancestor !== body) ancestor = ancestor.parent;
-            if (ancestor !== body) return;
-            const position = item.mapToItem(flick.contentItem, 0, 0);
-            const top = position.y - 4;
-            const bottom = position.y + item.height + 4;
-            if (top < flick.contentY) flick.contentY = Math.max(0, top);
-            else if (bottom > flick.contentY + flick.height)
-                flick.contentY = Math.min(flick.contentHeight - flick.height, bottom - flick.height);
-        }
+        function onActiveFocusItemChanged() { root.revealFocus(body); }
     }
     ColumnLayout {
         anchors.fill: parent; spacing: 0

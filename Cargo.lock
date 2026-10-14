@@ -972,6 +972,7 @@ dependencies = [
  "cap-std",
  "getrandom",
  "rustix",
+ "unicode-normalization",
  "winapi-util",
  "windows-sys 0.61.2",
  "xdzip-domain",
@@ -987,6 +988,13 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m3-probe"
+version = "0.1.0"
+dependencies = [
+ "xdzip-runtime",
+]
+
+[[package]]
+name = "xdzip-m4-probe"
 version = "0.1.0"
 dependencies = [
  "xdzip-runtime",

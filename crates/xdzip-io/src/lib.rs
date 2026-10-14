@@ -1,11 +1,13 @@
 //! Host-only output capabilities, private staging and whole-file publication.
 //! Path syntax is not authority. Every relative operation is anchored to held directories.
 mod identity;
+mod input;
 mod private;
 mod target;
 #[cfg(test)]
 mod tests;
 pub use identity::{FileIdentity, FileVersion};
+pub use input::{InputEntry, InputError, InputReader, InputTree};
 pub use target::{CommitReceipt, ExistingFile, Grant, Stage, Workspace};
 
 /// Stable filesystem failures without arbitrary OS strings or user paths.

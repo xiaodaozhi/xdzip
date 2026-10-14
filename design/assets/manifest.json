@@ -2831,7 +2831,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/archive-add-large.png"
+        ]
       },
       "sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
       "source_reference": "reference/create-archive.png",
@@ -5193,7 +5195,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/archive-add-large.png"
+        ]
       },
       "sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
       "source_reference": "reference/create-archive.png",
@@ -21864,6 +21868,66 @@
       "sha256": "72ac3e7b37426ac225febb820df7cf818ac3669d839e36ad7e4e9beaa5a146ca"
     },
     {
+      "id": "raster/light/archive@9x",
+      "file": "png/light/archive@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "brand",
+      "source": "svg/light/archive.svg",
+      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
+      "visible_bounds": [
+        4.3333,
+        2.0,
+        19.6667,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "e5ccc0e3afe188e110055453bb7700644cd1dbd437f95b63f4d8a95fd924f029"
+    },
+    {
+      "id": "raster/light/archive-add@9x",
+      "file": "png/light/archive-add@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "illustration",
+      "source": "svg/light/archive-add.svg",
+      "source_sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        23.4444,
+        23.4444
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "04ad1675a32f71abab43f531590d8e4aea10bb25442f34a77ece95732b3f3b38"
+    },
+    {
       "id": "raster/light/cancelled-large@9x",
       "file": "png/light/cancelled-large@9x.png",
       "kind": "vector-rasterization",
@@ -22315,6 +22379,66 @@
       "sha256": "9aece79fc8b00e30618f8758e845d446b8f112aa08bbc81bfb9d5b830d262bbd"
     },
     {
+      "id": "raster/dark/archive@9x",
+      "file": "png/dark/archive@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "brand",
+      "source": "svg/dark/archive.svg",
+      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
+      "visible_bounds": [
+        4.3333,
+        2.0,
+        19.6667,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "467f57d1bc88f0b0801ad131f38895a965c784cf1ee8b62b53e124b7ac11a834"
+    },
+    {
+      "id": "raster/dark/archive-add@9x",
+      "file": "png/dark/archive-add@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "illustration",
+      "source": "svg/dark/archive-add.svg",
+      "source_sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "visible_bounds": [
+        4.0,
+        2.0,
+        23.4444,
+        23.4444
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "04ad1675a32f71abab43f531590d8e4aea10bb25442f34a77ece95732b3f3b38"
+    },
+    {
       "id": "raster/dark/cancelled-large@9x",
       "file": "png/dark/cancelled-large@9x.png",
       "kind": "vector-rasterization",
@@ -22764,66 +22888,6 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "9aece79fc8b00e30618f8758e845d446b8f112aa08bbc81bfb9d5b830d262bbd"
-    },
-    {
-      "id": "raster/light/archive@9x",
-      "file": "png/light/archive@9x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        216,
-        216
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 9,
-      "theme": "light",
-      "category": "brand",
-      "source": "svg/light/archive.svg",
-      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
-      "visible_bounds": [
-        4.3333,
-        2.0,
-        19.6667,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "e5ccc0e3afe188e110055453bb7700644cd1dbd437f95b63f4d8a95fd924f029"
-    },
-    {
-      "id": "raster/dark/archive@9x",
-      "file": "png/dark/archive@9x.png",
-      "kind": "vector-rasterization",
-      "size": [
-        216,
-        216
-      ],
-      "canvas": [
-        24,
-        24
-      ],
-      "logical_size": [
-        24,
-        24
-      ],
-      "scale": 9,
-      "theme": "dark",
-      "category": "brand",
-      "source": "svg/dark/archive.svg",
-      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
-      "visible_bounds": [
-        4.3333,
-        2.0,
-        19.6667,
-        22.0
-      ],
-      "usage": "runtime-and-design",
-      "sha256": "467f57d1bc88f0b0801ad131f38895a965c784cf1ee8b62b53e124b7ac11a834"
     }
   ]
 }

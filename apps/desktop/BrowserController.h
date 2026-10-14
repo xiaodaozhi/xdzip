@@ -77,6 +77,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
+    Q_PROPERTY(QString creationError READ creationError NOTIFY changed)
     Q_PROPERTY(int total READ total NOTIFY changed)
     Q_PROPERTY(int archiveTotal READ archiveTotal NOTIFY changed)
     Q_PROPERTY(int offset READ offset NOTIFY changed)
@@ -166,7 +167,19 @@ class BrowserController : public QObject {
     int activeTaskCount() const;
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
     Q_INVOKABLE QString chooseTarget(const QString &initial);
+    Q_INVOKABLE QStringList chooseCreationInputs(bool directories);
+    Q_INVOKABLE QString defaultTargetDirectory() const;
+    QString creationError() const {
+        return m_creationError;
+    }
+    Q_INVOKABLE void clearCreationError() {
+        m_creationError.clear();
+        emit changed();
+    }
+    Q_INVOKABLE void startCreation(const QStringList &inputs, const QString &target,
+                                   const QString &name, int method, int level, bool openAfter);
     Q_INVOKABLE void checkTarget(const QString &path);
+    Q_INVOKABLE void checkCreationTarget(const QString &path);
     Q_INVOKABLE bool targetMatches(const QString &path) const;
     Q_INVOKABLE void startExtraction(const QString &target, bool all, bool createFolder,
                                      int conflict, bool allowHighRatio, bool openAfter);
@@ -195,6 +208,7 @@ class BrowserController : public QObject {
     void extractionChanged();
     void extractionReady();
     void extractionStarted(const QString &task);
+    void creationStarted(const QString &task);
     void tasksChanged();
 
   private:
@@ -209,6 +223,7 @@ class BrowserController : public QObject {
     struct Result {
         bool preflight = false;
         bool extraction = false;
+        bool creating = false;
         bool targetCheck = false;
         QString taskId;
         quint64 leftovers = 0;
@@ -273,6 +288,9 @@ class BrowserController : public QObject {
     QMap<quint64, QVariantMap> m_tasks;
     QSet<quint64> m_openAfterTasks;
     bool m_pendingOpenAfter = false;
+    QString m_pendingCreatedOpen;
+    QString m_creationError;
+    void openCreatedArchiveWhenIdle();
     QVariantMap m_preflightReport;
     QVariantMap m_detail;
     QString m_directory;

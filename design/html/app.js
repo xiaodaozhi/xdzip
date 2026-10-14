@@ -1175,30 +1175,26 @@ function showCreate() {
         showTask();
         return;
     }
-    state.createItems = [...roots.slice(0, 3)];
+    state.createItems = [byId.get("lake"),byId.get("sunrise"),byId.get("guide")].filter(Boolean);
     dialog(
-        header("新建压缩文件", "添加内容，选择格式与保存位置", "archive-add") +
-            `<div class="modal-content"><div class="field-group"><div class="field-label">待压缩内容<span id="create-size"></span></div><div id="create-list" class="create-list"></div><div class="create-actions"><button id="add-input" class="button">${icon("plus")}添加文件</button><button id="clear-input" class="button">清空</button></div></div><div class="field-group"><label for="create-name" class="field-label">压缩文件名称</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="field-group"><label for="create-destination" class="field-label">保存到</label><input id="create-destination" class="text-input" value="下载"></div><div class="two-fields"><div class="field-group"><label for="create-format" class="field-label">归档格式</label><select id="create-format" class="field-select"><option value="zip">ZIP</option><option value="tar">TAR</option><option value="tar.gz">TAR.GZ</option></select></div><div class="field-group" id="method-group"><label for="create-method" class="field-label">压缩方式</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store · 不压缩</option></select></div></div><div class="field-group" id="level-group"><label for="create-level" class="field-label">压缩级别</label><select id="create-level" class="field-select"><option>均衡</option><option>快速</option><option>更小</option></select></div><p id="create-valid" class="field-note success"></p><details><summary class="details-title">更多选项</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div>` +
-            footer(
-                cancelButton() +
-                    `<button id="start-create" class="button primary">开始压缩 ${icon("arrow")}</button>`,
-            ),
-        "create",
-        "C01",
+        header("新建压缩文件", "将文件整理为一个压缩包。", "archive-add") +
+        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label><div class="create-format-tabs" role="group" aria-label="压缩格式"><button id="create-format-zip" class="button primary" aria-pressed="true">ZIP</button><button class="button" id="create-format-tar" disabled title="此格式将在后续版本提供">TAR</button><button class="button" id="create-format-gzip" disabled title="此格式将在后续版本提供">TAR.GZ</button></div></div><div class="create-form-row" id="method-group"><label for="create-method">压缩算法</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store · 不压缩</option></select></div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option>均衡 (6)</option><option>快速 (1)</option><option>更小 (9)</option></select></div><p id="create-level-note" class="field-note">均衡兼顾速度与压缩率。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+        footer(`<button id="cancel-modal" class="button" data-close>取消</button><button id="start-create" class="button primary">创建压缩包</button>`),
+        "create", "C01", "#add-input",
     );
     bindClose();
     const validate = () => {
         const valid =
             state.createItems.length &&
-            $("#create-name").value.trim() &&
+            /^.+\.zip$/i.test($("#create-name").value.trim()) &&
             $("#create-destination").value.trim();
         $("#start-create").disabled = !valid;
         $("#create-valid").innerHTML =
             `${icon(valid ? "success" : "status-warning")}<span>${
                 valid
-                    ? "预检通过 · " +
+                    ? "示例检查通过 · " +
                       state.createItems.length +
-                      " 个文件 · 目标可写"
+                      " 个选择项 · 目标可写（示例）"
                     : "请添加输入文件，并填写名称与保存位置。"
             }</span>`;
         $("#create-valid").className =
@@ -1213,7 +1209,7 @@ function showCreate() {
                   )
                   .join("")
             : '<div class="create-row">尚未添加内容</div>';
-        $("#create-size").textContent = bytes(
+        $("#create-size").textContent = state.createItems.length + " 个选择项 · " + bytes(
             state.createItems.reduce((n, e) => n + e.size, 0),
         );
         $("#create-list")
@@ -1229,13 +1225,15 @@ function showCreate() {
     };
     $("#add-input").onclick = () => {
         const next = roots.find(
-            (e) => !state.createItems.some((f) => f.id === e.id),
+            (e) => !e.directory && !state.createItems.some((f) => f.id === e.id),
         );
         if (next) {
             state.createItems.push(next);
             draw();
         } else toast("所有示例文件都已添加。");
     };
+    $("#add-directory").onclick = () => { const next=roots.find(e=>e.directory && !state.createItems.some(f=>f.id===e.id)); if (next) { state.createItems.push(next); draw(); } };
+    $("#create-change-target").onclick = () => { $("#create-destination").value = $("#create-destination").value === "下载" ? "文稿" : "下载"; validate(); };
     $("#clear-input").onclick = () => {
         state.createItems = [];
         draw();
@@ -1243,25 +1241,23 @@ function showCreate() {
     $("#create-name").oninput = validate;
     $("#create-destination").oninput = validate;
     const format = () => {
-        const kind = $("#create-format").value;
+        const kind = "zip";
         $("#create-name").value =
             $("#create-name").value.replace(/\.(zip|tar(?:\.gz)?)$/, "") +
             "." +
             kind;
         $("#method-group").hidden = kind !== "zip";
-        $("#level-group").hidden =
-            kind === "tar" ||
-            (kind === "zip" && $("#create-method").value === "store");
+        $("#create-level").disabled = $("#create-method").value === "store";
+        $("#create-level-note").textContent = $("#create-method").value === "store" ? "Store 保留原始字节，不进行压缩。" : "均衡兼顾速度与压缩率。";
         validate();
     };
-    $("#create-format").onchange = format;
     $("#create-method").onchange = format;
     $("#start-create").onclick = () => {
         state.createTarget =
             $("#create-destination").value.trim() +
             " / " +
             $("#create-name").value.trim();
-        state.createFormat = $("#create-format").value;
+        state.createFormat = "zip";
         state.createMethod =
             state.createFormat === "zip"
                 ? $("#create-method").value

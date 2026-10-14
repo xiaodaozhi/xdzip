@@ -105,8 +105,10 @@
 <p>软等待期限初始 5 秒。超过后保留“正在安全收尾”信息，可继续等待或强制退出。强制退出说明可能保留暂存和部分结果，下次启动执行恢复检查。shutdown 控制不能被满队列或阻塞 GUI join 卡死。</p>
 <h2 id="并发验证">9. 并发验证<a class="heading-anchor" href="#%E5%B9%B6%E5%8F%91%E9%AA%8C%E8%AF%81" aria-label="本节链接">#</a></h2>
 <p>模型化验证状态转移、cancel/commit 竞争、关标签页/任务独立生存、事件乱序、满队列 shutdown、重复启动、资源回收和两任务重叠目标。测试通过同步屏障和故障点驱动，避免只依赖任意 sleep。必要时对小范围共享状态采用 Loom 等工具，不能把整个 Qt 应用塞进并发模型测试。</p>
+<h2 id="wp-10-创建任务">WP-10 创建任务<a class="heading-anchor" href="#wp-10-%E5%88%9B%E5%BB%BA%E4%BB%BB%E5%8A%A1" aria-label="本节链接">#</a></h2>
+<p>创建任务沿用单重任务线程和有界任务 mailbox，不在 GUI 递归扫描输入。冻结输入树后报告已知总量，顺序编码并写入私有暂存，完成后逐条重新解码校验，再取得整体提交许可。普通状态快照合并至约 100 ms，冲突和终态保留；取消与关闭沿用现有控制通道。整体保存后的输入文件数与源字节数才进入 committed 计数；written 表示实际 ZIP 输出字节。阶段、预算与失败行为见 <a href="https://github.com/xiaodaozhi/xdzip/blob/main/docs/engineering/m4-creation.md">实现契约</a>。</p>
 </article><nav class="page-navigation" aria-label="前后文档"><a href="07-file-security.html">← 07 文件安全、权限和输出事务</a><a href="09-performance.html">09 性能设计与基准 →</a></nav><footer class="footer">xdzip 软件设计 · 2026-10-11 · 基线 0.1</footer></main>
-<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#状态机">1. 状态机</a><a href="#进度">2. 进度</a><a href="#准入和线程预算">3. 准入和线程预算</a><a href="#公平和优先级">4. 公平和优先级</a><a href="#取消线性化">5. 取消线性化</a><a href="#等待用户和暂停">6. 等待用户和暂停</a><a href="#失败策略">7. 失败策略</a><a href="#应用关闭">8. 应用关闭</a><a href="#并发验证">9. 并发验证</a></aside></div>
+<aside class="toc" aria-label="本页目录"><div class="toc-title">本页目录</div><a href="#状态机">1. 状态机</a><a href="#进度">2. 进度</a><a href="#准入和线程预算">3. 准入和线程预算</a><a href="#公平和优先级">4. 公平和优先级</a><a href="#取消线性化">5. 取消线性化</a><a href="#等待用户和暂停">6. 等待用户和暂停</a><a href="#失败策略">7. 失败策略</a><a href="#应用关闭">8. 应用关闭</a><a href="#并发验证">9. 并发验证</a><a href="#wp-10-创建任务">WP-10 创建任务</a></aside></div>
 <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title"><div class="search-header"><div class="search-title"><h2 id="search-title">搜索全部设计文档</h2><button class="button" id="close-search" aria-label="关闭搜索">关闭</button></div>
 <label class="nav-label" for="search-input">关键词</label><input class="search-input" id="search-input" type="search" autocomplete="off" placeholder="例如：路径安全、取消、格式扩展">
 <p class="search-status" id="search-status" role="status" aria-live="polite"></p></div><div class="search-results" id="search-results"></div></dialog>

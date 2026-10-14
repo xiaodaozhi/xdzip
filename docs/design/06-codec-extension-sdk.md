@@ -63,6 +63,8 @@ ReadSource 只暴露读取、有限 seek 和已授权卷；OutputSink 只能写�
 
 ## 5. 插件包与 manifest
 
+当前源码编码切片已编译实现于 `xdzip-codec-api::encode`：`CreationCodec::encode` 接收 `EncodeInput`、`EncodeOutput`、`EncodeSettings`、取消令牌和处理字节回调。算法使用后端定义的 `store`／`deflate` 标识，ZIP 头的数值不成为通用格式接口。输入只提供不可变条目和按序号打开的读取流，输出只提供顺序 `Write`；没有目标路径、目录句柄或提交能力。ZIP 写入器与 Qt 无依赖关系。预算和写后逐项校验由 [WP-10 宿主契约](../engineering/m4-creation.md)约束，外部进程协议仍未启用。
+
 独立包包含 manifest、目标平台 executable、许可证、校验和、可选签名及能力 schema。manifest 至少包含 `plugin_id`、版本、作者、支持平台/架构、协议主版本范围、格式能力、入口、资源请求和来源。
 
 入口是包内相对路径；禁止 `..`、绝对路径、链接逃逸及 shell 命令字符串。宿主使用绝对可验证可执行文件及参数数组启动，不使用 `sh -c`。清理环境变量，不传应用凭据、代理密码、用户 PATH 扩展等。

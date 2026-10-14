@@ -750,3 +750,51 @@ dialog[data-kind="extract"] .destination-mark>svg { display:block; width:calc(va
 dialog[data-kind="extract"] #target-valid.error { color:var(--danger); }
 
 dialog[data-kind="extract"] input[type="radio"] { width:calc(20px * var(--ui-source-factor)); height:calc(20px * var(--ui-source-factor)); }
+/* Progress uses normal density too; scrolling belongs to the body alone. */
+dialog[data-kind="progress"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="progress"]>.os-titlebar,
+dialog[data-kind="progress"]>.modal-header,
+dialog[data-kind="progress"]>.modal-footer { flex-shrink:0; }
+dialog[data-kind="progress"]>.modal-content { min-height:0; overflow:auto; }
+dialog[data-kind="progress"] .modal-footer .button { height:calc(32px * var(--ui-source-factor)); min-height:calc(32px * var(--ui-source-factor)); }
+dialog[data-kind="progress"] .info-line { gap:calc(12px * var(--ui-source-factor)); }
+/* Creation follows C01's three-card hierarchy at the same normal form density. */
+dialog[data-kind="create"] { width:var(--operation-create-width); }
+dialog[data-kind="create"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="create"]>.os-titlebar,
+dialog[data-kind="create"]>.modal-header,
+dialog[data-kind="create"]>.modal-footer { flex-shrink:0; }
+dialog[data-kind="create"] .modal-header { padding:calc(20px * var(--ui-source-factor)) calc(18px * var(--ui-source-factor)) calc(12px * var(--ui-source-factor)); gap:calc(14px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .modal-header h1 { font-size:calc(20px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .modal-header p { font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .modal-symbol { width:calc(60px * var(--ui-source-factor)); height:calc(58px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .modal-symbol>svg { width:calc(53px * var(--ui-source-factor)); height:calc(59px * var(--ui-source-factor)); }
+dialog[data-kind="create"]>.modal-content { min-height:0; overflow:auto; padding:0 calc(18px * var(--ui-source-factor)) calc(12px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .field-group { padding:calc(13px * var(--ui-source-factor)); margin-bottom:calc(10px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--operation-card-border); border-radius:calc(6px * var(--ui-source-factor)); background:var(--operation-card); }
+dialog[data-kind="create"] .field-label { font-size:calc(13px * var(--ui-source-factor)); margin-bottom:calc(8px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-input-panel { padding:calc(10px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--operation-card-border); border-radius:calc(6px * var(--ui-source-factor)); background:var(--surface); }
+dialog[data-kind="create"] .create-actions { margin:0 0 calc(6px * var(--ui-source-factor)); gap:calc(8px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .button { min-height:calc(32px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); padding:0 calc(12px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .button>svg { width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-list { max-height:calc(148px * var(--ui-source-factor)); overflow:auto; border:0; border-radius:0; }
+dialog[data-kind="create"] .create-row { min-height:calc(38px * var(--ui-source-factor)); padding:0; font-size:calc(13px * var(--ui-source-factor)); gap:calc(8px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-row>svg { width:calc(24px * var(--ui-source-factor)); height:calc(24px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-row>span:nth-last-child(2) { font-size:calc(12px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-row .icon-button { width:calc(28px * var(--ui-source-factor)); height:calc(28px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-form-row { display:grid; grid-template-columns:calc(60px * var(--ui-source-factor)) minmax(0,1fr); align-items:center; gap:calc(12px * var(--ui-source-factor)); margin-bottom:calc(8px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .text-input,
+dialog[data-kind="create"] .field-select { font-size:calc(13px * var(--ui-source-factor)); height:calc(28px * var(--ui-source-factor)); border-color:var(--operation-field-border); background:var(--surface); }
+dialog[data-kind="create"] .create-target-row { display:flex; gap:calc(8px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-target-row .text-input { min-width:0; flex:1; }
+dialog[data-kind="create"] .create-format-tabs { display:flex; }
+dialog[data-kind="create"] .create-format-tabs>.button { flex:1; min-width:0; border-radius:0; }
+dialog[data-kind="create"] .create-format-tabs>.button:first-child { border-radius:calc(5px * var(--ui-source-factor)) 0 0 calc(5px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .create-format-tabs>.button:last-child { border-radius:0 calc(5px * var(--ui-source-factor)) calc(5px * var(--ui-source-factor)) 0; }
+dialog[data-kind="create"] .field-note,
+dialog[data-kind="create"] .details-title { font-size:calc(12px * var(--ui-source-factor)); }
+dialog[data-kind="create"] .check-label { font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="create"] input[type="checkbox"] { appearance:none; flex-shrink:0; width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--secondary); border-radius:calc(4px * var(--ui-source-factor)); background:var(--surface); }
+dialog[data-kind="create"] input[type="checkbox"]:checked { border:0; background:var(--checkbox-selected) center/126.3158% 126.3158% no-repeat; }
+dialog[data-kind="create"] .modal-footer { padding:calc(10px * var(--ui-source-factor)) calc(18px * var(--ui-source-factor)); min-height:calc(52px * var(--ui-source-factor)); }
+
+dialog[data-kind="create"] .modal-content .button { min-height:calc(28px * var(--ui-source-factor)); }

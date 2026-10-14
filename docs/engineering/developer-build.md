@@ -1,12 +1,12 @@
 # xdzip · 开发构建与验证
 
-这是实际 ZIP 浏览与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m3-acceptance.md)。签名与独立安全评审尚未达到正式发行条件。
+这是实际 ZIP 浏览、创建与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m3-acceptance.md)。签名与独立安全评审尚未达到正式发行条件。
 
 - macOS ARM64：自 2026-10-14 起仅进行原生编译、测试和 SDK 环境下的 Cocoa 启动验证，不自动打包或上传开发应用。Actions 仅保留日志和 JSON；本地构建方法见 [Qt 开发应用](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/README.md)。
 - Windows X64：保持 windows 目录内 DLL／插件布局，运行 windows/xdzip.exe。
 - Linux X64：xdzip-linux-qt6.8.2 是动态链接开发二进制，需要匹配的 Qt 6.8.2 和系统图形库，尚不是独立安装包。
 
-打开归档只浏览，不自动解压。选择条目或全部归档，选择个人目标目录，检查目标后开始。Store／Deflate 和单卷 ZIP64 使用实际负载、大小、流终止与 CRC 校验；不支持加密、分卷、其他编码／压缩方法、链接和特殊对象。新建归档与实际内容预览尚未实现。
+打开归档只浏览，不自动解压。选择条目或全部归档，选择个人目标目录，检查目标后开始。Store／Deflate 和单卷 ZIP64 使用实际负载、大小、流终止与 CRC 校验；不支持加密、分卷、其他编码／压缩方法、链接和特殊对象。新建支持 ZIP Store／Deflate 及 1／6／9 级，实际内容预览尚未实现。
 
 重名普通文件可询问、跳过、自动改名或明确替换。完整校验和数据同步后整文件发布；损坏、磁盘写入失败及提交前取消保留旧文件，早前已完成的文件继续保留。关闭任务窗口只隐藏它，可从状态栏重新打开；退出时等待或取消活动任务，不在 GUI 线程同步等待。
 

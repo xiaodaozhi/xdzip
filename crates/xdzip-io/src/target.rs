@@ -13,7 +13,7 @@ pub struct Grant {
     dir: Dir,
     path: PathBuf,
     identity: FileIdentity,
-    source: FileIdentity,
+    source: Option<FileIdentity>,
     created_directories: Arc<AtomicU64>,
     parent_grant: Option<Arc<Grant>>,
 }
@@ -32,6 +32,13 @@ pub struct ExistingFile {
 impl Grant {
     /// Authorize an existing directory chosen by the host. Broadly writable or linked roots fail.
     pub fn open(path: &Path, source: FileIdentity) -> Result<Arc<Self>, OutputError> {
+        Self::authorize(path, Some(source))
+    }
+    /// Authorize creation output; the host must protect every frozen input identity.
+    pub fn for_creation(path: &Path) -> Result<Arc<Self>, OutputError> {
+        Self::authorize(path, None)
+    }
+    fn authorize(path: &Path, source: Option<FileIdentity>) -> Result<Arc<Self>, OutputError> {
         let m = std::fs::symlink_metadata(path).map_err(failure)?;
         if m.file_type().is_symlink() || !m.is_dir() {
             return Err(OutputError::UnsafeTarget);
@@ -180,7 +187,7 @@ impl Grant {
         private::check(&file, false)?;
         let version = FileVersion::read(&file).map_err(failure)?;
         Ok(Some(ExistingFile {
-            source_protected: version.identity == self.source,
+            source_protected: Some(version.identity) == self.source,
             version,
         }))
     }
@@ -297,6 +304,10 @@ pub struct CommitReceipt {
     pub cleanup_warning: bool,
 }
 impl Workspace {
+    /// Exact private directory excluded from a creation input scan, with its identity.
+    pub fn input_exclusion(&self) -> (PathBuf, FileIdentity) {
+        (self.grant.path.join(&self.name), self.identity)
+    }
     fn dir(&self) -> &Dir {
         self.dir.as_ref().expect("workspace already cleaned")
     }
@@ -438,6 +449,20 @@ pub struct Stage {
     published: bool,
 }
 impl Stage {
+    /// Borrow a read handle for post-write verification. Writing has finished before this call.
+    /// A duplicated handle may share its cursor; this method is deliberately sequential.
+    pub fn verification_reader(&mut self) -> Result<File, OutputError> {
+        use std::io::{Seek, SeekFrom};
+        self.flush().map_err(failure)?;
+        let mut reader = self
+            .file
+            .as_ref()
+            .ok_or(OutputError::Io)?
+            .try_clone()
+            .map_err(failure)?;
+        reader.seek(SeekFrom::Start(0)).map_err(failure)?;
+        Ok(reader)
+    }
     /// Synchronize verified file data before publication, detecting delayed I/O failures.
     pub fn finish(&mut self) -> Result<(), OutputError> {
         if let Some(mut file) = self.file.take() {

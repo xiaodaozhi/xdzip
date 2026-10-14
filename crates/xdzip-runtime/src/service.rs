@@ -61,6 +61,8 @@ pub enum Command {
         /// Explicit selected existing directory.
         path: String,
     },
+    /// Queue a whole-archive creation independent of an open archive session.
+    Create(crate::creation::Options),
     /// Return the current session identity without filesystem work.
     Snapshot,
 }
@@ -73,6 +75,7 @@ impl Command {
             } => directory.len() + text.len(),
             Self::Preflight { selected, .. } => selected.len() * 8,
             Self::Extract { options, .. } => options.bytes(),
+            Self::Create(options) => options.bytes(),
             _ => 0,
         }
     }
@@ -93,6 +96,7 @@ impl Command {
             } => directory.len() <= 21 && text.len() <= 1024 && *sort <= 12,
             Self::Preflight { selected, .. } => !selected.is_empty() && selected.len() <= 128,
             Self::Extract { options, .. } => options.bounded(),
+            Self::Create(options) => options.bounded(),
             _ => true,
         }
     }
@@ -601,13 +605,18 @@ fn execute(
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
             Command::CheckTarget { session, path } => {
-                let archive = archive
-                    .as_ref()
-                    .filter(|a| a.key().session.get() == session)
-                    .ok_or("stale_session")?;
-                archive.source.validate().map_err(|_| "source_changed")?;
-                let id = archive.source.identity().map_err(|_| "source_changed")?;
-                let grant = xdzip_io::Grant::open(Path::new(&path), id).map_err(|e| match e {
+                let grant = if session == 0 {
+                    xdzip_io::Grant::for_creation(Path::new(&path))
+                } else {
+                    let archive = archive
+                        .as_ref()
+                        .filter(|a| a.key().session.get() == session)
+                        .ok_or("stale_session")?;
+                    archive.source.validate().map_err(|_| "source_changed")?;
+                    let id = archive.source.identity().map_err(|_| "source_changed")?;
+                    xdzip_io::Grant::open(Path::new(&path), id)
+                }
+                .map_err(|e| match e {
                     xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
                     _ => "output_io",
                 })?;
@@ -622,7 +631,14 @@ fn execute(
                     .filter(|a| a.key().session.get() == session)
                     .ok_or("stale_session")?;
                 let job = archive.extraction_job(options, control)?;
-                return shared.enqueue_task(job).map(Payload::TaskAccepted);
+                return shared
+                    .enqueue_task(tasks::Job::Extract(job))
+                    .map(Payload::TaskAccepted);
+            }
+            Command::Create(options) => {
+                return shared
+                    .enqueue_task(tasks::Job::Create(crate::creation::Job { options }))
+                    .map(Payload::TaskAccepted);
             }
             Command::Snapshot => {
                 return Ok(Payload::Snapshot(

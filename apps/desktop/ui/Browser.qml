@@ -22,7 +22,7 @@ ApplicationWindow {
     property bool waitBeforeExit: false
     property bool allowExit: false
     function phaseLabel(status: string): string {
-        return ({queued: qsTr("等待开始"), preparing: qsTr("检查目标与归档"), running: qsTr("解码与写入"),
+        return ({queued: qsTr("等待开始"), preparing: qsTr("检查目标与归档"), running: taskSnapshot.creating ? qsTr("读取与压缩") : qsTr("解码与写入"), verifying: qsTr("校验完整归档"),
                  waiting: qsTr("等待处理重名"), committing: qsTr("提交完整文件"), cancelling: qsTr("停止与清理"),
                  cleaning: qsTr("清理暂存"), succeeded: qsTr("完成"), failed: qsTr("失败"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
     }
@@ -49,7 +49,7 @@ ApplicationWindow {
     function remainingTime(): string {
         const t = taskSnapshot;
         const seconds = Number(t.elapsedMs || 0) / 1000;
-        const written = Number(t.writtenBytes || 0);
+        const written = Number(t.creating ? t.decodedBytes || 0 : t.writtenBytes || 0);
         if (seconds < 2 || !written || t.status !== "running") return "—";
         return qsTr("约 %1 秒").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
     }
@@ -135,6 +135,7 @@ ApplicationWindow {
         onReadyToClose: root.close()
         onPreflightReady: preflightWindow.present()
         onExtractionReady: extractWindow.configure()
+        onCreationStarted: id => { createWindow.close(); root.showTask(id); }
         onExtractionStarted: id => { extractWindow.close(); root.showTask(id); }
         onTasksChanged: {
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
@@ -159,6 +160,7 @@ ApplicationWindow {
             }
         }
     }
+    CreateWindow { id: createWindow; owner: root; controller: reader }
     ExtractWindow { id: extractWindow; owner: root; controller: reader }
     TaskWindow {
         id: taskWindow
@@ -167,15 +169,16 @@ ApplicationWindow {
         destination: root.taskSnapshot.target || reader.extractionIntent.target || ""
         currentFile: root.taskSnapshot.current || qsTr("正在准备…")
         fraction: root.taskFraction()
-        totalKnown: !!root.taskSnapshot.status
+        creating: root.taskSnapshot.creating || false
+        totalKnown: root.taskSnapshot.totalKnown || false
         stopping: ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
         taskStatus: root.taskSnapshot.status || "queued"
         phaseSummary: root.phaseLabel(taskStatus)
         errorSummary: root.taskSnapshot.error || ""
         cleanupWarning: root.taskSnapshot.cleanupWarning || false
         outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
-        processedSummary: qsTr("已写入 %1 · 已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
-        fileCountSummary: qsTr("%1 / %2 个文件 · 跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        processedSummary: taskWindow.creating ? qsTr("已读取 %1 · 压缩后 %2").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTr("已写入 %1 · 已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
+        fileCountSummary: taskWindow.creating ? qsTr("%1 个文件 · %2").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTr("整体保存已结束") : qsTr("校验后整体保存")) : qsTr("%1 / %2 个文件 · 跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
         resultSummary: qsTr("完成 %1 个文件 · 跳过 %2 · 创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
@@ -469,6 +472,7 @@ ApplicationWindow {
             canSearch: reader.queryAvailable
             canInspect: reader.ready && !reader.busy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
+            onNewRequested: createWindow.configure()
             onOpenRequested: reader.chooseArchive()
             onInspectRequested: reader.inspectSelection()
             onExtractRequested: all => reader.prepareExtraction(all)

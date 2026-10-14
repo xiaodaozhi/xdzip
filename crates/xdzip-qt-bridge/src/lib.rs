@@ -25,6 +25,7 @@ mod ffi {
         Snapshot,
         Extract,
         CheckTarget,
+        Create,
     }
     struct MetadataLimits {
         entries: u64,
@@ -45,6 +46,9 @@ mod ffi {
         sort: u8,
         selected: Vec<u64>,
         selectors: Vec<String>,
+        inputs: Vec<String>,
+        method: u16,
+        level: u8,
         all: bool,
         create_folder: bool,
         conflict: u8,
@@ -78,6 +82,8 @@ mod ffi {
         unicode_review: bool,
     }
     struct TaskSnapshot {
+        creating: bool,
+        total_known: bool,
         id: u64,
         session: u64,
         status: String,
@@ -227,7 +233,13 @@ impl CommandClient {
     /// Validate bounded foreign DTOs before admitting any work. Rejection consumes no ID.
     pub fn submit(&self, command: ffi::Command) -> ffi::Submission {
         use service::{Command, Rejection};
-        if command.path.len() > 4096
+        if command.inputs.len() > xdzip_codec_api::MAX_ENTRIES
+            || command
+                .inputs
+                .iter()
+                .any(|p| p.len() > 4096 || p.contains('\0'))
+            || command.inputs.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024
+            || command.path.len() > 4096
             || command.directory.len() > 21
             || command.text.len() > 1024
             || command.selected.len() > 128
@@ -244,6 +256,21 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         }
         let value = match command.kind {
+            ffi::CommandKind::Create => {
+                let Some(conflict) =
+                    xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
+                else {
+                    return admission(Err(Rejection::Invalid));
+                };
+                Command::Create(xdzip_runtime::creation::Options {
+                    inputs: command.inputs,
+                    target: command.path,
+                    name: command.text,
+                    method: command.method,
+                    level: command.level,
+                    conflict,
+                })
+            }
             ffi::CommandKind::Open => Command::Open(command.path),
             ffi::CommandKind::Browse => Command::Browse {
                 session: command.session,
@@ -461,6 +488,8 @@ impl EventReceiver {
 
 fn empty_task() -> ffi::TaskSnapshot {
     ffi::TaskSnapshot {
+        creating: false,
+        total_known: false,
         id: 0,
         session: 0,
         status: String::new(),
@@ -491,6 +520,8 @@ fn empty_task() -> ffi::TaskSnapshot {
 fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
     let prompt = s.prompt;
     ffi::TaskSnapshot {
+        creating: s.creating,
+        total_known: s.total_known,
         id: s.id,
         session: s.session,
         status: s.status.code().into(),
@@ -555,6 +586,9 @@ mod tests {
             sort: 0,
             selected: Vec::new(),
             selectors: Vec::new(),
+            inputs: Vec::new(),
+            method: 8,
+            level: 6,
             all: false,
             create_folder: false,
             conflict: 0,

@@ -7,6 +7,7 @@ QtObject {
         const suffix = name.toLowerCase().split(".").pop();
         let kind = "file-text";
         if (directory) kind = "folder";
+        else if (suffix === "zip") kind = "archive";
         else if (suffix === "pdf") kind = "file-pdf";
         else if (suffix === "md") kind = "file-markdown";
         else if (["jpg", "jpeg", "png", "gif", "webp", "avif", "heic"].includes(suffix)) kind = "image-file";

@@ -31,6 +31,8 @@ fn decoding(error: DecodeError) -> &'static str {
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
+        creating: false,
+        total_known: true,
         id,
         session: job.session,
         status: Status::Queued,

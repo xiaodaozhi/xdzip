@@ -14,8 +14,11 @@ QtObject {
     readonly property int mainMinimumHeight: 544
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
-    readonly property int operationProgressWidth: 846
+    readonly property int operationProgressWidth: 677
+    readonly property int operationCreateWidth: 491
     readonly property real operationExtractDensity: 0.8
+    readonly property real operationProgressDensity: 0.8
+    readonly property real operationCreateDensity: 0.8
     readonly property real operationFooterFontSize: 13 * fontScale
     readonly property real operationFooterNoteSize: 12 * fontScale
     readonly property real operationFooterIconSize: 16 * fontScale
@@ -44,6 +47,14 @@ QtObject {
     readonly property real operationDestinationIndicatorSlotSize: 24 * fontScale
     readonly property real operationDestinationIndicatorSize: 16 * fontScale
     readonly property real operationDestinationIndicatorGap: 8
+    readonly property real operationCreateClientHeight: 736
+    readonly property real operationCreateContentInset: 18
+    readonly property real operationCreateCardInset: 13
+    readonly property real operationCreateBodySize: 13 * fontScale
+    readonly property real operationCreateTitleSize: 20 * fontScale
+    readonly property real operationCreateNoteSize: 12 * fontScale
+    readonly property real operationCreateInputRowHeight: 38
+    readonly property real operationCreateFieldHeight: 28
     readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
     readonly property color surface: dark ? "#22262F" : "#FFFFFF"
     readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"

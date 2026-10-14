@@ -84,6 +84,124 @@ class BrowserTest : public QObject {
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
+    void m4CreationWindowAndRoundTrip() {
+        QTemporaryDir input, output;
+        QVERIFY(input.isValid() && output.isValid());
+        const auto source = input.path() + QStringLiteral("/输入");
+        QVERIFY(QDir().mkpath(source + QStringLiteral("/空目录")));
+        QFile file(source + QStringLiteral("/文件.txt"));
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        const auto data = QStringLiteral("真实 ZIP 创建与读回\n").repeated(1024).toUtf8();
+        QCOMPARE(file.write(data), data.size());
+        file.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && create);
+        auto *newButton = findVisual(window->contentItem(), "archiveNew");
+        QVERIFY(newButton && newButton->isEnabled());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            newButton->mapToScene(QPointF(newButton->width() / 2, newButton->height() / 2))
+                .toPoint());
+        QTRY_VERIFY(create->isVisible());
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(create->width(), 491);
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{source})),
+                                          Q_ARG(bool, true)));
+        QVERIFY(QMetaObject::invokeMethod(
+            create, "addInputPaths",
+            Q_ARG(QVariant, QVariant(QStringList{source + QStringLiteral("/文件.txt")})),
+            Q_ARG(bool, false)));
+        QVERIFY(QMetaObject::invokeMethod(
+            create, "addInputPaths",
+            Q_ARG(QVariant, QVariant(QStringList{source + QStringLiteral("/空目录")})),
+            Q_ARG(bool, true)));
+        auto *name = findVisual(create->contentItem(), "createName");
+        auto *target = findVisual(create->contentItem(), "createTarget");
+        auto *after = findVisual(create->contentItem(), "createOpenAfter");
+        auto *method = findVisual(create->contentItem(), "createMethod");
+        QVERIFY(name && target && after && method);
+        name->setProperty("text", QStringLiteral("创建.zip"));
+        target->setProperty("text", output.path());
+        after->setProperty("checked", false);
+        method->setProperty("currentIndex", 1);
+        auto *level = findVisual(create->contentItem(), "createLevel");
+        QVERIFY(level);
+        QTRY_VERIFY(!level->isEnabled());
+        controller->checkCreationTarget(output.path());
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(checkedTarget(controller, output.path()));
+        QTRY_VERIFY(visibleImagesReady(create->contentItem()));
+        const auto captures = qEnvironmentVariable("XDZIP_M4_VISUAL_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(create, captures, "create-selected"));
+            window->setProperty("darkMode", true);
+            QTest::qWait(20);
+            QVERIFY(visual_audit::save(create, captures, "create-dark"));
+            window->setProperty("darkMode", false);
+        }
+        auto *start = findVisual(create->contentItem(), "startCreate");
+        QVERIFY(start);
+        QTRY_VERIFY(start->isEnabled());
+        QSignalSpy started(controller, &BrowserController::creationStarted);
+        QTest::mouseClick(
+            create, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_COMPARE(started.count(), 1);
+        QTRY_VERIFY(!create->isVisible());
+        QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+        const auto tasks = controller->tasks();
+        QVERIFY(!tasks.isEmpty());
+        const auto task = tasks.first().toMap();
+        QCOMPARE(task.value("status").toString(), QString("succeeded"));
+        QVERIFY(task.value("creating").toBool() && task.value("totalKnown").toBool());
+        QCOMPARE(task.value("committedFiles").toString(), QString("1"));
+        const auto archive = output.path() + QStringLiteral("/创建.zip");
+        QVERIFY(QFileInfo::exists(archive));
+        controller->openPath(archive);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->archiveTotal(), 3);
+        QCOMPARE(controller->entries()->rowCount(), 1);
+        controller->enterDirectory(0);
+        QTRY_VERIFY(!controller->busy());
+        QCOMPARE(controller->entries()->rowCount(), 2);
+        if (!captures.isEmpty()) {
+            auto *progress = window->findChild<QQuickWindow *>("taskWindow");
+            QVERIFY(progress);
+            QVERIFY(visual_audit::save(progress, captures, "create-completed"));
+            QVERIFY(visual_audit::save(window, captures, "created-archive-open"));
+        }
+        QFile archiveFile(archive);
+        QVERIFY(archiveFile.open(QIODevice::ReadOnly));
+        const auto originalArchive = archiveFile.readAll();
+        archiveFile.close();
+        // Drive the actual conflict action, then prove whole-archive cancellation
+        // preserves the existing file and removes only our staging directory.
+        controller->startCreation({source}, output.path(), QStringLiteral("创建.zip"), 8, 6, false);
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        QVERIFY(conflict);
+        QTRY_VERIFY(conflict->isVisible());
+        auto *applyAll = findVisual(conflict->contentItem(), "conflictApplyAll");
+        QVERIFY(applyAll && !applyAll->isVisible());
+        auto *skip = findVisual(conflict->contentItem(), "conflictSkip");
+        QVERIFY(skip && skip->isEnabled());
+        QTest::mouseClick(
+            conflict, Qt::LeftButton, Qt::NoModifier,
+            skip->mapToScene(QPointF(skip->width() / 2, skip->height() / 2)).toPoint());
+        QTRY_COMPARE(controller->activeTaskCount(), 0);
+        QVERIFY(archiveFile.open(QIODevice::ReadOnly));
+        QCOMPARE(archiveFile.readAll(), originalArchive);
+        archiveFile.close();
+        QCOMPARE(QDir(output.path()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).size(), 1);
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
     void m3ExtractionWindowsAndRealOutput() {
         QTemporaryDir target;
         QVERIFY(target.isValid());
@@ -169,7 +287,7 @@ class BrowserTest : public QObject {
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible());
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
-        QCOMPARE(task->width(), 846);
+        QCOMPARE(task->width(), 677);
         QVERIFY(!(task->flags() & Qt::FramelessWindowHint));
         QCOMPARE(task->transientParent(), window);
         const auto button = findVisual(task->contentItem(), "cancelButton");

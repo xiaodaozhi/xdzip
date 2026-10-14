@@ -11,6 +11,7 @@ Rectangle {
     required property bool canInspect
     required property bool hasSelection
     signal extractRequested(bool all)
+    signal newRequested
     signal openRequested
     signal resetSortRequested
     signal inspectRequested
@@ -69,8 +70,8 @@ Rectangle {
                 rightPadding: 0
                 text: qsTr("新建")
                 asset: "new"
-                enabled: false
-                explanation: qsTr("创建归档尚未实现")
+                enabled: root.canOpen
+                onClicked: root.newRequested()
             }
             Rectangle {
                 Layout.preferredWidth: 1

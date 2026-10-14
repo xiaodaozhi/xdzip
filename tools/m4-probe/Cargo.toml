@@ -1,0 +1,11 @@
+[package]
+name = "xdzip-m4-probe"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[dependencies]
+xdzip-runtime = { path = "../../crates/xdzip-runtime" }
+[lints]
+workspace = true

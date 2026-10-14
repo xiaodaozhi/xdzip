@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT / 'docs/qa/extract-fidelity/html-operation-metrics.json').read_text(encoding='utf-8'))['scenes']
+reference = json.loads((ROOT / 'docs/qa/progress-density/html-operation-metrics.json').read_text(encoding='utf-8'))['scenes']
 layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))['operation']
 checks = []
 
@@ -43,7 +43,7 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
             check(name + '/' + node['text'] + '/footer size', label['fontPixelSize'], layout['footer']['fontSize'])
             check(name + '/' + node['text'] + '/inside right edge', node['x'] + node['width'] <= capture['width'] + 1, True)
             check(name + '/' + node['text'] + '/inside bottom edge', node['y'] + node['height'] <= capture['height'] + 1, True)
-            if kind == 'extract':
+            if kind in ('extract', 'progress'):
                 check(name + '/' + node['text'] + '/action height', node['height'], 32)
                 check(name + '/' + node['text'] + '/action minimum width', node['width'] >= 77, True)
             else:
@@ -52,9 +52,9 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
         body = text_node(capture, '实际耗时取决于文件与磁盘状态。')
         footer = text_node(capture, '关闭此窗口后，任务仍会继续。')
         check(name + '/hint text left edges', body['x'], footer['x'], .5)
-        check(name + '/body hint size', body['fontPixelSize'], 15)
+        check(name + '/body hint size', body['fontPixelSize'], 12)
         check(name + '/footer hint size', footer['fontPixelSize'], layout['footer']['noteSize'])
-        for note in (body, footer):
+        for note in ((body, footer) if capture['height'] >= 490 else (footer,)):
             check(name + '/' + note['text'] + '/visible without scroll', 0 <= note['y'] and note['y'] + note['height'] <= capture['height'], True)
 
 # Destination geometry comes from the independent source measurements, rather

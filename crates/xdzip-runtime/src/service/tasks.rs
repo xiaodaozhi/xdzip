@@ -2,11 +2,35 @@
 use super::*;
 use crate::extraction::{self, ConflictPolicy, Control, Snapshot, Status};
 
+pub(super) enum Job {
+    Extract(extraction::Job),
+    Create(crate::creation::Job),
+}
+impl Job {
+    fn retained_bytes(&self) -> usize {
+        match self {
+            Self::Extract(j) => j.retained_bytes(),
+            Self::Create(j) => j.retained_bytes(),
+        }
+    }
+    fn initial(&self, id: u64) -> Snapshot {
+        match self {
+            Self::Extract(j) => extraction::initial(j, id),
+            Self::Create(j) => crate::creation::initial(j, id),
+        }
+    }
+    fn run(self, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
+        match self {
+            Self::Extract(j) => extraction::run(j, id, control, publish),
+            Self::Create(j) => crate::creation::run(j, id, control, publish),
+        }
+    }
+}
 #[derive(Default)]
 pub(super) struct Queue {
     next_id: u64,
     retained: BTreeMap<u64, usize>,
-    jobs: VecDeque<(u64, extraction::Job, Arc<Control>)>,
+    jobs: VecDeque<(u64, Job, Arc<Control>)>,
     controls: BTreeMap<u64, Arc<Control>>,
     latest: BTreeMap<u64, Snapshot>,
     pub(super) pending: BTreeMap<u64, Snapshot>,
@@ -29,7 +53,7 @@ impl Queue {
     }
 }
 impl Shared {
-    pub(super) fn enqueue_task(&self, job: extraction::Job) -> Result<u64, &'static str> {
+    pub(super) fn enqueue_task(&self, job: Job) -> Result<u64, &'static str> {
         let bytes = job.retained_bytes();
         let mut state = self.lock();
         if state.shutdown.is_some() || !state.receiver_alive {
@@ -47,7 +71,7 @@ impl Shared {
         state.tasks.next_id = id;
         state.tasks.retained.insert(id, bytes);
         let control = Arc::new(Control::default());
-        let snapshot = extraction::initial(&job, id);
+        let snapshot = job.initial(id);
         state.tasks.controls.insert(id, Arc::clone(&control));
         state.tasks.latest.insert(id, snapshot.clone());
         state.tasks.pending.insert(id, snapshot);
@@ -94,11 +118,14 @@ pub(super) fn worker(shared: Arc<Shared>) {
         let Some((id, job, control)) = next else {
             break;
         };
-        let mut fallback = extraction::initial(&job, id);
+        let mut fallback = job.initial(id);
         if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let mut last_progress = std::time::Instant::now();
-            extraction::run(job, id, &control, &mut |s| {
-                if matches!(s.status, Status::Running | Status::Committing) {
+            job.run(id, &control, &mut |s| {
+                if matches!(
+                    s.status,
+                    Status::Running | Status::Committing | Status::Verifying
+                ) {
                     if last_progress.elapsed() < std::time::Duration::from_millis(100) {
                         return;
                     }
@@ -306,14 +333,16 @@ mod tests {
         };
         for _ in 0..extraction::MAX_TASKS {
             shared
-                .enqueue_task(
+                .enqueue_task(Job::Extract(
                     a.extraction_job(options.clone(), &Cancellation::default())
                         .unwrap(),
-                )
+                ))
                 .unwrap();
         }
         assert_eq!(
-            shared.enqueue_task(a.extraction_job(options, &Cancellation::default()).unwrap()),
+            shared.enqueue_task(Job::Extract(
+                a.extraction_job(options, &Cancellation::default()).unwrap()
+            )),
             Err("task_busy")
         );
         let state = shared.lock();

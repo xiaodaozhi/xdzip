@@ -1,4 +1,5 @@
 //! Internal format contracts. Payload adapters receive input and a host-owned sink, never paths.
+pub mod encode;
 pub mod payload;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};

@@ -12,7 +12,7 @@ ComboBox {
     contentItem: Text {
         text: root.displayText
         textFormat: Text.PlainText
-        font: root.font; color: Theme.text
+        font: root.font; color: root.enabled ? Theme.text : Theme.textSecondary
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
     }
@@ -20,11 +20,12 @@ ComboBox {
         x: root.width - width - 12
         y: (root.height - height) / 2
         width: 18; height: 18
+        opacity: root.enabled ? 1 : 0.45
         source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
     }
     background: Rectangle {
         radius: 6
-        color: root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : Theme.surface
+        color: !root.enabled ? Theme.operationCard : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : Theme.surface
         border.color: root.activeFocus ? Theme.accent : Theme.operationFieldBorder
         border.width: root.activeFocus ? 2 : 1
     }

@@ -27,7 +27,7 @@ OperationWindow {
                         OperationHero { source: "qrc:/xdzip/assets/conflict-document.png"; canvasWidth: 60; canvasHeight: 68; artworkWidth: 56; artworkHeight: 65; Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { text: qsTr("目标位置已有同名文件"); font.pixelSize: Theme.operationTitleSize; font.bold: true; color: Theme.text }
+                            Text { text: root.task.creating ? qsTr("目标位置已有同名归档") : qsTr("目标位置已有同名文件"); font.pixelSize: Theme.operationTitleSize; font.bold: true; color: Theme.text }
                             Text { Layout.fillWidth: true; text: qsTr("请选择要保留的版本"); textFormat: Text.PlainText; wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: 15 * Theme.fontScale }
                         }
                     }
@@ -39,7 +39,7 @@ OperationWindow {
                     GridLayout {
                         Layout.fillWidth: true; columns: Theme.fontScale > 1.35 ? 1 : 2; columnSpacing: 16; rowSpacing: 12
                         Repeater {
-                            model: [qsTr("已有文件"), qsTr("归档中的文件")]
+                            model: root.task.creating ? [qsTr("已有归档"), qsTr("新建归档")] : [qsTr("已有文件"), qsTr("归档中的文件")]
                             Rectangle {
                                 id: comparisonCard
                                 required property string modelData
@@ -59,7 +59,7 @@ OperationWindow {
                         }
                     }
                     InfoRow { Layout.fillWidth: true; text: root.task.overwriteAllowed ? qsTr("覆盖会替换已有文件，原文件不会进入废纸篓。") : qsTr("这个文件是源归档，只能跳过或保留两个版本。"); labelSize: Theme.operationNoteSize; iconSize: 20 }
-                    OperationCheck { id: remaining; objectName: "conflictApplyAll"; Layout.fillWidth: true; text: qsTr("对此任务后续的普通文件冲突使用相同操作") }
+                    OperationCheck { id: remaining; objectName: "conflictApplyAll"; Layout.fillWidth: true; visible: !root.task.creating; text: qsTr("对此任务后续的普通文件冲突使用相同操作") }
                 }
             }
         }
@@ -67,9 +67,9 @@ OperationWindow {
             Layout.fillWidth: true
             contentInset: 30; verticalInset: 17; minimumFooterHeight: 74
             note: qsTr("等待你的决定"); noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
-            AppButton { objectName: "conflictSkip"; text: qsTr("跳过"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; onClicked: root.decision(1, remaining.checked) }
+            AppButton { objectName: "conflictSkip"; text: root.task.creating ? qsTr("取消创建") : qsTr("跳过"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; onClicked: root.decision(1, remaining.checked) }
             AppButton { objectName: "conflictRename"; text: qsTr("自动改名"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; primary: true; onClicked: root.decision(2, remaining.checked) }
-            AppButton { objectName: "conflictOverwrite"; text: qsTr("覆盖文件"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
+            AppButton { objectName: "conflictOverwrite"; text: root.task.creating ? qsTr("替换归档") : qsTr("覆盖文件"); labelSize: Theme.operationFooterFontSize; baseHeight: 38; cornerRadius: 6; horizontalInset: 17; dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
         }
     }
 }
