@@ -20,7 +20,7 @@ def main():
     server = ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
     Thread(target=server.serve_forever,daemon=True).start()
     checks,envs,errors,external = [],[],[],[]
-    reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text())
+    reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text(encoding="utf-8"))
     def check(name,actual,expected,tolerance=1):
         passed = abs(actual-expected)<=tolerance if isinstance(actual,(int,float)) and isinstance(expected,(int,float)) else actual==expected
         checks.append(dict(name=name,actual=actual,expected=expected,passed=passed))
@@ -72,7 +72,7 @@ def main():
                     browser.close()
     finally: server.shutdown();server.server_close()
     report=dict(checks=checks,environments=envs,page_errors=errors,external_requests=external,passed=sum(c['passed'] for c in checks),failed=sum(not c['passed'] for c in checks))
-    (OUTPUT/'validation.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+    (OUTPUT/'validation.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n', encoding='utf-8')
     for c in checks:
         if not c['passed']:print(json.dumps(c,ensure_ascii=False))
     print(f"Native browser creation review: {report['passed']} passed, {report['failed']} failed")

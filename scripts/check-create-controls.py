@@ -10,7 +10,7 @@ p = argparse.ArgumentParser(description=__doc__)
 p.add_argument('--input', type=Path, required=True)
 p.add_argument('--output', type=Path, required=True)
 args = p.parse_args()
-reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text())
+reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text(encoding="utf-8"))
 assert hashlib.sha256((ROOT/reference['source']).read_bytes()).hexdigest() == reference['sha256']
 contract = reference['reviewed_control_contract']
 checks = []
@@ -18,7 +18,7 @@ def check(name, actual, expected, tolerance=.5):
     passed = abs(actual-expected) <= tolerance if isinstance(actual,(int,float)) and isinstance(expected,(int,float)) else actual == expected
     checks.append(dict(name=name,actual=actual,expected=expected,tolerance=tolerance,passed=passed))
 for scene in ['create-light','create-dark','create-remove-hover','create-field-focus','create-dropdown','create-removed']:
-    capture = json.loads((args.input/(scene+'.json')).read_text())
+    capture = json.loads((args.input/(scene+'.json')).read_text(encoding="utf-8"))
     nodes = {n['name']:n for n in capture['nodes'] if n['visible'] and n.get('name')}
     check(scene+'/width', capture['width'], reference['logical_width'])
     check(scene+'/DPR width', capture['imageWidth']/capture['dpr'], capture['width'],1)
@@ -65,7 +65,7 @@ report = dict(passed=sum(c['passed'] for c in checks),failed=sum(not c['passed']
               limits=['Offscreen client captures exclude OS decorations; native desktop appearance needs manual review.',
                       'Measured controls do not imply pixel-identical fonts or identical file icons to historical artwork.'])
 args.output.parent.mkdir(parents=True,exist_ok=True)
-args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+args.output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n', encoding='utf-8')
 for check in checks:
     if not check['passed']: print(json.dumps(check,ensure_ascii=False))
 print(f"C01 Qt control review: {report['passed']} passed, {report['failed']} failed")

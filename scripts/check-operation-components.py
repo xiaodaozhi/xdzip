@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 failures = []
 windows = ['CreateWindow', 'ExtractWindow', 'TaskWindow', 'ConflictWindow', 'QuitWindow', 'PreflightWindow']
 for name in windows:
-    text = (ROOT/'apps/desktop/ui'/f'{name}.qml').read_text()
+    text = (ROOT/'apps/desktop/ui'/f'{name}.qml').read_text(encoding="utf-8")
     # Match balanced QML objects, including signal-handler JS bodies.
     def blocks(kind):
         for match in re.finditer(r'\b'+kind+r'\s*\{', text):
@@ -27,7 +27,7 @@ for name in windows:
 for folder in ['apps', 'crates', 'design/html', 'scripts', 'tools']:
     for path in (ROOT/folder).rglob('*'):
         if path.suffix in {'.qml','.cpp','.h','.js','.html','.css','.py','.rs','.ps1'} and not any(p in {'build','target','dist','__pycache__'} for p in path.parts):
-            if '\u00b7' in path.read_text():
+            if '\u00b7' in path.read_text(encoding="utf-8"):
                 failures.append(f'{path.relative_to(ROOT)}: middle-dot delimiter in maintained source')
 for failure in failures:
     print(failure)
