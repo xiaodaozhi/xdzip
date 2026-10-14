@@ -9,8 +9,8 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT / 'docs/qa/extract-fidelity/html-operation-metrics.json').read_text())['scenes']
-layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())['operation']
+reference = json.loads((ROOT / 'docs/qa/extract-fidelity/html-operation-metrics.json').read_text(encoding='utf-8'))['scenes']
+layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))['operation']
 checks = []
 
 
@@ -29,7 +29,7 @@ def text_node(scene, text):
 for name, kind, title in [('extract-options', 'extract', '解压文件'),
                           ('task-waiting', 'progress', '等待处理重名文件'),
                           ('conflict', 'conflict', '目标位置已有同名文件')]:
-    capture = json.loads((args.input / (name + '.json')).read_text())
+    capture = json.loads((args.input / (name + '.json')).read_text(encoding='utf-8'))
     model = reference[kind]
     window = next(n for n in model if n['selector'] == 'DIALOG.')
     heading = next(n for n in model if n['selector'] == 'H1.')
@@ -59,9 +59,9 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
 
 # Destination geometry comes from the independent source measurements, rather
 # than copying the QML constants into the expected values.
-source = json.loads((ROOT / 'docs/visual/extract-reference.json').read_text())
+source = json.loads((ROOT / 'docs/visual/extract-reference.json').read_text(encoding='utf-8'))
 ratio = source['source_to_logical'][0] / source['source_to_logical'][1]
-capture = json.loads((args.input / 'extract-selected.json').read_text())
+capture = json.loads((args.input / 'extract-selected.json').read_text(encoding='utf-8'))
 named = {n['name']: n for n in capture['nodes'] if n.get('name') and n['visible']}
 field = named['extractDestinationField']
 change = named['extractChangeTarget']
@@ -79,7 +79,7 @@ report = dict(passed=sum(c['passed'] for c in checks), failed=sum(not c['passed'
                       'System window decorations follow the target OS and are not included in grabWindow',
                       'This check does not certify identical glyph contours or desktop appearance'])
 args.output.parent.mkdir(parents=True, exist_ok=True)
-args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 for c in checks:
     if not c['passed']:
         print(json.dumps(c, ensure_ascii=False))
