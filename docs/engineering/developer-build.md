@@ -1,8 +1,8 @@
-# xdzip · M3 开发验证包
+# xdzip · 开发构建与验证
 
-这是实际 ZIP 浏览与解压应用的实验开发构建。实现提交、Qt／Rust 版本和平台见包内 build.json；最终三平台检查、工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m3-acceptance.md)。签名与独立安全评审尚未达到正式发行条件。
+这是实际 ZIP 浏览与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/m3-acceptance.md)。签名与独立安全评审尚未达到正式发行条件。
 
-- macOS ARM64：解压 xdzip-macos-arm64.zip，打开 xdzip.app。采用 ad-hoc 签名，尚未完成 Developer ID 签名与公证；macOS 的首次打开规则仍适用。
+- macOS ARM64：自 2026-10-14 起仅进行原生编译、测试和 SDK 环境下的 Cocoa 启动验证，不自动打包或上传开发应用。Actions 仅保留日志和 JSON；本地构建方法见 [Qt 开发应用](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/README.md)。
 - Windows X64：保持 windows 目录内 DLL／插件布局，运行 windows/xdzip.exe。
 - Linux X64：xdzip-linux-qt6.8.2 是动态链接开发二进制，需要匹配的 Qt 6.8.2 和系统图形库，尚不是独立安装包。
 
@@ -14,4 +14,6 @@
 
 验收步骤：浏览根目录和子目录、搜索与五列表头排序；解压小文件、目录和全部归档；用自有文件测试四种重名策略；取消冲突等待；关闭进度窗后重新打开；检查 Cmd+Q／窗口关闭；核对浅深色、Retina、200% 字号、输入法和辅助功能。最新 macOS 桌面人工体验与独立审查单独登记，不由离屏自动检查代替。
 
-notices 保留当前平台依赖、Qt 与字体的上游许可原文；xdzip-source.tar 为同一提交的源码。Actions 工件保留 14 天，过期后可按锁定工具链从 build.json 的提交重建。
+Windows/Linux 开发包中的 notices 保留当前平台依赖、Qt 与字体的上游许可原文；xdzip-source.tar 为同一提交的源码。Actions 工件保留 14 天，过期后可按锁定工具链从 build.json 的提交重建。
+
+build/、target/ 以及所有层级的 dist/ 都是生成目录，不提交到 Git。macOS 构建产生的 .app 仅是 build/ 内编译中间产物，不复制成开发交付包。先前的 Apple Silicon 包回执作为历史验证记录保留。

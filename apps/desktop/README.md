@@ -17,7 +17,7 @@ ctest --test-dir build/ui --output-on-failure
 
 Linux 开发环境还需 OpenGL/EGL 和 xkbcommon 开发包；Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。即使使用软件离屏渲染，Qt Gui 的构建配置仍需要这些开发文件。
 
-Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/apps/desktop/xdzip.app`，组件预览仍是原生命令行开发构建。三平台 CI 提供开发验收产物，见 [M3 验收入口](../../docs/qa/m3-acceptance.md)；尚未完成 Developer ID 签名或公证。无显示服务的 Linux 设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 后运行测试，普通桌面运行不设置这些变量。
+Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/apps/desktop/xdzip.app`，组件预览仍是原生命令行开发构建；.app 作为 build/ 内中间产物，不提交到 Git。自 2026-10-14 起 macOS CI 只保留原生编译、测试及 SDK 环境下的 Cocoa 启动验证，不自动生成或上传 Apple Silicon 开发包；Windows/Linux 继续提供实验开发产物，见 [构建说明](../../docs/engineering/developer-build.md)和 [M3 验收入口](../../docs/qa/m3-acceptance.md)。无显示服务的 Linux 设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 后运行测试，普通桌面运行不设置这些变量。
 
 主窗口可打开/重开任务详情、切换主题、放大文字、检查未知总量和重置示例。关闭详情不发送取消；“取消任务”仅请求示例进入“正在停止”，不显示虚假的取消完成。状态由预览主窗口持有，正式任务状态仍将由 Rust runtime 持有。
 
@@ -44,6 +44,6 @@ Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/
 
 主窗口共用 `CommandMenu`、菜单项 / 分隔线、`Breadcrumb` 以及按钮状态参数。更多 / 范围 / 排序 / 视图 / 条目 / 目录 / 空白菜单调用真实浏览和解压能力；新建和独立归档完整性测试仍禁用。解压时执行本地头、实际大小、流终止和 CRC 校验。列表与网格共用索引和选择，右键保留已有多选，Shift 范围依赖稳定 ID，全选覆盖完整当前查询，复制使用系统剪贴板。详见[组件与交互复核](../../docs/qa/main-window-components.md)。
 
-M2 支持单卷 ZIP／ZIP64 最多十万条物理元数据；列表委托虚拟化，查询排序只执行一次，快速搜索／目录切换只提交最新意图。源变化需重新打开。实际核心与 Qt 测量、三平台状态及 Apple Silicon 开发包见 [M2 验收](../../docs/qa/m2-acceptance.md)。
+M2 支持单卷 ZIP／ZIP64 最多十万条物理元数据；列表委托虚拟化，查询排序只执行一次，快速搜索／目录切换只提交最新意图。源变化需重新打开。实际核心与 Qt 测量、三平台状态及历史 Apple Silicon 包记录见 [M2 验收](../../docs/qa/m2-acceptance.md)。
 
 M3 解压从工具栏、文件右键菜单或详情面板进入；检查目标后开始，重名处理只适用于普通文件。任务窗关闭后仍可从状态栏重新打开；Cmd+Q 与窗口关闭共用等待／取消退出流程。详情见 [M3 契约](../../docs/engineering/m3-extraction.md)。

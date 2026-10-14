@@ -1,6 +1,7 @@
 /target/
 /build/
-/dist/
+# Generated distribution/review files are never source, at any directory depth.
+dist/
 /.cache/
 .DS_Store
 Thumbs.db

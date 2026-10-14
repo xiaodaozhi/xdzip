@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check local Markdown targets, JSON and required design assets (stdlib only).
+"""Check repository hygiene, Markdown targets, JSON and design assets (stdlib only).
 
 This checks file targets, not Markdown anchor rendering or remote URL availability.
 The HTML builder separately checks generated page anchors. Code fences are ignored.
@@ -16,6 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def main():
     failures = []
     links = 0
+    # Read the index so this also rejects files staged with `git add --force`.
+    tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode('utf-8')
+    for name in tracked.split('\0'):
+        if name and 'dist' in Path(name).parts[:-1]:
+            failures.append(f'{name}: generated dist/ files must not be tracked by Git')
     documents = sorted(ROOT.rglob('*.md'))
     for path in documents:
         if any(part in {'.git', '.cache', 'dist', '.venv', 'target', 'build'} for part in path.relative_to(ROOT).parts):

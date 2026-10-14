@@ -19,22 +19,40 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk
-      - name: Build, test and package native product
+      - name: Build and validate native product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1
       - name: Collect failed test diagnostics
         if: failure()
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force 'dist/review/diagnostics' | Out-Null
-          if (Test-Path 'build/desktop/apps/desktop/browser-tests.log') { Copy-Item 'build/desktop/apps/desktop/browser-tests.log' 'dist/review/diagnostics/' }
-          if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') { Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review/diagnostics/' }
-          if (Test-Path 'build/desktop/visual-audit') { Copy-Item -Recurse 'build/desktop/visual-audit' 'dist/review/diagnostics/' }
+          New-Item -ItemType Directory -Force 'build/review/diagnostics' | Out-Null
+          if (Test-Path 'build/desktop/apps/desktop/browser-tests.log') { Copy-Item 'build/desktop/apps/desktop/browser-tests.log' 'build/review/diagnostics/' }
+          if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') { Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review/diagnostics/' }
+          if ($IsMacOS) {
+            if (Test-Path 'build/desktop/visual-audit/*.json') { Copy-Item 'build/desktop/visual-audit/*.json' 'build/review/diagnostics/' }
+          } elseif (Test-Path 'build/desktop/visual-audit') {
+            Copy-Item -Recurse 'build/desktop/visual-audit' 'build/review/diagnostics/'
+          }
       - name: Upload review build and evidence
-        if: always()
+        if: always() && runner.os != 'macOS'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: xdzip-m3-${{ runner.os }}-${{ runner.arch }}
-          path: dist/review/
+          path: build/review/
           if-no-files-found: error
+          retention-days: 14
+      - name: Upload macOS validation records only
+        if: always() && runner.os == 'macOS'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: xdzip-checks-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            build/desktop/apps/desktop/browser-tests.log
+            build/desktop/Testing/Temporary/LastTest.log
+            build/review/*.json
+            build/review/visual-audit/fidelity.json
+            build/review/diagnostics/*.log
+            build/review/diagnostics/*.json
+          if-no-files-found: warn
           retention-days: 14

@@ -1,4 +1,4 @@
-# Native M3 product build, lifecycle tests and developer-review artifacts.
+# Native product build, lifecycle tests and validation evidence.
 $ErrorActionPreference = 'Stop'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
@@ -48,7 +48,7 @@ Invoke-Checked qmllint (@('-I', 'build/desktop/qml') + (Get-ChildItem 'apps/desk
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
-New-Item -ItemType Directory -Force 'dist/review' | Out-Null
+New-Item -ItemType Directory -Force 'build/review' | Out-Null
 # Gate the repaired geometry and palette contracts on each native host.
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
@@ -58,70 +58,61 @@ Remove-Item Env:XDZIP_VISUAL_AUDIT
 $env:XDZIP_M3_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m3-operations'
 Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
 Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
-Copy-Item -Recurse 'build/desktop/m3-operations' 'dist/review/m3-operations'
+Copy-Item -Recurse 'build/desktop/m3-operations' 'build/review/m3-operations'
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
-Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'dist/review/m3-core-performance.json')
-Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'dist/review/m2-qt-performance.json')
+Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
+Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'build/review/m2-qt-performance.json')
 Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')
 Invoke-Checked cargo @('build', '--release', '-p', 'xdzip-m2-probe')
 $m2Probe = if ($IsWindows) { 'target/release/xdzip-m2-probe.exe' } else { 'target/release/xdzip-m2-probe' }
 $m2Report = & $m2Probe 'build/desktop/m2-shuffled.zip'
 if ($LASTEXITCODE -ne 0) { throw 'M2 core benchmark failed' }
-$m2Report | Set-Content 'dist/review/m2-core-performance.json'
-Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
-Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'dist/review/visual-audit/fidelity.json')
+$m2Report | Set-Content 'build/review/m2-core-performance.json'
+Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'build/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
+Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'build/review/visual-audit/fidelity.json')
 # Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
 foreach ($density in @('1.25', '2')) {
     $env:QT_SCALE_FACTOR = $density
     $capturePath = "build/desktop/visual-audit-dpr$density"
     $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) $capturePath
     Invoke-Checked $browserTests @('mainWindowFidelityAndSessionClose', 'rootListingAndReviewedInteractions', 'reviewedMainControlsAndMenus')
-    Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', $capturePath, '--output', "dist/review/fidelity-dpr$density.json")
-    Copy-Item -Recurse $capturePath "dist/review/visual-audit-dpr$density"
+    Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', $capturePath, '--output', "build/review/fidelity-dpr$density.json")
+    Copy-Item -Recurse $capturePath "build/review/visual-audit-dpr$density"
 }
 Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
-Copy-Item 'build/desktop/apps/desktop/*.png' 'dist/review'
-Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'dist/review'
-Copy-Item 'docs/engineering/developer-build.md' 'dist/review/README.md'
-Invoke-Checked python @('scripts/collect-notices.py', 'dist/review/notices')
-Invoke-Checked git @('archive', '--format=tar', '-o', 'dist/review/xdzip-source.tar', 'HEAD')
+Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
+Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
+if (!$IsMacOS) {
+    Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
+    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
+    Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
+}
 if ($IsMacOS) {
-    $bundle = 'build/desktop/apps/desktop/xdzip.app'
-    # Qt Quick's LocalStorage may deploy QtSql. Only SQLite is needed; the downloaded
-    # Qt SDK also contains unrelated server drivers with machine-specific dylib paths.
-    Get-ChildItem "$qtPrefix/plugins/sqldrivers/*.dylib" |
-        Where-Object { $_.Name -ne 'libqsqlite.dylib' } | Remove-Item
-    $deploymentLog = & macdeployqt $bundle '-qmldir=apps/desktop/ui' '-qmlimport=build/desktop/qml' '-always-overwrite' 2>&1
-    $deploymentExit = $LASTEXITCODE
-    $deploymentLog | ForEach-Object { Write-Host $_ }
-    # macdeployqt can print missing-library errors and still return zero.
-    if ($deploymentExit -ne 0 -or ($deploymentLog -match '^\s*ERROR:')) {
-        throw 'macdeployqt reported an incomplete deployment'
-    }
-    Invoke-Checked codesign @('--force', '--deep', '--sign', '-', $bundle)
-    Invoke-Checked codesign @('--verify', '--deep', '--strict', $bundle)
-    # Start the deployed bundle without the development Qt library search path.
-    $env:QT_PLUGIN_PATH = ''
-    $env:QML_IMPORT_PATH = ''
-    $env:DYLD_FRAMEWORK_PATH = ''
-    $env:DYLD_LIBRARY_PATH = ''
+    # Validate the native executable using the installed SDK. Do not deploy Qt,
+    # sign, archive or upload an Apple Silicon developer application package.
+    $env:QT_PLUGIN_PATH = Join-Path $qtPrefix 'plugins'
+    $env:QML_IMPORT_PATH = Join-Path $qtPrefix 'qml'
     $env:QT_QPA_PLATFORM = 'cocoa'
-    Invoke-Checked "$bundle/Contents/MacOS/xdzip" @('--smoke-test')
-    Invoke-Checked ditto @('-c', '-k', '--sequesterRsrc', '--keepParent', $bundle, 'dist/review/xdzip-macos-arm64.zip')
+    Invoke-Checked 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' @('--smoke-test')
 } elseif ($IsWindows) {
-    New-Item -ItemType Directory -Force 'dist/review/windows' | Out-Null
-    Copy-Item 'build/desktop/apps/desktop/xdzip-browser.exe' 'dist/review/windows/xdzip.exe'
-    Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'dist/review/windows/xdzip.exe')
+    New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
+    Copy-Item 'build/desktop/apps/desktop/xdzip-browser.exe' 'build/review/windows/xdzip.exe'
+    Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'build/review/windows/xdzip.exe')
     $env:QT_QPA_PLATFORM = 'windows'
     $env:QT_PLUGIN_PATH = ''
     $env:QML_IMPORT_PATH = ''
     $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -ne $qtBin }) -join ';'
-    Invoke-Checked 'dist/review/windows/xdzip.exe' @('--smoke-test')
+    Invoke-Checked 'build/review/windows/xdzip.exe' @('--smoke-test')
 } else {
-    Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'dist/review/xdzip-linux-qt6.8.2'
+    Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'build/review/xdzip-linux-qt6.8.2'
 }
 $commit = & git rev-parse HEAD
-@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; distribution = 'M3 ZIP Store/Deflate safe extraction developer review; independent security audit and signed public release pending' } |
-    ConvertTo-Json | Set-Content 'dist/review/build.json'
+$distribution = if ($IsMacOS) {
+    'Native macOS validation only; no Apple Silicon developer package'
+} else {
+    'M3 ZIP Store/Deflate safe extraction developer review; independent security audit and signed public release pending'
+}
+@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
+    ConvertTo-Json | Set-Content 'build/review/build.json'
