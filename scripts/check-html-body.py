@@ -332,9 +332,6 @@ def main():
               'limits': ['Source font is unknown; type contours are review evidence, not exact-font assertions.',
                          'Geometry and isolated ink checks do not prove pixel-perfect full-body fidelity.',
                          'The difference image includes antialiasing, source glow, shading and font differences.']}
-    baseline_metadata = args.output / 'baseline.json'
-    if baseline_metadata.exists():
-        report['baseline'] = json.loads(baseline_metadata.read_text())
     (args.output / 'measurements.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     (args.output / 'measurements.js').write_text('window.XDZIP_BODY_REPORT=' + json.dumps(report, ensure_ascii=False) + ';\n')
     if failures:

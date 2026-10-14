@@ -19,13 +19,20 @@ def main():
     manifest = json.loads((ASSETS / 'manifest.json').read_text())
     spec = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
     catalog = json.loads((ROOT / 'design/hifi/catalog.json').read_text())
-    baseline = json.loads((REPORT_ROOT / 'baseline.json').read_text())
-    preserved = []
-    for record in baseline['files']:
+    # Design inventories are source contracts. Never depend on a previous test
+    # run's baseline/report: a clean checkout must validate independently.
+    source_records = [
+        {'file': 'design/hifi/' + item['file'], 'sha256': item['sha256']}
+        for item in catalog['screens']
+    ] + [
+        {'file': 'design/assets/' + item['file'], 'sha256': item['sha256']}
+        for item in manifest['assets'] if item['kind'] == 'original-pixel-crop'
+    ]
+    verified_sources = []
+    for record in source_records:
         path = ROOT / record['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest() == record['sha256'], record['file']
-        preserved.append(record['file'])
-    assert len(preserved) == 58, 'Original ten boards, 45 references and three photos must survive unchanged'
+        verified_sources.append(record['file'])
 
     boards = {item['file']: item for item in catalog['screens'] if item.get('component') == 'directory-tree'}
     assert set(boards) == {'screens/directory-tree.png', 'screens/directory-tree-states.png',
@@ -115,10 +122,10 @@ def main():
         assert abs(example['source_css'] * source_to_logical - example['logical']) < 1e-9
     report = {
         'status': 'passed', 'approved_component_boards': len(boards),
-        'component_source_crops': len(cuts), 'preserved_original_files': len(preserved),
+        'component_source_crops': len(cuts), 'verified_design_source_files': len(verified_sources),
         'new_shared_glyphs': 4, 'new_themed_svg_files': 8, 'new_transparent_png_files': 24,
         'specified_states': len(spec['states']),
-        'checks': ['Original files keep their SHA-256', 'Every cut matches its exact bounded source rectangle',
+        'checks': ['Design source files match the canonical inventories', 'Every cut matches its exact bounded source rectangle',
                    'Six-unit marker is centered on every shared canvas',
                    'Counts, leaf arrows and hidden-current sample are internally consistent'],
         'coordinate_conversion': 'Qt logical values and HTML source values map to the same 1024-wide design size',
@@ -127,6 +134,7 @@ def main():
                    'Asset checks do not prove live keyboard or screen-reader behavior; see the component interaction review',
                    'Light boards do not constitute a complete dark component board'],
     }
+    REPORT_ROOT.mkdir(parents=True, exist_ok=True)
     (REPORT_ROOT / 'validation.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps(report, ensure_ascii=False))
 

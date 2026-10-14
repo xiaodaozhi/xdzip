@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT/'docs/visual/result-reference.json').read_text())
+reference = json.loads((ROOT/'docs/visual/result-reference.json').read_text(encoding='utf-8'))
 assert hashlib.sha256((ROOT/reference['source']).read_bytes()).hexdigest() == reference['sha256']
 checks = []
 
@@ -19,7 +19,7 @@ def check(name, actual, expected, tolerance=1):
     checks.append(dict(name=name,actual=actual,expected=expected,passed=passed))
 
 for scene in ['result-partial', 'result-dark', 'result-details']:
-    capture = json.loads((args.input/(scene+'.json')).read_text())
+    capture = json.loads((args.input/(scene+'.json')).read_text(encoding='utf-8'))
     visible = [n for n in capture['nodes'] if n['visible']]
     named = {n['name']:n for n in visible if n.get('name')}
     check(scene+'/width',capture['width'],reference['logical_width'])
@@ -41,7 +41,7 @@ for scene in ['result-partial', 'result-dark', 'result-details']:
     check(scene+'/disclosure present','resultDetailsToggle' in named,True)
 
 args.output.parent.mkdir(parents=True,exist_ok=True)
-args.output.write_text(json.dumps(dict(checks=checks,passed=sum(c['passed'] for c in checks),failed=sum(not c['passed'] for c in checks)),ensure_ascii=False,indent=2)+'\n')
+args.output.write_text(json.dumps(dict(checks=checks,passed=sum(c['passed'] for c in checks),failed=sum(not c['passed'] for c in checks)),ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 for c in checks:
     if not c['passed']: print(json.dumps(c,ensure_ascii=False))
 print(f"Result UI: {sum(c['passed'] for c in checks)} passed, {sum(not c['passed'] for c in checks)} failed")

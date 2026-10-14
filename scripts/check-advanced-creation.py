@@ -62,7 +62,7 @@ def main():
                         assert wrong.returncode != 0, 'Wrong password unexpectedly accepted'
                     cases.append(dict(method=method,split=split,encrypted=encrypt,parts=len(parts),passed=True))
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps(dict(cases=cases,independent_reader=Path(args.reader).name),indent=2)+'\n')
+    args.output.write_text(json.dumps(dict(cases=cases,independent_reader=Path(args.reader).name),indent=2)+'\n',encoding='utf-8')
     print(f'Independent ZIP creation: {len(cases)} cases passed')
 
 

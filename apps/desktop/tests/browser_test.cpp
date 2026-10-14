@@ -1322,8 +1322,10 @@ class BrowserTest : public QObject {
         click(item("inspectorClose"));
         QQuickItem *toggle = nullptr;
         QTRY_VERIFY((toggle = item("inspectorToggle")) && toggle->isVisible());
-        QCOMPARE(toggle->width(), 28.0);
-        QCOMPARE(toggle->height(), 28.0);
+        // Visibility updates before the RowLayout's next polish pass.
+        // Keep the exact size contract, but inspect the settled layout.
+        QTRY_COMPARE(toggle->width(), 28.0);
+        QTRY_COMPARE(toggle->height(), 28.0);
         click(item("browserGridButton"));
         QQuickItem *card = nullptr, *check = nullptr;
         QTRY_VERIFY((card = item("grid-entry-0")));
@@ -1396,6 +1398,9 @@ class BrowserTest : public QObject {
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());
         QVERIFY(QTest::qWaitForWindowExposed(window));
+        QSignalSpy initialFrame(window, &QQuickWindow::afterAnimating);
+        window->requestUpdate();
+        QTRY_VERIFY(initialFrame.count() > 0);
         const auto item = [window](const char *name) {
             return findVisual(window->contentItem(), QString::fromLatin1(name));
         };
@@ -1429,6 +1434,9 @@ class BrowserTest : public QObject {
                          icon->mapToItem(button, QPointF(icon->width(), 0)).x() - 6) < .01);
         }
         auto *close = item("inspectorClose");
+        // Native pointer delivery may coalesce a repeated position left by
+        // the previous window. Enter from outside this control after layout.
+        QTest::mouseMove(window, QPoint(0, 0));
         QTest::mouseMove(
             window, close->mapToScene(QPointF(close->width() / 2, close->height() / 2)).toPoint());
         QTRY_VERIFY(close->property("hovered").toBool());

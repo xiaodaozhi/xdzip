@@ -5,7 +5,7 @@ import json
 
 
 def build_review(source, output, title):
-    report = json.loads((source/'measurements.json').read_text())
+    report = json.loads((source/'measurements.json').read_text(encoding='utf-8'))
     figures = []
     for name, label in [('reference', '高保真原稿'), ('after', '本次实际渲染'), ('difference', '像素差异')]:
         data = base64.b64encode((source/(name+'.png')).read_bytes()).decode()
@@ -15,5 +15,5 @@ def build_review(source, output, title):
     body += '<h1>'+html.escape(title)+'</h1><p>真实生成工件；本文件只在本地或 CI 中保留。</p>'+''.join(figures)
     body += '<details><summary>当前量测记录</summary><pre>'+html.escape(json.dumps(report,ensure_ascii=False,indent=2))+'</pre></details></html>'
     output.parent.mkdir(parents=True,exist_ok=True)
-    output.write_text(body)
+    output.write_text(body,encoding='utf-8')
     print(output)
