@@ -13,6 +13,7 @@
 | 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [页面与操作状态原稿](../design/hifi/README.md)、[统一素材库](../design/assets/index.html)、[功能状态契约](ux/hifi-state-spec.md) |
+| 任务与检查窗口 | [原生窗口与状态复用契约](ux/task-windows.md) |
 | HTML 高保真设计 | [复核方法](visual/html-fidelity.md)、[使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |
 | 主窗口组件与交互 | [功能清单与输入契约](ux/main-window-components.md)、[可操作组件页](../design/html/components.html)、[共享菜单与状态参数](visual/controls.json) |
 | Figma 功能设计 | [文件、画板索引与待修项](ux/figma-design.md) |

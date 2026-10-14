@@ -700,7 +700,7 @@ function dialog(html, kind, spec, focus) {
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
     el.innerHTML =
         windowChrome(
-            kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
+            kind === "archive-test" ? "完整性检查进度" : kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
             ["progress", "archive-test"].includes(kind),
         ) + html;
     el.setAttribute("aria-label", title);
@@ -986,6 +986,24 @@ function applyConflict(policy, resume = true) {
         runTimer();
     }
 }
+// All task kinds share one card hierarchy. Callers supply semantics and actions;
+// sizing, colors, spacing and typography stay in the common progress selectors.
+function taskProgressBody(p) {
+    const percent = Math.max(0, Math.min(100, Number(p.progress) || 0));
+    return `<div class="modal-content">
+        <section class="path-card"><h2>${esc(p.scopeHeading)}</h2><div>${icon("folder")}<span>${esc(p.scopeValue)}</span></div></section>
+        <section class="progress-card">
+            <div class="progress-line"><div class="progress-track" role="progressbar" aria-label="${esc(p.progressName || "任务进度")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i id="progress-fill" style="width:${percent}%"></i></div><strong id="progress-value">${percent}%</strong></div>
+            <div class="progress-current"><span id="progress-bytes">${esc(p.processed || "")}</span><span id="progress-count">${esc(p.count || "")}</span></div>
+            <div class="task-metrics"><div><span>${esc(p.speedLabel || "速度")}</span><strong>${esc(p.speed || "6.2 MB/s")}</strong></div><div><span>预计剩余</span><strong>${esc(p.remaining || "约 5 秒")}</strong></div><div><span>当前阶段</span><strong id="progress-phase">${esc(p.phase || "正在准备")}</strong></div></div>
+        </section>
+        <section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon(p.entry ? fileIcon(p.entry) : "image-file")}</span><span id="progress-file">${esc(p.currentFile || "")}</span></div></section>
+        <p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p>
+    </div>`;
+}
+function taskProgressFooter(p = {}) {
+    return `<footer class="modal-footer"><span class="info-line">${icon("info")}${esc(p.note || "关闭此窗口后，任务仍会继续。")}</span><button id="${esc(p.backgroundId || "background-task")}" class="button">${esc(p.backgroundText || "返回浏览")}</button>${p.finished ? "" : `<button id="${esc(p.cancelId || "cancel-task")}" class="button" ${p.stopping ? "disabled" : ""}>${p.stopping ? "正在停止…" : esc(p.cancelText || "取消任务")}</button>`}</footer>`;
+}
 function showProgress() {
     const t = state.task;
     dialog(
@@ -1007,7 +1025,8 @@ function showProgress() {
                       : "document-download",
             false,
         ) +
-            `<div class="modal-content"><section class="path-card"><h2>${t.kind === "create" ? "保存到" : "解压到"}</h2><div>${icon("folder")}<span>${esc(t.target)}</span></div></section><section class="progress-card"><div class="progress-line"><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><strong id="progress-value">${t.progress}%</strong></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="task-metrics"><div><span>速度</span><strong>6.2 MB/s</strong></div><div><span>预计剩余</span><strong>约 5 秒</strong></div><div><span>当前阶段</span><strong id="progress-phase">正在准备</strong></div></div></section><section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon("image-file")}</span><span id="progress-file"></span></div></section><p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p></div><footer class="modal-footer"><span class="info-line">${icon("info")}关闭此窗口后，任务仍会继续。</span><button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button></footer>`,
+            taskProgressBody({scopeHeading: t.kind === "create" ? "保存到" : "解压到", scopeValue: t.target, progress: t.progress}) +
+            taskProgressFooter({stopping: t.status === "stopping"}),
         "progress",
         "T01",
         "#background-task",
@@ -1504,9 +1523,16 @@ render();
 // Public review API: UI demonstrations only, no file IO or codecs.
 window.XdzipDesign = {
     open(view) {
+        // Direct standalone URLs can run before the main-window adapter's
+        // deferred script; review messages arrive after that script is ready.
+        if (view === "archive-test" && !window.XdzipMain) {
+            window.addEventListener("DOMContentLoaded", () => window.XdzipDesign.open(view), {once: true});
+            return;
+        }
         applyingReviewPreset = true;
         try {
         if (state.task?.reviewPaused) state.task = null;
+        if (state.testJob?.reviewPaused) window.XdzipMain.resetJobs();
         if ($("#modal").open) closeModal({preserveReview:true});
         // Artboard changes restore the ready demo fixture after an error scene.
         // Active user-started demo tasks retain their own background state.
@@ -1523,6 +1549,15 @@ window.XdzipDesign = {
             $("#search").value = "";
             state.selected = new Set(["lake"]);
             render();
+            return;
+        }
+        if (view === "archive-test") {
+            window.XdzipMain.resetJobs();
+            window.XdzipDesign.open("main");
+            window.XdzipMain.dispatch("test");
+            state.testJob.progress = 60;
+            state.testJob.reviewPaused = true;
+            window.XdzipMain.dispatch("tasks");
             return;
         }
         if (view === "extract") {
@@ -1580,6 +1615,7 @@ window.addEventListener("message", (event) => {
             "extract",
             "create",
             "progress",
+            "archive-test",
             "result",
             "conflict",
             "settings",

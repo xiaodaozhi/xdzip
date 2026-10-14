@@ -17,6 +17,7 @@
   ],
   "icons": [
     "document-download",
+    "document-check",
     "status-success",
     "cancelled-large",
     "conflict-warning",

@@ -1,0 +1,30 @@
+{
+  "source": "design/hifi/screens/integrity-progress.png",
+  "sha256": "b6339c8084059f7d7b5c6cba9e6d59817d594ec6ca01c06225d296eb9115367c",
+  "source_size": [
+    1445,
+    1088
+  ],
+  "source_window": [
+    85,
+    60,
+    1276,
+    977
+  ],
+  "shared_progress_source": "design/hifi/screens/progress.png",
+  "shared_progress_sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387",
+  "logical_width": 677,
+  "client_height": 490,
+  "title_size": 20,
+  "body_size": 13,
+  "footer_font_size": 13,
+  "footer_note_size": 12,
+  "hero": "document-check",
+  "layout_contract": "docs/visual/layout-scale.json",
+  "notes": [
+    "Operation semantics change; shared progress geometry and density remain fixed",
+    "Native window decorations excluded from Qt content capture",
+    "Qt component preview and HTML demonstration do not execute a CRC task",
+    "Reference crops stay in the canonical asset library; captures and measurements stay outside Git"
+  ]
+}

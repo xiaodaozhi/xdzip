@@ -54,6 +54,7 @@
       "default": 612,
       "extract": 491,
       "progress": 677,
+      "archive-test": 677,
       "create": 491,
       "result": 677
     },
@@ -73,6 +74,8 @@
       "headerHeight": 108,
       "footerHeight": 64,
       "progressTrackHeight": 20,
+      "progressPercentageLineHeight": 30,
+      "progressBodyLineHeight": 22.5,
       "pathRowHeight": 46,
       "pathFontSize": 18,
       "controlIndicatorSize": 20,
@@ -98,6 +101,10 @@
         1548
       ],
       "progress": [
+        819.2,
+        1548
+      ],
+      "archive-test": [
         819.2,
         1548
       ],

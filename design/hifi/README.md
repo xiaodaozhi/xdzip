@@ -24,6 +24,7 @@
 | [部分失败](screens/partial-result.png) | R01 部分未完成 |
 | [设置](screens/settings.png) | S01 配置草稿 |
 | [任务状态](screens/task-states.png) | 成功 / 正在停止 / 已取消 |
+| [完整性检查进度](screens/integrity-progress.png) | 复用任务进度布局，只读对象、读取速度与校验阶段 |
 | [创建覆盖确认](screens/create-overwrite.png) | C02 覆盖准入 |
 | [Windows / Linux 平台对照](screens/platforms.png) | 平台窗口装饰示例 |
 

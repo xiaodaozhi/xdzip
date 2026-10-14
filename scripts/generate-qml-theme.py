@@ -33,7 +33,8 @@ for name, value in zip(['mainWindowWidth', 'mainWindowHeight'], layout['main']['
 for name, value in zip(['mainMinimumWidth', 'mainMinimumHeight'], layout['main']['minimum_window']):
     lines.append(f'    readonly property int {name}: {value}')
 for key, value in layout['operation']['logical_widths'].items():
-    lines.append(f'    readonly property int operation{key.title()}Width: {value}')
+    identifier = ''.join(part.title() for part in key.split('-'))
+    lines.append(f'    readonly property int operation{identifier}Width: {value}')
 lines.append(f'    readonly property real operationExtractDensity: {layout["operation"]["extract_density"]}')
 lines.append(f'    readonly property real operationProgressDensity: {layout["operation"]["progress_density"]}')
 lines.append(f'    readonly property real operationCreateDensity: {layout["operation"]["create_density"]}')

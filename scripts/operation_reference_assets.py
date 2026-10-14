@@ -1,5 +1,7 @@
 """Supplemental operation component cuts; runtime controls reuse canonical icons."""
 OPERATION_CUTS = {
+    'integrity-progress-hero': ('integrity-progress', [138, 144, 93, 112], '完整性检查蓝色文档插图', ['document-check']),
+    'integrity-progress-panel': ('integrity-progress', [122, 446, 1202, 267], '统一进度与三列指标卡片', []),
     'result-details-header': ('result-details', [70, 936, 916, 68], '处理明细展开栏', ['chevron-down']),
     'result-details-row-completed': ('result-details', [90, 1005, 876, 102], '已完成文件行', ['image-file', 'status-partial-success']),
     'result-details-row-unfinished': ('result-details', [90, 1206, 876, 102], '未完成文件行', ['file-pdf', 'status-warning']),

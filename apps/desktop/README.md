@@ -1,5 +1,7 @@
 # Qt 开发应用与组件预览
 
+完整性检查的界面开发入口位于 `xdzip-ui-preview` 的“预览完整性检查窗口”。IntegrityWindow 继承 TaskWindow，共用解压／创建进度的布局和控件，标明不执行实际校验；真实产品工具栏动作仍禁用。各系统窗口与任务状态的复用关系见 [任务窗口契约](../../docs/ux/task-windows.md)。
+
 `xdzip-browser` 已接通真实 ZIP 目录浏览：打开文件、保留重复条目、内部批次读取、取消读取、当前目录多选、显式/隐式目录树、名称搜索及全结果排序；并支持真实 Store／Deflate 安全解压，并支持从文件／目录创建 Store／Deflate ZIP（1／6／9 级）。运行 `./build/ui/apps/desktop/xdzip-browser`，也可追加 ZIP 路径。详细边界见 [只读浏览契约](../../docs/engineering/readonly-browser.md)。
 
 `xdzip-ui-preview` 提供独立任务详情窗、共用提示行、按钮和主题 token；不是可用的压缩工具。入口始终标识“组件开发预览”，任务数据固定来自本地示例，不访问文件或连接诊断桥接。不用动画或计时器伪装真实压缩进度。

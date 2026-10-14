@@ -636,13 +636,13 @@ dialog[data-kind="extract"] .modal-footer .button { min-width:calc(145px * var(-
 dialog[data-kind="extract"] .ready-label { font-size:calc(22px * var(--operation-extract-density)); }
 body[data-standalone="true"] dialog { margin:60px auto; }
 /* Progress card and both info rows share one icon/text alignment contract. */
-dialog[data-kind="progress"] { width:calc(1278px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-header { padding:calc(30px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)) calc(26px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-symbol { width:calc(114px * var(--operation-progress-density)); height:calc(108px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-symbol svg { width:calc(100px * var(--operation-progress-density)); height:calc(112px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-header h1 { font-size:calc(38px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-header p { font-size:calc(26px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-content { padding:0 calc(38px * var(--operation-progress-density)) calc(14px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) { width:calc(1278px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-header { padding:calc(30px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)) calc(26px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-symbol { width:calc(114px * var(--operation-progress-density)); height:calc(108px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-symbol svg { width:calc(100px * var(--operation-progress-density)); height:calc(112px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-header h1 { font-size:calc(38px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-header p { font-size:calc(26px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-content { padding:0 calc(38px * var(--operation-progress-density)) calc(14px * var(--operation-progress-density)); }
 .path-card,.progress-card { border:calc(1px * var(--operation-progress-density)) solid var(--border); border-radius:calc(12px * var(--operation-progress-density)); background:var(--canvas); padding:calc(18px * var(--operation-progress-density)) calc(24px * var(--operation-progress-density)); margin-bottom:calc(18px * var(--operation-progress-density)); }
 .path-card h2 { font-size:calc(24px * var(--operation-progress-density)); font-weight:600; margin:0 0 calc(14px * var(--operation-progress-density)); }
 .path-card>div { display:flex; gap:calc(18px * var(--operation-progress-density)); align-items:center; border:calc(1px * var(--operation-progress-density)) solid var(--border); background:var(--surface); border-radius:calc(9px * var(--operation-progress-density)); padding:calc(14px * var(--operation-progress-density)) calc(18px * var(--operation-progress-density)); font-size:calc(27px * var(--operation-progress-density)); min-height:calc(70px * var(--operation-progress-density)); }
@@ -660,9 +660,9 @@ dialog[data-kind="progress"] .modal-content { padding:0 calc(38px * var(--operat
 .task-metrics strong { display:block; font-size:calc(28px * var(--operation-progress-density)); margin-top:calc(8px * var(--operation-progress-density)); }
 .info-line { display:flex; align-items:center; gap:calc(18px * var(--operation-progress-density)); margin:0; font-size:calc(23px * var(--operation-progress-density)); color:var(--secondary); }
 .info-line svg { width:calc(30px * var(--operation-progress-density)); height:calc(30px * var(--operation-progress-density)); flex-shrink:0; }
-dialog[data-kind="progress"] .modal-footer { padding:calc(18px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)); min-height:calc(94px * var(--operation-progress-density)); }
-dialog[data-kind="progress"] .modal-footer .info-line { margin-right:auto; }
-dialog[data-kind="progress"] .modal-footer button { font-size:calc(23px * var(--operation-progress-density)); min-width:calc(180px * var(--operation-progress-density)); height:calc(58px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-footer { padding:calc(18px * var(--operation-progress-density)) calc(38px * var(--operation-progress-density)); min-height:calc(94px * var(--operation-progress-density)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-footer .info-line { margin-right:auto; }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-footer button { font-size:calc(23px * var(--operation-progress-density)); min-width:calc(180px * var(--operation-progress-density)); height:calc(58px * var(--operation-progress-density)); }
 body[data-standalone="true"] dialog { position:fixed; left:50%; top:60px; right:auto; bottom:auto; margin:0; transform:translateX(-50%); max-height:calc(100vh - 100px); }
 dialog[data-kind="extract"] .scope-files { max-height:none; overflow:visible; }
 .path-card h2 { line-height:calc(30px * var(--operation-progress-density)); margin-bottom:calc(12px * var(--operation-progress-density)); }
@@ -683,7 +683,7 @@ dialog[data-kind] .modal-footer .ready-label,
 dialog[data-kind] .modal-footer .info-line { font-size:var(--operation-footer-note-size); line-height:1.5; }
 dialog[data-kind] .modal-footer svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); flex-shrink:0; }
 /* Both progress hints share the same icon slot and text edge. */
-dialog[data-kind="progress"] .info-line svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .info-line svg { width:var(--operation-footer-icon-size); height:var(--operation-footer-icon-size); }
 
 :root[data-theme="dark"] #extract-menu-button { border-left-color:var(--border); }
 tbody tr:hover:not(.selected) td { background:var(--ui-control-hover); }
@@ -751,13 +751,13 @@ dialog[data-kind="extract"] #target-valid.error { color:var(--danger); }
 
 dialog[data-kind="extract"] input[type="radio"] { width:calc(20px * var(--ui-source-factor)); height:calc(20px * var(--ui-source-factor)); }
 /* Progress uses normal density too; scrolling belongs to the body alone. */
-dialog[data-kind="progress"][open] { display:flex; flex-direction:column; overflow:hidden; }
-dialog[data-kind="progress"]>.os-titlebar,
-dialog[data-kind="progress"]>.modal-header,
-dialog[data-kind="progress"]>.modal-footer { flex-shrink:0; }
-dialog[data-kind="progress"]>.modal-content { min-height:0; overflow:auto; }
-dialog[data-kind="progress"] .modal-footer .button { height:calc(32px * var(--ui-source-factor)); min-height:calc(32px * var(--ui-source-factor)); }
-dialog[data-kind="progress"] .info-line { gap:calc(12px * var(--ui-source-factor)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"])[open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog:is([data-kind="progress"], [data-kind="archive-test"])>.os-titlebar,
+dialog:is([data-kind="progress"], [data-kind="archive-test"])>.modal-header,
+dialog:is([data-kind="progress"], [data-kind="archive-test"])>.modal-footer { flex-shrink:0; }
+dialog:is([data-kind="progress"], [data-kind="archive-test"])>.modal-content { min-height:0; overflow:auto; }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .modal-footer .button { height:calc(32px * var(--ui-source-factor)); min-height:calc(32px * var(--ui-source-factor)); }
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) .info-line { gap:calc(12px * var(--ui-source-factor)); }
 /* Creation follows C01's three-card hierarchy at the same normal form density. */
 dialog[data-kind="create"] { width:var(--operation-create-width); }
 dialog[data-kind="create"][open] { display:flex; flex-direction:column; overflow:hidden; }

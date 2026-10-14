@@ -24,6 +24,9 @@ Rectangle {
         anchors.bottomMargin: 11 * root.density
         spacing: 9 * root.density
         Text {
+            // Qt's implicit text box includes font leading beyond the fixed
+            // line height; the layout must use the authored line slot.
+            Layout.preferredHeight: lineHeight
             text: root.heading
             font.pixelSize: root.labelSize
             lineHeight: Math.round(root.labelSize * 1.25)

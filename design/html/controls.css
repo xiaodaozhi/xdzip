@@ -383,17 +383,7 @@
     color: var(--secondary);
     padding: 10px;
 }
-.archive-test-results {
-    display: grid;
-    gap: 12px;
-    padding: 18px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-.archive-test-results progress {
-    width: 100%;
-    accent-color: var(--accent);
-}
+
 @media (prefers-reduced-motion: reduce) {
     .ui-menu,
     .ui-menu-item,

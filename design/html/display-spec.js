@@ -44,6 +44,14 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             ],
             "sourceToLogical": 0.5291989664082688
         },
+        "archive-test": {
+            "source": "../hifi/screens/integrity-progress.png",
+            "size": [
+                1445,
+                1088
+            ],
+            "sourceToLogical": 0.5291989664082688
+        },
         "result": {
             "source": "../hifi/screens/partial-result.png",
             "size": [

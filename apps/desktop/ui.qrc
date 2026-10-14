@@ -22,6 +22,7 @@
     <file alias="assets/dark/status-warning.png">../../design/assets/png/dark/status-warning@3x.png</file>
     <file alias="assets/document-warning.png">../../design/assets/png/light/document-warning@9x.png</file>
     <file>ui/TaskWindow.qml</file>
+    <file>ui/IntegrityWindow.qml</file>
     <file>ui/OperationResultPanel.qml</file>
     <file>ui/ResultFileRow.qml</file>
     <file>ui/ResultDisclosureButton.qml</file>
@@ -55,6 +56,8 @@
     <file alias="assets/info-light.png">../../design/assets/png/light/info@3x.png</file>
     <file alias="assets/info-dark.png">../../design/assets/png/dark/info@3x.png</file>
     <file alias="assets/document-download.png">../../design/assets/png/light/document-download@9x.png</file>
+    <file alias="assets/document-check.png">../../design/assets/png/light/document-check@9x.png</file>
+    <file alias="assets/dark/document-check.png">../../design/assets/png/dark/document-check@9x.png</file>
     <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
     <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
     <file alias="assets/app-icon.png">../../design/assets/brand/xdzip.png</file>

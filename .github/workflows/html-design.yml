@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'scripts/check-extract-fidelity.py'
+      - 'scripts/check-integrity-progress.py'
       - 'docs/visual/create-reference.json'
       - 'docs/visual/result-reference.json'
       - 'build/review/create-controls/**'
@@ -33,6 +34,7 @@ on:
   pull_request:
     paths:
       - 'scripts/check-extract-fidelity.py'
+      - 'scripts/check-integrity-progress.py'
       - 'docs/visual/create-reference.json'
       - 'docs/visual/result-reference.json'
       - 'build/review/create-controls/**'
@@ -94,6 +96,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-density.py
           .venv-design/bin/python scripts/check-html-operation-ui.py
+          .venv-design/bin/python scripts/check-integrity-progress.py
           .venv-design/bin/python scripts/check-html-create-controls.py
           .venv-design/bin/python scripts/check-extract-fidelity.py
           .venv-design/bin/python scripts/check-html-design.py

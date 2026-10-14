@@ -1065,7 +1065,7 @@ window.XdzipMain = (() => {
         showTestView();
         testTimer = setInterval(() => {
             const job = state.testJob;
-            if (!job || job.status !== "running") return;
+            if (!job || job.status !== "running" || job.reviewPaused) return;
             job.progress = Math.min(100, job.progress + 10);
             if (job.progress === 100) {
                 job.status = "finished";
@@ -1079,23 +1079,26 @@ window.XdzipMain = (() => {
     function showTestView(focus = true) {
         const job = state.testJob;
         if (!job) return;
-        const outcome =
-            job.status === "finished"
-                ? "演示检查完成"
-                : job.status === "cancelled"
-                  ? "演示检查已取消"
-                  : "正在演示归档完整性检查";
-        const content =
-            header(
-                outcome,
-                `${esc(job.title)}，设计示例，不执行实际 CRC 校验`,
-                "archive-test",
-            ) +
-            `<div class="modal-content"><section class="archive-test-results"><progress max="100" value="${job.progress}" aria-label="演示测试进度"></progress><strong>${job.progress}%，${Math.floor((job.total * job.progress) / 100)} / ${job.total} 条文件记录</strong><p>目录、数据读取与校验结果使用固定示例状态；真实 CRC 校验由格式模块执行。</p></section></div>` +
-            footer(
-                `${job.status === "running" ? '<button id="cancel-archive-test" class="button">取消检查</button>' : ""}<button id="close-archive-test" class="button">${job.status === "running" ? "返回浏览" : "完成"}</button>`,
-                "设计演示",
-            );
+        const running = job.status === "running";
+        const outcome = running ? "正在检查归档" : job.status === "cancelled" ? "检查已取消" : "检查完成";
+        const totalBytes = files.reduce((sum, entry) => sum + entry.size, 0);
+        const index = Math.min(files.length - 1, Math.floor(files.length * job.progress / 100));
+        const file = files[Math.max(0, index)];
+        const content = header(outcome, `${esc(job.title)}，界面演示`, "document-check") +
+            taskProgressBody({
+                scopeHeading: "检查对象", scopeValue: `下载 / ${job.title}`,
+                progressName: "完整性检查进度", progress: job.progress,
+                processed: `已读取 ${bytes(Math.round(totalBytes * job.progress / 100))} / ${bytes(totalBytes)}`,
+                count: `${Math.floor(job.total * job.progress / 100)} / ${job.total} 个文件`,
+                speedLabel: "平均读取", speed: running ? "6.2 MB/s" : "—",
+                remaining: running ? "约 5 秒" : "—",
+                phase: running ? "读取并校验" : job.status === "cancelled" ? "已停止" : "已结束",
+                currentFile: file?.name || "—", entry: file,
+            }) + taskProgressFooter({
+                note: "界面预览，不执行实际校验。", backgroundId: "close-archive-test",
+                backgroundText: running ? "返回浏览" : "关闭", cancelId: "cancel-archive-test",
+                cancelText: "取消检查", finished: !running,
+            });
         if (focus || state.modal !== "archive-test")
             dialog(content, "archive-test", "T01", "#close-archive-test");
         else {
@@ -1106,7 +1109,7 @@ window.XdzipMain = (() => {
             $("#modal h1").textContent = outcome;
             if (job.status !== "running") {
                 $("#cancel-archive-test")?.remove();
-                $("#close-archive-test").textContent = "完成";
+                $("#close-archive-test").textContent = "关闭";
             }
         }
         $("#close-archive-test").onclick = closeModal;

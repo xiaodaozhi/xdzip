@@ -15,6 +15,7 @@ QtObject {
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 677
+    readonly property int operationArchiveTestWidth: 677
     readonly property int operationCreateWidth: 491
     readonly property int operationResultWidth: 677
     readonly property real operationExtractDensity: 0.8
@@ -53,6 +54,8 @@ QtObject {
     readonly property real operationHeaderHeight: 108
     readonly property real operationFooterHeight: 64
     readonly property real operationProgressTrackHeight: 20
+    readonly property real operationProgressPercentageLineHeight: 30
+    readonly property real operationProgressBodyLineHeight: 22.5
     readonly property real operationPathRowHeight: 46
     readonly property real operationPathFontSize: 18 * fontScale
     readonly property real operationControlIndicatorSize: 20 * fontScale

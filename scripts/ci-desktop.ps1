@@ -97,6 +97,7 @@ Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/deskto
 # Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
 foreach ($density in @('1.25', '2')) {
     $env:QT_SCALE_FACTOR = $density
+    Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_task_components', '--output-on-failure')
     $capturePath = "build/desktop/visual-audit-dpr$density"
     $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) $capturePath
     Invoke-Checked $browserTests @('mainWindowFidelityAndSessionClose', 'rootListingAndReviewedInteractions', 'reviewedMainControlsAndMenus')

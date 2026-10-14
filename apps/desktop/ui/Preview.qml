@@ -43,6 +43,13 @@ ApplicationWindow {
             onClicked: task.present()
         }
         AppButton {
+            text: qsTr("预览完整性检查窗口")
+            onClicked: {
+                integrity.taskStatus = "running";
+                integrity.present();
+            }
+        }
+        AppButton {
             text: Theme.dark ? qsTr("切换浅色") : qsTr("切换深色")
             onClicked: Theme.dark = !Theme.dark
         }
@@ -75,5 +82,23 @@ ApplicationWindow {
         totalKnown: root.totalKnown
         stopping: root.stopping
         onCancelRequested: root.stopping = true
+    }
+    IntegrityWindow {
+        id: integrity
+        owner: root
+        sampleData: true
+        archiveName: qsTr("北境旅行.zip")
+        destination: qsTr("下载 / 北境旅行.zip")
+        currentFile: qsTr("旅途瞬间-08.jpg")
+        processedSummary: qsTr("已读取 46.5 MB / 77.5 MB")
+        fileCountSummary: qsTr("18 / 30 个文件")
+        speedSummary: "6.2 MB/s"
+        remainingSummary: qsTr("约 5 秒")
+        phaseSummary: qsTr("读取并校验")
+        resultSummary: qsTr("界面预览已取消，未执行校验。")
+        fraction: 0.6
+        totalKnown: true
+        stopping: false
+        onCancelRequested: taskStatus = "cancelled"
     }
 }
