@@ -836,7 +836,7 @@ function showExtract(scope = "selected", retryFiles = null) {
             `${esc(state.archiveTitle)} · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
             "archive",
         ) +
-            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row destination-field">${icon("folder")}<input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : esc(state.plan.target)}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group scope-card"><div class="field-label">解压范围</div><div class="scope-box">${
+            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row destination-field">${icon("folder")}<input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : esc(state.plan.target)}"><button class="button" id="change-target">更改</button></div><label class="check-label destination-check"><span class="destination-mark"><input id="same-folder" type="checkbox" checked></span><span class="destination-text">创建同名文件夹</span></label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group scope-card"><div class="field-label">解压范围</div><div class="scope-box">${
                 scope !== "all"
                     ? `<label class="radio-row"><input type="radio" name="scope" value="${scope}" checked><span>${scope === "results" ? "当前搜索结果" : scope === "retry" ? "失败或未完成项" : "所选文件"}</span><small>${count} 项 · ${bytes(sum)}</small></label><div class="scope-files">${chosen
                           .slice(0, 3)
@@ -867,7 +867,7 @@ function showExtract(scope = "selected", retryFiles = null) {
         $("#target-valid").className =
             "field-note " + (denied ? "error" : "success");
         $("#target-valid").innerHTML =
-            `${icon(denied ? "status-warning" : "status-success")}<span>${
+            `<span class="destination-mark">${icon(denied ? "status-warning" : "status-success")}</span><span class="destination-text">${
                 denied
                     ? "此位置不可写，请更改目标文件夹。"
                     : "目标位置可用（示例检查）"

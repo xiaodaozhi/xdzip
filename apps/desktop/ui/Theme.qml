@@ -41,6 +41,9 @@ QtObject {
     readonly property real operationExtractClientHeight: 866
     readonly property real operationProgressClientHeight: 612
     readonly property real operationExtractNoteSize: 12 * fontScale
+    readonly property real operationDestinationIndicatorSlotSize: 24 * fontScale
+    readonly property real operationDestinationIndicatorSize: 16 * fontScale
+    readonly property real operationDestinationIndicatorGap: 8
     readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
     readonly property color surface: dark ? "#22262F" : "#FFFFFF"
     readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"

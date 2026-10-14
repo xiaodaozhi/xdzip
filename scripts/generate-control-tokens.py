@@ -35,6 +35,10 @@ def main():
     for name, value in layout['operation']['footer'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-footer-{key}: calc({value}px * var(--ui-source-factor));')
+    for name, value in layout['operation']['components'].items():
+        if name.startswith('destinationIndicator'):
+            key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
+            declarations.append(f'  --operation-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in tokens['size'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --ui-{key}: calc({value}px * var(--ui-source-factor));')

@@ -740,8 +740,13 @@ dialog[data-kind="extract"] #start-extract { min-width:calc(190px * var(--operat
 dialog[data-kind] .modal-footer { gap:calc(10px * var(--ui-source-factor)); }
 dialog[data-kind="extract"] .ready-label { gap:calc(4px * var(--ui-source-factor)); }
 dialog[data-kind="extract"] .field-note { font-size:calc(23px * var(--operation-extract-density)); }
-dialog[data-kind="extract"] #target-valid { font-size:calc(24px * var(--operation-extract-density)); gap:calc(8px * var(--ui-source-factor)); }
-dialog[data-kind="extract"] #target-valid>svg { width:calc(24px * var(--ui-source-factor)); height:calc(24px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] #target-valid { display:flex; align-items:center; font-size:calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .destination-check,
+dialog[data-kind="extract"] #target-valid { gap:var(--operation-destination-indicator-gap); min-height:var(--operation-destination-indicator-slot-size); line-height:var(--operation-destination-indicator-slot-size); }
+dialog[data-kind="extract"] .destination-mark { display:flex; align-items:center; justify-content:center; flex-shrink:0; width:var(--operation-destination-indicator-slot-size); height:var(--operation-destination-indicator-slot-size); }
+dialog[data-kind="extract"] .destination-mark input { margin:0; width:var(--operation-destination-indicator-size); height:var(--operation-destination-indicator-size); }
+/* The status disc occupies 20 units of its shared 24-unit canvas. */
+dialog[data-kind="extract"] .destination-mark>svg { display:block; width:calc(var(--operation-destination-indicator-size) * 24 / 20); height:calc(var(--operation-destination-indicator-size) * 24 / 20); }
 dialog[data-kind="extract"] #target-valid.error { color:var(--danger); }
 
 dialog[data-kind="extract"] input[type="radio"] { width:calc(20px * var(--ui-source-factor)); height:calc(20px * var(--ui-source-factor)); }

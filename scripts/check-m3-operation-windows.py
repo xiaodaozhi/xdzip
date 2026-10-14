@@ -68,6 +68,19 @@ change = named['extractChangeTarget']
 check('extract/destination field height', field['height'], source['source_field_height'] * ratio, 1.5)
 check('extract/change vertical center', change['y'] + change['height'] / 2, field['y'] + field['height'] / 2, .5)
 check('extract/change inside field', change['x'] >= field['x'] and change['x'] + change['width'] <= field['x'] + field['width'], True)
+right_gap = field['x'] + field['width'] - change['x'] - change['width']
+top_gap = change['y'] - field['y']
+bottom_gap = field['y'] + field['height'] - change['y'] - change['height']
+check('extract/change right equals top inset', right_gap, top_gap, .5)
+check('extract/change right equals bottom inset', right_gap, bottom_gap, .5)
+checkbox_mark = named['extractSameFolderIndicator']
+status_mark = named['extractTargetStatusIndicator']
+checkbox_text = named['extractSameFolderLabel']
+status_text = named['extractTargetStatusText']
+check('extract/destination marker columns', checkbox_mark['x'] + checkbox_mark['width']/2, status_mark['x'] + status_mark['width']/2, .5)
+check('extract/destination text columns', checkbox_text['x'] + checkbox_text['leftPadding'], status_text['x'], .5)
+for row, mark, text in [('checkbox', checkbox_mark, checkbox_text), ('status', status_mark, status_text)]:
+    check('extract/' + row + ' vertical center', mark['y'] + mark['height']/2, text['y'] + text['height']/2, .5)
 check('extract/destination card fill', named['extractDestinationCard']['color'].upper(), source['colors']['card'].upper())
 check('extract/conflict card fill', named['extractConflictCard']['color'].upper(), source['colors']['card'].upper())
 check('extract/scope body fill', named['extractScopeCard']['color'], '#ffffff')

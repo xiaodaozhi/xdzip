@@ -77,7 +77,10 @@
       "controlGap": 10,
       "extractClientHeight": 866,
       "progressClientHeight": 612,
-      "extractNoteSize": 12
+      "extractNoteSize": 12,
+      "destinationIndicatorSlotSize": 24,
+      "destinationIndicatorSize": 16,
+      "destinationIndicatorGap": 8
     },
     "source_to_logical_by_view": {
       "extract": [

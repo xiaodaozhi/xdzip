@@ -64,6 +64,14 @@ def main():
                         frame.locator('#same-folder').check()
                         expect(frame.locator('#target-base')).to_have_value('下载 / 北境旅行')
                         check(tag+'/shared checkbox', frame.locator('#same-folder').evaluate('n=>getComputedStyle(n).appearance'), 'none')
+                        checkbox_mark = frame.locator('.destination-check .destination-mark').bounding_box()
+                        status_mark = frame.locator('#target-valid .destination-mark').bounding_box()
+                        checkbox_text = frame.locator('.destination-check .destination-text').bounding_box()
+                        status_text = frame.locator('#target-valid .destination-text').bounding_box()
+                        check(tag+'/destination marker columns', checkbox_mark['x'] + checkbox_mark['width']/2, status_mark['x'] + status_mark['width']/2, .1)
+                        check(tag+'/destination text columns', checkbox_text['x'], status_text['x'], .1)
+                        for row, mark, text in [('checkbox', checkbox_mark, checkbox_text), ('status', status_mark, status_text)]:
+                            check(tag+'/'+row+' vertical center', mark['y'] + mark['height']/2, text['y'] + text['height']/2, .5)
                         check(tag+'/native select hidden', frame.locator('#conflict-policy').is_visible(), False)
                         metrics = modal.evaluate('''n=>[n,n.querySelector('h1'),...n.querySelectorAll('.modal-footer .button')].map(e=>({
                             selector:e===n?'DIALOG.':e.tagName+'.',w:e.getBoundingClientRect().width,

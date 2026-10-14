@@ -94,6 +94,9 @@ OperationWindow {
                                 border.width: target.activeFocus ? 2 : 1
                                 RowLayout {
                                     anchors.fill: parent; anchors.margins: root.unit(5); spacing: root.unit(12)
+                                    // Match the right inset to the actual vertical clearance,
+                                    // including the height required by enlarged text.
+                                    anchors.rightMargin: (parent.height - changeTarget.height) / 2
                                     Image { source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "folder.png"; Layout.preferredWidth: root.unit(27); Layout.preferredHeight: root.unit(27); Layout.leftMargin: root.unit(6) }
                                     OperationField {
                                         id: target
@@ -114,12 +117,25 @@ OperationWindow {
                                 }
                             }
                             OperationCheck {
-                                density: root.density; spacing: 13; id: sameFolder; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTr("创建同名文件夹"); checked: true }
+                                density: root.density; spacing: Theme.operationDestinationIndicatorGap
+                                indicatorSlotSize: Theme.operationDestinationIndicatorSlotSize
+                                id: sameFolder; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTr("创建同名文件夹"); checked: true }
                             RowLayout {
-                                Layout.fillWidth: true; spacing: 8
-                                Image { visible: root.targetReady; source: "qrc:/xdzip/assets/success-large.png"; Layout.preferredWidth: 24; Layout.preferredHeight: 24 }
+                                Layout.fillWidth: true; spacing: Theme.operationDestinationIndicatorGap
+                                Item {
+                                    objectName: "extractTargetStatusIndicator"
+                                    Layout.preferredWidth: Theme.operationDestinationIndicatorSlotSize; Layout.preferredHeight: Theme.operationDestinationIndicatorSlotSize
+                                    Image {
+                                        anchors.centerIn: parent; visible: root.targetReady
+                                        source: "qrc:/xdzip/assets/success-large.png"
+                                        // The shared 24-unit canvas contains a 20-unit disc.
+                                        width: Theme.operationDestinationIndicatorSize * 24 / 20; height: width
+                                    }
+                                }
                                 Text {
-                                    Layout.fillWidth: true
+                                    objectName: "extractTargetStatusText"
+                                    Layout.fillWidth: true; Layout.minimumHeight: Theme.operationDestinationIndicatorSlotSize
+                                    verticalAlignment: Text.AlignVCenter
                                     text: root.targetState.checking ? qsTr("正在检查目标目录…") : root.targetReady ? qsTr("目标目录可写") : root.targetState.error || qsTr("修改目录后请重新检查")
                                     textFormat: Text.PlainText; wrapMode: Text.Wrap
                                     color: root.targetState.error && !root.targetState.checking && !root.targetReady ? Theme.menuDanger : Theme.textSecondary; font.pixelSize: Math.round(root.unit(Theme.operationBodySize))

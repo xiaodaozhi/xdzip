@@ -12,6 +12,9 @@
   --operation-footer-font-size: calc(13px * var(--ui-source-factor));
   --operation-footer-note-size: calc(12px * var(--ui-source-factor));
   --operation-footer-icon-size: calc(16px * var(--ui-source-factor));
+  --operation-destination-indicator-slot-size: calc(24px * var(--ui-source-factor));
+  --operation-destination-indicator-size: calc(16px * var(--ui-source-factor));
+  --operation-destination-indicator-gap: calc(8px * var(--ui-source-factor));
   --ui-menu-width: calc(240px * var(--ui-source-factor));
   --ui-menu-min-width: calc(208px * var(--ui-source-factor));
   --ui-menu-row-height: calc(32px * var(--ui-source-factor));
