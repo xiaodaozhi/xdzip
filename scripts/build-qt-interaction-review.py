@@ -29,7 +29,7 @@ def main():
     prefix += '<p>' + html.escape(environment) + '，1024×622 逻辑尺寸</p>'
     prefix += '<p>主界面、菜单和树均来自真实 Qt。离屏截图不包含 macOS 原生红绿灯；红绿灯另由 Cocoa 启动检查测量。解压及图片内容预览仍未实现，禁用状态保留。</p><button onclick="document.body.classList.toggle(\'actual\')">切换适应屏幕／100% 逻辑尺寸</button>'
     embedded, linked, hashes = [], [], {}
-    evidence = ROOT / 'docs/qa/qt-interaction-fixes'
+    evidence = ROOT / 'build/review/qt-interaction-fixes'
     if args.archive_evidence:
         evidence.mkdir(parents=True, exist_ok=True)
     for stem, label in scenes:

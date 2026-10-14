@@ -13,7 +13,7 @@
 | `preview` | 1 张素材联系表 | 本次生成的审核预览，不进入产品包 |
 | [fonts](fonts/README.md) | Noto 派生界面字体与 OFL-1.1 | HTML WOFF2 与同源 Qt TTF；子集外字形使用系统回退 |
 | [manifest.json](manifest.json) | 统一资产、45 张图标参考与 26 张组件切片的覆盖台账 | 用途、来源、哈希、画布、倍率、光学边界和实际 Qt 引用；总数以本清单为准 |
-| [validation.json](validation.json) | 生成一致性与资产检查 | 检查结果和仍需人工 / 原生核对的范围 |
+| [validation.json（本地／CI 工件）](../../docs/qa/README.md) | 生成一致性与资产检查 | 检查结果和仍需人工 / 原生核对的范围 |
 
 ## 目录树 B 设计交付
 
@@ -35,7 +35,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 品牌标记采用四条交错带与开放的 U 形下部，几何统一维护在 `scripts/brand_assets.py`。`brand/mark.svg` 是独立标记，`brand/xdzip.svg` 为应用图标母版，`brand/xdzip-zip.svg` 为 ZIP 文档图标母版。界面的 `app-mark`、`archive`、`archive-grey` 从同一几何定义生成；不在 Qt 或 HTML 中另外手绘。
 
-当前标记使用更修长的 440:660 比例，缩放保留宽高比与光学高度。应用底板和文档徽章共用四角旋转对称、曲率连续的轮廓；表面光照使用完全相同的路径，取消单独描边和开口高光线。`scripts/check-brand-corners.py` 从实际 SVG 检查曲线和轮廓，`--render` 另外检查抗锯齿后的边界位移；测量记录见 [圆角复核](../../docs/qa/brand-and-assets/corners.json)。
+当前标记使用更修长的 440:660 比例，缩放保留宽高比与光学高度。应用底板和文档徽章共用四角旋转对称、曲率连续的轮廓；表面光照使用完全相同的路径，取消单独描边和开口高光线。`scripts/check-brand-corners.py` 从实际 SVG 检查曲线和轮廓，`--render` 另外检查抗锯齿后的边界位移；测量记录见 [圆角复核（本地／CI 工件）](../../docs/qa/README.md)。
 
 两种母版分别导出 16、24、32、48、64、128、256、512、1024 像素的透明 PNG，共 18 张；512 像素文件命名为 `xdzip.png` 和 `xdzip-zip.png`。16/24/32 像素采用简化的小尺寸表现，保持品牌几何，省去不可读微字和大图光影。Windows 的两份 ICO 各含七种尺寸；macOS 的两份 ICNS 各含十一种表示，包含相应 Retina 密度。所有导出纳入主素材清单，不另建品牌清单。
 
@@ -47,7 +47,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 主清单的 `reference_coverage` 为全部 45 张原像素参考记录对应语义、浅深色 SVG、用途及说明。旧品牌参考标明历史设计依据，当前品牌指向新母版；控件参考标明实际控件呈现，避免把静态切片称为可操作控件。
 
-补齐主题浅 / 深、已有归档、Windows / Linux 文档、取消大图、选中复选框、成功、选中 / 未选中单选框、冲突 PDF、冲突警告和进度图片十三种语义。取消大图保留方形停止符号；主题系统图标展示完整窗口结构。成功、部分成功、跳过、停止、警告、停止中及系统主题七类既有图标调整渐变、高光或结构，实际表现与仍存在的差异见 [品牌与素材复核](../../docs/qa/brand-and-assets.md)。
+补齐主题浅 / 深、已有归档、Windows / Linux 文档、取消大图、选中复选框、成功、选中 / 未选中单选框、冲突 PDF、冲突警告和进度图片十三种语义。取消大图保留方形停止符号；主题系统图标展示完整窗口结构。成功、部分成功、跳过、停止、警告、停止中及系统主题七类既有图标调整渐变、高光或结构，实际表现与仍存在的差异见 [品牌与素材复核（本地／CI 工件）](../../docs/qa/README.md)。
 
 ## 原稿与参考的关系
 
@@ -77,7 +77,7 @@ python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-a
 
 `asset_definitions.py` 维护界面形状、参考坐标及固定光学边界，`brand_assets.py` 维护共用品牌几何与平台导出规格。构建工具依赖 Pillow；透明导出和联系表依赖 Playwright / Chromium。使用 `XDZIP_CHROMIUM` 指定浏览器，使用 `XDZIP_FONTCONFIG_FILE` 指定画廊字体配置；这套工具不进入产品运行时。`build-brand-assets.py --check` 只校验品牌母版、透明 PNG、来源凭据及 ICO / ICNS 容器，不写回文件。
 
-`build-design-assets.py --check` 验证定义、SVG、清单和画廊同步，不改写文件。完整检查还核对原稿裁剪像素、全部画布及透明通道，并验证文件家族在浅深色和三个倍率的光学边界与中心。光学边界统一按 `alpha > 8` 测量；像素边界包含抗锯齿尾部与采样取整，采用固定 1.5 物理像素容差并按倍率收紧，中心容差另行验证，不改变矢量目标边界。[折角采样实测](../../docs/qa/asset-review/image-antialias-evidence.json)记录 SVG 几何及 1×/2×/3× 外沿；独立原稿对照的容差保持原值。
+`build-design-assets.py --check` 验证定义、SVG、清单和画廊同步，不改写文件。完整检查还核对原稿裁剪像素、全部画布及透明通道，并验证文件家族在浅深色和三个倍率的光学边界与中心。光学边界统一按 `alpha > 8` 测量；像素边界包含抗锯齿尾部与采样取整，采用固定 1.5 物理像素容差并按倍率收紧，中心容差另行验证，不改变矢量目标边界。[折角采样实测（本地／CI 工件）](../../docs/qa/README.md)记录 SVG 几何及 1×/2×/3× 外沿；独立原稿对照的容差保持原值。
 
 画廊是直接展示当前运行素材的复核入口。结构 / 坐标检查不代表与原稿逐像素一致；独立视觉对照、Qt 的真实渲染和目标系统窗口验收分别记录，不能相互替代。
 

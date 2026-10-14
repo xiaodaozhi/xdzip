@@ -14,7 +14,17 @@
     <file>ui/InfoRow.qml</file>
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>
+    <file alias="assets/light/status-partial-success.png">../../design/assets/png/light/status-partial-success@3x.png</file>
+    <file alias="assets/light/status-skipped.png">../../design/assets/png/light/status-skipped@3x.png</file>
+    <file alias="assets/light/status-warning.png">../../design/assets/png/light/status-warning@3x.png</file>
+    <file alias="assets/dark/status-partial-success.png">../../design/assets/png/dark/status-partial-success@3x.png</file>
+    <file alias="assets/dark/status-skipped.png">../../design/assets/png/dark/status-skipped@3x.png</file>
+    <file alias="assets/dark/status-warning.png">../../design/assets/png/dark/status-warning@3x.png</file>
+    <file alias="assets/document-warning.png">../../design/assets/png/light/document-warning@9x.png</file>
     <file>ui/TaskWindow.qml</file>
+    <file>ui/OperationResultPanel.qml</file>
+    <file>ui/ResultFileRow.qml</file>
+    <file>ui/ResultDisclosureButton.qml</file>
     <file>ui/OperationCheck.qml</file>
     <file>ui/OperationField.qml</file>
     <file>ui/OperationSelect.qml</file>

@@ -41,7 +41,7 @@ def main():
 <p class="note">主窗口、独立解压确认及各操作状态共用一套视觉基线。完整原稿在此展示，图标、示例照片与原像素对照切片统一从素材库查看。当前主窗口的完整深色原稿尚缺；生成式图像不等于逐像素规范或已实现功能。</p>
 <h2 id="current">当前视觉参考</h2>''' + ''.join(groups['current']) + '''
 <h2 id="components">目录树 B，已确认组件设计</h2><p>下列三张图板定义多级目录、节点状态与导航边界，补充主稿中的侧栏。设计已交付，HTML 与 Qt 的目录树仍待按此稿接入；图板为放大的视觉说明，准确控件尺寸和行为见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>，逐项切图见 <a href="../assets/index.html#directory-tree">统一素材库</a>。</p>''' + ''.join(groups['component']) + '''
-<footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。实际实现截图保存在 <a href="../../docs/qa/navigation-sorting.md">验收文档</a>。</p></footer></body></html>
+<footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。测试截图只生成到本地或 CI 工件，参见 <a href="../../docs/qa/README.md">验收入口</a>。</p></footer></body></html>
 '''
     target = ROOT / 'index.html'
     if args.check:

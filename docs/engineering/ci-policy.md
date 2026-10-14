@@ -1,6 +1,6 @@
 # CI 与合入策略
 
-已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流和 HTML design review，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。最新解压实现证据见 [M3 验收入口](../qa/m3-acceptance.md)。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发布检查仍按阶段接入。
+已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流和 HTML design review，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。最新解压实现证据见 [M3 验收入口（本地／CI 工件）](../qa/README.md)。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发布检查仍按阶段接入。
 
 | 变更 | 必需检查 |
 | --- | --- |
@@ -23,10 +23,14 @@ Qt components 通过 scripts/ci-desktop.ps1 在三平台安装固定 Qt 6.8.2，
 
 所有层级的 dist/ 及其全部内容都在 .gitignore 中排除，build/、target/ 也不进入 Git 源码树。Documentation 的 scripts/check-docs.py 检查 Git 索引，即使强制暂存 dist/ 文件也会失败。HTML 离线审阅工具仍可在本地生成 dist/，但生成结果只能作为本地文件或 Actions 工件，不能提交到仓库。
 
-M2 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。Windows/Linux 开发工件命名为 xdzip-m4-平台-架构。M1/M2/M3 已登记的 macOS 开发包回执保留为历史证据，不代表后续构建继续打包。
+M2 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。Windows/Linux 开发工件命名为 xdzip-m4-平台-架构。源码树不再保留历史截图、量测记录或开发包回执；已存在的提交历史不重写。
 
 检查直接 main 推送时使用 `/actions/runs?head_sha=...`，核对 push 事件；连接器 `fetch_commit_workflow_runs` 仅筛选 PR 事件，空结果不表示没有自动运行。
 
 M3 额外执行真实解压、冲突、取消等待、关闭源会话后继续任务和退出决定的 Qt 流程；测量 64 个 Deflate 文件／32 MiB 实际输出并独立复核全部字节。核心覆盖 CRC、流终止、描述符、源／目标变化、链接、ACL、提交竞争、清理及磁盘写失败。磁盘满为可重复的部分写入故障注入，不冒充真实填满设备。Windows 权限回归直接修改新建自有夹具的 ACL，目录枚举、内容读取、写入、删除与 ACL 修改均保持拒绝。
 
 WP-10 增加三平台真实创建窗口→生成 ZIP→重新打开→重名取消的 Qt 流程，DPR 1／1.25／2 检查逻辑尺寸、字号、字段和 footer。独立 Python zipfile 校验 Store、Deflate 1／6／9、Unicode、空项与 66,001 条记录的 ZIP64；记录实际时间与可获得的 RSS，缺失值为 null。高 DPR 离屏屏幕变小可能触发窗口高度上限，报告记录可用屏幕高度并核验约束后的逻辑尺寸，不将裁切误记为正常全窗口体验。
+
+测试截图、量测 JSON、运行日志和生成报告均不得提交到 Git，已存在的工件从当前文件树删除。设计源图、透明运行素材、设计参数与字体材料清单保留；它们不是实际运行的验收证据。Documentation 对 Git 索引执行检查，禁止通过强制暂存恢复旧工件。所有生成器输出到 build/review、其他 build 子目录或 dist，当前工件只作为 Actions artifact 上传。
+
+ZIP 高级创建增加真实 AES-256 与编号分卷输出，核心覆盖错误密码、边界预算、来源／目标变化、整组冲突、身份校验及晚取消。Linux Qt CI 使用独立 7-Zip 解压 8 种 Store／Deflate、单文件／分卷和明文／AES 组合，复核空文件、空目录、Unicode 和全部有效载荷。Qt 控件校验覆盖默认级别、自定义空值／零值、单位、密码非法值与清空。结果明细检查使用真实任务记录，截图与量测遵守本地／CI 工件政策。

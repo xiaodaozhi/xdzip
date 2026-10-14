@@ -1,6 +1,6 @@
 # 文档导航
 
-基线日期：2026-10-11。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
+维护日期：2026-10-14。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
 
 ## 阅读顺序
 
@@ -9,20 +9,12 @@
 | 领域 | 入口 |
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
-| 素材修正 | [新品牌与遗漏素材](qa/brand-and-assets.md)、[实际图标与页面预览](qa/brand-and-assets/index.html)、[统一素材库与尺寸规范](qa/asset-consolidation.md)、[问题与修复记录](qa/asset-review.md)、[原稿与矢量逐项对照](qa/asset-review/index.html) |
-| M2 完整只读浏览 | [阶段验收与构建](qa/m2-acceptance.md)、[资源和查询契约](engineering/m2-readonly.md) |
-| 文件类型排序 | [目录优先、无后缀文件与双向排序回归](qa/type-sort.md) |
-| 根目录与文件项交互 | [Qt／HTML 同步整改与验收](qa/root-directory-interactions.md)、[实际图片审阅](qa/root-directory-interactions/index.html) |
-| 操作窗口与任务状态素材 | [正常尺寸、footer 字号与扁平圆盘验收](qa/operation-windows.md) |
-| 解压窗口最新修订 | [正常密度、原稿控件与实际交互](qa/extract-fidelity/README.md)、[HTML／Qt／原稿图片对照](qa/extract-fidelity/index.html) |
-| 解压目标对齐 | [标记、文字同列与更改按钮等留白](qa/extract-alignment/README.md)、[当前实际截图](qa/extract-alignment/index.html) |
-| HTML／Qt 交互同步 | [18 项修订的对应状态及实际缩放验收](qa/html-qt-interaction-sync.md) |
-| Qt 主窗口交互修订 | [18 项问题的修正与验收](qa/qt-interaction-fixes.md) |
-| 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json)、[100%／125% 与高 DPR 实测](qa/ui-density/README.md) |
+| M2 完整只读浏览 | [资源和查询契约](engineering/m2-readonly.md) |
+| 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |
 | 高保真状态稿 | [页面与操作状态原稿](../design/hifi/README.md)、[统一素材库](../design/assets/index.html)、[功能状态契约](ux/hifi-state-spec.md) |
-| HTML 高保真设计 | [分栏标题对齐](qa/pane-header-alignment.md)、[展示尺寸复核](qa/html-scale-review.md)、[顶部对照复核](qa/html-header-review.md)、[内容区域复核](qa/html-body-review.md)、[复核方法](visual/html-fidelity.md)、[使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |
-| 主窗口组件与交互 | [功能清单与输入契约](ux/main-window-components.md)、[可操作组件页](../design/html/components.html)、[实际复核与覆盖表](qa/main-window-components.md)、[共享菜单与状态参数](visual/controls.json) |
+| HTML 高保真设计 | [复核方法](visual/html-fidelity.md)、[使用说明](../design/html/README.md)、[功能映射](ux/prototype-spec.md) |
+| 主窗口组件与交互 | [功能清单与输入契约](ux/main-window-components.md)、[可操作组件页](../design/html/components.html)、[共享菜单与状态参数](visual/controls.json) |
 | Figma 功能设计 | [文件、画板索引与待修项](ux/figma-design.md) |
 | 未绘制页面和异常流程 | [交互补充](ux/interaction-spec.md) |
 | 开发与仓库约定 | [开发指南](engineering/development.md)、[目录规划](engineering/repository-layout.md) |
@@ -31,20 +23,16 @@
 | 隐私与诊断 | [数据生命周期](engineering/privacy.md) |
 | 持续集成与发布 | [CI 策略](engineering/ci-policy.md)、[发布流程](engineering/release-runbook.md) |
 | 项目执行 | [工作清单](planning/backlog.md)、[风险与决策](planning/risks.md)、[就绪评审](planning/readiness.md) |
-| 解压预检 | [阶段契约](engineering/extraction-preflight.md)、[测试与实际窗口](qa/extraction-preflight.md) |
-| 目录树 B 设计交付 | [正式设计与接入规格](ux/directory-tree.md)、[逻辑参数](visual/directory-tree.json)、[图板与切图 HTML](../design/hifi/directory-tree.html)、[交付复核](qa/directory-tree.md) |
-| 目录导航与排序 | [实现、实际截图与验收](qa/navigation-sorting.md) |
-| ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md)、[测试与实际截图](qa/zip-browser.md) |
-| Qt 与设计一致性 | [当前正常密度与菜单比例](qa/ui-density/README.md)、[前期校准历史](qa/qt-fidelity/README.md) |
-| M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md)、[完整验收入口](qa/m1-acceptance.md) |
-| 视觉修正复核 | [布局、排版、主题修正与新截图](qa/visual-refinement.md) |
-| 工具栏按钮修正 | [原稿对照与实际截图](qa/toolbar-review.md) |
-| 顶部结构修正 | [实施说明与实际截图](qa/header-review.md) |
-| 视觉严格复核 | [设计与实现差异报告](qa/visual-audit-review.md)、[运行时量化检查表](qa/visual-audit/measurements.md) |
-| 实现进展 | [领域与 Qt 组件验证](qa/foundation-components.md)、[任务窗实际截图与对照](qa/task-visual-review.md)、[开发预览](../apps/desktop/README.md) |
+| 解压预检 | [阶段契约](engineering/extraction-preflight.md) |
+| 目录树 B 设计交付 | [正式设计与接入规格](ux/directory-tree.md)、[逻辑参数](visual/directory-tree.json)、[图板与切图 HTML](../design/hifi/directory-tree.html) |
+| ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md) |
+| M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md) |
+| 实现进展 | [开发预览](../apps/desktop/README.md) |
 | 质量 | [验收用例](qa/acceptance.md)、[样本规范](qa/fixtures.md) |
 | 开源协作 | [贡献指南](../CONTRIBUTING.md)、[治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |
 | 历史记录 | [变更日志](../CHANGELOG.md)、[准备工作记录](planning/preparation-record.md) |
+
+测试截图与量测记录不保存在源码树，统一从[本地／CI 验证入口](qa/README.md)获取。结果窗口和创建高级选项分别见 [结果参数](visual/result-reference.json)和[创建契约](engineering/m4-creation.md)。
 
 ## 文档权威与维护
 
@@ -52,8 +40,8 @@
 
 所有“计划/候选/待验证”必须保持标记，不能因文档进入主分支就改写为已实现。设计调整同时更新受影响文档与需求追踪矩阵；重大变化追加 ADR。HTML 为派生阅读材料，修改 Markdown 后重新构建。
 
-M3 安全解压：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录](qa/m3-acceptance.md)、[Qt／HTML／原稿对照](qa/m3/index.html)。
+M3 安全解压：[安全解压实现](engineering/m3-extraction.md)、[依赖准入](engineering/zip-extraction-admission.md)、[验收记录（本地／CI 工件）](qa/README.md)、[Qt／HTML／原稿对照（本地／CI 工件）](qa/README.md)。
 
-WP-10 ZIP 创建：[输入树与整体保存契约](engineering/m4-creation.md)、[验收状态](qa/m4-acceptance.md)、[实际 Qt／HTML／原稿对照](qa/m4/index.html)。进度窗口正常密度修订见 [复核记录](qa/progress-density/README.md)。
+WP-10 ZIP 创建：[输入树与整体保存契约](engineering/m4-creation.md)、[验收状态（本地／CI 工件）](qa/README.md)、[实际 Qt／HTML／原稿对照（本地／CI 工件）](qa/README.md)。进度窗口正常密度修订见 [复核记录（本地／CI 工件）](qa/README.md)。
 
-新建窗口控件修订：[原稿参数](visual/create-reference.json)、[实际截图与验收](qa/create-controls/README.md)、[HTML／Qt／原稿对照](qa/create-controls/index.html)。共享控件禁止窗口覆盖 footer 样式，信息不使用中点分隔。
+新建窗口控件修订：[原稿参数](visual/create-reference.json)、[实际截图与验收（本地／CI 工件）](qa/README.md)、[HTML／Qt／原稿对照（本地／CI 工件）](qa/README.md)。共享控件禁止窗口覆盖 footer 样式，信息不使用中点分隔。

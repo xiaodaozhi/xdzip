@@ -31,6 +31,8 @@ impl Fixture {
                 method,
                 level: 6,
                 conflict: ConflictPolicy::Ask,
+                volume_bytes: 0,
+                password: None,
             },
         }
     }
@@ -86,6 +88,116 @@ fn store_and_deflate_write_real_archives_and_decode_every_record() {
         }
         assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
     }
+}
+#[test]
+fn aes_creation_authenticates_all_files_and_rejects_wrong_password() {
+    for method in [0, 8] {
+        let f = Fixture::new();
+        let mut job = f.job(method);
+        job.options.password = Some(Password::new("中文 password 123".into()).unwrap());
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+        assert!(result.external_reader);
+        assert_eq!(result.output_parts, 1);
+        let names = [
+            ("输入", true, 0),
+            ("输入/empty.bin", false, 0),
+            (
+                "输入/文件.txt",
+                false,
+                std::fs::metadata(f.0.join("输入/文件.txt")).unwrap().len(),
+            ),
+            ("输入/空目录", true, 0),
+        ];
+        // InputTree determines ordering, so reuse the frozen entries instead of
+        // presuming a filesystem enumeration or ZIP central-directory order.
+        let tree = InputTree::scan(&[f.0.join("输入")], vec![], &|| false).unwrap();
+        assert_eq!(tree.entries().len(), names.len());
+        let entries: Vec<_> = tree
+            .entries()
+            .iter()
+            .map(|e| EncodeEntry {
+                name: e.name.clone(),
+                directory: e.directory,
+                size: e.size,
+                modified_unix: 0,
+            })
+            .collect();
+        let cancel = Cancellation::default();
+        assert!(
+            ZipCodec
+                .verify_encrypted(
+                    std::fs::File::open(f.output()).unwrap(),
+                    &entries,
+                    "中文 password 123",
+                    &cancel
+                )
+                .is_ok()
+        );
+        assert!(
+            ZipCodec
+                .verify_encrypted(
+                    std::fs::File::open(f.output()).unwrap(),
+                    &entries,
+                    "wrong",
+                    &cancel
+                )
+                .is_err()
+        );
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+    }
+}
+#[test]
+fn split_parts_reassemble_to_a_verified_zip_and_never_replace_old_parts() {
+    let f = Fixture::new();
+    let mut job = f.job(0);
+    job.options.volume_bytes = 1024;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    assert!(result.output_parts > 1);
+    let mut joined = Vec::new();
+    for index in 1..=result.output_parts {
+        let bytes = std::fs::read(f.0.join(format!("output/archive.zip.{index:03}"))).unwrap();
+        assert!(bytes.len() <= 1024);
+        if index < result.output_parts {
+            assert_eq!(bytes.len(), 1024);
+        }
+        joined.extend(bytes);
+    }
+    let rows = ZipCodec
+        .scan(
+            &mut std::io::Cursor::new(joined),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(rows.len(), 4);
+    assert!(!f.output().exists());
+    let first = std::fs::read(f.0.join("output/archive.zip.001")).unwrap();
+    let mut job = f.job(0);
+    job.options.volume_bytes = 1024;
+    job.options.conflict = ConflictPolicy::Rename;
+    let again = execute(job, &Control::default(), |_| {});
+    assert_eq!(again.status, Status::Succeeded, "{}", again.error);
+    assert!(f.0.join("output/archive (2).zip.001").is_file());
+    assert_eq!(
+        std::fs::read(f.0.join("output/archive.zip.001")).unwrap(),
+        first
+    );
+}
+#[test]
+fn tiny_volume_budget_and_invalid_secrets_fail_without_publication() {
+    for value in ["", "a\nb", "\0", &"x".repeat(129)] {
+        assert!(Password::new(value.into()).is_err());
+    }
+    let secret = Password::new("do not log me".into()).unwrap();
+    assert_eq!(format!("{secret:?}"), "[REDACTED]");
+    let f = Fixture::new();
+    let mut job = f.job(0);
+    job.options.volume_bytes = 1;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.error, "resource_limit");
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 0);
 }
 #[test]
 fn cancelling_a_conflict_preserves_the_old_archive_and_cleans_staging() {

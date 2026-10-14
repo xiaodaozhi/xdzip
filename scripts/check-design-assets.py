@@ -12,6 +12,7 @@ from pathlib import Path
 
 from PIL import Image
 from directory_tree_assets import TREE_CUTS, component_reference_coverage, tree_shapes
+from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
 from asset_definitions import (
     CONTROL_PATHS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
     STATE_SHAPES, file_shapes, hero_shapes, revised_status_shapes, supplemental_shapes,
@@ -85,7 +86,8 @@ def check_reference_coverage(manifest: dict, by_file: dict) -> list[dict]:
     assert {item['reference'] for item in coverage} == references, 'Untracked reference coverage'
     assert {entry['file'] for entry in manifest['assets']
             if entry['kind'] == 'original-pixel-crop' and entry['usage'] == 'visual-reference-only'} == (
-                references | {f'reference/{name}.png' for name in TREE_CUTS})
+                references | {f'reference/{name}.png' for name in TREE_CUTS} | {f'reference/{name}.png' for name in OPERATION_CUTS})
+    assert manifest.get('operation_reference_coverage') == operation_reference_coverage()
     checked = []
     for item in coverage:
         reference = item['reference']
@@ -232,7 +234,7 @@ def main() -> None:
             raise AssertionError(f'Unknown asset kind: {kind}')
     counts = {kind: sum(item['kind'] == kind for item in manifest['assets'])
               for kind in ('original-pixel-crop', 'vector-reconstruction', 'vector-rasterization')}
-    assert counts == {'original-pixel-crop': 48 + len(TREE_CUTS), 'vector-reconstruction': len(names) * 2,
+    assert counts == {'original-pixel-crop': 48 + len(TREE_CUTS) + len(OPERATION_CUTS), 'vector-reconstruction': len(names) * 2,
                       'vector-rasterization': len(names) * 6 + len(HIGH_RES_ICONS) * 2}, counts
     assert {entry['file'] for entry in manifest['assets'] if entry['kind'] in BRAND_KINDS} == set(brand_specs)
     for theme in THEMES:
@@ -277,7 +279,9 @@ def main() -> None:
         'limits': ['Independent visual comparison remains necessary', 'No native Qt renderer validation in this script',
                    'Reference crops contain baked backgrounds and cannot ship as transparent icons'],
     }
-    (ROOT / 'validation.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    report_file = ROOT.parents[1] / 'build/review/assets/validation.json'
+    report_file.parent.mkdir(parents=True, exist_ok=True)
+    report_file.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({key: value for key, value in report.items()
                       if key not in ('optical_checks', 'reference_coverage')}, ensure_ascii=False))
 

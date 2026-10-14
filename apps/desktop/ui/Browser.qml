@@ -180,6 +180,7 @@ ApplicationWindow {
         processedSummary: taskWindow.creating ? qsTr("已读取 %1，压缩后 %2").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTr("已写入 %1，已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
         fileCountSummary: taskWindow.creating ? qsTr("%1 个文件，%2").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTr("整体保存已结束") : qsTr("校验后整体保存")) : qsTr("%1 / %2 个文件，跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
         resultSummary: qsTr("完成 %1 个文件，跳过 %2，创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
+        resultTask: root.taskSnapshot
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
         onCancelRequested: reader.cancelTask(root.activeTaskId)

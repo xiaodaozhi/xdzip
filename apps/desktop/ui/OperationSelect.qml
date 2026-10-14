@@ -5,18 +5,35 @@ import QtQuick.Controls
 ComboBox {
     id: root
     property real density: 1
+    property bool numericOnly: false
+    property string editPlaceholder: qsTr("输入数字")
     implicitHeight: Math.max(Theme.operationFieldHeight * density, contentItem.implicitHeight + 16 * density)
     font.pixelSize: Math.round(Theme.operationBodySize * density)
     leftPadding: Theme.operationControlFieldTextInset
     rightPadding: Theme.operationControlSelectIndicatorSize + Theme.operationControlSelectIndicatorRightInset + Theme.operationControlSelectIndicatorTextGap
-    contentItem: Text {
-        text: root.displayText
-        textFormat: Text.PlainText
+    contentItem: TextInput {
+        objectName: root.objectName + "Editor"
+        enabled: root.editable
+        text: root.editable ? root.editText : root.displayText
+        readOnly: !root.editable
+        selectByMouse: root.editable
+        validator: root.numericOnly ? digits : null
+        maximumLength: root.numericOnly ? 20 : 32767
         font: root.font
         color: root.enabled ? Theme.text : Theme.textSecondary
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
+        clip: true
+        onTextEdited: root.editText = text
+        Text {
+            anchors.fill: parent
+            visible: root.editable && !parent.text.length
+            text: root.editPlaceholder
+            font: root.font
+            color: Theme.textSecondary
+            verticalAlignment: Text.AlignVCenter
+        }
     }
+    RegularExpressionValidator { id: digits; regularExpression: /[0-9]*/ }
     indicator: Image {
         objectName: root.objectName + "Indicator"
         x: root.width - width - Theme.operationControlSelectIndicatorRightInset

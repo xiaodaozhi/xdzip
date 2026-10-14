@@ -24,7 +24,7 @@ def luminance(color):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=ROOT / '.cache/visual-audit')
-    parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/visual-audit')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/review/visual-audit')
     parser.add_argument('--fail-on-differences', action='store_true', help='Fail on measured regressions; unresolved fonts remain explicitly unverified')
     parser.add_argument('--require-navigation', action='store_true', help='Require the real tree interaction capture')
     parser.add_argument('--product-commit', help='Revision that produced the captures')

@@ -21,6 +21,12 @@ def main():
     for name in tracked.split('\0'):
         if name and 'dist' in Path(name).parts[:-1]:
             failures.append(f'{name}: generated dist/ files must not be tracked by Git')
+        if name.startswith('docs/qa/') and Path(name).suffix != '.md':
+            failures.append(f'{name}: QA captures/reports must not be tracked by Git')
+        if name.startswith(('design/html/screenshots/', 'design/assets/preview/')) or name in {
+                'design/assets/validation.json', 'design/assets/fonts/validation.json',
+                'docs/html/VALIDATION.json', 'docs/html/BROWSER-VALIDATION.json'}:
+            failures.append(f'{name}: generated review evidence must not be tracked by Git')
     documents = sorted(ROOT.rglob('*.md'))
     for path in documents:
         if any(part in {'.git', '.cache', 'dist', '.venv', 'target', 'build'} for part in path.relative_to(ROOT).parts):

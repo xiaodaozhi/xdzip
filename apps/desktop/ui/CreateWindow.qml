@@ -17,6 +17,19 @@ OperationWindow {
     title: qsTr("新建压缩文件 — xdzip")
     readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
     readonly property bool validName: /^.+\.zip$/i.test(fileName.text.trim()) && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
+    readonly property real volumeBytes: {
+        if (volume.currentIndex !== 13)
+            return [0, 3000000, 4000000, 5000000, 10000000, 20000000, 25000000, 100000000, 300000000, 650000000, 700000000, 4000000000, 4700000000][volume.currentIndex];
+        if (!/^[0-9]+$/.test(volume.editText)) return -1;
+        const bytes = Number(volume.editText) * [1, 1000, 1000000, 1000000000][volumeUnit.currentIndex];
+        return Number.isSafeInteger(bytes) && bytes > 0 && bytes <= 25769803776 ? bytes : -1;
+    }
+    function passwordBytes(text: string): int {
+        try { return unescape(encodeURIComponent(text)).length; } catch (_) { return -1; }
+    }
+    readonly property bool passwordValid: !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
+    readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
+    onClosing: password.text = ""
     function baseName(path: string): string {
         return path.replace(/\\/g, "/").split("/").pop();
     }
@@ -60,8 +73,11 @@ OperationWindow {
         inputs = [];
         fileName.text = qsTr("新建压缩文件.zip");
         target.text = controller.defaultTargetDirectory();
-        method.currentIndex = 0;
-        level.currentIndex = 0;
+        level.currentIndex = 2;
+        volume.currentIndex = 0;
+        volumeUnit.currentIndex = 2;
+        usePassword.checked = false;
+        password.text = "";
         present();
         controller.checkCreationTarget(target.text);
     }
@@ -420,19 +436,6 @@ OperationWindow {
                                             ]
                                         }
                                         Text {
-                                            text: qsTr("压缩算法")
-                                            font.pixelSize: Theme.operationCreateBodySize
-                                            color: Theme.text
-                                        }
-                                        OperationSelect {
-                                            id: method
-                                            objectName: "createMethod"
-                                            Layout.fillWidth: true
-                                            density: root.density
-                                            implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
-                                            model: ["Deflate", qsTr("Store，不压缩")]
-                                        }
-                                        Text {
                                             text: qsTr("压缩级别")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
@@ -443,17 +446,72 @@ OperationWindow {
                                             Layout.fillWidth: true
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
-                                            enabled: method.currentIndex === 0
-                                            model: [qsTr("均衡 (6)"), qsTr("快速 (1)"), qsTr("更小 (9)")]
+                                            currentIndex: 2
+                                            model: [qsTr("0-不压缩"), qsTr("1-快速压缩"), qsTr("2-正常压缩"), qsTr("3-最大压缩")]
+                                        }
+                                        Text {
+                                            text: qsTr("分卷")
+                                            font.pixelSize: Theme.operationCreateBodySize
+                                            color: Theme.text
+                                        }
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 8
+                                            OperationSelect {
+                                                id: volume
+                                                objectName: "createVolume"
+                                                Layout.fillWidth: true
+                                                density: root.density
+                                                implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
+                                                model: [qsTr("不分卷"), "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", qsTr("自定义")]
+                                                editable: currentIndex === 13
+                                                numericOnly: true
+                                                onCurrentIndexChanged: if (currentIndex === 13) Qt.callLater(function () { volume.editText = ""; });
+                                            }
+                                            OperationSelect {
+                                                id: volumeUnit
+                                                objectName: "createVolumeUnit"
+                                                visible: volume.currentIndex === 13
+                                                Layout.preferredWidth: Math.max(74, contentItem.implicitWidth + leftPadding + rightPadding)
+                                                density: root.density
+                                                implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
+                                                currentIndex: 2
+                                                model: [qsTr("字节"), "KB", "MB", "GB"]
+                                            }
                                         }
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: method.currentIndex === 0 ? qsTr("均衡兼顾速度与压缩率。") : qsTr("Store 保留原始字节，不进行压缩。")
+                                        text: volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTr("请输入正整数，每卷上限为 24 GiB，最多 1024 卷。") : volume.currentIndex > 0 ? qsTr("输出 .zip.001 等分卷，现有分卷只能整组改名。") : qsTr("级别 0 不压缩，其余级别使用 Deflate。")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
                                 }
+                            }
+                            OperationCheck {
+                                id: usePassword
+                                objectName: "createUsePassword"
+                                text: qsTr("输入密码")
+                                density: root.density
+                                onCheckedChanged: if (!checked) password.text = ""
+                            }
+                            OperationField {
+                                id: password
+                                objectName: "createPassword"
+                                Layout.fillWidth: true
+                                enabled: usePassword.checked
+                                density: root.density
+                                implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
+                                echoMode: TextInput.Password
+                                placeholderText: qsTr("1–128 个 UTF-8 字节，不含控制字符")
+                                Accessible.name: qsTr("压缩文件密码")
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: root.passwordValid ? qsTr("AES-256 加密文件内容，文件名仍可见。") : qsTr("请输入有效密码；密码不得为空或包含控制字符。")
+                                wrapMode: Text.Wrap
+                                font.pixelSize: Theme.operationCreateNoteSize
+                                color: root.passwordValid ? Theme.textSecondary : Theme.menuDanger
                             }
                         }
                     }
@@ -492,8 +550,11 @@ OperationWindow {
                 objectName: "startCreate"
                 text: qsTr("创建压缩包")
                 primary: true
-                enabled: root.inputs.length > 0 && root.validName && root.targetReady && !root.controller.busy
-                onClicked: root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method.currentIndex === 0 ? 8 : 0, [6, 1, 9][level.currentIndex], openAfter.checked)
+                enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
+                onClicked: {
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), level.currentIndex === 0 ? 0 : 8, [6, 1, 6, 9][level.currentIndex], openAfter.checked, root.volumeBytes, usePassword.checked ? password.text : "");
+                    password.text = "";
+                }
             }
         }
     }

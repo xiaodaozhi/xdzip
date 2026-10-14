@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         return Ok(());
     }
-    if args.len() != 5 || Path::new(&args[1]).join(&args[2]).exists() {
+    if !(5..=6).contains(&args.len()) || Path::new(&args[1]).join(&args[2]).exists() {
         return Err("provide owned input, output directory, new ZIP name, method and level".into());
     }
     let options = Options {
@@ -24,12 +24,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         method: args[3].parse()?,
         level: args[4].parse()?,
         conflict: ConflictPolicy::Ask,
+        volume_bytes: args.get(5).map_or(Ok(0), |v| v.parse())?,
+        // Owned synthetic-test secret, never printed in the measurement report.
+        password: std::env::var("XDZIP_TEST_PASSWORD")
+            .ok()
+            .map(xdzip_runtime::creation::Password::new)
+            .transpose()?,
     };
     let (client, mut receiver) = service::start()?;
     let start = Instant::now();
-    client
-        .submit(service::Command::Create(options))
-        .map_err(|_| "admission failed")?;
+    // The product mailbox is deliberately nonblocking; startup contention is
+    // retryable and does not mean the requested archive parameters are invalid.
+    loop {
+        match client.submit(service::Command::Create(options.clone())) {
+            Ok(_) => break,
+            Err(service::Rejection::Busy) if start.elapsed().as_secs() < 2 => {
+                std::thread::yield_now()
+            }
+            Err(error) => return Err(format!("admission failed: {error:?}").into()),
+        }
+    }
     let mut events = 0;
     let mut verification_start = None;
     let result = loop {

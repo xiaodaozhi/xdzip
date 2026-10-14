@@ -18,6 +18,7 @@ from asset_definitions import (
 )
 from brand_assets import brand_export_specs, brand_shapes
 from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_reference_coverage, tree_shapes
+from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO / 'design/assets'
@@ -77,7 +78,8 @@ def aliases() -> dict[tuple[str, str], list[str]]:
 
 def crop_entries(check: bool = False) -> list[dict]:
     entries = []
-    for name, (source, rect) in CROPS.items():
+    all_crops = CROPS | {name: (source, rect) for name, (source, rect, _, _) in OPERATION_CUTS.items()}
+    for name, (source, rect) in all_crops.items():
         folder = 'demo' if name.startswith('photo-') else 'reference'
         target = ROOT / folder / f'{name}.png'
         source_path = REPO / 'design/hifi/screens' / f'{source}.png'
@@ -277,6 +279,7 @@ def gallery(entries: list[dict]) -> str:
                    if Path(item['file']).suffix in ('.svg', '.png', '.jpg', '.jpeg') else '<span class="format">' + name.rsplit('.', 1)[-1].upper() + '</span>')
         dimensions = f'{item["size"][0]} × {item["size"][1]} px' if 'size' in item else item.get('format', '').upper()
         platform_cards.append(f'<figure class="platform-card"><div>{preview}</div><figcaption><a href="{item["file"]}">{name}</a><small>{html.escape(item["kind"])}，{dimensions}</small></figcaption></figure>')
+    operation_section = '<section id="operation-components"><h2>结果明细、分卷与密码组件</h2><p>参考切片保留原稿背景；运行界面由共享控件和已有透明素材绘制。</p><div class="references component-cuts">' + ''.join(f'<figure><a href="{item["reference"]}"><img src="{item["reference"]}" alt="{item["label"]}"></a><figcaption>{item["label"]}</figcaption></figure>' for item in operation_reference_coverage()) + '</div></section>'
     platform_section = ('<section id="platform-brand"><h2>应用图标与平台导出</h2><p>品牌母版、已确认参考及各平台图标统一纳入这份清单。平台图标使用对应格式和物理分辨率，界面小图标继续使用 24 × 24 共享画布。</p><div class="platform-grid">'
                         + ''.join(platform_cards) + '</div></section>')
     styles = '''*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f5f9;color:#222a3b;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1240px;margin:auto;padding:40px 24px}h1{font-size:32px;letter-spacing:-.6px;margin:0 0 12px}h2{font-size:21px;margin:32px 0 16px}p{line-height:1.85;color:#647089;max-width:920px}a{color:#245ce9}nav{display:flex;gap:18px;flex-wrap:wrap;padding:18px 0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #e0e5ef;border-radius:14px;padding:18px;box-shadow:0 2px 8px #22335304}.card header{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-bottom:18px}.card header b{font-size:13px}.card header span{font-size:10px;white-space:nowrap;color:#68758d}.comparison{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}small{display:block;font-size:10px;color:#78849a;line-height:1.5}.sample{height:72px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #e7ebf3;border-radius:9px;margin-top:8px}.sample img{display:block;object-fit:contain}.sample.dark{background:#222a37;border-color:#222a37}.source .sample{background:#f1f3f7}.missing{font-size:9px;color:#9aa4b7}.exports{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf0f5;padding-top:16px;margin-top:16px;min-height:102px}.exports>span{font-size:10px;line-height:1.6;color:#8993a6;max-width:30px}.exports>div{display:flex;flex-direction:column;align-items:center;gap:7px}.exports img{object-fit:contain;display:block;background:repeating-conic-gradient(#e9edf4 0% 25%,#fff 0% 50%) 0/8px 8px}.platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.platform-card{margin:0;padding:20px;background:white;border:1px solid #e0e5ef;border-radius:14px;text-align:center}.platform-card>div{height:180px;display:grid;place-items:center}.platform-card img{object-fit:contain}.platform-card figcaption{font-size:12px;margin-top:16px}.format{font-size:26px;font-weight:650;color:#3975f0}.references{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.references figure{margin:0;background:white;border:1px solid #e0e5ef;border-radius:10px;padding:14px;text-align:center}.references figure>div{height:110px;display:grid;place-items:center}.references img{max-width:100%;max-height:100px;object-fit:contain}.references figcaption{font-size:11px;overflow-wrap:anywhere;margin-top:14px}.component-cuts{grid-template-columns:repeat(2,minmax(0,1fr))}.component-cuts img{max-height:320px;max-width:100%;object-fit:contain}.component-cuts figure>a{display:grid;place-items:center;min-height:90px}.banner{border-left:3px solid #2d6bfa;padding:3px 16px;background:#eef3fd;border-radius:0 8px 8px 0}.banner p{margin:8px 0}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.references{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:540px){main{padding:26px 14px}.grid{grid-template-columns:1fr}.references{grid-template-columns:repeat(2,minmax(0,1fr))}.component-cuts{grid-template-columns:1fr}h1{font-size:26px}}'''
@@ -284,10 +287,10 @@ def gallery(entries: list[dict]) -> str:
             '<title>xdzip — 统一素材库</title><style>' + styles + '</style><main><h1>xdzip — 统一素材库</h1>'
             f'<p>一套命名、一份清单、一组透明画布。{len(vectors)} 类共享图标提供浅色 / 深色 SVG 与 1× / 2× / 3× PNG；原稿参考和演示照片集中保存。</p>'
             '<p><a href="../hifi/index.html">完整高保真原稿</a>，<a href="../html/index.html">HTML 高保真界面</a>，'
-            '<a href="../../docs/qa/asset-review/index.html">逐项质量复核</a>，<a href="manifest.json">资产清单</a></p>'
+            '<a href="../../docs/qa/README.md">本地／CI 质量复核</a>，<a href="manifest.json">资产清单</a></p>'
             '<div class="banner"><p>每个运行图标均使用 24 × 24 逻辑画布；下列浅深色对照固定显示为 48 × 48。文档可见高度一致，目录保留自然横向比例。原稿栏包含背景，只用于核对造型；透明运行素材来自独立矢量重建。</p></div>'
             '<nav>' + ''.join(f'<a href="#{group}">{title}</a>' for group, title in GROUP_TITLES.items()) +
-            '<a href="#platform-brand">平台品牌导出</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section +
+            '<a href="#platform-brand">平台品牌导出</a><a href="#directory-tree">目录树 B 切图</a><a href="#references">原像素参考</a></nav>' + ''.join(sections) + platform_section + operation_section +
             f'<section id="directory-tree"><h2>目录树 B，{len(component_cards)} 张原稿切图</h2><p><a href="../hifi/index.html#components">三张正式图板</a>，<a href="../../docs/ux/directory-tree.md">交互与接入规范</a>，<a href="../../docs/visual/directory-tree.json">精确逻辑尺寸</a>。切片保留原始背景与裁剪尺寸，用于评审；动态行、连接线、提示和状态不作为整块控件贴图。文件夹、箭头与分支圆点已用于 HTML 和 Qt 目录树；实心信息 / 警告、分段转轮与骨架仍为待接入的边界状态资源。</p><div class="component-cuts references">' + ''.join(component_cards) + '</div></section>' +
             '<section id="references"><h2>原像素参考与演示照片</h2><p>45 张原稿参考保留原始背景和不同裁剪矩形，每项都有对应的独立命名 SVG；3 张演示照片保留源分辨率。下方链接可直接查看对应素材。两张历史品牌参考保留原像素，当前标识采用独立修订的品牌母版。</p><div class="references">' + ''.join(cut_cards) + '</div></section></main></html>\n')
 
@@ -311,6 +314,7 @@ def main() -> None:
         'license': 'Apache-2.0; fonts/ is independently licensed under OFL-1.1',
         'reference_coverage': reference_coverage(),
         'component_reference_coverage': component_reference_coverage(),
+        'operation_reference_coverage': operation_reference_coverage(),
         'assets': entries,
     }
     if args.metadata_only:
@@ -327,6 +331,7 @@ def main() -> None:
         recorded = {item['file']: item for item in existing['assets']}
         assert existing['reference_coverage'] == reference_coverage(), 'Stale reference coverage ledger'
         assert existing['component_reference_coverage'] == component_reference_coverage(), 'Stale component reference coverage'
+        assert existing['operation_reference_coverage'] == operation_reference_coverage(), 'Stale operation component coverage'
         for item in entries:
             assert all(recorded[item['file']].get(key) == value for key, value in item.items()), item['file']
         assert (ROOT / 'index.html').read_text() == gallery(entries), 'Stale asset gallery'

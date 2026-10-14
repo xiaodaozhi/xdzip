@@ -210,7 +210,7 @@ impl Grant {
         let id = FileIdentity::read(&file).map_err(failure)?;
         let mut workspace = Workspace {
             grant: Arc::clone(self),
-            dir: Some(dir),
+            dir: Some(Arc::new(dir)),
             identity: id,
             name,
             journal: None,
@@ -288,7 +288,7 @@ fn private_options() -> OpenOptions {
 /// Private transaction owner. Cleanup targets only known objects with matching identities.
 pub struct Workspace {
     grant: Arc<Grant>,
-    dir: Option<Dir>,
+    dir: Option<Arc<Dir>>,
     identity: FileIdentity,
     name: String,
     journal: Option<File>,
@@ -302,6 +302,14 @@ pub struct Workspace {
 pub struct CommitReceipt {
     /// A private staging link or journal update could not be cleaned; content is already published.
     pub cleanup_warning: bool,
+}
+/// Set publication failure with an explicit identity-safe rollback outcome.
+#[derive(Debug)]
+pub struct SetCommitError {
+    /// Original failure class without paths.
+    pub error: OutputError,
+    /// Some newly linked parts may remain; existing files were never replaced.
+    pub rollback_failed: bool,
 }
 impl Workspace {
     /// Exact private directory excluded from a creation input scan, with its identity.
@@ -330,10 +338,13 @@ impl Workspace {
         let identity = FileIdentity::read(&file).map_err(failure)?;
         Ok(Stage {
             file: Some(file),
-            dir: self.dir().try_clone().map_err(failure)?,
+            // Closed volume stages share one held directory instead of each
+            // retaining a separate directory descriptor (macOS limits are low).
+            dir: Arc::clone(self.dir.as_ref().expect("workspace live")),
             identity,
             name,
             published: false,
+            sealed: None,
         })
     }
     /// Publish verified data. Caller owns the task's commit permit. No-overwrite uses
@@ -346,6 +357,7 @@ impl Workspace {
         overwrite: Option<&ExistingFile>,
     ) -> Result<CommitReceipt, OutputError> {
         stage.finish()?;
+        self.validate_stage(&stage)?;
         let parent = self.grant.parent(path, true)?;
         let leaf = path.parts().last().expect("validated leaf");
         self.grant.revalidate_parent(path, &parent)?;
@@ -366,6 +378,7 @@ impl Workspace {
             change();
         }
         self.grant.revalidate_parent(path, &parent)?;
+        self.validate_stage(&stage)?;
         if overwrite.is_some() {
             // Identity check is best effort; ordinary rename has no content-CAS
             // guarantee against a same-account editor between this check and commit.
@@ -392,6 +405,99 @@ impl Workspace {
         Ok(CommitReceipt {
             cleanup_warning: clean.is_err() || recorded.is_err(),
         })
+    }
+    /// Publish a verified flat volume set without replacing existing leaves.
+    /// Multiple files cannot appear atomically: check all names first, then roll
+    /// back only matching newly linked identities after any publication failure.
+    /// The host must already own the task's non-cancellable commit permit.
+    pub fn commit_set(
+        &mut self,
+        mut stages: Vec<Stage>,
+        paths: &[PortablePath],
+    ) -> Result<CommitReceipt, SetCommitError> {
+        let mut linked = Vec::new();
+        let result = (|| -> Result<(), OutputError> {
+            if stages.is_empty()
+                || stages.len() != paths.len()
+                || stages.len() > 1024
+                || paths.iter().any(|p| p.parts().len() != 1)
+                || paths
+                    .iter()
+                    .map(PortablePath::display)
+                    .collect::<std::collections::HashSet<_>>()
+                    .len()
+                    != paths.len()
+            {
+                return Err(OutputError::Limit);
+            }
+            self.grant.validate()?;
+            for (stage, path) in stages.iter_mut().zip(paths) {
+                stage.finish()?;
+                self.validate_stage(stage)?;
+                if self.grant.existing(path)?.is_some() {
+                    return Err(OutputError::Conflict);
+                }
+                self.record(&format!("prepared {} {}\n", stage.name, path.display()))?;
+            }
+            #[cfg(test)]
+            if let Some(change) = self.before_publish.take() {
+                change();
+            }
+            for (index, (stage, path)) in stages.iter().zip(paths).enumerate() {
+                self.grant.validate()?;
+                self.validate_stage(stage)?;
+                self.dir()
+                    .hard_link(&stage.name, &self.grant.dir, &path.parts()[0])
+                    .map_err(failure)?;
+                linked.push(index);
+            }
+            Ok(())
+        })();
+        if let Err(error) = result {
+            let mut rollback_failed = false;
+            for index in linked.into_iter().rev() {
+                rollback_failed |= self
+                    .grant
+                    .validate()
+                    .and_then(|()| {
+                        remove_known(
+                            &self.grant.dir,
+                            &paths[index].parts()[0],
+                            stages[index].identity,
+                        )
+                    })
+                    .is_err();
+            }
+            return Err(SetCommitError {
+                error,
+                rollback_failed,
+            });
+        }
+        let mut cleanup_warning = false;
+        for (stage, path) in stages.iter_mut().zip(paths) {
+            cleanup_warning |= stage.remove_known().is_err();
+            cleanup_warning |= self
+                .record(&format!("committed {} {}\n", stage.name, path.display()))
+                .is_err();
+        }
+        Ok(CommitReceipt { cleanup_warning })
+    }
+    fn validate_stage(&self, stage: &Stage) -> Result<(), OutputError> {
+        if FileIdentity::read(&directory_file(&stage.dir)?).map_err(failure)? != self.identity {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let mut options = private_options();
+        options.read(true);
+        let file = stage
+            .dir
+            .open_with(&stage.name, &options)
+            .map_err(failure)?
+            .into_std();
+        let version = FileVersion::read(&file).map_err(failure)?;
+        if version.identity != stage.identity || stage.sealed.as_ref() != Some(&version) {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(())
     }
     /// Finish private cleanup; preserve unknown or replaced objects for explicit recovery.
     pub fn cleanup(mut self) -> Result<(), OutputError> {
@@ -424,6 +530,7 @@ impl Workspace {
         // Close both handles before removing this verified empty private directory.
         drop(current);
         let dir = self.dir.take().expect("workspace live");
+        let dir = Arc::try_unwrap(dir).map_err(|_| OutputError::Io)?;
         #[cfg(windows)]
         {
             dir.remove_open_dir().map_err(failure)
@@ -443,10 +550,11 @@ impl Drop for Workspace {
 /// One private ordinary file. Dropping it never removes a published destination.
 pub struct Stage {
     file: Option<File>,
-    dir: Dir,
+    dir: Arc<Dir>,
     identity: FileIdentity,
     name: String,
     published: bool,
+    sealed: Option<FileVersion>,
 }
 impl Stage {
     /// Borrow a read handle for post-write verification. Writing has finished before this call.
@@ -471,6 +579,7 @@ impl Stage {
             if FileIdentity::read(&file).map_err(failure)? != self.identity {
                 return Err(OutputError::TargetChanged);
             }
+            self.sealed = Some(FileVersion::read(&file).map_err(failure)?);
         }
         Ok(())
     }
@@ -605,6 +714,55 @@ mod race_tests {
             b"concurrent editor"
         );
         workspace.cleanup().unwrap();
+    }
+    #[test]
+    fn late_volume_conflict_rolls_back_only_new_parts() {
+        let root = Owned::new();
+        let grant = root.grant();
+        let mut workspace = grant.workspace(12).unwrap();
+        let mut first = workspace.stage().unwrap();
+        first.write_all(b"first part").unwrap();
+        let mut second = workspace.stage().unwrap();
+        second.write_all(b"second part").unwrap();
+        first.finish().unwrap();
+        second.finish().unwrap();
+        let concurrent = root.0.join("a.zip.002");
+        workspace.before_publish = Some(Box::new(move || {
+            std::fs::write(concurrent, b"other editor").unwrap()
+        }));
+        let result = workspace.commit_set(
+            vec![first, second],
+            &[
+                PortablePath::parse("a.zip.001").unwrap(),
+                PortablePath::parse("a.zip.002").unwrap(),
+            ],
+        );
+        let failure = result.unwrap_err();
+        assert_eq!(failure.error, OutputError::Conflict);
+        assert!(!failure.rollback_failed);
+        assert!(!root.0.join("a.zip.001").exists());
+        assert_eq!(
+            std::fs::read(root.0.join("a.zip.002")).unwrap(),
+            b"other editor"
+        );
+        workspace.cleanup().unwrap();
+    }
+    #[test]
+    fn a_stage_from_another_transaction_is_never_published() {
+        let root = Owned::new();
+        let grant = root.grant();
+        let mut first = grant.workspace(13).unwrap();
+        let mut second = grant.workspace(14).unwrap();
+        let mut foreign = first.stage().unwrap();
+        foreign.write_all(b"foreign data").unwrap();
+        let result = second.commit_set(
+            vec![foreign],
+            &[PortablePath::parse("foreign.zip.001").unwrap()],
+        );
+        assert_eq!(result.unwrap_err().error, OutputError::UnsafeTarget);
+        assert!(!root.0.join("foreign.zip.001").exists());
+        first.cleanup().unwrap();
+        second.cleanup().unwrap();
     }
     #[test]
     fn unknown_staging_objects_preserve_journal_instead_of_recursive_deletion() {

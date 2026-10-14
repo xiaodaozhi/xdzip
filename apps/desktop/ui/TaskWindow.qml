@@ -9,10 +9,10 @@ OperationWindow {
     readonly property real density: Theme.operationProgressDensity
     function unit(value: real): real { return value * density; }
     width: Theme.operationProgressWidth
-    requestedHeight: Math.min(Math.round(unit(Theme.operationProgressClientHeight)), Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(terminal ? Theme.operationResultClientHeight : Math.round(unit(Theme.operationProgressClientHeight)), Screen.desktopAvailableHeight - 80)
     property bool creating: false
     property bool sampleData: false
-    title: sampleData ? qsTr("任务，示例数据 — xdzip") : creating ? qsTr("压缩任务 — xdzip") : qsTr("解压任务 — xdzip")
+    title: sampleData ? qsTr("任务，示例数据 — xdzip") : terminal ? creating ? qsTr("压缩结果 — xdzip") : qsTr("解压结果 — xdzip") : creating ? qsTr("压缩任务 — xdzip") : qsTr("解压任务 — xdzip")
     allowMinimize: true
     required property string archiveName
     required property string destination
@@ -30,15 +30,20 @@ OperationWindow {
     property string speedSummary: qsTr("等待估算")
     property string remainingSummary: qsTr("等待估算")
     property string phaseSummary: qsTr("准备中")
+    property var resultTask: ({})
     readonly property bool terminal: ["succeeded", "failed", "cancelled"].includes(taskStatus)
     readonly property bool largeType: Theme.fontScale > 1.35
     signal cancelRequested()
     signal openOutputRequested()
     signal conflictRequested()
+    Connections {
+        target: root
+        function onActiveFocusItemChanged() { root.revealFocus(scroll); }
+    }
     readonly property alias timingHint: timingHint
     readonly property alias closingHint: footer.hint
     readonly property string heading: taskStatus === "succeeded" ? (creating ? qsTr("压缩完成") : qsTr("解压完成"))
-        : taskStatus === "failed" ? (creating ? qsTr("压缩未完成") : qsTr("解压未完成")) : taskStatus === "cancelled" ? qsTr("任务已取消")
+        : taskStatus === "failed" ? (creating ? qsTr("压缩未完成") : Number(resultTask.committedFiles || 0) > 0 ? qsTr("部分文件未完成") : qsTr("解压未完成")) : taskStatus === "cancelled" ? qsTr("任务已取消")
         : taskStatus === "waiting" ? qsTr("等待处理重名文件") : stopping ? qsTr("正在停止")
         : taskStatus === "queued" ? qsTr("任务已排队") : taskStatus === "verifying" ? qsTr("正在校验归档") : (creating ? qsTr("正在压缩") : qsTr("正在解压"))
     ColumnLayout {
@@ -53,19 +58,22 @@ OperationWindow {
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.leftMargin: root.unit(Theme.operationProgressContentInset); Layout.rightMargin: root.unit(Theme.operationProgressContentInset)
-                    Layout.topMargin: root.unit(20); Layout.bottomMargin: root.unit(16); spacing: root.unit(20)
+                    Layout.topMargin: root.terminal ? 20 : root.unit(20); Layout.bottomMargin: root.terminal ? 16 : root.unit(16); spacing: root.terminal ? 20 : root.unit(20)
                     OperationHero {
                         density: root.density
-                        source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "partial-warning" : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
+                        artworkWidth: root.terminal ? 72 : 66 * root.density
+                        artworkHeight: root.terminal ? 72 : 74 * root.density
+                        source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning" : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
                         Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight
                     }
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 7
                         Text { Layout.fillWidth: true; text: root.heading; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); lineHeight: Math.round(Math.round(root.unit(Theme.operationTitleSize)) * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text; wrapMode: Text.Wrap }
-                        Text { Layout.fillWidth: true; text: root.archiveName; textFormat: Text.PlainText; font.pixelSize: Math.round(root.unit(17 * Theme.fontScale)); lineHeight: Math.round(Math.round(root.unit(17 * Theme.fontScale)) * 1.5); lineHeightMode: Text.FixedHeight; color: Theme.textSecondary; elide: Text.ElideMiddle }
+                        Text { Layout.fillWidth: true; text: root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTr("归档已完成校验并保存。") : root.outcomeUncertain ? qsTr("请检查目标目录及恢复材料。") : qsTr("临时归档未发布。") : qsTr("已保留成功解压的文件。") : root.archiveName; textFormat: Text.PlainText; font.pixelSize: Math.round(root.unit(17 * Theme.fontScale)); lineHeight: Math.round(Math.round(root.unit(17 * Theme.fontScale)) * 1.5); lineHeightMode: Text.FixedHeight; color: Theme.textSecondary; elide: Text.ElideMiddle }
                     }
                 }
                 ColumnLayout {
+                    visible: !root.terminal
                     Layout.fillWidth: true
                     Layout.leftMargin: root.unit(Theme.operationProgressContentInset); Layout.rightMargin: root.unit(Theme.operationProgressContentInset)
                     Layout.bottomMargin: root.unit(12); spacing: root.unit(12)
@@ -121,11 +129,20 @@ OperationWindow {
                         Layout.fillWidth: true; objectName: "currentFileCard"
                         heading: root.terminal ? qsTr("结果") : qsTr("当前文件")
                         value: root.outcomeUncertain ? qsTr("请检查目标目录中的已提交文件。") : root.terminal ? root.resultSummary : root.currentFile
-                        iconSource: root.terminal ? "qrc:/xdzip/assets/" + (root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "partial-warning") + ".png" : AssetLibrary.fileIcon(root.currentFile, root.currentFile.endsWith("/"), false)
+                        iconSource: root.terminal ? "qrc:/xdzip/assets/" + (root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning") + ".png" : AssetLibrary.fileIcon(root.currentFile, root.currentFile.endsWith("/"), false)
                     }
                     Text { Layout.fillWidth: true; visible: !!root.errorSummary; text: root.errorSummary; textFormat: Text.PlainText; color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     Text { Layout.fillWidth: true; visible: root.cleanupWarning; text: qsTr("部分暂存数据未能清理，已保留恢复材料，请检查目标目录。"); color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     InfoRow { id: timingHint; Layout.fillWidth: true; text: qsTr("实际耗时取决于文件与磁盘状态。"); labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); lineFactor: 1.4; iconSize: Theme.operationFooterIconSize }
+                }
+                OperationResultPanel {
+                    objectName: "taskResultPanel"
+                    visible: root.terminal
+                    Layout.fillWidth: true
+                    Layout.leftMargin: root.unit(Theme.operationProgressContentInset)
+                    Layout.rightMargin: root.unit(Theme.operationProgressContentInset)
+                    Layout.bottomMargin: 12
+                    task: root.resultTask
                 }
             }
         }
@@ -134,10 +151,10 @@ OperationWindow {
             contentInset: root.unit(Theme.operationProgressContentInset)
             verticalInset: root.unit(12); minimumFooterHeight: root.unit(Theme.operationFooterHeight)
             Layout.fillWidth: true
-            note: root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTr("归档已完整保存并校验。") : qsTr("已有归档保留，暂存数据已处理。")) : root.terminal ? qsTr("已提交的文件保留在目标目录。") : qsTr("关闭此窗口后，任务仍会继续。")
+            note: root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTr("归档已完整保存并校验。") : root.outcomeUncertain ? qsTr("请检查目标目录及恢复材料。") : root.cleanupWarning ? qsTr("暂存清理未完成，恢复材料已保留。") : qsTr("已有归档保留，暂存数据已处理。")) : root.terminal ? qsTr("已提交的文件保留在目标目录。") : qsTr("关闭此窗口后，任务仍会继续。")
             OperationFooterButton { text: root.terminal ? qsTr("关闭") : qsTr("返回浏览"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTr("处理重名文件"); primary: true; onClicked: root.conflictRequested() }
-            OperationFooterButton { visible: root.terminal; text: root.creating && root.taskStatus === "succeeded" ? qsTr("打开压缩包") : qsTr("打开目标目录"); onClicked: root.openOutputRequested() }
+            OperationFooterButton { visible: root.terminal; text: qsTr("打开目标文件夹"); onClicked: root.openOutputRequested() }
             OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTr("正在停止…") : qsTr("取消任务"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }
     }

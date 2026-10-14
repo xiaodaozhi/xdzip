@@ -62,4 +62,26 @@ with zipfile.ZipFile(ROOT / 'unsafe.zip', 'w') as archive:
 with zipfile.ZipFile(ROOT / 'aliases.zip', 'w') as archive:
     archive.writestr('A.txt', b'first')
     archive.writestr('a.txt', b'second')
+
+def partial_result_fixture():
+    """Two valid files followed by a bad CRC, for actual result-window outcomes."""
+    stream = io.BytesIO()
+    with zipfile.ZipFile(stream, 'w') as archive:
+        for name, payload in [('冰川湖.jpg', b'owned lake fixture'), ('山间日出.jpg', b'owned sunrise fixture'), ('行程手册.pdf', b'owned PDF fixture')]:
+            info = zipfile.ZipInfo(name, (2026, 10, 8, 0, 0, 0))
+            archive.writestr(info, payload)
+    value = bytearray(stream.getvalue())
+    with zipfile.ZipFile(stream) as archive:
+        entry = archive.infolist()[-1]
+        struct.pack_into('<I', value, entry.header_offset + 14, entry.CRC ^ 1)
+    central = value.index(b'PK\x01\x02', entry.header_offset)
+    while value[central:central+4] == b'PK\x01\x02':
+        name_len, extra_len, comment_len = struct.unpack_from('<HHH', value, central+28)
+        if value[central+46:central+46+name_len] == '行程手册.pdf'.encode():
+            struct.pack_into('<I', value, central+16, entry.CRC ^ 1)
+            break
+        central += 46 + name_len + extra_len + comment_len
+    return value
+
+(ROOT / 'partial_crc.zip').write_bytes(partial_result_fixture())
 print('Generated owned extraction fixtures')

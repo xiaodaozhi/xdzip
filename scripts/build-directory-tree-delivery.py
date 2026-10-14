@@ -49,8 +49,7 @@ def generate():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == record['sha256']
         files.add(path)
         width, height = record['size']
-        x, y, _, _ = record['rect']
-        cut_cards.append(f'<figure class="cut"><div class="cut-image">{image(path, entry["title"], width, height)}</div><figcaption>{html.escape(entry["title"])}<small>{html.escape(path.name)}，{width}×{height} 原像素</small><small>原图位置 ({x}, {y})，{labels[entry["implementation"]]}</small></figcaption></figure>')
+        cut_cards.append(f'<figure class="cut"><div class="cut-image">{image(path, entry["title"], width, height)}</div><figcaption>{html.escape(entry["title"])}<small>{html.escape(path.name)}，原稿切片</small><small>{labels[entry["implementation"]]}</small></figcaption></figure>')
     glyph_cards = []
     icons = sorted({name for item in references for name in item['icon_names']})
     for name in icons:
@@ -61,43 +60,31 @@ def generate():
             previews.append(f'<div class="glyph {theme}">{image(path, name + " " + theme, 48, 48)}</div>')
             files.update(ROOT / 'design/assets' / f'png/{theme}/{name}@{scale}x.png' for scale in (1, 2, 3))
         glyph_cards.append(f'<article><b>{html.escape(name)}</b><div class="glyphs">{"".join(previews)}</div><small>统一 24×24 源画布；PNG 24 / 48 / 72</small></article>')
-    geometry_labels = {
-        'sidebar_default_width': '侧栏默认宽度', 'row_min_height': '最小行高', 'depth_indent': '逐层缩进',
-        'disclosure_hit_width': '箭头命中区宽', 'disclosure_glyph_canvas': '箭头图形槽',
-        'folder_canvas': '文件夹图形槽', 'icon_label_gap': '图标与文字间距',
-        'body_font_size': '正文', 'count_font_size': '计数字号', 'count_min_width': '计数最小列宽',
-        'selection_indicator_width': '当前目录左侧标记', 'selection_radius': '当前行圆角',
-        'focus_stroke': '焦点描边', 'guide_stroke': '连接线描边',
-        'branch_marker_visible_diameter': '隐藏当前目录圆点直径',
-    }
-    geometry_rows = ''.join(f'<tr><td>{label}</td><td>{spec["geometry"][key]} 逻辑 px</td></tr>' for key, label in geometry_labels.items())
     events = [
         ('点击箭头', '只展开 / 收起，不改变列表路径、文件选择或详情。'),
-        ('点击名称 / Enter', '激活目录；成功替换查询后按既有规则重置分页、选择与详情。'),
+        ('点击名称 / Enter', '激活目录；成功替换查询后重置选择与详情。'),
         ('上 / 下', '移动可见目录行的焦点，不自动进入目录。'),
         ('右 / 左', '展开 / 收起；已经展开或无法收起时移到子节点 / 父节点。'),
         ('收起当前目录的祖先', '列表保持当前目录；最近可见折叠祖先显示圆点，焦点回到可见行。'),
-        ('深层级 / 长名称', '层级区横向滚动，数字固定靠右；省略名称可查看完整名称与路径。'),
-        ('200% 字号', '行高、图标槽与箭头命中区增长，文字和计数不裁切。'),
+        ('深层级 / 长名称', '按已展开节点宽度横向滚动；不显示文件数或悬浮提示，完整路径保留可访问描述。'),
+        ('200% 字号', '行高、图标槽与箭头命中区增长，文字不裁切。'),
     ]
     event_rows = ''.join(f'<tr><td>{html.escape(label)}</td><td>{html.escape(note)}</td></tr>' for label, note in events)
     state_rows = ''.join(f'<tr><td>{html.escape(next(item["title"] for item in references if Path(item["reference"]).stem == state["cut"]))}</td><td><code>{html.escape(name)}</code></td></tr>' for name, state in spec['states'].items())
     page = '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip — 目录树 B 设计交付</title>
-<style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f5f7fb;color:#20232a;font:15px/1.7 system-ui,-apple-system,sans-serif}main{max-width:1100px;margin:auto;padding:32px 24px}h1{font-size:28px;margin:0 0 12px}h2{font-size:22px;margin:36px 0 16px}a{color:#245ce9}nav{display:flex;gap:16px;flex-wrap:wrap}p{max-width:900px}figure,article{margin:0;padding:16px;border:1px solid #dce3ee;background:#fff;border-radius:12px;min-width:0}figure img{display:block;max-width:100%;height:auto;margin:auto}figcaption{margin-top:12px;font-weight:600;overflow-wrap:anywhere}small{display:block;font-size:12px;font-weight:400;color:#626874;overflow-wrap:anywhere}.boards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.cuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cut-image{min-height:90px;display:grid;place-items:center}.cut-image img{max-height:360px;object-fit:contain}.icons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.glyphs{display:flex;gap:8px;margin:12px 0}.glyph{width:80px;height:80px;display:grid;place-items:center;border-radius:8px;background:repeating-conic-gradient(#eef1f6 0% 25%,white 0% 50%) 0/10px 10px}.glyph.dark{background:#202936}.glyph img{width:48px;height:48px}.note{padding:16px;background:#e9effb;border-radius:8px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;background:#fff}td,th{padding:10px 14px;border:1px solid #dce3ee;text-align:left;vertical-align:top}code{font-size:12px;overflow-wrap:anywhere}.geometry td:last-child{white-space:nowrap}@media(max-width:700px){main{padding:24px 14px}.boards,.cuts{grid-template-columns:1fr}.icons{grid-template-columns:repeat(2,minmax(0,1fr))}.boards figure{padding:8px}h1{font-size:24px}td,th{padding:8px}.geometry td:last-child{white-space:normal}}@media(max-width:360px){.icons{grid-template-columns:1fr}}</style></head><body><main>
+<style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f5f7fb;color:#20232a;font:15px/1.7 system-ui,-apple-system,sans-serif}main{max-width:1100px;margin:auto;padding:32px 24px}h1{font-size:28px;margin:0 0 12px}h2{font-size:22px;margin:36px 0 16px}a{color:#245ce9}nav{display:flex;gap:16px;flex-wrap:wrap}p{max-width:900px}figure,article{margin:0;padding:16px;border:1px solid #dce3ee;background:#fff;border-radius:12px;min-width:0}figure img{display:block;max-width:100%;height:auto;margin:auto}figcaption{margin-top:12px;font-weight:600;overflow-wrap:anywhere}small{display:block;font-size:12px;font-weight:400;color:#626874;overflow-wrap:anywhere}.boards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.cuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.cut-image{min-height:90px;display:grid;place-items:center}.cut-image img{max-height:360px;object-fit:contain}.icons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.glyphs{display:flex;gap:8px;margin:12px 0}.glyph{width:80px;height:80px;display:grid;place-items:center;border-radius:8px;background:repeating-conic-gradient(#eef1f6 0% 25%,white 0% 50%) 0/10px 10px}.glyph.dark{background:#202936}.glyph img{width:48px;height:48px}.note{padding:16px;background:#e9effb;border-radius:8px}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;background:#fff}td,th{padding:10px 14px;border:1px solid #dce3ee;text-align:left;vertical-align:top}code{font-size:12px;overflow-wrap:anywhere}@media(max-width:700px){main{padding:24px 14px}.boards,.cuts{grid-template-columns:1fr}.icons{grid-template-columns:repeat(2,minmax(0,1fr))}.boards figure{padding:8px}h1{font-size:24px}td,th{padding:8px}}@media(max-width:360px){.icons{grid-template-columns:1fr}}</style></head><body><main>
 <h1>xdzip — 目录树 B 设计交付</h1>
-<p class="note">三张已确认图板、26 张原像素切片、共享透明图标与精确组件规格。设计和素材已交付，HTML / Qt 目录树改造待接入；本页仅展示原稿与素材，不模拟目录交互。</p>
-<nav><a href="#boards">正式图板</a><a href="#geometry">尺寸</a><a href="#behavior">行为与状态</a><a href="#cuts">逐项切图</a><a href="#icons">共享透明图标</a></nav>
-<p>图板是放大的视觉说明，局部卡片比例不同。下面的逻辑尺寸用于开发；切片保留物理像素和背景。原始主稿保持不变，此处只修订左侧目录组件。完整深色图板仍待补齐。</p>
+<p class="note">三张已确认图板、26 张原像素切片、共享透明图标与精确组件规格。设计和素材已交付，HTML / Qt 已接入目录导航与核心交互；本页仅展示原稿与素材，不模拟目录交互。</p>
+<nav><a href="#boards">正式图板</a><a href="#geometry">规范</a><a href="#behavior">行为与状态</a><a href="#cuts">逐项切图</a><a href="#icons">共享透明图标</a></nav>
+<p>图板是放大的视觉说明，局部卡片比例不同。组件规则参见规范；切片保留原稿背景。原始主稿保持不变，此处只修订左侧目录组件。完整深色图板仍待补齐。</p>
 <h2 id="boards">正式图板</h2><div class="boards">''' + ''.join(boards) + '''</div>
-<h2 id="geometry">落地尺寸</h2><div class="table-wrap"><table class="geometry"><tbody>''' + geometry_rows + '''</tbody></table></div>
-<p>Qt 直接使用上述逻辑值。现有 HTML 源画布的 CSS 值 = 逻辑值 ÷ (1024/1548)：32 行高对应 48.375 源 CSS px，11.2 字号对应 16.93125，16 图标槽对应 24.1875。预览缩放在换算后整体应用，DPR 不参与逻辑尺寸换算。</p>
-<p>完整参数与大字号公式见 <a href="../../docs/visual/directory-tree.json">组件参数</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，不按切片大小设置显示槽。</p>
-<h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；条目数表示全部后代物理记录，包含重复记录，排除该节点自己的目录记录，不受搜索影响。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
-<div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>读取时未知计数显示“—”，索引完整后发布树。空归档的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用全部文件和搜索；读取失败提供重新打开，不假装空目录。</p>
+<h2 id="geometry">组件规范</h2><p>设计参数与大字号规则见 <a href="../../docs/visual/directory-tree.json">目录树规范</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，运行控件按统一逻辑槽绘制。</p>
+<h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；运行树不显示计数；原稿中的数字保留其设计参考身份。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
+<div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>索引完整后发布目录树。空归档的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用根目录和搜索；读取失败提供重新打开，不假装空目录。</p>
 <details><summary>16 种规定状态</summary><div class="table-wrap"><table><tbody>''' + state_rows + '''</tbody></table></div></details>
-<p>接入与验收细则见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>；本次资产检查见 <a href="../../docs/qa/directory-tree.md">交付复核</a>。</p>
+<p>接入与验收细则见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>；本次资产检查见 <a href="../../docs/qa/README.md">交付复核</a>。</p>
 <h2 id="cuts">26 张原像素切图</h2><p>裁剪没有缩放、去底色或补画；小图保持自然像素尺寸，宽图在手机上缩小以便浏览。背景、文字、连接线和状态由界面动态绘制，切片用于对照。</p><div class="cuts">''' + ''.join(cut_cards) + '''</div>
-<h2 id="icons">共享透明图标</h2><p>下列浅深色图标统一显示在 48×48 审阅画布，实际组件按尺寸表等比显示。新增分支圆点、实心信息 / 警告和分段转轮尚无 Qt 引用，HTML 仅登记共享资源；文件夹与箭头复用当前素材库。</p><div class="icons">''' + ''.join(glyph_cards) + '''</div>
+<h2 id="icons">共享透明图标</h2><p>下列浅深色图标统一显示在 48×48 审阅画布，实际组件按统一规范显示。新增分支圆点、实心信息 / 警告和分段转轮尚无 Qt 引用，HTML 仅登记共享资源；文件夹与箭头复用当前素材库。</p><div class="icons">''' + ''.join(glyph_cards) + '''</div>
 <footer><p>完整素材台账见 <a href="../assets/manifest.json">manifest.json</a>；项目原创设计采用 <a href="../../LICENSE">Apache-2.0</a>。离线版内嵌所有展示图片，辅助文档链接需要仓库访问权限。</p></footer>
 </main></body></html>
 '''

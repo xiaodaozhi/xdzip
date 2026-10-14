@@ -11,12 +11,12 @@
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。
 - [详细软件设计](docs/design/index.md)：需求、架构、领域、桥接、格式 SDK、安全、性能和实施路线。
 - [HTML 高保真设计](design/html/index.html)：可操作界面、原稿对照和独立窗口预览；[目录职责](design/README.md)。
-- [主窗口组件与交互](design/html/components.html)：共享菜单、按钮状态和键盘操作；[功能覆盖与验证](docs/qa/main-window-components.md)。
+- [主窗口组件与交互](design/html/components.html)：共享菜单、按钮状态和键盘操作；[功能覆盖与验证（本地／CI 工件）](docs/qa/README.md)。
 - [高保真设计统一入口](design/hifi/README.md)：当前主界面、操作窗口与设计参数；图标和原像素切片在[统一素材库](design/assets/index.html)。
-- [WP-10 ZIP 创建验收](docs/qa/m4-acceptance.md)：真实创建、独立 ZIP/ZIP64 互操作及 [Qt／HTML／原稿对照](docs/qa/m4/index.html)。
-- [M3 安全解压验收](docs/qa/m3-acceptance.md)：真实 Store／Deflate、冲突、取消与三平台验证；[Qt／HTML／原稿对照](docs/qa/m3/index.html)。
-- [M2 完整验收入口](docs/qa/m2-acceptance.md)：十万条真实 ZIP64、查询与实际测量。
-- [M1 完整验收入口](docs/qa/m1-acceptance.md)：三平台检查和历史开发构建记录。
+- [WP-10 ZIP 创建验收（本地／CI 工件）](docs/qa/README.md)：真实创建、独立 ZIP/ZIP64 互操作及 [Qt／HTML／原稿对照（本地／CI 工件）](docs/qa/README.md)。
+- [M3 安全解压验收（本地／CI 工件）](docs/qa/README.md)：真实 Store／Deflate、冲突、取消与三平台验证；[Qt／HTML／原稿对照（本地／CI 工件）](docs/qa/README.md)。
+- [M2 完整验收入口（本地／CI 工件）](docs/qa/README.md)：十万条真实 ZIP64、查询与实际测量。
+- [M1 完整验收入口（本地／CI 工件）](docs/qa/README.md)：三平台检查和历史开发构建记录。
 - [开发就绪评审](docs/planning/readiness.md)：已确定事项、待验证项和实施门槛。
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。

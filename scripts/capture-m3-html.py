@@ -11,7 +11,7 @@ from threading import Thread
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / 'docs/qa/m3/html'
+OUTPUT = ROOT / 'build/review/m3/html'
 
 
 class QuietHandler(SimpleHTTPRequestHandler):

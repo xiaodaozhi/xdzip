@@ -182,7 +182,8 @@ class BrowserController : public QObject {
         emit changed();
     }
     Q_INVOKABLE void startCreation(const QStringList &inputs, const QString &target,
-                                   const QString &name, int method, int level, bool openAfter);
+                                   const QString &name, int method, int level, bool openAfter,
+                                   qulonglong volumeBytes = 0, const QString &password = QString());
     Q_INVOKABLE void checkTarget(const QString &path);
     Q_INVOKABLE void checkCreationTarget(const QString &path);
     Q_INVOKABLE bool targetMatches(const QString &path) const;
@@ -297,14 +298,12 @@ class BrowserController : public QObject {
     QMap<quint64, QVariantMap> m_tasks;
     QSet<quint64> m_openAfterTasks;
     bool m_pendingOpenAfter = false;
-    QString m_pendingCreatedOpen;
     QString m_creationError;
     QVariantList m_creationInputs;
     QStringList m_creationPreviewPaths;
     bool m_creationPreviewPending = false;
     QString m_pendingCreationTarget;
     void drainCreationUiWhenIdle();
-    void openCreatedArchiveWhenIdle();
     QVariantMap m_preflightReport;
     QVariantMap m_detail;
     QString m_directory;

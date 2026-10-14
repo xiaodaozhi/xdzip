@@ -338,9 +338,9 @@ def main() -> None:
     generated.extend(pages)
     report = validate(output, pages)
     report["generator"] = {"pandoc": text_command(["pandoc", "--version"]).splitlines()[0], "renderer": "Graphviz SVG; source edges and labels preserved"}
-    report_path = output / "VALIDATION.json"
+    report_path = PROJECT / "build/review/docs/VALIDATION.json"
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
-    generated.append(report_path)
     instructions = output / "README.txt"
     instructions.write_text(
         "xdzip HTML 软件设计文档\n\n"
@@ -361,9 +361,8 @@ def main() -> None:
                     for path in generated if path.suffix in (".html", ".css", ".js", ".svg")}
         # Include browser evidence only if it covers precisely these artifacts.
         if browser_validation.get("status") == "passed" and hashes == expected:
-            destination = output / "BROWSER-VALIDATION.json"
+            destination = PROJECT / "build/review/docs/BROWSER-VALIDATION.json"
             destination.write_bytes(browser_report.read_bytes())
-            generated.append(destination)
     checksums = output / "CHECKSUMS.sha256"
     checksums.write_text("".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(output)}\n" for path in sorted(generated)))
     generated.append(checksums)

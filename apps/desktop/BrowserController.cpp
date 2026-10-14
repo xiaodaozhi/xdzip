@@ -177,6 +177,9 @@ QString BrowserController::explain(const QString &code) {
         {"unsafe_input", tr("输入含链接、特殊对象，或输出与输入相同，请重新选择。")},
         {"input_collision", tr("输入名称在大小写或 Unicode 规范化后重名，请调整名称。")},
         {"unsafe_name", tr("所选文件名不满足安全输出规则。")},
+        {"invalid_password", tr("密码必须为 1–128 个 UTF-8 字节，且不含控制字符。")},
+        {"invalid_creation_options", tr("分卷大小或密码无效，请重新检查创建选项。")},
+        {"split_overwrite_not_supported", tr("已有分卷不能原地覆盖，请整组改名或选择其他目录。")},
         {"ambiguous_name", tr("归档中的文件与目录名称存在歧义，无法安全解压。")},
         {"high_ratio", tr("压缩比超过 1000:1；确认内容可信后可在选项中允许高压缩比。")},
         {"file_quota", tr("单文件超过 8 GiB 解压限额。")},
@@ -603,7 +606,8 @@ void BrowserController::checkCreationTarget(const QString &path) {
     submit(std::move(command));
 }
 void BrowserController::startCreation(const QStringList &inputs, const QString &target,
-                                      const QString &name, int method, int level, bool openAfter) {
+                                      const QString &name, int method, int level, bool openAfter,
+                                      qulonglong volumeBytes, const QString &password) {
     if (m_busy || !runtimeAvailable() || m_closing)
         return;
     const auto validText = [](const QString &value) {
@@ -617,6 +621,14 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
         emit extractionChanged();
         return;
     }
+    if (volumeBytes > 24ULL * 1024 * 1024 * 1024 || !validText(password) ||
+        password.toUtf8().size() > 128 ||
+        std::any_of(password.cbegin(), password.cend(),
+                    [](QChar c) { return c.category() == QChar::Other_Control; })) {
+        m_creationError = explain("invalid_creation_options");
+        emit extractionChanged();
+        return;
+    }
     xdzip::reader::Command command{};
     command.kind = xdzip::reader::CommandKind::Create;
     command.path = rust::String(QDir::cleanPath(target).toStdString());
@@ -625,17 +637,13 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
         command.inputs.push_back(rust::String(QDir::cleanPath(path).toStdString()));
     command.method = static_cast<std::uint16_t>(method);
     command.level = static_cast<std::uint8_t>(level);
+    command.volume_bytes = volumeBytes;
+    command.encrypt = !password.isEmpty();
+    command.password = rust::String(password.toUtf8().toStdString());
     command.conflict = 0;
     m_creationError.clear();
     m_pendingOpenAfter = openAfter;
     submit(std::move(command));
-}
-void BrowserController::openCreatedArchiveWhenIdle() {
-    if (m_busy || m_pending || m_closing || m_pendingCreatedOpen.isEmpty())
-        return;
-    const auto path = m_pendingCreatedOpen;
-    m_pendingCreatedOpen.clear();
-    openPath(path);
 }
 bool BrowserController::targetMatches(const QString &path) const {
     return m_targetCheck.value("valid").toBool() &&
@@ -692,11 +700,6 @@ bool BrowserController::decideTask(const QString &id, const QString &prompt, int
 }
 void BrowserController::openOutput(const QString &id) {
     const auto task = m_tasks.value(id.toULongLong());
-    if (task.value("creating").toBool() && task.value("status") == "succeeded") {
-        m_pendingCreatedOpen = task.value("target").toString();
-        QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
-        return;
-    }
     if (!task.isEmpty())
         QDesktopServices::openUrl(
             QUrl::fromLocalFile(task.value("creating").toBool()
@@ -878,7 +881,18 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         const auto &t = event.task;
         const auto status = text(t.status);
         const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
+        QVariantList details;
+        for (const auto &entry : t.details)
+            details.append(QVariantMap{{"name", text(entry.name)},
+                                       {"size", QString::number(entry.size)},
+                                       {"status", text(entry.status)},
+                                       {"errorCode", text(entry.error)},
+                                       {"error", explain(text(entry.error))}});
         QVariantMap value{
+            {"details", details},
+            {"omittedDetails", QString::number(t.omitted_details)},
+            {"externalReader", t.external_reader},
+            {"outputParts", QString::number(t.output_parts)},
             {"creating", t.creating},
             {"totalKnown", t.total_known},
             {"archive", t.creating ? QVariant(QFileInfo(text(t.target)).fileName())
@@ -1161,7 +1175,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 emit extractionStarted(taskId);
             if (creating && !taskId.isEmpty())
                 emit creationStarted(taskId);
-            QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }
@@ -1222,7 +1235,6 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result = {};
             emit changed();
         }
-        QTimer::singleShot(0, this, &BrowserController::openCreatedArchiveWhenIdle);
         QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
     }
 }

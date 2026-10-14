@@ -29,6 +29,7 @@
     "image-amber",
     "folder",
     "archive",
-    "archive-add"
+    "archive-add",
+    "document-warning"
   ]
 }

@@ -18,7 +18,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk
+          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk 7zip
       - name: Build and validate native product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1

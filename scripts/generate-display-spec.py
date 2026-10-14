@@ -17,6 +17,7 @@ def main():
              'extract': ('extract-macos.png', [1092, 1440]),
              'create': ('create.png', [1073, 1466]),
              'progress': ('progress.png', [1446, 1088]),
+             'result': ('partial-result.png', [1421, 1108]),
              'conflict': ('conflict.png', [1478, 1064]),
              'settings': ('settings.png', [1092, 1440]),
              'empty': (None, [1586, 992]), 'damaged': (None, [1586, 992])}

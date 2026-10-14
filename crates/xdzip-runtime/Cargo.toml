@@ -12,6 +12,7 @@ xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"
+zeroize = "=1.8.2"
 [target.'cfg(windows)'.dependencies]
 winapi-util = { version = "=0.1.11", default-features = false }
 [lints]

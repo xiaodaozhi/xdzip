@@ -147,6 +147,18 @@ pub struct Prompt {
     /// False when replacing would overwrite the selected archive.
     pub overwrite_allowed: bool,
 }
+/// Actual completed file observation, independent of UI strings and icons.
+#[derive(Clone, Debug)]
+pub struct Outcome {
+    /// Escaped relative name, capped at 1024 UTF-8 bytes for display.
+    pub name: String,
+    /// Actual file's admitted byte size.
+    pub size: u64,
+    /// Stable status: completed, skipped or unfinished.
+    pub status: &'static str,
+    /// Fixed error code, never arbitrary OS text.
+    pub error: &'static str,
+}
 /// Bounded replaceable display snapshot. Counters describe actual work, not a timer simulation.
 #[derive(Clone, Debug)]
 pub struct Snapshot {
@@ -192,6 +204,42 @@ pub struct Snapshot {
     pub leftovers: u64,
     /// Present only for the latest outstanding conflict.
     pub prompt: Option<Prompt>,
+    /// Recent actual file outcomes, at most 128 records, shared by progress snapshots.
+    pub details: std::sync::Arc<Vec<Outcome>>,
+    /// Number of older records omitted from this bounded display history.
+    pub omitted_details: u64,
+    /// True if the result needs an external reader: AES or numbered split ZIP.
+    pub external_reader: bool,
+    /// Number of published archive parts; zero for extraction or failed creation.
+    pub output_parts: u64,
+}
+impl Snapshot {
+    pub(crate) fn record(
+        &mut self,
+        name: &str,
+        size: u64,
+        status: &'static str,
+        error: &'static str,
+    ) {
+        let records = std::sync::Arc::make_mut(&mut self.details);
+        if records.len() == 128 {
+            records.remove(0);
+            self.omitted_details += 1;
+        }
+        let mut limited = String::new();
+        for ch in name.chars() {
+            if limited.len() + ch.len_utf8() > 1024 {
+                break;
+            }
+            limited.push(ch);
+        }
+        records.push(Outcome {
+            name: limited,
+            size,
+            status,
+            error,
+        });
+    }
 }
 impl Archive {
     /// Freeze selectors and input identity without creating a destination object.

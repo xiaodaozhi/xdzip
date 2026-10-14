@@ -7,10 +7,12 @@
   --operation-extract-density: calc(0.5291989664082688 * var(--ui-source-factor));
   --operation-progress-density: calc(0.5291989664082688 * var(--ui-source-factor));
   --operation-create-density: calc(0.5291989664082688 * var(--ui-source-factor));
+  --operation-result-density: calc(0.5313971742543171 * var(--ui-source-factor));
   --operation-default-width: calc(612px * var(--ui-source-factor));
   --operation-extract-width: calc(491px * var(--ui-source-factor));
   --operation-progress-width: calc(677px * var(--ui-source-factor));
   --operation-create-width: calc(491px * var(--ui-source-factor));
+  --operation-result-width: calc(677px * var(--ui-source-factor));
   --operation-footer-font-size: calc(13px * var(--ui-source-factor));
   --operation-footer-note-size: calc(12px * var(--ui-source-factor));
   --operation-footer-icon-size: calc(16px * var(--ui-source-factor));

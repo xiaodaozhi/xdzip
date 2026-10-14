@@ -31,4 +31,4 @@ Cargo 首次联网获取锁定依赖；缓存完整后设置 `CARGO_NET_OFFLINE=
 - 阻塞接收只能在工作线程执行。本测试命令行无 GUI 事件循环；Qt Core 仅参与字符串边界验证。后续 Qt 事件投递、mailbox 合并、任务取消/提交竞争尚未实现。
 - 手写 Rust 禁止 unsafe；仅 cxx 生成桥接局部放行。预期错误使用 Result/枚举；内部锁中毒是程序缺陷，panic 不作为可恢复的跨语言错误。C++ 异常在调用端处理，不回调穿越 Rust 栈。
 
-原生三平台 CI 执行 [检查脚本](../../scripts/check-foundation.ps1)，不安装 Qt，因此不证明三平台窗口行为。实际证据见 [桥接验证记录](../../docs/qa/toolchain/bridge-probe.md)。
+原生三平台 CI 执行 [检查脚本](../../scripts/check-foundation.ps1)，不安装 Qt，因此不证明三平台窗口行为。实际证据见 [桥接验证记录（本地／CI 工件）](../../docs/qa/README.md)。

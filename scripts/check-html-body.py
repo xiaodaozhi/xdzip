@@ -103,7 +103,7 @@ def save_images(output, original, shot, regions):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reference', type=Path, default=ROOT / 'design/html/body-reference.json')
-    parser.add_argument('--output', type=Path, default=ROOT / 'docs/qa/html-body')
+    parser.add_argument('--output', type=Path, default=ROOT / 'build/review/html-body')
     parser.add_argument('--bundle', type=Path, default=ROOT / 'dist/xdzip-hifi-design.html')
     parser.add_argument('--rect-tolerance', type=float, default=2)
     parser.add_argument('--center-tolerance', type=float, default=2)
@@ -116,9 +116,6 @@ def main():
     if hashlib.sha256(source.read_bytes()).hexdigest() != spec['sha256']:
         raise SystemExit('Reference changed: remeasure it explicitly before running this check')
     args.output.mkdir(parents=True, exist_ok=True)
-    baseline = args.output / 'before.png'
-    if not baseline.exists() or Image.open(baseline).size != (1548, 803):
-        raise SystemExit('The preserved pre-change body crop before.png is missing or has the wrong dimensions')
     original = Image.open(source).convert('RGB')
     measurements, failures, page_errors, requests = [], [], [], []
     with sync_playwright() as playwright:

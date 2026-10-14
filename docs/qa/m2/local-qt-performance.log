@@ -1,8 +1,0 @@
-********* Start testing of BrowserTest *********
-Config: Using QtTest library 6.8.2, Qt 6.8.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 14.2.0), debian 13
-PASS   : BrowserTest::initTestCase()
-QINFO  : BrowserTest::m2LargeArchiveLatestQueryAndSourceChange() M2_QT_METRICS open_ms=957 rows=100000 delegates=55 full_sort_ms=652
-PASS   : BrowserTest::m2LargeArchiveLatestQueryAndSourceChange()
-PASS   : BrowserTest::cleanupTestCase()
-Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 3040ms
-********* Finished testing of BrowserTest *********

@@ -3,8 +3,6 @@
   "source_commit": "05d410066eee723969f584b9ef77ef6f87a0ccd8",
   "source": "design/hifi/screens/main-light.png",
   "source_sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
-  "html_capture": "docs/qa/qt-fidelity/html-baseline.png",
-  "html_sha256": "a739aa25bba59c914521f57540639cc47695d6a964a5b127be0ba927a1f99ac0",
   "source_window": [
     20,
     30,
@@ -12,7 +10,7 @@
     940
   ],
   "logical_width": 1024,
-  "method": "Frozen source/HTML measurements, independent of Qt. Density correction treats the previous 1280 logical width as 125%; multiply by 0.8 to obtain 1024/1548. Original source image and historical HTML bytes remain immutable. Round Qt font targets after conversion.",
+  "method": "Authored geometry and typography contracts anchored to the immutable hifi source, independent of Qt. Actual HTML and Qt captures are generated locally or in CI, not stored as source. Density is 1024/1548; round Qt fonts after conversion.",
   "geometry_tolerance": 1.0,
   "source_geometry": {
     "titleHeight": 58,

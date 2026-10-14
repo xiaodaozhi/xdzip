@@ -12,6 +12,30 @@ use xdzip_codec_api::{
 use xdzip_codec_zip::ZipCodec;
 use xdzip_domain::path::PortablePath;
 use xdzip_io::{ExistingFile, Grant, InputTree, OutputError, Stage};
+use zeroize::Zeroizing;
+
+/// Validated UTF-8 creation secret, redacted in Debug and zeroed on drop.
+#[derive(Clone)]
+pub struct Password(Zeroizing<String>);
+impl Password {
+    /// Accept 1–128 UTF-8 bytes, excluding controls; never trim a password.
+    pub fn new(value: String) -> Result<Self, &'static str> {
+        let value = Zeroizing::new(value);
+        if value.is_empty() || value.len() > 128 || value.chars().any(char::is_control) {
+            return Err("invalid_password");
+        }
+        Ok(Self(value))
+    }
+    /// Borrow for the codec; never copy into events or logs.
+    pub fn expose(&self) -> &str {
+        &self.0
+    }
+}
+impl std::fmt::Debug for Password {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[REDACTED]")
+    }
+}
 
 /// Explicit creation intent. Directory paths are host selections, not codec authority.
 #[derive(Clone, Debug)]
@@ -28,6 +52,10 @@ pub struct Options {
     pub level: u8,
     /// Ask, rename, overwrite or decline the whole archive.
     pub conflict: ConflictPolicy,
+    /// Zero means single ZIP; otherwise the byte ceiling for each numbered part.
+    pub volume_bytes: u64,
+    /// AES-256 content encryption; filenames remain visible in ZIP metadata.
+    pub password: Option<Password>,
 }
 impl Options {
     pub(crate) fn bounded(&self) -> bool {
@@ -46,6 +74,8 @@ impl Options {
             && PortablePath::parse(&self.name).is_some_and(|p| p.parts().len() == 1)
             && [0, 8].contains(&self.method)
             && [1, 6, 9].contains(&self.level)
+            && self.volume_bytes <= 24 * 1024 * 1024 * 1024
+            && (self.volume_bytes == 0 || self.name.len() <= 250)
     }
     pub(crate) fn bytes(&self) -> usize {
         self.inputs
@@ -54,6 +84,7 @@ impl Options {
             .sum::<usize>()
             + self.name.capacity()
             + self.target.capacity()
+            + self.password.as_ref().map_or(0, |p| p.0.capacity())
     }
 }
 pub(crate) struct Job {
@@ -90,6 +121,10 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         outcome_uncertain: false,
         leftovers: 0,
         prompt: None,
+        details: Default::default(),
+        omitted_details: 0,
+        external_reader: job.options.volume_bytes > 0 || job.options.password.is_some(),
+        output_parts: 0,
     }
 }
 struct Sources<'a> {
@@ -240,16 +275,29 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let w = workspace.as_mut().expect("workspace created");
         let (excluded, identity) = w.input_exclusion();
         let paths: Vec<_> = job.options.inputs.iter().map(PathBuf::from).collect();
+        let mut exclusions = vec![(output_path, None), (excluded, Some(identity))];
+        if job.options.volume_bytes != 0 {
+            for path in volume_paths(&job.options.name, 1024)? {
+                let output = root.display_path().join(path.display());
+                if paths.contains(&output) {
+                    return Err("unsafe_input");
+                }
+                exclusions.push((output, None));
+            }
+        }
         let stopped = || control.cancel.check().is_err();
-        let tree = InputTree::scan(
-            &paths,
-            vec![(output_path, None), (excluded, Some(identity))],
-            &stopped,
-        )
-        .map_err(|e| e.code())?;
+        let tree = InputTree::scan(&paths, exclusions, &stopped).map_err(|e| e.code())?;
         stats.files = tree.entries().iter().filter(|e| !e.directory).count() as u64;
         stats.declared_bytes = tree.total_bytes();
         stats.total_known = true;
+        // Store cannot make the data smaller. Reject a provably impossible
+        // volume budget before reading potentially many gigabytes of inputs.
+        if job.options.method == 0
+            && job.options.volume_bytes != 0
+            && stats.declared_bytes > job.options.volume_bytes * 1024
+        {
+            return Err("resource_limit");
+        }
         let entries = tree
             .entries()
             .iter()
@@ -291,6 +339,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                         "deflate"
                     },
                     level: job.options.level,
+                    password: job.options.password.as_ref().map(Password::expose),
                 },
                 &control.cancel,
                 &mut |p| {
@@ -319,62 +368,85 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         stats.status = Status::Verifying;
         emit(&mut stats, start, publish);
         let mut reader = stage.verification_reader().map_err(output_code)?;
-        let rows = ZipCodec
-            .scan(&mut reader, &control.cancel, ScanLimits::default())
-            .map_err(|e| {
-                if control.cancel.check().is_err() {
-                    "cancelled"
-                } else {
-                    let _ = e;
-                    "integrity_error"
+        if let Some(password) = &job.options.password {
+            ZipCodec
+                .verify_encrypted(
+                    &mut reader,
+                    &sources.entries,
+                    password.expose(),
+                    &control.cancel,
+                )
+                .map_err(|e| {
+                    if e == EncodeError::Cancelled {
+                        "cancelled"
+                    } else {
+                        "integrity_error"
+                    }
+                })?;
+        } else {
+            let rows = ZipCodec
+                .scan(&mut reader, &control.cancel, ScanLimits::default())
+                .map_err(|e| {
+                    if control.cancel.check().is_err() {
+                        "cancelled"
+                    } else {
+                        let _ = e;
+                        "integrity_error"
+                    }
+                })?;
+            if rows.len() != tree.entries().len() {
+                return Err("integrity_error");
+            }
+            {
+                let mut decoder = ZipCodec
+                    .open_payload(&mut reader, &rows, &control.cancel)
+                    .map_err(|_| "integrity_error")?;
+                for (row, input) in rows.iter().zip(tree.entries()) {
+                    control.cancel.check().map_err(|_| "cancelled")?;
+                    let expected = if input.directory {
+                        format!("{}/", input.name)
+                    } else {
+                        input.name.clone()
+                    };
+                    if row.raw_name != expected.as_bytes()
+                        || row.directory != input.directory
+                        || row.size != input.size
+                    {
+                        return Err("integrity_error");
+                    }
+                    stats.current = input.name.clone();
+                    if last.elapsed().as_millis() >= 100 {
+                        emit(&mut stats, start, publish);
+                        last = Instant::now();
+                    }
+                    decoder
+                        .decode(
+                            row,
+                            &mut VerifySink {
+                                bytes: 0,
+                                limit: input.size,
+                                cancel: &control.cancel,
+                            },
+                            &control.cancel,
+                        )
+                        .map_err(|_| {
+                            if stopped() {
+                                "cancelled"
+                            } else {
+                                "integrity_error"
+                            }
+                        })?;
                 }
-            })?;
-        if rows.len() != tree.entries().len() {
-            return Err("integrity_error");
-        }
-        {
-            let mut decoder = ZipCodec
-                .open_payload(&mut reader, &rows, &control.cancel)
-                .map_err(|_| "integrity_error")?;
-            for (row, input) in rows.iter().zip(tree.entries()) {
-                control.cancel.check().map_err(|_| "cancelled")?;
-                let expected = if input.directory {
-                    format!("{}/", input.name)
-                } else {
-                    input.name.clone()
-                };
-                if row.raw_name != expected.as_bytes()
-                    || row.directory != input.directory
-                    || row.size != input.size
-                {
-                    return Err("integrity_error");
-                }
-                stats.current = input.name.clone();
-                if last.elapsed().as_millis() >= 100 {
-                    emit(&mut stats, start, publish);
-                    last = Instant::now();
-                }
-                decoder
-                    .decode(
-                        row,
-                        &mut VerifySink {
-                            bytes: 0,
-                            limit: input.size,
-                            cancel: &control.cancel,
-                        },
-                        &control.cancel,
-                    )
-                    .map_err(|_| {
-                        if stopped() {
-                            "cancelled"
-                        } else {
-                            "integrity_error"
-                        }
-                    })?;
             }
         }
         drop(reader);
         tree.validate(&stopped).map_err(|e| e.code())?;
+        if job.options.volume_bytes != 0 {
+            publish_volumes(
+                &job, &tree, &root, w, &mut stage, &mut stats, start, control, publish,
+            )?;
+            return Ok(());
+        }
         let mut path = PortablePath::parse(&job.options.name).ok_or("unsafe_name")?;
         let mut overwrite: Option<ExistingFile> = None;
         if let Some(existing) = root.existing(&path).map_err(output_code)? {
@@ -431,6 +503,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         stats.cleanup_warning |= receipt.cleanup_warning;
         stats.committed_files = stats.files;
         stats.committed_bytes = stats.declared_bytes;
+        stats.output_parts = 1;
+        stats.record(&path.display(), stats.written_bytes, "completed", "");
         stats.created_directories = tree.entries().iter().filter(|e| e.directory).count() as u64;
         Ok(())
     })();
@@ -446,8 +520,175 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         Err(_) => Status::Failed,
     };
     stats.error = result.err().unwrap_or_default().into();
+    if result.is_err() {
+        stats.record(
+            &job.options.name,
+            stats.written_bytes,
+            "unfinished",
+            result.err().unwrap_or("internal_error"),
+        );
+    }
     control.mark_terminal();
     emit(&mut stats, start, publish);
+}
+
+fn volume_paths(name: &str, count: usize) -> Result<Vec<PortablePath>, &'static str> {
+    (1..=count)
+        .map(|index| PortablePath::parse(&format!("{name}.{index:03}")).ok_or("unsafe_name"))
+        .collect()
+}
+
+// This private helper receives the same transaction context as single-file publication.
+#[allow(clippy::too_many_arguments)]
+fn publish_volumes(
+    job: &Job,
+    tree: &InputTree,
+    root: &Grant,
+    workspace: &mut xdzip_io::Workspace,
+    stage: &mut Stage,
+    stats: &mut Snapshot,
+    start: Instant,
+    control: &Control,
+    publish: &mut dyn FnMut(Snapshot),
+) -> Result<(), &'static str> {
+    let limit = job.options.volume_bytes;
+    let count = stats.written_bytes.div_ceil(limit);
+    if count == 0 || count > 1024 {
+        return Err("resource_limit");
+    }
+    let mut paths = volume_paths(&job.options.name, count as usize)?;
+    let mut conflict = None;
+    for path in &paths {
+        if let Some(existing) = root.existing(path).map_err(output_code)? {
+            if tree.contains_identity(existing.version.identity) {
+                return Err("unsafe_input");
+            }
+            conflict = Some((path.display(), existing));
+            break;
+        }
+    }
+    if let Some((name, existing)) = conflict {
+        let policy = if job.options.conflict == ConflictPolicy::Ask {
+            control.arm(1);
+            stats.status = Status::Waiting;
+            stats.prompt = Some(Prompt {
+                id: 1,
+                name,
+                existing_bytes: existing.version.length,
+                incoming_bytes: limit.min(stats.written_bytes),
+                existing_modified: None,
+                incoming_modified_dos: 0,
+                overwrite_allowed: false,
+            });
+            emit(stats, start, publish);
+            control.wait()?.0
+        } else {
+            job.options.conflict
+        };
+        stats.prompt = None;
+        match policy {
+            ConflictPolicy::Skip => return Err("cancelled"),
+            ConflictPolicy::Rename => {
+                let stem = job
+                    .options
+                    .name
+                    .strip_suffix(".zip")
+                    .unwrap_or(&job.options.name[..job.options.name.len() - 4]);
+                let mut found = false;
+                for suffix in 2..=10_000 {
+                    control.cancel.check().map_err(|_| "cancelled")?;
+                    let next = volume_paths(&format!("{stem} ({suffix}).zip"), count as usize)?;
+                    let mut available = true;
+                    for path in &next {
+                        available &= root.existing(path).map_err(output_code)?.is_none();
+                    }
+                    if available {
+                        paths = next;
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    return Err("output_conflict");
+                }
+            }
+            // A flat set has no atomic replacement primitive; never truncate old parts.
+            ConflictPolicy::Overwrite => return Err("split_overwrite_not_supported"),
+            ConflictPolicy::Ask => return Err("invalid_decision"),
+        }
+    }
+    stats.status = Status::Verifying;
+    emit(stats, start, publish);
+    let mut reader = stage.verification_reader().map_err(output_code)?;
+    let mut parts = Vec::with_capacity(count as usize);
+    let mut remaining = stats.written_bytes;
+    let mut buffer = [0u8; 64 * 1024];
+    for _ in &paths {
+        control.cancel.check().map_err(|_| "cancelled")?;
+        let mut part = workspace.stage().map_err(output_code)?;
+        let mut bytes = remaining.min(limit);
+        remaining -= bytes;
+        while bytes > 0 {
+            control.cancel.check().map_err(|_| "cancelled")?;
+            let amount = bytes.min(buffer.len() as u64) as usize;
+            reader
+                .read_exact(&mut buffer[..amount])
+                .map_err(|_| "integrity_error")?;
+            part.write_all(&buffer[..amount])
+                .map_err(|e| output_code(xdzip_io_failure(e)))?;
+            bytes -= amount as u64;
+        }
+        // Close each file after sync so 1024 parts do not require 1024 open files.
+        part.finish().map_err(output_code)?;
+        parts.push(part);
+    }
+    if remaining != 0
+        || reader
+            .read(&mut buffer[..1])
+            .map_err(|_| "integrity_error")?
+            != 0
+    {
+        return Err("integrity_error");
+    }
+    drop(reader);
+    tree.validate(&|| control.cancel.check().is_err())
+        .map_err(|e| e.code())?;
+    stats.target = root
+        .display_path()
+        .join(paths[0].display())
+        .to_string_lossy()
+        .into_owned();
+    control.begin_commit()?;
+    stats.status = Status::Committing;
+    emit(stats, start, publish);
+    let receipt = workspace.commit_set(parts, &paths).map_err(|failure| {
+        stats.cleanup_warning |= failure.rollback_failed;
+        stats.outcome_uncertain |= failure.rollback_failed;
+        output_code(failure.error)
+    })?;
+    stats.cleanup_warning |= receipt.cleanup_warning;
+    stats.committed_files = stats.files;
+    stats.committed_bytes = stats.declared_bytes;
+    stats.output_parts = paths.len() as u64;
+    for (index, path) in paths.iter().enumerate() {
+        stats.record(
+            &path.display(),
+            (stats.written_bytes - index as u64 * limit).min(limit),
+            "completed",
+            "",
+        );
+    }
+    stats.created_directories = tree.entries().iter().filter(|e| e.directory).count() as u64;
+    control.mark_terminal();
+    Ok(())
+}
+
+fn xdzip_io_failure(error: io::Error) -> OutputError {
+    if error.kind() == io::ErrorKind::StorageFull {
+        OutputError::NoSpace
+    } else {
+        OutputError::Io
+    }
 }
 #[cfg(test)]
 mod tests;

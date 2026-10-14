@@ -54,7 +54,8 @@
       "default": 612,
       "extract": 491,
       "progress": 677,
-      "create": 491
+      "create": 491,
+      "result": 677
     },
     "components": {
       "bodySize": 16,
@@ -103,6 +104,10 @@
       "create": [
         819.2,
         1548
+      ],
+      "result": [
+        677,
+        1274
       ]
     },
     "extract_density": 0.8,

@@ -52,6 +52,8 @@ pub struct EncodeSettings<'a> {
     pub method: &'a str,
     /// Admitted backend level; its meaning belongs to that codec's capability.
     pub level: u8,
+    /// Optional borrowed password. Never include it in progress, metadata or errors.
+    pub password: Option<&'a str>,
 }
 /// Reusable source extension point for archive creation, separate from decoding.
 pub trait CreationCodec {

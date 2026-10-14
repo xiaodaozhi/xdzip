@@ -1,0 +1,46 @@
+{
+  "source": "design/hifi/screens/partial-result.png",
+  "sha256": "056a8570e21226c29ef2ced8a0ea646a7b6988ab3f2c83d6add350695a8269df",
+  "source_window": [
+    73,
+    68,
+    1274,
+    967
+  ],
+  "source_to_logical": [
+    677,
+    1274
+  ],
+  "logical_width": 677,
+  "title_size": 20,
+  "subtitle_size": 14,
+  "body_size": 13,
+  "section_size": 15,
+  "note_size": 12,
+  "count_size": 28,
+  "card_radius": 6,
+  "card_inset": 12,
+  "card_gap": 10,
+  "row_height": 56,
+  "footer_height": 32,
+  "details_source": "design/hifi/screens/result-details.png",
+  "details_sha256": "0b0682e07855ba81d82772f555eb3d828a52bc6ec8c9b23bdc31935e4f58dec5",
+  "details_crop": [
+    70,
+    936,
+    916,
+    393
+  ],
+  "notes": [
+    "Single left-aligned hero, then labels above counts, then unfinished and destination cards from R01",
+    "Expanded disclosure is a supplemental component, runtime status icons are canonical flat discs",
+    "Only backend outcomes are displayed; retain at most 128 records, show omitted count explicitly",
+    "Native window decorations excluded from Qt client capture; screenshot evidence is local or CI only"
+  ],
+  "client_height": 600,
+  "header_top": 20,
+  "header_bottom": 16,
+  "details_height": 168,
+  "hero_artwork_canvas": 72,
+  "hero_text_gap": 20
+}

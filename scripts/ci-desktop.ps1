@@ -60,6 +60,11 @@ Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityF
 Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
 Copy-Item -Recurse 'build/desktop/m3-operations' 'build/review/m3-operations'
 Invoke-Checked python @('scripts/check-m3-operation-windows.py', '--input', 'build/desktop/m3-operations', '--output', 'build/review/m3-operation-ui.json')
+$env:XDZIP_RESULT_AUDIT = Join-Path (Get-Location) 'build/desktop/result-ui'
+Invoke-Checked $browserTests @('partialResultUsesActualOutcomes')
+Remove-Item Env:XDZIP_RESULT_AUDIT
+Invoke-Checked python @('scripts/check-result-ui.py', '--input', 'build/desktop/result-ui', '--output', 'build/review/result-ui.json')
+if (!$IsMacOS) { Copy-Item -Recurse 'build/desktop/result-ui' 'build/review/result-ui' }
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
 Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
@@ -76,6 +81,9 @@ Copy-Item -Recurse 'build/desktop/m4-operations' 'build/review/m4-operations'
 Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', 'build/desktop/m4-operations', '--output', 'build/review/m4-operation-ui.json')
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m4-probe')
 $m4Probe = if ($IsWindows) { 'target/release/xdzip-m4-probe.exe' } else { 'target/release/xdzip-m4-probe' }
+if ($IsLinux) {
+    Invoke-Checked python @('scripts/check-advanced-creation.py', '--binary', $m4Probe, '--output', 'build/review/advanced-creation.json')
+}
 Invoke-Checked python @('scripts/measure-m4-core.py', '--binary', $m4Probe, '--output', 'build/review/m4-core-performance.json')
 Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'build/review/m2-qt-performance.json')
 Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')

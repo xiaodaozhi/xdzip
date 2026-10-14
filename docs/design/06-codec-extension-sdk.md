@@ -30,7 +30,7 @@ TAR 是容器，GZIP 是压缩流；`tar.gz` 组合为有限层数的 Source →
 
 | 格式 | v0.1 | 后续 | 依赖选择门槛 |
 |---|---|---|---|
-| ZIP Store/Deflate | 浏览、读、创建 | 具体加密算法、其他压缩方法、分卷 | 候选 `zip` 等 Rust 实现，审计 features、ZIP64、重复名、CRC、取消和许可证 |
+| ZIP Store/Deflate | 浏览、读、创建、AES-256／编号分卷创建 | 加密／分卷读取、其他压缩方法 | 候选 `zip` 等 Rust 实现，审计 features、ZIP64、重复名、CRC、取消和许可证 |
 | TAR | 浏览、读、创建 | 稀疏项等独立能力 | 候选 `tar`，不得调用未受宿主约束的直接 unpack |
 | GZIP/TAR.GZ | 读/写及组合 | 多 member 等逐项验证 | 候选 `flate2`，明确后端实现及许可证 |
 | BZIP2/XZ/Zstd 层 | 未支持 | v0.2 后逐层接入 | 限制窗口/字典、原生依赖、内存预估 |

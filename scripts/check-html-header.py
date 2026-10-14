@@ -9,7 +9,7 @@ from PIL import Image, ImageChops
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / 'docs/qa/html-header'
+OUTPUT = ROOT / 'build/review/html-header'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 spec = json.loads((ROOT / 'design/html/header-reference.json').read_text())
 source = ROOT / spec['source']

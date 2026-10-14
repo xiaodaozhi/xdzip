@@ -16,6 +16,7 @@ QtObject {
     readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 677
     readonly property int operationCreateWidth: 491
+    readonly property int operationResultWidth: 677
     readonly property real operationExtractDensity: 0.8
     readonly property real operationProgressDensity: 0.8
     readonly property real operationCreateDensity: 0.8
@@ -70,6 +71,18 @@ QtObject {
     readonly property real operationCreateNoteSize: 12 * fontScale
     readonly property real operationCreateInputRowHeight: 38
     readonly property real operationCreateFieldHeight: 28
+    readonly property real operationResultTitleSize: 20 * fontScale
+    readonly property real operationResultSubtitleSize: 14 * fontScale
+    readonly property real operationResultBodySize: 13 * fontScale
+    readonly property real operationResultSectionSize: 15 * fontScale
+    readonly property real operationResultNoteSize: 12 * fontScale
+    readonly property real operationResultCountSize: 28 * fontScale
+    readonly property real operationResultCardRadius: 6
+    readonly property real operationResultCardInset: 12
+    readonly property real operationResultCardGap: 10
+    readonly property real operationResultRowHeight: 56
+    readonly property real operationResultDetailsHeight: 168
+    readonly property real operationResultClientHeight: 600
     readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
     readonly property color surface: dark ? "#22262F" : "#FFFFFF"
     readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"
@@ -91,6 +104,8 @@ QtObject {
     readonly property color operationCardBorder: dark ? "#343E4E" : "#DFE5EF"
     readonly property color operationFieldBorder: dark ? "#485469" : "#C9D1E0"
     readonly property color operationButtonSurface: dark ? "#28313F" : "#FAFBFD"
+    readonly property color resultWarningSurface: dark ? "#342A1F" : "#FFF8ED"
+    readonly property color resultWarningInk: dark ? "#F5B659" : "#B86900"
     readonly property real bodySize: 14 * fontScale
     readonly property real mainBodySize: 11 * fontScale
     readonly property real tableSize: 16 * fontScale

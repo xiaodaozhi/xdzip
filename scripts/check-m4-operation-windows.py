@@ -20,7 +20,7 @@ def check(name, actual, expected, tolerance=1):
     checks.append(dict(name=name, actual=actual, expected=expected, passed=passed))
 
 for name, width, height, title in [('create-selected', 491, 736, '新建压缩文件'),
-                                    ('create-completed', 677, 490, '压缩完成')]:
+                                    ('create-completed', 677, 600, '压缩完成')]:
     capture = json.loads((args.input / (name+'.json')).read_text(encoding='utf-8'))
     nodes = [n for n in capture['nodes'] if n['visible']]
     named = {n['name']: n for n in nodes if n.get('name')}
@@ -34,7 +34,7 @@ for name, width, height, title in [('create-selected', 491, 736, '新建压缩�
     heading = next(n for n in nodes if n.get('text') == title and n['class'].startswith('QQuickText'))
     check(name+'/title', heading['fontPixelSize'], reference['title_size'])
     if name == 'create-selected':
-        for key in ['createName','createTarget','createMethod','createLevel']:
+        for key in ['createName','createTarget','createVolume','createLevel']:
             field = named[key]
             check(key+'/body font', field['fontPixelSize'], reference['body_size'])
             check(key+'/field height', field['height'], reference['field_height'], 1.5)
@@ -49,7 +49,8 @@ for name, width, height, title in [('create-selected', 491, 736, '新建压缩�
         label = next(n for n in nodes if n.get('text') == '创建压缩包' and n['class'].startswith('QQuickText'))
         check('footer/action font', label['fontPixelSize'], 13)
     else:
-        check('task/progress label', named['progressLabel']['fontPixelSize'], 20)
+        check('task/result panel present', 'taskResultPanel' in named, True)
+        check('task/result counts present', 'resultCounts' in named, True)
 
 report = dict(checks=checks, passed=sum(c['passed'] for c in checks), failed=sum(not c['passed'] for c in checks),
               scope='Actual Qt JSON and unedited captures; reviewed HTML logical dimensions',

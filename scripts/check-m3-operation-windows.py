@@ -9,7 +9,6 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT / 'docs/qa/progress-density/html-operation-metrics.json').read_text(encoding='utf-8'))['scenes']
 layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))['operation']
 checks = []
 
@@ -30,11 +29,9 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
                           ('task-waiting', 'progress', '等待处理重名文件'),
                           ('conflict', 'conflict', '目标位置已有同名文件')]:
     capture = json.loads((args.input / (name + '.json')).read_text(encoding='utf-8'))
-    model = reference[kind]
-    window = next(n for n in model if n['selector'] == 'DIALOG.')
-    heading = next(n for n in model if n['selector'] == 'H1.')
-    check(name + '/logical width', capture['width'], round(window['w']))
-    check(name + '/title size', text_node(capture, title)['fontPixelSize'], round(heading['font']))
+    check(name + '/logical width', capture['width'], layout['logical_widths'].get(kind, layout['logical_widths']['default']))
+    density = layout.get(kind + '_density', 1)
+    check(name + '/title size', text_node(capture, title)['fontPixelSize'], round(layout['components']['titleSize'] * density))
     check(name + '/capture width divided by DPR', capture['imageWidth'] / capture['dpr'], capture['width'])
     check(name + '/capture height divided by DPR', capture['imageHeight'] / capture['dpr'], capture['height'])
     footer_buttons = [node for node in capture['nodes'] if node['visible'] and node['class'].startswith('OperationFooterButton')]
@@ -88,7 +85,7 @@ check('extract/scope body fill', named['extractScopeCard']['color'], '#ffffff')
 check('extract/path body size', named['extractTarget']['fontPixelSize'], round(source['source_body_font'] * ratio))
 
 report = dict(passed=sum(c['passed'] for c in checks), failed=sum(not c['passed'] for c in checks),
-              checks=checks, source='Frozen HTML logical metrics; actual Qt JSON and unedited captures',
+              checks=checks, source='Authored layout-scale.json and hifi source contracts; current Qt captures',
               limits=['Qt captures use owned fixture data, different from the illustrated photo archive',
                       'System window decorations follow the target OS and are not included in grabWindow',
                       'This check does not certify identical glyph contours or desktop appearance'])

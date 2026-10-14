@@ -13,6 +13,7 @@ controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
 tree = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
 main = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
 layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+result = json.loads((ROOT / 'docs/visual/result-reference.json').read_text())
 main_scale = main['logical_width'] / main['source_window'][2]
 
 
@@ -43,6 +44,11 @@ for key, value in layout['operation']['controls'].items():
 for key, value in layout['operation']['components'].items():
     suffix = ' * fontScale' if key.endswith('Size') else ''
     lines.append(f'    readonly property real operation{key[0].upper() + key[1:]}: {value}{suffix}')
+for key in ['title_size', 'subtitle_size', 'body_size', 'section_size', 'note_size', 'count_size',
+            'card_radius', 'card_inset', 'card_gap', 'row_height', 'details_height', 'client_height']:
+    name = 'operationResult' + ''.join(word.title() for word in key.split('_'))
+    scale = ' * fontScale' if key.endswith('_size') else ''
+    lines.append(f'    readonly property real {name}: {result[key]}{scale}')
 for key, value in tokens['light'].items():
     lines.append(f'    readonly property color {key}: dark ? "{qt_color(tokens["dark"][key])}" : "{qt_color(value)}"')
 for key, value in tokens['type'].items():

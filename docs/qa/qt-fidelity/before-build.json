@@ -1,8 +1,0 @@
-{
-  "qt": "6.8.2",
-  "commit": "05d410066eee723969f584b9ef77ef6f87a0ccd8",
-  "rust": "1.99.0",
-  "distribution": "M1 developer review; not a signed public release",
-  "architecture": "ARM64",
-  "platform": "mac"
-}

@@ -453,7 +453,7 @@ def main():
     report["passed"] = not report["failures"]
     (OUTPUT / "validation.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     (OUTPUT / "validation.js").write_text("window.XDZIP_SCALE_REPORT=" + json.dumps(report, ensure_ascii=False) + ";\n")
-    template = ROOT / "docs/qa/html-scale/index.html"
+    template = ROOT / "scripts/review-templates/html-scale.html"
     if all((OUTPUT / name).exists() for name in ["main-normal.png", "reference-normal.png"]):
         images = {key: "data:image/png;base64," + base64.b64encode((OUTPUT / name).read_bytes()).decode()
                   for key, name in {"html": "main-normal.png", "reference": "reference-normal.png"}.items()}

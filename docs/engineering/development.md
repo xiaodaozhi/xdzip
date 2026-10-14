@@ -20,6 +20,6 @@ macOS 准备 Xcode Command Line Tools 与 Qt；Windows 准备 MSVC Build Tools�
 
 ## 首轮工程验证
 
-[工具链探针](../../tools/toolchain-probe/README.md) 提供 Qt Quick 独立窗口的最小构建和 CTest 命令，不构成桌面产品。版本与测试边界见 [WP-01 证据](../qa/toolchain/wp01-linux.md)。
+[工具链探针](../../tools/toolchain-probe/README.md) 提供 Qt Quick 独立窗口的最小构建和 CTest 命令，不构成桌面产品。版本与测试边界见 [WP-01 证据（本地／CI 工件）](../qa/README.md)。
 
 [统一 CMake/Cargo 桥接探针](../../tools/bridge-probe/README.md) 已提供根构建入口、锁定依赖与生命周期检查。依赖记录见 [cxx 诊断准入](cxx-admission.md)。

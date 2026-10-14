@@ -327,9 +327,11 @@ function visibleEntries() {
 function fileIcon(e) {
     return e.folder
         ? "folder"
-        : e.type.includes("JPEG")
+        : e.name.toLowerCase().endsWith(".zip")
+          ? "archive"
+          : e.type?.includes("JPEG")
           ? "image"
-          : e.type.includes("PDF")
+          : e.type?.includes("PDF")
             ? "pdf"
             : e.name.endsWith(".gpx")
               ? "code"
@@ -698,7 +700,7 @@ function dialog(html, kind, spec, focus) {
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
     el.innerHTML =
         windowChrome(
-            kind === "progress" ? "解压进度" : title,
+            kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
             ["progress", "archive-test"].includes(kind),
         ) + html;
     el.setAttribute("aria-label", title);
@@ -747,6 +749,7 @@ function dialog(html, kind, spec, focus) {
 }
 function closeModal({ preserveReview = false } = {}) {
     if ($("#modal").open) $("#modal").close();
+    $("#modal").querySelectorAll('input[type="password"]').forEach(input => input.value = "");
     state.modal = null;
     if (!preserveReview && document.body.dataset.standalone === "true") {
         document.body.dataset.standalone = "false";
@@ -767,8 +770,8 @@ function closeModal({ preserveReview = false } = {}) {
 function header(title, subtitle, ico = "archive") {
     return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
 }
-function footer(content, ready = "准备就绪") {
-    return `<footer class="modal-footer"><span class="ready-label">${icon("shield")}${ready}</span>${content}</footer>`;
+function footer(content, ready = "准备就绪", ico = "shield") {
+    return `<footer class="modal-footer"><span class="ready-label">${icon(ico)}${ready}</span>${content}</footer>`;
 }
 function cancelButton(label = "取消") {
     return `<button class="button" data-close>${label}</button>`;
@@ -910,9 +913,10 @@ function showExtract(scope = "selected", retryFiles = null) {
 function startTask(items, kind) {
     window.XdzipMain?.resetJobs();
     clearInterval(timer);
+    const taskItems = kind === "create" ? selectedFiles(new Set(items.map(e => e.id))) : items;
     state.task = {
         kind,
-        items: [...items],
+        items: [...taskItems],
         status: "running",
         progress: 0,
         target: kind === "create" ? state.createTarget : state.plan.target,
@@ -1003,7 +1007,7 @@ function showProgress() {
                       : "document-download",
             false,
         ) +
-            `<div class="modal-content"><section class="path-card"><h2>解压到</h2><div>${icon("folder")}<span>${esc(t.target)}</span></div></section><section class="progress-card"><div class="progress-line"><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><strong id="progress-value">${t.progress}%</strong></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="task-metrics"><div><span>速度</span><strong>6.2 MB/s</strong></div><div><span>预计剩余</span><strong>约 5 秒</strong></div><div><span>当前阶段</span><strong id="progress-phase">正在准备</strong></div></div></section><section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon("image-file")}</span><span id="progress-file"></span></div></section><p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p></div><footer class="modal-footer"><span class="info-line">${icon("info")}关闭此窗口后，任务仍会继续。</span><button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button></footer>`,
+            `<div class="modal-content"><section class="path-card"><h2>${t.kind === "create" ? "保存到" : "解压到"}</h2><div>${icon("folder")}<span>${esc(t.target)}</span></div></section><section class="progress-card"><div class="progress-line"><div class="progress-track" role="progressbar" aria-label="任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${t.progress}"><i id="progress-fill" style="width:${t.progress}%"></i></div><strong id="progress-value">${t.progress}%</strong></div><div class="progress-current"><span id="progress-bytes"></span><span id="progress-count"></span></div><div class="task-metrics"><div><span>速度</span><strong>6.2 MB/s</strong></div><div><span>预计剩余</span><strong>约 5 秒</strong></div><div><span>当前阶段</span><strong id="progress-phase">正在准备</strong></div></div></section><section class="path-card"><h2>当前文件</h2><div><span id="progress-file-icon">${icon("image-file")}</span><span id="progress-file"></span></div></section><p class="info-line">${icon("info")}实际耗时取决于文件与磁盘状态。</p></div><footer class="modal-footer"><span class="info-line">${icon("info")}关闭此窗口后，任务仍会继续。</span><button id="background-task" class="button">返回浏览</button><button id="cancel-task" class="button" ${t.status === "stopping" ? "disabled" : ""}>${t.status === "stopping" ? "正在停止…" : "取消任务"}</button></footer>`,
         "progress",
         "T01",
         "#background-task",
@@ -1103,61 +1107,34 @@ function finishTask(result) {
     updateTaskCount();
     if (state.modal === "progress") showResult();
 }
+function resultFileRow(entry, status, reason = "") {
+    const unfinished = status === "unfinished";
+    const label = reason || (unfinished ? "未完成" : status === "skipped" ? "已跳过" : "已完成");
+    return `<div class="result-file-row ${unfinished ? "unfinished" : ""}">${icon(fileIcon(entry))}<div class="result-file-label"><strong>${esc(entry.name)}</strong><span>${bytes(entry.size)}</span></div><span class="result-file-status">${icon(unfinished ? "status-warning" : status === "skipped" ? "status-skipped" : "status-partial-success")}${esc(label)}</span></div>`;
+}
 function showResult() {
-    const t = state.task,
-        ok = t.result === "success",
-        cancel = t.result === "cancelled",
-        created = t.kind === "create",
-        title = ok
-            ? created
-                ? "压缩文件已创建"
-                : "解压完成"
-            : cancel
-              ? "任务已取消"
-              : t.result === "source"
-                ? "源文件已发生变化"
-                : "部分文件未能完成";
-    const successCount = created ? (ok ? 1 : 0) : t.completed.length,
-        failedCount = created ? (ok ? 0 : 1) : t.failed.length;
+    const t = state.task, ok = t.result === "success", cancel = t.result === "cancelled", created = t.kind === "create";
+    const title = ok ? created ? "压缩文件已创建" : "解压完成" : cancel ? "任务已取消" : t.result === "source" ? "源文件已发生变化" : "部分文件未完成";
+    const successCount = created ? (ok ? 1 : 0) : t.completed.length;
+    const failedCount = created ? (ok ? 0 : 1) : t.failed.length;
+    const reason = cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足，请释放空间或更改位置后重试。";
+    const saved = t.completed.map(e=>e.name).join("、");
     dialog(
-        header(
-            "任务结果",
-            created ? "新建压缩文件" : esc(t.archiveTitle),
-            ok
-                ? "status-success"
-                : cancel
-                  ? "cancelled-large"
-                  : "document-warning",
-        ) +
-            `<div class="modal-content"><div class="result-hero"><div class="result-icon">${icon(ok ? "status-success" : cancel ? "cancelled-large" : "document-warning")}</div><h2>${title}</h2><p>${ok ? (created ? "归档已完成校验并保存。" : "所选内容已处理完成。") : created ? "临时归档未发布，原有文件保持不变。" : "已经完成的文件会保留，不会因本次停止而删除。"}</p></div><div class="result-counts"><div><b>${successCount}</b><span>${icon("status-partial-success")}${created ? "已创建归档" : "成功文件"}</span></div><div><b>${created ? 0 : t.skipped.length}</b><span>${icon("status-skipped")}跳过</span></div><div><b>${failedCount}</b><span>${icon(cancel ? "status-stopped" : "status-warning")}${cancel ? "未完成" : "失败"}</span></div></div>${!ok ? `<div class="notice ${cancel ? "" : "error"}">${cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足。释放空间或选择其他位置后重试。"}</div>` : ""}<div class="result-destination">${icon("folder")}<span>${esc(t.target)}</span></div>${t.renamed ? `<p class="field-note">重名文件已改名为 ${esc(t.conflictEntry.name.replace(/(\.[^.]+)$/, " (2)$1"))}</p>` : ""}<details><summary class="details-title">查看处理明细</summary><div class="result-list">${t.completed.map((e) => `<div><span>${esc(e.name)}</span><span>已完成</span></div>`).join("")}${t.failed.map((e) => `<div class="bad"><span>${esc(e.name)}</span><span>${cancel ? "未完成" : "失败"}</span></div>`).join("")}${t.skipped.map((id) => `<div><span>${esc(byId.get(id).name)}</span><span>已跳过</span></div>`).join("")}</div></details></div>` +
-            footer(
-                cancelButton("完成") +
-                    (t.result === "source"
-                        ? '<button id="reopen-result" class="button primary">重新打开</button>'
-                        : !ok && failedCount
-                          ? '<button id="retry-result" class="button primary">重试未完成项</button>'
-                          : '<button id="reveal-result" class="button primary">打开目标文件夹</button>'),
-            ),
-        "result",
-        "R01",
+        header(title, ok ? created ? "归档已完成校验并保存。" : "所选内容已处理完成。" : created ? "临时归档未发布，原有文件保持不变。" : "已保留成功解压的文件。", ok ? "status-success" : cancel ? "cancelled-large" : "document-warning") +
+        `<div class="modal-content result-content"><div class="result-counts"><div><span>${icon("status-partial-success")}${created ? "已创建归档" : "成功"}</span><b>${successCount}</b></div><div><span>${icon("status-skipped")}跳过</span><b>${created ? 0 : t.skipped.length}</b></div><div><span>${icon(cancel ? "status-stopped" : "status-warning")}未完成</span><b>${failedCount}</b></div></div>
+        ${!ok ? `<section class="result-card"><h2>未完成的文件</h2><div class="result-inner">${t.failed.map(e=>resultFileRow(e,"unfinished",cancel ? "未完成" : t.result === "source" ? "源文件已变化" : "空间不足")).join("")}</div><div class="result-warning">${icon("status-warning")}<span>${reason}</span></div></section>` : ""}
+        <section class="result-card"><h2>目标位置</h2><div class="result-location result-inner">${icon("folder")}<div><strong>${esc(t.target)}</strong><p>${created ? "归档已校验并保存。" : "已保存：" + (saved ? esc(saved) + "（" + bytes(t.completed.reduce((n,e)=>n+e.size,0)) + "）" : "尚未保存文件")}</p></div></div></section>
+        <details class="result-details result-card"><summary>${icon("chevron-right")}<strong>查看处理明细</strong><span>${t.completed.length + t.failed.length + t.skipped.length} 个文件</span></summary><div class="result-list result-inner">${t.completed.map(e=>resultFileRow(e,"completed")).join("")}${t.failed.map(e=>resultFileRow(e,"unfinished")).join("")}${t.skipped.map(id=>resultFileRow(byId.get(id),"skipped")).join("")}</div></details></div>` +
+        footer(cancelButton("关闭") + '<button id="reveal-result" class="button">打开目标文件夹</button>' + (t.result === "source" ? '<button id="reopen-result" class="button primary">重新打开</button>' : !ok && failedCount ? '<button id="retry-result" class="button primary">重试未完成项</button>' : ""), ok ? "已完成校验并保存。" : "重试将仅处理未完成的文件，并重新确认目标位置。", "info"),
+        "result", "R01"
     );
     bindClose();
-    if ($("#reveal-result"))
-        $("#reveal-result").onclick = () =>
-            toast("原型演示：正式产品将在系统文件管理器中打开目标位置。");
-    if ($("#reopen-result"))
-        $("#reopen-result").onclick = () => {
-            closeModal();
-            openPicker();
-        };
-    if ($("#retry-result"))
-        $("#retry-result").onclick = () => {
-            state.scenario = "normal";
-            $("#scenario").value = "normal";
-            if (created) showCreate();
-            else showExtract("retry", t.failed);
-        };
-    if (ok && t.open) toast("原型演示：已触发“完成后打开目标文件夹”。");
+    $("#reveal-result").onclick = () => toast("原型演示：正式产品将在系统文件管理器中打开目标位置。");
+    if ($("#reopen-result")) $("#reopen-result").onclick = () => { closeModal(); openPicker(); };
+    if ($("#retry-result")) $("#retry-result").onclick = () => {
+        state.scenario = "normal"; $("#scenario").value = "normal";
+        if (created) showCreate(); else showExtract("retry", t.failed);
+    };
 }
 function showTask() {
     if (!state.task) {
@@ -1179,16 +1156,17 @@ function showCreate() {
     state.createItems = [byId.get("lake"),byId.get("sunrise"),byId.get("guide")].filter(Boolean);
     dialog(
         header("新建压缩文件", "将文件整理为一个压缩包。", "archive-add") +
-        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label>${XdzipControls.segmentedMarkup({id:"create-format",label:"压缩格式",selected:"zip",options:[{id:"create-format-zip",value:"zip",text:"ZIP"},{id:"create-format-tar",value:"tar",text:"TAR",disabled:true},{id:"create-format-gzip",value:"gzip",text:"TAR.GZ",disabled:true}]})}</div><div class="create-form-row" id="method-group"><label for="create-method">压缩算法</label><select id="create-method" class="field-select"><option value="deflate">Deflate</option><option value="store">Store，不压缩</option></select></div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option>均衡 (6)</option><option>快速 (1)</option><option>更小 (9)</option></select></div><p id="create-level-note" class="field-note">均衡兼顾速度与压缩率。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label>${XdzipControls.segmentedMarkup({id:"create-format",label:"压缩格式",selected:"zip",options:[{id:"create-format-zip",value:"zip",text:"ZIP"},{id:"create-format-tar",value:"tar",text:"TAR",disabled:true},{id:"create-format-gzip",value:"gzip",text:"TAR.GZ",disabled:true}]})}</div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option value="0">0-不压缩</option><option value="1">1-快速压缩</option><option value="2" selected>2-正常压缩</option><option value="3">3-最大压缩</option></select></div><div class="create-form-row"><label for="create-volume">分卷</label><div class="create-volume-row"><select id="create-volume" class="field-select" data-editable-value="custom">${["不分卷", "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", "自定义"].map((label,i)=>`<option value="${i===13?"custom":i}">${label}</option>`).join("")}</select><select id="create-volume-unit" class="field-select"><option value="1">字节</option><option value="1000">KB</option><option value="1000000" selected>MB</option><option value="1000000000">GB</option></select></div></div><p id="create-volume-note" class="field-note">每卷使用所选字节上限，输出 .zip.001 等文件。</p><label class="check-label"><input id="create-use-password" type="checkbox">输入密码</label><input id="create-password" type="password" class="text-input" disabled aria-label="压缩文件密码" placeholder="1–128 个 UTF-8 字节，不含控制字符" autocomplete="new-password"><p id="create-password-note" class="field-note">AES-256 加密文件内容，文件名仍可见。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名归档（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
         footer(`<button id="cancel-modal" class="button" data-close>取消</button><button id="start-create" class="button primary">创建压缩包</button>`),
         "create", "C01", "#add-input",
     );
     bindClose();
     const validate = () => {
+        const optionsValid = advancedValid();
         const valid =
             state.createItems.length &&
             /^.+\.zip$/i.test($("#create-name").value.trim()) &&
-            $("#create-destination").value.trim();
+            $("#create-destination").value.trim() && optionsValid;
         $("#start-create").disabled = !valid;
         $("#create-valid").innerHTML =
             `${icon(valid ? "success" : "status-warning")}<span>${
@@ -1207,7 +1185,7 @@ function showCreate() {
             ? state.createItems
                   .map(
                       (e, i) =>
-                          `<div class="create-row">${icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${bytes(e.size)}</span><button class="icon-button" data-remove="${i}" aria-label="移除 ${esc(e.name)}">${icon("remove")}</button></div>`,
+                          `<div class="create-row">${icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${e.folder ? "开始前扫描" : bytes(e.size)}</span><button class="icon-button" data-remove="${i}" aria-label="移除 ${esc(e.name)}">${icon("remove")}</button></div>`,
                   )
                   .join("")
             : '<div class="create-row">尚未添加内容</div>';
@@ -1232,14 +1210,14 @@ function showCreate() {
     };
     $("#add-input").onclick = () => {
         const next = roots.find(
-            (e) => !e.directory && !state.createItems.some((f) => f.id === e.id),
+            (e) => !e.folder && !state.createItems.some((f) => f.id === e.id),
         );
         if (next) {
             state.createItems.push(next);
             draw();
         } else toast("所有示例文件都已添加。");
     };
-    $("#add-directory").onclick = () => { const next=roots.find(e=>e.directory && !state.createItems.some(f=>f.id===e.id)); if (next) { state.createItems.push(next); draw(); } };
+    $("#add-directory").onclick = () => { const next=rootFolders.find(e=>e.folder && !state.createItems.some(f=>f.id===e.id)); if (next) { state.createItems.push(next); draw(); } };
     $("#create-change-target").onclick = () => { $("#create-destination").value = $("#create-destination").value === "下载" ? "文稿" : "下载"; validate(); };
     $("#clear-input").onclick = () => {
         state.createItems = [];
@@ -1247,31 +1225,40 @@ function showCreate() {
     };
     $("#create-name").oninput = validate;
     $("#create-destination").oninput = validate;
-    const format = () => {
-        const kind = "zip";
-        $("#create-name").value =
-            $("#create-name").value.replace(/\.(zip|tar(?:\.gz)?)$/, "") +
-            "." +
-            kind;
-        $("#method-group").hidden = kind !== "zip";
-        $("#create-level").disabled = $("#create-method").value === "store";
-        $("#create-level-note").textContent = $("#create-method").value === "store" ? "Store 保留原始字节，不进行压缩。" : "均衡兼顾速度与压缩率。";
-        validate();
+    const advancedValid = () => {
+        const custom = $("#create-volume").value === "custom";
+        $("#create-volume-unit").closest(".ui-select").hidden = !custom;
+        const number = $("#create-volume")._xdzipEditor?.value || "";
+        const volumeBytes = Number(number) * Number($("#create-volume-unit").value);
+        const validVolume = !custom || (/^[0-9]+$/.test(number) && Number.isSafeInteger(volumeBytes) && volumeBytes > 0 && volumeBytes <= 25769803776);
+        $("#create-volume-note").textContent = validVolume ? "每卷使用所选字节上限，输出 .zip.001 等文件。现有分卷只能整组改名。" : "请输入正整数，每卷上限为 24 GiB，最多 1024 卷。";
+        $("#create-volume-note").classList.toggle("error", !validVolume);
+        const enabled = $("#create-use-password").checked;
+        $("#create-password").disabled = !enabled;
+        const password = $("#create-password").value;
+        const passwordLength = new TextEncoder().encode(password).length;
+        const validPassword = !enabled || (passwordLength > 0 && passwordLength <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password) && password.isWellFormed());
+        $("#create-password-note").textContent = validPassword ? "AES-256 加密文件内容，文件名仍可见。" : "请输入有效密码；不得为空或包含控制字符。";
+        $("#create-password-note").classList.toggle("error", !validPassword);
+        return validVolume && validPassword;
     };
-    $("#create-method").onchange = format;
+    $("#create-volume").onchange = validate;
+    $("#create-volume").oninput = validate;
+    $("#create-volume-unit").onchange = validate;
+    $("#create-use-password").onchange = () => { if (!$("#create-use-password").checked) $("#create-password").value = ""; validate(); };
+    $("#create-password").oninput = validate;
     $("#start-create").onclick = () => {
         state.createTarget =
             $("#create-destination").value.trim() +
             " / " +
             $("#create-name").value.trim();
         state.createFormat = "zip";
-        state.createMethod =
-            state.createFormat === "zip"
-                ? $("#create-method").value
-                : state.createFormat === "tar"
-                  ? "none"
-                  : "gzip";
-        state.createLevel = $("#create-level").value;
+        state.createLevel = Number($("#create-level").value);
+        state.createMethod = state.createLevel === 0 ? "store" : "deflate";
+        // This HTML is an interaction demo; never retain a secret in task state.
+        state.createEncrypted = $("#create-use-password").checked;
+        state.createVolume = $("#create-volume").value;
+        $("#create-password").value = "";
         if ($("#create-existing").checked) confirmCreateOverwrite();
         else startTask(state.createItems, "create");
     };
@@ -1544,6 +1531,12 @@ window.XdzipDesign = {
             showExtract("selected");
         } else if (view === "create") showCreate();
         else if (view === "settings") showSettings();
+        else if (view === "result") {
+            state.task = null; showExtract("selected");
+            startTask([byId.get("lake"), byId.get("sunrise"), byId.get("guide")], "extract");
+            clearInterval(timer); state.task.progress = 80;
+            state.modal = "progress"; finishTask("partial");
+        }
         else if (view === "progress") {
             showExtract("all");
             startTask(files, "extract");
@@ -1587,6 +1580,7 @@ window.addEventListener("message", (event) => {
             "extract",
             "create",
             "progress",
+            "result",
             "conflict",
             "settings",
             "empty",

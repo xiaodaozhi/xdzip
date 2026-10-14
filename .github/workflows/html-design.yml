@@ -4,9 +4,10 @@ on:
     paths:
       - 'scripts/check-extract-fidelity.py'
       - 'docs/visual/create-reference.json'
-      - 'docs/qa/create-controls/**'
+      - 'docs/visual/result-reference.json'
+      - 'build/review/create-controls/**'
       - 'docs/visual/extract-reference.json'
-      - 'docs/qa/extract-fidelity/**'
+      - 'build/review/extract-fidelity/**'
       - 'design/**'
       - 'scripts/*html*'
       - 'scripts/*asset*'
@@ -18,24 +19,25 @@ on:
       - 'scripts/generate-display-spec.py'
       - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
-      - 'docs/qa/asset-review/**'
-      - 'docs/qa/asset-consumers/**'
-      - 'docs/qa/brand-and-assets*'
-      - 'docs/qa/brand-and-assets/**'
-      - 'docs/qa/html-header/**'
-      - 'docs/qa/html-body/**'
-      - 'docs/qa/html-body-review.md'
-      - 'docs/qa/pane-header-alignment*'
-      - 'docs/qa/pane-header-alignment/**'
+      - 'build/review/asset-review/**'
+      - 'build/review/asset-consumers/**'
+      - 'build/review/brand-and-assets*'
+      - 'build/review/brand-and-assets/**'
+      - 'build/review/html-header/**'
+      - 'build/review/html-body/**'
+      - 'build/review/html-body-review.md'
+      - 'build/review/pane-header-alignment*'
+      - 'build/review/pane-header-alignment/**'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
   pull_request:
     paths:
       - 'scripts/check-extract-fidelity.py'
       - 'docs/visual/create-reference.json'
-      - 'docs/qa/create-controls/**'
+      - 'docs/visual/result-reference.json'
+      - 'build/review/create-controls/**'
       - 'docs/visual/extract-reference.json'
-      - 'docs/qa/extract-fidelity/**'
+      - 'build/review/extract-fidelity/**'
       - 'design/**'
       - 'scripts/*html*'
       - 'scripts/*asset*'
@@ -47,15 +49,15 @@ on:
       - 'scripts/generate-display-spec.py'
       - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
-      - 'docs/qa/asset-review/**'
-      - 'docs/qa/asset-consumers/**'
-      - 'docs/qa/brand-and-assets*'
-      - 'docs/qa/brand-and-assets/**'
-      - 'docs/qa/html-header/**'
-      - 'docs/qa/html-body/**'
-      - 'docs/qa/html-body-review.md'
-      - 'docs/qa/pane-header-alignment*'
-      - 'docs/qa/pane-header-alignment/**'
+      - 'build/review/asset-review/**'
+      - 'build/review/asset-consumers/**'
+      - 'build/review/brand-and-assets*'
+      - 'build/review/brand-and-assets/**'
+      - 'build/review/html-header/**'
+      - 'build/review/html-body/**'
+      - 'build/review/html-body-review.md'
+      - 'build/review/pane-header-alignment*'
+      - 'build/review/pane-header-alignment/**'
       - '.github/workflows/html-design.yml'
       - '.gitattributes'
 permissions:
@@ -109,22 +111,22 @@ jobs:
         with:
           name: xdzip-html-design-evidence
           path: |
-            docs/qa/html-header/
-            docs/qa/html-body/
-            docs/qa/pane-header-alignment.md
-            docs/qa/pane-header-alignment/
-            docs/qa/html-scrollbars/
+            build/review/html-header/
+            build/review/html-body/
+            build/review/pane-header-alignment.md
+            build/review/pane-header-alignment/
+            build/review/html-scrollbars/
             dist/ui-density/
             build/create-style/html/
-            docs/qa/asset-review/
-            docs/qa/asset-consumers/
-            docs/qa/brand-and-assets.md
-            docs/qa/brand-and-assets/
+            build/review/asset-review/
+            build/review/asset-consumers/
+            build/review/brand-and-assets.md
+            build/review/brand-and-assets/
             design/assets/brand/
-            design/assets/validation.json
+            build/review/assets/validation.json
             design/assets/reference/tree-*.png
             design/hifi/screens/directory-tree*.png
-            docs/qa/directory-tree/
+            build/review/directory-tree/
             docs/ux/directory-tree.md
             docs/visual/directory-tree.json
             dist/html-operation-review/
@@ -142,8 +144,8 @@ jobs:
             dist/xdzip-assets.html
             dist/xdzip-directory-tree.html
             dist/xdzip-directory-tree.zip
-            docs/qa/main-window-components.md
-            docs/qa/main-window-components/
+            build/review/main-window-components.md
+            build/review/main-window-components/
             docs/ux/main-window-components.md
             docs/visual/controls.json
             dist/html-controls-review/

@@ -95,7 +95,9 @@ impl Shared {
             snapshot.status = Status::Cancelling;
             snapshot.prompt = None;
         }
-        // Fixed maximum 32 tasks and <=16KiB names/target per snapshot; no event-per-chunk growth.
+        // At most 32 tasks, bounded 128-record display history (1024-byte names).
+        // Arc-backed records are shared by latest/pending snapshots; chunks do
+        // not append events or history. No secret ever enters a snapshot.
         state.tasks.latest.insert(snapshot.id, snapshot.clone());
         state.tasks.pending.insert(snapshot.id, snapshot);
         self.changed.notify_all();

@@ -8,7 +8,7 @@ mod target;
 mod tests;
 pub use identity::{FileIdentity, FileVersion};
 pub use input::{InputEntry, InputError, InputReader, InputTree};
-pub use target::{CommitReceipt, ExistingFile, Grant, Stage, Workspace};
+pub use target::{CommitReceipt, ExistingFile, Grant, SetCommitError, Stage, Workspace};
 
 /// Stable filesystem failures without arbitrary OS strings or user paths.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

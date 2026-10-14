@@ -29,4 +29,4 @@ QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software QT_PLUGIN_PATH=/workspace/.t
 
 所有窗口由 C++ 栈持有；transient owner 不转移 QObject 所有权。关闭在事件循环中进行，离开循环后逆序析构。这里的重复 close 不等同于 WP-03 的 Rust 运行时关闭协议测试。
 
-后续必须补充 cxx 最小往返、生成器版本一致性、跨语言所有权和真实 Qt 接收线程关闭测试。当前证据见 [WP-01 记录](../../docs/qa/toolchain/wp01-linux.md)。
+后续必须补充 cxx 最小往返、生成器版本一致性、跨语言所有权和真实 Qt 接收线程关闭测试。当前证据见 [WP-01 记录（本地／CI 工件）](../../docs/qa/README.md)。

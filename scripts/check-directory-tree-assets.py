@@ -12,7 +12,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'design/assets'
-REPORT_ROOT = ROOT / 'docs/qa/directory-tree'
+REPORT_ROOT = ROOT / 'build/review/directory-tree'
 
 
 def main():

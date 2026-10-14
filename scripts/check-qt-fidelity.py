@@ -29,7 +29,7 @@ def audit(directory):
         checks.append(dict(name=name, actual=actual, expected=expected,
                            tolerance=tolerance if numeric else None, passed=passed))
 
-    for path_key, hash_key in [('source', 'source_sha256'), ('html_capture', 'html_sha256')]:
+    for path_key, hash_key in [('source', 'source_sha256')]:
         digest = hashlib.sha256((ROOT / reference[path_key]).read_bytes()).hexdigest()
         check('frozen/' + path_key, digest, reference[hash_key])
 

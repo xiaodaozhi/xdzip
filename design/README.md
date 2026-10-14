@@ -1,6 +1,6 @@
 # xdzip 设计交付目录
 
-[可操作组件页](html/components.html)与[功能覆盖](../docs/qa/main-window-components.md)提供菜单、按钮状态和主窗口行为复核。
+[可操作组件页](html/components.html)与[功能覆盖（本地／CI 工件）](../docs/qa/README.md)提供菜单、按钮状态和主窗口行为复核。
 
 **HTML 界面从 [html/index.html](html/index.html) 打开，完整原稿从 [hifi/index.html](hifi/index.html) 查看，素材统一从 [assets/index.html](assets/index.html) 查看。** 三个入口分别负责实现、视觉依据和共用素材；历史迭代由 Git 保存，不再按交付批次拆目录。
 
@@ -28,7 +28,7 @@
 
 原像素对照切片保留各自裁切矩形，因此其物理尺寸不同；其尺寸不用于设置运行时图标大小。调整 SVG 后重新导出 PNG，HTML 与 Qt 才能保持同一图形。
 
-当前应用标记采用四条交错带与 U 形下部，应用品牌、蓝色归档和灰色归档标识共用 `scripts/brand_assets.py` 的几何。它是明确的新品牌设计修订，完整高保真原稿中的旧 ZIP 标志仍作为历史视觉依据保留。平台接入与本轮补图见 [品牌与素材复核](../docs/qa/brand-and-assets.md)；交付 ZIP 图标不代表已注册系统文件关联。
+当前应用标记采用四条交错带与 U 形下部，应用品牌、蓝色归档和灰色归档标识共用 `scripts/brand_assets.py` 的几何。它是明确的新品牌设计修订，完整高保真原稿中的旧 ZIP 标志仍作为历史视觉依据保留。平台接入与本轮补图见 [品牌与素材复核（本地／CI 工件）](../docs/qa/README.md)；交付 ZIP 图标不代表已注册系统文件关联。
 
 ## 更新顺序
 

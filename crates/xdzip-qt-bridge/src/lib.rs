@@ -50,6 +50,9 @@ mod ffi {
         inputs: Vec<String>,
         method: u16,
         level: u8,
+        volume_bytes: u64,
+        encrypt: bool,
+        password: String,
         all: bool,
         create_folder: bool,
         conflict: u8,
@@ -87,6 +90,12 @@ mod ffi {
         finding_count: u64,
         unicode_review: bool,
     }
+    struct TaskOutcome {
+        name: String,
+        size: u64,
+        status: String,
+        error: String,
+    }
     struct TaskSnapshot {
         creating: bool,
         total_known: bool,
@@ -108,6 +117,10 @@ mod ffi {
         cleanup_warning: bool,
         outcome_uncertain: bool,
         leftovers: u64,
+        details: Vec<TaskOutcome>,
+        omitted_details: u64,
+        external_reader: bool,
+        output_parts: u64,
         prompt_id: u64,
         prompt_name: String,
         existing_bytes: u64,
@@ -240,6 +253,21 @@ fn admission(result: Result<u64, service::Rejection>) -> ffi::Submission {
 impl CommandClient {
     /// Validate bounded foreign DTOs before admitting any work. Rejection consumes no ID.
     pub fn submit(&self, command: ffi::Command) -> ffi::Submission {
+        // Move the ABI-owned secret into zeroizing storage before any rejection.
+        // It never becomes a progress field, debug string or retained event.
+        let empty_password = command.password.is_empty();
+        let candidate = xdzip_runtime::creation::Password::new(command.password);
+        let password = if command.encrypt {
+            match candidate {
+                Ok(value) => Some(value),
+                Err(_) => return admission(Err(Rejection::Invalid)),
+            }
+        } else {
+            if !empty_password {
+                return admission(Err(Rejection::Invalid));
+            }
+            None
+        };
         use service::{Command, Rejection};
         if command.inputs.len() > xdzip_codec_api::MAX_ENTRIES
             || command
@@ -278,6 +306,8 @@ impl CommandClient {
                     method: command.method,
                     level: command.level,
                     conflict,
+                    volume_bytes: command.volume_bytes,
+                    password,
                 })
             }
             ffi::CommandKind::Open => Command::Open(command.path),
@@ -529,6 +559,10 @@ fn empty_task() -> ffi::TaskSnapshot {
         cleanup_warning: false,
         outcome_uncertain: false,
         leftovers: 0,
+        details: Vec::new(),
+        omitted_details: 0,
+        external_reader: false,
+        output_parts: 0,
         prompt_id: 0,
         prompt_name: String::new(),
         existing_bytes: 0,
@@ -561,6 +595,19 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
         cleanup_warning: s.cleanup_warning,
         outcome_uncertain: s.outcome_uncertain,
         leftovers: s.leftovers,
+        details: s
+            .details
+            .iter()
+            .map(|d| ffi::TaskOutcome {
+                name: d.name.clone(),
+                size: d.size,
+                status: d.status.into(),
+                error: d.error.into(),
+            })
+            .collect(),
+        omitted_details: s.omitted_details,
+        external_reader: s.external_reader,
+        output_parts: s.output_parts,
         prompt_id: prompt.as_ref().map_or(0, |p| p.id),
         prompt_name: prompt.as_ref().map_or(String::new(), |p| p.name.clone()),
         existing_bytes: prompt.as_ref().map_or(0, |p| p.existing_bytes),
@@ -610,6 +657,9 @@ mod tests {
             inputs: Vec::new(),
             method: 8,
             level: 6,
+            volume_bytes: 0,
+            encrypt: false,
+            password: String::new(),
             all: false,
             create_folder: false,
             conflict: 0,

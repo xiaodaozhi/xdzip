@@ -61,6 +61,10 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         outcome_uncertain: false,
         leftovers: 0,
         prompt: None,
+        details: Default::default(),
+        omitted_details: 0,
+        external_reader: false,
+        output_parts: 0,
     }
 }
 fn emit(stats: &mut Snapshot, start: Instant, publish: &mut dyn FnMut(Snapshot)) {
@@ -75,6 +79,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
     emit(&mut stats, start, publish);
     let mut workspace = None;
     let mut grant = None;
+    let mut pending_file = None;
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
@@ -126,6 +131,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 target.ensure_directory(&planned.path).map_err(output)?;
                 continue;
             }
+            pending_file = Some(entry.size);
             let mut path = planned.path.clone();
             let mut overwrite = None;
             if let Some(existing) = target.existing(&path).map_err(output)? {
@@ -160,6 +166,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 match decision {
                     ConflictPolicy::Skip => {
                         stats.skipped_files += 1;
+                        stats.record(&entry.display_name, entry.size, "skipped", "");
+                        pending_file = None;
                         emit(&mut stats, start, publish);
                         continue;
                     }
@@ -210,6 +218,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 stats.committed_files += 1;
                 stats.committed_bytes += actual;
                 stats.cleanup_warning |= receipt.cleanup_warning;
+                stats.record(&path.display(), actual, "completed", "");
+                pending_file = None;
             }
             committed?;
             cancelled?;
@@ -235,6 +245,15 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         Err(_) => Status::Failed,
     };
     stats.error = result.err().unwrap_or_default().into();
+    if let Some(size) = pending_file {
+        let name = stats.current.clone();
+        stats.record(
+            &name,
+            size,
+            "unfinished",
+            result.err().unwrap_or("internal_error"),
+        );
+    }
     control.mark_terminal();
     emit(&mut stats, start, publish);
 }

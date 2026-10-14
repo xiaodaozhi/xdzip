@@ -437,12 +437,39 @@ window.XdzipControls = (() => {
                 trigger.setAttribute("aria-label", label.textContent);
             }
             wrapper.append(trigger);
+            let editor = null;
+            if (select.dataset.editableValue) {
+                editor = document.createElement("input");
+                editor.id = select.id + "-input";
+                editor.className = "ui-select-editor";
+                editor.inputMode = "numeric";
+                editor.maxLength = 20;
+                editor.placeholder = "输入数字";
+                editor.setAttribute("role", "combobox");
+                editor.setAttribute("aria-autocomplete", "none");
+                editor.setAttribute("aria-label", label?.textContent || "自定义数值");
+                wrapper.append(editor);
+                select._xdzipEditor = editor;
+                editor.oninput = () => select.dispatchEvent(new Event("input", {bubbles:true}));
+                editor.onkeydown = event => {
+                    if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+                        event.preventDefault(); expand();
+                    }
+                };
+            }
             function refresh() {
                 const text = document.createElement("span");
                 text.textContent = select.selectedOptions[0]?.textContent || "";
                 trigger.replaceChildren(text);
                 trigger.insertAdjacentHTML("beforeend", renderIcon("chevron-down"));
                 trigger.disabled = select.disabled;
+                if (editor) {
+                    const editable = select.value === select.dataset.editableValue;
+                    editor.hidden = !editable;
+                    editor.disabled = select.disabled;
+                    wrapper.classList.toggle("editable", editable);
+                    trigger.querySelector("span").style.visibility = editable ? "hidden" : "";
+                }
             }
             function expand() {
                 const menuId = trigger.id + "-options";

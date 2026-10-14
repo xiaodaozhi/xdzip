@@ -23,7 +23,7 @@ def main():
             browser = p.chromium.launch(executable_path='/usr/bin/chromium', args=['--no-sandbox','--disable-dev-shm-usage'])
             page = browser.new_page(viewport={'width':1800,'height':1800}, device_scale_factor=1)
             for view, directory in [('create','m4'),('progress','progress-density')]:
-                output = ROOT / 'docs/qa' / directory / 'html'
+                output = ROOT / 'build/review' / directory / 'html'
                 output.mkdir(parents=True, exist_ok=True)
                 page.goto(f'http://127.0.0.1:{server.server_port}/design/html/index.html?view={view}&zoom=1')
                 frame = page.frame_locator('#design-frame')

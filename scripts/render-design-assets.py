@@ -103,7 +103,9 @@ def main() -> None:
             page.set_viewport_size({'width': 1200, 'height': 1000})
             page.set_content(embedded_gallery())
             page.evaluate('Promise.all([...document.images].map(image => image.decode()))')
-            page.screenshot(path=str(ROOT / 'preview/asset-contact-sheet.png'), full_page=True)
+            contact = ROOT.parents[1] / 'build/review/assets/asset-contact-sheet.png'
+            contact.parent.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(contact), full_page=True)
         browser.close()
     (ROOT / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     if args.standalone:
