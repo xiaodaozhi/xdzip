@@ -1,6 +1,6 @@
 # WP-10 · 真实 ZIP 创建验收
 
-2026-10-14：开发和本地自动化验收完成。三平台 push 检查由 [Qt components](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml) 与 [Foundation probes](https://github.com/xiaodaozhi/xdzip/actions/workflows/foundation.yml) 登记；应核对同一提交的实际结果，不由本地 Linux 结果推定 macOS／Windows 已通过。macOS 不生成开发应用包，build/、target/ 和 dist/ 均不提交。
+2026-10-14：开发与三平台自动化验收完成。实现提交为 `a69d2fd2e76ad07789aa5eeb3c5b61acb4ddc39f`。[Qt components](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053993)、[Foundation probes](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053997)、[HTML design review](https://github.com/xiaodaozhi/xdzip/actions/runs/38535053981)和 [Documentation](https://github.com/xiaodaozhi/xdzip/actions/runs/38535054002)全部通过。[原生 CI 回执](m4/native-ci.json)记录九项任务与三平台工件身份。macOS 仅上传日志／JSON，没有 Apple Silicon 应用包；build/、target/ 和 dist/ 均不提交。桌面人工验收和独立安全审查仍单独登记。
 
 ## 实际能力和边界
 

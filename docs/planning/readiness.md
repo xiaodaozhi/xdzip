@@ -32,4 +32,4 @@ M2 只读 ZIP 完整查询与索引已完成开发和三平台自动化验收。
 
 领域与窗口组件的历史准备见 [组件增量](../qa/foundation-components.md)，M2 查询见 [只读契约](../engineering/m2-readonly.md)，当前写入和任务语义见 [M3 契约](../engineering/m3-extraction.md)。示例组件预览始终明确标识；实际浏览应用执行真实归档操作。
 
-WP-10 已实现有界输入树、流式 Store／Deflate 写入、写后逐项校验、整体发布与真实创建窗口；本地互操作与安全回归通过，三平台运行记录及桌面人工状态见 [WP-10 验收](../qa/m4-acceptance.md)。下一实现工作包为 WP-11 TAR/GZIP。TAR/GZIP、内容预览和外部进程扩展仍依后续里程碑准入。
+WP-10 已实现有界输入树、流式 Store／Deflate 写入、写后逐项校验、整体发布与真实创建窗口；三平台自动化与互操作回归通过，运行记录及桌面人工状态见 [WP-10 验收](../qa/m4-acceptance.md)。下一实现工作包为 WP-11 TAR/GZIP。TAR/GZIP、内容预览和外部进程扩展仍依后续里程碑准入。
