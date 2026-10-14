@@ -34,20 +34,46 @@ Menu {
             returnFocusItem.forceActiveFocus(Qt.PopupFocusReason);
     }
     background: Item {
-        // Soft rounded layers work on the software renderer as well as the GPU.
-        Repeater {
-            model: Theme.menuShadowLayers
-            Rectangle {
-                required property int index
-                readonly property real spread: Theme.menuShadowRadius * (1 - index / Theme.menuShadowLayers)
-                objectName: "menuShadowLayer-" + index
-                x: -spread
-                y: Theme.menuShadowOffsetY - spread
-                width: parent.width + spread * 2
-                height: parent.height + spread * 2
-                radius: Theme.menuRadius + spread
-                color: Theme.menuShadow
-                opacity: 1 / Theme.menuShadowLayers
+        // Rasterize one blurred rounded silhouette. Stacked expanded rectangles
+        // produce visible bands and disproportionately dark corners.
+        Canvas {
+            id: shadow
+            objectName: "menuShadowLayer-0"
+            readonly property real inset: Theme.menuShadowRadius * 2
+            x: -inset; y: -inset
+            width: parent.width + inset * 2
+            height: parent.height + inset * 2
+            renderTarget: Canvas.Image
+            onWidthChanged: requestPaint()
+            onHeightChanged: requestPaint()
+            Connections {
+                target: Theme
+                function onDarkChanged() { shadow.requestPaint(); }
+                function onFontScaleChanged() { shadow.requestPaint(); }
+            }
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+                ctx.clearRect(0, 0, width, height);
+                ctx.shadowColor = Theme.menuShadow;
+                ctx.shadowBlur = Theme.menuShadowRadius * 2;
+                ctx.shadowOffsetY = Theme.menuShadowOffsetY;
+                ctx.fillStyle = Theme.menuSurface;
+                const left = inset, top = inset;
+                const right = width - inset, bottom = height - inset;
+                const radius = Theme.menuRadius;
+                ctx.beginPath();
+                ctx.moveTo(left + radius, top);
+                ctx.lineTo(right - radius, top);
+                ctx.quadraticCurveTo(right, top, right, top + radius);
+                ctx.lineTo(right, bottom - radius);
+                ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+                ctx.lineTo(left + radius, bottom);
+                ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
+                ctx.lineTo(left, top + radius);
+                ctx.quadraticCurveTo(left, top, left + radius, top);
+                ctx.closePath();
+                ctx.fill();
             }
         }
         Rectangle {

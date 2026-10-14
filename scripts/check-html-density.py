@@ -117,8 +117,9 @@ def main():
                                         frame.locator('.window').screenshot(path=str(OUTPUT / f'{kind}.png'))
                                 page.keyboard.press('Escape')
                                 expect(frame.locator('.ui-menu')).to_have_count(0)
-                                operation_ratio = spec['operation']['source_to_logical'][0] / spec['operation']['source_to_logical'][1]
                                 for view in ['extract', 'progress', 'settings']:
+                                    conversion = spec['operation'].get('source_to_logical_by_view', {}).get(view, spec['operation']['source_to_logical'])
+                                    operation_ratio = conversion[0] / conversion[1]
                                     page.locator('#view').select_option(view)
                                     expect(child.locator('dialog[open]')).to_have_attribute('data-kind', view)
                                     check(tag + '/operation width ' + view, child.locator('dialog[open]').bounding_box()['width'], spec['operation']['logical_widths'].get(view, spec['operation']['logical_widths']['default']), 1)

@@ -14,6 +14,7 @@
 | 文件类型排序 | [目录优先、无后缀文件与双向排序回归](qa/type-sort.md) |
 | 根目录与文件项交互 | [Qt／HTML 同步整改与验收](qa/root-directory-interactions.md)、[实际图片审阅](qa/root-directory-interactions/index.html) |
 | 操作窗口与任务状态素材 | [正常尺寸、footer 字号与扁平圆盘验收](qa/operation-windows.md) |
+| 解压窗口最新修订 | [正常密度、原稿控件与实际交互](qa/extract-fidelity/README.md)、[HTML／Qt／原稿图片对照](qa/extract-fidelity/index.html) |
 | HTML／Qt 交互同步 | [18 项修订的对应状态及实际缩放验收](qa/html-qt-interaction-sync.md) |
 | Qt 主窗口交互修订 | [18 项问题的修正与验收](qa/qt-interaction-fixes.md) |
 | 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json)、[100%／125% 与高 DPR 实测](qa/ui-density/README.md) |

@@ -73,7 +73,6 @@
   ],
   "shadow": {
     "radius": 12,
-    "offsetY": 4,
-    "layers": 12
+    "offsetY": 4
   }
 }

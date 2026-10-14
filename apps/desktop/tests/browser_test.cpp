@@ -11,6 +11,7 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QRegularExpression>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -74,6 +75,12 @@ class BrowserTest : public QObject {
         QVERIFY(installUiFont());
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
+    void init() {
+        // Platform offscreen notices are expected; broken bindings or image
+        // resources must never pass a visual or interaction regression silently.
+        QTest::failOnWarning(QRegularExpression(
+            "Binding loop detected|Cannot open:|ReferenceError|TypeError|Unable to assign"));
+    }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
@@ -95,7 +102,7 @@ class BrowserTest : public QObject {
         QVERIFY(extract);
         QTRY_VERIFY(extract->isVisible());
         QTRY_VERIFY(visibleImagesReady(extract->contentItem()));
-        QCOMPARE(extract->width(), 614);
+        QCOMPARE(extract->width(), 491);
         auto *targetField = findVisual(extract->contentItem(), "extractTarget");
         QVERIFY(targetField);
         targetField->setProperty("text", target.path());
@@ -106,6 +113,39 @@ class BrowserTest : public QObject {
         auto *start = findVisual(extract->contentItem(), "startExtract");
         QVERIFY(start);
         QTRY_VERIFY(start->isEnabled());
+        if (!qEnvironmentVariableIsEmpty("XDZIP_M3_VISUAL_AUDIT")) {
+            const auto directory = qEnvironmentVariable("XDZIP_M3_VISUAL_AUDIT");
+            QVERIFY(QDir().mkpath(directory));
+            QVERIFY(visual_audit::save(extract, directory, "extract-selected"));
+            window->setProperty("darkMode", true);
+            QTRY_VERIFY(visibleImagesReady(extract->contentItem()));
+            QVERIFY(visual_audit::save(extract, directory, "extract-dark"));
+            window->setProperty("darkMode", false);
+            QTRY_VERIFY(visibleImagesReady(extract->contentItem()));
+            auto *policy = findVisual(extract->contentItem(), "extractConflictPolicy");
+            QVERIFY(policy);
+            policy->forceActiveFocus(Qt::TabFocusReason);
+            QTest::mouseClick(
+                extract, Qt::LeftButton, Qt::NoModifier,
+                policy->mapToScene(QPointF(policy->width() / 2, policy->height() / 2)).toPoint());
+            auto *popup = policy->property("popup").value<QObject *>();
+            QVERIFY(popup);
+            QTRY_VERIFY(popup->property("visible").toBool());
+            QTest::qWait(50);
+            auto *popupContent = popup->property("contentItem").value<QQuickItem *>();
+            QVERIFY(popupContent);
+            const auto popupTop =
+                popupContent->mapToScene(QPointF()).y() - popup->property("topPadding").toDouble();
+            const auto fieldTop = policy->mapToScene(QPointF()).y();
+            const auto menuGap = popupTop >= fieldTop
+                                     ? popupTop - fieldTop - policy->height()
+                                     : fieldTop - popupTop - popup->property("height").toDouble();
+            QVERIFY(qAbs(menuGap - 4) < 1);
+            QVERIFY(visual_audit::save(extract, directory, "extract-dropdown"));
+            QTest::keyClick(extract, Qt::Key_Escape);
+            QTRY_VERIFY(!popup->property("visible").toBool());
+            QVERIFY(extract->isVisible());
+        }
         // Test the explicit action without opening a desktop file manager on CI.
         controller->startExtraction(target.path(), false, false, 0, false, false);
         QTRY_VERIFY_WITH_TIMEOUT(!controller->tasks().isEmpty() &&
@@ -1006,6 +1046,8 @@ class BrowserTest : public QObject {
             content->mapToScene(QPointF()).y() - menu->property("topPadding").toDouble();
         QVERIFY(qAbs(top - more->mapToScene(QPointF(0, more->height())).y() - 4) < .1);
         const auto center = background->mapToScene(QPointF(-4, background->height() / 2));
+        // Canvas paints its blurred silhouette on the next frame.
+        QTest::qWait(50);
         const QImage after = window->grabWindow();
         const auto pixel = QPoint(qRound(center.x() * after.width() / window->width()),
                                   qRound(center.y() * after.height() / window->height()));

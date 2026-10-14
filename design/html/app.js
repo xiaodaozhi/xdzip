@@ -686,6 +686,7 @@ function windowChrome(title, taskView) {
         <button class="os-maximize" aria-label="此窗口不可最大化" disabled><span>□</span></button></div>`;
     return `<div class="os-titlebar">${mac ? controls : taskView ? icon(document.body.dataset.platform === "windows" ? "windows-document" : "linux-document") : icon("app-mark")}<span class="os-title">${esc(title)}</span>${mac ? '<span class="os-balance"></span>' : controls}</div>`;
 }
+let applyingReviewPreset = false;
 function dialog(html, kind, spec, focus) {
     XdzipControls.close({ restoreFocus: false });
     XdzipControls.hideTooltip();
@@ -704,7 +705,14 @@ function dialog(html, kind, spec, focus) {
     el.style.left = el.style.top = el.style.margin = el.style.transform = "";
     state.modal = kind;
     el.dataset.kind = kind;
+    if (!applyingReviewPreset && document.body.dataset.standalone === "true" && window.XDZIP_DISPLAY_SPEC.views[kind]) {
+        setCanvasLogicalScale(kind);
+        if (window.parent !== window)
+            window.parent.postMessage({type:"xdzip-review-window", view:kind}, "*");
+    }
     setSpec(spec);
+    el.querySelectorAll("select.field-select").forEach(select => select.dataset.xdzipSelect = "true");
+    XdzipControls.enhanceSelects(el);
     // Decision windows block only their owner; task details/settings remain modeless.
     const modeless = [
         "progress",
@@ -736,9 +744,15 @@ function dialog(html, kind, spec, focus) {
     };
     if (focus) $(focus)?.focus();
 }
-function closeModal() {
+function closeModal({ preserveReview = false } = {}) {
     if ($("#modal").open) $("#modal").close();
     state.modal = null;
+    if (!preserveReview && document.body.dataset.standalone === "true") {
+        document.body.dataset.standalone = "false";
+        setCanvasLogicalScale("main");
+        if (window.parent !== window)
+            window.parent.postMessage({type:"xdzip-review-window", view:"main"}, "*");
+    }
     render();
     const restored = returnFocus?.isConnected
         ? returnFocus
@@ -822,7 +836,7 @@ function showExtract(scope = "selected", retryFiles = null) {
             `${esc(state.archiveTitle)} · ${scope === "all" ? "整个归档" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
             "archive",
         ) +
-            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row"><input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : "下载"}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group"><div class="field-label">解压范围</div><div class="scope-box">${
+            `<div class="modal-content"><div class="field-group"><label class="field-label" for="target-base">解压到</label><div class="input-row destination-field">${icon("folder")}<input id="target-base" class="text-input" value="${state.scenario === "permission" ? "系统 / 受保护目录" : esc(state.plan.target)}"><button class="button" id="change-target">更改</button></div><label class="check-label"><input id="same-folder" type="checkbox" checked>创建同名文件夹</label><p id="target-preview" class="field-note"></p><p id="target-valid" class="field-note success"></p></div><div class="field-group scope-card"><div class="field-label">解压范围</div><div class="scope-box">${
                 scope !== "all"
                     ? `<label class="radio-row"><input type="radio" name="scope" value="${scope}" checked><span>${scope === "results" ? "当前搜索结果" : scope === "retry" ? "失败或未完成项" : "所选文件"}</span><small>${count} 项 · ${bytes(sum)}</small></label><div class="scope-files">${chosen
                           .slice(0, 3)
@@ -834,7 +848,7 @@ function showExtract(scope = "selected", retryFiles = null) {
                               "",
                           )}${count > 3 ? `<br>另有 ${count - 3} 个文件` : ""}</div>`
                     : ""
-            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">遇到重名文件时</label><select id="conflict-policy" class="field-select"><option value="ask">询问我如何处理</option><option value="rename">自动改名，保留两个版本</option><option value="skip">跳过已有文件</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label><label class="check-label"><input id="allow-high-ratio" type="checkbox">允许高压缩比文件（仍受字节限额约束）</label></div>` +
+            }<label class="radio-row"><input type="radio" name="scope" value="all" ${scope === "all" ? "checked" : ""}><span>全部归档</span><small>${files.length} 项 · ${bytes(archiveBytes)}</small></label></div></div><div class="field-group"><label for="conflict-policy" class="field-label">重名文件</label><select id="conflict-policy" class="field-select" data-xdzip-select><option value="ask">询问我如何处理</option><option value="skip">跳过已有文件</option><option value="rename">自动改名，保留两个版本</option><option value="overwrite">覆盖已有文件</option></select><p id="policy-note" class="field-note">保留已有文件，确认后再处理。</p></div><label class="check-label"><input id="open-after" type="checkbox" checked>完成后打开目标文件夹</label><label class="check-label"><input id="allow-high-ratio" type="checkbox">允许高压缩比文件（仍受字节限额约束）</label></div>` +
             footer(
                 cancelButton() +
                     `<button id="start-extract" class="button primary">开始解压</button>`,
@@ -853,7 +867,7 @@ function showExtract(scope = "selected", retryFiles = null) {
         $("#target-valid").className =
             "field-note " + (denied ? "error" : "success");
         $("#target-valid").innerHTML =
-            `${icon(denied ? "status-warning" : "success")}<span>${
+            `${icon(denied ? "status-warning" : "status-success")}<span>${
                 denied
                     ? "此位置不可写，请更改目标文件夹。"
                     : "目标位置可用（示例检查）"
@@ -861,7 +875,15 @@ function showExtract(scope = "selected", retryFiles = null) {
         $("#start-extract").disabled = denied;
     };
     $("#target-base").oninput = check;
-    $("#same-folder").onchange = check;
+    $("#same-folder").onchange = () => {
+        const folder = " / " + state.archiveTitle.replace(/\.[^.]+$/, "");
+        const input = $("#target-base");
+        if (!$("#same-folder").checked && input.value.endsWith(folder))
+            input.value = input.value.slice(0, -folder.length);
+        else if ($("#same-folder").checked && !input.value.endsWith(folder))
+            input.value += folder;
+        check();
+    };
     $("#change-target").onclick = () => {
         $("#target-base").value = "下载";
         check();
@@ -1350,7 +1372,7 @@ function scenario(value) {
     state.archiveState = "ready";
     $("#search").value = "";
     $("#welcome").hidden = true;
-    if ($("#modal").open) closeModal();
+    if ($("#modal").open) closeModal({preserveReview:true});
     if (["empty", "unsupported", "damaged", "loading"].includes(value)) {
         state.archiveState = value;
         if (value === "loading")
@@ -1436,7 +1458,7 @@ $("#tasks").onclick = showTask;
 $("#settings").onclick = showSettings;
 $("#platform").onchange = (event) => {
     document.body.dataset.platform = event.target.value;
-    if ($("#modal").open) closeModal();
+    if ($("#modal").open) closeModal({preserveReview:true});
     $("#search").setAttribute(
         "aria-keyshortcuts",
         event.target.value === "macos" ? "Meta+F" : "Control+F",
@@ -1492,8 +1514,10 @@ render();
 // Public review API: UI demonstrations only, no file IO or codecs.
 window.XdzipDesign = {
     open(view) {
+        applyingReviewPreset = true;
+        try {
         if (state.task?.reviewPaused) state.task = null;
-        if ($("#modal").open) closeModal();
+        if ($("#modal").open) closeModal({preserveReview:true});
         // Artboard changes restore the ready demo fixture after an error scene.
         // Active user-started demo tasks retain their own background state.
         if (
@@ -1525,6 +1549,7 @@ window.XdzipDesign = {
             state.task.reviewPaused = true;
             updateProgress();
         } else scenario(view);
+        } finally { applyingReviewPreset = false; }
     },
     theme: setTheme,
     platform(value) {
@@ -1535,7 +1560,7 @@ window.XdzipControls.configure({ icon });
 function setCanvasLogicalScale(view) {
     const spec = window.XDZIP_DISPLAY_SPEC;
     const main = ["main", "empty", "damaged"].includes(view);
-    document.documentElement.style.setProperty("--ui-source-factor", 1 / (main ? spec.sourceToLogical : spec.operationSourceToLogical));
+    document.documentElement.style.setProperty("--ui-source-factor", 1 / (spec.views[view]?.sourceToLogical ?? (main ? spec.sourceToLogical : spec.operationSourceToLogical)));
 }
 const reviewQuery = new URLSearchParams(location.search);
 setCanvasLogicalScale(reviewQuery.get("view") || "main");

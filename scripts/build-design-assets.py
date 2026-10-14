@@ -292,7 +292,10 @@ def gallery(entries: list[dict]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Verify generated SVGs and gallery without rewriting files')
+    parser.add_argument('--metadata-only', action='store_true', help='Refresh runtime usage and gallery while preserving all image bytes and raster records')
     args = parser.parse_args()
+    if args.metadata_only:
+        args.check = True  # Build expected descriptors without recropping or drawing.
     for folder in ('reference', 'demo', 'svg/light', 'svg/dark', 'png/light', 'png/dark', 'preview'):
         (ROOT / folder).mkdir(parents=True, exist_ok=True)
     entries = crop_entries(args.check) + svg_entries(args.check) + brand_entries()
@@ -307,7 +310,16 @@ def main() -> None:
         'component_reference_coverage': component_reference_coverage(),
         'assets': entries,
     }
-    if args.check:
+    if args.metadata_only:
+        existing = json.loads((ROOT / 'manifest.json').read_text())
+        recorded = {item['file']: item for item in existing['assets']}
+        for item in entries:
+            assert item['file'] in recorded, 'Generate a new image before refreshing its metadata'
+            assert item['sha256'] == recorded[item['file']]['sha256'], 'Image changes require a full asset export'
+            recorded[item['file']].update(item)
+        (ROOT / 'manifest.json').write_text(json.dumps(existing, ensure_ascii=False, indent=2) + '\n')
+        (ROOT / 'index.html').write_text(gallery(entries))
+    elif args.check:
         existing = json.loads((ROOT / 'manifest.json').read_text())
         recorded = {item['file']: item for item in existing['assets']}
         assert existing['reference_coverage'] == reference_coverage(), 'Stale reference coverage ledger'

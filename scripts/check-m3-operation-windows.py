@@ -9,7 +9,8 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--input', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
 args = parser.parse_args()
-reference = json.loads((ROOT / 'docs/qa/m3/html-operation-metrics.json').read_text())['scenes']
+reference = json.loads((ROOT / 'docs/qa/extract-fidelity/html-operation-metrics.json').read_text())['scenes']
+layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())['operation']
 checks = []
 
 
@@ -39,12 +40,12 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
     for node in capture['nodes']:
         if node['visible'] and node['class'].startswith('AppButton') and node['y'] > capture['height'] - 120:
             label = text_node(capture, node['text'])
-            check(name + '/' + node['text'] + '/footer size', label['fontPixelSize'], 15)
+            check(name + '/' + node['text'] + '/footer size', label['fontPixelSize'], layout['footer']['fontSize'])
             check(name + '/' + node['text'] + '/inside right edge', node['x'] + node['width'] <= capture['width'] + 1, True)
             check(name + '/' + node['text'] + '/inside bottom edge', node['y'] + node['height'] <= capture['height'] + 1, True)
             if kind == 'extract':
-                check(name + '/' + node['text'] + '/action height', node['height'], 40)
-                check(name + '/' + node['text'] + '/action minimum width', node['width'] >= 96, True)
+                check(name + '/' + node['text'] + '/action height', node['height'], 32)
+                check(name + '/' + node['text'] + '/action minimum width', node['width'] >= 77, True)
             else:
                 check(name + '/' + node['text'] + '/action height', node['height'], 38)
     if kind == 'progress':
@@ -52,9 +53,25 @@ for name, kind, title in [('extract-options', 'extract', '解压文件'),
         footer = text_node(capture, '关闭此窗口后，任务仍会继续。')
         check(name + '/hint text left edges', body['x'], footer['x'], .5)
         check(name + '/body hint size', body['fontPixelSize'], 15)
-        check(name + '/footer hint size', footer['fontPixelSize'], 13)
+        check(name + '/footer hint size', footer['fontPixelSize'], layout['footer']['noteSize'])
         for note in (body, footer):
             check(name + '/' + note['text'] + '/visible without scroll', 0 <= note['y'] and note['y'] + note['height'] <= capture['height'], True)
+
+# Destination geometry comes from the independent source measurements, rather
+# than copying the QML constants into the expected values.
+source = json.loads((ROOT / 'docs/visual/extract-reference.json').read_text())
+ratio = source['source_to_logical'][0] / source['source_to_logical'][1]
+capture = json.loads((args.input / 'extract-selected.json').read_text())
+named = {n['name']: n for n in capture['nodes'] if n.get('name') and n['visible']}
+field = named['extractDestinationField']
+change = named['extractChangeTarget']
+check('extract/destination field height', field['height'], source['source_field_height'] * ratio, 1.5)
+check('extract/change vertical center', change['y'] + change['height'] / 2, field['y'] + field['height'] / 2, .5)
+check('extract/change inside field', change['x'] >= field['x'] and change['x'] + change['width'] <= field['x'] + field['width'], True)
+check('extract/destination card fill', named['extractDestinationCard']['color'].upper(), source['colors']['card'].upper())
+check('extract/conflict card fill', named['extractConflictCard']['color'].upper(), source['colors']['card'].upper())
+check('extract/scope body fill', named['extractScopeCard']['color'], '#ffffff')
+check('extract/path body size', named['extractTarget']['fontPixelSize'], round(source['source_body_font'] * ratio))
 
 report = dict(passed=sum(c['passed'] for c in checks), failed=sum(not c['passed'] for c in checks),
               checks=checks, source='Frozen HTML logical metrics; actual Qt JSON and unedited captures',

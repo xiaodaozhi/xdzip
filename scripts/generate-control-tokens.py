@@ -28,6 +28,10 @@ def main():
     declarations.append(f'  --operation-source-factor: {operation_ratio[1] / operation_ratio[0]};')
     for kind, density in layout['operation']['oversized_source_density'].items():
         declarations.append(f'  --operation-{kind}-density: {density};')
+    for kind, ratio in layout['operation'].get('source_to_logical_by_view', {}).items():
+        declarations.append(f'  --operation-{kind}-density: calc({ratio[0] / ratio[1]} * var(--ui-source-factor));')
+    for kind, value in layout['operation']['logical_widths'].items():
+        declarations.append(f'  --operation-{kind}-width: calc({value}px * var(--ui-source-factor));')
     for name, value in layout['operation']['footer'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-footer-{key}: calc({value}px * var(--ui-source-factor));')
@@ -49,6 +53,10 @@ def main():
         for name, value in tokens[theme].items():
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
             declarations.append(f'  --ui-{key}: {value};')
+        for name, value in palette[theme].items():
+            if name.startswith('operation'):
+                key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
+                declarations.append(f'  --{key}: {value};')
         for name, value in tree['colors'][theme].items():
             if not value.startswith('#'):
                 source_theme, key = value.split('.')

@@ -2,6 +2,9 @@ name: HTML design review
 on:
   push:
     paths:
+      - 'scripts/check-extract-fidelity.py'
+      - 'docs/visual/extract-reference.json'
+      - 'docs/qa/extract-fidelity/**'
       - 'design/**'
       - 'scripts/*html*'
       - 'scripts/*asset*'
@@ -26,6 +29,9 @@ on:
       - '.gitattributes'
   pull_request:
     paths:
+      - 'scripts/check-extract-fidelity.py'
+      - 'docs/visual/extract-reference.json'
+      - 'docs/qa/extract-fidelity/**'
       - 'design/**'
       - 'scripts/*html*'
       - 'scripts/*asset*'
@@ -82,6 +88,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-density.py
           .venv-design/bin/python scripts/check-html-operation-ui.py
+          .venv-design/bin/python scripts/check-extract-fidelity.py
           .venv-design/bin/python scripts/check-html-design.py
           .venv-design/bin/python scripts/build-html-header-review.py
       - name: Compare body anchors and build offline regional review
@@ -115,6 +122,7 @@ jobs:
             docs/ux/directory-tree.md
             docs/visual/directory-tree.json
             dist/html-operation-review/
+            build/operation-repair/html/
             dist/flat-status-validation.json
             dist/html-preview-review/
             dist/html-reference-review/

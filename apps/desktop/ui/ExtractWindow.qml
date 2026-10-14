@@ -10,9 +10,14 @@ OperationWindow {
     property var intent: controller.extractionIntent
     property var targetState: controller.targetCheck
     property bool allFiles: true
+    readonly property real density: Theme.operationExtractDensity
+    function unit(value: real): real { return value * density; }
     width: Theme.operationExtractWidth
-    requestedHeight: Math.min(Theme.operationExtractClientHeight, Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTr("解压文件 — xdzip")
+    readonly property string archiveFolder: String(intent.archive || "").replace(/\.[^.]+$/, "")
+    readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
+        ? (target.text.includes("\\") ? "\\" : "/") + archiveFolder : "")
     function configure() {
         allFiles = Boolean(intent.all);
         target.text = intent.target || "";
@@ -24,80 +29,122 @@ OperationWindow {
         controller.checkTarget(target.text);
     }
     readonly property bool targetReady: Boolean(targetState.valid) && controller.targetMatches(target.text)
+    Connections {
+        target: root
+        function onActiveFocusItemChanged() {
+            const item = root.activeFocusItem;
+            const flick = body.contentItem as Flickable;
+            if (!item || !flick) return;
+            let ancestor = item.parent;
+            while (ancestor && ancestor !== body) ancestor = ancestor.parent;
+            if (ancestor !== body) return;
+            const position = item.mapToItem(flick.contentItem, 0, 0);
+            const top = position.y - 4;
+            const bottom = position.y + item.height + 4;
+            if (top < flick.contentY) flick.contentY = Math.max(0, top);
+            else if (bottom > flick.contentY + flick.height)
+                flick.contentY = Math.min(flick.contentHeight - flick.height, bottom - flick.height);
+        }
+    }
     ColumnLayout {
         anchors.fill: parent; spacing: 0
         ScrollView {
             id: body
+            objectName: "extractScrollView"
             Layout.fillWidth: true; Layout.fillHeight: true
             contentWidth: availableWidth; clip: true
             ColumnLayout {
                 width: body.availableWidth; spacing: 0
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.leftMargin: Theme.operationGutter; Layout.rightMargin: Theme.operationGutter
-                    Layout.topMargin: 21; Layout.bottomMargin: 16; spacing: 20
+                    Layout.leftMargin: root.unit(Theme.operationGutter); Layout.rightMargin: root.unit(Theme.operationGutter)
+                    Layout.topMargin: root.unit(21); Layout.bottomMargin: root.unit(16); spacing: root.unit(20)
                     OperationHero {
-                        source: "qrc:/xdzip/assets/document-download.png"
-                        canvasWidth: 70; canvasHeight: 81; artworkWidth: 66; artworkHeight: 79
+                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive-large.png"
+                        canvasWidth: root.unit(70); canvasHeight: root.unit(81); artworkWidth: root.unit(66); artworkHeight: root.unit(79)
                         Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight
                     }
                     ColumnLayout {
-                        Layout.fillWidth: true; spacing: 7
-                        Text { text: qsTr("解压文件"); font.pixelSize: Theme.operationTitleSize; lineHeight: Math.round(Theme.operationTitleSize * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
+                        Layout.fillWidth: true; spacing: root.unit(7)
+                        Text { text: qsTr("解压文件"); font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); lineHeight: Math.round(Math.round(root.unit(Theme.operationTitleSize)) * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
                         Text {
                             Layout.fillWidth: true
                             text: root.intent.archive || ""; textFormat: Text.PlainText
-                            font.pixelSize: Theme.operationBodySize; color: Theme.textSecondary; elide: Text.ElideMiddle
+                            font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); color: Theme.textSecondary; elide: Text.ElideMiddle
                         }
                     }
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.leftMargin: Theme.operationExtractContentInset; Layout.rightMargin: Theme.operationExtractContentInset
-                    Layout.bottomMargin: 20; spacing: Theme.operationCardGap
+                    Layout.leftMargin: root.unit(Theme.operationExtractContentInset); Layout.rightMargin: root.unit(Theme.operationExtractContentInset)
+                    Layout.bottomMargin: root.unit(20); spacing: root.unit(Theme.operationCardGap)
                     Rectangle {
-                        Layout.fillWidth: true; implicitHeight: targetContent.implicitHeight + 32
-                        color: Theme.taskPanel; radius: Theme.operationFieldRadius; border.color: Theme.taskBorder
+                        objectName: "extractDestinationCard"
+                        Layout.fillWidth: true; implicitHeight: targetContent.implicitHeight + root.unit(32)
+                        color: Theme.operationCard; radius: root.unit(Theme.operationFieldRadius); border.color: Theme.operationCardBorder
                         ColumnLayout {
                             id: targetContent
-                            anchors.fill: parent; anchors.margins: Theme.operationCardInset; spacing: 10
-                            Text { text: qsTr("解压到"); font.pixelSize: Theme.operationBodySize; font.bold: true; color: Theme.text }
-                            RowLayout {
-                                Layout.fillWidth: true; spacing: 10
-                                OperationField { id: target; objectName: "extractTarget"; Layout.fillWidth: true; Accessible.name: qsTr("目标目录") }
-                                AppButton {
-                                    text: qsTr("浏览…"); labelSize: Theme.operationBodySize; baseHeight: 40; cornerRadius: 6; horizontalInset: 17
-                                    enabled: !root.controller.busy
-                                    onClicked: { const path = root.controller.chooseTarget(target.text); if (path) { target.text = path; root.controller.checkTarget(path); } }
+                            anchors.fill: parent; anchors.margins: root.unit(Theme.operationCardInset); spacing: root.unit(10)
+                            Text { text: qsTr("解压到"); font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); font.bold: true; color: Theme.text }
+                            Rectangle {
+                                objectName: "extractDestinationField"
+                                Layout.fillWidth: true; implicitHeight: Math.max(root.unit(44), target.contentHeight + root.unit(10), changeTarget.implicitHeight + root.unit(10))
+                                radius: root.unit(6); color: Theme.surface
+                                border.color: target.activeFocus ? Theme.accent : Theme.operationFieldBorder
+                                border.width: target.activeFocus ? 2 : 1
+                                RowLayout {
+                                    anchors.fill: parent; anchors.margins: root.unit(5); spacing: root.unit(12)
+                                    Image { source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "folder.png"; Layout.preferredWidth: root.unit(27); Layout.preferredHeight: root.unit(27); Layout.leftMargin: root.unit(6) }
+                                    OperationField {
+                                        id: target
+                                        objectName: "extractTarget"
+                                        density: root.density; framed: false
+                                        previewText: root.destinationPreview
+                                        Layout.fillWidth: true; Layout.fillHeight: true
+                                        Accessible.name: qsTr("目标目录")
+                                    }
+                                    AppButton {
+                                        id: changeTarget
+                                        objectName: "extractChangeTarget"
+                                        verticalInset: 2.5; surfaceColor: Theme.operationButtonSurface; outlineColor: Theme.operationFieldBorder
+                                        text: qsTr("更改"); labelSize: Math.round(root.unit(Theme.operationBodySize)); baseHeight: root.unit(30); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(86)
+                                        enabled: !root.controller.busy
+                                        onClicked: { const path = root.controller.chooseTarget(target.text); if (path) { target.text = path; root.controller.checkTarget(path); } }
+                                    }
                                 }
                             }
-                            OperationCheck { id: sameFolder; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTr("创建同名文件夹"); checked: true }
+                            OperationCheck {
+                                density: root.density; spacing: 13; id: sameFolder; objectName: "extractSameFolder"; Layout.fillWidth: true; text: qsTr("创建同名文件夹"); checked: true }
                             RowLayout {
-                                Layout.fillWidth: true
+                                Layout.fillWidth: true; spacing: 8
+                                Image { visible: root.targetReady; source: "qrc:/xdzip/assets/success-large.png"; Layout.preferredWidth: 24; Layout.preferredHeight: 24 }
                                 Text {
                                     Layout.fillWidth: true
                                     text: root.targetState.checking ? qsTr("正在检查目标目录…") : root.targetReady ? qsTr("目标目录可写") : root.targetState.error || qsTr("修改目录后请重新检查")
                                     textFormat: Text.PlainText; wrapMode: Text.Wrap
-                                    color: root.targetReady ? Theme.accentInk : Theme.textSecondary; font.pixelSize: Theme.operationNoteSize
+                                    color: root.targetState.error && !root.targetState.checking && !root.targetReady ? Theme.menuDanger : Theme.textSecondary; font.pixelSize: Math.round(root.unit(Theme.operationBodySize))
                                 }
-                                AppButton { objectName: "extractCheckTarget"; text: qsTr("检查目标"); labelSize: Theme.operationNoteSize; enabled: !root.controller.busy; onClicked: root.controller.checkTarget(target.text) }
+                                AppButton { objectName: "extractCheckTarget"; visible: !root.targetReady && !root.targetState.checking; text: qsTr("检查目标"); labelSize: Theme.operationExtractNoteSize; enabled: !root.controller.busy; onClicked: root.controller.checkTarget(target.text) }
                             }
                             Text {
                                 visible: Number(root.targetState.leftovers || 0) > 0
                                 Layout.fillWidth: true
                                 text: qsTr("发现 %1 个可能的暂存目录，将保留供检查。").arg(root.targetState.leftovers)
-                                wrapMode: Text.Wrap; font.pixelSize: Theme.operationNoteSize; color: Theme.textSecondary
+                                wrapMode: Text.Wrap; font.pixelSize: Theme.operationExtractNoteSize; color: Theme.textSecondary
                             }
                         }
                     }
                     Rectangle {
-                        Layout.fillWidth: true; implicitHeight: scopeContent.implicitHeight + 32
-                        color: Theme.taskPanel; radius: Theme.operationFieldRadius; border.color: Theme.taskBorder
+                        objectName: "extractScopeCard"
+                        Layout.fillWidth: true; implicitHeight: scopeContent.implicitHeight + root.unit(32)
+                        color: Theme.surface; radius: root.unit(Theme.operationFieldRadius); border.color: Theme.operationCardBorder
+                        Rectangle { x: 1; y: 1; width: parent.width - 2; height: Math.max(root.unit(42), scopeHeading.implicitHeight + root.unit(18)) - 1; radius: root.unit(Theme.operationFieldRadius); bottomLeftRadius: 0; bottomRightRadius: 0; color: Theme.operationCard }
                         ColumnLayout {
                             id: scopeContent
-                            anchors.fill: parent; anchors.margins: Theme.operationCardInset; spacing: 10
-                            Text { text: qsTr("解压范围"); font.pixelSize: Theme.operationBodySize; font.bold: true; color: Theme.text }
+                            anchors.fill: parent; anchors.margins: root.unit(Theme.operationCardInset); spacing: root.unit(10)
+                            Text { id: scopeHeading; Layout.topMargin: -5.5; Layout.bottomMargin: 5.5; text: qsTr("解压范围"); font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); font.bold: true; color: Theme.text }
                             OperationCheck {
+                                density: root.density; spacing: 13;
                                 objectName: "extractSelectedScope"
                                 visible: Number(root.intent.selectedCount || 0) > 0
                                 Layout.fillWidth: true; radioStyle: true
@@ -107,9 +154,9 @@ OperationWindow {
                             }
                             Rectangle {
                                 visible: !root.allFiles
-                                Layout.fillWidth: true; Layout.leftMargin: 28
+                                Layout.fillWidth: true; Layout.leftMargin: root.unit(28)
                                 implicitHeight: sampleContent.implicitHeight
-                                color: Theme.surface; radius: 6; border.color: Theme.taskBorder
+                                color: Theme.surface; radius: 6; border.color: Theme.operationCardBorder
                                 ColumnLayout {
                                     id: sampleContent
                                     anchors.fill: parent; spacing: 0
@@ -118,15 +165,16 @@ OperationWindow {
                                         RowLayout {
                                             id: sampleRow
                                             required property var modelData
-                                            Layout.fillWidth: true; Layout.minimumHeight: 45
-                                            Layout.leftMargin: 10; Layout.rightMargin: 10; spacing: 10
-                                            Image { source: AssetLibrary.fileIcon(String(sampleRow.modelData.name), Boolean(sampleRow.modelData.directory), false); Layout.preferredWidth: 30; Layout.preferredHeight: 30 }
-                                            Text { Layout.fillWidth: true; text: sampleRow.modelData.name; textFormat: Text.PlainText; elide: Text.ElideMiddle; color: Theme.text; font.pixelSize: Theme.operationBodySize }
+                                            Layout.fillWidth: true; Layout.minimumHeight: root.unit(45)
+                                            Layout.leftMargin: root.unit(10); Layout.rightMargin: root.unit(10); spacing: root.unit(10)
+                                            Image { source: AssetLibrary.fileIcon(String(sampleRow.modelData.name), Boolean(sampleRow.modelData.directory), false); Layout.preferredWidth: root.unit(30); Layout.preferredHeight: root.unit(30) }
+                                            Text { Layout.fillWidth: true; text: sampleRow.modelData.name; textFormat: Text.PlainText; elide: Text.ElideMiddle; color: Theme.text; font.pixelSize: Math.round(root.unit(Theme.operationBodySize)) }
                                         }
                                     }
                                 }
                             }
                             OperationCheck {
+                                density: root.density; spacing: 13;
                                 objectName: "extractAllScope"
                                 Layout.fillWidth: true; radioStyle: true
                                 text: qsTr("全部归档 · %1 条记录").arg(root.intent.archiveCount || 0)
@@ -136,40 +184,44 @@ OperationWindow {
                         }
                     }
                     Rectangle {
-                        Layout.fillWidth: true; implicitHeight: policyContent.implicitHeight + 32
-                        color: Theme.taskPanel; radius: Theme.operationFieldRadius; border.color: Theme.taskBorder
+                        objectName: "extractConflictCard"
+                        Layout.fillWidth: true; implicitHeight: policyContent.implicitHeight + root.unit(32)
+                        color: Theme.operationCard; radius: root.unit(Theme.operationFieldRadius); border.color: Theme.operationCardBorder
                         ColumnLayout {
                             id: policyContent
-                            anchors.fill: parent; anchors.margins: Theme.operationCardInset; spacing: 10
-                            Text { text: qsTr("遇到重名文件时"); font.pixelSize: Theme.operationBodySize; font.bold: true; color: Theme.text }
+                            anchors.fill: parent; anchors.margins: root.unit(Theme.operationCardInset); spacing: root.unit(10)
+                            Text { text: qsTr("重名文件"); font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); font.bold: true; color: Theme.text }
                             OperationSelect {
+                                density: root.density;
                                 id: conflict; objectName: "extractConflictPolicy"
                                 Layout.fillWidth: true
                                 model: [qsTr("询问我如何处理"), qsTr("跳过已有文件"), qsTr("自动改名，保留两个版本"), qsTr("覆盖已有文件")]
                             }
-                            Text { Layout.fillWidth: true; text: qsTr("只处理普通文件；不会覆盖源归档或跟随链接。"); wrapMode: Text.Wrap; font.pixelSize: Theme.operationNoteSize; color: Theme.textSecondary }
+                            Text { Layout.fillWidth: true; text: qsTr("只处理普通文件；不会覆盖源归档或跟随链接。"); wrapMode: Text.Wrap; font.pixelSize: Theme.operationExtractNoteSize; color: Theme.textSecondary }
                         }
                     }
-                    OperationCheck { id: openAfter; objectName: "extractOpenAfter"; Layout.fillWidth: true; text: qsTr("完成后打开目标文件夹") }
-                    OperationCheck { id: highRatio; objectName: "extractHighRatio"; Layout.fillWidth: true; text: qsTr("允许高压缩比文件（仍受字节限额约束）") }
+                    OperationCheck {
+                                density: root.density; spacing: 13; id: openAfter; objectName: "extractOpenAfter"; Layout.fillWidth: true; text: qsTr("完成后打开目标文件夹") }
+                    OperationCheck {
+                                density: root.density; spacing: 13; id: highRatio; objectName: "extractHighRatio"; Layout.fillWidth: true; text: qsTr("允许高压缩比文件（仍受字节限额约束）") }
                     Text {
                         Layout.fillWidth: true
                         visible: Boolean(root.intent.error)
                         text: root.intent.error || ""; textFormat: Text.PlainText
-                        font.pixelSize: Theme.operationNoteSize; color: Theme.menuDanger; wrapMode: Text.Wrap
+                        font.pixelSize: Theme.operationExtractNoteSize; color: Theme.menuDanger; wrapMode: Text.Wrap
                     }
                 }
             }
         }
         OperationFooter {
             Layout.fillWidth: true
-            contentInset: 24; verticalInset: 13; minimumFooterHeight: 67
+            contentInset: root.unit(24); verticalInset: root.unit(13); minimumFooterHeight: root.unit(67)
             noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
             note: root.targetReady ? qsTr("准备就绪") : qsTr("请检查目标目录")
-            AppButton { text: qsTr("取消"); labelSize: Theme.operationFooterFontSize; baseHeight: 40; cornerRadius: 6; horizontalInset: 17; minimumWidth: 96; onClicked: root.close() }
+            AppButton { text: qsTr("取消"); labelSize: Theme.operationFooterFontSize; baseHeight: root.unit(40); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(96); onClicked: root.close() }
             AppButton {
                 objectName: "startExtract"
-                text: qsTr("开始解压"); labelSize: Theme.operationFooterFontSize; baseHeight: 40; cornerRadius: 6; horizontalInset: 17; minimumWidth: 96; primary: true
+                text: qsTr("开始解压"); labelSize: Theme.operationFooterFontSize; baseHeight: root.unit(40); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: 101; primary: true
                 enabled: root.targetReady && !root.controller.busy && root.intent.session === root.controller.sessionId
                 onClicked: root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked)
             }

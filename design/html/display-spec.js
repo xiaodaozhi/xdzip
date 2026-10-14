@@ -25,7 +25,8 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             "size": [
                 1092,
                 1440
-            ]
+            ],
+            "sourceToLogical": 0.5291989664082688
         },
         "create": {
             "source": "../hifi/screens/create.png",
@@ -39,7 +40,8 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             "size": [
                 1446,
                 1088
-            ]
+            ],
+            "sourceToLogical": 0.661498708010336
         },
         "conflict": {
             "source": "../hifi/screens/conflict.png",

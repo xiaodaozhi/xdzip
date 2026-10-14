@@ -4,8 +4,9 @@ import QtQuick.Controls
 
 ComboBox {
     id: root
-    implicitHeight: Math.max(Theme.operationFieldHeight, contentItem.implicitHeight + 16)
-    font.pixelSize: Theme.operationBodySize
+    property real density: 1
+    implicitHeight: Math.max(Theme.operationFieldHeight * density, contentItem.implicitHeight + 16 * density)
+    font.pixelSize: Math.round(Theme.operationBodySize * density)
     leftPadding: 12
     rightPadding: 38
     contentItem: Text {
@@ -24,20 +25,28 @@ ComboBox {
     background: Rectangle {
         radius: 6
         color: root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : Theme.surface
-        border.color: root.activeFocus ? Theme.accent : Theme.taskBorder
+        border.color: root.activeFocus ? Theme.accent : Theme.operationFieldBorder
         border.width: root.activeFocus ? 2 : 1
     }
     delegate: CommandMenuItem {
         required property var modelData
         required property int index
         width: root.popup.availableWidth
-        labelSize: Theme.operationBodySize
+        labelSize: Math.round(Theme.operationBodySize * root.density)
         text: String(modelData)
+        checkable: true
+        checked: root.currentIndex === index
         highlighted: root.highlightedIndex === index
         onTriggered: { root.currentIndex = index; root.popup.close(); }
     }
     popup: CommandMenu {
-        y: root.height + Theme.mainPopupGap
+        // Keep the normal gap on either side of the field, including short windows.
+        y: {
+            const expectedHeight = Math.min(Math.max(root.count * Theme.menuRowHeight, contentItem.implicitHeight) + padding * 2, root.Window.height - 40);
+            const fieldTop = root.mapToItem(null, 0, 0).y;
+            return fieldTop + root.height + Theme.mainPopupGap + expectedHeight > root.Window.height - Theme.menuViewportInset
+                ? -expectedHeight - Theme.mainPopupGap : root.height + Theme.mainPopupGap;
+        }
         width: root.width
         implicitHeight: Math.min(contentItem.implicitHeight + topPadding + bottomPadding, root.Window.height - 40)
         contentItem: ListView {

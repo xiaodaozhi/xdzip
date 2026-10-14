@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = ROOT / 'design/assets'
 QUOTED = re.compile(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'')
 
+HIGH_RES_ICONS = set(json.loads((ROOT / 'docs/visual/operation-assets.json').read_text())['icons'])
+
 
 def require(condition, message):
     if not condition:
@@ -181,10 +183,7 @@ def check_qt(base, assets, qrc):
         scale = entry.get('scale')
         require(logical_size == [24, 24] and vector.get('logical_size') == logical_size,
                 f'Runtime icon logical size must be 24×24: {node.text}')
-        large = scale == 9 and Path(entry['source']).stem in {
-            'document-download', 'status-success', 'cancelled-large', 'conflict-warning',
-            'document-conflict', 'file-text', 'file-code', 'file-pdf', 'file-markdown',
-            'image-file', 'image-amber', 'folder'}
+        large = scale == 9 and Path(entry['source']).stem in HIGH_RES_ICONS
         require((scale in (1, 2, 3) or large) and entry['size'] == [24 * scale, 24 * scale],
                 f'Invalid icon raster scale: {node.text}')
         require(png_dimensions(path) == entry['size'],

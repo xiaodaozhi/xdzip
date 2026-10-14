@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | `svg/light`、`svg/dark` | 每主题 74 类；全部 24×24 透明画布 | HTML 和 Qt 共用的界面矢量源 |
 | `png/light`、`png/dark` | 每主题 222 张；24/48/72 px | 同一矢量的 1×/2×/3× 透明导出；Qt QRC 使用 3× |
+| `png/light/*@9x.png`、`png/dark/*@9x.png` | 每主题 13 张；216 px | 操作窗口大图标；语义清单维护在 `docs/visual/operation-assets.json` |
 | `reference` | 71 张 PNG（45 既有图标参考 + 26 目录树 B）；保留源区域物理尺寸 | 原像素参考，保留背景，不作为透明运行图标 |
 | `demo` | 3 张照片；保留原始切片分辨率 | HTML 示例缩略图及预览；产品预览服务提供真实图像 |
 | `brand` | 26 项；应用与 ZIP 文档母版、平台格式及设计参考 | 系统应用图标、界面品牌和后续安装器的文件图标素材 |
@@ -63,6 +64,7 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 ```sh
 python3 scripts/build-brand-assets.py
 python3 scripts/build-design-assets.py
+python3 scripts/build-design-assets.py --metadata-only
 python3 scripts/render-design-assets.py
 python3 scripts/check-design-assets.py
 python3 scripts/check-asset-integration.py
@@ -70,6 +72,8 @@ python3 scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directo
 # Embed the existing gallery images for offline / mobile review.
 python3 scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
 ```
+
+仅更新 QRC 使用映射时可单独执行 `build-design-assets.py --metadata-only`；它核对既有文件的 SHA-256，再刷新清单和画廊，不重新裁图或渲染素材。
 
 `asset_definitions.py` 维护界面形状、参考坐标及固定光学边界，`brand_assets.py` 维护共用品牌几何与平台导出规格。构建工具依赖 Pillow；透明导出和联系表依赖 Playwright / Chromium。使用 `XDZIP_CHROMIUM` 指定浏览器，使用 `XDZIP_FONTCONFIG_FILE` 指定画廊字体配置；这套工具不进入产品运行时。`build-brand-assets.py --check` 只校验品牌母版、透明 PNG、来源凭据及 ICO / ICNS 容器，不写回文件。
 

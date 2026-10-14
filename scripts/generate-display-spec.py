@@ -29,6 +29,8 @@ def main():
                 mainDensity=layout['main']['density'],
                 views={key: dict(source='../hifi/screens/' + filename if filename else None,
                                  size=size) for key, (filename, size) in sizes.items()})
+    for key, ratio in layout['operation'].get('source_to_logical_by_view', {}).items():
+        spec['views'][key]['sourceToLogical'] = ratio[0] / ratio[1]
     output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'
               'window.XDZIP_DISPLAY_SPEC = Object.freeze(' + json.dumps(spec, indent=4) + ');\n')
     path = ROOT / 'design/html/display-spec.js'

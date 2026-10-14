@@ -7,18 +7,21 @@ Button {
     property real minimumWidth: 0
     property real horizontalInset: Theme.gutter
     property real labelSize: Theme.bodySize
+    property real verticalInset: 6
+    property color surfaceColor: Theme.surface
+    property color outlineColor: Theme.border
     property bool primary: false
     property bool dangerous: false
     property real cornerRadius: Theme.controlRadius
     property string explanation: ""
     property real density: 1
     hoverEnabled: true
-    implicitHeight: Math.max(root.baseHeight * density, contentItem.implicitHeight + 12 * density)
+    implicitHeight: Math.max(root.baseHeight * density, contentItem.implicitHeight + root.verticalInset * 2 * density)
     implicitWidth: Math.max(root.minimumWidth, contentItem.implicitWidth + root.horizontalInset * 2 * density)
     leftPadding: Theme.gap * density
     rightPadding: Theme.gap * density
-    topPadding: 6 * density
-    bottomPadding: 6 * density
+    topPadding: root.verticalInset * density
+    bottomPadding: root.verticalInset * density
     focusPolicy: Qt.StrongFocus
     Accessible.name: text
     Accessible.description: explanation
@@ -36,8 +39,8 @@ Button {
     }
     background: Rectangle {
         radius: root.cornerRadius * root.density
-        color: !root.enabled ? (root.primary ? Theme.accentDisabled : Theme.surface) : root.dangerous ? Qt.rgba(Theme.menuDanger.r, Theme.menuDanger.g, Theme.menuDanger.b, root.down ? .2 : root.hovered ? .12 : .06) : root.primary ? (root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : Theme.surface
-        border.color: root.activeFocus ? Theme.accent : root.dangerous ? Theme.menuDanger : Theme.border
+        color: !root.enabled ? (root.primary ? Theme.accentDisabled : root.surfaceColor) : root.dangerous ? Qt.rgba(Theme.menuDanger.r, Theme.menuDanger.g, Theme.menuDanger.b, root.down ? .2 : root.hovered ? .12 : .06) : root.primary ? (root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : root.surfaceColor
+        border.color: root.activeFocus ? Theme.accent : root.dangerous ? Theme.menuDanger : root.outlineColor
         border.width: root.activeFocus ? 2 : 1
     }
 }

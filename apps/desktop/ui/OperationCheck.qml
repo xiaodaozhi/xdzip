@@ -5,36 +5,32 @@ import QtQuick.Controls
 CheckBox {
     id: root
     property bool radioStyle: false
+    property real density: 1
     autoExclusive: radioStyle
     hoverEnabled: true
     padding: 0
-    spacing: Theme.operationControlGap
-    implicitHeight: Math.max(28, contentItem.implicitHeight + 4)
+    spacing: Theme.operationControlGap * density
+    implicitHeight: Math.max(28 * density, contentItem.implicitHeight + 4 * density)
     indicator: Rectangle {
         x: root.leftPadding
         y: (root.height - height) / 2
-        width: Theme.operationControlIndicatorSize
+        width: Theme.operationControlIndicatorSize * (root.radioStyle ? 1 : root.density)
         height: width
-        radius: root.radioStyle ? width / 2 : 4
-        color: root.checked && !root.radioStyle ? Theme.accent : Theme.surface
-        border.width: root.activeFocus ? 2 : 1
+        radius: root.radioStyle ? width / 2 : 4 * root.density
+        color: root.checked || root.radioStyle ? "transparent" : Theme.surface
+        border.width: root.activeFocus ? 2 : root.checked || root.radioStyle ? 0 : 1
         border.color: root.checked || root.hovered || root.activeFocus ? Theme.accent : Theme.textSecondary
-        Rectangle {
-            visible: root.radioStyle && root.checked
-            anchors.centerIn: parent
-            width: parent.width * .55; height: width; radius: width / 2
-            color: Theme.accent
-        }
         Image {
-            visible: !root.radioStyle && root.checked
-            anchors.fill: parent
-            source: "qrc:/xdzip/assets/dark/check.png"
+            visible: root.radioStyle || root.checked
+            anchors.centerIn: parent
+            width: parent.width * 24 / 19; height: width
+            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (root.radioStyle ? (root.checked ? "radio-selected.png" : "radio-unselected.png") : "check-selected.png")
         }
     }
     contentItem: Text {
         text: root.text
         textFormat: Text.PlainText
-        font.pixelSize: Theme.operationBodySize
+        font.pixelSize: Math.round(Theme.operationBodySize * root.density)
         color: root.enabled ? Theme.text : Theme.textSecondary
         leftPadding: root.indicator.width + root.spacing
         verticalAlignment: Text.AlignVCenter

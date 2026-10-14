@@ -2795,6 +2795,7 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
+          "assets/light/archive-large.png",
           "assets/archive.png",
           "assets/light/archive.png"
         ]
@@ -3043,7 +3044,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/check-selected.png"
+        ]
       },
       "sha256": "86dd23a02b4b73116408a698bc1eb9a63d4ef5a514df5275407a1ed8f9a0fde8",
       "source_reference": "reference/check-selected.png",
@@ -4139,7 +4142,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/radio-selected.png"
+        ]
       },
       "sha256": "695a4cb86da3966efa2009c87197777b186dfe665dc6dc9282b34a8a44d9eaae",
       "source_reference": "reference/radio-selected.png",
@@ -4169,7 +4174,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/radio-unselected.png"
+        ]
       },
       "sha256": "16c3caba2b73899e81ad178c710640d5ea78f97c8b6d027857e2a873d1a55593",
       "source_reference": "reference/radio-unselected.png",
@@ -5151,6 +5158,7 @@
       "runtime_usage": {
         "html": "registered in the shared design library",
         "qt_aliases": [
+          "assets/dark/archive-large.png",
           "assets/dark/archive.png"
         ]
       },
@@ -5397,7 +5405,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/check-selected.png"
+        ]
       },
       "sha256": "004096643e9b23b546c39345f4267c295da70e525c50a501786ab579fe114154",
       "source_reference": "reference/check-selected.png",
@@ -6487,7 +6497,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/radio-selected.png"
+        ]
       },
       "sha256": "261682d2b0a4296e9a64455fbbed6285969d7e22ecd88b9f814f3656f130976a",
       "source_reference": "reference/radio-selected.png",
@@ -6517,7 +6529,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/radio-unselected.png"
+        ]
       },
       "sha256": "949d5689a1cfb64c03794b11aa98c75f7e6afe5e197e3986615fa6b6680a575a",
       "source_reference": "reference/radio-unselected.png",
@@ -22750,6 +22764,66 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "9aece79fc8b00e30618f8758e845d446b8f112aa08bbc81bfb9d5b830d262bbd"
+    },
+    {
+      "id": "raster/light/archive@9x",
+      "file": "png/light/archive@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "light",
+      "category": "brand",
+      "source": "svg/light/archive.svg",
+      "source_sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
+      "visible_bounds": [
+        4.3333,
+        2.0,
+        19.6667,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "e5ccc0e3afe188e110055453bb7700644cd1dbd437f95b63f4d8a95fd924f029"
+    },
+    {
+      "id": "raster/dark/archive@9x",
+      "file": "png/dark/archive@9x.png",
+      "kind": "vector-rasterization",
+      "size": [
+        216,
+        216
+      ],
+      "canvas": [
+        24,
+        24
+      ],
+      "logical_size": [
+        24,
+        24
+      ],
+      "scale": 9,
+      "theme": "dark",
+      "category": "brand",
+      "source": "svg/dark/archive.svg",
+      "source_sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
+      "visible_bounds": [
+        4.3333,
+        2.0,
+        19.6667,
+        22.0
+      ],
+      "usage": "runtime-and-design",
+      "sha256": "467f57d1bc88f0b0801ad131f38895a965c784cf1ee8b62b53e124b7ac11a834"
     }
   ]
 }

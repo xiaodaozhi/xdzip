@@ -27,6 +27,7 @@
     "file-markdown",
     "image-file",
     "image-amber",
-    "folder"
+    "folder",
+    "archive"
   ]
 }

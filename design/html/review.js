@@ -12,7 +12,7 @@
     const current = id => document.querySelector(`#${id}`).value;
     const number = value => Number(value.toFixed(2));
     const isMainView = () => ["main","empty","damaged"].includes(current("view"));
-    const logicalScale = () => isMainView() ? displaySpec.sourceToLogical : displaySpec.operationSourceToLogical;
+    const logicalScale = () => displaySpec.views[current("view")].sourceToLogical ?? (isMainView() ? displaySpec.sourceToLogical : displaySpec.operationSourceToLogical);
 
     // Source-image pixels are measurement coordinates. Normal presentation uses
     // explicit CSS logical dimensions; devicePixelRatio never changes this ratio.
@@ -155,5 +155,14 @@
             }
         });
     }
+    window.addEventListener("message", event => {
+        if (event.source !== frame.contentWindow || event.data?.type !== "xdzip-review-window") return;
+        const view = event.data.view;
+        if (!displaySpec.views[view]) return;
+        document.querySelector("#view").value = view;
+        // Resize the active window without replaying a preset or resetting its task.
+        updateReference();
+        fit();
+    });
     update();
 })();

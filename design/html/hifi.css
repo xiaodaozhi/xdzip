@@ -1,7 +1,7 @@
 /* Reference artboard: 1548 × 940, measured from the approved 1586 × 992 image.
    The outer reviewer scales this whole artboard; it does not reflow desktop UI. */
 :root { --font:"Xdzip Design Sans SC",sans-serif; --canvas:#f7f8fa; --surface:#fff; --sidebar:#f5f6f8; --text:#141827; --secondary:#626b86; --border:#e3e7ef; --accent:#1956ff; --accent-ink:#1956ff; --accent-hover:#1048e8; --selection:#e7edff; --row-height:66px; }
-:root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#4277ff; --accent-ink:#8aafff; --selection:#30436a; }
+:root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#3264e9; --accent-ink:#8aafff; --selection:#30436a; }
 :root { --pane-header-height:69px; --pane-header-font-size:20px; --pane-header-line-height:28px; --pane-header-text-offset:-2px; }
 /* Column labels and values share the same content edge at every row. */
 :root { --original-size-column-inset:26px; --compressed-size-column-inset:22px; --type-column-inset:28px; }
@@ -529,7 +529,7 @@ tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; bac
 #tasks .task-chevron svg { width:20px; height:20px; transform:none; }
 #settings { display:none; }
 /* Independent operation-window artboards retain their own system titlebars. */
-dialog { width:740px; max-height:940px; border:1px solid var(--border); border-radius:18px; font-size:18px; padding:0; }
+dialog { width:var(--operation-default-width); max-height:940px; border:1px solid var(--border); border-radius:18px; font-size:18px; padding:0; }
 .os-titlebar { height:52px; min-height:52px; padding:0 22px; }
 .os-title { font-size:17px; }
 .mac-controls { width:66px; gap:9px; }
@@ -615,7 +615,7 @@ dialog[data-kind="extract"] .modal-symbol { width:calc(106px * var(--operation-e
 dialog[data-kind="extract"] .modal-symbol svg { width:calc(100px * var(--operation-extract-density)); height:calc(120px * var(--operation-extract-density)); }
 dialog[data-kind="extract"] .modal-header h1 { font-size:calc(38px * var(--operation-extract-density)); }
 dialog[data-kind="extract"] .modal-header p { font-size:calc(24px * var(--operation-extract-density)); }
-dialog[data-kind="extract"] .field-group { padding:calc(22px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); border:calc(1px * var(--operation-extract-density)) solid var(--border); border-radius:calc(12px * var(--operation-extract-density)); background:linear-gradient(var(--canvas),var(--surface)); margin:0 0 calc(16px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .field-group { padding:calc(22px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); border:calc(1px * var(--operation-extract-density)) solid var(--border); border-radius:calc(12px * var(--operation-extract-density)); border-color:var(--operation-card-border); background:var(--operation-card); margin:0 0 calc(16px * var(--operation-extract-density)); }
 dialog[data-kind="extract"] .field-label { font-size:calc(24px * var(--operation-extract-density)); font-weight:600; }
 dialog[data-kind="extract"] .text-input,dialog[data-kind="extract"] .field-select { font-size:calc(24px * var(--operation-extract-density)); height:calc(62px * var(--operation-extract-density)); background:var(--surface); }
 dialog[data-kind="extract"] .check-label { font-size:calc(24px * var(--operation-extract-density)); }
@@ -676,7 +676,7 @@ dialog[data-kind="extract"] .scope-files { max-height:none; overflow:visible; }
 .info-line { line-height:calc(32px * var(--operation-progress-density)); }
 /* Footer text uses logical sizes at either main or independent review density.
    Explicit selectors replace the old 10/12 px footer overrides. */
-:root:has(body[data-standalone="true"]) { --ui-source-factor:var(--operation-source-factor); }
+/* The active review view sets --ui-source-factor; standalone never overrides it. */
 dialog[data-kind] .modal-footer { font-size:var(--operation-footer-font-size); }
 dialog[data-kind] .modal-footer .button { font-size:var(--operation-footer-font-size); }
 dialog[data-kind] .modal-footer .ready-label,
@@ -687,3 +687,61 @@ dialog[data-kind="progress"] .info-line svg { width:var(--operation-footer-icon-
 
 :root[data-theme="dark"] #extract-menu-button { border-left-color:var(--border); }
 tbody tr:hover:not(.selected) td { background:var(--ui-control-hover); }
+
+/* Extraction source coordinates come from extract-macos.png. The contextual
+   conversion cancels reviewer density, so embedded and independent windows agree. */
+dialog[data-kind="extract"] .modal-content { padding:0 calc(34px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .destination-field { height:calc(66px * var(--operation-extract-density)); padding:calc(8px * var(--operation-extract-density)); gap:calc(16px * var(--operation-extract-density)); align-items:center; background:var(--surface); border:1px solid var(--operation-field-border); border-radius:calc(9px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .destination-field:focus-within { outline:2px solid var(--accent); outline-offset:2px; }
+dialog[data-kind="extract"] .destination-field>svg { width:calc(40px * var(--operation-extract-density)); height:calc(40px * var(--operation-extract-density)); flex-shrink:0; margin-left:calc(10px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .destination-field .text-input { flex:1; width:0; border:0; padding:0; height:100%; background:transparent; box-shadow:none; outline:0; }
+dialog[data-kind="extract"] #change-target { min-width:calc(130px * var(--operation-extract-density)); min-height:calc(46px * var(--operation-extract-density)); height:calc(46px * var(--operation-extract-density)); font-size:calc(24px * var(--operation-extract-density)); padding:0 calc(18px * var(--operation-extract-density)); flex-shrink:0; background:var(--operation-button-surface); border-color:var(--operation-field-border); }
+dialog[data-kind="extract"] #change-target:hover { background:var(--ui-control-hover); }
+dialog[data-kind="extract"] .scope-card { background:var(--surface); }
+dialog[data-kind="extract"] .scope-card>.field-label { padding:calc(18px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); margin:calc(-22px * var(--operation-extract-density)) calc(-24px * var(--operation-extract-density)) 0; background:var(--operation-card); border-radius:calc(12px * var(--operation-extract-density)) calc(12px * var(--operation-extract-density)) 0 0; }
+dialog[data-kind="extract"] .field-select { border-color:var(--operation-field-border); }
+dialog[data-kind="extract"] input[type="checkbox"] { appearance:none; width:calc(32px * var(--operation-extract-density)); height:calc(32px * var(--operation-extract-density)); border-radius:calc(5px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] input[type="checkbox"]:checked { background:var(--checkbox-selected) center/126.3158% 126.3158% no-repeat; border:0; }
+dialog[data-kind="extract"] input[type="radio"] { appearance:none; border:0; background:var(--radio-unselected) center/126.3158% 126.3158% no-repeat; }
+dialog[data-kind="extract"] input[type="radio"]:checked { background-image:var(--radio-selected); }
+.ui-select { min-width:0; }
+.ui-select [hidden] { display:none; }
+.ui-select-trigger { display:flex; align-items:center; justify-content:space-between; text-align:left; gap:12px; cursor:pointer; }
+.ui-select-trigger>span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ui-select-trigger>svg { width:var(--ui-menu-icon-size); height:var(--ui-menu-icon-size); flex-shrink:0; }
+.ui-select-trigger:hover { background:var(--ui-control-hover); }
+.ui-select-trigger[aria-expanded="true"] { border-color:var(--accent); }
+/* Match the real operation window: scroll its body and keep actions reachable. */
+dialog[data-kind="extract"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="extract"]>.os-titlebar,
+dialog[data-kind="extract"]>.modal-header,
+dialog[data-kind="extract"]>.modal-footer { flex-shrink:0; }
+dialog[data-kind="extract"]>.modal-content { min-height:0; overflow:auto; }
+
+dialog[data-kind="extract"] .check-label { gap:calc(24px * var(--operation-extract-density)); margin-top:calc(16px * var(--operation-extract-density)); line-height:calc(30px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .radio-row { gap:calc(24px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] #target-valid { color:var(--secondary); gap:calc(20px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] #target-valid>svg { width:calc(36px * var(--operation-extract-density)); height:calc(36px * var(--operation-extract-density)); }
+
+dialog[data-kind="extract"] .field-label { margin-bottom:calc(16px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] .scope-card>.field-label { height:calc(64px * var(--operation-extract-density)); padding-top:0; padding-bottom:0; margin-bottom:0; align-items:center; }
+dialog[data-kind="extract"] .field-group,
+dialog[data-kind="extract"] .destination-field,
+dialog[data-kind="extract"] .field-select,
+dialog[data-kind="extract"] .scope-files,
+dialog[data-kind="extract"] #change-target { border-width:calc(1px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] .modal-footer { background:var(--surface); border-top-width:calc(1px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] .os-titlebar { height:calc(28px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] .os-titlebar .mac-controls button { width:calc(10px * var(--ui-source-factor)); height:calc(10px * var(--ui-source-factor)); }
+
+dialog[data-kind] .modal-footer .button { font-weight:400; }
+dialog[data-kind="extract"] #start-extract { min-width:calc(190px * var(--operation-extract-density)); }
+
+dialog[data-kind] .modal-footer { gap:calc(10px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] .ready-label { gap:calc(4px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] .field-note { font-size:calc(23px * var(--operation-extract-density)); }
+dialog[data-kind="extract"] #target-valid { font-size:calc(24px * var(--operation-extract-density)); gap:calc(8px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] #target-valid>svg { width:calc(24px * var(--ui-source-factor)); height:calc(24px * var(--ui-source-factor)); }
+dialog[data-kind="extract"] #target-valid.error { color:var(--danger); }
+
+dialog[data-kind="extract"] input[type="radio"] { width:calc(20px * var(--ui-source-factor)); height:calc(20px * var(--ui-source-factor)); }

@@ -68,24 +68,29 @@ window.XdzipControls = (() => {
     function position(element, anchor, point, submenu = false, placement = "bottom-start") {
         const inset = tokens.size.menuViewportInset * sourceScale();
         const gap = tokens.size.menuGap * sourceScale();
-        element.style.maxHeight = `${Math.max(80, innerHeight - inset * 2)}px`;
-        element.style.maxWidth = `${Math.max(120, innerWidth - inset * 2)}px`;
+        const owner = element.closest('dialog[open]')?.getBoundingClientRect();
+        const left = (owner?.left || 0) + inset;
+        const top = (owner?.top || 0) + inset;
+        const right = (owner?.right || innerWidth) - inset;
+        const bottom = (owner?.bottom || innerHeight) - inset;
+        element.style.maxHeight = `${Math.max(80, bottom - top)}px`;
+        element.style.maxWidth = `${Math.max(120, right - left)}px`;
         const box = element.getBoundingClientRect();
         let x = point ? point.x : submenu ? anchor.right + gap : placement.endsWith("end") ? anchor.right - box.width : anchor.left;
         let y = point ? point.y : submenu ? anchor.top : placement.startsWith("top") ? anchor.top - box.height - gap : anchor.bottom + gap;
-        if (!point && !submenu && placement.startsWith("top") && y < inset)
+        if (!point && !submenu && placement.startsWith("top") && y < top)
             y = anchor.bottom + gap;
-        if (x + box.width > innerWidth - inset)
+        if (x + box.width > right)
             x = submenu
                 ? anchor.left - box.width - gap
-                : innerWidth - inset - box.width;
-        if (y + box.height > innerHeight - inset)
+                : right - box.width;
+        if (y + box.height > bottom)
             y =
                 point || submenu
-                    ? innerHeight - inset - box.height
+                    ? bottom - box.height
                     : anchor.top - box.height - gap;
-        element.style.left = `${Math.max(inset, x)}px`;
-        element.style.top = `${Math.max(inset, y)}px`;
+        element.style.left = `${Math.max(left, x)}px`;
+        element.style.top = `${Math.max(top, y)}px`;
     }
     function truncate(levelIndex) {
         if (!active) return;
@@ -275,6 +280,14 @@ window.XdzipControls = (() => {
             event.stopPropagation();
         });
         owner.append(element);
+        // A modal's scroll container must not clip its choices or scroll when a
+        // distant option receives focus. Keep DOM ownership and use the top layer.
+        if (owner.closest?.('dialog[open]')) {
+            element.popover = "manual";
+            element.style.inset = "auto";
+            element.style.margin = "0";
+            element.showPopover();
+        }
         return level;
     }
     function open({
@@ -402,9 +415,77 @@ window.XdzipControls = (() => {
         close({ restoreFocus: false });
         hideTooltip();
     });
+    function enhanceSelects(owner) {
+        owner.querySelectorAll('select[data-xdzip-select]').forEach((select) => {
+            if (select.dataset.enhanced) return;
+            select.dataset.enhanced = "true";
+            const wrapper = document.createElement("div");
+            wrapper.className = "ui-select";
+            select.before(wrapper);
+            wrapper.append(select);
+            select.hidden = true;
+            const trigger = document.createElement("button");
+            trigger.type = "button";
+            trigger.id = select.id + "-trigger";
+            trigger.className = "field-select ui-select-trigger";
+            trigger.setAttribute("role", "combobox");
+            trigger.setAttribute("aria-haspopup", "listbox");
+            trigger.setAttribute("aria-expanded", "false");
+            const label = owner.querySelector(`label[for="${select.id}"]`);
+            if (label) {
+                label.htmlFor = trigger.id;
+                trigger.setAttribute("aria-label", label.textContent);
+            }
+            wrapper.append(trigger);
+            function refresh() {
+                const text = document.createElement("span");
+                text.textContent = select.selectedOptions[0]?.textContent || "";
+                trigger.replaceChildren(text);
+                trigger.insertAdjacentHTML("beforeend", renderIcon("chevron-down"));
+                trigger.disabled = select.disabled;
+            }
+            function expand() {
+                const menuId = trigger.id + "-options";
+                trigger.setAttribute("aria-controls", menuId);
+                open({trigger, owner, id:menuId, label:label?.textContent || "选择选项",
+                    items:[...select.options].map(option => ({
+                        id:select.id + "-" + option.value, label:option.textContent, type:"radio", checked:option.selected,
+                        disabled:option.disabled,
+                        run:() => {
+                            select.value = option.value;
+                            select.dispatchEvent(new Event("change", {bubbles:true}));
+                        },
+                    }))});
+                const menu = owner.querySelector(".ui-menu");
+                if (!menu) return;
+                trigger.setAttribute("aria-haspopup", "listbox");
+                menu.setAttribute("role", "listbox");
+                const options = menu.querySelectorAll(".ui-menu-item");
+                options.forEach((option, index) => {
+                    option.setAttribute("role", "option");
+                    option.setAttribute("aria-selected", String(select.options[index].selected));
+                    option.removeAttribute("aria-checked");
+                });
+                options[select.selectedIndex]?.focus({preventScroll:true});
+            }
+            trigger.onclick = expand;
+            trigger.onkeydown = event => {
+                if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+                    event.preventDefault(); expand();
+                }
+            };
+            select._xdzipRefresh = refresh;
+            select.addEventListener("change", () => {
+                // Host change handlers may update dependent format/method controls.
+                queueMicrotask(() => owner.querySelectorAll("select[data-xdzip-select]").forEach(item => item._xdzipRefresh?.()));
+            });
+            refresh();
+        });
+    }
     return {
         open,
         close,
+        enhanceSelects,
         hideTooltip,
         configure(options) {
             renderIcon = options.icon;

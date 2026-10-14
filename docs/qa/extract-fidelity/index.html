@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xdzip · 解压窗口修订对照</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fa;color:#202532;font:16px/1.6 system-ui,sans-serif}main{max-width:1720px;margin:auto;padding:24px}h1{font-size:26px}h2{font-size:20px}p{max-width:1050px}a{color:#1956ff}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}figure{margin:0;padding:16px;background:white;border:1px solid #dfe5ef;border-radius:12px;min-width:0}img{display:block;max-width:100%;height:auto;margin:auto}figure:not(.reference) img{width:491px}.reference svg{display:block;width:491px;max-width:100%;height:auto;margin:auto}figcaption{color:#626b86;font-size:14px;margin-top:14px}nav{display:flex;gap:16px;flex-wrap:wrap}@media(max-width:900px){.grid,.pair{grid-template-columns:1fr}main{padding:16px}}
+</style>
+<main>
+<h1>xdzip · 解压窗口修订对照</h1>
+<p>正常宽度统一为 491 逻辑像素，正文与 footer 操作为 13。HTML 的嵌入和独立入口共用最终尺寸，Qt 直接使用同一契约。下图为实际捕获，没有截图缩小或后期重绘；原稿仅裁去外背景，并按记录的源坐标比例展示。</p>
+<nav><a href="../../../design/html/index.html?view=extract&amp;zoom=1">可操作设计稿</a><a href="README.md">修订与验证说明</a><a href="html-validation.json">HTML 记录</a><a href="qt-validation.json">Qt 记录</a></nav>
+<h2>默认状态与原稿</h2>
+<div class="grid">
+<figure><h3>HTML · 100%</h3><a href="html-extract.png"><img src="html-extract.png" alt="正常密度 HTML 解压窗口"></a><figcaption>照片示例，路径栏内嵌更改按钮，范围正文为白色，footer 固定可达。系统装饰为 HTML 外观示意。</figcaption></figure>
+<figure><h3>实际 Qt · DPR 1</h3><a href="qt-extract.png"><img src="qt-extract.png" alt="实际 Qt 解压窗口"></a><figcaption>真实 ZIP 和自有目标目录，含目录及文件选择。491×693 客户区；原生系统标题栏不包含在 grabWindow 中。</figcaption></figure>
+<figure class="reference"><h3>未修改的高保真原稿</h3><a href="../../../design/hifi/screens/extract-macos.png"><svg xmlns="http://www.w3.org/2000/svg" viewBox="83 59 928 1324" width="491" height="701" role="img" aria-label="裁去外背景的原始高保真窗口"><image href="../../../design/hifi/screens/extract-macos.png" width="1092" height="1440"/></svg></a><figcaption>源坐标采用 819.2／1548 比例，应用窗口宽度约 491；原稿外背景、标题栏与当前真实数据不属于客户区像素一致性承诺。</figcaption></figure>
+</div>
+<h2>下拉组件</h2><div class="pair">
+<figure><h3>HTML</h3><a href="html-dropdown.png"><img src="html-dropdown.png" alt="HTML 内建下拉组件"></a><figcaption>共用选中状态与键盘逻辑；空间不足时向上展开，保持 4 像素间距。</figcaption></figure>
+<figure><h3>实际 Qt</h3><a href="qt-dropdown.png"><img src="qt-dropdown.png" alt="实际 Qt 下拉组件"></a><figcaption>实际操作窗口中的菜单，Escape 只关闭选择列表并将焦点归还控件。</figcaption></figure>
+</div>
+<h2>深色与菜单阴影</h2><div class="pair">
+<figure><h3>实际 Qt · 深色</h3><a href="qt-dark.png"><img src="qt-dark.png" alt="实际 Qt 深色解压窗口"></a><figcaption>卡片、边框、路径和选中素材同步切换主题。</figcaption></figure>
+<figure><h3>实际 Qt · 主窗口菜单</h3><a href="qt-menu.png"><img src="qt-menu.png" alt="实际 Qt 柔和菜单阴影"></a><figcaption>一次模糊绘制，替换旧叠层近似；截图宽 1024，此处适应页面展示，可打开原图核对。</figcaption></figure>
+</div>
+</main>
+</html>

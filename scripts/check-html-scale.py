@@ -188,7 +188,7 @@ def main():
                       reference_visible=True, boundary_height=None):
         metrics = page.evaluate(METRICS)
         size = report["sources"][view]["size"] if view in SOURCES else report["sources"]["main"]["size"]
-        view_scale = NORMAL_SCALE if view in ["main", "empty", "damaged"] else 1280 / 1548
+        view_scale = {"extract": 819.2 / 1548, "progress": 1024 / 1548}.get(view, NORMAL_SCALE if view in ["main", "empty", "damaged"] else 1280 / 1548)
         scale = 1 if zoom == "pixels" else view_scale
         if zoom == "fit":
             scale = min(view_scale, metrics["viewportWidth"] / size[0])

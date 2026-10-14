@@ -59,6 +59,7 @@ $env:XDZIP_M3_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m3-operatio
 Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
 Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
 Copy-Item -Recurse 'build/desktop/m3-operations' 'build/review/m3-operations'
+Invoke-Checked python @('scripts/check-m3-operation-windows.py', '--input', 'build/desktop/m3-operations', '--output', 'build/review/m3-operation-ui.json')
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
 Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
@@ -79,6 +80,11 @@ foreach ($density in @('1.25', '2')) {
     Invoke-Checked $browserTests @('mainWindowFidelityAndSessionClose', 'rootListingAndReviewedInteractions', 'reviewedMainControlsAndMenus')
     Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', $capturePath, '--output', "build/review/fidelity-dpr$density.json")
     Copy-Item -Recurse $capturePath "build/review/visual-audit-dpr$density"
+    $operationPath = "build/desktop/m3-operations-dpr$density"
+    $env:XDZIP_M3_VISUAL_AUDIT = Join-Path (Get-Location) $operationPath
+    Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
+    Invoke-Checked python @('scripts/check-m3-operation-windows.py', '--input', $operationPath, '--output', "build/review/m3-operation-ui-dpr$density.json")
+    Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
 }
 Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT

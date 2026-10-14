@@ -4,10 +4,13 @@
   --main-density: 0.8;
   --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));
   --operation-source-factor: 1.209375;
-  --operation-extract-density: 0.8;
-  --operation-progress-density: 0.8;
-  --operation-footer-font-size: calc(15px * var(--ui-source-factor));
-  --operation-footer-note-size: calc(13px * var(--ui-source-factor));
+  --operation-extract-density: calc(0.5291989664082688 * var(--ui-source-factor));
+  --operation-progress-density: calc(0.661498708010336 * var(--ui-source-factor));
+  --operation-default-width: calc(612px * var(--ui-source-factor));
+  --operation-extract-width: calc(491px * var(--ui-source-factor));
+  --operation-progress-width: calc(846px * var(--ui-source-factor));
+  --operation-footer-font-size: calc(13px * var(--ui-source-factor));
+  --operation-footer-note-size: calc(12px * var(--ui-source-factor));
   --operation-footer-icon-size: calc(16px * var(--ui-source-factor));
   --ui-menu-width: calc(240px * var(--ui-source-factor));
   --ui-menu-min-width: calc(208px * var(--ui-source-factor));
@@ -36,7 +39,6 @@
   --main-grid-icon-size: calc(40px * var(--ui-source-factor));
   --ui-menu-shadow-radius: calc(12px * var(--ui-source-factor));
   --ui-menu-shadow-offset-y: calc(4px * var(--ui-source-factor));
-  --ui-menu-shadow-layers: 12;
   --tree-sidebar-default-width: calc(193.15762273901808px * var(--ui-source-factor));
   --tree-row-min-height: calc(32.0px * var(--ui-source-factor));
   --tree-row-outer-inset: calc(6.4px * var(--ui-source-factor));
@@ -75,6 +77,10 @@
   --ui-menu-shadow: #1B294329;
   --ui-tooltip-surface: #202B41;
   --ui-tooltip-text: #FFFFFF;
+  --operation-card: #F4F6FA;
+  --operation-card-border: #DFE5EF;
+  --operation-field-border: #C9D1E0;
+  --operation-button-surface: #FAFBFD;
   --tree-surface-color: #F7F9FC;
   --tree-text-color: #141827;
   --tree-secondary-color: #626B86;
@@ -99,6 +105,10 @@
   --ui-menu-shadow: #00000066;
   --ui-tooltip-surface: #E3EBF9;
   --ui-tooltip-text: #182030;
+  --operation-card: #202630;
+  --operation-card-border: #343E4E;
+  --operation-field-border: #485469;
+  --operation-button-surface: #28313F;
   --tree-surface-color: #1D2129;
   --tree-text-color: #F0F2F8;
   --tree-secondary-color: #A7B0C7;

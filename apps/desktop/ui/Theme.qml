@@ -13,10 +13,11 @@ QtObject {
     readonly property int mainMinimumWidth: 832
     readonly property int mainMinimumHeight: 544
     readonly property int operationDefaultWidth: 612
-    readonly property int operationExtractWidth: 614
+    readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 846
-    readonly property real operationFooterFontSize: 15 * fontScale
-    readonly property real operationFooterNoteSize: 13 * fontScale
+    readonly property real operationExtractDensity: 0.8
+    readonly property real operationFooterFontSize: 13 * fontScale
+    readonly property real operationFooterNoteSize: 12 * fontScale
     readonly property real operationFooterIconSize: 16 * fontScale
     readonly property real operationBodySize: 16 * fontScale
     readonly property real operationTitleSize: 25 * fontScale
@@ -28,7 +29,7 @@ QtObject {
     readonly property real operationFieldRadius: 8
     readonly property real operationCardInset: 16
     readonly property real operationCardGap: 12
-    readonly property real operationExtractContentInset: 30
+    readonly property real operationExtractContentInset: 22.5
     readonly property real operationProgressContentInset: 25
     readonly property real operationHeaderHeight: 108
     readonly property real operationFooterHeight: 64
@@ -39,6 +40,7 @@ QtObject {
     readonly property real operationControlGap: 10
     readonly property real operationExtractClientHeight: 866
     readonly property real operationProgressClientHeight: 612
+    readonly property real operationExtractNoteSize: 12 * fontScale
     readonly property color canvas: dark ? "#171A20" : "#F7F8FA"
     readonly property color surface: dark ? "#22262F" : "#FFFFFF"
     readonly property color sidebar: dark ? "#1D2129" : "#F7F9FC"
@@ -56,6 +58,10 @@ QtObject {
     readonly property color progressEnd: dark ? "#4165DB" : "#0757FA"
     readonly property color inspector: dark ? "#22262F" : "#FFFFFF"
     readonly property color accentDisabled: dark ? "#465B91" : "#7087CB"
+    readonly property color operationCard: dark ? "#202630" : "#F4F6FA"
+    readonly property color operationCardBorder: dark ? "#343E4E" : "#DFE5EF"
+    readonly property color operationFieldBorder: dark ? "#485469" : "#C9D1E0"
+    readonly property color operationButtonSurface: dark ? "#28313F" : "#FAFBFD"
     readonly property real bodySize: 14 * fontScale
     readonly property real mainBodySize: 11 * fontScale
     readonly property real tableSize: 16 * fontScale
@@ -92,7 +98,6 @@ QtObject {
     readonly property real focusWidth: 2 * fontScale
     readonly property real menuShadowRadius: 12
     readonly property real menuShadowOffsetY: 4
-    readonly property real menuShadowLayers: 12
     readonly property int hoverDelayMs: 450
     readonly property int submenuDelayMs: 120
     readonly property int tooltipDurationMs: 7000

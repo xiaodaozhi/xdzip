@@ -11,7 +11,6 @@ OUTPUT = ROOT / 'dist/html-operation-review'
 
 def main():
     spec = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())['operation']
-    ratio = spec['source_to_logical'][0] / spec['source_to_logical'][1]
     OUTPUT.mkdir(parents=True, exist_ok=True)
     checks, errors, requests = [], [], []
 
@@ -34,7 +33,7 @@ def main():
             page.evaluate('document.fonts.ready')
             for platform in ['macos', 'windows', 'linux']:
                 for theme in ['light', 'dark']:
-                    page.evaluate('([platform,theme])=>{XdzipDesign.platform(platform);XdzipDesign.theme(theme);document.body.dataset.standalone="true";setCanvasLogicalScale("extract")}', [platform,theme])
+                    page.evaluate('([platform,theme])=>{XdzipDesign.platform(platform);XdzipDesign.theme(theme);document.body.dataset.standalone="true";}', [platform,theme])
                     for view in ['extract', 'create', 'settings', 'progress', 'conflict', 'result']:
                         if view == 'conflict':
                             page.evaluate('()=>{XdzipDesign.open("progress");state.task.status="conflict";showConflict()}')
@@ -46,6 +45,9 @@ def main():
                         expect(modal).to_be_visible()
                         expect(modal).to_have_attribute('data-kind', view)
                         kind = modal.get_attribute('data-kind')
+                        conversion = spec.get('source_to_logical_by_view', {}).get(kind, spec['source_to_logical'])
+                        ratio = conversion[0] / conversion[1]
+                        page.evaluate('kind=>setCanvasLogicalScale(kind)', kind)
                         tag = f'{platform}/{theme}/DPR{dpr}/{kind}'
                         metrics = modal.evaluate('''n=>({
                             width:n.getBoundingClientRect().width,
@@ -88,7 +90,7 @@ def main():
         browser.close()
     report = dict(checks=checks, passed=sum(c['passed'] for c in checks),
                   failed=sum(not c['passed'] for c in checks), page_errors=errors, external_requests=requests,
-                  environment='Chromium offline artboard; CSS source bounds multiplied by 1280/1548; DPR changes raster only')
+                  environment='Chromium offline artboard; CSS source bounds use per-view source-to-logical conversion; DPR changes raster only')
     (OUTPUT / 'validation.json').write_text(json.dumps(report, ensure_ascii=False, indent=2)+'\n')
     for c in checks:
         if not c['passed']: print(json.dumps(c))
