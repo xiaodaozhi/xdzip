@@ -1,0 +1,98 @@
+{
+  "code_commit": "08f03230db9c6546e123e55a853d35e6f6b37892",
+  "implementation_commit": "45b15eebc62f879d9610aed5653fc2331f0a2157",
+  "checked_at": "2026-10-14 10:33:16 UTC",
+  "workflows": [
+    {
+      "name": "HTML design review",
+      "id": 38548779799,
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38548779799",
+      "jobs": [
+        {
+          "id": 115801330788,
+          "name": "visual-anchors",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Foundation probes",
+      "id": 38548779792,
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38548779792",
+      "jobs": [
+        {
+          "id": 115801330674,
+          "name": "bridge (ubuntu-24.04)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115801330862,
+          "name": "cpp-format",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115801330915,
+          "name": "bridge (windows-2022)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115801331144,
+          "name": "bridge (macos-14)",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "id": 38548779790,
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38548779790",
+      "jobs": [
+        {
+          "id": 115801330657,
+          "name": "docs",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "Qt components",
+      "id": 38548779814,
+      "url": "https://github.com/xiaodaozhi/xdzip/actions/runs/38548779814",
+      "jobs": [
+        {
+          "id": 115801330762,
+          "name": "native-qt (ubuntu-24.04)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115801330933,
+          "name": "native-qt (windows-2022)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 115801330973,
+          "name": "native-qt (macos-14)",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "previous_failure": {
+    "commit": "45b15eebc62f879d9610aed5653fc2331f0a2157",
+    "platform": "Windows",
+    "cause": "Review scripts used the default cp1252 codec; explicit UTF-8 fixed this failure."
+  },
+  "limits": [
+    "Automated native-host build, offscreen geometry and interaction checks; desktop visual acceptance is separate.",
+    "Subsequent HTML checked-segment hover/pressed fix has no Qt/Rust implementation or Qt resource changes."
+  ]
+}

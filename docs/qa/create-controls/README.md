@@ -12,6 +12,8 @@ Qt 夹具在临时目录真实建立三个普通文件，大小分别为 8,400,0
 
 本地环境为 Linux x86_64，Qt 6.8.2，offscreen／software，Chromium 离线画布；DPR 与逻辑尺寸见各捕获 JSON，页面缩放证据单独登记。实际客户区截图不含操作系统装饰，不能替代 macOS 原生标题栏或桌面人工验收。旧原图文件图标、插图及文字抗锯齿与当前统一素材／字体存在差异；当前 ZIP 能力禁用项、滚动正文和真实目录状态是明确功能修订。
 
-本地 Qt 创建控件量测在 DPR 1／1.25／2 各 325 项通过；其他操作窗口量测 81 项通过，ZIP 创建往返 28 项通过。HTML 操作控件 1278 项通过，创建窗口的真实浏览器 100%／125% 页面缩放、DPR 1／1.25／2 检查 54 项通过；主界面比例回归 594 项通过。Rust fmt／Clippy／workspace 测试、Qt 六组 CTest 通过，浏览器后台生命周期整组连续十次通过。qmllint 成功返回，保留已有 columnWidthProvider 类型提示，未把它记作零警告。
+本地 Qt 创建控件量测在 DPR 1／1.25／2 各 325 项通过；其他操作窗口量测 81 项通过，ZIP 创建往返 28 项通过。HTML 操作控件 1278 项通过，创建窗口的真实浏览器 100%／125% 页面缩放、DPR 1／1.25／2 检查 66 项通过；主界面比例回归 594 项通过。Rust fmt／Clippy／workspace 测试、Qt 六组 CTest 通过，浏览器后台生命周期整组连续十次通过。qmllint 成功返回，保留已有 columnWidthProvider 类型提示，未把它记作零警告。
 
-[Qt 量测 DPR 1](qt-controls-dpr1.json)、[DPR 1.25](qt-controls-dpr1.25.json)、[DPR 2](qt-controls-dpr2.json)、[HTML 真实页面缩放](html-native-zoom.json)、[全部操作窗口 HTML](html-operation-controls.json)、[其他操作窗口 Qt](qt-other-operations.json)、[真实 ZIP 往返](qt-zip-roundtrip.json)。main 提交及远端 CI 待发布后记录；检查数不表示视觉还原百分比。
+[Qt 量测 DPR 1](qt-controls-dpr1.json)、[DPR 1.25](qt-controls-dpr1.25.json)、[DPR 2](qt-controls-dpr2.json)、[HTML 真实页面缩放](html-native-zoom.json)、[全部操作窗口 HTML](html-operation-controls.json)、[其他操作窗口 Qt](qt-other-operations.json)、[真实 ZIP 往返](qt-zip-roundtrip.json)。实现提交为 45b15ee，Windows 验收脚本明确 UTF-8 的修复提交为 08f0323。08f0323 的四个工作流、九个 job 全部成功，包括原生 Apple Silicon／Windows／Linux 的 Qt 构建、控件量测与交互验证；完整 URL 和 job 记录见 [CI 记录](ci.json)。macOS 不打包或上传开发应用，dist 未纳入 Git。
+
+最后修订 HTML 已选中 ZIP 分段项的 hover／pressed 规则，防止通用按钮规则将它变成灰底白字；真实页面缩放的 66 项包含悬停和按下的实际颜色检查。Qt／Rust 实现与 Qt 资源保持 08f0323 的内容。几何与行为检查数不表示视觉还原百分比。

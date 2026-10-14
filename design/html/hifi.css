@@ -833,3 +833,6 @@ dialog[data-kind="create"] .create-row .icon-button:hover::before { background:v
 dialog[data-kind="create"] .create-row .icon-button:active::before { background:var(--ui-control-pressed); }
 dialog[data-kind="create"] .create-row .icon-button:focus-visible { outline:0; }
 dialog[data-kind="create"] .create-row .icon-button:focus-visible::before { box-shadow:inset 0 0 0 var(--ui-focus-width) var(--accent); }
+/* Checked radio buttons retain their accent under the generic button hover rule. */
+.operation-segment[aria-checked="true"]:hover:not(:disabled) { background:color-mix(in srgb,var(--accent) 89.285714%,black); }
+.operation-segment[aria-checked="true"]:active:not(:disabled) { background:color-mix(in srgb,var(--accent) 81.967213%,black); }

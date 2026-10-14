@@ -49,6 +49,18 @@
       "passed": true
     },
     {
+      "name": "DPR1-page1/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
       "name": "DPR1-page1/keyboard, disabled group, remove",
       "actual": true,
       "expected": true,
@@ -100,6 +112,18 @@
       "name": "DPR1-page1.25#create-level-trigger/height",
       "actual": 28,
       "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR1-page1.25/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
       "passed": true
     },
     {
@@ -157,6 +181,18 @@
       "passed": true
     },
     {
+      "name": "DPR1.25-page1/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
       "name": "DPR1.25-page1/keyboard, disabled group, remove",
       "actual": true,
       "expected": true,
@@ -208,6 +244,18 @@
       "name": "DPR1.25-page1.25#create-level-trigger/height",
       "actual": 28,
       "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR1.25-page1.25/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
       "passed": true
     },
     {
@@ -265,6 +313,18 @@
       "passed": true
     },
     {
+      "name": "DPR2-page1/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
       "name": "DPR2-page1/keyboard, disabled group, remove",
       "actual": true,
       "expected": true,
@@ -316,6 +376,18 @@
       "name": "DPR2-page1.25#create-level-trigger/height",
       "actual": 27.9937744140625,
       "expected": 28,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/checked segment hover color",
+      "actual": 0,
+      "expected": 0,
+      "passed": true
+    },
+    {
+      "name": "DPR2-page1.25/checked segment pressed color",
+      "actual": 0,
+      "expected": 0,
       "passed": true
     },
     {
@@ -377,6 +449,6 @@
   ],
   "page_errors": [],
   "external_requests": [],
-  "passed": 54,
+  "passed": 66,
   "failed": 0
 }
