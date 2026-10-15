@@ -67,11 +67,13 @@ with sync_playwright() as playwright:
                 checks.append({'selection': 'multiple files', **metrics})
                 frame.locator('tr[data-id="photos"] input').uncheck()
                 frame.locator('tr[data-id="guide"] input').uncheck()
-                expect(panel.locator('h2')).to_have_text('北境旅行.zip')
-                metrics = frame.evaluate(METRICS)
-                assert metrics['scrollWidth'] <= metrics['width'], metrics
-                assert metrics['buttonVisible'], metrics
-                checks.append({'selection': 'archive metadata', **metrics})
+                expect(panel.locator('h2')).to_have_text('未选择文件')
+                expect(panel.locator('.property-list')).to_have_count(0)
+                expect(panel.locator('#inspector-extract')).to_have_count(0)
+                checks.append({'selection': 'empty selection', 'metadataHidden': True, 'actionHidden': True})
+                # Select a real demo item again before checking long metadata and its action.
+                frame.locator('tr[data-id="guide"]').click()
+                expect(panel.locator('#inspector-extract')).to_be_visible()
                 # Long names and metadata may scroll vertically, but actions remain reachable.
                 frame.eval_on_selector('#inspector h2', '(e) => e.textContent = "长文件名".repeat(60) + ".pdf"')
                 frame.eval_on_selector('.property dd', '(e) => e.textContent = "长属性值".repeat(40)')
