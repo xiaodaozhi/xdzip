@@ -811,7 +811,7 @@ function finalTarget() {
         .trim()
         .replace(/[\/]+$/, "");
     const same = $("#same-folder")?.checked;
-    const folder = state.archiveTitle.replace(/\.[^.]+$/, "");
+    const folder = state.archiveTitle.replace(/\.(tar\.gz|[^.]+)$/i, "");
     return base + (same && !base.endsWith(folder) ? " / " + folder : "");
 }
 function showExtract(scope = "selected", retryFiles = null) {
@@ -825,7 +825,7 @@ function showExtract(scope = "selected", retryFiles = null) {
     state.scope = scope;
     state.plan = {
         retryFiles,
-        target: "下载 / " + state.archiveTitle.replace(/\.[^.]+$/, ""),
+        target: "下载 / " + state.archiveTitle.replace(/\.(tar\.gz|[^.]+)$/i, ""),
         policy: "ask",
         same: true,
         open: true,
@@ -884,7 +884,7 @@ function showExtract(scope = "selected", retryFiles = null) {
     };
     $("#target-base").oninput = check;
     $("#same-folder").onchange = () => {
-        const folder = " / " + state.archiveTitle.replace(/\.[^.]+$/, "");
+        const folder = " / " + state.archiveTitle.replace(/\.(tar\.gz|[^.]+)$/i, "");
         const input = $("#target-base");
         if (!$("#same-folder").checked && input.value.endsWith(folder))
             input.value = input.value.slice(0, -folder.length);

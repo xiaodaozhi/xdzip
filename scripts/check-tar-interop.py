@@ -53,7 +53,8 @@ def main():
                 system_output = output/'system'
                 system_output.mkdir()
                 run([system_tar, '-xf', archive, '-C', system_output])
-                assert digest_tree(system_output/'资料') == expected
+                if digest_tree(system_output/'资料') != expected:
+                    raise RuntimeError('system tar name/content mismatch: '+json.dumps({'expected':sorted(expected),'actual':sorted(digest_tree(system_output))},ensure_ascii=True))
             checks.append({'case': f'xdzip creates {suffix} level {level}', 'python_bytes': True, 'system_tar_bytes': bool(system_tar)})
         for fmt in [tarfile.USTAR_FORMAT, tarfile.GNU_FORMAT, tarfile.PAX_FORMAT]:
             # USTAR has a short component ceiling. Other variants exercise GNU/PAX paths.

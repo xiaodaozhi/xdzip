@@ -16,7 +16,7 @@ OperationWindow {
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTr("解压文件 — xdzip")
     escapeClosesWindow: !target.activeFocus
-    readonly property string archiveFolder: String(intent.archive || "").replace(/\.[^.]+$/, "")
+    readonly property string archiveFolder: String(intent.folder || intent.archive || "")
     readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
         ? (target.text.includes("\\") ? "\\" : "/") + archiveFolder : "")
     function finishTargetEditing() {

@@ -310,8 +310,14 @@ class BrowserTest : public QObject {
             QTRY_VERIFY(!controller->busy());
             QVERIFY(checkedTarget(controller, extracted.path()));
             auto *folder = findVisual(extract->contentItem(), "extractSameFolder");
-            if (folder)
+            QVERIFY(folder);
+            QCOMPARE(controller->extractionIntent().value("folder").toString(),
+                     QStringLiteral("归档"));
+            QTRY_COMPARE(extract->property("archiveFolder").toString(), QStringLiteral("归档"));
+            if (formatIndex == 1)
                 folder->setProperty("checked", false);
+            const auto resultRoot =
+                extracted.path() + (formatIndex == 2 ? QStringLiteral("/归档") : QString{});
             auto *extractStart = findVisual(extract->contentItem(), "startExtract");
             QVERIFY(extractStart);
             QTRY_VERIFY(extractStart->isEnabled());
@@ -324,10 +330,10 @@ class BrowserTest : public QObject {
             QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
             for (const auto &task : controller->tasks())
                 QCOMPARE(task.toMap().value("status").toString(), QString("succeeded"));
-            QFile actual(extracted.path() + QStringLiteral("/资料/内容.txt"));
+            QFile actual(resultRoot + QStringLiteral("/资料/内容.txt"));
             QVERIFY(actual.open(QIODevice::ReadOnly));
             QCOMPARE(actual.readAll(), data);
-            QVERIFY(QFileInfo(extracted.path() + QStringLiteral("/资料/空目录")).isDir());
+            QVERIFY(QFileInfo(resultRoot + QStringLiteral("/资料/空目录")).isDir());
             if (!captures.isEmpty())
                 QVERIFY(visual_audit::save(window->findChild<QQuickWindow *>("taskWindow"),
                                            captures,

@@ -151,6 +151,7 @@ mod ffi {
         total: u64,
         archive_total: u64,
         format: String,
+        folder_name: String,
         query: u64,
         generation: u64,
         revision: u64,
@@ -397,6 +398,7 @@ impl EventReceiver {
             total: 0,
             archive_total: 0,
             format: String::new(),
+            folder_name: String::new(),
             query: 0,
             generation: 0,
             revision: 0,
@@ -427,6 +429,7 @@ impl EventReceiver {
                 total,
                 archive_total,
                 format,
+                folder_name,
                 key,
                 rows,
                 navigation,
@@ -438,6 +441,7 @@ impl EventReceiver {
                 event.total = total;
                 event.archive_total = archive_total;
                 event.format = format.label().into();
+                event.folder_name = folder_name;
                 event.query = key.query.get();
                 event.generation = key.generation.get();
                 event.revision = key.revision.get();

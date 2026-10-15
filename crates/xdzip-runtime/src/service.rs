@@ -170,6 +170,8 @@ pub enum Payload {
         archive_total: u64,
         /// Container determined from source bytes.
         format: xdzip_codec_api::Format,
+        /// Host-derived same-folder name, revalidated by the output grant.
+        folder_name: String,
         /// At most 128 owned display rows.
         rows: Vec<Row>,
         /// Complete bounded navigation, sent only when opening a new session.
@@ -199,9 +201,13 @@ impl Payload {
     pub fn bytes(&self) -> usize {
         match self {
             Self::Page {
-                rows, navigation, ..
+                rows,
+                navigation,
+                folder_name,
+                ..
             } => {
-                rows.iter().map(|row| row.name.len()).sum::<usize>()
+                folder_name.len()
+                    + rows.iter().map(|row| row.name.len()).sum::<usize>()
                     + navigation
                         .iter()
                         .flatten()
@@ -737,6 +743,7 @@ fn execute(
         .ok_or("stale_session")?;
     let archive_total = archive.len() as u64;
     let format = archive.format();
+    let folder_name = archive.output_folder().to_owned();
     let navigation = replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec());
     let navigation_limited = archive.directories().is_none();
     let generation = if generation == 0 {
@@ -781,6 +788,7 @@ fn execute(
         total: page.total as u64,
         archive_total,
         format,
+        folder_name,
         navigation,
         navigation_limited,
         rows: page
@@ -966,10 +974,11 @@ mod tests {
                 total: 1,
                 archive_total: 1,
                 format: xdzip_codec_api::Format::Zip,
+                folder_name: "archive".into(),
                 rows: vec![Row {
                     id: 1,
                     navigation_id: 0,
-                    name: "x".repeat(MAX_EVENT_BYTES / 2),
+                    name: "x".repeat(MAX_EVENT_BYTES / 2 - "archive".len()),
                     size: 0,
                     packed_size: 0,
                     method: 0,

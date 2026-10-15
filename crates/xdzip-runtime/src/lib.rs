@@ -96,6 +96,10 @@ impl Archive {
             key,
         })
     }
+    /// Display suggestion for the same-folder extraction option, never output authority.
+    pub fn output_folder(&self) -> &str {
+        self.source.name()
+    }
     /// Actual capability determined by validated source contents.
     pub fn format(&self) -> xdzip_codec_api::Format {
         self.format

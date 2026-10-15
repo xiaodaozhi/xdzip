@@ -45,7 +45,7 @@ fn write_tar(
     let mut bytes = 0;
     for (index, entry) in input.entries().iter().enumerate() {
         cancel.check().map_err(|_| EncodeError::Cancelled)?;
-        let mut header = tar::Header::new_gnu();
+        let mut header = tar::Header::new_ustar();
         header.set_entry_type(if entry.directory {
             tar::EntryType::Directory
         } else {
@@ -61,6 +61,27 @@ fn write_tar(
             format!("{}/", entry.name)
         } else {
             entry.name.clone()
+        };
+        // PAX defines path as UTF-8. GNU raw-name bytes otherwise depend on the
+        // reference reader's locale (notably Windows' system bsdtar).
+        let size = entry.size.to_string();
+        let mut extensions = Vec::new();
+        let extended_name = !name.is_ascii() || name.len() > 100;
+        if extended_name {
+            extensions.push(("path", name.as_bytes()));
+        }
+        if entry.size >= (1 << 33) {
+            extensions.push(("size", size.as_bytes()));
+        }
+        if !extensions.is_empty() {
+            builder
+                .append_pax_extensions(extensions)
+                .map_err(|_| EncodeError::Output)?;
+        }
+        let stored_name = if extended_name {
+            format!("entry-{index}{}", if entry.directory { "/" } else { "" })
+        } else {
+            name.clone()
         };
         let reader: Box<dyn Read> = if entry.directory {
             Box::new(io::empty())
@@ -78,7 +99,7 @@ fn write_tar(
         };
         let before = *reader.bytes;
         builder
-            .append_data(&mut header, &name, &mut reader)
+            .append_data(&mut header, &stored_name, &mut reader)
             .map_err(|_| {
                 if cancel.check().is_err() {
                     EncodeError::Cancelled

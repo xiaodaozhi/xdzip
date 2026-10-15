@@ -315,6 +315,7 @@ class BrowserController : public QObject {
     QString m_search;
     QString m_title;
     QString m_format;
+    QString m_archiveFolder;
     QString m_message;
     QString m_session;
     int m_total = 0;

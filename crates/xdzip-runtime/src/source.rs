@@ -76,21 +76,39 @@ impl Source {
         xdzip_io::FileIdentity::read(&self.file).map_err(|_| ScanError::SourceChanged)
     }
     pub fn name(&self) -> &str {
-        self.path
-            .file_stem()
-            .and_then(|name| name.to_str())
-            .unwrap_or("archive")
-            .strip_suffix(".tar")
-            .filter(|_| {
-                self.path
-                    .extension()
-                    .is_some_and(|s| s.eq_ignore_ascii_case("gz"))
-            })
-            .unwrap_or_else(|| {
-                self.path
-                    .file_stem()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("archive")
-            })
+        source_name(&self.path)
+    }
+}
+fn source_name(path: &std::path::Path) -> &str {
+    let stem = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("archive");
+    let stem = if path
+        .extension()
+        .is_some_and(|s| s.eq_ignore_ascii_case("gz"))
+        && stem.to_ascii_lowercase().ends_with(".tar")
+    {
+        &stem[..stem.len() - 4]
+    } else {
+        stem
+    };
+    if stem.is_empty() { "archive" } else { stem }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn compound_suffixes_use_the_same_nonempty_folder_as_the_ui_intent() {
+        for (input, expected) in [
+            ("归档.tar.gz", "归档"),
+            ("归档.TAR.GZ", "归档"),
+            ("archive.tgz", "archive"),
+            ("archive.tar", "archive"),
+            ("archive.zip", "archive"),
+            (".tar.gz", "archive"),
+        ] {
+            assert_eq!(source_name(std::path::Path::new(input)), expected);
+        }
     }
 }

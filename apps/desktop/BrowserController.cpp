@@ -528,6 +528,7 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     }
     m_extractionIntent = {{"session", m_session},
                           {"archive", m_title},
+                          {"folder", m_archiveFolder},
                           {"all", all},
                           {"selectedCount", m_extractionSelectors.size()},
                           {"archiveCount", m_archiveTotal},
@@ -1036,6 +1037,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.total = static_cast<int>(event.total);
         m_result.archiveTotal = static_cast<int>(event.archive_total);
         m_format = text(event.format);
+        m_archiveFolder = text(event.folder_name);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {

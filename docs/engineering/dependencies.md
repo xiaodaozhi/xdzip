@@ -38,7 +38,7 @@ rawzip 暂无对应 AES 编码能力；自行实现 AES/PBKDF2 或把真实密�
 
 ## WP-11 TAR/GZIP
 
-精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性。仅使用 Header、PaxExtensions 和对宿主 Write 的 Builder::append_data，不调用 Archive::unpack、Entry::unpack、文件路径读取或所有者／权限恢复。读取采用显式有界头与扩展头处理，避免不受宿主约束的扩展分配；编码沿用库的 GNU 长名称支持。
+精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性。仅使用 Header、PaxExtensions 和对宿主 Write 的 Builder::append_data，不调用 Archive::unpack、Entry::unpack、文件路径读取或所有者／权限恢复。读取采用显式有界头与扩展头处理，避免不受宿主约束的扩展分配；编码通过显式 PAX UTF-8 path 及大尺寸字段保证跨平台名称互操作，不依赖 Windows 系统 tar 对 GNU 原始名称的本地编码猜测。
 
 GZIP 复用已锁定的 flate2 1.1.10、Rust backend、miniz_oxide，无新增原生压缩库。MultiGzDecoder 只作为一层过滤器组合到 TAR，压缩输入和解码输出均受取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。独立非 TAR 的 GZIP 仍明确拒绝。
 

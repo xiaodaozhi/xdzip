@@ -674,7 +674,12 @@ mod tests {
                 Err(DecodeError::Unsupported)
             );
         }
-        let mut bytes = encoded(false);
+        let mut unsafe_header = tar::Header::new_gnu();
+        unsafe_header.set_path("safe").unwrap();
+        unsafe_header.set_size(0);
+        unsafe_header.set_cksum();
+        let mut bytes = unsafe_header.as_bytes().to_vec();
+        bytes.resize(1536, 0);
         bytes[..100].fill(0);
         bytes[..9].copy_from_slice(b"../escape");
         let header = tar::Header::from_byte_slice(&bytes[..512]).clone();
@@ -682,6 +687,14 @@ mod tests {
         header.set_cksum();
         bytes[..512].copy_from_slice(header.as_bytes());
         assert!(scan_bytes(bytes, false).unwrap()[0].warning);
+        let mut builder = tar::Builder::new(Vec::new());
+        builder
+            .append_pax_extensions([("path", b"../escape".as_slice())])
+            .unwrap();
+        builder
+            .append_data(&mut unsafe_header, "safe", io::empty())
+            .unwrap();
+        assert!(scan_bytes(builder.into_inner().unwrap(), false).unwrap()[0].warning);
     }
     #[test]
     fn gzip_members_compose_one_tar_stream_and_non_tar_gzip_is_rejected() {
