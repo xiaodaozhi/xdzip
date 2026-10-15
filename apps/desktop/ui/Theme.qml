@@ -165,7 +165,7 @@ QtObject {
     readonly property real menuViewportInset: 8 * fontScale
     readonly property real tooltipMaxWidth: 320 * fontScale
     readonly property real tooltipPadding: 8 * fontScale
-    readonly property real focusWidth: 2 * fontScale
+    readonly property real focusWidth: 0 * fontScale
     readonly property real menuShadowRadius: 12
     readonly property real menuShadowOffsetY: 4
     readonly property int hoverDelayMs: 450
@@ -191,7 +191,7 @@ QtObject {
     readonly property real treeBranchCountGap: 3.2
     readonly property real treeSelectionIndicatorWidth: 2.4
     readonly property real treeSelectionRadius: 6.4
-    readonly property real treeFocusStroke: 2
+    readonly property real treeFocusStroke: 0
     readonly property real treeGuideStroke: 1
     readonly property real treeBodyFontSize: 11.2
     readonly property real treeCountFontSize: 9.6

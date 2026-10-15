@@ -13,7 +13,7 @@ OperationWindow {
     function unit(value: real): real { return value * density; }
     width: Theme.operationConflictWidth
     requestedHeight: Math.min(Math.ceil(conflictContent.implicitHeight + footer.implicitHeight), Theme.operationConflictClientHeight, Screen.desktopAvailableHeight - 80)
-    title: qsTr("文件已存在 — xdzip")
+    title: qsTr("文件已存在")
     ColumnLayout {
         anchors.fill: parent; spacing: root.unit(0)
         ScrollView {

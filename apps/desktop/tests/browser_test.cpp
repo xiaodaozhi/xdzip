@@ -1,5 +1,6 @@
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
+#include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
@@ -71,6 +72,7 @@ class BrowserTest : public QObject {
     Q_OBJECT
   private slots:
     void initTestCase() {
+        FocusDismissPolicy::install(QCoreApplication::instance());
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
         QVERIFY(installUiFont());
@@ -84,6 +86,46 @@ class BrowserTest : public QObject {
     }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void controlsDismissFocusWithoutLosingActions() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTest::qWait(50);
+        auto *open = findVisual(window->contentItem(), "welcomeOpen");
+        QVERIFY(open);
+        open->forceActiveFocus();
+        QVERIFY(open->hasActiveFocus());
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(!open->hasActiveFocus());
+        QVERIFY(window->isVisible());
+        open->forceActiveFocus();
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier,
+                          QPoint(window->width() - 8, window->height() - 8));
+        QTRY_VERIFY(!open->hasActiveFocus());
+        auto *create = findVisual(window->contentItem(), "welcomeCreate");
+        auto *dialog = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(create && dialog);
+        create->forceActiveFocus();
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY(dialog->isVisible());
+        QTRY_VERIFY(!create->hasActiveFocus());
+        for (auto *ownedWindow : window->findChildren<QQuickWindow *>())
+            QVERIFY(!ownedWindow->title().contains(QStringLiteral(" — xdzip")));
+        auto *name = findVisual(dialog->contentItem(), "createName");
+        QVERIFY(name);
+        name->forceActiveFocus();
+        QTest::keyClick(dialog, Qt::Key_Escape);
+        QTRY_VERIFY(!name->hasActiveFocus());
+        QVERIFY(dialog->isVisible());
+        name->forceActiveFocus();
+        QTest::keyClick(dialog, Qt::Key_Enter);
+        QTRY_VERIFY(!name->hasActiveFocus());
+        QVERIFY(dialog->isVisible());
+        dialog->close();
+        window->close();
     }
     void welcomeOpensRealArchivesAndReturns() {
         QQmlApplicationEngine engine;
@@ -1344,6 +1386,8 @@ class BrowserTest : public QObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
         QCOMPARE(controller->location(), "documents/");
         QCOMPARE(controller->total(), 1);
+        QTRY_VERIFY(!treeView->hasActiveFocus());
+        treeView->forceActiveFocus();
         QTest::keyClick(window, Qt::Key_Up);
         QTest::keyClick(window, Qt::Key_Return);
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);

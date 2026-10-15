@@ -51,7 +51,11 @@ Item {
             mousePress(primary, primary.width / 2, primary.height / 2);
             compare(bg.color, Ui.Theme.accentPressed);
             mouseRelease(primary, primary.width / 2, primary.height / 2);
+            const normalBorder = bg.border.color;
+            const normalWidth = bg.border.width;
             primary.forceActiveFocus();
+            compare(bg.border.color, normalBorder);
+            compare(bg.border.width, normalWidth);
             keyPress(Qt.Key_Space);
             compare(bg.color, Ui.Theme.accentPressed);
             keyRelease(Qt.Key_Space);

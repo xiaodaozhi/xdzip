@@ -9,6 +9,6 @@ Rectangle {
     property bool hovered: false
     radius: Theme.operationControlRadius
     color: !framed ? "transparent" : control && !control.enabled ? Theme.operationCard : pressed ? Theme.controlPressed : hovered ? Theme.operationButtonSurface : Theme.surface
-    border.color: !framed ? "transparent" : control && control.activeFocus ? Theme.accent : Theme.operationFieldBorder
-    border.width: control && control.activeFocus ? 2 : 1
+    border.color: !framed ? "transparent" : Theme.operationFieldBorder
+    border.width: 1
 }

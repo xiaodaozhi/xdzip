@@ -355,9 +355,30 @@ window.XdzipControls = (() => {
             );
         }, tokens.motion.hoverDelayMs);
     }
+    const focusedControl = () => {
+        const node = document.activeElement;
+        return node instanceof HTMLElement && node !== document.body &&
+            node.matches('button, input, select, textarea, a[href], [tabindex], [contenteditable="true"]') ? node : null;
+    };
+    document.addEventListener("keydown", event => {
+        const node = focusedControl();
+        if (event.key === "Escape" && !event.isComposing && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey &&
+            node && !node.closest(".ui-menu") && !active) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            node.blur();
+        }
+    }, true);
+    document.addEventListener("keyup", event => {
+        if (["Enter", "Escape"].includes(event.key) && !event.isComposing && !event.altKey && !event.ctrlKey && !event.metaKey)
+            setTimeout(() => { const node = focusedControl(); if (node && !active && !node.closest(".ui-menu")) node.blur(); }, 0);
+    });
     document.addEventListener(
         "pointerdown",
         (event) => {
+            const focused = focusedControl();
+            const group = focused?.closest(".ui-select, .search-field, .destination-field") || focused;
+            if (focused && !focused.closest(".ui-menu") && !group.contains(event.target)) focused.blur();
             if (
                 active &&
                 !event.target.closest(".ui-menu") &&

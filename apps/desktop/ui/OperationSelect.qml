@@ -4,6 +4,7 @@ import QtQuick.Controls
 
 ComboBox {
     id: root
+    focusPolicy: Qt.StrongFocus
     property real density: 1
     property bool numericOnly: false
     property string editPlaceholder: qsTr("输入数字")

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 
 Button {
     id: root
+    focusPolicy: Qt.StrongFocus
     required property string title
     required property string description
     required property string asset
@@ -74,14 +75,5 @@ Button {
         radius: Theme.welcomeActionRadius
         color: !root.enabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : root.down ? Theme.selection : root.hovered ? Theme.canvas : Theme.surface
         border.color: !root.enabled ? Theme.accentDisabled : root.primary ? color : root.hovered ? Theme.operationFieldBorder : Theme.border
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -5
-            radius: 11
-            color: "transparent"
-            border.width: 2
-            border.color: Theme.accentInk
-            visible: root.visualFocus
-        }
     }
 }

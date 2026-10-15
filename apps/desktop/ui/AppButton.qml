@@ -41,7 +41,7 @@ Button {
         objectName: root.objectName ? root.objectName + "Background" : ""
         radius: root.cornerRadius * root.density
         color: !root.enabled ? (root.primary ? Theme.accentDisabled : root.surfaceColor) : root.dangerous ? Qt.rgba(Theme.menuDanger.r, Theme.menuDanger.g, Theme.menuDanger.b, root.down ? .2 : root.hovered ? .12 : .06) : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : root.surfaceColor
-        border.color: root.activeFocus ? Theme.accent : root.dangerous ? Theme.menuDanger : root.outlineColor
-        border.width: root.activeFocus ? 2 : 1
+        border.color: root.dangerous ? Theme.menuDanger : root.outlineColor
+        border.width: 1
     }
 }

@@ -1,3 +1,4 @@
+#include "../FocusDismissPolicy.h"
 #include "../UiFont.h"
 #include <QQmlEngine>
 #include <QQuickStyle>
@@ -13,6 +14,7 @@ class Setup : public QObject {
     }
   public slots:
     void applicationAvailable() {
+        FocusDismissPolicy::install(QCoreApplication::instance());
         if (!installUiFont())
             qFatal("Unable to load UI font");
     }

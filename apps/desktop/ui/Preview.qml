@@ -9,7 +9,7 @@ ApplicationWindow {
     minimumWidth: 800
     minimumHeight: 600
     visible: true
-    title: qsTr("xdzip — 组件开发预览")
+    title: qsTr("组件开发预览")
     color: Theme.canvas
     property bool stopping: false
     property bool totalKnown: true

@@ -1,5 +1,6 @@
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
+#include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include <QApplication>
 #include <QEvent>
@@ -18,6 +19,7 @@ bool verifyMacTitlebar(QQuickWindow *window);
 
 int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
+    FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
@@ -57,6 +59,27 @@ int main(int argc, char *argv[]) {
 #ifdef Q_OS_MACOS
             if (!verifyMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()))) {
                 QCoreApplication::exit(6);
+                return;
+            }
+#endif
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+                window->resize(window->width() + 8, window->height() + 8);
+                QTimer::singleShot(400, &application, [&application, window] {
+                    if (!verifyMacTitlebar(window)) {
+                        QCoreApplication::exit(6);
+                        return;
+                    }
+                    window->requestActivate();
+                    QTimer::singleShot(400, &application, [&application, window] {
+                        if (!verifyMacTitlebar(window)) {
+                            QCoreApplication::exit(6);
+                            return;
+                        }
+                        application.quit();
+                    });
+                });
                 return;
             }
 #endif

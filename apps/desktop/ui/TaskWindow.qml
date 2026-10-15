@@ -14,7 +14,7 @@ OperationWindow {
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
     property bool sampleData: false
-    title: checking ? sampleData ? qsTr("完整性检查，界面预览 — xdzip") : qsTr("完整性检查 — xdzip") : sampleData ? qsTr("任务，示例数据 — xdzip") : terminal ? creating ? qsTr("压缩结果 — xdzip") : qsTr("解压结果 — xdzip") : creating ? qsTr("压缩任务 — xdzip") : qsTr("解压任务 — xdzip")
+    title: checking ? sampleData ? qsTr("完整性检查，界面预览") : qsTr("完整性检查") : sampleData ? qsTr("任务，示例数据") : terminal ? creating ? qsTr("压缩结果") : qsTr("解压结果") : creating ? qsTr("压缩任务") : qsTr("解压任务")
     allowMinimize: true
     required property string archiveName
     required property string destination

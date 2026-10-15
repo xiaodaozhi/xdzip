@@ -75,8 +75,8 @@ Control {
                     topRightRadius: segment.index === root.options.length - 1 ? Theme.operationControlSegmentedRadius - 1 : 0
                     bottomRightRadius: topRightRadius
                     color: segment.checked ? segment.down ? Theme.accentPressed : segment.hovered ? Theme.accentHover : Theme.accent : segment.hovered && segment.enabled ? Theme.controlHover : "transparent"
-                    border.color: segment.activeFocus ? Theme.accentInk : "transparent"
-                    border.width: segment.activeFocus ? 2 : 0
+                    border.color: "transparent"
+                    border.width: 0
                     Rectangle {
                         visible: segment.index > 0 && !segment.checked && root.currentIndex !== segment.index - 1
                         x: 0

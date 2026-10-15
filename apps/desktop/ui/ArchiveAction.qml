@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Button {
     id: root
+    focusPolicy: Qt.StrongFocus
     property string asset: ""
     property bool primary: false
     property bool toolbarStyle: false
@@ -63,7 +64,7 @@ Button {
         objectName: "actionBackground"
         radius: root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
         color: root.primary && !root.enabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
-        border.width: root.activeFocus ? 2 : 0
+        border.width: 0
         border.color: Theme.accent
     }
     Rectangle {

@@ -146,8 +146,12 @@ with sync_playwright() as playwright:
         page.locator('[data-extract="selected"]').click()
         assert page.locator('dialog[open][data-kind="extract"]').count() == 1
         page.keyboard.press('Escape')
+        assert page.locator('dialog[open][data-kind=extract]').count() == 1
+        page.keyboard.press('Escape')
         page.locator('#title-settings').click()
         assert page.locator('dialog[open][data-kind="settings"]').count() == 1
+        page.keyboard.press('Escape')
+        assert page.locator('dialog[open][data-kind=settings]').count() == 1
         page.keyboard.press('Escape')
         page.locator('#new-tab').click()
         assert page.locator('dialog[open]').count() == 1

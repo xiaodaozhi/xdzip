@@ -14,7 +14,7 @@ OperationWindow {
     function unit(value: real): real { return value * density; }
     width: Theme.operationExtractWidth
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
-    title: qsTr("解压文件 — xdzip")
+    title: qsTr("解压文件")
     escapeClosesWindow: !target.activeFocus
     readonly property string archiveFolder: String(intent.folder || intent.archive || "")
     readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
@@ -99,8 +99,8 @@ OperationWindow {
                                 objectName: "extractDestinationField"
                                 Layout.fillWidth: true; implicitHeight: Math.max(root.unit(44), target.contentHeight + root.unit(10), changeTarget.implicitHeight + root.unit(10))
                                 radius: root.unit(6); color: Theme.surface
-                                border.color: target.activeFocus ? Theme.accent : Theme.operationFieldBorder
-                                border.width: target.activeFocus ? 2 : 1
+                                border.color: Theme.operationFieldBorder
+                                border.width: 1
                                 RowLayout {
                                     anchors.fill: parent; anchors.margins: root.unit(5); spacing: root.unit(12)
                                     // Match the right inset to the actual vertical clearance,

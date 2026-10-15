@@ -5,6 +5,7 @@ import QtQuick.Layouts
 
 AbstractButton {
     id: root
+    focusPolicy: Qt.StrongFocus
     property int recordCount: 0
     implicitHeight: Math.max(28, contentItem.implicitHeight + 8)
     checkable: true
@@ -14,7 +15,7 @@ AbstractButton {
     background: Rectangle {
         radius: Theme.operationControlRadius
         color: root.hovered ? Theme.selection : "transparent"
-        border.width: root.activeFocus ? 2 : 0
+        border.width: 0
         border.color: Theme.accent
     }
     contentItem: RowLayout {

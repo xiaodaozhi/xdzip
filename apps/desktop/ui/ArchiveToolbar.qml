@@ -175,7 +175,7 @@ Rectangle {
             background: Rectangle {
                 color: Theme.canvas
                 radius: Theme.mainToolbarRadius
-                border.color: searchField.activeFocus ? Theme.accent : Theme.border
+                border.color: Theme.border
             }
             Image {
                 anchors.left: parent.left
@@ -240,7 +240,7 @@ Rectangle {
                 background: Rectangle {
                     radius: Theme.mainToolbarRadius
                     color: scopeButton.down ? "#30FFFFFF" : scopeButton.hovered ? "#18FFFFFF" : "transparent"
-                    border.width: scopeButton.activeFocus ? 2 : 0
+                    border.width: 0
                     border.color: Theme.accentInk
                 }
                 onClicked: scopes.open()

@@ -1,3 +1,4 @@
+#include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include <QGuiApplication>
 #include <QIcon>
@@ -7,6 +8,7 @@
 
 int main(int argc, char *argv[]) {
     QGuiApplication application(argc, argv);
+    FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setOrganizationName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));

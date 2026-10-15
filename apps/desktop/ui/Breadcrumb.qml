@@ -59,7 +59,7 @@ RowLayout {
                 background: Rectangle {
                     radius: 4
                     color: button.down ? Theme.controlPressed : button.hovered && button.enabled ? Theme.controlHover : "transparent"
-                    border.width: button.activeFocus ? Theme.focusWidth : 0
+                    border.width: 0
                     border.color: Theme.accent
                 }
                 CommandTooltip {

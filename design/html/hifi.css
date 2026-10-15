@@ -396,7 +396,7 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
 .location #breadcrumbs { gap:11.5px; flex:1; overflow:hidden; white-space:nowrap; }
 .location #breadcrumbs button { padding:0 4px; height:var(--main-breadcrumb-height); flex-shrink:0; border-radius:6px; display:flex; align-items:center; }
 .location #breadcrumbs button:hover { background:var(--ui-control-hover); }
-.location #breadcrumbs button:focus-visible { outline:var(--ui-focus-width) solid var(--accent); outline-offset:-2px; }
+.location #breadcrumbs button:focus-visible { outline:none; }
 .location #breadcrumbs>span:last-child { font-weight:600; }
 .breadcrumb-separator { font-size:21px; color:var(--secondary); }
 /* 8 source density units = 6.4 logical pixels, matching the Qt header row. */
@@ -565,7 +565,7 @@ dialog { width:var(--operation-default-width); max-height:940px; border:1px soli
 .theme-card>svg { display:block; width:100px; height:100px; }
 .theme-card>span { display:flex; align-items:center; justify-content:center; gap:10px; font-size:19px; line-height:28px; white-space:nowrap; }
 .theme-card:has(input:checked) { border-color:var(--accent); background:color-mix(in srgb,var(--accent) 6%,var(--surface)); }
-.theme-card:has(input:focus-visible) { outline:3px solid var(--accent); outline-offset:3px; }
+.theme-card:has(input:focus-visible) { outline:none; }
 .theme-card input:focus-visible { outline:none; box-shadow:none; }
 .theme-card input[type="radio"],dialog[data-kind="extract"] input[type="radio"] {
     appearance:none;
@@ -693,7 +693,7 @@ tbody tr:hover:not(.selected) td { background:var(--ui-control-hover); }
    conversion cancels reviewer density, so embedded and independent windows agree. */
 dialog[data-kind="extract"] .modal-content { padding:0 calc(34px * var(--operation-extract-density)) calc(24px * var(--operation-extract-density)); }
 dialog[data-kind="extract"] .destination-field { height:calc(66px * var(--operation-extract-density)); padding:calc(8px * var(--operation-extract-density)); gap:calc(16px * var(--operation-extract-density)); align-items:center; background:var(--surface); border:1px solid var(--operation-field-border); border-radius:calc(9px * var(--operation-extract-density)); }
-dialog[data-kind="extract"] .destination-field:focus-within { outline:2px solid var(--accent); outline-offset:2px; }
+dialog[data-kind="extract"] .destination-field:focus-within { outline:none; }
 dialog[data-kind="extract"] .destination-field>svg { width:calc(40px * var(--operation-extract-density)); height:calc(40px * var(--operation-extract-density)); flex-shrink:0; margin-left:calc(10px * var(--operation-extract-density)); }
 dialog[data-kind="extract"] .destination-field .text-input { flex:1; width:0; border:0; padding:0; height:100%; background:transparent; box-shadow:none; outline:0; }
 dialog[data-kind="extract"] #change-target { min-width:calc(130px * var(--operation-extract-density)); min-height:calc(46px * var(--operation-extract-density)); height:calc(46px * var(--operation-extract-density)); font-size:calc(24px * var(--operation-extract-density)); padding:0 calc(18px * var(--operation-extract-density)); flex-shrink:0; background:var(--operation-button-surface); border-color:var(--operation-field-border); }
@@ -817,7 +817,7 @@ dialog[data-kind="create"] .create-row .icon-button:hover { background:var(--ui-
 .operation-segment:disabled { color:var(--ui-menu-disabled); cursor:default; }
 .operation-segment:not(:first-child):not([aria-checked="true"])::before { content:""; position:absolute; left:0; top:0; bottom:0; width:calc(1px * var(--ui-source-factor)); background:var(--operation-field-border); }
 .operation-segment[aria-checked="true"]+ .operation-segment::before { display:none; }
-.operation-segment:focus-visible { outline:var(--ui-focus-width) solid var(--accent); outline-offset:calc(-2px * var(--ui-source-factor)); }
+.operation-segment:focus-visible { outline:none; }
 
 /* Inset outline avoids fractional CSS border snapping shifting the arrow slot. */
 dialog[data-kind] .ui-select-trigger { border-width:0; box-shadow:inset 0 0 0 calc(1px * var(--ui-source-factor)) var(--operation-field-border); padding-right:var(--operation-control-select-indicator-right-inset); }
@@ -834,8 +834,8 @@ dialog[data-kind="create"] .create-row .icon-button>svg { position:relative; }
 dialog[data-kind="create"] .create-row .icon-button:hover { background:transparent; }
 dialog[data-kind="create"] .create-row .icon-button:hover::before { background:var(--ui-control-hover); }
 dialog[data-kind="create"] .create-row .icon-button:active::before { background:var(--ui-control-pressed); }
-dialog[data-kind="create"] .create-row .icon-button:focus-visible { outline:0; }
-dialog[data-kind="create"] .create-row .icon-button:focus-visible::before { box-shadow:inset 0 0 0 var(--ui-focus-width) var(--accent); }
+dialog[data-kind="create"] .create-row .icon-button:focus-visible { outline:none; }
+dialog[data-kind="create"] .create-row .icon-button:focus-visible::before { outline:none; box-shadow:none; }
 
 /* Result is a normal-size operation window, mapped from the approved R01 source. */
 dialog[data-kind="result"] { width:var(--operation-result-width); max-height:min(calc(600px * var(--ui-source-factor)), calc(100vh - 32px)); }
@@ -889,7 +889,7 @@ dialog[data-kind="create"] .create-volume-row>.ui-select:first-child { flex:1; m
 dialog[data-kind="create"] .create-volume-row>.ui-select:last-child { width:calc(74px * var(--ui-source-factor)); flex-shrink:0; }
 .ui-select { position:relative; }
 .ui-select-editor { position:absolute; left:var(--operation-control-field-text-inset); top:0; bottom:0; width:calc(100% - var(--operation-control-field-text-inset) - var(--operation-control-select-indicator-size) - var(--operation-control-select-indicator-right-inset) - var(--operation-control-select-indicator-text-gap)); border:0; outline:0; background:transparent; color:var(--text); padding:0; font:inherit; font-size:calc(13px * var(--ui-source-factor)); }
-.ui-select.editable:focus-within .ui-select-trigger { box-shadow:inset 0 0 0 var(--ui-focus-width) var(--accent); }
+.ui-select.editable:focus-within .ui-select-trigger { outline:none; }
 dialog[data-kind="create"] #create-password { margin-top:calc(8px * var(--ui-source-factor)); }
 /* Checked radio buttons retain their accent under the generic button hover rule. */
 .operation-segment[aria-checked="true"]:hover:not(:disabled) { background:color-mix(in srgb,var(--accent) 89.285714%,black); }

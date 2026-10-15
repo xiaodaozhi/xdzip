@@ -5,6 +5,7 @@ import QtQuick.Layouts
 
 CheckBox {
     id: root
+    focusPolicy: Qt.StrongFocus
     property bool radioStyle: false
     property string trailingText: ""
     property real density: 1
@@ -26,8 +27,8 @@ CheckBox {
             width: root.indicatorSize; height: width
             radius: root.radioStyle ? width / 2 : 4 * root.density
             color: root.checked || root.radioStyle ? "transparent" : Theme.surface
-            border.width: root.activeFocus ? 2 : root.checked || root.radioStyle ? 0 : 1
-            border.color: root.checked || root.hovered || root.activeFocus ? Theme.accent : Theme.textSecondary
+            border.width: root.checked || root.radioStyle ? 0 : 1
+            border.color: root.checked || root.hovered ? Theme.accent : Theme.textSecondary
             Image {
                 visible: root.radioStyle || root.checked
                 anchors.centerIn: parent

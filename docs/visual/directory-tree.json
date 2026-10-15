@@ -25,7 +25,7 @@
     "branch_count_gap": 3.2,
     "selection_indicator_width": 2.4,
     "selection_radius": 6.4,
-    "focus_stroke": 2,
+    "focus_stroke": 0,
     "guide_stroke": 1,
     "body_font_size": 11.2,
     "count_font_size": 9.6,

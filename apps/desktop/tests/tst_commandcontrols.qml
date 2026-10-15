@@ -90,7 +90,7 @@ Item {
             keyClick(Qt.Key_Return);
             tryCompare(menu, "visible", false);
             compare(check.checked, true);
-            verify(trigger.activeFocus);
+            tryCompare(trigger, "activeFocus", false);
             mouseClick(trigger);
             tryCompare(menu, "visible", true);
             mouseClick(disabled);
@@ -98,7 +98,7 @@ Item {
             verify(menu.visible);
             keyClick(Qt.Key_Escape);
             tryCompare(menu, "visible", false);
-            verify(trigger.activeFocus);
+            tryCompare(trigger, "activeFocus", false);
         }
         function test_submenu_return_and_activation() {
             openWithKeyboard();

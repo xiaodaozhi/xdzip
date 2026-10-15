@@ -191,8 +191,8 @@ Rectangle {
                     objectName: "inspectorExtractBackground"
                     radius: Theme.mainUnits(6)
                     color: !panel.canExtract ? Theme.surface : extractAction.down ? Theme.controlPressed : extractAction.hovered ? Theme.controlHover : Theme.surface
-                    border.color: extractAction.activeFocus ? Theme.accent : Theme.border
-                    border.width: extractAction.activeFocus ? 2 : 1
+                    border.color: Theme.border
+                    border.width: 1
                 }
             }
         }

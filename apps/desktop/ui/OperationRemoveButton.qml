@@ -17,8 +17,8 @@ Button {
         height: width
         radius: width / 2
         color: root.down ? Theme.controlPressed : root.hovered ? Theme.controlHover : Theme.surface
-        border.color: root.activeFocus ? Theme.accent : "transparent"
-        border.width: root.activeFocus ? 2 : 0
+        border.color: "transparent"
+        border.width: 0
     }
     contentItem: Item {
         Image {

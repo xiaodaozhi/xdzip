@@ -83,9 +83,12 @@ Item {
             searchSpy.clear();
             keyClick(Qt.Key_Return);
             compare(searchSpy.signalArguments[0][0], "notes");
+            tryCompare(search, "activeFocus", false);
+            search.forceActiveFocus();
             keyClick(Qt.Key_Escape);
-            compare(search.text, "");
-            compare(searchSpy.signalArguments[1][0], "");
+            tryCompare(search, "activeFocus", false);
+            compare(search.text, "notes");
+            compare(searchSpy.count, 1);
         }
     }
 }

@@ -1,9 +1,11 @@
 #import <AppKit/AppKit.h>
 #include <QDebug>
 #include <QGuiApplication>
+#include <QPointer>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QTimer>
+#include <memory>
 #include <vector>
 
 namespace {
@@ -29,10 +31,13 @@ void alignTrafficLights(QQuickWindow *window) {
         frame.origin.y = host.superview.isFlipped ? NSMinY(host.superview.bounds)
                                                   : NSMaxY(host.superview.bounds) - height;
         frame.size.height = height;
-        host.frame = frame;
+        if (!NSEqualRects(host.frame, frame))
+            host.frame = frame;
     }
+    const qreal topCenter = title ? title->mapToScene(QPointF(0, height / 2)).y() : height / 2;
     const NSPoint center =
-        NSMakePoint(0, view.isFlipped ? height / 2 : NSHeight(view.bounds) - height / 2);
+        NSMakePoint(NSMinX(view.bounds), view.isFlipped ? NSMinY(view.bounds) + topCenter
+                                                        : NSMaxY(view.bounds) - topCenter);
     for (NSWindowButton kind :
          {NSWindowCloseButton, NSWindowMiniaturizeButton, NSWindowZoomButton}) {
         NSButton *button = [native standardWindowButton:kind];
@@ -41,7 +46,8 @@ void alignTrafficLights(QQuickWindow *window) {
         const NSPoint target = [button.superview convertPoint:center fromView:view];
         NSRect frame = button.frame;
         frame.origin.y = target.y - NSHeight(frame) / 2;
-        [button setFrame:frame];
+        if (!NSEqualRects(button.frame, frame))
+            [button setFrame:frame];
     }
 }
 } // namespace
@@ -59,9 +65,48 @@ void integrateMacTitlebar(QQuickWindow *window) {
     native.styleMask |= NSWindowStyleMaskFullSizeContentView;
     native.movableByWindowBackground = NO;
     window->setProperty("integratedTitlebar", true);
-    const auto schedule = [window] {
-        QTimer::singleShot(0, window, [window] { alignTrafficLights(window); });
+    const QPointer<QQuickWindow> guard(window);
+    const auto pending = std::make_shared<bool>(false);
+    const auto schedule = [guard, pending] {
+        if (!guard || *pending)
+            return;
+        *pending = true;
+        QTimer::singleShot(0, guard, [guard, pending] {
+            *pending = false;
+            if (guard)
+                alignTrafficLights(guard);
+        });
     };
+    // AppKit can lay out standard buttons again after Qt's resize/activation
+    // callback. Observe that layout instead of fixing only the startup frame.
+    // Notification tokens and deferred callbacks are scoped to the QWindow.
+    const auto observe = [window, schedule](NSString *name, id object) {
+        id token =
+            [[NSNotificationCenter defaultCenter] addObserverForName:name
+                                                              object:object
+                                                               queue:nil
+                                                          usingBlock:^(NSNotification *note) {
+                                                            Q_UNUSED(note);
+                                                            schedule();
+                                                          }];
+        QObject::connect(window, &QObject::destroyed,
+                         [token] { [[NSNotificationCenter defaultCenter] removeObserver:token]; });
+    };
+    for (NSString *name in @[
+             NSWindowDidResizeNotification, NSWindowDidBecomeKeyNotification,
+             NSWindowDidUpdateNotification, NSWindowDidExitFullScreenNotification
+         ])
+        observe(name, native);
+    view.postsFrameChangedNotifications = YES;
+    observe(NSViewFrameDidChangeNotification, view);
+    for (NSWindowButton kind :
+         {NSWindowCloseButton, NSWindowMiniaturizeButton, NSWindowZoomButton}) {
+        NSButton *button = [native standardWindowButton:kind];
+        button.postsFrameChangedNotifications = YES;
+        observe(NSViewFrameDidChangeNotification, button);
+    }
+    QObject::connect(window, &QWindow::visibleChanged, window, schedule);
+    QObject::connect(window, &QWindow::activeChanged, window, schedule);
     QObject::connect(window, &QWindow::widthChanged, window, schedule);
     QObject::connect(window, &QWindow::heightChanged, window, schedule);
     QObject::connect(window, &QWindow::windowStateChanged, window, schedule);
@@ -75,7 +120,6 @@ void integrateMacTitlebar(QQuickWindow *window) {
 bool verifyMacTitlebar(QQuickWindow *window) {
     if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
         return true;
-    alignTrafficLights(window);
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     auto *title = window->findChild<QQuickItem *>(QStringLiteral("archiveTitlebar"));
     if (!view.window || !title)
@@ -96,10 +140,12 @@ bool verifyMacTitlebar(QQuickWindow *window) {
         }
         NSPoint center = [view convertPoint:NSMakePoint(NSMidX(button.frame), NSMidY(button.frame))
                                    fromView:button.superview];
-        const double topCenter = view.isFlipped ? center.y : NSHeight(view.bounds) - center.y;
+        const double topCenter =
+            view.isFlipped ? center.y - NSMinY(view.bounds) : NSMaxY(view.bounds) - center.y;
         qInfo("NATIVE_TITLEBAR button=%d centerY=%.2f expected=%.2f hostHeight=%.2f", int(kind),
-              topCenter, title->height() / 2, NSHeight(button.superview.bounds));
-        if (qAbs(topCenter - title->height() / 2) > .5)
+              topCenter, title->mapToScene(QPointF(0, title->height() / 2)).y(),
+              NSHeight(button.superview.bounds));
+        if (qAbs(topCenter - title->mapToScene(QPointF(0, title->height() / 2)).y()) > .5)
             return false;
     }
     return true;

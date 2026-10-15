@@ -14,7 +14,7 @@ OperationWindow {
     }
     width: Theme.operationCreateWidth
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
-    title: qsTr("新建压缩文件 — xdzip")
+    title: qsTr("新建压缩文件")
     readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
     readonly property string formatExtension: [".zip", ".tar", ".tar.gz"][formatGroup.currentIndex]
     readonly property bool validName: fileName.text.trim().toLowerCase().endsWith(formatExtension) && fileName.text.trim().length > formatExtension.length && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)

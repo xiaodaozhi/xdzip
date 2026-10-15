@@ -6,7 +6,7 @@ import QtQuick.Layouts
 OperationWindow {
     id: root
     objectName: "preflightWindow"
-    title: qsTr("xdzip — 解压预检")
+    title: qsTr("解压预检")
     property var report: ({})
     width: Theme.operationDefaultWidth
     requestedHeight: Math.min(620, Screen.desktopAvailableHeight - 80)

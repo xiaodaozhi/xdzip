@@ -16,7 +16,7 @@
     "menuViewportInset": 8,
     "tooltipMaxWidth": 320,
     "tooltipPadding": 8,
-    "focusWidth": 2
+    "focusWidth": 0
   },
   "motion": {
     "hoverDelayMs": 450,

@@ -121,10 +121,7 @@
 .icon-button:focus-visible,
 .header-icon:focus-visible,
 .tab-close:focus-visible,
-.archive-tab:focus-visible {
-    outline: var(--ui-focus-width) solid var(--accent);
-    outline-offset: -3px;
-}
+.archive-tab:focus-visible { outline:none; }
 .archive-tab {
     cursor: default;
 }
@@ -199,10 +196,7 @@
 .grid-entry:hover {
     background: var(--ui-control-hover);
 }
-.grid-entry:focus-visible {
-    outline: var(--ui-focus-width) solid var(--accent);
-    outline-offset: -3px;
-}
+.grid-entry:focus-visible { outline:none; }
 .grid-entry .entry-icon,
 .grid-entry .entry-icon svg,
 .grid-entry .entry-photo {
@@ -282,8 +276,7 @@
 .tree-row.active {
     background: var(--tree-selection-color);
 }
-.tree-row.active::before,
-.tree-row:focus-visible::before {
+.tree-row.active::before {
     content: "";
     position: absolute;
     top: 0;
@@ -293,9 +286,7 @@
     background: var(--accent);
     border-radius: 0;
 }
-.tree-row:focus-visible {
-    outline: none;
-}
+.tree-row:focus-visible { outline:none; }
 .tree-row .tree-label {
     min-width: 0;
     flex: 1;

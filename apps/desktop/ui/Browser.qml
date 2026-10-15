@@ -113,7 +113,7 @@ ApplicationWindow {
     }
     onDarkModeChanged: Theme.dark = darkMode
     visible: true
-    title: reader.title.length ? reader.title + " — xdzip" : "xdzip"
+    title: reader.title.length ? reader.title : "xdzip"
     color: Theme.surface
     onClosing: function (close) {
         if (reader.activeTaskCount > 0 && !root.allowExit) {
@@ -223,7 +223,7 @@ ApplicationWindow {
         id: inspectorWindow
         objectName: "inspectorWindow"
         transientParent: root
-        title: qsTr("条目详情 — xdzip")
+        title: qsTr("条目详情")
         width: 360
         height: 600
         minimumWidth: 320
@@ -633,7 +633,7 @@ ApplicationWindow {
                             border.width: 0
                             border.color: Theme.accent
                             Rectangle {
-                                visible: reader.location.length === 0 || allFiles.activeFocus
+                                visible: reader.location.length === 0
                                 width: Theme.mainUnits(3)
                                 height: parent.height
                                 y: 0
@@ -816,7 +816,7 @@ ApplicationWindow {
                                 border.width: 0
                                 border.color: Theme.accent
                                 Rectangle {
-                                    visible: reader.directoryId === directoryNode.nodeId || (directoryNode.activeFocus && directoryNode.current)
+                                    visible: reader.directoryId === directoryNode.nodeId
                                     x: directoryTree.contentX
                                     width: Theme.mainUnits(3)
                                     height: parent.height
@@ -1066,7 +1066,7 @@ ApplicationWindow {
                                 Rectangle {
                                     anchors.fill: parent
                                     color: "transparent"
-                                    border.width: columnHeader.activeFocus ? 2 : 0
+                                    border.width: 0
                                     border.color: Theme.accent
                                 }
                                 Text {
@@ -1308,7 +1308,7 @@ ApplicationWindow {
                             height: grid.cellHeight - Theme.mainGridGap
                             radius: Theme.mainControlRadius
                             color: gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
-                            border.color: gridEntry.activeFocus ? Theme.accent : Theme.border
+                            border.color: Theme.border
                             HoverHandler {
                                 id: gridHover
                             }
