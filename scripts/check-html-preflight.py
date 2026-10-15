@@ -31,6 +31,17 @@ def main():
         assert abs(modal.bounding_box()['width']/factor-spec['logical_width'])<1
         assert abs(modal.locator('h1').evaluate('e=>parseFloat(getComputedStyle(e).fontSize)')/factor-spec['title_size'])<.1
         expect(modal.locator('.os-title')).to_have_text('解压预检')
+        expect(modal.locator('.preflight-body .preflight-note')).to_contain_text('此报告仅检查元数据')
+        expect(modal.locator('.modal-footer .ready-label')).to_have_count(0)
+        footer = modal.locator('.modal-footer')
+        expected_height = json.loads((ROOT/'docs/visual/layout-scale.json').read_text())['operation']['components']['footerHeight']
+        assert abs(footer.bounding_box()['height']/factor-expected_height)<1
+        height = footer.bounding_box()['height']
+        modal.locator('.preflight-note').evaluate('e=>e.textContent=e.textContent.repeat(20)')
+        assert abs(footer.bounding_box()['height']-height)<1
+        assert footer.bounding_box()['y']+footer.bounding_box()['height']<=modal.bounding_box()['y']+modal.bounding_box()['height']+1
+        assert modal.locator('.preflight-body').evaluate('e=>e.scrollHeight>e.clientHeight')
+        page.evaluate("window.XdzipDesign.open('preflight')")
         for theme in ['light','dark']:
             page.evaluate('(t)=>window.XdzipDesign.theme(t)',theme)
             modal.screenshot(path=str(OUTPUT/f'preflight-{theme}.png'))

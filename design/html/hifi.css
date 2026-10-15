@@ -967,6 +967,8 @@ tbody tr:not(.selected) td::after,tbody tr.selected td::after {
     height:calc(1px * var(--ui-source-factor));
     background:color-mix(in srgb,var(--border) 45%,var(--surface)); pointer-events:none;
 }
+dialog[data-kind="preflight"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="preflight"]>.os-titlebar,dialog[data-kind="preflight"]>.modal-footer { flex-shrink:0; }
 dialog[data-kind="preflight"] { width:calc(491px * var(--ui-source-factor)); max-height:calc(600px * var(--ui-source-factor)); }
 dialog[data-kind="preflight"] .preflight-body { padding:calc(20px * var(--ui-source-factor)); display:flex; flex-direction:column; gap:calc(12px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); overflow:auto; min-height:0; }
 .preflight-body h1 { margin:0; font-size:calc(20px * var(--ui-source-factor)); }
@@ -975,3 +977,7 @@ dialog[data-kind="preflight"] .preflight-body { padding:calc(20px * var(--ui-sou
 .preflight-stats>div { flex:1; min-width:0; }
 .preflight-stats span { display:block; color:var(--secondary); font-size:calc(12px * var(--ui-source-factor)); }
 .preflight-stats strong { display:block; font-size:calc(22px * var(--ui-source-factor)); }
+
+/* No note placeholder: action-only footers retain the shared logical height. */
+dialog[data-kind] .action-only-footer { min-height:var(--operation-footer-height); padding:calc(12px * var(--ui-source-factor)) calc(25px * var(--ui-source-factor)); }
+.preflight-body .preflight-note { font-size:calc(12px * var(--ui-source-factor)); }

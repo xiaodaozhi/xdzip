@@ -34,6 +34,7 @@
   --operation-control-remove-artwork-size: calc(24px * var(--ui-source-factor));
   --operation-control-segmented-height: calc(28px * var(--ui-source-factor));
   --operation-control-segmented-radius: calc(5px * var(--ui-source-factor));
+  --operation-footer-height: calc(64px * var(--ui-source-factor));
   --operation-destination-indicator-slot-size: calc(24px * var(--ui-source-factor));
   --operation-destination-indicator-size: calc(16px * var(--ui-source-factor));
   --operation-destination-indicator-gap: calc(8px * var(--ui-source-factor));

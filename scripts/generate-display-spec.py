@@ -26,6 +26,8 @@ def main():
              'preflight': ('preflight-light.png', [634, 497]),
              'empty': (None, [1586, 992]), 'damaged': (None, [1586, 992])}
     settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text())
+    preflight = json.loads((ROOT / 'docs/visual/preflight-reference.json').read_text())
+    sizes['preflight'] = (Path(preflight['light_source_image']).name, preflight['source_size'])
     sizes['settings'] = (Path(settings['source_image']).name, settings['source_size'])
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
@@ -41,7 +43,7 @@ def main():
     spec['views']['welcome-narrow']['sourceToLogical'] = main_ratio[0] / main_ratio[1]
     spec['views']['welcome']['sourceToLogical'] = main_ratio[0] / main_ratio[1]
     spec['views']['welcome-narrow']['window'] = [20, 30, 832 / spec['sourceToLogical'], 544 / spec['sourceToLogical']]
-    spec['views']['preflight']['darkSource'] = '../hifi/screens/preflight-dark.png'
+    spec['views']['preflight']['darkSource'] = '../hifi/screens/' + Path(preflight['dark_source_image']).name
     spec['views']['settings']['darkSource'] = '../hifi/screens/settings-current-dark.png'
     spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-titlebar-dark.png'
     output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'

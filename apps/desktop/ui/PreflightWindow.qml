@@ -125,6 +125,14 @@ OperationWindow {
                             font.pixelSize: Theme.preflightBodySize
                         }
                     }
+                    Text {
+                        objectName: "preflightNote"
+                        Layout.fillWidth: true
+                        text: qsTrId("ui.0d92f3d4cae3")
+                        wrapMode: Text.Wrap
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.preflightNoteSize
+                    }
                 }
             }
         }
@@ -132,7 +140,6 @@ OperationWindow {
             id: footer
             objectName: "preflightFooter"
             Layout.fillWidth: true
-            note: qsTrId("ui.0d92f3d4cae3")
             OperationFooterButton {
                 objectName: "preflightClose"
                 text: qsTrId("ui.26867436321f")

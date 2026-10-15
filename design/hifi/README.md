@@ -69,4 +69,6 @@
 
 S01 当前设置窗口修订见[主题、文字与语言设计源](sources/settings.html)，逻辑参数见[设置参数](../../docs/visual/settings-reference.json)，保存／取消与重启生效见[设置契约](../../docs/ux/settings-localization.md)。[历史 settings.png](screens/settings.png) 保留原图和哈希，不再定义当前设置功能范围。
 
-P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-light.png)、[深色](screens/preflight-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
+P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-body-note-light.png)、[深色](screens/preflight-body-note-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
+
+预检的元数据边界说明位于可滚动正文末尾，footer 仅放返回按钮并保持共享操作栏高度；原 footer 含说明的浅深色稿保留在历史画廊。

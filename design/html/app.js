@@ -784,7 +784,7 @@ function header(title, subtitle, ico = "archive") {
     return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
 }
 function footer(content, ready = "准备就绪", ico = "shield") {
-    return `<footer class="modal-footer"><span class="ready-label">${icon(ico)}${ready}</span><div class="operation-footer-actions">${content}</div></footer>`;
+    return `<footer class="modal-footer${ready ? "" : " action-only-footer"}">${ready ? `<span class="ready-label">${icon(ico)}${ready}</span>` : ""}<div class="operation-footer-actions">${content}</div></footer>`;
 }
 function cancelButton(label = "取消") {
     return `<button class="button" data-close>${label}</button>`;
@@ -1400,7 +1400,7 @@ function restoreSettingsPreview() {
 }
 function showPreflight() {
     const t = settingText;
-    dialog(`<div class="preflight-body"><h1>${t("ui.9cb79c4bee66")}</h1><p>${t("ui.db661e297081")}</p><div class="preflight-stats"><div><span>${t("ui.0790c26b1e36")}</span><strong>9</strong></div><div><span>${t("ui.377532e93480")}</span><strong>77619200</strong></div><div><span>${t("ui.9d959257ce7e")}</span><strong>0</strong></div></div><p>${t("ui.f644f6ec6fad")}</p></div>` + footer(`<button class="button primary" id="preflight-close">${t("ui.26867436321f")}</button>`, t("ui.0d92f3d4cae3")), "preflight", "P01", "#preflight-close");
+    dialog(`<div class="preflight-body"><h1>${t("ui.9cb79c4bee66")}</h1><p>${t("ui.db661e297081")}</p><div class="preflight-stats"><div><span>${t("ui.0790c26b1e36")}</span><strong>9</strong></div><div><span>${t("ui.377532e93480")}</span><strong>77619200</strong></div><div><span>${t("ui.9d959257ce7e")}</span><strong>0</strong></div></div><p>${t("ui.f644f6ec6fad")}</p><p class="preflight-note">${t("ui.0d92f3d4cae3")}</p></div>` + footer(`<button class="button primary" id="preflight-close">${t("ui.26867436321f")}</button>`, ""), "preflight", "P01", "#preflight-close");
     $("#preflight-close").onclick = closeModal;
 }
 function showSettings() {

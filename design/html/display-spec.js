@@ -99,12 +99,12 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             "darkSource": "../hifi/screens/settings-current-dark.png"
         },
         "preflight": {
-            "source": "../hifi/screens/preflight-light.png",
+            "source": "../hifi/screens/preflight-body-note-light.png",
             "size": [
                 634,
-                497
+                476
             ],
-            "darkSource": "../hifi/screens/preflight-dark.png"
+            "darkSource": "../hifi/screens/preflight-body-note-dark.png"
         },
         "empty": {
             "source": null,

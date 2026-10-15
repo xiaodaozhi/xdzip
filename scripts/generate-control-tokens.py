@@ -39,7 +39,7 @@ def main():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-control-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in layout['operation']['components'].items():
-        if name.startswith('destinationIndicator'):
+        if name.startswith('destinationIndicator') or name == 'footerHeight':
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
             declarations.append(f'  --operation-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in tokens['size'].items():

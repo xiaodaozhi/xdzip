@@ -14,18 +14,39 @@
   "notes": [
     "Metadata findings only, never an output authorization",
     "Content-driven height, fixed shared footer, scroll bounded body",
-    "Main density 0.8, menu density 1; native titlebar excluded from client measurements"
+    "Main density 0.8, menu density 1; native titlebar excluded from client measurements",
+    "2026-10-15 revision: metadata disclaimer belongs at the end of the scrollable body; the action-only footer uses the shared minimum height, independent of report content"
   ],
   "source_size": [
     634,
-    497
+    476
   ],
-  "light_sha256": "f869657d862e1aebb11c0452b7a83028f8f0a134ad608140814a01b5f6a9d436",
-  "dark_sha256": "2cfbbb2e7a6b33430af718ea19d4ade2b1f312386f5382296ec2c0202bbd4e68",
+  "light_sha256": "8d0ea9a5dafdb825f0ae59c4da410a3e0876b0f15babf19fe567fd1a602b48d3",
+  "dark_sha256": "22c8a7db8a2857b9e572cc62bd96551bbe3f8af7e81bbcad00b0a5b89a4946f5",
   "source_to_logical": [
     1280,
     1548
   ],
   "authoring_dpr": 1,
-  "authoring_browser_zoom": 1
+  "authoring_browser_zoom": 1,
+  "footer": {
+    "note_placement": "body",
+    "height_source": "layout-scale.json#/operation/components/footerHeight",
+    "vertical_inset": 12
+  },
+  "history": [
+    {
+      "light_source": "design/hifi/screens/preflight-light.png",
+      "dark_source": "design/hifi/screens/preflight-dark.png",
+      "source_size": [
+        634,
+        497
+      ],
+      "light_sha256": "f869657d862e1aebb11c0452b7a83028f8f0a134ad608140814a01b5f6a9d436",
+      "dark_sha256": "2cfbbb2e7a6b33430af718ea19d4ade2b1f312386f5382296ec2c0202bbd4e68",
+      "note": "Original disclaimer inside footer retained as history"
+    }
+  ],
+  "light_source_image": "design/hifi/screens/preflight-body-note-light.png",
+  "dark_source_image": "design/hifi/screens/preflight-body-note-dark.png"
 }
