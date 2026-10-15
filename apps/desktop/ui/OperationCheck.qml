@@ -1,10 +1,12 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 CheckBox {
     id: root
     property bool radioStyle: false
+    property string trailingText: ""
     property real density: 1
     readonly property real indicatorSize: Theme.operationControlIndicatorSize * (radioStyle ? 1 : density)
     property real indicatorSlotSize: indicatorSize
@@ -34,14 +36,25 @@ CheckBox {
             }
         }
     }
-    contentItem: Text {
-        objectName: root.objectName ? root.objectName + "Label" : ""
-        text: root.text
-        textFormat: Text.PlainText
-        font.pixelSize: Math.round(Theme.operationBodySize * root.density)
-        color: root.enabled ? Theme.text : Theme.textSecondary
-        leftPadding: root.indicator.width + root.spacing
-        verticalAlignment: Text.AlignVCenter
-        wrapMode: Text.Wrap
+    contentItem: RowLayout {
+        spacing: 0
+        Item { implicitWidth: root.indicator.width + root.spacing; implicitHeight: 1 }
+        Text {
+            objectName: root.objectName ? root.objectName + "Label" : ""
+            Layout.fillWidth: true
+            text: root.text; textFormat: Text.PlainText
+            font.pixelSize: Math.round(Theme.operationBodySize * root.density)
+            color: root.enabled ? Theme.text : Theme.textSecondary
+            verticalAlignment: Text.AlignVCenter; wrapMode: Text.Wrap
+        }
+        Text {
+            objectName: root.objectName ? root.objectName + "Count" : ""
+            visible: root.trailingText.length > 0
+            Layout.leftMargin: 12
+            text: root.trailingText; textFormat: Text.PlainText
+            font.pixelSize: Math.round(Theme.operationBodySize * root.density)
+            color: Theme.textSecondary
+            horizontalAlignment: Text.AlignRight
+        }
     }
 }

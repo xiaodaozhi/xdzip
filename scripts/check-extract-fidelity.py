@@ -114,6 +114,15 @@ def main():
                         options.get_by_role('option').last.press('Escape')
                         expect(trigger).to_be_focused()
                         expect(modal).to_be_visible()
+                        target = frame.locator('#target-base')
+                        for key in ['Escape', 'Enter']:
+                            target.focus()
+                            target.press(key)
+                            expect(modal).to_be_visible()
+                            check(tag+'/'+key+'/target loses focus', target.evaluate('n=>n!==document.activeElement'), True)
+                        target.focus()
+                        modal.locator('h1').click()
+                        check(tag+'/outside click/target loses focus', target.evaluate('n=>n!==document.activeElement'), True)
                         check(tag+'/keyboard selection and Escape', True, True)
                         if entry == 'extract' and dpr == 1:
                             trigger.press('ArrowDown')
@@ -129,7 +138,7 @@ def main():
                                 frame.locator('#start-extract').click()
                                 expect(modal).to_have_attribute('data-kind', 'progress')
                                 expect(page.locator('#view')).to_have_value('progress')
-                                check(tag+'/transition to progress width', modal.bounding_box()['width'], 677)
+                                check(tag+'/transition to progress width', modal.bounding_box()['width'], 491)
                         page.close()
             browser.close()
     finally:

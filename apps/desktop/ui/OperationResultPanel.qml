@@ -7,6 +7,8 @@ ColumnLayout {
     id: root
     required property var task
     property bool expanded: false
+    readonly property string taskId: String(task.id || "")
+    onTaskIdChanged: expanded = false
     readonly property var entries: task.details || []
     readonly property var failures: entries.filter(e => e.status === "unfinished")
     readonly property int remaining: Math.max(0, Number(task.files || 0) - Number(task.committedFiles || 0) - Number(task.skippedFiles || 0))

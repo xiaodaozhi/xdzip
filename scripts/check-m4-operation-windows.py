@@ -20,7 +20,7 @@ def check(name, actual, expected, tolerance=1):
     checks.append(dict(name=name, actual=actual, expected=expected, passed=passed))
 
 for name, width, height, title in [('create-selected', 491, 736, '新建压缩文件'),
-                                    ('create-completed', 677, 600, '压缩完成')]:
+                                    ('create-completed', 491, 600, '压缩完成')]:
     capture = json.loads((args.input / (name+'.json')).read_text(encoding='utf-8'))
     nodes = [n for n in capture['nodes'] if n['visible']]
     named = {n['name']: n for n in nodes if n.get('name')}
@@ -28,7 +28,10 @@ for name, width, height, title in [('create-selected', 491, 736, '新建压缩�
     # Short desktops may constrain creation height while preserving footer.
     available = capture.get('availableScreenHeight', height+80)
     expected_height = min(height, available-(60 if name == 'create-selected' else 80))
-    check(name+'/screen-constrained logical height', capture['height'], expected_height)
+    if name == 'create-selected':
+        check(name+'/screen-constrained logical height', capture['height'], expected_height)
+    else:
+        check(name+'/content-driven bounded height', 0 < capture['height'] <= expected_height, True)
     check(name+'/DPR width', capture['imageWidth']/capture['dpr'], capture['width'])
     check(name+'/DPR height', capture['imageHeight']/capture['dpr'], capture['height'])
     heading = next(n for n in nodes if n.get('text') == title and n['class'].startswith('QQuickText'))

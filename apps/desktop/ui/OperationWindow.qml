@@ -4,6 +4,7 @@ Window {
     id: root
     required property Window owner
     property bool allowMinimize: false
+    property bool escapeClosesWindow: true
     // Constraints depend on requested geometry, never the constrained height.
     property int requestedHeight: Math.min(720, Screen.desktopAvailableHeight - 80)
     transientParent: owner
@@ -19,6 +20,14 @@ Window {
     maximumWidth: width
     minimumHeight: requestedHeight
     maximumHeight: requestedHeight
+
+    // Cocoa may report an older resize after the content limits have changed.
+    // Reconcile that notification with the latest fixed client height.
+    function applyRequestedHeight() {
+        if (height !== requestedHeight) height = requestedHeight;
+    }
+    onRequestedHeightChanged: Qt.callLater(applyRequestedHeight)
+    onHeightChanged: if (visible && height !== requestedHeight) Qt.callLater(applyRequestedHeight)
 
     function present() {
         // Reopening preserves view state and uses the owner's current display.
@@ -47,7 +56,7 @@ Window {
     }
     Shortcut {
         sequence: "Escape"
-        enabled: root.visible && root.active
+        enabled: root.visible && root.active && root.escapeClosesWindow
         onActivated: root.close()
     }
 }

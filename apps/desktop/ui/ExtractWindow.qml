@@ -15,9 +15,19 @@ OperationWindow {
     width: Theme.operationExtractWidth
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
     title: qsTr("解压文件 — xdzip")
+    escapeClosesWindow: !target.activeFocus
     readonly property string archiveFolder: String(intent.archive || "").replace(/\.[^.]+$/, "")
     readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
         ? (target.text.includes("\\") ? "\\" : "/") + archiveFolder : "")
+    function finishTargetEditing() {
+        target.focus = false;
+        focusSink.forceActiveFocus(Qt.OtherFocusReason);
+    }
+    function dismissTargetFocus(position: point) {
+        const p = target.mapFromItem(windowContent, position.x, position.y);
+        if (target.activeFocus && (p.x < 0 || p.y < 0 || p.x > target.width || p.y > target.height))
+            finishTargetEditing();
+    }
     function configure() {
         allFiles = Boolean(intent.all);
         target.text = intent.target || "";
@@ -33,7 +43,19 @@ OperationWindow {
         target: root
         function onActiveFocusItemChanged() { root.revealFocus(body); }
     }
+    Item { id: focusSink; objectName: "extractFocusSink" }
+    MouseArea {
+        anchors.fill: parent
+        z: 100
+        acceptedButtons: Qt.AllButtons
+        onPressed: mouse => {
+            root.dismissTargetFocus(Qt.point(mouse.x, mouse.y));
+            // Observe the press, then let the actual control receive it.
+            mouse.accepted = false;
+        }
+    }
     ColumnLayout {
+        id: windowContent
         anchors.fill: parent; spacing: 0
         ScrollView {
             id: body
@@ -92,6 +114,12 @@ OperationWindow {
                                         previewText: root.destinationPreview
                                         Layout.fillWidth: true; Layout.fillHeight: true
                                         Accessible.name: qsTr("目标目录")
+                                        Keys.priority: Keys.BeforeItem
+                                        Keys.onPressed: (event) => {
+                                            if ([Qt.Key_Escape, Qt.Key_Return, Qt.Key_Enter].includes(event.key)) { root.finishTargetEditing(); event.accepted = true; }
+                                        }
+                                        Keys.onReturnPressed: (event) => { root.finishTargetEditing(); event.accepted = true; }
+                                        Keys.onEnterPressed: (event) => { root.finishTargetEditing(); event.accepted = true; }
                                     }
                                     AppButton {
                                         id: changeTarget
@@ -151,7 +179,8 @@ OperationWindow {
                                 objectName: "extractSelectedScope"
                                 visible: Number(root.intent.selectedCount || 0) > 0
                                 Layout.fillWidth: true; radioStyle: true
-                                text: qsTr("所选文件和目录，%1 项").arg(root.intent.selectedCount || 0)
+                                text: qsTr("所选文件和目录")
+                                trailingText: qsTr("%1 项").arg(root.intent.selectedCount || 0)
                                 checked: !root.allFiles
                                 onClicked: root.allFiles = false
                             }
@@ -180,7 +209,8 @@ OperationWindow {
                                 density: root.density; spacing: 13;
                                 objectName: "extractAllScope"
                                 Layout.fillWidth: true; radioStyle: true
-                                text: qsTr("全部归档，%1 条记录").arg(root.intent.archiveCount || 0)
+                                text: qsTr("全部归档")
+                                trailingText: qsTr("%1 条记录").arg(root.intent.archiveCount || 0)
                                 checked: root.allFiles
                                 onClicked: root.allFiles = true
                             }

@@ -11,7 +11,7 @@
     677,
     1274
   ],
-  "logical_width": 677,
+  "logical_width": 491,
   "title_size": 20,
   "subtitle_size": 14,
   "body_size": 13,
@@ -35,7 +35,8 @@
     "Single left-aligned hero, then labels above counts, then unfinished and destination cards from R01",
     "Expanded disclosure is a supplemental component, runtime status icons are canonical flat discs",
     "Only backend outcomes are displayed; retain at most 128 records, show omitted count explicitly",
-    "Native window decorations excluded from Qt client capture; screenshot evidence is local or CI only"
+    "Native window decorations excluded from Qt client capture; screenshot evidence is local or CI only",
+    "2026-10-15 revision: task and result widths match 491px create/extract windows; content-driven height, 600px maximum; disclosure list bounded to 168px. Original source is retained as historical reference."
   ],
   "client_height": 600,
   "header_top": 20,

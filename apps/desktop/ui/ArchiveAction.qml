@@ -53,7 +53,7 @@ Button {
                 textFormat: Text.PlainText
                 font.pixelSize: root.toolbarStyle ? Theme.mainToolbarSize : Theme.mainHeaderSize
                 font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
-                color: root.primary ? Theme.accentText : root.enabled ? Theme.text : Theme.textSecondary
+                color: !root.enabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : Theme.text
                 verticalAlignment: Text.AlignVCenter
             }
         }
@@ -61,7 +61,7 @@ Button {
     background: Rectangle {
         objectName: "actionBackground"
         radius: root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
-        color: root.primary ? (root.down ? Qt.darker(Theme.accent, 1.22) : root.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
+        color: root.primary && !root.enabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.accent
     }

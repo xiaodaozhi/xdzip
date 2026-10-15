@@ -53,15 +53,20 @@ def main():
                         radios=frame.locator('#create-format [role=radio]')
                         radios.nth(0).focus();page.keyboard.press('ArrowRight')
                         expect(radios.nth(0)).to_be_focused();expect(radios.nth(0)).to_have_attribute('aria-checked','true')
+                        ratio = child.evaluate('XDZIP_DISPLAY_SPEC.views.create.sourceToLogical')
+                        for i, expected in enumerate([(4, 0, 0, 4), (0, 0, 0, 0), (0, 4, 4, 0)]):
+                            corners = radios.nth(i).evaluate('n=>{const s=getComputedStyle(n);return [s.borderTopLeftRadius,s.borderTopRightRadius,s.borderBottomRightRadius,s.borderBottomLeftRadius].map(parseFloat)}')
+                            for corner, (actual, wanted) in enumerate(zip(corners, expected)):
+                                check(tag+f'/segment{i}/corner{corner}', actual * ratio, wanted, .15)
                         selected = radios.nth(0)
                         selected.hover()
                         def painted_background():
                             return selected.evaluate('n=>{const c=document.createElement("canvas");c.width=c.height=1;const p=c.getContext("2d");p.fillStyle=getComputedStyle(n).backgroundColor;p.fillRect(0,0,1,1);return [...p.getImageData(0,0,1,1).data].slice(0,3)}')
                         hover = painted_background()
-                        check(tag+'/checked segment hover color',max(abs(a-b) for a,b in zip(hover,[22,77,228])),0,1)
+                        check(tag+'/checked segment hover color',max(abs(a-b) for a,b in zip(hover,[18,75,224])),0,1)
                         page.mouse.down()
                         pressed = painted_background()
-                        check(tag+'/checked segment pressed color',max(abs(a-b) for a,b in zip(pressed,[20,70,209])),0,1)
+                        check(tag+'/checked segment pressed color',max(abs(a-b) for a,b in zip(pressed,[11,56,181])),0,1)
                         page.mouse.up()
                         if dpr==1 and zoom==1:
                             modal.screenshot(path=str(OUTPUT/'create-segment-hover.png'))

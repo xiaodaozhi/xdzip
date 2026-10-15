@@ -12,6 +12,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QRegularExpression>
+#include <QScreen>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTimer>
@@ -354,6 +355,16 @@ class BrowserTest : public QObject {
         QCOMPARE(extract->width(), 491);
         auto *targetField = findVisual(extract->contentItem(), "extractTarget");
         QVERIFY(targetField);
+        for (const auto key : {Qt::Key_Escape, Qt::Key_Return, Qt::Key_Enter}) {
+            targetField->forceActiveFocus(Qt::TabFocusReason);
+            QTRY_VERIFY(targetField->hasActiveFocus());
+            QTest::keyClick(extract, key);
+            QTRY_VERIFY(!targetField->hasActiveFocus());
+            QVERIFY(extract->isVisible());
+        }
+        targetField->forceActiveFocus(Qt::TabFocusReason);
+        QTest::mouseClick(extract, Qt::LeftButton, Qt::NoModifier, QPoint(8, 8));
+        QTRY_VERIFY(!targetField->hasActiveFocus());
         targetField->setProperty("text", target.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkTarget(target.path());
@@ -418,7 +429,7 @@ class BrowserTest : public QObject {
         QVERIFY(task);
         QTRY_VERIFY(task->isVisible());
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
-        QCOMPARE(task->width(), 677);
+        QCOMPARE(task->width(), 491);
         QVERIFY(!(task->flags() & Qt::FramelessWindowHint));
         QCOMPARE(task->transientParent(), window);
         const auto button = findVisual(task->contentItem(), "cancelButton");
@@ -431,17 +442,55 @@ class BrowserTest : public QObject {
             return QDir().mkpath(directory) && visual_audit::save(w, directory, name);
         };
         QVERIFY(capture(task, "task-success"));
+        auto *tasksButton = findVisual(window->contentItem(), "browserTasks");
+        QVERIFY(tasksButton);
+        QCOMPARE(tasksButton->property("text").toString(),
+                 QStringLiteral("任务 %1").arg(controller->tasks().size()));
+        QCOMPARE(controller->activeTaskCount(), 0);
+        window->requestActivate();
+        QTRY_VERIFY(window->isActive());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            tasksButton->mapToScene(QPointF(tasksButton->width() / 2, tasksButton->height() / 2))
+                .toPoint());
+        auto *tasksMenu = window->findChild<QObject *>("browserTaskMenu");
+        QVERIFY(tasksMenu);
+        QTRY_VERIFY(tasksMenu->property("visible").toBool());
+        QCOMPARE(tasksMenu->property("width").toDouble(), 240.0);
+        QTRY_VERIFY(tasksMenu->property("height").toDouble() <= 50.0);
+        auto *taskEntry = window->findChild<QObject *>(QStringLiteral("taskMenuItem-") +
+                                                       result.value("id").toString());
+        QVERIFY(taskEntry);
+        QCOMPARE(taskEntry->property("statusLabel").toString(), QStringLiteral("已完成"));
+        QCOMPARE(taskEntry->property("labelSize").toDouble(), 13.0);
+        QVERIFY(capture(window, "tasks-menu"));
+        auto *taskItem = qobject_cast<QQuickItem *>(taskEntry);
+        QVERIFY(taskItem);
+        taskItem->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY(!tasksMenu->property("visible").toBool());
+        QCOMPARE(window->property("activeTaskId").toString(), result.value("id").toString());
+        task->requestActivate();
+        QTRY_VERIFY(task->isActive());
         QCOMPARE(result.value("details").toList().size(), 3);
         auto *detailsToggle = findVisual(task->contentItem(), "resultDetailsToggle");
         QVERIFY(detailsToggle);
+        QTRY_COMPARE(task->height(), task->property("requestedHeight").toInt());
+        const auto collapsedHeight = task->height();
+        QVERIFY(collapsedHeight < 600);
         detailsToggle->forceActiveFocus(Qt::TabFocusReason);
-        QTest::qWait(20);
+        QTRY_VERIFY(detailsToggle->hasActiveFocus());
         QTest::keyClick(task, Qt::Key_Space);
         QTRY_VERIFY(detailsToggle->property("checked").toBool());
+        const auto availableHeight =
+            std::min(600, task->screen()->availableGeometry().height() - 80);
+        QTRY_VERIFY(task->height() > collapsedHeight || collapsedHeight >= availableHeight);
+        QVERIFY(task->height() <= 600);
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
         QVERIFY(capture(task, "task-result-details"));
         QTest::keyClick(task, Qt::Key_Space);
         QTRY_VERIFY(!detailsToggle->property("checked").toBool());
+        QTRY_COMPARE(task->height(), collapsedHeight);
         controller->prepareExtraction(true);
         QTRY_VERIFY(extract->isVisible());
         QTRY_VERIFY(!controller->busy());
@@ -464,7 +513,7 @@ class BrowserTest : public QObject {
         QVERIFY(conflict);
         QTRY_VERIFY(conflict->isVisible());
         QTRY_VERIFY(visibleImagesReady(conflict->contentItem()));
-        QCOMPARE(conflict->width(), 612);
+        QCOMPARE(conflict->width(), 491);
         QVERIFY(capture(conflict, "conflict"));
         QVERIFY(capture(task, "task-waiting"));
         conflict->close();
@@ -1000,6 +1049,10 @@ class BrowserTest : public QObject {
         QCOMPARE(QGuiApplication::clipboard()->text().split('\n').size(), 3);
         controller.selectAll(true);
         QCOMPARE(controller.selectedCount(), 4);
+        QVERIFY(!controller.detail().isEmpty());
+        QCOMPARE(controller.detail().value("id").toString(), "5");
+        QVERIFY(!controller.detail().value("size").toString().isEmpty());
+        QVERIFY(!controller.detail().value("method").toString().isEmpty());
         controller.selectAll(false);
         QCOMPARE(controller.selectedCount(), 0);
         QVERIFY(controller.detail().isEmpty());
@@ -1529,6 +1582,9 @@ class BrowserTest : public QObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        window->raise();
+        window->requestActivate();
+        QTRY_VERIFY(window->isActive());
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         controller->openPath(archivePath);
@@ -1556,8 +1612,8 @@ class BrowserTest : public QObject {
         }
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!dropdown->property("visible").toBool());
-        auto *entry = findVisual(window->contentItem(), "entry-3-0");
-        QVERIFY(entry);
+        QQuickItem *entry = nullptr;
+        QTRY_VERIFY((entry = findVisual(window->contentItem(), "entry-3-0")));
         QTest::mouseClick(window, Qt::RightButton, Qt::NoModifier,
                           entry->mapToScene(QPointF(100, entry->height() / 2)).toPoint());
         auto *context = window->findChild<QObject *>("browserEntryMenu");

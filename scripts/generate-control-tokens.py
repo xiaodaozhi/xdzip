@@ -61,7 +61,7 @@ def main():
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
             declarations.append(f'  --ui-{key}: {value};')
         for name, value in palette[theme].items():
-            if name.startswith('operation'):
+            if name.startswith('operation') or name in {'accentHover', 'accentPressed', 'accentDisabled', 'accentDisabledText'}:
                 key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
                 declarations.append(f'  --{key}: {value};')
         for name, value in tree['colors'][theme].items():

@@ -184,9 +184,13 @@ window.XdzipControls = (() => {
                 text.append(reason);
             }
             const shortcut = document.createElement("span");
-            shortcut.className = "ui-menu-shortcut";
-            shortcut.textContent = item.shortcut || "";
+            shortcut.className = item.status ? "task-status" : "ui-menu-shortcut";
+            shortcut.textContent = item.status || item.shortcut || "";
             shortcut.setAttribute("aria-hidden", "true");
+            if (item.status) {
+                shortcut.dataset.status = item.statusKind || "running";
+                node.setAttribute("aria-label", item.label + "，" + item.status);
+            }
             const arrow = document.createElement("span");
             arrow.className = "ui-menu-arrow";
             arrow.innerHTML = item.children ? renderIcon("chevron-right") : "";

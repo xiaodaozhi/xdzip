@@ -55,3 +55,8 @@
 新增原稿时更新 `catalog.json` 的用途、标题和 SHA-256，再运行 `python scripts/build-hifi-gallery.py`。CI 通过 `--check` 校验图片完整性及画廊同步，不重新生成图像。清单中的 schema 版本仅用于数据兼容，不是素材分组。
 
 手机离线阅读可运行 `python scripts/build-hifi-gallery.py --standalone dist/xdzip-hifi-gallery.html`，导出内嵌全部原图的单文件 HTML；其他文档链接仍需仓库访问权限。
+
+
+## 当前交互与尺寸修订
+
+[操作窗口、按钮与任务状态修订](operation-revisions.html)覆盖 2026-10-15 的 491 逻辑像素统一宽度、动态结果高度、分段圆角、按下和禁用状态、重名正常密度及任务菜单。原始位图继续作为历史依据；当前行为及参数以该状态稿、docs/visual/layout-scale.json 和设计规范的修订段为准。

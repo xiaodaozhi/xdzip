@@ -13,8 +13,8 @@
   ],
   "shared_progress_source": "design/hifi/screens/progress.png",
   "shared_progress_sha256": "caa81c1b5e2072db01d032bbf48cd3478ac9aa90ccce953172985e1de917d387",
-  "logical_width": 677,
-  "client_height": 490,
+  "logical_width": 491,
+  "client_height": 600,
   "title_size": 20,
   "body_size": 13,
   "footer_font_size": 13,
@@ -25,6 +25,7 @@
     "Operation semantics change; shared progress geometry and density remain fixed",
     "Native window decorations excluded from Qt content capture",
     "Qt component preview and HTML demonstration do not execute a CRC task",
-    "Reference crops stay in the canonical asset library; captures and measurements stay outside Git"
+    "Reference crops stay in the canonical asset library; captures and measurements stay outside Git",
+    "2026-10-15: shared task width is now 491 logical pixels; content-driven height with 600px upper bound. Original bitmap is historical."
   ]
 }

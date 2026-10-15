@@ -157,6 +157,7 @@ Rectangle {
                     rowSpacing: Theme.mainUnits(4)
                     columnSpacing: Theme.mainUnits(10)
                     Layout.fillWidth: true
+                    visible: panel.selectionCount > 0
                     Layout.minimumHeight: Math.max(Theme.mainUnits(32), Theme.mainPropertySize * 1.6 + Theme.mainUnits(8))
                     Text {
                         text: parent.modelData.label
@@ -175,7 +176,9 @@ Rectangle {
                 }
             }
             ArchiveAction {
+                id: extractAction
                 objectName: "inspectorExtract"
+                visible: panel.selectionCount > 0
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.mainUnits(12)
                 implicitHeight: Math.max(Theme.mainUnits(47), Theme.mainHeaderSize * 1.6 + Theme.mainUnits(16))
@@ -185,9 +188,11 @@ Rectangle {
                 explanation: qsTr("解压当前焦点条目")
                 onClicked: panel.extractRequested(String(panel.detail.id))
                 background: Rectangle {
+                    objectName: "inspectorExtractBackground"
                     radius: Theme.mainUnits(6)
-                    color: Theme.surface
-                    border.color: Theme.border
+                    color: !panel.canExtract ? Theme.surface : extractAction.down ? Theme.controlPressed : extractAction.hovered ? Theme.controlHover : Theme.surface
+                    border.color: extractAction.activeFocus ? Theme.accent : Theme.border
+                    border.width: extractAction.activeFocus ? 2 : 1
                 }
             }
         }

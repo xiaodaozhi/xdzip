@@ -9,7 +9,7 @@ OperationWindow {
     readonly property real density: Theme.operationProgressDensity
     function unit(value: real): real { return value * density; }
     width: Theme.operationProgressWidth
-    requestedHeight: Math.min(terminal && !checking ? Theme.operationResultClientHeight : Math.round(unit(Theme.operationProgressClientHeight)), Screen.desktopAvailableHeight - 80)
+    requestedHeight: Math.min(Math.ceil(taskContent.implicitHeight + footer.implicitHeight), Theme.operationResultClientHeight, Screen.desktopAvailableHeight - 80)
     property bool creating: false
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
@@ -56,6 +56,8 @@ OperationWindow {
             Layout.fillWidth: true; Layout.fillHeight: true
             contentWidth: availableWidth; clip: true
             ColumnLayout {
+                id: taskContent
+                objectName: "taskBodyContent"
                 width: scroll.availableWidth; spacing: 0
                 RowLayout {
                     Layout.fillWidth: true

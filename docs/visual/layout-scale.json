@@ -53,10 +53,11 @@
     "logical_widths": {
       "default": 612,
       "extract": 491,
-      "progress": 677,
-      "archive-test": 677,
+      "progress": 491,
+      "archive-test": 491,
       "create": 491,
-      "result": 677
+      "result": 491,
+      "conflict": 491
     },
     "components": {
       "bodySize": 16,
@@ -93,7 +94,8 @@
       "createTitleSize": 20,
       "createNoteSize": 12,
       "createInputRowHeight": 38,
-      "createFieldHeight": 28
+      "createFieldHeight": 28,
+      "conflictClientHeight": 560
     },
     "source_to_logical_by_view": {
       "extract": [
@@ -136,7 +138,8 @@
       "removeArtworkSize": 24,
       "segmentedHeight": 28,
       "segmentedRadius": 5
-    }
+    },
+    "conflict_density": 0.8
   },
   "controls": {
     "density": 1,

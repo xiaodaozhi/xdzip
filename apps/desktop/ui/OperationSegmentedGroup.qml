@@ -69,8 +69,12 @@ Control {
                 }
                 background: Rectangle {
                     objectName: segment.objectName + "Background"
-                    radius: segment.checked || segment.activeFocus ? Theme.operationControlSegmentedRadius - 1 : 0
-                    color: segment.checked ? segment.down ? Qt.darker(Theme.accent, 1.22) : segment.hovered ? Qt.darker(Theme.accent, 1.12) : Theme.accent : segment.hovered && segment.enabled ? Theme.controlHover : "transparent"
+                    radius: 0
+                    topLeftRadius: segment.index === 0 ? Theme.operationControlSegmentedRadius - 1 : 0
+                    bottomLeftRadius: topLeftRadius
+                    topRightRadius: segment.index === root.options.length - 1 ? Theme.operationControlSegmentedRadius - 1 : 0
+                    bottomRightRadius: topRightRadius
+                    color: segment.checked ? segment.down ? Theme.accentPressed : segment.hovered ? Theme.accentHover : Theme.accent : segment.hovered && segment.enabled ? Theme.controlHover : "transparent"
                     border.color: segment.activeFocus ? Theme.accentInk : "transparent"
                     border.width: segment.activeFocus ? 2 : 0
                     Rectangle {

@@ -109,11 +109,12 @@
 }
 .button.primary:active:not(:disabled),
 #extract-menu-button:active:not(:disabled) {
-    background: color-mix(in srgb, var(--accent) 82%, black);
+    background: var(--accent-pressed);
 }
 .button.primary:disabled {
-    background: var(--accent);
-    color: white;
+    background: var(--accent-disabled);
+    color: var(--accent-disabled-text);
+    border-color: var(--accent-disabled);
     opacity: 1;
 }
 .button:focus-visible,

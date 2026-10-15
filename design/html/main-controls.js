@@ -376,7 +376,7 @@ window.XdzipMain = (() => {
         properties: {
             label: "文件属性",
             enabled: () => ready() && hasSelection(),
-            reason: "请先选择一个或多个条目",
+            reason: "",
             run: showInspector,
         },
         "archive-properties": {
@@ -400,7 +400,7 @@ window.XdzipMain = (() => {
             label: "解压所选…",
             enabled: () =>
                 ready() && selectedFiles().length > 0 && !jobRunning(),
-            reason: "请先选择可解压条目并等待当前任务结束",
+            reason: "",
             run: () => showExtract("selected"),
         },
         "extract-results": {
@@ -1136,8 +1136,9 @@ window.XdzipMain = (() => {
             label: "任务菜单",
             placement: "top-end",
             items: [
-                { id: "task-status", label: state.task || state.testJob ? "演示任务" : "暂无后台任务", disabled: true },
-                { id: "task-details", label: "查看任务详情", disabled: !state.task && !state.testJob, run: () => dispatch("tasks") },
+                ...(state.task ? [{ id: "task-details", label: state.task.kind === "create" ? "创建任务" : "解压任务", icon: "task-list", status: state.task.status === "finished" ? state.task.result === "success" ? "已完成" : state.task.result === "cancelled" ? "已取消" : "未完成" : state.task.status === "conflict" ? "等待处理" : "进行中", statusKind: state.task.status === "finished" ? state.task.result === "success" ? "succeeded" : state.task.result === "cancelled" ? "cancelled" : "failed" : state.task.status === "conflict" ? "waiting" : "running", run: () => dispatch("tasks") }] : []),
+                ...(state.testJob ? [{ id: state.task ? "check-details" : "task-details", label: "完整性检查预览", icon: "task-list", status: state.testJob.status === "running" ? "进行中" : "已结束", run: showTestView }] : []),
+                ...(!state.task && !state.testJob ? [{ id: "no-tasks", label: "暂无任务", disabled: true }] : []),
             ],
         });
         $("#extract").onclick = () =>

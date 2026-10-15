@@ -14,10 +14,11 @@ QtObject {
     readonly property int mainMinimumHeight: 544
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
-    readonly property int operationProgressWidth: 677
-    readonly property int operationArchiveTestWidth: 677
+    readonly property int operationProgressWidth: 491
+    readonly property int operationArchiveTestWidth: 491
     readonly property int operationCreateWidth: 491
-    readonly property int operationResultWidth: 677
+    readonly property int operationResultWidth: 491
+    readonly property int operationConflictWidth: 491
     readonly property real operationExtractDensity: 0.8
     readonly property real operationProgressDensity: 0.8
     readonly property real operationCreateDensity: 0.8
@@ -74,6 +75,7 @@ QtObject {
     readonly property real operationCreateNoteSize: 12 * fontScale
     readonly property real operationCreateInputRowHeight: 38
     readonly property real operationCreateFieldHeight: 28
+    readonly property real operationConflictClientHeight: 560
     readonly property real operationResultTitleSize: 20 * fontScale
     readonly property real operationResultSubtitleSize: 14 * fontScale
     readonly property real operationResultBodySize: 13 * fontScale
@@ -102,13 +104,16 @@ QtObject {
     readonly property color progressStart: dark ? "#428FFF" : "#2788FF"
     readonly property color progressEnd: dark ? "#4165DB" : "#0757FA"
     readonly property color inspector: dark ? "#22262F" : "#FFFFFF"
-    readonly property color accentDisabled: dark ? "#465B91" : "#7087CB"
+    readonly property color accentDisabled: dark ? "#29364D" : "#E4EAF5"
     readonly property color operationCard: dark ? "#202630" : "#F4F6FA"
     readonly property color operationCardBorder: dark ? "#343E4E" : "#DFE5EF"
     readonly property color operationFieldBorder: dark ? "#485469" : "#C9D1E0"
     readonly property color operationButtonSurface: dark ? "#28313F" : "#FAFBFD"
     readonly property color resultWarningSurface: dark ? "#342A1F" : "#FFF8ED"
     readonly property color resultWarningInk: dark ? "#F5B659" : "#B86900"
+    readonly property color accentHover: dark ? "#3874EE" : "#124BE0"
+    readonly property color accentPressed: dark ? "#2355BA" : "#0B38B5"
+    readonly property color accentDisabledText: dark ? "#8C9AB2" : "#738098"
     readonly property real bodySize: 14 * fontScale
     readonly property real mainBodySize: 11 * fontScale
     readonly property real tableSize: 16 * fontScale

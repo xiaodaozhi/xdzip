@@ -26,6 +26,12 @@ ApplicationWindow {
                  waiting: qsTr("等待处理重名"), committing: qsTr("提交完整文件"), cancelling: qsTr("停止与清理"),
                  cleaning: qsTr("清理暂存"), succeeded: qsTr("完成"), failed: qsTr("失败"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
     }
+    function taskStateLabel(status: string): string {
+        return ({queued: qsTr("排队中"), preparing: qsTr("准备中"), running: qsTr("进行中"),
+                 verifying: qsTr("校验中"), waiting: qsTr("等待处理"), committing: qsTr("保存中"),
+                 cancelling: qsTr("停止中"), cleaning: qsTr("清理中"), succeeded: qsTr("已完成"),
+                 failed: qsTr("未完成"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
+    }
     function showTask(id: string) {
         activeTaskId = id;
         taskSnapshot = reader.tasks.find(t => t.id === id) || {};
@@ -1409,8 +1415,8 @@ ApplicationWindow {
                 ArchiveAction {
                     objectName: "browserTasks"
                     asset: "task-list"
-                    text: qsTr("任务 %1").arg(reader.activeTaskCount)
-                    explanation: qsTr("查看后台解压任务")
+                    text: qsTr("任务 %1").arg(reader.tasks.length)
+                    explanation: qsTr("查看创建和解压任务，进行中 %1 项").arg(reader.activeTaskCount)
                     onClicked: taskMenu.open()
                     CommandMenu {
                         id: taskMenu
@@ -1418,22 +1424,28 @@ ApplicationWindow {
                         x: parent.width - width
                         y: -implicitHeight - Theme.mainPopupGap
                         CommandMenuItem {
-                            text: qsTr("暂无解压任务")
-                            visible: reader.tasks.length === 0
+                            text: qsTr("暂无任务")
+                            commandVisible: reader.tasks.length === 0
                             enabled: false
                         }
-                        Repeater {
+                        Instantiator {
                             model: reader.tasks
-                            CommandMenuItem {
+                            delegate: CommandMenuItem {
                                 required property var modelData
-                                text: qsTr("任务 %1，%2").arg(modelData.id).arg(root.phaseLabel(modelData.status))
+                                objectName: "taskMenuItem-" + modelData.id
+                                text: (modelData.creating ? qsTr("创建任务 %1") : qsTr("解压任务 %1")).arg(modelData.id)
+                                asset: "task-list"
+                                statusLabel: root.taskStateLabel(modelData.status)
+                                statusInk: modelData.status === "failed" ? Theme.menuDanger : modelData.status === "waiting" ? Theme.resultWarningInk : modelData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
                                 onTriggered: root.showTask(modelData.id)
                             }
+                            onObjectAdded: (index, object) => taskMenu.insertItem(index + 1, object)
+                            onObjectRemoved: (index, object) => taskMenu.removeItem(object)
                         }
-                        CommandMenuSeparator { visible: reader.busy }
+                        CommandMenuSeparator { commandVisible: reader.busy }
                         CommandMenuItem {
                             text: qsTr("取消读取")
-                            visible: reader.busy
+                            commandVisible: reader.busy
                             onTriggered: reader.cancel()
                         }
                     }

@@ -611,6 +611,11 @@ function renderInspector(chosen) {
             `<div class="inspector-head"><span>归档信息</span></div><div class="file-emblem">${icon("archive")}</div><h2>${esc(state.archiveTitle)}</h2><p class="inspector-footnote">${state.archiveState === "empty" ? "目录已读取，归档中没有可解压的文件。" : "目录信息未就绪，暂时无法展示文件属性。"}</p>`;
         return;
     }
+    if (!chosen.length) {
+        $("#inspector").innerHTML = `<div class="inspector-head"><span>文件预览</span><button class="icon-button" aria-label="关闭属性面板" id="hide-inspector">${icon("close")}</button></div><div class="file-emblem">${icon("archive")}</div><h2>未选择文件</h2><p class="inspector-footnote">选择文件查看属性</p>`;
+        $("#hide-inspector").onclick = () => ($("#inspector").hidden = true);
+        return;
+    }
     const multi = chosen.length > 1,
         single = chosen.length === 1 ? chosen[0] : null;
     const size = chosen.length
@@ -668,11 +673,10 @@ function updateTaskCount() {
             state.task &&
                 ["running", "stopping", "conflict"].includes(state.task.status),
         ) + Number(state.testJob?.status === "running");
-    $("#task-count").textContent = running
-        ? `任务 ${running}`
-        : state.task || state.testJob
-          ? "任务，已结束"
-          : "任务 0";
+    const count = Number(Boolean(state.task)) + Number(Boolean(state.testJob));
+    $("#task-count").textContent = `任务 ${count}`;
+    $("#task-count").title = `进行中 ${running} 项`;
+
 }
 // Web chrome is a design simulation. Production uses separate QQuickWindows.
 function windowClose() {
@@ -888,6 +892,13 @@ function showExtract(scope = "selected", retryFiles = null) {
             input.value += folder;
         check();
     };
+    const targetField = $("#target-base");
+    targetField.addEventListener("keydown", event => {
+        if (["Escape", "Enter"].includes(event.key)) { event.preventDefault(); event.stopPropagation(); targetField.blur(); }
+    });
+    targetField.closest("dialog").addEventListener("pointerdown", event => {
+        if (event.target !== targetField) targetField.blur();
+    });
     $("#change-target").onclick = () => {
         $("#target-base").value = "下载";
         check();
@@ -1137,7 +1148,7 @@ function showResult() {
     const successCount = created ? (ok ? 1 : 0) : t.completed.length;
     const failedCount = created ? (ok ? 0 : 1) : t.failed.length;
     const reason = cancel ? "任务已安全停止。可以重新规划未完成项。" : t.result === "source" ? "压缩文件在读取后被修改。请重新打开并重新选择内容。" : "目标磁盘空间不足，请释放空间或更改位置后重试。";
-    const saved = t.completed.map(e=>e.name).join("、");
+    const saved = t.completed.slice(0, 3).map(e=>e.name).join("、") + (t.completed.length > 3 ? ` 等 ${t.completed.length} 个文件` : "");
     dialog(
         header(title, ok ? created ? "归档已完成校验并保存。" : "所选内容已处理完成。" : created ? "临时归档未发布，原有文件保持不变。" : "已保留成功解压的文件。", ok ? "status-success" : cancel ? "cancelled-large" : "document-warning") +
         `<div class="modal-content result-content"><div class="result-counts"><div><span>${icon("status-partial-success")}${created ? "已创建归档" : "成功"}</span><b>${successCount}</b></div><div><span>${icon("status-skipped")}跳过</span><b>${created ? 0 : t.skipped.length}</b></div><div><span>${icon(cancel ? "status-stopped" : "status-warning")}未完成</span><b>${failedCount}</b></div></div>

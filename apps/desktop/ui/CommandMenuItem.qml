@@ -7,6 +7,8 @@ MenuItem {
     id: root
     property string asset: ""
     property string shortcutLabel: ""
+    property string statusLabel: ""
+    property color statusInk: Theme.accentInk
     property string disabledReason: ""
     property bool dangerous: false
     property bool commandVisible: true
@@ -21,7 +23,7 @@ MenuItem {
     bottomPadding: 4
     property real labelSize: Theme.menuLabelSize
     font.pixelSize: labelSize
-    Accessible.name: text
+    Accessible.name: statusLabel.length ? text + "，" + statusLabel : text
     Accessible.description: enabled ? "" : disabledReason
     indicator: null
     arrow: null
@@ -64,6 +66,20 @@ MenuItem {
                 wrapMode: Text.Wrap
                 color: Theme.menuSecondary
                 font.pixelSize: Theme.menuShortcutSize
+            }
+        }
+        Rectangle {
+            objectName: root.objectName + "Status"
+            visible: root.statusLabel.length > 0
+            implicitWidth: statusText.implicitWidth + 14
+            implicitHeight: statusText.implicitHeight + 6
+            radius: 4
+            color: Qt.rgba(root.statusInk.r, root.statusInk.g, root.statusInk.b, 0.10)
+            Text {
+                id: statusText
+                anchors.centerIn: parent
+                text: root.statusLabel; font.pixelSize: Theme.menuShortcutSize
+                color: root.statusInk
             }
         }
         Text {

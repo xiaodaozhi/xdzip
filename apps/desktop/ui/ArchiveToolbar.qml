@@ -257,14 +257,12 @@ Rectangle {
                     CommandMenuItem {
                         text: qsTr("解压所选")
                         enabled: root.canSearch && root.canSelect && root.hasSelection
-                        disabledReason: qsTr("先选择文件或目录")
                         onTriggered: root.extractRequested(false)
                     }
                     CommandMenuSeparator {}
                     CommandMenuItem {
                         text: qsTr("解压元数据预检")
                         enabled: root.canInspect
-                        disabledReason: qsTr("先选择条目")
                         onTriggered: root.inspectRequested()
                     }
                 }

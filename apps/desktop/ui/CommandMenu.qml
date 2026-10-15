@@ -7,6 +7,7 @@ Menu {
     // Keep the shared delegates on every platform; AppKit-native menus ignore
     // custom backgrounds and disabled-reason rows. Operation windows are separate.
     popupType: Popup.Item
+    focus: true
     property Item returnFocusItem: null
     implicitWidth: Math.max(Theme.menuMinWidth, Theme.menuWidth)
     padding: Theme.menuPadding

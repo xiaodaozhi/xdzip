@@ -362,7 +362,10 @@ void BrowserController::selectAll(bool selected) {
         return;
     m_model.selectAll(selected);
     m_selectionAnchor.clear();
-    m_detail.clear();
+    if (selected && m_model.rowCount() > 0)
+        showRowDetail(m_model.rowCount() - 1);
+    else
+        m_detail.clear();
     m_preflightReport.clear();
     emit changed();
 }

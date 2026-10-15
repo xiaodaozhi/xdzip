@@ -809,7 +809,9 @@ dialog[data-kind="create"] .create-row .icon-button>svg { width:var(--operation-
 dialog[data-kind="create"] .create-row .icon-button:hover { background:var(--ui-control-hover); }
 .operation-segmented { display:flex; align-items:stretch; height:var(--operation-control-segmented-height); min-height:var(--operation-control-segmented-height); padding:calc(1px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); border-radius:var(--operation-control-segmented-radius); background:var(--operation-card); }
 .operation-segment { position:relative; flex:1; min-width:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--text); font:inherit; }
-.operation-segment[aria-checked="true"] { background:var(--accent); color:white; border-radius:calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)); }
+.operation-segment[aria-checked="true"] { background:var(--accent); color:white; }
+.operation-segment:first-child { border-radius:calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)) 0 0 calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)); }
+.operation-segment:last-child { border-radius:0 calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)) calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)) 0; }
 .operation-segment:not([aria-checked="true"]):not(:disabled):hover { background:var(--ui-control-hover); }
 .operation-segment:disabled { color:var(--ui-menu-disabled); cursor:default; }
 .operation-segment:not(:first-child):not([aria-checked="true"])::before { content:""; position:absolute; left:0; top:0; bottom:0; width:calc(1px * var(--ui-source-factor)); background:var(--operation-field-border); }
@@ -835,7 +837,7 @@ dialog[data-kind="create"] .create-row .icon-button:focus-visible { outline:0; }
 dialog[data-kind="create"] .create-row .icon-button:focus-visible::before { box-shadow:inset 0 0 0 var(--ui-focus-width) var(--accent); }
 
 /* Result is a normal-size operation window, mapped from the approved R01 source. */
-dialog[data-kind="result"] { width:calc(677px * var(--ui-source-factor)); }
+dialog[data-kind="result"] { width:var(--operation-result-width); max-height:min(calc(600px * var(--ui-source-factor)), calc(100vh - 32px)); }
 dialog[data-kind="result"][open] { display:flex; flex-direction:column; overflow:hidden; }
 dialog[data-kind="result"]>.os-titlebar,
 dialog[data-kind="result"]>.modal-header,
@@ -891,3 +893,25 @@ dialog[data-kind="create"] #create-password { margin-top:calc(8px * var(--ui-sou
 /* Checked radio buttons retain their accent under the generic button hover rule. */
 .operation-segment[aria-checked="true"]:hover:not(:disabled) { background:color-mix(in srgb,var(--accent) 89.285714%,black); }
 .operation-segment[aria-checked="true"]:active:not(:disabled) { background:color-mix(in srgb,var(--accent) 81.967213%,black); }
+
+/* 2026-10-15: one normal-density operation family; original artboards remain archived. */
+dialog:is([data-kind="progress"], [data-kind="archive-test"]) { width:var(--operation-progress-width); height:auto; max-height:min(calc(600px * var(--ui-source-factor)), calc(100vh - 32px)); }
+dialog[data-kind="conflict"] { width:var(--operation-conflict-width); max-height:min(calc(560px * var(--ui-source-factor)), calc(100vh - 32px)); }
+dialog[data-kind="conflict"] .modal-header { padding:calc(24px * var(--ui-source-factor)); gap:calc(16px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .modal-header h1 { font-size:calc(20px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .modal-header p { font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .modal-content { padding:0 calc(24px * var(--ui-source-factor)) calc(20px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .comparison>div { padding:calc(13px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .comparison label, dialog[data-kind="conflict"] .comparison strong, dialog[data-kind="conflict"] .conflict-name { font-size:calc(14px * var(--ui-source-factor)); }
+dialog[data-kind="conflict"] .comparison small, dialog[data-kind="conflict"] .notice, dialog[data-kind="conflict"] .check-label { font-size:calc(12px * var(--ui-source-factor)); }
+.radio-row small { margin-left:auto; color:var(--secondary); }
+.button.primary:hover:not(:disabled), .operation-segment[aria-checked="true"]:hover:not(:disabled) { background:var(--accent-hover); }
+.button.primary:active:not(:disabled), .operation-segment[aria-checked="true"]:active:not(:disabled) { background:var(--accent-pressed); box-shadow:inset 0 calc(2px * var(--ui-source-factor)) calc(3px * var(--ui-source-factor)) #0002; }
+.button.primary:disabled { background:var(--accent-disabled); color:var(--accent-disabled-text); opacity:1; border-color:var(--accent-disabled); }
+.task-status { margin-left:auto; border-radius:calc(4px * var(--ui-source-factor)); padding:calc(3px * var(--ui-source-factor)) calc(7px * var(--ui-source-factor)); font-size:calc(12px * var(--ui-source-factor)); background:var(--selection); color:var(--accent-ink); }
+.task-status[data-status="failed"], .task-status[data-status="waiting"] { background:var(--result-warning-surface); color:var(--result-warning-ink); }
+.task-status[data-status="cancelled"] { background:var(--canvas); color:var(--secondary); }
+
+dialog[data-kind="conflict"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="conflict"]>.modal-content { min-height:0; overflow:auto; }
+dialog[data-kind="conflict"]>.modal-footer, dialog[data-kind="conflict"]>.modal-header, dialog[data-kind="conflict"]>.os-titlebar { flex-shrink:0; }

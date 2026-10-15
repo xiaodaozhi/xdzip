@@ -33,8 +33,8 @@ Item {
         function test_native_shared_layout() {
             compare(task.transientParent, ownerWindow);
             verify((task.flags & Qt.FramelessWindowHint) === 0);
-            compare(task.width, 677);
-            compare(task.height, Math.min(490, Screen.desktopAvailableHeight - 80));
+            compare(task.width, 491);
+            verify(task.height > 0 && task.height <= Math.min(600, Screen.desktopAvailableHeight - 80));
             compare(task.heading, "正在检查归档");
             compare(findChild(task, "progressLabel").text, "60%");
             compare(task.closingHint.text, "界面预览，不执行实际校验。");
