@@ -27,7 +27,7 @@ SOURCES = {
     "create": "design/hifi/screens/create.png",
     "progress": "design/hifi/screens/progress.png",
     "conflict": "design/hifi/screens/conflict.png",
-    "settings": "design/hifi/screens/settings.png",
+    "settings": "design/hifi/screens/settings-current-light.png",
 }
 VIEWS = [*SOURCES, "empty", "damaged"]
 ZOOMS = ["fit", "1", "pixels"]
