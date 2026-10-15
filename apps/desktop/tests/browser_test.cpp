@@ -791,6 +791,95 @@ class BrowserTest : public QObject {
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
     }
+    void extractionSubmissionKeepsBrowserPresentationStable() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QVERIFY(controller->busy());
+        QVERIFY(controller->browsingBusy());
+        QVERIFY(!controller->taskStarting());
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->selectAll(true);
+        const auto selected = controller->selectedCount();
+        const auto rows = controller->entries()->rowCount();
+        controller->prepareExtraction(false);
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QVERIFY(extract);
+        QTRY_VERIFY(extract->isVisible());
+        auto *field = findVisual(extract->contentItem(), "extractTarget");
+        auto *openAfter = findVisual(extract->contentItem(), "extractOpenAfter");
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        auto *change = findVisual(extract->contentItem(), "extractChangeTarget");
+        auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        QVERIFY(field && openAfter && start && change && overlay);
+        field->setProperty("text", target.path());
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(checkedTarget(controller, target.path()));
+        openAfter->setProperty("checked", false);
+        QTRY_VERIFY(start->isEnabled());
+        QVERIFY(!overlay->isVisible());
+        bool controlsStable = true;
+        bool overlayStable = true;
+        bool sawSubmitting = false;
+        bool sawStartDisabled = false;
+        bool retried = false;
+        QObject monitor;
+        for (const auto &name :
+             {"archiveOpen", "archiveNew", "archiveMore", "archiveSearch", "archiveExtract"}) {
+            auto *control = findVisual(window->contentItem(), QString::fromLatin1(name));
+            QVERIFY(control && control->isEnabled());
+            connect(control, &QQuickItem::enabledChanged, &monitor,
+                    [&, control] { controlsStable &= control->isEnabled(); });
+        }
+        QVERIFY(change->isEnabled());
+        connect(change, &QQuickItem::enabledChanged, &monitor,
+                [&] { controlsStable &= change->isEnabled(); });
+        connect(overlay, &QQuickItem::visibleChanged, &monitor,
+                [&] { overlayStable &= !overlay->isVisible(); });
+        connect(controller, &BrowserController::changed, &monitor, [&] {
+            if (controller->taskStarting()) {
+                sawSubmitting = true;
+                if (!retried) {
+                    retried = true;
+                    controller->startExtraction(target.path(), false, true, 0, false, false);
+                }
+                controlsStable &=
+                    !controller->browsingBusy() && controller->browserQueryAvailable();
+            }
+        });
+        connect(start, &QQuickItem::enabledChanged, &monitor,
+                [&] { sawStartDisabled |= controller->taskStarting() && !start->isEnabled(); });
+        QSignalSpy resets(controller->entries(), &QAbstractItemModel::modelReset);
+        QSignalSpy started(controller, &BrowserController::extractionStarted);
+        // Use the real pointer path; the changed handler also attempts a duplicate request.
+        QTest::mouseClick(
+            extract, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_COMPARE(started.count(), 1);
+        QTRY_VERIFY(!extract->isVisible());
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->tasks().isEmpty() &&
+                                     controller->tasks().first().toMap().value("terminal").toBool(),
+                                 10000);
+        QVERIFY(sawSubmitting);
+        QVERIFY(sawStartDisabled);
+        QVERIFY(controlsStable);
+        QVERIFY(overlayStable);
+        QCOMPARE(resets.count(), 0);
+        QCOMPARE(controller->entries()->rowCount(), rows);
+        QCOMPARE(controller->selectedCount(), selected);
+        QCOMPARE(controller->tasks().size(), 1);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
+        window->close();
+    }
     void m3ExtractionWindowsAndRealOutput() {
         QTemporaryDir target;
         QVERIFY(target.isValid());

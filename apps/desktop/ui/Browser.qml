@@ -79,7 +79,7 @@ ApplicationWindow {
     property bool contextDirectoryHasChildren: false
     property bool contextDirectoryExpanded: false
     property bool pendingDirectorySearchFocus: false
-    readonly property bool contextAvailable: reader.ready && !reader.busy && contextEntry.session === reader.sessionId
+    readonly property bool contextAvailable: reader.ready && !reader.browsingBusy && contextEntry.session === reader.sessionId
     // File and directory icons share one logical slot; artwork retains its aspect ratio.
     readonly property real entryIconSize: Theme.mainFileIconSize
     function toggleInspector() {
@@ -102,7 +102,7 @@ ApplicationWindow {
             reader.selectOnlyRow(row);
     }
     function entryMenuAt(item, row, entryId, directory, navigable, x, y) {
-        if (!reader.ready || reader.busy)
+        if (!reader.ready || reader.browsingBusy)
             return;
         root.contextEntry = {
             row: row,
@@ -166,7 +166,7 @@ ApplicationWindow {
         onChanged: {
             if (root.welcomeVisible && !busy && root.welcomeWasBusy) Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
             root.welcomeWasBusy = root.welcomeVisible && busy && title.length > 0;
-            if (busy || root.contextEntry.session !== sessionId) {
+            if (browsingBusy || root.contextEntry.session !== sessionId) {
                 entryMenu.close();
                 directoryMenu.close();
             }
@@ -248,7 +248,7 @@ ApplicationWindow {
             selectionCount: reader.selectedCount
             sizeFormatter: root.formatSize
             iconForFile: root.fileIcon
-            canExtract: reader.ready && !reader.busy
+            canExtract: reader.ready && !reader.browsingBusy
             onExtractRequested: id => reader.prepareExtraction(false, [id])
             onCloseRequested: inspectorWindow.close()
         }
@@ -273,32 +273,32 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: StandardKey.Open
-        enabled: reader.runtimeAvailable && !reader.busy
+        enabled: reader.runtimeAvailable && !reader.browsingBusy
         onActivated: reader.chooseArchive()
     }
     Shortcut {
         sequence: StandardKey.New
-        enabled: reader.runtimeAvailable && !reader.busy
+        enabled: reader.runtimeAvailable && !reader.browsingBusy
         onActivated: createWindow.configure()
     }
     Shortcut {
         sequence: StandardKey.Find
-        enabled: reader.queryAvailable
+        enabled: reader.browserQueryAvailable
         onActivated: toolbar.focusSearch()
     }
     Shortcut {
         sequences: [StandardKey.Close]
-        enabled: reader.ready && !reader.busy
+        enabled: reader.ready && !reader.browsingBusy
         onActivated: reader.closeArchive()
     }
     Shortcut {
         sequence: StandardKey.SelectAll
-        enabled: reader.ready && !reader.busy
+        enabled: reader.ready && !reader.browsingBusy
         onActivated: reader.selectAll(true)
     }
     Shortcut {
         sequences: [StandardKey.Copy]
-        enabled: reader.ready && !reader.busy && reader.selectedCount > 0
+        enabled: reader.ready && !reader.browsingBusy && reader.selectedCount > 0
         onActivated: {
             entryMenu.close();
             reader.copySelection(false);
@@ -309,7 +309,7 @@ ApplicationWindow {
         objectName: "browserDirectoryMenu"
         CommandMenuItem {
             text: root.contextDirectoryId.length ? qsTrId("ui.fb1eccfe14ea") : qsTrId("ui.42ee2863b6d7")
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: {
                 if (root.contextDirectoryId.length)
                     reader.navigateDirectory(root.contextDirectoryId);
@@ -319,20 +319,20 @@ ApplicationWindow {
         }
         CommandMenuItem {
             text: root.contextDirectoryExpanded ? qsTrId("ui.9c9c21cc25c0") : qsTrId("ui.521dbd520244")
-            enabled: reader.ready && !reader.busy && root.contextDirectoryHasChildren
+            enabled: reader.ready && !reader.browsingBusy && root.contextDirectoryHasChildren
             disabledReason: qsTrId("ui.fa58108c4823")
             onTriggered: directoryTree.toggleExpanded(root.contextDirectoryRow)
         }
         CommandMenuItem {
             text: qsTrId("ui.2a7934774a06")
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.prepareExtraction(!root.contextDirectoryId.length, root.contextDirectoryId.length ? [root.contextDirectoryId] : [])
         }
         CommandMenuSeparator {}
         CommandMenuItem {
             text: qsTrId("ui.6050037c48c3")
             asset: "search"
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: {
                 root.pendingDirectorySearchFocus = true;
                 if (root.contextDirectoryId.length)
@@ -349,35 +349,35 @@ ApplicationWindow {
             text: qsTrId("ui.d44e9b3d3b31")
             checkable: true
             checked: reader.sortOrder === 1 || reader.sortOrder === 2
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(0)
         }
         CommandMenuItem {
             text: qsTrId("ui.301a69c74dfc")
             checkable: true
             checked: reader.sortOrder === 3 || reader.sortOrder === 4
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(1)
         }
         CommandMenuItem {
             text: qsTrId("ui.2582e6a2c9e2")
             checkable: true
             checked: reader.sortOrder === 5 || reader.sortOrder === 6
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(2)
         }
         CommandMenuItem {
             text: qsTrId("ui.ba40014ff496")
             checkable: true
             checked: reader.sortOrder === 9 || reader.sortOrder === 10
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(3)
         }
         CommandMenuItem {
             text: qsTrId("ui.2cbced881b2d")
             checkable: true
             checked: reader.sortOrder === 11 || reader.sortOrder === 12
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(4)
         }
         CommandMenuSeparator {}
@@ -385,7 +385,7 @@ ApplicationWindow {
             text: qsTrId("ui.897c9681c945")
             checkable: true
             checked: reader.sortOrder === 0
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.sortByColumn(-1)
         }
     }
@@ -465,12 +465,12 @@ ApplicationWindow {
         objectName: "browserBackgroundMenu"
         CommandMenuItem {
             text: qsTrId("ui.64f51f30dabc")
-            enabled: reader.ready && !reader.busy
+            enabled: reader.ready && !reader.browsingBusy
             onTriggered: reader.selectAll(true)
         }
         CommandMenuItem {
             text: qsTrId("ui.74966e20df2e")
-            enabled: reader.ready && !reader.busy && reader.selectedCount > 0
+            enabled: reader.ready && !reader.browsingBusy && reader.selectedCount > 0
             onTriggered: reader.selectAll(false)
         }
         CommandMenuSeparator {}
@@ -503,8 +503,8 @@ ApplicationWindow {
             Layout.fillWidth: true
             archiveTitle: reader.title
             integratedTitlebar: root.integratedTitlebar
-            canOpen: reader.runtimeAvailable && !reader.busy
-            canClose: reader.ready && !reader.busy
+            canOpen: reader.runtimeAvailable && !reader.browsingBusy
+            canClose: reader.ready && !reader.browsingBusy
             onOpenRequested: reader.chooseArchive()
             onCloseRequested: reader.closeArchive()
             onSettingsRequested: settingsWindow.configure()
@@ -512,12 +512,13 @@ ApplicationWindow {
         }
         ArchiveToolbar {
             id: toolbar
+            objectName: "archiveToolbar"
             visible: !root.welcomeVisible
             Layout.fillWidth: true
-            canOpen: reader.runtimeAvailable && !reader.busy
-            canSelect: reader.ready && !reader.busy
-            canSearch: reader.queryAvailable
-            canInspect: reader.ready && !reader.busy && reader.canPreflight
+            canOpen: reader.runtimeAvailable && !reader.browsingBusy
+            canSelect: reader.ready && !reader.browsingBusy
+            canSearch: reader.browserQueryAvailable
+            canInspect: reader.ready && !reader.browsingBusy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onNewRequested: createWindow.configure()
             onOpenRequested: reader.chooseArchive()
@@ -535,10 +536,10 @@ ApplicationWindow {
             visible: root.welcomeVisible
             Layout.fillWidth: true
             Layout.fillHeight: true
-            canOpen: reader.runtimeAvailable && !reader.busy
-            canCreate: reader.runtimeAvailable && !reader.busy
-            busy: reader.busy && reader.title.length > 0
-            message: reader.busy ? "" : reader.message || AppSettings.error
+            canOpen: reader.runtimeAvailable && !reader.browsingBusy
+            canCreate: reader.runtimeAvailable && !reader.browsingBusy
+            busy: reader.browsingBusy && reader.title.length > 0
+            message: reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: reader.chooseArchive()
             onCreateRequested: createWindow.configure()
             onCancelRequested: reader.cancel()
@@ -640,7 +641,7 @@ ApplicationWindow {
                         implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
                         leftPadding: Theme.mainUnits(12)
                         rightPadding: Theme.mainUnits(12)
-                        enabled: reader.queryAvailable
+                        enabled: reader.browserQueryAvailable
                         onClicked: reader.showRoot()
                         Accessible.name: qsTrId("ui.42ee2863b6d7")
                         background: Rectangle {
@@ -717,7 +718,7 @@ ApplicationWindow {
                             if (event.key === Qt.Key_Menu || event.key === Qt.Key_F10 && event.modifiers & Qt.ShiftModifier) {
                                 const row = directoryTree.currentRow;
                                 const index = directoryTree.index(row, 0);
-                                if (row < 0 || !reader.ready || reader.busy)
+                                if (row < 0 || !reader.ready || reader.browsingBusy)
                                     return;
                                 root.contextDirectoryId = reader.directories.data(index, Qt.UserRole);
                                 root.contextDirectoryRow = row;
@@ -729,7 +730,7 @@ ApplicationWindow {
                                 event.accepted = true;
                             }
                         }
-                        enabled: reader.queryAvailable
+                        enabled: reader.browserQueryAvailable
                         columnWidthProvider: function (column) {
                             let extent = width;
                             for (let row = 0; row < rows; ++row) {
@@ -925,7 +926,7 @@ ApplicationWindow {
                     Breadcrumb {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        available: reader.queryAvailable
+                        available: reader.browserQueryAvailable
                         entries: reader.title.length ? [
                             {
                                 id: "",
@@ -1011,7 +1012,7 @@ ApplicationWindow {
                         glyphSize: Theme.mainUnits(28)
                         Accessible.name: qsTrId("ui.1ce6b1d7c95c")
                         explanation: Accessible.name
-                        enabled: reader.queryAvailable
+                        enabled: reader.browserQueryAvailable
                         onClicked: {
                             const p = mapToItem(root.contentItem, width, height);
                             sortMenu.popup(root.contentItem, p.x - sortMenu.width, p.y + Theme.mainPopupGap);
@@ -1058,24 +1059,24 @@ ApplicationWindow {
                                 color: Theme.text
                                 font.pixelSize: Theme.mainHeaderSize
                                 activeFocusOnTab: true
-                                enabled: reader.queryAvailable
+                                enabled: reader.browserQueryAvailable
                                 Accessible.role: Accessible.Button
                                 Accessible.name: modelData + (reader.sortOrder === (index < 3 ? index * 2 + 1 : index * 2 + 3) ? qsTrId("ui.e5a9c120c1e7") : reader.sortOrder === (index < 3 ? index * 2 + 2 : index * 2 + 4) ? qsTrId("ui.8abeaa2c751b") : "")
-                                Accessible.onPressAction: if (reader.queryAvailable)
+                                Accessible.onPressAction: if (reader.browserQueryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onReturnPressed: if (reader.queryAvailable)
+                                Keys.onReturnPressed: if (reader.browserQueryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onEnterPressed: if (reader.queryAvailable)
+                                Keys.onEnterPressed: if (reader.browserQueryAvailable)
                                     reader.sortByColumn(index)
-                                Keys.onSpacePressed: if (reader.queryAvailable)
+                                Keys.onSpacePressed: if (reader.browserQueryAvailable)
                                     reader.sortByColumn(index)
                                 TapHandler {
-                                    enabled: reader.queryAvailable
+                                    enabled: reader.browserQueryAvailable
                                     onTapped: reader.sortByColumn(columnHeader.index)
                                 }
                                 TapHandler {
                                     acceptedButtons: Qt.RightButton
-                                    enabled: reader.queryAvailable
+                                    enabled: reader.browserQueryAvailable
                                     onTapped: function (eventPoint) {
                                         const position = columnHeader.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
                                         sortMenu.popup(position.x, position.y);
@@ -1108,7 +1109,7 @@ ApplicationWindow {
                                     visible: columnHeader.index === 0
                                     x: Theme.mainCheckboxInset
                                     anchors.verticalCenter: parent.verticalCenter
-                                    enabled: reader.ready && !reader.busy && reader.entries.rowCount() > 0
+                                    enabled: reader.ready && !reader.browsingBusy && reader.entries.rowCount() > 0
                                     checkState: reader.selectedCount === 0 ? Qt.Unchecked : reader.selectedCount === reader.entries.rowCount() ? Qt.Checked : Qt.PartiallyChecked
                                     nextCheckState: () => checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
                                     Accessible.name: qsTrId("ui.6f0c67b2ca91")
@@ -1212,7 +1213,7 @@ ApplicationWindow {
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                enabled: reader.runtimeAvailable && !reader.busy
+                                enabled: reader.runtimeAvailable && !reader.browsingBusy
                                 onClicked: function (mouse) {
                                     if (mouse.button === Qt.RightButton)
                                         root.entryMenuAt(cell, cell.row, cell.entryId, cell.isDirectory, cell.canNavigate, mouse.x, mouse.y);
@@ -1252,7 +1253,7 @@ ApplicationWindow {
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.alignWhenCentered: false
                                 checked: cell.chosen
-                                enabled: cell.canSelect && reader.runtimeAvailable && !reader.busy
+                                enabled: cell.canSelect && reader.runtimeAvailable && !reader.browsingBusy
                                 Accessible.name: cell.display
                                 onClicked: reader.selectRow(cell.row)
                             }
@@ -1334,7 +1335,7 @@ ApplicationWindow {
                             MouseArea {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                                enabled: reader.runtimeAvailable && !reader.busy
+                                enabled: reader.runtimeAvailable && !reader.browsingBusy
                                 onClicked: function (mouse) {
                                     if (mouse.button === Qt.RightButton)
                                         root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId, gridEntry.isDirectory, gridEntry.canNavigate, mouse.x, mouse.y);
@@ -1353,7 +1354,7 @@ ApplicationWindow {
                                 z: 2
                                 visible: gridEntry.canSelect && (gridHover.hovered || gridEntry.chosen)
                                 checked: gridEntry.chosen
-                                enabled: reader.runtimeAvailable && !reader.busy
+                                enabled: reader.runtimeAvailable && !reader.browsingBusy
                                 Accessible.name: qsTrId("ui.98fb7e184544").arg(gridEntry.display)
                                 onClicked: reader.selectRow(gridEntry.index)
                             }
@@ -1404,19 +1405,20 @@ ApplicationWindow {
                         }
                     }
                     Rectangle {
+                        objectName: "archiveLoadingOverlay"
                         anchors.fill: parent
                         color: Theme.surface
-                        visible: reader.busy || !reader.ready || reader.total === 0
+                        visible: reader.browsingBusy || !reader.ready || reader.total === 0
                         opacity: 0.95
                     }
                     ColumnLayout {
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, 460)
-                        visible: reader.busy || !reader.ready || reader.total === 0
+                        visible: reader.browsingBusy || !reader.ready || reader.total === 0
                         spacing: Theme.mainUnits(16)
                         Text {
                             Layout.fillWidth: true
-                            text: reader.busy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.4031b1da2311") : qsTrId("ui.ced325d6e7d0")
+                            text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.4031b1da2311") : qsTrId("ui.ced325d6e7d0")
                             color: Theme.text
                             font.pixelSize: Theme.mainPanelTitleSize
                             horizontalAlignment: Text.AlignHCenter
@@ -1431,7 +1433,7 @@ ApplicationWindow {
                         }
                         AppButton {
                             Layout.alignment: Qt.AlignHCenter
-                            visible: reader.busy
+                            visible: reader.browsingBusy
                             text: qsTrId("ui.caf06adff4f1")
                             onClicked: reader.cancel()
                         }
@@ -1449,7 +1451,7 @@ ApplicationWindow {
                 selectionCount: reader.selectedCount
                 sizeFormatter: root.formatSize
                 iconForFile: root.fileIcon
-                canExtract: reader.ready && !reader.busy
+                canExtract: reader.ready && !reader.browsingBusy
                 onExtractRequested: id => reader.prepareExtraction(false, [id])
                 onCloseRequested: root.inspectorRequested = false
             }
@@ -1516,10 +1518,10 @@ ApplicationWindow {
                             onObjectAdded: (index, object) => taskMenu.insertItem(index + 1, object)
                             onObjectRemoved: (index, object) => taskMenu.removeItem(object)
                         }
-                        CommandMenuSeparator { commandVisible: reader.busy }
+                        CommandMenuSeparator { commandVisible: reader.browsingBusy }
                         CommandMenuItem {
                             text: qsTrId("ui.caf06adff4f1")
-                            commandVisible: reader.busy
+                            commandVisible: reader.browsingBusy
                             onTriggered: reader.cancel()
                         }
                     }
@@ -1533,10 +1535,10 @@ ApplicationWindow {
                 Image {
                     Layout.preferredWidth: Theme.mainUnits(22)
                     Layout.preferredHeight: Theme.mainUnits(22)
-                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.busy ? "activity.png" : "completed.png")
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.browsingBusy ? "activity.png" : "completed.png")
                 }
                 Text {
-                    text: reader.busy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
+                    text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
                     color: Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                 }

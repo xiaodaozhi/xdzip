@@ -75,6 +75,9 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString location READ location NOTIFY changed)
     Q_PROPERTY(bool runtimeAvailable READ runtimeAvailable NOTIFY changed)
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
+    Q_PROPERTY(bool taskStarting READ taskStarting NOTIFY changed)
+    Q_PROPERTY(bool browsingBusy READ browsingBusy NOTIFY changed)
+    Q_PROPERTY(bool browserQueryAvailable READ browserQueryAvailable NOTIFY changed)
     Q_PROPERTY(bool queryAvailable READ queryAvailable NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
@@ -121,6 +124,15 @@ class BrowserController : public QObject {
     bool queryAvailable() const {
         return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession &&
                !m_result.extraction && !m_result.targetCheck;
+    }
+    bool taskStarting() const {
+        return m_busy && !m_closing && !m_faulted && (m_result.extraction || m_result.creating);
+    }
+    bool browsingBusy() const {
+        return m_busy && !taskStarting();
+    }
+    bool browserQueryAvailable() const {
+        return m_ready && runtimeAvailable() && (queryAvailable() || taskStarting());
     }
     bool busy() const {
         return m_busy;
