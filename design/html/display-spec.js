@@ -14,21 +14,27 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "mainDensity": 0.8,
     "views": {
         "welcome": {
-            "source": "../hifi/screens/welcome-light.png",
+            "source": "../hifi/screens/welcome-titlebar-light.png",
             "size": [
-                1024,
-                622
+                1586,
+                992
             ],
-            "sourceToLogical": 1,
-            "darkSource": "../hifi/screens/welcome-dark.png"
+            "sourceToLogical": 0.661498708010336,
+            "darkSource": "../hifi/screens/welcome-titlebar-dark.png"
         },
         "welcome-narrow": {
-            "source": "../hifi/screens/welcome-narrow.png",
+            "source": "../hifi/screens/welcome-titlebar-narrow.png",
             "size": [
-                832,
-                544
+                1296,
+                875
             ],
-            "sourceToLogical": 1
+            "sourceToLogical": 0.661498708010336,
+            "window": [
+                20,
+                30,
+                1257.75,
+                822.375
+            ]
         },
         "main": {
             "source": "../hifi/screens/main-light.png",

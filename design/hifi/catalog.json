@@ -111,34 +111,66 @@
     {
       "file": "screens/welcome-light.png",
       "title": "W01 欢迎页，浅色",
-      "group": "current",
-      "status": "implemented-html-and-qt-manual-acceptance-pending",
+      "group": "historical",
+      "status": "superseded-titlebar-revision",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "0253eea896639c56543740b63dbc8fc32d9a7885c51d36fcf63066ef3048446c"
     },
     {
       "file": "screens/welcome-dark.png",
       "title": "W01 欢迎页，深色",
-      "group": "current",
-      "status": "implemented-html-and-qt-manual-acceptance-pending",
+      "group": "historical",
+      "status": "superseded-titlebar-revision",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "1450b032d50ff32e46848f8f8f58fe1d8346361b4a972e5cb073b9780aa2ac05"
     },
     {
       "file": "screens/welcome-narrow.png",
       "title": "W01 欢迎页，最小窗口",
-      "group": "current",
-      "status": "implemented-html-and-qt-manual-acceptance-pending",
+      "group": "historical",
+      "status": "superseded-titlebar-revision",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "3df8d036e80b1d724473d8b0286dd97a7cfa4f0979715382b590261a2c0b14dd"
     },
     {
       "file": "screens/welcome-drag.png",
       "title": "W01 欢迎页，拖入状态",
-      "group": "current",
-      "status": "implemented-html-and-qt-manual-acceptance-pending",
+      "group": "historical",
+      "status": "superseded-titlebar-revision",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "826f2761696b5602818b31561782bf196f73c3afbfbdd51873495a890d16213e"
+    },
+    {
+      "file": "screens/welcome-titlebar-light.png",
+      "title": "W01 欢迎页，浅色，沿用主窗口标题栏",
+      "group": "current",
+      "status": "titlebar-preserved",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "9fbbe8f16273e823514b93a1bcc2eca6be87377a5077ee970b128309732989c6"
+    },
+    {
+      "file": "screens/welcome-titlebar-dark.png",
+      "title": "W01 欢迎页，深色，沿用主窗口标题栏",
+      "group": "current",
+      "status": "titlebar-preserved",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "b432a01276e2e264a208e01b181a4ea07f9dfda968f1799d8839b7d19bbaf211"
+    },
+    {
+      "file": "screens/welcome-titlebar-narrow.png",
+      "title": "W01 欢迎页，最小窗口，沿用主窗口标题栏",
+      "group": "current",
+      "status": "titlebar-preserved",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "1f166867662e0be38e0250dd246b6d2ddd165b887db8545ccca8d8bde6c03793"
+    },
+    {
+      "file": "screens/welcome-titlebar-drag.png",
+      "title": "W01 欢迎页，拖入状态，沿用主窗口标题栏",
+      "group": "current",
+      "status": "titlebar-preserved",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "c6ca53a32ce0e73c7860bad921dcf8785b5f1c74e1f1c7b4d386842ff46ff937"
     }
   ],
   "schema_version": 1

@@ -5,8 +5,14 @@
   "source": "../../design/hifi/sources/welcome.html",
   "theme_source": "tokens.json",
   "window_source": "layout-scale.json",
-  "window": [1024, 622],
-  "minimum_window": [832, 544],
+  "window": [
+    1024,
+    622
+  ],
+  "minimum_window": [
+    832,
+    544
+  ],
   "titlebar_height": 48,
   "statusbar_height": 32,
   "content_width": 608,
@@ -24,5 +30,7 @@
   "menu_width": 240,
   "menu_font_size": 13,
   "main_body_size": 13,
-  "menu_to_body_font_ratio": 1
+  "menu_to_body_font_ratio": 1,
+  "titlebar_policy": "reuse existing main titlebar unchanged; welcome content only",
+  "titlebar_source": "qt-main-reference.json"
 }

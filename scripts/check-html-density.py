@@ -130,10 +130,9 @@ def main():
                                 for welcome_view, welcome_width, welcome_height in [('welcome', 1024, 622), ('welcome-narrow', 832, 544)]:
                                     page.locator('#view').select_option(welcome_view)
                                     expect(frame.locator('#welcome-open')).to_be_visible()
-                                    expect(frame.locator('.window')).to_have_css('width', f'{welcome_width}px')
-                                    expect(frame.locator('.window')).to_have_css('height', f'{welcome_height}px')
+                                    child.wait_for_function("width => Math.abs(document.querySelector('.window').getBoundingClientRect().width * (1024 / 1548) - width) < 1", arg=welcome_width)
                                     check(tag + '/' + welcome_view + ' width', child.locator('.window').bounding_box()['width'], welcome_width)
-                                    check(tag + '/' + welcome_view + ' height', child.locator('.window').bounding_box()['height'], welcome_height)
+                                    check(tag + '/' + welcome_view + ' height', child.locator('.window').bounding_box()['height'], welcome_height, 1)
                                     check(tag + '/' + welcome_view + ' titlebar', child.locator('.titlebar').bounding_box()['height'], 48)
                                     frame.locator('#tasks').click()
                                     welcome_menu = child.locator('.ui-menu')

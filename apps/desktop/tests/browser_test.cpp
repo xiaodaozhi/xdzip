@@ -103,6 +103,13 @@ class BrowserTest : public QObject {
         QTRY_COMPARE(open->width(), 296.0);
         QTRY_COMPARE(open->height(), 124.0);
         QTRY_VERIFY(visibleImagesReady(window->contentItem()));
+        auto *titlebar = findVisual(window->contentItem(), "archiveTitlebar");
+        auto *tab = findVisual(window->contentItem(), "activeArchiveTab");
+        auto *settings = findVisual(window->contentItem(), "archiveSettings");
+        QVERIFY(titlebar && tab && settings);
+        const QRectF titlebarBefore(titlebar->position(), titlebar->size());
+        const QRectF tabBefore(tab->position(), tab->size());
+        const QRectF settingsBefore(settings->position(), settings->size());
         const auto captures = qEnvironmentVariable("XDZIP_WELCOME_VISUAL_AUDIT");
         if (!captures.isEmpty()) {
             QVERIFY(QDir().mkpath(captures));
@@ -151,6 +158,9 @@ class BrowserTest : public QObject {
             welcome, "archiveDropped", Q_ARG(QVariant, QVariant::fromValue(QList<QUrl>{archive}))));
         QTRY_VERIFY(!controller->busy() && controller->ready());
         QVERIFY(!welcome->isVisible() && workspace->isVisible());
+        QCOMPARE(QRectF(titlebar->position(), titlebar->size()), titlebarBefore);
+        QCOMPARE(QRectF(tab->position(), tab->size()), tabBefore);
+        QCOMPARE(QRectF(settings->position(), settings->size()), settingsBefore);
         controller->closeArchive();
         QTRY_VERIFY(!controller->busy() && !controller->ready());
         QTRY_VERIFY(welcome->isVisible() && !workspace->isVisible());

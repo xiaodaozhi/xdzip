@@ -36,11 +36,11 @@ with sync_playwright() as p:
                     frame.locator('body').evaluate('() => document.fonts.ready')
                     expect(frame.locator('.toolbar')).to_be_hidden()
                     expect(frame.locator('.workspace')).to_be_hidden()
-                    expect(frame.locator('.welcome-tab')).to_contain_text('欢迎')
+                    expect(frame.locator('.welcome-tab')).to_contain_text('起始页')
                     expect(frame.locator('#selection-status')).to_have_text('文件在本机处理')
-                    rects = frame.locator('.window').evaluate('el => ({window:el.getBoundingClientRect().toJSON(),titlebar:el.querySelector(".titlebar").getBoundingClientRect().toJSON(),status:el.querySelector(".statusbar").getBoundingClientRect().toJSON(),cards:[...el.querySelectorAll(".welcome-action")].map(e=>e.getBoundingClientRect().toJSON()),overflow:el.scrollWidth>el.clientWidth})')
-                    assert rects['window']['width'] == width and rects['window']['height'] == height, rects
-                    assert rects['titlebar']['height'] == 48 and rects['status']['height'] == 32, rects
+                    rects = frame.locator('.window').evaluate('el => {const f=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-source-factor"));const rect=e=>{const r=e.getBoundingClientRect();return {width:r.width/f,height:r.height/f}};return {window:rect(el),titlebar:rect(el.querySelector(".titlebar")),status:rect(el.querySelector(".statusbar")),cards:[...el.querySelectorAll(".welcome-action")].map(rect),overflow:el.scrollWidth>el.clientWidth}}')
+                    assert abs(rects['window']['width'] - width) <= 1 and abs(rects['window']['height'] - height) <= 1, rects
+                    assert abs(rects['titlebar']['height'] - 48) <= 1 and abs(rects['status']['height'] - 32) <= 1, rects
                     assert not rects['overflow'], rects
                     assert all(abs(card['width'] - 296) <= 1 and abs(card['height'] - 124) <= 1 for card in rects['cards']), rects
                     frame.locator('.window').screenshot(path=str(OUT / f'{view}-{theme}-dpr{dpr}.png'))
@@ -55,8 +55,16 @@ with sync_playwright() as p:
 
         page = browser.new_page(viewport={'width': 1200, 'height': 1000})
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(base + 'design/html/index.html?view=welcome&zoom=1')
+        page.goto(base + 'design/html/index.html?view=main&zoom=1')
         frame = page.frame_locator('#design-frame')
+        expect(frame.locator('#file-rows tr')).to_have_count(9)
+        header_metrics = "el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,font:getComputedStyle(el).fontSize}}"
+        header_before = {selector: frame.locator(selector).first.evaluate(header_metrics) for selector in ['.titlebar', '.app-brand', '.archive-tab', '#title-settings']}
+        page.locator('#view').select_option('welcome')
+        expect(frame.locator('#welcome-open')).to_be_visible()
+        header_after = {selector: frame.locator(selector).first.evaluate(header_metrics) for selector in header_before}
+        assert header_before == header_after, (header_before, header_after)
+        checks.append('Welcome reuses main titlebar, brand, tab and settings geometry and fonts unchanged')
         open_button = frame.locator('#welcome-open')
         open_button.hover()
         assert open_button.evaluate('el=>getComputedStyle(el).backgroundColor') == 'rgb(18, 75, 224)'
@@ -107,7 +115,7 @@ with sync_playwright() as p:
         menu = frame.locator('[role=menu]')
         expect(menu).to_be_visible()
         menu_metrics = menu.evaluate('el=>({width:el.getBoundingClientRect().width,font:parseFloat(getComputedStyle(el.querySelector("[role^=menuitem]")||el).fontSize)})')
-        assert abs(menu_metrics['width'] - 240) <= 1 and menu_metrics['font'] == 13, menu_metrics
+        assert abs(menu_metrics['width'] * (1024 / 1548) - 240) <= 1 and abs(menu_metrics['font'] * (1024 / 1548) - 13) < .01, menu_metrics
         checks.append({'menu': menu_metrics, 'menu_to_body_font_ratio': 1})
         page.close()
 

@@ -483,8 +483,7 @@ ApplicationWindow {
         spacing: 0
         ArchiveTabs {
             Layout.fillWidth: true
-            archiveTitle: root.welcomeVisible ? "" : reader.title
-            welcome: root.welcomeVisible
+            archiveTitle: reader.title
             integratedTitlebar: root.integratedTitlebar
             canOpen: reader.runtimeAvailable && !reader.busy
             canClose: reader.ready && !reader.busy

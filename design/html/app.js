@@ -1725,6 +1725,10 @@ window.addEventListener("message", (event) => {
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);
+    if (config.welcomeDrag && ["welcome", "welcome-narrow"].includes(config.view)) {
+        $("#welcome-drop").classList.add("drag-over");
+        $("#welcome-drop span").textContent = "松开即可打开压缩文件";
+    }
 });
 if (window.parent !== window)
     window.parent.postMessage({ type: "xdzip-review-ready" }, "*");

@@ -78,6 +78,6 @@
 
 [直接审阅欢迎页](index.html?view=welcome&zoom=1)，也可在画面菜单选择“欢迎页，最小窗口”。已接入浅深色、打开示例、新建、取消后焦点恢复、关闭最后标签返回、快捷键和拖入检查；拖入不读取文件内容，而是进入示例选择器。正式 Qt 已接入真实打开与新建，桌面人工验收另行登记。
 
-welcome.css 承担欢迎页样式，逻辑参数来自 [welcome-reference.json](../../docs/visual/welcome-reference.json)。欢迎页使用 1024×622 或 832×544 的逻辑画布，映射比例为 1，不套用历史主图的源像素倍率。浅色和深色对照分别显示对应原稿，最小窗口深色没有对应位图时明确隐藏对照。离线单文件包含相同页面和原稿。`python scripts/build-html-design.py` 另生成默认展示欢迎页的 `dist/xdzip-welcome-design.html`。
+welcome.css 承担欢迎页样式，逻辑参数来自 [welcome-reference.json](../../docs/visual/welcome-reference.json)。欢迎页客户区沿用主窗口 1024×约622 或最小 832×544，标题栏复用同一 DOM、样式与历史源坐标换算，不增加欢迎页专属标题栏。浅色和深色对照分别显示对应原稿，最小窗口深色没有对应位图时明确隐藏对照。离线单文件包含相同页面和原稿。`python scripts/build-html-design.py` 另生成默认展示欢迎页的 `dist/xdzip-welcome-design.html`。
 
 运行 `python scripts/check-html-welcome.py`，验证布局、DPR 1／1.25／2、打开和新建、取消与焦点、最后标签关闭、拖入拒绝、菜单比例和断网离线流程。截图与报告只保存在 build/review/html-welcome/。

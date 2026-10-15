@@ -13,8 +13,8 @@ def main():
     args = parser.parse_args()
     layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
     reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
-    sizes = {'welcome': ('welcome-light.png', layout['main']['logical_window']),
-             'welcome-narrow': ('welcome-narrow.png', layout['main']['minimum_window']),
+    sizes = {'welcome': ('welcome-titlebar-light.png', [1586, 992]),
+             'welcome-narrow': ('welcome-titlebar-narrow.png', [1296, 875]),
              'main': ('main-light.png', [1586, 992]),
              'extract': ('extract-macos.png', [1092, 1440]),
              'create': ('create.png', [1073, 1466]),
@@ -35,9 +35,10 @@ def main():
                                  size=size) for key, (filename, size) in sizes.items()})
     for key, ratio in layout['operation'].get('source_to_logical_by_view', {}).items():
         spec['views'][key]['sourceToLogical'] = ratio[0] / ratio[1]
-    spec['views']['welcome-narrow']['sourceToLogical'] = 1
-    spec['views']['welcome']['sourceToLogical'] = 1
-    spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-dark.png'
+    spec['views']['welcome-narrow']['sourceToLogical'] = main_ratio[0] / main_ratio[1]
+    spec['views']['welcome']['sourceToLogical'] = main_ratio[0] / main_ratio[1]
+    spec['views']['welcome-narrow']['window'] = [20, 30, 832 / spec['sourceToLogical'], 544 / spec['sourceToLogical']]
+    spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-titlebar-dark.png'
     output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'
               'window.XDZIP_DISPLAY_SPEC = Object.freeze(' + json.dumps(spec, indent=4) + ');\n')
     path = ROOT / 'design/html/display-spec.js'

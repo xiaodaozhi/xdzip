@@ -176,7 +176,7 @@ window.XdzipMain = (() => {
         const bar = $(".archive-tabs");
         bar.setAttribute("role", "tablist");
         bar.innerHTML =
-            (state.activeTab === null ? `<div class="archive-tab welcome-tab" role="tab" aria-selected="true">${icon("app-mark")}<span class="tab-label">欢迎</span></div>` : "") +
+            (state.activeTab === null ? `<div class="archive-tab welcome-tab" role="tab" aria-selected="true"><span class="tab-icon">${icon("archive")}</span><span class="tab-label">起始页</span></div>` : "") +
             (state.activeTab === null ? [] : tabs)
                 .map(
                     (tab) =>

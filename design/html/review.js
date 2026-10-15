@@ -11,7 +11,7 @@
     const referenceViewport = document.querySelector("#reference-viewport");
     const current = id => document.querySelector(`#${id}`).value;
     const number = value => Number(value.toFixed(2));
-    const isMainView = () => ["main","empty","damaged"].includes(current("view"));
+    const isMainView = () => ["main","welcome","welcome-narrow","empty","damaged"].includes(current("view"));
     const logicalScale = () => displaySpec.views[current("view")].sourceToLogical ?? (isMainView() ? displaySpec.sourceToLogical : displaySpec.operationSourceToLogical);
 
     // Source-image pixels are measurement coordinates. Normal presentation uses
@@ -37,7 +37,7 @@
             wrapper.style.height = `${height * scale}px`;
         }
         const windowView = isMainView();
-        const [, ,windowWidth,windowHeight] = displaySpec.sourceWindow;
+        const [, ,windowWidth,windowHeight] = displaySpec.views[current("view")].window || displaySpec.sourceWindow;
         const dimensions = windowView ? [windowWidth,windowHeight] : [width,height];
         const logical = dimensions.map(value => number(value * logicalScale()));
         const mode = current("zoom") === "pixels" ? "原稿像素 1:1" : current("zoom") === "fit" ? "适应屏幕" : "100% 设计尺寸";
