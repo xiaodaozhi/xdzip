@@ -28,6 +28,7 @@ Rectangle {
         height: implicitHeight
         leftInset: Theme.mainInspectorLeftInset
         rightInset: Theme.mainInspectorRightInset
+        actionInset: panel.showCloseAction ? Theme.mainIconButtonSize + Theme.mainUnits(10) : 0
         Text {
             objectName: "inspectorPaneTitle"
             Layout.fillWidth: true
@@ -41,12 +42,12 @@ Rectangle {
         }
         ArchiveAction {
             objectName: "inspectorClose"
-            Layout.minimumWidth: Theme.mainIconButtonSize
-            Layout.maximumWidth: Theme.mainIconButtonSize
-            Layout.preferredWidth: Theme.mainIconButtonSize
-            Layout.minimumHeight: Theme.mainIconButtonSize
-            Layout.maximumHeight: Theme.mainIconButtonSize
-            Layout.preferredHeight: Theme.mainIconButtonSize
+            parent: header
+            anchors.right: parent.right
+            anchors.rightMargin: header.rightInset
+            anchors.verticalCenter: parent.verticalCenter
+            width: Theme.mainIconButtonSize
+            height: Theme.mainIconButtonSize
             visible: panel.showCloseAction
             leftPadding: 0
             rightPadding: 0

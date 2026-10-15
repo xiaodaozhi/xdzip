@@ -45,6 +45,16 @@ QtObject {
     readonly property real settingsHeroArtworkSize: 48
     readonly property real settingsHeroGap: 20
     readonly property real settingsCompactListFactor: 0.8
+    readonly property real preflightLogicalWidth: 491
+    readonly property real preflightMaximumHeight: 600
+    readonly property real preflightContentInset: 20
+    readonly property real preflightSectionGap: 12
+    readonly property real preflightTitleSize: 20 * fontScale
+    readonly property real preflightBodySize: 13 * fontScale
+    readonly property real preflightNoteSize: 12 * fontScale
+    readonly property real preflightCountSize: 22 * fontScale
+    readonly property real preflightCardRadius: 6
+    readonly property real preflightCardInset: 12
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 491
@@ -253,6 +263,9 @@ QtObject {
     readonly property real mainGridIconSize: 40
     readonly property real mainFormatBadgeMinimumWidth: 32
     readonly property real mainFormatBadgeInset: 6
+    readonly property real mainEntryBandTopInset: 1
+    readonly property real mainEntryBandBottomInset: 2
+    readonly property real mainEntrySeparatorHeight: 1
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

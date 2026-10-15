@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QVariantMap>
+#include <QWindow>
 #include <QtQml/qqmlregistration.h>
 #include <limits>
 #include <memory>
@@ -184,8 +185,8 @@ class BrowserController : public QObject {
     QVariantList tasks() const;
     int activeTaskCount() const;
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
-    Q_INVOKABLE QString chooseTarget(const QString &initial);
-    Q_INVOKABLE QStringList chooseCreationInputs(bool directories);
+    Q_INVOKABLE QString chooseTarget(const QString &initial, QWindow *owner = nullptr);
+    Q_INVOKABLE QStringList chooseCreationInputs(bool directories, QWindow *owner = nullptr);
     Q_INVOKABLE void inspectCreationInputs(const QStringList &paths);
     QVariantList creationInputs() const {
         return m_creationInputs;
@@ -220,7 +221,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE void showRoot();
     Q_INVOKABLE void search(const QString &text);
     Q_INVOKABLE void openPath(const QString &path);
-    Q_INVOKABLE void chooseArchive();
+    Q_INVOKABLE void chooseArchive(QWindow *owner = nullptr);
     Q_INVOKABLE bool canOpenDroppedUrls(const QList<QUrl> &urls) const;
     Q_INVOKABLE bool openDroppedUrls(const QList<QUrl> &urls);
     Q_INVOKABLE void closeArchive();

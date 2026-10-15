@@ -174,6 +174,7 @@ const state = {
     recent: true,
 };
 const specs = {
+    P01: ["解压元数据预检", "仅检查元数据", "展开所选目录并检查路径、容量与碰撞", "问题列表滚动，返回浏览不改变选择", "不允许输出，不替代真实内容验证"],
     W01: ["欢迎页", "设计演示，不读取归档或写入文件", "打开与新建为主要入口，文件在本机处理。", "支持键盘、拖入反馈、打开后浏览以及取消返回。", "文件选择与拖入仅选择示例数据，不读取用户文件。"],
     B01: [
         "归档浏览",
@@ -709,7 +710,7 @@ function dialog(html, kind, spec, focus) {
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
     el.innerHTML =
         windowChrome(
-            kind === "archive-test" ? "完整性检查进度" : kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
+            kind === "preflight" ? settingText("ui.ff6f3ae7c4fb") : kind === "archive-test" ? "完整性检查进度" : kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
             ["progress", "archive-test"].includes(kind),
         ) + html;
     el.setAttribute("aria-label", title);
@@ -729,6 +730,7 @@ function dialog(html, kind, spec, focus) {
     const modeless = [
         "progress",
         "settings",
+        "preflight",
         "result",
         "archive-test",
     ].includes(kind);
@@ -1396,6 +1398,11 @@ function restoreSettingsPreview() {
     document.documentElement.dataset.listDensity = original.density;
     document.documentElement.style.setProperty("--settings-text-scale", original.textScale);
 }
+function showPreflight() {
+    const t = settingText;
+    dialog(`<div class="preflight-body"><h1>${t("ui.9cb79c4bee66")}</h1><p>${t("ui.db661e297081")}</p><div class="preflight-stats"><div><span>${t("ui.0790c26b1e36")}</span><strong>9</strong></div><div><span>${t("ui.377532e93480")}</span><strong>77619200</strong></div><div><span>${t("ui.9d959257ce7e")}</span><strong>0</strong></div></div><p>${t("ui.f644f6ec6fad")}</p></div>` + footer(`<button class="button primary" id="preflight-close">${t("ui.26867436321f")}</button>`, t("ui.0d92f3d4cae3")), "preflight", "P01", "#preflight-close");
+    $("#preflight-close").onclick = closeModal;
+}
 function showSettings() {
     restoreSettingsPreview();
     const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, clearRecent:false};
@@ -1633,7 +1640,7 @@ window.XdzipDesign = {
     open(view) {
         // Direct standalone URLs can run before the main-window adapter's
         // deferred script; review messages arrive after that script is ready.
-        if (["archive-test", "welcome", "welcome-narrow"].includes(view) && !window.XdzipMain) {
+        if (["archive-test", "preflight", "welcome", "welcome-narrow"].includes(view) && !window.XdzipMain) {
             window.addEventListener("DOMContentLoaded", () => window.XdzipDesign.open(view), {once: true});
             return;
         }
@@ -1683,6 +1690,7 @@ window.XdzipDesign = {
             showExtract("selected");
         } else if (view === "create") showCreate();
         else if (view === "settings") showSettings();
+        else if (view === "preflight") showPreflight();
         else if (view === "result") {
             state.task = null; showExtract("selected");
             startTask([byId.get("lake"), byId.get("sunrise"), byId.get("guide")], "extract");
@@ -1739,6 +1747,7 @@ window.addEventListener("message", (event) => {
             "result",
             "conflict",
             "settings",
+            "preflight",
             "empty",
             "damaged",
         ].includes(config.view) ||

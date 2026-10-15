@@ -453,6 +453,7 @@
     "settings.clearRecent": "Clear recent files",
     "settings.clearPending": "Clear when saved",
     "settings.privacy": "All archive processing happens on this device. Files are not uploaded and telemetry is off by default. Clearing recent files does not delete the original files.",
-    "settings.done": "Done"
+    "settings.done": "Done",
+    "error.unsupportedLink": "The selection contains symbolic or hard links, which this version cannot extract. macOS app bundles may require these links and executable permissions and cannot be fully restored. Select regular files or use the system archive utility."
   }
 }

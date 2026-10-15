@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "NativeDialogPolicy.h"
 #include "UiText.h"
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
@@ -175,6 +176,7 @@ QString BrowserController::explain(const QString &code) {
         {"target_changed", qtTrId("ui.8c5b6e8cc7b3")},
         {"output_conflict", qtTrId("ui.370322f1d979")},
         {"unsupported_filesystem", qtTrId("ui.74b624993d20")},
+        {"unsupported_link", qtTrId("error.unsupportedLink")},
         {"unsupported_entry", qtTrId("ui.491bda01a7fa")},
         {"unsafe_input", qtTrId("ui.2c68fedd118c")},
         {"input_collision", qtTrId("ui.96d580ed8b8a")},
@@ -221,15 +223,14 @@ QString BrowserController::explain(const QString &code) {
     return qtTrId("ui.cd2a579ed2df");
 }
 
-void BrowserController::chooseArchive() {
+void BrowserController::chooseArchive(QWindow *owner) {
     if (m_busy || !runtimeAvailable())
         return;
-    // No QWidget parent: the native chooser is independent, not an attached macOS sheet.
-    // Native per-platform modality and ownership still require desktop acceptance testing.
-    const auto path = QFileDialog::getOpenFileName(nullptr, systemDialogText("ui.1b59353f1874"), {},
-                                                   systemDialogText("ui.8f69a61727d2"));
-    if (!path.isEmpty())
-        openPath(path);
+    QFileDialog dialog(nullptr, systemDialogText("ui.1b59353f1874"), {},
+                       systemDialogText("ui.8f69a61727d2"));
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    if (execOwnedFileDialog(dialog, owner) && !dialog.selectedFiles().isEmpty())
+        openPath(dialog.selectedFiles().first());
 }
 bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
     if (m_busy || !runtimeAvailable() || urls.size() != 1 || !urls.first().isLocalFile())
@@ -562,20 +563,21 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     emit extractionChanged();
     emit extractionReady();
 }
-QString BrowserController::chooseTarget(const QString &initial) {
-    return QFileDialog::getExistingDirectory(nullptr, systemDialogText("ui.3fb3d26f0ffd"), initial,
-                                             QFileDialog::ShowDirsOnly |
-                                                 QFileDialog::DontResolveSymlinks);
+QString BrowserController::chooseTarget(const QString &initial, QWindow *owner) {
+    QFileDialog dialog(nullptr, systemDialogText("ui.3fb3d26f0ffd"), initial);
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    return execOwnedFileDialog(dialog, owner) && !dialog.selectedFiles().isEmpty()
+               ? dialog.selectedFiles().first()
+               : QString{};
 }
-QStringList BrowserController::chooseCreationInputs(bool directories) {
-    if (directories) {
-        const auto path = QFileDialog::getExistingDirectory(
-            nullptr, systemDialogText("ui.45da2d9c85d1"), {},
-            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-        return path.isEmpty() ? QStringList{} : QStringList{path};
-    }
-    return QFileDialog::getOpenFileNames(nullptr, systemDialogText("ui.ad9daebe00dc"), {}, {},
-                                         nullptr, QFileDialog::DontResolveSymlinks);
+QStringList BrowserController::chooseCreationInputs(bool directories, QWindow *owner) {
+    QFileDialog dialog(nullptr, directories ? systemDialogText("ui.45da2d9c85d1")
+                                            : systemDialogText("ui.ad9daebe00dc"));
+    dialog.setFileMode(directories ? QFileDialog::Directory : QFileDialog::ExistingFiles);
+    dialog.setOptions(QFileDialog::DontResolveSymlinks |
+                      (directories ? QFileDialog::ShowDirsOnly : QFileDialog::Options{}));
+    return execOwnedFileDialog(dialog, owner) ? dialog.selectedFiles() : QStringList{};
 }
 QString BrowserController::defaultTargetDirectory() const {
     const auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);

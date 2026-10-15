@@ -68,3 +68,5 @@
 欢迎页标题栏修订见 screens/welcome-titlebar-*.png，原有 welcome-*.png 与 sources/welcome-initial.html 保留历史。修订只设计正文，标题栏与主窗口共用，不再另设品牌、标签或按钮几何。
 
 S01 当前设置窗口修订见[主题、文字与语言设计源](sources/settings.html)，逻辑参数见[设置参数](../../docs/visual/settings-reference.json)，保存／取消与重启生效见[设置契约](../../docs/ux/settings-localization.md)。[历史 settings.png](screens/settings.png) 保留原图和哈希，不再定义当前设置功能范围。
+
+P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-light.png)、[深色](screens/preflight-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。

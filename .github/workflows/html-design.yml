@@ -100,6 +100,7 @@ jobs:
           .venv-design/bin/python scripts/generate-display-spec.py --check
           .venv-design/bin/python scripts/generate-control-tokens.py --check
           .venv-design/bin/python scripts/check-html-settings.py
+          .venv-design/bin/python scripts/check-html-preflight.py
           .venv-design/bin/python scripts/check-html-welcome.py
           .venv-design/bin/python scripts/check-html-controls.py
           .venv-design/bin/python scripts/check-html-header.py

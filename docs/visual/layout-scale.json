@@ -37,7 +37,10 @@
       "gridGap": 12,
       "gridIconSize": 40,
       "formatBadgeMinimumWidth": 32,
-      "formatBadgeInset": 6
+      "formatBadgeInset": 6,
+      "entryBandTopInset": 1,
+      "entryBandBottomInset": 2,
+      "entrySeparatorHeight": 1
     }
   },
   "operation": {

@@ -8,6 +8,7 @@ Item {
     // The header remains outside scrolling content so long details cannot move it.
     implicitHeight: Math.round(Math.max(Theme.mainPaneHeaderHeight, Theme.mainPaneTitleSize * 1.6 + Theme.mainUnits(24)))
     property real leftInset: Theme.mainPaneInset
+    property real actionInset: 0
     property real rightInset: Theme.mainPaneInset
     default property alias content: row.data
 
@@ -15,7 +16,7 @@ Item {
         id: row
         anchors.fill: parent
         anchors.leftMargin: root.leftInset
-        anchors.rightMargin: root.rightInset
+        anchors.rightMargin: root.rightInset + root.actionInset
         anchors.topMargin: 0
         anchors.bottomMargin: 0
         spacing: Theme.mainUnits(10)

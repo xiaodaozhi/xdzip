@@ -353,6 +353,7 @@ fn scan(
             raw_name: name,
             display_name: text,
             directory,
+            link: kind.is_symlink() || kind.is_hard_link(),
             size,
             packed_size: if gzip { 0 } else { size },
             method: if gzip { 8 } else { 0 },

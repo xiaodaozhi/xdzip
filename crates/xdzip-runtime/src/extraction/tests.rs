@@ -296,3 +296,17 @@ fn every_terminal_outcome_rejects_late_control_requests() {
     assert_eq!(done.status, Status::Cancelled);
     assert!(!c.cancel());
 }
+
+#[test]
+fn declared_links_have_explicit_diagnostic_before_output_admission() {
+    let target = Target::new();
+    let mut a = archive("stored.zip");
+    let entries = Arc::make_mut(&mut a.rows);
+    entries[0].link = true;
+    entries[0].warning = true;
+    assert!(matches!(
+        a.extraction_job(target.options(), &Cancellation::default()),
+        Err("unsupported_link")
+    ));
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
+}

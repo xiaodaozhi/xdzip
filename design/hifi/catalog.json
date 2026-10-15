@@ -189,6 +189,18 @@
       "role": "code-authored-design",
       "source": "sources/settings.html",
       "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/preflight-light.png",
+      "title": "P01 解压元数据预检，浅色",
+      "group": "current",
+      "sha256": "f869657d862e1aebb11c0452b7a83028f8f0a134ad608140814a01b5f6a9d436"
+    },
+    {
+      "file": "screens/preflight-dark.png",
+      "title": "P01 解压元数据预检，深色",
+      "group": "current",
+      "sha256": "2cfbbb2e7a6b33430af718ea19d4ade2b1f312386f5382296ec2c0202bbd4e68"
     }
   ],
   "schema_version": 1

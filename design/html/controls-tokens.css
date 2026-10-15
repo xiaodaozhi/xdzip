@@ -65,6 +65,9 @@
   --main-grid-icon-size: calc(40px * var(--ui-source-factor));
   --main-format-badge-minimum-width: calc(32px * var(--ui-source-factor));
   --main-format-badge-inset: calc(6px * var(--ui-source-factor));
+  --main-entry-band-top-inset: calc(1px * var(--ui-source-factor));
+  --main-entry-band-bottom-inset: calc(2px * var(--ui-source-factor));
+  --main-entry-separator-height: calc(1px * var(--ui-source-factor));
   --ui-menu-shadow-radius: calc(12px * var(--ui-source-factor));
   --ui-menu-shadow-offset-y: calc(4px * var(--ui-source-factor));
   --tree-sidebar-default-width: calc(193.15762273901808px * var(--ui-source-factor));

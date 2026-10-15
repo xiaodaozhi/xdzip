@@ -146,6 +146,7 @@ fn scan(
             raw_name: name.to_vec(),
             display_name: display,
             directory: record.is_dir(),
+            link: unix_type == Some(0o120000),
             size: record.uncompressed_size_hint(),
             packed_size: record.compressed_size_hint(),
             method: record.compression_method().as_u16(),
@@ -342,6 +343,16 @@ mod tests {
         assert_eq!(rows[0].raw_name, b"../escape.txt");
         assert!(rows[..3].iter().all(|row| row.warning));
         assert!(rows[3].display_name.contains("\\u{202E}"));
+    }
+    #[test]
+    fn unix_links_are_identified_separately_from_other_warnings() {
+        let mut bytes = NORMAL.to_vec();
+        let central = bytes.windows(4).position(|b| b == b"PK\x01\x02").unwrap();
+        bytes[central + 5] = 3;
+        bytes[central + 38..central + 42].copy_from_slice(&((0o120777u32) << 16).to_le_bytes());
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert!(rows[0].link && rows[0].warning);
+        assert!(rows[1..].iter().all(|row| !row.link));
     }
     #[test]
     fn split_disk_and_legacy_encrypted_metadata() {

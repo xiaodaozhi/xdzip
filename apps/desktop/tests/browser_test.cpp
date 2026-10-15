@@ -1,6 +1,7 @@
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
 #include "FocusDismissPolicy.h"
+#include "NativeDialogPolicy.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
@@ -383,10 +384,18 @@ class BrowserTest : public QObject {
         QVERIFY(!controller->openDroppedUrls({QUrl::fromLocalFile(text.fileName())}));
         QVERIFY(welcome->isVisible());
         QVERIFY(controller->canOpenDroppedUrls({archive}));
+        QQuickWindow dragSource;
+        dragSource.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&dragSource));
+        dragSource.requestActivate();
+        if (QGuiApplication::platformName() == "cocoa")
+            QTRY_COMPARE(QGuiApplication::focusWindow(), &dragSource);
         QVERIFY(QMetaObject::invokeMethod(
             welcome, "archiveDropped", Q_ARG(QVariant, QVariant::fromValue(QList<QUrl>{archive}))));
         QTRY_VERIFY(!controller->busy() && controller->ready());
         QVERIFY(!welcome->isVisible() && workspace->isVisible());
+        if (QGuiApplication::platformName() == "cocoa")
+            QTRY_COMPARE(QGuiApplication::focusWindow(), window);
         QCOMPARE(QRectF(titlebar->position(), titlebar->size()), titlebarBefore);
         QCOMPARE(QRectF(tab->position(), tab->size()), tabBefore);
         QCOMPARE(QRectF(settings->position(), settings->size()), settingsBefore);
@@ -1855,6 +1864,30 @@ class BrowserTest : public QObject {
         QVERIFY(!controller.busy());
         QVERIFY(controller.requestClose());
     }
+    void nativeChooserOwnershipAndCancelRestoreCaller() {
+        QQuickWindow mainWindow;
+        QQuickWindow caller;
+        caller.setTransientParent(&mainWindow);
+        mainWindow.show();
+        caller.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&caller));
+        for (const auto mode :
+             {QFileDialog::ExistingFile, QFileDialog::ExistingFiles, QFileDialog::Directory}) {
+            QFileDialog dialog;
+            // Inspect the same ownership policy without depending on OS automation permissions.
+            dialog.setOption(QFileDialog::DontUseNativeDialog);
+            dialog.setFileMode(mode);
+            bool owned = false;
+            QTimer::singleShot(0, &dialog, [&] {
+                owned = dialog.windowHandle()->transientParent() == &caller;
+                dialog.reject();
+            });
+            QVERIFY(!execOwnedFileDialog(dialog, &caller));
+            QVERIFY(owned);
+            if (QGuiApplication::platformName() == "cocoa")
+                QTRY_COMPARE(QGuiApplication::focusWindow(), &caller);
+        }
+    }
     void rootListingAndReviewedInteractions() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -1885,13 +1918,18 @@ class BrowserTest : public QObject {
         auto *caption = item("archiveCaption");
         auto *title = item("filePaneTitle");
         QCOMPARE(caption->property("text").toString(), QString::fromUtf8("档案文件"));
-        QVERIFY(qAbs(caption->mapToScene(QPointF(0, caption->height() / 2)).y() -
-                     title->mapToScene(QPointF(0, title->height() / 2)).y()) < .5);
+        QTRY_VERIFY(qAbs(caption->mapToScene(QPointF(0, caption->height() / 2)).y() -
+                         title->mapToScene(QPointF(0, title->height() / 2)).y()) < .5);
         auto *cell = item("entry-0-0");
         QTest::mouseMove(window, cell->mapToScene(QPointF(100, cell->height() / 2)).toPoint());
         for (int column = 0; column < 5; ++column) {
             auto *band = findVisual(window->contentItem(), QString("entryBand-0-%1").arg(column));
             QVERIFY(band);
+            auto *separator =
+                findVisual(window->contentItem(), QString("entrySeparator-0-%1").arg(column));
+            QVERIFY(separator);
+            // The upper band's gap to its line equals the next band's gap after that line.
+            QCOMPARE(separator->y() - (band->y() + band->height()), band->y());
             QTRY_COMPARE(band->property("color").value<QColor>(), QColor("#EDF2FF"));
         }
         const auto captures = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
@@ -1920,6 +1958,8 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(qAbs(guide->mapToScene(QPointF(guide->width() / 2, 0)).x() -
                          disclosure->mapToScene(QPointF(disclosure->width() / 2, 0)).x()) < .01);
         scaling->setProperty("scale", 1);
+        QTest::qWait(30);
+        const auto closePosition = item("inspectorClose")->mapToScene(QPointF());
         click(item("inspectorClose"));
         QQuickItem *toggle = nullptr;
         QTRY_VERIFY((toggle = item("inspectorToggle")) && toggle->isVisible());
@@ -1927,6 +1967,12 @@ class BrowserTest : public QObject {
         // Keep the exact size contract, but inspect the settled layout.
         QTRY_COMPARE(toggle->width(), 28.0);
         QTRY_COMPARE(toggle->height(), 28.0);
+        QTRY_VERIFY2(qAbs(toggle->mapToScene(QPointF()).x() - closePosition.x()) < .01,
+                     qPrintable(QString("show=%1 close=%2 window=%3")
+                                    .arg(toggle->mapToScene(QPointF()).x())
+                                    .arg(closePosition.x())
+                                    .arg(window->width())));
+        QCOMPARE(toggle->mapToScene(QPointF()).y(), closePosition.y());
         click(item("browserGridButton"));
         QQuickItem *card = nullptr, *check = nullptr;
         QTRY_VERIFY((card = item("grid-entry-0")));

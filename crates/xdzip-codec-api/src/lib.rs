@@ -90,6 +90,8 @@ pub struct Entry {
     pub display_name: String,
     /// Directory marker from metadata; no filesystem object is created.
     pub directory: bool,
+    /// Declared symbolic/hard link, retained for explicit unsupported-link diagnostics.
+    pub link: bool,
     /// Raw declared uncompressed bytes.
     pub size: u64,
     /// Raw declared compressed bytes.

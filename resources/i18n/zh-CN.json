@@ -453,6 +453,7 @@
     "settings.clearRecent": "清空最近记录",
     "settings.clearPending": "保存后清空",
     "settings.privacy": "所有归档处理都在本机进行。默认不上传文件、不启用遥测。清空最近记录不会删除原文件。",
-    "settings.done": "完成"
+    "settings.done": "完成",
+    "error.unsupportedLink": "所选条目包含符号链接或硬链接，当前版本尚不支持解压。macOS 应用包可能依赖这些链接及可执行权限，不能完整还原；请选择普通文件，或使用系统归档工具。"
   }
 }

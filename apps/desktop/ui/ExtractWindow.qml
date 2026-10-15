@@ -127,7 +127,7 @@ OperationWindow {
                                         verticalInset: 2.5; surfaceColor: Theme.operationButtonSurface; outlineColor: Theme.operationFieldBorder
                                         text: qsTrId("ui.6b01fce4dbea"); labelSize: Math.round(root.unit(Theme.operationBodySize)); baseHeight: root.unit(30); cornerRadius: root.unit(6); horizontalInset: root.unit(17); minimumWidth: root.unit(86)
                                         enabled: !root.controller.busy || Boolean(root.controller.taskStarting)
-                                        onClicked: { const path = root.controller.chooseTarget(target.text); if (path) { target.text = path; root.controller.checkTarget(path); } }
+                                        onClicked: { const path = root.controller.chooseTarget(target.text, root); if (path) { target.text = path; root.controller.checkTarget(path); } }
                                     }
                                 }
                             }

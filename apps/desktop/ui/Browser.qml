@@ -274,7 +274,7 @@ ApplicationWindow {
     Shortcut {
         sequence: StandardKey.Open
         enabled: reader.runtimeAvailable && !reader.browsingBusy
-        onActivated: reader.chooseArchive()
+        onActivated: reader.chooseArchive(root)
     }
     Shortcut {
         sequence: StandardKey.New
@@ -505,7 +505,7 @@ ApplicationWindow {
             integratedTitlebar: root.integratedTitlebar
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canClose: reader.ready && !reader.browsingBusy
-            onOpenRequested: reader.chooseArchive()
+            onOpenRequested: reader.chooseArchive(root)
             onCloseRequested: reader.closeArchive()
             onSettingsRequested: settingsWindow.configure()
             onDragRequested: root.startSystemMove()
@@ -521,7 +521,7 @@ ApplicationWindow {
             canInspect: reader.ready && !reader.browsingBusy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onNewRequested: createWindow.configure()
-            onOpenRequested: reader.chooseArchive()
+            onOpenRequested: reader.chooseArchive(root)
             onInspectRequested: reader.inspectSelection()
             onExtractRequested: all => reader.prepareExtraction(all)
             onResetSortRequested: reader.sortByColumn(-1)
@@ -540,14 +540,19 @@ ApplicationWindow {
             canCreate: reader.runtimeAvailable && !reader.browsingBusy
             busy: reader.browsingBusy && reader.title.length > 0
             message: reader.browsingBusy ? "" : reader.message || AppSettings.error
-            onOpenRequested: reader.chooseArchive()
+            onOpenRequested: reader.chooseArchive(root)
             onCreateRequested: createWindow.configure()
             onCancelRequested: reader.cancel()
             onDragEntered: urls => {
                 dropSupported = reader.canOpenDroppedUrls(urls);
                 dropMessage = dropSupported ? qsTrId("ui.dc3e93fbf81a") : qsTrId("ui.a3c9bc4e63f7");
             }
-            onArchiveDropped: urls => reader.openDroppedUrls(urls)
+            onArchiveDropped: urls => {
+                if (reader.openDroppedUrls(urls)) {
+                    // Activate after DropArea has accepted the drag and Finder has ended it.
+                    Qt.callLater(function () { root.raise(); root.requestActivate(); });
+                }
+            }
         }
         RowLayout {
             objectName: "archiveWorkspace"
@@ -921,6 +926,8 @@ ApplicationWindow {
                 spacing: 0
                 PaneHeader {
                     id: fileHeader
+                    rightInset: root.inspectorVisible ? Theme.mainPaneInset : Theme.mainInspectorRightInset
+                    actionInset: root.inspectorVisible ? 0 : Theme.mainIconButtonSize + Theme.mainUnits(10)
                     objectName: "filePaneHeader"
                     Layout.fillWidth: true
                     Breadcrumb {
@@ -1020,12 +1027,12 @@ ApplicationWindow {
                     }
                     ArchiveAction {
                         objectName: "inspectorToggle"
-                        Layout.minimumWidth: Theme.mainIconButtonSize
-                        Layout.preferredWidth: Theme.mainIconButtonSize
-                        Layout.maximumWidth: Theme.mainIconButtonSize
-                        Layout.minimumHeight: Theme.mainIconButtonSize
-                        Layout.preferredHeight: Theme.mainIconButtonSize
-                        Layout.maximumHeight: Theme.mainIconButtonSize
+                        parent: fileHeader
+                        anchors.right: parent.right
+                        anchors.rightMargin: fileHeader.rightInset
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Theme.mainIconButtonSize
+                        height: Theme.mainIconButtonSize
                         visible: !root.inspectorVisible
                         asset: "panel"
                         Accessible.name: qsTrId("ui.749ca86aef0e")
@@ -1194,8 +1201,8 @@ ApplicationWindow {
                                 anchors.fill: parent
                                 anchors.leftMargin: cell.column === 0 ? Theme.mainUnits(8) : 0
                                 anchors.rightMargin: cell.column === 4 ? Theme.mainUnits(8) : 0
-                                anchors.topMargin: 2
-                                anchors.bottomMargin: 2
+                                anchors.topMargin: Theme.mainEntryBandTopInset
+                                anchors.bottomMargin: Theme.mainEntryBandBottomInset
                                 radius: cell.column === 0 || cell.column === 4 ? Theme.mainControlRadius : 0
                                 color: cell.chosen ? Theme.selection : table.hoveredRow === cell.row ? Theme.controlHover : Theme.surface
                                 // Square the interior edge so adjacent cells form one continuous rounded band.
@@ -1237,9 +1244,10 @@ ApplicationWindow {
                                 }
                             }
                             Rectangle {
+                                objectName: "entrySeparator-" + cell.row + "-" + cell.column
                                 anchors.bottom: parent.bottom
                                 width: parent.width
-                                height: 1
+                                height: Theme.mainEntrySeparatorHeight
                                 color: Theme.border
                                 opacity: 0.45
                             }

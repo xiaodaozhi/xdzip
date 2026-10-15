@@ -192,14 +192,14 @@ OperationWindow {
                                             primary: true
                                             actionIcon: AssetLibrary.fileIcon("", false, false)
                                             enabled: !root.controller.busy
-                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(false), false)
+                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(false, root), false)
                                         }
                                         OperationAction {
                                             objectName: "createAddDirectories"
                                             text: qsTrId("ui.45da2d9c85d1")
                                             actionIcon: AssetLibrary.fileIcon("", true, false)
                                             enabled: !root.controller.busy
-                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(true), true)
+                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(true, root), true)
                                         }
                                         Item {
                                             Layout.fillWidth: true
@@ -358,7 +358,7 @@ OperationWindow {
                                                 text: qsTrId("ui.6b01fce4dbea")
                                                 minimumWidth: 58
                                                 onClicked: {
-                                                    const path = root.controller.chooseTarget(target.text);
+                                                    const path = root.controller.chooseTarget(target.text, root);
                                                     if (path) {
                                                         target.text = path;
                                                         root.controller.checkCreationTarget(path);

@@ -85,6 +85,9 @@ pub(crate) fn prepare(
         if !options.all && !selected.contains(&entry.id) && !descendant {
             continue;
         }
+        if entry.link {
+            return Err("unsupported_link");
+        }
         if entry.warning || entry.encrypted || (!entry.directory && !matches!(entry.method, 0 | 8))
         {
             return Err("unsupported_entry");

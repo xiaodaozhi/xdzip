@@ -217,6 +217,7 @@ mod tests {
             raw_name: name.as_bytes().to_vec(),
             display_name: (*name).into(),
             directory: name.ends_with('/'),
+            link: false,
             size: 1,
             packed_size: 1,
             method: 0,
