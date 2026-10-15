@@ -180,10 +180,10 @@ window.XdzipMain = (() => {
             (state.activeTab === null ? [] : tabs)
                 .map(
                     (tab) =>
-                        `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭归档，${shortcut("W")}">${icon("close")}</button></div>`,
+                        `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭压缩包，${shortcut("W")}">${icon("close")}</button></div>`,
                 )
                 .join("") +
-            `<button id="new-tab" class="header-icon" aria-label="打开其他归档" data-tooltip="打开其他归档，${shortcut("O")}">${icon("plus")}</button>`;
+            `<button id="new-tab" class="header-icon" aria-label="打开其他压缩包" data-tooltip="打开其他压缩包，${shortcut("O")}">${icon("plus")}</button>`;
         bar.querySelectorAll("[data-tab]").forEach((node) => {
             node.onclick = (event) => {
                 if (!event.target.closest("[data-close-tab]"))
@@ -246,18 +246,18 @@ window.XdzipMain = (() => {
         ui.open({
             trigger,
             point,
-            label: "归档标签操作",
+            label: "压缩包标签操作",
             origin: () => $(`[data-tab="${state.activeTab}"]`) || $("#new-tab"),
             items: [
                 {
                     id: "tab-close",
-                    label: "关闭归档",
+                    label: "关闭压缩包",
                     shortcut: shortcut("W"),
                     run: () => closeTab(id),
                 },
                 {
                     id: "tab-close-others",
-                    label: "关闭其他归档",
+                    label: "关闭其他压缩包",
                     disabled: tabs.length < 2,
                     run: () =>
                         tabs
@@ -266,7 +266,7 @@ window.XdzipMain = (() => {
                 },
                 {
                     id: "tab-close-right",
-                    label: "关闭右侧归档",
+                    label: "关闭右侧压缩包",
                     disabled: index === tabs.length - 1,
                     run: () =>
                         tabs
@@ -276,7 +276,7 @@ window.XdzipMain = (() => {
                 separator(),
                 {
                     id: "tab-reopen",
-                    label: "重新打开关闭的归档",
+                    label: "重新打开关闭的压缩包",
                     disabled: closedTabs.length === 0,
                     shortcut: shortcut("⇧T"),
                     run: () => {
@@ -293,11 +293,11 @@ window.XdzipMain = (() => {
     function openPickerView() {
         dialog(
             header(
-                "打开压缩文件",
-                "系统文件选择器的设计替身，使用示例归档",
+                "打开压缩包",
+                "系统文件选择器的设计替身，使用示例压缩包",
                 "open",
             ) +
-                `<div class="modal-content"><p class="field-note">选择下列示例验证多归档交互。</p><div class="field-group"><button id="pick-sample" class="button">${icon("archive")}北境旅行.zip</button><button id="pick-project" class="button">${icon("archive-grey")}项目素材.zip</button></div></div>` +
+                `<div class="modal-content"><p class="field-note">选择下列示例验证多压缩包交互。</p><div class="field-group"><button id="pick-sample" class="button">${icon("archive")}北境旅行.zip</button><button id="pick-project" class="button">${icon("archive-grey")}项目素材.zip</button></div></div>` +
                 footer(cancelButton(), "仅使用示例数据"),
             "picker",
             "B01",
@@ -349,7 +349,7 @@ window.XdzipMain = (() => {
             if (!navigator.clipboard?.writeText)
                 throw new Error("clipboard-unavailable");
             await navigator.clipboard.writeText(text);
-            toast(fullPath ? "归档内路径已复制。" : "文件名称已复制。");
+            toast(fullPath ? "压缩包内路径已复制。" : "文件名称已复制。");
         } catch {
             dialog(
                 header(
@@ -369,13 +369,13 @@ window.XdzipMain = (() => {
     }
     const commands = {
         open: {
-            label: "打开压缩文件…",
+            label: "打开压缩包…",
             icon: "open",
             hotkey: "O",
             run: openPickerView,
         },
         create: {
-            label: "新建压缩文件…",
+            label: "创建压缩包…",
             icon: "new",
             hotkey: "N",
             enabled: () => !jobRunning(),
@@ -383,10 +383,10 @@ window.XdzipMain = (() => {
             run: showCreate,
         },
         test: {
-            label: "测试归档完整性…",
+            label: "测试压缩包完整性…",
             icon: "archive-test",
             enabled: () => ready() && !jobRunning(),
-            reason: "请先打开归档并等待当前任务结束",
+            reason: "请先打开压缩包并等待当前任务结束",
             run: showTest,
         },
         properties: {
@@ -396,10 +396,10 @@ window.XdzipMain = (() => {
             run: showInspector,
         },
         "archive-properties": {
-            label: "归档信息",
+            label: "压缩包信息",
             icon: "archive",
             enabled: ready,
-            reason: "归档目录尚未就绪",
+            reason: "压缩包目录尚未就绪",
             run: () => {
                 state.selected.clear();
                 render();
@@ -409,7 +409,7 @@ window.XdzipMain = (() => {
         "extract-all": {
             label: "全部解压…",
             enabled: () => ready() && files.length > 0 && !jobRunning(),
-            reason: "请等待归档读取或当前任务结束",
+            reason: "请等待压缩包读取或当前任务结束",
             run: () => showExtract("all"),
         },
         "extract-selected": {
@@ -456,7 +456,7 @@ window.XdzipMain = (() => {
             run: () => copySelection(false),
         },
         "copy-path": {
-            label: "复制归档内路径",
+            label: "复制压缩包内路径",
             enabled: hasSelection,
             reason: "请先选择条目",
             run: () => copySelection(true),
@@ -493,7 +493,7 @@ window.XdzipMain = (() => {
             icon: "search",
             hotkey: "F",
             enabled: ready,
-            reason: "请先打开可浏览归档",
+            reason: "请先打开可浏览压缩包",
             run: () => {
                 $("#search").focus();
                 $("#search").select();
@@ -523,7 +523,7 @@ window.XdzipMain = (() => {
         return [
             ["name", "名称"],
             ["size", "原始大小"],
-            ["compressed", "压缩后"],
+            ["compressed", "压缩大小"],
             ["type", "类型"],
             ["modified", "修改日期"],
         ]
@@ -556,7 +556,7 @@ window.XdzipMain = (() => {
                 separator(),
                 {
                     id: "sort-original",
-                    label: "按归档顺序排列",
+                    label: "按原始顺序排列",
                     type: "radio",
                     checked: state.sort === 0,
                     disabled: !ready(),
@@ -1091,7 +1091,7 @@ window.XdzipMain = (() => {
         const job = state.testJob;
         if (!job) return;
         const running = job.status === "running";
-        const outcome = running ? "正在检查归档" : job.status === "cancelled" ? "检查已取消" : "检查完成";
+        const outcome = running ? "正在检查压缩包" : job.status === "cancelled" ? "检查已取消" : "检查完成";
         const totalBytes = files.reduce((sum, entry) => sum + entry.size, 0);
         const index = Math.min(files.length - 1, Math.floor(files.length * job.progress / 100));
         const file = files[Math.max(0, index)];
@@ -1176,7 +1176,7 @@ window.XdzipMain = (() => {
         $("#more-actions").onclick = () =>
             ui.open({
                 trigger: $("#more-actions"),
-                label: "更多归档操作",
+                label: "更多压缩包操作",
                 items: [
                     item("archive-properties"),
                     item("test"),

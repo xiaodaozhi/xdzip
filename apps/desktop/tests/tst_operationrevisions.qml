@@ -89,7 +89,7 @@ Item {
         function test_scope_counts() {
             extract.present();
             const scope = findChild(extract, "extractAllScope");
-            compare(scope.text, "全部归档");
+            compare(scope.text, "全部内容");
             compare(findChild(extract, "extractAllScopeCount").text, "9 条记录");
             compare(findChild(extract, "extractSelectedScopeCount").text, "2 项");
         }

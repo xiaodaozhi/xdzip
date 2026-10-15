@@ -243,7 +243,7 @@ class BrowserTest : public QObject {
         const bool systemChinese =
             !systemLanguages.isEmpty() && systemLanguages.first().startsWith("zh");
         QCOMPARE(systemDialogText("ui.1b59353f1874"),
-                 systemChinese ? QStringLiteral("打开归档") : QStringLiteral("Open archive"));
+                 systemChinese ? QStringLiteral("打开压缩包") : QStringLiteral("Open archive"));
         if (systemChinese)
             QVERIFY(QCoreApplication::translate("QFileDialog", "Open")
                         .contains(QStringLiteral("打开")));
@@ -2032,7 +2032,7 @@ class BrowserTest : public QObject {
         };
         auto *caption = item("archiveCaption");
         auto *title = item("filePaneTitle");
-        QCOMPARE(caption->property("text").toString(), QString::fromUtf8("档案文件"));
+        QCOMPARE(caption->property("text").toString(), QString::fromUtf8("压缩包"));
         QTRY_VERIFY(qAbs(caption->mapToScene(QPointF(0, caption->height() / 2)).y() -
                          title->mapToScene(QPointF(0, title->height() / 2)).y()) < .5);
         auto *cell = item("entry-0-0");

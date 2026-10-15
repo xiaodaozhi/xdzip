@@ -14,7 +14,7 @@
         inspector = true;
     ui.configure({ icon });
     document.querySelector("#component-open").onclick = () =>
-        notice("已选择打开动作；请在主窗口中选择示例归档。");
+        notice("已选择打开动作；请在主窗口中选择示例压缩包。");
     document.querySelector("#component-primary").onclick = () =>
         notice("示例主动作已触发，没有执行实际解压。");
     const confirmation = document.querySelector("#component-confirmation");
@@ -49,7 +49,7 @@
         [
             ["name", "名称"],
             ["size", "原始大小"],
-            ["packed", "压缩后"],
+            ["packed", "压缩大小"],
         ].map(([id, label]) => ({
             id: `catalog-sort-${id}`,
             label,
@@ -99,7 +99,7 @@
         },
         {
             id: "catalog-test",
-            label: "测试归档完整性…",
+            label: "测试压缩包完整性…",
             icon: "archive-test",
             disabled: true,
             reason: "真实 CRC 校验尚未接入",
@@ -134,7 +134,7 @@
                 {
                     id: "catalog-all",
                     label: "全部解压…",
-                    run: () => notice("示例范围：全部归档"),
+                    run: () => notice("示例范围：全部内容"),
                 },
                 {
                     id: "catalog-selected",
@@ -162,7 +162,7 @@
     const edge = document.querySelector("#component-edge");
     edge.onclick = () => open(edge, { x: innerWidth - 4, y: innerHeight - 4 });
     document.querySelector("#component-error").onclick = () => {
-        notice("读取失败。可重新打开归档；示例文件和选择保持不变。");
+        notice("读取失败。可重新打开压缩包；示例文件和选择保持不变。");
         document.querySelector("#component-notice").dataset.error = "true";
     };
     function hydrate() {

@@ -13,7 +13,7 @@
     "ui.6aa8f49cc992": "Test",
     "ui.8a96ab493fb0": "CRC testing is not available yet",
     "ui.124e56e8a623": "More archive actions",
-    "ui.897c9681c945": "Archive order",
+    "ui.897c9681c945": "Sort by original order",
     "ui.994e3891e9d5": "Extraction metadata preflight",
     "ui.64f51f30dabc": "Select all in current folder",
     "ui.74966e20df2e": "Clear selection",
@@ -191,7 +191,7 @@
     "ui.79cd20ee8749": "Add content to continue",
     "common.cancel": "Cancel",
     "ui.e185d04bcc5f": "Create archive",
-    "ui.b32af2a5114f": "Extract files",
+    "ui.b32af2a5114f": "Extract",
     "ui.8d7e2c47b34e": "Extract to",
     "ui.26fa005acb80": "Destination folder",
     "ui.82e9111f1c4f": "Create a folder with the archive name",
@@ -201,7 +201,7 @@
     "ui.5a1185ab8a19": "Possible temporary folders: %1. They will be preserved for inspection.",
     "ui.9a6dab135f17": "Extraction scope",
     "ui.3941617567bb": "Selected files and folders",
-    "ui.cb7aa46a18d2": "Entire archive",
+    "ui.cb7aa46a18d2": "All contents",
     "ui.55571e4a91ac": {
       "one": "%n record",
       "other": "%n records"

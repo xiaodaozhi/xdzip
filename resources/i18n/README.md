@@ -7,3 +7,5 @@
 新增文案同时填写两份目录，运行 `python3 scripts/check-ui-i18n.py`。HTML 设置设计所需目录由 `python3 scripts/generate-ui-messages.py` 生成，字体覆盖由 `design/assets/fonts/build-subset.py` 检查。工程文档、高保真审阅说明、测试断言、示例归档内的文件名、用户内容和 Rust 协议标识不属于产品翻译资源。
 
 设置与保存边界见[设置和界面语言](../../docs/ux/settings-localization.md)。运行验证报告仅生成到 build/ 或 dist/。
+
+简体中文产品用词遵循[中文术语规范](../../docs/ux/chinese-terminology.md)与 JSON 配置。`check-ui-i18n.py` 同时拒绝旧容器称呼和旧大小标签，保留 ID、占位符、英文 archive 及用户文件名称。

@@ -72,3 +72,7 @@ S01 当前设置窗口修订见[主题、文字与语言设计源](sources/setti
 P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-body-note-light.png)、[深色](screens/preflight-body-note-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
 
 预检的元数据边界说明位于可滚动正文末尾，footer 仅放返回按钮并保持共享操作栏高度；原 footer 含说明的浅深色稿保留在历史画廊。
+
+## 中文文案修订
+
+[当前术语状态稿](terminology.html)覆盖主窗口、欢迎页、解压、创建、进度、结果和设置的浅深色设计。容器名称为“压缩包”，范围为“全部内容”“所选文件和文件夹”，大小属性为“原始大小”“压缩大小”。历史 PNG、初版欢迎页和原始墨迹量测保留原文与哈希，其文字不再定义当前产品用词；布局、密度和控件尺寸保持既定规范。详见[中文术语规范](../../docs/ux/chinese-terminology.md)。

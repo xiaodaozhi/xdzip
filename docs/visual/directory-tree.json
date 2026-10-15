@@ -330,7 +330,7 @@
   },
   "listing": {
     "root_label": "根目录",
-    "archive_caption": "档案文件",
+    "archive_caption": "压缩包",
     "ordinary_scope": "direct files and directories only",
     "search_scope": "recursive physical entries in current directory",
     "ordinary_name": "basename",

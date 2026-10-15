@@ -80,7 +80,7 @@ def generate():
 <h2 id="boards">正式图板</h2><div class="boards">''' + ''.join(boards) + '''</div>
 <h2 id="geometry">组件规范</h2><p>设计参数与大字号规则见 <a href="../../docs/visual/directory-tree.json">目录树规范</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，运行控件按统一逻辑槽绘制。</p>
 <h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；运行树不显示计数；原稿中的数字保留其设计参考身份。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
-<div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>索引完整后发布目录树。空归档的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用根目录和搜索；读取失败提供重新打开，不假装空目录。</p>
+<div class="table-wrap"><table><thead><tr><th>操作</th><th>结果</th></tr></thead><tbody>''' + event_rows + '''</tbody></table></div><p>索引完整后发布目录树。空压缩包的文件列表为空；只有根文件时列表正常显示。导航索引超限仍可使用根目录和搜索；读取失败提供重新打开，不假装空目录。</p>
 <details><summary>16 种规定状态</summary><div class="table-wrap"><table><tbody>''' + state_rows + '''</tbody></table></div></details>
 <p>接入与验收细则见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>；本次资产检查见 <a href="../../docs/qa/README.md">交付复核</a>。</p>
 <h2 id="cuts">26 张原像素切图</h2><p>裁剪没有缩放、去底色或补画；小图保持自然像素尺寸，宽图在手机上缩小以便浏览。背景、文字、连接线和状态由界面动态绘制，切片用于对照。</p><div class="cuts">''' + ''.join(cut_cards) + '''</div>

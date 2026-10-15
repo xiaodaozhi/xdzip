@@ -19,7 +19,7 @@ def check(name, actual, expected, tolerance=1):
     passed = abs(actual-expected) <= tolerance if isinstance(actual, (int, float)) else actual == expected
     checks.append(dict(name=name, actual=actual, expected=expected, passed=passed))
 
-for name, width, height, title in [('create-selected', 491, 736, '新建压缩文件'),
+for name, width, height, title in [('create-selected', 491, 736, '创建压缩包'),
                                     ('create-completed', 491, 600, '压缩完成')]:
     capture = json.loads((args.input / (name+'.json')).read_text(encoding='utf-8'))
     nodes = [n for n in capture['nodes'] if n['visible']]

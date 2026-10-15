@@ -163,11 +163,11 @@ with sync_playwright() as p:
         page.locator('#add-input').click()
         expect(page.locator('#start-create')).to_be_enabled()
         page.locator('#start-create').click()
-        expect(page.locator('dialog[data-kind="result"] h1')).to_have_text('压缩文件已创建', timeout=12000)
+        expect(page.locator('dialog[data-kind="result"] h1')).to_have_text('压缩包已创建', timeout=12000)
         expect(page.locator('.result-counts b').nth(0)).to_have_text('1')
         close_dialog(page)
         record('Format capabilities update fields; empty input blocks creation; creation publishes one archive')
-        for scene, text in [('empty','这个压缩文件没有内容'),('noresult','没有找到匹配项'),('unsupported','暂不支持此加密方式'),('damaged','无法读取压缩文件')]:
+        for scene, text in [('empty','这个压缩包没有内容'),('noresult','没有找到匹配项'),('unsupported','暂不支持此加密方式'),('damaged','无法读取压缩包')]:
             page.locator('#scenario').select_option(scene)
             expect(page.locator('#empty-state h2')).to_have_text(text)
             screenshot(page, 'state-'+scene)
@@ -239,7 +239,7 @@ with sync_playwright() as p:
         for platform in ['macos', 'windows', 'linux']:
             page.locator('#platform').select_option(platform)
             page.locator('#extract').click()
-            expect(page.locator('.os-title')).to_have_text('解压文件')
+            expect(page.locator('.os-title')).to_have_text('解压')
             expect(page.locator('.os-maximize')).to_be_disabled()
             close_box = page.locator('.os-close').bounding_box()
             title_box = page.locator('.os-title').bounding_box()

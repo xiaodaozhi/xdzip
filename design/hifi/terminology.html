@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip，中文术语修订稿</title>
+<style>body{margin:0;background:#e8ebf0;color:#141827;font:14px/1.6 system-ui,sans-serif}header{padding:16px 24px}nav{display:flex;gap:20px;align-items:center;flex-wrap:wrap}a{color:#1956ff}iframe{display:block;border:0;margin:0 auto}p{margin:8px 0}label{display:flex;gap:8px}</style></head>
+<body><header><nav><strong>中文术语修订稿，2026-10-15</strong><label>画面<select id="scene"><option value="main">主窗口</option><option value="welcome">欢迎页</option><option value="extract">解压确认</option><option value="create">创建压缩包</option><option value="progress">任务进度</option><option value="result">结果</option><option value="preflight">元数据预检</option><option value="settings">设置</option></select></label><label>主题<select id="theme"><option value="light">浅色</option><option value="dark">深色</option></select></label><a href="../../docs/ux/chinese-terminology.md">术语规范</a><a href="index.html">历史原图与几何依据</a></nav><p>统一使用“压缩包”“全部内容”“所选文件和文件夹”“原始大小”“压缩大小”。本页使用当前设计源，历史原图及哈希保持不变，旧图中的文字由本修订替代。布局和密度参数沿用既定规范。</p><p>可操作设计演示，仅使用示例数据，不执行压缩、解压或文件读写。</p></header><iframe title="当前术语高保真状态稿" width="1586" height="1100"></iframe>
+<script>
+const query=new URLSearchParams(location.search),scene=document.querySelector('#scene'),theme=document.querySelector('#theme'),frame=document.querySelector('iframe');
+if([...scene.options].some(o=>o.value===query.get('view')))scene.value=query.get('view');
+if(query.get('theme')==='dark')theme.value='dark';
+function configure(){frame.contentWindow.postMessage({type:'xdzip-review-configure',view:scene.value,platform:'macos',theme:theme.value},'*');}
+frame.addEventListener('load',configure);scene.addEventListener('change',configure);theme.addEventListener('change',configure);frame.src='../html/canvas.html?view='+scene.value;
+</script></body></html>

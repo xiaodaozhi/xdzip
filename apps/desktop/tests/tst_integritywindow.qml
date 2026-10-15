@@ -35,7 +35,7 @@ Item {
             verify((task.flags & Qt.FramelessWindowHint) === 0);
             compare(task.width, 491);
             verify(task.height > 0 && task.height <= Math.min(600, Screen.desktopAvailableHeight - 80));
-            compare(task.heading, "正在检查归档");
+            compare(task.heading, "正在检查压缩包");
             compare(findChild(task, "progressLabel").text, "60%");
             compare(task.closingHint.text, "界面预览，不执行实际校验。");
             const bodyText = task.timingHint.labelItem.mapToItem(task.contentItem, 0, 0);

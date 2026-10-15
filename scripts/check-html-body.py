@@ -7,6 +7,7 @@ they never change the approved image or silently relax its tolerance.
 A failed comparison still writes images and measurements for visual review.
 Text contours are review evidence: the raster reference's original font is unknown.
 """
+from ui_terminology import revised_source_label
 from pathlib import Path
 import argparse
 import hashlib
@@ -277,12 +278,15 @@ def main():
                 record_geometry(measurements, failures, kind, item['name'], expected, actual,
                                 item.get('tolerance', 6))
             for selector, expected in spec.get('text_targets', {}).items():
+                historical_expected = expected
+                expected = revised_source_label(expected)
                 values = page.locator(selector).all_text_contents()
                 actual = [value.strip() for value in values]
                 if isinstance(expected, str):
                     actual = actual[0] if len(actual) == 1 else actual
                 passed = actual == expected
-                measurements.append({'kind': 'source text', 'name': selector,
+                measurements.append({'kind': 'source text' if expected == historical_expected else 'approved copy revision',
+                                     'name': selector, 'historical_expected': historical_expected,
                                      'expected': expected, 'actual': actual, 'passed': passed})
                 if not passed:
                     failures.append(f'{selector}: source label/order differs: {actual!r}')

@@ -15,7 +15,7 @@
     },
     {
       "file": "screens/create.png",
-      "title": "新建归档",
+      "title": "创建压缩包",
       "group": "current",
       "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72"
     },

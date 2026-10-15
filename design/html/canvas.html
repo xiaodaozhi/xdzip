@@ -42,10 +42,10 @@
                         <option value="disk">磁盘空间不足</option>
                         <option value="source">源文件变化</option>
                         <option value="cancel">取消任务</option>
-                        <option value="empty">空归档</option>
+                        <option value="empty">空压缩包</option>
                         <option value="noresult">搜索无结果</option>
                         <option value="unsupported">不支持加密</option>
-                        <option value="damaged">归档损坏</option>
+                        <option value="damaged">压缩包损坏</option>
                         <option value="loading">读取目录</option>
                     </select></label
                 ><button
@@ -59,29 +59,29 @@
             </div>
         </div>
         <main class="stage" id="stage">
-            <section class="window" aria-label="xdzip 压缩文件管理器">
+            <section class="window" aria-label="xdzip 压缩包管理器">
                 <header class="titlebar">
                     <div class="traffic" aria-hidden="true">
                         <i></i><i></i><i></i>
                     </div>
                     <div class="app-brand" id="app-brand"></div>
-                    <div class="archive-tabs" aria-label="归档标签">
+                    <div class="archive-tabs" aria-label="压缩包标签">
                     <div class="archive-tab">
                         <span class="tab-icon" data-icon="archive"></span
                         ><span class="tab-label">北境旅行.zip</span
                         ><button
                             class="tab-close"
                             id="close-archive"
-                            aria-label="关闭当前归档"
+                            aria-label="关闭当前压缩包"
                         >
                             <span data-icon="close"></span>
                         </button>
                     </div>
-                    <div class="archive-tab inactive" aria-label="其他归档示例"><span class="tab-icon" data-icon="archive"></span><span class="tab-label">项目素材.zip</span><button class="tab-close" id="close-example-tab" aria-label="关闭其他归档（设计示例）"><span data-icon="close"></span></button></div>
+                    <div class="archive-tab inactive" aria-label="其他压缩包示例"><span class="tab-icon" data-icon="archive"></span><span class="tab-label">项目素材.zip</span><button class="tab-close" id="close-example-tab" aria-label="关闭其他压缩包（设计示例）"><span data-icon="close"></span></button></div>
                     <button
                         id="new-tab"
                         class="header-icon"
-                        aria-label="打开其他归档"
+                        aria-label="打开其他压缩包"
                     >
                         <span data-icon="plus"></span>
                     </button>
@@ -126,14 +126,14 @@
                 <div class="workspace">
                     <aside class="sidebar">
                         <div class="archive-card">
-                            <span class="archive-caption">档案文件</span>
+                            <span class="archive-caption">压缩包</span>
                             <div>
                                 <strong>北境旅行.zip</strong
-                                ><div class="archive-summary"><span class="format-badge">ZIP</span><span id="archive-info">归档信息</span></div>
+                                ><div class="archive-summary"><span class="format-badge">ZIP</span><span id="archive-info">压缩包信息</span></div>
                             </div>
                         </div>
 
-                        <nav id="tree" aria-label="归档目录"></nav>
+                        <nav id="tree" aria-label="压缩包目录"></nav>
                         <div class="sidebar-bottom">
                             <div class="storage-heading">
                                 <span>节省</span
@@ -146,7 +146,7 @@
                                 <span>原始大小</span><b id="original-size"></b>
                             </div>
                             <div class="storage-meta compressed-meta">
-                                <span>压缩后</span><b id="compressed-size"></b>
+                                <span>压缩大小</span><b id="compressed-size"></b>
                             </div>
                             <div class="sidebar-tip">
                                 <span data-icon="shield"></span
@@ -194,7 +194,7 @@
                                             </button>
                                         </th>
                                         <th><button class="sort-header" data-sort="size">原始大小</button></th>
-                                        <th><button class="sort-header" data-sort="compressed">压缩后</button></th>
+                                        <th><button class="sort-header" data-sort="compressed">压缩大小</button></th>
                                         <th class="type-col"><button class="sort-header" data-sort="type">类型</button></th>
                                         <th class="date-col"><button class="sort-header" data-sort="modified">修改日期</button></th>
                                     </tr>
@@ -243,7 +243,7 @@
         ></section>
         <div class="review-footer">
             <span><i></i> xdzip / v0.1 功能设计</span
-            ><span id="state-label">B01，归档浏览</span
+            ><span id="state-label">B01，压缩包浏览</span
             ><button id="reset">重置演示</button>
         </div>
         <dialog id="modal" aria-label="操作对话框"></dialog>

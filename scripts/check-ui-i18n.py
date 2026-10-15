@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 import re
+from ui_terminology import inspect as inspect_terminology
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -10,6 +11,7 @@ def main():
     catalogs = {locale: json.loads((ROOT/'resources/i18n'/f'{locale}.json').read_text(encoding='utf-8')) for locale in ['zh-CN','en-US']}
     errors = []
     source = catalogs['zh-CN']['messages']
+    errors.extend(inspect_terminology(source))
     target = catalogs['en-US']['messages']
     if source.keys() != target.keys():
         errors.append('Catalog IDs differ')

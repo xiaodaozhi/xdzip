@@ -25,7 +25,7 @@ def text_node(scene, text):
     return nodes[0]
 
 
-for name, kind, title in [('extract-options', 'extract', '解压文件'),
+for name, kind, title in [('extract-options', 'extract', '解压'),
                           ('task-waiting', 'progress', '等待处理重名文件'),
                           ('conflict', 'conflict', '目标位置已有同名文件')]:
     capture = json.loads((args.input / (name + '.json')).read_text(encoding='utf-8'))

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "locale": "zh-CN",
+  "labels": {
+    "container": "压缩包",
+    "open": "打开压缩包",
+    "create": "创建压缩包",
+    "extract": "解压",
+    "all_contents": "全部内容",
+    "selected_contents": "所选文件和文件夹",
+    "original_size": "原始大小",
+    "compressed_size": "压缩大小"
+  },
+  "message_labels": {
+    "ui.1674a0c33f35": "container",
+    "ui.1b59353f1874": "open",
+    "ui.80c2aec8adfc": "open",
+    "ui.fe189b616c1d": "create",
+    "ui.b32af2a5114f": "extract",
+    "ui.cb7aa46a18d2": "all_contents",
+    "ui.3941617567bb": "selected_contents",
+    "ui.2582e6a2c9e2": "compressed_size"
+  },
+  "forbidden_ui_nouns": ["档案文件", "归档", "压缩文件", "压缩后大小"],
+  "forbidden_ui_labels": ["压缩后"],
+  "allowed_compress_verb_prefixes": ["正在", "开始", "需要", "可以"],
+  "historical_label_revisions": {
+    "压缩后": "压缩大小",
+    "档案文件": "压缩包",
+    "全部归档": "全部内容"
+  }
+}

@@ -36,7 +36,7 @@ def verify(page, ratio, check, tag, output=None):
         check(tag + '/rounded control ' + selector, radius > 0, True, 0)
     check(tag + '/primary blue', page.locator('#extract').evaluate('(n)=>getComputedStyle(n).backgroundColor'), 'rgb(25, 86, 255)', 0)
     check(tag + '/root label', page.locator('.tree-root .tree-label').inner_text(), '根目录', 0)
-    check(tag + '/archive caption', page.locator('.archive-caption').inner_text(), '档案文件', 0)
+    check(tag + '/archive caption', page.locator('.archive-caption').inner_text(), '压缩包', 0)
     check(tag + '/caption center', center(box('.archive-caption'), 'y'), center(box('#breadcrumbs'), 'y'), .5)
     check(tag + '/root direct count', page.locator('#entry-count').inner_text(), '9 项', 0)
     page.locator('#file-rows [data-id=guide]').hover()
