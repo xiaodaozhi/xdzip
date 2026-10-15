@@ -150,7 +150,7 @@ QtObject {
     readonly property color accentDisabled: dark ? "#29364D" : "#E4EAF5"
     readonly property color operationCard: dark ? "#202630" : "#F4F6FA"
     readonly property color operationCardBorder: dark ? "#343E4E" : "#DFE5EF"
-    readonly property color operationFieldBorder: dark ? "#485469" : "#C9D1E0"
+    readonly property color operationFieldBorder: dark ? "#485469" : "#DCE2EC"
     readonly property color operationButtonSurface: dark ? "#28313F" : "#FAFBFD"
     readonly property color resultWarningSurface: dark ? "#342A1F" : "#FFF8ED"
     readonly property color resultWarningInk: dark ? "#F5B659" : "#B86900"

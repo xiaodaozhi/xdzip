@@ -64,8 +64,8 @@
     "button_radius": 5,
     "field_radius": 5,
     "footer_radius": 5,
-    "field_border": "#C9D1E0",
-    "neutral_button_border": "#C9D1E0",
+    "field_border": "#DCE2EC",
+    "neutral_button_border": "#DCE2EC",
     "neutral_button_surface": "#FAFBFD",
     "select_icon_slot": 18,
     "select_icon_right_inset": 6,
@@ -89,6 +89,28 @@
   "reviewed_changes": [
     "Circular minus removal, shared borders/radii and continuous segmented radio group follow C01",
     "Footer buttons use one role component across operation windows",
-    "Information uses commas or line breaks; original bitmaps remain immutable"
-  ]
+    "Information uses commas or line breaks; original bitmaps remain immutable",
+    "2026-10-15 border correction: light neutral control border changes from #C9D1E0 to #DCE2EC. Original C01 pixels and hash remain unchanged; dark #485469 and semantic states are retained."
+  ],
+  "border_review": {
+    "source_straight_edges": {
+      "file_name_top": [
+        286,
+        791,
+        630,
+        1
+      ],
+      "cancel_top": [
+        665,
+        1361,
+        93,
+        1
+      ]
+    },
+    "method": "Median RGB along straight source edges, excluding corner antialiasing and text. Original raster has resampling noise; do not treat its physical stroke width as a logical width.",
+    "previous_light": "#C9D1E0",
+    "current_light": "#DCE2EC",
+    "dark": "#485469",
+    "scope": "Neutral input, select, segmented group, normal button, footer button and unselected settings card borders. Card, menu, accent, error and danger roles retain their own colors."
+  }
 }

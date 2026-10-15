@@ -47,7 +47,8 @@
     "Normal density matches extraction opened from the 1024-wide main window.",
     "Host target check, permission warning and high-ratio permission remain real product controls.",
     "The scope body is white; its heading band has the same card background.",
-    "Footer actions use the shared normal 13-pixel size."
+    "Footer actions use the shared normal 13-pixel size.",
+    "2026-10-15: current neutral field border is #DCE2EC, superseding the historical #C9D1E0 sample contract. Source pixels remain unchanged."
   ],
   "source_footer_widths": [
     145,

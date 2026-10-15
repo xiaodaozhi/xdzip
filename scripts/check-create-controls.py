@@ -30,7 +30,7 @@ for scene in ['create-light','create-dark','create-remove-hover','create-field-f
         check(scene+'/'+name+'/height',field['height'],reference['field_height'],1.5)
         check(scene+'/'+name+'/radius',bg['radius'],contract['field_radius'],.01)
         check(scene+'/'+name+'/body font',field['fontPixelSize'],reference['body_size'],.01)
-        # Keyboard focus intentionally has a distinct accent border.
+        # Focus uses the same normal border, without an extra outline.
         if scene in ['create-light','create-dark']:
             check(scene+'/'+name+'/border',bg['border.color'].upper(),'#485469' if dark else contract['field_border'])
         if name in ['createVolume','createLevel']:
