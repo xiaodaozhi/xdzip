@@ -1,6 +1,7 @@
 """Exercise the Qt-synchronized HTML contract in the caller's actual zoom environment."""
 from playwright.sync_api import expect
 from io import BytesIO
+import base64
 from PIL import Image
 
 
@@ -61,8 +62,17 @@ def verify(page, ratio, check, tag, output=None):
     cdp.send('CSS.forcePseudoState', {'nodeId': node, 'forcedPseudoClasses': ['hover']})
     try:
         cell = page.locator('#file-rows [data-id=guide] td').first
-        image = Image.open(BytesIO(surface.screenshot(clip=cell.bounding_box()))).convert('RGB')
-        check(tag + '/row hover painted', list(image.getpixel((image.width // 2, image.height // 4))), [237, 242, 255], 0)
+        # Browser-native page zoom maps CSS coordinates to capture DIPs. DPR only
+        # affects image sampling, never the UI's logical component dimensions.
+        rect = cell.bounding_box()
+        zoom = cdp.send('Page.getLayoutMetrics')['cssVisualViewport']['zoom']
+        clip = {key: rect[key] * zoom for key in ['x', 'y', 'width', 'height']}
+        capture = cdp.send('Page.captureScreenshot', {'format': 'png',
+                           'clip': {**clip, 'scale': 1}, 'captureBeyondViewport': True})
+        image = Image.open(BytesIO(base64.b64decode(capture['data']))).convert('RGB')
+        if output:
+            image.save(str(output / 'row-hover-cell.png'))
+        check(tag + '/row hover painted', list(image.getpixel((image.width // 4, image.height // 2))), [237, 242, 255], 0)
         geometry = cell.evaluate(r"""n=>{
             const band=getComputedStyle(n), line=getComputedStyle(n,'::after');
             const removed=band.backgroundSize.match(/-\s*([\d.]+)px/);
