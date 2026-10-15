@@ -41,15 +41,36 @@ def verify(page, ratio, check, tag, output=None):
     page.locator('#file-rows [data-id=guide]').hover()
     colors = page.locator('#file-rows [data-id=guide] td').evaluate_all('(nodes)=>nodes.map(n=>getComputedStyle(n).backgroundImage)')
     check(tag + '/whole row hover', len(set(colors)), 1, 0)
-    # Check pixels, rather than mistaking the transparent base behind the inset band for its paint.
-    cell = page.locator('#file-rows [data-id=guide] td').last
-    image = Image.open(BytesIO(cell.screenshot())).convert('RGB')
-    check(tag + '/row hover painted', list(image.getpixel((image.width // 2, image.height // 4))), [237, 242, 255], 0)
-    geometry = cell.evaluate(r"""n=>{
-        const band=getComputedStyle(n), line=getComputedStyle(n,'::after');
-        const removed=band.backgroundSize.match(/-\s*([\d.]+)px/);
-        return {top:parseFloat(band.backgroundPositionY),removed:removed?Number(removed[1]):0,line:parseFloat(line.height)};
-    }""")
+    check(tag + '/row hover background layer', colors[0], 'linear-gradient(rgb(237, 242, 255), rgb(237, 242, 255))', 0)
+    # The real pointer was verified above. Headed Chromium clears its synthetic pointer
+    # while capturing; freeze that already-observed CSS state for the pixel measurement.
+    surface = page.page if hasattr(page, 'page') else page
+    cdp = surface.context.new_cdp_session(surface)
+    cdp.send('DOM.enable')
+    cdp.send('CSS.enable')
+    document = cdp.send('DOM.getDocument', {'depth': -1, 'pierce': True})['root']
+    def row_node(node):
+        attrs = node.get('attributes', [])
+        attributes = dict(zip(attrs[::2], attrs[1::2]))
+        if node.get('nodeName') == 'TR' and attributes.get('data-id') == 'guide':
+            return node['nodeId']
+        children = node.get('children', []) + ([node['contentDocument']] if 'contentDocument' in node else [])
+        return next((result for child in children if (result := row_node(child))), None)
+    node = row_node(document)
+    assert node, 'Hover row is missing from the browser DOM'
+    cdp.send('CSS.forcePseudoState', {'nodeId': node, 'forcedPseudoClasses': ['hover']})
+    try:
+        cell = page.locator('#file-rows [data-id=guide] td').first
+        image = Image.open(BytesIO(surface.screenshot(clip=cell.bounding_box()))).convert('RGB')
+        check(tag + '/row hover painted', list(image.getpixel((image.width // 2, image.height // 4))), [237, 242, 255], 0)
+        geometry = cell.evaluate(r"""n=>{
+            const band=getComputedStyle(n), line=getComputedStyle(n,'::after');
+            const removed=band.backgroundSize.match(/-\s*([\d.]+)px/);
+            return {top:parseFloat(band.backgroundPositionY),removed:removed?Number(removed[1]):0,line:parseFloat(line.height)};
+        }""")
+    finally:
+        cdp.send('CSS.forcePseudoState', {'nodeId': node, 'forcedPseudoClasses': []})
+        cdp.detach()
     check(tag + '/row band upper inset', geometry['top'] * ratio, 1, .06)
     check(tag + '/row separator height', geometry['line'] * ratio, 1, .06)
     check(tag + '/row separator equal gaps', (geometry['removed'] - geometry['top'] - geometry['line']) * ratio, geometry['top'] * ratio, .06)
