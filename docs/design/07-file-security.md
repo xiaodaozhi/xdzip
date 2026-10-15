@@ -29,7 +29,7 @@ Windows 特别处理 `CON/NUL/COM1` 等保留名、尾随空格/点、冒号 ADS
 
 POSIX 以目录句柄和 `openat` 类调用逐组件遍历，拒绝跟随符号链接；Linux 可在可用时使用 `openat2` 的 beneath/no-symlink 约束，但仍需其他平台后端。Windows 使用句柄相对/可验证打开、reparse point 检查及 file ID；不把 `canonicalize + string starts_with` 当安全算法。
 
-输出不恢复符号链接、硬链接、junction、设备、FIFO、socket 或 setuid/setgid。已有目标若为链接/特殊对象则拒绝普通覆盖。所有暂存文件排他创建，句柄保留至提交；扫描与提交间的目标变化重新走冲突决策。
+POSIX ZIP 符号链接按 [安全解压契约](../engineering/m3-extraction.md) 的选中范围闭合图校验、普通输出完成后排他发布；不跟随链接写入。其他符号链接、硬链接、junction、设备、FIFO、socket 或 setuid/setgid 不恢复。已有目标若为链接/特殊对象则拒绝普通覆盖。所有暂存文件排他创建，句柄保留至提交；扫描与提交间的目标变化重新走冲突决策。
 
 仅目录句柄不能保证其路径永远不被有权限者移动。平台层需定义“授权对象下”的语义，检测目标/父节点身份变化；普通多人可写树不满足安全覆盖要求时拒绝或转到私有新子目录。不得声称 `O_NOFOLLOW` 能单独消除全部目录移动竞态。
 

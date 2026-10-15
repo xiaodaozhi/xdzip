@@ -110,6 +110,7 @@ mod tests {
             display_name: name.into(),
             directory: name.ends_with('/'),
             link: false,
+            unix_mode: 0,
             size: 0,
             packed_size: 0,
             method: 0,

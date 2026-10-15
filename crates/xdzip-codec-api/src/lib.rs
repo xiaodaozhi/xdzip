@@ -90,8 +90,10 @@ pub struct Entry {
     pub display_name: String,
     /// Directory marker from metadata; no filesystem object is created.
     pub directory: bool,
-    /// Declared symbolic/hard link, retained for explicit unsupported-link diagnostics.
+    /// Declared symbolic/hard link. Only ZIP symbolic links have an extraction policy.
     pub link: bool,
+    /// Raw Unix mode for ZIP Unix creators; zero for other creators/formats. Never applied directly.
+    pub unix_mode: u32,
     /// Raw declared uncompressed bytes.
     pub size: u64,
     /// Raw declared compressed bytes.
@@ -102,7 +104,7 @@ pub struct Entry {
     pub modified_dos: u32,
     /// Metadata encryption flag. No password is requested in this read-only slice.
     pub encrypted: bool,
-    /// Suspicious name, non-UTF8 bytes, link or special record; never safe-to-extract approval.
+    /// Suspicious name, non-UTF8 bytes or unsupported special record; never safe-to-extract approval.
     pub warning: bool,
 }
 

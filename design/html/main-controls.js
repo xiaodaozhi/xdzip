@@ -821,11 +821,6 @@ window.XdzipMain = (() => {
             );
         $("#select-all").setAttribute("aria-label", "选择当前列表全部条目");
         [
-            "open",
-            "create",
-            "test-archive",
-            "more-actions",
-            "extract-menu-button",
             "sort-direction",
             "list-view",
             "grid-view",

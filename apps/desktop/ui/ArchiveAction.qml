@@ -7,6 +7,7 @@ Button {
     property string asset: ""
     property bool primary: false
     property bool toolbarStyle: false
+    property bool tooltipEnabled: true
     property bool selected: false
     // Reserved presentation for the unavailable extraction action; no dropdown is activated.
     property bool splitIndicator: false
@@ -22,7 +23,7 @@ Button {
     Accessible.name: text
     Accessible.description: explanation
     CommandTooltip {
-        requested: root.hovered && !root.down
+        requested: root.tooltipEnabled && root.hovered && !root.down
         text: root.explanation
     }
     property real labelSize: toolbarStyle ? Theme.mainToolbarSize : Theme.mainHeaderSize

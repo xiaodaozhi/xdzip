@@ -310,3 +310,119 @@ fn declared_links_have_explicit_diagnostic_before_output_admission() {
     ));
     assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
 }
+
+#[cfg(unix)]
+#[test]
+fn unix_bundle_links_and_safe_executable_modes_are_restored_after_regular_files() {
+    use std::os::unix::fs::PermissionsExt;
+    let target = Target::new();
+    let a = archive("unix_bundle.zip");
+    let done = execute(&a, target.options(), &Control::default(), |_| {});
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(done.committed_files, 7);
+    assert_eq!(done.decoded_bytes, done.declared_bytes);
+    assert_eq!(done.written_bytes, done.committed_bytes);
+    let app = target.0.join("Demo.app/Contents");
+    assert_eq!(
+        std::fs::metadata(app.join("MacOS/demo"))
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o7777,
+        0o755
+    );
+    assert_eq!(
+        std::fs::metadata(app.join("Resources/info.txt"))
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o7777,
+        0o644
+    );
+    let framework = app.join("Frameworks/F.framework");
+    assert_eq!(
+        std::fs::read_link(framework.join("Versions/Current")).unwrap(),
+        Path::new("A")
+    );
+    assert_eq!(
+        std::fs::read_link(framework.join("F")).unwrap(),
+        Path::new("Versions/Current/F")
+    );
+    assert_eq!(
+        std::fs::read(framework.join("F")).unwrap(),
+        b"owned library\n"
+    );
+    assert_eq!(
+        std::fs::read(framework.join("Resources/info")).unwrap(),
+        b"resource"
+    );
+    assert!(!done.cleanup_warning);
+}
+
+#[test]
+fn hostile_or_incomplete_link_graphs_are_rejected_before_any_output() {
+    for name in [
+        "link_absolute.zip",
+        "link_parent.zip",
+        "link_backslash.zip",
+        "link_empty.zip",
+        "link_nul.zip",
+        "link_dangling.zip",
+        "link_cycle.zip",
+        "link_device.zip",
+        "link_parent_write.zip",
+        "link_cycle_pair.zip",
+        "link_large.zip",
+        "link_crc.zip",
+    ] {
+        let target = Target::new();
+        let a = archive(name);
+        assert!(
+            a.extraction_job(target.options(), &Cancellation::default())
+                .is_err(),
+            "{name}"
+        );
+        assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0, "{name}");
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn bundle_conflicts_and_partial_selections_do_not_publish_broken_links() {
+    let target = Target::new();
+    let a = archive("unix_bundle.zip");
+    std::fs::create_dir_all(target.0.join("Demo.app/Contents/MacOS")).unwrap();
+    let executable = target.0.join("Demo.app/Contents/MacOS/demo");
+    std::fs::write(&executable, b"preserve").unwrap();
+    for policy in [
+        ConflictPolicy::Ask,
+        ConflictPolicy::Skip,
+        ConflictPolicy::Rename,
+        ConflictPolicy::Overwrite,
+    ] {
+        let mut options = target.options();
+        options.conflict = policy;
+        let done = execute(&a, options, &Control::default(), |_| {});
+        assert_eq!(done.error, "output_conflict");
+        assert_eq!(done.committed_files, 0);
+        assert_eq!(std::fs::read(&executable).unwrap(), b"preserve");
+    }
+    let mut options = target.options();
+    options.all = false;
+    options.selected = vec![a.rows.iter().find(|e| e.link).unwrap().id.get().to_string()];
+    assert!(matches!(
+        a.extraction_job(options, &Cancellation::default()),
+        Err("unsupported_link")
+    ));
+}
+
+#[cfg(not(unix))]
+#[test]
+fn unix_links_fail_explicitly_without_windows_privilege_or_file_substitution() {
+    let target = Target::new();
+    assert!(matches!(
+        archive("unix_bundle.zip").extraction_job(target.options(), &Cancellation::default()),
+        Err("unsupported_link")
+    ));
+    assert_eq!(std::fs::read_dir(&target.0).unwrap().count(), 0);
+}

@@ -9,6 +9,7 @@ use xdzip_domain::path::PortablePath;
 pub(crate) struct Planned {
     pub index: usize,
     pub path: PortablePath,
+    pub link_target: Option<String>,
 }
 pub(crate) struct Job {
     pub source: Source,
@@ -85,7 +86,11 @@ pub(crate) fn prepare(
         if !options.all && !selected.contains(&entry.id) && !descendant {
             continue;
         }
-        if entry.link {
+        if entry.link
+            && (!cfg!(unix)
+                || entry.format != xdzip_codec_api::Format::Zip
+                || entry.unix_mode & 0o170000 != 0o120000)
+        {
             return Err("unsupported_link");
         }
         if entry.warning || entry.encrypted || (!entry.directory && !matches!(entry.method, 0 | 8))
@@ -153,6 +158,7 @@ pub(crate) fn prepare(
         let canonical_path = canonical_parts.join("/");
         result.push(Planned {
             index,
+            link_target: None,
             path: PortablePath::parse(&canonical_path).ok_or("unsafe_name")?,
         });
     }
@@ -165,6 +171,9 @@ pub(crate) fn prepare(
     {
         return Err("high_ratio");
     }
+    super::links::prepare(archive, &mut result, cancel)?;
+    // No subsequent filesystem write may traverse an archive-created link.
+    result.sort_by_key(|p| p.link_target.is_some());
     Ok(result)
 }
 
@@ -182,6 +191,7 @@ impl Job {
                 .iter()
                 .map(|p| {
                     std::mem::size_of::<Planned>()
+                        + p.link_target.as_ref().map_or(0, String::capacity)
                         + p.path
                             .parts()
                             .iter()

@@ -255,8 +255,8 @@ OperationWindow {
             OperationFooterButton {
                 objectName: "startExtract"
                 text: qsTrId("ui.d63e300f62a9"); primary: true
-                enabled: root.targetReady && !root.controller.busy && root.intent.session === root.controller.sessionId
-                onClicked: root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked)
+                enabled: root.targetReady && (!root.controller.busy || Boolean(root.controller.taskStarting)) && root.intent.session === root.controller.sessionId
+                onClicked: { if (!root.controller.busy) root.controller.startExtraction(target.text, root.allFiles, sameFolder.checked, conflict.currentIndex, highRatio.checked, openAfter.checked); }
             }
         }
     }

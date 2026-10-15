@@ -312,6 +312,41 @@ pub struct SetCommitError {
     pub rollback_failed: bool,
 }
 impl Workspace {
+    /// Publish a plan-validated relative symbolic link, exclusively, under a held no-follow
+    /// parent. This never opens its target or replaces an existing object. Call only after
+    /// all ordinary output has committed; Windows link privileges are not assumed.
+    pub fn commit_symlink(
+        &mut self,
+        path: &PortablePath,
+        target: &PortablePath,
+    ) -> Result<CommitReceipt, OutputError> {
+        #[cfg(not(unix))]
+        {
+            let _ = (path, target);
+            Err(OutputError::Unsupported)
+        }
+        #[cfg(unix)]
+        {
+            let parent = self.grant.parent(path, true)?;
+            let leaf = path.parts().last().ok_or(OutputError::UnsafeTarget)?;
+            self.grant.revalidate_parent(path, &parent)?;
+            // symlink itself is an atomic create-if-absent operation, including dangling leaves.
+            self.record(&format!("prepared-link {}\n", path.display()))?;
+            #[cfg(test)]
+            if let Some(change) = self.before_publish.take() {
+                change();
+            }
+            self.grant.revalidate_parent(path, &parent)?;
+            parent
+                .dir
+                .symlink(target.display(), leaf)
+                .map_err(failure)?;
+            let recorded = self.record(&format!("committed-link {}\n", path.display()));
+            Ok(CommitReceipt {
+                cleanup_warning: recorded.is_err(),
+            })
+        }
+    }
     /// Exact private directory excluded from a creation input scan, with its identity.
     pub fn input_exclusion(&self) -> (PathBuf, FileIdentity) {
         (self.grant.path.join(&self.name), self.identity)
@@ -571,6 +606,21 @@ impl Stage {
         reader.seek(SeekFrom::Start(0)).map_err(failure)?;
         Ok(reader)
     }
+    /// Restore only ordinary ZIP read/execute bits plus owner read/write. Privileged,
+    /// group/other write and file-type bits never reach the OS. Applied by held file handle
+    /// before publication; failure leaves the destination untouched.
+    pub fn restore_mode(&mut self, mode: u32) -> Result<(), OutputError> {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let file = self.file.as_ref().ok_or(OutputError::Io)?;
+            file.set_permissions(std::fs::Permissions::from_mode(0o600 | (mode & 0o155)))
+                .map_err(failure)?;
+        }
+        #[cfg(not(unix))]
+        let _ = mode;
+        Ok(())
+    }
     /// Synchronize verified file data before publication, detecting delayed I/O failures.
     pub fn finish(&mut self) -> Result<(), OutputError> {
         if let Some(mut file) = self.file.take() {
@@ -777,5 +827,55 @@ mod race_tests {
             fs::read(root.0.join(name).join("unfamiliar")).unwrap(),
             b"do not delete"
         );
+    }
+}
+
+#[cfg(all(test, unix))]
+mod link_tests {
+    use super::*;
+    use crate::tests::Owned;
+    use std::fs;
+    #[test]
+    fn link_publication_is_exclusive_and_never_follows_an_existing_leaf() {
+        let root = Owned::new();
+        let outside = Owned::new();
+        let sentinel = outside.0.join("sentinel");
+        fs::write(&sentinel, b"unchanged").unwrap();
+        let grant = root.grant();
+        let mut work = grant.workspace(1).unwrap();
+        std::os::unix::fs::symlink(&sentinel, root.0.join("link")).unwrap();
+        assert!(
+            work.commit_symlink(
+                &PortablePath::parse("link").unwrap(),
+                &PortablePath::parse("safe").unwrap()
+            )
+            .is_err()
+        );
+        assert_eq!(fs::read(sentinel).unwrap(), b"unchanged");
+        work.cleanup().unwrap();
+    }
+    #[test]
+    fn parent_replacement_cannot_publish_link_into_an_external_directory() {
+        let root = Owned::new();
+        let outside = Owned::new();
+        fs::create_dir(root.0.join("safe")).unwrap();
+        let grant = root.grant();
+        let mut work = grant.workspace(1).unwrap();
+        let base = root.0.clone();
+        let external = outside.0.clone();
+        work.before_publish = Some(Box::new(move || {
+            fs::rename(base.join("safe"), base.join("old-safe")).unwrap();
+            std::os::unix::fs::symlink(external, base.join("safe")).unwrap();
+        }));
+        assert!(
+            work.commit_symlink(
+                &PortablePath::parse("safe/link").unwrap(),
+                &PortablePath::parse("file").unwrap()
+            )
+            .is_err()
+        );
+        assert_eq!(fs::read_dir(&outside.0).unwrap().count(), 0);
+        assert_eq!(fs::read_dir(root.0.join("old-safe")).unwrap().count(), 0);
+        work.cleanup().unwrap();
     }
 }

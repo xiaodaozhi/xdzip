@@ -759,11 +759,10 @@ class BrowserTest : public QObject {
         QCOMPARE(task.value("committedFiles").toString(), QString("1"));
         const auto archive = output.path() + QStringLiteral("/创建.zip");
         QVERIFY(QFileInfo::exists(archive));
-        // Job completion and advisory selection/target requests have separate
-        // lifetimes. Wait for the metadata lane before issuing a new open intent.
-        QTRY_VERIFY(!controller->busy());
-        controller->openPath(archive);
-        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        // Successful creation opens its committed output without a second user action.
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                     controller->title() == QStringLiteral("创建.zip"),
+                                 10000);
         QCOMPARE(controller->archiveTotal(), 3);
         QCOMPARE(controller->entries()->rowCount(), 1);
         controller->enterDirectory(0);
@@ -828,6 +827,12 @@ class BrowserTest : public QObject {
         auto *change = findVisual(extract->contentItem(), "extractChangeTarget");
         auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
         QVERIFY(field && openAfter && start && change && overlay);
+        for (const auto &name :
+             {"archiveOpen", "archiveNew", "archiveTest", "archiveMore", "archiveExtract"}) {
+            auto *action = findVisual(window->contentItem(), QString::fromLatin1(name));
+            QVERIFY(action);
+            QVERIFY(!action->property("tooltipEnabled").toBool());
+        }
         field->setProperty("text", target.path());
         QTRY_VERIFY(!controller->busy());
         controller->checkTarget(target.path());
@@ -879,7 +884,7 @@ class BrowserTest : public QObject {
                                      controller->tasks().first().toMap().value("terminal").toBool(),
                                  10000);
         QVERIFY(sawSubmitting);
-        QVERIFY(sawStartDisabled);
+        QVERIFY(!sawStartDisabled);
         QVERIFY(controlsStable);
         QVERIFY(overlayStable);
         QCOMPARE(resets.count(), 0);
@@ -888,6 +893,86 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->tasks().size(), 1);
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
         window->close();
+    }
+    void rejectedExtractionKeepsStartButtonEnabledWithoutDuplicateSubmission() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/unsafe.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->prepareExtraction(true);
+        auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+        QTRY_VERIFY(extract && extract->isVisible());
+        auto *field = findVisual(extract->contentItem(), "extractTarget");
+        auto *start = findVisual(extract->contentItem(), "startExtract");
+        QVERIFY(field && start);
+        QTRY_VERIFY(!controller->busy());
+        field->setProperty("text", target.path());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, target.path()));
+        QTRY_VERIFY(start->isEnabled());
+        bool stayedEnabled = true;
+        bool retried = false;
+        QObject monitor;
+        connect(start, &QQuickItem::enabledChanged, &monitor,
+                [&] { stayedEnabled &= start->isEnabled(); });
+        connect(controller, &BrowserController::changed, &monitor, [&] {
+            if (controller->taskStarting() && !retried) {
+                retried = true;
+                controller->startExtraction(target.path(), true, false, 0, false, false);
+            }
+        });
+        QSignalSpy accepted(controller, &BrowserController::extractionStarted);
+        QTest::mouseClick(
+            extract, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        QTRY_VERIFY(retried && !controller->busy());
+        QVERIFY(stayedEnabled);
+        QVERIFY(start->isEnabled());
+        QVERIFY(extract->isVisible());
+        QVERIFY(!controller->extractionIntent().value("error").toString().isEmpty());
+        QCOMPARE(accepted.count(), 0);
+        QCOMPARE(controller->tasks().size(), 0);
+        QCOMPARE(QDir(target.path()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).size(), 0);
+        window->close();
+    }
+    void unixBundleExtractionThroughNativeController() {
+#ifndef Q_OS_UNIX
+        QSKIP("ZIP symbolic link restoration is supported on POSIX only");
+#else
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/unix_bundle.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.prepareExtraction(true);
+        controller.checkTarget(target.path());
+        QTRY_VERIFY(!controller.busy() && checkedTarget(&controller, target.path()));
+        QSignalSpy started(&controller, &BrowserController::extractionStarted);
+        controller.startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_COMPARE(started.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.tasks().isEmpty() &&
+                                     controller.tasks().first().toMap().value("terminal").toBool(),
+                                 10000);
+        const auto task = controller.tasks().first().toMap();
+        QCOMPARE(task.value("status").toString(), QStringLiteral("succeeded"));
+        QCOMPARE(task.value("committedFiles").toString(), QStringLiteral("7"));
+        const auto base = target.path() + QStringLiteral("/Demo.app/Contents/");
+        QVERIFY(QFileInfo(base + "MacOS/demo").permissions().testFlag(QFile::ExeOwner));
+        const auto link = base + "Frameworks/F.framework/F";
+        QVERIFY(QFileInfo(link).isSymLink());
+        QFile file(link);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(file.readAll(), QByteArray("owned library\n"));
+        file.close();
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
+#endif
     }
     void m3ExtractionWindowsAndRealOutput() {
         QTemporaryDir target;

@@ -154,6 +154,7 @@ BrowserController::BrowserController(QObject *parent)
                 task.insert("promptId", QString{});
             }
             m_openAfterTasks.clear();
+            m_createdArchivesToOpen.clear();
             emit tasksChanged();
         }
         QPointer<BrowserController> alive(this);
@@ -600,7 +601,9 @@ void BrowserController::inspectCreationInputs(const QStringList &paths) {
 void BrowserController::drainCreationUiWhenIdle() {
     if (m_busy || m_pending || m_closing || !runtimeAvailable())
         return;
-    if (!m_pendingCreationTarget.isEmpty()) {
+    if (!m_createdArchivesToOpen.isEmpty()) {
+        openPath(m_createdArchivesToOpen.takeFirst());
+    } else if (!m_pendingCreationTarget.isEmpty()) {
         const auto path = std::exchange(m_pendingCreationTarget, QString{});
         checkCreationTarget(path);
     } else if (std::exchange(m_creationPreviewPending, false)) {
@@ -969,7 +972,13 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                      validTime ? QLocale().toString(QDateTime::fromSecsSinceEpoch(existingTime),
                                                     qtTrId("format.dateTime"))
                                : QStringLiteral("—"));
+        const bool firstSuccess =
+            status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
         m_tasks.insert(t.id, value);
+        if (t.creating && firstSuccess && t.output_parts <= 1) {
+            m_createdArchivesToOpen.append(text(t.target));
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
+        }
         while (m_tasks.size() > 64) {
             auto oldest = std::find_if(m_tasks.begin(), m_tasks.end(),
                                        [](const auto &v) { return v.value("terminal").toBool(); });
@@ -1142,6 +1151,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Finished) {
         m_busy = false;
         m_pending = 0;
+        // Even a failed query must release a queued successful creation output.
+        if (!m_createdArchivesToOpen.isEmpty())
+            QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
         if (m_deferredQuery && text(event.error) != "source_changed") {
             m_creationPreviewPending |= m_result.inputPreview;
             auto latest = std::move(*m_deferredQuery);

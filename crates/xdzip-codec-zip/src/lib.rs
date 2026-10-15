@@ -133,7 +133,7 @@ fn scan(
             || name.iter().any(|b| b.is_ascii_control())
             || utf8.is_none()
             || (!record.flags().is_utf8() && !name.is_ascii())
-            || unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000))
+            || unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000))
             || utf8.is_some_and(|text| text.chars().any(is_display_control));
         let id = u64::try_from(rows.len())
             .ok()
@@ -147,6 +147,7 @@ fn scan(
             display_name: display,
             directory: record.is_dir(),
             link: unix_type == Some(0o120000),
+            unix_mode: unix_type.map_or(0, |_| record.external_attributes() >> 16),
             size: record.uncompressed_size_hint(),
             packed_size: record.compressed_size_hint(),
             method: record.compression_method().as_u16(),
@@ -351,7 +352,8 @@ mod tests {
         bytes[central + 5] = 3;
         bytes[central + 38..central + 42].copy_from_slice(&((0o120777u32) << 16).to_le_bytes());
         let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
-        assert!(rows[0].link && rows[0].warning);
+        assert!(rows[0].link && !rows[0].warning);
+        assert_eq!(rows[0].unix_mode, 0o120777);
         assert!(rows[1..].iter().all(|row| !row.link));
     }
     #[test]

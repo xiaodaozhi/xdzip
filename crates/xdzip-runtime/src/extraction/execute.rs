@@ -107,6 +107,16 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         );
         job.source.validate().map_err(|_| "source_changed")?;
         let mut decoder = opened.map_err(decoding)?;
+        let has_links = job.planned.iter().any(|p| p.link_target.is_some());
+        if has_links {
+            // Renaming/skipping a dependency would change the frozen link graph. Refuse
+            // occupied file/link leaves before writing, rather than producing a broken bundle.
+            for p in job.planned.iter().filter(|p| !job.rows[p.index].directory) {
+                if target.existing(&p.path).map_err(output)?.is_some() {
+                    return Err("output_conflict");
+                }
+            }
+        }
         let mut policy = job.options.conflict;
         let mut prompt_id = 0u64;
         for planned in &job.planned {
@@ -135,10 +145,39 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 target.ensure_directory(&planned.path).map_err(output)?;
                 continue;
             }
+            if let Some(link_target) = &planned.link_target {
+                pending_file = Some(entry.size);
+                // Payload was fully decoded and CRC checked before output admission. Source
+                // identity is rechecked above; no untrusted link is ever used as a write path.
+                control.begin_commit()?;
+                let committed = workspace
+                    .commit_symlink(
+                        &planned.path,
+                        &PortablePath::parse(link_target).ok_or("unsupported_link")?,
+                    )
+                    .map_err(output);
+                let cancelled = control.end_commit(false);
+                if let Ok(receipt) = &committed {
+                    stats.committed_files += 1;
+                    stats.decoded_bytes += entry.size;
+                    stats.written_bytes += entry.size;
+                    stats.committed_bytes += entry.size;
+                    stats.cleanup_warning |= receipt.cleanup_warning;
+                    stats.record(&planned.path.display(), entry.size, "completed", "");
+                    pending_file = None;
+                }
+                committed?;
+                cancelled?;
+                emit(&mut stats, start, publish);
+                continue;
+            }
             pending_file = Some(entry.size);
             let mut path = planned.path.clone();
             let mut overwrite = None;
             if let Some(existing) = target.existing(&path).map_err(output)? {
+                if has_links {
+                    return Err("output_conflict");
+                }
                 let mut decision = policy;
                 if decision == ConflictPolicy::Ask {
                     prompt_id = prompt_id.checked_add(1).ok_or("resource_limit")?;
@@ -204,6 +243,9 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))?;
             if actual != entry.size {
                 return Err("integrity_error");
+            }
+            if entry.unix_mode != 0 {
+                stage.restore_mode(entry.unix_mode).map_err(output)?;
             }
             control.begin_commit()?;
             stats.status = Status::Committing;

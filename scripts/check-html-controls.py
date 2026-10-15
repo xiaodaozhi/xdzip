@@ -34,6 +34,11 @@ def main():
         expect(page.locator('[data-tab]')).to_have_count(2)
         expect(page.locator('#tree [role=treeitem]')).to_have_count(4)
         checks.append('Initial archive, table and directory controls load offline')
+        for ident in ['open', 'create', 'test-archive', 'more-actions', 'extract', 'extract-menu-button']:
+            assert page.locator('#' + ident).get_attribute('data-tooltip') is None
+            assert page.locator('#' + ident).get_attribute('title') is None
+        checks.append('Main toolbar actions have no hover tooltips or browser titles')
+
 
         page.locator('#more-actions').focus()
         assert page.locator('#more-actions').evaluate('el=>getComputedStyle(el).outlineStyle') == 'none'
@@ -241,7 +246,8 @@ def main():
         checks.append('Demo integrity job: busy guard, modeless close keeps running, reopen and explicit cancellation')
 
         page.locator('#more-actions').hover()
-        expect(page.locator('[role=tooltip]')).to_be_visible(timeout=2000)
+        page.wait_for_timeout(500)
+        expect(page.locator('[role=tooltip]')).to_have_count(0)
         page.locator('#more-actions').click()
         expect(page.locator('[role=tooltip]')).to_have_count(0)
         page.locator('#list-view').click()
@@ -250,7 +256,7 @@ def main():
         page.keyboard.press('Tab')
         expect(page.locator('.ui-menu')).to_have_count(0)
         assert page.evaluate('!document.activeElement.closest(".ui-menu")')
-        checks.append('Delayed tooltip, outside action and Tab release the menu without trapping focus')
+        checks.append('No toolbar hover tooltip; outside action and Tab release the menu without trapping focus')
 
         # Release after a real Chromium touch hold must open, not execute, the menu.
         lake = page.locator('#file-rows [data-id=lake]').bounding_box()

@@ -47,6 +47,7 @@ Rectangle {
             ArchiveAction {
                 id: openAction
                 toolbarStyle: true
+                tooltipEnabled: false
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveOpen"
@@ -61,6 +62,7 @@ Rectangle {
             }
             ArchiveAction {
                 toolbarStyle: true
+                tooltipEnabled: false
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveNew"
@@ -82,6 +84,7 @@ Rectangle {
             }
             ArchiveAction {
                 toolbarStyle: true
+                tooltipEnabled: false
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveTest"
@@ -96,6 +99,7 @@ Rectangle {
             }
             ArchiveAction {
                 toolbarStyle: true
+                tooltipEnabled: false
                 Layout.minimumHeight: root.controlHeight
                 Layout.maximumHeight: root.controlHeight
                 objectName: "archiveMore"
@@ -220,6 +224,7 @@ Rectangle {
                 id: extractAction
                 anchors.fill: parent
                 toolbarStyle: true
+                tooltipEnabled: false
                 text: root.hasSelection ? qsTrId("ui.a1fca7bde5d2") : qsTrId("ui.0af5cbabf545")
                 objectName: "archiveExtract"
                 primary: true

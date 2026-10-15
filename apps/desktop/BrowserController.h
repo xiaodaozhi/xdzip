@@ -324,6 +324,7 @@ class BrowserController : public QObject {
     QStringList m_creationPreviewPaths;
     bool m_creationPreviewPending = false;
     QString m_pendingCreationTarget;
+    QStringList m_createdArchivesToOpen;
     void drainCreationUiWhenIdle();
     QVariantMap m_preflightReport;
     QVariantMap m_detail;

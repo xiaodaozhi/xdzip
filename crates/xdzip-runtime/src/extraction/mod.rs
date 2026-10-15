@@ -1,6 +1,7 @@
 //! Safe ZIP task contracts. Plans are frozen before granting any output authority.
 mod control;
 mod execute;
+mod links;
 mod plan;
 #[cfg(test)]
 mod tests;

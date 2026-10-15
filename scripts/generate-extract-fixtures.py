@@ -85,3 +85,39 @@ def partial_result_fixture():
 
 (ROOT / 'partial_crc.zip').write_bytes(partial_result_fixture())
 print('Generated owned extraction fixtures')
+
+# Minimal synthetic macOS-style bundle, not copied from a third-party application.
+def unix_zip(records):
+    stream = io.BytesIO()
+    with zipfile.ZipFile(stream, 'w') as archive:
+        for name, payload, mode in records:
+            info = zipfile.ZipInfo(name, (2026, 10, 8, 0, 0, 0))
+            info.create_system = 3
+            info.external_attr = mode << 16
+            info.compress_type = zipfile.ZIP_DEFLATED
+            archive.writestr(info, payload)
+    return stream.getvalue()
+
+bundle = [
+    ('Demo.app/Contents/MacOS/demo', b'owned executable fixture\n', 0o100755),
+    ('Demo.app/Contents/Resources/info.txt', b'owned resource\n', 0o106644),
+    ('Demo.app/Contents/Frameworks/F.framework/Versions/A/F', b'owned library\n', 0o100755),
+    ('Demo.app/Contents/Frameworks/F.framework/Versions/A/Resources/info', b'resource', 0o100644),
+    ('Demo.app/Contents/Frameworks/F.framework/Versions/Current', b'A', 0o120777),
+    ('Demo.app/Contents/Frameworks/F.framework/F', b'Versions/Current/F', 0o120777),
+    ('Demo.app/Contents/Frameworks/F.framework/Resources', b'Versions/Current/Resources', 0o120777),
+]
+(ROOT / 'unix_bundle.zip').write_bytes(unix_zip(bundle))
+for label, target in [('absolute', b'/tmp/outside'), ('parent', b'../outside'),
+                      ('backslash', b'..\\outside'), ('empty', b''), ('nul', b'file\x00x'),
+                      ('dangling', b'missing'), ('cycle', b'link'), ('device', b'C:target')]:
+    (ROOT / f'link_{label}.zip').write_bytes(unix_zip([
+        ('file', b'keep private until admission', 0o100644), ('link', target, 0o120777)]))
+(ROOT / 'link_parent_write.zip').write_bytes(unix_zip([
+    ('dir/file', b'original', 0o100644), ('link', b'dir', 0o120777), ('link/child', b'bad', 0o100644)]))
+(ROOT / 'link_cycle_pair.zip').write_bytes(unix_zip([
+    ('one', b'two', 0o120777), ('two', b'one', 0o120777)]))
+(ROOT / 'link_large.zip').write_bytes(unix_zip([('link', b'x' * 4097, 0o120777)]))
+corrupt = bytearray(unix_zip([('link', b'file', 0o120777), ('file', b'content', 0o100644)]))
+struct.pack_into('<I', corrupt, 14, struct.unpack_from('<I', corrupt, 14)[0] ^ 1)
+(ROOT / 'link_crc.zip').write_bytes(corrupt)
