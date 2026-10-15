@@ -262,6 +262,9 @@ void BrowserController::openPath(const QString &path) {
         emit changed();
         return;
     }
+    // An explicit open can satisfy a queued creation result before its idle callback.
+    // Do not reopen it later and invalidate a newly prepared extraction intent.
+    m_createdArchivesToOpen.removeAll(path);
     m_committedQuery = {};
     m_directory.clear();
     m_location.clear();

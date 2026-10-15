@@ -617,9 +617,9 @@ class BrowserTest : public QObject {
             QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
             QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
                      QString("succeeded"));
-            QTRY_VERIFY(!controller->busy());
-            controller->openPath(output.path() + QStringLiteral("/归档") + suffix);
-            QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+            QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                         controller->title() == QStringLiteral("归档") + suffix,
+                                     10000);
             QCOMPARE(controller->formatLabel(),
                      formatIndex == 1 ? QString("TAR") : QString("TAR.GZ"));
             QCOMPARE(controller->archiveTotal(), 3);
@@ -798,6 +798,35 @@ class BrowserTest : public QObject {
         QCOMPARE(QDir(output.path()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).size(), 1);
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
+    }
+    void explicitOpenConsumesQueuedCreationOutput() {
+        QTemporaryDir input, output;
+        QVERIFY(input.isValid() && output.isValid());
+        const auto source = input.path() + "/data.txt";
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("owned payload"), qint64(13));
+        file.close();
+        BrowserController controller;
+        const auto archive = output.path() + "/created.zip";
+        bool openedExplicitly = false;
+        connect(&controller, &BrowserController::tasksChanged, &controller, [&] {
+            if (openedExplicitly || controller.busy() || controller.tasks().isEmpty())
+                return;
+            if (controller.tasks().first().toMap().value("status").toString() == "succeeded") {
+                openedExplicitly = true;
+                controller.openPath(archive);
+            }
+        });
+        QSignalSpy opened(&controller, &BrowserController::archiveOpened);
+        controller.startCreation({source}, output.path(), "created.zip", 8, 6, false);
+        QTRY_VERIFY_WITH_TIMEOUT(openedExplicitly && controller.ready() && !controller.busy(),
+                                 10000);
+        QTest::qWait(100);
+        QCOMPARE(opened.count(), 1);
+        QCOMPARE(controller.archiveTotal(), 1);
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
     }
     void extractionSubmissionKeepsBrowserPresentationStable() {
         QTemporaryDir target;
