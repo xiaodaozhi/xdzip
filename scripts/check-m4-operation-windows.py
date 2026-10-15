@@ -34,7 +34,8 @@ for name, width, height, title in [('create-selected', 491, 736, '创建压缩�
         check(name+'/content-driven bounded height', 0 < capture['height'] <= expected_height, True)
     check(name+'/DPR width', capture['imageWidth']/capture['dpr'], capture['width'])
     check(name+'/DPR height', capture['imageHeight']/capture['dpr'], capture['height'])
-    heading = next(n for n in nodes if n.get('text') == title and n['class'].startswith('QQuickText'))
+    heading = next(n for n in nodes if n.get('text') == title and n['class'].startswith('QQuickText')
+                   and (name != 'create-selected' or not n['path'].startswith(named['startCreate']['path'] + '/')))
     check(name+'/title', heading['fontPixelSize'], reference['title_size'])
     if name == 'create-selected':
         for key in ['createName','createTarget','createVolume','createLevel']:
@@ -49,7 +50,9 @@ for name, width, height, title in [('create-selected', 491, 736, '创建压缩�
         action = named['startCreate']
         check('footer/action height', action['height'], 32)
         check('footer/action inside window', action['y']+action['height'] <= capture['height'], True)
-        label = next(n for n in nodes if n.get('text') == '创建压缩包' and n['class'].startswith('QQuickText'))
+        # The heading and footer intentionally share copy; select the action's own label.
+        label = next(n for n in nodes if n.get('text') == '创建压缩包'
+                     and n['class'].startswith('QQuickText') and n['path'].startswith(action['path'] + '/'))
         check('footer/action font', label['fontPixelSize'], 13)
     else:
         check('task/result panel present', 'taskResultPanel' in named, True)
