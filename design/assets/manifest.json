@@ -4469,7 +4469,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/settings-tile.png"
+        ]
       },
       "sha256": "9e0a0520e38f11c89480688eb64a0306f9616f1a286e4f2932376f5a07528168",
       "source_reference": "reference/settings-gear.png",
@@ -4872,7 +4874,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/theme-dark.png"
+        ]
       },
       "sha256": "feec09f5e9e7156a2a40a70a6584baf76d0534c5e8347d0f8d899071035bbf3d",
       "source_reference": "reference/theme-dark.png",
@@ -4902,7 +4906,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/theme-light.png"
+        ]
       },
       "sha256": "8b93fb64bc51c9bdbb7cb5faa56e2a57043303ad1f1f4bac12fb3540b6d51da0",
       "source_reference": "reference/theme-light.png",
@@ -4932,7 +4938,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/theme-system.png"
+        ]
       },
       "sha256": "9a1dfc6259ea57c5c2a32ce7b15bc47f083aec1a805b78c26e7edd3ccc9b2634",
       "source_reference": "reference/theme-system.png",
@@ -6836,7 +6844,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/settings-tile.png"
+        ]
       },
       "sha256": "746a4826cb07f6ab636fcabf330af6a797006390b4b77fc8b8ffff7db3992d29",
       "source_reference": "reference/settings-gear.png",
@@ -7238,7 +7248,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/theme-dark.png"
+        ]
       },
       "sha256": "6b1dab0f70e39930a027e203ecf07381d053f0915708f1ec612b18790343cbae",
       "source_reference": "reference/theme-dark.png",
@@ -7268,7 +7280,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/theme-light.png"
+        ]
       },
       "sha256": "ade5d746ca31f24dd99b604f783c39202f4a93ff74f9a84acc238e227a86d5fb",
       "source_reference": "reference/theme-light.png",
@@ -7298,7 +7312,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/theme-system.png"
+        ]
       },
       "sha256": "dba7a1cb2f31a89e1c440e8050b4bef9f4f6c7d3a7c425fc938109d01400761a",
       "source_reference": "reference/theme-system.png",
