@@ -361,9 +361,19 @@ window.XdzipControls = (() => {
             node.matches('button, input, select, textarea, a[href], [tabindex], [contenteditable="true"]') ? node : null;
     };
     document.addEventListener("keydown", event => {
+        if (event.key !== "Escape" || event.isComposing || event.repeat ||
+            event.altKey || event.ctrlKey || event.metaKey) return;
         const node = focusedControl();
-        if (event.key === "Escape" && !event.isComposing && !event.repeat && !event.altKey && !event.ctrlKey && !event.metaKey &&
-            node && !node.closest(".ui-menu") && !active) {
+        // An all-disabled menu has no focusable item; Escape still closes it.
+        if (active) {
+            if (!node?.closest(".ui-menu")) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                close();
+            }
+            return;
+        }
+        if (node && !node.closest(".ui-menu")) {
             event.preventDefault();
             event.stopImmediatePropagation();
             node.blur();

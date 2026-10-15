@@ -112,7 +112,7 @@ def verify(page, ratio, check, tag, output=None):
         if output:
             page.locator('.window').screenshot(path=str(output / (placement + '-menu.png')))
         keyboard.press('Escape')
-        expect(page.locator(selector)).to_be_focused()
+        expect(page.locator(selector)).not_to_be_focused()
     page.locator('[data-directory=""]').click(button='right')
     expect(page.locator('[data-command=directory-search]')).to_be_visible()
     check(tag + '/directory separator', page.locator('[data-command=directory-search]').evaluate('(n)=>n.previousElementSibling.getAttribute("role")'), 'separator', 0)

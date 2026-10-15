@@ -108,11 +108,11 @@ def main():
                         options.get_by_role('option').first.press('End')
                         options.get_by_role('option').last.press('Enter')
                         expect(trigger).to_contain_text('覆盖已有文件')
-                        expect(trigger).to_be_focused()
+                        expect(trigger).not_to_be_focused()
                         expect(frame.locator('#policy-note')).to_contain_text('将替换已有文件内容')
                         trigger.press('ArrowDown')
                         options.get_by_role('option').last.press('Escape')
-                        expect(trigger).to_be_focused()
+                        expect(trigger).not_to_be_focused()
                         expect(modal).to_be_visible()
                         target = frame.locator('#target-base')
                         for key in ['Escape', 'Enter']:

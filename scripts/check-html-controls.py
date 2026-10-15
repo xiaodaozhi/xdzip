@@ -44,6 +44,13 @@ def main():
         expect(page.locator('#search')).not_to_be_focused()
         checks.append('Controls have no focus outline and lose focus on outside click or Enter')
 
+        page.locator('#tasks').click()
+        expect(page.locator('[data-command=no-tasks]')).to_be_visible()
+        page.keyboard.press('Escape')
+        expect(page.locator('.ui-menu')).to_have_count(0)
+        expect(page.locator('#tasks')).not_to_be_focused()
+        checks.append('Escape closes an all-disabled task menu and dismisses its trigger focus')
+
         page.locator('#more-actions').click()
         expect(page.locator('.ui-menu')).to_have_count(1)
         expect(page.locator('#more-actions')).to_have_attribute('aria-expanded', 'true')
