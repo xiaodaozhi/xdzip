@@ -3026,7 +3026,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/archive-grey.png"
+        ]
       },
       "sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "brand_source": "brand/xdzip-zip.svg",
@@ -5400,7 +5402,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/archive-grey.png"
+        ]
       },
       "sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "brand_source": "brand/xdzip-zip.svg",
