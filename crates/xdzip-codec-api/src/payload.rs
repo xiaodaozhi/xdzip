@@ -48,7 +48,7 @@ pub trait PayloadReader {
 }
 /// Built-in extension point independent of Qt and output filesystem policy.
 pub trait PayloadCodec {
-    /// Check the source's central metadata against the immutable host snapshot.
+    /// Check the source's container metadata against the immutable host snapshot.
     /// The decoder borrows input, retains bounded locators, and opens no paths.
     fn open_payload<'a>(
         &self,

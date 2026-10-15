@@ -153,10 +153,17 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(start->isEnabled());
         auto *tar = findVisual(create->contentItem(), "createFormat-1");
         auto *zip = findVisual(create->contentItem(), "createFormat-0");
-        QVERIFY(zip && tar && zip->isEnabled() && !tar->isEnabled());
+        QVERIFY(zip && tar && zip->isEnabled() && tar->isEnabled());
         zip->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Right);
-        QCOMPARE(group->property("currentIndex").toInt(), 0);
+        QCOMPARE(group->property("currentIndex").toInt(), 1);
+        QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".tar")));
+        QVERIFY(!method->isEnabled() && !volume->isEnabled() && !usePassword->isEnabled());
+        group->setProperty("currentIndex", 2);
+        QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".tar.gz")));
+        QVERIFY(method->isEnabled() && !volume->isEnabled());
+        group->setProperty("currentIndex", 0);
+        QTRY_VERIFY(method->isEnabled() && volume->isEnabled());
         name->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Tab);
         const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
@@ -175,6 +182,9 @@ class BrowserTest : public QObject {
         window->setProperty("darkMode", false);
         remove->forceActiveFocus(Qt::TabFocusReason);
         QTest::qWait(20); // reveal controls in the body on a short high-DPR screen
+        create->raise();
+        create->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(create));
         create->contentItem()->forceActiveFocus();
         QTest::mouseMove(
             create,
@@ -212,6 +222,96 @@ class BrowserTest : public QObject {
         create->close();
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
+    }
+    void tarCreationBrowseAndSafeExtraction() {
+        for (int formatIndex : {1, 2}) {
+            QTemporaryDir input, output, extracted;
+            QVERIFY(input.isValid() && output.isValid() && extracted.isValid());
+            const auto source = input.path() + QStringLiteral("/资料");
+            QVERIFY(QDir().mkpath(source + QStringLiteral("/空目录")));
+            const auto data = QStringLiteral("TAR 与 GZIP 真实读写\n").repeated(200).toUtf8();
+            QFile file(source + QStringLiteral("/内容.txt"));
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QCOMPARE(file.write(data), data.size());
+            file.close();
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *controller = window->findChild<BrowserController *>();
+            auto *create = window->findChild<QQuickWindow *>("createWindow");
+            QVERIFY(controller && create);
+            QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+            QTRY_VERIFY(create->isVisible() && !controller->busy());
+            QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                              Q_ARG(QVariant, QVariant(QStringList{source})),
+                                              Q_ARG(bool, true)));
+            auto *group = findVisual(create->contentItem(), "createFormat");
+            auto *name = findVisual(create->contentItem(), "createName");
+            auto *target = findVisual(create->contentItem(), "createTarget");
+            auto *after = findVisual(create->contentItem(), "createOpenAfter");
+            QVERIFY(group && name && target && after);
+            group->setProperty("currentIndex", formatIndex);
+            const QString suffix =
+                formatIndex == 1 ? QStringLiteral(".tar") : QStringLiteral(".tar.gz");
+            QTRY_VERIFY(name->property("text").toString().endsWith(suffix));
+            name->setProperty("text", QStringLiteral("归档") + suffix);
+            target->setProperty("text", output.path());
+            after->setProperty("checked", false);
+            QTRY_VERIFY(!controller->busy());
+            controller->checkCreationTarget(output.path());
+            QTRY_VERIFY(!controller->busy());
+            QVERIFY(checkedTarget(controller, output.path()));
+            auto *start = findVisual(create->contentItem(), "startCreate");
+            QVERIFY(start);
+            QTRY_VERIFY(start->isEnabled());
+            QSignalSpy started(controller, &BrowserController::creationStarted);
+            QTest::mouseClick(
+                create, Qt::LeftButton, Qt::NoModifier,
+                start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+            QTRY_COMPARE(started.count(), 1);
+            QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+            QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                     QString("succeeded"));
+            QTRY_VERIFY(!controller->busy());
+            controller->openPath(output.path() + QStringLiteral("/归档") + suffix);
+            QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+            QCOMPARE(controller->formatLabel(),
+                     formatIndex == 1 ? QString("TAR") : QString("TAR.GZ"));
+            QCOMPARE(controller->archiveTotal(), 3);
+            controller->prepareExtraction(true);
+            auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+            QVERIFY(extract);
+            QTRY_VERIFY(extract->isVisible());
+            auto *extractTarget = findVisual(extract->contentItem(), "extractTarget");
+            QVERIFY(extractTarget);
+            extractTarget->setProperty("text", extracted.path());
+            QTRY_VERIFY(!controller->busy());
+            controller->checkTarget(extracted.path());
+            QTRY_VERIFY(!controller->busy());
+            QVERIFY(checkedTarget(controller, extracted.path()));
+            auto *folder = findVisual(extract->contentItem(), "extractSameFolder");
+            if (folder)
+                folder->setProperty("checked", false);
+            auto *extractStart = findVisual(extract->contentItem(), "startExtract");
+            QVERIFY(extractStart);
+            QTRY_VERIFY(extractStart->isEnabled());
+            QTest::mouseClick(
+                extract, Qt::LeftButton, Qt::NoModifier,
+                extractStart
+                    ->mapToScene(QPointF(extractStart->width() / 2, extractStart->height() / 2))
+                    .toPoint());
+            QTRY_COMPARE_WITH_TIMEOUT(controller->tasks().size(), 2, 10000);
+            QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
+            for (const auto &task : controller->tasks())
+                QCOMPARE(task.toMap().value("status").toString(), QString("succeeded"));
+            QFile actual(extracted.path() + QStringLiteral("/资料/内容.txt"));
+            QVERIFY(actual.open(QIODevice::ReadOnly));
+            QCOMPARE(actual.readAll(), data);
+            QVERIFY(QFileInfo(extracted.path() + QStringLiteral("/资料/空目录")).isDir());
+            controller->requestClose();
+            QTRY_VERIFY(controller->requestClose());
+        }
     }
     void m4CreationWindowAndRoundTrip() {
         QTemporaryDir input, output;

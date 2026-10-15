@@ -56,12 +56,35 @@ impl Default for ScanLimits {
     }
 }
 
+/// Container capability selected from source bytes, never a filename hint.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum Format {
+    /// ZIP container.
+    Zip,
+    /// Uncompressed TAR container.
+    Tar,
+    /// One GZIP filter around TAR.
+    TarGzip,
+}
+impl Format {
+    /// Stable user-visible capability label.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Zip => "ZIP",
+            Self::Tar => "TAR",
+            Self::TarGzip => "TAR.GZ",
+        }
+    }
+}
+
 /// Owned metadata of a physical record. Declared sizes are not verified payload sizes.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Entry {
+    /// Actual container capability; packed sizes are unknown for TAR.GZ records.
+    pub format: Format,
     /// Stable within this immutable scan, independent of the name and view row.
     pub id: EntryId,
-    /// Original filename bytes retained for future encoding and output policy.
+    /// Container-resolved filename bytes before output validation. TAR strips leading ./ only.
     pub raw_name: Vec<u8>,
     /// Safe text only; never a filesystem output path.
     pub display_name: String,
@@ -73,7 +96,7 @@ pub struct Entry {
     pub packed_size: u64,
     /// ZIP method number; listing a method does not imply decoding support.
     pub method: u16,
-    /// ZIP local DOS date/time bits; zero denotes unavailable or invalid metadata.
+    /// DOS-shaped date/time bits. ZIP uses local time, TAR uses UTC; zero is unavailable.
     pub modified_dos: u32,
     /// Metadata encryption flag. No password is requested in this read-only slice.
     pub encrypted: bool,

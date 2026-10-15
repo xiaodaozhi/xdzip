@@ -84,6 +84,7 @@ $m4Probe = if ($IsWindows) { 'target/release/xdzip-m4-probe.exe' } else { 'targe
 if ($IsLinux) {
     Invoke-Checked python @('scripts/check-advanced-creation.py', '--binary', $m4Probe, '--output', 'build/review/advanced-creation.json')
 }
+Invoke-Checked python @('scripts/check-tar-interop.py', '--create-binary', $m4Probe, '--extract-binary', $m3Probe, '--output', 'build/review/tar-interop.json')
 Invoke-Checked python @('scripts/measure-m4-core.py', '--binary', $m4Probe, '--output', 'build/review/m4-core-performance.json')
 Invoke-Checked python @('scripts/measure-m2-qt.py', '--binary', $browserTests, '--output', 'build/review/m2-qt-performance.json')
 Invoke-Checked python @('scripts/generate-m2-fixture.py', '--output', 'build/desktop/m2-shuffled.zip', '--shuffle')

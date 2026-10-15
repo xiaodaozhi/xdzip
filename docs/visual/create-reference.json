@@ -12,7 +12,7 @@
   "footer_action_height": 32,
   "reference_notes": [
     "C01 source shapes and three cards retained; normal density policy is the explicit 0.8 correction",
-    "Unsupported TAR/GZIP disabled; pending directory bytes are not fabricated",
+    "WP-11 enables TAR/TAR.GZ; TAR disables levels, both disable password/volumes; pending directory bytes are not fabricated",
     "Selected-input count and empty-state layout are functional additions",
     "Native OS titlebar is outside client bounds; body may scroll on short screens"
   ],

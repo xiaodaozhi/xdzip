@@ -9,6 +9,7 @@ publish.workspace = true
 xdzip-extract-plan = { path = "../xdzip-extract-plan" }
 xdzip-domain = { path = "../xdzip-domain" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-tar = { path = "../xdzip-codec-tar" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"

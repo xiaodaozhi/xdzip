@@ -253,6 +253,7 @@ impl Archive {
         let planned = plan::prepare(self, &options, cancel)?;
         Ok(Job {
             source,
+            format: self.format,
             rows: Arc::clone(&self.rows),
             planned,
             options,

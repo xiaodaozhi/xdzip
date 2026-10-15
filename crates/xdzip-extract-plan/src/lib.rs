@@ -83,7 +83,9 @@ pub fn inspect(
             if row.size > 8 * 1024 * 1024 * 1024 {
                 report.add(row.id, "file_limit");
             }
-            if row.size > row.packed_size.saturating_mul(1000) {
+            if row.format == xdzip_codec_api::Format::Zip
+                && row.size > row.packed_size.saturating_mul(1000)
+            {
                 report.add(row.id, "high_ratio");
             }
         }
@@ -154,6 +156,7 @@ mod tests {
     use super::*;
     fn entry(id: u64, name: &str) -> Entry {
         Entry {
+            format: xdzip_codec_api::Format::Zip,
             id: EntryId::try_from(id).unwrap(),
             raw_name: name.as_bytes().to_vec(),
             display_name: name.into(),

@@ -35,3 +35,13 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 AES、cipher、hmac、pbkdf2、sha1、zeroize 等 RustCrypto 依赖、随机源和常量时间比较锁定在 Cargo.lock；这些包采用 MIT 或 Apache-2.0 双许可。SHA-1/PBKDF2 参数来自 WinZip AES 格式，并非另选的用户密码存储方案。禁用原生压缩库与网络下载构建行为，构建脚本只做平台配置；不增加应用进程、运行下载或 subprocess 后端。直接依赖 zeroize 1.8.2 为宿主密码容器归零，Debug 固定脱敏。
 
 rawzip 暂无对应 AES 编码能力；自行实现 AES/PBKDF2 或把真实密码传到外部 CLI 都会扩大安全边界，因此选用受维护的库。准入包含精确特性树、锁文件、许可证、来源、故障测试和独立 7-Zip 互操作。2026-10-14 对 zip、aes、cipher、hmac、pbkdf2、sha1、zeroize、constant_time_eq 和 getrandom 的锁定版本执行 OSV 精确版本查询，未返回公告；原始响应仅保留为本地工件。这不是无漏洞保证，未实施独立密码学安全审计；新增版本须重新检查可达特性和平台构建。
+
+## WP-11 TAR/GZIP
+
+精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性。仅使用 Header、PaxExtensions 和对宿主 Write 的 Builder::append_data，不调用 Archive::unpack、Entry::unpack、文件路径读取或所有者／权限恢复。读取采用显式有界头与扩展头处理，避免不受宿主约束的扩展分配；编码沿用库的 GNU 长名称支持。
+
+GZIP 复用已锁定的 flate2 1.1.10、Rust backend、miniz_oxide，无新增原生压缩库。MultiGzDecoder 只作为一层过滤器组合到 TAR，压缩输入和解码输出均受取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。独立非 TAR 的 GZIP 仍明确拒绝。
+
+新增传递依赖 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 的系统时间恢复接口不由产品调用。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
+
+2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证或独立安全审查。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。

@@ -141,6 +141,7 @@ fn scan(
             .and_then(|n| EntryId::try_from(n).ok())
             .ok_or(ScanError::Limit)?;
         rows.push(Entry {
+            format: xdzip_codec_api::Format::Zip,
             id,
             raw_name: name.to_vec(),
             display_name: display,

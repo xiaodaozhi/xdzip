@@ -150,6 +150,7 @@ mod ffi {
         offset: u64,
         total: u64,
         archive_total: u64,
+        format: String,
         query: u64,
         generation: u64,
         revision: u64,
@@ -395,6 +396,7 @@ impl EventReceiver {
             offset: 0,
             total: 0,
             archive_total: 0,
+            format: String::new(),
             query: 0,
             generation: 0,
             revision: 0,
@@ -424,6 +426,7 @@ impl EventReceiver {
                 offset,
                 total,
                 archive_total,
+                format,
                 key,
                 rows,
                 navigation,
@@ -434,6 +437,7 @@ impl EventReceiver {
                 event.offset = offset;
                 event.total = total;
                 event.archive_total = archive_total;
+                event.format = format.label().into();
                 event.query = key.query.get();
                 event.generation = key.generation.get();
                 event.revision = key.revision.get();

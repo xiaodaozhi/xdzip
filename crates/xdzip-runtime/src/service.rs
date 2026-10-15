@@ -168,6 +168,8 @@ pub enum Payload {
         total: u64,
         /// Complete physical record count, independent of the current directory.
         archive_total: u64,
+        /// Container determined from source bytes.
+        format: xdzip_codec_api::Format,
         /// At most 128 owned display rows.
         rows: Vec<Row>,
         /// Complete bounded navigation, sent only when opening a new session.
@@ -734,6 +736,7 @@ fn execute(
         .filter(|a| a.key().session.get() == session)
         .ok_or("stale_session")?;
     let archive_total = archive.len() as u64;
+    let format = archive.format();
     let navigation = replace_navigation.then(|| archive.directories().unwrap_or(&[]).to_vec());
     let navigation_limited = archive.directories().is_none();
     let generation = if generation == 0 {
@@ -777,6 +780,7 @@ fn execute(
         offset,
         total: page.total as u64,
         archive_total,
+        format,
         navigation,
         navigation_limited,
         rows: page
@@ -961,6 +965,7 @@ mod tests {
                 offset: 0,
                 total: 1,
                 archive_total: 1,
+                format: xdzip_codec_api::Format::Zip,
                 rows: vec![Row {
                     id: 1,
                     navigation_id: 0,

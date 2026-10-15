@@ -16,8 +16,10 @@ OperationWindow {
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTr("新建压缩文件 — xdzip")
     readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
-    readonly property bool validName: /^.+\.zip$/i.test(fileName.text.trim()) && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
+    readonly property string formatExtension: [".zip", ".tar", ".tar.gz"][formatGroup.currentIndex]
+    readonly property bool validName: fileName.text.trim().toLowerCase().endsWith(formatExtension) && fileName.text.trim().length > formatExtension.length && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
     readonly property real volumeBytes: {
+        if (formatGroup.currentIndex !== 0) return 0;
         if (volume.currentIndex !== 13)
             return [0, 3000000, 4000000, 5000000, 10000000, 20000000, 25000000, 100000000, 300000000, 650000000, 700000000, 4000000000, 4700000000][volume.currentIndex];
         if (!/^[0-9]+$/.test(volume.editText)) return -1;
@@ -27,7 +29,7 @@ OperationWindow {
     function passwordBytes(text: string): int {
         try { return unescape(encodeURIComponent(text)).length; } catch (_) { return -1; }
     }
-    readonly property bool passwordValid: !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
+    readonly property bool passwordValid: formatGroup.currentIndex !== 0 || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
     readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
     onClosing: password.text = ""
     function baseName(path: string): string {
@@ -71,6 +73,7 @@ OperationWindow {
         }
         controller.clearCreationError();
         inputs = [];
+        formatGroup.currentIndex = 0;
         fileName.text = qsTr("新建压缩文件.zip");
         target.text = controller.defaultTargetDirectory();
         level.currentIndex = 2;
@@ -418,6 +421,14 @@ OperationWindow {
                                             objectName: "createFormat"
                                             Layout.fillWidth: true
                                             accessibleLabel: qsTr("压缩格式")
+                                            onCurrentIndexChanged: {
+                                                if (!fileName) return;
+                                                const stem = fileName.text.replace(/\.(tar\.gz|zip|tar)$/i, "");
+                                                fileName.text = stem + [".zip", ".tar", ".tar.gz"][currentIndex];
+                                                volume.currentIndex = 0;
+                                                usePassword.checked = false;
+                                                password.text = "";
+                                            }
                                             options: [
                                                 {
                                                     text: "ZIP",
@@ -425,13 +436,11 @@ OperationWindow {
                                                 },
                                                 {
                                                     text: "TAR",
-                                                    enabled: false,
-                                                    reason: qsTr("此格式将在后续版本提供")
+                                                    enabled: true
                                                 },
                                                 {
                                                     text: "TAR.GZ",
-                                                    enabled: false,
-                                                    reason: qsTr("此格式将在后续版本提供")
+                                                    enabled: true
                                                 }
                                             ]
                                         }
@@ -442,6 +451,7 @@ OperationWindow {
                                         }
                                         OperationSelect {
                                             id: level
+                                            enabled: formatGroup.currentIndex !== 1
                                             objectName: "createLevel"
                                             Layout.fillWidth: true
                                             density: root.density
@@ -459,6 +469,7 @@ OperationWindow {
                                             spacing: 8
                                             OperationSelect {
                                                 id: volume
+                                                enabled: formatGroup.currentIndex === 0
                                                 objectName: "createVolume"
                                                 Layout.fillWidth: true
                                                 density: root.density
@@ -482,7 +493,7 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTr("请输入正整数，每卷上限为 24 GiB，最多 1024 卷。") : volume.currentIndex > 0 ? qsTr("输出 .zip.001 等分卷，现有分卷只能整组改名。") : qsTr("级别 0 不压缩，其余级别使用 Deflate。")
+                                        text: formatGroup.currentIndex === 1 ? qsTr("TAR 仅打包，不压缩，不支持分卷和密码。") : formatGroup.currentIndex === 2 ? qsTr("TAR.GZ 使用 GZIP 压缩，不支持分卷和密码。") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTr("请输入正整数，每卷上限为 24 GiB，最多 1024 卷。") : volume.currentIndex > 0 ? qsTr("输出 .zip.001 等分卷，现有分卷只能整组改名。") : qsTr("级别 0 不压缩，其余级别使用 Deflate。")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -490,6 +501,7 @@ OperationWindow {
                             }
                             OperationCheck {
                                 id: usePassword
+                                enabled: formatGroup.currentIndex === 0
                                 objectName: "createUsePassword"
                                 text: qsTr("输入密码")
                                 density: root.density
@@ -508,7 +520,7 @@ OperationWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: root.passwordValid ? qsTr("AES-256 加密文件内容，文件名仍可见。") : qsTr("请输入有效密码；密码不得为空或包含控制字符。")
+                                text: formatGroup.currentIndex !== 0 ? qsTr("此格式不支持密码加密。") : root.passwordValid ? qsTr("AES-256 加密文件内容，文件名仍可见。") : qsTr("请输入有效密码；密码不得为空或包含控制字符。")
                                 wrapMode: Text.Wrap
                                 font.pixelSize: Theme.operationCreateNoteSize
                                 color: root.passwordValid ? Theme.textSecondary : Theme.menuDanger
@@ -552,7 +564,7 @@ OperationWindow {
                 primary: true
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), level.currentIndex === 0 ? 0 : 8, [6, 1, 6, 9][level.currentIndex], openAfter.checked, root.volumeBytes, usePassword.checked ? password.text : "");
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), formatGroup.currentIndex === 1 || (formatGroup.currentIndex === 0 && level.currentIndex === 0) ? 0 : 8, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], openAfter.checked, root.volumeBytes, formatGroup.currentIndex === 0 && usePassword.checked ? password.text : "");
                     password.text = "";
                 }
             }

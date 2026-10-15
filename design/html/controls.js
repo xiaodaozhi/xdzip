@@ -515,7 +515,7 @@ window.XdzipControls = (() => {
     }
     function segmentedMarkup({id,label,options,selected}) {
         const escape = value => String(value).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
-        return `<div id="${escape(id)}" class="operation-segmented" role="radiogroup" aria-label="${escape(label)}">${options.map(option=>`<button type="button" id="${escape(option.id)}" class="operation-segment" role="radio" aria-checked="${option.value===selected}" tabindex="${option.value===selected?0:-1}" ${option.disabled?'disabled':''}>${escape(option.text)}</button>`).join("")}</div>`;
+        return `<div id="${escape(id)}" class="operation-segmented" role="radiogroup" aria-label="${escape(label)}">${options.map(option=>`<button type="button" id="${escape(option.id)}" class="operation-segment" data-value="${escape(option.value)}" role="radio" aria-checked="${option.value===selected}" tabindex="${option.value===selected?0:-1}" ${option.disabled?'disabled':''}>${escape(option.text)}</button>`).join("")}</div>`;
     }
     function enhanceSegmentedGroups(owner) {
         owner.querySelectorAll('.operation-segmented').forEach(group=>{

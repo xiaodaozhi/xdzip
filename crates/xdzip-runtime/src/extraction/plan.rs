@@ -12,6 +12,7 @@ pub(crate) struct Planned {
 }
 pub(crate) struct Job {
     pub source: Source,
+    pub format: xdzip_codec_api::Format,
     pub rows: Arc<Vec<Entry>>,
     pub planned: Vec<Planned>,
     pub options: Options,
@@ -110,7 +111,8 @@ pub(crate) fn prepare(
                 .checked_add(entry.size)
                 .filter(|n| *n <= MAX_TASK_BYTES)
                 .ok_or("task_quota")?;
-            if !options.allow_high_ratio
+            if entry.format == xdzip_codec_api::Format::Zip
+                && !options.allow_high_ratio
                 && entry.size > entry.packed_size.saturating_mul(1000)
                 && entry.size > 1024 * 1024
             {

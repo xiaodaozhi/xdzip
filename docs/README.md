@@ -1,6 +1,6 @@
 # 文档导航
 
-维护日期：2026-10-14。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
+维护日期：2026-10-15。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
 
 ## 阅读顺序
 
@@ -9,6 +9,7 @@
 | 领域 | 入口 |
 | --- | --- |
 | 软件设计（16 篇） | [设计总览](design/index.md)、[HTML 阅读版](html/index.html)、[单文件 HTML](html/all.html) |
+| WP-11 TAR/GZIP | [流式格式与安全提交契约](engineering/m4-tar-gzip.md) |
 | M2 完整只读浏览 | [资源和查询契约](engineering/m2-readonly.md) |
 | 界面设计准入 | [严格设计规范](visual/design-standard.md)、[设计流程](visual/design-workflow.md)、[逻辑尺寸与密度](visual/layout-scale.json) |
 | 视觉基线 | [高保真统一入口](../design/hifi/README.md)、[完整图片画廊](../design/hifi/index.html)、[视觉说明](visual/README.md)、[颜色尺寸参数](visual/tokens.json) |

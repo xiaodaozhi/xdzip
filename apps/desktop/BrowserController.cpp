@@ -216,7 +216,7 @@ QString BrowserController::explain(const QString &code) {
         return tr("无法读取所选文件，请检查文件类型和权限。");
     if (code == "invalid_path")
         return tr("当前版本无法无损表示这个源文件路径。");
-    return tr("无法读取 ZIP 目录，文件可能损坏或格式尚不支持。");
+    return tr("无法读取归档目录，文件可能损坏、超过资源上限或格式尚不支持。");
 }
 
 void BrowserController::chooseArchive() {
@@ -224,8 +224,8 @@ void BrowserController::chooseArchive() {
         return;
     // No QWidget parent: the native chooser is independent, not an attached macOS sheet.
     // Native per-platform modality and ownership still require desktop acceptance testing.
-    const auto path = QFileDialog::getOpenFileName(nullptr, tr("打开归档"), {},
-                                                   tr("ZIP 归档 (*.zip);;所有文件 (*)"));
+    const auto path = QFileDialog::getOpenFileName(
+        nullptr, tr("打开归档"), {}, tr("压缩文件 (*.zip *.tar *.tar.gz *.tgz);;所有文件 (*)"));
     if (!path.isEmpty())
         openPath(path);
 }
@@ -616,7 +616,9 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     const auto validText = [](const QString &value) {
         return !value.contains(QChar::Null) && QString::fromUtf8(value.toUtf8()) == value;
     };
-    if ((method != 0 && method != 8) || (level != 1 && level != 6 && level != 9) ||
+    if ((method != 0 && method != 8) ||
+        (level != 1 && level != 6 && level != 9 &&
+         !(name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive) && level == 0)) ||
         !validText(target) || !validText(name) ||
         std::any_of(inputs.cbegin(), inputs.cend(),
                     [&](const QString &path) { return !validText(path); })) {
@@ -1033,12 +1035,14 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         }
         m_result.total = static_cast<int>(event.total);
         m_result.archiveTotal = static_cast<int>(event.archive_total);
+        m_format = text(event.format);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {
-            const auto method = row.method == 0   ? QStringLiteral("Store")
-                                : row.method == 8 ? QStringLiteral("Deflate")
-                                                  : QString::number(row.method);
+            const auto method = m_format == QStringLiteral("TAR") ? tr("无压缩")
+                                : row.method == 0                 ? QStringLiteral("Store")
+                                : row.method == 8                 ? QStringLiteral("Deflate")
+                                                                  : QString::number(row.method);
             QStringList status;
             if (row.directory)
                 status << tr("目录");
@@ -1064,18 +1068,20 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
             const auto modified = date.isValid() && time.isValid() ? date.toString("yyyy/MM/dd")
                                                                    : QStringLiteral("—");
-            m_result.rows.append(
-                {text(row.id),
-                 {name, row.physical ? QString::number(row.size) : QString{},
-                  row.physical ? QString::number(row.packed_size) : QString{}, type, modified},
-                 row.directory,
-                 row.directory && !row.warning,
-                 row.physical ? method : QStringLiteral("—"),
-                 status.isEmpty() ? tr("元数据") : status.join("，"),
-                 row.warning || row.encrypted,
-                 path,
-                 text(row.navigation_id),
-                 row.physical});
+            m_result.rows.append({text(row.id),
+                                  {name, row.physical ? QString::number(row.size) : QString{},
+                                   row.physical && m_format != QStringLiteral("TAR.GZ")
+                                       ? QString::number(row.packed_size)
+                                       : QString{},
+                                   type, modified},
+                                  row.directory,
+                                  row.directory && !row.warning,
+                                  row.physical ? method : QStringLiteral("—"),
+                                  status.isEmpty() ? tr("元数据") : status.join("，"),
+                                  row.warning || row.encrypted,
+                                  path,
+                                  text(row.navigation_id),
+                                  row.physical});
         }
         m_hasPayload = true;
     } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {

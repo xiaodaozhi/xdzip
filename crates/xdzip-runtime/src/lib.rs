@@ -1,6 +1,7 @@
 //! First read-only session service. Called only on a bounded background worker.
 pub mod creation;
 pub mod extraction;
+mod formats;
 mod index;
 pub mod listing;
 pub mod navigation;
@@ -11,8 +12,8 @@ use std::fs::File;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
-use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ScanError, ScanLimits};
-use xdzip_codec_zip::ZipCodec;
+use xdzip_codec_api::{Cancellation, Entry, ScanError};
+
 use xdzip_domain::identity::{QueryGeneration, QueryId, SessionId, SnapshotRevision};
 use xdzip_domain::query::{PageRequest, QueryKey};
 
@@ -21,6 +22,7 @@ static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 /// Immutable metadata snapshot backed by an owned read-only source handle.
 pub struct Archive {
     source: source::Source,
+    format: xdzip_codec_api::Format,
     index: index::DirectoryIndex,
     cached_query: Option<query::QuerySnapshot>,
     next_query: u64,
@@ -42,7 +44,27 @@ impl Archive {
             return Err(ScanError::Io);
         }
         let version = source::SourceVersion::read(&source)?;
-        let scanned = ZipCodec.scan(&mut source, control, ScanLimits::default());
+        let mut format = formats::detect(&mut source)?;
+        let scanned = formats::codec(format).scan(&mut source, control, formats::limits(format));
+        // Preserve validated self-extracting ZIP sources without using the suffix.
+        // Budget/cancel/unsupported failures are authoritative and never retried.
+        let scanned = if format == xdzip_codec_api::Format::Tar
+            && matches!(&scanned, Err(ScanError::Invalid))
+        {
+            match formats::codec(xdzip_codec_api::Format::Zip).scan(
+                &mut source,
+                control,
+                formats::limits(xdzip_codec_api::Format::Zip),
+            ) {
+                Ok(rows) => {
+                    format = xdzip_codec_api::Format::Zip;
+                    Ok(rows)
+                }
+                Err(_) => scanned,
+            }
+        } else {
+            scanned
+        };
         control.check()?;
         let source = source::Source::new(source, path.to_owned(), version);
         source.validate()?;
@@ -66,12 +88,17 @@ impl Archive {
         Ok(Self {
             directories,
             source,
+            format,
             index,
             cached_query: None,
             next_query: 0,
             rows: Arc::new(rows),
             key,
         })
+    }
+    /// Actual capability determined by validated source contents.
+    pub fn format(&self) -> xdzip_codec_api::Format {
+        self.format
     }
     /// Complete navigation nodes, or None if the separate navigation budget was exceeded.
     pub fn directories(&self) -> Option<&[navigation::Directory]> {

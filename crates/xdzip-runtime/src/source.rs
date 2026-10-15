@@ -80,5 +80,17 @@ impl Source {
             .file_stem()
             .and_then(|name| name.to_str())
             .unwrap_or("archive")
+            .strip_suffix(".tar")
+            .filter(|_| {
+                self.path
+                    .extension()
+                    .is_some_and(|s| s.eq_ignore_ascii_case("gz"))
+            })
+            .unwrap_or_else(|| {
+                self.path
+                    .file_stem()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("archive")
+            })
     }
 }

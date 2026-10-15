@@ -551,13 +551,13 @@ ApplicationWindow {
                                 color: Theme.selection
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "ZIP"
+                                    text: reader.formatLabel || "ZIP"
                                     font.pixelSize: Theme.mainSummarySize
                                     color: Theme.accentInk
                                 }
                             }
                             Text {
-                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("安全 ZIP 解压")
+                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("安全归档解压")
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.mainSummarySize
                             }
@@ -845,7 +845,7 @@ ApplicationWindow {
                         font.pixelSize: Theme.mainSecondarySize
                     }
                     Text {
-                        text: qsTr("安全 ZIP 解压")
+                        text: qsTr("安全归档解压")
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
                     }
@@ -878,7 +878,7 @@ ApplicationWindow {
                                 ])] : [
                             {
                                 id: "",
-                                label: qsTr("打开 ZIP，先浏览内容"),
+                                label: qsTr("打开归档，先浏览内容"),
                                 current: true
                             }
                         ]
@@ -1359,7 +1359,7 @@ ApplicationWindow {
                         }
                         Text {
                             Layout.fillWidth: true
-                            text: reader.message.length ? reader.message : qsTr("选择 ZIP 文件浏览内容，并解压到指定目录。")
+                            text: reader.message.length ? reader.message : qsTr("选择 ZIP、TAR 或 TAR.GZ 浏览内容，并解压到指定目录。")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainBodySize
                             wrapMode: Text.Wrap

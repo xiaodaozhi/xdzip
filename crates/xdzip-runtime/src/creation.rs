@@ -1,13 +1,15 @@
 //! Whole-archive creation: input capabilities, streaming codec, validation and one commit.
 use crate::extraction::{ConflictPolicy, Control, Prompt, Snapshot, Status};
+use crate::formats::{codec, creation_format};
 use std::cell::Cell;
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Instant, UNIX_EPOCH};
+use xdzip_codec_api::Format;
 use xdzip_codec_api::{
-    Cancellation, MetadataCodec, ScanLimits,
-    encode::{CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeSettings},
-    payload::{DecodeError, DecodedSink, PayloadCodec},
+    Cancellation,
+    encode::{EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeSettings},
+    payload::{DecodeError, DecodedSink},
 };
 use xdzip_codec_zip::ZipCodec;
 use xdzip_domain::path::PortablePath;
@@ -44,7 +46,7 @@ pub struct Options {
     pub inputs: Vec<String>,
     /// Existing, explicitly selected output directory.
     pub target: String,
-    /// Portable basename ending in .zip, never a subpath.
+    /// Portable basename ending in .zip, .tar or .tar.gz, never a subpath.
     pub name: String,
     /// ZIP method: 0 Store or 8 Deflate.
     pub method: u16,
@@ -70,10 +72,15 @@ impl Options {
             && Path::new(&self.target).is_absolute()
             && !self.target.contains('\0')
             && self.name.len() <= 255
-            && self.name.to_ascii_lowercase().ends_with(".zip")
+            && creation_format(&self.name).is_some()
+            && (creation_format(&self.name) == Some(Format::Zip)
+                || (self.password.is_none() && self.volume_bytes == 0))
+            && (creation_format(&self.name) != Some(Format::Tar) || self.method == 0)
+            && (creation_format(&self.name) != Some(Format::TarGzip) || self.method == 8)
             && PortablePath::parse(&self.name).is_some_and(|p| p.parts().len() == 1)
             && [0, 8].contains(&self.method)
-            && [1, 6, 9].contains(&self.level)
+            && ([1, 6, 9].contains(&self.level)
+                || (creation_format(&self.name) == Some(Format::TarGzip) && self.level == 0))
             && self.volume_bytes <= 24 * 1024 * 1024 * 1024
             && (self.volume_bytes == 0 || self.name.len() <= 250)
     }
@@ -231,10 +238,18 @@ fn fresh_name(
     name: &str,
     cancel: &Cancellation,
 ) -> Result<PortablePath, &'static str> {
-    let stem = name.get(..name.len() - 4).ok_or("unsafe_name")?;
+    let extension = match creation_format(name).ok_or("unsafe_name")? {
+        Format::Zip => ".zip",
+        Format::Tar => ".tar",
+        Format::TarGzip => ".tar.gz",
+    };
+    let stem = name
+        .get(..name.len() - extension.len())
+        .ok_or("unsafe_name")?;
     for suffix in 2..=10_000 {
         cancel.check().map_err(|_| "cancelled")?;
-        let path = PortablePath::parse(&format!("{stem} ({suffix}).zip")).ok_or("unsafe_name")?;
+        let path =
+            PortablePath::parse(&format!("{stem} ({suffix}){extension}")).ok_or("unsafe_name")?;
         if root.existing(&path).map_err(output_code)?.is_none() {
             return Ok(path);
         }
@@ -323,7 +338,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let mut last = Instant::now();
         stats.status = Status::Running;
         emit(&mut stats, start, publish);
-        ZipCodec
+        let format = creation_format(&job.options.name).ok_or("unsupported_feature")?;
+        codec(format)
             .encode(
                 &sources,
                 &mut Output {
@@ -384,8 +400,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     }
                 })?;
         } else {
-            let rows = ZipCodec
-                .scan(&mut reader, &control.cancel, ScanLimits::default())
+            let rows = codec(format)
+                .scan(&mut reader, &control.cancel, crate::formats::limits(format))
                 .map_err(|e| {
                     if control.cancel.check().is_err() {
                         "cancelled"
@@ -398,7 +414,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 return Err("integrity_error");
             }
             {
-                let mut decoder = ZipCodec
+                let mut decoder = codec(format)
                     .open_payload(&mut reader, &rows, &control.cancel)
                     .map_err(|_| "integrity_error")?;
                 for (row, input) in rows.iter().zip(tree.entries()) {

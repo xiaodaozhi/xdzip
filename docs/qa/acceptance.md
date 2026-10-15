@@ -44,3 +44,18 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 | UI-REV-11 | HTML 100%／125%，Qt DPR 1／1.25／2，长路径及辅助字号 | 逻辑尺寸不随 DPR 改变，正文与菜单比例正确，footer 可达 |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
+
+## WP-11 TAR/GZIP
+
+| ID | 输入／操作 | 预期 |
+| --- | --- | --- |
+| TAR-01 | 系统 tar／Python USTAR、GNU、PAX，TAR/GZIP 和分段多 member GZIP | 内容探测，完整扫描，名称及全部字节一致，空目录保留 |
+| TAR-02 | 从 Qt 选择 TAR／TAR.GZ，创建后重开并解压 | 格式与扩展名一致，任务成功，输出字节一致，不显示虚构的逐条压缩大小 |
+| TAR-03 | 密码、分卷启用后切换格式 | 不适用参数清空且禁用，TAR 级别禁用，TAR.GZ 0／1／6／9 可写 |
+| TAR-04 | 路径逃逸、链接、设备、FIFO、稀疏和全局 PAX | 不创建不安全输出，明确拒绝，不通过库 unpack 写入 |
+| TAR-05 | 截断、头校验和、CRC／ISIZE、非零尾部、扩展头和字节预算 | 完整扫描失败，不发布部分索引；超额、取消可解释 |
+| TAR-06 | 复合扩展名冲突改名，覆盖任务在校验阶段取消 | 保留 .tar.gz，旧归档不变，本次暂存清理 |
+
+测试入口为 codec-tar、runtime creation 测试、Qt tarCreationBrowseAndSafeExtraction 及 [独立互操作脚本](../../scripts/check-tar-interop.py)。实际日志与截图仅在 build/review/wp11 或 CI 工件。
+
+2026-10-15 本轮 UI 的 macOS 桌面人工验收未通过准入：Computer Use 返回未授予权限，因此登记为待验收，不把离屏或 Cocoa 自动化记为人工操作。独立安全审查仍另行安排。

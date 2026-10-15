@@ -3,8 +3,8 @@ use super::{ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Prompt, Sna
 use std::io::Write;
 use std::path::Path;
 use std::time::{Duration, Instant};
-use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec};
-use xdzip_codec_zip::ZipCodec;
+use xdzip_codec_api::payload::{DecodeError, DecodedSink};
+
 use xdzip_domain::path::PortablePath;
 use xdzip_io::{Grant, OutputError};
 
@@ -100,7 +100,11 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
-        let opened = ZipCodec.open_payload(source.file(), &job.rows, &control.cancel);
+        let opened = crate::formats::codec(job.format).open_payload(
+            source.file(),
+            &job.rows,
+            &control.cancel,
+        );
         job.source.validate().map_err(|_| "source_changed")?;
         let mut decoder = opened.map_err(decoding)?;
         let mut policy = job.options.conflict;

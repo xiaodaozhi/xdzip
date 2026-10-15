@@ -30,8 +30,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", base.to_str().ok_or("non-UTF-8 temporary base")?);
         return Ok(());
     }
-    if args.len() != 2 {
-        return Err("provide owned ZIP and empty output directory".into());
+    let generic = args.len() == 3 && args[2] == "--generic";
+    if args.len() != 2 && !generic {
+        return Err("provide owned archive and empty output directory".into());
     }
     // Preserve the selected object for the nofollow grant; canonicalize would
     // erase a directory link before the output layer can reject it.
@@ -99,6 +100,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if matches!(event.payload, service::Payload::ShutdownReady) {
             assert_eq!(event.request, shutdown);
         }
+    }
+    if generic {
+        // Independent caller owns the fixture manifest and verifies every output byte.
+        println!(
+            "{{\"files\":{},\"bytes\":{},\"directories\":{}}}",
+            result.committed_files, result.committed_bytes, result.created_directories
+        );
+        return Ok(());
     }
     // Verify actual files through a separate streaming reader, after all worker handles exit.
     let verify_start = Instant::now();

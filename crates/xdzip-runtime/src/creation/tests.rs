@@ -1,6 +1,7 @@
 //! Real creation/publication regressions; all inputs are owned temporary fixtures.
 use super::*;
 use std::sync::atomic::{AtomicU64, Ordering};
+use xdzip_codec_api::{MetadataCodec, ScanLimits, payload::PayloadCodec};
 static NEXT: AtomicU64 = AtomicU64::new(0);
 struct Fixture(PathBuf);
 impl Fixture {
@@ -421,4 +422,67 @@ fn directory_link_swap_after_scan_is_rejected() {
     assert_eq!(result.status, Status::Failed);
     assert_eq!(result.error, "source_changed");
     assert!(!f.output().exists());
+}
+
+#[test]
+fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers() {
+    for (extension, method, format) in [(".tar", 0, Format::Tar), (".tar.gz", 8, Format::TarGzip)] {
+        let f = Fixture::new();
+        let mut job = f.job(method);
+        job.options.name = format!("archive{extension}");
+        let options = job.options.clone();
+        let done = execute(job, &Control::default(), |_| {});
+        assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+        let path = f.0.join("output").join(&options.name);
+        let original = std::fs::read(&path).unwrap();
+        let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+        assert_eq!(archive.format(), format);
+        let destination = f.0.join("extracted");
+        std::fs::create_dir(&destination).unwrap();
+        let extraction = crate::extraction::Options {
+            target: destination.to_string_lossy().into_owned(),
+            all: true,
+            selected: vec![],
+            directory: String::new(),
+            create_folder: false,
+            conflict: ConflictPolicy::Ask,
+            allow_high_ratio: false,
+        };
+        let mut terminal = None;
+        crate::extraction::run(
+            archive
+                .extraction_job(extraction, &Cancellation::default())
+                .unwrap(),
+            2,
+            &Control::default(),
+            &mut |s| terminal = Some(s),
+        );
+        assert_eq!(terminal.unwrap().status, Status::Succeeded);
+        assert_eq!(
+            std::fs::read(destination.join("输入/文件.txt")).unwrap(),
+            std::fs::read(f.0.join("输入/文件.txt")).unwrap()
+        );
+        let mut renamed = options.clone();
+        renamed.conflict = ConflictPolicy::Rename;
+        assert_eq!(
+            execute(Job { options: renamed }, &Control::default(), |_| {}).status,
+            Status::Succeeded
+        );
+        assert!(
+            f.0.join("output")
+                .join(format!("archive (2){extension}"))
+                .is_file()
+        );
+        let mut overwrite = options;
+        overwrite.conflict = ConflictPolicy::Overwrite;
+        let cancel = Control::default();
+        let stopped = execute(Job { options: overwrite }, &cancel, |s| {
+            if s.status == Status::Verifying {
+                cancel.cancel();
+            }
+        });
+        assert_eq!(stopped.status, Status::Cancelled);
+        assert_eq!(std::fs::read(path).unwrap(), original);
+        assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 2);
+    }
 }

@@ -60,6 +60,7 @@ class BrowserController : public QObject {
     QML_ELEMENT
     Q_PROPERTY(QAbstractItemModel *entries READ entries CONSTANT)
     Q_PROPERTY(QAbstractItemModel *directories READ directories CONSTANT)
+    Q_PROPERTY(QString formatLabel READ formatLabel NOTIFY changed)
     Q_PROPERTY(QString directoryId READ directoryId NOTIFY changed)
     Q_PROPERTY(QVariantList breadcrumbs READ breadcrumbs NOTIFY changed)
     Q_PROPERTY(bool navigationLimited READ navigationLimited NOTIFY changed)
@@ -125,6 +126,9 @@ class BrowserController : public QObject {
     }
     bool ready() const {
         return m_ready;
+    }
+    QString formatLabel() const {
+        return m_format;
     }
     QString title() const {
         return m_title;
@@ -310,6 +314,7 @@ class BrowserController : public QObject {
     QString m_location;
     QString m_search;
     QString m_title;
+    QString m_format;
     QString m_message;
     QString m_session;
     int m_total = 0;

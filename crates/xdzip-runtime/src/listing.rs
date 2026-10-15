@@ -212,6 +212,7 @@ mod tests {
         .iter()
         .enumerate()
         .map(|(i, name)| Entry {
+            format: xdzip_codec_api::Format::Zip,
             id: (i as u64 + 1).try_into().unwrap(),
             raw_name: name.as_bytes().to_vec(),
             display_name: (*name).into(),
