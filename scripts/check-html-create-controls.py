@@ -67,12 +67,14 @@ def main():
                             corners = radios.nth(i).evaluate('n=>{const s=getComputedStyle(n);return [s.borderTopLeftRadius,s.borderTopRightRadius,s.borderBottomRightRadius,s.borderBottomLeftRadius].map(parseFloat)}')
                             for corner, (actual, wanted) in enumerate(zip(corners, expected)):
                                 check(tag+f'/segment{i}/corner{corner}', actual * ratio, wanted, .15)
+                        # bounding_box includes the review iframe's source-to-logical transform.
+                        # Unlike computed CSS corner radii above, these distances are already logical.
                         group_box = frame.locator('#create-format').bounding_box()
                         first_box, last_box = radios.first.bounding_box(), radios.last.bounding_box()
-                        check(tag+'/segment outer left inset', (first_box['x']-group_box['x'])*ratio, 1, .15)
-                        check(tag+'/segment outer right inset', (group_box['x']+group_box['width']-last_box['x']-last_box['width'])*ratio, 1, .15)
-                        check(tag+'/segment outer top inset', (first_box['y']-group_box['y'])*ratio, 1, .15)
-                        check(tag+'/segment outer bottom inset', (group_box['y']+group_box['height']-first_box['y']-first_box['height'])*ratio, 1, .15)
+                        check(tag+'/segment outer left inset', first_box['x']-group_box['x'], 1, .15)
+                        check(tag+'/segment outer right inset', group_box['x']+group_box['width']-last_box['x']-last_box['width'], 1, .15)
+                        check(tag+'/segment outer top inset', first_box['y']-group_box['y'], 1, .15)
+                        check(tag+'/segment outer bottom inset', group_box['y']+group_box['height']-first_box['y']-first_box['height'], 1, .15)
                         selected = radios.nth(0)
                         selected.hover()
                         def painted_background():
