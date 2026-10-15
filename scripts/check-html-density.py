@@ -127,6 +127,22 @@ def main():
                                         fonts = child.locator('dialog[open] ' + selector).evaluate_all('(nodes)=>nodes.map(n=>parseFloat(getComputedStyle(n).fontSize))')
                                         for i, size in enumerate(fonts):
                                             check(tag + f'/operation footer {view}/{selector}/{i}', size * operation_ratio, expected)
+                                for welcome_view, welcome_width, welcome_height in [('welcome', 1024, 622), ('welcome-narrow', 832, 544)]:
+                                    page.locator('#view').select_option(welcome_view)
+                                    expect(frame.locator('#welcome-open')).to_be_visible()
+                                    expect(frame.locator('.window')).to_have_css('width', f'{welcome_width}px')
+                                    expect(frame.locator('.window')).to_have_css('height', f'{welcome_height}px')
+                                    check(tag + '/' + welcome_view + ' width', child.locator('.window').bounding_box()['width'], welcome_width)
+                                    check(tag + '/' + welcome_view + ' height', child.locator('.window').bounding_box()['height'], welcome_height)
+                                    check(tag + '/' + welcome_view + ' titlebar', child.locator('.titlebar').bounding_box()['height'], 48)
+                                    frame.locator('#tasks').click()
+                                    welcome_menu = child.locator('.ui-menu')
+                                    expect(welcome_menu).to_have_count(1)
+                                    check(tag + '/' + welcome_view + ' menu width', welcome_menu.bounding_box()['width'], 240)
+                                    menu_font = welcome_menu.evaluate('(el)=>parseFloat(getComputedStyle(el).fontSize)')
+                                    body_font = child.locator('.welcome-subtitle').evaluate('(el)=>parseFloat(getComputedStyle(el).fontSize)')
+                                    check(tag + '/' + welcome_view + ' menu/body ratio', menu_font / body_font, 1)
+                                    page.keyboard.press('Escape')
                                 page.locator('#view').select_option('main')
                                 expect(child.locator('#file-rows tr')).to_have_count(9)
                         finally:

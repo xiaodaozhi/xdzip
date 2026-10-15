@@ -64,7 +64,7 @@ def main():
         print('HTML shared assets match reviewed SVGs and source photos')
         return
     (SOURCE / 'assets.js').write_text(generated)
-    canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css', 'controls-tokens.css', 'controls.css'],
+    canvas = inline_html('canvas.html', [FONT_STYLESHEET, 'styles.css', 'hifi.css', 'controls-tokens.css', 'controls.css', 'welcome.css'],
                          ['assets.js', 'display-spec.js', 'controls-tokens.js', 'controls.js', 'app.js', 'main-controls.js'])
     references = {}
     source_root = ROOT / 'design/hifi'
@@ -85,6 +85,8 @@ def main():
     output = ROOT / 'dist/xdzip-hifi-design.html'
     output.parent.mkdir(exist_ok=True)
     output.write_text(review)
+    welcome_review = review.replace('<option value="welcome">', '<option value="welcome" selected>', 1)
+    output.with_name('xdzip-welcome-design.html').write_text(welcome_review)
     # Give the corrected logical-size delivery a distinct download name.
     output.with_name('xdzip-hifi-design-1to1.html').write_text(review)
     components = inline_html('components.html', [FONT_STYLESHEET, 'controls-tokens.css', 'controls.css', 'components.css'],

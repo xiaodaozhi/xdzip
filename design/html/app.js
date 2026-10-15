@@ -174,6 +174,7 @@ const state = {
     recent: true,
 };
 const specs = {
+    W01: ["欢迎页", "设计演示，不读取归档或写入文件", "打开与新建为主要入口，文件在本机处理。", "支持键盘、拖入反馈、打开后浏览以及取消返回。", "文件选择与拖入仅选择示例数据，不读取用户文件。"],
     B01: [
         "归档浏览",
         "P01 / P02 / P08，AC-01 / AC-02 / AC-08",
@@ -541,9 +542,12 @@ function render() {
     syncInspectorContentOffset();
     renderInspector(chosen);
     updateTaskCount();
+    if (document.body.classList.contains("welcome-mode")) $("#selection-status").textContent = "文件在本机处理";
     if (!state.modal)
         setSpec(
-            state.archiveState !== "ready"
+            document.body.classList.contains("welcome-mode")
+                ? "W01"
+                : state.archiveState !== "ready"
                 ? "X01"
                 : state.query || chosen.length
                   ? "B02"
@@ -757,9 +761,10 @@ function closeModal({ preserveReview = false } = {}) {
     state.modal = null;
     if (!preserveReview && document.body.dataset.standalone === "true") {
         document.body.dataset.standalone = "false";
-        setCanvasLogicalScale("main");
+        const baseView = document.body.classList.contains("welcome-artboard") ? (document.body.classList.contains("welcome-narrow") ? "welcome-narrow" : "welcome") : "main";
+        setCanvasLogicalScale(baseView);
         if (window.parent !== window)
-            window.parent.postMessage({type:"xdzip-review-window", view:"main"}, "*");
+            window.parent.postMessage({type:"xdzip-review-window", view:baseView}, "*");
     }
     render();
     const restored = returnFocus?.isConnected
@@ -789,16 +794,64 @@ function openPicker() {
     window.XdzipMain.dispatch("open");
 }
 
+function setWelcomeMode(visible) {
+    document.body.classList.toggle("welcome-mode", visible);
+    $("#welcome").hidden = !visible;
+    if (!visible) document.body.classList.remove("welcome-artboard", "welcome-narrow");
+}
 function showWelcome() {
     state.selected.clear();
-    $("#welcome").hidden = false;
-    $("#welcome").innerHTML =
-        `<div class="brand-tile">${icon("archive")}</div><h1>压缩文件，一目了然。</h1><p>先查看内容，再决定解压哪些文件。</p><div class="welcome-actions"><button class="button primary" id="welcome-open">${icon("folderOpen")}打开压缩文件</button><button class="button" id="welcome-create">${icon("plus")}新建压缩文件</button></div><small>ZIP，TAR，TAR.GZ / 所有处理均在本机完成</small>`;
+    setWelcomeMode(true);
+    const shortcut = document.body.dataset.platform === "macos" ? "⌘ " : "Ctrl+";
+    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打开归档，从容整理。</h1><p class="welcome-subtitle">先查看内容，再选择解压。也可以把文件打包，轻松分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩文件</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>新建压缩文件</strong><small>添加文件或文件夹，创建归档</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩文件拖到这里</span></div><div class="welcome-formats"><span>支持打开与创建</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b></div><p class="welcome-feedback" role="status" aria-live="polite"></p></div>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
+    const resetDrop = () => {
+        $("#welcome-drop").classList.remove("drag-over");
+        $("#welcome-drop span").textContent = "也可以将压缩文件拖到这里";
+    };
+    const validName = name => /\.(zip|tar|tar\.gz)$/i.test(name);
+    const dragKind = transfer => {
+        const items = [...(transfer?.items || [])];
+        if (items.length !== 1 || items[0].kind !== "file" || items[0].webkitGetAsEntry?.()?.isDirectory) return "invalid";
+        const file = items[0].getAsFile();
+        return file ? (validName(file.name) ? "valid" : "invalid") : "unknown";
+    };
+    const zone = $("#welcome");
+    zone.ondragenter = event => {
+        event.preventDefault();
+        const kind = dragKind(event.dataTransfer);
+        $("#welcome-drop").classList.toggle("drag-over", kind === "valid");
+        $("#welcome-drop span").textContent = kind === "valid" ? "松开以选择对应示例，不读取拖入文件" : kind === "unknown" ? "松开以检查格式，原型不读取文件内容" : "请拖入单个 ZIP、TAR 或 TAR.GZ 压缩文件";
+    };
+    zone.ondragover = event => {
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = dragKind(event.dataTransfer) === "invalid" ? "none" : "copy";
+    };
+    zone.ondragleave = event => {
+        if (!zone.contains(event.relatedTarget)) resetDrop();
+    };
+    zone.ondrop = event => {
+        event.preventDefault();
+        resetDrop();
+        const dropped = [...(event.dataTransfer?.files || [])];
+        const directory = [...(event.dataTransfer?.items || [])].some(item => item.webkitGetAsEntry?.()?.isDirectory);
+        if (directory || dropped.length !== 1 || !validName(dropped[0].name)) {
+            $(".welcome-feedback").textContent = "请拖入单个 ZIP、TAR 或 TAR.GZ 压缩文件。此原型不读取文件内容。";
+            return;
+        }
+        // Validate the name only; never read user bytes.
+        openPicker();
+        toast("拖入演示，不读取文件内容。请选择示例归档继续。");
+    };
     render();
-    setSpec("B01");
+    $("#state-label").textContent = "W01，欢迎页，设计演示";
 }
+
+// Keep a file dropped on window chrome from navigating away from the prototype.
+for (const eventName of ["dragover", "drop"]) document.addEventListener(eventName, event => {
+    if (document.body.classList.contains("welcome-mode")) event.preventDefault();
+});
 function scopeFiles(scope) {
     if (scope === "retry") return state.plan.retryFiles;
     if (scope === "selected") return selectedFiles();
@@ -1405,7 +1458,7 @@ function scenario(value) {
     state.query = "";
     state.archiveState = "ready";
     $("#search").value = "";
-    $("#welcome").hidden = true;
+    setWelcomeMode(false);
     if ($("#modal").open) closeModal({preserveReview:true});
     if (["empty", "unsupported", "damaged", "loading"].includes(value)) {
         state.archiveState = value;
@@ -1521,7 +1574,7 @@ document.addEventListener("keydown", (e) => {
         }
     }
     if ((e.metaKey || e.ctrlKey) && !$("#modal").open) {
-        if (e.key.toLowerCase() === "f") {
+        if (e.key.toLowerCase() === "f" && !document.body.classList.contains("welcome-mode")) {
             e.preventDefault();
             $("#search").focus();
         }
@@ -1550,12 +1603,16 @@ window.XdzipDesign = {
     open(view) {
         // Direct standalone URLs can run before the main-window adapter's
         // deferred script; review messages arrive after that script is ready.
-        if (view === "archive-test" && !window.XdzipMain) {
+        if (["archive-test", "welcome", "welcome-narrow"].includes(view) && !window.XdzipMain) {
             window.addEventListener("DOMContentLoaded", () => window.XdzipDesign.open(view), {once: true});
             return;
         }
         applyingReviewPreset = true;
         try {
+        if (!["welcome", "welcome-narrow", "main"].includes(view) && document.body.classList.contains("welcome-mode")) {
+            setWelcomeMode(false);
+            window.XdzipMain?.openSample("travel");
+        }
         if (state.task?.reviewPaused) state.task = null;
         if (state.testJob?.reviewPaused) window.XdzipMain.resetJobs();
         if ($("#modal").open) closeModal({preserveReview:true});
@@ -1566,6 +1623,11 @@ window.XdzipDesign = {
         ) {
             state.archiveState = "ready";
             state.scenario = "normal";
+        }
+        if (["welcome", "welcome-narrow"].includes(view)) {
+            document.body.classList.add("welcome-artboard");
+            window.XdzipMain.enterWelcome(view);
+            return;
         }
         if (view === "main") {
             window.XdzipMain?.openSample("travel");
@@ -1610,12 +1672,13 @@ window.XdzipDesign = {
     theme: setTheme,
     platform(value) {
         document.body.dataset.platform = value;
+        if (document.body.classList.contains("welcome-mode")) showWelcome();
     },
 };
 window.XdzipControls.configure({ icon });
 function setCanvasLogicalScale(view) {
     const spec = window.XDZIP_DISPLAY_SPEC;
-    const main = ["main", "empty", "damaged"].includes(view);
+    const main = ["main", "welcome", "welcome-narrow", "empty", "damaged"].includes(view);
     document.documentElement.style.setProperty("--ui-source-factor", 1 / (spec.views[view]?.sourceToLogical ?? (main ? spec.sourceToLogical : spec.operationSourceToLogical)));
 }
 const reviewQuery = new URLSearchParams(location.search);
@@ -1637,6 +1700,8 @@ window.addEventListener("message", (event) => {
     if (
         ![
             "main",
+            "welcome",
+            "welcome-narrow",
             "extract",
             "create",
             "progress",
@@ -1651,7 +1716,7 @@ window.addEventListener("message", (event) => {
         !["light", "dark"].includes(config.theme)
     )
         return;
-    document.body.dataset.standalone = ["main", "empty", "damaged"].includes(
+    document.body.dataset.standalone = ["main", "welcome", "welcome-narrow", "empty", "damaged"].includes(
         config.view,
     )
         ? "false"

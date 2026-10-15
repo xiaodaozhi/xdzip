@@ -121,7 +121,12 @@ window.XdzipMain = (() => {
             archiveState: "ready",
         });
         $("#search").value = tab.query;
-        $("#welcome").hidden = true;
+        const wasWelcomeArtboard = document.body.classList.contains("welcome-artboard");
+        setWelcomeMode(false);
+        if (wasWelcomeArtboard && !applyingReviewPreset) {
+            setCanvasLogicalScale("main");
+            window.parent.postMessage({type:"xdzip-review-window", view:"main"}, "*");
+        }
         render();
         if (focus) $(`[data-tab="${id}"]`)?.focus();
     }
@@ -135,12 +140,22 @@ window.XdzipMain = (() => {
         if (!tabs.length) {
             state.activeTab = null;
             state.archiveState = "empty";
-            renderTabs();
-            showWelcome();
+            enterWelcome();
             $("#welcome-open")?.focus();
         } else if (state.activeTab === id)
             switchTab(tabs[Math.min(index, tabs.length - 1)].id, true);
         else renderTabs();
+    }
+    function enterWelcome(view = "welcome") {
+        saveTab();
+        document.body.classList.add("welcome-artboard");
+        document.body.classList.toggle("welcome-narrow", view === "welcome-narrow");
+        document.body.dataset.standalone = "false";
+        setCanvasLogicalScale(view);
+        if (window.parent !== window) window.parent.postMessage({type:"xdzip-review-window", view}, "*");
+        state.activeTab = null;
+        state.archiveState = "welcome";
+        showWelcome();
     }
     function openSample(id) {
         let tab = tabs.find((item) => item.id === id);
@@ -161,7 +176,8 @@ window.XdzipMain = (() => {
         const bar = $(".archive-tabs");
         bar.setAttribute("role", "tablist");
         bar.innerHTML =
-            tabs
+            (state.activeTab === null ? `<div class="archive-tab welcome-tab" role="tab" aria-selected="true">${icon("app-mark")}<span class="tab-label">欢迎</span></div>` : "") +
+            (state.activeTab === null ? [] : tabs)
                 .map(
                     (tab) =>
                         `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭归档，${shortcut("W")}">${icon("close")}</button></div>`,
@@ -1232,7 +1248,8 @@ window.XdzipMain = (() => {
                 const key = event.key.toLowerCase();
                 if (modifier && ["o", "n", "f"].includes(key)) {
                     event.preventDefault();
-                    dispatch({ o: "open", n: "create", f: "search" }[key]);
+                    if (key !== "f" || !document.body.classList.contains("welcome-mode"))
+                        dispatch({ o: "open", n: "create", f: "search" }[key]);
                 } else if (
                     modifier &&
                     key === "a" &&
@@ -1299,6 +1316,7 @@ window.XdzipMain = (() => {
         entryNode,
         directoryPath,
         openSample,
+        enterWelcome,
         switchTab,
         closeTab,
         commands,

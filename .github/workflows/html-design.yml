@@ -89,6 +89,7 @@ jobs:
           .venv-design/bin/python scripts/build-html-design.py
           .venv-design/bin/python scripts/generate-display-spec.py --check
           .venv-design/bin/python scripts/generate-control-tokens.py --check
+          .venv-design/bin/python scripts/check-html-welcome.py
           .venv-design/bin/python scripts/check-html-controls.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
@@ -114,6 +115,7 @@ jobs:
         with:
           name: xdzip-html-design-evidence
           path: |
+            build/review/html-welcome/
             build/review/html-header/
             build/review/html-body/
             build/review/pane-header-alignment.md
@@ -141,6 +143,7 @@ jobs:
             dist/html-scale-review/
             dist/xdzip-header-review.html
             dist/xdzip-body-review.html
+            dist/xdzip-welcome-design.html
             dist/xdzip-hifi-design.html
             dist/xdzip-hifi-design-1to1.html
             dist/xdzip-scale-review.html

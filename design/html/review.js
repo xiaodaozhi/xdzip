@@ -41,12 +41,13 @@
         const dimensions = windowView ? [windowWidth,windowHeight] : [width,height];
         const logical = dimensions.map(value => number(value * logicalScale()));
         const mode = current("zoom") === "pixels" ? "原稿像素 1:1" : current("zoom") === "fit" ? "适应屏幕" : "100% 设计尺寸";
-        const theme = current("theme") === "dark" ? "深色适配（无对应完整主稿）" : "浅色";
+        const theme = current("theme") === "dark" && !["welcome", "welcome-narrow"].includes(current("view")) ? "深色适配（无对应完整主稿）" : current("theme") === "dark" ? "深色" : "浅色";
         document.querySelector("#status").textContent = `${current("platform")}，${theme}，设计${windowView ? "窗口" : "图板"} ${logical.join(" × ")} CSS px，${mode}，当前 ${number(scale / logicalScale() * 100)}% 审阅倍率，DPR ${window.devicePixelRatio}（${number(scale * 100)}% 原稿倍率）`;
     }
 
     function updateReference() {
-        const source = displaySpec.views[current("view")].source;
+        const view = displaySpec.views[current("view")];
+        const source = current("theme") === "dark" && current("view") === "welcome-narrow" ? null : current("theme") === "dark" && view.darkSource ? view.darkSource : view.source;
         const image = document.querySelector("#reference-image");
         image.hidden = !source;
         document.querySelector("#reference-message").textContent = source

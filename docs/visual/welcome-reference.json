@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "design-proposal-not-implemented",
+  "status": "approved-design-html-implemented-qt-pending",
   "units": "CSS px / Qt device-independent pixels",
   "source": "../../design/hifi/sources/welcome.html",
   "theme_source": "tokens.json",

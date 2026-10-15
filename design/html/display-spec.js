@@ -13,6 +13,23 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "operationSourceToLogical": 0.8268733850129198,
     "mainDensity": 0.8,
     "views": {
+        "welcome": {
+            "source": "../hifi/screens/welcome-light.png",
+            "size": [
+                1024,
+                622
+            ],
+            "sourceToLogical": 1,
+            "darkSource": "../hifi/screens/welcome-dark.png"
+        },
+        "welcome-narrow": {
+            "source": "../hifi/screens/welcome-narrow.png",
+            "size": [
+                832,
+                544
+            ],
+            "sourceToLogical": 1
+        },
         "main": {
             "source": "../hifi/screens/main-light.png",
             "size": [
