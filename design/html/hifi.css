@@ -962,7 +962,7 @@ tbody tr.selected td,tbody tr:hover:not(.selected) td {
 }
 tbody tr.selected td { --row-band-color:var(--selection); }
 tbody tr:hover:not(.selected) td { --row-band-color:var(--ui-control-hover); }
-tbody tr td::after {
+tbody tr:not(.selected) td::after,tbody tr.selected td::after {
     content:""; position:absolute; bottom:0; left:0; right:0;
     height:calc(1px * var(--ui-source-factor));
     background:color-mix(in srgb,var(--border) 45%,var(--surface)); pointer-events:none;

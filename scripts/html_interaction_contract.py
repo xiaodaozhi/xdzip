@@ -1,5 +1,7 @@
 """Exercise the Qt-synchronized HTML contract in the caller's actual zoom environment."""
 from playwright.sync_api import expect
+from io import BytesIO
+from PIL import Image
 
 
 def verify(page, ratio, check, tag, output=None):
@@ -37,9 +39,20 @@ def verify(page, ratio, check, tag, output=None):
     check(tag + '/caption center', center(box('.archive-caption'), 'y'), center(box('#breadcrumbs'), 'y'), .5)
     check(tag + '/root direct count', page.locator('#entry-count').inner_text(), '9 项', 0)
     page.locator('#file-rows [data-id=guide]').hover()
-    colors = page.locator('#file-rows [data-id=guide] td').evaluate_all('(nodes)=>nodes.map(n=>getComputedStyle(n).backgroundColor)')
+    colors = page.locator('#file-rows [data-id=guide] td').evaluate_all('(nodes)=>nodes.map(n=>getComputedStyle(n).backgroundImage)')
     check(tag + '/whole row hover', len(set(colors)), 1, 0)
-    check(tag + '/row hover painted', colors[0], 'rgb(237, 242, 255)', 0)
+    # Check pixels, rather than mistaking the transparent base behind the inset band for its paint.
+    cell = page.locator('#file-rows [data-id=guide] td').last
+    image = Image.open(BytesIO(cell.screenshot())).convert('RGB')
+    check(tag + '/row hover painted', list(image.getpixel((image.width // 2, image.height // 4))), [237, 242, 255], 0)
+    geometry = cell.evaluate(r"""n=>{
+        const band=getComputedStyle(n), line=getComputedStyle(n,'::after');
+        const removed=band.backgroundSize.match(/-\s*([\d.]+)px/);
+        return {top:parseFloat(band.backgroundPositionY),removed:removed?Number(removed[1]):0,line:parseFloat(line.height)};
+    }""")
+    check(tag + '/row band upper inset', geometry['top'] * ratio, 1, .06)
+    check(tag + '/row separator height', geometry['line'] * ratio, 1, .06)
+    check(tag + '/row separator equal gaps', (geometry['removed'] - geometry['top'] - geometry['line']) * ratio, geometry['top'] * ratio, .06)
     for directory in ['photos', 'ice']:
         if page.locator('[data-directory=' + directory + ']').get_attribute('aria-expanded') != 'true':
             page.locator('[data-toggle=' + directory + ']').click()

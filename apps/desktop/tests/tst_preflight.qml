@@ -22,7 +22,9 @@ Item {
             verify(reportWindow.height < 450);
             const compactHeight = reportWindow.height;
             reportWindow.report = {entries:"10000",bytes:"unknown",findingCount:"64",findings:Array(64).fill("Record 1: The name needs filesystem review.")};
-            tryVerify(function(){return reportWindow.height>compactHeight;});
+            // At high DPR the offscreen desktop can already cap the compact report.
+            tryCompare(reportWindow,"height",Math.min(600, Screen.desktopAvailableHeight - 80));
+            verify(reportWindow.height>=compactHeight);
             verify(reportWindow.height<=600);
             const body = findChild(reportWindow,"preflightBody");
             verify(body.contentItem.contentHeight>body.height);
