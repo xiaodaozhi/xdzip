@@ -107,6 +107,38 @@
       "title": "完整性检查，共享任务进度样式",
       "group": "current",
       "sha256": "b6339c8084059f7d7b5c6cba9e6d59817d594ec6ca01c06225d296eb9115367c"
+    },
+    {
+      "file": "screens/welcome-light.png",
+      "title": "W01 欢迎页，浅色，设计候选",
+      "group": "current",
+      "status": "design-proposal-not-implemented",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "0253eea896639c56543740b63dbc8fc32d9a7885c51d36fcf63066ef3048446c"
+    },
+    {
+      "file": "screens/welcome-dark.png",
+      "title": "W01 欢迎页，深色，设计候选",
+      "group": "current",
+      "status": "design-proposal-not-implemented",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "1450b032d50ff32e46848f8f8f58fe1d8346361b4a972e5cb073b9780aa2ac05"
+    },
+    {
+      "file": "screens/welcome-narrow.png",
+      "title": "W01 欢迎页，最小窗口，设计候选",
+      "group": "current",
+      "status": "design-proposal-not-implemented",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "3df8d036e80b1d724473d8b0286dd97a7cfa4f0979715382b590261a2c0b14dd"
+    },
+    {
+      "file": "screens/welcome-drag.png",
+      "title": "W01 欢迎页，拖入状态，设计候选",
+      "group": "current",
+      "status": "design-proposal-not-implemented",
+      "spec": "../../docs/ux/welcome.md",
+      "sha256": "826f2761696b5602818b31561782bf196f73c3afbfbdd51873495a890d16213e"
     }
   ],
   "schema_version": 1
