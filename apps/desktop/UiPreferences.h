@@ -2,7 +2,7 @@
 #include <QObject>
 #include <QtQml/qqmlregistration.h>
 
-class UiPreferences final : public QObject {
+class UiPreferences : public QObject {
     Q_OBJECT
     QML_NAMED_ELEMENT(AppSettings)
     QML_SINGLETON
