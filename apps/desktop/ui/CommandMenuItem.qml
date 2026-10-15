@@ -23,7 +23,7 @@ MenuItem {
     bottomPadding: 4
     property real labelSize: Theme.menuLabelSize
     font.pixelSize: labelSize
-    Accessible.name: statusLabel.length ? text + "，" + statusLabel : text
+    Accessible.name: statusLabel.length ? text + qsTrId("common.separator") + statusLabel : text
     Accessible.description: enabled ? "" : disabledReason
     indicator: null
     arrow: null

@@ -701,6 +701,7 @@ function dialog(html, kind, spec, focus) {
     XdzipControls.close({ restoreFocus: false });
     XdzipControls.hideTooltip();
     const el = $("#modal");
+    if (state.modal === "settings") restoreSettingsPreview();
     returnFocus = el.open ? returnFocus : document.activeElement;
     if (el.open) el.close();
     const template = document.createElement("template");
@@ -756,6 +757,7 @@ function dialog(html, kind, spec, focus) {
     if (focus) $(focus)?.focus();
 }
 function closeModal({ preserveReview = false } = {}) {
+    if (state.modal === "settings") restoreSettingsPreview();
     if ($("#modal").open) $("#modal").close();
     $("#modal").querySelectorAll('input[type="password"]').forEach(input => input.value = "");
     state.modal = null;
@@ -1382,32 +1384,60 @@ function confirmCreateOverwrite() {
     $("#confirm-create-overwrite").onclick = () =>
         startTask(state.createItems, "create");
 }
+let savedSettingsDemo = null;
+let settingsPreview = null;
+const settingText = id => window.XDZIP_UI_MESSAGES["zh-CN"].messages[id];
+function restoreSettingsPreview() {
+    if (!settingsPreview) return;
+    const original = settingsPreview.original;
+    settingsPreview = null;
+    setTheme(original.theme);
+    document.documentElement.style.setProperty("--list-density-factor", original.density === "compact" ? .8 : 1);
+    document.documentElement.dataset.listDensity = original.density;
+    document.documentElement.style.setProperty("--settings-text-scale", original.textScale);
+}
 function showSettings() {
+    restoreSettingsPreview();
+    const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, clearRecent:false};
+    const draft = {...(savedSettingsDemo || original)};
+    const t = settingText;
+    const themePreviews = {system:icon("theme-system"),light:icon("theme-light"),dark:icon("theme-dark")};
     dialog(
-        header("设置", "外观与隐私", "settings-tile") +
-            `<div class="modal-content"><fieldset id="setting-theme" class="settings-theme"><legend>外观主题</legend><div class="theme-cards"><label class="theme-card">${icon("theme-system")}<span><input type="radio" name="setting-theme" value="system">跟随系统</span></label><label class="theme-card">${icon("theme-light")}<span><input type="radio" name="setting-theme" value="light">浅色</span></label><label class="theme-card">${icon("theme-dark")}<span><input type="radio" name="setting-theme" value="dark">深色</span></label></div></fieldset><div class="settings-row"><label for="setting-density">列表密度</label><select id="setting-density" class="field-select"><option value="standard">标准</option><option value="compact">紧凑</option></select></div><label class="check-label"><input id="recent-enabled" type="checkbox" ${state.recent ? "checked" : ""}>在本机保留最近文件记录</label><div class="field-group"><button id="clear-recent" class="button">清空最近记录</button></div><div class="notice">所有归档处理都在本机进行。默认不上传文件、不启用遥测。清空最近记录不会删除原文件。</div></div>` +
-            footer(cancelButton("完成"), "设置仅在本机生效"),
-        "settings",
-        "S01",
+        header(t("settings.title"), t("settings.subtitle"), "settings-tile") +
+        `<div class="modal-content settings-content">
+        <fieldset id="setting-theme" class="settings-theme"><legend>${t("settings.theme")}</legend>
+        <div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${themePreviews[mode]}<span><input type="radio" name="setting-theme" value="${mode}">${t("settings."+mode)}</span></label>`).join("")}</div></fieldset>
+        <div class="settings-row"><label for="setting-density">${t("settings.density")}</label><select id="setting-density" class="field-select"><option value="standard">${t("settings.standard")}</option><option value="compact">${t("settings.compact")}</option></select></div>
+        <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5,2].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
+        <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div></div>` +
+        footer(`<button id="settings-defaults" class="button">${t("settings.defaults")}</button><button class="button" data-close>${t("common.cancel")}</button><button id="settings-save" class="button">${t("settings.done")}</button>`,t("ui.5fb5c0083f18"), "shield"),
+        "settings", "S01", "#settings-save",
     );
+    settingsPreview = {original,draft};
+    function refresh() {
+        $(`input[name="setting-theme"][value="${draft.theme}"]`).checked = true;
+        $("#setting-text-scale").value = String(draft.textScale);
+        $("#setting-language").value = draft.language;
+        $("#setting-density").value = draft.density;
+        $("#recent-enabled").checked = draft.recent;
+        $("#clear-recent").textContent = t(draft.clearRecent ? "settings.clearPending" : "settings.clearRecent");
+        $("#clear-recent").disabled = draft.clearRecent;
+        $("#modal").querySelectorAll("select").forEach(select=>select._xdzipRefresh?.());
+        setTheme(draft.theme);
+        document.documentElement.style.setProperty("--list-density-factor",draft.density === "compact" ? .8 : 1);
+        document.documentElement.dataset.listDensity = draft.density;
+        document.documentElement.style.setProperty("--settings-text-scale",draft.textScale);
+    }
+    refresh();
     bindClose();
-    $(`input[name="setting-theme"][value="${state.theme}"]`).checked = true;
-    $("#setting-theme").onchange = (e) => {
-        if (e.target.matches('input[name="setting-theme"]'))
-            setTheme(e.target.value);
-    };
-    $("#setting-density").onchange = (e) => {
-        document.documentElement.style.setProperty(
-            "--row-height",
-            e.target.value === "compact" ? "32px" : "40px",
-        );
-        document
-            .querySelectorAll("td")
-            .forEach((td) => (td.style.height = "var(--row-height)"));
-    };
-    $("#recent-enabled").onchange = (e) => (state.recent = e.target.checked);
-    $("#clear-recent").onclick = () =>
-        toast("最近记录已清空，原文件未被删除。");
+    $("#setting-theme").onchange = e => { draft.theme=e.target.value;refresh(); };
+    $("#setting-text-scale").onchange = e => { draft.textScale=Number(e.target.value);refresh(); };
+    $("#setting-language").onchange = e => { draft.language=e.target.value; };
+    $("#setting-density").onchange = e => { draft.density=e.target.value; refresh(); };
+    $("#recent-enabled").onchange = e => { draft.recent=e.target.checked; };
+    $("#clear-recent").onclick = () => { draft.clearRecent=true; refresh(); };
+    $("#settings-defaults").onclick = () => { Object.assign(draft,{theme:"system",textScale:1,language:"zh-CN",density:"standard",recent:true,clearRecent:false});refresh(); };
+    $("#settings-save").onclick = () => { savedSettingsDemo={...draft,clearRecent:false};state.recent=draft.recent;settingsPreview=null;closeModal(); };
 }
 function setTheme(theme) {
     XdzipControls.close({ restoreFocus: false });
@@ -1669,7 +1699,7 @@ window.XdzipDesign = {
         } else scenario(view);
         } finally { applyingReviewPreset = false; }
     },
-    theme: setTheme,
+    theme(value) { restoreSettingsPreview(); setTheme(value); },
     platform(value) {
         document.body.dataset.platform = value;
         if (document.body.classList.contains("welcome-mode")) showWelcome();

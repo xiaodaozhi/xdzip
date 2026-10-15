@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import Xdzip.Settings 1.0
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQml.Models
@@ -13,7 +14,11 @@ ApplicationWindow {
     minimumHeight: Theme.mainMinimumHeight
     readonly property color accentTextColor: Theme.accentText
     property bool uiReady: false
-    Component.onCompleted: uiReady = true
+    Component.onCompleted: {
+        uiReady = true;
+        Theme.dark = AppSettings.dark;
+        Theme.fontScale = AppSettings.textScale;
+    }
     readonly property bool welcomeVisible: !reader.ready
     property bool welcomeWasBusy: false
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
@@ -24,21 +29,21 @@ ApplicationWindow {
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
     property bool integratedTitlebar: false
     property string searchSession: ""
-    property bool darkMode: false
+    property bool darkMode: AppSettings.dark
     property string activeTaskId: ""
     property var taskSnapshot: ({})
     property bool waitBeforeExit: false
     property bool allowExit: false
     function phaseLabel(status: string): string {
-        return ({queued: qsTr("等待开始"), preparing: qsTr("检查目标与归档"), running: taskSnapshot.creating ? qsTr("读取与压缩") : qsTr("解码与写入"), verifying: qsTr("校验完整归档"),
-                 waiting: qsTr("等待处理重名"), committing: qsTr("提交完整文件"), cancelling: qsTr("停止与清理"),
-                 cleaning: qsTr("清理暂存"), succeeded: qsTr("完成"), failed: qsTr("失败"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
+        return ({queued: qsTrId("ui.03f07c12d5fa"), preparing: qsTrId("ui.a1b9ba49c8a2"), running: taskSnapshot.creating ? qsTrId("ui.f066ff44699e") : qsTrId("ui.8865f5103610"), verifying: qsTrId("ui.b87ef7da7959"),
+                 waiting: qsTrId("ui.9a6cfa6abc53"), committing: qsTrId("ui.f5312f1e339a"), cancelling: qsTrId("ui.684398ae6c51"),
+                 cleaning: qsTrId("ui.b4966391542e"), succeeded: qsTrId("ui.c0b3fbff51cc"), failed: qsTrId("ui.28384d7afd2e"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
     }
     function taskStateLabel(status: string): string {
-        return ({queued: qsTr("排队中"), preparing: qsTr("准备中"), running: qsTr("进行中"),
-                 verifying: qsTr("校验中"), waiting: qsTr("等待处理"), committing: qsTr("保存中"),
-                 cancelling: qsTr("停止中"), cleaning: qsTr("清理中"), succeeded: qsTr("已完成"),
-                 failed: qsTr("未完成"), cancelled: qsTr("已取消")})[status] || qsTr("准备中");
+        return ({queued: qsTrId("ui.d6f766f2adf5"), preparing: qsTrId("ui.b53be09930f4"), running: qsTrId("ui.dc9591e56d50"),
+                 verifying: qsTrId("ui.784f9b54ae2b"), waiting: qsTrId("ui.8fb3a3261b43"), committing: qsTrId("ui.a1a1720d3eb5"),
+                 cancelling: qsTrId("ui.72eea71385de"), cleaning: qsTrId("ui.718b6372d7fb"), succeeded: qsTrId("ui.f28461bb49c8"),
+                 failed: qsTrId("ui.6707de42c29d"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
     }
     function showTask(id: string) {
         activeTaskId = id;
@@ -58,14 +63,14 @@ ApplicationWindow {
         const seconds = Number(taskSnapshot.elapsedMs || 0) / 1000;
         if (taskSnapshot.terminal && seconds < 2) return "—";
         return seconds >= 2 && Number(taskSnapshot.writtenBytes || 0) > 0 ?
-            formatSize(String(Math.round(Number(taskSnapshot.writtenBytes) / seconds))) + "/s" : qsTr("等待估算");
+            formatSize(String(Math.round(Number(taskSnapshot.writtenBytes) / seconds))) + "/s" : qsTrId("ui.f4199761edc9");
     }
     function remainingTime(): string {
         const t = taskSnapshot;
         const seconds = Number(t.elapsedMs || 0) / 1000;
         const written = Number(t.creating ? t.decodedBytes || 0 : t.writtenBytes || 0);
         if (seconds < 2 || !written || t.status !== "running") return "—";
-        return qsTr("约 %1 秒").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
+        return qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
     }
     property string viewMode: "list"
     property var contextEntry: ({})
@@ -138,15 +143,16 @@ ApplicationWindow {
         if (size < 1024)
             return value + " B";
         if (size < 1048576)
-            return (size / 1024).toFixed(1) + " KiB";
+            return (size / 1024).toLocaleString(Qt.locale(AppSettings.activeLanguage), "f", 1) + " KiB";
         if (size < 1073741824)
-            return (size / 1048576).toFixed(1) + " MiB";
-        return (size / 1073741824).toFixed(1) + " GiB";
+            return (size / 1048576).toLocaleString(Qt.locale(AppSettings.activeLanguage), "f", 1) + " MiB";
+        return (size / 1073741824).toLocaleString(Qt.locale(AppSettings.activeLanguage), "f", 1) + " GiB";
     }
     BrowserController {
         id: reader
         objectName: "browserController"
         onReadyToClose: root.close()
+        onArchiveOpened: path => AppSettings.rememberArchive(path)
         onPreflightReady: preflightWindow.present()
         onExtractionReady: extractWindow.configure()
         onCreationStarted: id => { createWindow.close(); root.showTask(id); }
@@ -183,7 +189,7 @@ ApplicationWindow {
         owner: root
         archiveName: root.taskSnapshot.archive || reader.extractionIntent.archive || ""
         destination: root.taskSnapshot.target || reader.extractionIntent.target || ""
-        currentFile: root.taskSnapshot.current || qsTr("正在准备…")
+        currentFile: root.taskSnapshot.current || qsTrId("ui.f07335163e36")
         fraction: root.taskFraction()
         creating: root.taskSnapshot.creating || false
         totalKnown: root.taskSnapshot.totalKnown || false
@@ -193,9 +199,9 @@ ApplicationWindow {
         errorSummary: root.taskSnapshot.error || ""
         cleanupWarning: root.taskSnapshot.cleanupWarning || false
         outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
-        processedSummary: taskWindow.creating ? qsTr("已读取 %1，压缩后 %2").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTr("已写入 %1，已提交 %2").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
-        fileCountSummary: taskWindow.creating ? qsTr("%1 个文件，%2").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTr("整体保存已结束") : qsTr("校验后整体保存")) : qsTr("%1 / %2 个文件，跳过 %3").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
-        resultSummary: qsTr("完成 %1 个文件，跳过 %2，创建 %3 个目录").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
+        processedSummary: taskWindow.creating ? qsTrId("ui.a1c9c21cfbef").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTrId("ui.8bce13df4816").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
+        fileCountSummary: taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        resultSummary: qsTrId("ui.51fe7c80c764").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
         resultTask: root.taskSnapshot
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
@@ -223,7 +229,7 @@ ApplicationWindow {
         id: inspectorWindow
         objectName: "inspectorWindow"
         transientParent: root
-        title: qsTr("条目详情")
+        title: qsTrId("ui.801948f7646f")
         width: 360
         height: 600
         minimumWidth: 320
@@ -252,6 +258,18 @@ ApplicationWindow {
         function onVisibleChanged() {
             if (!createWindow.visible && root.welcomeVisible) welcomePage.focusCreate();
         }
+    }
+    SettingsWindow { id: settingsWindow; owner: root }
+    Connections {
+        target: AppSettings
+        function onAppearanceChanged() {
+            root.darkMode = AppSettings.dark;
+            Theme.fontScale = AppSettings.textScale;
+        }
+    }
+    Shortcut {
+        sequence: StandardKey.Preferences
+        onActivated: settingsWindow.configure()
     }
     Shortcut {
         sequence: StandardKey.Open
@@ -290,7 +308,7 @@ ApplicationWindow {
         id: directoryMenu
         objectName: "browserDirectoryMenu"
         CommandMenuItem {
-            text: root.contextDirectoryId.length ? qsTr("进入目录") : qsTr("根目录")
+            text: root.contextDirectoryId.length ? qsTrId("ui.fb1eccfe14ea") : qsTrId("ui.42ee2863b6d7")
             enabled: reader.ready && !reader.busy
             onTriggered: {
                 if (root.contextDirectoryId.length)
@@ -300,19 +318,19 @@ ApplicationWindow {
             }
         }
         CommandMenuItem {
-            text: root.contextDirectoryExpanded ? qsTr("收起子目录") : qsTr("展开子目录")
+            text: root.contextDirectoryExpanded ? qsTrId("ui.9c9c21cc25c0") : qsTrId("ui.521dbd520244")
             enabled: reader.ready && !reader.busy && root.contextDirectoryHasChildren
-            disabledReason: qsTr("该节点没有子目录")
+            disabledReason: qsTrId("ui.fa58108c4823")
             onTriggered: directoryTree.toggleExpanded(root.contextDirectoryRow)
         }
         CommandMenuItem {
-            text: qsTr("解压此目录")
+            text: qsTrId("ui.2a7934774a06")
             enabled: reader.ready && !reader.busy
             onTriggered: reader.prepareExtraction(!root.contextDirectoryId.length, root.contextDirectoryId.length ? [root.contextDirectoryId] : [])
         }
         CommandMenuSeparator {}
         CommandMenuItem {
-            text: qsTr("在此目录中搜索")
+            text: qsTrId("ui.6050037c48c3")
             asset: "search"
             enabled: reader.ready && !reader.busy
             onTriggered: {
@@ -328,35 +346,35 @@ ApplicationWindow {
         id: sortMenu
         objectName: "browserSortMenu"
         CommandMenuItem {
-            text: qsTr("名称")
+            text: qsTrId("ui.d44e9b3d3b31")
             checkable: true
             checked: reader.sortOrder === 1 || reader.sortOrder === 2
             enabled: reader.ready && !reader.busy
             onTriggered: reader.sortByColumn(0)
         }
         CommandMenuItem {
-            text: qsTr("原始大小")
+            text: qsTrId("ui.301a69c74dfc")
             checkable: true
             checked: reader.sortOrder === 3 || reader.sortOrder === 4
             enabled: reader.ready && !reader.busy
             onTriggered: reader.sortByColumn(1)
         }
         CommandMenuItem {
-            text: qsTr("压缩后")
+            text: qsTrId("ui.2582e6a2c9e2")
             checkable: true
             checked: reader.sortOrder === 5 || reader.sortOrder === 6
             enabled: reader.ready && !reader.busy
             onTriggered: reader.sortByColumn(2)
         }
         CommandMenuItem {
-            text: qsTr("类型")
+            text: qsTrId("ui.ba40014ff496")
             checkable: true
             checked: reader.sortOrder === 9 || reader.sortOrder === 10
             enabled: reader.ready && !reader.busy
             onTriggered: reader.sortByColumn(3)
         }
         CommandMenuItem {
-            text: qsTr("修改日期")
+            text: qsTrId("ui.2cbced881b2d")
             checkable: true
             checked: reader.sortOrder === 11 || reader.sortOrder === 12
             enabled: reader.ready && !reader.busy
@@ -364,7 +382,7 @@ ApplicationWindow {
         }
         CommandMenuSeparator {}
         CommandMenuItem {
-            text: qsTr("按归档顺序排列")
+            text: qsTrId("ui.897c9681c945")
             checkable: true
             checked: reader.sortOrder === 0
             enabled: reader.ready && !reader.busy
@@ -374,22 +392,22 @@ ApplicationWindow {
     CommandMenu {
         id: viewMenu
         objectName: "browserViewMenu"
-        title: qsTr("视图")
+        title: qsTrId("ui.1c5c06713870")
         CommandMenuItem {
-            text: qsTr("列表视图")
+            text: qsTrId("ui.d56220435194")
             checkable: true
             checked: root.viewMode === "list"
             onTriggered: root.viewMode = "list"
         }
         CommandMenuItem {
-            text: qsTr("网格视图")
+            text: qsTrId("ui.a35441db5cd1")
             checkable: true
             checked: root.viewMode === "grid"
             onTriggered: root.viewMode = "grid"
         }
         CommandMenuSeparator {}
         CommandMenuItem {
-            text: qsTr("文件详情")
+            text: qsTrId("ui.27b6154b3fd3")
             checkable: true
             checked: root.inspectorVisible || inspectorWindow.visible
             onTriggered: root.toggleInspector()
@@ -400,16 +418,16 @@ ApplicationWindow {
         objectName: "browserEntryMenu"
         CommandMenuItem {
             objectName: "contextEnterDirectory"
-            text: qsTr("进入目录")
+            text: qsTrId("ui.fb1eccfe14ea")
             asset: "folder"
             commandVisible: Boolean(root.contextEntry.directory)
             enabled: root.contextAvailable && Boolean(root.contextEntry.navigable)
-            disabledReason: qsTr("该条目不具有可导航的安全目录身份")
+            disabledReason: qsTrId("ui.613797f41e6c")
             onTriggered: reader.enterDirectory(root.contextEntry.row)
         }
         CommandMenuItem {
             objectName: "contextProperties"
-            text: qsTr("文件属性")
+            text: qsTrId("ui.19ca3df6c82f")
             enabled: root.contextAvailable
             onTriggered: {
                 reader.selectForContext(root.contextEntry.row);
@@ -418,26 +436,26 @@ ApplicationWindow {
             }
         }
         CommandMenuItem {
-            text: qsTr("解压元数据预检")
+            text: qsTrId("ui.994e3891e9d5")
             enabled: root.contextAvailable && reader.canPreflight
             onTriggered: reader.inspectSelection()
         }
         CommandMenuSeparator {}
         CommandMenuItem {
             objectName: "contextCopyName"
-            text: qsTr("复制名称")
+            text: qsTrId("ui.a77a6cca3ce2")
             shortcutLabel: Qt.platform.os === "osx" ? "⌘C" : "Ctrl+C"
             enabled: root.contextAvailable && reader.selectedCount > 0
             onTriggered: reader.copySelection(false)
         }
         CommandMenuItem {
-            text: qsTr("复制归档内路径")
+            text: qsTrId("ui.567254b2f2a5")
             enabled: root.contextAvailable && reader.selectedCount > 0
             onTriggered: reader.copySelection(true)
         }
         CommandMenuSeparator {}
         CommandMenuItem {
-            text: qsTr("解压所选")
+            text: qsTrId("ui.a1fca7bde5d2")
             enabled: root.contextAvailable && reader.selectedCount > 0
             onTriggered: reader.prepareExtraction(false)
         }
@@ -446,33 +464,33 @@ ApplicationWindow {
         id: emptyMenu
         objectName: "browserBackgroundMenu"
         CommandMenuItem {
-            text: qsTr("全选当前目录")
+            text: qsTrId("ui.64f51f30dabc")
             enabled: reader.ready && !reader.busy
             onTriggered: reader.selectAll(true)
         }
         CommandMenuItem {
-            text: qsTr("取消选择")
+            text: qsTrId("ui.74966e20df2e")
             enabled: reader.ready && !reader.busy && reader.selectedCount > 0
             onTriggered: reader.selectAll(false)
         }
         CommandMenuSeparator {}
         CommandMenu {
-            title: qsTr("视图")
+            title: qsTrId("ui.1c5c06713870")
             CommandMenuItem {
-                text: qsTr("列表视图")
+                text: qsTrId("ui.d56220435194")
                 checkable: true
                 checked: root.viewMode === "list"
                 onTriggered: root.viewMode = "list"
             }
             CommandMenuItem {
-                text: qsTr("网格视图")
+                text: qsTrId("ui.a35441db5cd1")
                 checkable: true
                 checked: root.viewMode === "grid"
                 onTriggered: root.viewMode = "grid"
             }
         }
         CommandMenuItem {
-            text: qsTr("文件详情")
+            text: qsTrId("ui.27b6154b3fd3")
             checkable: true
             checked: root.inspectorVisible || inspectorWindow.visible
             onTriggered: root.toggleInspector()
@@ -489,7 +507,7 @@ ApplicationWindow {
             canClose: reader.ready && !reader.busy
             onOpenRequested: reader.chooseArchive()
             onCloseRequested: reader.closeArchive()
-            onThemeRequested: root.darkMode = !root.darkMode
+            onSettingsRequested: settingsWindow.configure()
             onDragRequested: root.startSystemMove()
         }
         ArchiveToolbar {
@@ -510,7 +528,7 @@ ApplicationWindow {
             onSelectAllRequested: reader.selectAll(true)
             onClearSelectionRequested: reader.selectAll(false)
             onDetailsRequested: root.toggleInspector()
-            onThemeRequested: root.darkMode = !root.darkMode
+            onSettingsRequested: settingsWindow.configure()
         }
         WelcomePage {
             id: welcomePage
@@ -520,13 +538,13 @@ ApplicationWindow {
             canOpen: reader.runtimeAvailable && !reader.busy
             canCreate: reader.runtimeAvailable && !reader.busy
             busy: reader.busy && reader.title.length > 0
-            message: reader.busy ? "" : reader.message
+            message: reader.busy ? "" : reader.message || AppSettings.error
             onOpenRequested: reader.chooseArchive()
             onCreateRequested: createWindow.configure()
             onCancelRequested: reader.cancel()
             onDragEntered: urls => {
                 dropSupported = reader.canOpenDroppedUrls(urls);
-                dropMessage = dropSupported ? qsTr("松开即可打开压缩文件") : qsTr("请拖入单个本地 ZIP、TAR 或 TAR.GZ 压缩文件");
+                dropMessage = dropSupported ? qsTrId("ui.dc3e93fbf81a") : qsTrId("ui.a3c9bc4e63f7");
             }
             onArchiveDropped: urls => reader.openDroppedUrls(urls)
         }
@@ -564,7 +582,7 @@ ApplicationWindow {
                             x: Theme.mainUnits(8)
                             objectName: "archiveCaption"
                             y: (fileHeader.height - height) / 2
-                            text: qsTr("档案文件")
+                            text: qsTrId("ui.1674a0c33f35")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainArchiveCaptionSize
                         }
@@ -574,7 +592,7 @@ ApplicationWindow {
                             x: Theme.mainUnits(8)
                             y: archiveCaption.y + archiveCaption.height + Theme.mainUnits(7)
                             width: parent.width - Theme.mainUnits(16)
-                            text: reader.title.length ? reader.title : qsTr("尚未打开归档")
+                            text: reader.title.length ? reader.title : qsTrId("ui.365d4b7cdd5c")
                             textFormat: Text.PlainText
                             elide: Text.ElideMiddle
                             font.pixelSize: Theme.mainArchiveTitleSize
@@ -602,7 +620,7 @@ ApplicationWindow {
                                 }
                             }
                             Text {
-                                text: reader.ready ? qsTr("%1 项").arg(reader.archiveTotal) : qsTr("安全归档解压")
+                                text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.archiveTotal)) : qsTrId("ui.7fe646004f2a")
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.mainSummarySize
                             }
@@ -624,7 +642,7 @@ ApplicationWindow {
                         rightPadding: Theme.mainUnits(12)
                         enabled: reader.queryAvailable
                         onClicked: reader.showRoot()
-                        Accessible.name: qsTr("根目录")
+                        Accessible.name: qsTrId("ui.42ee2863b6d7")
                         background: Rectangle {
                             radius: Theme.mainControlRadius
                             topLeftRadius: 0
@@ -651,7 +669,7 @@ ApplicationWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: qsTr("根目录")
+                                text: qsTrId("ui.42ee2863b6d7")
                                 elide: Text.ElideRight
                                 color: Theme.text
                                 font.pixelSize: Theme.mainBodySize
@@ -776,7 +794,7 @@ ApplicationWindow {
                                 height: Theme.treeDisclosureHitMinHeight * Theme.fontScale
                                 padding: (Theme.treeDisclosureHitWidth - Theme.treeDisclosureGlyphCanvas) / 2 * Theme.fontScale
                                 visible: directoryNode.hasChildren
-                                Accessible.name: directoryNode.expanded ? qsTr("收起目录") : qsTr("展开目录")
+                                Accessible.name: directoryNode.expanded ? qsTrId("ui.47c91fadcc3e") : qsTrId("ui.a49f5287fc9e")
                                 contentItem: Image {
                                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (directoryNode.expanded ? "chevron-down.png" : "chevron-right.png")
                                     fillMode: Image.PreserveAspectFit
@@ -806,7 +824,7 @@ ApplicationWindow {
                                     directoryMenu.popup(position.x, position.y);
                                 }
                             }
-                            Accessible.name: nodeName + qsTr("，%1 条记录").arg(entryCount)
+                            Accessible.name: nodeName + qsTrId("ui.81d50cef7f67", Number(entryCount))
                             Accessible.description: directoryNode.fullPath
                             background: Rectangle {
                                 radius: Theme.mainControlRadius
@@ -884,13 +902,13 @@ ApplicationWindow {
                     Text {
                         Layout.fillWidth: true
                         visible: reader.navigationLimited
-                        text: qsTr("目录数量或层级超出显示限额，仍可浏览根目录或搜索后代。")
+                        text: qsTrId("ui.a2bec6b91db6")
                         wrapMode: Text.Wrap
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
                     }
                     Text {
-                        text: qsTr("安全归档解压")
+                        text: qsTrId("ui.7fe646004f2a")
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
                     }
@@ -917,13 +935,13 @@ ApplicationWindow {
                             ...(reader.breadcrumbs.length ? reader.breadcrumbs : [
                                     {
                                         id: "",
-                                        label: qsTr("根目录"),
+                                        label: qsTrId("ui.42ee2863b6d7"),
                                         current: true
                                     }
                                 ])] : [
                             {
                                 id: "",
-                                label: qsTr("打开归档，先浏览内容"),
+                                label: qsTrId("ui.989ea71171f9"),
                                 current: true
                             }
                         ]
@@ -935,7 +953,7 @@ ApplicationWindow {
                         }
                     }
                     Text {
-                        text: reader.ready ? qsTr("%1 项").arg(reader.total) : ""
+                        text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.total)) : ""
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSummarySize
                     }
@@ -953,7 +971,7 @@ ApplicationWindow {
                         leftPadding: Theme.mainUnits(8)
                         rightPadding: Theme.mainUnits(8)
                         selected: root.viewMode === "list"
-                        Accessible.name: qsTr("列表视图")
+                        Accessible.name: qsTrId("ui.d56220435194")
                         explanation: Accessible.name
                         onClicked: root.viewMode = "list"
                         TapHandler {
@@ -974,7 +992,7 @@ ApplicationWindow {
                         leftPadding: Theme.mainUnits(5)
                         rightPadding: Theme.mainUnits(5)
                         selected: root.viewMode === "grid"
-                        Accessible.name: qsTr("网格视图")
+                        Accessible.name: qsTrId("ui.a35441db5cd1")
                         explanation: Accessible.name
                         onClicked: root.viewMode = "grid"
                     }
@@ -991,7 +1009,7 @@ ApplicationWindow {
                         leftPadding: 2
                         rightPadding: 2
                         glyphSize: Theme.mainUnits(28)
-                        Accessible.name: qsTr("排序方式")
+                        Accessible.name: qsTrId("ui.1ce6b1d7c95c")
                         explanation: Accessible.name
                         enabled: reader.queryAvailable
                         onClicked: {
@@ -1009,7 +1027,7 @@ ApplicationWindow {
                         Layout.maximumHeight: Theme.mainIconButtonSize
                         visible: !root.inspectorVisible
                         asset: "panel"
-                        Accessible.name: qsTr("显示文件预览与属性")
+                        Accessible.name: qsTrId("ui.749ca86aef0e")
                         explanation: Accessible.name
                         onClicked: root.toggleInspector()
                     }
@@ -1024,7 +1042,7 @@ ApplicationWindow {
                     Row {
                         x: -table.contentX
                         Repeater {
-                            model: [qsTr("名称"), qsTr("原始大小"), qsTr("压缩后"), qsTr("类型"), qsTr("修改日期")]
+                            model: [qsTrId("ui.d44e9b3d3b31"), qsTrId("ui.301a69c74dfc"), qsTrId("ui.2582e6a2c9e2"), qsTrId("ui.ba40014ff496"), qsTrId("ui.2cbced881b2d")]
                             Text {
                                 id: columnHeader
                                 required property string modelData
@@ -1042,7 +1060,7 @@ ApplicationWindow {
                                 activeFocusOnTab: true
                                 enabled: reader.queryAvailable
                                 Accessible.role: Accessible.Button
-                                Accessible.name: modelData + (reader.sortOrder === (index < 3 ? index * 2 + 1 : index * 2 + 3) ? qsTr("，升序") : reader.sortOrder === (index < 3 ? index * 2 + 2 : index * 2 + 4) ? qsTr("，降序") : "")
+                                Accessible.name: modelData + (reader.sortOrder === (index < 3 ? index * 2 + 1 : index * 2 + 3) ? qsTrId("ui.e5a9c120c1e7") : reader.sortOrder === (index < 3 ? index * 2 + 2 : index * 2 + 4) ? qsTrId("ui.8abeaa2c751b") : "")
                                 Accessible.onPressAction: if (reader.queryAvailable)
                                     reader.sortByColumn(index)
                                 Keys.onReturnPressed: if (reader.queryAvailable)
@@ -1093,7 +1111,7 @@ ApplicationWindow {
                                     enabled: reader.ready && !reader.busy && reader.entries.rowCount() > 0
                                     checkState: reader.selectedCount === 0 ? Qt.Unchecked : reader.selectedCount === reader.entries.rowCount() ? Qt.Checked : Qt.PartiallyChecked
                                     nextCheckState: () => checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
-                                    Accessible.name: qsTr("选择当前目录全部文件")
+                                    Accessible.name: qsTrId("ui.6f0c67b2ca91")
                                     onClicked: reader.selectAll(checkState === Qt.Checked)
                                 }
                             }
@@ -1136,7 +1154,8 @@ ApplicationWindow {
                         }
                         columnWidthProvider: columnSize
                         onWidthChanged: forceLayout()
-                        readonly property real scaledRowHeight: Math.max(Theme.mainFolderRowHeight, Theme.mainTableSize * 1.6 + Theme.mainUnits(16))
+                        readonly property real densityFactor: AppSettings.density === "compact" ? Theme.settingsCompactListFactor : 1
+                        readonly property real scaledRowHeight: Math.max(Theme.mainFolderRowHeight * densityFactor, Theme.mainTableSize * 1.6 + Theme.mainUnits(16) * densityFactor)
                         onScaledRowHeightChanged: forceLayout()
                         Connections {
                             target: Theme
@@ -1145,7 +1164,7 @@ ApplicationWindow {
                             }
                         }
                         rowHeightProvider: function (row) {
-                            return Math.max(reader.entries.data(reader.entries.index(row, 0), Qt.UserRole + 1) ? Theme.mainFolderRowHeight : Theme.mainFileRowHeight, table.scaledRowHeight);
+                            return Math.max(reader.entries.data(reader.entries.index(row, 0), Qt.UserRole + 1) ? Theme.mainFolderRowHeight * table.densityFactor : Theme.mainFileRowHeight * table.densityFactor, table.scaledRowHeight);
                         }
                         ScrollBar.vertical: ScrollBar {}
                         ScrollBar.horizontal: ScrollBar {
@@ -1335,7 +1354,7 @@ ApplicationWindow {
                                 visible: gridEntry.canSelect && (gridHover.hovered || gridEntry.chosen)
                                 checked: gridEntry.chosen
                                 enabled: reader.runtimeAvailable && !reader.busy
-                                Accessible.name: qsTr("选择 %1").arg(gridEntry.display)
+                                Accessible.name: qsTrId("ui.98fb7e184544").arg(gridEntry.display)
                                 onClicked: reader.selectRow(gridEntry.index)
                             }
                             ColumnLayout {
@@ -1397,14 +1416,14 @@ ApplicationWindow {
                         spacing: Theme.mainUnits(16)
                         Text {
                             Layout.fillWidth: true
-                            text: reader.busy ? qsTr("正在读取…") : reader.ready ? qsTr("没有匹配的条目") : qsTr("浏览归档，无需先解压")
+                            text: reader.busy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.4031b1da2311") : qsTrId("ui.ced325d6e7d0")
                             color: Theme.text
                             font.pixelSize: Theme.mainPanelTitleSize
                             horizontalAlignment: Text.AlignHCenter
                         }
                         Text {
                             Layout.fillWidth: true
-                            text: reader.message.length ? reader.message : qsTr("选择 ZIP、TAR 或 TAR.GZ 浏览内容，并解压到指定目录。")
+                            text: reader.message.length ? reader.message : qsTrId("ui.6a9e92783d20")
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainBodySize
                             wrapMode: Text.Wrap
@@ -1413,7 +1432,7 @@ ApplicationWindow {
                         AppButton {
                             Layout.alignment: Qt.AlignHCenter
                             visible: reader.busy
-                            text: qsTr("取消读取")
+                            text: qsTrId("ui.caf06adff4f1")
                             onClicked: reader.cancel()
                         }
                     }
@@ -1460,7 +1479,7 @@ ApplicationWindow {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: root.welcomeVisible ? qsTr("文件在本机处理") : qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? "，" + root.formatSize(reader.selectedBytes) : "")
+                    text: root.welcomeVisible ? qsTrId("ui.d43d21c6f28f") : qsTrId("ui.aeb126abb448", Number(reader.selectedCount)) + (reader.selectedCount ? qsTrId("common.separator") + root.formatSize(reader.selectedBytes) : "")
                     color: Theme.textSecondary
                     font.pixelSize: root.welcomeVisible ? 11 * Theme.fontScale : Theme.mainStatusSize
                     elide: Text.ElideRight
@@ -1470,8 +1489,8 @@ ApplicationWindow {
                     labelSize: root.welcomeVisible ? 12 * Theme.fontScale : Theme.mainHeaderSize
                     glyphSize: root.welcomeVisible ? 16 : Theme.mainUnits(24)
                     asset: "task-list"
-                    text: qsTr("任务 %1").arg(reader.tasks.length)
-                    explanation: qsTr("查看创建和解压任务，进行中 %1 项").arg(reader.activeTaskCount)
+                    text: qsTrId("ui.76bbe94afbc9", Number(reader.tasks.length))
+                    explanation: qsTrId("ui.bba8ad73d43c").arg(reader.activeTaskCount)
                     onClicked: taskMenu.open()
                     CommandMenu {
                         id: taskMenu
@@ -1479,7 +1498,7 @@ ApplicationWindow {
                         x: parent.width - width
                         y: -implicitHeight - Theme.mainPopupGap
                         CommandMenuItem {
-                            text: qsTr("暂无任务")
+                            text: qsTrId("ui.da9688984cdc")
                             commandVisible: reader.tasks.length === 0
                             enabled: false
                         }
@@ -1488,7 +1507,7 @@ ApplicationWindow {
                             delegate: CommandMenuItem {
                                 required property var modelData
                                 objectName: "taskMenuItem-" + modelData.id
-                                text: (modelData.creating ? qsTr("创建任务 %1") : qsTr("解压任务 %1")).arg(modelData.id)
+                                text: (modelData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(modelData.id)
                                 asset: "task-list"
                                 statusLabel: root.taskStateLabel(modelData.status)
                                 statusInk: modelData.status === "failed" ? Theme.menuDanger : modelData.status === "waiting" ? Theme.resultWarningInk : modelData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
@@ -1499,7 +1518,7 @@ ApplicationWindow {
                         }
                         CommandMenuSeparator { commandVisible: reader.busy }
                         CommandMenuItem {
-                            text: qsTr("取消读取")
+                            text: qsTrId("ui.caf06adff4f1")
                             commandVisible: reader.busy
                             onTriggered: reader.cancel()
                         }
@@ -1517,7 +1536,7 @@ ApplicationWindow {
                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.busy ? "activity.png" : "completed.png")
                 }
                 Text {
-                    text: reader.busy ? qsTr("正在读取…") : reader.ready ? qsTr("目录已读取") : qsTr("等待打开归档")
+                    text: reader.busy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
                     color: Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                 }

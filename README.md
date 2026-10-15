@@ -21,6 +21,8 @@
 - [实施工作清单](docs/planning/backlog.md)：可直接拆为开发 issue 的工作包与验收条件。
 - [贡献指南](CONTRIBUTING.md)与[编码规范](docs/design/10-quality-engineering.md)。
 
+界面支持独立设置窗口，可保存主题、文字大小及中文 (简体)／English (US) 语言选择；语言下次启动生效，详见[设置与国际化](docs/ux/settings-localization.md)。
+
 开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP、TAR、TAR.GZ 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务。`xdzip-browser` 已执行真实 ZIP 解压，支持从文件／目录创建普通、AES-256 加密或 `.zip.001` 编号分卷 ZIP。TAR/TAR.GZ 通过 [WP-11 契约](docs/engineering/m4-tar-gzip.md)复用安全提交；加密／分卷 ZIP 读取、独立非 TAR 的 GZIP、稀疏／特殊 TAR 和实际内容预览仍未实现；目前加密／分卷输出可使用 7-Zip 等兼容工具打开。创建边界见 [WP-10 契约](docs/engineering/m4-creation.md)，解压边界见 [M3 实现契约](docs/engineering/m3-extraction.md)。
 
 macOS 保留原生编译与测试，不自动生成或上传 Apple Silicon 开发包。build/、target/ 和所有层级的 dist/ 均不提交到 Git；详细规则见 [CI 策略](docs/engineering/ci-policy.md)。

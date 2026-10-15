@@ -9,7 +9,7 @@ Rectangle {
     property bool integratedTitlebar: false
     property bool canOpen: true
     property bool canClose: false
-    signal themeRequested
+    signal settingsRequested
     signal dragRequested
     signal openRequested
     signal closeRequested
@@ -56,7 +56,7 @@ Rectangle {
         radius: height / 2
         border.color: Theme.border
         Accessible.role: Accessible.PageTab
-        Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+        Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTrId("ui.8f1009f1369b")
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Theme.mainUnits(15)
@@ -70,7 +70,7 @@ Rectangle {
             }
             Text {
                 Layout.fillWidth: true
-                text: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+                text: root.archiveTitle.length ? root.archiveTitle : qsTrId("ui.8f1009f1369b")
                 textFormat: Text.PlainText
                 elide: Text.ElideMiddle
                 font.pixelSize: Theme.mainTabSize
@@ -87,7 +87,7 @@ Rectangle {
                 glyphSize: Theme.mainUnits(20)
                 asset: "close"
                 enabled: root.canClose
-                Accessible.name: qsTr("关闭当前归档")
+                Accessible.name: qsTrId("ui.6eff18378890")
                 explanation: Accessible.name
                 onClicked: root.closeRequested()
             }
@@ -102,8 +102,8 @@ Rectangle {
         glyphSize: Theme.mainUnits(26)
         asset: "plus"
         enabled: root.canOpen
-        Accessible.name: qsTr("打开归档")
-        explanation: qsTr("打开归档；当前版本替换现有会话")
+        Accessible.name: qsTrId("ui.1b59353f1874")
+        explanation: qsTrId("ui.e5ab37895edd")
         onClicked: root.openRequested()
     }
     ArchiveAction {
@@ -115,17 +115,8 @@ Rectangle {
         height: Theme.mainSettingsSize
         glyphSize: Theme.mainToolbarIconSize
         asset: "settings"
-        Accessible.name: qsTr("外观设置")
+        Accessible.name: qsTrId("settings.title")
         explanation: Accessible.name
-        onClicked: appearance.open()
-        CommandMenu {
-            id: appearance
-            x: parent.width - width
-            y: parent.height + Theme.mainPopupGap
-            CommandMenuItem {
-                text: Theme.dark ? qsTr("切换浅色外观") : qsTr("切换深色外观")
-                onTriggered: root.themeRequested()
-            }
-        }
+        onClicked: root.settingsRequested()
     }
 }

@@ -11,7 +11,7 @@ AbstractButton {
     checkable: true
     hoverEnabled: true
     padding: 4
-    Accessible.name: qsTr("查看处理明细")
+    Accessible.name: qsTrId("ui.607c38a015ea")
     background: Rectangle {
         radius: Theme.operationControlRadius
         color: root.hovered ? Theme.selection : "transparent"
@@ -24,8 +24,8 @@ AbstractButton {
             source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (root.checked ? "chevron-down" : "chevron-right") + ".png"
             Layout.preferredWidth: 18; Layout.preferredHeight: 18
         }
-        Text { text: qsTr("查看处理明细"); font.pixelSize: Math.round(Theme.operationResultBodySize); font.bold: true; color: Theme.text }
+        Text { text: qsTrId("ui.607c38a015ea"); font.pixelSize: Math.round(Theme.operationResultBodySize); font.bold: true; color: Theme.text }
         Item { Layout.fillWidth: true }
-        Text { text: qsTr("%1 条记录").arg(root.recordCount); font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary }
+        Text { text: qsTrId("ui.55571e4a91ac", Number(root.recordCount)); font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary }
     }
 }

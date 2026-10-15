@@ -6,7 +6,7 @@ import QtQuick.Layouts
 OperationWindow {
     id: root
     objectName: "preflightWindow"
-    title: qsTr("解压预检")
+    title: qsTrId("ui.ff6f3ae7c4fb")
     property var report: ({})
     width: Theme.operationDefaultWidth
     requestedHeight: Math.min(620, Screen.desktopAvailableHeight - 80)
@@ -15,12 +15,12 @@ OperationWindow {
         anchors.margins: 24
         spacing: 18
         Text {
-            text: root.report.error ? qsTr("预检未完成") : root.report.findingCount !== "0" ? qsTr("发现需要处理的条目") : qsTr("基础预检完成")
+            text: root.report.error ? qsTrId("ui.716a0b6591ca") : root.report.findingCount !== "0" ? qsTrId("ui.c668803dc295") : qsTrId("ui.9cb79c4bee66")
             font.pixelSize: Theme.panelTitleSize; font.bold: true; color: Theme.text
         }
         Text {
             Layout.fillWidth: true
-            text: qsTr("检查本页选择，包含所选目录中的全部后代条目。不会创建或修改文件。")
+            text: qsTrId("ui.db661e297081")
             wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: Theme.bodySize
         }
         Rectangle {
@@ -29,14 +29,14 @@ OperationWindow {
             RowLayout {
                 anchors.fill: parent; anchors.margins: 18; spacing: 24
                 Repeater {
-                    model: [qsTr("展开后的记录"), qsTr("声明字节总量"), qsTr("发现的问题")]
+                    model: [qsTrId("ui.0790c26b1e36"), qsTrId("ui.377532e93480"), qsTrId("ui.9d959257ce7e")]
                     ColumnLayout {
                         required property int index
                         required property string modelData
                         Layout.fillWidth: true
                         Text { text: parent.modelData; color: Theme.textSecondary; font.pixelSize: Theme.secondarySize }
                         Text {
-                            text: [root.report.entries || "—", root.report.bytes === "unknown" ? qsTr("无法计算") : root.report.bytes || "—", root.report.findingCount || "—"][parent.index]
+                            text: [root.report.entries || "—", root.report.bytes === "unknown" ? qsTrId("ui.aa524057ccca") : root.report.bytes || "—", root.report.findingCount || "—"][parent.index]
                             color: Theme.text; font.pixelSize: 18; font.bold: true
                         }
                     }
@@ -65,14 +65,14 @@ OperationWindow {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: root.report.findingCount === "0" ? qsTr("未发现本阶段规则覆盖的路径或容量问题。") : qsTr("最多显示前 64 条问题；不会自动覆盖、改名或跳过。")
+                    text: root.report.findingCount === "0" ? qsTrId("ui.f644f6ec6fad") : qsTrId("ui.780102188429")
                     color: Theme.textSecondary; wrapMode: Text.Wrap; font.pixelSize: Theme.bodySize
                     visible: !root.report.error
                 }
                 Text {
                     Layout.fillWidth: true
                     visible: !!root.report.unicodeReview
-                    text: qsTr("包含 Unicode 名称，仍需在目标文件系统检查名称等价与碰撞。")
+                    text: qsTrId("ui.b8b0671912e5")
                     wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: Theme.bodySize
                 }
             }
@@ -80,8 +80,8 @@ OperationWindow {
         OperationFooter {
             Layout.fillWidth: true
             contentInset: 0
-            note: qsTr("此报告仅检查元数据；开始解压后逐文件验证内容与目标，完整校验后才提交。")
-            OperationFooterButton { text: qsTr("返回浏览"); primary: true; onClicked: root.close() }
+            note: qsTrId("ui.0d92f3d4cae3")
+            OperationFooterButton { text: qsTrId("ui.26867436321f"); primary: true; onClicked: root.close() }
         }
     }
 }

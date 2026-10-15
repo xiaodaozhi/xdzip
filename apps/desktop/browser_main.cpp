@@ -2,6 +2,7 @@
 #include "BrowserController.h"
 #include "FocusDismissPolicy.h"
 #include "UiFont.h"
+#include "UiText.h"
 #include <QApplication>
 #include <QEvent>
 #include <QIcon>
@@ -24,6 +25,8 @@ int main(int argc, char *argv[]) {
     application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     Q_INIT_RESOURCE(ui);
+    if (!initializeUiText())
+        return 5;
     if (!installUiFont())
         return 5;
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));

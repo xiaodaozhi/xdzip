@@ -43,7 +43,7 @@ Button {
             spacing: 0
             Text {
                 Layout.fillWidth: true
-                text: root.busy ? qsTr("正在打开…") : root.title
+                text: root.busy ? qsTrId("ui.821ffb8cd6a2") : root.title
                 textFormat: Text.PlainText
                 font.pixelSize: Theme.welcomeActionTitleSize * Theme.fontScale
                 font.weight: Font.DemiBold

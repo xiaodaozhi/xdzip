@@ -9,7 +9,7 @@ Button {
     padding: 0
     hoverEnabled: true
     focusPolicy: Qt.StrongFocus
-    Accessible.name: qsTr("移除 %1").arg(entryName)
+    Accessible.name: qsTrId("ui.2ec7e443b1c7").arg(entryName)
     background: Rectangle {
         objectName: root.objectName + "Background"
         anchors.centerIn: parent

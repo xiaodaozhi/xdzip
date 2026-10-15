@@ -14,7 +14,7 @@ OperationWindow {
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
     property bool sampleData: false
-    title: checking ? sampleData ? qsTr("完整性检查，界面预览") : qsTr("完整性检查") : sampleData ? qsTr("任务，示例数据") : terminal ? creating ? qsTr("压缩结果") : qsTr("解压结果") : creating ? qsTr("压缩任务") : qsTr("解压任务")
+    title: checking ? sampleData ? qsTrId("ui.09fb2202dff9") : qsTrId("ui.06840dd516fe") : sampleData ? qsTrId("ui.cbd8ddd9b2b3") : terminal ? creating ? qsTrId("ui.ecabd6e05c84") : qsTrId("ui.7525c4c57b28") : creating ? qsTrId("ui.7d33a8f142f9") : qsTrId("ui.60483c3431b0")
     allowMinimize: true
     required property string archiveName
     required property string destination
@@ -27,11 +27,11 @@ OperationWindow {
     property bool cleanupWarning: false
     property bool outcomeUncertain: false
     property string resultSummary: ""
-    property string processedSummary: qsTr("等待任务数据")
-    property string fileCountSummary: qsTr("数量未知")
-    property string speedSummary: qsTr("等待估算")
-    property string remainingSummary: qsTr("等待估算")
-    property string phaseSummary: qsTr("准备中")
+    property string processedSummary: qsTrId("ui.730a0e3c817a")
+    property string fileCountSummary: qsTrId("ui.0c98ac32e82f")
+    property string speedSummary: qsTrId("ui.f4199761edc9")
+    property string remainingSummary: qsTrId("ui.f4199761edc9")
+    property string phaseSummary: qsTrId("ui.b53be09930f4")
     property var resultTask: ({})
     readonly property bool terminal: ["succeeded", "failed", "cancelled"].includes(taskStatus)
     readonly property bool largeType: Theme.fontScale > 1.35
@@ -44,10 +44,10 @@ OperationWindow {
     }
     readonly property alias timingHint: timingHint
     readonly property alias closingHint: footer.hint
-    readonly property string heading: checking ? taskStatus === "succeeded" ? qsTr("检查完成") : taskStatus === "failed" ? qsTr("完整性检查未完成") : taskStatus === "cancelled" ? qsTr("检查已取消") : stopping ? qsTr("正在停止检查") : taskStatus === "queued" ? qsTr("检查已排队") : qsTr("正在检查归档") : taskStatus === "succeeded" ? (creating ? qsTr("压缩完成") : qsTr("解压完成"))
-        : taskStatus === "failed" ? (creating ? qsTr("压缩未完成") : Number(resultTask.committedFiles || 0) > 0 ? qsTr("部分文件未完成") : qsTr("解压未完成")) : taskStatus === "cancelled" ? qsTr("任务已取消")
-        : taskStatus === "waiting" ? qsTr("等待处理重名文件") : stopping ? qsTr("正在停止")
-        : taskStatus === "queued" ? qsTr("任务已排队") : taskStatus === "verifying" ? qsTr("正在校验归档") : (creating ? qsTr("正在压缩") : qsTr("正在解压"))
+    readonly property string heading: checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
+        : taskStatus === "failed" ? (creating ? qsTrId("ui.b5926b78a037") : Number(resultTask.committedFiles || 0) > 0 ? qsTrId("ui.cf06124d3ffd") : qsTrId("ui.5bef0b169e84")) : taskStatus === "cancelled" ? qsTrId("ui.6f96c2add214")
+        : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : stopping ? qsTrId("ui.af48159f380f")
+        : taskStatus === "queued" ? qsTrId("ui.402ce5b3351f") : taskStatus === "verifying" ? qsTrId("ui.ceecf5089636") : (creating ? qsTrId("ui.34ee864936c6") : qsTrId("ui.09eb6850c88c"))
     ColumnLayout {
         anchors.fill: parent; spacing: 0
         ScrollView {
@@ -73,7 +73,7 @@ OperationWindow {
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 7
                         Text { Layout.fillWidth: true; Layout.preferredHeight: root.terminal ? implicitHeight : lineHeight; text: root.heading; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); lineHeight: Math.round(Math.round(root.unit(Theme.operationTitleSize)) * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text; wrapMode: Text.Wrap }
-                        Text { Layout.fillWidth: true; Layout.preferredHeight: root.terminal ? implicitHeight : lineHeight; text: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTr("归档已完成校验并保存。") : root.outcomeUncertain ? qsTr("请检查目标目录及恢复材料。") : qsTr("临时归档未发布。") : qsTr("已保留成功解压的文件。") : root.archiveName; textFormat: Text.PlainText; font.pixelSize: Math.round(root.unit(17 * Theme.fontScale)); lineHeight: Math.round(Math.round(root.unit(17 * Theme.fontScale)) * 1.5); lineHeightMode: Text.FixedHeight; color: Theme.textSecondary; elide: Text.ElideMiddle }
+                        Text { Layout.fillWidth: true; Layout.preferredHeight: root.terminal ? implicitHeight : lineHeight; text: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName; textFormat: Text.PlainText; font.pixelSize: Math.round(root.unit(17 * Theme.fontScale)); lineHeight: Math.round(Math.round(root.unit(17 * Theme.fontScale)) * 1.5); lineHeightMode: Text.FixedHeight; color: Theme.textSecondary; elide: Text.ElideMiddle }
                     }
                 }
                 ColumnLayout {
@@ -81,7 +81,7 @@ OperationWindow {
                     Layout.fillWidth: true
                     Layout.leftMargin: root.unit(Theme.operationProgressContentInset); Layout.rightMargin: root.unit(Theme.operationProgressContentInset)
                     Layout.bottomMargin: root.unit(12); spacing: root.unit(12)
-                    TaskPathCard { density: root.density; Layout.fillWidth: true; heading: root.checking ? qsTr("检查对象") : root.creating ? qsTr("保存到") : qsTr("解压到"); value: root.destination; iconSource: "qrc:/xdzip/assets/folder.png" }
+                    TaskPathCard { density: root.density; Layout.fillWidth: true; heading: root.checking ? qsTrId("ui.c0dbe7153a05") : root.creating ? qsTrId("ui.e31cccd7bba0") : qsTrId("ui.8d7e2c47b34e"); value: root.destination; iconSource: "qrc:/xdzip/assets/folder.png" }
                     Rectangle {
                         Layout.fillWidth: true; implicitHeight: progressColumn.implicitHeight + root.unit(38)
                         color: Theme.taskPanel; border.color: Theme.taskBorder; radius: Theme.controlRadius
@@ -95,7 +95,7 @@ OperationWindow {
                                     Layout.fillWidth: true
                                     value: Number.isFinite(root.fraction) ? Math.max(0, Math.min(1, root.fraction)) : 0
                                     indeterminate: !root.totalKnown
-                                    Accessible.name: root.checking ? qsTr("完整性检查进度") : root.creating ? qsTr("压缩进度") : qsTr("解压进度")
+                                    Accessible.name: root.checking ? qsTrId("ui.928c432129ac") : root.creating ? qsTrId("ui.317cb00c1275") : qsTrId("ui.fcef101b1132")
                                     background: Rectangle { implicitHeight: root.unit(Theme.operationProgressTrackHeight); radius: height / 2; color: Theme.taskTrack }
                                     contentItem: Item {
                                         implicitHeight: root.unit(Theme.operationProgressTrackHeight)
@@ -111,7 +111,7 @@ OperationWindow {
                                         }
                                     }
                                 }
-                                Text { objectName: "progressLabel"; Layout.preferredHeight: lineHeight; lineHeight: Math.round(root.unit(Theme.operationProgressPercentageLineHeight) * Theme.fontScale); lineHeightMode: Text.FixedHeight; verticalAlignment: Text.AlignVCenter; text: root.totalKnown ? Math.floor(progress.value * 100) + "%" : qsTr("总量未知"); font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.accentInk }
+                                Text { objectName: "progressLabel"; Layout.preferredHeight: lineHeight; lineHeight: Math.round(root.unit(Theme.operationProgressPercentageLineHeight) * Theme.fontScale); lineHeightMode: Text.FixedHeight; verticalAlignment: Text.AlignVCenter; text: root.totalKnown ? Math.floor(progress.value * 100) + "%" : qsTrId("ui.d80cf5192559"); font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.accentInk }
                             }
                             GridLayout {
                                 Layout.fillWidth: true; columns: root.largeType ? 1 : 2; rowSpacing: root.unit(8)
@@ -121,23 +121,23 @@ OperationWindow {
                             Rectangle { Layout.fillWidth: true; implicitHeight: 1; color: Theme.taskBorder }
                             GridLayout {
                                 Layout.fillWidth: true; columns: root.largeType ? 1 : 5; columnSpacing: root.unit(18); rowSpacing: root.unit(12)
-                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: root.checking ? qsTr("平均读取") : qsTr("平均写入"); value: root.stopping ? "—" : root.speedSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
+                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: root.checking ? qsTrId("ui.21e080cef726") : qsTrId("ui.725c2dd76eaa"); value: root.stopping ? "—" : root.speedSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
                                 Rectangle { visible: !root.largeType; Layout.fillHeight: true; implicitWidth: 1; color: Theme.taskBorder }
-                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: qsTr("预计剩余"); value: root.stopping || !root.totalKnown ? "—" : root.remainingSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
+                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: qsTrId("ui.8db1c6ec1423"); value: root.stopping || !root.totalKnown ? "—" : root.remainingSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
                                 Rectangle { visible: !root.largeType; Layout.fillHeight: true; implicitWidth: 1; color: Theme.taskBorder }
-                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: qsTr("当前阶段"); value: root.stopping ? qsTr("停止与清理") : root.phaseSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
+                                TaskMetric { density: root.density; Layout.fillWidth: true; Layout.preferredWidth: 1; heading: qsTrId("ui.30b7a5d7edaa"); value: root.stopping ? qsTrId("ui.684398ae6c51") : root.phaseSummary; labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); valueSize: Math.round(root.unit(Theme.operationMetricValueSize)) }
                             }
                         }
                     }
                     TaskPathCard { density: root.density;
                         Layout.fillWidth: true; objectName: "currentFileCard"
-                        heading: root.terminal ? root.checking ? qsTr("检查结果") : qsTr("结果") : qsTr("当前文件")
-                        value: root.checking && root.terminal ? root.resultSummary : root.outcomeUncertain ? qsTr("请检查目标目录中的已提交文件。") : root.terminal ? root.resultSummary : root.currentFile
+                        heading: root.terminal ? root.checking ? qsTrId("ui.7c5569c38a3c") : qsTrId("ui.bb7ef73495dd") : qsTrId("ui.33e19add5200")
+                        value: root.checking && root.terminal ? root.resultSummary : root.outcomeUncertain ? qsTrId("ui.e43731762133") : root.terminal ? root.resultSummary : root.currentFile
                         iconSource: root.terminal ? "qrc:/xdzip/assets/" + (root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning") + ".png" : AssetLibrary.fileIcon(root.currentFile, root.currentFile.endsWith("/"), false)
                     }
                     Text { Layout.fillWidth: true; visible: !!root.errorSummary; text: root.errorSummary; textFormat: Text.PlainText; color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
-                    Text { Layout.fillWidth: true; visible: root.cleanupWarning; text: qsTr("部分暂存数据未能清理，已保留恢复材料，请检查目标目录。"); color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
-                    InfoRow { id: timingHint; Layout.fillWidth: true; text: qsTr("实际耗时取决于文件与磁盘状态。"); labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); lineFactor: 1.4; iconSize: Theme.operationFooterIconSize }
+                    Text { Layout.fillWidth: true; visible: root.cleanupWarning; text: qsTrId("ui.6739af981bf5"); color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
+                    InfoRow { id: timingHint; Layout.fillWidth: true; text: qsTrId("ui.77ec1e1ef2e8"); labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); lineFactor: 1.4; iconSize: Theme.operationFooterIconSize }
                 }
                 OperationResultPanel {
                     objectName: "taskResultPanel"
@@ -156,11 +156,11 @@ OperationWindow {
             contentInset: root.unit(Theme.operationProgressContentInset)
             verticalInset: root.unit(12); minimumFooterHeight: root.unit(Theme.operationFooterHeight)
             Layout.fillWidth: true
-            note: root.checking ? root.sampleData ? qsTr("界面预览，不执行实际校验。") : root.terminal ? qsTr("检查已结束，未写出文件。") : qsTr("关闭此窗口后，任务仍会继续。") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTr("归档已完整保存并校验。") : root.outcomeUncertain ? qsTr("请检查目标目录及恢复材料。") : root.cleanupWarning ? qsTr("暂存清理未完成，恢复材料已保留。") : qsTr("已有归档保留，暂存数据已处理。")) : root.terminal ? qsTr("已提交的文件保留在目标目录。") : qsTr("关闭此窗口后，任务仍会继续。")
-            OperationFooterButton { text: root.terminal ? qsTr("关闭") : qsTr("返回浏览"); onClicked: root.close() }
-            OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTr("处理重名文件"); primary: true; onClicked: root.conflictRequested() }
-            OperationFooterButton { visible: root.terminal && !root.checking; text: qsTr("打开目标文件夹"); onClicked: root.openOutputRequested() }
-            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTr("正在停止…") : root.checking ? qsTr("取消检查") : qsTr("取消任务"); enabled: !root.stopping; onClicked: root.cancelRequested() }
+            note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.terminal ? qsTrId("ui.7235cf9b27c3") : qsTrId("ui.188180d3d3d3") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
+            OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
+            OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
+            OperationFooterButton { visible: root.terminal && !root.checking; text: qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
+            OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }
     }
 }

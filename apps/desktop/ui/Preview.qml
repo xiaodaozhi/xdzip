@@ -9,7 +9,7 @@ ApplicationWindow {
     minimumWidth: 800
     minimumHeight: 600
     visible: true
-    title: qsTr("组件开发预览")
+    title: qsTrId("ui.c19dff3add03")
     color: Theme.canvas
     property bool stopping: false
     property bool totalKnown: true
@@ -26,43 +26,43 @@ ApplicationWindow {
         }
         Text {
             Layout.fillWidth: true
-            text: qsTr("组件开发预览")
+            text: qsTrId("ui.c19dff3add03")
             font.pixelSize: Theme.panelTitleSize
             color: Theme.text
         }
         Text {
             Layout.fillWidth: true
-            text: qsTr("当前版本用于检查独立任务窗口、主题与文字缩放。示例不会打开归档或读写文件。")
+            text: qsTrId("ui.e2cb3aefdf46")
             wrapMode: Text.Wrap
             font.pixelSize: Theme.bodySize
             color: Theme.textSecondary
         }
         AppButton {
-            text: qsTr("打开任务窗口")
+            text: qsTrId("ui.1ff29e2c4f9e")
             primary: true
             onClicked: task.present()
         }
         AppButton {
-            text: qsTr("预览完整性检查窗口")
+            text: qsTrId("ui.110c344f1bfb")
             onClicked: {
                 integrity.taskStatus = "running";
                 integrity.present();
             }
         }
         AppButton {
-            text: Theme.dark ? qsTr("切换浅色") : qsTr("切换深色")
+            text: Theme.dark ? qsTrId("ui.a9c0aba4a8d9") : qsTrId("ui.0aa457c7157c")
             onClicked: Theme.dark = !Theme.dark
         }
         AppButton {
-            text: Theme.fontScale === 1 ? qsTr("文字放大至 200%") : qsTr("恢复文字大小")
+            text: Theme.fontScale === 1 ? qsTrId("ui.654163d57759") : qsTrId("ui.e4c6ed7edc0e")
             onClicked: Theme.fontScale = Theme.fontScale === 1 ? 2 : 1
         }
         AppButton {
-            text: root.totalKnown ? qsTr("检查未知总量") : qsTr("恢复已知总量")
+            text: root.totalKnown ? qsTrId("ui.46494508e8c5") : qsTrId("ui.36811ad33361")
             onClicked: root.totalKnown = !root.totalKnown
         }
         AppButton {
-            text: qsTr("重置示例状态")
+            text: qsTrId("ui.85a67ad77e63")
             onClicked: root.stopping = false
         }
     }
@@ -70,14 +70,14 @@ ApplicationWindow {
         id: task
         sampleData: true
         owner: root
-        archiveName: qsTr("北境旅行.zip")
-        destination: qsTr("下载 / 北境旅行")
-        currentFile: qsTr("旅途瞬间-08.jpg")
-        processedSummary: task.totalKnown ? qsTr("已处理 46.5 MB / 77.5 MB") : qsTr("已处理 46.5 MB")
-        fileCountSummary: "18 / 30 个文件"
+        archiveName: qsTrId("ui.520b9959055c")
+        destination: qsTrId("ui.ff8d59dd14c0")
+        currentFile: qsTrId("ui.256a90e1f32a")
+        processedSummary: task.totalKnown ? qsTrId("ui.2b2e4496585d") : qsTrId("ui.2e94836b4139")
+        fileCountSummary: qsTrId("ui.513fdd900786")
         speedSummary: "6.2 MB/s"
-        remainingSummary: "约 5 秒"
-        phaseSummary: "写入文件"
+        remainingSummary: qsTrId("ui.59edd20c37ae")
+        phaseSummary: qsTrId("ui.7ed80e44eaf9")
         fraction: 0.6
         totalKnown: root.totalKnown
         stopping: root.stopping
@@ -87,15 +87,15 @@ ApplicationWindow {
         id: integrity
         owner: root
         sampleData: true
-        archiveName: qsTr("北境旅行.zip")
-        destination: qsTr("下载 / 北境旅行.zip")
-        currentFile: qsTr("旅途瞬间-08.jpg")
-        processedSummary: qsTr("已读取 46.5 MB / 77.5 MB")
-        fileCountSummary: qsTr("18 / 30 个文件")
+        archiveName: qsTrId("ui.520b9959055c")
+        destination: qsTrId("ui.5d0e624f9cbb")
+        currentFile: qsTrId("ui.256a90e1f32a")
+        processedSummary: qsTrId("ui.8ef695dbdd2d")
+        fileCountSummary: qsTrId("ui.513fdd900786")
         speedSummary: "6.2 MB/s"
-        remainingSummary: qsTr("约 5 秒")
-        phaseSummary: qsTr("读取并校验")
-        resultSummary: qsTr("界面预览已取消，未执行校验。")
+        remainingSummary: qsTrId("ui.59edd20c37ae")
+        phaseSummary: qsTrId("ui.33e13bf4ef00")
+        resultSummary: qsTrId("ui.d0343e6846c6")
         fraction: 0.6
         totalKnown: true
         stopping: false

@@ -91,11 +91,12 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             ]
         },
         "settings": {
-            "source": "../hifi/screens/settings.png",
+            "source": "../hifi/screens/settings-current-light.png",
             "size": [
-                1092,
-                1440
-            ]
+                780,
+                1007
+            ],
+            "darkSource": "../hifi/screens/settings-current-dark.png"
         },
         "empty": {
             "source": null,

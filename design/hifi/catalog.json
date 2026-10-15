@@ -39,8 +39,8 @@
     },
     {
       "file": "screens/settings.png",
-      "title": "设置",
-      "group": "current",
+      "title": "设置，历史设计",
+      "group": "historical",
       "sha256": "78ce04944d9610d8d1f5a873e488b8ed1fa78a0e34bc8516dc218397939fd6b0"
     },
     {
@@ -171,6 +171,24 @@
       "status": "titlebar-preserved",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "c6ca53a32ce0e73c7860bad921dcf8785b5f1c74e1f1c7b4d386842ff46ff937"
+    },
+    {
+      "file": "screens/settings-current-light.png",
+      "title": "设置，外观、隐私与语言，浅色",
+      "group": "current",
+      "sha256": "9c2020d1886caaf87037377613fcdf25dd3422b5d9fdf093cb1594c89da181b6",
+      "role": "code-authored-design",
+      "source": "sources/settings.html",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-current-dark.png",
+      "title": "设置，外观、隐私与语言，深色",
+      "group": "current",
+      "sha256": "5a40147e54e223273165fdceae83007b9ca1bae4ed7b7ce69b01c94eaf592ada",
+      "role": "code-authored-design",
+      "source": "sources/settings.html",
+      "spec": "../../docs/ux/settings-localization.md"
     }
   ],
   "schema_version": 1

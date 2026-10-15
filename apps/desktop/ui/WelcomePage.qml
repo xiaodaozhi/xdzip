@@ -66,7 +66,7 @@ Rectangle {
                     objectName: "welcomeHeadline"
                     Layout.topMargin: root.width < 900 ? 12 : 17
                     Layout.fillWidth: true
-                    text: qsTr("打开归档，从容整理。")
+                    text: qsTrId("ui.431ebe9b36de")
                     font.pixelSize: (root.width < 900 ? Theme.welcomeNarrowHeadlineSize : Theme.welcomeHeadlineSize) * Theme.fontScale
                     font.weight: Font.DemiBold
                     lineHeightMode: Text.FixedHeight
@@ -78,7 +78,7 @@ Rectangle {
                 Text {
                     Layout.topMargin: 8
                     Layout.fillWidth: true
-                    text: qsTr("先查看内容，再选择解压。也可以把文件打包，轻松分享。")
+                    text: qsTrId("ui.785a4505c2ba")
                     font.pixelSize: Theme.welcomeMainBodySize * Theme.fontScale
                     lineHeightMode: Text.FixedHeight
                     lineHeight: 22 * Theme.fontScale
@@ -96,8 +96,8 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredWidth: (Theme.welcomeContentWidth - Theme.welcomeActionGap) / 2
                         Layout.fillHeight: true
-                        title: qsTr("打开压缩文件")
-                        description: qsTr("浏览内容，选择需要解压的文件")
+                        title: qsTrId("ui.80c2aec8adfc")
+                        description: qsTrId("ui.0e801031324c")
                         shortcutText: (Qt.platform.os === "osx" ? "⌘ " : "Ctrl+") + "O"
                         asset: "open"
                         primary: true
@@ -113,8 +113,8 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredWidth: (Theme.welcomeContentWidth - Theme.welcomeActionGap) / 2
                         Layout.fillHeight: true
-                        title: qsTr("新建压缩文件")
-                        description: qsTr("添加文件或文件夹，创建归档")
+                        title: qsTrId("ui.fe189b616c1d")
+                        description: qsTrId("ui.b0d96542deee")
                         shortcutText: (Qt.platform.os === "osx" ? "⌘ " : "Ctrl+") + "N"
                         asset: "new"
                         enabled: root.canCreate
@@ -174,7 +174,7 @@ Rectangle {
                         Text {
                             id: dropText
                             Layout.fillWidth: true
-                            text: dropArea.containsDrag ? root.dropMessage : qsTr("也可以将压缩文件拖到这里")
+                            text: dropArea.containsDrag ? root.dropMessage : qsTrId("ui.4a11171118b0")
                             font.pixelSize: Theme.welcomeMainBodySize * Theme.fontScale
                             color: dropArea.containsDrag && root.dropSupported ? Theme.accentInk : Theme.textSecondary
                             wrapMode: Text.Wrap
@@ -186,7 +186,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 8
                     Text {
-                        text: qsTr("支持打开与创建")
+                        text: qsTrId("ui.68e2f0d4ff9a")
                         font.pixelSize: 11 * Theme.fontScale
                         color: Theme.textSecondary
                     }
@@ -226,7 +226,7 @@ Rectangle {
                     Layout.topMargin: visible ? 8 : 0
                     Layout.alignment: Qt.AlignHCenter
                     visible: root.busy
-                    text: qsTr("取消读取")
+                    text: qsTrId("ui.caf06adff4f1")
                     onClicked: root.cancelRequested()
                 }
             }

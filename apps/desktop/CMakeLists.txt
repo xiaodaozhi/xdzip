@@ -3,19 +3,23 @@ qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
 qt_add_resources(ui_resources ui.qrc)
 add_library(xdzip-ui-resources STATIC ${ui_resources})
-target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core)
+qt_add_qml_module(xdzip-ui-resources
+    URI Xdzip.Settings VERSION 1.0
+    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
+    SOURCES UiPreferences.h UiPreferences.cpp)
+target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
 add_executable(xdzip-ui-preview main.cpp)
-target_link_libraries(xdzip-ui-preview PRIVATE xdzip-ui-resources Qt6::Quick Qt6::QuickControls2)
+target_link_libraries(xdzip-ui-preview PRIVATE Qt6::Quick Qt6::QuickControls2)
 if(BUILD_TESTING)
     add_test(NAME qt_preview_load COMMAND xdzip-ui-preview --smoke-test)
     find_package(Qt6 6.8 REQUIRED COMPONENTS QuickTest)
     add_executable(xdzip-ui-tests tests/main.cpp)
-    target_link_libraries(xdzip-ui-tests PRIVATE xdzip-ui-resources Qt6::QuickTest Qt6::QuickControls2)
+    target_link_libraries(xdzip-ui-tests PRIVATE Qt6::QuickTest Qt6::QuickControls2)
     add_test(NAME qt_task_components COMMAND xdzip-ui-tests -input "${CMAKE_CURRENT_SOURCE_DIR}/tests")
     set_tests_properties(qt_task_components PROPERTIES TIMEOUT 30)
 endif()
 
-foreach(target xdzip-ui-preview xdzip-ui-tests)
+foreach(target xdzip-ui-resources xdzip-ui-preview xdzip-ui-tests)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)
@@ -57,7 +61,7 @@ qt_add_qml_module(xdzip-browser
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
     SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp)
-target_link_libraries(xdzip-browser PRIVATE xdzip-ui-resources xdzip-reader-rust
+target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
     Qt6::Widgets Qt6::Quick Qt6::QuickControls2)
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
@@ -81,7 +85,7 @@ if(BUILD_TESTING)
     add_custom_target(xdzip-m2-fixtures DEPENDS "${XDZIP_M2_FIXTURE}" "${XDZIP_M2_HIERARCHICAL}")
     add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
-    target_link_libraries(xdzip-browser-tests PRIVATE xdzip-ui-resources xdzip-reader-rust
+    target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust
         Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log,txt")
     # Whole-suite ceiling includes large scans and many event-loop waits. Individual
@@ -96,5 +100,11 @@ foreach(target xdzip-browser xdzip-browser-tests)
         else()
             target_compile_options(${target} PRIVATE -Wall -Wextra -Werror)
         endif()
+    endif()
+endforeach()
+
+foreach(target xdzip-ui-preview xdzip-ui-tests xdzip-browser xdzip-browser-tests)
+    if(TARGET ${target})
+        target_link_libraries(${target} PRIVATE xdzip-ui-resourcesplugin)
     endif()
 endforeach()

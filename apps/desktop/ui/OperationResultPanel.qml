@@ -15,11 +15,11 @@ ColumnLayout {
     readonly property string savedCaption: {
         const total = Number(task.creating ? task.outputParts || 0 : task.committedFiles || 0);
         const saved = entries.filter(e => e.status === "completed");
-        if (!saved.length) return qsTr("尚未保存文件");
-        const names = saved.slice(0, 3).map(e => e.name.replace(/.*\//, "")).join("、");
+        if (!saved.length) return qsTrId("ui.c58cdccacf5f");
+        const names = saved.slice(0, 3).map(e => e.name.replace(/.*\//, "")).join(qsTrId("common.listSeparator"));
         const bytes = Number(task.creating ? task.writtenBytes || 0 : task.committedBytes || 0);
         const amount = bytes >= 1000000 ? (bytes / 1000000).toFixed(1) + " MB" : bytes >= 1000 ? (bytes / 1000).toFixed(1) + " KB" : bytes + " B";
-        return qsTr("已保存：%1%2（%3）").arg(names).arg(total > 3 ? qsTr(" 等 %1 个文件").arg(total) : "").arg(amount);
+        return qsTrId("ui.f4d4c82e77ea").arg(names).arg(total > 3 ? qsTrId("ui.afa336b07774", Number(total)) : "").arg(amount);
     }
     spacing: Theme.operationResultCardGap
     Rectangle {
@@ -33,9 +33,9 @@ ColumnLayout {
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset
             Repeater {
                 model: [
-                    {label: root.task.creating ? qsTr("已保存归档／分卷") : qsTr("成功"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
-                    {label: qsTr("跳过"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
-                    {label: qsTr("未完成"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
+                    {label: root.task.creating ? qsTrId("ui.0e65135b7f52") : qsTrId("ui.053461ce86d2"), value: root.task.creating ? root.task.outputParts || 0 : root.task.committedFiles || 0, icon: "status-partial-success"},
+                    {label: qsTrId("ui.fc50a99caae0"), value: root.task.skippedFiles || 0, icon: "status-skipped"},
+                    {label: qsTrId("ui.6707de42c29d"), value: root.task.creating ? root.task.status === "succeeded" ? 0 : 1 : root.remaining, icon: "status-warning"}
                 ]
                 delegate: Item {
                     id: metric
@@ -65,7 +65,7 @@ ColumnLayout {
         ColumnLayout {
             id: failed
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset; spacing: 8
-            Text { text: qsTr("未完成的文件"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
+            Text { text: qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
             Repeater { model: root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
             Rectangle {
                 visible: Boolean(root.task.error); Layout.fillWidth: true
@@ -87,7 +87,7 @@ ColumnLayout {
         ColumnLayout {
             id: destination
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset; spacing: 8
-            Text { text: qsTr("目标位置"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
+            Text { text: qsTrId("ui.4a4f9c0beda1"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
             Rectangle {
                 Layout.fillWidth: true; implicitHeight: location.implicitHeight + 20
                 color: Theme.surface; border.color: Theme.operationCardBorder; radius: 5
@@ -100,7 +100,7 @@ ColumnLayout {
                         Text { Layout.fillWidth: true; text: root.task.target || ""; textFormat: Text.PlainText; elide: Text.ElideMiddle; font.pixelSize: Math.round(Theme.operationResultBodySize); color: Theme.text }
                         Text {
                             Layout.fillWidth: true; wrapMode: Text.Wrap
-                            text: root.task.externalReader ? root.savedCaption + "\n" + qsTr("AES 或分卷文件可使用 7-Zip 等兼容工具打开。") : root.savedCaption
+                            text: root.task.externalReader ? root.savedCaption + "\n" + qsTrId("ui.92ccb53e91dc") : root.savedCaption
                             font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
                         }
                     }
@@ -136,7 +136,7 @@ ColumnLayout {
             Text {
                 visible: root.expanded && (!root.entries.length || Number(root.task.omittedDetails) > 0)
                 Layout.fillWidth: true; wrapMode: Text.Wrap
-                text: root.entries.length ? qsTr("显示最近 %1 条记录，较早的 %2 条未保留；统计包含全部文件。").arg(root.entries.length).arg(root.task.omittedDetails) : qsTr("尚未产生文件处理记录。")
+                text: root.entries.length ? qsTrId("ui.c0e1b58aa792").arg(root.entries.length).arg(root.task.omittedDetails) : qsTrId("ui.aa3597f4a1f9")
                 font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
             }
         }
@@ -144,7 +144,7 @@ ColumnLayout {
     Text {
         visible: Boolean(root.task.cleanupWarning || root.task.outcomeUncertain)
         Layout.fillWidth: true; wrapMode: Text.Wrap
-        text: root.task.outcomeUncertain ? qsTr("无法确认全部提交结果，请检查目标目录及恢复材料。") : qsTr("部分暂存数据未能清理，恢复材料已保留。")
+        text: root.task.outcomeUncertain ? qsTrId("ui.8f708e0b80e2") : qsTrId("ui.afbab4f7c95a")
         font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.menuDanger
     }
 }

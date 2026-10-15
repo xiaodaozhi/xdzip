@@ -22,7 +22,7 @@
 | [重名冲突](screens/conflict.png) | E02 等待决策 |
 | [任务进度](screens/progress.png) | T01 执行中 |
 | [部分失败](screens/partial-result.png) | R01 部分未完成 |
-| [设置](screens/settings.png) | S01 配置草稿 |
+| [设置](sources/settings.html) | S01 主题、文字大小与界面语言，当前修订 |
 | [任务状态](screens/task-states.png) | 成功 / 正在停止 / 已取消 |
 | [完整性检查进度](screens/integrity-progress.png) | 复用任务进度布局，只读对象、读取速度与校验阶段 |
 | [创建覆盖确认](screens/create-overwrite.png) | C02 覆盖准入 |
@@ -66,3 +66,5 @@
 [欢迎页状态稿](sources/welcome.html)提供浅色、深色、832×544 最小窗口和拖入状态。对应原稿为 screens/welcome-*.png，布局与交互见[欢迎页设计](../../docs/ux/welcome.md)。设计已确认并接入正式 HTML，Qt 已接入真实打开与新建，桌面人工验收另行登记。sources/ 保存可编辑设计源，不是产品界面原型。
 
 欢迎页标题栏修订见 screens/welcome-titlebar-*.png，原有 welcome-*.png 与 sources/welcome-initial.html 保留历史。修订只设计正文，标题栏与主窗口共用，不再另设品牌、标签或按钮几何。
+
+S01 当前设置窗口修订见[主题、文字与语言设计源](sources/settings.html)，逻辑参数见[设置参数](../../docs/visual/settings-reference.json)，保存／取消与重启生效见[设置契约](../../docs/ux/settings-localization.md)。[历史 settings.png](screens/settings.png) 保留原图和哈希，不再定义当前设置功能范围。

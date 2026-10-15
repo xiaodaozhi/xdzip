@@ -30,6 +30,21 @@ QtObject {
     readonly property real welcomeMenuFontSize: 13
     readonly property real welcomeMainBodySize: 13
     readonly property real welcomeMenuToBodyFontRatio: 1
+    readonly property real settingsLogicalWidth: 612
+    readonly property real settingsContentInset: 24
+    readonly property real settingsSectionGap: 20
+    readonly property real settingsRowGap: 12
+    readonly property real settingsTitleSize: 20
+    readonly property real settingsBodySize: 13
+    readonly property real settingsNoteSize: 12
+    readonly property real settingsMaximumHeight: 720
+    readonly property real settingsThemeArtworkWidth: 72
+    readonly property real settingsThemeArtworkHeight: 66
+    readonly property real settingsThemeCardGap: 10
+    readonly property real settingsThemeCardVerticalInset: 26
+    readonly property real settingsHeroArtworkSize: 48
+    readonly property real settingsHeroGap: 20
+    readonly property real settingsCompactListFactor: 0.8
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 491

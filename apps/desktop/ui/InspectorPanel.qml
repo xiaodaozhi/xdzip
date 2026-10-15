@@ -32,7 +32,7 @@ Rectangle {
             objectName: "inspectorPaneTitle"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: qsTr("文件预览")
+            text: qsTrId("ui.f3c5fe4dd2da")
             font.pixelSize: Theme.mainPaneTitleSize
             font.weight: Font.DemiBold
             color: Theme.text
@@ -51,7 +51,7 @@ Rectangle {
             leftPadding: 0
             rightPadding: 0
             asset: "close"
-            Accessible.name: qsTr("关闭文件预览与属性")
+            Accessible.name: qsTrId("ui.0b4ff2491b1d")
             explanation: Accessible.name
             onClicked: panel.closeRequested()
         }
@@ -89,7 +89,7 @@ Rectangle {
                     }
                     Text {
                         Layout.fillWidth: true
-                        text: panel.detail.id ? qsTr("此类型暂不支持内容预览") : qsTr("选择文件查看属性")
+                        text: panel.detail.id ? qsTrId("ui.1248c3b87f73") : qsTrId("ui.3d997d4452fc")
                         font.pixelSize: Theme.mainPropertySize
                         color: Theme.textSecondary
                         horizontalAlignment: Text.AlignHCenter
@@ -100,7 +100,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.mainUnits(14)
-                text: panel.selectionCount > 1 ? qsTr("已选择 %1 项").arg(panel.selectionCount) : panel.detail.name || qsTr("未选择文件")
+                text: panel.selectionCount > 1 ? qsTrId("ui.aeb126abb448", Number(panel.selectionCount)) : panel.detail.name || qsTrId("ui.ce2a58ab4ccf")
                 textFormat: Text.PlainText
                 wrapMode: Text.WrapAnywhere
                 font.pixelSize: Theme.mainDetailTitleSize
@@ -110,7 +110,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.mainUnits(6)
-                text: panel.selectionCount > 1 ? qsTr("以下为当前焦点条目的属性") : panel.detail.type ? panel.detail.type + (panel.detail.directory ? "" : qsTr(" 文件")) : qsTr("归档内条目")
+                text: panel.selectionCount > 1 ? qsTrId("ui.43850dc99c15") : panel.detail.type ? panel.detail.type + (panel.detail.directory ? "" : qsTrId("ui.8915e82b0e8f")) : qsTrId("ui.a853163f3d9c")
                 color: Theme.textSecondary
                 font.pixelSize: Theme.mainDetailTypeSize
                 wrapMode: Text.Wrap
@@ -135,19 +135,19 @@ Rectangle {
             Repeater {
                 model: [
                     {
-                        label: qsTr("原始大小"),
+                        label: qsTrId("ui.301a69c74dfc"),
                         value: panel.detail.size ? panel.sizeFormatter(panel.detail.size) : "—"
                     },
                     {
-                        label: qsTr("压缩后"),
+                        label: qsTrId("ui.2582e6a2c9e2"),
                         value: panel.detail.packed ? panel.sizeFormatter(panel.detail.packed) : "—"
                     },
                     {
-                        label: qsTr("修改日期"),
+                        label: qsTrId("ui.2cbced881b2d"),
                         value: panel.detail.modified || "—"
                     },
                     {
-                        label: qsTr("压缩方法"),
+                        label: qsTrId("ui.9e9d1bfc0746"),
                         value: panel.detail.method || "—"
                     }
                 ]
@@ -183,9 +183,9 @@ Rectangle {
                 Layout.topMargin: Theme.mainUnits(12)
                 implicitHeight: Math.max(Theme.mainUnits(47), Theme.mainHeaderSize * 1.6 + Theme.mainUnits(16))
                 asset: "external-open"
-                text: qsTr("解压此文件")
+                text: qsTrId("ui.236df7227118")
                 enabled: panel.canExtract && Boolean(panel.detail.id)
-                explanation: qsTr("解压当前焦点条目")
+                explanation: qsTrId("ui.9abb78dabe17")
                 onClicked: panel.extractRequested(String(panel.detail.id))
                 background: Rectangle {
                     objectName: "inspectorExtractBackground"

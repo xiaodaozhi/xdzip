@@ -464,7 +464,7 @@ th button svg { width:20px; height:20px; }
     background-repeat:no-repeat;
 }
 input[type="checkbox"],input[type="radio"] { width:22px; height:22px; }
-td { height:67.5px; border-bottom:0; padding:0; position:relative; }
+td { height:calc(67.5px * var(--list-density-factor,1)); border-bottom:0; padding:0; position:relative; }
 tbody tr:not(.selected) td::after {
     content:"";
     position:absolute;
@@ -477,7 +477,7 @@ tbody tr:not(.selected) td::after {
 }
 tbody tr:not(.selected) td:first-child::after { left:17px; }
 tbody tr:not(.selected) td:last-child::after { right:17px; }
-.folder-row td { height:65px; }
+.folder-row td { height:calc(65px * var(--list-density-factor,1)); }
 td:first-child { padding-left:27px; }
 td:first-child input { display:block; }
 td:nth-child(2) { padding-left:1px; }
@@ -916,3 +916,33 @@ dialog[data-kind="conflict"] .comparison small, dialog[data-kind="conflict"] .no
 dialog[data-kind="conflict"][open] { display:flex; flex-direction:column; overflow:hidden; }
 dialog[data-kind="conflict"]>.modal-content { min-height:0; overflow:auto; }
 dialog[data-kind="conflict"]>.modal-footer, dialog[data-kind="conflict"]>.modal-header, dialog[data-kind="conflict"]>.os-titlebar { flex-shrink:0; }
+
+/* Settings uses the same normal-density fields and footer roles as Qt. */
+dialog[data-kind="settings"] .settings-content { padding:calc(24px * var(--ui-source-factor)); display:flex; flex-direction:column; gap:calc(20px * var(--ui-source-factor)); }
+.settings-content h1 { font-size:calc(20px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.3; margin:0; }
+.settings-content .settings-theme { margin:0; }
+.settings-content .settings-theme legend,.settings-section>label { display:block; font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); font-weight:600; margin:0 0 calc(12px * var(--ui-source-factor)); }
+.settings-section { display:flex; flex-direction:column; }
+.settings-section p { margin:calc(12px * var(--ui-source-factor)) 0 0; color:var(--secondary); font-size:calc(12px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+dialog[data-kind="settings"]>.os-titlebar { height:calc(28px * var(--ui-source-factor)); min-height:calc(28px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor)); }
+.settings-content h1 { line-height:1.45; }
+.settings-content .settings-theme legend,.settings-section>label { line-height:1.45; }
+.settings-section p { line-height:1.5; }
+.settings-content .ui-select-trigger { height:auto; min-height:var(--operation-control-body-button-height); padding-top:calc(4px * var(--ui-source-factor)); padding-bottom:calc(4px * var(--ui-source-factor)); font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.45; }
+.settings-content .settings-theme legend,.settings-section>label { font-weight:700; }
+
+/* Restore the original illustrated settings hierarchy; language is an additional row. */
+dialog[data-kind="settings"] .theme-card { padding:calc(10px * var(--ui-source-factor)) calc(8px * var(--ui-source-factor)) calc(14px * var(--ui-source-factor)); }
+dialog[data-kind="settings"] .theme-card>svg { width:calc(72px * var(--ui-source-factor)); height:calc(66px * var(--ui-source-factor)); }
+dialog[data-kind="settings"] .theme-card>span { font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); white-space:normal; }
+dialog[data-kind="settings"] .theme-cards { gap:calc(10px * var(--ui-source-factor)); }
+dialog[data-kind="settings"] .settings-row,dialog[data-kind="settings"] .check-label { font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+dialog[data-kind="settings"] .notice { font-size:calc(12px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+
+dialog[data-kind="settings"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="settings"]>.modal-content { min-height:0; overflow:auto; flex:1; }
+dialog[data-kind="settings"]>.modal-footer,dialog[data-kind="settings"]>.modal-header,dialog[data-kind="settings"]>.os-titlebar { flex-shrink:0; }
+dialog[data-kind="settings"] .settings-row { min-height:calc(28px * var(--ui-source-factor)); margin:0; gap:calc(16px * var(--ui-source-factor)); }
+dialog[data-kind="settings"] .settings-row .ui-select { margin-left:auto; }
+dialog[data-kind="settings"] .modal-header h1 { font-size:calc(20px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+dialog[data-kind="settings"] .modal-header p { font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); }

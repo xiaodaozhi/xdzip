@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QLocale>
 #include <QPointer>
 #include <QStandardPaths>
 #include <QTime>
@@ -165,58 +166,58 @@ QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
         return {};
     const QHash<QString, QString> taskErrors = {
-        {"task_abandoned", tr("任务异常中断，提交计数可能不完整，请检查目标目录并重新启动应用。")},
-        {"integrity_error", tr("文件内容校验失败，未提交的文件已丢弃。")},
-        {"output_io", tr("无法写入目标目录，请检查权限和文件系统。")},
-        {"disk_full", tr("目标磁盘空间不足，已停止写入。")},
-        {"unsafe_target", tr("目标包含链接、特殊对象或不可信的共享权限，请选择个人目录。")},
-        {"target_changed", tr("目标目录或已有文件发生变化，请重新检查后重试。")},
-        {"output_conflict", tr("提交时目标文件被其他操作创建，请重新解压并选择冲突处理方式。")},
-        {"unsupported_filesystem", tr("目标文件系统不支持安全提交，请选择本地磁盘目录。")},
-        {"unsupported_entry", tr("所选条目包含不支持的方法、加密、编码或特殊对象。")},
-        {"unsafe_input", tr("输入含链接、特殊对象，或输出与输入相同，请重新选择。")},
-        {"input_collision", tr("输入名称在大小写或 Unicode 规范化后重名，请调整名称。")},
-        {"unsafe_name", tr("所选文件名不满足安全输出规则。")},
-        {"invalid_password", tr("密码必须为 1–128 个 UTF-8 字节，且不含控制字符。")},
-        {"invalid_creation_options", tr("分卷大小或密码无效，请重新检查创建选项。")},
-        {"split_overwrite_not_supported", tr("已有分卷不能原地覆盖，请整组改名或选择其他目录。")},
-        {"ambiguous_name", tr("归档中的文件与目录名称存在歧义，无法安全解压。")},
-        {"high_ratio", tr("压缩比超过 1000:1；确认内容可信后可在选项中允许高压缩比。")},
-        {"file_quota", tr("单文件超过 8 GiB 解压限额。")},
-        {"task_quota", tr("任务超过 20 GiB 解压限额。")},
-        {"protected_source", tr("不能覆盖正在解压的源归档。")},
-        {"task_busy", tr("任务队列已满，请等待已有任务结束。")},
-        {"cleanup_error", tr("暂存目录清理失败，请检查目标目录中的恢复材料。")},
-        {"invalid_selection", tr("所选文件与当前目录不匹配，请重新选择。")},
-        {"unsafe_folder_name", tr("归档名称不能用作输出文件夹，请取消创建同名文件夹。")},
-        {"rename_limit", tr("可用的自动重命名次数已耗尽。")}};
+        {"task_abandoned", qtTrId("ui.cc72ffea1705")},
+        {"integrity_error", qtTrId("ui.6adbf73c75b1")},
+        {"output_io", qtTrId("ui.7735b66ae246")},
+        {"disk_full", qtTrId("ui.8e2070ff3086")},
+        {"unsafe_target", qtTrId("ui.123399c0fb8b")},
+        {"target_changed", qtTrId("ui.8c5b6e8cc7b3")},
+        {"output_conflict", qtTrId("ui.370322f1d979")},
+        {"unsupported_filesystem", qtTrId("ui.74b624993d20")},
+        {"unsupported_entry", qtTrId("ui.491bda01a7fa")},
+        {"unsafe_input", qtTrId("ui.2c68fedd118c")},
+        {"input_collision", qtTrId("ui.96d580ed8b8a")},
+        {"unsafe_name", qtTrId("ui.c9aa9ad002f7")},
+        {"invalid_password", qtTrId("ui.a35179e5025f")},
+        {"invalid_creation_options", qtTrId("ui.674e51a0a214")},
+        {"split_overwrite_not_supported", qtTrId("ui.930e2ed5950e")},
+        {"ambiguous_name", qtTrId("ui.1f3e5278a2e1")},
+        {"high_ratio", qtTrId("ui.083aa56b5fb0")},
+        {"file_quota", qtTrId("ui.026f5e2a7952")},
+        {"task_quota", qtTrId("ui.08a85911314e")},
+        {"protected_source", qtTrId("ui.f740b2508391")},
+        {"task_busy", qtTrId("ui.159a5a9a826f")},
+        {"cleanup_error", qtTrId("ui.3ca05aed62cc")},
+        {"invalid_selection", qtTrId("ui.0541a7a33cf3")},
+        {"unsafe_folder_name", qtTrId("ui.a811dae528ce")},
+        {"rename_limit", qtTrId("ui.432c56670e32")}};
     if (taskErrors.contains(code))
         return taskErrors.value(code);
     if (code == "runtime_unavailable")
-        return tr("应用无法继续处理任务，请关闭并重新启动。");
+        return qtTrId("ui.4284b709fb50");
     if (code == "invalid_request")
-        return tr("请求参数超出当前支持范围。");
+        return qtTrId("ui.14387362d973");
     if (code == "identifier_exhausted")
-        return tr("请求编号已耗尽，请重新启动应用。");
+        return qtTrId("ui.2b79855e1be0");
     if (code == "busy")
-        return tr("请求暂未接收，请稍后重试。");
+        return qtTrId("ui.9a27a22a22ff");
     if (code == "stale_session")
-        return tr("归档会话已变化，请重新打开。");
+        return qtTrId("ui.a27358be0e89");
     if (code == "cancelled")
-        return tr("读取已取消。");
+        return qtTrId("ui.a3562bc1ea59");
     if (code == "resource_limit")
-        return tr("操作超过内存、记录或字节限额。");
+        return qtTrId("ui.faf573ec7fbf");
     if (code == "unsupported_feature")
-        return tr("暂不支持此归档的分卷、加密或压缩方法。");
+        return qtTrId("ui.48a1b719a41d");
     if (code == "stale_query")
-        return tr("查询结果已过期，请重试");
+        return qtTrId("ui.f4e564347a6a");
     if (code == "source_changed")
-        return tr("读取期间源文件发生变化，请重新打开。");
+        return qtTrId("ui.b0783c10a988");
     if (code == "source_io")
-        return tr("无法读取所选文件，请检查文件类型和权限。");
+        return qtTrId("ui.14df9062a079");
     if (code == "invalid_path")
-        return tr("当前版本无法无损表示这个源文件路径。");
-    return tr("无法读取归档目录，文件可能损坏、超过资源上限或格式尚不支持。");
+        return qtTrId("ui.bcd73815bcd5");
+    return qtTrId("ui.cd2a579ed2df");
 }
 
 void BrowserController::chooseArchive() {
@@ -224,8 +225,8 @@ void BrowserController::chooseArchive() {
         return;
     // No QWidget parent: the native chooser is independent, not an attached macOS sheet.
     // Native per-platform modality and ownership still require desktop acceptance testing.
-    const auto path = QFileDialog::getOpenFileName(
-        nullptr, tr("打开归档"), {}, tr("压缩文件 (*.zip *.tar *.tar.gz *.tgz);;所有文件 (*)"));
+    const auto path = QFileDialog::getOpenFileName(nullptr, qtTrId("ui.1b59353f1874"), {},
+                                                   qtTrId("ui.8f69a61727d2"));
     if (!path.isEmpty())
         openPath(path);
 }
@@ -241,7 +242,7 @@ bool BrowserController::openDroppedUrls(const QList<QUrl> &urls) {
     if (m_busy || !runtimeAvailable())
         return false;
     if (!canOpenDroppedUrls(urls)) {
-        m_message = tr("请拖入单个本地 ZIP、TAR 或 TAR.GZ 压缩文件。");
+        m_message = qtTrId("ui.e827041f3805");
         emit changed();
         return false;
     }
@@ -561,18 +562,18 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     emit extractionReady();
 }
 QString BrowserController::chooseTarget(const QString &initial) {
-    return QFileDialog::getExistingDirectory(nullptr, tr("选择目标目录"), initial,
+    return QFileDialog::getExistingDirectory(nullptr, qtTrId("ui.3fb3d26f0ffd"), initial,
                                              QFileDialog::ShowDirsOnly |
                                                  QFileDialog::DontResolveSymlinks);
 }
 QStringList BrowserController::chooseCreationInputs(bool directories) {
     if (directories) {
-        const auto path = QFileDialog::getExistingDirectory(nullptr, tr("添加文件夹"), {},
+        const auto path = QFileDialog::getExistingDirectory(nullptr, qtTrId("ui.45da2d9c85d1"), {},
                                                             QFileDialog::ShowDirsOnly |
                                                                 QFileDialog::DontResolveSymlinks);
         return path.isEmpty() ? QStringList{} : QStringList{path};
     }
-    return QFileDialog::getOpenFileNames(nullptr, tr("添加文件"), {}, {}, nullptr,
+    return QFileDialog::getOpenFileNames(nullptr, qtTrId("ui.ad9daebe00dc"), {}, {}, nullptr,
                                          QFileDialog::DontResolveSymlinks);
 }
 QString BrowserController::defaultTargetDirectory() const {
@@ -785,7 +786,7 @@ bool BrowserController::requestClose() {
     m_admissionRetry.stop();
     m_waiting.reset();
     m_preflightReport.clear();
-    m_message = tr("正在退出…");
+    m_message = qtTrId("ui.0ae60dd37b14");
     m_connection->shutdown();
     emit changed();
     return false;
@@ -841,12 +842,12 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
     m_hasPayload = false;
     m_busy = true;
-    m_message = m_result.inputPreview  ? tr("正在读取选中文件大小…")
-                : m_result.creating    ? tr("正在准备压缩任务…")
-                : m_result.extraction  ? tr("正在准备解压任务…")
-                : m_result.targetCheck ? tr("正在检查目标目录…")
-                : preflight            ? tr("正在检查所选条目…")
-                                       : tr("正在读取归档目录…");
+    m_message = m_result.inputPreview  ? qtTrId("ui.013b4f811abe")
+                : m_result.creating    ? qtTrId("ui.33495b6653c6")
+                : m_result.extraction  ? qtTrId("ui.8cf09709f8f6")
+                : m_result.targetCheck ? qtTrId("ui.2ae4afff62f1")
+                : preflight            ? qtTrId("ui.d37d23d13df0")
+                                       : qtTrId("ui.5126629edae6");
     m_waiting.emplace(std::move(command));
     m_admissionAttempts = 0;
     attemptSubmission();
@@ -915,54 +916,56 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                        {"status", text(entry.status)},
                                        {"errorCode", text(entry.error)},
                                        {"error", explain(text(entry.error))}});
-        QVariantMap value{
-            {"details", details},
-            {"omittedDetails", QString::number(t.omitted_details)},
-            {"externalReader", t.external_reader},
-            {"outputParts", QString::number(t.output_parts)},
-            {"creating", t.creating},
-            {"totalKnown", t.total_known},
-            {"archive", t.creating ? QVariant(QFileInfo(text(t.target)).fileName())
-                                   : m_tasks.value(t.id).value(
-                                         "archive", m_extractionIntent.value("archive"))},
-            {"id", QString::number(t.id)},
-            {"session", QString::number(t.session)},
-            {"status", status},
-            {"terminal", terminal},
-            {"target", text(t.target)},
-            {"current", text(t.current)},
-            {"files", QString::number(t.files)},
-            {"declaredBytes", QString::number(t.declared_bytes)},
-            {"decodedBytes", QString::number(t.decoded_bytes)},
-            {"writtenBytes", QString::number(t.written_bytes)},
-            {"committedBytes", QString::number(t.committed_bytes)},
-            {"committedFiles", QString::number(t.committed_files)},
-            {"skippedFiles", QString::number(t.skipped_files)},
-            {"createdDirectories", QString::number(t.created_directories)},
-            {"elapsedMs", QString::number(t.elapsed_ms)},
-            {"errorCode", text(t.error)},
-            {"error", text(t.error) == "cancelled" ? tr("任务已取消。") : explain(text(t.error))},
-            {"cleanupWarning", t.cleanup_warning},
-            {"outcomeUncertain", t.outcome_uncertain},
-            {"leftovers", QString::number(t.leftovers)},
-            {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
-            {"promptName", text(t.prompt_name)},
-            {"existingBytes", QString::number(t.existing_bytes)},
-            {"incomingBytes", QString::number(t.incoming_bytes)},
-            {"overwriteAllowed", t.overwrite_allowed}};
+        QVariantMap value{{"details", details},
+                          {"omittedDetails", QString::number(t.omitted_details)},
+                          {"externalReader", t.external_reader},
+                          {"outputParts", QString::number(t.output_parts)},
+                          {"creating", t.creating},
+                          {"totalKnown", t.total_known},
+                          {"archive", t.creating
+                                          ? QVariant(QFileInfo(text(t.target)).fileName())
+                                          : m_tasks.value(t.id).value(
+                                                "archive", m_extractionIntent.value("archive"))},
+                          {"id", QString::number(t.id)},
+                          {"session", QString::number(t.session)},
+                          {"status", status},
+                          {"terminal", terminal},
+                          {"target", text(t.target)},
+                          {"current", text(t.current)},
+                          {"files", QString::number(t.files)},
+                          {"declaredBytes", QString::number(t.declared_bytes)},
+                          {"decodedBytes", QString::number(t.decoded_bytes)},
+                          {"writtenBytes", QString::number(t.written_bytes)},
+                          {"committedBytes", QString::number(t.committed_bytes)},
+                          {"committedFiles", QString::number(t.committed_files)},
+                          {"skippedFiles", QString::number(t.skipped_files)},
+                          {"createdDirectories", QString::number(t.created_directories)},
+                          {"elapsedMs", QString::number(t.elapsed_ms)},
+                          {"errorCode", text(t.error)},
+                          {"error", text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31")
+                                                                 : explain(text(t.error))},
+                          {"cleanupWarning", t.cleanup_warning},
+                          {"outcomeUncertain", t.outcome_uncertain},
+                          {"leftovers", QString::number(t.leftovers)},
+                          {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
+                          {"promptName", text(t.prompt_name)},
+                          {"existingBytes", QString::number(t.existing_bytes)},
+                          {"incomingBytes", QString::number(t.incoming_bytes)},
+                          {"overwriteAllowed", t.overwrite_allowed}};
         const auto incoming = t.incoming_modified_dos;
         const QDate date(1980 + (incoming >> 25), (incoming >> 21) & 15, (incoming >> 16) & 31);
         const QTime time((incoming >> 11) & 31, (incoming >> 5) & 63, (incoming & 31) * 2);
-        value.insert("incomingModified",
-                     date.isValid() && time.isValid()
-                         ? date.toString("yyyy/MM/dd") + " " + time.toString("HH:mm")
-                         : QStringLiteral("—"));
+        value.insert("incomingModified", date.isValid() && time.isValid()
+                                             ? QLocale().toString(date, qtTrId("format.date")) +
+                                                   " " +
+                                                   QLocale().toString(time, qtTrId("format.time"))
+                                             : QStringLiteral("—"));
         bool validTime = false;
         const auto existingTime = text(t.existing_modified).toLongLong(&validTime);
         value.insert("existingModified",
-                     validTime
-                         ? QDateTime::fromSecsSinceEpoch(existingTime).toString("yyyy/MM/dd HH:mm")
-                         : QStringLiteral("—"));
+                     validTime ? QLocale().toString(QDateTime::fromSecsSinceEpoch(existingTime),
+                                                    qtTrId("format.dateTime"))
+                               : QStringLiteral("—"));
         m_tasks.insert(t.id, value);
         while (m_tasks.size() > 64) {
             auto oldest = std::find_if(m_tasks.begin(), m_tasks.end(),
@@ -1062,17 +1065,17 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {
-            const auto method = m_format == QStringLiteral("TAR") ? tr("无压缩")
+            const auto method = m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                 ? QStringLiteral("Store")
                                 : row.method == 8                 ? QStringLiteral("Deflate")
                                                                   : QString::number(row.method);
             QStringList status;
             if (row.directory)
-                status << tr("目录");
+                status << qtTrId("ui.52daa71ebc31");
             if (row.encrypted)
-                status << tr("加密");
+                status << qtTrId("ui.320c254572c4");
             if (row.warning)
-                status << tr("需检查");
+                status << qtTrId("ui.ffcf372a457f");
             const auto path = text(row.name);
             auto name = path;
             if (m_result.criteria.search.isEmpty()) {
@@ -1080,17 +1083,19 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                     name.chop(1);
                 name = name.section('/', -1);
             }
-            auto type = row.directory ? tr("文件夹") : QFileInfo(name).suffix().toUpper();
+            auto type =
+                row.directory ? qtTrId("ui.7c7802d8adae") : QFileInfo(name).suffix().toUpper();
             if (type == QStringLiteral("JPG"))
                 type = QStringLiteral("JPEG");
             if (type.isEmpty())
-                type = tr("文件");
+                type = qtTrId("ui.39932f24fe11");
             // DOS values describe archive-local wall time, with no timezone information.
             const auto packed = row.modified_dos;
             const QDate date(1980 + (packed >> 25), (packed >> 21) & 15, (packed >> 16) & 31);
             const QTime time((packed >> 11) & 31, (packed >> 5) & 63, (packed & 31) * 2);
-            const auto modified = date.isValid() && time.isValid() ? date.toString("yyyy/MM/dd")
-                                                                   : QStringLiteral("—");
+            const auto modified = date.isValid() && time.isValid()
+                                      ? QLocale().toString(date, qtTrId("format.date"))
+                                      : QStringLiteral("—");
             m_result.rows.append({text(row.id),
                                   {name, row.physical ? QString::number(row.size) : QString{},
                                    row.physical && m_format != QStringLiteral("TAR.GZ")
@@ -1100,7 +1105,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                   row.directory,
                                   row.directory && !row.warning,
                                   row.physical ? method : QStringLiteral("—"),
-                                  status.isEmpty() ? tr("元数据") : status.join("，"),
+                                  status.isEmpty() ? qtTrId("ui.aeae1c799c94")
+                                                   : status.join(qtTrId("common.separator")),
                                   row.warning || row.encrypted,
                                   path,
                                   text(row.navigation_id),
@@ -1112,21 +1118,17 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Preflight) {
         const auto &report = event.report;
         const QHash<QString, QString> reasons = {
-            {"path", tr("名称包含不支持的路径、保留名或非法组件")},
-            {"collision", tr("输出名称重名，或文件与目录冲突")},
-            {"metadata", tr("编码、链接或特殊条目需要检查")},
-            {"encrypted", tr("加密条目尚不支持")},
-            {"method", tr("压缩方法未纳入首版解码范围")},
-            {"file_limit", tr("声明大小超过单文件 8 GiB 限额")},
-            {"total_limit", tr("声明总量超过 20 GiB 或计数溢出")},
-            {"high_ratio", tr("声明压缩比超过 1000:1，需要复核")}};
+            {"path", qtTrId("ui.10fee48a2a5d")},        {"collision", qtTrId("ui.179c1af47cd2")},
+            {"metadata", qtTrId("ui.5f62429e8f2b")},    {"encrypted", qtTrId("ui.bd832c169421")},
+            {"method", qtTrId("ui.b3ac882336b4")},      {"file_limit", qtTrId("ui.db4ca98ebb0e")},
+            {"total_limit", qtTrId("ui.eca46ec574de")}, {"high_ratio", qtTrId("ui.998c9646d2cd")}};
         QStringList findings;
         for (const auto &finding : report.findings) {
             const auto value = text(finding);
             const auto split = value.indexOf(':');
-            findings << tr("记录 %1：%2")
+            findings << qtTrId("ui.a1881d3f7bb1")
                             .arg(value.left(split),
-                                 reasons.value(value.mid(split + 1), tr("需要检查")));
+                                 reasons.value(value.mid(split + 1), qtTrId("ui.85ab227ee09d")));
         }
         m_result.report = {{"entries", QString::number(report.entries)},
                            {"bytes", text(report.declared_bytes)},
@@ -1251,6 +1253,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 return;
             }
             m_ready = true;
+            if (m_result.replaceDirectories)
+                emit archiveOpened(m_sourcePath);
             m_committedQuery = m_result.criteria;
             restoreQuery();
             if (m_result.replaceDirectories)

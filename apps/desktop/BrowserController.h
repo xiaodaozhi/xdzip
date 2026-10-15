@@ -217,6 +217,7 @@ class BrowserController : public QObject {
   signals:
     void changed();
     void readyToClose();
+    void archiveOpened(const QString &path);
     void preflightReady();
     void extractionChanged();
     void extractionReady();

@@ -41,6 +41,12 @@ def current_characters() -> set[int]:
         source = path.read_text(encoding="utf-8")
         for label in re.findall(r'(?:qsTr|\btr)\("((?:[^"\\]|\\.)*)"\)', source):
             codepoints.update(ord(c) for c in label if ord(c) >= 0x20)
+    for path in sorted((ROOT / "resources/i18n").glob("*.json")):
+        catalog = json.loads(path.read_text(encoding="utf-8"))
+        for value in catalog["messages"].values():
+            texts = value.values() if isinstance(value, dict) else [value]
+            for label in texts:
+                codepoints.update(ord(c) for c in label if ord(c) >= 0x20)
     return codepoints
 
 

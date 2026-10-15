@@ -10,6 +10,9 @@ on:
       - 'docs/visual/extract-reference.json'
       - 'build/review/extract-fidelity/**'
       - 'design/**'
+      - 'resources/i18n/**'
+      - 'scripts/generate-ui-messages.py'
+      - 'scripts/check-ui-i18n.py'
       - 'scripts/*html*'
       - 'scripts/*asset*'
       - 'scripts/*brand*'
@@ -41,6 +44,9 @@ on:
       - 'docs/visual/extract-reference.json'
       - 'build/review/extract-fidelity/**'
       - 'design/**'
+      - 'resources/i18n/**'
+      - 'scripts/generate-ui-messages.py'
+      - 'scripts/check-ui-i18n.py'
       - 'scripts/*html*'
       - 'scripts/*asset*'
       - 'scripts/*brand*'
@@ -86,9 +92,12 @@ jobs:
           .venv-design/bin/python scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
           .venv-design/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
           .venv-design/bin/python scripts/check-directory-tree-delivery.py
+          .venv-design/bin/python scripts/check-ui-i18n.py
+          .venv-design/bin/python scripts/generate-ui-messages.py --check
           .venv-design/bin/python scripts/build-html-design.py
           .venv-design/bin/python scripts/generate-display-spec.py --check
           .venv-design/bin/python scripts/generate-control-tokens.py --check
+          .venv-design/bin/python scripts/check-html-settings.py
           .venv-design/bin/python scripts/check-html-welcome.py
           .venv-design/bin/python scripts/check-html-controls.py
           .venv-design/bin/python scripts/check-html-header.py
@@ -115,6 +124,7 @@ jobs:
         with:
           name: xdzip-html-design-evidence
           path: |
+            build/review/html-settings/
             build/review/html-welcome/
             build/review/html-header/
             build/review/html-body/

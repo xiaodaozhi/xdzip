@@ -14,6 +14,7 @@ tree = json.loads((ROOT / 'docs/visual/directory-tree.json').read_text())
 main = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
 layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
 welcome = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text())
+settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text())
 result = json.loads((ROOT / 'docs/visual/result-reference.json').read_text())
 main_scale = main['logical_width'] / main['source_window'][2]
 
@@ -37,6 +38,11 @@ for key, value in welcome.items():
     if key != "schema_version" and isinstance(value, (int, float)):
         name = ''.join(part.title() for part in key.split('_'))
         lines.append(f'    readonly property real welcome{name}: {value}')
+for key in ['logical_width', 'content_inset', 'section_gap', 'row_gap', 'title_size',
+            'body_size', 'note_size', 'maximum_height', 'theme_artwork_width', 'theme_artwork_height',
+            'theme_card_gap', 'theme_card_vertical_inset', 'hero_artwork_size', 'hero_gap', 'compact_list_factor']:
+    name = ''.join(part.title() for part in key.split('_'))
+    lines.append(f'    readonly property real settings{name}: {settings[key]}')
 for key, value in layout['operation']['logical_widths'].items():
     identifier = ''.join(part.title() for part in key.split('-'))
     lines.append(f'    readonly property int operation{identifier}Width: {value}')

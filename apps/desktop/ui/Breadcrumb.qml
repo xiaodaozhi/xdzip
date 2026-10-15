@@ -44,7 +44,7 @@ RowLayout {
                 Layout.alignment: Qt.AlignVCenter
                 padding: 2
                 enabled: root.available && !segment.modelData.current
-                Accessible.name: segment.modelData.more ? qsTr("显示上级目录") : segment.modelData.label
+                Accessible.name: segment.modelData.more ? qsTrId("ui.163fd73d3df9") : segment.modelData.label
                 onClicked: segment.modelData.more ? hiddenMenu.popup(button, 0, button.height + Theme.mainPopupGap) : root.activated(segment.modelData.id)
                 contentItem: Text {
                     objectName: segment.modelData.current ? "filePaneTitle" : ""
@@ -71,7 +71,7 @@ RowLayout {
     }
     CommandMenu {
         id: hiddenMenu
-        title: qsTr("上级目录")
+        title: qsTrId("ui.963f3b5d1c4f")
         Instantiator {
             model: root.entries.length > 3 ? root.entries.slice(1, -2) : []
             delegate: CommandMenuItem {

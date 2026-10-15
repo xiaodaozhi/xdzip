@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "logical_width": 612,
+  "content_inset": 24,
+  "section_gap": 20,
+  "row_gap": 12,
+  "title_size": 20,
+  "body_size": 13,
+  "note_size": 12,
+  "maximum_height": 720,
+  "languages": [
+    "zh-CN",
+    "en-US"
+  ],
+  "font_scales": [
+    1,
+    1.25,
+    1.5,
+    2
+  ],
+  "theme_modes": [
+    "system",
+    "light",
+    "dark"
+  ],
+  "source_image": "design/hifi/screens/settings-current-light.png",
+  "source_size": [
+    780,
+    1007
+  ],
+  "source_to_logical": [
+    1280,
+    1548
+  ],
+  "authoring_viewport": [
+    1586,
+    1100
+  ],
+  "authoring_dpr": 1,
+  "authoring_browser_zoom": 1,
+  "export_padding": 20,
+  "authoring_source": "design/hifi/sources/settings.html",
+  "theme_artwork_width": 72,
+  "theme_artwork_height": 66,
+  "theme_card_gap": 10,
+  "theme_card_vertical_inset": 26,
+  "hero_artwork_size": 48,
+  "hero_gap": 20,
+  "compact_list_factor": 0.8
+}

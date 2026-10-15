@@ -7,7 +7,7 @@ ComboBox {
     focusPolicy: Qt.StrongFocus
     property real density: 1
     property bool numericOnly: false
-    property string editPlaceholder: qsTr("输入数字")
+    property string editPlaceholder: qsTrId("ui.2449d5ec999a")
     implicitHeight: Math.max(Theme.operationFieldHeight * density, contentItem.implicitHeight + 16 * density)
     font.pixelSize: Math.round(Theme.operationBodySize * density)
     leftPadding: Theme.operationControlFieldTextInset

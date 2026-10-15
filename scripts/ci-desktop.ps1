@@ -5,6 +5,7 @@ function Invoke-Checked {
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
 }
+Invoke-Checked python @('scripts/check-ui-i18n.py')
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
 $qtArchitecture = 'linux_gcc_64'

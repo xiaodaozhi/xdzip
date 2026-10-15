@@ -2,17 +2,21 @@
 #include "BrowserController.h"
 #include "FocusDismissPolicy.h"
 #include "UiFont.h"
+#include "UiPreferences.h"
+#include "UiText.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QClipboard>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QRegularExpression>
+#include <QScopeGuard>
 #include <QScreen>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -69,12 +73,17 @@ static bool checkedTarget(BrowserController *controller, const QString &fixtureP
 }
 
 class BrowserTest : public QObject {
+    QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
     void initTestCase() {
         FocusDismissPolicy::install(QCoreApplication::instance());
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
+        QVERIFY(m_settingsProfile.isValid());
+        if (qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
+            qputenv("XDZIP_SETTINGS_PATH", m_settingsProfile.filePath("settings.ini").toUtf8());
+        QVERIFY(initializeUiText(qEnvironmentVariable("XDZIP_UI_TEST_LANGUAGE", "zh-CN")));
         QVERIFY(installUiFont());
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
@@ -86,6 +95,158 @@ class BrowserTest : public QObject {
     }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void settingsWindowPersistsAndRollsBack() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
+        const auto restore = qScopeGuard([previous] {
+            if (previous.isNull())
+                qunsetenv("XDZIP_SETTINGS_PATH");
+            else
+                qputenv("XDZIP_SETTINGS_PATH", previous);
+        });
+        const auto path = profile.filePath("settings.ini");
+        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        auto *entry = findVisual(window->contentItem(), "archiveSettings");
+        QVERIFY(settings && entry);
+        const auto click = [](QQuickWindow *owner, QQuickItem *item) {
+            QTest::mouseClick(
+                owner, Qt::LeftButton, Qt::NoModifier,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        };
+        const bool originalDark = window->property("darkMode").toBool();
+        click(window, entry);
+        QTRY_VERIFY(settings->isVisible());
+        QCOMPARE(settings->width(), 612);
+        QVERIFY(visibleImagesReady(settings->contentItem()));
+        const auto captureSettings = [&](const QString &name) {
+            const auto directory = qEnvironmentVariable("XDZIP_SETTINGS_VISUAL_AUDIT");
+            return directory.isEmpty() ||
+                   (QDir().mkpath(directory) && visual_audit::save(settings, directory, name));
+        };
+        QVERIFY(captureSettings("settings-light"));
+        auto *themeChoice = findVisual(settings->contentItem(),
+                                       originalDark ? "settingsTheme-1" : "settingsTheme-2");
+        QVERIFY(themeChoice);
+        click(settings, themeChoice);
+        QTRY_COMPARE(window->property("darkMode").toBool(), !originalDark);
+        auto *scaleChoice = findVisual(settings->contentItem(), "settingsTextScale");
+        QVERIFY(scaleChoice);
+        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 13);
+        scaleChoice->forceActiveFocus();
+        QTest::keyClick(settings, Qt::Key_Down);
+        QTest::keyClick(settings, Qt::Key_End);
+        QTest::keyClick(settings, Qt::Key_Return);
+        QTRY_COMPARE(settings->property("draftScale").toDouble(), 2.0);
+        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 26);
+        auto *cancel = findVisual(settings->contentItem(), "settingsCancel");
+        auto *save = findVisual(settings->contentItem(), "settingsSave");
+        QVERIFY(cancel && save);
+        QTRY_VERIFY(save->mapToScene(QPointF(0, save->height())).y() <= settings->height() + 1);
+        QVERIFY(captureSettings("settings-large"));
+        auto *languageChoice = findVisual(settings->contentItem(), "settingsLanguage");
+        auto *settingsFooter = findVisual(settings->contentItem(), "settingsFooter");
+        QVERIFY(languageChoice && settingsFooter);
+        languageChoice->forceActiveFocus();
+        QTRY_VERIFY(languageChoice->mapToScene(QPointF(0, languageChoice->height())).y() <=
+                    settingsFooter->y() + 1);
+        auto *densityChoice = findVisual(settings->contentItem(), "settingsDensity");
+        QVERIFY(densityChoice);
+        settings->setProperty("draftDensity", "compact");
+        settings->setProperty("clearRecent", true);
+        click(settings, cancel);
+        QTRY_VERIFY(!settings->isVisible());
+        QTRY_COMPARE(window->property("darkMode").toBool(), originalDark);
+        QVERIFY(!QFile::exists(path));
+        click(window, entry);
+        QTRY_VERIFY(settings->isVisible());
+        QCOMPARE(settings->property("draftScale").toDouble(), 1.0);
+        settings->setProperty("draftTheme", "dark");
+        settings->setProperty("draftLanguage", "en-US");
+        QCOMPARE(settings->property("draftDensity").toString(), "standard");
+        QCOMPARE(settings->property("clearRecent").toBool(), false);
+        settings->setProperty("draftDensity", "compact");
+        click(settings, save);
+        QTRY_VERIFY(!settings->isVisible());
+        QSettings persisted(path, QSettings::IniFormat);
+        QCOMPARE(persisted.value("locale/language").toString(), "en-US");
+        QCOMPARE(persisted.value("appearance/theme").toString(), "dark");
+        QCOMPARE(persisted.value("schemaVersion").toInt(), 1);
+        QCOMPARE(qtTrId("settings.title"), QStringLiteral("设置"));
+        UiPreferences restored;
+        QCOMPARE(restored.language(), "en-US");
+        QCOMPARE(restored.savedTheme(), "dark");
+        QCOMPARE(restored.savedDensity(), "compact");
+        const auto recentPath = profile.filePath("recent.json");
+        restored.rememberArchive(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QVERIFY(QFile::exists(recentPath));
+        QFile recent(recentPath);
+        QVERIFY(recent.open(QIODevice::ReadOnly));
+        const auto before = recent.readAll();
+        recent.close();
+        QVERIFY(restored.saveDetails("dark", 1, "en-US", "compact", false, false));
+        restored.rememberArchive(QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
+        QVERIFY(recent.open(QIODevice::ReadOnly));
+        QCOMPARE(recent.readAll(), before);
+        recent.close();
+        QVERIFY(restored.saveDetails("dark", 1, "en-US", "compact", false, true));
+        QVERIFY(!QFile::exists(recentPath));
+        QVERIFY(QFile::exists(QStringLiteral(XDZIP_FIXTURES "/normal.zip")));
+        QVERIFY(!restored.save("invalid", 1, "en-US"));
+        QCOMPARE(restored.savedTheme(), "dark");
+        // A separate process proves language restoration across an actual restart.
+        QProcess child;
+        child.setProcessChannelMode(QProcess::MergedChannels);
+        auto environment = QProcessEnvironment::systemEnvironment();
+        environment.insert("XDZIP_UI_TEST_LANGUAGE", "");
+        environment.remove("XDZIP_LANGUAGE");
+        environment.insert("XDZIP_SETTINGS_CHILD", "1");
+        child.setProcessEnvironment(environment);
+        child.start(QCoreApplication::applicationFilePath(), {"settingsEnglishStartup"});
+        QVERIFY(child.waitForFinished(20000));
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
+                 child.readAllStandardOutput().constData());
+        window->close();
+    }
+    void settingsEnglishStartup() {
+        if (qEnvironmentVariable("XDZIP_SETTINGS_CHILD") != "1")
+            QSKIP("Covered by the isolated settings restart child process");
+        QCOMPARE(QCoreApplication::instance()->property("xdzipUiLanguage").toString(), "en-US");
+        QCOMPARE(qtTrId("settings.title"), QStringLiteral("Settings"));
+        QCOMPARE(qtTrId("ui.2e84a56c5f19", 1), QStringLiteral("1 file"));
+        QCOMPARE(qtTrId("ui.2e84a56c5f19", 2), QStringLiteral("2 files"));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *open = findVisual(window->contentItem(), "welcomeOpen");
+        QVERIFY(open);
+        QCOMPARE(open->property("title").toString(), "Open archive");
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings);
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QTRY_VERIFY(settings->isVisible());
+        QCOMPARE(settings->title(), "Settings");
+        const auto directory = qEnvironmentVariable("XDZIP_SETTINGS_VISUAL_AUDIT");
+        if (!directory.isEmpty())
+            QVERIFY(visual_audit::save(settings, directory, "settings-en-US"));
+        for (auto *owned : window->findChildren<QQuickWindow *>())
+            QVERIFY(!owned->title().contains(QRegularExpression("[\\x{3400}-\\x{9fff}]")));
+        settings->close();
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(!controller->message().contains(QRegularExpression("[\\x{3400}-\\x{9fff}]")));
+        window->close();
     }
     void controlsDismissFocusWithoutLosingActions() {
         QQmlApplicationEngine engine;

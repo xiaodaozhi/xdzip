@@ -14,7 +14,7 @@ OperationWindow {
     }
     width: Theme.operationCreateWidth
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
-    title: qsTr("新建压缩文件")
+    title: qsTrId("ui.fe189b616c1d")
     readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
     readonly property string formatExtension: [".zip", ".tar", ".tar.gz"][formatGroup.currentIndex]
     readonly property bool validName: fileName.text.trim().toLowerCase().endsWith(formatExtension) && fileName.text.trim().length > formatExtension.length && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
@@ -44,16 +44,16 @@ OperationWindow {
         const directories = inputs.length - files.length;
         const parts = [];
         if (files.length)
-            parts.push(qsTr("%1 个文件").arg(files.length));
+            parts.push(qsTrId("ui.2e84a56c5f19", Number(files.length)));
         if (directories)
-            parts.push(qsTr("%1 个文件夹").arg(directories));
+            parts.push(qsTrId("ui.43a28a01147e", Number(directories)));
         if (files.length && files.every(item => item.known))
             parts.push(formatInputSize(files.reduce((total, item) => total + Number(item.sizeBytes || 0), 0)));
         else if (files.length)
-            parts.push(qsTr("大小将在开始前检查"));
+            parts.push(qsTrId("ui.db436a950681"));
         if (directories)
-            parts.push(qsTr("文件夹大小将在开始前扫描"));
-        return parts.length ? parts.join("，") : qsTr("尚未添加文件");
+            parts.push(qsTrId("ui.2ad1d92b2858"));
+        return parts.length ? parts.join(qsTrId("common.separator")) : qsTrId("ui.02256d747caf");
     }
     onInputsChanged: if (controller)
         controller.inspectCreationInputs(inputs.map(item => item.path))
@@ -74,7 +74,7 @@ OperationWindow {
         controller.clearCreationError();
         inputs = [];
         formatGroup.currentIndex = 0;
-        fileName.text = qsTr("新建压缩文件.zip");
+        fileName.text = qsTrId("ui.58ca935c9fbf");
         target.text = controller.defaultTargetDirectory();
         level.currentIndex = 2;
         volume.currentIndex = 0;
@@ -135,14 +135,14 @@ OperationWindow {
                         Layout.fillWidth: true
                         spacing: 6
                         Text {
-                            text: qsTr("新建压缩文件")
+                            text: qsTrId("ui.fe189b616c1d")
                             font.pixelSize: Theme.operationCreateTitleSize
                             font.bold: true
                             color: Theme.text
                         }
                         Text {
                             Layout.fillWidth: true
-                            text: qsTr("将文件整理为一个压缩包。")
+                            text: qsTrId("ui.24d107333a04")
                             wrapMode: Text.Wrap
                             font.pixelSize: Theme.operationCreateBodySize
                             color: Theme.textSecondary
@@ -167,7 +167,7 @@ OperationWindow {
                             anchors.margins: Theme.operationCreateCardInset
                             spacing: 8
                             Text {
-                                text: qsTr("添加文件")
+                                text: qsTrId("ui.ad9daebe00dc")
                                 font.pixelSize: Theme.operationCreateBodySize
                                 font.bold: true
                                 color: Theme.text
@@ -188,7 +188,7 @@ OperationWindow {
                                         spacing: 8
                                         OperationAction {
                                             objectName: "createAddFiles"
-                                            text: qsTr("添加文件")
+                                            text: qsTrId("ui.ad9daebe00dc")
                                             primary: true
                                             actionIcon: AssetLibrary.fileIcon("", false, false)
                                             enabled: !root.controller.busy
@@ -196,7 +196,7 @@ OperationWindow {
                                         }
                                         OperationAction {
                                             objectName: "createAddDirectories"
-                                            text: qsTr("添加文件夹")
+                                            text: qsTrId("ui.45da2d9c85d1")
                                             actionIcon: AssetLibrary.fileIcon("", true, false)
                                             enabled: !root.controller.busy
                                             onClicked: root.addInputPaths(root.controller.chooseCreationInputs(true), true)
@@ -269,7 +269,7 @@ OperationWindow {
                                         Text {
                                             anchors.centerIn: parent
                                             visible: root.inputs.length === 0
-                                            text: qsTr("添加文件或文件夹开始")
+                                            text: qsTrId("ui.5ac6516c836e")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.textSecondary
                                         }
@@ -298,7 +298,7 @@ OperationWindow {
                             anchors.margins: Theme.operationCreateCardInset
                             spacing: 8
                             Text {
-                                text: qsTr("保存位置")
+                                text: qsTrId("ui.0b7e2876922e")
                                 font.pixelSize: Theme.operationCreateBodySize
                                 font.bold: true
                                 color: Theme.text
@@ -320,7 +320,7 @@ OperationWindow {
                                         columnSpacing: 12
                                         rowSpacing: 8
                                         Text {
-                                            text: qsTr("文件名")
+                                            text: qsTrId("ui.a6e48adc26d6")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -332,10 +332,10 @@ OperationWindow {
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
                                             topPadding: 4
                                             bottomPadding: 4
-                                            Accessible.name: qsTr("压缩文件名称")
+                                            Accessible.name: qsTrId("ui.0d568cd7b07d")
                                         }
                                         Text {
-                                            text: qsTr("保存到")
+                                            text: qsTrId("ui.e31cccd7bba0")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -350,12 +350,12 @@ OperationWindow {
                                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
                                                 topPadding: 4
                                                 bottomPadding: 4
-                                                Accessible.name: qsTr("保存目录")
+                                                Accessible.name: qsTrId("ui.18e7649764bb")
                                                 onEditingFinished: root.controller.checkCreationTarget(text)
                                             }
                                             OperationButton {
                                                 objectName: "createChangeTarget"
-                                                text: qsTr("更改")
+                                                text: qsTrId("ui.6b01fce4dbea")
                                                 minimumWidth: 58
                                                 onClicked: {
                                                     const path = root.controller.chooseTarget(target.text);
@@ -370,7 +370,7 @@ OperationWindow {
                                     InfoRow {
                                         Layout.fillWidth: true
                                         iconSource: root.targetReady ? "qrc:/xdzip/assets/success-large.png" : (Theme.dark ? "qrc:/xdzip/assets/info-dark.png" : "qrc:/xdzip/assets/info-light.png")
-                                        text: root.targetReady ? qsTr("目标位置可用") : root.controller.targetCheck.checking ? qsTr("正在检查目标目录…") : root.controller.targetCheck.error || qsTr("更改目录后请重新检查")
+                                        text: root.targetReady ? qsTrId("ui.059a6ea7ca12") : root.controller.targetCheck.checking ? qsTrId("ui.2ae4afff62f1") : root.controller.targetCheck.error || qsTrId("ui.cef0425c5413")
                                         labelSize: Theme.operationCreateNoteSize
                                         iconSize: 19.2
                                     }
@@ -390,7 +390,7 @@ OperationWindow {
                             anchors.margins: Theme.operationCreateCardInset
                             spacing: 8
                             Text {
-                                text: qsTr("压缩选项")
+                                text: qsTrId("ui.28c4470de92d")
                                 font.pixelSize: Theme.operationCreateBodySize
                                 font.bold: true
                                 color: Theme.text
@@ -412,7 +412,7 @@ OperationWindow {
                                         columnSpacing: 12
                                         rowSpacing: 8
                                         Text {
-                                            text: qsTr("压缩格式")
+                                            text: qsTrId("ui.5e30948d6a8b")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -420,7 +420,7 @@ OperationWindow {
                                             id: formatGroup
                                             objectName: "createFormat"
                                             Layout.fillWidth: true
-                                            accessibleLabel: qsTr("压缩格式")
+                                            accessibleLabel: qsTrId("ui.5e30948d6a8b")
                                             onCurrentIndexChanged: {
                                                 if (!fileName) return;
                                                 const stem = fileName.text.replace(/\.(tar\.gz|zip|tar)$/i, "");
@@ -445,7 +445,7 @@ OperationWindow {
                                             ]
                                         }
                                         Text {
-                                            text: qsTr("压缩级别")
+                                            text: qsTrId("ui.e7e4273dd4c8")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -457,10 +457,10 @@ OperationWindow {
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
                                             currentIndex: 2
-                                            model: [qsTr("0-不压缩"), qsTr("1-快速压缩"), qsTr("2-正常压缩"), qsTr("3-最大压缩")]
+                                            model: [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
                                         }
                                         Text {
-                                            text: qsTr("分卷")
+                                            text: qsTrId("ui.5473b9b24a75")
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -474,7 +474,7 @@ OperationWindow {
                                                 Layout.fillWidth: true
                                                 density: root.density
                                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
-                                                model: [qsTr("不分卷"), "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", qsTr("自定义")]
+                                                model: [qsTrId("ui.13fa566b385e"), "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", qsTrId("ui.4eafa9e925b3")]
                                                 editable: currentIndex === 13
                                                 numericOnly: true
                                                 onCurrentIndexChanged: if (currentIndex === 13) Qt.callLater(function () { volume.editText = ""; });
@@ -487,13 +487,13 @@ OperationWindow {
                                                 density: root.density
                                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentItem.implicitHeight + 8)
                                                 currentIndex: 2
-                                                model: [qsTr("字节"), "KB", "MB", "GB"]
+                                                model: [qsTrId("ui.b1c5e73e1471"), "KB", "MB", "GB"]
                                             }
                                         }
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: formatGroup.currentIndex === 1 ? qsTr("TAR 仅打包，不压缩，不支持分卷和密码。") : formatGroup.currentIndex === 2 ? qsTr("TAR.GZ 使用 GZIP 压缩，不支持分卷和密码。") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTr("请输入正整数，每卷上限为 24 GiB，最多 1024 卷。") : volume.currentIndex > 0 ? qsTr("输出 .zip.001 等分卷，现有分卷只能整组改名。") : qsTr("级别 0 不压缩，其余级别使用 Deflate。")
+                                        text: formatGroup.currentIndex === 1 ? qsTrId("ui.a823dd053540") : formatGroup.currentIndex === 2 ? qsTrId("ui.8de83aec57d2") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? qsTrId("ui.17f715707e84") : qsTrId("ui.13e4af7e4901")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -503,7 +503,7 @@ OperationWindow {
                                 id: usePassword
                                 enabled: formatGroup.currentIndex === 0
                                 objectName: "createUsePassword"
-                                text: qsTr("输入密码")
+                                text: qsTrId("ui.7673702e6ff6")
                                 density: root.density
                                 onCheckedChanged: if (!checked) password.text = ""
                             }
@@ -515,12 +515,12 @@ OperationWindow {
                                 density: root.density
                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
                                 echoMode: TextInput.Password
-                                placeholderText: qsTr("1–128 个 UTF-8 字节，不含控制字符")
-                                Accessible.name: qsTr("压缩文件密码")
+                                placeholderText: qsTrId("ui.b1e4901deada")
+                                Accessible.name: qsTrId("ui.96d162db488e")
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: formatGroup.currentIndex !== 0 ? qsTr("此格式不支持密码加密。") : root.passwordValid ? qsTr("AES-256 加密文件内容，文件名仍可见。") : qsTr("请输入有效密码；密码不得为空或包含控制字符。")
+                                text: formatGroup.currentIndex !== 0 ? qsTrId("ui.f0af11af0bbb") : root.passwordValid ? qsTrId("ui.511f8696a4f3") : qsTrId("ui.cbf703a10c7b")
                                 wrapMode: Text.Wrap
                                 font.pixelSize: Theme.operationCreateNoteSize
                                 color: root.passwordValid ? Theme.textSecondary : Theme.menuDanger
@@ -531,7 +531,7 @@ OperationWindow {
                         id: openAfter
                         objectName: "createOpenAfter"
                         density: root.density
-                        text: qsTr("完成后打开目标文件夹")
+                        text: qsTrId("ui.3fc24f609be8")
                         checked: true
                     }
                     Text {
@@ -551,16 +551,16 @@ OperationWindow {
             contentInset: Theme.operationCreateContentInset
             verticalInset: 10
             minimumFooterHeight: 52
-            note: root.inputs.length ? qsTr("准备就绪") : qsTr("等待添加内容")
+            note: root.inputs.length ? qsTrId("ui.1bd1893c0900") : qsTrId("ui.79cd20ee8749")
             noteIcon: Theme.dark ? "qrc:/xdzip/assets/dark/shield.png" : "qrc:/xdzip/assets/light/shield.png"
             OperationFooterButton {
                 objectName: "createCancel"
-                text: qsTr("取消")
+                text: qsTrId("common.cancel")
                 onClicked: root.close()
             }
             OperationFooterButton {
                 objectName: "startCreate"
-                text: qsTr("创建压缩包")
+                text: qsTrId("ui.e185d04bcc5f")
                 primary: true
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {

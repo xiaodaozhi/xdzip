@@ -18,8 +18,8 @@
   },
   "subset": {
     "path": "xdzip-design-sans-sc.woff2",
-    "sha256": "523f5d0d3ef6359534412b492547d1e32c11cd77ff93632bcdec1f447c280409",
-    "bytes": 161460,
+    "sha256": "b4eba67a8212587f5e072244a7d86acbe7ccdd9f8c54c33ed10d829235c0fcb5",
+    "bytes": 162080,
     "format": "WOFF2",
     "fonttools_version": "4.61.1",
     "brotli_version": "1.1.0",
@@ -28,7 +28,7 @@
       "default": 400,
       "max": 750
     },
-    "unicode_count": 700,
+    "unicode_count": 703,
     "requested_codepoints": [
       "U+0020",
       "U+0021",
@@ -564,6 +564,7 @@
       "U+7B49",
       "U+7B56",
       "U+7B7E",
+      "U+7B80",
       "U+7B97",
       "U+7BA1",
       "U+7BAD",
@@ -619,6 +620,7 @@
       "U+89C9",
       "U+89E3",
       "U+89E6",
+      "U+8A00",
       "U+8BA1",
       "U+8BA4",
       "U+8BA9",
@@ -632,6 +634,7 @@
       "U+8BE2",
       "U+8BE5",
       "U+8BE6",
+      "U+8BED",
       "U+8BEF",
       "U+8BF4",
       "U+8BF7",

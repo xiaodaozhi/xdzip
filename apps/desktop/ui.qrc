@@ -11,6 +11,9 @@
     <file alias="fonts/xdzip-design-sans-sc.ttf">../../design/assets/fonts/xdzip-design-sans-sc.ttf</file>
     <file>ui/qmldir</file>
     <file>ui/Theme.qml</file>
+    <file>ui/SettingsWindow.qml</file>
+    <file alias="i18n/zh-CN.json">../../resources/i18n/zh-CN.json</file>
+    <file alias="i18n/en-US.json">../../resources/i18n/en-US.json</file>
     <file>ui/InfoRow.qml</file>
     <file>ui/AppButton.qml</file>
     <file>ui/OperationWindow.qml</file>
@@ -170,5 +173,13 @@
     <file alias="assets/dark/folder-large.png">../../design/assets/png/dark/folder@9x.png</file>
     <file alias="assets/light/shield.png">../../design/assets/png/light/shield@3x.png</file>
     <file alias="assets/dark/shield.png">../../design/assets/png/dark/shield@3x.png</file>
+    <file alias="assets/light/settings-tile.png">../../design/assets/png/light/settings-tile@3x.png</file>
+    <file alias="assets/light/theme-system.png">../../design/assets/png/light/theme-system@3x.png</file>
+    <file alias="assets/light/theme-light.png">../../design/assets/png/light/theme-light@3x.png</file>
+    <file alias="assets/light/theme-dark.png">../../design/assets/png/light/theme-dark@3x.png</file>
+    <file alias="assets/dark/settings-tile.png">../../design/assets/png/dark/settings-tile@3x.png</file>
+    <file alias="assets/dark/theme-system.png">../../design/assets/png/dark/theme-system@3x.png</file>
+    <file alias="assets/dark/theme-light.png">../../design/assets/png/dark/theme-light@3x.png</file>
+    <file alias="assets/dark/theme-dark.png">../../design/assets/png/dark/theme-dark@3x.png</file>
   </qresource>
 </RCC>

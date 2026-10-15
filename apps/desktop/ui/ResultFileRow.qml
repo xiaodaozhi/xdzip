@@ -8,7 +8,7 @@ Rectangle {
     required property var entry
     property bool showReason: false
     readonly property bool incomplete: entry.status === "unfinished"
-    readonly property string reason: ({disk_full: qsTr("空间不足"), source_changed: qsTr("来源变化"), integrity_error: qsTr("校验失败"), cancelled: qsTr("已取消"), output_io: qsTr("无法写入")})[entry.errorCode] || qsTr("未完成")
+    readonly property string reason: ({disk_full: qsTrId("ui.1eeed25bf9dd"), source_changed: qsTrId("ui.89c590068e9d"), integrity_error: qsTrId("ui.a096c1176981"), cancelled: qsTrId("ui.a37778f17c5f"), output_io: qsTrId("ui.55039130fcb8")})[entry.errorCode] || qsTrId("ui.6707de42c29d")
     implicitHeight: Math.max(Theme.operationResultRowHeight, labels.implicitHeight + 16, statusLabel.implicitHeight + 20)
     color: incomplete && !showReason ? (Theme.resultWarningSurface) : Theme.surface
     RowLayout {
@@ -42,7 +42,7 @@ Rectangle {
         }
         Text {
             id: statusLabel
-            text: root.showReason ? root.reason : root.incomplete ? qsTr("未完成") : root.entry.status === "skipped" ? qsTr("已跳过") : qsTr("已完成")
+            text: root.showReason ? root.reason : root.incomplete ? qsTrId("ui.6707de42c29d") : root.entry.status === "skipped" ? qsTrId("ui.71e95b289aad") : qsTrId("ui.f28461bb49c8")
             textFormat: Text.PlainText; wrapMode: Text.Wrap
             Layout.maximumWidth: Math.max(88, root.width * 0.3)
             font.pixelSize: Math.round(Theme.operationResultBodySize)
