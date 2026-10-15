@@ -7,9 +7,11 @@
 #include "UiText.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
+#include <QAccessible>
 #include <QClipboard>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QInputMethodEvent>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
@@ -17,6 +19,7 @@
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QRegularExpression>
+#include <QSGRendererInterface>
 #include <QScopeGuard>
 #include <QScreen>
 #include <QSignalSpy>
@@ -96,6 +99,88 @@ class BrowserTest : public QObject {
     }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void privateTestDesktopInputAndAccessibility() {
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
+        QElapsedTimer firstFrame;
+        firstFrame.start();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(create);
+        QSignalSpy frames(create, &QQuickWindow::frameSwapped);
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible());
+        create->update();
+        QTRY_VERIFY_WITH_TIMEOUT(!frames.isEmpty(), 5000);
+        const auto firstPresentedMs = firstFrame.elapsed();
+        QVERIFY(!create->grabWindow().isNull());
+        const auto api = create->rendererInterface()->graphicsApi();
+        const bool hardwareApi =
+            api == QSGRendererInterface::Metal || api == QSGRendererInterface::OpenGL ||
+            api == QSGRendererInterface::Direct3D11 || api == QSGRendererInterface::Direct3D12 ||
+            api == QSGRendererInterface::Vulkan;
+        if (qEnvironmentVariable("XDZIP_REQUIRE_GPU") == "1")
+            QVERIFY2(hardwareApi, "GPU validation must not silently fall back to software or Null");
+        auto *field = findVisual(create->contentItem(), "createName");
+        auto *action = findVisual(create->contentItem(), "startCreate");
+        QVERIFY(field && action);
+        field->setProperty("text", QString{});
+        field->forceActiveFocus();
+        QTRY_VERIFY(field->hasActiveFocus());
+        QInputMethodEvent composing(QStringLiteral("中文"), {});
+        QCoreApplication::sendEvent(create, &composing);
+        QTRY_VERIFY(field->property("inputMethodComposing").toBool());
+        QCOMPARE(field->property("text").toString(), QString{});
+        QInputMethodEvent commit;
+        const auto name = QString::fromUtf8("中文文件📦.zip");
+        commit.setCommitString(name);
+        QCoreApplication::sendEvent(create, &commit);
+        QTRY_COMPARE(field->property("text").toString(), name);
+        QTRY_VERIFY(!field->property("inputMethodComposing").toBool());
+        auto *editable = QAccessible::queryAccessibleInterface(field);
+        auto *button = QAccessible::queryAccessibleInterface(action);
+        QVERIFY(editable && button);
+        QCOMPARE(editable->role(), QAccessible::EditableText);
+        QCOMPARE(editable->text(QAccessible::Name), qtTrId("ui.0d568cd7b07d"));
+        QCOMPARE(editable->text(QAccessible::Value), name);
+        QVERIFY(editable->textInterface());
+        QCOMPARE(button->role(), QAccessible::Button);
+        QCOMPARE(button->text(QAccessible::Name), qtTrId("ui.e185d04bcc5f"));
+        QVERIFY(button->state().disabled);
+        QTest::keyClick(create, Qt::Key_Escape);
+        QTRY_VERIFY(!field->hasActiveFocus());
+        QCOMPARE(field->property("text").toString(), name);
+        const auto directory = qEnvironmentVariable("XDZIP_PRIVATE_TEST_AUDIT");
+        if (!directory.isEmpty()) {
+            QVERIFY(QDir().mkpath(directory));
+            const QJsonObject evidence{
+                {"schema", 1},
+                {"qt", qVersion()},
+                {"platform", QGuiApplication::platformName()},
+                {"architecture", QSysInfo::currentCpuArchitecture()},
+                {"graphicsApi", static_cast<int>(api)},
+                {"hardwareApi", hardwareApi},
+                {"framesPresented", frames.count()},
+                {"firstPresentedMs", firstPresentedMs},
+                {"measurementScope",
+                 "Warm in-process test startup, not release cold-start benchmark"},
+                {"syntheticIme", true},
+                {"accessibleInterfaces", true},
+                {"nativeImeManual", "pending"},
+                {"screenReaderManual", "pending"}};
+            QFile output(QDir(directory).filePath("desktop-input-accessibility.json"));
+            QVERIFY(output.open(QIODevice::WriteOnly));
+            const auto bytes = QJsonDocument(evidence).toJson();
+            QCOMPARE(output.write(bytes), bytes.size());
+        }
+        create->close();
     }
     void settingsWindowPersistsAndRollsBack() {
         QTemporaryDir profile;

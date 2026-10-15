@@ -51,6 +51,11 @@ Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
+# Record synthetic IME/accessibility coverage; offscreen does not imply native desktop approval.
+$env:XDZIP_PRIVATE_TEST_AUDIT = Join-Path (Get-Location) 'build/review'
+$desktopProbe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
+Invoke-Checked $desktopProbe @('privateTestDesktopInputAndAccessibility')
+Remove-Item Env:XDZIP_PRIVATE_TEST_AUDIT
 # Gate the repaired geometry and palette contracts on each native host.
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'

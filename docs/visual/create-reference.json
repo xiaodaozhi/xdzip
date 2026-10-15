@@ -90,7 +90,8 @@
     "Circular minus removal, shared borders/radii and continuous segmented radio group follow C01",
     "Footer buttons use one role component across operation windows",
     "Information uses commas or line breaks; original bitmaps remain immutable",
-    "2026-10-15 border correction: light neutral control border changes from #C9D1E0 to #DCE2EC. Original C01 pixels and hash remain unchanged; dark #485469 and semantic states are retained."
+    "2026-10-15 border correction: light neutral control border changes from #C9D1E0 to #DCE2EC. Original C01 pixels and hash remain unchanged; dark #485469 and semantic states are retained.",
+    "2026-10-15 outer-corner correction: uniform antialiased rounded fills extend behind square inner seams; Qt and HTML inset once by the one-logical-pixel track border."
   ],
   "border_review": {
     "source_straight_edges": {

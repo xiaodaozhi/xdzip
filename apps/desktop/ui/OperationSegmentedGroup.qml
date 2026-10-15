@@ -67,16 +67,22 @@ Control {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                 }
-                background: Rectangle {
+                background: Item {
+                    id: segmentBackground
                     objectName: segment.objectName + "Background"
-                    radius: 0
-                    topLeftRadius: segment.index === 0 ? Theme.operationControlSegmentedRadius - 1 : 0
-                    bottomLeftRadius: topLeftRadius
-                    topRightRadius: segment.index === root.options.length - 1 ? Theme.operationControlSegmentedRadius - 1 : 0
-                    bottomRightRadius: topRightRadius
-                    color: segment.checked ? segment.down ? Theme.accentPressed : segment.hovered ? Theme.accentHover : Theme.accent : segment.hovered && segment.enabled ? Theme.controlHover : "transparent"
-                    border.color: "transparent"
-                    border.width: 0
+                    readonly property real outerRadius: Theme.operationControlSegmentedRadius - root.padding
+                    property color color: segment.checked ? segment.down ? Theme.accentPressed : segment.hovered ? Theme.accentHover : Theme.accent : segment.hovered && segment.enabled ? Theme.controlHover : "transparent"
+                    clip: true
+                    // Extend the rounded fill past the inner edge, then clip the seam square.
+                    // Uniform Rectangle radii render consistently on software and GPU backends.
+                    Rectangle {
+                        x: segment.index === root.options.length - 1 && segment.index !== 0 ? -segmentBackground.outerRadius : 0
+                        width: parent.width + (root.options.length > 1 && (segment.index === 0 || segment.index === root.options.length - 1) ? segmentBackground.outerRadius : 0)
+                        height: parent.height
+                        radius: segment.index === 0 || segment.index === root.options.length - 1 ? segmentBackground.outerRadius : 0
+                        antialiasing: true
+                        color: segmentBackground.color
+                    }
                     Rectangle {
                         visible: segment.index > 0 && !segment.checked && root.currentIndex !== segment.index - 1
                         x: 0

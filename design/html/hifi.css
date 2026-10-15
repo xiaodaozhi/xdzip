@@ -809,7 +809,7 @@ dialog[data-kind] .modal-footer .button.primary { min-width:var(--operation-cont
 dialog[data-kind="create"] .create-row .icon-button { background:transparent; color:var(--text); }
 dialog[data-kind="create"] .create-row .icon-button>svg { width:var(--operation-control-remove-artwork-size); height:var(--operation-control-remove-artwork-size); }
 dialog[data-kind="create"] .create-row .icon-button:hover { background:var(--ui-control-hover); }
-.operation-segmented { display:flex; align-items:stretch; height:var(--operation-control-segmented-height); min-height:var(--operation-control-segmented-height); padding:calc(1px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); border-radius:var(--operation-control-segmented-radius); background:var(--operation-card); }
+.operation-segmented { display:flex; align-items:stretch; height:var(--operation-control-segmented-height); min-height:var(--operation-control-segmented-height); padding:calc(1px * var(--ui-source-factor)); border:0; box-shadow:inset 0 0 0 calc(1px * var(--ui-source-factor)) var(--operation-field-border); border-radius:var(--operation-control-segmented-radius); background:var(--operation-card); }
 .operation-segment { position:relative; flex:1; min-width:0; padding:0; border:0; border-radius:0; background:transparent; color:var(--text); font:inherit; }
 .operation-segment[aria-checked="true"] { background:var(--accent); color:white; }
 .operation-segment:first-child { border-radius:calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)) 0 0 calc(var(--operation-control-segmented-radius) - 1px * var(--ui-source-factor)); }
