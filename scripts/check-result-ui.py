@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +24,10 @@ for scene in ['result-partial', 'result-dark', 'result-details']:
     visible = [n for n in capture['nodes'] if n['visible']]
     named = {n['name']:n for n in visible if n.get('name')}
     check(scene+'/width',capture['width'],reference['logical_width'])
-    check(scene+'/height',capture['height'],min(reference['client_height'],capture.get('availableScreenHeight',680)-80))
+    maximum_height = min(reference['client_height'], capture.get('availableScreenHeight', 680)-80)
+    natural_height = math.ceil(named['taskBodyContent']['implicitHeight'] + named['taskFooter']['implicitHeight'])
+    check(scene+'/content-driven height', capture['height'], min(natural_height, maximum_height))
+    check(scene+'/maximum height', 0 < capture['height'] <= maximum_height, True)
     check(scene+'/DPR width',capture['imageWidth']/capture['dpr'],capture['width'])
     check(scene+'/single heading',len([n for n in visible if n.get('text')=='部分文件未完成']),1)
     for text,key in [('部分文件未完成','title_size'),('未完成的文件','section_size'),('目标位置','section_size'),('查看处理明细','body_size')]:

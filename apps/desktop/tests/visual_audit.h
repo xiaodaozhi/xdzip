@@ -35,7 +35,8 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
                      {"visible", item->isVisible()},
                      {"clip", item->clip()},
                      {"baselineOffset", item->baselineOffset()},
-                     {"implicitWidth", item->implicitWidth()}};
+                     {"implicitWidth", item->implicitWidth()},
+                     {"implicitHeight", item->implicitHeight()}};
     for (const auto *key :
          {"text", "color", "source", "radius", "horizontalAlignment", "verticalAlignment",
           "contentWidth", "contentHeight", "opacity", "leftPadding", "rightPadding", "nodeDepth",
@@ -65,9 +66,9 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
 }
 inline bool save(QQuickWindow *window, const QString &directory, const QString &name) {
     QTest::qWait(80); // allow layout, font fallback and the software render loop to settle
+    const auto shot = window->grabWindow();
     QJsonArray nodes;
     collect(window->contentItem(), nodes);
-    const auto shot = window->grabWindow();
     QJsonObject data{{"width", window->width()},
                      {"height", window->height()},
                      {"availableScreenHeight", window->screen()->availableGeometry().height()},
