@@ -85,7 +85,7 @@ def main():
     output = ROOT / 'dist/xdzip-hifi-design.html'
     output.parent.mkdir(exist_ok=True)
     output.write_text(review)
-    welcome_review = review.replace('<option value="welcome">', '<option value="welcome" selected>', 1)
+    welcome_review = review.replace('<option value="main" selected>', '<option value="main">', 1).replace('<option value="welcome">', '<option value="welcome" selected>', 1)
     output.with_name('xdzip-welcome-design.html').write_text(welcome_review)
     # Give the corrected logical-size delivery a distinct download name.
     output.with_name('xdzip-hifi-design-1to1.html').write_text(review)
