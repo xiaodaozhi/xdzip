@@ -62,6 +62,17 @@ Item {
     TestCase {
         name: "CommandControls"
         when: windowShown
+        function init() {
+            surface.Window.window.requestActivate();
+            tryCompare(surface.Window.window, "active", true);
+            // Keep native pointer hover from choosing an item during keyboard navigation.
+            mouseMove(surface, surface.width - 2, surface.height - 2);
+        }
+        function openWithKeyboard() {
+            trigger.forceActiveFocus();
+            keyClick(Qt.Key_Space);
+            tryCompare(menu, "visible", true);
+        }
         function cleanup() {
             tooltip.requested = false;
             menu.close();
@@ -71,9 +82,7 @@ Item {
             Ui.Theme.dark = false;
         }
         function test_keyboard_selection_and_disabled_guard() {
-            trigger.forceActiveFocus();
-            mouseClick(trigger);
-            tryCompare(menu, "visible", true);
+            openWithKeyboard();
             keyClick(Qt.Key_Down);
             tryCompare(menu, "currentIndex", 0);
             keyClick(Qt.Key_Down);
@@ -92,8 +101,7 @@ Item {
             verify(trigger.activeFocus);
         }
         function test_submenu_return_and_activation() {
-            mouseClick(trigger);
-            tryCompare(menu, "visible", true);
+            openWithKeyboard();
             keyClick(Qt.Key_Up);
             tryCompare(menu, "currentIndex", 4);
             keyClick(Qt.Key_Right);
@@ -102,8 +110,7 @@ Item {
             tryCompare(submenu, "visible", false);
             verify(menu.visible);
             keyClick(Qt.Key_Escape);
-            mouseClick(trigger);
-            tryCompare(menu, "visible", true);
+            openWithKeyboard();
             keyClick(Qt.Key_Down);
             keyClick(Qt.Key_Return);
             tryCompare(firstSpy, "count", 1);
