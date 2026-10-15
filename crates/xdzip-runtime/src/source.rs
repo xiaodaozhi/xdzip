@@ -75,6 +75,9 @@ impl Source {
     pub fn identity(&self) -> Result<xdzip_io::FileIdentity, ScanError> {
         xdzip_io::FileIdentity::read(&self.file).map_err(|_| ScanError::SourceChanged)
     }
+    pub fn length(&self) -> u64 {
+        self.version.length
+    }
     pub fn name(&self) -> &str {
         source_name(&self.path)
     }

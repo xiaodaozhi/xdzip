@@ -153,6 +153,15 @@ pub(crate) fn prepare(
             path: PortablePath::parse(&canonical_path).ok_or("unsafe_name")?,
         });
     }
+    // GZIP has no per-entry compressed sizes. Use the immutable whole-source
+    // size for a conservative selected-output ratio gate; work quotas still apply.
+    if archive.format == xdzip_codec_api::Format::TarGzip
+        && !options.allow_high_ratio
+        && declared > 1024 * 1024
+        && declared > archive.source.length().saturating_mul(1000)
+    {
+        return Err("high_ratio");
+    }
     Ok(result)
 }
 

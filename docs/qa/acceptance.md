@@ -55,6 +55,7 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 | TAR-04 | 路径逃逸、链接、设备、FIFO、稀疏和全局 PAX | 不创建不安全输出，明确拒绝，不通过库 unpack 写入 |
 | TAR-05 | 截断、头校验和、CRC／ISIZE、非零尾部、扩展头和字节预算 | 完整扫描失败，不发布部分索引；超额、取消可解释 |
 | TAR-06 | 复合扩展名冲突改名，覆盖任务在校验阶段取消 | 保留 .tar.gz，旧归档不变，本次暂存清理 |
+| TAR-07 | 高压缩比 GZIP，未允许及明确允许两种意图 | 默认在写入前拒绝，允许后仍执行来源、字节配额和安全提交检查 |
 
 测试入口为 codec-tar、runtime creation 测试、Qt tarCreationBrowseAndSafeExtraction 及 [独立互操作脚本](../../scripts/check-tar-interop.py)。实际日志与截图仅在 build/review/wp11 或 CI 工件。
 

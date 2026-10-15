@@ -486,3 +486,51 @@ fn tar_and_gzip_use_the_same_safe_creation_extraction_rename_and_cancel_barriers
         assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 2);
     }
 }
+
+#[test]
+fn gzip_ratio_requires_explicit_intent_and_opt_in_still_uses_the_safe_output_job() {
+    let f = Fixture::new();
+    let input = f.0.join("输入/文件.txt");
+    std::fs::write(&input, vec![0; 32 * 1024 * 1024]).unwrap();
+    let mut create = f.job(8);
+    create.options.name = "ratio.tar.gz".into();
+    assert_eq!(
+        execute(create, &Control::default(), |_| {}).status,
+        Status::Succeeded
+    );
+    let path = f.0.join("output/ratio.tar.gz");
+    let archive = crate::Archive::open(&path, &Cancellation::default()).unwrap();
+    let target = f.0.join("ratio-output");
+    std::fs::create_dir(&target).unwrap();
+    let mut options = crate::extraction::Options {
+        target: target.to_string_lossy().into_owned(),
+        all: true,
+        selected: vec![],
+        directory: String::new(),
+        create_folder: false,
+        conflict: ConflictPolicy::Ask,
+        allow_high_ratio: false,
+    };
+    assert!(matches!(
+        archive.extraction_job(options.clone(), &Cancellation::default()),
+        Err("high_ratio")
+    ));
+    assert_eq!(std::fs::read_dir(&target).unwrap().count(), 0);
+    options.allow_high_ratio = true;
+    let mut terminal = None;
+    crate::extraction::run(
+        archive
+            .extraction_job(options, &Cancellation::default())
+            .unwrap(),
+        3,
+        &Control::default(),
+        &mut |s| terminal = Some(s),
+    );
+    assert_eq!(terminal.unwrap().status, Status::Succeeded);
+    assert_eq!(
+        std::fs::metadata(target.join("输入/文件.txt"))
+            .unwrap()
+            .len(),
+        32 * 1024 * 1024
+    );
+}
