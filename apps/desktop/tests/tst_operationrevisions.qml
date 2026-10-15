@@ -96,6 +96,7 @@ Item {
             const rename = findChild(conflict, "conflictRename");
             compare(rename.contentItem.font.pixelSize, 13);
             compare(rename.background.radius, 5);
+            compare(findChild(conflict, "conflictNotice").labelItem.font.pixelSize, 12);
             grabImage(conflict.contentItem).save("conflict-normal-density.png");
             Ui.Theme.fontScale = 2;
             waitForRendering(conflict.contentItem);

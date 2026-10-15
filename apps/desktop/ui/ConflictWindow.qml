@@ -55,13 +55,13 @@ OperationWindow {
                                     Image { Layout.alignment: Qt.AlignHCenter; Layout.preferredWidth: root.unit(60); Layout.preferredHeight: root.unit(60); source: AssetLibrary.fileIcon(root.task.promptName || "", false, true) }
                                     Text { Layout.fillWidth: true; text: comparisonCard.modelData; font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); font.bold: true; color: Theme.text; horizontalAlignment: Text.AlignHCenter }
                                     Text { Layout.fillWidth: true; text: root.sizeFormatter(comparisonCard.index === 0 ? root.task.existingBytes || "0" : root.task.incomingBytes || "0"); font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); color: Theme.textSecondary; horizontalAlignment: Text.AlignHCenter }
-                                    Text { Layout.fillWidth: true; text: qsTr("修改日期"); color: Theme.textSecondary; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)); horizontalAlignment: Text.AlignHCenter }
-                                    Text { Layout.fillWidth: true; text: comparisonCard.index === 0 ? root.task.existingModified || "—" : root.task.incomingModified || "—"; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)); color: Theme.text; horizontalAlignment: Text.AlignHCenter }
+                                    Text { Layout.fillWidth: true; text: qsTr("修改日期"); color: Theme.textSecondary; font.pixelSize: Theme.operationFooterNoteSize; horizontalAlignment: Text.AlignHCenter }
+                                    Text { Layout.fillWidth: true; text: comparisonCard.index === 0 ? root.task.existingModified || "—" : root.task.incomingModified || "—"; font.pixelSize: Theme.operationFooterNoteSize; color: Theme.text; horizontalAlignment: Text.AlignHCenter }
                                 }
                             }
                         }
                     }
-                    InfoRow { Layout.fillWidth: true; text: root.task.overwriteAllowed ? qsTr("覆盖会替换已有文件，原文件不会进入废纸篓。") : qsTr("这个文件是源归档，只能跳过或保留两个版本。"); labelSize: Math.round(root.unit(Theme.operationNoteSize)); iconSize: 20 }
+                    InfoRow { objectName: "conflictNotice"; Layout.fillWidth: true; text: root.task.overwriteAllowed ? qsTr("覆盖会替换已有文件，原文件不会进入废纸篓。") : qsTr("这个文件是源归档，只能跳过或保留两个版本。"); labelSize: Theme.operationFooterNoteSize; iconSize: 20 }
                     OperationCheck { density: root.density; id: remaining; objectName: "conflictApplyAll"; Layout.fillWidth: true; visible: !root.task.creating; text: qsTr("对此任务后续的普通文件冲突使用相同操作") }
                 }
             }
