@@ -782,7 +782,7 @@ function header(title, subtitle, ico = "archive") {
     return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
 }
 function footer(content, ready = "准备就绪", ico = "shield") {
-    return `<footer class="modal-footer"><span class="ready-label">${icon(ico)}${ready}</span>${content}</footer>`;
+    return `<footer class="modal-footer"><span class="ready-label">${icon(ico)}${ready}</span><div class="operation-footer-actions">${content}</div></footer>`;
 }
 function cancelButton(label = "取消") {
     return `<button class="button" data-close>${label}</button>`;
@@ -1408,7 +1408,7 @@ function showSettings() {
         <fieldset id="setting-theme" class="settings-theme"><legend>${t("settings.theme")}</legend>
         <div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${themePreviews[mode]}<span><input type="radio" name="setting-theme" value="${mode}">${t("settings."+mode)}</span></label>`).join("")}</div></fieldset>
         <div class="settings-row"><label for="setting-density">${t("settings.density")}</label><select id="setting-density" class="field-select"><option value="standard">${t("settings.standard")}</option><option value="compact">${t("settings.compact")}</option></select></div>
-        <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5,2].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
+        <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
         <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div></div>` +
         footer(`<button id="settings-defaults" class="button">${t("settings.defaults")}</button><button class="button" data-close>${t("common.cancel")}</button><button id="settings-save" class="button">${t("settings.done")}</button>`,t("ui.5fb5c0083f18"), "shield"),
         "settings", "S01", "#settings-save",

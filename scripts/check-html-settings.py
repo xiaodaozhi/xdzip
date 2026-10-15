@@ -24,6 +24,7 @@ def main():
         expect(modal).to_have_attribute('data-kind','settings')
         expect(modal).to_have_attribute('data-modeless','true')
         expect(page.locator('#setting-language option')).to_have_text(['中文 (简体)','English (US)'])
+        expect(page.locator('#setting-text-scale option')).to_have_text(['100%','125%','150%'])
         original=page.evaluate('state.theme')
         expect(modal.locator('.modal-header')).to_be_visible()
         expect(modal.locator('.theme-card')).to_have_count(3)
@@ -47,8 +48,10 @@ def main():
         page.locator('#setting-text-scale-trigger').click()
         page.keyboard.press('End')
         page.keyboard.press('Enter')
-        expect(page.locator('#setting-text-scale')).to_have_value('2')
-        assert modal.locator('.modal-header h1').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')==normal*2
+        expect(page.locator('#setting-text-scale')).to_have_value('1.5')
+        assert abs(modal.locator('.modal-header h1').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')-normal*1.5) < .01
+        bounds=modal.locator('.operation-footer-actions button').evaluate_all('els=>els.map(el=>el.getBoundingClientRect().y)')
+        assert max(bounds)-min(bounds) <= 1
         modal.locator('[data-close]').click()
         expect(modal).not_to_be_visible()
         assert page.evaluate('state.theme')==original
@@ -62,6 +65,15 @@ def main():
         assert page.locator('#file-rows td').first.evaluate('el=>parseFloat(getComputedStyle(el).height)') < 60
         page.locator('#recent-enabled').uncheck()
         page.locator('#setting-language-trigger').click()
+        menu=page.locator('#setting-language-trigger-options')
+        expect(menu).to_be_visible()
+        anchor=page.locator('#setting-language-trigger').bounding_box()
+        box=menu.bounding_box()
+        assert box['width'] >= anchor['width'] - 1
+        assert abs(box['x']+box['width']-anchor['x']-anchor['width']) <= 1
+        measured=menu.locator('.ui-menu-label').evaluate_all('els=>els.map(el=>({text:el.textContent,width:el.clientWidth,scroll:el.scrollWidth,font:getComputedStyle(el).font}))')
+        assert all(item['scroll']<=item['width']+1 for item in measured), {'labels':measured,'popup':box,'button':anchor}
+        menu.screenshot(path=str(OUTPUT/'language-options.png'))
         page.keyboard.press('End')
         page.keyboard.press('Enter')
         expect(page.locator('#setting-language')).to_have_value('en-US')

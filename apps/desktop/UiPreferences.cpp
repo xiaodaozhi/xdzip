@@ -13,7 +13,7 @@ bool validTheme(const QString &theme) {
     return theme == "system" || theme == "light" || theme == "dark";
 }
 bool validScale(double scale) {
-    return scale == 1 || scale == 1.25 || scale == 1.5 || scale == 2;
+    return scale == 1 || scale == 1.25 || scale == 1.5;
 }
 bool validLanguage(const QString &language) {
     return language == "zh-CN" || language == "en-US";
@@ -23,7 +23,8 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
     QSettings settings(uiSettingsPath(), QSettings::IniFormat);
     const auto schema = settings.value("schemaVersion", 1).toInt();
     const auto theme = settings.value("appearance/theme", "system").toString();
-    const auto scale = settings.value("appearance/textScale", 1).toDouble();
+    const auto storedScale = settings.value("appearance/textScale", 1).toDouble();
+    const auto scale = storedScale == 2 ? 1.5 : storedScale;
     const auto language = settings.value("locale/language", "zh-CN").toString();
     if (settings.status() == QSettings::NoError && schema == 1 && validTheme(theme) &&
         validScale(scale) && validLanguage(language)) {

@@ -144,16 +144,29 @@ class BrowserTest : public QObject {
         QTest::keyClick(settings, Qt::Key_Down);
         QTest::keyClick(settings, Qt::Key_End);
         QTest::keyClick(settings, Qt::Key_Return);
-        QTRY_COMPARE(settings->property("draftScale").toDouble(), 2.0);
-        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 26);
+        QTRY_COMPARE(settings->property("draftScale").toDouble(), 1.5);
+        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 20);
+        QCOMPARE(scaleChoice->property("count").toInt(), 3);
         auto *cancel = findVisual(settings->contentItem(), "settingsCancel");
         auto *save = findVisual(settings->contentItem(), "settingsSave");
         QVERIFY(cancel && save);
+        auto *defaults = findVisual(settings->contentItem(), "settingsDefaults");
+        QVERIFY(defaults);
+        QTRY_VERIFY(qAbs(cancel->mapToScene(QPointF()).y() - save->mapToScene(QPointF()).y()) <= 1);
+        QTRY_VERIFY(qAbs(defaults->mapToScene(QPointF()).y() - save->mapToScene(QPointF()).y()) <=
+                    1);
         QTRY_VERIFY(save->mapToScene(QPointF(0, save->height())).y() <= settings->height() + 1);
         QVERIFY(captureSettings("settings-large"));
         auto *languageChoice = findVisual(settings->contentItem(), "settingsLanguage");
         auto *settingsFooter = findVisual(settings->contentItem(), "settingsFooter");
         QVERIFY(languageChoice && settingsFooter);
+        languageChoice->forceActiveFocus();
+        auto *languagePopup = languageChoice->property("popup").value<QObject *>();
+        QVERIFY(languagePopup);
+        QVERIFY(QMetaObject::invokeMethod(languagePopup, "open"));
+        QTRY_VERIFY(languagePopup->property("visible").toBool());
+        QVERIFY(captureSettings("settings-language-menu-large"));
+        QTest::keyClick(settings, Qt::Key_Escape);
         languageChoice->forceActiveFocus();
         QTRY_VERIFY(languageChoice->mapToScene(QPointF(0, languageChoice->height())).y() <=
                     settingsFooter->y() + 1);
@@ -199,6 +212,11 @@ class BrowserTest : public QObject {
         QVERIFY(restored.saveDetails("dark", 1, "en-US", "compact", false, true));
         QVERIFY(!QFile::exists(recentPath));
         QVERIFY(QFile::exists(QStringLiteral(XDZIP_FIXTURES "/normal.zip")));
+        persisted.setValue("appearance/textScale", 2);
+        persisted.sync();
+        UiPreferences migrated;
+        QCOMPARE(migrated.savedTextScale(), 1.5);
+        QVERIFY(!migrated.save("dark", 2, "en-US"));
         QVERIFY(!restored.save("invalid", 1, "en-US"));
         QCOMPARE(restored.savedTheme(), "dark");
         // A separate process proves language restoration across an actual restart.
@@ -220,6 +238,14 @@ class BrowserTest : public QObject {
             QSKIP("Covered by the isolated settings restart child process");
         QCOMPARE(QCoreApplication::instance()->property("xdzipUiLanguage").toString(), "en-US");
         QCOMPARE(qtTrId("settings.title"), QStringLiteral("Settings"));
+        const auto systemLanguages = QLocale::system().uiLanguages();
+        const bool systemChinese =
+            !systemLanguages.isEmpty() && systemLanguages.first().startsWith("zh");
+        QCOMPARE(systemDialogText("ui.1b59353f1874"),
+                 systemChinese ? QStringLiteral("打开归档") : QStringLiteral("Open archive"));
+        if (systemChinese)
+            QVERIFY(QCoreApplication::translate("QFileDialog", "Open")
+                        .contains(QStringLiteral("打开")));
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 1), QStringLiteral("1 file"));
         QCOMPARE(qtTrId("ui.2e84a56c5f19", 2), QStringLiteral("2 files"));
         QQmlApplicationEngine engine;

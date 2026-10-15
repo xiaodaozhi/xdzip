@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLibraryInfo>
 #include <QLocale>
 #include <QSettings>
 #include <QStandardPaths>
@@ -58,6 +59,13 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
             settings.value(QStringLiteral("locale/language"), QStringLiteral("zh-CN")).toString();
     if (language != QStringLiteral("en-US"))
         language = QStringLiteral("zh-CN");
+    // Qt-owned controls use the OS language, independently of the product locale.
+    auto *systemTranslator = new QTranslator(QCoreApplication::instance());
+    if (systemTranslator->load(QLocale::system(), QStringLiteral("qtbase"), QStringLiteral("_"),
+                               QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+        QCoreApplication::installTranslator(systemTranslator);
+    else
+        delete systemTranslator;
     auto *translator = new UiTranslator(QCoreApplication::instance());
     if (!translator->read(language)) {
         delete translator;
@@ -66,4 +74,18 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
     QLocale::setDefault(QLocale(language));
     QCoreApplication::instance()->setProperty("xdzipUiLanguage", language);
     return QCoreApplication::installTranslator(translator);
+}
+
+inline QString systemDialogText(const char *id) {
+    const auto preferred = QLocale::system().uiLanguages();
+    const auto first = preferred.isEmpty() ? QStringLiteral("en") : preferred.first();
+    UiTranslator text(nullptr);
+    if (text.read(first.startsWith(QStringLiteral("zh"), Qt::CaseInsensitive)
+                      ? QStringLiteral("zh-CN")
+                      : QStringLiteral("en-US"))) {
+        const auto result = text.translate(nullptr, id, nullptr, -1);
+        if (!result.isEmpty())
+            return result;
+    }
+    return qtTrId(id);
 }

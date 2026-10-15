@@ -21,7 +21,7 @@ Rectangle {
         anchors.leftMargin: root.contentInset
         anchors.rightMargin: root.contentInset
         anchors.topMargin: root.verticalInset; anchors.bottomMargin: root.verticalInset
-        columns: Theme.fontScale > 1.35 ? 1 : 2
+        columns: !hint.visible || width >= hint.implicitWidth + buttons.implicitWidth + columnSpacing ? 2 : 1
         columnSpacing: 12; rowSpacing: 10
         InfoRow {
             id: hint
@@ -33,11 +33,10 @@ Rectangle {
             labelSize: Theme.operationFooterNoteSize
             iconSize: Theme.operationFooterIconSize
         }
-        GridLayout {
+        RowLayout {
             id: buttons
-            columns: Theme.fontScale > 1.35 ? 1 : 3
-            rowSpacing: 10
-            columnSpacing: 10
+            objectName: "operationFooterActions"
+            spacing: 10
             Layout.alignment: Qt.AlignRight
             Layout.fillWidth: false
         }

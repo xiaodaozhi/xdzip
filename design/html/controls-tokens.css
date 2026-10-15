@@ -51,6 +51,7 @@
   --ui-tooltip-max-width: calc(320px * var(--ui-source-factor));
   --ui-tooltip-padding: calc(8px * var(--ui-source-factor));
   --ui-focus-width: calc(0px * var(--ui-source-factor));
+  --ui-select-popup-max-width: calc(360px * var(--ui-source-factor));
   --main-icon-button-size: calc(28px * var(--ui-source-factor));
   --main-toolbar-content-gap: calc(6px * var(--ui-source-factor));
   --main-breadcrumb-height: calc(28px * var(--ui-source-factor));

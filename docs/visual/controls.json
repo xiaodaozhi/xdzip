@@ -16,7 +16,8 @@
     "menuViewportInset": 8,
     "tooltipMaxWidth": 320,
     "tooltipPadding": 8,
-    "focusWidth": 0
+    "focusWidth": 0,
+    "selectPopupMaxWidth": 360
   },
   "motion": {
     "hoverDelayMs": 450,

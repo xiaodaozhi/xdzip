@@ -522,6 +522,22 @@ window.XdzipControls = (() => {
                 if (!menu) return;
                 trigger.setAttribute("aria-haspopup", "listbox");
                 menu.setAttribute("role", "listbox");
+                menu.classList.add("ui-select-options");
+                const anchor = trigger.getBoundingClientRect();
+                const font = getComputedStyle(trigger);
+                menu.style.font = font.font;
+                const optionScale = Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1;
+                for (const [property,key] of [["icon-size","menuIconSize"],["label-inset","menuLabelInset"],["padding","menuPadding"],["row-height","menuRowHeight"]])
+                    menu.style.setProperty(`--ui-menu-${property}`, `${tokens.size[key] * sourceScale() * optionScale}px`);
+                const canvas = document.createElement("canvas");
+                const metrics = canvas.getContext("2d");
+                metrics.font = font.font;
+                const widest = Math.max(...[...select.options].map(option => metrics.measureText(option.textContent).width));
+                const cap = Math.min(tokens.size.selectPopupMaxWidth * sourceScale(), innerWidth - tokens.size.menuViewportInset * sourceScale() * 2);
+                const padding = (tokens.size.menuIconSize + tokens.size.menuLabelInset * 3 + tokens.size.menuPadding * 2) * sourceScale() * optionScale;
+                const border = parseFloat(getComputedStyle(menu).borderLeftWidth) + parseFloat(getComputedStyle(menu).borderRightWidth);
+                menu.style.width = `${Math.max(anchor.width, Math.min(Math.ceil(widest + padding + border), cap))}px`;
+                position(menu, anchor, null, false, "bottom-end");
                 const options = menu.querySelectorAll(".ui-menu-item");
                 options.forEach((option, index) => {
                     option.setAttribute("role", "option");

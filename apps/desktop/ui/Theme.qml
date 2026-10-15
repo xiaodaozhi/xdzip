@@ -181,6 +181,7 @@ QtObject {
     readonly property real tooltipMaxWidth: 320 * fontScale
     readonly property real tooltipPadding: 8 * fontScale
     readonly property real focusWidth: 0 * fontScale
+    readonly property real selectPopupMaxWidth: 360 * fontScale
     readonly property real menuShadowRadius: 12
     readonly property real menuShadowOffsetY: 4
     readonly property int hoverDelayMs: 450

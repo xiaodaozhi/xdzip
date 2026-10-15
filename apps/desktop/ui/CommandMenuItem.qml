@@ -51,6 +51,7 @@ MenuItem {
             Layout.fillWidth: true
             spacing: 2
             Text {
+                objectName: root.objectName + "Label"
                 Layout.fillWidth: true
                 text: root.text
                 textFormat: Text.PlainText
@@ -83,6 +84,7 @@ MenuItem {
             }
         }
         Text {
+            visible: root.shortcutLabel.length > 0
             text: root.shortcutLabel
             color: Theme.menuSecondary
             font.pixelSize: Theme.menuShortcutSize

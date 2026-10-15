@@ -48,6 +48,7 @@ if(APPLE)
     target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in"
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"
         MACOSX_BUNDLE_ICON_FILE "xdzip.icns"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"

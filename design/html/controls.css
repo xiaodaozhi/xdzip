@@ -385,3 +385,8 @@
         transition: none !important;
     }
 }
+
+/* Selects need a check column, a label, and no unused submenu/shortcut columns. */
+.ui-select-options .ui-menu-item { grid-template-columns:var(--ui-menu-icon-size) minmax(0,1fr); }
+.ui-select-options .ui-menu-shortcut,.ui-select-options .ui-menu-arrow { display:none; }
+.ui-select-options .ui-menu-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

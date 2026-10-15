@@ -1,4 +1,5 @@
 #include "BrowserController.h"
+#include "UiText.h"
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
 #include <QClipboard>
@@ -225,8 +226,8 @@ void BrowserController::chooseArchive() {
         return;
     // No QWidget parent: the native chooser is independent, not an attached macOS sheet.
     // Native per-platform modality and ownership still require desktop acceptance testing.
-    const auto path = QFileDialog::getOpenFileName(nullptr, qtTrId("ui.1b59353f1874"), {},
-                                                   qtTrId("ui.8f69a61727d2"));
+    const auto path = QFileDialog::getOpenFileName(nullptr, systemDialogText("ui.1b59353f1874"), {},
+                                                   systemDialogText("ui.8f69a61727d2"));
     if (!path.isEmpty())
         openPath(path);
 }
@@ -562,19 +563,19 @@ void BrowserController::prepareExtraction(bool all, const QStringList &selectors
     emit extractionReady();
 }
 QString BrowserController::chooseTarget(const QString &initial) {
-    return QFileDialog::getExistingDirectory(nullptr, qtTrId("ui.3fb3d26f0ffd"), initial,
+    return QFileDialog::getExistingDirectory(nullptr, systemDialogText("ui.3fb3d26f0ffd"), initial,
                                              QFileDialog::ShowDirsOnly |
                                                  QFileDialog::DontResolveSymlinks);
 }
 QStringList BrowserController::chooseCreationInputs(bool directories) {
     if (directories) {
-        const auto path = QFileDialog::getExistingDirectory(nullptr, qtTrId("ui.45da2d9c85d1"), {},
-                                                            QFileDialog::ShowDirsOnly |
-                                                                QFileDialog::DontResolveSymlinks);
+        const auto path = QFileDialog::getExistingDirectory(
+            nullptr, systemDialogText("ui.45da2d9c85d1"), {},
+            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
         return path.isEmpty() ? QStringList{} : QStringList{path};
     }
-    return QFileDialog::getOpenFileNames(nullptr, qtTrId("ui.ad9daebe00dc"), {}, {}, nullptr,
-                                         QFileDialog::DontResolveSymlinks);
+    return QFileDialog::getOpenFileNames(nullptr, systemDialogText("ui.ad9daebe00dc"), {}, {},
+                                         nullptr, QFileDialog::DontResolveSymlinks);
 }
 QString BrowserController::defaultTargetDirectory() const {
     const auto path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);

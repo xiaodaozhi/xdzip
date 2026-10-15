@@ -39,7 +39,7 @@ def main():
             if line.lstrip().startswith('//'): continue
             if re.search(r'"(?:[^"\\]|\\.)*[\u3400-\u9fff](?:[^"\\]|\\.)*"', line):
                 errors.append(f'{path.name}: static CJK text remains in source')
-        for match in re.finditer(r'(?:qsTrId|qtTrId)\("([^"]+)"', text):
+        for match in re.finditer(r'(?:qsTrId|qtTrId|systemDialogText)\("([^"]+)"', text):
             key = match.group(1)
             used.add(key)
             if key not in source: errors.append(f'{path.name}: missing {key}')

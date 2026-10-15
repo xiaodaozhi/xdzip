@@ -50,7 +50,18 @@ ComboBox {
         pressed: root.down
         hovered: root.hovered
     }
+    FontMetrics { id: optionMetrics; font: root.font }
+    readonly property real widestOption: {
+        const source = root.model;
+        const currentFont = root.font;
+        if (!source || currentFont.pixelSize <= 0) return 0;
+        let width = 0;
+        for (let index = 0; index < root.count; ++index)
+            width = Math.max(width, optionMetrics.advanceWidth(root.textAt(index)));
+        return width;
+    }
     delegate: CommandMenuItem {
+        objectName: root.objectName + "Option-" + index
         required property var modelData
         required property int index
         width: root.popup.availableWidth
@@ -71,7 +82,9 @@ ComboBox {
             const fieldTop = root.mapToItem(null, 0, 0).y;
             return fieldTop + root.height + Theme.mainPopupGap + expectedHeight > root.Window.height - Theme.menuViewportInset ? -expectedHeight - Theme.mainPopupGap : root.height + Theme.mainPopupGap;
         }
-        width: root.width
+        x: root.width - width
+        width: Math.max(root.width, Math.min(Math.ceil(root.widestOption) + Theme.menuIconSize + Theme.menuLabelInset * 3 + padding * 2,
+            Theme.selectPopupMaxWidth / Theme.fontScale, root.Window.width - Theme.menuViewportInset * 2))
         implicitHeight: Math.min(contentItem.implicitHeight + topPadding + bottomPadding, root.Window.height - 40)
         onOpened: {
             choices.currentIndex = root.currentIndex;

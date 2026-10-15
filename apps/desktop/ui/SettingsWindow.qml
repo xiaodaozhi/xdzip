@@ -30,7 +30,7 @@ OperationWindow {
     function syncControls() {
         if (!scaleSelect || !languageSelect || !densitySelect) return;
         densitySelect.currentIndex = draftDensity === "compact" ? 1 : 0;
-        scaleSelect.currentIndex = [1, 1.25, 1.5, 2].indexOf(draftScale);
+        scaleSelect.currentIndex = [1, 1.25, 1.5].indexOf(draftScale);
         languageSelect.currentIndex = draftLanguage === "en-US" ? 1 : 0;
     }
     function preview() { if (visible) AppSettings.preview(draftTheme, draftScale); }
@@ -148,9 +148,9 @@ OperationWindow {
                         Accessible.name: qsTrId("settings.textSize")
                         density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
                         implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
-                        model: ["100%", "125%", "150%", "200%"]
-                        currentIndex: [1, 1.25, 1.5, 2].indexOf(root.draftScale)
-                        onCurrentIndexChanged: if (currentIndex >= 0) root.draftScale = [1, 1.25, 1.5, 2][currentIndex]
+                        model: ["100%", "125%", "150%"]
+                        currentIndex: [1, 1.25, 1.5].indexOf(root.draftScale)
+                        onCurrentIndexChanged: if (currentIndex >= 0) root.draftScale = [1, 1.25, 1.5][currentIndex]
                     }
                 }
                 ColumnLayout {
