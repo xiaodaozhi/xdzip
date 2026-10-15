@@ -808,7 +808,8 @@ class BrowserTest : public QObject {
         QCOMPARE(file.write("owned payload"), qint64(13));
         file.close();
         BrowserController controller;
-        const auto archive = output.path() + "/created.zip";
+        // Explicit spelling differs from the runtime path, including native separators on Windows.
+        const auto archive = output.path() + "/./created.zip";
         bool openedExplicitly = false;
         connect(&controller, &BrowserController::tasksChanged, &controller, [&] {
             if (openedExplicitly || controller.busy() || controller.tasks().isEmpty())

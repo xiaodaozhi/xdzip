@@ -264,7 +264,19 @@ void BrowserController::openPath(const QString &path) {
     }
     // An explicit open can satisfy a queued creation result before its idle callback.
     // Do not reopen it later and invalidate a newly prepared extraction intent.
-    m_createdArchivesToOpen.removeAll(path);
+    const auto openKey = [](const QString &value) {
+        const QFileInfo file(value);
+        const auto canonical = file.canonicalFilePath();
+        auto key = QDir::cleanPath(
+            QDir::fromNativeSeparators(canonical.isEmpty() ? file.absoluteFilePath() : canonical));
+#ifdef Q_OS_WIN
+        key = key.toCaseFolded();
+#endif
+        return key;
+    };
+    // This comparison only deduplicates UI intents; it grants no output authority.
+    const auto key = openKey(path);
+    m_createdArchivesToOpen.removeIf([&](const QString &queued) { return openKey(queued) == key; });
     m_committedQuery = {};
     m_directory.clear();
     m_location.clear();
