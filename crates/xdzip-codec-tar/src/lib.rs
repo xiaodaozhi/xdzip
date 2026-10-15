@@ -40,7 +40,10 @@ impl Read for SourceGuard<'_> {
         let take = output
             .len()
             .min(self.remaining.min(usize::MAX as u64) as usize);
-        let n = self.source.read(&mut output[..take])?;
+        let n = self
+            .source
+            .read(&mut output[..take])
+            .map_err(|_| io::Error::other(ScanError::Io))?;
         self.remaining -= n as u64;
         Ok(n)
     }
@@ -526,6 +529,28 @@ mod tests {
             &Cancellation::default(),
             ScanLimits::default(),
         )
+    }
+    #[test]
+    fn host_read_failures_keep_their_stable_io_class() {
+        struct Broken;
+        impl Read for Broken {
+            fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
+                Err(io::Error::other("owned fault"))
+            }
+        }
+        impl std::io::Seek for Broken {
+            fn seek(&mut self, _: SeekFrom) -> io::Result<u64> {
+                Ok(0)
+            }
+        }
+        for gzip in [false, true] {
+            assert_eq!(
+                TarCodec { gzip }
+                    .scan(&mut Broken, &Cancellation::default(), ScanLimits::default())
+                    .unwrap_err(),
+                ScanError::Io
+            );
+        }
     }
     #[test]
     fn utc_display_dates_keep_seconds_and_boundaries() {

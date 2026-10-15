@@ -69,7 +69,7 @@ Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
 Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
 $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m4-operations'
-Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
+Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip', 'tarCreationBrowseAndSafeExtraction')
 Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
 Invoke-Checked python @('scripts/check-operation-components.py')
 $env:XDZIP_CREATE_CONTROLS_AUDIT = Join-Path (Get-Location) 'build/desktop/create-controls'
@@ -111,7 +111,7 @@ foreach ($density in @('1.25', '2')) {
     Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
     $creationPath = "build/desktop/m4-operations-dpr$density"
     $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) $creationPath
-    Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip')
+    Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip', 'tarCreationBrowseAndSafeExtraction')
     Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', $creationPath, '--output', "build/review/m4-operation-ui-dpr$density.json")
     Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
     $stylePath = "build/desktop/create-controls-dpr$density"

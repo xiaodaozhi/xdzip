@@ -73,7 +73,7 @@ def main():
                             radios = group.locator('[role=radio]')
                             expect(radios).to_have_count(3)
                             expect(radios.nth(0)).to_have_attribute('aria-checked', 'true')
-                            assert all(radios.nth(i).is_disabled() for i in [1,2])
+                            assert all(radios.nth(i).is_enabled() for i in [0,1,2])
                             for selector in ['#create-name','#create-destination','#create-volume-trigger','#create-level-trigger']:
                                 field = modal.locator(selector)
                                 shape = field.evaluate('n=>({radius:parseFloat(getComputedStyle(n).borderRadius),height:n.getBoundingClientRect().height})')

@@ -338,7 +338,8 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
 .archive-summary { display:flex; align-items:center; gap:14px; margin-top:11px; height:28px; }
 .archive-card .archive-summary span { margin:0; font-size:18px; line-height:28px; }
 .archive-card .format-badge {
-    width:49px;
+    min-width:var(--main-format-badge-minimum-width);
+    padding:0 var(--main-format-badge-inset);
     height:28px;
     text-align:center;
     border-radius:5px;

@@ -35,7 +35,9 @@
       "gridCellWidth": 144,
       "gridCellHeight": 124,
       "gridGap": 12,
-      "gridIconSize": 40
+      "gridIconSize": 40,
+      "formatBadgeMinimumWidth": 32,
+      "formatBadgeInset": 6
     }
   },
   "operation": {

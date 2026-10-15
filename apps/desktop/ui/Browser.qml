@@ -545,11 +545,14 @@ ApplicationWindow {
                             y: archiveTitle.y + archiveTitle.height + Theme.mainUnits(8)
                             spacing: Theme.mainUnits(12)
                             Rectangle {
-                                implicitWidth: Theme.mainUnits(40)
+                                objectName: "archiveFormatBadge"
+                                implicitWidth: Math.max(Theme.mainFormatBadgeMinimumWidth, formatLabel.implicitWidth + 2 * Theme.mainFormatBadgeInset)
                                 implicitHeight: Math.max(Theme.mainUnits(24), Theme.mainSummarySize * 1.6)
                                 radius: Theme.mainUnits(5)
                                 color: Theme.selection
                                 Text {
+                                    id: formatLabel
+                                    objectName: "archiveFormatLabel"
                                     anchors.centerIn: parent
                                     text: reader.formatLabel || "ZIP"
                                     font.pixelSize: Theme.mainSummarySize

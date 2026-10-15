@@ -243,6 +243,10 @@ class BrowserTest : public QObject {
             QVERIFY(controller && create);
             QVERIFY(QMetaObject::invokeMethod(create, "configure"));
             QTRY_VERIFY(create->isVisible() && !controller->busy());
+            QCOMPARE(create->width(), 491);
+            const auto captures = qEnvironmentVariable("XDZIP_TAR_VISUAL_AUDIT");
+            if (!captures.isEmpty())
+                QVERIFY(QDir().mkpath(captures));
             QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
                                               Q_ARG(QVariant, QVariant(QStringList{source})),
                                               Q_ARG(bool, true)));
@@ -265,6 +269,9 @@ class BrowserTest : public QObject {
             auto *start = findVisual(create->contentItem(), "startCreate");
             QVERIFY(start);
             QTRY_VERIFY(start->isEnabled());
+            if (!captures.isEmpty())
+                QVERIFY(visual_audit::save(create, captures,
+                                           formatIndex == 1 ? "create-tar" : "create-tar-gzip"));
             QSignalSpy started(controller, &BrowserController::creationStarted);
             QTest::mouseClick(
                 create, Qt::LeftButton, Qt::NoModifier,
@@ -279,6 +286,18 @@ class BrowserTest : public QObject {
             QCOMPARE(controller->formatLabel(),
                      formatIndex == 1 ? QString("TAR") : QString("TAR.GZ"));
             QCOMPARE(controller->archiveTotal(), 3);
+            auto *badge = findVisual(window->contentItem(), "archiveFormatBadge");
+            auto *label = findVisual(window->contentItem(), "archiveFormatLabel");
+            QVERIFY(badge && label);
+            QTRY_VERIFY(badge->width() >= label->width() + 12);
+            controller->enterDirectory(0);
+            QTRY_VERIFY(!controller->busy());
+            controller->selectAll(true);
+            QVERIFY(!controller->detail().value("modified").toString().contains(QChar(0x2014)));
+            QCOMPARE(controller->detail().value("packed").toString().isEmpty(), formatIndex == 2);
+            if (!captures.isEmpty())
+                QVERIFY(visual_audit::save(window, captures,
+                                           formatIndex == 1 ? "opened-tar" : "opened-tar-gzip"));
             controller->prepareExtraction(true);
             auto *extract = window->findChild<QQuickWindow *>("extractWindow");
             QVERIFY(extract);
@@ -309,6 +328,10 @@ class BrowserTest : public QObject {
             QVERIFY(actual.open(QIODevice::ReadOnly));
             QCOMPARE(actual.readAll(), data);
             QVERIFY(QFileInfo(extracted.path() + QStringLiteral("/资料/空目录")).isDir());
+            if (!captures.isEmpty())
+                QVERIFY(visual_audit::save(window->findChild<QQuickWindow *>("taskWindow"),
+                                           captures,
+                                           formatIndex == 1 ? "result-tar" : "result-tar-gzip"));
             controller->requestClose();
             QTRY_VERIFY(controller->requestClose());
         }

@@ -217,6 +217,8 @@ QtObject {
     readonly property real mainGridCellHeight: 124
     readonly property real mainGridGap: 12
     readonly property real mainGridIconSize: 40
+    readonly property real mainFormatBadgeMinimumWidth: 32
+    readonly property real mainFormatBadgeInset: 6
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

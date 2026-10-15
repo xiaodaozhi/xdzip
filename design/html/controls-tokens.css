@@ -62,6 +62,8 @@
   --main-grid-cell-height: calc(124px * var(--ui-source-factor));
   --main-grid-gap: calc(12px * var(--ui-source-factor));
   --main-grid-icon-size: calc(40px * var(--ui-source-factor));
+  --main-format-badge-minimum-width: calc(32px * var(--ui-source-factor));
+  --main-format-badge-inset: calc(6px * var(--ui-source-factor));
   --ui-menu-shadow-radius: calc(12px * var(--ui-source-factor));
   --ui-menu-shadow-offset-y: calc(4px * var(--ui-source-factor));
   --tree-sidebar-default-width: calc(193.15762273901808px * var(--ui-source-factor));
