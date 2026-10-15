@@ -85,6 +85,95 @@ class BrowserTest : public QObject {
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
+    void welcomeOpensRealArchivesAndReturns() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *welcome = findVisual(window->contentItem(), "welcomePage");
+        auto *workspace = findVisual(window->contentItem(), "archiveWorkspace");
+        auto *open = findVisual(window->contentItem(), "welcomeOpen");
+        auto *createAction = findVisual(window->contentItem(), "welcomeCreate");
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && welcome && workspace && open && createAction && create);
+        QTRY_VERIFY(controller->runtimeAvailable() && welcome->isVisible());
+        QVERIFY(!workspace->isVisible());
+        window->resize(1024, 622);
+        QTRY_COMPARE(open->width(), 296.0);
+        QTRY_COMPARE(open->height(), 124.0);
+        QTRY_VERIFY(visibleImagesReady(window->contentItem()));
+        const auto captures = qEnvironmentVariable("XDZIP_WELCOME_VISUAL_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures, "welcome-light"));
+            window->setProperty("darkMode", true);
+            QVERIFY(visual_audit::save(window, captures, "welcome-dark"));
+            window->resize(832, 544);
+            QVERIFY(visual_audit::save(window, captures, "welcome-dark-minimum"));
+            window->setProperty("darkMode", false);
+            QVERIFY(visual_audit::save(window, captures, "welcome-minimum"));
+            window->resize(1024, 622);
+        }
+        const auto click = [&](QQuickItem *item) {
+            const auto point = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point.toPoint());
+        };
+        click(findVisual(window->contentItem(), "browserTasks"));
+        auto *taskMenu = window->findChild<QObject *>("browserTaskMenu");
+        QVERIFY(taskMenu);
+        QTRY_VERIFY(taskMenu->property("visible").toBool());
+        QCOMPARE(taskMenu->property("width").toReal(), 240.0);
+        QCOMPARE(taskMenu->property("font").value<QFont>().pixelSize(), 13);
+        QVERIFY(QMetaObject::invokeMethod(taskMenu, "close"));
+        click(createAction);
+        QTRY_VERIFY(create->isVisible());
+        create->close();
+        QTRY_VERIFY(!create->isVisible() && welcome->isVisible() && !controller->busy());
+        // The welcome entry must not fabricate a task when a draft is dismissed.
+        QCOMPARE(controller->tasks().size(), 0);
+        const auto archive = QUrl::fromLocalFile(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QVERIFY(!controller->openDroppedUrls({}));
+        QVERIFY(!controller->openDroppedUrls({archive, archive}));
+        QVERIFY(!controller->openDroppedUrls({QUrl("https://example.invalid/a.zip")}));
+        QVERIFY(
+            !controller->openDroppedUrls({QUrl::fromLocalFile(QStringLiteral(XDZIP_FIXTURES))}));
+        QTemporaryDir inputs;
+        QVERIFY(inputs.isValid());
+        QFile text(inputs.filePath("notes.txt"));
+        QVERIFY(text.open(QIODevice::WriteOnly));
+        text.write("not an archive");
+        text.close();
+        QVERIFY(!controller->openDroppedUrls({QUrl::fromLocalFile(text.fileName())}));
+        QVERIFY(welcome->isVisible());
+        QVERIFY(controller->canOpenDroppedUrls({archive}));
+        QVERIFY(QMetaObject::invokeMethod(
+            welcome, "archiveDropped", Q_ARG(QVariant, QVariant::fromValue(QList<QUrl>{archive}))));
+        QTRY_VERIFY(!controller->busy() && controller->ready());
+        QVERIFY(!welcome->isVisible() && workspace->isVisible());
+        controller->closeArchive();
+        QTRY_VERIFY(!controller->busy() && !controller->ready());
+        QTRY_VERIFY(welcome->isVisible() && !workspace->isVisible());
+        QTRY_VERIFY(open->hasActiveFocus());
+        // An empty, valid archive is a browser state, never the welcome page.
+        QVERIFY(controller->openDroppedUrls(
+            {QUrl::fromLocalFile(QStringLiteral(XDZIP_FIXTURES "/empty.zip"))}));
+        QTRY_VERIFY(!controller->busy() && controller->ready());
+        QCOMPARE(controller->archiveTotal(), 0);
+        QVERIFY(!welcome->isVisible());
+        controller->closeArchive();
+        QTRY_VERIFY(!controller->busy() && welcome->isVisible());
+        QFile invalid(inputs.filePath("broken.zip"));
+        QVERIFY(invalid.open(QIODevice::WriteOnly));
+        invalid.write("not an archive");
+        invalid.close();
+        QVERIFY(controller->openDroppedUrls({QUrl::fromLocalFile(invalid.fileName())}));
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(!controller->ready() && welcome->isVisible());
+        QVERIFY(!controller->message().isEmpty());
+        QCOMPARE(controller->tasks().size(), 0);
+        controller->requestClose();
+    }
     void creationControlsMatchReviewedSource() {
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
@@ -359,7 +448,7 @@ class BrowserTest : public QObject {
         auto *controller = window->findChild<BrowserController *>();
         auto *create = window->findChild<QQuickWindow *>("createWindow");
         QVERIFY(controller && create);
-        auto *newButton = findVisual(window->contentItem(), "archiveNew");
+        auto *newButton = findVisual(window->contentItem(), "welcomeCreate");
         QVERIFY(newButton && newButton->isEnabled());
         QTest::mouseClick(
             window, Qt::LeftButton, Qt::NoModifier,

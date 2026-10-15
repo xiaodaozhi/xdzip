@@ -12,6 +12,24 @@ QtObject {
     readonly property int mainWindowHeight: 622
     readonly property int mainMinimumWidth: 832
     readonly property int mainMinimumHeight: 544
+    readonly property real welcomeTitlebarHeight: 48
+    readonly property real welcomeStatusbarHeight: 32
+    readonly property real welcomeContentWidth: 608
+    readonly property real welcomeActionGap: 16
+    readonly property real welcomeActionHeight: 124
+    readonly property real welcomeActionInset: 20
+    readonly property real welcomeActionRadius: 8
+    readonly property real welcomeActionIcon: 28
+    readonly property real welcomeActionTitleSize: 16
+    readonly property real welcomeActionBodySize: 12
+    readonly property real welcomeHeadlineSize: 30
+    readonly property real welcomeNarrowHeadlineSize: 28
+    readonly property real welcomeDropHeight: 64
+    readonly property real welcomeDropGap: 16
+    readonly property real welcomeMenuWidth: 240
+    readonly property real welcomeMenuFontSize: 13
+    readonly property real welcomeMainBodySize: 13
+    readonly property real welcomeMenuToBodyFontRatio: 1
     readonly property int operationDefaultWidth: 612
     readonly property int operationExtractWidth: 491
     readonly property int operationProgressWidth: 491

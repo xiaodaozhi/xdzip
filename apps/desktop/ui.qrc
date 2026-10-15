@@ -50,6 +50,10 @@
     <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
     <file>ui/Browser.qml</file>
+    <file>ui/WelcomePage.qml</file>
+    <file alias="assets/light/archive-grey.png">../../design/assets/png/light/archive-grey@3x.png</file>
+    <file alias="assets/dark/archive-grey.png">../../design/assets/png/dark/archive-grey@3x.png</file>
+    <file>ui/WelcomeAction.qml</file>
     <file>ui/InspectorPanel.qml</file>
     <file>ui/PaneHeader.qml</file>
     <file>ui/PreflightWindow.qml</file>

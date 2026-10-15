@@ -12,6 +12,14 @@ ApplicationWindow {
     minimumWidth: Theme.mainMinimumWidth
     minimumHeight: Theme.mainMinimumHeight
     readonly property color accentTextColor: Theme.accentText
+    property bool uiReady: false
+    Component.onCompleted: uiReady = true
+    readonly property bool welcomeVisible: !reader.ready
+    property bool welcomeWasBusy: false
+    onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
+        inspectorWindow.close();
+        Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
+    }
     property bool inspectorRequested: true
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
     property bool integratedTitlebar: false
@@ -150,6 +158,8 @@ ApplicationWindow {
             if (root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
         }
         onChanged: {
+            if (root.welcomeVisible && !busy && root.welcomeWasBusy) Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
+            root.welcomeWasBusy = root.welcomeVisible && busy && title.length > 0;
             if (busy || root.contextEntry.session !== sessionId) {
                 entryMenu.close();
                 directoryMenu.close();
@@ -237,10 +247,21 @@ ApplicationWindow {
             onCloseRequested: inspectorWindow.close()
         }
     }
+    Connections {
+        target: createWindow
+        function onVisibleChanged() {
+            if (!createWindow.visible && root.welcomeVisible) welcomePage.focusCreate();
+        }
+    }
     Shortcut {
         sequence: StandardKey.Open
         enabled: reader.runtimeAvailable && !reader.busy
         onActivated: reader.chooseArchive()
+    }
+    Shortcut {
+        sequence: StandardKey.New
+        enabled: reader.runtimeAvailable && !reader.busy
+        onActivated: createWindow.configure()
     }
     Shortcut {
         sequence: StandardKey.Find
@@ -462,7 +483,8 @@ ApplicationWindow {
         spacing: 0
         ArchiveTabs {
             Layout.fillWidth: true
-            archiveTitle: reader.title
+            archiveTitle: root.welcomeVisible ? "" : reader.title
+            welcome: root.welcomeVisible
             integratedTitlebar: root.integratedTitlebar
             canOpen: reader.runtimeAvailable && !reader.busy
             canClose: reader.ready && !reader.busy
@@ -473,6 +495,7 @@ ApplicationWindow {
         }
         ArchiveToolbar {
             id: toolbar
+            visible: !root.welcomeVisible
             Layout.fillWidth: true
             canOpen: reader.runtimeAvailable && !reader.busy
             canSelect: reader.ready && !reader.busy
@@ -490,7 +513,27 @@ ApplicationWindow {
             onDetailsRequested: root.toggleInspector()
             onThemeRequested: root.darkMode = !root.darkMode
         }
+        WelcomePage {
+            id: welcomePage
+            visible: root.welcomeVisible
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            canOpen: reader.runtimeAvailable && !reader.busy
+            canCreate: reader.runtimeAvailable && !reader.busy
+            busy: reader.busy && reader.title.length > 0
+            message: reader.busy ? "" : reader.message
+            onOpenRequested: reader.chooseArchive()
+            onCreateRequested: createWindow.configure()
+            onCancelRequested: reader.cancel()
+            onDragEntered: urls => {
+                dropSupported = reader.canOpenDroppedUrls(urls);
+                dropMessage = dropSupported ? qsTr("松开即可打开压缩文件") : qsTr("请拖入单个本地 ZIP、TAR 或 TAR.GZ 压缩文件");
+            }
+            onArchiveDropped: urls => reader.openDroppedUrls(urls)
+        }
         RowLayout {
+            objectName: "archiveWorkspace"
+            visible: !root.welcomeVisible
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 0
@@ -1396,7 +1439,7 @@ ApplicationWindow {
         Rectangle {
             objectName: "browserStatus"
             Layout.fillWidth: true
-            implicitHeight: Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + Theme.mainUnits(16)))
+            implicitHeight: root.welcomeVisible ? Math.max(Theme.welcomeStatusbarHeight, statusActions.implicitHeight + 4) : Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + Theme.mainUnits(16)))
             color: Theme.surface
             Rectangle {
                 width: parent.width
@@ -1404,19 +1447,29 @@ ApplicationWindow {
                 color: Theme.border
             }
             RowLayout {
+                id: statusActions
                 anchors.fill: parent
-                anchors.leftMargin: Theme.mainContentInset
-                anchors.rightMargin: Theme.mainContentInset
+                anchors.leftMargin: root.welcomeVisible ? 14 : Theme.mainContentInset
+                anchors.rightMargin: root.welcomeVisible ? 14 : Theme.mainContentInset
                 spacing: Theme.mainUnits(8)
+                Rectangle {
+                    visible: root.welcomeVisible
+                    Layout.preferredWidth: 6
+                    Layout.preferredHeight: 6
+                    radius: 3
+                    color: Theme.accentInk
+                }
                 Text {
                     Layout.fillWidth: true
-                    text: qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? "，" + root.formatSize(reader.selectedBytes) : "")
+                    text: root.welcomeVisible ? qsTr("文件在本机处理") : qsTr("已选择 %1 项").arg(reader.selectedCount) + (reader.selectedCount ? "，" + root.formatSize(reader.selectedBytes) : "")
                     color: Theme.textSecondary
-                    font.pixelSize: Theme.mainStatusSize
+                    font.pixelSize: root.welcomeVisible ? 11 * Theme.fontScale : Theme.mainStatusSize
                     elide: Text.ElideRight
                 }
                 ArchiveAction {
                     objectName: "browserTasks"
+                    labelSize: root.welcomeVisible ? 12 * Theme.fontScale : Theme.mainHeaderSize
+                    glyphSize: root.welcomeVisible ? 16 : Theme.mainUnits(24)
                     asset: "task-list"
                     text: qsTr("任务 %1").arg(reader.tasks.length)
                     explanation: qsTr("查看创建和解压任务，进行中 %1 项").arg(reader.activeTaskCount)
@@ -1455,6 +1508,7 @@ ApplicationWindow {
                 }
             }
             RowLayout {
+                visible: !root.welcomeVisible
                 x: parent.width / 2 - Theme.mainUnits(50)
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: Theme.mainUnits(9)

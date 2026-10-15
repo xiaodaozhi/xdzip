@@ -6,6 +6,7 @@
 #include <QStandardItemModel>
 #include <QStringList>
 #include <QTimer>
+#include <QUrl>
 #include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 #include <limits>
@@ -208,6 +209,8 @@ class BrowserController : public QObject {
     Q_INVOKABLE void search(const QString &text);
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void chooseArchive();
+    Q_INVOKABLE bool canOpenDroppedUrls(const QList<QUrl> &urls) const;
+    Q_INVOKABLE bool openDroppedUrls(const QList<QUrl> &urls);
     Q_INVOKABLE void closeArchive();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE bool requestClose();

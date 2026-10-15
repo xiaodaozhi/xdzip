@@ -6,6 +6,7 @@ Rectangle {
     id: root
     objectName: "archiveTitlebar"
     required property string archiveTitle
+    property bool welcome: false
     property bool integratedTitlebar: false
     property bool canOpen: true
     property bool canClose: false
@@ -23,10 +24,11 @@ Rectangle {
     }
     RowLayout {
         id: brand
-        x: root.integratedTitlebar ? Theme.mainBrandMacX : Theme.mainUnits(20)
+        x: root.welcome ? (root.integratedTitlebar ? 89 : 16) : root.integratedTitlebar ? Theme.mainBrandMacX : Theme.mainUnits(20)
         height: root.height
         spacing: Theme.mainUnits(8)
         Image {
+            visible: !root.welcome
             source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "app-mark.png"
             Layout.preferredWidth: Theme.mainUnits(30)
             Layout.preferredHeight: Theme.mainUnits(30)
@@ -34,7 +36,7 @@ Rectangle {
         }
         Text {
             text: "xdzip"
-            font.pixelSize: Theme.mainBrandSize
+            font.pixelSize: root.welcome ? 16 * Theme.fontScale : Theme.mainBrandSize
             font.weight: Font.DemiBold
             color: Theme.text
         }
@@ -48,33 +50,33 @@ Rectangle {
     Rectangle {
         id: tab
         objectName: "activeArchiveTab"
-        x: root.integratedTitlebar ? Theme.mainTabFirstMacX : Math.max(Theme.mainTabFirstOtherX, brand.x + brand.width + Theme.mainUnits(24))
+        x: root.welcome ? Math.max(root.integratedTitlebar ? 163 : 96, brand.x + brand.width + 32) : root.integratedTitlebar ? Theme.mainTabFirstMacX : Math.max(Theme.mainTabFirstOtherX, brand.x + brand.width + Theme.mainUnits(24))
         y: (root.height - height) / 2
-        width: Math.max(Theme.mainTabWidth, Theme.mainTabWidth * Math.min(1.5, Theme.fontScale))
+        width: root.welcome ? Math.max(160, 160 * Theme.fontScale) : Math.max(Theme.mainTabWidth, Theme.mainTabWidth * Math.min(1.5, Theme.fontScale))
         height: root.capsuleHeight
         color: Theme.surface
         radius: height / 2
         border.color: Theme.border
         Accessible.role: Accessible.PageTab
-        Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+        Accessible.name: root.archiveTitle.length ? root.archiveTitle : qsTr("欢迎")
         RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Theme.mainUnits(15)
             anchors.rightMargin: Theme.mainUnits(9)
             spacing: Theme.mainTabTextGap
             Image {
-                source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive.png"
+                source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (root.welcome ? "app-mark.png" : "archive.png")
                 Layout.preferredWidth: Theme.mainTabIconSize
                 Layout.preferredHeight: Theme.mainTabIconSize
                 fillMode: Image.PreserveAspectFit
             }
             Text {
                 Layout.fillWidth: true
-                text: root.archiveTitle.length ? root.archiveTitle : qsTr("起始页")
+                text: root.archiveTitle.length ? root.archiveTitle : qsTr("欢迎")
                 textFormat: Text.PlainText
                 elide: Text.ElideMiddle
                 font.pixelSize: Theme.mainTabSize
-                font.weight: Font.DemiBold
+                font.weight: root.welcome ? Font.Normal : Font.DemiBold
                 color: Theme.text
             }
             ArchiveAction {

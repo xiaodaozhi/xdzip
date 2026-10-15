@@ -1,6 +1,6 @@
 # W01 主窗口欢迎页，高保真候选
 
-高保真设计已确认，现已接入[正式 HTML 审阅入口](../../design/html/index.html?view=welcome&zoom=1)。Qt 尚未接入。设计入口见[欢迎页状态稿](../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
+高保真设计已确认，现已接入[正式 HTML 审阅入口](../../design/html/index.html?view=welcome&zoom=1)。Qt 已接入真实打开与新建，桌面人工验收另行登记。设计入口见[欢迎页状态稿](../../design/hifi/sources/welcome.html)，参数见 [welcome-reference.json](../visual/welcome-reference.json)。颜色、主窗口密度沿用现有 tokens 和 layout-scale，不调整全局规范。四张 PNG 为代码绘制的设计原稿导出，不是产品运行截图。
 
 ## 信息与布局
 
@@ -26,4 +26,16 @@
 
 HTML 已接入欢迎页、最小窗口、浅深色、键盘、示例选择、新建、关闭最后一个归档标签返回以及拖入反馈。拖入只验证数量和扩展名，随后打开示例选择器，不读取用户文件；浏览器拖入期间若隐藏文件名，先显示中性检查提示，落下后再验证。禁用、焦点和按下使用共享色值。验证脚本为 scripts/check-html-welcome.py，实际结果保存于 build/review/html-welcome/。
 
-Qt 尚未实施，未执行桌面人工验收。欢迎页专项检查覆盖 DPR 1、1.25、2，100% 浏览器缩放及共享菜单比例；真实 125% 页面缩放仍由 Linux CI 的现有缩放检查执行，不能将 CSS 缩放当作该项证据。200% 字号和原生平台菜单留待 Qt 接入时验证。欢迎页完整深色稿不代表归档浏览页已有完整深色原稿。
+Qt 已实施真实欢迎页及拖入，未执行桌面人工验收。欢迎页专项检查覆盖 DPR 1、1.25、2，100% 浏览器缩放及共享菜单比例；真实 125% 页面缩放仍由 Linux CI 的现有缩放检查执行，不能将 CSS 缩放当作该项证据。Qt 200% 字号已有自动化组件回归，原生平台菜单和辅助功能仍需人工验收。欢迎页完整深色稿不代表归档浏览页已有完整深色原稿。
+
+## Qt 真实接入
+
+WelcomePage、WelcomeAction 仅表达布局和意图。启动及关闭归档后显示欢迎页，成功打开后进入现有单归档浏览；空归档仍是有效浏览状态。首次读取期间禁用重复打开及新建，显示“正在打开…”与取消读取；失败保留欢迎页和真实错误消息，可重新选择文件。创建草稿关闭后不产生任务。后台任务列表不随欢迎页重置。
+
+打开按钮和系统快捷键复用 chooseArchive，新建复用 CreateWindow。原生文件选择器保持系统窗口，取消不创建会话。Qt 当前只有单归档会话，HTML 的多标签示例不是本次新增的产品能力。
+
+拖入适配仅接受一个本地普通文件，文件名为 ZIP、TAR、TAR.GZ 或 TGZ。QFileInfo 只检查输入形态，不读取归档内容；openDroppedUrls 复用 openPath，格式、预算、错误和源变化仍由现有 Rust 核心检查。拖入扩展名不表示内容有效，目录、多个条目及网络 URL 明确拒绝，不隐式创建。
+
+尺寸取 welcome-reference.json，经 generate-qml-theme.py 进入 Theme；字号放大增长卡片与正文，正文可滚动，键盘聚焦入口时自动滚到可见范围。状态栏和标题区独立增长，不使用 Item.scale。Qt 使用共享 PNG 图标，主按钮为既有深色浅墨图形；不从原稿裁切运行素材。
+
+自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。三平台 CI 在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。离屏结果不代替原生拖放、文件选择器、读屏和输入法人工验收。

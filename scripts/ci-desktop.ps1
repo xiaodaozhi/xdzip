@@ -55,6 +55,11 @@ $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'rootListingAndReviewedInteractions', 'm2LargeArchiveLatestQueryAndSourceChange', 'renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
+$env:XDZIP_WELCOME_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/welcome'
+Invoke-Checked $browserTests @('welcomeOpensRealArchivesAndReturns')
+Invoke-Checked python @('scripts/check-qt-welcome.py', '--input', 'build/desktop/welcome', '--output', 'build/review/welcome.json')
+Remove-Item Env:XDZIP_WELCOME_VISUAL_AUDIT
+if (!$IsMacOS) { Copy-Item -Recurse 'build/desktop/welcome' 'build/review/welcome' }
 $env:XDZIP_M3_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m3-operations'
 Invoke-Checked $browserTests @('m3ExtractionWindowsAndRealOutput', 'm3IntegrityFailurePreservesDestinationAndCancelEndsWaiting')
 Remove-Item Env:XDZIP_M3_VISUAL_AUDIT
@@ -98,6 +103,12 @@ Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/deskto
 # Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
 foreach ($density in @('1.25', '2')) {
     $env:QT_SCALE_FACTOR = $density
+    $welcomePath = "build/desktop/welcome-dpr$density"
+    $env:XDZIP_WELCOME_VISUAL_AUDIT = Join-Path (Get-Location) $welcomePath
+    Invoke-Checked $browserTests @('welcomeOpensRealArchivesAndReturns')
+    Invoke-Checked python @('scripts/check-qt-welcome.py', '--input', $welcomePath, '--output', "build/review/welcome-dpr$density.json")
+    Remove-Item Env:XDZIP_WELCOME_VISUAL_AUDIT
+    if (!$IsMacOS) { Copy-Item -Recurse $welcomePath "build/review/welcome-dpr$density" }
     Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_task_components', '--output-on-failure')
     $capturePath = "build/desktop/visual-audit-dpr$density"
     $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) $capturePath

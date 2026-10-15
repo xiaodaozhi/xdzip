@@ -24,6 +24,7 @@ Button {
         requested: root.hovered && !root.down
         text: root.explanation
     }
+    property real labelSize: toolbarStyle ? Theme.mainToolbarSize : Theme.mainHeaderSize
     contentItem: Item {
         implicitWidth: actionRow.implicitWidth
         implicitHeight: Math.max(root.glyphSize, label.implicitHeight)
@@ -51,7 +52,7 @@ Button {
                 height: parent.height
                 text: root.text
                 textFormat: Text.PlainText
-                font.pixelSize: root.toolbarStyle ? Theme.mainToolbarSize : Theme.mainHeaderSize
+                font.pixelSize: root.labelSize
                 font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
                 color: !root.enabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : Theme.text
                 verticalAlignment: Text.AlignVCenter

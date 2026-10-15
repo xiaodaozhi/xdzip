@@ -63,4 +63,4 @@
 
 ## W01 欢迎页候选
 
-[欢迎页状态稿](sources/welcome.html)提供浅色、深色、832×544 最小窗口和拖入状态。对应原稿为 screens/welcome-*.png，布局与交互见[欢迎页设计](../../docs/ux/welcome.md)。设计已确认并接入正式 HTML，Qt 尚未接入。sources/ 保存可编辑设计源，不是产品界面原型。
+[欢迎页状态稿](sources/welcome.html)提供浅色、深色、832×544 最小窗口和拖入状态。对应原稿为 screens/welcome-*.png，布局与交互见[欢迎页设计](../../docs/ux/welcome.md)。设计已确认并接入正式 HTML，Qt 已接入真实打开与新建，桌面人工验收另行登记。sources/ 保存可编辑设计源，不是产品界面原型。

@@ -229,6 +229,27 @@ void BrowserController::chooseArchive() {
     if (!path.isEmpty())
         openPath(path);
 }
+bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
+    if (m_busy || !runtimeAvailable() || urls.size() != 1 || !urls.first().isLocalFile())
+        return false;
+    const QFileInfo file(urls.first().toLocalFile());
+    const auto name = file.fileName().toLower();
+    return file.isFile() && (name.endsWith(".zip") || name.endsWith(".tar") ||
+                             name.endsWith(".tar.gz") || name.endsWith(".tgz"));
+}
+bool BrowserController::openDroppedUrls(const QList<QUrl> &urls) {
+    if (m_busy || !runtimeAvailable())
+        return false;
+    if (!canOpenDroppedUrls(urls)) {
+        m_message = tr("请拖入单个本地 ZIP、TAR 或 TAR.GZ 压缩文件。");
+        emit changed();
+        return false;
+    }
+    // This is an input hint only. The existing runtime probes content and applies
+    // admission limits; a matching extension never asserts that an archive is valid.
+    openPath(urls.first().toLocalFile());
+    return true;
+}
 void BrowserController::openPath(const QString &path) {
     if (m_busy || m_closing || path.isEmpty())
         return;
