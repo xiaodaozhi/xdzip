@@ -6,7 +6,7 @@
 
 Qt 6.8 起提供构建对应的 [SPDX 清单](https://doc.qt.io/qt-6.8/licenses-used-in-qt.html)。工具只读取本次固定 Qt 6.8.2 SDK 的 sbom/ 中 qtbase、qtdeclarative、qtsvg 和 qttranslations 等运行时声明，排除 qttools 构建／测试工具。验证 SPDX 版本、模块名和 Qt 版本，保存原始文档 SHA-256、namespace 和稳定包引用。输出只保留必要字段，不复制包含开发机路径的上游构建注释。
 
-`scripts/qt-license-sources.json` 固定官方 Qt 源码提交、许可文本 URL 和 SHA-256。下载内容放入 build/ 缓存；任何缓存或下载的哈希不符都会失败。不会跟随 SPDX 中任意地址下载材料。除 LICENSES/ 的标准文本，还包含 Qt GUI 平滑缩放算法的原始组合通知；上游 LicenseRef 原文和版权声明保留在声明 JSON 中。
+`scripts/qt-license-sources.json` 固定官方 Qt 源码及 SPDX license-list-data 提交、许可文本 URL 和 SHA-256。下载内容放入 build/ 缓存；任何缓存或下载的哈希不符都会失败。不会跟随 SPDX 中任意地址下载材料。除 LICENSES/ 的标准文本，还包含 Qt GUI 平滑缩放算法与 SVG 的原始通知，以及系统依赖声明涉及的 LGPL-2.1 文本；上游 LicenseRef 原文和版权声明保留在声明 JSON 中。
 
 ## 文件与组件关联
 

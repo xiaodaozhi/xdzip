@@ -82,6 +82,11 @@
       "sha256": "67ac968431270291f5e9cd3ed76705e1169f57082ee102093b2543b28cef63cf"
     },
     {
+      "id": "HPND-sell-variant",
+      "url": "https://raw.githubusercontent.com/qt/qtsvg/e59eaa7dbc09fbf885b1c5a69d93b7e2fb1c7ce3/src/svg/XSVG_LICENSE.txt",
+      "sha256": "3a946598a9f674d44df764279ca0b85b5d6faba08f3bc75d8e0fcf6cd729a9bd"
+    },
+    {
       "id": "IJG",
       "url": "https://raw.githubusercontent.com/qt/qtbase/f1136de66638060b8a1ab9bc0cdf1a91dcb5ec01/LICENSES/IJG.txt",
       "sha256": "1cb448f5e2e6d3aca60943f4eee1a04675628dc0266a074a42bc1560ebc28d61"
@@ -96,6 +101,11 @@
       "url": "https://raw.githubusercontent.com/qt/qtbase/f1136de66638060b8a1ab9bc0cdf1a91dcb5ec01/src/gui/painting/QIMAGETRANSFORM_LICENSE.txt",
       "sha256": "46b3cbfa2f2946b93291506351e9be1dd0a28d2a53260f5aa488abd36fbeca9d",
       "scope": "Combined upstream smooth-scaling notice, BSD-2-Clause AND Imlib2"
+    },
+    {
+      "id": "LGPL-2.1-or-later",
+      "url": "https://raw.githubusercontent.com/spdx/license-list-data/31ba1a50e5397e00a304dbadc76531740e89ee48/text/LGPL-2.1-or-later.txt",
+      "sha256": "5749785c8bdefafcb5d798270ed0a967036fe2ca63dcedade1627565dfef81d2"
     },
     {
       "id": "LGPL-3.0-only",

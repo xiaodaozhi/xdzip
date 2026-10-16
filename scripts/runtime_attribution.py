@@ -81,8 +81,10 @@ def license_materials(output, cache):
     cache.mkdir(parents=True, exist_ok=True)
     for record in config['licenses']:
         # Only reviewed configuration URLs may be fetched, never SPDX-provided URLs.
-        if not re.fullmatch(r'https://raw\.githubusercontent\.com/qt/[a-z]+/[0-9a-f]{40}/[A-Za-z0-9_./+-]+\.txt', record['url']) or '..' in record['url']:
-            raise ValueError('Unpinned Qt license source')
+        qt_source = re.fullmatch(r'https://raw\.githubusercontent\.com/qt/[a-z]+/[0-9a-f]{40}/[A-Za-z0-9_./+-]+\.txt', record['url'])
+        spdx_source = re.fullmatch(r'https://raw\.githubusercontent\.com/spdx/license-list-data/[0-9a-f]{40}/text/[A-Za-z0-9.+-]+\.txt', record['url'])
+        if not (qt_source or spdx_source) or '..' in record['url']:
+            raise ValueError('Unpinned license source')
         path = cache / (record['id'] + '.txt')
         if not path.exists():
             data = urllib.request.urlopen(record['url'], timeout=30).read()
