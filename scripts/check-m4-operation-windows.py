@@ -45,8 +45,9 @@ for name, width, height, title in [('create-selected', 491, 736, '创建压缩�
             check(key+'/horizontal bounds', field['x'] >= 0 and field['x']+field['width'] <= width+1, True)
         target, change = named['createTarget'], named['createChangeTarget']
         check('target/change center', target['y']+target['height']/2, change['y']+change['height']/2, .5)
-        mark, label = named['createOpenAfterIndicator'], named['createOpenAfterLabel']
-        check('checkbox/label center', mark['y']+mark['height']/2, label['y']+label['height']/2, .5)
+        # 2026-10-16: the user removed automatic folder opening after creation.
+        check('creation/automatic folder option removed',
+              not any(name.startswith('createOpenAfter') for name in named), True)
         action = named['startCreate']
         check('footer/action height', action['height'], 32)
         check('footer/action inside window', action['y']+action['height'] <= capture['height'], True)

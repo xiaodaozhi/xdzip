@@ -1673,6 +1673,7 @@ render();
 // Public review API: UI demonstrations only, no file IO or codecs.
 window.XdzipDesign = {
     open(view) {
+        cancelWelcomeOpening(false);
         // Direct standalone URLs can run before the main-window adapter's
         // deferred script; review messages arrive after that script is ready.
         if (["archive-test", "preflight", "welcome", "welcome-narrow"].includes(view) && !window.XdzipMain) {
@@ -1702,6 +1703,7 @@ window.XdzipDesign = {
             return;
         }
         if (view === "main") {
+            setWelcomeMode(false);
             window.XdzipMain?.openSample("travel");
             state.path = "";
             state.query = "";

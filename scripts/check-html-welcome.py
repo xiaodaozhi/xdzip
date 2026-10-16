@@ -4,6 +4,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
+import re
 import json
 import os
 from playwright.sync_api import sync_playwright, expect
@@ -96,6 +97,17 @@ with sync_playwright() as p:
         expect(frame.locator('#welcome-opening')).to_have_count(0)
         expect(frame.locator('#welcome-open')).to_be_focused()
         checks.append('Opening overlay cancellation suppresses stale completion and restores welcome focus')
+        page.locator('#view').select_option('welcome-narrow')
+        expect(frame.locator('body')).to_have_class(re.compile(r'.*welcome-narrow.*'))
+        child = next(f for f in page.frames if f.parent_frame)
+        child.evaluate('()=>{beginWelcomeOpening("preview.zip",()=>{throw new Error("Stale preset completion")});XdzipDesign.open("main")}')
+        expect(frame.locator('#welcome-opening')).to_have_count(0)
+        expect(frame.locator('#welcome')).to_be_hidden()
+        assert not child.evaluate('document.body.classList.contains("welcome-narrow")')
+        assert abs(frame.locator('.window').bounding_box()['width'] - 1024) <= 1
+        page.locator('#view').select_option('welcome')
+        expect(frame.locator('#welcome-open')).to_be_visible()
+        checks.append('Main review preset bypasses demo loading and cancels pending preview callbacks')
         frame.locator('#welcome-open').click()
         frame.locator('#pick-sample').click()
         expect(frame.locator('#welcome')).to_be_hidden()
