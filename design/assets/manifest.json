@@ -2931,7 +2931,7 @@
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "source_revision": "current-logo",
       "visible_bounds": [
         2.0,
@@ -2968,7 +2968,7 @@
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -3032,7 +3032,7 @@
       },
       "sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -5320,7 +5320,7 @@
       "source_reference": "reference/brand-titlebar.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip.svg",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "source_revision": "current-logo",
       "visible_bounds": [
         2.0,
@@ -5356,7 +5356,7 @@
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -5420,7 +5420,7 @@
       },
       "sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
       "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -7691,7 +7691,7 @@
         1024,
         1024
       ],
-      "sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
@@ -7711,9 +7711,10 @@
         16
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "9591062ec7048613db5b5857f76d028335d852bf592b6a9e7c68d101dd6948df",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "d045d947993cab25fa0237dbfbc7073a1bb66a4fea4942e1f1d86a85b9353d31",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7732,9 +7733,10 @@
         24
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "a99ec581e43ad5de2d85b568fd167b2b41c6309bce3625454079565a7a3a915d",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "f82dc56350cca47ca009df6a23314696a58769d57854693999acf07cc95994a1",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7753,9 +7755,10 @@
         32
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "2639849e75fb886d3b2b2907ba298cbfb559c8049d9f3af99edd42df3e092df9",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "3bc68bf1bd75ab0de42091cae3c4d5f71916ee17f852e71163b72b5885e633ae",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7774,9 +7777,10 @@
         48
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "a6dcbcb78565eab5e5f677f70381f64f32c78227448559b68e99dc678b133fd8",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "fc0c8c5a3f31bdec2130ec4bcf8b4dd83cc3c3a3ffca8751c67cbd03a095ef4b",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7795,9 +7799,10 @@
         64
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "d4c58a8458b12c390b68b6bfcbb39a08812b02619fb68d837067826e414ba74a",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "d01b95fa4d7cc84f1152f445658cdf9495b9066696cb5f9eab52697e98fc16f1",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7816,9 +7821,10 @@
         128
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "633ae1480203ace511f8733e5ee90dce7e448c58ccd90de3be7914ee3151d185",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "db6a5accb7cb0601b38ccc70d7b619927fe67fb36ecf4a70ea1435c1bb2d3d95",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7837,9 +7843,10 @@
         256
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "3989c6a0bfe405ad516f3c742630dadafc089cfa4fc5993f3e52d1bfcebe04da",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "3fbd2a93d3df87bd3cc45a5dc9a5c3fe15fbb830ad0a1513259071eb6efaace0",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7858,9 +7865,10 @@
         512
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "095335fdf0984709fa5505ec182212abdfc095c28895c2d98974e2e8c81ca450",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "143e0faa0ca1f3a3312df89b72da4f6089d57ce04437503f05e0203760646d6a",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [
           "assets/app-icon.png"
@@ -7883,9 +7891,10 @@
         1024
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "UI detail at 16/24/32; master lighting at 48–1024",
-      "sha256": "f9e4b23386b80e74906523185418c3f0e1b79d416c2383df7835b0963b8879c0",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "0db576a5a0d2cedef386edb5cd586e44ee1175e8593e2fe6f6c0649c820b3539",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -7909,8 +7918,8 @@
         128,
         256
       ],
-      "sha256": "6e2f86337b8893e0d474418546cc87293b4462c1d247cd36f1ed1eba24dac601",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "2ac322b40b531e4d468e8d8c8b2fb4239d67d01aff879ac0562dec6f6a470acf",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -7940,8 +7949,8 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "7753f7010084aa0e2fa9478e009f1a09bc3999bc13b5a367152c15ba46a4a424",
-      "source_sha256": "96bfaabab805890220142f19f04d40b8c6def9352a4ef49febb9a0f3c4d50916",
+      "sha256": "f3b194857df73541057e8356730c34d333b6a14f6558f9385d9e572eac26a146",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": [
@@ -7961,7 +7970,7 @@
         1024,
         1024
       ],
-      "sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
       "runtime_usage": {
         "qt_aliases": [],
@@ -7981,9 +7990,10 @@
         16
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "4e3f7e5905e10757943856a0a6965be4fbaccfcffa639e4931c25972beeb79c3",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "4b80240d028831ea36c46821506819f6f5ce66c55abd813a5f28450045e8e508",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8002,9 +8012,10 @@
         24
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "12b9830f744b7caa644747303cf21b7998d641c99a2f7f3505a599f702e8c816",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "bf49cb671f810eb35fb645fb5122be5701a4341ffc57fcdf3ff7b1bb6cbbae4c",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8023,9 +8034,10 @@
         32
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "f33405ca6a42b9307a283156f6e4b1ff767a6a6169346654bc427404cd5dfe94",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "baae6b0f120deb5e69a615577bf731939f4daa96b32e86ef24521df6c6cd10b0",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8044,9 +8056,10 @@
         48
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "b4599ad2252e8015b93be5399b236279ef941be0f4c0a72f3caac0ef8b00cf56",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "c6e8c7aa568f5f5fa5ac03b3ab1224ac45ce75529f6e21c0dfd7aefde0916773",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8065,9 +8078,10 @@
         64
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "053cfc980871f6f16d9e36bbe7783eede3d41a52f80885774643010308b4499a",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "14a09601a55cc47181a5e6e98961a804ba700e7b4a46d0d68fb53854676cf6b0",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8086,9 +8100,10 @@
         128
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "df33e54be7ffd72d6a2f7714b6ea539bb7409e1d620906ae7f93a8e2972a99f9",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "be7d8a44272f337131f5605c0b9dbac5414a9cefea1be46db07af8fc8701b4d1",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8107,9 +8122,10 @@
         256
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "f86572d54820a7687faa49b1fc5371c1c1c5d9bb92bf860888a1e00a71b2214b",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "11d17e1bf542cb1887831f5abd2c73fa2c27ce9d203463734b92c1b9acb7b616",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8128,9 +8144,10 @@
         512
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "b496cd55599fdb0a699aba7eed64240f93d4e3e04cdfbec07dffd27372442686",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "11b848aa3012e9b5be40231ce3df62cd3161eec9424a903c443c599a4fadcdfb",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8149,9 +8166,10 @@
         1024
       ],
       "format": "png",
+      "optical_body_height": 0.9,
       "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "e8f5c0545316be5826c7717c446f79529c2356120d7225e598ff02af7f2048ed",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "96761d086849a9ae17cf830972ecf22c577431cdb08a769c98974ae9bbb656ce",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8175,8 +8193,8 @@
         128,
         256
       ],
-      "sha256": "512c225bdc65f1915063151949e9a40d14672794ccc7863db0218edc380f1750",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "bf1c445b6060ef26c50e003576c6c5ba11278bc37d026f89671109b59f8b0991",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []
@@ -8204,8 +8222,8 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "d3a44faed234083faee2e7c85f6a1787c3aa0217b411207a30fd9b0fc39fbcd3",
-      "source_sha256": "0efaace758282a4f34cd3f275f3b93093af6bc5f92d4030ca07d4468e885e8b8",
+      "sha256": "8e3f91f07ddabd9d592b5b73c9674caaedfc519baf02d6d0c571791c7425a4f9",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
         "platform_resources": []

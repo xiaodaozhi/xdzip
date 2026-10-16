@@ -38,9 +38,16 @@ def source_svg(stem: str, size: int) -> str:
     # Enlarge the document's badge at 16/24 pixels so its U opening and four
     # staggered ribbons survive native rasterization. The signature is unchanged.
     profile = 'ui' if stem == 'xdzip' else 'tiny' if size <= 24 else 'small'
+    # Platform canvases omit the UI slot's extra padding. Keep small-size
+    # optical detail, without scaling a previously rasterized PNG.
     shape = brand_shapes('light', document_profile=profile)[icon]
+    # Snap the 20-unit silhouette to an even number of physical pixels so
+    # near-opaque edge rows do not disappear at 16/24/32 px.
+    body_pixels = 2 * round(size * .90 / 2)
+    extent = 20 * size / body_pixels
+    inset = (24 - extent) / 2
     return ('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" '
-            f'viewBox="0 0 24 24" fill="none">{shape}</svg>\n')
+            f'viewBox="{inset:.12g} {inset:.12g} {extent:.12g} {extent:.12g}" fill="none">{shape}</svg>\n')
 
 
 def png_bytes(stem: str, size: int) -> bytes:
@@ -94,6 +101,21 @@ def validate() -> None:
                 alpha = picture.getchannel('A')
                 if alpha.getextrema() != (0, 255) or not alpha.getbbox():
                     raise ValueError(f'Missing transparent margin or opaque body: {path.name}')
+                # Measure the 50%-coverage silhouette, never the shadow's alpha
+                # tails. An independent 90% target catches double padding in any
+                # size; 1.25 px covers edge antialiasing and small-icon rounding.
+                bounds = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
+                # Large document paper has a 1.7-unit outline beyond its path.
+                expected_height = size * (.90 + (1.7 / 960 if stem == 'xdzip-zip' and size > 32 else 0))
+                if not bounds or abs(bounds[3] - bounds[1] - expected_height) > 1.25:
+                    raise ValueError(f'Wrong optical body height: {path.name}: {bounds}')
+                expected_width = (size * .90 if stem == 'xdzip' else
+                                  size * (641.7 / 960) if size > 32 else .76 * (2 * round(size * .90 / 2)))
+                if abs(bounds[2] - bounds[0] - expected_width) > 1.25:
+                    raise ValueError(f'Wrong optical body width: {path.name}: {bounds}')
+                if any(abs((bounds[axis] + bounds[axis + 2]) / 2 - size / 2) > 1
+                       for axis in (0, 1)):
+                    raise ValueError(f'Off-centre optical body: {path.name}: {bounds}')
                 if any(alpha.getpixel(point) for point in [(0, 0), (size - 1, 0),
                                                             (0, size - 1), (size - 1, size - 1)]):
                     raise ValueError(f'Clipped brand corner: {path.name}')

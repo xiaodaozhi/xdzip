@@ -39,6 +39,10 @@ Qt 的稳定资源别名保留在 `apps/desktop/ui.qrc`，实际 PNG 全部从�
 
 两种母版分别导出 16、24、32、48、64、128、256、512、1024 像素的透明 PNG，共 18 张；512 像素文件命名为 `xdzip.png` 和 `xdzip-zip.png`。16/24/32 像素采用简化的小尺寸表现，保持品牌几何，省去不可读微字和大图光影。Windows 的两份 ICO 各含七种尺寸；macOS 的两份 ICNS 各含十一种表示，包含相应 Retina 密度。所有导出纳入主素材清单，不另建品牌清单。
 
+平台导出留白于 2026-10-16 显式修订：1024 母版的取景框由 `0 0 1024 1024` 改为 `32 32 960 960`，主体高度由 84.375% 增至 90%，单侧留白由约 7.8% 降至 5%。应用底板及 ZIP 纸张、折角、徽章、文字整体等比扩大，不拉伸窄文档去填满正方形。保留透明边缘和原有阴影；不把微弱阴影尾部当成主体边界。16／24／32 像素直接从简化矢量渲染，将约 90% 的主体高度对齐到偶数像素，避免半透明边缘使小图标再缩一圈。ICO、ICNS 和 PNG 共用这些导出，不在打包时二次加边；24 单位界面品牌、主窗口与菜单的密度保持原值。
+
+参考 [Microsoft 图标构建规范](https://learn.microsoft.com/en-us/windows/apps/design/iconography/app-icon-construction)的多尺寸、透明背景和逐尺寸采样，以及 [Apple 应用图标指南](https://developer.apple.com/design/human-interface-guidelines/app-icons)的画布与平台呈现原则。90% 是本项目传统 ICO／ICNS 的光学校准值，不是平台统一强制比例；当前未迁移 Icon Composer 的分层图标。验证以 `alpha >= 128` 的主体边界为准，允许 1.25 物理像素的抗锯齿与取整误差，并验证透明角、每项来源凭据以及全部 ICO／ICNS 表示可解码。修订前后联系表与边界量测只输出到 `build/review/icon-padding/`，原始设计参考不改写。
+
 `brand/identity-reference.png` 是新应用与文档标志的生成式视觉方向，用于审阅，不作为运行图标。此次品牌是明确的新设计修订，不能称为旧高保真 ZIP 拉链图标的无差别还原；十张完整原稿及 48 张原像素切片仍保留原始字节。
 
 应用图标接入 Qt 窗口、macOS app bundle、Windows 可执行资源与 Linux 桌面启动项 / hicolor 目录，详情见 [平台接入说明](../../apps/desktop/packaging/README.md)。ZIP 的 PNG、ICO、ICNS 供后续安装器和文件关联工作使用；当前不注册默认应用或文件关联，不新增双击打开及已运行应用收件行为。

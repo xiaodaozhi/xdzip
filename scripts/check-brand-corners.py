@@ -165,7 +165,7 @@ def main():
     report = {'status': 'passed', 'svg_contours': [item[0] for item in results],
               'limits': 'Contour checks exclude lighting, drop shadows, source-logo tracing accuracy and native OS display.'}
     if args.render:
-        report['master_raster_symmetry'] = render_contour(results[0][1], '0 0 1024 1024')
+        report['master_raster_symmetry'] = render_contour(results[0][1], ET.parse(paths[0]).getroot().get('viewBox'))
         report['ui_raster_symmetry'] = render_contour(results[2][1], '0 0 24 24')
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
