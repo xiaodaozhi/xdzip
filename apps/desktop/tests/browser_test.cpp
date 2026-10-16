@@ -1278,8 +1278,8 @@ class BrowserTest : public QObject {
         QVERIFY(QTest::qWaitForWindowActive(window));
         QVERIFY(QTest::qWaitFor([&] {
             auto *button = findVisual(window->contentItem(), "archiveExtract");
-            return button && button->isVisible() && button->isEnabled() &&
-                   button->width() > 0 && button->height() > 0;
+            return button && button->isVisible() && button->isEnabled() && button->width() > 0 &&
+                   button->height() > 0;
         }));
         QSignalSpy toolbarFrame(window, &QQuickWindow::frameSwapped);
         window->update();
