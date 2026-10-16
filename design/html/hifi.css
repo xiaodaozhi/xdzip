@@ -1009,7 +1009,7 @@ dialog[data-kind] .text-input::placeholder { color:var(--secondary); opacity:1; 
 dialog[data-kind="about"] { width:calc(var(--about-logical-width,491) * 1px * var(--ui-source-factor)); max-height:calc(var(--about-maximum-height,640) * 1px * var(--ui-source-factor)); }
 dialog[data-kind="about"] .about-content { display:flex; flex-direction:column; align-items:center; gap:calc(var(--about-section-gap,16) * 1px * var(--ui-source-factor)); padding:calc(var(--about-content-inset,24) * 1px * var(--ui-source-factor)); font-size:calc(var(--about-body-size,13) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
 .about-content .about-artwork { width:calc(var(--about-artwork-size,64) * 1px * var(--ui-source-factor)); height:calc(var(--about-artwork-size,64) * 1px * var(--ui-source-factor)); }
-.about-artwork svg { width:100%; height:100%; }
+.about-artwork svg { width:100%; height:100%; stroke:none; }
 .about-content h1 { font-size:calc(var(--about-title-size,24) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); margin:0; }
 .about-content p { margin:0; color:var(--secondary); width:100%; font-size:inherit; }
 .about-content .about-description { text-align:center; }

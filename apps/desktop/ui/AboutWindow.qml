@@ -33,7 +33,8 @@ OperationWindow {
                 spacing: Theme.aboutSectionGap
                 Item { Layout.preferredHeight: Theme.aboutContentInset - Theme.aboutSectionGap }
                 Image {
-                    source: "qrc:/xdzip/assets/app-mark.png"
+                    objectName: "aboutArtwork"
+                    source: Qt.platform.os === "osx" ? "qrc:/xdzip/assets/app-icon-macos.png" : "qrc:/xdzip/assets/app-icon.png"
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: Theme.aboutArtworkSize
                     Layout.preferredHeight: Theme.aboutArtworkSize

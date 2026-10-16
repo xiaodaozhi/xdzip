@@ -23,7 +23,9 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             "150%",
             "dirty",
             "unknown-revision"
-        ]
+        ],
+        "artwork_source": "design/assets/brand/xdzip.svg",
+        "macos_artwork_source": "design/assets/brand/macos/xdzip.png"
     },
     "version": 2,
     "logicalWindowWidth": 1024,

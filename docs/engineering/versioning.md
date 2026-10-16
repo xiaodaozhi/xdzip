@@ -13,6 +13,8 @@ QML 模块、桥接协议和设置 schema 的版本独立于产品版本，不�
 
 `xdzip --version` 与“设置 → 关于 xdzip”读取同一构建信息，预览应用也一致。CLI 在创建 GUI 之前处理版本参数。“关于”窗口显示版本、构建号、提交、实际 Qt、系统和架构，开发渠道与未提交修改明确标记。复制结果为 JSON，不包含个人文件、路径、机器名或凭据。项目主页按钮由用户点击后打开浏览器。
 
+关于的大图标使用对应平台的 512px PNG，HTML 使用同源矢量，不放大 72px 的界面小图。
+
 关于窗口的逻辑参数来自 [about-reference.json](../visual/about-reference.json)，Qt 复用操作窗口及 footer，支持简体中文、English (US)、浅深色与 100%／125%／150% 字号。当前设计见 [A01 高保真](../../design/hifi/about.html)，HTML 版本信息由同一 JSON 生成，原生 Qt／提交未知时不伪造数值。
 
 验证入口：`scripts/check-build-version.py` 对照实际 CLI 与原生版本资源，`scripts/test-version.py`、`scripts/check-html-about.py`、`BrowserTest::versionAboutWindow`。截图与测量仅保存在 `build/review/about/`。源码、系统元数据与实际运行版本一致是检查条件；版本号本身不证明签名、私测准入、兼容性或独立安全审查已经通过。

@@ -133,6 +133,10 @@ class BrowserTest : public QObject {
                     QTest::qWait(30);
                     QCOMPARE(about->width(), 491);
                     QVERIFY(about->height() <= 640);
+                    auto *artwork = findVisual(about->contentItem(), "aboutArtwork");
+                    QVERIFY(artwork && visibleImagesReady(about->contentItem()));
+                    QVERIFY(artwork->property("sourceSize").toSize().width() >=
+                            qCeil(artwork->width() * about->devicePixelRatio()));
                     auto *version = findVisual(about->contentItem(), "aboutValue-1");
                     QVERIFY(version);
                     QCOMPARE(version->property("text").toString(), BuildInfo::version());

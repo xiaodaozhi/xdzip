@@ -10,5 +10,17 @@
   "body_size": 13,
   "note_size": 12,
   "source": "design/hifi/about.html",
-  "states": ["light", "dark", "zh-CN", "en-US", "100%", "125%", "150%", "dirty", "unknown-revision"]
+  "states": [
+    "light",
+    "dark",
+    "zh-CN",
+    "en-US",
+    "100%",
+    "125%",
+    "150%",
+    "dirty",
+    "unknown-revision"
+  ],
+  "artwork_source": "design/assets/brand/xdzip.svg",
+  "macos_artwork_source": "design/assets/brand/macos/xdzip.png"
 }

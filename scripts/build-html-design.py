@@ -7,6 +7,7 @@ import json
 import mimetypes
 import re
 from pathlib import Path
+from brand_assets import master_svg
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'design/html'
@@ -40,6 +41,12 @@ def main():
     # The manifest is the production inventory; stray files never enter a bundle.
     asset_root = ROOT / 'design/assets'
     manifest = json.loads((asset_root / 'manifest.json').read_text())
+    application = asset_root / 'brand/xdzip.svg'
+    receipt = next(entry for entry in manifest['assets'] if entry['file'] == 'brand/xdzip.svg')
+    if hashlib.sha256(application.read_bytes()).hexdigest() != receipt['sha256']:
+        raise SystemExit('Application artwork differs from its canonical source')
+    assets['brand'] = {'application': application.read_text().strip(),
+                       'applicationMac': master_svg('application', 'macos').strip()}
     for entry in manifest['assets']:
         if entry['kind'] != 'vector-reconstruction':
             continue

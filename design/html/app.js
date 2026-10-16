@@ -1453,7 +1453,7 @@ function showAbout() {
     const spec = window.XDZIP_DISPLAY_SPEC.about;
     const rows = [[t("about.version"), version.display_version], [t("about.build"), String(version.build)],
                   [t("about.revision"), t("about.unknown")], [t("about.runtime"), "HTML"]];
-    dialog(`<div class="modal-content about-content"><span class="about-artwork">${icon("app-mark")}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button">${t("about.homepage")}</button></div>` +
+    dialog(`<div class="modal-content about-content"><span class="about-artwork">${window.XDZIP_ASSETS.brand[document.body.dataset.platform === "macos" ? "applicationMac" : "application"]}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button">${t("about.homepage")}</button></div>` +
         footer(`<button id="about-copy" class="button">${t("about.copy")}</button><button class="button" data-close>${t("about.done")}</button>`, ""), "about", "A01", "#about-copy");
     const modal = $("#modal");
     modal.querySelector(".os-title").textContent = t("about.title");
