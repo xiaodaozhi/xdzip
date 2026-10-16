@@ -43,8 +43,17 @@
       "entrySeparatorHeight": 1,
       "captionButtonWidth": 46,
       "captionIconSize": 18,
-      "resizeBorderWidth": 5,
       "captionRestoreOffset": 3
+    },
+    "windows_frame": {
+      "strategy": "Native resizable frame, client-extended titlebar",
+      "frame_margin_native_pixels": 1,
+      "restored_top_edge_native_pixels": 1,
+      "maximized_top_inset": "Native resize metric for the window DPI",
+      "border": "System DWM border",
+      "corner_preference": "Round on supported Windows 11 builds, OS default otherwise",
+      "shadow": "DWM non-client rendering",
+      "caption_controls": "Existing QML caption controls"
     }
   },
   "operation": {

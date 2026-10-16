@@ -59,6 +59,22 @@ int main(int argc, char *argv[]) {
 #endif
         // Exercise startup, real receiver wakeup and shutdown, not just QML construction.
         QTimer::singleShot(500, &application, [&application, &engine] {
+#ifdef Q_OS_WIN
+            if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+                QVariantMap nativeFrame;
+                auto *frame =
+                    engine.rootObjects().first()->findChild<QObject *>("windowsNativeFrame");
+                if (!frame ||
+                    !QMetaObject::invokeMethod(frame, "diagnostics",
+                                               Q_RETURN_ARG(QVariantMap, nativeFrame)) ||
+                    !nativeFrame.value("attached").toBool() ||
+                    !nativeFrame.value("resizeStyle").toBool() ||
+                    nativeFrame.value("topInsetPixels").toInt() != 1) {
+                    QCoreApplication::exit(7);
+                    return;
+                }
+            }
+#endif
 #ifdef Q_OS_MACOS
             if (!verifyMacTitlebar(qobject_cast<QQuickWindow *>(engine.rootObjects().first()))) {
                 QCoreApplication::exit(6);

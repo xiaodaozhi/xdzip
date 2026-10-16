@@ -12,12 +12,13 @@ ApplicationWindow {
     height: Theme.mainWindowHeight
     minimumWidth: Theme.mainMinimumWidth
     minimumHeight: Theme.mainMinimumHeight
-    WindowResizeEdges {
+    WindowsFrame {
+        objectName: "windowsNativeFrame"
         window: root
-        visible: root.windowsTitlebar && root.visibility === Window.Windowed
+        dark: Theme.dark
     }
     readonly property bool windowsTitlebar: Qt.platform.os === "windows"
-    flags: windowsTitlebar ? Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint : Qt.Window
+    flags: Qt.Window
     function toggleMaximized() {
         if (visibility === Window.Maximized) showNormal();
         else showMaximized();

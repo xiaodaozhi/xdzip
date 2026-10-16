@@ -82,7 +82,6 @@
     <file alias="assets/dark/minimize.png">../../design/assets/png/dark/minimize@3x.png</file>
     <file alias="assets/dark/maximize.png">../../design/assets/png/dark/maximize@3x.png</file>
     <file>ui/WindowCaptionButton.qml</file>
-    <file>ui/WindowResizeEdges.qml</file>
     <file>ui/SelectionCheck.qml</file>
     <file>ui/ArchiveToolbar.qml</file>
     <file>ui/CommandMenu.qml</file>

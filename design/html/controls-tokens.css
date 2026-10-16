@@ -77,7 +77,6 @@
   --main-entry-separator-height: calc(1px * var(--ui-source-factor));
   --main-caption-button-width: calc(46px * var(--ui-source-factor));
   --main-caption-icon-size: calc(18px * var(--ui-source-factor));
-  --main-resize-border-width: calc(5px * var(--ui-source-factor));
   --main-caption-restore-offset: calc(3px * var(--ui-source-factor));
   --ui-menu-shadow-radius: calc(12px * var(--ui-source-factor));
   --ui-menu-shadow-offset-y: calc(4px * var(--ui-source-factor));

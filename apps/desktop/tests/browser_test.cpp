@@ -28,6 +28,9 @@
 #include <QTimer>
 #include <QtTest>
 #include <thread>
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
@@ -98,8 +101,24 @@ class BrowserTest : public QObject {
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         QVERIFY(window);
-        QVERIFY(window->flags().testFlag(Qt::FramelessWindowHint));
+        QVERIFY(!window->flags().testFlag(Qt::FramelessWindowHint));
         QTRY_VERIFY(window->isVisible());
+        QCOMPARE(window->size(), QSize(1024, 622));
+        QVariantMap nativeFrame;
+        if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+            auto *frame = window->findChild<QObject *>("windowsNativeFrame");
+            QVERIFY(frame);
+            QVERIFY(QMetaObject::invokeMethod(frame, "diagnostics",
+                                              Q_RETURN_ARG(QVariantMap, nativeFrame)));
+            QVERIFY(nativeFrame.value("attached").toBool());
+            QVERIFY(nativeFrame.value("captionStyle").toBool());
+            QVERIFY(nativeFrame.value("resizeStyle").toBool());
+            if (nativeFrame.value("composition").toBool())
+                QVERIFY(nativeFrame.value("nonClientRendering").toBool());
+            QCOMPARE(nativeFrame.value("topInsetPixels").toInt(), 1);
+            if (nativeFrame.value("cornerPreferenceSupported").toBool())
+                QCOMPARE(nativeFrame.value("cornerPreference").toInt(), 2);
+        }
         auto *bar = findVisual(window->contentItem(), "archiveTitlebar");
         auto *settings = findVisual(window->contentItem(), "archiveSettings");
         auto *minimize = findVisual(window->contentItem(), "windowMinimize");
@@ -115,6 +134,61 @@ class BrowserTest : public QObject {
         if (!audit.isEmpty()) {
             QVERIFY(QDir().mkpath(audit));
             QVERIFY(visual_audit::save(window, audit, "windows-caption"));
+            QFile frameRecord(audit + "/windows-native-frame.json");
+            QVERIFY(frameRecord.open(QIODevice::WriteOnly));
+            QVERIFY(frameRecord.write(
+                        QJsonDocument(QJsonObject::fromVariantMap(nativeFrame)).toJson()) > 0);
+            if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+                // A solid, owned backdrop makes the external DWM border/shadow
+                // visible without recording unrelated desktop content.
+                window->resize(900, 560);
+                const auto available = window->screen()->availableGeometry();
+                window->setPosition(available.center() - QPoint(450, 280));
+                QQuickWindow backdrop;
+                backdrop.setFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+                backdrop.setColor(QColor("#CFD8E5"));
+                backdrop.setGeometry(window->frameGeometry().adjusted(-32, -32, 32, 32));
+                backdrop.show();
+                window->setFlag(Qt::WindowStaysOnTopHint, true);
+                window->show();
+                window->raise();
+                window->requestActivate();
+                QTest::qWait(300);
+                QVariantMap frameState;
+                QVERIFY(QMetaObject::invokeMethod(
+                    window->findChild<QObject *>("windowsNativeFrame"), "diagnostics",
+                    Q_RETURN_ARG(QVariantMap, frameState)));
+                QVERIFY(frameState.value("visibleAtCenter").toBool());
+                const auto bounds = frameState.value("frameBoundsNative").toList();
+                const auto origin = frameState.value("monitorOriginNative").toList();
+                QCOMPARE(bounds.size(), 4);
+                QCOMPARE(origin.size(), 2);
+                const QRect crop(bounds[0].toInt() - origin[0].toInt() - 24,
+                                 bounds[1].toInt() - origin[1].toInt() - 24, bounds[2].toInt() + 48,
+                                 bounds[3].toInt() + 48);
+                const auto desktop = window->screen()->grabWindow(0).toImage();
+                QVERIFY(desktop.rect().contains(crop));
+                const auto image = desktop.copy(crop);
+                for (const auto point :
+                     {crop.topLeft(), crop.topRight(), crop.bottomLeft(), crop.bottomRight()}) {
+                    const POINT nativePoint{point.x() + origin[0].toInt(),
+                                            point.y() + origin[1].toInt()};
+                    const auto owner = WindowFromPoint(nativePoint);
+                    QVERIFY(owner == reinterpret_cast<HWND>(backdrop.winId()));
+                    const auto color = image.pixelColor(point - crop.topLeft());
+                    // DWM's shadow darkens the owned blue backdrop. Verify its
+                    // hue and ownership instead of requiring an unshaded pixel.
+                    const auto base = backdrop.color();
+                    QVERIFY(color.blue() <= base.blue() + 5 && color.blue() >= base.blue() / 3);
+                    QVERIFY(qAbs(color.red() * base.blue() - color.blue() * base.red()) <=
+                            8 * base.blue());
+                    QVERIFY(qAbs(color.green() * base.blue() - color.blue() * base.green()) <=
+                            8 * base.blue());
+                }
+                QVERIFY(image.save(audit + "/windows-dwm-frame.png"));
+                window->setFlag(Qt::WindowStaysOnTopHint, false);
+                window->show();
+            }
         }
         const auto click = [window](QQuickItem *item) {
             QTest::mouseClick(
@@ -123,6 +197,11 @@ class BrowserTest : public QObject {
         };
         click(maximize);
         QTRY_COMPARE(window->visibility(), QWindow::Maximized);
+        if (QGuiApplication::platformName() == QStringLiteral("windows"))
+            QTRY_VERIFY(window->screen()
+                            ->availableGeometry()
+                            .adjusted(-1, -1, 1, 1)
+                            .contains(window->geometry()));
         QCOMPARE(maximize->property("captionAction").toString(), QStringLiteral("restore"));
         click(maximize);
         QTRY_COMPARE(window->visibility(), QWindow::Windowed);

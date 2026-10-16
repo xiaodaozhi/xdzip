@@ -16,3 +16,5 @@
 Windows 10 的维护生命周期与发行政策必须在 WP-01 重新评估；不能仅因 Qt 可编译就宣布仍受官方安全维护。选定支持范围写 ADR 并更新 design/11。
 
 首轮实测见 [验证记录（本地／CI 工件）](../qa/README.md)，机器可读候选与本地缓存指纹见 [toolchain-candidates.json](toolchain-candidates.json)。这是观测清单，不是发行依赖锁；不能据此安装“当前最新”依赖后宣称复现。
+
+Windows 主窗口的客户区扩展使用 Qt 6.8.2 随 SDK 提供的 GuiPrivate Windows native interface，仅由 WindowsFrame 适配层引用。它不是稳定的公共 API；升级 Qt 或替换 SDK 时必须重新编译并验证客户区尺寸、原生边框、DWM、DPI 变化和最大化工作区。Linux／macOS 不链接此私有接口。

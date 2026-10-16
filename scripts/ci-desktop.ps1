@@ -158,6 +158,8 @@ if ($IsMacOS) {
     $env:QT_QPA_PLATFORM = 'cocoa'
     Invoke-Checked 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' @('--smoke-test')
 } elseif ($IsWindows) {
+    $env:QT_QPA_PLATFORM = 'windows'
+    Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
     New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
     Copy-Item 'build/desktop/apps/desktop/xdzip-browser.exe' 'build/review/windows/xdzip.exe'
     Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'build/review/windows/xdzip.exe')

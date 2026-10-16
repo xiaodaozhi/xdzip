@@ -276,7 +276,6 @@ QtObject {
     readonly property real mainEntrySeparatorHeight: 1
     readonly property real mainCaptionButtonWidth: 46
     readonly property real mainCaptionIconSize: 18
-    readonly property real mainResizeBorderWidth: 5
     readonly property real mainCaptionRestoreOffset: 3
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000

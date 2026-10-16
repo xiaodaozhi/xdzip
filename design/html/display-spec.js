@@ -22,7 +22,6 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
         "entrySeparatorHeight": 1,
         "captionButtonWidth": 46,
         "captionIconSize": 18,
-        "resizeBorderWidth": 5,
         "captionRestoreOffset": 3
     },
     "sourceWindow": [
