@@ -19,6 +19,9 @@ OperationWindow {
         spacing: 0
         ScrollView {
             id: scroll
+            objectName: "aboutScroll"
+            onHeightChanged: if (root.visible) Qt.callLater(() => root.revealFocus(scroll))
+            onContentHeightChanged: if (root.visible) Qt.callLater(() => root.revealFocus(scroll))
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true

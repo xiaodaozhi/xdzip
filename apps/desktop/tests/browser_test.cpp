@@ -96,6 +96,7 @@ class BrowserTest : public QObject {
     Q_OBJECT
   private slots:
     void versionAboutWindow() {
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(!BuildInfo::version().isEmpty());
         QVERIFY(BuildInfo::buildNumber() > 0);
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
@@ -105,6 +106,9 @@ class BrowserTest : public QObject {
             QVERIFY(!engine.rootObjects().isEmpty());
             auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
             QVERIFY(owner);
+            QSignalSpy initialFrame(owner, &QQuickWindow::frameSwapped);
+            owner->update();
+            QTRY_VERIFY(initialFrame.count() > 0);
             auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
             auto *about = owner->findChild<QQuickWindow *>("aboutWindow");
             QVERIFY(settings && about);
@@ -152,9 +156,22 @@ class BrowserTest : public QObject {
             auto *homepage = findVisual(about->contentItem(), "aboutHomepage");
             auto *footer = findVisual(about->contentItem(), "aboutFooter");
             QVERIFY(homepage && footer);
+            about->requestActivate();
+            QVERIFY(QTest::qWaitForWindowActive(about));
             homepage->forceActiveFocus(Qt::TabFocusReason);
-            QTRY_VERIFY(homepage->mapToScene(QPointF(0, homepage->height())).y() <=
-                        footer->y() + 1);
+            QTRY_VERIFY(homepage->hasActiveFocus());
+            auto *scroll = findVisual(about->contentItem(), "aboutScroll");
+            QVERIFY(scroll);
+            QTRY_VERIFY2(
+                homepage->mapToScene(QPointF(0, homepage->height())).y() <= footer->y() + 1,
+                qPrintable(
+                    QStringLiteral("active=%1 focus=%2 bottom=%3 footer=%4 view=%5 content=%6")
+                        .arg(about->isActive())
+                        .arg(homepage->hasActiveFocus())
+                        .arg(homepage->mapToScene(QPointF(0, homepage->height())).y())
+                        .arg(footer->y())
+                        .arg(scroll->height())
+                        .arg(scroll->property("contentHeight").toReal())));
             auto *copy = about->findChild<QObject *>("aboutCopy");
             QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
             const auto diagnostic =
