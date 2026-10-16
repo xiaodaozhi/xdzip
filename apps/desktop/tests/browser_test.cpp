@@ -1274,7 +1274,16 @@ class BrowserTest : public QObject {
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());
         controller->selectAll(operation != 0);
-        QTest::qWait(50); // Allow the real toolbar hit area to finish its layout.
+        window->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(window));
+        QVERIFY(QTest::qWaitFor([&] {
+            auto *button = findVisual(window->contentItem(), "archiveExtract");
+            return button && button->isVisible() && button->isEnabled() &&
+                   button->width() > 0 && button->height() > 0;
+        }));
+        QSignalSpy toolbarFrame(window, &QQuickWindow::frameSwapped);
+        window->update();
+        QTRY_VERIFY(!toolbarFrame.isEmpty());
         const auto rows = controller->entries()->rowCount();
         const auto selected = controller->selectedCount();
         auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
