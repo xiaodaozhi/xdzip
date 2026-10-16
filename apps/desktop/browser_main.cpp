@@ -1,8 +1,11 @@
 #include "AppQuitGuard.h"
+#include "AssociationProbe.h"
 #include "BrowserController.h"
 #include "BuildInfo.h"
 #include "DesktopProbe.h"
+#include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
+#include "InstalledRuntimeGuard.h"
 #include "UiFont.h"
 #include "UiText.h"
 #include <QApplication>
@@ -26,6 +29,11 @@ int main(int argc, char *argv[]) {
     if (BuildInfo::printVersionIfRequested(argc, argv))
         return 0;
     QApplication application(argc, argv);
+    InstalledRuntimeGuard installedRuntime;
+    if (!installedRuntime.acquire())
+        return 11;
+    FileOpenRouter fileOpens;
+    application.installEventFilter(&fileOpens);
     FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setApplicationVersion(BuildInfo::version());
@@ -54,6 +62,9 @@ int main(int argc, char *argv[]) {
     auto *controller = engine.rootObjects().first()->findChild<BrowserController *>();
     if (!controller)
         return 1;
+    auto *mainWindow = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    fileOpens.attach(controller, mainWindow);
+    installAssociationProbe(controller, mainWindow);
     AppQuitGuard guard;
     guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     guard.controller = controller;
@@ -61,7 +72,9 @@ int main(int argc, char *argv[]) {
     QObject::connect(controller, &BrowserController::readyToClose, &application,
                      &QApplication::quit, Qt::QueuedConnection);
     std::unique_ptr<DesktopProbe> probe;
-    const auto probeArgument = application.arguments().indexOf(QStringLiteral("--desktop-probe"));
+    const bool literalPaths = application.arguments().contains(QStringLiteral("--"));
+    const auto probeArgument =
+        literalPaths ? -1 : application.arguments().indexOf(QStringLiteral("--desktop-probe"));
     if (probeArgument >= 0) {
         if (probeArgument + 1 >= application.arguments().size() ||
             qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
@@ -73,7 +86,7 @@ int main(int argc, char *argv[]) {
             controller, qobject_cast<QQuickWindow *>(engine.rootObjects().first()), fixture,
             &application);
     }
-    if (application.arguments().contains(QStringLiteral("--smoke-test"))) {
+    if (!literalPaths && application.arguments().contains(QStringLiteral("--smoke-test"))) {
         if (application.windowIcon().isNull() || application.windowIcon().pixmap(64, 64).isNull())
             return 4;
 #ifdef Q_OS_MACOS
@@ -129,9 +142,13 @@ int main(int argc, char *argv[]) {
             application.quit();
         });
         QTimer::singleShot(10000, &application, [] { QCoreApplication::exit(2); });
-    } else if (application.arguments().size() == 2) {
-        const auto path = application.arguments().at(1);
-        QTimer::singleShot(0, controller, [controller, path] { controller->openPath(path); });
+    } else if (probeArgument < 0) {
+        const auto args = application.arguments();
+        const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
+        for (int i = start; i < args.size(); ++i) {
+            if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
+                fileOpens.enqueue(args.at(i));
+        }
     }
     const auto result = application.exec();
     // Window close completes the existing task decision and runtime join barrier first.

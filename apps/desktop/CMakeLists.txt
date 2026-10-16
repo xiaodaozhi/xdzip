@@ -72,6 +72,8 @@ if(APPLE)
     set_source_files_properties("${XDZIP_BRAND_ASSETS}/xdzip.icns" PROPERTIES
         MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(xdzip-browser PRIVATE "${XDZIP_BRAND_ASSETS}/xdzip.icns")
+    set_source_files_properties("${XDZIP_BRAND_ASSETS}/xdzip-zip.icns" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    target_sources(xdzip-browser PRIVATE "${XDZIP_BRAND_ASSETS}/xdzip-zip.icns")
 endif()
 qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0

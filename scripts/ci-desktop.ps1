@@ -7,6 +7,7 @@ function Invoke-Checked {
 }
 Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
+if ($IsWindows) { Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain') }
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
 $qtArchitecture = 'linux_gcc_64'
@@ -154,8 +155,10 @@ Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
+Invoke-Checked python @('scripts/test-installers.py')
 Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
 Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
+if ($IsWindows) { Copy-Item 'build/installer-toolchain/InnoSetup-license.txt' 'build/review/notices/' }
 Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
 if (!$IsMacOS) {
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
@@ -173,6 +176,7 @@ if ($IsMacOS) {
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
     New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
     Copy-Item 'build/desktop/apps/desktop/xdzip-browser.exe' 'build/review/windows/xdzip.exe'
+    Copy-Item 'design/assets/brand/xdzip-zip.ico' 'build/review/windows/'
     Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'build/review/windows/xdzip.exe')
     $env:QT_QPA_PLATFORM = 'windows'
     $env:QT_PLUGIN_PATH = ''
@@ -200,6 +204,25 @@ Invoke-Checked python $attributionArgs
 Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json', '--attribution', 'build/review/runtime-attribution.json')
 Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
 if ($IsLinux) { Invoke-Checked python @('scripts/package_linux.py', '--root', 'build/review/linux', '--output', 'build/review/xdzip-linux-x86_64.tar.gz', '--report', 'build/review/linux-package.json') }
+if ($IsLinux) {
+    New-Item -ItemType Directory -Force 'build/installer-tests/linux-packages' | Out-Null
+    Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/review/xdzip-ubuntu24.04-amd64.deb', '--report', 'build/review/linux-installer.json')
+    Copy-Item 'build/review/xdzip-ubuntu24.04-amd64.deb' 'build/installer-tests/linux-packages/product.deb'
+    foreach ($variant in @('1','2')) {
+        Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', "build/installer-tests/linux-packages/qa$variant.deb", '--report', "build/installer-tests/linux-packages/qa$variant.json", '--qa-variant', $variant)
+    }
+    Invoke-Checked python @('scripts/verify-linux-installer.py', '--packages', 'build/installer-tests/linux-packages', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/linux-install-lifecycle.json')
+}
+if ($IsWindows) {
+    New-Item -ItemType Directory -Force 'build/installer-tests/windows-packages' | Out-Null
+    $installerBase = @('scripts/build-windows-installer.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--iscc','build/installer-toolchain/compiler/ISCC.exe','--chinese','build/installer-toolchain/ChineseSimplified.isl')
+    Invoke-Checked python ($installerBase + @('--output','build/review/xdzip-windows-x64-setup.exe','--report','build/review/windows-installer.json'))
+    Copy-Item 'build/review/xdzip-windows-x64-setup.exe' 'build/installer-tests/windows-packages/product.exe'
+    foreach ($variant in @('1','2')) {
+        Invoke-Checked python ($installerBase + @('--output',"build/installer-tests/windows-packages/qa$variant.exe",'--report',"build/installer-tests/windows-packages/qa$variant.json",'--qa-variant',$variant))
+    }
+    Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Output','build/review/windows-install-lifecycle.json')
+}
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {

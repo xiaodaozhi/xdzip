@@ -44,4 +44,6 @@ linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quic
 
 CI 生成 xdzip-linux-x86_64.tar.gz 并记录 SHA-256 和可执行文件哈希。tar.gz 保留执行权限，避免 Actions ZIP 解压丢失入口执行位；归档路径、UID/GID 和时间规范化，不写入私人目录。下载后解压并运行目录内 `./xdzip`，不能只搬走 bin/xdzip。原始 linux/ 不重复上传。
 
-该运行目录仍是实验开发交付，未自动安装、注册关联、签名或升级系统。其他发行版与桌面、Wayland、真实输入法／读屏、干净安装升级卸载、完整组件许可归属与独立安全审查继续按 [WP-12 准入](../qa/private-test-readiness.md)登记。目录运行通过不自动完成这些门槛。
+该运行目录仍是实验开发交付，其 tar.gz 不自动安装或改默认，另提供实验 .deb 安装与打开候选，仍未签名。其他发行版与桌面、Wayland、真实输入法／读屏、干净安装升级卸载、完整组件许可归属与独立安全审查继续按 [WP-12 准入](../qa/private-test-readiness.md)登记。目录运行通过不自动完成这些门槛。
+
+Ubuntu .deb 的安装／升级／回退／卸载、运行锁与桌面 MIME 自动验证见[安装与关联](installers-associations.md)，运行容器的通过不替代真实桌面与签名准入。

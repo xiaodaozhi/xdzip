@@ -40,3 +40,5 @@ WP-11 复用三平台核心和 Qt 门槛，增加 TAR/TAR.GZ 真实创建、浏�
 WP-12 对实际工件递归核验原生导入，Windows/Linux 使用 deployed 模式，macOS 使用 sdk 模式并保留外部 SDK 限制。源码与实际文件分别生成 CycloneDX 1.6，绑定实际 CLI 身份并校验锁定官方 schema；不把文件清单称为完整运行时组件合规证明。所有平台生成八项全 pending 的人工表，具体边界见[部署核验](deployment-audit.md)。macOS 新增上传仍仅限 JSON，禁止应用包自动部署、签名或上传。
 
 Linux 增加[独立部署与运行容器](linux-deployment.md)：固定 SDK 的 QML 扫描、Qt 库递归收集和相对 RPATH，清除开发搜索路径后核验。独立 Ubuntu 24.04 镜像只安装实际 OS 运行依赖与 Xvfb，确认没有系统 Qt／编译器；只读挂载带空格路径下的运行目录，关闭网络，检查版本、X11 启动及十万条目打开／取消／退出。该测试使用软件渲染，不冒充真实 GPU 或完整桌面安装。Linux 下载使用 tar.gz 保留执行权限，原始 linux/ 目录不再重复上传。
+
+安装器 gate：Windows 固定官方 Inno Setup 编译器／中文资源哈希并验证当前用户安装、原生 ShellExecuteEx 打开、升级／回退、忙时阻止和自有项卸载；Ubuntu 在 SDK-free 容器用非 root 产品验证 dpkg／GIO 同类生命周期。QA 包只生成到 build/installer-tests/，不上传为产品；正式实验安装器及 JSON／日志随已有 Windows/Linux 工件保存。Mac 只补充文档类型与文件事件并原生编译／启动，不生成安装包。

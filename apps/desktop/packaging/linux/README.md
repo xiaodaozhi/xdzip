@@ -4,7 +4,7 @@
 
 解压整个 tar.gz 后，在本目录运行 `./xdzip`。保留 bin、lib、qml、plugins、translations 和 share 的相对布局，可将整个目录移动到带空格的路径。不要直接从其他目录复制 bin/xdzip；入口脚本会设置本目录的运行路径。Qt 共享库保持可替换，未做静态链接或阻止用户修改库。
 
-系统依赖名称见 share/deployment.json 的 system_packages，来源于构建基线的实际原生导入。它们是 OS 运行依赖，不是需要安装的 Qt／Rust 开发工具。其他发行版、较旧 glibc、Wayland、真实输入法和读屏均未据此宣称通过。目录没有安装器、不自动注册文件关联或改写系统设置。
+系统依赖名称见 share/deployment.json 的 system_packages，来源于构建基线的实际原生导入。它们是 OS 运行依赖，不是需要安装的 Qt／Rust 开发工具。其他发行版、较旧 glibc、Wayland、真实输入法和读屏均未据此宣称通过。tar.gz 本身不自动安装或改默认；同一 CI 工件另有 Ubuntu 24.04 .deb，安装后注册打开候选并保护原默认。
 
 share/notices 包含源码依赖、Qt 和字体通知；同一 CI 工件的 xdzip-source.tar 提供本项目同提交源码。外层 artifact-files.cdx.json、linux-runtime.json 和 linux-package.json 分别记录文件与已知依赖、隔离容器运行结果、下载 tar.gz 的 SHA-256。完整组件许可归属和独立安全审查仍是发行门槛。
 

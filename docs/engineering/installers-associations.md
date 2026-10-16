@@ -1,0 +1,41 @@
+# 实验安装器与文件关联
+
+本轮交付 Windows x64 当前用户安装器和 Ubuntu 24.04 amd64 X11 的 .deb。它们是未签名开发安装器，不代表 WP-12 全部准入、独立安全审查或通用 Linux 支持完成。macOS 只补齐文档声明／打开事件并原生构建，不自动部署 Qt、制作 DMG/PKG、签名、公证或上传应用。
+
+## Windows
+
+build-windows-installer.py 只接受干净构建的 deployed 审计，重新核对每个文件的 SHA-256。固定 Inno Setup 6.7.3、官方安装程序哈希、源码提交、简体中文资源与许可正文见 [工具链配置](../../scripts/installer-toolchain.json)。编译器不进入产品，许可正文随 notices 交付；向导支持简体中文与 English，遵循系统语言。
+
+安装器使用固定 AppId、PrivilegesRequired=lowest，默认安装至当前用户 LocalAppData/Programs/xdzip，不需要管理员权限。构建放入提交与二进制哈希限定的 versions/ 子目录，快捷方式和打开命令指向本次版本。Inno Setup 的[累计卸载日志](https://jrsoftware.org/ishelp/topic_appendnotes.htm)登记各次安装拥有的文件，不递归删除额外内容。设置和最近记录位于既有用户配置目录，不由安装器删除。
+
+产品整个生命周期持有 Local\xdzip.desktop.running 命名互斥量。[AppMutex](https://jrsoftware.org/ishelp/topic_setup_appmutex.htm)阻止安装／卸载，CloseApplications=no，不强制结束应用。FFI 句柄创建失败时启动失败，进程关闭时释放。任务退出仍沿用现有选择与 Rust join 屏障。
+
+关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。命令为带引号的可执行路径、-- 和带引号的 %1，不经过命令解释器。文档图标使用 xdzip-zip.ico。
+
+ZIP、TAR、TGZ 和 GZ 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。默认应用由用户在系统设置选择，安装器不绕过确认。
+
+## Ubuntu 24.04
+
+build-linux-installer.py 从同一核验目录生成 .deb，包名 xdzip，版本绑定产品渠道和提交，架构 amd64。系统依赖来自实际部署清单，补充桌面数据库和锁工具，glibc 至少 2.39。Qt／QML／插件及通知位于 /opt/xdzip/versions/；/usr/bin/xdzip 是固定目标的引号化转发入口。dpkg 负责替换和清除旧包文件，回退需保留原 .deb。
+
+桌面文件按 [MimeType 与 Exec 规范](https://specifications.freedesktop.org/desktop-entry/latest-single/)注册 ZIP、TAR、压缩 TAR，使用 %f 逐文件启动和 -- 参数边界。不执行 xdg-mime default，不修改 mimeapps.list 或全局 MIME 图标。卸载删除自有启动项、图标、运行文件并刷新缓存，保留用户设置及额外文件。
+
+安装的产品持有 /run/xdzip/usage.lock 的共享 flock，维护脚本先取非阻塞独占锁，活动进程存在就失败。脚本在根用户独占的 /run/xdzip 下设置 installing 门，产品取得锁后再次检查，避免在 dpkg 钩子间启动。符号链接或错误所有者／权限被拒绝；关闭 QFile 释放锁。tmpfiles.d 在系统启动时准备运行锁。此约束不影响 SDK 开发应用。
+
+成功及 dpkg abort 路径清理门；中断／掉电可能留下未完成事务，应执行 sudo dpkg --configure -a 并修复实际错误，不能把无法启动当作安装成功。脚本不递归清理用户目录，产物只生成至 build/ 或 CI。
+
+## macOS 与文件打开
+
+Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。默认应用由用户和 Launch Services 决定，本轮不执行开发机全局注册。
+
+FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件，等控制器空闲后复用真实打开与激活。命令行 -- 后都作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。现有产品仍为单个真实会话，多输入串行打开并显示最后一个；不宣称跨进程单实例或多会话标签已实现。
+
+## 自动验证与限制
+
+三平台 CTest 检查启动前文件事件、非本地 URL 拒绝及读取忙时排队。显式 XDZIP_ASSOCIATION_PROBE 加隔离设置仅供 CI：通过正常打开流程读取自有十万条目 ZIP，保存计数／构建身份并正常关闭，不记录来源路径或执行解压。
+
+Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交付包；ShellExecuteEx 按自有注册类打开中文、空格、& 路径，检查默认及 UserChoice 不变、忙时拒绝替换、卸载保留设置／额外文件／其他候选。Linux 在无 SDK／系统 Qt／编译器、无网络容器执行相同 dpkg 生命周期，UID 1000 的产品由 GIO 桌面启动项实际打开十万条目，核对 MIME、默认、锁、卸载和 purge。
+
+QA 变体共用本次核验二进制，只改变测试包版本／目录，验证安装机制，不作为发行工件，也不冒充真实不同产品版本的数据迁移。设置 schema 当前为 1，两平台安装元数据记录它，旧安装器拒绝覆盖声明更新 schema 的安装；未来迁移须同步契约。
+
+windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、不同产品版本的数据迁移、签名信任、GPU 与桌面专项仍需人工，INSTALL-01／ASSOC-01 不自动标记全部通过。

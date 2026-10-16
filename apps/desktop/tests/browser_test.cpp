@@ -1,6 +1,7 @@
 #include "../BuildInfo.h"
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
+#include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "NativeDialogPolicy.h"
 #include "UiFont.h"
@@ -95,6 +96,35 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void nativeFileOpenQueuesBeforeReadyAndDuringRead() {
+        QTemporaryDir temporary;
+        QVERIFY(temporary.isValid());
+        const auto path = temporary.filePath(QStringLiteral("中文 空格 ; --smoke-test.zip"));
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/normal.zip"), path));
+        FileOpenRouter router;
+        QFileOpenEvent early(QUrl::fromLocalFile(path));
+        QVERIFY(router.eventFilter(nullptr, &early));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        router.attach(controller, window);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->title(), QFileInfo(path).fileName());
+        QFileOpenEvent remote(QUrl(QStringLiteral("https://example.invalid/archive.zip")));
+        QVERIFY(router.eventFilter(nullptr, &remote));
+        QTest::qWait(20);
+        QCOMPARE(controller->title(), QFileInfo(path).fileName());
+        controller->openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+        QVERIFY(controller->busy());
+        QFileOpenEvent whileBusy(QUrl::fromLocalFile(path));
+        QVERIFY(router.eventFilter(nullptr, &whileBusy));
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->title() == QFileInfo(path).fileName());
+        window->close();
+    }
     void settingsRestartConfirmation() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));

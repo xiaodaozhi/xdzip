@@ -38,3 +38,5 @@ WP-12 第三批已接入实际工件原生导入核验、分离的源码／文�
 WP-12 第四批接入 Linux Qt／QML 运行目录、相对 RPATH、无 SDK 的独立容器验证和保留执行位的 tar.gz；仅验证明确 Ubuntu 24.04 x86_64 X11 基线，桌面与安装准入仍按[Linux 部署](../engineering/linux-deployment.md)和人工专项登记。
 
 WP-12 第五批接入 [SDK SPDX 实际归属](../engineering/runtime-attribution.md)、内嵌第三方关系、固定官方许可文本和 Rust 普通运行时候选筛选；证据随工件核验并合入 SBOM，未知项与源码／重链接交付仍阻断发行，不能据此标记 WP-12 完成。
+
+WP-12 第六批引入[实验安装器与关联](../engineering/installers-associations.md)，自动验证 Windows／Ubuntu 安装机制、系统打开、忙时保护、卸载和默认／数据保留；签名、真实桌面、重启与真实不同版本迁移仍须单独验收。

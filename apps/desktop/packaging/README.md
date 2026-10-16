@@ -4,13 +4,11 @@
 
 | 平台 | 当前接入 |
 | --- | --- |
-| Qt 窗口 | 正式浏览应用和组件预览通过 `QGuiApplication::setWindowIcon` 读取共用的应用图标；标题栏中的品牌和压缩文件图标使用各自的 24 单位共享素材 |
-| macOS | `xdzip.app/Contents/Resources/xdzip.icns` 与 `Info.plist` 的 `CFBundleIconFile` 配套，供 Finder 和 Dock 显示 |
-| Windows | 应用 ICO 编入可执行文件的资源 1，供 Explorer 和任务栏使用；版本信息与 CMake 项目版本一致 |
-| Linux | `cmake --install` 安装可执行文件、桌面启动项和 hicolor 512×512 应用图标；启动项不声明 MIME 文件关联 |
+| Qt | 共用图标与实际文件打开路由，忙时排队 |
+| macOS | 应用及文档 ICNS，Viewer/Alternate 文档声明和 QFileOpenEvent；只原生构建，不自动制作安装包或全局注册 |
+| Windows | EXE 图标、当前用户 Inno Setup 安装器、OpenWith 候选和文档图标，保留原默认 |
+| Ubuntu 24.04 | 独立 Qt 运行目录及 amd64 .deb，桌面 MIME 候选，保留原默认 |
 
-Linux 安装规则不打包 Qt 依赖，仍需匹配的 Qt 运行环境；不是可直接分发的独立安装包。macOS/Windows 依赖部署沿用开发构建脚本。
+安装、升级、运行保护、卸载与平台边界见[安装与文件关联](../../../docs/engineering/installers-associations.md)，运行目录见[Linux 部署](../../../docs/engineering/linux-deployment.md)。普通 CMake install 仍是 SDK 安装规则，不代替独立运行包。格式边界沿用项目 README，GZ 候选仅用于 TAR.GZ，不支持普通独立 GZIP。未签名安装器不作为正式发行或人工桌面验收通过。
 
-当前支持 ZIP、TAR／TAR.GZ 浏览、创建与安全解压，具体边界见项目 README。系统图标采用独立的平台留白，macOS ICNS 与 Qt Dock PNG 主体约 81.2%，通用 PNG 与 Windows ICO 约 90%，相关规则见[素材库说明](../../../design/assets/README.md)。此次不注册文件关联，不修改默认打开应用，也不向 macOS 发布文档类型声明。系统双击打开、已运行应用接收文件、安装与卸载关联均留待独立实现和验证；交付了 ZIP 图标文件不表示这些行为已经完成。标题栏和文件列表实际使用的归档图标可在 [统一素材库](../../../design/assets/index.html) 核对。
-
-Linux 的可移动 Qt／QML 运行目录、tar.gz 与隔离验证见[部署说明](../../../docs/engineering/linux-deployment.md)。其入口为目录中的 xdzip 脚本；既有 CMake install 的桌面启动项不等于此运行目录已注册系统文件关联。
+图标留白：macOS ICNS／Dock PNG 主体约 81.2%，通用 PNG／Windows ICO 约 90%，见[素材说明](../../../design/assets/README.md)。

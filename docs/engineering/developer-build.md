@@ -19,3 +19,5 @@ Windows/Linux 开发包中的 notices 保留当前平台依赖、Qt 与字体的
 build/、target/ 以及所有层级的 dist/ 都是生成目录，不提交到 Git。macOS 构建产生的 .app 仅是 build/ 内编译中间产物，不复制成开发交付包。先前的 Apple Silicon 包回执作为历史验证记录保留。
 
 工件中的 deployment-audit.json 区分已部署导入和 SDK 依赖。source-build.cdx.json 是源码宿主依赖图，artifact-files.cdx.json 是实际文件及已知原生导入清单，均标记完整性 incomplete，不代表完整运行时 SBOM 或许可签字。manual-desktop.json 全部待人工验证，不能把 CI 生成表格当作桌面验收。
+
+实验安装器：Windows 工件中的 xdzip-windows-x64-setup.exe 为当前用户安装，Ubuntu 工件中的 xdzip-ubuntu24.04-amd64.deb 由包管理器安装。二者均未签名，提供打开候选而不改默认。安装／升级／回退／忙时保护／卸载的自动验证及人工边界见[安装与关联](installers-associations.md)。
