@@ -72,6 +72,12 @@ env -u QT_QUICK_BACKEND QT_QPA_PLATFORM=cocoa QSG_RHI_BACKEND=metal \
 
 已接入[部署核验与 SBOM](../engineering/deployment-audit.md)：对实际工件逐文件哈希、递归解析原生导入，区分系统、工件内与外部 SDK；未解析依赖失败，Windows deployed 模式拒绝非系统外部依赖。源码图和实际工件分别生成 CycloneDX 1.6，使用锁定上游提交和哈希的官方 schema 检查，校验引用与实际二进制版本／提交／dirty 身份。两个 SBOM 均标记覆盖不完整，不能冒充全部运行时组件和许可已审查。
 
-macOS 仍只读取开发 .app 与 SDK，不部署／签名／压缩／上传应用。Linux 开发二进制明确保留 SDK 依赖；Windows 的导入闭合和脱离 Qt 开发搜索路径启动也不能替代干净安装。正式部署阶段需补全按名称动态加载的插件、Qt 内嵌第三方、静态 Rust 归属及许可材料。
+macOS 仍只读取开发 .app 与 SDK，不部署／签名／压缩／上传应用。第三批的 Linux 开发二进制仍保留 SDK 依赖，后续由第四批运行目录替代；Windows 的导入闭合和脱离 Qt 开发搜索路径启动也不能替代干净安装。正式部署阶段需补全按名称动态加载的插件、Qt 内嵌第三方、静态 Rust 归属及许可材料。
 
 [人工专项操作清单](private-test-manual.md)提供八项实际步骤和记录方法。CI 为本平台生成全部 pending 的记录表，不自动填写通过；缺设备、安装渠道、系统关联实现或发布身份时填写阻塞。已确认的 macOS 常规操作验收继续沿用。当前尚未注册系统文件关联，须实现或取得发布负责人明确范围决策，不能以图标文件存在代替。
+
+## 第四批，Linux 独立运行目录
+
+已接入[Linux 部署流程](../engineering/linux-deployment.md)，将固定 Qt 6.8.2 的库、QML、X11 平台与输入相关插件、标准翻译及通知收集到相对目录，重写 ELF RPATH 并生成保留执行位的 tar.gz。系统图形／字体／glibc 等仍作为明确的 OS 运行依赖，不复制宿主系统库冒充通用兼容。
+
+CI 在无 Qt SDK、无系统 Qt 和编译器的 Ubuntu 24.04 运行容器中，将应用目录只读挂载到带空格的新路径，关闭网络，执行版本、X11 软件渲染启动、十万条目打开、活动取消与退出；随后 deployed 模式核验和文件级 SBOM 必须通过。实际结果保存 linux-runtime.json、linux-deployment.json 和 linux-package.json，未执行时不标记通过。容器验证不替代完整桌面、物理 GPU、输入法／读屏、安装升级卸载、Wayland 或其他发行版验收；macOS 部署限制不变。

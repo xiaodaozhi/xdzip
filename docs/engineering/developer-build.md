@@ -4,7 +4,7 @@
 
 - macOS ARM64：自 2026-10-14 起仅进行原生编译、测试和 SDK 环境下的 Cocoa 启动验证，不自动打包或上传开发应用。Actions 仅保留日志和 JSON；本地构建方法见 [Qt 开发应用](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/README.md)。
 - Windows X64：保持 windows 目录内 DLL／插件布局，运行 windows/xdzip.exe，产品采用 GUI 子系统，启动不会创建控制台窗口。主窗口在设置右侧提供最小化、最大化／还原和关闭按钮，标题空白处可拖动、双击最大化／还原，保留原生可缩放边框和 DWM 装饰，窗口边缘由系统命中测试处理。圆角与阴影遵循系统版本及合成设置。
-- Linux X64：linux/xdzip-linux-qt6.8.2 是动态链接开发二进制，需要匹配的 Qt 6.8.2 和系统图形库，尚不是独立安装包。
+- Linux X64：解压 xdzip-linux-x86_64.tar.gz 后运行目录内 ./xdzip，Qt 6.8.2、QML 和插件随目录提供，不要求开发 SDK。当前验证基线为 Ubuntu 24.04、X11，OS 图形及字体运行库仍需具备；这不是通用发行版安装器。系统依赖见 share/deployment.json，真实桌面与安装专项仍单独验收。
 
 打开压缩包只浏览，不自动解压。支持 ZIP Store／Deflate／单卷 ZIP64 与 TAR／TAR.GZ 的浏览、创建和安全解压。ZIP 创建支持四档级别、AES-256 内容加密和编号分卷；加密／分卷 ZIP 读取仍不支持，输出可用兼容工具验证。安全条件满足时可恢复 ZIP 相对符号链接及受限可执行位；特殊对象与逃逸仍拒绝。实际内容预览尚未实现，完整支持边界以同提交 README 和格式契约为准。
 

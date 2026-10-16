@@ -18,7 +18,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk 7zip
+          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb-cursor0 fonts-noto-cjk 7zip patchelf
       - name: Build and validate native product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1
@@ -39,7 +39,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: xdzip-m4-${{ runner.os }}-${{ runner.arch }}
-          path: build/review/
+          path: |
+            build/review/
+            !build/review/linux/**
           if-no-files-found: error
           retention-days: 14
       - name: Upload macOS validation records only

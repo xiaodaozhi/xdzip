@@ -152,6 +152,7 @@ Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Invoke-Checked python @('scripts/test-deployment-audit.py')
+Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
 Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
 if (!$IsMacOS) {
@@ -177,15 +178,21 @@ if ($IsMacOS) {
     $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -ne $qtBin }) -join ';'
     Invoke-Checked 'build/review/windows/xdzip.exe' @('--smoke-test')
 } else {
-    New-Item -ItemType Directory -Force 'build/review/linux' | Out-Null
-    Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'build/review/linux/xdzip-linux-qt6.8.2'
+    Invoke-Checked python @('scripts/deploy_linux.py', '--app', $productExe, '--qt-prefix', $qtPrefix, '--notices', 'build/review/notices', '--output', 'build/review/linux')
+    Copy-Item 'build/review/linux/share/deployment.json' 'build/review/linux-deployment.json'
+    Invoke-Checked python @('scripts/verify_linux_runtime.py', '--root', 'build/review/linux', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/linux-runtime.json')
+    $env:LD_LIBRARY_PATH = ''
+    $env:QT_PLUGIN_PATH = ''
+    $env:QML_IMPORT_PATH = ''
+    $env:QML2_IMPORT_PATH = ''
 }
 $auditRoot = if ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app' } elseif ($IsWindows) { 'build/review/windows' } else { 'build/review/linux' }
-$auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/xdzip-linux-qt6.8.2' }
-$auditMode = if ($IsWindows) { 'deployed' } else { 'sdk' }
+$auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/bin/xdzip' }
+$auditMode = if ($IsMacOS) { 'sdk' } else { 'deployed' }
 Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
 Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json')
 Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
+if ($IsLinux) { Invoke-Checked python @('scripts/package_linux.py', '--root', 'build/review/linux', '--output', 'build/review/xdzip-linux-x86_64.tar.gz', '--report', 'build/review/linux-package.json') }
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {

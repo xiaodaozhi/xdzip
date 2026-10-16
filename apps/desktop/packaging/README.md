@@ -12,3 +12,5 @@
 Linux 安装规则不打包 Qt 依赖，仍需匹配的 Qt 运行环境；不是可直接分发的独立安装包。macOS/Windows 依赖部署沿用开发构建脚本。
 
 当前支持 ZIP、TAR／TAR.GZ 浏览、创建与安全解压，具体边界见项目 README。系统图标采用独立的平台留白，macOS ICNS 与 Qt Dock PNG 主体约 81.2%，通用 PNG 与 Windows ICO 约 90%，相关规则见[素材库说明](../../../design/assets/README.md)。此次不注册文件关联，不修改默认打开应用，也不向 macOS 发布文档类型声明。系统双击打开、已运行应用接收文件、安装与卸载关联均留待独立实现和验证；交付了 ZIP 图标文件不表示这些行为已经完成。标题栏和文件列表实际使用的归档图标可在 [统一素材库](../../../design/assets/index.html) 核对。
+
+Linux 的可移动 Qt／QML 运行目录、tar.gz 与隔离验证见[部署说明](../../../docs/engineering/linux-deployment.md)。其入口为目录中的 xdzip 脚本；既有 CMake install 的桌面启动项不等于此运行目录已注册系统文件关联。

@@ -34,3 +34,5 @@ WP-12 首批已接入实际帧呈现、合成中文组合输入与 Qt 无障碍�
 WP-12 第二批已接入统一版本、关于窗口、真实产品进程观测和版本化源码许可清单；本地测量不替代发行预算或桌面人工门槛，证据与剩余项见[私测准入](../qa/private-test-readiness.md)。
 
 WP-12 第三批已接入实际工件原生导入核验、分离的源码／文件级 CycloneDX SBOM、官方 schema 校验及全待验证人工表；平台部署差异、未识别组件与人工专项继续作为准入缺口，见[部署核验](../engineering/deployment-audit.md)与[人工清单](../qa/private-test-manual.md)。
+
+WP-12 第四批接入 Linux Qt／QML 运行目录、相对 RPATH、无 SDK 的独立容器验证和保留执行位的 tar.gz；仅验证明确 Ubuntu 24.04 x86_64 X11 基线，桌面与安装准入仍按[Linux 部署](../engineering/linux-deployment.md)和人工专项登记。

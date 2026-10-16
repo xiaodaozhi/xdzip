@@ -20,7 +20,7 @@ WP-12 使用两类清单，均为开发审阅材料，完整性明确标记 `inc
 - 未解析导入、源码与实际二进制版本／提交／dirty 不符、官方 schema 哈希或格式不符、重复／悬空组件引用均阻断相关检查。
 - 原生导入闭合不能替代按名称加载插件的覆盖和干净机器检查。Windows 已部署目录的导入通过也不等于安装器验收。
 
-三平台 CI 保存根目录下的两个 cdx.json、deployment-audit.json 和待填写人工表。macOS 只读取本地编译 .app 与 SDK，仍不运行 macdeployqt、签名、压缩或上传应用包。Linux 开发二进制位于 `linux/xdzip-linux-qt6.8.2`，仍依赖匹配 Qt SDK，不称为独立发行包。
+三平台 CI 保存根目录下的两个 cdx.json、deployment-audit.json 和待填写人工表。macOS 只读取本地编译 .app 与 SDK，仍不运行 macdeployqt、签名、压缩或上传应用包。Linux 通过[独立运行目录](linux-deployment.md)提供 Qt／QML／插件，使用 deployed 核验及无 SDK 容器验证；下载 tar.gz 保留执行位。当前只声明 Ubuntu 24.04、x86_64、X11 基线，不称为通用 Linux 安装器。
 
 本地 macOS 示例，先从一致源码重新构建，然后运行：
 
