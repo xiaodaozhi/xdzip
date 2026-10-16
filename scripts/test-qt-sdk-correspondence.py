@@ -89,6 +89,11 @@ class CorrespondenceTests(unittest.TestCase):
                 for content, expected in [('original\n', 'upstream-unmodified'), ('modified\n', 'known-local-patch')]:
                     target.write_bytes(content.encode('utf-8'))
                     self.assertEqual(audit.patch_status(sdk, item, archive)['state'], expected)
+                target.write_bytes(b'original\r\n')
+                result = audit.patch_status(sdk, item, archive)
+                self.assertEqual(result['state'], 'upstream-unmodified')
+                self.assertEqual(result['line_endings'], 'CRLF-normalized-for-comparison')
+                self.assertNotEqual(result['sdk_sha256'], result['lf_sha256'])
                 target.write_text('unknown\n')
                 with self.assertRaisesRegex(ValueError, 'Unrecognized'):
                     audit.patch_status(sdk, item, archive)

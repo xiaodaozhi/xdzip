@@ -142,15 +142,19 @@ def patch_status(prefix, item, archive_path):
     path = prefix/relative
     if not within(path.resolve(), prefix) or not path.is_file():
         raise ValueError('SDK patch target missing or outside SDK')
-    actual = digest(path)
-    if actual == item['before_sha256']:
+    raw = path.read_bytes()
+    actual = hashlib.sha256(raw).hexdigest()
+    normalized = hashlib.sha256(raw.replace(b'\r\n', b'\n')).hexdigest()
+    if normalized == item['before_sha256']:
         state = 'upstream-unmodified'
-    elif actual == item['after_sha256']:
+    elif normalized == item['after_sha256']:
         state = 'known-local-patch'
     else:
-        raise ValueError('Unrecognized SDK consumer helper modification')
+        raise ValueError('Unrecognized SDK consumer helper modification, SHA256='+actual+', LF-SHA256='+normalized)
     return {'id': item['id'], 'sdk_path': relative, 'state': state, 'sdk_sha256': actual,
-            'patch_sha256': item['patch_sha256'], 'scope': item['scope']}
+            'patch_sha256': item['patch_sha256'], 'scope': item['scope'],
+            'line_endings': 'LF' if actual == normalized else 'CRLF-normalized-for-comparison',
+            'lf_sha256': normalized}
 
 
 def sanitize(text):
