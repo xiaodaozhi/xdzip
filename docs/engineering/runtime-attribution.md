@@ -43,3 +43,5 @@ runtime-attribution.json 包含文件、组件、关系、上游声明、版权�
 ## 尚未解决的发行门槛
 
 已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor 和四份固定 Qt 模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约仍需完成。[本地 Mac 核验](macos-deployment.md)只证明元数据修改的兼容 QtCore 可替换，不冒充从源码重建 Qt。源清单与 SPDX 字段不能替代这些义务。真实安装、签名身份和独立安全审查按 [WP-12 准入](../qa/private-test-readiness.md)单独登记。
+
+[Qt SDK 对应核验](qt-sdk-correspondence.md)进一步记录固定归档提交、SDK 源码声明逐文件哈希、安装配置与已知 AGL 消费端补丁。声明覆盖范围内匹配不等于完整 SDK 构建等价，原有发行阻断保持不变。

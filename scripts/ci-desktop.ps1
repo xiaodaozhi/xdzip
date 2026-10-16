@@ -19,6 +19,7 @@ Invoke-Checked python @('scripts/check-ui-i18n.py')
 Assert-CleanSources
 Invoke-Checked python @('scripts/test-installers.py')
 Invoke-Checked python @('scripts/test-source-delivery.py')
+Invoke-Checked python @('scripts/test-qt-sdk-correspondence.py')
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
@@ -53,6 +54,9 @@ Push-Location 'build/qt-install-tool'
 try { Invoke-Checked $aqtPython @('-m', 'aqt', 'install-qt', $qtHost, 'desktop', '6.8.2', $qtArchitecture, '-O', $qtRoot) }
 finally { Pop-Location }
 $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
+New-Item -ItemType Directory -Force 'build/review' | Out-Null
+# Source bytes and installed configuration are evidence, not a Qt rebuild claim.
+Invoke-Checked python @('scripts/qt_sdk_correspondence.py', '--qt-prefix', $qtPrefix, '--fetch', '--output', 'build/review/qt-sdk-correspondence.json')
 $qtBin = Join-Path $qtPrefix 'bin'
 $env:PATH = "$qtBin$([IO.Path]::PathSeparator)$env:PATH"
 if ($IsLinux) { $env:LD_LIBRARY_PATH = Join-Path $qtPrefix 'lib' }

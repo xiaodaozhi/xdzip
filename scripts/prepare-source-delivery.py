@@ -34,6 +34,10 @@ def archive_source(item, cache):
         if not names or any(not (name == prefix or name.startswith(prefix+'/')) or
                             '..' in Path(name).parts for name in names):
             raise ValueError('Unexpected source archive layout')
+        if 'source_commit' in item:
+            tag = archive.getmember(prefix+'/.tag')
+            if not tag.isfile() or archive.extractfile(tag).read().decode('ascii').strip() != item['source_commit']:
+                raise ValueError('Pinned source commit marker mismatch')
     return target
 
 
@@ -41,6 +45,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--cache', type=Path, default=ROOT/'build/source-cache')
+    parser.add_argument('--qt-prefix', type=Path, help='Also collect installed SDK correspondence evidence')
     args = parser.parse_args()
     output = args.output.resolve()
     if not within(output, ROOT/'build') or output.exists():
@@ -57,6 +62,18 @@ def main():
     for source, item in zip(sources, config['archives']):
         shutil.copy2(source, output/source.name)
         materials.append(dict(item))
+    shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
+    patch_dir = output/'qt-patches'
+    patch_dir.mkdir()
+    for item in config.get('sdk_patches', []):
+        patch = ROOT/item['patch']
+        if digest(patch) != item['patch_sha256']:
+            raise ValueError('Pinned SDK patch checksum mismatch')
+        shutil.copy2(patch, patch_dir/patch.name)
+    if args.qt_prefix:
+        from qt_sdk_correspondence import collect
+        evidence = collect(args.qt_prefix.resolve(), args.cache.resolve())
+        (output/'qt-sdk-correspondence.json').write_text(json.dumps(evidence, indent=2)+'\n')
     project = output/'xdzip-source.tar'
     subprocess.run(['git', 'archive', '--format=tar', '--output', str(project), commit], cwd=ROOT, check=True)
     # --locked binds checksummed registry sources to Cargo.lock, including build
@@ -78,7 +95,7 @@ def main():
    复制为该目录 .cargo/config.toml。保持 Cargo.lock，不执行 cargo update。
 2. 按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
-   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
+   qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
 3. 从源码工作目录运行 cargo test --workspace --locked --offline。
 4. 将 QT_PREFIX 指向重建的兼容 Qt SDK，运行：
    cmake -S . -B build/relink -G Ninja -DCMAKE_BUILD_TYPE=Release \\
@@ -94,8 +111,8 @@ def main():
 平台对应源码与配置核对、修改版 Qt 的行为验证仍在 WP-12 准入中单独登记。
 '''
     (output/'REBUILD.md').write_text(instructions, encoding='utf-8')
-    files = [{'file': p.name, 'sha256': digest(p), 'bytes': p.stat().st_size}
-             for p in sorted(output.iterdir()) if p.is_file()]
+    files = [{'file': p.relative_to(output).as_posix(), 'sha256': digest(p), 'bytes': p.stat().st_size}
+             for p in sorted(output.rglob('*')) if p.is_file()]
     report = {'schema_version': 1, 'revision': commit, 'qt_version': config['qt_version'],
               'source_delivery': 'collected-not-compliance-verified', 'materials': materials, 'files': files,
               'limits': ['Pinned Qt module archives and locked Cargo vendor inputs, not a proof of SDK build equivalence.',

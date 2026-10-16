@@ -15,6 +15,7 @@ materials=license_materials(args.output,args.license_cache)
 config=json.loads((ROOT/'scripts/qt-license-sources.json').read_text())
 report={'scope':'Reference declarations for installed Qt SDK, including unused modules and build tools; runtime selection is a separate report.',
         'qt_version':'6.8.2','source_commits':config['source_commits'],
+        'source_commit_scope':config['source_commit_scope'],
         'corresponding_source_url':'https://download.qt.io/archive/qt/6.8/6.8.2/single/qt-everywhere-src-6.8.2.tar.xz',
         'source_delivery':'URL only; corresponding-source archive delivery and relinking obligations require release review.',
         'upstream_documents':documents,'packages':list(packages.values()),'extracted_license_texts':extracted,
