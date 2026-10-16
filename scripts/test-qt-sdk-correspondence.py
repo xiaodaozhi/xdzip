@@ -75,7 +75,7 @@ class CorrespondenceTests(unittest.TestCase):
             folder = root/'scripts/qt-patches'
             folder.mkdir(parents=True)
             p = folder/'owned.patch'
-            p.write_text('--- a/cmake/helper.cmake\n+++ b/cmake/helper.cmake\n@@ -1 +1 @@\n-original\n+modified\n')
+            p.write_text('--- a/cmake/helper.cmake\n+++ b/cmake/helper.cmake\n@@ -1 +1 @@\n-original\n+modified\n', newline='\n')
             item = {'patch': 'scripts/qt-patches/owned.patch', 'patch_sha256': audit.digest(p),
                     'source_path': 'cmake/helper.cmake', 'sdk_path': 'lib/helper.cmake',
                     'id': 'owned', 'scope': 'fixture',
@@ -85,7 +85,7 @@ class CorrespondenceTests(unittest.TestCase):
             target = sdk/'lib/helper.cmake'
             with patch.object(audit, 'ROOT', root):
                 for content, expected in [('original\n', 'upstream-unmodified'), ('modified\n', 'known-local-patch')]:
-                    target.write_text(content)
+                    target.write_bytes(content.encode('utf-8'))
                     self.assertEqual(audit.patch_status(sdk, item, archive)['state'], expected)
                 target.write_text('unknown\n')
                 with self.assertRaisesRegex(ValueError, 'Unrecognized'):
