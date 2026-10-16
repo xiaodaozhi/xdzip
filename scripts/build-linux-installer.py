@@ -29,23 +29,23 @@ def package_tree(payload,audit,stage,qa=None):
     launcher=bindir/'xdzip'
     launcher.write_text('#!/bin/sh\nexec "/opt/xdzip/versions/'+runtime_id+'/xdzip" "$@"\n');launcher.chmod(0o755)
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
-    desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text().replace('Exec=xdzip-browser','Exec=/usr/bin/xdzip')
-    (share/'applications/xdzip.desktop').write_text(desktop)
+    desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8').replace('Exec=xdzip-browser','Exec=/usr/bin/xdzip')
+    (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',icons/'xdzip.png')
     tmpfiles=stage/'usr/lib/tmpfiles.d';tmpfiles.mkdir(parents=True)
     (tmpfiles/'xdzip.conf').write_text('d /run/xdzip 0755 root root -\nf /run/xdzip/usage.lock 0644 root root -\n')
     control=stage/'DEBIAN';control.mkdir()
-    manifest=json.loads((payload/'share/deployment.json').read_text())
+    manifest=json.loads((payload/'share/deployment.json').read_text(encoding='utf-8'))
     packages={p.removesuffix(':amd64') for p in manifest['system_packages']}
     if any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',p) for p in packages):raise ValueError('Invalid runtime dependency')
     packages.update(['desktop-file-utils','shared-mime-info','util-linux'])
     depends=', '.join('libc6 (>= 2.39)' if p=='libc6' else p for p in sorted(packages))
     (control/'control').write_text(f'Package: xdzip\nVersion: {version}\nArchitecture: amd64\nMaintainer: xdzip contributors <noreply@xdzip.invalid>\nSection: utils\nPriority: optional\nX-Xdzip-Settings-Schema: 1\nDepends: {depends}\nDescription: Experimental ZIP and TAR archive manager\n Ubuntu 24.04 x86_64 X11 developer installer, unsigned; release review pending.\n')
-    hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text()
+    hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text(encoding='utf-8')
     for name in ['preinst','prerm','postinst','postrm']:
         path=control/name
-        path.write_text(hook.replace('hook=$1\nshift',f'hook={name}'))
+        path.write_text(hook.replace('hook=$1\nshift',f'hook={name}'),encoding='utf-8')
         path.chmod(0o755)
     doc=share/'doc/xdzip';doc.mkdir(parents=True)
     shutil.copy2(ROOT/'LICENSE',doc/'copyright')
@@ -59,7 +59,7 @@ def main():
     parser.add_argument('--qa-variant',choices=['1','2'])
     args=parser.parse_args();stage=ROOT/'build/installer-staging'/args.output.stem
     if not within(args.output,ROOT/'build'):parser.error('Generated installer belongs under build/')
-    result=package_tree(args.root,json.loads(args.audit.read_text()),stage,args.qa_variant)
+    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant)
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(args.output)],check=True)
     result.update(file=args.output.name,sha256=digest(args.output),baseline='Ubuntu 24.04 amd64 X11',signed=False)
     args.report.write_text(json.dumps(result,indent=2)+'\n')

@@ -16,6 +16,7 @@ function Assert-CleanSources {
 Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 Assert-CleanSources
+Invoke-Checked python @('scripts/test-installers.py')
 if ($IsWindows) { Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain') }
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
@@ -42,7 +43,10 @@ $qtEnvironment = Join-Path $env:RUNNER_TEMP 'xdzip-aqt'
 Invoke-Checked python @('-m', 'venv', $qtEnvironment)
 $aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
 Invoke-Checked $aqtPython @('-m', 'pip', 'install', 'aqtinstall==3.3.0', 'jsonschema==4.23.0')
-Invoke-Checked $aqtPython @('-m', 'aqt', 'install-qt', $qtHost, 'desktop', '6.8.2', $qtArchitecture, '-O', $qtRoot)
+New-Item -ItemType Directory -Force 'build/qt-install-tool' | Out-Null
+Push-Location 'build/qt-install-tool'
+try { Invoke-Checked $aqtPython @('-m', 'aqt', 'install-qt', $qtHost, 'desktop', '6.8.2', $qtArchitecture, '-O', $qtRoot) }
+finally { Pop-Location }
 $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
 $qtBin = Join-Path $qtPrefix 'bin'
 $env:PATH = "$qtBin$([IO.Path]::PathSeparator)$env:PATH"
@@ -166,7 +170,6 @@ Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
-Invoke-Checked python @('scripts/test-installers.py')
 Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
 Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
 if ($IsWindows) { Copy-Item 'build/installer-toolchain/InnoSetup-license.txt' 'build/review/notices/' }

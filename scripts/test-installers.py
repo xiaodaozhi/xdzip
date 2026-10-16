@@ -27,12 +27,12 @@ class InstallerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp);root,audit=self.payload(base,'linux');stage=base/'stage';r=linux.package_tree(root,audit,stage)
             self.assertIn('~dev.1+git',r['version'])
-            self.assertIn('libc6 (>= 2.39)',(stage/'DEBIAN/control').read_text())
-            self.assertIn('-- %f',(stage/'usr/share/applications/xdzip.desktop').read_text())
-            self.assertTrue((stage/'usr/bin/xdzip').read_text().startswith('#!/bin/sh\nexec "/opt/xdzip/versions/'))
-            self.assertIn('installing',(stage/'DEBIAN/preinst').read_text())
-            self.assertNotIn('xdg-mime default',(stage/'DEBIAN/postinst').read_text())
-            self.assertNotIn('rm -rf',(stage/'DEBIAN/postrm').read_text())
+            self.assertIn('libc6 (>= 2.39)',(stage/'DEBIAN/control').read_text(encoding='utf-8'))
+            self.assertIn('-- %f',(stage/'usr/share/applications/xdzip.desktop').read_text(encoding='utf-8'))
+            self.assertTrue((stage/'usr/bin/xdzip').read_text(encoding='utf-8').startswith('#!/bin/sh\nexec "/opt/xdzip/versions/'))
+            self.assertIn('installing',(stage/'DEBIAN/preinst').read_text(encoding='utf-8'))
+            self.assertNotIn('xdg-mime default',(stage/'DEBIAN/postinst').read_text(encoding='utf-8'))
+            self.assertNotIn('rm -rf',(stage/'DEBIAN/postrm').read_text(encoding='utf-8'))
 
     def test_changed_audit_and_sdk_only_build_are_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -68,7 +68,7 @@ class InstallerTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'unrecorded'):windows.render(root,audit,base/'bad.exe',base/'Chinese.isl')
 
     def test_macos_alternate_documents_preserve_system_localizations(self):
-        text=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').read_text()
+        text=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').read_text(encoding='utf-8')
         self.assertIn('<string>Alternate</string>',text);self.assertIn('xdzip-zip.icns',text)
         self.assertIn('<string>public.zip-archive</string>',text);self.assertIn('<string>org.gnu.gnu-zip-tar-archive</string>',text)
         self.assertIn('<string>zh-Hans</string>',text)
