@@ -79,6 +79,7 @@ inline bool save(QQuickWindow *window, const QString &directory, const QString &
                      {"imageHeight", shot.height()},
                      {"qt", qVersion()},
                      {"platform", QGuiApplication::platformName()},
+                     {"windowsCaption", window->property("windowsTitlebar").toBool()},
                      {"os", QSysInfo::prettyProductName()},
                      {"architecture", QSysInfo::currentCpuArchitecture()},
                      {"requestedQuickBackend", qEnvironmentVariable("QT_QUICK_BACKEND")},

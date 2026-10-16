@@ -3,8 +3,9 @@
 *.json text eol=lf
 *.html text eol=lf
 *.py text eol=lf
+*.svg text eol=lf
 *.png binary
 *.zip binary
 *.woff2 binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
-design/assets/fonts/OFL.txt -whitespace
+design/assets/fonts/OFL.txt -text -whitespace

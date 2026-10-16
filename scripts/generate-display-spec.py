@@ -32,6 +32,7 @@ def main():
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
     spec = dict(version=2, logicalWindowWidth=main_ratio[0],
+                windowsCaption=layout['main']['interaction'],
                 sourceWindow=reference['source_window'],
                 sourceToLogical=main_ratio[0] / main_ratio[1],
                 operationSourceToLogical=operation_ratio[0] / operation_ratio[1],

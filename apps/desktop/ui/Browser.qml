@@ -12,6 +12,16 @@ ApplicationWindow {
     height: Theme.mainWindowHeight
     minimumWidth: Theme.mainMinimumWidth
     minimumHeight: Theme.mainMinimumHeight
+    WindowResizeEdges {
+        window: root
+        visible: root.windowsTitlebar && root.visibility === Window.Windowed
+    }
+    readonly property bool windowsTitlebar: Qt.platform.os === "windows"
+    flags: windowsTitlebar ? Qt.Window | Qt.FramelessWindowHint | Qt.WindowSystemMenuHint | Qt.WindowMinMaxButtonsHint | Qt.WindowCloseButtonHint : Qt.Window
+    function toggleMaximized() {
+        if (visibility === Window.Maximized) showNormal();
+        else showMaximized();
+    }
     readonly property color accentTextColor: Theme.accentText
     property bool uiReady: false
     Component.onCompleted: {
@@ -503,12 +513,17 @@ ApplicationWindow {
             Layout.fillWidth: true
             archiveTitle: reader.title
             integratedTitlebar: root.integratedTitlebar
+            windowsControls: root.windowsTitlebar
+            maximized: root.visibility === Window.Maximized
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canClose: reader.ready && !reader.browsingBusy
             onOpenRequested: reader.chooseArchive(root)
             onCloseRequested: reader.closeArchive()
             onSettingsRequested: settingsWindow.configure()
             onDragRequested: root.startSystemMove()
+            onMinimizeRequested: root.showMinimized()
+            onMaximizeRequested: root.toggleMaximized()
+            onWindowCloseRequested: root.close()
         }
         ArchiveToolbar {
             id: toolbar

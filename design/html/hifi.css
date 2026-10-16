@@ -206,6 +206,27 @@ body:not([data-platform="macos"]) .desktop-caption-controls {
     font-size:20px;
     color:var(--secondary);
 }
+body[data-platform="windows"] .titlebar {
+    padding-right:0;
+    grid-template-columns:68px 128px auto 1fr 40px calc(3 * var(--captionButtonWidth) * var(--ui-source-factor) * 1px);
+    column-gap:16px;
+}
+body[data-platform="windows"] .desktop-caption-controls {
+    height:100%;
+    gap:0;
+    color:var(--text);
+}
+body[data-platform="windows"] .desktop-caption-controls>span {
+    width:calc(var(--captionButtonWidth) * var(--ui-source-factor) * 1px);
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+body[data-platform="windows"] .desktop-caption-controls svg {
+    width:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
+    height:calc(var(--captionIconSize) * var(--ui-source-factor) * 1px);
+}
 .icon-button {
     width:40px;
     height:40px;

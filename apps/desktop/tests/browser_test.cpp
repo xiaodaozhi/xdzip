@@ -91,6 +91,59 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void windowsCaptionControlsAndWindowState() {
+#ifdef Q_OS_WIN
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        QVERIFY(window->flags().testFlag(Qt::FramelessWindowHint));
+        QTRY_VERIFY(window->isVisible());
+        auto *bar = findVisual(window->contentItem(), "archiveTitlebar");
+        auto *settings = findVisual(window->contentItem(), "archiveSettings");
+        auto *minimize = findVisual(window->contentItem(), "windowMinimize");
+        auto *maximize = findVisual(window->contentItem(), "windowMaximize");
+        auto *close = findVisual(window->contentItem(), "windowClose");
+        QVERIFY(bar && settings && minimize && maximize && close);
+        QCOMPARE(bar->height(), 48.0);
+        QCOMPARE(minimize->width(), 46.0);
+        QVERIFY(settings->mapToScene(QPointF(settings->width(), 0)).x() <
+                minimize->mapToScene(QPointF()).x());
+        QCOMPARE(close->mapToScene(QPointF(close->width(), 0)).x(), qreal(window->width()));
+        const auto audit = qEnvironmentVariable("XDZIP_WINDOWS_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(window, audit, "windows-caption"));
+        }
+        const auto click = [window](QQuickItem *item) {
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        };
+        click(maximize);
+        QTRY_COMPARE(window->visibility(), QWindow::Maximized);
+        QCOMPARE(maximize->property("captionAction").toString(), QStringLiteral("restore"));
+        click(maximize);
+        QTRY_COMPARE(window->visibility(), QWindow::Windowed);
+        QTRY_COMPARE(close->mapToScene(QPointF(close->width(), 0)).x(), qreal(window->width()));
+        QTest::mouseDClick(window, Qt::LeftButton, Qt::NoModifier, QPoint(window->width() / 2, 24));
+        QTRY_COMPARE(window->visibility(), QWindow::Maximized);
+        QVERIFY(QMetaObject::invokeMethod(window, "toggleMaximized"));
+        QTRY_COMPARE(window->visibility(), QWindow::Windowed);
+        QTRY_COMPARE(close->mapToScene(QPointF(close->width(), 0)).x(), qreal(window->width()));
+        click(minimize);
+        QTRY_COMPARE(window->visibility(), QWindow::Minimized);
+        window->showNormal();
+        QTRY_COMPARE(window->visibility(), QWindow::Windowed);
+        QTRY_COMPARE(close->mapToScene(QPointF(close->width(), 0)).x(), qreal(window->width()));
+        // Closing the new button still passes through the runtime shutdown barrier.
+        click(close);
+        QTRY_VERIFY(!window->isVisible());
+#else
+        QSKIP("Windows custom caption regression");
+#endif
+    }
     void initTestCase() {
         FocusDismissPolicy::install(QCoreApplication::instance());
         QQuickStyle::setStyle("Basic");

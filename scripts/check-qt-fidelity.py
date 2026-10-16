@@ -147,7 +147,14 @@ def audit(directory):
         tab_x = geometry['tabFirstMacX' if scene == 'main-integrated-layout' else 'tabFirstOtherX']
         record('tab.left', tab['x'], tab_x, .05)
         settings = named('archiveSettings')
-        record('settings.right', data['width'] - settings['x'] - settings['width'], geometry['settingsRightInset'], .05)
+        caption_width = 3 * layout['main']['interaction']['captionButtonWidth'] if data.get('windowsCaption') else 0
+        record('settings.right', data['width'] - settings['x'] - settings['width'], geometry['settingsRightInset'] + caption_width, .05)
+        if caption_width:
+            for name in ['windowMinimize', 'windowMaximize', 'windowClose']:
+                button = named(name)
+                record(name + '.width', button['width'], layout['main']['interaction']['captionButtonWidth'], .05)
+                record(name + '.center', center(button), center(tab), .5)
+            record('caption.right', named('windowClose')['x'] + named('windowClose')['width'], data['width'], .05)
 
     # Check the composed proportions, not just unrelated main/menu token values.
     for scene in ['main-dropdown', 'main-context']:

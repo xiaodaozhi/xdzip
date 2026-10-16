@@ -41,12 +41,10 @@ mod windows {
     use super::*;
     use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
     use std::ptr::{addr_of, null_mut};
-    use windows_sys::Win32::Foundation::LocalFree;
+    use windows_sys::Win32::Foundation::{GENERIC_EXECUTE, GENERIC_READ, LocalFree};
     use windows_sys::Win32::Security::Authorization::{GetSecurityInfo, SE_FILE_OBJECT};
     use windows_sys::Win32::Security::*;
-    use windows_sys::Win32::Storage::FileSystem::{
-        FILE_READ_ATTRIBUTES, READ_CONTROL, SYNCHRONIZE,
-    };
+    use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_EXECUTE, FILE_GENERIC_READ};
     use windows_sys::Win32::System::SystemServices::{
         ACCESS_ALLOWED_ACE_TYPE, ACCESS_DENIED_ACE_TYPE,
     };
@@ -177,17 +175,18 @@ mod windows {
             if unsafe { GetLengthSid(sid) } > u32::from(header.AceSize) - 8 {
                 return Err(OutputError::UnsafeTarget);
             }
-            // Both effective and inherit-only grants matter. Qt's private
-            // directories retain metadata-only access for Everyone: these rights
-            // cannot enumerate names, read bytes, create/delete or change a DACL.
-            // Content access and any write/unknown bit remain fail-closed, including
-            // generic rights (do not expand them to a permissive interpretation).
+            // Both effective and inherit-only grants matter. Read/execute access
+            // cannot mutate the authorized tree. Existing read-only sharing is
+            // preserved, including on newly inherited output; it is not a promise
+            // of confidentiality. Generic read/execute have the same bounded
+            // mapping for file objects; write, delete, ACL and unknown bits fail.
             let trusted = unsafe { EqualSid(sid, user_sid) != 0 }
                 || allowed
                     .iter()
                     .any(|known| unsafe { EqualSid(sid, known.as_ptr().cast_mut().cast()) != 0 });
-            let metadata_only = FILE_READ_ATTRIBUTES | READ_CONTROL | SYNCHRONIZE;
-            if !trusted && unsafe { (*entry).Mask } & !metadata_only != 0 {
+            let read_only =
+                FILE_GENERIC_READ | FILE_GENERIC_EXECUTE | GENERIC_READ | GENERIC_EXECUTE;
+            if !trusted && unsafe { (*entry).Mask } & !read_only != 0 {
                 return Err(OutputError::UnsafeTarget);
             }
         }

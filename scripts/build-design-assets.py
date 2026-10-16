@@ -97,7 +97,7 @@ def crop_entries(check: bool = False) -> list[dict]:
                 raise ValueError(f'Missing source crop: {target.relative_to(ROOT)}')
             pixels.save(target)
         entries.append({
-            'id': f'{folder}/{name}', 'file': str(target.relative_to(ROOT)),
+            'id': f'{folder}/{name}', 'file': target.relative_to(ROOT).as_posix(),
             'kind': 'original-pixel-crop', 'source': f'../hifi/screens/{source}.png',
             'source_sha256': digest(source_path), 'rect': rect, 'size': [width, height],
             'usage': 'demo-image-only' if folder == 'demo' else 'visual-reference-only',
@@ -140,9 +140,9 @@ def svg_entries(check: bool = False) -> list[dict]:
                 if not target.is_file() or target.read_text() != svg:
                     raise ValueError(f'Stale SVG definition: {target.relative_to(ROOT)}')
             else:
-                target.write_text(svg)
+                target.write_text(svg, encoding='utf-8', newline='\n')
             entry = {
-                'id': f'{theme}/{name}', 'file': str(target.relative_to(ROOT)),
+                'id': f'{theme}/{name}', 'file': target.relative_to(ROOT).as_posix(),
                 'kind': 'vector-reconstruction', 'logical_size': CANVAS, 'canvas': CANVAS,
                 'theme': theme, 'category': category(name), 'usage': 'runtime-and-design',
                 'runtime_usage': {'html': 'registered in the shared design library',

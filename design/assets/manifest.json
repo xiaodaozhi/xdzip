@@ -4045,7 +4045,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/maximize.png"
+        ]
       },
       "sha256": "1dff402f7ec9f7f205e3e8e1b7a3b318cd9b3c7b5d54d58afc18be7fc7bf8c07",
       "visible_bounds": [
@@ -4073,7 +4075,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/light/minimize.png"
+        ]
       },
       "sha256": "66a3a8fa9a4eb48d70a86ab467f8bc0d271c328657bb065a2297e5f600336d45",
       "visible_bounds": [
@@ -6420,7 +6424,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/maximize.png"
+        ]
       },
       "sha256": "900e8935657bffa474432aa87fa430d0546481878ef30c85c846b6384151208c",
       "visible_bounds": [
@@ -6448,7 +6454,9 @@
       "usage": "runtime-and-design",
       "runtime_usage": {
         "html": "registered in the shared design library",
-        "qt_aliases": []
+        "qt_aliases": [
+          "assets/dark/minimize.png"
+        ]
       },
       "sha256": "bf1630251aa3b4adcb73ca48ec6181e645e2a57868e2bae2576d00a20aa7b5ef",
       "visible_bounds": [

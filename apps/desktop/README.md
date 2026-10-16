@@ -25,7 +25,7 @@ Windows 可执行文件带 `.exe`。macOS 的实际浏览应用生成 `build/ui/
 
 ## 实现边界
 
-- `OperationWindow` 是带 transient owner 的真实顶层非模态 Window，保留系统装饰。macOS 不绘制交通灯；Windows/Linux 暂用原生标题栏。当前只实例化任务窗，其余操作窗口的模态/关闭策略尚未实现。
+- `OperationWindow` 是带 transient owner 的真实顶层非模态 Window，保留系统装饰。macOS 不绘制交通灯；Windows 主窗口使用内建窗口按钮与系统移动／缩放，操作窗口和 Linux 继续使用原生标题栏。当前只实例化任务窗，其余操作窗口的模态/关闭策略尚未实现。
 - 两行提示使用同一个 `InfoRow`：相同外侧 24 逻辑像素、20 像素图标列、12 像素图文间距；正文与底栏都在窗口坐标下校验。
 - 文字大小提供 100%、125%、150%，历史 200% 配置读取为 150%；正文使用可滚动布局，footer 按钮保持横向。200% 保留为布局压力验证，不再作为设置选项。
 - `Theme.qml` 由视觉 token 生成；运行 `python3 scripts/generate-qml-theme.py` 更新，`--check` 校验同步。主题选择目前只作用于预览，不持久化。

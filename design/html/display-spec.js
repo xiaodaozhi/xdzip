@@ -3,6 +3,28 @@
 window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "version": 2,
     "logicalWindowWidth": 1024,
+    "windowsCaption": {
+        "iconButtonSize": 28,
+        "toolbarContentGap": 6,
+        "breadcrumbHeight": 28,
+        "popupGap": 4,
+        "treeTrailingInset": 16,
+        "gridInset": 16,
+        "gridCheckboxInset": 8,
+        "gridCellWidth": 144,
+        "gridCellHeight": 124,
+        "gridGap": 12,
+        "gridIconSize": 40,
+        "formatBadgeMinimumWidth": 32,
+        "formatBadgeInset": 6,
+        "entryBandTopInset": 1,
+        "entryBandBottomInset": 2,
+        "entrySeparatorHeight": 1,
+        "captionButtonWidth": 46,
+        "captionIconSize": 18,
+        "resizeBorderWidth": 5,
+        "captionRestoreOffset": 3
+    },
     "sourceWindow": [
         20,
         30,

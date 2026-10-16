@@ -241,8 +241,8 @@ def main() -> None:
         vector_files = {f'svg/{theme}/{name}.svg' for name in names}
         raster_files = {f'png/{theme}/{name}@{scale}x.png' for name in names for scale in (1, 2, 3)}
         raster_files |= {f'png/{theme}/{name}@9x.png' for name in HIGH_RES_ICONS}
-        assert {str(path.relative_to(ROOT)) for path in (ROOT / 'svg' / theme).glob('*.svg')} == vector_files
-        assert {str(path.relative_to(ROOT)) for path in (ROOT / 'png' / theme).glob('*.png')} == raster_files
+        assert {path.relative_to(ROOT).as_posix() for path in (ROOT / 'svg' / theme).glob('*.svg')} == vector_files
+        assert {path.relative_to(ROOT).as_posix() for path in (ROOT / 'png' / theme).glob('*.png')} == raster_files
         assert {entry['file'] for entry in manifest['assets']
                 if entry['kind'] == 'vector-reconstruction' and entry['theme'] == theme} == vector_files
         assert {entry['file'] for entry in manifest['assets']

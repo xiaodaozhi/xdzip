@@ -40,7 +40,11 @@
       "formatBadgeInset": 6,
       "entryBandTopInset": 1,
       "entryBandBottomInset": 2,
-      "entrySeparatorHeight": 1
+      "entrySeparatorHeight": 1,
+      "captionButtonWidth": 46,
+      "captionIconSize": 18,
+      "resizeBorderWidth": 5,
+      "captionRestoreOffset": 3
     }
   },
   "operation": {

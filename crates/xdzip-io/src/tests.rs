@@ -170,7 +170,7 @@ fn broad_write_permissions_are_refused_before_staging() {
 
 #[cfg(windows)]
 #[test]
-fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_not() {
+fn windows_read_only_acl_allows_output_but_mutation_does_not() {
     // Modify only newly owned fixtures through the system ACL tool, not product
     // FFI. Native filesystem checks exercise effective and inherited grants.
     fn grant_access(root: &Owned, sid: &str, rights: &str) {
@@ -188,27 +188,34 @@ fn windows_metadata_only_acl_allows_private_output_but_content_and_mutation_do_n
             result.status.code()
         );
     }
-    let root = Owned::new();
-    grant_access(&root, "S-1-1-0", "(RA,RC,S)");
-    // OWNER RIGHTS is a dynamic reference to the already trusted object owner.
-    // Exercise inheritance on real stage files and newly created output parents.
-    grant_access(&root, "S-1-3-4", "(F)");
-    let grant = root.grant();
-    let mut workspace = grant.workspace(90).unwrap();
-    let mut staged = workspace.stage().unwrap();
-    staged.write_all(b"verified private bytes").unwrap();
-    workspace
-        .commit(staged, &path("nested/private.txt"), None)
-        .unwrap();
-    workspace.cleanup().unwrap();
-    assert_eq!(
-        fs::read(root.0.join("nested/private.txt")).unwrap(),
-        b"verified private bytes"
-    );
-    drop(grant);
-    // RD also grants directory enumeration. W, D, WDAC and generic F must all
+    for rights in ["(RA,RC,S)", "(RD)", "(R)", "(RX)", "(GR,GE)"] {
+        let root = Owned::new();
+        grant_access(&root, "S-1-1-0", rights);
+        // OWNER RIGHTS is a dynamic reference to the already trusted object owner.
+        // Exercise inheritance on real stage files and newly created output parents.
+        if rights == "(GR,GE)" {
+            grant_access(&root, "S-1-3-4", "(F)");
+        }
+        let grant = root.grant();
+        let mut workspace = grant.workspace(90).unwrap();
+        let mut staged = workspace.stage().unwrap();
+        staged.write_all(b"verified private bytes").unwrap();
+        workspace
+            .commit(staged, &path("nested/private.txt"), None)
+            .unwrap();
+        workspace.cleanup().unwrap();
+        assert_eq!(
+            fs::read(root.0.join("nested/private.txt")).unwrap(),
+            b"verified private bytes"
+        );
+        drop(grant);
+    }
+    // Read-only sharing does not authorize mutation. Both effective and
+    // inherited write/delete/ACL rights and generic write/all must still
     // reject before creating a staging directory or touching any existing bytes.
-    for rights in ["(RD)", "(W)", "(D)", "(WDAC)", "(F)"] {
+    for rights in [
+        "(W)", "(D)", "(WDAC)", "(WO)", "(DC)", "(GW)", "(F)", "(IO)(W)", "(IO)(F)",
+    ] {
         let root = Owned::new();
         let source = root.0.join("source.zip");
         fs::write(&source, b"protected old bytes").unwrap();

@@ -376,7 +376,7 @@
     "ui.6adbf73c75b1": "Content verification failed. Uncommitted files were discarded.",
     "ui.7735b66ae246": "Unable to write to the destination. Check permissions and the file system.",
     "ui.8e2070ff3086": "The destination disk is full. Writing has stopped.",
-    "ui.123399c0fb8b": "The destination contains links, special objects, or untrusted shared permissions. Choose a private folder.",
+    "ui.123399c0fb8b": "The destination contains links, special objects, an untrusted owner, or permissions allowing other accounts to modify it. Choose a safe directory.",
     "ui.8c5b6e8cc7b3": "The destination or an existing file changed. Check it again before retrying.",
     "ui.370322f1d979": "Another operation created the destination file during commit. Extract again and choose a conflict action.",
     "ui.74b624993d20": "The file system does not support safe commits. Choose a local disk folder.",
@@ -456,6 +456,10 @@
     "settings.done": "Done",
     "error.unsupportedLink": "The selected links cannot be safely restored. Only relative ZIP symbolic links resolving within this extraction are supported. Escaping, cyclic, dangling, parent-relative and hard links are refused. Symbolic links are not restored on Windows.",
     "welcome.opening.note": "Reading the archive directory. The file list will appear when ready.",
-    "welcome.opening.progress": "Read progress"
+    "welcome.opening.progress": "Read progress",
+    "window.minimize": "Minimize",
+    "window.maximize": "Maximize",
+    "window.restore": "Restore",
+    "window.close": "Close window"
   }
 }

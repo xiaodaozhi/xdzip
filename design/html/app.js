@@ -1753,6 +1753,8 @@ window.XdzipDesign = {
 window.XdzipControls.configure({ icon });
 function setCanvasLogicalScale(view) {
     const spec = window.XDZIP_DISPLAY_SPEC;
+    for (const key of ["captionButtonWidth", "captionIconSize"])
+        document.documentElement.style.setProperty(`--${key}`, spec.windowsCaption[key]);
     const main = ["main", "welcome", "welcome-narrow", "empty", "damaged"].includes(view);
     document.documentElement.style.setProperty("--ui-source-factor", 1 / (spec.views[view]?.sourceToLogical ?? (main ? spec.sourceToLogical : spec.operationSourceToLogical)));
 }

@@ -163,6 +163,8 @@ QtObject {
     readonly property color accentHover: dark ? "#3874EE" : "#124BE0"
     readonly property color accentPressed: dark ? "#2355BA" : "#0B38B5"
     readonly property color accentDisabledText: dark ? "#8C9AB2" : "#738098"
+    readonly property color captionCloseHover: dark ? "#C42B1C" : "#C42B1C"
+    readonly property color captionClosePressed: dark ? "#A12317" : "#A12317"
     readonly property real bodySize: 14 * fontScale
     readonly property real mainBodySize: 11 * fontScale
     readonly property real tableSize: 16 * fontScale
@@ -272,6 +274,10 @@ QtObject {
     readonly property real mainEntryBandTopInset: 1
     readonly property real mainEntryBandBottomInset: 2
     readonly property real mainEntrySeparatorHeight: 1
+    readonly property real mainCaptionButtonWidth: 46
+    readonly property real mainCaptionIconSize: 18
+    readonly property real mainResizeBorderWidth: 5
+    readonly property real mainCaptionRestoreOffset: 3
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

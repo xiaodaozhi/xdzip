@@ -7,19 +7,33 @@ Rectangle {
     objectName: "archiveTitlebar"
     required property string archiveTitle
     property bool integratedTitlebar: false
+    property bool windowsControls: false
+    property bool maximized: false
     property bool canOpen: true
     property bool canClose: false
     signal settingsRequested
     signal dragRequested
     signal openRequested
     signal closeRequested
+    signal minimizeRequested
+    signal maximizeRequested
+    signal windowCloseRequested
     color: Theme.canvas
     readonly property real capsuleHeight: Math.max(Theme.mainTabHeight, Math.ceil(Theme.mainTabSize * 1.6 + 8))
     implicitHeight: Math.max(Theme.mainTitleHeight, capsuleHeight + 2 * Theme.mainTabTopInset)
     DragHandler {
+        enabled: !root.windowsControls
         target: null
-        onActiveChanged: if (active)
-            root.dragRequested()
+        onActiveChanged: if (active) root.dragRequested()
+    }
+    MouseArea {
+        anchors.fill: parent
+        enabled: root.windowsControls
+        DragHandler {
+            target: null
+            onActiveChanged: if (active) root.dragRequested()
+        }
+        onDoubleClicked: if (root.windowsControls) root.maximizeRequested()
     }
     RowLayout {
         id: brand
@@ -41,6 +55,7 @@ Rectangle {
     }
     Rectangle {
         anchors.bottom: parent.bottom
+        z: 1
         width: parent.width
         height: 1
         color: Theme.border
@@ -109,7 +124,7 @@ Rectangle {
     ArchiveAction {
         objectName: "archiveSettings"
         anchors.right: parent.right
-        anchors.rightMargin: Theme.mainSettingsRightInset
+        anchors.rightMargin: Theme.mainSettingsRightInset + (root.windowsControls ? captionControls.width : 0)
         anchors.verticalCenter: parent.verticalCenter
         width: Theme.mainSettingsSize
         height: Theme.mainSettingsSize
@@ -118,5 +133,33 @@ Rectangle {
         Accessible.name: qsTrId("settings.title")
         explanation: Accessible.name
         onClicked: root.settingsRequested()
+    }
+    Row {
+        id: captionControls
+        objectName: "windowCaptionControls"
+        anchors.right: parent.right
+        height: root.height
+        visible: root.windowsControls
+        WindowCaptionButton {
+            objectName: "windowMinimize"
+            height: captionControls.height
+            captionAction: "minimize"
+            text: qsTrId("window.minimize")
+            onClicked: root.minimizeRequested()
+        }
+        WindowCaptionButton {
+            objectName: "windowMaximize"
+            height: captionControls.height
+            captionAction: root.maximized ? "restore" : "maximize"
+            text: root.maximized ? qsTrId("window.restore") : qsTrId("window.maximize")
+            onClicked: root.maximizeRequested()
+        }
+        WindowCaptionButton {
+            objectName: "windowClose"
+            height: captionControls.height
+            captionAction: "close"
+            text: qsTrId("window.close")
+            onClicked: root.windowCloseRequested()
+        }
     }
 }

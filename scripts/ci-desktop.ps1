@@ -45,6 +45,9 @@ $cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_T
 if ($IsMacOS) { $cmakeArgs += @('-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0') }
 Invoke-Checked cmake $cmakeArgs
 Invoke-Checked cmake @('--build', 'build/desktop', '--parallel', '3')
+if ($IsWindows) {
+    Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', 'build/desktop/apps/desktop/xdzip-browser.exe', '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
+}
 if ($IsMacOS) { Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist') }
 Invoke-Checked qmllint (@('-I', 'build/desktop/qml') + (Get-ChildItem 'apps/desktop/ui/*.qml').FullName)
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
