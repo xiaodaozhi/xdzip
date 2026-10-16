@@ -63,6 +63,14 @@ def build(source, qt, output):
     checked([qt/'bin/macdeployqt', app, '-always-overwrite', '-no-strip',
              '-qmldir='+str(ROOT/'apps/desktop/ui'),
              '-qmlimport='+str(source.parents[2]/'qml'), '-verbose=1'])
+    # macdeployqt copies every SQL driver when QML's optional LocalStorage pulls
+    # QtSql in. Only SQLite is self-contained here; server/ODBC drivers are not
+    # product capabilities and require SDK-external client libraries.
+    omitted_sql = []
+    for driver in (app/'Contents/PlugIns/sqldrivers').glob('*.dylib'):
+        if driver.name != 'libqsqlite.dylib':
+            omitted_sql.append(driver.name)
+            driver.unlink()
     # Absolute development RPATHs must not survive into a portable application.
     for path in {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')}:
         rpaths = mac_rpaths(checked(['otool', '-l', path]))
@@ -98,7 +106,7 @@ def build(source, qt, output):
     checked(['hdiutil', 'verify', output])
     report.update(identity_text=identity, file=output.name, sha256=digest(output),
                   signing='ad-hoc', developer_id_signed=False, notarized=False,
-                  app_tree='xdzip.app', local_only=True)
+                  app_tree='xdzip.app', local_only=True, unused_sql_drivers_omitted=sorted(omitted_sql))
     output.with_suffix('.json').write_text(json.dumps(report, indent=2)+'\n')
     return report
 

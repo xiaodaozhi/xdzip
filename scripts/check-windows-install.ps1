@@ -78,8 +78,16 @@ function Test-AssociatedOpen($Label) {
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE
 }
 try {
-    Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'
+    Invoke-Installer (Join-Path $Packages 'previous.exe') 'historical-product-install'; Test-AssociatedOpen 'historical-product-install'
     $sentinel = Join-Path $testRoot 'user-kept.txt'; Set-Content $sentinel 'keep user data'
+    $settingsBefore = [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings))
+    $historical = Get-Content (Join-Path $evidenceRoot 'historical-product-install.json') -Raw | ConvertFrom-Json
+    Invoke-Installer (Join-Path $Packages 'product.exe') 'actual-product-upgrade'; Test-AssociatedOpen 'actual-product-upgrade'
+    $current = Get-Content (Join-Path $evidenceRoot 'actual-product-upgrade.json') -Raw | ConvertFrom-Json
+    if ($historical.revision -eq $current.revision -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change revision or preserve settings' }
+    Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
+    if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
+    Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'
     Invoke-Installer (Join-Path $Packages 'qa2.exe') 'upgrade'; Test-AssociatedOpen 'upgrade'
     $command = (Get-Item "$classes\xdzip.Archive\shell\open\command").GetValue('')
     $executable = [regex]::Match($command, '^"([^"]+)" -- "%1"$').Groups[1].Value

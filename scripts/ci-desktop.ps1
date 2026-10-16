@@ -182,6 +182,8 @@ Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-buil
 if (!$IsMacOS) {
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
     Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
+    Invoke-Checked python @('scripts/prepare-previous-product.py', '--qt-prefix', $qtPrefix, '--output', 'build/previous-product', '--notices', 'build/review/notices')
+    Copy-Item 'build/previous-product/previous-product.json' 'build/review/previous-product.json'
 }
 if ($IsMacOS) {
     # Validate the native executable using the installed SDK. Do not deploy Qt,
@@ -227,6 +229,7 @@ if ($IsLinux) {
     New-Item -ItemType Directory -Force 'build/installer-tests/linux-packages' | Out-Null
     Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/review/xdzip-ubuntu24.04-amd64.deb', '--report', 'build/review/linux-installer.json')
     Copy-Item 'build/review/xdzip-ubuntu24.04-amd64.deb' 'build/installer-tests/linux-packages/product.deb'
+    Copy-Item 'build/previous-product/previous.deb' 'build/installer-tests/linux-packages/previous.deb'
     foreach ($variant in @('1','2')) {
         Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', "build/installer-tests/linux-packages/qa$variant.deb", '--report', "build/installer-tests/linux-packages/qa$variant.json", '--qa-variant', $variant)
     }
@@ -238,6 +241,7 @@ if ($IsWindows) {
     $installerBase = @('scripts/build-windows-installer.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--iscc','build/installer-toolchain/compiler/ISCC.exe','--chinese','build/installer-toolchain/ChineseSimplified.isl')
     Invoke-Checked python ($installerBase + @('--output','build/review/xdzip-windows-x64-setup.exe','--report','build/review/windows-installer.json'))
     Copy-Item 'build/review/xdzip-windows-x64-setup.exe' 'build/installer-tests/windows-packages/product.exe'
+    Copy-Item 'build/previous-product/previous.exe' 'build/installer-tests/windows-packages/previous.exe'
     foreach ($variant in @('1','2')) {
         Invoke-Checked python ($installerBase + @('--output',"build/installer-tests/windows-packages/qa$variant.exe",'--report',"build/installer-tests/windows-packages/qa$variant.json",'--qa-variant',$variant))
     }

@@ -40,4 +40,6 @@ QA 变体共用本次核验二进制，只改变测试包版本／目录，验�
 
 后续故障注入只允许 QA 变体 2，在 postinst configure 阶段失败一次；正式产品禁止携带该分支。容器实际验证 half-configured 状态、运行门阻止启动、设置保持，再运行 dpkg --configure -a 恢复并经 GIO 打开真实文件。这是可重复配置失败，不冒充设备掉电。设置兼容检查另编译固定 4cf0f8c 与当前源码两个实际组件，往返同 schema 配置；不冒充两个完整安装器的数据迁移。
 
+完整产品兼容另由 prepare-previous-product.py 在一次性 Windows/Linux CI 主机构建固定 4cf0f8c 的完整历史源码：使用 detached worktree 保留真实干净身份，使用当前固定 SDK 生成历史产品 QA 安装器，不下载易过期的旧 Actions 二进制。先安装历史产品并实际打开，再安装当前产品并检查 revision 改变、配置字节保留，再回退历史产品重新打开并检查数据。它证明两个完整源码提交在同 schema 的兼容，不冒充历史已签名原包、尚不存在的 schema 2 迁移或设备重启。历史安装器只作 QA，不上传为产品；回执绑定两个二进制与安装器 SHA-256。
+
 windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、不同产品版本的数据迁移、签名信任、GPU 与桌面专项仍需人工，INSTALL-01／ASSOC-01 不自动标记全部通过。

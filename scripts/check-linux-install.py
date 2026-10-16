@@ -52,9 +52,18 @@ def main():
             if run(['xdg-mime','query','default','application/zip'],**user)!='other.desktop':raise RuntimeError('Default handler changed')
             if 'xdzip.desktop' not in run(['gio','mime','application/zip'],**user):raise RuntimeError('MIME candidate not registered')
             phases.append(label)
-        run(['dpkg','-i','/packages/qa1.deb']);verify_open('install')
+        run(['dpkg','-i','/packages/previous.deb']);verify_open('historical-product-install')
         sentinel=Path('/opt/xdzip/user-kept.txt');sentinel.write_text('keep user data')
         original_settings=settings.read_bytes()
+        historical=json.loads((home/'probe/historical-product-install.json').read_text())
+        run(['dpkg','-i','/packages/product.deb']);verify_open('actual-product-upgrade')
+        current=json.loads((home/'probe/actual-product-upgrade.json').read_text())
+        if historical['revision']==current['revision'] or settings.read_bytes()!=original_settings:
+            raise RuntimeError('Actual upgrade did not change product revision or modified settings')
+        run(['dpkg','-i','/packages/previous.deb']);verify_open('actual-product-rollback')
+        if settings.read_bytes()!=original_settings or sentinel.read_text()!='keep user data':
+            raise RuntimeError('Actual product rollback lost settings or user data')
+        run(['dpkg','-i','/packages/qa1.deb']);verify_open('install')
         broken=subprocess.run(['dpkg','-i','/packages/qa-failure.deb'],capture_output=True,text=True,timeout=40)
         if broken.returncode==0 or 'half-configured' not in run(['dpkg-query','-W','-f=${Status}','xdzip']):
             raise RuntimeError('Configuration failure was not exercised')
