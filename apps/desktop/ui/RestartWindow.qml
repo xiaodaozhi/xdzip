@@ -20,7 +20,7 @@ OperationWindow {
             Text {
                 Layout.fillWidth: true
                 text: qsTrId("settings.restartQuestion")
-                font.pixelSize: Theme.operationTitleSize
+                font.pixelSize: Theme.settingsTitleSize * Theme.fontScale
                 font.bold: true
                 color: Theme.text
                 wrapMode: Text.Wrap

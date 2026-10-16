@@ -1021,4 +1021,4 @@ dialog[data-kind="about"] .about-content { display:flex; flex-direction:column; 
 /* Settings restart confirmation shares the normal operation density. */
 dialog[data-kind="restart"] { width:calc(491px * var(--ui-source-factor)); }
 dialog[data-kind="restart"] .modal-header { padding:calc(24px * var(--ui-source-factor)); }
-dialog[data-kind="restart"] .modal-header h1 { font-size:calc(20px * var(--ui-source-factor)); }
+dialog[data-kind="restart"] .modal-header h1 { font-size:calc(20px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
