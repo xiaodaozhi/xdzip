@@ -56,7 +56,9 @@ def main():
         sentinel=Path('/opt/xdzip/user-kept.txt');sentinel.write_text('keep user data')
         original_settings=settings.read_bytes()
         historical=json.loads((home/'probe/historical-product-install.json').read_text())
+        historical_version=run(['dpkg-query','-W','-f=${Version}','xdzip'])
         run(['dpkg','-i','/packages/product.deb']);verify_open('actual-product-upgrade')
+        run(['dpkg','--compare-versions',run(['dpkg-query','-W','-f=${Version}','xdzip']),'gt',historical_version])
         current=json.loads((home/'probe/actual-product-upgrade.json').read_text())
         if historical['revision']==current['revision'] or settings.read_bytes()!=original_settings:
             raise RuntimeError('Actual upgrade did not change product revision or modified settings')

@@ -2,6 +2,8 @@
 
 [VERSION.json](../../VERSION.json) 是产品版本、渠道与构建号的唯一维护入口。首个接入基线为 `0.1.0-dev.1`，是开发构建，不表示 WP-12 已达到私测发行门槛。
 
+本地 DMG 与源码交付批次递增为 `0.1.0-dev.2`，完整产品兼容检查使用固定历史 dev.1 和当前 dev.2；开发版本递增不改变设置 schema 1，也不表示正式发行准入完成。
+
 - `version` 使用无前导零的 `major.minor.patch`。不兼容变更、兼容功能与修复分别按版本范围管理，0.x 阶段仍须说明兼容边界。
 - `channel` 支持 development、alpha、beta、rc、stable。非 stable 显示为 `version-渠道缩写.build`，development 缩写为 dev；stable 显示基础版本。
 - `build` 为 1～65535 的整数。准备新的对外交付构建时递增，不按本机每次编译自动递增，也不自动创建标签或发布。数字版本各段同样不超过 65535，以兼容 Windows 资源。
