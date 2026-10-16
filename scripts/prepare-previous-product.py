@@ -26,8 +26,8 @@ def main():
         parser.error('Use a new build/ output directory')
     output.mkdir(parents=True)
     log = (output/'previous-product.log').open('w', encoding='utf-8')
-    def run(command):
-        subprocess.run([str(x) for x in command], cwd=ROOT, stdout=log, stderr=log, check=True)
+    def run(command, env=None):
+        subprocess.run([str(x) for x in command], cwd=ROOT, env=env, stdout=log, stderr=log, check=True)
     source = output/'source'
     build = output/'compiled'
     qt = args.qt_prefix.resolve()
@@ -56,8 +56,11 @@ def main():
         runtime = source/'build/runtime'
         executable = runtime/'bin/xdzip'
     audit = output/'deployment-audit.json'
+    deployed_environment = dict(os.environ)
+    for key in ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML_IMPORT_PATH', 'QML2_IMPORT_PATH']:
+        deployed_environment.pop(key, None)
     run([sys.executable, ROOT/'scripts/deployment_audit.py', '--root', runtime,
-         '--app', executable, '--qt-prefix', qt, '--mode', 'deployed', '--output', audit])
+         '--app', executable, '--qt-prefix', qt, '--mode', 'deployed', '--output', audit], env=deployed_environment)
     record = json.loads(audit.read_text(encoding='utf-8'))
     if record['identity']['revision'] != BASELINE[:12] or record['identity']['dirty']:
         raise ValueError('Historical full product identity is not the pinned clean revision')
