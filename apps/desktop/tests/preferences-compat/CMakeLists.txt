@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.24)
+project(xdzip_preferences_compat LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml)
+foreach(revision IN ITEMS previous current)
+    add_executable(preferences-${revision} main.cpp
+        "${${revision}_SOURCE}/UiPreferences.cpp" "${${revision}_SOURCE}/UiPreferences.h")
+    target_include_directories(preferences-${revision} PRIVATE "${${revision}_SOURCE}")
+    target_link_libraries(preferences-${revision} PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
+endforeach()

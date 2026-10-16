@@ -27,7 +27,7 @@
 
 开发构建入口：[Qt 开发应用](apps/desktop/README.md)。`xdzip-browser` 读取真实 ZIP、TAR、TAR.GZ 目录，支持搜索、真实目录树、全结果排序、当前目录选择及解压元数据预检，`xdzip-ui-preview` 使用明确标识的示例任务。`xdzip-browser` 已执行真实 ZIP 解压，支持从文件／目录创建普通、AES-256 加密或 `.zip.001` 编号分卷 ZIP。TAR/TAR.GZ 通过 [WP-11 契约](docs/engineering/m4-tar-gzip.md)复用安全提交；加密／分卷 ZIP 读取、独立非 TAR 的 GZIP、稀疏／特殊 TAR 和实际内容预览仍未实现；目前加密／分卷输出可使用 7-Zip 等兼容工具打开。创建边界见 [WP-10 契约](docs/engineering/m4-creation.md)，解压边界见 [M3 实现契约](docs/engineering/m3-extraction.md)。
 
-macOS 保留原生编译与测试，不自动生成或上传 Apple Silicon 开发包。build/、target/ 和所有层级的 dist/ 均不提交到 Git；详细规则见 [CI 策略](docs/engineering/ci-policy.md)。
+macOS 保留原生编译与测试，经用户明确要求可制作[本地开发 DMG](docs/engineering/macos-deployment.md)，CI 不生成或上传 Apple Silicon 应用包。build/、target/ 和所有层级的 dist/ 均不提交到 Git；详细规则见 [CI 策略](docs/engineering/ci-policy.md)。
 
 ## 产品方向
 

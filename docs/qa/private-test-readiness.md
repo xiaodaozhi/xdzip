@@ -91,3 +91,11 @@ CI 在无 Qt SDK、无系统 Qt 和编译器的 Ubuntu 24.04 运行容器中，�
 ## 第六批，安装与系统打开
 
 已接入[实验安装器与文件关联](../engineering/installers-associations.md)：Windows 当前用户安装、Ubuntu 24.04 .deb、候选注册、正常文件打开与忙时保护。CI 执行安装／升级／回退／卸载，保护设置、额外文件和原默认；QA 变体不冒充真实不同产品的数据迁移。macOS 只补充文档声明与文件事件并原生验证，不制作或上传安装包。真实系统选择、双击、重启、签名和跨版本迁移仍保留人工门槛。
+
+## 第七批，本地 DMG、源码交付与恢复验证
+
+用户明确要求后增加[本地 Mac 开发 DMG](../engineering/macos-deployment.md)，CI 的 Mac 不部署／上传政策保持不变。镜像包含 Qt 运行依赖、通知及 Applications 入口，要求干净构建身份、独立导入核验和 ad-hoc 完整性签名；只读挂载、换路径 Cocoa／Metal 启动及修改 QtCore 镜像的兼容替换均由本地核验脚本记录实际结果。Developer ID、公证、干净 Mac、Finder 和真实重启不自动通过。
+
+[源码收集器](../engineering/source-delivery.md)交付实际项目源码、锁定 Rust vendor、四份 Qt 官方源码归档及重建／替换说明，校验和与实际提交绑定；SDK 构建等价、精确静态归属和许可选择仍未批准。原 SBOM 的 incomplete 和发行阻断保留。
+
+设置保存增加原子暂存／备份／提交、并发拒绝及较新 schema 拒写。固定 4cf0f8c 与当前适配器分别编译，在隔离配置往返验证 schema 1，不虚称两个完整安装器或 schema 2 迁移。Linux QA 增加实际 postinst 配置失败、half-configured 状态与启动阻止，随后 dpkg --configure -a 恢复；这不替代设备掉电验证。执行结果保存在 build/ 或 CI JSON／日志，未执行平台不自动登记通过。

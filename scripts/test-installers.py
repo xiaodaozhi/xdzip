@@ -41,6 +41,17 @@ class InstallerTests(unittest.TestCase):
             audit['mode']='sdk'
             with self.assertRaisesRegex(ValueError,'deployed'):linux.package_tree(root,audit,base/'bad')
 
+    def test_failure_injection_never_enters_product_package(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);root,audit=self.payload(base,'linux')
+            with self.assertRaisesRegex(ValueError,'QA variant 2'):
+                linux.package_tree(root,audit,base/'bad',failure='postinst-once')
+            linux.package_tree(root,audit,base/'product')
+            self.assertNotIn('qa-postinst-failed',(base/'product/DEBIAN/postinst').read_text())
+            result=linux.package_tree(root,audit,base/'fixture',qa='2',failure='postinst-once')
+            self.assertTrue(result['qa_fixture'])
+            self.assertIn('exit 85',(base/'fixture/DEBIAN/postinst').read_text())
+
     def test_windows_is_per_user_quoted_and_tracks_only_owned_keys(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp);root,audit=self.payload(base,'windows')

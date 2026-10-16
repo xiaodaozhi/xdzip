@@ -42,3 +42,5 @@ WP-12 对实际工件递归核验原生导入，Windows/Linux 使用 deployed �
 Linux 增加[独立部署与运行容器](linux-deployment.md)：固定 SDK 的 QML 扫描、Qt 库递归收集和相对 RPATH，清除开发搜索路径后核验。独立 Ubuntu 24.04 镜像只安装实际 OS 运行依赖与 Xvfb，确认没有系统 Qt／编译器；只读挂载带空格路径下的运行目录，关闭网络，检查版本、X11 启动及十万条目打开／取消／退出。该测试使用软件渲染，不冒充真实 GPU 或完整桌面安装。Linux 下载使用 tar.gz 保留执行权限，原始 linux/ 目录不再重复上传。
 
 安装器 gate：Windows 固定官方 Inno Setup 编译器／中文资源哈希并验证当前用户安装、原生 ShellExecuteEx 打开、升级／回退、忙时阻止和自有项卸载；Ubuntu 在 SDK-free 容器用非 root 产品验证 dpkg／GIO 同类生命周期。QA 包只生成到 build/installer-tests/，不上传为产品；正式实验安装器及 JSON／日志随已有 Windows/Linux 工件保存。Mac 只补充文档类型与文件事件并原生编译／启动，不生成安装包。
+
+2026-10-16 后续本地授权：用户明确要求可制作开发 DMG，允许本地 Qt 部署与必需的 ad-hoc 完整性签名，见[Mac 部署](macos-deployment.md)。此例外不改变上述 CI 禁止生成／上传 Mac 应用的范围，不授权 Developer ID、公证或发布。三平台 CI 另编译固定历史／当前设置适配器并验证同 schema 往返和较新 schema 拒写；Linux 安装测试增加一次真实 postinst 配置失败、运行阻止与 dpkg 恢复。

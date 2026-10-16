@@ -1,0 +1,29 @@
+{
+  "qt_version": "6.8.2",
+  "archives": [
+    {
+      "module": "qtbase",
+      "file": "qtbase-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtbase-everywhere-src-6.8.2.tar.xz",
+      "sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05"
+    },
+    {
+      "module": "qtdeclarative",
+      "file": "qtdeclarative-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtdeclarative-everywhere-src-6.8.2.tar.xz",
+      "sha256": "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56"
+    },
+    {
+      "module": "qtsvg",
+      "file": "qtsvg-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtsvg-everywhere-src-6.8.2.tar.xz",
+      "sha256": "aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa"
+    },
+    {
+      "module": "qttranslations",
+      "file": "qttranslations-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qttranslations-everywhere-src-6.8.2.tar.xz",
+      "sha256": "d2106e8a580bfd77702c4c1840299288d344902b0e2c758ca813ea04c6d6a3d1"
+    }
+  ]
+}

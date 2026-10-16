@@ -18,6 +18,7 @@ Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 Assert-CleanSources
 Invoke-Checked python @('scripts/test-installers.py')
+Invoke-Checked python @('scripts/test-source-delivery.py')
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
@@ -58,6 +59,9 @@ if ($IsLinux) { $env:LD_LIBRARY_PATH = Join-Path $qtPrefix 'lib' }
 $env:QT_QPA_PLATFORM = 'offscreen'
 $env:QT_QUICK_BACKEND = 'software'
 $env:XDZIP_CI_POWERSHELL = (Get-Process -Id $PID).Path
+Invoke-Checked python @('scripts/check-settings-compat.py', '--qt-prefix', $qtPrefix, '--output', 'build/settings-compat')
+New-Item -ItemType Directory -Force 'build/review' | Out-Null
+Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-compat.json'
 Invoke-Checked rustup @('toolchain', 'install', '1.99.0', '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy')
 Invoke-Checked rustc @('-vV')
 $cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', "-DCMAKE_PREFIX_PATH=$qtPrefix")
@@ -226,6 +230,7 @@ if ($IsLinux) {
     foreach ($variant in @('1','2')) {
         Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', "build/installer-tests/linux-packages/qa$variant.deb", '--report', "build/installer-tests/linux-packages/qa$variant.json", '--qa-variant', $variant)
     }
+    Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/installer-tests/linux-packages/qa-failure.deb', '--report', 'build/installer-tests/linux-packages/qa-failure.json', '--qa-variant', '2', '--qa-failure', 'postinst-once')
     Invoke-Checked python @('scripts/verify-linux-installer.py', '--packages', 'build/installer-tests/linux-packages', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/linux-install-lifecycle.json')
 }
 if ($IsWindows) {

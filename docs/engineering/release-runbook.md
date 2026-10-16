@@ -14,3 +14,5 @@
 v0.1 手动下载更新；不在活跃任务中覆盖程序或插件。回退前检查设置 schema 兼容性，保留旧可运行版本，不能强行降级数据。域名、bundle ID、签名身份、证书、渠道和维护周期均在发行前确定，当前不虚构。
 
 WP-12 准备材料从[部署依赖核验与 SBOM](deployment-audit.md)和[人工专项清单](../qa/private-test-manual.md)生成。源码图和实际文件清单必须与同一源码／可执行文件身份一致；当前完整性标记 incomplete，仍须完成实际部署组件归属、许可及干净机器核验。已有 Windows 当前用户及 Ubuntu 24.04 实验安装器，见[安装与关联](installers-associations.md)。macOS 开发 .app 不作为独立安装包通过，真实桌面与签名仍须单独验证。
+
+本地 Mac 可按用户明确要求制作[开发 DMG](macos-deployment.md)，源码与重建材料使用[交付收集器](source-delivery.md)。ad-hoc 签名不满足上文正式签名和公证门槛；镜像核验不自动批准发行。

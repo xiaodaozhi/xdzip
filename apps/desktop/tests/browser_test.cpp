@@ -15,6 +15,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QInputMethodEvent>
+#include <QLockFile>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
@@ -96,6 +97,53 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void settingsRejectFutureSchemaAndPreserveAtomicBackup() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto path = profile.filePath("settings.ini");
+        const auto oldOverride = qgetenv("XDZIP_SETTINGS_PATH");
+        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
+        const auto reset = qScopeGuard([&] { qputenv("XDZIP_SETTINGS_PATH", oldOverride); });
+        auto bytes = [](const QString &name) {
+            QFile input(name);
+            return input.open(QIODevice::ReadOnly) ? input.readAll() : QByteArray{};
+        };
+        QFile input(path);
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        const QByteArray original = "[General]\nschemaVersion=1\n[future]\nkeep=owned-canary\n"
+                                    "[appearance]\ntextScale=2\ntheme=dark\n";
+        QCOMPARE(input.write(original), original.size());
+        input.close();
+        UiPreferences preferences;
+        QCOMPARE(preferences.savedTextScale(), 1.5);
+        QCOMPARE(bytes(path), original); // Loading legacy 200% never mutates the file.
+        QVERIFY(preferences.save("light", 1.25, "en-US"));
+        QCOMPARE(bytes(path + ".bak"), original);
+        const auto saved = bytes(path);
+        QVERIFY(saved.contains("keep=owned-canary"));
+        QLockFile otherWriter(path + ".xdzip-lock");
+        QVERIFY(otherWriter.tryLock());
+        QVERIFY(!preferences.save("dark", 1, "zh-CN"));
+        QCOMPARE(bytes(path), saved);
+        QCOMPARE(bytes(path + ".bak"), original);
+        otherWriter.unlock();
+        // Backup failure must not remove either the saved profile or old backup.
+        QVERIFY(QFile::remove(path + ".bak"));
+        QVERIFY(QDir().mkdir(path + ".bak"));
+        QVERIFY(!preferences.save("dark", 1, "zh-CN"));
+        QCOMPARE(bytes(path), saved);
+        QVERIFY(QDir().rmdir(path + ".bak"));
+        QVERIFY(input.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        const QByteArray future = "[General]\nschemaVersion=2\n[future]\nkeep=do-not-downgrade\n";
+        QCOMPARE(input.write(future), future.size());
+        input.close();
+        UiPreferences older;
+        QVERIFY(!older.error().isEmpty());
+        QVERIFY(!older.saveDetails("light", 1, "en-US", "compact", false, true));
+        QCOMPARE(bytes(path), future);
+        QVERIFY(!QFile::exists(path + ".bak"));
+    }
+
     void nativeFileOpenQueuesBeforeReadyAndDuringRead() {
         QTemporaryDir temporary;
         QVERIFY(temporary.isValid());

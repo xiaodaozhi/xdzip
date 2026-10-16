@@ -1,6 +1,6 @@
 # 实验安装器与文件关联
 
-本轮交付 Windows x64 当前用户安装器和 Ubuntu 24.04 amd64 X11 的 .deb。它们是未签名开发安装器，不代表 WP-12 全部准入、独立安全审查或通用 Linux 支持完成。macOS 只补齐文档声明／打开事件并原生构建，不自动部署 Qt、制作 DMG/PKG、签名、公证或上传应用。
+本轮交付 Windows x64 当前用户安装器和 Ubuntu 24.04 amd64 X11 的 .deb。它们是未签名开发安装器，不代表 WP-12 全部准入、独立安全审查或通用 Linux 支持完成。后续用户明确要求接入[本地 macOS 开发 DMG](macos-deployment.md)，CI 不部署或上传 Mac 应用，Developer ID 与公证仍待发行环境。
 
 ## Windows
 
@@ -37,5 +37,7 @@ FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfile
 Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交付包；ShellExecuteEx 按自有注册类打开中文、空格、& 路径，检查默认及 UserChoice 不变、忙时拒绝替换、卸载保留设置／额外文件／其他候选。Linux 在无 SDK／系统 Qt／编译器、无网络容器执行相同 dpkg 生命周期，UID 1000 的产品由 GIO 桌面启动项实际打开十万条目，核对 MIME、默认、锁、卸载和 purge。
 
 QA 变体共用本次核验二进制，只改变测试包版本／目录，验证安装机制，不作为发行工件，也不冒充真实不同产品版本的数据迁移。设置 schema 当前为 1，两平台安装元数据记录它，旧安装器拒绝覆盖声明更新 schema 的安装；未来迁移须同步契约。
+
+后续故障注入只允许 QA 变体 2，在 postinst configure 阶段失败一次；正式产品禁止携带该分支。容器实际验证 half-configured 状态、运行门阻止启动、设置保持，再运行 dpkg --configure -a 恢复并经 GIO 打开真实文件。这是可重复配置失败，不冒充设备掉电。设置兼容检查另编译固定 4cf0f8c 与当前源码两个实际组件，往返同 schema 配置；不冒充两个完整安装器的数据迁移。
 
 windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、不同产品版本的数据迁移、签名信任、GPU 与桌面专项仍需人工，INSTALL-01／ASSOC-01 不自动标记全部通过。

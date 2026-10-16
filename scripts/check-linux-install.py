@@ -54,6 +54,19 @@ def main():
             phases.append(label)
         run(['dpkg','-i','/packages/qa1.deb']);verify_open('install')
         sentinel=Path('/opt/xdzip/user-kept.txt');sentinel.write_text('keep user data')
+        original_settings=settings.read_bytes()
+        broken=subprocess.run(['dpkg','-i','/packages/qa-failure.deb'],capture_output=True,text=True,timeout=40)
+        if broken.returncode==0 or 'half-configured' not in run(['dpkg-query','-W','-f=${Status}','xdzip']):
+            raise RuntimeError('Configuration failure was not exercised')
+        if not Path('/run/xdzip/installing').is_file() or settings.read_bytes()!=original_settings:
+            raise RuntimeError('Incomplete installation not gated or user settings changed')
+        blocked=subprocess.run(['/usr/bin/xdzip','--smoke-test'],capture_output=True,text=True,timeout=20,**user)
+        if blocked.returncode==0:raise RuntimeError('Half-configured runtime was allowed to launch')
+        phases.append('configuration-failure-blocks-launch-preserves-settings')
+        run(['dpkg','--configure','-a'])
+        if Path('/run/xdzip/installing').exists() or settings.read_bytes()!=original_settings:
+            raise RuntimeError('dpkg recovery did not clear gate or changed settings')
+        verify_open('configure-recovery')
         run(['dpkg','-i','/packages/qa2.deb']);verify_open('upgrade')
         active=subprocess.Popen(['/usr/bin/xdzip'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,**user)
         try:

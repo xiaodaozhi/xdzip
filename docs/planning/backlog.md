@@ -40,3 +40,5 @@ WP-12 第四批接入 Linux Qt／QML 运行目录、相对 RPATH、无 SDK 的�
 WP-12 第五批接入 [SDK SPDX 实际归属](../engineering/runtime-attribution.md)、内嵌第三方关系、固定官方许可文本和 Rust 普通运行时候选筛选；证据随工件核验并合入 SBOM，未知项与源码／重链接交付仍阻断发行，不能据此标记 WP-12 完成。
 
 WP-12 第六批引入[实验安装器与关联](../engineering/installers-associations.md)，自动验证 Windows／Ubuntu 安装机制、系统打开、忙时保护、卸载和默认／数据保留；签名、真实桌面、重启与真实不同版本迁移仍须单独验收。
+
+WP-12 第七批增加用户明确要求的[本地 Mac DMG](../engineering/macos-deployment.md)、[对应源码及重建材料](../engineering/source-delivery.md)、历史／当前设置组件兼容与原子配置保护、Linux 安装配置失败恢复。CI 不自动打包 Mac，源码收集不冒充许可履约或 SDK 重建等价，组件兼容不冒充两个完整历史安装器验证。剩余发行门槛继续按[私测准入](../qa/private-test-readiness.md)登记。

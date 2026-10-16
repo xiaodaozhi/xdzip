@@ -5,8 +5,10 @@
 #include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QLockFile>
 #include <QSaveFile>
 #include <QStyleHints>
+#include <QTemporaryDir>
 
 namespace {
 bool validTheme(const QString &theme) {
@@ -17,6 +19,14 @@ bool validScale(double scale) {
 }
 bool validLanguage(const QString &language) {
     return language == "zh-CN" || language == "en-US";
+}
+bool atomicWrite(const QString &path, const QByteArray &bytes) {
+    QSaveFile output(path);
+    output.setDirectWriteFallback(false);
+    if (!output.open(QIODevice::WriteOnly))
+        return false;
+    output.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner);
+    return output.write(bytes) == bytes.size() && output.commit();
 }
 } // namespace
 UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
@@ -76,7 +86,6 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     if (!validTheme(theme) || !validScale(scale) || !validLanguage(language))
         return false;
     const auto path = uiSettingsPath();
-    QSettings settings(path, QSettings::IniFormat);
     // Keep the previous profile recoverable. Failure preserves the draft and the
     // existing file; no archive or task policy is changed by preferences.
     if (!QDir().mkpath(QFileInfo(path).absolutePath())) {
@@ -84,15 +93,34 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
         emit errorChanged();
         return false;
     }
-    if (QFile::exists(path)) {
-        const auto backup = path + QStringLiteral(".bak");
-        if ((QFile::exists(backup) && !QFile::remove(backup)) || !QFile::copy(path, backup)) {
-            m_error = qtTrId("ui.f9274c70af84");
-            emit errorChanged();
-            return false;
-        }
+    auto failed = [this] {
+        m_error = qtTrId("ui.c43b29d7cbdf");
+        emit errorChanged();
+        return false;
+    };
+    QLockFile lock(path + QStringLiteral(".xdzip-lock"));
+    if (!lock.tryLock(0) || QFileInfo(path).isSymLink() ||
+        QFileInfo(path + QStringLiteral(".bak")).isSymLink())
+        return failed();
+    // Stage the whole profile before touching the original. Keep unrecognized
+    // schema-1 keys for same-schema rollback; never downgrade an unknown schema.
+    QTemporaryDir stage(QFileInfo(path).dir().filePath(".xdzip-settings-XXXXXX"));
+    if (!stage.isValid())
+        return failed();
+    const auto stagedPath = stage.filePath("settings.ini");
+    QByteArray previous;
+    const bool existed = QFile::exists(path);
+    if (existed) {
+        QFile input(path);
+        if (!input.open(QIODevice::ReadOnly) || input.size() > 1024 * 1024)
+            return failed();
+        previous = input.readAll();
+        if (input.error() != QFileDevice::NoError || !atomicWrite(stagedPath, previous))
+            return failed();
     }
-    settings.clear();
+    QSettings settings(stagedPath, QSettings::IniFormat);
+    if (settings.status() != QSettings::NoError || settings.value("schemaVersion", 1).toInt() != 1)
+        return failed();
     settings.setValue("schemaVersion", 1);
     settings.setValue("appearance/theme", theme);
     settings.setValue("appearance/textScale", scale);
@@ -100,11 +128,23 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     settings.setValue("appearance/density", m_savedDensity);
     settings.setValue("privacy/recentEnabled", m_recentEnabled);
     settings.sync();
-    if (settings.status() != QSettings::NoError) {
-        m_error = qtTrId("ui.c43b29d7cbdf");
+    if (settings.status() != QSettings::NoError)
+        return failed();
+    QFile staged(stagedPath);
+    if (!staged.open(QIODevice::ReadOnly))
+        return failed();
+    const auto replacement = staged.readAll();
+    if (staged.error() != QFileDevice::NoError)
+        return failed();
+    // A failed backup or atomic replacement leaves the original intact. An
+    // interrupted process may leave an ignored staging directory, never half INI.
+    if (existed && !atomicWrite(path + QStringLiteral(".bak"), previous)) {
+        m_error = qtTrId("ui.f9274c70af84");
         emit errorChanged();
         return false;
     }
+    if (!atomicWrite(path, replacement))
+        return failed();
     m_savedTheme = theme;
     m_savedScale = scale;
     m_language = language;

@@ -12,7 +12,9 @@ from installer_payload import verify_payload
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def package_tree(payload,audit,stage,qa=None):
+def package_tree(payload,audit,stage,qa=None,failure=None):
+    if failure and (qa != '2' or failure != 'postinst-once'):
+        raise ValueError('Failure injection is limited to QA variant 2')
     if audit['status']!='passed' or audit['platform']!='linux' or audit['mode']!='deployed':
         raise ValueError('Installer requires independently deployed Linux audit')
     if audit['identity']['dirty']:raise ValueError('Installer requires a clean build identity')
@@ -45,11 +47,21 @@ def package_tree(payload,audit,stage,qa=None):
     hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text(encoding='utf-8')
     for name in ['preinst','prerm','postinst','postrm']:
         path=control/name
-        path.write_text(hook.replace('hook=$1\nshift',f'hook={name}'),encoding='utf-8')
+        generated=hook.replace('hook=$1\nshift',f'hook={name}')
+        if name=='postinst' and failure:
+            injection='''# Owned CI fixture only: interrupt configuration once, then permit dpkg recovery.
+if test "$1" = configure && ! test -f /run/xdzip/qa-postinst-failed; then
+    install -m 0644 /dev/null /run/xdzip/qa-postinst-failed
+    exit 85
+fi
+rm -f /run/xdzip/qa-postinst-failed
+'''
+            generated=generated.replace('hook=postinst',injection+'hook=postinst')
+        path.write_text(generated,encoding='utf-8')
         path.chmod(0o755)
     doc=share/'doc/xdzip';doc.mkdir(parents=True)
     shutil.copy2(ROOT/'LICENSE',doc/'copyright')
-    return {'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None}
+    return {'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None,'failure_injection':failure}
 
 
 def main():
@@ -57,9 +69,10 @@ def main():
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--audit',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--report',type=Path,required=True)
     parser.add_argument('--qa-variant',choices=['1','2'])
+    parser.add_argument('--qa-failure',choices=['postinst-once'])
     args=parser.parse_args();stage=ROOT/'build/installer-staging'/args.output.stem
     if not within(args.output,ROOT/'build'):parser.error('Generated installer belongs under build/')
-    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant)
+    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure)
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(args.output)],check=True)
     result.update(file=args.output.name,sha256=digest(args.output),baseline='Ubuntu 24.04 amd64 X11',signed=False)
     args.report.write_text(json.dumps(result,indent=2)+'\n')
