@@ -81,3 +81,9 @@ macOS 仍只读取开发 .app 与 SDK，不部署／签名／压缩／上传应�
 已接入[Linux 部署流程](../engineering/linux-deployment.md)，将固定 Qt 6.8.2 的库、QML、X11 平台与输入相关插件、标准翻译及通知收集到相对目录，重写 ELF RPATH 并生成保留执行位的 tar.gz。系统图形／字体／glibc 等仍作为明确的 OS 运行依赖，不复制宿主系统库冒充通用兼容。
 
 CI 在无 Qt SDK、无系统 Qt 和编译器的 Ubuntu 24.04 运行容器中，将应用目录只读挂载到带空格的新路径，关闭网络，执行版本、X11 软件渲染启动、十万条目打开、活动取消与退出；随后 deployed 模式核验和文件级 SBOM 必须通过。实际结果保存 linux-runtime.json、linux-deployment.json 和 linux-package.json，未执行时不标记通过。容器验证不替代完整桌面、物理 GPU、输入法／读屏、安装升级卸载、Wayland 或其他发行版验收；macOS 部署限制不变。
+
+## 第五批，实际组件与许可证据
+
+已接入[运行时归属](../engineering/runtime-attribution.md)：实际文件与 Qt SDK SPDX 的模块／内嵌第三方关系、上游版权／许可、固定提交与哈希的许可文本，以及 Rust 普通运行时候选筛选。Windows/Linux 在最终审计前将通知材料放入运行目录；Linux 保留 SDK 原文件到重写工件的双向哈希。组件关系合入工件 CycloneDX，身份或字节证据冲突失败，未确认项目显式登记，不自动批准许可。
+
+源码地址不冒充完整源码交付，候选依赖不冒充精确链接结果。上游哈希差异、NOASSERTION、未归属的原生库／资源、平台再分发、源码与重链接交付及人工审查继续作为发行缺口；--require-complete 当前应阻断发行。既有用户确认的 macOS 操作验收不重做。

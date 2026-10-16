@@ -14,7 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
-from deployment_audit import linux_imports, native, within
+from deployment_audit import digest, linux_imports, native, within
 
 ROOT=Path(__file__).resolve().parents[1]
 STATIC_MODULES={'Xdzip.Settings','Xdzip.Native'}
@@ -162,6 +162,14 @@ exec "$xdzip_dir/bin/xdzip" "$@"
             'system_packages':sorted(packages),'system_libraries':sorted(system_libraries),
             'limits':['Relocatable runtime directory, not an installer or universal Linux compatibility claim.',
                       'Desktop IME/readers, physical GPU, Wayland, clean install/upgrade and full license attribution remain separate gates.']}
+    # Bind original SDK bytes to final bytes after patchelf; filenames alone do
+    # not establish provenance for libraries rewritten during deployment.
+    origins = {c['path']:c['source'].removeprefix('qt-sdk/') for c in copied if c['source'].startswith('qt-sdk/')}
+    for group in ['qml','plugins','translations']:
+        for path in (output/group).rglob('*'):
+            if path.is_file():origins[path.relative_to(output).as_posix()] = path.relative_to(output).as_posix()
+    report['sdk_files'] = [{'path':path,'sdk_path':source,'sdk_sha256':digest(sdk/source),
+                            'artifact_sha256':digest(output/path)} for path,source in sorted(origins.items())]
     (output/'share/deployment.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
 

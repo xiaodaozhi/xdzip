@@ -32,6 +32,8 @@ def source_bom(inventory):
         component = {'type':'library', 'bom-ref':package['bom_ref'], 'name':package['name'],
                      'version':package['version'],
                      'properties':properties(evidence='Cargo host-resolved graph; not proof of linked runtime inclusion')}
+        if 'rust_runtime_candidates' in inventory:
+            component['properties'] += properties(runtime_candidate=str(package['bom_ref'] in inventory['rust_runtime_candidates']['packages']).lower())
         if package.get('source_kind') == 'registry':
             component['purl'] = f'pkg:cargo/{quote(package["name"],safe="")}@{quote(package["version"],safe="")}'
         if package['license']:
@@ -53,7 +55,7 @@ def source_bom(inventory):
     return bom
 
 
-def artifact_bom(audit, source):
+def artifact_bom(audit, source, attribution=None):
     if audit['status'] != 'passed':
         raise ValueError('Cannot generate a passing artifact inventory from failed imports')
     identity = audit['identity']
@@ -82,6 +84,29 @@ def artifact_bom(audit, source):
         if edge['from'] in refs and edge.get('to') in refs:
             dependencies.setdefault(edge['from'],set()).add(edge['to'])
     bom['dependencies'] = [{'ref':ref,'dependsOn':sorted(deps)} for ref,deps in sorted(dependencies.items())]
+    if attribution is not None:
+        expected=hashlib.sha256(json.dumps(audit,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        if attribution['audit_sha256']!=expected or attribution['identity']!=identity:
+            raise ValueError('Attribution and audited artifact identities differ')
+        bom['metadata']['properties'] += properties(attribution_completeness='incomplete', attribution_gaps=len(attribution['gaps']),
+            attribution_canonical_sha256=hashlib.sha256(json.dumps(attribution,sort_keys=True,separators=(',',':')).encode()).hexdigest())
+        for p in attribution['components']:
+            c={'type':'library','bom-ref':'runtime:'+p['ref'],'name':p['name'],
+                'properties':properties(evidence='SDK upstream SPDX; not a licensing decision', upstream_ref=p['ref'],
+                    license_declared=p['license_declared'], license_concluded_by_upstream=p['license_concluded_by_upstream'])}
+            if p.get('version'):c['version']=p['version']
+            if p['copyright']!='NOASSERTION':c['copyright']=p['copyright']
+            if p['source'].startswith(('https://','http://','git://')):
+                c['externalReferences']=[{'type':'vcs','url':p['source']}]
+            if p['license_concluded_by_upstream'] not in {'NOASSERTION','NONE',''}:
+                c['licenses']=[{'expression':p['license_concluded_by_upstream']}]
+            bom['components'].append(c)
+        for edge in attribution['dependencies']:
+            bom['dependencies'].append({'ref':'runtime:'+edge['ref'],'dependsOn':['runtime:'+r for r in edge['dependsOn']]})
+        owners={f['path']:['runtime:'+r for r in f['owners']] for f in attribution['files'] if f['path'] in refs and f['owners']}
+        combined={d['ref']:set(d['dependsOn']) for d in bom['dependencies']}
+        for ref,values in owners.items():combined.setdefault(ref,set()).update(values)
+        bom['dependencies']=[{'ref':ref,'dependsOn':sorted(values)} for ref,values in sorted(combined.items())]
     return bom
 
 
@@ -90,12 +115,14 @@ def main():
     parser.add_argument('--audit',type=Path,required=True)
     parser.add_argument('--source',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--attribution',type=Path)
     args = parser.parse_args()
-    report = artifact_bom(json.loads(args.audit.read_text()),json.loads(args.source.read_text()))
+    report = artifact_bom(json.loads(args.audit.read_text()),json.loads(args.source.read_text()),
+        json.loads(args.attribution.read_text()) if args.attribution else None)
     report['metadata']['properties'] += properties(source_bom_file_sha256=hashlib.sha256(args.source.read_bytes()).hexdigest())
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(report,indent=2)+'\n')
-    print(f'Artifact CycloneDX: {len(report["components"])} hashed files, completeness=incomplete')
+    print(f'Artifact CycloneDX: {sum(c["type"]=="file" for c in report["components"])} hashed files, {sum(c["type"]=="library" for c in report["components"])} attributed components, completeness=incomplete')
 
 if __name__ == '__main__':
     main()

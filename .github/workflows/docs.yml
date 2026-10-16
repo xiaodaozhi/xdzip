@@ -16,6 +16,7 @@ jobs:
           python3 scripts/test-version.py
           python3 scripts/test-deployment-audit.py
           python3 scripts/test-linux-deployment.py
+          python3 scripts/test-runtime-attribution.py
           python3 scripts/check-macos-localization.py
           python3 scripts/check-ui-i18n.py
           python3 scripts/generate-ui-messages.py --check

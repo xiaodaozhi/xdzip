@@ -36,3 +36,5 @@ WP-12 第二批已接入统一版本、关于窗口、真实产品进程观测�
 WP-12 第三批已接入实际工件原生导入核验、分离的源码／文件级 CycloneDX SBOM、官方 schema 校验及全待验证人工表；平台部署差异、未识别组件与人工专项继续作为准入缺口，见[部署核验](../engineering/deployment-audit.md)与[人工清单](../qa/private-test-manual.md)。
 
 WP-12 第四批接入 Linux Qt／QML 运行目录、相对 RPATH、无 SDK 的独立容器验证和保留执行位的 tar.gz；仅验证明确 Ubuntu 24.04 x86_64 X11 基线，桌面与安装准入仍按[Linux 部署](../engineering/linux-deployment.md)和人工专项登记。
+
+WP-12 第五批接入 [SDK SPDX 实际归属](../engineering/runtime-attribution.md)、内嵌第三方关系、固定官方许可文本和 Rust 普通运行时候选筛选；证据随工件核验并合入 SBOM，未知项与源码／重链接交付仍阻断发行，不能据此标记 WP-12 完成。
