@@ -3,7 +3,7 @@ param([string]$Packages, [string]$Fixture, [string]$Output)
 $ErrorActionPreference = 'Stop'
 $classes = 'HKCU:\Software\Classes'
 if (Test-Path "$classes\xdzip.Archive") { throw 'Refusing to replace an existing xdzip registration in this verification host' }
-$testRoot = Join-Path $env:RUNNER_TEMP 'xdzip 安装 space'
+$testRoot = Join-Path $env:RUNNER_TEMP 'xdzip 安装, space'
 $evidenceRoot = Join-Path $env:RUNNER_TEMP 'xdzip-install-evidence'
 New-Item -ItemType Directory -Force $evidenceRoot | Out-Null
 $settings = Join-Path $evidenceRoot 'settings.ini'
@@ -56,6 +56,11 @@ function Assert-Default {
 }
 $phases = [Collections.Generic.List[string]]::new()
 function Test-AssociatedOpen($Label) {
+    foreach ($extension in @('zip','tar','tgz','gz')) {
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
+        if (!$key -or $key.GetValueNames() -notcontains 'xdzip.Archive') { throw 'OpenWith candidate value missing' }
+        $key.Close()
+    }
     $probe = Join-Path $evidenceRoot ($Label+'.json')
     $env:XDZIP_ASSOCIATION_PROBE = $probe
     $info = [XdzipShell+ExecuteInfo]::new()

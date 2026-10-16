@@ -40,7 +40,7 @@ Name: "{userprograms}\xdzip"; Filename: "{app}\versions\@RUNTIME@\xdzip.exe"
 
 [Registry]
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive"; ValueType: string; ValueData: "ZIP, TAR, TAR.GZ"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\DefaultIcon"; ValueType: string; ValueData: "{app}\versions\@RUNTIME@\xdzip-zip.ico,0"
+Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\DefaultIcon"; ValueType: string; ValueData: """{app}\versions\@RUNTIME@\xdzip-zip.ico"",0"
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\shell\open\command"; ValueType: string; ValueData: """{app}\versions\@RUNTIME@\xdzip.exe"" -- ""%1"""
 Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe\shell\open\command"; ValueType: string; ValueData: """{app}\versions\@RUNTIME@\xdzip.exe"" -- ""%1"""

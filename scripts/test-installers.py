@@ -50,7 +50,8 @@ class InstallerTests(unittest.TestCase):
             self.assertIn(' -- ""%1""',text)
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
             for line in text.splitlines():
-                if '\\OpenWithProgids' in line:self.assertIn('uninsdeletevalue',line)
+                if '\\OpenWithProgids' in line:
+                    self.assertIn('uninsdeletevalue',line);self.assertIn('ValueType: string',line)
             self.assertFalse(r['qa_fixture'])
 
     def test_qa_versions_are_distinct_and_dirty_payload_is_not_delivered(self):

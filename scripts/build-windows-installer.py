@@ -21,7 +21,7 @@ def render(payload,audit,output,chinese,qa=None):
     runtime=revision+'-'+digest(payload/'xdzip.exe')[:12]+('-qa'+qa if qa else '')
     associations=[]
     for ext in EXTENSIONS:
-        associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: none; ValueName: "xdzip.Archive"; Flags: uninsdeletevalue',
+        associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: string; ValueName: "xdzip.Archive"; Flags: uninsdeletevalue',
             f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe\\SupportedTypes"; ValueType: string; ValueName: ".{ext}"',
             f'Root: HKCU; Subkey: "Software\\xdzip\\Capabilities\\FileAssociations"; ValueType: string; ValueName: ".{ext}"; ValueData: "xdzip.Archive"']
     values={'VERSION':identity['version'],'OUTPUT':str(output.parent.resolve()),'FILENAME':output.stem,
