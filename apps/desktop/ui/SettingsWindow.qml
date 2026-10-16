@@ -9,9 +9,11 @@ OperationWindow {
     objectName: "settingsWindow"
     title: qsTrId("settings.title")
     signal aboutRequested()
+    signal restartConfirmationRequested()
     property string draftTheme: "system"
     property real draftScale: 1
     property string draftLanguage: "zh-CN"
+    property string initialLanguage: "zh-CN"
     property bool saved: false
     property string draftDensity: "standard"
     property bool draftRecent: true
@@ -20,7 +22,8 @@ OperationWindow {
         if (visible) { raise(); requestActivate(); return; }
         draftTheme = AppSettings.savedTheme;
         draftScale = AppSettings.savedTextScale;
-        draftLanguage = AppSettings.language;
+        initialLanguage = AppSettings.language;
+        draftLanguage = initialLanguage;
         draftDensity = AppSettings.savedDensity;
         draftRecent = AppSettings.recentEnabled;
         clearRecent = false;
@@ -236,7 +239,14 @@ OperationWindow {
             OperationFooterButton {
                 objectName: "settingsSave"
                 text: qsTrId("settings.done")
-                onClicked: if (AppSettings.saveDetails(root.draftTheme, root.draftScale, root.draftLanguage, root.draftDensity, root.draftRecent, root.clearRecent)) { root.saved = true; root.close(); }
+                onClicked: {
+                    const restartNeeded = root.draftLanguage !== root.initialLanguage && root.draftLanguage !== AppSettings.activeLanguage;
+                    if (AppSettings.saveDetails(root.draftTheme, root.draftScale, root.draftLanguage, root.draftDensity, root.draftRecent, root.clearRecent)) {
+                        root.saved = true;
+                        root.close();
+                        if (restartNeeded) root.restartConfirmationRequested();
+                    }
+                }
             }
         }
     }

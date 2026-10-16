@@ -154,7 +154,6 @@
     "ui.24d107333a04": "将文件整理为一个压缩包。",
     "ui.ad9daebe00dc": "添加文件",
     "ui.45da2d9c85d1": "添加文件夹",
-    "ui.5ac6516c836e": "添加文件或文件夹开始",
     "ui.0b7e2876922e": "保存位置",
     "ui.a6e48adc26d6": "文件名",
     "ui.0d568cd7b07d": "压缩包名称",
@@ -474,6 +473,9 @@
     "about.copy": "复制版本信息",
     "about.copied": "已复制",
     "about.done": "完成",
-    "about.unknown": "未知"
+    "about.unknown": "未知",
+    "settings.restartQuestion": "是否要重启应用使设置生效？",
+    "settings.restartLater": "稍后",
+    "settings.restartNow": "现在重启"
   }
 }

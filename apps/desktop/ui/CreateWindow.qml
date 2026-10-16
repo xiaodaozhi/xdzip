@@ -266,13 +266,6 @@ OperationWindow {
                                                 }
                                             }
                                         }
-                                        Text {
-                                            anchors.centerIn: parent
-                                            visible: root.inputs.length === 0
-                                            text: qsTrId("ui.5ac6516c836e")
-                                            font.pixelSize: Theme.operationCreateBodySize
-                                            color: Theme.textSecondary
-                                        }
                                     }
                                     Text {
                                         objectName: "createInputSummary"

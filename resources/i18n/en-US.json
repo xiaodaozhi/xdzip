@@ -154,7 +154,6 @@
     "ui.24d107333a04": "Collect your files in one archive.",
     "ui.ad9daebe00dc": "Add files",
     "ui.45da2d9c85d1": "Add folder",
-    "ui.5ac6516c836e": "Add files or folders to begin",
     "ui.0b7e2876922e": "Save location",
     "ui.a6e48adc26d6": "File name",
     "ui.0d568cd7b07d": "Archive name",
@@ -474,6 +473,9 @@
     "about.copy": "Copy version info",
     "about.copied": "Copied",
     "about.done": "Done",
-    "about.unknown": "Unknown"
+    "about.unknown": "Unknown",
+    "settings.restartQuestion": "Restart the application to apply settings?",
+    "settings.restartLater": "Later",
+    "settings.restartNow": "Restart now"
   }
 }

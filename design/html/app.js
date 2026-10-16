@@ -711,7 +711,7 @@ function dialog(html, kind, spec, focus) {
     const title = template.content.querySelector("h1")?.textContent || "xdzip";
     el.innerHTML =
         windowChrome(
-            kind === "preflight" ? settingText("ui.ff6f3ae7c4fb") : kind === "archive-test" ? "完整性检查进度" : kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
+            kind === "restart" ? settingText("settings.title") : kind === "preflight" ? settingText("ui.ff6f3ae7c4fb") : kind === "archive-test" ? "完整性检查进度" : kind === "progress" ? (state.task?.kind === "create" ? "压缩进度" : "解压进度") : kind === "result" ? (state.task?.kind === "create" ? "压缩结果" : "解压结果") : title,
             ["progress", "archive-test"].includes(kind),
         ) + html;
     el.setAttribute("aria-label", title);
@@ -1317,7 +1317,7 @@ function showCreate() {
                           `<div class="create-row">${icon(fileIcon(e))}<span>${esc(e.name)}</span><span>${e.folder ? "开始前扫描" : bytes(e.size)}</span><button class="icon-button" data-remove="${i}" aria-label="移除 ${esc(e.name)}">${icon("remove")}</button></div>`,
                   )
                   .join("")
-            : '<div class="create-row">尚未添加内容</div>';
+            : "";
         const selectedFiles = state.createItems.filter(e => !e.folder);
         const selectedDirectories = state.createItems.length - selectedFiles.length;
         const summary = [];
@@ -1426,6 +1426,7 @@ function confirmCreateOverwrite() {
     $("#confirm-create-overwrite").onclick = () =>
         startTask(state.createItems, "create");
 }
+let activeSettingsLanguage = "zh-CN";
 let savedSettingsDemo = null;
 let settingsPreview = null;
 let aboutReturnDraft = null;
@@ -1512,7 +1513,23 @@ function showSettings() {
     $("#recent-enabled").onchange = e => { draft.recent=e.target.checked; };
     $("#clear-recent").onclick = () => { draft.clearRecent=true; refresh(); };
     $("#settings-defaults").onclick = () => { Object.assign(draft,{theme:"system",textScale:1,language:"zh-CN",density:"standard",recent:true,clearRecent:false});refresh(); };
-    $("#settings-save").onclick = () => { savedSettingsDemo={...draft,clearRecent:false};state.recent=draft.recent;settingsPreview=null;closeModal(); };
+    $("#settings-save").onclick = () => {
+        const restartNeeded = draft.language !== (savedSettingsDemo?.language || activeSettingsLanguage) && draft.language !== activeSettingsLanguage;
+        savedSettingsDemo={...draft,clearRecent:false};state.recent=draft.recent;settingsPreview=null;closeModal();
+        if (restartNeeded) showRestartConfirmation();
+    };
+}
+function showRestartConfirmation() {
+    const t = settingText;
+    dialog(`<header class="modal-header"><h1>${t("settings.restartQuestion")}</h1></header>` +
+        footer(`<button id="restart-later" class="button" data-close>${t("settings.restartLater")}</button><button id="restart-now" class="button primary">${t("settings.restartNow")}</button>`, ""),
+        "restart", "S01", "#restart-now");
+    bindClose();
+    $("#restart-now").onclick = () => {
+        // The HTML prototype has no native process; simulate the saved launch boundary only.
+        activeSettingsLanguage = savedSettingsDemo.language;
+        closeModal();
+    };
 }
 function setTheme(theme) {
     XdzipControls.close({ restoreFocus: false });

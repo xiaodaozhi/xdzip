@@ -40,6 +40,7 @@ ApplicationWindow {
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
     property bool integratedTitlebar: false
     property string searchSession: ""
+    property bool restartAfterClose: false
     property bool darkMode: AppSettings.dark
     property string activeTaskId: ""
     property var taskSnapshot: ({})
@@ -228,6 +229,7 @@ ApplicationWindow {
     QuitWindow {
         id: quitWindow
         owner: root
+        onClosing: if (!stopping && !root.waitBeforeExit) root.restartAfterClose = false
         onWaitRequested: { root.waitBeforeExit = true; close(); }
         onCancelAndQuitRequested: { stopping = true; root.allowExit = true; reader.requestClose(); }
     }
@@ -271,7 +273,12 @@ ApplicationWindow {
         }
     }
     AboutWindow { id: aboutWindow; owner: settingsWindow.visible ? settingsWindow : root }
-    SettingsWindow { id: settingsWindow; owner: root; onAboutRequested: aboutWindow.present() }
+    SettingsWindow { id: settingsWindow; owner: root; onAboutRequested: aboutWindow.present(); onRestartConfirmationRequested: restartWindow.present() }
+    RestartWindow {
+        id: restartWindow
+        owner: root
+        onRestartRequested: { close(); root.restartAfterClose = true; root.close(); }
+    }
     Connections {
         target: AppSettings
         function onAppearanceChanged() {

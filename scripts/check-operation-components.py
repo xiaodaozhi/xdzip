@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 failures = []
-windows = ['CreateWindow', 'ExtractWindow', 'TaskWindow', 'ConflictWindow', 'QuitWindow', 'PreflightWindow', 'SettingsWindow', 'AboutWindow']
+windows = ['CreateWindow', 'ExtractWindow', 'TaskWindow', 'ConflictWindow', 'QuitWindow', 'PreflightWindow', 'SettingsWindow', 'AboutWindow', 'RestartWindow']
 for name in windows:
     text = (ROOT/'apps/desktop/ui'/f'{name}.qml').read_text(encoding="utf-8")
     # Match balanced QML objects, including signal-handler JS bodies.

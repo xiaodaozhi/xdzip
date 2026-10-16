@@ -95,6 +95,79 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void settingsRestartConfirmation() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(owner);
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences);
+        const auto theme = preferences->savedTheme();
+        const auto scale = preferences->savedTextScale();
+        const auto language = preferences->language();
+        const auto density = preferences->savedDensity();
+        const auto recent = preferences->recentEnabled();
+        const auto restore = qScopeGuard(
+            [&] { preferences->saveDetails(theme, scale, language, density, recent, false); });
+        QVERIFY(preferences->saveDetails(theme, scale, preferences->activeLanguage(), density,
+                                         recent, false));
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        auto *confirmation = owner->findChild<QQuickWindow *>("restartWindow");
+        QVERIFY(settings && confirmation);
+        auto *save = settings->findChild<QQuickItem *>("settingsSave");
+        auto *later = confirmation->findChild<QQuickItem *>("restartLater");
+        auto *now = confirmation->findChild<QQuickItem *>("restartNow");
+        QVERIFY(save && later && now);
+        const auto changedLanguage = preferences->activeLanguage() == "en-US" ? "zh-CN" : "en-US";
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("draftLanguage", changedLanguage);
+        settings->close(); // Cancel does not save or ask to restart.
+        QTest::qWait(20);
+        QVERIFY(!confirmation->isVisible());
+        QCOMPARE(preferences->language(), preferences->activeLanguage());
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("draftLanguage", changedLanguage);
+        QVERIFY(QMetaObject::invokeMethod(save, "clicked"));
+        QTRY_VERIFY(confirmation->isVisible());
+        QVERIFY(!settings->isVisible());
+        QCOMPARE(confirmation->modality(), Qt::ApplicationModal);
+        QCOMPARE(confirmation->transientParent(), owner);
+        QCOMPARE(confirmation->width(), 491);
+        QCOMPARE(later->mapToScene(QPointF()).y(), now->mapToScene(QPointF()).y());
+        QVERIFY(now->mapToScene(QPointF(now->width(), now->height())).y() <=
+                confirmation->height());
+        const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_VISUAL_AUDIT");
+        if (!captures.isEmpty()) {
+            QSignalSpy frames(confirmation, &QQuickWindow::frameSwapped);
+            confirmation->update();
+            QTRY_VERIFY(frames.count() > 0);
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(confirmation, captures, "restart-confirmation"));
+        }
+        QCOMPARE(preferences->language(), QString::fromLatin1(changedLanguage));
+        QVERIFY(QMetaObject::invokeMethod(later, "clicked"));
+        QTRY_VERIFY(!confirmation->isVisible());
+        QVERIFY(owner->isVisible());
+        QVERIFY(!owner->property("restartAfterClose").toBool());
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QMetaObject::invokeMethod(save, "clicked")); // Unchanged saved language.
+        QTest::qWait(20);
+        QVERIFY(!confirmation->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("draftLanguage", preferences->activeLanguage());
+        QVERIFY(QMetaObject::invokeMethod(save, "clicked")); // Back to running language.
+        QTest::qWait(20);
+        QVERIFY(!confirmation->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("draftLanguage", changedLanguage);
+        QVERIFY(QMetaObject::invokeMethod(save, "clicked"));
+        QTRY_VERIFY(confirmation->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(now, "clicked"));
+        QVERIFY(owner->property("restartAfterClose").toBool());
+        QTRY_VERIFY(!owner->isVisible()); // Existing asynchronous shutdown barrier completes.
+    }
     void versionAboutWindow() {
         const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(!BuildInfo::version().isEmpty());

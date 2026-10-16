@@ -9,6 +9,7 @@
 #include <QEvent>
 #include <QIcon>
 #include <QPointer>
+#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QQuickWindow>
@@ -132,5 +133,13 @@ int main(int argc, char *argv[]) {
         const auto path = application.arguments().at(1);
         QTimer::singleShot(0, controller, [controller, path] { controller->openPath(path); });
     }
-    return application.exec();
+    const auto result = application.exec();
+    // Window close completes the existing task decision and runtime join barrier first.
+    // Relaunch only the application, never replay diagnostic flags or a previously opened file.
+    if (result == 0 && !engine.rootObjects().isEmpty() &&
+        engine.rootObjects().first()->property("restartAfterClose").toBool()) {
+        if (!QProcess::startDetached(QCoreApplication::applicationFilePath(), QStringList{}))
+            return 6;
+    }
+    return result;
 }

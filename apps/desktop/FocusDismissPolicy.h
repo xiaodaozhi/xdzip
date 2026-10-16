@@ -54,6 +54,11 @@ class FocusDismissPolicy final : public QObject {
         application->installEventFilter(policy);
     }
     bool eventFilter(QObject *watched, QEvent *event) override {
+        // Modal teardown can send WindowUnblocked after Quick's private state is gone.
+        // Only input events need focus inspection; never inspect destruction/visibility events.
+        if (event->type() != QEvent::MouseButtonPress && event->type() != QEvent::KeyPress &&
+            event->type() != QEvent::KeyRelease && event->type() != QEvent::ShortcutOverride)
+            return false;
         auto *window = qobject_cast<QQuickWindow *>(watched);
         if (!window)
             return false;
