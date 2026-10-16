@@ -13,6 +13,7 @@ OperationWindow {
     requestedHeight: Math.min(Theme.aboutMaximumHeight, Screen.desktopAvailableHeight - 80,
                               body.implicitHeight + footer.implicitHeight)
     onVisibleChanged: if (visible) copied = false
+    onActiveFocusItemChanged: if (visible) Qt.callLater(() => root.revealFocus(scroll))
     ColumnLayout {
         anchors.fill: parent
         spacing: 0

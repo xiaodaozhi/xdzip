@@ -147,6 +147,14 @@ class BrowserTest : public QObject {
                     }
                 }
             }
+            about->setProperty("requestedHeight", 400);
+            QTRY_COMPARE(about->height(), 400);
+            auto *homepage = findVisual(about->contentItem(), "aboutHomepage");
+            auto *footer = findVisual(about->contentItem(), "aboutFooter");
+            QVERIFY(homepage && footer);
+            homepage->forceActiveFocus(Qt::TabFocusReason);
+            QTRY_VERIFY(homepage->mapToScene(QPointF(0, homepage->height())).y() <=
+                        footer->y() + 1);
             auto *copy = about->findChild<QObject *>("aboutCopy");
             QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
             const auto diagnostic =
