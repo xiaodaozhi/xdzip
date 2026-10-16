@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 from deployment_audit import audit, digest, mac_rpaths, native, within
+from sbom import artifact_bom
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -99,6 +100,12 @@ def build(source, qt, output):
         raise ValueError('DMG application still has external dependencies')
     if checked([binary, '--version']).strip() != identity:
         raise ValueError('Deployment changed the product identity')
+    inventory = json.loads((notices/'build-inventory.json').read_text(encoding='utf-8'))
+    report['identity'] = {'version': inventory['display_version'], 'build': inventory['version_source']['build'],
+                          'revision': revision, 'dirty': False}
+    source_bom = json.loads((notices/'source-build.cdx.json').read_text(encoding='utf-8'))
+    file_bom = artifact_bom(report, source_bom)
+    output.with_suffix('.cdx.json').write_text(json.dumps(file_bom, indent=2)+'\n')
     (stage/'Applications').symlink_to('/Applications')
     (stage/'安装说明.txt').write_text(
         '将 xdzip.app 拖入 Applications 后打开。替换旧版本前请退出 xdzip。\n'

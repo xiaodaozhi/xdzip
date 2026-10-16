@@ -19,6 +19,8 @@ Qt 可选 QML LocalStorage 引入 QtSql 后，部署工具会顺带复制数据�
 
 镜像提供 xdzip.app、Applications 链接和安装说明，使用 UDZO 压缩并执行 hdiutil verify。拖入 Applications 前应正常退出旧版，未提供自动更新器或安装中的任务迁移。设置、最近记录位于用户目录，移除应用不自动删除这些数据。
 
+镜像旁保留部署核验 JSON 和 CycloneDX 文件级 SBOM，绑定同提交源码清单、最终原生文件 SHA-256 和导入关系。SBOM 继续标记 incomplete，不将文件枚举当作精确组件归属或许可批准；清单位于镜像外，避免自包含哈希递归。
+
 ARM64 的已修改 Mach-O 需要有效代码目录，因此复制／重写后使用 ad-hoc 本地签名，并验证嵌套代码。**这不属于 Developer ID 签名，也未公证，不表示 Gatekeeper 信任或可公开发行。** 不关闭 SIP，不删除用户全局安全策略。
 
 核验脚本只读挂载镜像，核对 Applications 链接，复制到含中文与空格的隔离目录，移除 SDK／QML／插件搜索环境，检查递归原生导入，再以 Cocoa／Metal 启动关闭。随后仅在核验副本修改 QtCore 的 Mach-O 库身份并重新 ad-hoc 签名，验证兼容修改库可加载。该测试证明部署允许修改镜像替换，不冒充从对应源码重建 Qt、任意 ABI 兼容或法律履约批准。
