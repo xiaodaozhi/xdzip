@@ -527,13 +527,6 @@ OperationWindow {
                             }
                         }
                     }
-                    OperationCheck {
-                        id: openAfter
-                        objectName: "createOpenAfter"
-                        density: root.density
-                        text: qsTrId("ui.3fc24f609be8")
-                        checked: true
-                    }
                     Text {
                         Layout.fillWidth: true
                         visible: root.controller.creationError.length > 0
@@ -564,7 +557,7 @@ OperationWindow {
                 primary: true
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), formatGroup.currentIndex === 1 || (formatGroup.currentIndex === 0 && level.currentIndex === 0) ? 0 : 8, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], openAfter.checked, root.volumeBytes, formatGroup.currentIndex === 0 && usePassword.checked ? password.text : "");
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), formatGroup.currentIndex === 1 || (formatGroup.currentIndex === 0 && level.currentIndex === 0) ? 0 : 8, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, formatGroup.currentIndex === 0 && usePassword.checked ? password.text : "");
                     password.text = "";
                 }
             }

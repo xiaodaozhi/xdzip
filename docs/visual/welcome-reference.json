@@ -32,5 +32,11 @@
   "main_body_size": 13,
   "menu_to_body_font_ratio": 1,
   "titlebar_policy": "reuse existing main titlebar unchanged; welcome content only",
-  "titlebar_source": "qt-main-reference.json"
+  "titlebar_source": "qt-main-reference.json",
+  "opening_card_width": 360,
+  "opening_inset": 24,
+  "opening_gap": 12,
+  "opening_radius": 8,
+  "opening_title_size": 16,
+  "opening_dim_opacity": 0.86
 }

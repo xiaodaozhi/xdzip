@@ -9,6 +9,7 @@ TextField {
     property string previewText: ""
     font.pixelSize: Math.round(Theme.operationBodySize * density)
     color: !root.activeFocus && root.previewText ? "transparent" : Theme.text
+    placeholderTextColor: Theme.textSecondary
     selectByMouse: true
     leftPadding: root.framed ? Theme.operationControlFieldTextInset : 0
     rightPadding: root.framed ? Theme.operationControlFieldTextInset : 0

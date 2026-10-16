@@ -539,6 +539,7 @@ ApplicationWindow {
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canCreate: reader.runtimeAvailable && !reader.browsingBusy
             busy: reader.browsingBusy && reader.title.length > 0
+            openingName: reader.title
             message: reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: reader.chooseArchive(root)
             onCreateRequested: createWindow.configure()

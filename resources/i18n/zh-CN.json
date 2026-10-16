@@ -233,7 +233,7 @@
       "one": " 等 %n 个文件",
       "other": " 等 %n 个文件"
     },
-    "ui.0e65135b7f52": "已保存压缩包／分卷",
+    "ui.0e65135b7f52": "已保存",
     "ui.053461ce86d2": "成功",
     "ui.3ce2b5b2c6e8": "未完成的文件",
     "ui.4a4f9c0beda1": "目标位置",
@@ -454,6 +454,8 @@
     "settings.clearPending": "保存后清空",
     "settings.privacy": "所有压缩包处理都在本机进行。默认不上传文件、不启用遥测。清空最近记录不会删除原文件。",
     "settings.done": "完成",
-    "error.unsupportedLink": "所选链接无法安全还原。仅支持 ZIP 内的安全相对符号链接，目标必须包含在本次解压范围中。硬链接及 Windows 平台上的链接暂不支持。"
+    "error.unsupportedLink": "所选链接无法安全还原。仅支持 ZIP 内的安全相对符号链接，目标必须包含在本次解压范围中。硬链接及 Windows 平台上的链接暂不支持。",
+    "welcome.opening.note": "正在读取压缩包目录，完成后将显示文件列表。",
+    "welcome.opening.progress": "读取进度"
   }
 }

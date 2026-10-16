@@ -46,3 +46,15 @@
 body.welcome-artboard.welcome-narrow .window { width:calc(832px * var(--ui-source-factor)); height:calc(544px * var(--ui-source-factor)); min-height:0; }
 body.welcome-artboard.welcome-narrow { min-width:0; }
 body.welcome-artboard.welcome-narrow .stage { width:1296px; }
+
+/* W01 opening only covers the welcome body; the shared titlebar is unchanged. */
+.welcome-opening { position:absolute; inset:0; z-index:20; display:grid; place-items:center; padding:calc(16px * var(--ui-source-factor)); background:color-mix(in srgb,var(--canvas) 86%,transparent); }
+.welcome-opening-card { width:var(--welcome-opening-card-width); max-width:100%; max-height:100%; overflow:auto; padding:var(--welcome-opening-inset); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:var(--welcome-opening-radius); background:var(--surface); display:flex; flex-direction:column; gap:var(--welcome-opening-gap); text-align:left; }
+.welcome-opening-card h2 { margin:0; font-size:var(--welcome-opening-title-size); color:var(--text); }
+.welcome-opening-card p { margin:0; color:var(--secondary); font-size:calc(13px * var(--ui-source-factor)); line-height:1.6; }
+.welcome-opening-name { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.welcome-opening-progress { height:calc(4px * var(--ui-source-factor)); border-radius:calc(2px * var(--ui-source-factor)); background:var(--task-track); overflow:hidden; }
+.welcome-opening-progress span { display:block; height:100%; width:35%; background:var(--accent); animation:welcome-reading 1.2s ease-in-out infinite alternate; }
+.welcome-opening-card .button { align-self:flex-end; height:var(--operation-control-body-button-height); min-height:var(--operation-control-body-button-height); padding:var(--operation-control-vertical-inset) var(--operation-control-horizontal-inset); font-size:calc(13px * var(--ui-source-factor)); }
+@keyframes welcome-reading { from { transform:translateX(-100%); } to { transform:translateX(285%); } }
+@media(prefers-reduced-motion:reduce) { .welcome-opening-progress span { animation:none; transform:translateX(90%); } }

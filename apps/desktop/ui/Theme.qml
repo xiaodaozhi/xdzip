@@ -30,6 +30,12 @@ QtObject {
     readonly property real welcomeMenuFontSize: 13
     readonly property real welcomeMainBodySize: 13
     readonly property real welcomeMenuToBodyFontRatio: 1
+    readonly property real welcomeOpeningCardWidth: 360
+    readonly property real welcomeOpeningInset: 24
+    readonly property real welcomeOpeningGap: 12
+    readonly property real welcomeOpeningRadius: 8
+    readonly property real welcomeOpeningTitleSize: 16
+    readonly property real welcomeOpeningDimOpacity: 0.86
     readonly property real settingsLogicalWidth: 612
     readonly property real settingsContentInset: 24
     readonly property real settingsSectionGap: 20

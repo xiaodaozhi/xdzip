@@ -691,7 +691,9 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     command.password = rust::String(password.toUtf8().toStdString());
     command.conflict = 0;
     m_creationError.clear();
-    m_pendingOpenAfter = openAfter;
+    // Creation auto-opens in this application; the legacy folder option is ignored.
+    Q_UNUSED(openAfter)
+    m_pendingOpenAfter = false;
     submit(std::move(command));
 }
 bool BrowserController::targetMatches(const QString &path) const {
@@ -1010,7 +1012,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_message = explain("source_changed");
             emit changed();
         }
-        if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded")
+        if (terminal && m_openAfterTasks.remove(t.id) && status == "succeeded" && !t.creating)
             QDesktopServices::openUrl(QUrl::fromLocalFile(
                 t.creating ? QFileInfo(text(t.target)).absolutePath() : text(t.target)));
         emit tasksChanged();
@@ -1022,7 +1024,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     if (event.kind == EventKind::TaskAccepted) {
         m_result.taskId = QString::number(event.task.id);
         m_hasPayload = true;
-        if (m_pendingOpenAfter) {
+        if (m_pendingOpenAfter && !m_result.creating) {
             const auto existing = m_tasks.value(event.task.id);
             if (existing.value("terminal").toBool()) {
                 if (existing.value("status") == "succeeded")

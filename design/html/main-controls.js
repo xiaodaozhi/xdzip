@@ -158,6 +158,15 @@ window.XdzipMain = (() => {
         showWelcome();
     }
     function openSample(id) {
+        if (document.body.classList.contains("welcome-mode")) {
+            if (welcomeOpening) return;
+            if ($("#modal").open) closeModal();
+            beginWelcomeOpening(id === "travel" ? "北境旅行.zip" : "项目素材.zip", () => completeOpenSample(id));
+            return;
+        }
+        completeOpenSample(id);
+    }
+    function completeOpenSample(id) {
         let tab = tabs.find((item) => item.id === id);
         if (!tab) {
             tab =
@@ -501,6 +510,7 @@ window.XdzipMain = (() => {
         },
     };
     function dispatch(id) {
+        if (welcomeOpening && ["open", "create"].includes(id)) return false;
         const command = commands[id];
         if (!command || (command.enabled && !command.enabled())) return false;
         command.run();

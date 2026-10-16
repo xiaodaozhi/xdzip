@@ -43,3 +43,7 @@ env -u QT_QUICK_BACKEND QT_QPA_PLATFORM=cocoa QSG_RHI_BACKEND=metal \
 复用 `scripts/collect-notices.py build/review/private-test/notices` 收集宿主解析的 Cargo 依赖（含构建工具）、项目、Qt 和字体通知。它不是完整产品 SBOM，不证明所有部署文件的许可材料或可替换链接义务均已满足。Qt 模块和素材按 [许可说明](../engineering/licensing.md) 继续核验。
 
 遵循 [CI 策略](../engineering/ci-policy.md)：macOS 只做 Apple Silicon 原生构建、测试和启动验证，不自动部署 Qt、签名、压缩或上传开发应用包。签名、发布身份、干净机器人工验收及独立安全审查需要相应人员与环境；本阶段不虚构这些结果。发行步骤按 [发布手册](../engineering/release-runbook.md) 执行。
+
+## 2026-10-16 用户人工验收反馈
+
+用户在本地 macOS 完成前述操作检查，并明确反馈“其他项已验收完毕，没有发现问题”。按用户结论登记其余清单项通过；本次剩余修订为深色密码 placeholder、创建后系统目录自动打开、“已保存”文案和欢迎页读取遮罩。修正基线为 1bd6d5e，人工反馈未单独附构建哈希、设备、后端或读屏工具记录，不把本机结论外推为 Windows/Linux、干净安装或独立安全审查通过。验收说明来源为用户本轮反馈，不要求重做已经确认的检查。

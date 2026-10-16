@@ -803,7 +803,42 @@ function setWelcomeMode(visible) {
     $("#welcome").hidden = !visible;
     if (!visible) document.body.classList.remove("welcome-artboard", "welcome-narrow");
 }
+let welcomeOpening = null;
+function cancelWelcomeOpening(restoreFocus = true) {
+    if (!welcomeOpening) return;
+    clearTimeout(welcomeOpening.timer);
+    welcomeOpening = null;
+    $("#welcome-opening")?.remove();
+    const content = $(".welcome-content");
+    if (content) content.inert = false;
+    if (restoreFocus) $("#welcome-open")?.focus();
+}
+function beginWelcomeOpening(name, complete = null) {
+    if (welcomeOpening) return;
+    const token = {};
+    welcomeOpening = token;
+    $(".welcome-content").inert = true;
+    const overlay = document.createElement("div");
+    overlay.id = "welcome-opening";
+    overlay.className = "welcome-opening";
+    overlay.innerHTML = `<section class="welcome-opening-card" role="dialog" aria-modal="true" aria-labelledby="welcome-opening-title"><h2 id="welcome-opening-title">${settingText("ui.821ffb8cd6a2")}</h2><p class="welcome-opening-name">${esc(name)}</p><div class="welcome-opening-progress" role="progressbar" aria-label="${settingText("welcome.opening.progress")}"><span></span></div><p role="status">${settingText("welcome.opening.note")}</p><button id="welcome-opening-cancel" class="button">${settingText("ui.caf06adff4f1")}</button></section>`;
+    $("#welcome").append(overlay);
+    const cancel = $("#welcome-opening-cancel");
+    cancel.onclick = () => cancelWelcomeOpening();
+    overlay.onkeydown = event => {
+        if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); cancelWelcomeOpening(); }
+        if (event.key === "Tab") { event.preventDefault(); cancel.focus(); }
+    };
+    cancel.focus();
+    // Demonstrate a cancellable wait; this prototype never reads user archive bytes.
+    if (complete) token.timer = setTimeout(() => {
+        if (welcomeOpening !== token) return;
+        cancelWelcomeOpening(false);
+        complete();
+    }, 500);
+}
 function showWelcome() {
+    cancelWelcomeOpening(false);
     state.selected.clear();
     setWelcomeMode(true);
     const shortcut = document.body.dataset.platform === "macos" ? "⌘ " : "Ctrl+";
@@ -1208,7 +1243,7 @@ function showResult() {
     const saved = t.completed.slice(0, 3).map(e=>e.name).join("、") + (t.completed.length > 3 ? ` 等 ${t.completed.length} 个文件` : "");
     dialog(
         header(title, ok ? created ? "压缩包已完成校验并保存。" : "所选内容已处理完成。" : created ? "临时压缩包未发布，原有文件保持不变。" : "已保留成功解压的文件。", ok ? "status-success" : cancel ? "cancelled-large" : "document-warning") +
-        `<div class="modal-content result-content"><div class="result-counts"><div><span>${icon("status-partial-success")}${created ? "已创建压缩包" : "成功"}</span><b>${successCount}</b></div><div><span>${icon("status-skipped")}跳过</span><b>${created ? 0 : t.skipped.length}</b></div><div><span>${icon(cancel ? "status-stopped" : "status-warning")}未完成</span><b>${failedCount}</b></div></div>
+        `<div class="modal-content result-content"><div class="result-counts"><div><span>${icon("status-partial-success")}${created ? "已保存" : "成功"}</span><b>${successCount}</b></div><div><span>${icon("status-skipped")}跳过</span><b>${created ? 0 : t.skipped.length}</b></div><div><span>${icon(cancel ? "status-stopped" : "status-warning")}未完成</span><b>${failedCount}</b></div></div>
         ${!ok ? `<section class="result-card"><h2>未完成的文件</h2><div class="result-inner">${t.failed.map(e=>resultFileRow(e,"unfinished",cancel ? "未完成" : t.result === "source" ? "源文件已变化" : "空间不足")).join("")}</div><div class="result-warning">${icon("status-warning")}<span>${reason}</span></div></section>` : ""}
         <section class="result-card"><h2>目标位置</h2><div class="result-location result-inner">${icon("folder")}<div><strong>${esc(t.target)}</strong><p>${created ? "压缩包已校验并保存。" : "已保存：" + (saved ? esc(saved) + "（" + bytes(t.completed.reduce((n,e)=>n+e.size,0)) + "）" : "尚未保存文件")}</p></div></div></section>
         <details class="result-details result-card"><summary>${icon("chevron-right")}<strong>查看处理明细</strong><span>${t.completed.length + t.failed.length + t.skipped.length} 个文件</span></summary><div class="result-list result-inner">${t.completed.map(e=>resultFileRow(e,"completed")).join("")}${t.failed.map(e=>resultFileRow(e,"unfinished")).join("")}${t.skipped.map(id=>resultFileRow(byId.get(id),"skipped")).join("")}</div></details></div>` +
@@ -1243,7 +1278,7 @@ function showCreate() {
     state.createItems = [byId.get("lake"),byId.get("sunrise"),byId.get("guide")].filter(Boolean);
     dialog(
         header("创建压缩包", "将文件整理为一个压缩包。", "archive-add") +
-        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label>${XdzipControls.segmentedMarkup({id:"create-format",label:"压缩格式",selected:"zip",options:[{id:"create-format-zip",value:"zip",text:"ZIP"},{id:"create-format-tar",value:"tar",text:"TAR"},{id:"create-format-gzip",value:"gzip",text:"TAR.GZ"}]})}</div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option value="0">0-不压缩</option><option value="1">1-快速压缩</option><option value="2" selected>2-正常压缩</option><option value="3">3-最大压缩</option></select></div><div class="create-form-row"><label for="create-volume">分卷</label><div class="create-volume-row"><select id="create-volume" class="field-select" data-editable-value="custom">${["不分卷", "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", "自定义"].map((label,i)=>`<option value="${i===13?"custom":i}">${label}</option>`).join("")}</select><select id="create-volume-unit" class="field-select"><option value="1">字节</option><option value="1000">KB</option><option value="1000000" selected>MB</option><option value="1000000000">GB</option></select></div></div><p id="create-volume-note" class="field-note">每卷使用所选字节上限，输出 .zip.001 等文件。</p><label class="check-label"><input id="create-use-password" type="checkbox">输入密码</label><input id="create-password" type="password" class="text-input" disabled aria-label="压缩包密码" placeholder="1–128 个 UTF-8 字节，不含控制字符" autocomplete="new-password"><p id="create-password-note" class="field-note">AES-256 加密文件内容，文件名仍可见。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名压缩包（演示覆盖确认）</label></div></details></div><label class="check-label"><input id="create-open-after" type="checkbox" checked>完成后打开目标文件夹</label></div>` +
+        `<div class="modal-content"><div class="field-group"><div class="field-label">添加文件</div><div class="create-input-panel"><div class="create-actions"><button id="add-input" class="button primary">${icon("file-text")}添加文件</button><button id="add-directory" class="button">${icon("folder")}添加文件夹</button><button id="clear-input" class="button">清空</button></div><div id="create-list" class="create-list"></div><p class="field-note" id="create-size"></p></div></div><div class="field-group"><div class="field-label">保存位置</div><div class="create-input-panel"><div class="create-form-row"><label for="create-name">文件名</label><input id="create-name" class="text-input" value="旅行资料.zip"></div><div class="create-form-row"><label for="create-destination">保存到</label><div class="create-target-row"><input id="create-destination" class="text-input" value="下载"><button id="create-change-target" class="button">更改</button></div></div><p id="create-valid" class="field-note success"></p></div></div><div class="field-group"><div class="field-label">压缩选项</div><div class="create-input-panel"><div class="create-form-row"><label>压缩格式</label>${XdzipControls.segmentedMarkup({id:"create-format",label:"压缩格式",selected:"zip",options:[{id:"create-format-zip",value:"zip",text:"ZIP"},{id:"create-format-tar",value:"tar",text:"TAR"},{id:"create-format-gzip",value:"gzip",text:"TAR.GZ"}]})}</div><div class="create-form-row" id="level-group"><label for="create-level">压缩级别</label><select id="create-level" class="field-select"><option value="0">0-不压缩</option><option value="1">1-快速压缩</option><option value="2" selected>2-正常压缩</option><option value="3">3-最大压缩</option></select></div><div class="create-form-row"><label for="create-volume">分卷</label><div class="create-volume-row"><select id="create-volume" class="field-select" data-editable-value="custom">${["不分卷", "3MB", "4MB", "5MB", "10MB", "20MB", "25MB (Gmail)", "100MB", "300MB", "650MB (CD)", "700MB (CD)", "4GB (FAT32)", "4.7GB (DVE)", "自定义"].map((label,i)=>`<option value="${i===13?"custom":i}">${label}</option>`).join("")}</select><select id="create-volume-unit" class="field-select"><option value="1">字节</option><option value="1000">KB</option><option value="1000000" selected>MB</option><option value="1000000000">GB</option></select></div></div><p id="create-volume-note" class="field-note">每卷使用所选字节上限，输出 .zip.001 等文件。</p><label class="check-label"><input id="create-use-password" type="checkbox">输入密码</label><input id="create-password" type="password" class="text-input" disabled aria-label="压缩包密码" placeholder="1–128 个 UTF-8 字节，不含控制字符" autocomplete="new-password"><p id="create-password-note" class="field-note">AES-256 加密文件内容，文件名仍可见。</p></div><details><summary class="details-title">重名演示</summary><div class="details-body"><label class="check-label"><input id="create-existing" type="checkbox">目标位置已有同名压缩包（演示覆盖确认）</label></div></details></div></div>` +
         footer(`<button id="cancel-modal" class="button" data-close>取消</button><button id="start-create" class="button primary">创建压缩包</button>`),
         "create", "C01", "#add-input",
     );
@@ -1764,6 +1799,8 @@ window.addEventListener("message", (event) => {
     XdzipDesign.platform(config.platform);
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);
+    if (config.welcomeOpening && ["welcome", "welcome-narrow"].includes(config.view))
+        beginWelcomeOpening("北境旅行.zip");
     if (config.welcomeDrag && ["welcome", "welcome-narrow"].includes(config.view)) {
         $("#welcome-drop").classList.add("drag-over");
         $("#welcome-drop span").textContent = "松开即可打开压缩包";

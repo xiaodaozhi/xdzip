@@ -3,6 +3,12 @@
   --ui-source-factor: 1.51171875;
   --main-density: 0.8;
   --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));
+  --welcome-opening-card-width: calc(360px * var(--ui-source-factor));
+  --welcome-opening-inset: calc(24px * var(--ui-source-factor));
+  --welcome-opening-gap: calc(12px * var(--ui-source-factor));
+  --welcome-opening-radius: calc(8px * var(--ui-source-factor));
+  --welcome-opening-title-size: calc(16px * var(--ui-source-factor));
+  --welcome-opening-dim-opacity: 0.86;
   --operation-source-factor: 1.209375;
   --operation-extract-density: calc(0.5291989664082688 * var(--ui-source-factor));
   --operation-progress-density: calc(0.5291989664082688 * var(--ui-source-factor));

@@ -233,7 +233,7 @@
       "one": " (%n file in total)",
       "other": " (%n files in total)"
     },
-    "ui.0e65135b7f52": "Saved archive / volumes",
+    "ui.0e65135b7f52": "Saved",
     "ui.053461ce86d2": "Succeeded",
     "ui.3ce2b5b2c6e8": "Incomplete files",
     "ui.4a4f9c0beda1": "Destination",
@@ -454,6 +454,8 @@
     "settings.clearPending": "Clear when saved",
     "settings.privacy": "All archive processing happens on this device. Files are not uploaded and telemetry is off by default. Clearing recent files does not delete the original files.",
     "settings.done": "Done",
-    "error.unsupportedLink": "The selected links cannot be safely restored. Only relative ZIP symbolic links resolving within this extraction are supported. Escaping, cyclic, dangling, parent-relative and hard links are refused. Symbolic links are not restored on Windows."
+    "error.unsupportedLink": "The selected links cannot be safely restored. Only relative ZIP symbolic links resolving within this extraction are supported. Escaping, cyclic, dangling, parent-relative and hard links are refused. Symbolic links are not restored on Windows.",
+    "welcome.opening.note": "Reading the archive directory. The file list will appear when ready.",
+    "welcome.opening.progress": "Read progress"
   }
 }

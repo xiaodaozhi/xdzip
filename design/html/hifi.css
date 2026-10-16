@@ -798,9 +798,9 @@ dialog[data-kind="create"] .modal-footer { padding:calc(10px * var(--ui-source-f
 dialog[data-kind="create"] .modal-content .button { min-height:calc(28px * var(--ui-source-factor)); }
 
 /* Operation roles are shared; window-specific footer shape overrides are forbidden. */
-dialog[data-kind] .button { border-width:calc(1px * var(--ui-source-factor)); border-radius:var(--operation-control-radius); border-color:var(--operation-field-border); }
+dialog[data-kind] .button, .welcome-opening-card .button { border-width:calc(1px * var(--ui-source-factor)); border-radius:var(--operation-control-radius); border-color:var(--operation-field-border); }
 dialog[data-kind] .button.danger { border-color:var(--ui-menu-danger); }
-dialog[data-kind] .button:not(.primary):not(.danger) { background:var(--operation-button-surface); }
+dialog[data-kind] .button:not(.primary):not(.danger), .welcome-opening-card .button { background:var(--operation-button-surface); }
 dialog[data-kind] .text-input,dialog[data-kind] .field-select { border-width:calc(1px * var(--ui-source-factor)); border-radius:var(--operation-control-radius); border-color:var(--operation-field-border); }
 dialog[data-kind] .ui-select-trigger { padding-left:var(--operation-control-field-text-inset); padding-right:calc(var(--operation-control-select-indicator-right-inset) - 1px * var(--ui-source-factor)); }
 dialog[data-kind] .ui-select-trigger>svg { width:var(--operation-control-select-indicator-size); height:var(--operation-control-select-indicator-size); }
@@ -981,3 +981,5 @@ dialog[data-kind="preflight"] .preflight-body { padding:calc(20px * var(--ui-sou
 /* No note placeholder: action-only footers retain the shared logical height. */
 dialog[data-kind] .action-only-footer { min-height:var(--operation-footer-height); padding:calc(12px * var(--ui-source-factor)) calc(25px * var(--ui-source-factor)); }
 .preflight-body .preflight-note { font-size:calc(12px * var(--ui-source-factor)); }
+
+dialog[data-kind] .text-input::placeholder { color:var(--secondary); opacity:1; }

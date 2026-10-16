@@ -41,3 +41,5 @@ WelcomePage、WelcomeAction 仅表达布局和意图。启动及关闭压缩包�
 自动化入口为 tst_welcome.qml、browser_test.cpp 的 welcomeOpensRealArchivesAndReturns 与 scripts/check-qt-welcome.py。三平台 CI 在 DPR 1、1.25、2 检查真实打开、关闭、失败恢复及 36 项几何，菜单同时检查 240 宽、13 字号。离屏结果不代替原生拖放、文件选择器、读屏和输入法人工验收。
 
 标题栏修订：初版欢迎页中对标题栏的专属样式已撤销。Qt ArchiveTabs 恢复接入前的组件原样，HTML 复用主窗口原有源画布及相同比例；欢迎页只替换正文。旧 PNG 与哈希保持历史记录，新修订为 screens/welcome-titlebar-*.png，源为 design/hifi/sources/welcome.html。回归比较欢迎页与打开压缩包后的标题栏、标签及外观按钮几何，防止空态再次改变应用框架。
+
+2026-10-16 读取状态修订：首次打开期间的取消入口移入正文浮动遮罩，进度未知时显示活动进度条，不模拟百分比；详见 [读取遮罩契约](welcome-opening.md)。原始欢迎页位图保留，动态稿提供 opening=1 状态。

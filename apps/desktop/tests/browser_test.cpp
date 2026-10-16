@@ -9,6 +9,7 @@
 #include <QAbstractItemModelTester>
 #include <QAccessible>
 #include <QClipboard>
+#include <QDesktopServices>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QInputMethodEvent>
@@ -75,6 +76,16 @@ static bool checkedTarget(BrowserController *controller, const QString &fixtureP
 #endif
     return false;
 }
+
+class DesktopUrlRecorder : public QObject {
+    Q_OBJECT
+  public:
+    int count = 0;
+  public slots:
+    void record(const QUrl &) {
+        ++count;
+    }
+};
 
 class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
@@ -507,6 +518,29 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->tasks().size(), 0);
         controller->requestClose();
     }
+    void welcomeOpeningCanCancelRealRead() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *welcome = findVisual(window->contentItem(), "welcomePage");
+        auto *overlay = findVisual(window->contentItem(), "welcomeOpeningOverlay");
+        auto *cancel = findVisual(window->contentItem(), "welcomeOpeningCancel");
+        QVERIFY(controller && welcome && overlay && cancel);
+        controller->openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+        QVERIFY(controller->browsingBusy() && !controller->ready());
+        QVERIFY(overlay->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(cancel, "clicked"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
+        QVERIFY(!overlay->isVisible());
+        // Completion may beat cancellation; either terminal state must remove the mask.
+        if (!controller->ready())
+            QVERIFY(welcome->isVisible());
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QVERIFY(!welcome->isVisible() && !overlay->isVisible());
+    }
     void creationControlsMatchReviewedSource() {
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
@@ -675,15 +709,13 @@ class BrowserTest : public QObject {
             auto *group = findVisual(create->contentItem(), "createFormat");
             auto *name = findVisual(create->contentItem(), "createName");
             auto *target = findVisual(create->contentItem(), "createTarget");
-            auto *after = findVisual(create->contentItem(), "createOpenAfter");
-            QVERIFY(group && name && target && after);
+            QVERIFY(group && name && target);
             group->setProperty("currentIndex", formatIndex);
             const QString suffix =
                 formatIndex == 1 ? QStringLiteral(".tar") : QStringLiteral(".tar.gz");
             QTRY_VERIFY(name->property("text").toString().endsWith(suffix));
             name->setProperty("text", QStringLiteral("归档") + suffix);
             target->setProperty("text", output.path());
-            after->setProperty("checked", false);
             QTRY_VERIFY(!controller->busy());
             controller->checkCreationTarget(output.path());
             QTRY_VERIFY(!controller->busy());
@@ -803,12 +835,10 @@ class BrowserTest : public QObject {
             Q_ARG(bool, true)));
         auto *name = findVisual(create->contentItem(), "createName");
         auto *target = findVisual(create->contentItem(), "createTarget");
-        auto *after = findVisual(create->contentItem(), "createOpenAfter");
         auto *method = findVisual(create->contentItem(), "createLevel");
-        QVERIFY(name && target && after && method);
+        QVERIFY(name && target && method);
         name->setProperty("text", QStringLiteral("创建.zip"));
         target->setProperty("text", output.path());
-        after->setProperty("checked", false);
         method->setProperty("currentIndex", 0);
         auto *level = findVisual(create->contentItem(), "createLevel");
         QVERIFY(level);
@@ -885,6 +915,9 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(controller->requestClose());
     }
     void explicitOpenConsumesQueuedCreationOutput() {
+        DesktopUrlRecorder recorder;
+        QDesktopServices::setUrlHandler("file", &recorder, "record");
+        const auto restoreHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("file"); });
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
         const auto source = input.path() + "/data.txt";
@@ -905,12 +938,13 @@ class BrowserTest : public QObject {
             }
         });
         QSignalSpy opened(&controller, &BrowserController::archiveOpened);
-        controller.startCreation({source}, output.path(), "created.zip", 8, 6, false);
+        controller.startCreation({source}, output.path(), "created.zip", 8, 6, true);
         QTRY_VERIFY_WITH_TIMEOUT(openedExplicitly && controller.ready() && !controller.busy(),
                                  10000);
         QTest::qWait(100);
         QCOMPARE(opened.count(), 1);
         QCOMPARE(controller.archiveTotal(), 1);
+        QCOMPARE(recorder.count, 0);
         controller.requestClose();
         QTRY_VERIFY(controller.requestClose());
     }

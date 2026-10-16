@@ -10,6 +10,7 @@ Rectangle {
     property bool canCreate: true
     property bool busy: false
     property string message: ""
+    property string openingName: ""
     property bool dropSupported: false
     property string dropMessage: ""
     signal openRequested
@@ -32,6 +33,7 @@ Rectangle {
     }
     color: Theme.surface
     ScrollView {
+        enabled: !root.busy
         anchors.fill: parent
         clip: true
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
@@ -222,12 +224,105 @@ Rectangle {
                     color: Theme.textSecondary
                     Accessible.role: Accessible.AlertMessage
                 }
-                OperationButton {
-                    Layout.topMargin: visible ? 8 : 0
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: root.busy
-                    text: qsTrId("ui.caf06adff4f1")
-                    onClicked: root.cancelRequested()
+
+            }
+        }
+    }
+
+    FocusScope {
+        id: openingOverlay
+        objectName: "welcomeOpeningOverlay"
+        anchors.fill: parent
+        visible: root.busy
+        z: 10
+        onVisibleChanged: {
+            if (visible) openingCancel.forceActiveFocus(Qt.OtherFocusReason);
+            else Qt.callLater(function () { if (root.visible && root.canOpen) root.focusOpen(); });
+        }
+        Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(Theme.canvas.r, Theme.canvas.g, Theme.canvas.b, Theme.welcomeOpeningDimOpacity)
+        }
+        MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons }
+        Rectangle {
+            objectName: "welcomeOpeningCard"
+            anchors.centerIn: parent
+            width: Math.min(Theme.welcomeOpeningCardWidth, parent.width - 32)
+            height: Math.min(openingContent.implicitHeight + Theme.welcomeOpeningInset * 2, parent.height - 16)
+            radius: Theme.welcomeOpeningRadius
+            color: Theme.surface
+            border.color: Theme.border
+            Accessible.role: Accessible.Dialog
+            Accessible.name: qsTrId("ui.821ffb8cd6a2")
+            ScrollView {
+                id: openingScroll
+                anchors.fill: parent
+                anchors.margins: Theme.welcomeOpeningInset
+                contentWidth: availableWidth
+                contentHeight: openingContent.implicitHeight
+                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                clip: true
+                ColumnLayout {
+                    id: openingContent
+                    width: openingScroll.availableWidth
+                    height: implicitHeight
+                    spacing: Theme.welcomeOpeningGap
+                    Text {
+                        objectName: "welcomeOpeningTitle"
+                        Layout.fillWidth: true
+                        text: qsTrId("ui.821ffb8cd6a2")
+                        color: Theme.text
+                        font.pixelSize: Theme.welcomeOpeningTitleSize * Theme.fontScale
+                        font.bold: true
+                        wrapMode: Text.Wrap
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.openingName
+                        textFormat: Text.PlainText
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.welcomeMainBodySize * Theme.fontScale
+                        elide: Text.ElideMiddle
+                    }
+                    ProgressBar {
+                        id: readingProgress
+                        objectName: "welcomeOpeningProgress"
+                        Layout.fillWidth: true
+                        indeterminate: true
+                        palette.highlight: Theme.accent
+                        Accessible.name: qsTrId("welcome.opening.progress")
+                        background: Rectangle { implicitHeight: 4; color: Theme.taskTrack; radius: 2 }
+                        contentItem: Item {
+                            implicitHeight: 4
+                            Rectangle {
+                                id: readingBeam
+                                width: parent.width * .32
+                                height: parent.height
+                                radius: 2
+                                color: Theme.accent
+                                SequentialAnimation on x {
+                                    running: root.busy
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 0; to: Math.max(0, readingProgress.availableWidth - readingBeam.width); duration: 1000; easing.type: Easing.InOutSine }
+                                    NumberAnimation { to: 0; duration: 1000; easing.type: Easing.InOutSine }
+                                }
+                            }
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: qsTrId("welcome.opening.note")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.welcomeMainBodySize * Theme.fontScale
+                        wrapMode: Text.Wrap
+                    }
+                    OperationButton {
+                        id: openingCancel
+                        objectName: "welcomeOpeningCancel"
+                        Layout.alignment: Qt.AlignRight
+                        text: qsTrId("ui.caf06adff4f1")
+                        onClicked: root.cancelRequested()
+                    }
                 }
             }
         }

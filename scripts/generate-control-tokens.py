@@ -24,6 +24,12 @@ def main():
                     f'  --ui-source-factor: {source_factor};',
                     f'  --main-density: {layout["main"]["density"]};',
                     '  --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));']
+    welcome = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text())
+    for key, value in welcome.items():
+        if key.startswith('opening_') and isinstance(value, (int, float)):
+            name = key.replace('_', '-')
+            css = str(value) if key.endswith('opacity') else f'calc({value}px * var(--ui-source-factor))'
+            declarations.append(f'  --welcome-{name}: {css};')
     operation_ratio = layout['operation']['source_to_logical']
     declarations.append(f'  --operation-source-factor: {operation_ratio[1] / operation_ratio[0]};')
     for kind, density in layout['operation']['oversized_source_density'].items():
