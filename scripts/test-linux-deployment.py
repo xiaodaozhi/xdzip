@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 import tempfile
 import unittest
-from deploy_linux import qml_roots, relative_rpath
+from deploy_linux import qml_roots, relative_rpath, runtime_origin
 from verify_linux_runtime import check_events
 from package_linux import archive_payload
 
@@ -26,6 +26,16 @@ class LinuxDeploymentTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Unresolved QML'):qml_roots(entries,sdk)
             entries[-1]={'name':'Unknown.Required','type':'module','path':str(sdk/'outside')}
             with self.assertRaisesRegex(ValueError,'escapes'):qml_roots(entries,sdk)
+
+    def test_copied_icu_sibling_is_an_internal_dependency(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);sdk=base/'sdk';payload=base/'app'
+            (sdk/'lib').mkdir(parents=True);(payload/'lib').mkdir(parents=True)
+            copied=payload/'lib/libicudata.so.73';copied.touch()
+            self.assertEqual(runtime_origin(copied,sdk,payload),'artifact')
+            self.assertEqual(runtime_origin(sdk/'lib/libicudata.so.73',sdk,payload),'sdk')
+            with self.assertRaisesRegex(ValueError,'Unexpected external'):
+                runtime_origin(base/'unknown/libicudata.so.73',sdk,payload)
 
     def test_nested_plugin_origin_paths_remain_inside_relocatable_root(self):
         with tempfile.TemporaryDirectory() as temp:

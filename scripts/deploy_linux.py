@@ -64,6 +64,14 @@ def system_package(path):
     raise ValueError('System runtime dependency has no Debian package owner: '+path.name)
 
 
+def runtime_origin(path,sdk,output):
+    if within(path,output):return 'artifact'
+    if within(path,sdk):return 'sdk'
+    if str(path).startswith(('/lib/','/lib64/','/usr/lib/','/usr/lib64/')) and not path.name.startswith('libQt'):
+        return 'system'
+    raise ValueError('Unexpected external runtime dependency: '+path.name)
+
+
 def deploy(app,sdk,output,notices):
     if sys.platform!='linux' or platform.machine()!='x86_64':raise ValueError('Deployment requires native Linux x86_64')
     app,sdk,output=app.resolve(),sdk.resolve(),output.resolve()
@@ -112,7 +120,13 @@ def deploy(app,sdk,output,notices):
         for name,source in linux_imports(command('ldd',str(binary),env=env)):
             if source is None or not source.is_file():raise ValueError('Unresolved runtime import: '+name)
             source=source.resolve()
-            if within(source,sdk):
+            origin=runtime_origin(source,sdk,output)
+            if origin=='artifact':
+                # ICU and some SDK binaries use DT_RPATH=$ORIGIN, which can prefer
+                # an already copied sibling over the staging SDK search path.
+                if source not in inspected:pending.append(source)
+                continue
+            if origin=='sdk':
                 if Path(name).name!=name:raise ValueError('Unsafe native import name')
                 target=output/'lib'/name
                 if target.exists():
@@ -122,8 +136,6 @@ def deploy(app,sdk,output,notices):
                         raise ValueError('Conflicting runtime library names')
                 else:copy(source,target);pending.append(target)
             else:
-                if not str(source).startswith(('/lib/','/lib64/','/usr/lib/','/usr/lib64/')) or source.name.startswith('libQt'):
-                    raise ValueError('Unexpected external runtime dependency: '+source.name)
                 packages.add(system_package(source));system_libraries.add(name)
         command('patchelf','--set-rpath',relative_rpath(binary,output),str(binary))
         if command('patchelf','--print-rpath',str(binary)).strip()!=relative_rpath(binary,output):
