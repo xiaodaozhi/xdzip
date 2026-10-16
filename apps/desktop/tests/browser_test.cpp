@@ -2958,10 +2958,12 @@ class BrowserTest : public QObject {
         QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, checkPoint);
         QTRY_COMPARE(controller->selectedCount(), 1);
         QTest::qWait(30);
-        QVERIFY(window->grabWindow().save("zip-browser.png"));
+        // Direct CI invocations also run from the source root; never save there.
+        const QDir captures(QCoreApplication::applicationDirPath());
+        QVERIFY(window->grabWindow().save(captures.filePath("zip-browser.png")));
         window->setProperty("darkMode", true);
         QTest::qWait(30);
-        QVERIFY(window->grabWindow().save("zip-browser-dark.png"));
+        QVERIFY(window->grabWindow().save(captures.filePath("zip-browser-dark.png")));
         window->setProperty("darkMode", false);
         controller->inspectSelection();
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 5000);
@@ -2972,7 +2974,7 @@ class BrowserTest : public QObject {
         QCOMPARE(reportWindow->modality(), Qt::NonModal);
         QVERIFY(reportWindow->flags().testFlag(Qt::WindowTitleHint));
         QVERIFY(QTest::qWaitForWindowExposed(reportWindow));
-        QVERIFY(reportWindow->grabWindow().save("zip-preflight.png"));
+        QVERIFY(reportWindow->grabWindow().save(captures.filePath("zip-preflight.png")));
         if (!qEnvironmentVariableIsEmpty("XDZIP_VISUAL_AUDIT")) {
             const auto directory = qEnvironmentVariable("XDZIP_VISUAL_AUDIT");
             QVERIFY(QDir().mkpath(directory));
