@@ -18,7 +18,11 @@ int main(int argc, char *argv[]) {
         return 5;
     if (!installUiFont())
         return 5;
+#ifdef Q_OS_MACOS
+    application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon-macos.png")));
+#else
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
+#endif
     QQmlApplicationEngine engine;
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,

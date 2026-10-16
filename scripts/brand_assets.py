@@ -105,8 +105,11 @@ def brand_shapes(theme: str, document_profile: str = 'ui') -> dict[str, str]:
     }
 
 
-def master_svg(kind: str) -> str:
-    """Produce a transparent 1024-pixel master, with a 90% optical body and transparent shadow clearance."""
+def master_svg(kind: str, platform: str = 'default') -> str:
+    """Produce the shared vector with platform-specific optical framing."""
+    if platform not in ('default', 'macos'):
+        raise ValueError(f'Unknown icon platform: {platform}')
+    viewbox = '-20 -20 1064 1064' if platform == 'macos' else '32 32 960 960'
     prefix = 'xdzip-master'
     defs = gradients(prefix)
     effects = (
@@ -143,7 +146,7 @@ def master_svg(kind: str) -> str:
     else:
         raise ValueError(f'Unknown brand master: {kind}')
     return ('<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" '
-            f'viewBox="32 32 960 960" fill="none">{defs}{effects}{content}</svg>\n')
+            f'viewBox="{viewbox}" fill="none">{defs}{effects}{content}</svg>\n')
 
 
 def mark_svg() -> str:
@@ -176,8 +179,13 @@ def brand_export_specs() -> list[dict]:
                             'optical_body_height': 0.90,
                             'raster_profile': ('Compact document at 16/24; balanced document at 32; master lighting at 48–1024'
                                                if stem == 'xdzip-zip' else 'UI detail at 16/24/32; master lighting at 48–1024')})
+        for size in EXPORT_SIZES:
+            entries.append({'file': f'brand/macos/{png_name(stem, size)}', 'kind': 'platform-icon',
+                            'purpose': purpose, 'source': source, 'size': [size, size], 'format': 'png',
+                            'platform': 'macos', 'optical_body_height': 864 / 1064})
         entries.append({'file': f'brand/{stem}.ico', 'kind': 'platform-icon', 'purpose': purpose,
                         'source': source, 'format': 'ico', 'sizes': list(ICO_SIZES)})
         entries.append({'file': f'brand/{stem}.icns', 'kind': 'platform-icon', 'purpose': purpose,
-                        'source': source, 'format': 'icns', 'chunks': ICNS_CHUNKS.copy()})
+                        'source': source, 'format': 'icns', 'platform': 'macos',
+                        'optical_body_height': 864 / 1064, 'chunks': ICNS_CHUNKS.copy()})
     return entries

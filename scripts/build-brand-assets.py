@@ -31,9 +31,9 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def source_svg(stem: str, size: int) -> str:
+def source_svg(stem: str, size: int, platform: str = 'default') -> str:
     if size > 32:
-        return master_svg('application' if stem == 'xdzip' else 'archive')
+        return master_svg('application' if stem == 'xdzip' else 'archive', platform)
     icon = 'app-mark' if stem == 'xdzip' else 'archive'
     # Enlarge the document's badge at 16/24 pixels so its U opening and four
     # staggered ribbons survive native rasterization. The signature is unchanged.
@@ -43,15 +43,15 @@ def source_svg(stem: str, size: int) -> str:
     shape = brand_shapes('light', document_profile=profile)[icon]
     # Snap the 20-unit silhouette to an even number of physical pixels so
     # near-opaque edge rows do not disappear at 16/24/32 px.
-    body_pixels = 2 * round(size * .90 / 2)
+    body_pixels = 2 * round(size * (864 / 1064 if platform == 'macos' else .90) / 2)
     extent = 20 * size / body_pixels
     inset = (24 - extent) / 2
     return ('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" '
             f'viewBox="{inset:.12g} {inset:.12g} {extent:.12g} {extent:.12g}" fill="none">{shape}</svg>\n')
 
 
-def png_bytes(stem: str, size: int) -> bytes:
-    return (OUTPUT / png_name(stem, size)).read_bytes()
+def png_bytes(stem: str, size: int, platform: str = 'default') -> bytes:
+    return (OUTPUT / ('macos' if platform == 'macos' else '') / png_name(stem, size)).read_bytes()
 
 
 def ico_bytes(stem: str) -> bytes:
@@ -70,7 +70,7 @@ def ico_bytes(stem: str) -> bytes:
 def icns_bytes(stem: str) -> bytes:
     chunks = []
     for tag, size in ICNS_CHUNKS.items():
-        payload = png_bytes(stem, size)
+        payload = png_bytes(stem, size, 'macos')
         chunks.append(tag.encode('ascii') + struct.pack('>I', len(payload) + 8) + payload)
     data = b''.join(chunks)
     return b'icns' + struct.pack('>I', len(data) + 8) + data
@@ -89,36 +89,39 @@ def validate() -> None:
         reference.verify()
     for stem in ['xdzip', 'xdzip-zip']:
         source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
-        for size in EXPORT_SIZES:
-            path = OUTPUT / png_name(stem, size)
-            with Image.open(path) as picture:
-                if picture.size != (size, size) or picture.mode != 'RGBA':
-                    raise ValueError(f'Wrong brand canvas: {path.name}')
-                if picture.info.get('xdzip-source-sha256') != source_hash:
-                    raise ValueError(f'Stale brand PNG source receipt: {path.name}')
-                if picture.info.get('xdzip-render-sha256') != digest(source_svg(stem, size).encode()):
-                    raise ValueError(f'Stale brand PNG rendering profile: {path.name}')
-                alpha = picture.getchannel('A')
-                if alpha.getextrema() != (0, 255) or not alpha.getbbox():
-                    raise ValueError(f'Missing transparent margin or opaque body: {path.name}')
-                # Measure the 50%-coverage silhouette, never the shadow's alpha
-                # tails. An independent 90% target catches double padding in any
-                # size; 1.25 px covers edge antialiasing and small-icon rounding.
-                bounds = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
-                # Large document paper has a 1.7-unit outline beyond its path.
-                expected_height = size * (.90 + (1.7 / 960 if stem == 'xdzip-zip' and size > 32 else 0))
-                if not bounds or abs(bounds[3] - bounds[1] - expected_height) > 1.25:
-                    raise ValueError(f'Wrong optical body height: {path.name}: {bounds}')
-                expected_width = (size * .90 if stem == 'xdzip' else
-                                  size * (641.7 / 960) if size > 32 else .76 * (2 * round(size * .90 / 2)))
-                if abs(bounds[2] - bounds[0] - expected_width) > 1.25:
-                    raise ValueError(f'Wrong optical body width: {path.name}: {bounds}')
-                if any(abs((bounds[axis] + bounds[axis + 2]) / 2 - size / 2) > 1
-                       for axis in (0, 1)):
-                    raise ValueError(f'Off-centre optical body: {path.name}: {bounds}')
-                if any(alpha.getpixel(point) for point in [(0, 0), (size - 1, 0),
-                                                            (0, size - 1), (size - 1, size - 1)]):
-                    raise ValueError(f'Clipped brand corner: {path.name}')
+        for platform in ('default', 'macos'):
+            for size in EXPORT_SIZES:
+                path = OUTPUT / ('macos' if platform == 'macos' else '') / png_name(stem, size)
+                with Image.open(path) as picture:
+                    if picture.size != (size, size) or picture.mode != 'RGBA':
+                        raise ValueError(f'Wrong brand canvas: {path.name}')
+                    if picture.info.get('xdzip-source-sha256') != source_hash:
+                        raise ValueError(f'Stale brand PNG source receipt: {path.name}')
+                    if picture.info.get('xdzip-render-sha256') != digest(source_svg(stem, size, platform).encode()):
+                        raise ValueError(f'Stale brand PNG rendering profile: {path.name}')
+                    alpha = picture.getchannel('A')
+                    if alpha.getextrema() != (0, 255) or not alpha.getbbox():
+                        raise ValueError(f'Missing transparent margin or opaque body: {path.name}')
+                    target = 864 / 1064 if platform == 'macos' else .90
+                    canvas = 1064 if platform == 'macos' else 960
+                    # Measure the 50%-coverage silhouette, never the shadow's alpha
+                    # tails. Platform-specific targets catch double padding in every
+                    # size; 1.25 px covers edge antialiasing and small-icon rounding.
+                    bounds = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
+                    # Large document paper has a 1.7-unit outline beyond its path.
+                    expected_height = size * (target + (1.7 / canvas if stem == 'xdzip-zip' and size > 32 else 0))
+                    if not bounds or abs(bounds[3] - bounds[1] - expected_height) > 1.25:
+                        raise ValueError(f'Wrong optical body height: {path.name}: {bounds}')
+                    expected_width = (size * target if stem == 'xdzip' else
+                                      size * (641.7 / canvas) if size > 32 else .76 * (2 * round(size * target / 2)))
+                    if abs(bounds[2] - bounds[0] - expected_width) > 1.25:
+                        raise ValueError(f'Wrong optical body width: {path.name}: {bounds}')
+                    if any(abs((bounds[axis] + bounds[axis + 2]) / 2 - size / 2) > 1
+                           for axis in (0, 1)):
+                        raise ValueError(f'Off-centre optical body: {path.name}: {bounds}')
+                    if any(alpha.getpixel(point) for point in [(0, 0), (size - 1, 0),
+                                                                (0, size - 1), (size - 1, size - 1)]):
+                        raise ValueError(f'Clipped brand corner: {path.name}')
         ico = (OUTPUT / f'{stem}.ico').read_bytes()
         if ico != ico_bytes(stem):
             raise ValueError(f'Stale ICO directory or embedded images: {stem}')
@@ -140,13 +143,14 @@ def validate() -> None:
                 decoded = image.icns.getimage(size)
                 if decoded.size != (size[0] * size[2], size[1] * size[2]):
                     raise ValueError(f'Unreadable ICNS size {size}: {stem}')
-    print('2 brand families: 18 transparent PNGs, 14 ICO representations, 22 ICNS chunks; sources and receipts valid')
+    print('2 brand families: 36 transparent PNGs, 14 ICO representations, 22 ICNS chunks; sources and receipts valid')
 
 
 def build(reference: Path | None) -> None:
     from playwright.sync_api import sync_playwright
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
+    (OUTPUT / 'macos').mkdir(exist_ok=True)
     if reference:
         if reference.resolve() == (OUTPUT / 'identity-reference.png').resolve():
             raise ValueError('Reference source and destination must be different')
@@ -163,18 +167,19 @@ def build(reference: Path | None) -> None:
         try:
             page = browser.new_page(device_scale_factor=1)
             page.route('**/*', lambda route: route.abort())
-            for stem in ['xdzip', 'xdzip-zip']:
-                source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
-                for size in EXPORT_SIZES:
-                    svg = source_svg(stem, size)
-                    page.set_viewport_size({'width': size, 'height': size})
-                    page.set_content('<style>html,body{margin:0;background:transparent}svg{display:block;width:100vw;height:100vh}</style>' + svg)
-                    raw = page.screenshot(omit_background=True)
-                    with Image.open(io.BytesIO(raw)) as image:
-                        receipt = PngImagePlugin.PngInfo()
-                        receipt.add_text('xdzip-source-sha256', source_hash)
-                        receipt.add_text('xdzip-render-sha256', digest(svg.encode()))
-                        image.convert('RGBA').save(OUTPUT / png_name(stem, size), pnginfo=receipt)
+            for platform in ('default', 'macos'):
+                for stem in ['xdzip', 'xdzip-zip']:
+                    source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
+                    for size in EXPORT_SIZES:
+                        svg = source_svg(stem, size, platform)
+                        page.set_viewport_size({'width': size, 'height': size})
+                        page.set_content('<style>html,body{margin:0;background:transparent}svg{display:block;width:100vw;height:100vh}</style>' + svg)
+                        raw = page.screenshot(omit_background=True)
+                        with Image.open(io.BytesIO(raw)) as image:
+                            receipt = PngImagePlugin.PngInfo()
+                            receipt.add_text('xdzip-source-sha256', source_hash)
+                            receipt.add_text('xdzip-render-sha256', digest(svg.encode()))
+                            image.convert('RGBA').save(OUTPUT / ('macos' if platform == 'macos' else '') / png_name(stem, size), pnginfo=receipt)
         finally:
             browser.close()
     for stem in ['xdzip', 'xdzip-zip']:

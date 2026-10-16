@@ -64,9 +64,10 @@ def aliases() -> dict[tuple[str, str], list[str]]:
     result: dict[tuple[str, str], list[str]] = {}
     for node in ET.parse(REPO / 'apps/desktop/ui.qrc').iter('file'):
         if node.text and node.text.endswith('.png'):
-            if (node.attrib.get('alias') == 'assets/app-icon.png'
-                    and node.text == '../../design/assets/brand/xdzip.png'):
-                # This one 512px application export is inventoried as a platform
+            if ((node.attrib.get('alias'), node.text) in (
+                    ('assets/app-icon.png', '../../design/assets/brand/xdzip.png'),
+                    ('assets/app-icon-macos.png', '../../design/assets/brand/macos/xdzip.png'))):
+                # These 512px application exports are inventoried as platform
                 # icon below, never as a themed 24-unit interface glyph.
                 continue
             name = Path(node.text).stem.split('@')[0]
@@ -181,7 +182,7 @@ def brand_entries() -> list[dict]:
         path = ROOT / spec['file']
         if not path.is_file():
             raise FileNotFoundError(f'Missing brand export; run build-brand-assets.py: {spec["file"]}')
-        entry = {'id': 'brand/' + Path(spec['file']).name, 'category': 'brand',
+        entry = {'id': spec['file'], 'category': 'brand',
                  'usage': 'application-brand' if spec['kind'] != 'brand-reference' else 'brand-source-reference',
                  **spec, 'sha256': digest(path)}
         if 'source' in spec:
@@ -193,6 +194,9 @@ def brand_entries() -> list[dict]:
         if spec['file'] == 'brand/xdzip.png':
             entry['runtime_usage']['qt_aliases'] = ['assets/app-icon.png']
             entry['runtime_usage']['platform_resources'] = ['Linux application icon']
+        elif spec['file'] == 'brand/macos/xdzip.png':
+            entry['runtime_usage']['qt_aliases'] = ['assets/app-icon-macos.png']
+            entry['runtime_usage']['platform_resources'] = ['macOS runtime Dock icon']
         elif spec['file'] == 'brand/xdzip.ico':
             entry['runtime_usage']['platform_resources'] = ['Windows application icon resource']
         elif spec['file'] == 'brand/xdzip.icns':

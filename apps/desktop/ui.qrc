@@ -67,6 +67,7 @@
     <file alias="assets/dark/document-check.png">../../design/assets/png/dark/document-check@9x.png</file>
     <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
     <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/app-icon-macos.png">../../design/assets/brand/macos/xdzip.png</file>
     <file alias="assets/app-icon.png">../../design/assets/brand/xdzip.png</file>
     <file alias="assets/light/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
     <file alias="assets/dark/app-mark.png">../../design/assets/png/dark/app-mark@3x.png</file>

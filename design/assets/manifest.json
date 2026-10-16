@@ -7936,6 +7936,8 @@
       "purpose": "application-icon",
       "source": "brand/xdzip.svg",
       "format": "icns",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
       "chunks": {
         "icp4": 16,
         "icp5": 32,
@@ -7949,7 +7951,7 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "f3b194857df73541057e8356730c34d333b6a14f6558f9385d9e572eac26a146",
+      "sha256": "acbe8ad88a5e48bc747123e60bcd2654875b659c6ae4a6b9f5e650bdc038938e",
       "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
       "runtime_usage": {
         "qt_aliases": [],
@@ -8209,6 +8211,8 @@
       "purpose": "archive-document-icon",
       "source": "brand/xdzip-zip.svg",
       "format": "icns",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
       "chunks": {
         "icp4": 16,
         "icp5": 32,
@@ -8222,7 +8226,7 @@
         "ic13": 256,
         "ic14": 512
       },
-      "sha256": "8e3f91f07ddabd9d592b5b73c9674caaedfc519baf02d6d0c571791c7425a4f9",
+      "sha256": "d63932f962c7f0bfd7f15a172d75013f45c4d462098a2cb71dade187f981cc9c",
       "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
       "runtime_usage": {
         "qt_aliases": [],
@@ -23518,6 +23522,406 @@
       ],
       "usage": "runtime-and-design",
       "sha256": "6c9d879108c634f13a548326dc9da59563d1735aff5e6de2fef36f3a3733ae46"
+    },
+    {
+      "id": "brand/macos/xdzip-16.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-16.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        16,
+        16
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "f011d1d15a09bb2a4c81d236c4ee4311fbc9ace76033487d871a71edd792aae9",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-24.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-24.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        24,
+        24
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "9686d037a43ae5f797eecdc11a1097d2ebeb6c449d042d19fe776e5aa881ec72",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-32.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-32.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        32,
+        32
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "5c0d4e5c2cd81f976bff47ff4312d07b46987dfe93394174616df870469a4a86",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-48.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-48.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        48,
+        48
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "d3d87e0c1ea581e782f24f3904675e5a89e30d3cabc4950e784075ceb6b22e01",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-64.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-64.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        64,
+        64
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "e20bd15489dacb0a2d041c09cbf46ffb442ceab5511e722591fe1e609f0eb633",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-128.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-128.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        128,
+        128
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "697270ff4cc800396d3dc7c6d074820f1d24a19320aac14208e86f8450033bec",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-256.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-256.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        256,
+        256
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "736e405908e2799ad1506c606d98d62cbe8f4a32daa890a4ff277c24f82fe6ec",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "722c63a9f88d0010018673d85836c154a9f356249de541fe1220b42aad3290e1",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [
+          "assets/app-icon-macos.png"
+        ],
+        "platform_resources": [
+          "macOS runtime Dock icon"
+        ]
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-1024.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-1024.png",
+      "kind": "platform-icon",
+      "purpose": "application-icon",
+      "source": "brand/xdzip.svg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "c4c8f571dba6060d6fe4126a16f3cf2c7d84ec274d96ae7097f40b6f55f6c741",
+      "source_sha256": "b01c2bd73894e945e2cdbee7d9cae324ae4b02f4620782e4e435feaf2ffa9fb9",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-16.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-16.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        16,
+        16
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "2e98a063d0eb651d177dd0264195bd8cf2e9022f634a22f7e4b680a2d7d27d19",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-24.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-24.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        24,
+        24
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "d1177a0a0f2d535b6a5b5fe52f254e3ac7cbb8a6dafbdfb3085cfb93ef38bc11",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-32.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-32.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        32,
+        32
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "f4fd006e98284dfba868d3df56510877453d24e6e46cbb6108e8c89bee347acf",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-48.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-48.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        48,
+        48
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "5df9e77181aecbab7d5b707cdc3d17a4543ad434710163fa2610bfd3a7e8d125",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-64.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-64.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        64,
+        64
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "7b86faec879a629407f9f2272f2e68a336f2b777a7c358d5e5cd8d53dc61e6f5",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-128.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-128.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        128,
+        128
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "6de164f0b791159eecc4babfe1c4cfc41b4e0776e60eea86a3822d08e0a61241",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-256.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-256.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        256,
+        256
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "908d1878aa78d5d438eee7d046812d228ea8dd671cba1e32cd15ed57afdd821a",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        512,
+        512
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "050776506917dd582bee4297c2a43fe45468314bfb2786bf99cb21176b82a642",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
+    },
+    {
+      "id": "brand/macos/xdzip-zip-1024.png",
+      "category": "brand",
+      "usage": "application-brand",
+      "file": "brand/macos/xdzip-zip-1024.png",
+      "kind": "platform-icon",
+      "purpose": "archive-document-icon",
+      "source": "brand/xdzip-zip.svg",
+      "size": [
+        1024,
+        1024
+      ],
+      "format": "png",
+      "platform": "macos",
+      "optical_body_height": 0.8120300751879699,
+      "sha256": "2d25d17a7784fc5a2a8cd176e851f38ca560783a29a0498d546ed541dc0c4027",
+      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "runtime_usage": {
+        "qt_aliases": [],
+        "platform_resources": []
+      }
     }
   ]
 }

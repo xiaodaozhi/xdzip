@@ -114,16 +114,18 @@ def png_dimensions(path):
 
 
 def check_application_icon(base, assets, path, entry, alias, prefix):
-    """Admit exactly the declared high-resolution application icon.
+    """Admit only the two declared high-resolution application icon profiles.
 
     A platform icon does not weaken shared 24-unit glyph rules. Archive document
     icons and the original logo reference cannot use this runtime exception.
     Package ICO/ICNS payload validation belongs to the brand-export checker.
     """
-    require(alias == 'assets/app-icon.png' and prefix.rstrip('/') == '/xdzip',
-            'Application icon must have the dedicated /xdzip/assets/app-icon.png alias')
-    require(path == (base / 'brand/xdzip.png').resolve(),
-            'Application icon alias must reference brand/xdzip.png')
+    icon_paths = {'assets/app-icon.png': 'brand/xdzip.png',
+                  'assets/app-icon-macos.png': 'brand/macos/xdzip.png'}
+    require(alias in icon_paths and prefix.rstrip('/') == '/xdzip',
+            'Application icon must have a declared /xdzip application alias')
+    require(path == (base / icon_paths[alias]).resolve(),
+            'Application icon alias must reference its declared platform PNG')
     require(entry['kind'] == 'platform-icon', 'Application icon must be a platform export')
     require(entry.get('purpose') == 'application-icon' and entry.get('format') == 'png',
             'Application icon must have the application PNG purpose')
@@ -189,7 +191,7 @@ def check_qt(base, assets, qrc):
         require(png_dimensions(path) == entry['size'],
                 f'Runtime PNG dimensions differ from manifest: {node.text}')
         checked += 1
-    require(applications == 1, 'Qt must register exactly one high-resolution application icon')
+    require(applications == 2, 'Qt must register the default and macOS high-resolution application icons')
     return checked
 
 
@@ -262,7 +264,7 @@ def main():
     html_count, dynamic_count = check_html(ASSET_ROOT, assets, ROOT / 'design/html')
     print(f'Checked {qt_count} Qt raster aliases and {html_count} HTML icon names '
           f'({dynamic_count} dynamic calls) against one canonical library. '
-          'The single 512×512 application icon has separate brand provenance. '
+          'The default and macOS 512×512 application icons have separate platform profiles. '
           'Visual fidelity requires separate review.')
 
 
