@@ -5,8 +5,17 @@ function Invoke-Checked {
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
 }
+function Assert-CleanSources {
+    $changes = & git status --porcelain --untracked-files=normal
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect build source identity' }
+    if ($changes) {
+        $changes | Write-Host
+        throw 'Installer build requires clean source; relative changed paths shown above'
+    }
+}
 Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
+Assert-CleanSources
 if ($IsWindows) { Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain') }
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
@@ -46,7 +55,9 @@ Invoke-Checked rustc @('-vV')
 $cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', "-DCMAKE_PREFIX_PATH=$qtPrefix")
 if ($IsMacOS) { $cmakeArgs += @('-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0') }
 Invoke-Checked cmake $cmakeArgs
+Assert-CleanSources
 Invoke-Checked cmake @('--build', 'build/desktop', '--parallel', '3')
+Assert-CleanSources
 if ($IsWindows) {
     Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', 'build/desktop/apps/desktop/xdzip-browser.exe', '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
 }

@@ -21,6 +21,7 @@
         <key>CFBundleTypeName</key><string>ZIP, TAR, TAR.GZ</string>
         <key>CFBundleTypeRole</key><string>Viewer</string>
         <key>LSHandlerRank</key><string>Alternate</string>
+        <key>LSItemContentTypes</key><array><string>public.zip-archive</string><string>public.tar-archive</string><string>org.gnu.gnu-zip-tar-archive</string><string>org.gnu.gnu-zip-archive</string></array>
         <key>CFBundleTypeExtensions</key><array><string>zip</string><string>tar</string><string>tgz</string><string>gz</string></array>
         <key>CFBundleTypeIconFile</key><string>xdzip-zip.icns</string>
     </dict></array>

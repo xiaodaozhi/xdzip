@@ -70,6 +70,7 @@ class InstallerTests(unittest.TestCase):
     def test_macos_alternate_documents_preserve_system_localizations(self):
         text=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').read_text()
         self.assertIn('<string>Alternate</string>',text);self.assertIn('xdzip-zip.icns',text)
+        self.assertIn('<string>public.zip-archive</string>',text);self.assertIn('<string>org.gnu.gnu-zip-tar-archive</string>',text)
         self.assertIn('<string>zh-Hans</string>',text)
 
 if __name__=='__main__':unittest.main()
