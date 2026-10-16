@@ -33,7 +33,7 @@
 | ZIP 只读浏览 | [实现契约](engineering/readonly-browser.md)、[依赖准入](engineering/zip-metadata-admission.md) |
 | M1 产品骨架 | [正式运行时契约](engineering/m1-runtime.md) |
 | 实现进展 | [开发预览](../apps/desktop/README.md) |
-| WP-12 私测准备 | [准入与桌面验证](qa/private-test-readiness.md) |
+| WP-12 私测准备 | [准入与桌面验证](qa/private-test-readiness.md)、[人工专项清单](qa/private-test-manual.md)、[部署与 SBOM](engineering/deployment-audit.md) |
 | 质量 | [验收用例](qa/acceptance.md)、[样本规范](qa/fixtures.md) |
 | 开源协作 | [贡献指南](../CONTRIBUTING.md)、[治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |
 | 历史记录 | [变更日志](../CHANGELOG.md)、[准备工作记录](planning/preparation-record.md) |

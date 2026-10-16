@@ -5,6 +5,8 @@
 运行界面检查时，截图和 JSON 写入 `build/review/`、其他 `build/` 子目录或 `dist/`。这些目录全部忽略。GitHub Actions 把实际运行工件作为短期保留的 Actions artifact 提供，禁止把工件再次提交到源代码仓库。
 
 - [WP-12 私测准入](private-test-readiness.md)
+- [WP-12 人工专项操作清单](private-test-manual.md)
+- [部署依赖核验与 SBOM](../engineering/deployment-audit.md)
 - [CI 策略](../engineering/ci-policy.md)
 - [设计流程](../visual/design-workflow.md)
 - [统一尺寸规范](../visual/layout-scale.json)

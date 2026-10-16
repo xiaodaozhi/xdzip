@@ -31,7 +31,7 @@ if ($IsWindows) {
 $qtEnvironment = Join-Path $env:RUNNER_TEMP 'xdzip-aqt'
 Invoke-Checked python @('-m', 'venv', $qtEnvironment)
 $aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
-Invoke-Checked $aqtPython @('-m', 'pip', 'install', 'aqtinstall==3.3.0')
+Invoke-Checked $aqtPython @('-m', 'pip', 'install', 'aqtinstall==3.3.0', 'jsonschema==4.23.0')
 Invoke-Checked $aqtPython @('-m', 'aqt', 'install-qt', $qtHost, 'desktop', '6.8.2', $qtArchitecture, '-O', $qtRoot)
 $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
 $qtBin = Join-Path $qtPrefix 'bin'
@@ -151,9 +151,11 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
+Invoke-Checked python @('scripts/test-deployment-audit.py')
+Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
+Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
 if (!$IsMacOS) {
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
-    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
     Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
 }
 if ($IsMacOS) {
@@ -175,13 +177,21 @@ if ($IsMacOS) {
     $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -ne $qtBin }) -join ';'
     Invoke-Checked 'build/review/windows/xdzip.exe' @('--smoke-test')
 } else {
-    Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'build/review/xdzip-linux-qt6.8.2'
+    New-Item -ItemType Directory -Force 'build/review/linux' | Out-Null
+    Copy-Item 'build/desktop/apps/desktop/xdzip-browser' 'build/review/linux/xdzip-linux-qt6.8.2'
 }
+$auditRoot = if ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app' } elseif ($IsWindows) { 'build/review/windows' } else { 'build/review/linux' }
+$auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/xdzip-linux-qt6.8.2' }
+$auditMode = if ($IsWindows) { 'deployed' } else { 'sdk' }
+Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
+Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json')
+Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
+Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
-    'Native macOS validation only; no Apple Silicon developer package'
+    'Native macOS SDK validation only; no Apple Silicon developer package'
 } else {
     'M4 ZIP Store/Deflate creation and safe extraction developer review; independent security audit and signed public release pending'
 }
-@{ commit = $commit; platform = $qtHost; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
+@{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
     ConvertTo-Json | Set-Content 'build/review/build.json'

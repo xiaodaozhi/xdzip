@@ -32,3 +32,5 @@ M2 查询证据见 [M2 验收（本地／CI 工件）](../qa/README.md)；M3 当
 WP-12 首批已接入实际帧呈现、合成中文组合输入与 Qt 无障碍接口自动化，覆盖和剩余桌面／发行门槛见 [私测准入](../qa/private-test-readiness.md)。离屏检查不替代原生输入法、GPU 和读屏验收；本地硬件探针须显式禁止软件回退。
 
 WP-12 第二批已接入统一版本、关于窗口、真实产品进程观测和版本化源码许可清单；本地测量不替代发行预算或桌面人工门槛，证据与剩余项见[私测准入](../qa/private-test-readiness.md)。
+
+WP-12 第三批已接入实际工件原生导入核验、分离的源码／文件级 CycloneDX SBOM、官方 schema 校验及全待验证人工表；平台部署差异、未识别组件与人工专项继续作为准入缺口，见[部署核验](../engineering/deployment-audit.md)与[人工清单](../qa/private-test-manual.md)。
