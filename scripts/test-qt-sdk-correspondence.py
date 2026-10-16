@@ -64,6 +64,8 @@ class CorrespondenceTests(unittest.TestCase):
                 p.write_text('FileName: '+name+'\nFileChecksum: SHA1: '+'a'*40+'\n')
                 with self.assertRaisesRegex(ValueError, 'Unsafe'):
                     audit.source_checksums(p)
+            p.write_text('FileName: .\\cmake\\helper.cmake\nFileChecksum: SHA1: '+'a'*40+'\n')
+            self.assertEqual(audit.source_checksums(p), {'cmake/helper.cmake': 'a'*40})
             p.write_text(('FileName: ./same\nFileChecksum: SHA1: '+'a'*40+'\n')*2)
             with self.assertRaisesRegex(ValueError, 'duplicate'):
                 audit.source_checksums(p)

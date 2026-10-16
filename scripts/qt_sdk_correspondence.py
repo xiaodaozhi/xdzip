@@ -32,7 +32,9 @@ def source_checksums(path):
             if line.startswith('FileName: '):
                 if name is not None:
                     raise ValueError('Source file record has no SHA1 checksum')
-                name = safe_path(line[len('FileName: '):].strip())
+                # Windows REUSE declarations use native relative separators.
+                # Normalize only declaration names; archive members stay POSIX-only.
+                name = safe_path(line[len('FileName: '):].strip().replace('\\', '/'))
             elif line.startswith('FileChecksum: SHA1: ') and name:
                 value = line.split(': ', 2)[2].strip().lower()
                 if not re.fullmatch('[0-9a-f]{40}', value) or name in records:
