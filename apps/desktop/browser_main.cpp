@@ -23,6 +23,7 @@
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
 bool verifyMacTitlebar(QQuickWindow *window);
+void showMacWindowAfterLaunch(QQuickWindow *window);
 #endif
 
 int main(int argc, char *argv[]) {
@@ -34,6 +35,17 @@ int main(int argc, char *argv[]) {
         return 11;
     FileOpenRouter fileOpens;
     application.installEventFilter(&fileOpens);
+    const auto args = application.arguments();
+    const bool literalPaths = args.contains(QStringLiteral("--"));
+    const auto probeArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--desktop-probe"));
+    const bool smokeTest = !literalPaths && args.contains(QStringLiteral("--smoke-test"));
+    if (!smokeTest && probeArgument < 0) {
+        const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
+        for (int i = start; i < args.size(); ++i) {
+            if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
+                fileOpens.enqueue(args.at(i));
+        }
+    }
     FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setApplicationVersion(BuildInfo::version());
@@ -50,6 +62,7 @@ int main(int argc, char *argv[]) {
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
 #endif
     QQmlApplicationEngine engine;
+    engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,
         [] { QCoreApplication::exit(1); }, Qt::QueuedConnection);
@@ -72,9 +85,6 @@ int main(int argc, char *argv[]) {
     QObject::connect(controller, &BrowserController::readyToClose, &application,
                      &QApplication::quit, Qt::QueuedConnection);
     std::unique_ptr<DesktopProbe> probe;
-    const bool literalPaths = application.arguments().contains(QStringLiteral("--"));
-    const auto probeArgument =
-        literalPaths ? -1 : application.arguments().indexOf(QStringLiteral("--desktop-probe"));
     if (probeArgument >= 0) {
         if (probeArgument + 1 >= application.arguments().size() ||
             qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
@@ -86,7 +96,7 @@ int main(int argc, char *argv[]) {
             controller, qobject_cast<QQuickWindow *>(engine.rootObjects().first()), fixture,
             &application);
     }
-    if (!literalPaths && application.arguments().contains(QStringLiteral("--smoke-test"))) {
+    if (smokeTest) {
         if (application.windowIcon().isNull() || application.windowIcon().pixmap(64, 64).isNull())
             return 4;
 #ifdef Q_OS_MACOS
@@ -142,14 +152,14 @@ int main(int argc, char *argv[]) {
             application.quit();
         });
         QTimer::singleShot(10000, &application, [] { QCoreApplication::exit(2); });
-    } else if (probeArgument < 0) {
-        const auto args = application.arguments();
-        const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
-        for (int i = start; i < args.size(); ++i) {
-            if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
-                fileOpens.enqueue(args.at(i));
-        }
     }
+    // Allow queued platform launch events to join the same startup intent path.
+    // Do not wait for archive I/O: large files show the cancellable loading card.
+#ifdef Q_OS_MACOS
+    showMacWindowAfterLaunch(mainWindow);
+#else
+    QTimer::singleShot(0, mainWindow, &QWindow::show);
+#endif
     const auto result = application.exec();
     // Window close completes the existing task decision and runtime join barrier first.
     // Relaunch only the application, never replay diagnostic flags or a previously opened file.

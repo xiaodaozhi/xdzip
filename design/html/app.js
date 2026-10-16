@@ -814,14 +814,16 @@ function cancelWelcomeOpening(restoreFocus = true) {
     clearTimeout(welcomeOpening.timer);
     welcomeOpening = null;
     $("#welcome-opening")?.remove();
+    $("#welcome").classList.remove("external-opening");
     const content = $(".welcome-content");
     if (content) content.inert = false;
     if (restoreFocus) $("#welcome-open")?.focus();
 }
-function beginWelcomeOpening(name, complete = null) {
+function beginWelcomeOpening(name, complete = null, external = false) {
     if (welcomeOpening) return;
     const token = {};
     welcomeOpening = token;
+    $("#welcome").classList.toggle("external-opening", external);
     $(".welcome-content").inert = true;
     const overlay = document.createElement("div");
     overlay.id = "welcome-opening";
@@ -1855,7 +1857,7 @@ window.addEventListener("message", (event) => {
     XdzipDesign.theme(config.theme);
     XdzipDesign.open(config.view);
     if (config.welcomeOpening && ["welcome", "welcome-narrow"].includes(config.view))
-        beginWelcomeOpening("北境旅行.zip");
+        beginWelcomeOpening("北境旅行.zip", null, !!config.welcomeExternalOpening);
     if (config.welcomeDrag && ["welcome", "welcome-narrow"].includes(config.view)) {
         $("#welcome-drop").classList.add("drag-over");
         $("#welcome-drop span").textContent = "松开即可打开压缩包";

@@ -9,6 +9,7 @@ Rectangle {
     property bool canOpen: true
     property bool canCreate: true
     property bool busy: false
+    property bool externalOpening: false
     property string message: ""
     property string openingName: ""
     property bool dropSupported: false
@@ -33,6 +34,8 @@ Rectangle {
     }
     color: Theme.surface
     ScrollView {
+        objectName: "welcomeContent"
+        visible: !root.externalOpening
         enabled: !root.busy
         anchors.fill: parent
         clip: true

@@ -30,9 +30,15 @@ Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有�
 
 FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件，等控制器空闲后复用真实打开与激活。命令行 -- 后都作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。现有产品仍为单个真实会话，多输入串行打开并显示最后一个；不宣称跨进程单实例或多会话标签已实现。
 
+启动参数在加载 QML 前入队，主窗口先隐藏，附接控制器时立即提交首个可用请求，不再要求窗口已可见。主窗口在初始事件队列中显示，允许平台启动事件走同一处理路径；外部打开期间先隐藏欢迎入口再改变会话，避免首帧或替换会话闪现欢迎页。取消／失败恢复欢迎页，成功显示真实列表，详见[读取状态](../ux/welcome-opening.md)。
+
+macOS 原生启动单独等待 AppKit 的 NSApplicationDidFinishLaunchingNotification，再在隐藏状态处理该批排队的 Qt 文件事件，随后显示窗口。通知与排队回调均限定在主窗口生命周期，不替换 Qt 的应用 delegate，不使用固定毫秒延迟；offscreen 等非 Cocoa 后端仍走普通事件队列。实际 Launch Services 回归曾检出 1 帧欢迎正文，修正后要求为 0。check-macos-open.py 在本地与 Mac CI 执行 argv 和原生 open 两种路径，仅保存 JSON／日志，不生成或上传应用包。
+
 ## 自动验证与限制
 
 三平台 CTest 检查启动前文件事件、非本地 URL 拒绝及读取忙时排队。显式 XDZIP_ASSOCIATION_PROBE 加隔离设置仅供 CI：通过正常打开流程读取自有十万条目 ZIP，保存计数／构建身份并正常关闭，不记录来源路径或执行解压。
+
+当前关联探针等待至少一次实际帧呈现，逐帧记录欢迎正文可见次数；Windows ShellExecuteEx 和 Linux GIO 的当前产品要求 presented_frames 大于 0 且 welcome_frames 为 0。固定旧产品仍按历史探针能力验证，不伪造旧二进制具有新的首帧计数。
 
 Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交付包；ShellExecuteEx 按自有注册类打开中文、空格、& 路径，检查默认及 UserChoice 不变、忙时拒绝替换、卸载保留设置／额外文件／其他候选。Linux 在无 SDK／系统 Qt／编译器、无网络容器执行相同 dpkg 生命周期，UID 1000 的产品由 GIO 桌面启动项实际打开十万条目，核对 MIME、默认、锁、卸载和 purge。
 

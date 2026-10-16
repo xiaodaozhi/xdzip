@@ -101,3 +101,9 @@ CI 在无 Qt SDK、无系统 Qt 和编译器的 Ubuntu 24.04 运行容器中，�
 设置保存增加原子暂存／备份／提交、并发拒绝及较新 schema 拒写。固定 4cf0f8c 与当前适配器分别编译，在隔离配置往返验证 schema 1，不虚称两个完整安装器或 schema 2 迁移。Linux QA 增加实际 postinst 配置失败、half-configured 状态与启动阻止，随后 dpkg --configure -a 恢复；这不替代设备掉电验证。执行结果保存在 build/ 或 CI JSON／日志，未执行平台不自动登记通过。
 
 完整产品另由 Windows/Linux CI 从固定 4cf0f8c 的干净 detached worktree 重建历史产品，以实际不同源码 revision 执行安装、升级、回退及正常文件打开，核对设置与额外文件保留。历史 QA 安装器不是原历史签名工件，不作为发行下载；同 schema 产品验证不冒充未来 schema 迁移。真实桌面、重启与信任仍待人工。
+
+## dev.3 外部文件启动显示回归
+
+修复系统打开文件时首帧先显示欢迎页的问题：命令行意图在 QML 加载前入队，隐藏窗口先提交读取；Mac 额外同步 AppKit 启动完成后的文件事件。外部读取期间只显示既有读取卡片，欢迎正文隐藏，失败／取消恢复。HTML 和动态高保真 external=1 同步，标题栏及密度参数不变。
+
+本地 Qt 6/6、真实取消／失败恢复和 HTML 欢迎页检查已执行；Mac 实际 argv 与 Launch Services 探针均观察到呈现帧且欢迎正文可见数为 0。三平台自动化要求当前系统关联打开同样满足 presented_frames > 0、welcome_frames = 0；固定历史产品只按其既有探针能力检查。实际日志、帧计数与 CI 身份保存于 build/ 或 CI 工件，不替代人工 Finder／Explorer 操作、输入法与读屏验收。

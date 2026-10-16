@@ -31,6 +31,7 @@ ApplicationWindow {
         Theme.fontScale = AppSettings.textScale;
     }
     readonly property bool welcomeVisible: !reader.ready
+    property bool externalFileOpening: false
     property bool welcomeWasBusy: false
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
         inspectorWindow.close();
@@ -563,6 +564,7 @@ ApplicationWindow {
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canCreate: reader.runtimeAvailable && !reader.browsingBusy
             busy: reader.browsingBusy && reader.title.length > 0
+            externalOpening: root.externalFileOpening
             openingName: reader.title
             message: reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: reader.chooseArchive(root)

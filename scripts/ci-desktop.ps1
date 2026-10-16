@@ -192,6 +192,7 @@ if ($IsMacOS) {
     $env:QML_IMPORT_PATH = Join-Path $qtPrefix 'qml'
     $env:QT_QPA_PLATFORM = 'cocoa'
     Invoke-Checked 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' @('--smoke-test')
+    Invoke-Checked python @('scripts/check-macos-open.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/macos-association.json')
 } elseif ($IsWindows) {
     $env:QT_QPA_PLATFORM = 'windows'
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')

@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QQuickItem>
 #include <QQuickWindow>
 #include <QSaveFile>
 #include <QTimer>
@@ -19,27 +20,50 @@ inline void installAssociationProbe(BrowserController *controller, QQuickWindow 
         QTimer::singleShot(0, [] { QCoreApplication::exit(12); });
         return;
     }
-    auto completed = std::make_shared<bool>(false);
+    struct State {
+        bool opened = false;
+        bool completed = false;
+        int frames = 0;
+        int welcomeFrames = 0;
+    };
+    auto state = std::make_shared<State>();
     QObject::connect(controller, &BrowserController::changed, controller,
-                     [controller, window, output, completed] {
-                         if (*completed || controller->busy() || !controller->ready())
+                     [controller, window, state] {
+                         if (state->completed || controller->busy() || !controller->ready())
                              return;
-                         *completed = true;
-                         const QJsonObject result{{"event", "association_open"},
-                                                  {"records", controller->archiveTotal()},
-                                                  {"version", BuildInfo::version()},
-                                                  {"revision", BuildInfo::revision()}};
-                         QSaveFile file(output);
-                         const auto data = QJsonDocument(result).toJson(QJsonDocument::Compact);
-                         if (!file.open(QIODevice::WriteOnly) || file.write(data) != data.size() ||
-                             !file.commit()) {
-                             QCoreApplication::exit(12);
-                             return;
-                         }
-                         QTimer::singleShot(0, window, &QWindow::close);
+                         state->opened = true;
+                         window->update();
                      });
-    QTimer::singleShot(15000, controller, [completed] {
-        if (!*completed)
+    QObject::connect(
+        window, &QQuickWindow::frameSwapped, window, [controller, window, output, state] {
+            if (state->completed)
+                return;
+            auto *welcome = window->findChild<QQuickItem *>("welcomeContent");
+            if (!welcome) {
+                QCoreApplication::exit(12);
+                return;
+            }
+            ++state->frames;
+            if (welcome->isVisible())
+                ++state->welcomeFrames;
+            if (!state->opened)
+                return;
+            state->completed = true;
+            const QJsonObject result{
+                {"event", "association_open"},       {"records", controller->archiveTotal()},
+                {"version", BuildInfo::version()},   {"revision", BuildInfo::revision()},
+                {"presented_frames", state->frames}, {"welcome_frames", state->welcomeFrames}};
+            QSaveFile file(output);
+            const auto data = QJsonDocument(result).toJson(QJsonDocument::Compact);
+            if (!file.open(QIODevice::WriteOnly) || file.write(data) != data.size() ||
+                !file.commit()) {
+                QCoreApplication::exit(12);
+                return;
+            }
+            QTimer::singleShot(0, window, &QWindow::close);
+        });
+    QTimer::singleShot(15000, controller, [state] {
+        if (!state->completed)
             QCoreApplication::exit(12);
     });
 }

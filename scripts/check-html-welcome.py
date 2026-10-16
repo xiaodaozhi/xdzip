@@ -140,6 +140,16 @@ with sync_playwright() as p:
         menu_metrics = menu.evaluate('el=>({width:el.getBoundingClientRect().width,font:parseFloat(getComputedStyle(el.querySelector("[role^=menuitem]")||el).fontSize)})')
         assert abs(menu_metrics['width'] * (1024 / 1548) - 240) <= 1 and abs(menu_metrics['font'] * (1024 / 1548) - 13) < .01, menu_metrics
         checks.append({'menu': menu_metrics, 'menu_to_body_font_ratio': 1})
+        page.goto(base + 'design/hifi/sources/welcome.html?external=1')
+        external = page.frame_locator('iframe')
+        expect(external.locator('#welcome-opening')).to_be_visible()
+        expect(external.locator('.welcome-content')).to_be_hidden()
+        expect(external.locator('.titlebar')).to_be_visible()
+        # The hifi wrapper deliberately disables pointer interaction with its iframe.
+        external.locator('#welcome-opening-cancel').evaluate('button => button.click()')
+        expect(external.locator('.welcome-content')).to_be_visible()
+        expect(external.locator('#welcome-opening')).to_have_count(0)
+        checks.append('External-open hifi shows only cancellable loading content, then restores welcome on cancellation')
         page.close()
 
         # No network access is permitted while testing the self-contained delivery.

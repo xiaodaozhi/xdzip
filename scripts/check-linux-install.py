@@ -44,6 +44,8 @@ def main():
                 time.sleep(.05)
             data=json.loads(probe.read_text())
             if data['event']!='association_open' or data['records']!=100000:raise RuntimeError('Associated product did not read real archive')
+            if label not in ['historical-product-install','actual-product-rollback'] and (data.get('presented_frames',0)<1 or data.get('welcome_frames')!=0):
+                raise RuntimeError('Associated current product presented the welcome content before opening')
             # Probe requests normal close; wait until its lifetime lock is released.
             for _ in range(100):
                 with open('/run/xdzip/usage.lock') as lock:

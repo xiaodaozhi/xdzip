@@ -10,7 +10,7 @@ Item {
     SignalSpy { id: cancelSpy; target: page; signalName: "cancelRequested" }
     TestCase {
         name: "WelcomePage"; when: windowShown
-        function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.canOpen = true; page.busy = false; openSpy.clear(); createSpy.clear(); }
+        function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.canOpen = true; page.busy = false; page.externalOpening = false; openSpy.clear(); createSpy.clear(); }
         function cleanup() { Ui.Theme.fontScale = 1; }
         function test_actions_and_states_data() { return [{tag:"light", dark:false}, {tag:"dark", dark:true}]; }
         function test_actions_and_states(data) {
@@ -41,6 +41,20 @@ Item {
         function test_opening_overlay_data() {
             return [{tag: "light", dark: false, scale: 1}, {tag: "dark", dark: true, scale: 1},
                     {tag: "large", dark: true, scale: 1.5}];
+        }
+        function test_external_open_hides_welcome_until_cancel_or_failure() {
+            page.externalOpening = true;
+            page.busy = true;
+            const content = findChild(page, "welcomeContent");
+            const overlay = findChild(page, "welcomeOpeningOverlay");
+            verify(!content.visible);
+            verify(overlay.visible);
+            verify(waitForRendering(overlay));
+            grabImage(page).save("welcome-external-opening.png");
+            page.busy = false;
+            page.externalOpening = false;
+            verify(content.visible);
+            verify(!overlay.visible);
         }
         function test_opening_overlay(data) {
             Ui.Theme.dark = data.dark; Ui.Theme.fontScale = data.scale;

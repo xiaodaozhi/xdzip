@@ -73,6 +73,7 @@ function Test-AssociatedOpen($Label) {
     } finally { [void][XdzipShell]::CloseHandle($info.hProcess) }
     $result = Get-Content $probe -Raw | ConvertFrom-Json
     if ($result.event -ne 'association_open' -or $result.records -ne 100000) { throw 'Associated product did not read actual archive' }
+    if ($Label -notin @('historical-product-install','actual-product-rollback') -and ($result.presented_frames -lt 1 -or $result.welcome_frames -ne 0)) { throw 'Associated current product presented welcome content during startup' }
     Assert-Default
     $phases.Add($Label)
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE

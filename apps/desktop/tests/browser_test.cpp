@@ -153,12 +153,30 @@ class BrowserTest : public QObject {
         QFileOpenEvent early(QUrl::fromLocalFile(path));
         QVERIFY(router.eventFilter(nullptr, &early));
         QQmlApplicationEngine engine;
+        engine.setInitialProperties({{"visible", false}});
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         router.attach(controller, window);
+        QVERIFY(!window->isVisible());
+        QVERIFY(controller->browsingBusy());
+        auto *welcomeContent = findVisual(window->contentItem(), "welcomeContent");
+        QVERIFY(welcomeContent);
+        QVERIFY(!welcomeContent->isVisible());
+        bool firstFrameSeen = false;
+        bool firstFrameShowedWelcome = false;
+        QObject firstFrameObserver;
+        connect(window, &QQuickWindow::frameSwapped, &firstFrameObserver, [&] {
+            if (!firstFrameSeen) {
+                firstFrameSeen = true;
+                firstFrameShowedWelcome = welcomeContent->isVisible();
+            }
+        });
+        window->show();
+        QTRY_VERIFY(firstFrameSeen);
+        QVERIFY(!firstFrameShowedWelcome);
         QTRY_VERIFY(controller->ready() && !controller->busy());
         QCOMPARE(controller->title(), QFileInfo(path).fileName());
         QFileOpenEvent remote(QUrl(QStringLiteral("https://example.invalid/archive.zip")));
@@ -171,6 +189,36 @@ class BrowserTest : public QObject {
         QVERIFY(router.eventFilter(nullptr, &whileBusy));
         QTRY_VERIFY(controller->ready() && !controller->busy() &&
                     controller->title() == QFileInfo(path).fileName());
+        window->close();
+    }
+    void externalFileOpenFailureRestoresWelcome_data() {
+        QTest::addColumn<bool>("cancel");
+        QTest::newRow("failure") << false;
+        QTest::newRow("cancel") << true;
+    }
+    void externalFileOpenFailureRestoresWelcome() {
+        QFETCH(bool, cancel);
+        FileOpenRouter router;
+        router.enqueue(cancel ? QStringLiteral(XDZIP_M2_FIXTURE)
+                              : QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
+        QQmlApplicationEngine engine;
+        engine.setInitialProperties({{"visible", false}});
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *content = findVisual(window->contentItem(), "welcomeContent");
+        QVERIFY(controller && content);
+        router.attach(controller, window);
+        QVERIFY(controller->browsingBusy());
+        QVERIFY(!content->isVisible());
+        if (cancel)
+            controller->cancel();
+        window->show();
+        QTRY_VERIFY(!controller->browsingBusy());
+        QVERIFY(!controller->ready());
+        QTRY_VERIFY(content->isVisible());
+        QVERIFY(!controller->message().isEmpty());
         window->close();
     }
     void settingsRestartConfirmation() {

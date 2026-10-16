@@ -1,5 +1,6 @@
 #import <AppKit/AppKit.h>
 #include <QDebug>
+#include <QEventLoop>
 #include <QGuiApplication>
 #include <QPointer>
 #include <QQuickItem>
@@ -51,6 +52,44 @@ void alignTrafficLights(QQuickWindow *window) {
     }
 }
 } // namespace
+
+void showMacWindowAfterLaunch(QQuickWindow *window) {
+    if (QGuiApplication::platformName() != QStringLiteral("cocoa")) {
+        QTimer::singleShot(0, window, &QWindow::show);
+        return;
+    }
+    const QPointer<QQuickWindow> guard(window);
+    const auto scheduled = std::make_shared<bool>(false);
+    const auto schedule = [guard, scheduled] {
+        if (!guard || *scheduled)
+            return;
+        *scheduled = true;
+        QTimer::singleShot(0, guard, [guard] {
+            // AppKit's launch openFiles callback queues QFileOpenEvent in Qt.
+            // Drain it while hidden, after launch completion, without waiting
+            // for archive I/O or borrowing a fixed startup delay.
+            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            if (guard)
+                guard->show();
+        });
+    };
+    if (NSRunningApplication.currentApplication.finishedLaunching) {
+        schedule();
+        return;
+    }
+    id token = [[NSNotificationCenter defaultCenter]
+        addObserverForName:NSApplicationDidFinishLaunchingNotification
+                    object:NSApp
+                     queue:nil
+                usingBlock:^(NSNotification *note) {
+                  Q_UNUSED(note);
+                  schedule();
+                }];
+    // Qt retains its own application delegate. Scope our notification token to
+    // the window, including early startup failure or shutdown.
+    QObject::connect(window, &QObject::destroyed,
+                     [token] { [[NSNotificationCenter defaultCenter] removeObserver:token]; });
+}
 
 // Qt owns the NSView/NSWindow. All callbacks are GUI-thread and scoped to QWindow.
 void integrateMacTitlebar(QQuickWindow *window) {

@@ -12,13 +12,23 @@ class FileOpenRouter final : public QObject {
     QPointer<BrowserController> m_controller;
     QPointer<QQuickWindow> m_window;
     void pump() {
-        if (!m_controller || !m_controller->runtimeAvailable() || !m_window ||
-            !m_window->isVisible() || m_controller->busy() || m_pending.isEmpty())
+        if (!m_controller || !m_window || m_controller->busy())
             return;
+        if (!m_controller->runtimeAvailable() || m_pending.isEmpty()) {
+            m_window->setProperty("externalFileOpening", false);
+            return;
+        }
         const auto path = m_pending.takeFirst();
+        // Publish the intent before openPath clears ready, including replacement
+        // opens. A hidden startup window can submit without exposing empty UI.
+        m_window->setProperty("externalFileOpening", true);
         m_controller->openPath(path);
-        m_window->raise();
-        m_window->requestActivate();
+        if (!m_controller->browsingBusy())
+            m_window->setProperty("externalFileOpening", false);
+        if (m_window->isVisible()) {
+            m_window->raise();
+            m_window->requestActivate();
+        }
     }
 
   public:
@@ -27,7 +37,7 @@ class FileOpenRouter final : public QObject {
             return;
         if (!m_pending.contains(path))
             m_pending.append(path);
-        QTimer::singleShot(0, this, [this] { pump(); });
+        pump();
     }
     void attach(BrowserController *controller, QQuickWindow *window) {
         m_controller = controller;
@@ -35,7 +45,7 @@ class FileOpenRouter final : public QObject {
         connect(
             controller, &BrowserController::changed, this, [this] { pump(); },
             Qt::QueuedConnection);
-        QTimer::singleShot(0, this, [this] { pump(); });
+        pump();
     }
     bool eventFilter(QObject *, QEvent *event) override {
         if (event->type() != QEvent::FileOpen)
