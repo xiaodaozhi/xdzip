@@ -4,6 +4,7 @@ function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
+    Assert-CleanSources
 }
 function Assert-CleanSources {
     $changes = & git status --porcelain --untracked-files=normal
@@ -17,6 +18,9 @@ Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 Assert-CleanSources
 Invoke-Checked python @('scripts/test-installers.py')
+Invoke-Checked python @('scripts/test-deployment-audit.py')
+Invoke-Checked python @('scripts/test-linux-deployment.py')
+Invoke-Checked python @('scripts/test-runtime-attribution.py')
 if ($IsWindows) { Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain') }
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
@@ -167,9 +171,6 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
-Invoke-Checked python @('scripts/test-deployment-audit.py')
-Invoke-Checked python @('scripts/test-linux-deployment.py')
-Invoke-Checked python @('scripts/test-runtime-attribution.py')
 Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
 Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
 if ($IsWindows) { Copy-Item 'build/installer-toolchain/InnoSetup-license.txt' 'build/review/notices/' }

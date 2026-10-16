@@ -45,3 +45,14 @@ GZIP 复用已锁定的 flate2 1.1.10、Rust backend、miniz_oxide，无新增�
 新增传递依赖 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 的系统时间恢复接口不由产品调用。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
 
 2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证或独立安全审查。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
+
+
+## 实验安装器工具
+
+Windows 构建引入 Inno Setup 6.7.3，仅用于编译自有运行目录的当前用户安装器，来源为 [jrsoftware/issrc 官方发行](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3)，不可变源码提交、官方二进制／中文语言资源／许可正文的 SHA-256 固定在 [installer-toolchain.json](../../scripts/installer-toolchain.json)。选择其当前用户模式和累计卸载日志；NSIS 与 WiX/MSI 是替代方案，本轮不另维护自制清理数据库或企业部署规则。
+
+许可采用该固定源码中的 Inno Setup License，保留版权／原始来源及引擎界面，不修改编译器；正文随 Windows notices 交付。传递代码使用官方编译器／安装存根提供的 Pascal Script、压缩与平台组件，本轮不重新编译引擎或宣称其全部内嵌组件已独立审查。编译器安装在 CI build/，不进入 Qt 运行目录；安装存根进入最终安装器，其版本与安装器哈希由回执记录，运行目录 SBOM 不冒充安装器存根的完整 SBOM。
+
+仅启用标准文件复制、当前用户注册表、自有快捷方式和互斥量保护，关闭自动关闭／重启应用，无安装时网络下载、自定义原生插件或新 Rust 构建脚本。Linux .deb 使用 Ubuntu 的 dpkg-deb 与系统维护工具，不引入额外应用编解码器。Qt 下载工具工作目录固定在 build/，避免 aqtinstall.log 污染源码身份。
+
+2026-10-16 查询官方仓库公开 security-advisories API 返回空列表，原文保存在 build/review/installer-tool-advisories.json。这不代表无漏洞、NVD 全库检索通过或独立审查通过；[官方版本记录](https://jrsoftware.org/files/is6-whatsnew.htm)用于后续安全维护复核，固定 6.7.3 不代表最新版本或长期支持承诺。哈希校验不代替签名身份与完整引擎许可／安全准入。真实编译、安装、系统打开、更新／回退／卸载和未通过项按[安装契约](installers-associations.md)及实际 CI 记录登记。
