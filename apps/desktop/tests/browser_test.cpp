@@ -1080,6 +1080,88 @@ class BrowserTest : public QObject {
         controller.requestClose();
         QTRY_VERIFY(controller.requestClose());
     }
+    void operationPreparationKeepsBrowserPresentationStable_data() {
+        QTest::addColumn<int>("operation");
+        QTest::newRow("extract-all") << 0;
+        QTest::newRow("extract-selection") << 1;
+        QTest::newRow("target-recheck") << 2;
+        QTest::newRow("creation-target") << 3;
+        QTest::newRow("creation-input-preview") << 4;
+    }
+    void operationPreparationKeepsBrowserPresentationStable() {
+        QFETCH(int, operation);
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/tree.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->selectAll(operation != 0);
+        QTest::qWait(50); // Allow the real toolbar hit area to finish its layout.
+        const auto rows = controller->entries()->rowCount();
+        const auto selected = controller->selectedCount();
+        auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        QVERIFY(overlay && !overlay->isVisible());
+        bool controlsStable = true, overlayStable = true, sawPending = false;
+        bool presentationStable = true;
+        QObject monitor;
+        for (const auto &name :
+             {"archiveOpen", "archiveNew", "archiveMore", "archiveSearch", "archiveExtract"}) {
+            auto *control = findVisual(window->contentItem(), QString::fromLatin1(name));
+            QVERIFY(control && control->isEnabled());
+            connect(control, &QQuickItem::enabledChanged, &monitor,
+                    [&, control] { controlsStable &= control->isEnabled(); });
+        }
+        connect(overlay, &QQuickItem::visibleChanged, &monitor,
+                [&] { overlayStable &= !overlay->isVisible(); });
+        connect(controller, &BrowserController::changed, &monitor, [&] {
+            if (controller->busy()) {
+                sawPending = true;
+                presentationStable &=
+                    !controller->browsingBusy() && controller->browserQueryAvailable();
+            }
+        });
+        QSignalSpy resets(controller->entries(), &QAbstractItemModel::modelReset);
+        if (operation == 0) {
+            auto *button = findVisual(window->contentItem(), "archiveExtract");
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                button->mapToScene(QPointF(button->width() / 4, button->height() / 2)).toPoint());
+        } else if (operation == 1) {
+            controller->prepareExtraction(false);
+        } else if (operation == 2) {
+            controller->prepareExtraction(true);
+            QTRY_VERIFY(!controller->busy());
+            controller->checkTarget(target.path());
+        } else if (operation == 3) {
+            controller->checkCreationTarget(target.path());
+        } else {
+            QFile input(target.filePath("input.txt"));
+            QVERIFY(input.open(QIODevice::WriteOnly));
+            QCOMPARE(input.write("preview"), 7);
+            input.close();
+            auto *create = window->findChild<QQuickWindow *>("createWindow");
+            QVERIFY(create);
+            QVERIFY(QMetaObject::invokeMethod(
+                create, "addInputPaths", Q_ARG(QVariant, QVariant(QStringList{input.fileName()})),
+                Q_ARG(bool, false)));
+            QTRY_COMPARE(controller->creationInputs().size(), 1);
+        }
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(sawPending);
+        QVERIFY(presentationStable);
+        QVERIFY(controlsStable);
+        QVERIFY(overlayStable);
+        QCOMPARE(resets.count(), 0);
+        QCOMPARE(controller->entries()->rowCount(), rows);
+        QCOMPARE(controller->selectedCount(), selected);
+        window->close();
+    }
     void extractionSubmissionKeepsBrowserPresentationStable() {
         QTemporaryDir target;
         QVERIFY(target.isValid());

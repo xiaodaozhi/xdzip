@@ -130,10 +130,12 @@ class BrowserController : public QObject {
         return m_busy && !m_closing && !m_faulted && (m_result.extraction || m_result.creating);
     }
     bool browsingBusy() const {
-        return m_busy && !taskStarting();
+        // Operation-window preparation does not replace the committed browser snapshot.
+        return m_busy && (m_closing || m_faulted ||
+                          (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview));
     }
     bool browserQueryAvailable() const {
-        return m_ready && runtimeAvailable() && (queryAvailable() || taskStarting());
+        return m_ready && runtimeAvailable() && (queryAvailable() || !browsingBusy());
     }
     bool busy() const {
         return m_busy;
