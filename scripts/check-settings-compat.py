@@ -44,7 +44,13 @@ def main():
              '-Dprevious_SOURCE='+str(previous), '-Dcurrent_SOURCE='+str(ROOT/'apps/desktop')],
             ['cmake', '--build', str(build), '--parallel', '3'],
         ]:
-            subprocess.run(command, stdout=stream, stderr=stream, check=True)
+            try:
+                subprocess.run(command, stdout=stream, stderr=stream, check=True)
+            except subprocess.CalledProcessError:
+                stream.flush()
+                detail = '\n'.join(log.read_text().splitlines()[-30:])
+                print(detail.replace(str(ROOT), '<workspace>').replace(str(args.qt_prefix.resolve()), '<qt-sdk>'))
+                raise SystemExit('Settings compatibility compilation failed; see compile.log')
     profile = output/'settings.ini'
     environment = dict(os.environ, XDZIP_SETTINGS_PATH=str(profile), QT_QPA_PLATFORM='offscreen')
     suffix = '.exe' if os.name == 'nt' else ''

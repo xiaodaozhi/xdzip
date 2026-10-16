@@ -36,6 +36,7 @@ jobs:
           if (Test-Path 'build/desktop/apps/desktop/browser-tests.log') { Copy-Item 'build/desktop/apps/desktop/browser-tests.log' 'build/review/diagnostics/' }
           if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') { Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review/diagnostics/' }
           if (Test-Path 'build/previous-product/previous-product.log') { Copy-Item 'build/previous-product/previous-product.log' 'build/review/diagnostics/' }
+          if (Test-Path 'build/settings-compat/compile.log') { Copy-Item 'build/settings-compat/compile.log' 'build/review/diagnostics/settings-compat-compile.log' }
           if ($IsMacOS) {
             if (Test-Path 'build/desktop/visual-audit/*.json') { Copy-Item 'build/desktop/visual-audit/*.json' 'build/review/diagnostics/' }
           } elseif (Test-Path 'build/desktop/visual-audit') {
