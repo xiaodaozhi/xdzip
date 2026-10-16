@@ -123,7 +123,7 @@ try {
     if ($remaining.GetValueNames() -notcontains 'xdzip.QAForeign' -or $remaining.GetValueNames() -contains 'xdzip.Archive') { throw 'OpenWith uninstall ownership incorrect' }
     $remaining.Close(); Assert-Default
     $phases.Add('uninstall-preserves-user-data-and-default')
-    @{ status='passed'; platform='windows'; phases=$phases.ToArray(); records=100000; scope='current user'; limits='Native CI shell dispatch, not an Explorer human click, signed release or physical-device acceptance.' } | ConvertTo-Json -Depth 4 | Set-Content $Output
+    @{ status='passed'; platform='windows'; phases=$phases.ToArray(); records=100000; scope='current user'; product_revisions=@{ previous=$historical.revision; current=$current.revision }; limits='Native CI shell dispatch, not an Explorer human click, signed release or physical-device acceptance.' } | ConvertTo-Json -Depth 4 | Set-Content $Output
     Write-Host 'Windows install/upgrade/rollback/busy protection/native association/uninstall passed'
 } finally {
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE -ErrorAction SilentlyContinue

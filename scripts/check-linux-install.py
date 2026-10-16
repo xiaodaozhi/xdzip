@@ -102,6 +102,7 @@ def main():
         if run(['xdg-mime','query','default','application/zip'],**user)!='other.desktop':raise RuntimeError('Uninstall changed foreign default')
         phases.append('uninstall-preserves-user-data-and-default')
         print('XDZIP_INSTALL '+json.dumps({'status':'passed','platform':'linux','phases':phases,'uid':1000,'records':100000,
+            'product_revisions':{'previous':historical['revision'],'current':current['revision']},
             'limits':'Xvfb container/GIO, not physical desktop click, GPU, IME, signed release or distribution-wide support.'}))
     finally:display.terminate();display.wait(timeout=10)
 

@@ -41,7 +41,7 @@ def main():
         for command in [
             ['cmake', '-S', str(ROOT/'apps/desktop/tests/preferences-compat'), '-B', str(build), '-G', 'Ninja',
              '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_PREFIX_PATH='+str(args.qt_prefix.resolve()),
-             '-Dprevious_SOURCE='+str(previous), '-Dcurrent_SOURCE='+str(ROOT/'apps/desktop')],
+             '-Dprevious_SOURCE='+previous.as_posix(), '-Dcurrent_SOURCE='+(ROOT/'apps/desktop').as_posix()],
             ['cmake', '--build', str(build), '--parallel', '3'],
         ]:
             try:

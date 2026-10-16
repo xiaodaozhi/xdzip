@@ -54,6 +54,9 @@ def build(source, qt, output):
     identity = checked([binary, '--version']).strip()
     if 'dirty' in identity or 'unknown' in identity:
         raise ValueError('DMG requires a clean verifiable product build')
+    revision = checked(['git', '-C', ROOT, 'rev-parse', '--short=12', 'HEAD']).strip()
+    if checked(['git', '-C', ROOT, 'status', '--porcelain']).strip() or not identity.endswith(', '+revision+')'):
+        raise ValueError('DMG source and notice materials must match the clean executable revision')
     stage = output.parent/(output.stem+'-stage')
     if stage.exists():
         raise ValueError('Refusing an existing staging directory')
@@ -79,6 +82,7 @@ def build(source, qt, output):
                 checked(['install_name_tool', '-delete_rpath', value, path])
     notices = app/'Contents/Resources/notices'
     notices.mkdir(parents=True, exist_ok=True)
+    checked([sys.executable, ROOT/'scripts/collect-notices.py', notices])
     for name in ['LICENSE', 'NOTICE']:
         if (ROOT/name).exists():
             shutil.copy2(ROOT/name, notices/name)
