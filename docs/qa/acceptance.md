@@ -140,3 +140,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 ## 平台图标留白修订
 
 检查应用和 ZIP 文档两组 PNG、ICO、ICNS，覆盖 16～1024 像素。通用 PNG／ICO 主体高度约占画布 90%，macOS PNG／ICNS 约占 81.2%，小尺寸允许像素取整；四角透明，圆角连续，纸张不变形，阴影不作为主体量测边界。ICO 七种表示与 ICNS 十一种表示均需解码，嵌入图像与对应平台 PNG 来源一致，macOS Qt 运行时图标必须选择 macOS PNG。检查浅深背景的实际尺寸联系表；主窗口与菜单的 24 单位界面图标几何和密度不变。`build-brand-assets.py --check` 自动校验边界、透明度、来源及容器，原生 Finder／Dock／Explorer 缓存显示另外人工核对，不能以容器解码代替该项验收。
+
+## 版本与关于窗口
+
+验证 `VERSION.json`、Cargo workspace、CLI、Windows 版本资源、macOS bundle 与关于窗口一致。覆盖开发／稳定渠道、非法版本与构建号边界、无 Git 的 unknown、dirty 提示、两种语言、浅深色、100/125/150% 字号和高 DPR；复制 JSON 不含个人文件路径，关闭后返回原设置窗口。HTML 不伪造原生 Qt 或提交。完整进程资源观测及其限制见 [WP-12](private-test-readiness.md)。

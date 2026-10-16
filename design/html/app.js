@@ -225,6 +225,7 @@ const specs = {
         "更改格式同步扩展名和参数。输入为空或名称为空时不可提交。",
         "首版不提供加密和分卷。已有目标进入独立覆盖确认，取消保留旧压缩包。",
     ],
+    A01: ["关于 xdzip", "版本与构建来源", "版本信息来自 VERSION.json，Qt 显示实际构建信息。", "复制不含个人文件或路径的信息，关闭后返回原窗口。", "HTML 预览不伪造原生 Qt 版本与 Git 提交。"],
     S01: [
         "设置",
         "P08 / P11，AC-08 / AC-11",
@@ -702,7 +703,7 @@ function dialog(html, kind, spec, focus) {
     XdzipControls.close({ restoreFocus: false });
     XdzipControls.hideTooltip();
     const el = $("#modal");
-    if (state.modal === "settings") restoreSettingsPreview();
+    if (state.modal === "settings" && kind !== "about") restoreSettingsPreview();
     returnFocus = el.open ? returnFocus : document.activeElement;
     if (el.open) el.close();
     const template = document.createElement("template");
@@ -730,6 +731,7 @@ function dialog(html, kind, spec, focus) {
     const modeless = [
         "progress",
         "settings",
+        "about",
         "preflight",
         "result",
         "archive-test",
@@ -759,11 +761,13 @@ function dialog(html, kind, spec, focus) {
     if (focus) $(focus)?.focus();
 }
 function closeModal({ preserveReview = false } = {}) {
-    if (state.modal === "settings") restoreSettingsPreview();
+    const resumeSettings = state.modal === "about" && !preserveReview ? aboutReturnDraft : null;
+    if (state.modal === "settings" || (state.modal === "about" && settingsPreview)) restoreSettingsPreview();
+    if (state.modal === "about") aboutReturnDraft = null;
     if ($("#modal").open) $("#modal").close();
     $("#modal").querySelectorAll('input[type="password"]').forEach(input => input.value = "");
     state.modal = null;
-    if (!preserveReview && document.body.dataset.standalone === "true") {
+    if (!preserveReview && !resumeSettings && document.body.dataset.standalone === "true") {
         document.body.dataset.standalone = "false";
         const baseView = document.body.classList.contains("welcome-artboard") ? (document.body.classList.contains("welcome-narrow") ? "welcome-narrow" : "welcome") : "main";
         setCanvasLogicalScale(baseView);
@@ -779,6 +783,7 @@ function closeModal({ preserveReview = false } = {}) {
             ? window.XdzipMain?.entryNode(returnFocus.dataset.id)
             : null;
     restored?.focus({ preventScroll: true });
+    if (resumeSettings) { settingsResumeDraft = resumeSettings; showSettings(); }
 }
 function header(title, subtitle, ico = "archive") {
     return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
@@ -1423,6 +1428,8 @@ function confirmCreateOverwrite() {
 }
 let savedSettingsDemo = null;
 let settingsPreview = null;
+let aboutReturnDraft = null;
+let settingsResumeDraft = null;
 const settingText = id => window.XDZIP_UI_MESSAGES["zh-CN"].messages[id];
 function restoreSettingsPreview() {
     if (!settingsPreview) return;
@@ -1438,10 +1445,35 @@ function showPreflight() {
     dialog(`<div class="preflight-body"><h1>${t("ui.9cb79c4bee66")}</h1><p>${t("ui.db661e297081")}</p><div class="preflight-stats"><div><span>${t("ui.0790c26b1e36")}</span><strong>9</strong></div><div><span>${t("ui.377532e93480")}</span><strong>77619200</strong></div><div><span>${t("ui.9d959257ce7e")}</span><strong>0</strong></div></div><p>${t("ui.f644f6ec6fad")}</p><p class="preflight-note">${t("ui.0d92f3d4cae3")}</p></div>` + footer(`<button class="button primary" id="preflight-close">${t("ui.26867436321f")}</button>`, ""), "preflight", "P01", "#preflight-close");
     $("#preflight-close").onclick = closeModal;
 }
+function showAbout() {
+    aboutReturnDraft = state.modal === "settings" && settingsPreview ? {...settingsPreview.draft} : null;
+    const locale = new URLSearchParams(location.search).get("lang") || "zh-CN";
+    const t = id => window.XDZIP_UI_MESSAGES[locale]?.messages[id] || settingText(id);
+    const version = window.XDZIP_VERSION;
+    const spec = window.XDZIP_DISPLAY_SPEC.about;
+    const rows = [[t("about.version"), version.display_version], [t("about.build"), String(version.build)],
+                  [t("about.revision"), t("about.unknown")], [t("about.runtime"), "HTML"]];
+    dialog(`<div class="modal-content about-content"><span class="about-artwork">${icon("app-mark")}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button">${t("about.homepage")}</button></div>` +
+        footer(`<button id="about-copy" class="button">${t("about.copy")}</button><button class="button" data-close>${t("about.done")}</button>`, ""), "about", "A01", "#about-copy");
+    const modal = $("#modal");
+    modal.querySelector(".os-title").textContent = t("about.title");
+    modal.setAttribute("aria-label", t("about.title"));
+    Object.entries(spec).forEach(([key,value])=>{if(typeof value === "number") modal.style.setProperty("--about-"+key.replaceAll("_","-"),String(value));});
+    bindClose();
+    $("#about-homepage").onclick = () => window.open("https://github.com/xiaodaozhi/xdzip", "_blank", "noopener");
+    $("#about-copy").onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(JSON.stringify({product:"xdzip",version:version.display_version,build:version.build,channel:version.channel,preview:"HTML"},null,2));
+            if (state.modal === "about") $("#about-copy").textContent = t("about.copied");
+        } catch { /* Keep the copy action available when browser permission is absent. */ }
+    };
+}
 function showSettings() {
+    if (state.modal === "about" && aboutReturnDraft) { settingsResumeDraft = aboutReturnDraft; aboutReturnDraft = null; }
     restoreSettingsPreview();
     const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, clearRecent:false};
-    const draft = {...(savedSettingsDemo || original)};
+    const draft = {...(settingsResumeDraft || savedSettingsDemo || original)};
+    settingsResumeDraft = null;
     const t = settingText;
     const themePreviews = {system:icon("theme-system"),light:icon("theme-light"),dark:icon("theme-dark")};
     dialog(
@@ -1451,10 +1483,11 @@ function showSettings() {
         <div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${themePreviews[mode]}<span><input type="radio" name="setting-theme" value="${mode}">${t("settings."+mode)}</span></label>`).join("")}</div></fieldset>
         <div class="settings-row"><label for="setting-density">${t("settings.density")}</label><select id="setting-density" class="field-select"><option value="standard">${t("settings.standard")}</option><option value="compact">${t("settings.compact")}</option></select></div>
         <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
-        <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div></div>` +
+        <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div><div><button id="settings-about" class="button">${t("about.title")}</button></div></div>` +
         footer(`<button id="settings-defaults" class="button">${t("settings.defaults")}</button><button class="button" data-close>${t("common.cancel")}</button><button id="settings-save" class="button">${t("settings.done")}</button>`,t("ui.5fb5c0083f18"), "shield"),
         "settings", "S01", "#settings-save",
     );
+    $("#settings-about").onclick = showAbout;
     settingsPreview = {original,draft};
     function refresh() {
         $(`input[name="setting-theme"][value="${draft.theme}"]`).checked = true;
@@ -1727,6 +1760,7 @@ window.XdzipDesign = {
             showExtract("selected");
         } else if (view === "create") showCreate();
         else if (view === "settings") showSettings();
+        else if (view === "about") showAbout();
         else if (view === "preflight") showPreflight();
         else if (view === "result") {
             state.task = null; showExtract("selected");
@@ -1786,7 +1820,7 @@ window.addEventListener("message", (event) => {
             "result",
             "conflict",
             "settings",
-            "preflight",
+            "about",            "preflight",
             "empty",
             "damaged",
         ].includes(config.view) ||

@@ -1,3 +1,4 @@
+#include "../BuildInfo.h"
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
 #include "FocusDismissPolicy.h"
@@ -94,6 +95,75 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void versionAboutWindow() {
+        QVERIFY(!BuildInfo::version().isEmpty());
+        QVERIFY(BuildInfo::buildNumber() > 0);
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QVERIFY(initializeUiText(language));
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            QVERIFY(owner);
+            auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+            auto *about = owner->findChild<QQuickWindow *>("aboutWindow");
+            QVERIFY(settings && about);
+            QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+            auto *entry = settings->findChild<QQuickItem *>("settingsAbout");
+            QVERIFY(entry);
+            QVERIFY(QMetaObject::invokeMethod(entry, "clicked"));
+            QTRY_VERIFY(about->isVisible());
+            QCOMPARE(about->transientParent(), settings);
+            QQmlComponent changes(&engine);
+            changes.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                            "QtObject { property bool dark: false; property real factor: 1; "
+                            "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: "
+                            "Ui.Theme.fontScale = factor }",
+                            QUrl());
+            std::unique_ptr<QObject> appearance(changes.create());
+            QVERIFY(appearance);
+            for (const bool dark : {false, true}) {
+                appearance->setProperty("dark", dark);
+                for (const double scale : {1., 1.25, 1.5}) {
+                    appearance->setProperty("factor", scale);
+                    QTest::qWait(30);
+                    QCOMPARE(about->width(), 491);
+                    QVERIFY(about->height() <= 640);
+                    auto *version = findVisual(about->contentItem(), "aboutValue-1");
+                    QVERIFY(version);
+                    QCOMPARE(version->property("text").toString(), BuildInfo::version());
+                    auto *copy = about->findChild<QQuickItem *>("aboutCopy");
+                    auto *done = about->findChild<QQuickItem *>("aboutDone");
+                    QVERIFY(copy && done);
+                    QCOMPARE(copy->mapToScene(QPointF()).y(), done->mapToScene(QPointF()).y());
+                    QVERIFY(done->mapToScene(QPointF(done->width(), done->height())).y() <=
+                            about->height());
+                    const auto captures = qEnvironmentVariable("XDZIP_ABOUT_AUDIT");
+                    if (!captures.isEmpty()) {
+                        QVERIFY(QDir().mkpath(captures));
+                        QVERIFY(visual_audit::save(about, captures,
+                                                   language + (dark ? "-dark-" : "-light-") +
+                                                       QString::number(scale)));
+                    }
+                }
+            }
+            auto *copy = about->findChild<QObject *>("aboutCopy");
+            QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
+            const auto diagnostic =
+                QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toUtf8()).object();
+            QCOMPARE(diagnostic.value("version").toString(), BuildInfo::version());
+            QCOMPARE(diagnostic.value("build").toInt(), BuildInfo::buildNumber());
+            QVERIFY(!diagnostic.contains("path"));
+            auto *done = about->findChild<QObject *>("aboutDone");
+            QVERIFY(QMetaObject::invokeMethod(done, "clicked"));
+            QTRY_VERIFY(!about->isVisible());
+            appearance->setProperty("factor", 1.);
+            appearance->setProperty("dark", false);
+            settings->close();
+            owner->close();
+        }
+        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
+    }
     void windowsCaptionControlsAndWindowState() {
 #ifdef Q_OS_WIN
         QQmlApplicationEngine engine;

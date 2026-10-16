@@ -1,3 +1,4 @@
+#include "BuildInfo.h"
 #include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include "UiText.h"
@@ -8,9 +9,12 @@
 #include <QResource>
 
 int main(int argc, char *argv[]) {
+    if (BuildInfo::printVersionIfRequested(argc, argv))
+        return 0;
     QGuiApplication application(argc, argv);
     FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
+    application.setApplicationVersion(BuildInfo::version());
     application.setOrganizationName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     Q_INIT_RESOURCE(ui);

@@ -8,6 +8,7 @@ OperationWindow {
     id: root
     objectName: "settingsWindow"
     title: qsTrId("settings.title")
+    signal aboutRequested()
     property string draftTheme: "system"
     property real draftScale: 1
     property string draftLanguage: "zh-CN"
@@ -204,6 +205,12 @@ OperationWindow {
                         anchors.fill: parent; anchors.margins: 14
                         text: qsTrId("settings.privacy"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap
                     }
+                }
+                OperationButton {
+                    objectName: "settingsAbout"
+                    Layout.leftMargin: Theme.settingsContentInset
+                    text: qsTrId("about.title")
+                    onClicked: root.aboutRequested()
                 }
                 Text {
                     Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true

@@ -12,6 +12,7 @@
     <file>ui/qmldir</file>
     <file>ui/Theme.qml</file>
     <file>ui/SettingsWindow.qml</file>
+    <file>ui/AboutWindow.qml</file>
     <file alias="i18n/zh-CN.json">../../resources/i18n/zh-CN.json</file>
     <file alias="i18n/en-US.json">../../resources/i18n/en-US.json</file>
     <file>ui/InfoRow.qml</file>

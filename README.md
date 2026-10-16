@@ -6,6 +6,8 @@
 
 ![xdzip 已确认的浅色主窗口设计](design/hifi/screens/main-light.png)
 
+版本统一维护在 [VERSION.json](VERSION.json)，当前开发渠道和构建号见“设置 → 关于 xdzip”或 `xdzip --version`，规则见[版本机制](docs/engineering/versioning.md)。
+
 ## 从这里开始
 
 - [文档总入口](docs/README.md)：按角色阅读全部设计和开发准备文档。

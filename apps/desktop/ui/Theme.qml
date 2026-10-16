@@ -36,6 +36,15 @@ QtObject {
     readonly property real welcomeOpeningRadius: 8
     readonly property real welcomeOpeningTitleSize: 16
     readonly property real welcomeOpeningDimOpacity: 0.86
+    readonly property real aboutLogicalWidth: 491
+    readonly property real aboutMaximumHeight: 640
+    readonly property real aboutContentInset: 24
+    readonly property real aboutSectionGap: 16
+    readonly property real aboutRowGap: 10
+    readonly property real aboutArtworkSize: 64
+    readonly property real aboutTitleSize: 24
+    readonly property real aboutBodySize: 13
+    readonly property real aboutNoteSize: 12
     readonly property real settingsLogicalWidth: 612
     readonly property real settingsContentInset: 24
     readonly property real settingsSectionGap: 20

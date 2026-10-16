@@ -460,6 +460,20 @@
     "window.minimize": "Minimize",
     "window.maximize": "Maximize",
     "window.restore": "Restore",
-    "window.close": "Close window"
+    "window.close": "Close window",
+    "about.title": "About xdzip",
+    "about.description": "A lightweight, modern archive manager",
+    "about.version": "Version",
+    "about.build": "Build",
+    "about.revision": "Revision",
+    "about.runtime": "Runtime",
+    "about.development": "Development build, for testing.",
+    "about.modified": "Includes uncommitted changes",
+    "about.license": "Licensed under Apache-2.0. Third-party components retain their own licenses.",
+    "about.homepage": "Project website",
+    "about.copy": "Copy version info",
+    "about.copied": "Copied",
+    "about.done": "Done",
+    "about.unknown": "Unknown"
   }
 }

@@ -5,6 +5,7 @@ function Invoke-Checked {
     & $Program @Arguments
     if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
 }
+Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 $qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
 $qtHost = 'linux'
@@ -54,6 +55,11 @@ Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
+$productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip-browser' }
+Invoke-Checked python @('scripts/check-build-version.py', '--app', $productExe, '--output', 'build/review/build-version.json')
+# One offscreen run checks the measurement protocol; this is not a desktop performance budget.
+Invoke-Checked python @('scripts/measure-desktop.py', '--app', $productExe, '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/desktop-performance.json', '--runs', '1')
+
 # Record synthetic IME/accessibility coverage; offscreen does not imply native desktop approval.
 $env:XDZIP_PRIVATE_TEST_AUDIT = Join-Path (Get-Location) 'build/review'
 $desktopProbe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }

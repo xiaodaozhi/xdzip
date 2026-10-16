@@ -1,6 +1,6 @@
 # 文档导航
 
-维护日期：2026-10-15。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
+维护日期：2026-10-16。产品名固定为 **xdzip**。项目采用 Qt Quick 技术路线，并已建立高保真视觉基线；M1 产品骨架已完成开发与三平台自动化验证，进入一次性人工验收。
 
 ## 阅读顺序
 
@@ -25,6 +25,7 @@
 | 工具链与依赖 | [工具链决策表](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 诊断记录](engineering/cxx-admission.md)、[许可证](engineering/licensing.md) |
 | 接口审查 | [契约冻结清单](engineering/contracts.md) |
 | 隐私与诊断 | [数据生命周期](engineering/privacy.md) |
+| 产品版本与关于窗口 | [统一版本机制](engineering/versioning.md)、[A01 高保真](../design/hifi/about.html) |
 | 持续集成与发布 | [CI 策略](engineering/ci-policy.md)、[发布流程](engineering/release-runbook.md) |
 | 项目执行 | [工作清单](planning/backlog.md)、[风险与决策](planning/risks.md)、[就绪评审](planning/readiness.md) |
 | 解压预检 | [阶段契约](engineering/extraction-preflight.md) |

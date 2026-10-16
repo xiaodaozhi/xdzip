@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "logical_width": 491,
+  "maximum_height": 640,
+  "content_inset": 24,
+  "section_gap": 16,
+  "row_gap": 10,
+  "artwork_size": 64,
+  "title_size": 24,
+  "body_size": 13,
+  "note_size": 12,
+  "source": "design/hifi/about.html",
+  "states": ["light", "dark", "zh-CN", "en-US", "100%", "125%", "150%", "dirty", "unknown-revision"]
+}

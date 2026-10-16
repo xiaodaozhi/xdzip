@@ -1,12 +1,22 @@
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
+set(XDZIP_BUILD_INFO_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+add_custom_target(xdzip-build-info
+    COMMAND "${CMAKE_COMMAND}" "-DXDZIP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+        "-DXDZIP_OUTPUT_DIR=${XDZIP_BUILD_INFO_DIR}" "-DXDZIP_DISPLAY_VERSION=${XDZIP_DISPLAY_VERSION}"
+        "-DXDZIP_BUILD_NUMBER=${XDZIP_BUILD_NUMBER}" "-DXDZIP_CHANNEL=${XDZIP_CHANNEL}"
+        "-DXDZIP_CONFIGURATION=${CMAKE_BUILD_TYPE}"
+        -P "${PROJECT_SOURCE_DIR}/cmake/BuildVersion.cmake"
+    BYPRODUCTS "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h" VERBATIM)
 qt_add_resources(ui_resources ui.qrc)
 add_library(xdzip-ui-resources STATIC ${ui_resources})
+add_dependencies(xdzip-ui-resources xdzip-build-info)
+target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
 qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
-    SOURCES UiPreferences.h UiPreferences.cpp WindowsFrame.h WindowsFrame.cpp)
+    SOURCES UiPreferences.h UiPreferences.cpp WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
 if(WIN32)
     target_link_libraries(xdzip-ui-resources PRIVATE Qt6::GuiPrivate dwmapi user32)
@@ -57,7 +67,8 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"
         MACOSX_BUNDLE_ICON_FILE "xdzip.icns"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}")
+        MACOSX_BUNDLE_BUNDLE_VERSION "${XDZIP_BUILD_NUMBER}"
+        MACOSX_BUNDLE_LONG_VERSION_STRING "${XDZIP_DISPLAY_VERSION}")
     set_source_files_properties("${XDZIP_BRAND_ASSETS}/xdzip.icns" PROPERTIES
         MACOSX_PACKAGE_LOCATION "Resources")
     target_sources(xdzip-browser PRIVATE "${XDZIP_BRAND_ASSETS}/xdzip.icns")

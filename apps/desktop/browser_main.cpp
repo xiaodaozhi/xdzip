@@ -1,5 +1,7 @@
 #include "AppQuitGuard.h"
 #include "BrowserController.h"
+#include "BuildInfo.h"
+#include "DesktopProbe.h"
 #include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include "UiText.h"
@@ -12,6 +14,7 @@
 #include <QQuickWindow>
 #include <QResource>
 #include <QTimer>
+#include <memory>
 
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
@@ -19,9 +22,12 @@ bool verifyMacTitlebar(QQuickWindow *window);
 #endif
 
 int main(int argc, char *argv[]) {
+    if (BuildInfo::printVersionIfRequested(argc, argv))
+        return 0;
     QApplication application(argc, argv);
     FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
+    application.setApplicationVersion(BuildInfo::version());
     application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     Q_INIT_RESOURCE(ui);
@@ -53,6 +59,19 @@ int main(int argc, char *argv[]) {
     application.installEventFilter(&guard);
     QObject::connect(controller, &BrowserController::readyToClose, &application,
                      &QApplication::quit, Qt::QueuedConnection);
+    std::unique_ptr<DesktopProbe> probe;
+    const auto probeArgument = application.arguments().indexOf(QStringLiteral("--desktop-probe"));
+    if (probeArgument >= 0) {
+        if (probeArgument + 1 >= application.arguments().size() ||
+            qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
+            return 8;
+        const auto fixture = application.arguments().at(probeArgument + 1);
+        if (!QFileInfo(fixture).isFile())
+            return 8;
+        probe = std::make_unique<DesktopProbe>(
+            controller, qobject_cast<QQuickWindow *>(engine.rootObjects().first()), fixture,
+            &application);
+    }
     if (application.arguments().contains(QStringLiteral("--smoke-test"))) {
         if (application.windowIcon().isNull() || application.windowIcon().pixmap(64, 64).isNull())
             return 4;

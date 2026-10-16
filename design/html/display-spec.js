@@ -1,6 +1,30 @@
 "use strict";
 // Generated from docs/visual/layout-scale.json; never infer logical size from DPR.
 window.XDZIP_DISPLAY_SPEC = Object.freeze({
+    "about": {
+        "schema_version": 1,
+        "logical_width": 491,
+        "maximum_height": 640,
+        "content_inset": 24,
+        "section_gap": 16,
+        "row_gap": 10,
+        "artwork_size": 64,
+        "title_size": 24,
+        "body_size": 13,
+        "note_size": 12,
+        "source": "design/hifi/about.html",
+        "states": [
+            "light",
+            "dark",
+            "zh-CN",
+            "en-US",
+            "100%",
+            "125%",
+            "150%",
+            "dirty",
+            "unknown-revision"
+        ]
+    },
     "version": 2,
     "logicalWindowWidth": 1024,
     "windowsCaption": {
@@ -34,6 +58,13 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "operationSourceToLogical": 0.8268733850129198,
     "mainDensity": 0.8,
     "views": {
+        "about": {
+            "source": null,
+            "size": [
+                780,
+                900
+            ]
+        },
         "welcome": {
             "source": "../hifi/screens/welcome-titlebar-light.png",
             "size": [

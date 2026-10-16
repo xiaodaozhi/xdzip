@@ -1194,7 +1194,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-bridge-probe"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "cxx",
  "cxx-build",
@@ -1202,14 +1202,14 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-api"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "xdzip-domain",
 ]
 
 [[package]]
 name = "xdzip-codec-tar"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "flate2",
  "tar",
@@ -1219,7 +1219,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-codec-zip"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "flate2",
  "rawzip",
@@ -1230,11 +1230,11 @@ dependencies = [
 
 [[package]]
 name = "xdzip-domain"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 
 [[package]]
 name = "xdzip-extract-plan"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-domain",
@@ -1242,7 +1242,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-io"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "cap-fs-ext",
  "cap-std",
@@ -1256,7 +1256,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m2-probe"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "xdzip-codec-api",
  "xdzip-runtime",
@@ -1264,21 +1264,21 @@ dependencies = [
 
 [[package]]
 name = "xdzip-m3-probe"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "xdzip-runtime",
 ]
 
 [[package]]
 name = "xdzip-m4-probe"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "xdzip-runtime",
 ]
 
 [[package]]
 name = "xdzip-qt-bridge"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "cxx",
  "cxx-build",
@@ -1289,7 +1289,7 @@ dependencies = [
 
 [[package]]
 name = "xdzip-runtime"
-version = "0.1.0"
+version = "0.1.0-dev.1"
 dependencies = [
  "unicode-normalization",
  "winapi-util",

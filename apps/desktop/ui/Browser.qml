@@ -270,7 +270,8 @@ ApplicationWindow {
             if (!createWindow.visible && root.welcomeVisible) welcomePage.focusCreate();
         }
     }
-    SettingsWindow { id: settingsWindow; owner: root }
+    AboutWindow { id: aboutWindow; owner: settingsWindow.visible ? settingsWindow : root }
+    SettingsWindow { id: settingsWindow; owner: root; onAboutRequested: aboutWindow.present() }
     Connections {
         target: AppSettings
         function onAppearanceChanged() {

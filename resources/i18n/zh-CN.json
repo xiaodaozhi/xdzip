@@ -460,6 +460,20 @@
     "window.minimize": "最小化",
     "window.maximize": "最大化",
     "window.restore": "还原",
-    "window.close": "关闭窗口"
+    "window.close": "关闭窗口",
+    "about.title": "关于 xdzip",
+    "about.description": "轻量、现代的压缩包管理工具",
+    "about.version": "版本",
+    "about.build": "构建号",
+    "about.revision": "代码提交",
+    "about.runtime": "运行环境",
+    "about.development": "开发构建，仅供测试。",
+    "about.modified": "包含未提交修改",
+    "about.license": "采用 Apache-2.0 许可，第三方组件遵循各自许可。",
+    "about.homepage": "项目主页",
+    "about.copy": "复制版本信息",
+    "about.copied": "已复制",
+    "about.done": "完成",
+    "about.unknown": "未知"
   }
 }

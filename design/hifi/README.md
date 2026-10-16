@@ -80,3 +80,5 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 当前操作窗口的中性描边按 [2026-10-15 描边校正](../../docs/visual/design-standard.md#2026-10-15-操作控件描边校正) 统一使用浅色 #DCE2EC。上述动态状态稿与 HTML 共用生成参数，历史位图及其哈希保持不变。
 
 欢迎页新增 [正在打开的浮动遮罩](sources/welcome.html?opening=1)，与 Qt、HTML 共用 [参数和交互契约](../../docs/ux/welcome-opening.md)，支持浅深色，保留原有标题栏。
+
+当前新增设计：[A01 关于 xdzip](about.html)，统一版本信息、开发状态与复制操作。参数来自 [about-reference.json](../../docs/visual/about-reference.json)，不覆盖历史原稿。

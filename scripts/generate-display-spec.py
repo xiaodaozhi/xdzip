@@ -13,7 +13,7 @@ def main():
     args = parser.parse_args()
     layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
     reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
-    sizes = {'welcome': ('welcome-titlebar-light.png', [1586, 992]),
+    sizes = {'about': (None, [780, 900]), 'welcome': ('welcome-titlebar-light.png', [1586, 992]),
              'welcome-narrow': ('welcome-titlebar-narrow.png', [1296, 875]),
              'main': ('main-light.png', [1586, 992]),
              'extract': ('extract-macos.png', [1092, 1440]),
@@ -31,7 +31,7 @@ def main():
     sizes['settings'] = (Path(settings['source_image']).name, settings['source_size'])
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
-    spec = dict(version=2, logicalWindowWidth=main_ratio[0],
+    spec = dict(about=json.loads((ROOT / 'docs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
                 windowsCaption=layout['main']['interaction'],
                 sourceWindow=reference['source_window'],
                 sourceToLogical=main_ratio[0] / main_ratio[1],

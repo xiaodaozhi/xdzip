@@ -37,3 +37,22 @@ shutil.copytree(root / 'third_party/qt', out / 'Qt-6.8.2', dirs_exist_ok=True)
 shutil.copyfile(root / 'design/assets/fonts/OFL.txt', out / 'Xdzip-Design-Sans-SC-OFL.txt')
 (out / 'rust-dependencies.json').write_text(json.dumps(inventory, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 (out / 'target.json').write_text(json.dumps({'rust_host': host, 'scope': 'Host-resolved workspace dependencies, including build tools; Cargo.lock retains all targets'}, indent=2) + '\n', encoding='utf-8')
+
+version = json.loads((root / 'VERSION.json').read_text())
+revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+source_inventory = {
+    'schema_version': 1, 'product': 'xdzip', 'version_source': version,
+    'revision': revision, 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=normal'], cwd=root, text=True)), 'rust_host': host,
+    'rust_packages': [{k: p[k] for k in ('name', 'version', 'license', 'repository')}
+                      for p in metadata['packages'] if p['id'] in resolved],
+    'qt_declared_product_modules': ['Core', 'Gui', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
+    'qt_version': '6.8.2',
+    'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
+    'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
+                      for p in sorted(out.rglob('*')) if p.is_file() and p.name != 'build-inventory.json'],
+    'limits': ['Source-resolved host build inventory, including build tools, not an installed artifact SBOM.',
+               'Declared Qt product modules do not inventory all transitive deployed libraries or plugins.',
+               'Signed packages, deployed dependency completeness and licensing obligations still require release review.']
+}
+(out / 'build-inventory.json').write_text(json.dumps(source_inventory, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+print(f'Collected {len(inventory)} external Rust notice sets and a versioned source build inventory')
