@@ -10,3 +10,6 @@
 *.woff2 binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
 design/assets/fonts/OFL.txt -text -whitespace
+# Historical source fixtures are verified by SHA-256, including original LF bytes.
+apps/desktop/tests/preferences-compat/previous/*.cpp -text
+apps/desktop/tests/preferences-compat/previous/*.h -text
