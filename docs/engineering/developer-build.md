@@ -1,23 +1,33 @@
-# xdzip — 开发构建与验证
+# 开发构建与平台验证
 
-这是实际 ZIP 浏览、创建与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/README.md)。签名与独立安全评审尚未达到正式发行条件。
+开发构建包含真实 ZIP、TAR、TAR.GZ 浏览、创建与解压，仍标记实验性。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。WP-12 开发与验收完成不代表正式发行获批，剩余许可来源、独立安全审查与私密报告演练在[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。
 
-- macOS ARM64：自 2026-10-14 起仅进行原生编译、测试和 SDK 环境下的 Cocoa 启动验证，不自动打包或上传开发应用。Actions 仅保留日志和 JSON；本地构建方法见 [Qt 开发应用](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/README.md)。
-- Windows X64：保持 windows 目录内 DLL／插件布局，运行 windows/xdzip.exe，产品采用 GUI 子系统，启动不会创建控制台窗口。主窗口在设置右侧提供最小化、最大化／还原和关闭按钮，标题空白处可拖动、双击最大化／还原，保留原生可缩放边框和 DWM 装饰，窗口边缘由系统命中测试处理。圆角与阴影遵循系统版本及合成设置。
-- Linux X64：解压 xdzip-linux-x86_64.tar.gz 后运行目录内 ./xdzip，Qt 6.8.2、QML 和插件随目录提供，不要求开发 SDK。当前验证基线为 Ubuntu 24.04、X11，OS 图形及字体运行库仍需具备；这不是通用发行版安装器。系统依赖见 share/deployment.json，真实桌面与安装专项仍单独验收。
+## 从源码运行
 
-打开压缩包只浏览，不自动解压。支持 ZIP Store／Deflate／单卷 ZIP64 与 TAR／TAR.GZ 的浏览、创建和安全解压。ZIP 创建支持四档级别、AES-256 内容加密和编号分卷；加密／分卷 ZIP 读取仍不支持，输出可用兼容工具验证。安全条件满足时可恢复 ZIP 相对符号链接及受限可执行位；特殊对象与逃逸仍拒绝。实际内容预览尚未实现，完整支持边界以同提交 README 和格式契约为准。
+使用根目录锁定的 Rust、Cargo.lock、Qt 与平台编译器。完整配置、构建、CTest 及离屏环境命令见[Qt 开发应用](../../apps/desktop/README.md)。Rust 核心可独立执行 `cargo test --workspace --locked`，不需要 Qt。
 
-重名普通文件可询问、跳过、自动改名或明确替换。完整校验和数据同步后整文件发布；损坏、磁盘写入失败及提交前取消保留旧文件，早前已完成的文件继续保留。关闭任务窗口只隐藏它，可从状态栏重新打开；退出时等待或取消活动任务，不在 GUI 线程同步等待。
+`xdzip-browser` 为真实产品目标，`xdzip-ui-preview` 为示例组件入口。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
 
-输出采用受限权限，ZIP Unix 普通文件可恢复受限可执行位，不恢复扩展属性或原始修改时间；这不代表程序包安装、签名验证或系统安全审查。拒绝外部账户具有修改权限的 Windows 目标，只读／执行共享允许且输出继承目标的只读共享权限、组或其他用户可写的 POSIX 目标，以及目录链接。崩溃留下的暂存目录只提示并保留供检查，不自动恢复或删除未知内容。
+## 平台交付
 
-验收步骤：浏览根目录和子目录、搜索与五列表头排序；解压小文件、目录和全部归档；用自有文件测试四种重名策略；取消冲突等待；关闭进度窗后重新打开；检查 Cmd+Q／窗口关闭；核对浅深色、Retina、100/125/150% 字号、输入法和辅助功能。最新 macOS 桌面人工体验与独立审查单独登记，不由离屏自动检查代替。
+| 平台 | 开发工件与入口 | 验证边界 |
+| --- | --- | --- |
+| macOS arm64 | 原生构建生成 build/ 内 xdzip.app；按明确需求制作本地开发 DMG | CI 使用固定 SDK 编译、测试及 Cocoa 启动，只上传日志与 JSON，不部署、签名或上传应用；本地 DMG 允许必要 ad-hoc 完整性签名 |
+| Windows x64 | 开发工件 windows/xdzip.exe 及相邻 DLL／插件；当前用户安装器 | 安装后入口固定为安装根目录 xdzip.exe，不新建 versions/提交号-哈希 层级；旧布局迁移规则见安装契约 |
+| Ubuntu 24.04 x64 | xdzip-linux-x86_64.tar.gz 内 ./xdzip，或 .deb 安装后的 xdzip 命令 | Qt、QML 与插件随包提供；仍依赖声明的 OS 图形和字体库，不保证其他发行版或 Wayland |
 
-Windows/Linux 开发包中的 notices 保留当前平台依赖、Qt 与字体的上游许可原文；xdzip-source.tar 为同一提交的源码。Actions 工件保留 14 天，过期后可按锁定工具链从 build.json 的提交重建。
+部署流程见[Linux 部署](linux-deployment.md)、[macOS DMG](macos-deployment.md)及[安装与文件关联](installers-associations.md)。Windows/Linux 安装器未正式签名，注册打开候选而不修改用户默认应用。文件关联、权限或系统焦点的问题须使用真实安装环境验证。
 
-build/、target/ 以及所有层级的 dist/ 都是生成目录，不提交到 Git。macOS 构建产生的 .app 仅是 build/ 内编译中间产物，不复制成开发交付包。先前的 Apple Silicon 包回执作为历史验证记录保留。
+## 文件与任务边界
 
-工件中的 deployment-audit.json 区分已部署导入和 SDK 依赖。source-build.cdx.json 是源码宿主依赖图，artifact-files.cdx.json 是实际文件及已知原生导入清单，均标记完整性 incomplete，不代表完整运行时 SBOM 或许可签字。manual-desktop.json 全部待人工验证，不能把 CI 生成表格当作桌面验收。
+打开只浏览，不自动解压。普通同名文件支持询问、跳过、改名及明确替换；内容校验和同步后才整文件发布。提交前取消或写入失败保留旧文件，早前已提交的解压项继续保留。关闭任务窗口仅隐藏详情，退出由活动任务决策和异步 shutdown 屏障处理。
 
-实验安装器：Windows 工件中的 xdzip-windows-x64-setup.exe 为当前用户安装，Ubuntu 工件中的 xdzip-ubuntu24.04-amd64.deb 由包管理器安装。二者均未签名，提供打开候选而不改默认。安装／升级／回退／忙时保护／卸载的自动验证及人工边界见[安装与关联](installers-associations.md)。
+ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](m3-extraction.md)；已知输入竞态和 macOS ACL 兼容问题见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
+
+## 证据与复验
+
+按[通用验证方法](../qa/README.md)和[桌面清单](../qa/private-test-manual.md)选择受影响项。人工专项与离屏、Cocoa 或软件渲染自动检查分别记录；既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成清单而重做。
+
+Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，完整性仍可能为 incomplete，不能当作独立安全或许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
+
+所有构建、截图、量测、报告与包只写入忽略的 build/、target/ 或 dist/。不要把开发机 SDK 可运行、生成的 pending 表或部分 SBOM 写成干净环境与全部发行门槛通过。

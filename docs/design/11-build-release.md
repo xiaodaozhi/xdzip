@@ -16,7 +16,7 @@
 
 产品以 CMake 组织 Qt/C++/QML，Cargo 组织 Rust，顶层脚本/预设负责 target、依赖位置及顺序。Rust 静态核心链接进应用，Qt 默认动态部署，便于许可合规和替换。平台原生 codec/helper 作为明确可审计独立工件。
 
-Rust 工具链锁定经过 CI 验证的 stable；原型的 1.99.0 是已用版本，不永久规定产品只能用它。Qt 采用 ≥6.8 的已验证且有安全维护的版本，准确补丁版本在实施锁文件记录。Qt LTS 名称不代表所有开源分发渠道都提供相同的长期补丁。
+当前 Rust 工具链由 rust-toolchain.toml 锁定为 1.99.0，Qt SDK 由构建配置锁定为 6.8.2；来源和哈希见[工具链策略](../engineering/toolchain.md)。升级通过对应审查与三平台复验，不把原型版本或宽泛的 ≥6.8 当作可直接替换的构建输入。Qt LTS 名称不代表所有开源分发渠道都提供相同的长期补丁。
 
 `cxx`、Cargo、CMake、编译器、Qt 包 SHA、features 和目标架构保存于版本化构建清单。构建生成文件放 build 目录；QML 编译缓存启用与否也写入基准元数据。缓存 key 含工具链/Qt/feature，避免错误复用不同架构产物。
 
@@ -28,7 +28,7 @@ Rust 工具链锁定经过 CI 验证的 stable；原型的 1.99.0 是已用版�
 
 不能仅列直接链接库就删掉所有 transitive DLL/QML 插件。部署工具扫描 QML imports 和动态依赖，在干净机器上验证。QML 包资源和 platform/imageformat 插件用明确允许清单；不从用户当前目录加载未知 Qt 插件。
 
-macOS 使用部署工具生成 app bundle，配置相对加载路径；Windows 部署 Qt DLL/QML 和必要 MSVC runtime；Linux 按选定 AppImage/发行包方案及 Qt 依赖部署。部署工具的输出需审查，不假设自动满足许可、安全或最小体积。
+macOS 使用部署工具生成 app bundle，配置相对加载路径；Windows 部署 Qt DLL/QML 和必要 MSVC runtime；Linux 采用 Ubuntu 24.04 运行目录 tar.gz 和 .deb，按[部署契约](../engineering/linux-deployment.md)收集 Qt 与 OS 依赖。部署工具的输出需审查，不假设自动满足许可、安全或最小体积。
 
 产品安装包仅包含 Qt 产品核心和选择的后端，不包含 Slint/Tauri 原型、Python 基准环境、Cargo target、头文件或字体实验资源。源码包可保留选型实验，但必须与产品二进制包分开。
 
@@ -46,7 +46,7 @@ Mac App Store 是独立发行路线，需重新评估 App Sandbox、书签授权
 
 ### Linux
 
-先发布一种可验证自包含路线，再增加发行版包。针对基线系统构建，不在新 glibc 上构建后宣称老系统可运行。Wayland/X11、portal、Qt 插件和沙箱权限分别测试。AppImage/Flatpak/原生包对文件与工作进程限制不同，按发行配置暴露实际能力。
+当前交付 Ubuntu 24.04 运行目录及 .deb，不提供 AppImage 或 Flatpak。扩大渠道前须补充安装、文件访问和来源验证。针对基线系统构建，不在新 glibc 上构建后宣称老系统可运行。Wayland/X11、portal、Qt 插件和沙箱权限分别测试。AppImage/Flatpak/原生包对文件与工作进程限制不同，按发行配置暴露实际能力。
 
 ## 5. 许可证和供应链
 

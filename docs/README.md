@@ -19,6 +19,15 @@
 | 仓库管理 | [内容与历史管理](engineering/repository-hygiene.md)、[目录与依赖](engineering/repository-layout.md)、[贡献指南](../CONTRIBUTING.md)、[变更日志](../CHANGELOG.md) |
 | 开源协作 | [治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |
 
+## 按任务阅读
+
+- 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，实际命令见 [Qt 应用](../apps/desktop/README.md)。
+- 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；设计中的外部 SDK、磁盘索引和内容预览仍属于后续能力。
+- 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
+- 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与独立发行审查。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
+
+新缺陷与任务先查重并记录到 issue。已完成的 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)不承接后续新待办；独立发行审查见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，尚未收口的文件输入与 macOS ACL 问题见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。这些入口用于查阅实际状态，本文不复制执行报告。
+
 ## 文档权威
 
 需求以 design/01 为准；领域与任务以 design/03、08 为准；桥接以 design/05 为准；格式扩展以 design/06 为准；视觉以已确认原稿和 tokens 为准。工程文档补充实施边界，不另定义冲突协议。候选、未实现与未验证内容保持明确标记，不因文档存在便写成已实现。

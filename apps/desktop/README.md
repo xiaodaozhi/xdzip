@@ -9,11 +9,11 @@
 ```sh
 cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
 cmake --build build/ui
-./build/ui/apps/desktop/xdzip-ui-preview
+./build/ui/apps/desktop/xdzip-browser
 ctest --test-dir build/ui --output-on-failure
 ```
 
-macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 可执行文件带 `.exe`。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
+macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip-browser.exe`。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
 
 无显示服务时可设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 测试；普通桌面运行不设置这些变量。离屏渲染不证明 GPU、系统输入法或读屏已验收。产物、截图和日志位于 `build/`，不提交 Git；实际执行状态由对应 issue 与 Actions 记录。
 

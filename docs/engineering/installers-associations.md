@@ -1,6 +1,6 @@
 # 实验安装器与文件关联
 
-本轮交付 Windows x64 当前用户安装器和 Ubuntu 24.04 amd64 X11 的 .deb。它们是未签名开发安装器，不代表 WP-12 全部准入、独立安全审查或通用 Linux 支持完成。后续用户明确要求接入[本地 macOS 开发 DMG](macos-deployment.md)，CI 不部署或上传 Mac 应用，Developer ID 与公证仍待发行环境。
+提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表独立发行审查获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
 ## Windows
 
@@ -30,7 +30,7 @@ build-linux-installer.py 从同一核验目录生成 .deb，包名 xdzip，版�
 
 ## macOS 与文件打开
 
-Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。默认应用由用户和 Launch Services 决定，本轮不执行开发机全局注册。
+Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。默认应用由用户和 Launch Services 决定，不主动修改默认应用。开发验证副本的临时注册按[Mac 维护方法](macos-deployment.md)收尾，保留已有应用与用户默认选择。
 
 FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件，等控制器空闲后复用真实打开与激活。命令行 -- 后都作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。现有产品仍为单个真实会话，多输入串行打开并显示最后一个；不宣称跨进程单实例或多会话标签已实现。
 
@@ -48,11 +48,11 @@ Windows 原生 CI 安装 QA 变体 1、升级 2、回退 1，再安装真正交�
 
 QA 变体共用本次核验二进制，只改变测试包版本／目录，验证安装机制，不作为发行工件，也不冒充真实不同产品版本的数据迁移。设置 schema 当前为 1，两平台安装元数据记录它，旧安装器拒绝覆盖声明更新 schema 的安装；未来迁移须同步契约。
 
-后续故障注入只允许 QA 变体 2，在 postinst configure 阶段失败一次；正式产品禁止携带该分支。容器实际验证 half-configured 状态、运行门阻止启动、设置保持，再运行 dpkg --configure -a 恢复并经 GIO 打开真实文件。这是可重复配置失败，不冒充设备掉电。设置兼容检查另编译固定 4cf0f8c 与当前源码两个实际组件，往返同 schema 配置；不冒充两个完整安装器的数据迁移。
+后续故障注入只允许 QA 变体 2，在 postinst configure 阶段失败一次；正式产品禁止携带该分支。容器实际验证 half-configured 状态、运行门阻止启动、设置保持，再运行 dpkg --configure -a 恢复并经 GIO 打开真实文件。这是可重复配置失败，不冒充设备掉电。设置兼容检查另编译保留的原始设置组件与当前组件，往返同 schema 配置；原始输入逐文件固定哈希，不依赖旧 main 历史，不冒充完整安装器的数据迁移。
 
-完整产品兼容另由 prepare-previous-product.py 在一次性 Windows/Linux CI 主机构建固定 4cf0f8c 的完整历史源码：使用 detached worktree 保留真实干净身份，使用当前固定 SDK 生成历史产品 QA 安装器，不下载易过期的旧 Actions 二进制。先安装历史产品并实际打开，再安装当前产品并检查 revision 改变、配置字节保留，再回退历史产品重新打开并检查数据。它证明两个完整源码提交在同 schema 的兼容，不冒充历史已签名原包、尚不存在的 schema 2 迁移或设备重启。历史安装器只作 QA，不上传为产品；回执绑定两个二进制与安装器 SHA-256。
+完整产品兼容另由 prepare-previous-product.py 在一次性 Windows/Linux CI 主机构建固定兼容快照（来源为原 4cf0f8c）的完整产品源码：使用 detached worktree 保留真实干净身份，使用当前固定 SDK 生成历史产品 QA 安装器，不下载易过期的旧 Actions 二进制。先安装历史产品并实际打开，再安装当前产品并检查 revision 改变、配置字节保留，再回退历史产品重新打开并检查数据。它证明两个完整源码提交在同 schema 的兼容，不冒充历史已签名原包、尚不存在的 schema 2 迁移或设备重启。历史安装器只作 QA，不上传为产品；回执绑定两个二进制与安装器 SHA-256。
 
-windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、不同产品版本的数据迁移、签名信任、GPU 与桌面专项仍需人工，INSTALL-01／ASSOC-01 不自动标记全部通过。
+windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、未正式签名提示、GPU 与桌面专项按人工清单核验。自动脚本不得自行把 INSTALL-01／ASSOC-01 全部标记通过；既有人工结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，不因重新生成 pending 模板而重开验收。未来 schema 迁移须另增实际兼容用例。
 
 Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使 `CloseMainWindow` 按该配置执行正常退出；其他关联打开探针保留默认托盘配置并通过显式退出屏障结束。安装保护探针不得把“窗口隐藏”误判为“进程退出失败”，也不得通过强制终止正常路径跳过退出验证。
 

@@ -13,7 +13,7 @@
 
 已阅读这些包的 Cargo 配置、许可和涉及的 API／源码。flate2 上游持续维护、cap 系列由 Bytecode Alliance 维护、getrandom 和 rustix 为系统接口项目、Unicode normalization 为通用 Unicode 库；升级仍须锁版本并重跑原生边界回归，不以维护主体代替安全审计。新增包无运行时网络请求；含 build script 的包只探测编译器／目标配置或选择 Rust 系统调用后端，没有下载外部代码或编译 C 解码器。MIT／Apache-2.0／Zlib 等许可通知通过开发包 notices 收集完整上游原文；实际许可表达式以锁定材料为准。
 
-[OSV 精确版本查询（本地／CI 工件）](../qa/README.md)记录实际响应；查询失败不能解释成未发现公告。该检查不是完整 cargo-audit 或独立审查。既有 cxx 公告与版本选择仍见 [M2 依赖记录](dependencies.md)。
+OSV 精确版本查询须按[验证方法](../qa/README.md)保留实际响应；查询失败不能解释成未发现公告。该检查不是完整 cargo-audit 或独立审查。既有 cxx 公告与版本选择仍见 [M2 依赖记录](dependencies.md)。
 
 rawzip 保持 0.5.2；M2 元数据准入不自动批准解码。M3 适配器独立验证本地头、流结束、CRC 与 32／64-bit 数据描述符。rawzip 自带的数据描述符宽度推断不覆盖某些 Python force_zip64 流式产物，适配器按本地 ZIP64 哨兵验证，不复制或修改第三方源码；独立 Python 夹具同时覆盖合法混合宽度和篡改大小。
 

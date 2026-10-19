@@ -17,7 +17,7 @@
 | P09 低资源 | [09](09-performance.md)、[08](08-task-scheduling.md) | T09 实际进程树、GPU、启动、吞吐、完整体积 | M5 建基线，M9 预算退出 |
 | P10 解耦/格式扩展 | [02](02-system-architecture.md)、[06](06-codec-extension-sdk.md) | T10 无 Qt 核心、依赖方向、第三格式样例 | M1/M4，源码 SDK；外部 M8 |
 | P11 隐私/密码 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T11 无默认联网、脱敏、秘密生命周期 | M5 隐私；秘密能力 M7 |
-| P12 可审计发行 | [10](10-quality-engineering.md)、[11](11-build-release.md) | T12 锁定依赖、SBOM、签名、干净机、许可材料 | M5 私测包，M9 正式发行 |
+| P12 可审计发行 | [10](10-quality-engineering.md)、[11](11-build-release.md) | T12 锁定依赖、SBOM、必要 ad-hoc 完整性及未正式签名说明、干净机、许可材料 | M5 私测包，M9 正式发行 |
 | P13 第三方扩展 | [06](06-codec-extension-sdk.md)、[11](11-build-release.md) | T13 独立实现互通、权限变更、拒绝越权/拒绝取消 | M8 试验；M9 满足沙箱门槛 |
 | P14 受限预览 | [04](04-qt-quick-ui.md)、[07](07-file-security.md) | T14 超大图像/文本、活动内容、临时文件清理 | M6，v0.2+ |
 | P15 可恢复错误 | [05](05-qt-rust-bridge.md)、[07](07-file-security.md)、[08](08-task-scheduling.md) | T15 错误分类、源变化、磁盘满、崩溃恢复 | M3～M5，v0.1 |

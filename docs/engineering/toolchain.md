@@ -4,12 +4,12 @@
 
 | 项目 | 当前方向 | 冻结所需证据 |
 | --- | --- | --- |
-| Rust | stable，统一 edition 与 MSRV | 具体版本、三目标编译、依赖 MSRV；写入 rust-toolchain.toml |
-| Qt | Qt 6.8 或更新的受维护版本，动态部署 | 精确补丁/来源/哈希、模块许可、三平台 smoke、维护渠道 |
+| Rust | rust-toolchain.toml 固定 1.99.0，edition 2024，rust-version 1.99 | 升级时核对依赖 MSRV、三目标测试和 Clippy，保持工具链文件与 Cargo 配置一致 |
+| Qt | 当前固定 6.8.2 SDK，动态部署 | 固定来源／哈希、模块许可、三平台 smoke；每次发行检查安全维护状态，升级须复验源码与替换流程 |
 | C++ | C++17、Qt 匹配的编译器 | macOS clang、Windows MSVC、Linux 编译器版本 |
-| CMake | 支持所选 Qt 和生成式 cxx 桥接 | 精确最低版本、Ninja/presets、生成头依赖验证 |
-| cxx | 构建期生成桥接，不提供稳定二进制 ABI | 锁定 crate/生成器同版本，关闭竞态和异常边界通过 |
-| 系统 | macOS arm64 优先，Windows/Linux x86_64 | design/11 候选最低版本经过干净机器运行 |
+| CMake | 根配置要求 3.24 及以上，使用 Ninja | 核对实际构建版本、生成头依赖与干净配置；CI 工具版本由工作流固定 |
+| cxx | 1.0.205，构建期生成桥接，不提供稳定二进制 ABI | crate／生成器同版本，关闭竞态和异常边界回归 |
+| 系统 | macOS 14+ arm64、受维护 Windows 11 x64、Ubuntu 24.04 X11 x64 | 按已批准支持政策核对真实环境，不把 CI 宿主扩大为全部系统版本保证 |
 
 每条记录包含版本、下载来源、SHA256、许可证、目标、负责人、验证提交和日期。Rust/Qt 安全更新触发重新验证，不无限保留已失去维护的补丁。最低系统候选不等于正式支持承诺。
 

@@ -42,7 +42,7 @@ runtime-attribution.json 包含文件、组件、关系、上游声明、版权�
 
 ## 尚未解决的发行门槛
 
-已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor 和四份固定 Qt 模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约仍需完成。[本地 Mac 核验](macos-deployment.md)只证明元数据修改的兼容 QtCore 可替换，不冒充从源码重建 Qt。源清单与 SPDX 字段不能替代这些义务。真实安装、签名身份和独立安全审查按 [WP-12 准入](https://github.com/xiaodaozhi/xdzip/issues/5)单独登记。
+已增加[源码交付收集器](source-delivery.md)，保存实际项目源码、Rust vendor、四份运行时 Qt 模块归档及两份构建模块归档、重建及动态替换说明。它不能证明 SDK 与上游逐项构建等价。精确静态链接归属、操作系统／再分发运行库、所有内嵌资源逐项许可、开源许可分支选择及履约仍需完成。[本地 Mac 部署核验](macos-deployment.md)中的元数据修改替换，与[实际源码 Qt 构建及加载／替换](wp12-automation.md#qt-源码与兼容替换)是不同流程，分别保留证据；均不能推断任意 SDK 的字节级构建等价。源清单与 SPDX 字段不能替代许可义务。剩余来源、许可和独立安全审查按[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)登记，付费签名身份不作为门槛；既有桌面验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留。
 
 [Qt SDK 对应核验](qt-sdk-correspondence.md)进一步记录固定归档提交、SDK 源码声明逐文件哈希、安装配置与已知 AGL 消费端补丁。声明覆盖范围内匹配不等于完整 SDK 构建等价，原有发行阻断保持不变。
 

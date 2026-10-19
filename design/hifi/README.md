@@ -38,7 +38,7 @@
 | [节点与交互状态](screens/directory-tree-states.png) | 折叠 / 展开、空 / 非空叶子、当前 / 悬停 / 焦点、长名称、大字号 |
 | [空态与导航边界](screens/directory-tree-boundaries.png) | 读取、空归档、根文件、超限、失败、隐藏当前目录 |
 
-[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../docs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML 示例与 Qt 只读目录树已接入核心交互，边界提示 / 骨架、完整深色图板与人工辅助功能验收仍待后续完成。
+[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../docs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML 示例与 Qt 只读目录树已接入核心交互，专用边界图标／骨架与完整深色图板仍待补齐；既有人工专项以 [WP-12 issue](https://github.com/xiaodaozhi/xdzip/issues/5)结论为准，不以图板交付替代实际验收。
 
 ## 原稿与素材的职责
 
@@ -48,7 +48,7 @@
 - `assets/reference/`：原图直接裁切的精美对照素材；保留原背景和原像素，用于评审透明重建的差异。
 - `assets/demo/`：HTML 示例照片。
 - `docs/visual/`：视觉规范与实现约束。
-- `docs/qa/`：实际渲染、历史复核与验收证据。
+- `docs/qa/`：可复用验证方法与清单；实际证据放本地 build/ 或 CI 工件，结论由 issue 跟踪。
 
 目录合并保持十张原稿及原像素切片的字节不变。历史 QA JSON 保留当时输入路径与哈希，结合 [迁移清单](../assets/migration.json) 或其记录的 Git 提交追溯，不回写历史测量。
 

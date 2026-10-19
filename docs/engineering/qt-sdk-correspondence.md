@@ -19,8 +19,8 @@ python3 scripts/qt_sdk_correspondence.py \
 
 源码对应记录中的 archive_commit 来自固定归档 .tag。qt-license-sources.json 的 source_commits 仅表示许可文本的固定取回提交，两者分别保存；例如 QtDeclarative 的许可来源提交与官方 6.8.2 归档提交不同，不应互相覆盖或冒充 SDK 编译提交。许可证文本本身仍按原有 SHA-256 检查。
 
-## 实际范围与下一门槛
+## 结果解释与发行边界
 
-本地 Qt 6.8.2 核验中，QtBase 21,597 个、QtDeclarative 52,976 个 SDK 已声明源码文件与归档一致，声明文件无差异或缺失；归档仍分别有 349、105 个未被该声明覆盖的普通文件。QtSvg 和 QtTranslations 没有随当前 SDK 提供源码 SPDX，不能推断逐文件对应通过。实际统计、配置和补丁状态以本次生成的 JSON 为准，不把本地观测推广到其他 SDK。
+模块是否提供源码 SPDX、匹配／缺失／未覆盖数量、配置和补丁状态均以本次生成的 JSON 为准，不把某个 SDK 的观测推广到其他 SDK。没有逐文件声明时不能推断对应通过，必须保留具体缺口。
 
-报告状态固定为 evidence-collected-not-build-equivalence。完成 Qt 的源码重建、完整工具链与系统 SDK 材料、未覆盖／生成文件核对、运行库来源及替换行为验证之前，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择、平台运行库及独立审查门槛继续保留。
+报告状态固定为 evidence-collected-not-build-equivalence。[实际 Qt 源码构建和加载／替换](wp12-automation.md#qt-源码与兼容替换)已有独立流程，但不能由此推断原 SDK 的字节级重现。完整工具链与系统 SDK 材料、未覆盖／生成文件、运行库来源及许可履约尚未全部核清时，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择、平台运行库及独立审查门槛继续保留。

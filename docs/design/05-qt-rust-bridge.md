@@ -8,7 +8,7 @@
 
 以下表格定义概念类型与语义，不是可直接编译的 `cxx::bridge` 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。
 
-M1 已落地独立双句柄、Open/Browse/Preflight/CloseSession/Snapshot、取消/关闭控制通道和 Qt mailbox。当前单会话、串行 GUI 请求；完整查询代际、TaskId、输出授权与扩展协议仍是后续目标。已实现签名、资源预算与故障语义见 [M1 运行时契约](../engineering/m1-runtime.md)，测试和开发包见 [M1 验收入口（本地／CI 工件）](../qa/README.md)。
+当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。Qt 仍为单会话、串行普通请求；第三方进程协议、完整多会话调度和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [M1 运行时](../engineering/m1-runtime.md)、[M2 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
 
 ## 2. 客户端和事件接收
 
