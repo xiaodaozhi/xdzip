@@ -1,46 +1,106 @@
-# xdzip
+<p align="center">
+  <img src="design/assets/brand/xdzip-128.png" width="80" height="80" alt="xdzip 应用图标">
+</p>
 
-现代、轻量的跨平台压缩包管理工具，采用 Qt Quick/QML、薄 C++ 适配层与 Rust 核心。打开压缩包先浏览内容，由用户明确选择创建或解压。
+<h1 align="center">xdzip</h1>
 
-当前为实验性开发版本。WP-12 开发与验收已完成，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)；[独立发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)仍未完成，尚未批准正式发行。
+<p align="center"><strong>先浏览，再解压。</strong><br>面向 macOS、Windows 和 Linux 的开源压缩包管理工具。</p>
 
-![xdzip 浅色主窗口设计](design/hifi/screens/main-light.png)
+<p align="center">
+  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml/badge.svg?branch=main" alt="Qt 三平台构建"></a>
+  <a href="https://github.com/xiaodaozhi/xdzip/actions/workflows/foundation.yml"><img src="https://github.com/xiaodaozhi/xdzip/actions/workflows/foundation.yml/badge.svg?branch=main" alt="Rust 核心检查"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="Apache License 2.0"></a>
+</p>
 
-## 当前能力
+<p align="center">
+  <a href="#功能亮点">功能</a> / <a href="#格式支持">格式支持</a> / <a href="#获取与安装">获取与安装</a> / <a href="#从源码构建">源码构建</a> / <a href="docs/README.md">文档</a> / <a href="https://github.com/xiaodaozhi/xdzip/issues">反馈</a>
+</p>
 
-| 格式 | 浏览与解压 | 创建 |
+> **开发预览**：xdzip 目前处于实验性开发阶段，尚无获批的正式发行版本。试用前请阅读[当前限制](#当前限制)与[已知问题](https://github.com/xiaodaozhi/xdzip/issues)，并为重要文件保留备份。
+
+![xdzip 主界面设计预览](design/hifi/screens/main-light.png)
+
+<p align="center"><sub>主界面高保真设计参考。图中的多标签与图片预览为设计示例，当前产品能力见下文。</sub></p>
+
+## 功能亮点
+
+- **清晰地浏览内容**：目录树、列表与网格、搜索、全结果排序和文件属性，支持最多十万条物理记录。
+- **按需要解压**：选择文件或文件夹，确认目标与重名策略，查看真实进度，随时请求取消；已完成的文件有明确结果记录。
+- **创建压缩包**：支持 ZIP、TAR 与 TAR.GZ，提供压缩级别、ZIP AES-256 内容加密和编号分卷，写后校验通过后保存。
+- **适应你的桌面**：浅色、深色与跟随系统主题，100%／125%／150% 字号、列表密度、中文 (简体) 与 English (US)，配合 macOS 系统菜单和全平台托盘。
+
+打开文件先浏览内容，不自动解压。创建成功后在应用内打开可浏览的单卷结果，不自动弹出 Finder 或 Explorer。
+
+## 格式支持
+
+| 格式 | 浏览目录与元数据 | 解压 | 创建 |
+| --- | --- | --- | --- |
+| ZIP、单卷 ZIP64 | 支持 | Store／Deflate | Store／Deflate，四档级别 |
+| TAR | 支持 | 普通文件与目录 | 支持，仅打包 |
+| TAR.GZ、TGZ | 支持 | 普通文件与目录 | 支持，四档级别 |
+| AES-256 ZIP | 可浏览可见文件名与元数据 | 尚不支持密码解压 | 支持内容加密，文件名不加密 |
+| 编号分卷 ZIP（`.zip.001`） | 尚不支持跨卷读取 | 尚不支持 | 支持，可用兼容外部工具读取 |
+
+解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)与 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。
+
+## 获取与安装
+
+当前可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
+
+| 平台 | 支持范围 | 开发交付方式 |
 | --- | --- | --- |
-| ZIP、单卷 ZIP64 | Store／Deflate，目录树、搜索、全结果排序及选择性解压 | Store／Deflate 四档级别，默认 2-正常压缩 |
-| TAR、TAR.GZ | 普通文件与目录，流式扫描和安全提交 | 输入树预检、写后校验、整体保存 |
-| AES-256 ZIP、编号分卷 ZIP | 尚不支持读取与解压 | 支持内容加密和 `.zip.001` 编号分卷，可用兼容工具读取 |
+| macOS | macOS 14+，Apple Silicon arm64 | 本地构建 `.app`，可按[部署指南](docs/engineering/macos-deployment.md)制作开发 DMG；CI 不提供应用包 |
+| Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器，或含 Qt 运行库的目录包 |
+| Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39+ | `.deb` 安装包，或保留执行权限的 `.tar.gz` 运行目录 |
 
-- 浏览支持最多十万条物理记录，显示元数据和文件属性；实际内容预览与独立完整性检查命令尚未实现。
-- 解压提供目标预检、同名询问／跳过／改名／替换、真实进度和取消。ZIP 在符合安全条件的 POSIX 目标可恢复受限相对符号链接和可执行位；TAR 链接、Windows ZIP 链接及特殊对象不支持。
-- 创建成功后在应用内打开受支持的单卷结果，不自动打开 Finder／Explorer。
-- 欢迎页支持拖放和最近记录；设置支持跟随系统／浅色／深色、100%／125%／150% 字号、列表密度及中文 (简体)／English (US)。语言保存后可选择重启生效。
-- 提供关于窗口、macOS 系统菜单、全平台托盘及活动任务退出保护。Qt 当前使用单个真实压缩包会话，HTML 多标签属于设计示例。
+Windows 安装器未签名；本地 macOS DMG 使用必要的 ad-hoc 完整性签名，未做 Developer ID 签名或公证。系统可能提示未验证的发布者。安装与文件关联说明见[安装指南](docs/engineering/installers-associations.md)，完整平台及维护范围见[支持政策](docs/engineering/support-policy.md)。
 
-独立非 TAR 的 GZIP、7z／RAR、稀疏 TAR、第三方扩展和百万条磁盘索引不在当前实现范围。详细限制见[浏览](docs/engineering/readonly-browser.md)、[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)及 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。已知的文件输入竞态与 macOS ACL 兼容问题继续在[安全修复复验 #6](https://github.com/xiaodaozhi/xdzip/issues/6)跟踪，现有检查不等同独立安全审查。
+## 从源码构建
 
-## 构建与运行
+界面采用 **Qt Quick/QML + 薄 C++ 适配层**，格式、查询与任务由 **Rust 核心**负责，核心不依赖 Qt。
 
-产品入口为 `xdzip-browser`，macOS 构建为 `xdzip.app`；`xdzip-ui-preview` 仅用于组件示例。准备锁定的 Rust、CMake、Ninja 与 Qt，将 Qt 前缀加入 `CMAKE_PREFIX_PATH`，按[Qt 开发应用](apps/desktop/README.md)构建和测试。平台部署、安装器和本地 DMG 见[开发构建指南](docs/engineering/developer-build.md)。
+准备仓库锁定的 Rust 工具链、Qt 6.8.2、CMake 3.24+、Ninja、Python 3 与平台编译器，并将 Qt 安装前缀加入 `CMAKE_PREFIX_PATH`。克隆后构建：
 
-版本由 [VERSION.json](VERSION.json)统一维护，可在“关于 xdzip”或 `xdzip --version` 查看，规则见[版本机制](docs/engineering/versioning.md)。开发工件随 [Actions](https://github.com/xiaodaozhi/xdzip/actions)提供，保存时间及平台差异见 [CI 策略](docs/engineering/ci-policy.md)，不作为正式发行承诺。
+```sh
+git clone https://github.com/xiaodaozhi/xdzip.git
+cd xdzip
+cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
+cmake --build build/ui
+ctest --test-dir build/ui --output-on-failure
+```
 
-## 系统支持与维护
+macOS 配置时另加 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`。Windows 使用 MSVC x64 开发环境。
 
-首批支持 macOS 14 及以上的 Apple Silicon arm64、仍受维护的 Windows 11 x86_64，以及 Ubuntu 24.04 LTS x86_64、X11、glibc 2.39 及以上。不提供 Intel Mac 或 Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。实际验证边界见[支持政策](docs/engineering/support-policy.md)。
+| 平台 | 构建后的运行入口 |
+| --- | --- |
+| macOS | `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip` |
+| Windows | `build/ui/apps/desktop/xdzip-browser.exe` |
+| Linux | `build/ui/apps/desktop/xdzip-browser` |
 
-个人项目优先维护最新公开版本，尽力处理反馈，不承诺固定响应时限；v0.1 手动下载更新。付费开发者账号、签名证书和公证不作为发行前提。Windows 提供未签名的当前用户安装器，Ubuntu 提供 .deb；macOS 可按需制作带必要 ad-hoc 完整性签名的本地开发 DMG，CI 只编译和验证，不部署或上传 Apple Silicon 应用包。
+更完整的依赖、离屏测试与平台说明见 [Qt 开发应用](apps/desktop/README.md)和[开发构建指南](docs/engineering/developer-build.md)。仅验证 Rust 核心可运行 `cargo test --workspace --locked`。
 
-## 文档与贡献
+## 当前限制
 
-- [文档导航](docs/README.md)：产品、架构、工程契约、构建和验证方法。
-- [高保真原稿](design/hifi/README.md)、[可操作 HTML 设计](design/html/index.html)与[统一素材库](design/assets/index.html)：界面设计输入；[视觉规范](docs/visual/README.md)约束实现。
-- [工作包路线](docs/planning/backlog.md)与 [Issues](https://github.com/xiaodaozhi/xdzip/issues)：交付边界、实际进度和缺陷跟踪。
-- [贡献指南](CONTRIBUTING.md)、[开发指南](docs/engineering/development.md)及[目录职责](docs/engineering/repository-layout.md)：参与项目的入口。
+- 当前使用单个真实压缩包会话，尚未实现多标签会话、文件内容预览和独立完整性检查命令。
+- 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
+- 已知的文件输入竞态与 macOS ACL 兼容问题仍在 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)跟踪；[独立发行审查](https://github.com/xiaodaozhi/xdzip/issues/4)尚未完成，开发验证不等于独立安全审查。
+- 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。
 
-仓库保留源码、测试、设计输入和持久文档。阶段报告与验收状态使用 Issues，生成证据放本地或 Actions 工件；build/、target/ 和所有层级的 dist/ 不提交到 Git，详见[内容与历史管理](docs/engineering/repository-hygiene.md)。
+版本、渠道和构建身份可在“关于 xdzip”或 `xdzip --version` 查看。项目采取尽力维护，优先处理最新版本反馈，不承诺固定响应时限。
 
-项目原创内容采用 [Apache License 2.0](LICENSE)。Qt、编解码器及其他依赖分别遵守自身许可证，见[许可证说明](docs/engineering/licensing.md)。
+## 文档与参与
+
+| 我想了解 | 入口 |
+| --- | --- |
+| 产品设计与技术架构 | [文档导航](docs/README.md)、[软件设计](docs/design/index.md)、[目录与依赖](docs/engineering/repository-layout.md) |
+| 界面与交互 | [高保真原稿](design/hifi/README.md)、[可操作 HTML 设计](design/html/index.html)、[视觉规范](docs/visual/README.md) |
+| 后续方向与变更 | [工作包路线](docs/planning/backlog.md)、[Issues](https://github.com/xiaodaozhi/xdzip/issues)、[变更日志](CHANGELOG.md) |
+| 参与开发 | [贡献指南](CONTRIBUTING.md)、[开发指南](docs/engineering/development.md)、[行为规范](CODE_OF_CONDUCT.md) |
+
+欢迎提交可复现的缺陷、功能建议、文档改进和代码贡献。报告问题时请附版本或提交、系统与架构、复现步骤和实际结果，样本应自行生成且不含敏感内容。
+
+**安全问题请私下报告**，使用仓库的 [Report a vulnerability](https://github.com/xiaodaozhi/xdzip/security/advisories/new) 入口，不在公开 issue 上传漏洞样本、密码或用户文件。
+
+## 许可证
+
+项目原创内容采用 [Apache License 2.0](LICENSE)。Qt、编解码器、字体及其他依赖遵守各自许可证，相关来源与说明见[许可证文档](docs/engineering/licensing.md)。
