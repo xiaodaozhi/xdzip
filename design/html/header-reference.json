@@ -1,0 +1,400 @@
+{
+  "source": "design/hifi/screens/main-light.png",
+  "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+  "source_size": [
+    1586,
+    992
+  ],
+  "coordinate_system": "Source pixels, [x,y,width,height]; source window interior origin [20,30]. Geometric borders soft ±1-2 px; visible icon/text ink ±1px. Font family/weight cannot be recovered exactly from raster.",
+  "window": [
+    20,
+    30,
+    1548,
+    940
+  ],
+  "titlebar": {
+    "bounds": [
+      20,
+      30,
+      1548,
+      58
+    ],
+    "bottom_rule_y": 87,
+    "fill_top_sample": [
+      247,
+      248,
+      250
+    ],
+    "fill_bottom_sample": [
+      244,
+      245,
+      247
+    ]
+  },
+  "tabs": {
+    "active": {
+      "outer_bounds": [
+        293,
+        39,
+        246,
+        49
+      ],
+      "radius_approx": 9,
+      "fill": [
+        254,
+        254,
+        254
+      ],
+      "border_sample": [
+        237,
+        239,
+        242
+      ],
+      "zip_visible_ink": [
+        315,
+        50,
+        21,
+        28
+      ],
+      "label_visible_ink": [
+        350,
+        55,
+        113,
+        21
+      ],
+      "close_visible_ink": [
+        508,
+        58,
+        11,
+        11
+      ],
+      "close_ink_center": [
+        513.5,
+        63.5
+      ]
+    },
+    "inactive": {
+      "outer_bounds": [
+        542,
+        39,
+        262,
+        49
+      ],
+      "radius_approx": 9,
+      "fill": [
+        234,
+        236,
+        240
+      ],
+      "zip_visible_ink": [
+        563,
+        51,
+        20,
+        26
+      ],
+      "label_visible_ink": [
+        599,
+        55,
+        107,
+        21
+      ],
+      "close_visible_ink": [
+        773,
+        58,
+        11,
+        11
+      ],
+      "close_ink_center": [
+        778.5,
+        63.5
+      ]
+    },
+    "new_tab": {
+      "visible_ink": [
+        827,
+        54,
+        17,
+        17
+      ],
+      "ink_center": [
+        835.5,
+        62.5
+      ]
+    },
+    "label_type_estimate": {
+      "font_size_px": 20,
+      "weight_active": "approximately 600; estimate only",
+      "weight_inactive": "approximately 400–500; estimate only",
+      "label_ink_bottom": 76
+    }
+  },
+  "settings": {
+    "visible_ink": [
+      1521,
+      50,
+      22,
+      22
+    ],
+    "ink_center": [
+      1532,
+      61
+    ],
+    "right_window_edge_gap_visible_ink": 25,
+    "note": "Source center y61 is 2.5px above close ink center; inspect optical anchors rather than forcing every glyph mathematical center."
+  },
+  "brand": {
+    "zip_visible_ink": [
+      138,
+      47,
+      27,
+      30
+    ],
+    "label_visible_ink": [
+      178,
+      52,
+      54,
+      22
+    ],
+    "brand_region_right_edge": 293
+  },
+  "toolbar": {
+    "bounds": [
+      20,
+      88,
+      1548,
+      79
+    ],
+    "bottom_rule_y": [
+      166,
+      167
+    ],
+    "open_icon_ink": [
+      50,
+      115,
+      26,
+      24
+    ],
+    "new_icon_ink": [
+      176,
+      114,
+      26,
+      26
+    ],
+    "test_icon_ink": [
+      322,
+      114,
+      26,
+      26
+    ],
+    "more_icon_ink": [
+      452,
+      125,
+      23,
+      4
+    ],
+    "search_field": [
+      906,
+      101,
+      449,
+      51
+    ],
+    "search_icon_ink": [
+      925,
+      117,
+      20,
+      21
+    ],
+    "placeholder_ink": [
+      960,
+      119,
+      161,
+      17
+    ],
+    "extract_button": [
+      1368,
+      101,
+      183,
+      51
+    ],
+    "split_rule_x": 1502,
+    "down_arrow_center_approx": [
+      1526,
+      126
+    ]
+  },
+  "limitations": [
+    "Generated reference has antialiased/soft borders and inconsistent icon center y values. Measurements are explicit visual anchors, not original editable component geometry.",
+    "Font family and exact glyph baseline cannot be proven from raster; stable cross-platform fonts need an explicit design decision."
+  ],
+  "measurement_method": "Independent source-image inspection and local color threshold measurements; not inferred from HTML CSS.",
+  "dom_rect_targets": {
+    ".window": [
+      20,
+      30,
+      1548,
+      940
+    ],
+    ".archive-tab:not(.inactive)": [
+      293,
+      39,
+      246,
+      49
+    ],
+    ".archive-tab.inactive": [
+      542,
+      39,
+      262,
+      49
+    ],
+    ".search-field": [
+      906,
+      101,
+      449,
+      51
+    ],
+    ".split-button": [
+      1368,
+      101,
+      183,
+      51
+    ]
+  },
+  "dom_center_targets": {
+    "#close-archive svg": [
+      513.5,
+      63.5
+    ],
+    "#close-example-tab svg": [
+      778.5,
+      63.5
+    ],
+    "#new-tab svg": [
+      835.5,
+      62.5
+    ],
+    "#title-settings svg": [
+      1532,
+      61
+    ]
+  },
+  "active_right_shoulder": {
+    "radius_estimate_px": 8,
+    "pixel_samples": [
+      {
+        "point": [
+          538,
+          85
+        ],
+        "source_rgb": [
+          255,
+          255,
+          255
+        ],
+        "before_rgb": [
+          227,
+          231,
+          239
+        ]
+      },
+      {
+        "point": [
+          538,
+          86
+        ],
+        "source_rgb": [
+          254,
+          254,
+          254
+        ],
+        "before_rgb": [
+          227,
+          231,
+          239
+        ]
+      },
+      {
+        "point": [
+          539,
+          83
+        ],
+        "source_rgb": [
+          226,
+          229,
+          234
+        ],
+        "before_rgb": [
+          243,
+          244,
+          247
+        ]
+      },
+      {
+        "point": [
+          540,
+          84
+        ],
+        "source_rgb": [
+          228,
+          230,
+          235
+        ],
+        "before_rgb": [
+          244,
+          245,
+          247
+        ]
+      },
+      {
+        "point": [
+          541,
+          85
+        ],
+        "source_rgb": [
+          226,
+          230,
+          234
+        ],
+        "before_rgb": [
+          245,
+          246,
+          248
+        ]
+      },
+      {
+        "point": [
+          542,
+          86
+        ],
+        "source_rgb": [
+          224,
+          228,
+          233
+        ],
+        "before_rgb": [
+          235,
+          236,
+          239
+        ]
+      }
+    ],
+    "rgb_tolerance": 10
+  },
+  "extract_chevron": {
+    "region": [
+      1513,
+      112,
+      27,
+      29
+    ],
+    "white_ink_bounds": [
+      1520,
+      123,
+      12,
+      7
+    ],
+    "center": [
+      1526,
+      126.5
+    ]
+  }
+}

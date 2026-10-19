@@ -1,0 +1,12 @@
+[package]
+name = "xdzip-extract-plan"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[dependencies]
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-domain = { path = "../xdzip-domain" }
+[lints]
+workspace = true

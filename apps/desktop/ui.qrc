@@ -1,0 +1,222 @@
+<RCC>
+  <qresource prefix="/xdzip">
+    <file alias="assets/tray-contrast-16.png">../../design/assets/tray/contrast-16.png</file>
+    <file alias="assets/tray-contrast-20.png">../../design/assets/tray/contrast-20.png</file>
+    <file alias="assets/tray-contrast-22.png">../../design/assets/tray/contrast-22.png</file>
+    <file alias="assets/tray-contrast-24.png">../../design/assets/tray/contrast-24.png</file>
+    <file alias="assets/tray-contrast-32.png">../../design/assets/tray/contrast-32.png</file>
+    <file alias="assets/tray-contrast-44.png">../../design/assets/tray/contrast-44.png</file>
+    <file alias="assets/tray-contrast-48.png">../../design/assets/tray/contrast-48.png</file>
+    <file alias="assets/tray-contrast-64.png">../../design/assets/tray/contrast-64.png</file>
+
+    <file alias="assets/tray-black-16.png">../../design/assets/tray/black-16.png</file>
+    <file alias="assets/tray-black-20.png">../../design/assets/tray/black-20.png</file>
+    <file alias="assets/tray-black-22.png">../../design/assets/tray/black-22.png</file>
+    <file alias="assets/tray-black-24.png">../../design/assets/tray/black-24.png</file>
+    <file alias="assets/tray-black-32.png">../../design/assets/tray/black-32.png</file>
+    <file alias="assets/tray-black-44.png">../../design/assets/tray/black-44.png</file>
+    <file alias="assets/tray-black-48.png">../../design/assets/tray/black-48.png</file>
+    <file alias="assets/tray-black-64.png">../../design/assets/tray/black-64.png</file>
+    <file alias="assets/tray-white-16.png">../../design/assets/tray/white-16.png</file>
+    <file alias="assets/tray-white-20.png">../../design/assets/tray/white-20.png</file>
+    <file alias="assets/tray-white-22.png">../../design/assets/tray/white-22.png</file>
+    <file alias="assets/tray-white-24.png">../../design/assets/tray/white-24.png</file>
+    <file alias="assets/tray-white-32.png">../../design/assets/tray/white-32.png</file>
+    <file alias="assets/tray-white-44.png">../../design/assets/tray/white-44.png</file>
+    <file alias="assets/tray-white-48.png">../../design/assets/tray/white-48.png</file>
+    <file alias="assets/tray-white-64.png">../../design/assets/tray/white-64.png</file>
+
+    <file alias="assets/light/check-selected.png">../../design/assets/png/light/check-selected@3x.png</file>
+    <file alias="assets/dark/check-selected.png">../../design/assets/png/dark/check-selected@3x.png</file>
+    <file alias="assets/light/archive-large.png">../../design/assets/png/light/archive@9x.png</file>
+    <file alias="assets/dark/archive-large.png">../../design/assets/png/dark/archive@9x.png</file>
+    <file alias="assets/light/radio-selected.png">../../design/assets/png/light/radio-selected@3x.png</file>
+    <file alias="assets/dark/radio-selected.png">../../design/assets/png/dark/radio-selected@3x.png</file>
+    <file alias="assets/light/radio-unselected.png">../../design/assets/png/light/radio-unselected@3x.png</file>
+    <file alias="assets/dark/radio-unselected.png">../../design/assets/png/dark/radio-unselected@3x.png</file>
+    <file alias="fonts/xdzip-design-sans-sc.ttf">../../design/assets/fonts/xdzip-design-sans-sc.ttf</file>
+    <file>ui/qmldir</file>
+    <file>ui/Theme.qml</file>
+    <file>ui/SettingsWindow.qml</file>
+    <file>ui/RestartWindow.qml</file>
+    <file>ui/AboutWindow.qml</file>
+    <file alias="i18n/zh-CN.json">../../resources/i18n/zh-CN.json</file>
+    <file alias="i18n/en-US.json">../../resources/i18n/en-US.json</file>
+    <file>ui/InfoRow.qml</file>
+    <file>ui/AppButton.qml</file>
+    <file>ui/OperationWindow.qml</file>
+    <file>ui/OperationConfirmationWindow.qml</file>
+    <file alias="assets/light/status-partial-success.png">../../design/assets/png/light/status-partial-success@3x.png</file>
+    <file alias="assets/light/status-skipped.png">../../design/assets/png/light/status-skipped@3x.png</file>
+    <file alias="assets/light/status-warning.png">../../design/assets/png/light/status-warning@3x.png</file>
+    <file alias="assets/dark/status-partial-success.png">../../design/assets/png/dark/status-partial-success@3x.png</file>
+    <file alias="assets/dark/status-skipped.png">../../design/assets/png/dark/status-skipped@3x.png</file>
+    <file alias="assets/dark/status-warning.png">../../design/assets/png/dark/status-warning@3x.png</file>
+    <file alias="assets/document-warning.png">../../design/assets/png/light/document-warning@9x.png</file>
+    <file>ui/TaskWindow.qml</file>
+    <file>ui/IntegrityWindow.qml</file>
+    <file>ui/OperationResultPanel.qml</file>
+    <file>ui/ResultFileRow.qml</file>
+    <file>ui/ResultDisclosureButton.qml</file>
+    <file>ui/OperationCheck.qml</file>
+    <file>ui/OperationField.qml</file>
+    <file>ui/OperationSelect.qml</file>
+    <file>ui/OperationFooter.qml</file>
+    <file>ui/OperationHero.qml</file>
+    <file>ui/OperationAction.qml</file>
+    <file>ui/OperationButton.qml</file>
+    <file>ui/OperationFooterButton.qml</file>
+    <file>ui/OperationFrame.qml</file>
+    <file>ui/OperationRemoveButton.qml</file>
+    <file>ui/OperationSegmentedGroup.qml</file>
+    <file>ui/IntentRadioButton.qml</file>
+    <file>ui/IntentCheckBox.qml</file>
+    <file alias="assets/light/remove.png">../../design/assets/png/light/remove@3x.png</file>
+    <file alias="assets/dark/remove.png">../../design/assets/png/dark/remove@3x.png</file>
+    <file>ui/CreateWindow.qml</file>
+    <file alias="assets/archive-add-large.png">../../design/assets/png/light/archive-add@9x.png</file>
+    <file alias="assets/dark/archive-add-large.png">../../design/assets/png/dark/archive-add@9x.png</file>
+    <file>ui/AssetLibrary.qml</file>
+    <file>ui/ExtractWindow.qml</file>
+    <file>ui/ConflictWindow.qml</file>
+    <file>ui/QuitWindow.qml</file>
+    <file>ui/TaskPathCard.qml</file>
+    <file>ui/TaskMetric.qml</file>
+    <file>ui/Preview.qml</file>
+    <file>ui/Browser.qml</file>
+    <file>ui/WelcomePage.qml</file>
+    <file alias="assets/light/archive-grey.png">../../design/assets/png/light/archive-grey@3x.png</file>
+    <file alias="assets/dark/archive-grey.png">../../design/assets/png/dark/archive-grey@3x.png</file>
+    <file>ui/WelcomeAction.qml</file>
+    <file>ui/InspectorPanel.qml</file>
+    <file>ui/PaneHeader.qml</file>
+    <file>ui/PreflightWindow.qml</file>
+    <file alias="assets/info-light.png">../../design/assets/png/light/info@3x.png</file>
+    <file alias="assets/info-dark.png">../../design/assets/png/dark/info@3x.png</file>
+    <file alias="assets/document-download.png">../../design/assets/png/light/document-download@9x.png</file>
+    <file alias="assets/document-check.png">../../design/assets/png/light/document-check@9x.png</file>
+    <file alias="assets/dark/document-check.png">../../design/assets/png/dark/document-check@9x.png</file>
+    <file alias="assets/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
+    <file alias="assets/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/app-icon-macos.png">../../design/assets/brand/macos/xdzip.png</file>
+    <file alias="assets/app-icon.png">../../design/assets/brand/xdzip.png</file>
+    <file alias="assets/light/app-mark.png">../../design/assets/png/light/app-mark@3x.png</file>
+    <file alias="assets/dark/app-mark.png">../../design/assets/png/dark/app-mark@3x.png</file>
+    <file alias="assets/archive.png">../../design/assets/png/light/archive@3x.png</file>
+    <file alias="assets/light/archive.png">../../design/assets/png/light/archive@3x.png</file>
+    <file alias="assets/dark/archive.png">../../design/assets/png/dark/archive@3x.png</file>
+    <file alias="assets/folder.png">../../design/assets/png/light/folder@3x.png</file>
+    <file alias="assets/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
+    <file>ui/ArchiveAction.qml</file>
+    <file>ui/ArchiveTabs.qml</file>
+    <file alias="assets/light/minimize.png">../../design/assets/png/light/minimize@3x.png</file>
+    <file alias="assets/light/maximize.png">../../design/assets/png/light/maximize@3x.png</file>
+    <file alias="assets/dark/minimize.png">../../design/assets/png/dark/minimize@3x.png</file>
+    <file alias="assets/dark/maximize.png">../../design/assets/png/dark/maximize@3x.png</file>
+    <file>ui/WindowCaptionButton.qml</file>
+    <file>ui/SelectionCheck.qml</file>
+    <file>ui/ArchiveToolbar.qml</file>
+    <file>ui/CommandMenu.qml</file>
+    <file>ui/Breadcrumb.qml</file>
+    <file>ui/CommandMenuItem.qml</file>
+    <file>ui/CommandMenuSeparator.qml</file>
+    <file>ui/CommandTooltip.qml</file>
+    <file alias="assets/light/check.png">../../design/assets/png/light/check@3x.png</file>
+    <file alias="assets/dark/check.png">../../design/assets/png/dark/check@3x.png</file>
+    <file alias="assets/light/chevron-right.png">../../design/assets/png/light/chevron-right@3x.png</file>
+    <file alias="assets/dark/chevron-right.png">../../design/assets/png/dark/chevron-right@3x.png</file>
+    <file alias="assets/light/chevron-down.png">../../design/assets/png/light/chevron-down@3x.png</file>
+    <file alias="assets/dark/chevron-down.png">../../design/assets/png/dark/chevron-down@3x.png</file>
+    <file alias="assets/light/tree-active-branch.png">../../design/assets/png/light/tree-active-branch@3x.png</file>
+    <file alias="assets/dark/tree-active-branch.png">../../design/assets/png/dark/tree-active-branch@3x.png</file>
+    <file alias="assets/light/open.png">../../design/assets/png/light/open@3x.png</file>
+    <file alias="assets/light/new.png">../../design/assets/png/light/new@3x.png</file>
+    <file alias="assets/light/archive-test.png">../../design/assets/png/light/archive-test@3x.png</file>
+    <file alias="assets/light/more.png">../../design/assets/png/light/more@3x.png</file>
+    <file alias="assets/light/settings.png">../../design/assets/png/light/settings@3x.png</file>
+    <file alias="assets/light/search.png">../../design/assets/png/light/search@3x.png</file>
+    <file alias="assets/dark/open.png">../../design/assets/png/dark/open@3x.png</file>
+    <file alias="assets/dark/new.png">../../design/assets/png/dark/new@3x.png</file>
+    <file alias="assets/dark/archive-test.png">../../design/assets/png/dark/archive-test@3x.png</file>
+    <file alias="assets/dark/more.png">../../design/assets/png/dark/more@3x.png</file>
+    <file alias="assets/dark/settings.png">../../design/assets/png/dark/settings@3x.png</file>
+    <file alias="assets/dark/search.png">../../design/assets/png/dark/search@3x.png</file>
+    <file alias="assets/light/folder.png">../../design/assets/png/light/folder@3x.png</file>
+    <file alias="assets/light/file-text.png">../../design/assets/png/light/file-text@3x.png</file>
+    <file alias="assets/light/file-code.png">../../design/assets/png/light/file-code@3x.png</file>
+    <file alias="assets/light/file-markdown.png">../../design/assets/png/light/file-markdown@3x.png</file>
+    <file alias="assets/light/file-pdf.png">../../design/assets/png/light/file-pdf@3x.png</file>
+    <file alias="assets/light/close.png">../../design/assets/png/light/close@3x.png</file>
+    <file alias="assets/light/view-list.png">../../design/assets/png/light/view-list@3x.png</file>
+    <file alias="assets/dark/folder.png">../../design/assets/png/dark/folder@3x.png</file>
+    <file alias="assets/dark/file-text.png">../../design/assets/png/dark/file-text@3x.png</file>
+    <file alias="assets/dark/file-code.png">../../design/assets/png/dark/file-code@3x.png</file>
+    <file alias="assets/dark/file-markdown.png">../../design/assets/png/dark/file-markdown@3x.png</file>
+    <file alias="assets/dark/file-pdf.png">../../design/assets/png/dark/file-pdf@3x.png</file>
+    <file alias="assets/dark/close.png">../../design/assets/png/dark/close@3x.png</file>
+    <file alias="assets/dark/view-list.png">../../design/assets/png/dark/view-list@3x.png</file>
+    <file alias="assets/light/image-file.png">../../design/assets/png/light/image-file@3x.png</file>
+    <file alias="assets/dark/image-file.png">../../design/assets/png/dark/image-file@3x.png</file>
+    <file alias="assets/light/view-grid.png">../../design/assets/png/light/view-grid@3x.png</file>
+    <file alias="assets/dark/view-grid.png">../../design/assets/png/dark/view-grid@3x.png</file>
+    <file alias="assets/light/sort.png">../../design/assets/png/light/sort@3x.png</file>
+    <file alias="assets/dark/sort.png">../../design/assets/png/dark/sort@3x.png</file>
+    <file alias="assets/light/plus.png">../../design/assets/png/light/plus@3x.png</file>
+    <file alias="assets/dark/plus.png">../../design/assets/png/dark/plus@3x.png</file>
+    <file alias="assets/light/extract.png">../../design/assets/png/light/extract@3x.png</file>
+    <file alias="assets/dark/extract.png">../../design/assets/png/dark/extract@3x.png</file>
+    <file alias="assets/light/task-list.png">../../design/assets/png/light/task-list@3x.png</file>
+    <file alias="assets/dark/task-list.png">../../design/assets/png/dark/task-list@3x.png</file>
+    <file alias="assets/light/panel.png">../../design/assets/png/light/panel@3x.png</file>
+    <file alias="assets/dark/panel.png">../../design/assets/png/dark/panel@3x.png</file>
+    <file alias="assets/light/completed.png">../../design/assets/png/light/completed@3x.png</file>
+    <file alias="assets/dark/completed.png">../../design/assets/png/dark/completed@3x.png</file>
+    <file alias="assets/light/activity.png">../../design/assets/png/light/activity@3x.png</file>
+    <file alias="assets/dark/activity.png">../../design/assets/png/dark/activity@3x.png</file>
+    <file alias="assets/light/external-open.png">../../design/assets/png/light/external-open@3x.png</file>
+    <file alias="assets/dark/external-open.png">../../design/assets/png/dark/external-open@3x.png</file>
+    <file alias="assets/light/sort-ascending.png">../../design/assets/png/light/sort-ascending@3x.png</file>
+    <file alias="assets/dark/sort-ascending.png">../../design/assets/png/dark/sort-ascending@3x.png</file>
+    <file alias="assets/primary-chevron.png">../../design/assets/png/dark/chevron-down@3x.png</file>
+    <file alias="assets/light/view-list-selected.png">../../design/assets/png/light/view-list-selected@3x.png</file>
+    <file alias="assets/dark/view-list-selected.png">../../design/assets/png/dark/view-list-selected@3x.png</file>
+    <file alias="assets/light/view-grid-selected.png">../../design/assets/png/light/view-grid-selected@3x.png</file>
+    <file alias="assets/dark/view-grid-selected.png">../../design/assets/png/dark/view-grid-selected@3x.png</file>
+    <file alias="assets/light/success-large.png">../../design/assets/png/light/status-success@9x.png</file>
+    <file alias="assets/dark/success-large.png">../../design/assets/png/dark/status-success@9x.png</file>
+    <file alias="assets/success-large.png">../../design/assets/png/light/status-success@9x.png</file>
+    <file alias="assets/light/cancelled-large.png">../../design/assets/png/light/cancelled-large@9x.png</file>
+    <file alias="assets/dark/cancelled-large.png">../../design/assets/png/dark/cancelled-large@9x.png</file>
+    <file alias="assets/cancelled-large.png">../../design/assets/png/light/cancelled-large@9x.png</file>
+    <file alias="assets/light/partial-warning.png">../../design/assets/png/light/conflict-warning@9x.png</file>
+    <file alias="assets/dark/partial-warning.png">../../design/assets/png/dark/conflict-warning@9x.png</file>
+    <file alias="assets/partial-warning.png">../../design/assets/png/light/conflict-warning@9x.png</file>
+    <file alias="assets/light/conflict-document.png">../../design/assets/png/light/document-conflict@9x.png</file>
+    <file alias="assets/dark/conflict-document.png">../../design/assets/png/dark/document-conflict@9x.png</file>
+    <file alias="assets/conflict-document.png">../../design/assets/png/light/document-conflict@9x.png</file>
+    <file alias="assets/light/file-text-large.png">../../design/assets/png/light/file-text@9x.png</file>
+    <file alias="assets/light/file-code-large.png">../../design/assets/png/light/file-code@9x.png</file>
+    <file alias="assets/light/file-pdf-large.png">../../design/assets/png/light/file-pdf@9x.png</file>
+    <file alias="assets/light/file-markdown-large.png">../../design/assets/png/light/file-markdown@9x.png</file>
+    <file alias="assets/light/image-file-large.png">../../design/assets/png/light/image-file@9x.png</file>
+    <file alias="assets/light/image-amber-large.png">../../design/assets/png/light/image-amber@9x.png</file>
+    <file alias="assets/light/folder-large.png">../../design/assets/png/light/folder@9x.png</file>
+    <file alias="assets/dark/file-text-large.png">../../design/assets/png/dark/file-text@9x.png</file>
+    <file alias="assets/dark/file-code-large.png">../../design/assets/png/dark/file-code@9x.png</file>
+    <file alias="assets/dark/file-pdf-large.png">../../design/assets/png/dark/file-pdf@9x.png</file>
+    <file alias="assets/dark/file-markdown-large.png">../../design/assets/png/dark/file-markdown@9x.png</file>
+    <file alias="assets/dark/image-file-large.png">../../design/assets/png/dark/image-file@9x.png</file>
+    <file alias="assets/dark/image-amber-large.png">../../design/assets/png/dark/image-amber@9x.png</file>
+    <file alias="assets/dark/folder-large.png">../../design/assets/png/dark/folder@9x.png</file>
+    <file alias="assets/light/shield.png">../../design/assets/png/light/shield@3x.png</file>
+    <file alias="assets/dark/shield.png">../../design/assets/png/dark/shield@3x.png</file>
+    <file alias="assets/light/settings-tile.png">../../design/assets/png/light/settings-tile@3x.png</file>
+    <file alias="assets/light/theme-system.png">../../design/assets/png/light/theme-system@3x.png</file>
+    <file alias="assets/light/theme-light.png">../../design/assets/png/light/theme-light@3x.png</file>
+    <file alias="assets/light/theme-dark.png">../../design/assets/png/light/theme-dark@3x.png</file>
+    <file alias="assets/dark/settings-tile.png">../../design/assets/png/dark/settings-tile@3x.png</file>
+    <file alias="assets/dark/theme-system.png">../../design/assets/png/dark/theme-system@3x.png</file>
+    <file alias="assets/dark/theme-light.png">../../design/assets/png/dark/theme-light@3x.png</file>
+    <file alias="assets/dark/theme-dark.png">../../design/assets/png/dark/theme-dark@3x.png</file>
+  </qresource>
+</RCC>

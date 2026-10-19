@@ -1,0 +1,83 @@
+{
+  "qt_version": "6.8.2",
+  "archives": [
+    {
+      "module": "qtbase",
+      "file": "qtbase-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtbase-everywhere-src-6.8.2.tar.xz",
+      "sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05",
+      "source_commit": "f1136de66638060b8a1ab9bc0cdf1a91dcb5ec01"
+    },
+    {
+      "module": "qtdeclarative",
+      "file": "qtdeclarative-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtdeclarative-everywhere-src-6.8.2.tar.xz",
+      "sha256": "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56",
+      "source_commit": "0a8139c574fe150aba92d5f2484a8f3fdb774977"
+    },
+    {
+      "module": "qtsvg",
+      "file": "qtsvg-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtsvg-everywhere-src-6.8.2.tar.xz",
+      "sha256": "aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa",
+      "source_commit": "e59eaa7dbc09fbf885b1c5a69d93b7e2fb1c7ce3"
+    },
+    {
+      "module": "qttranslations",
+      "file": "qttranslations-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qttranslations-everywhere-src-6.8.2.tar.xz",
+      "sha256": "d2106e8a580bfd77702c4c1840299288d344902b0e2c758ca813ea04c6d6a3d1",
+      "source_commit": "6a47261ffdbf3a694e8867f984f61daded03d291"
+    }
+  ],
+  "sdk_patches": [
+    {
+      "id": "macos-no-agl",
+      "module": "qtbase",
+      "source_path": "cmake/FindWrapOpenGL.cmake",
+      "sdk_path": "lib/cmake/Qt6/FindWrapOpenGL.cmake",
+      "patch": "scripts/qt-patches/macos-no-agl.patch",
+      "patch_sha256": "cf043676047d1de9b89f3677f4b605646e21a31d02fd7834a6a44b6d67a043eb",
+      "before_sha256": "2ace1ceb59e7fb5b18d1defc8da11f7a8978684783237714080d563b04b227e6",
+      "after_sha256": "a38369028387b7fcd56b72e23cac9203377a7910b6104330f17c6b44d3444aee",
+      "scope": "Installed CMake consumer helper only; does not modify Qt runtime binaries."
+    }
+  ],
+  "build_tools": [
+    {
+      "module": "qtshadertools",
+      "file": "qtshadertools-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtshadertools-everywhere-src-6.8.2.tar.xz",
+      "sha256": "d1d5f90e8885fc70d63ac55a4ce4d9a2688562033a000bc4aff9320f5f551871",
+      "source_commit": "9b81996cea92b13d9f896504516d920976a77a86"
+    },
+    {
+      "module": "qttools",
+      "file": "qttools-everywhere-src-6.8.2.tar.xz",
+      "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qttools-everywhere-src-6.8.2.tar.xz",
+      "sha256": "326381b7d43f07913612f291abc298ae79bd95382e2233abce982cff2b53d2c0",
+      "source_commit": "8aa2456d4461516f54c98916fcd699557afb41ad"
+    }
+  ],
+  "source_build_patches": [
+    {
+      "module": "qtbase",
+      "source_path": "src/corelib/thread/qyieldcpu.h",
+      "patch": "scripts/qt-patches/clang-arm-acle.patch",
+      "patch_sha256": "9ad4ae2f8bc69eae504bd43294097bf166b84349a4bfc1aca72c3983feb65a3f"
+    },
+    {
+      "module": "qtbase",
+      "source_path": "src/corelib/global/qglobal.cpp",
+      "patch": "scripts/qt-patches/source-rebuild-proof.patch",
+      "patch_sha256": "49c72d68b869d63eb76773abff13f5c884ca93a8b562e2580120259f02161a00"
+    }
+  ],
+  "rust_stdlib": {
+    "toolchain": "1.99.0",
+    "version": "1.99.0 (b940084d7 2026-09-28)",
+    "file": "rust-src-1.99.0.tar.xz",
+    "url": "https://static.rust-lang.org/dist/2026-10-01/rust-src-1.99.0.tar.xz",
+    "sha256": "3f1f9b7ed48f4596fc87889b7b3c61747336a55c9c22db1ab0c697e0aadb77aa"
+  }
+}

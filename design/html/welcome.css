@@ -1,0 +1,61 @@
+/* W01 logical dimensions from docs/visual/welcome-reference.json.
+   Only source artboards multiply by ui-source-factor; DPR is never a layout input. */
+.welcome-mode .toolbar,.welcome-mode .workspace { display:none; }
+.welcome-mode .window { container-type:inline-size; }
+.welcome-mode .welcome { position:relative; inset:auto; order:1; flex:1; min-height:0; padding:calc(28px * var(--ui-source-factor)) calc(40px * var(--ui-source-factor)); }
+.welcome-content { width:calc(608px * var(--ui-source-factor)); max-width:100%; display:flex; flex-direction:column; align-items:center; position:relative; }
+.welcome-identity { display:flex; align-items:center; gap:calc(10px * var(--ui-source-factor)); font-size:calc(14px * var(--ui-source-factor)); letter-spacing:calc(1px * var(--ui-source-factor)); color:var(--secondary); }
+.welcome-identity>svg { width:calc(26px * var(--ui-source-factor)); height:calc(26px * var(--ui-source-factor)); }
+.welcome-mode .welcome h1 { font-size:calc(30px * var(--ui-source-factor)); line-height:1.45; font-weight:650; letter-spacing:calc(-.6px * var(--ui-source-factor)); margin:calc(17px * var(--ui-source-factor)) 0 calc(8px * var(--ui-source-factor)); }
+.welcome-mode .welcome .welcome-subtitle { font-size:calc(13px * var(--ui-source-factor)); line-height:calc(22px * var(--ui-source-factor)); margin:0 0 calc(30px * var(--ui-source-factor)); text-align:center; }
+.welcome-mode .welcome-actions { display:grid; grid-template-columns:1fr 1fr; gap:calc(16px * var(--ui-source-factor)); width:100%; }
+.welcome-action { display:flex; gap:calc(14px * var(--ui-source-factor)); padding:calc(20px * var(--ui-source-factor)); min-width:0; width:100%; min-height:calc(124px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:calc(8px * var(--ui-source-factor)); background:var(--surface); color:var(--text); text-align:left; cursor:pointer; font:inherit; }
+.welcome-action>svg { width:calc(28px * var(--ui-source-factor)); height:calc(28px * var(--ui-source-factor)); margin-top:calc(2px * var(--ui-source-factor)); flex-shrink:0; }
+.welcome-action strong { display:block; font-size:calc(16px * var(--ui-source-factor)); font-weight:600; line-height:normal; margin-bottom:calc(7px * var(--ui-source-factor)); }
+.welcome-mode .welcome-action small { display:block; font-size:calc(12px * var(--ui-source-factor)); line-height:calc(20px * var(--ui-source-factor)); margin:0; color:var(--secondary); }
+.welcome-shortcut { display:block; font:calc(11px * var(--ui-source-factor))/normal var(--font); margin-top:calc(13px * var(--ui-source-factor)); opacity:.7; letter-spacing:calc(.4px * var(--ui-source-factor)); }
+.welcome-action.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+.welcome-action.primary>svg { filter:brightness(0) invert(1); }
+.welcome-mode .welcome-action.primary small { color:var(--on-accent); opacity:.86; }
+.welcome-action:hover { background:var(--canvas); border-color:var(--operation-field-border); }
+.welcome-action.primary:hover { background:var(--accent-hover); border-color:var(--accent-hover); }
+.welcome-action:active { background:var(--selection); }
+.welcome-action.primary:active { background:var(--accent-pressed); border-color:var(--accent-pressed); }
+.welcome-action:focus-visible { outline:none; }
+.welcome-action:disabled { background:var(--accent-disabled); border-color:var(--accent-disabled); color:var(--accent-disabled-text); cursor:default; opacity:1; }
+.welcome-mode .welcome-action:disabled small { color:var(--accent-disabled-text); opacity:1; }
+.welcome-drop { width:100%; margin-top:calc(16px * var(--ui-source-factor)); min-height:calc(64px * var(--ui-source-factor)); border:calc(1px * var(--ui-source-factor)) dashed var(--operation-field-border); border-radius:calc(8px * var(--ui-source-factor)); display:flex; align-items:center; justify-content:center; gap:calc(10px * var(--ui-source-factor)); background:var(--canvas); color:var(--secondary); font-size:calc(13px * var(--ui-source-factor)); }
+.welcome-drop>svg { width:calc(20px * var(--ui-source-factor)); height:calc(20px * var(--ui-source-factor)); }
+.welcome-drop.drag-over { border:calc(2px * var(--ui-source-factor)) solid var(--accent-ink); background:var(--selection); color:var(--accent-ink); }
+.welcome-formats { display:flex; align-items:center; gap:calc(8px * var(--ui-source-factor)); margin-top:calc(22px * var(--ui-source-factor)); color:var(--secondary); font-size:calc(11px * var(--ui-source-factor)); }
+.welcome-formats b { font:500 calc(11px * var(--ui-source-factor))/normal system-ui,sans-serif; background:var(--canvas); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:calc(4px * var(--ui-source-factor)); padding:calc(3px * var(--ui-source-factor)) calc(7px * var(--ui-source-factor)); }
+.welcome-mode .welcome-feedback { position:absolute; top:100%; width:100%; font-size:calc(12px * var(--ui-source-factor)); margin:calc(8px * var(--ui-source-factor)) 0 0; color:var(--secondary); text-align:center; }
+.welcome-mode .statusbar { order:2; height:calc(32px * var(--ui-source-factor)); padding:0 calc(14px * var(--ui-source-factor)); font-size:calc(11px * var(--ui-source-factor)); line-height:normal; }
+.welcome-mode #selection-status::before { content:""; display:inline-block; width:calc(6px * var(--ui-source-factor)); height:calc(6px * var(--ui-source-factor)); border-radius:50%; background:var(--accent-ink); margin-right:calc(9px * var(--ui-source-factor)); }
+.welcome-mode .read-status,.welcome-mode #settings,.welcome-mode .task-chevron { display:none; }
+.welcome-mode #tasks { font-size:calc(12px * var(--ui-source-factor)); gap:calc(6px * var(--ui-source-factor)); padding:0; }
+.welcome-mode #tasks>svg { width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); }
+@container(max-width:1360px) {
+    .welcome-mode .welcome h1 { font-size:calc(28px * var(--ui-source-factor)); margin-top:calc(12px * var(--ui-source-factor)); }
+    .welcome-mode .welcome .welcome-subtitle { margin-bottom:calc(24px * var(--ui-source-factor)); }
+    .welcome-formats { margin-top:calc(18px * var(--ui-source-factor)); }
+}
+.welcome-mode #selection-status { font-size:calc(11px * var(--ui-source-factor)); transform:none; }
+.welcome-mode #tasks { height:calc(28px * var(--ui-source-factor)); line-height:normal; }
+.welcome-mode #tasks>span:first-child svg { width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); }
+body.welcome-artboard.welcome-narrow .window { width:calc(832px * var(--ui-source-factor)); height:calc(544px * var(--ui-source-factor)); min-height:0; }
+body.welcome-artboard.welcome-narrow { min-width:0; }
+body.welcome-artboard.welcome-narrow .stage { width:1296px; }
+
+/* W01 opening only covers the welcome body; the shared titlebar is unchanged. */
+.welcome-opening { position:absolute; inset:0; z-index:20; display:grid; place-items:center; padding:calc(16px * var(--ui-source-factor)); background:color-mix(in srgb,var(--canvas) 86%,transparent); }
+#welcome.external-opening .welcome-content { visibility:hidden; }
+.welcome-opening-card { width:var(--welcome-opening-card-width); max-width:100%; max-height:100%; overflow:auto; padding:var(--welcome-opening-inset); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:var(--welcome-opening-radius); background:var(--surface); display:flex; flex-direction:column; gap:var(--welcome-opening-gap); text-align:left; }
+.welcome-opening-card h2 { margin:0; font-size:var(--welcome-opening-title-size); color:var(--text); }
+.welcome-opening-card p { margin:0; color:var(--secondary); font-size:calc(13px * var(--ui-source-factor)); line-height:1.6; }
+.welcome-opening-name { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.welcome-opening-progress { height:calc(4px * var(--ui-source-factor)); border-radius:calc(2px * var(--ui-source-factor)); background:var(--task-track); overflow:hidden; }
+.welcome-opening-progress span { display:block; height:100%; width:35%; background:var(--accent); animation:welcome-reading 1.2s ease-in-out infinite alternate; }
+.welcome-opening-card .button { align-self:flex-end; height:var(--operation-control-body-button-height); min-height:var(--operation-control-body-button-height); padding:var(--operation-control-vertical-inset) var(--operation-control-horizontal-inset); font-size:calc(13px * var(--ui-source-factor)); }
+@keyframes welcome-reading { from { transform:translateX(-100%); } to { transform:translateX(285%); } }
+@media(prefers-reduced-motion:reduce) { .welcome-opening-progress span { animation:none; transform:translateX(90%); } }

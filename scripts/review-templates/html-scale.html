@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xdzip — 设计尺寸对照</title>
+<style>
+*{box-sizing:border-box}body{margin:0;color:#202638;background:#f3f5f8;font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{padding:24px;max-width:1440px;margin:auto}h1{margin:0;font-size:25px}p{color:#5f6b83}nav{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}button{font:inherit;border:1px solid #d9dfeb;border-radius:8px;background:white;padding:8px 12px;color:inherit;cursor:pointer}button[aria-pressed=true]{color:#1956ff;background:#e7edff;border-color:#9fb4ff}button:focus-visible{outline:2px solid #1956ff;outline-offset:2px}.viewport{overflow:auto;border:1px solid #dce2ed;background:white;border-radius:10px}.canvas{position:relative;overflow:hidden}.canvas img{position:absolute;left:0;top:0;display:block;max-width:none;transform-origin:top left}table{border-collapse:collapse;background:white;width:100%;font-size:13px}td,th{padding:8px;text-align:left;border-bottom:1px solid #e5e9f0}.scroll{overflow:auto}.fail{color:#b33232}.pass{color:#287341}details{margin-top:20px}pre{padding:16px;background:white;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 monospace}label{display:flex;gap:10px;align-items:center;flex-wrap:wrap}small{color:#65718a}@media(max-width:650px){main{padding:16px}h1{font-size:21px}button{padding:6px 9px}}
+</style>
+</head>
+<body><main>
+<h1>xdzip 设计尺寸对照</h1>
+<p>主窗口正常设计尺寸为 1280 × 777.26 CSS px。下面两层分别由浏览器按同一倍率显示原稿与 HTML，不再分别按容器宽度缩放。原稿像素窗口 1548 × 940 是测量坐标；设备像素比不会改变设计尺寸。</p>
+<nav aria-label="对照方式"><button data-mode="overlay" aria-pressed="true">原稿 + HTML 叠加</button><button data-mode="html" aria-pressed="false">HTML</button><button data-mode="reference" aria-pressed="false">原稿</button><button id="normal" aria-pressed="false">100% 设计尺寸</button></nav>
+<label>HTML 透明度<input id="opacity" type="range" min="0" max="100" value="50"><output id="opacity-value">50%</output></label>
+<p><small>手机默认适应宽度；“100% 设计尺寸”保持正常桌面大小并允许横向滚动。截图将不足一个像素的边界取整，两层使用相同截图尺寸。</small></p>
+<div id="viewport" class="viewport"><div id="canvas" class="canvas"><img id="reference" alt="原稿按正常设计尺寸显示"><img id="html" alt="HTML 按正常设计尺寸显示"></div></div>
+<p id="result" role="status">正在读取尺寸检查报告…</p>
+<div class="scroll"><table><thead><tr><th>检查组合</th><th>结果</th></tr></thead><tbody id="checks"></tbody></table></div>
+<p><small>检查覆盖桌面与手机、DPR 1/2、正常/适应/原稿像素模式、在线资源与离线单文件以及独立预览窗口。尺寸一致并不等于字体、颜色或所有视觉细节完全一致。</small></p>
+<details><summary>尺寸定义、原稿哈希和验证范围</summary><pre id="metadata"></pre></details>
+<script>
+(() => {
+    const viewport=document.querySelector('#viewport'),canvas=document.querySelector('#canvas');
+    const layers={reference:document.querySelector('#reference'),html:document.querySelector('#html')};
+    let mode='overlay',normal=false;
+    function layout(){const image=layers.reference;if(!image.naturalWidth)return;const scale=normal?1:Math.min(1,viewport.clientWidth/image.naturalWidth);canvas.style.width=image.naturalWidth*scale+'px';canvas.style.height=image.naturalHeight*scale+'px';for(const layer of Object.values(layers)){layer.style.width=image.naturalWidth+'px';layer.style.height=image.naturalHeight+'px';layer.style.transform='scale('+scale+')'}}
+    function render(){layers.reference.style.visibility=mode==='html'?'hidden':'visible';layers.html.style.visibility=mode==='reference'?'hidden':'visible';layers.html.style.opacity=mode==='overlay'?document.querySelector('#opacity').value/100:1;document.querySelector('#opacity-value').textContent=document.querySelector('#opacity').value+'%';for(const button of document.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===mode));layout()}
+    for(const button of document.querySelectorAll('[data-mode]'))button.onclick=()=>{mode=button.dataset.mode;render()};
+    document.querySelector('#normal').onclick=()=>{normal=!normal;document.querySelector('#normal').setAttribute('aria-pressed',String(normal));layout()};
+    document.querySelector('#opacity').oninput=()=>{mode='overlay';render()};new ResizeObserver(layout).observe(viewport);
+    function load(report){const images=window.XDZIP_SCALE_IMAGES||{html:'main-normal.png',reference:'reference-normal.png'};for(const [key,layer] of Object.entries(layers)){layer.onload=layout;layer.src=images[key]}const result=document.querySelector('#result');result.textContent=report.passed?'尺寸与倍率检查通过；原稿与 HTML 采用同一显示尺寸。':'尺寸检查未全部通过，详见报告；本页未标记为验收完成。';result.className=report.passed?'pass':'fail';for(const item of report.checks){const row=document.createElement('tr');for(const value of [item.name,item.passed?'通过':'未通过']){const cell=document.createElement('td');cell.textContent=value;row.append(cell)}if(!item.passed)row.className='fail';document.querySelector('#checks').append(row)}document.querySelector('#metadata').textContent=JSON.stringify({logical_window_width:report.logical_window_width,source_window:report.source_window,source_to_logical:report.source_to_logical,normal_evidence:report.normal_evidence,sources:report.sources,limits:report.limits,failures:report.failures},null,2);render()}
+    if(window.XDZIP_SCALE_REPORT)load(window.XDZIP_SCALE_REPORT);else{const script=document.createElement('script');script.src='validation.js';script.onload=()=>load(window.XDZIP_SCALE_REPORT);script.onerror=()=>document.querySelector('#result').textContent='请打开生成的 dist/xdzip-scale-review.html 离线文件，或更新本目录的尺寸检查报告和截图。';document.head.append(script)}
+})();
+</script>
+</main></body></html>

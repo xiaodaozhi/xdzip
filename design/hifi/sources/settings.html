@@ -1,0 +1,6 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S01 设置，外观、隐私与语言</title><style>body{margin:0;background:#e8ebf0;color:#141827;font:13px system-ui,sans-serif}nav{height:64px;display:flex;align-items:center;gap:24px;padding:0 24px}a{color:#1956ff}iframe{display:block;border:0;pointer-events:none;margin:0 auto}body.export nav{display:none}</style><nav><strong>S01 设置，外观、隐私与语言</strong><a href="?theme=light">浅色</a><a href="?theme=dark">深色</a><span>独立窗口，保存与取消草稿，语言保存后询问是否重启生效</span></nav><iframe title="设置窗口设计原稿"></iframe><script>
+const q=new URLSearchParams(location.search),theme=q.get('theme')==='dark'?'dark':'light',frame=document.querySelector('iframe');
+if(q.has('export'))document.body.classList.add('export');
+frame.width=1586;frame.height=1100;frame.src='../../html/canvas.html?view=settings';
+frame.addEventListener('load',()=>frame.contentWindow.postMessage({type:'xdzip-review-configure',view:'settings',platform:'macos',theme},'*'));
+</script></html>

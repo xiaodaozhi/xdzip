@@ -1,0 +1,340 @@
+{
+  "schema_version": 1,
+  "component": "directory-tree",
+  "name": "B，层级引导目录树",
+  "status": "core-interactions-integrated",
+  "units": "Qt logical pixels / CSS pixels in the normalized 1024-wide main window",
+  "coordinate_note": "图板是放大的视觉说明，不存在适用于三张图板的共同缩放系数；下列值是组件落地尺寸，不是对图片像素的测量。切片的 source physical rect 单独记入资产清单。",
+  "base_tokens": "tokens.json",
+  "geometry": {
+    "sidebar_default_width": 193.15762273901808,
+    "row_min_height": 32.0,
+    "row_outer_inset": 6.4,
+    "content_left_inset": 9.6,
+    "content_right_inset": 9.6,
+    "depth_indent": 12.8,
+    "disclosure_hit_width": 19.2,
+    "disclosure_hit_min_height": 19.2,
+    "disclosure_glyph_canvas": 14.4,
+    "folder_canvas": 16.0,
+    "icon_label_gap": 6.4,
+    "label_count_gap": 6.4,
+    "count_min_width": 25.6,
+    "branch_marker_canvas": 19.2,
+    "branch_marker_visible_diameter": 4.8,
+    "branch_count_gap": 3.2,
+    "selection_indicator_width": 2.4,
+    "selection_radius": 6.4,
+    "focus_stroke": 0,
+    "guide_stroke": 1,
+    "body_font_size": 11.2,
+    "count_font_size": 9.6,
+    "tooltip_max_width": 360,
+    "tooltip_max_height": 240,
+    "status_glyph_canvas": 16.0,
+    "row_vertical_padding": 12.8
+  },
+  "responsive_rules": {
+    "row_height": "ceil(max(32, body_font_size * font_scale * 1.6 + 12.8, 19.2 * font_scale + 12.8))",
+    "glyph_slots": "disclosure = 14.4 * font_scale; folder = 16 * font_scale; branch marker uses a 19.2 canvas; hit area grows with accessibility font_scale",
+    "indentation": "12.8 logical pixels at every accessibility font scale; content scrolls when the depth does not fit",
+    "tooltip": "No floating tooltip on hover. Full archive path remains available in accessible descriptions and details.",
+    "scrollbars": "inside the directory viewport; visible only when content overflows; never around the application frame",
+    "labels": "Measure only expanded visible rows, allow horizontal scroll for full names; no reserved count column; 16 logical pixels trailing inset"
+  },
+  "colors": {
+    "light": {
+      "surface": "#F7F9FC",
+      "text": "light.text",
+      "secondary": "light.textSecondary",
+      "selection": "#E6EDFF",
+      "hover": "#EDF1F7",
+      "focus": "#1674FF",
+      "current_indicator": "#1674FF",
+      "guide": "#D4DBE6",
+      "branch_dot": "#1674FF",
+      "skeleton": "#DAE2EE"
+    },
+    "dark": {
+      "surface": "dark.sidebar",
+      "text": "dark.text",
+      "secondary": "dark.textSecondary",
+      "selection": "dark.selection",
+      "hover": "#222B39",
+      "focus": "#78A6FF",
+      "current_indicator": "#78A6FF",
+      "guide": "#3A4658",
+      "branch_dot": "#78A6FF",
+      "skeleton": "#323E50"
+    },
+    "dark_board_status": "tokens-and-glyphs-prepared-full-component-board-pending"
+  },
+  "rendering": {
+    "folder": "shared folder SVG/PNG; aspect-preserving inside a 16-unit slot",
+    "disclosure": "shared chevron-right/chevron-down SVG/PNG; visible only with child directories",
+    "guides": "Native one-unit lines; line centers share the parent disclosure center X, including font-scale growth. Stop at last sibling center.",
+    "current": "native selection background plus 2.4-unit leading indicator",
+    "focus": "Full-height leading indicator with square left corners; no four-sided outline",
+    "hidden_current": "shared tree-active-branch glyph on a 19.2-unit canvas at the nearest visible collapsed ancestor",
+    "text": "live, escaped plain text using platform fonts; never baked into an icon",
+    "loading": "shared tree-spinner segmented glyph; rotation is driven by the live component and disabled under reduced motion",
+    "information": "shared tree-info solid neutral circle with white information mark",
+    "error": "shared tree-warning filled amber rounded triangle with white exclamation"
+  },
+  "sample": {
+    "archive_physical_count": 30,
+    "root_physical_count": 6,
+    "current_directory": null,
+    "selected_file_example": "冰川湖.jpg",
+    "nodes": [
+      {
+        "id": "photos",
+        "parent_id": null,
+        "name": "01 照片",
+        "descendant_physical_count": 12,
+        "direct_physical_count": 0,
+        "has_child_directories": true,
+        "expanded": true
+      },
+      {
+        "id": "ice",
+        "parent_id": "photos",
+        "name": "冰川湖",
+        "descendant_physical_count": 6,
+        "direct_physical_count": 0,
+        "has_child_directories": true,
+        "expanded": true
+      },
+      {
+        "id": "shore",
+        "parent_id": "ice",
+        "name": "湖岸步道",
+        "descendant_physical_count": 3,
+        "direct_physical_count": 0,
+        "has_child_directories": true,
+        "expanded": false
+      },
+      {
+        "id": "shore-sub",
+        "parent_id": "shore",
+        "name": "沿湖照片",
+        "descendant_physical_count": 3,
+        "direct_physical_count": 3,
+        "has_child_directories": false,
+        "expanded": false
+      },
+      {
+        "id": "snow",
+        "parent_id": "ice",
+        "name": "雪山远景",
+        "descendant_physical_count": 3,
+        "direct_physical_count": 3,
+        "has_child_directories": false,
+        "expanded": false
+      },
+      {
+        "id": "sunrise",
+        "parent_id": "photos",
+        "name": "山间日出",
+        "descendant_physical_count": 4,
+        "direct_physical_count": 0,
+        "has_child_directories": true,
+        "expanded": false
+      },
+      {
+        "id": "sunrise-sub",
+        "parent_id": "sunrise",
+        "name": "日出照片",
+        "descendant_physical_count": 4,
+        "direct_physical_count": 4,
+        "has_child_directories": false,
+        "expanded": false
+      },
+      {
+        "id": "other",
+        "parent_id": "photos",
+        "name": "其他照片",
+        "descendant_physical_count": 2,
+        "direct_physical_count": 2,
+        "has_child_directories": false,
+        "expanded": false
+      },
+      {
+        "id": "docs",
+        "parent_id": null,
+        "name": "02 文档",
+        "descendant_physical_count": 8,
+        "direct_physical_count": 0,
+        "has_child_directories": true,
+        "expanded": false
+      },
+      {
+        "id": "docs-sub",
+        "parent_id": "docs",
+        "name": "旅行资料",
+        "descendant_physical_count": 8,
+        "direct_physical_count": 8,
+        "has_child_directories": false,
+        "expanded": false
+      },
+      {
+        "id": "maps",
+        "parent_id": null,
+        "name": "03 地图",
+        "descendant_physical_count": 4,
+        "direct_physical_count": 4,
+        "has_child_directories": false,
+        "expanded": false
+      }
+    ]
+  },
+  "states": {
+    "collapsed": {
+      "show_disclosure": true,
+      "glyph": "chevron-right",
+      "cut": "tree-row-collapsed"
+    },
+    "expanded": {
+      "show_disclosure": true,
+      "glyph": "chevron-down",
+      "cut": "tree-row-expanded"
+    },
+    "leaf_nonempty": {
+      "show_disclosure": false,
+      "count": 3,
+      "cut": "tree-row-leaf"
+    },
+    "leaf_empty": {
+      "show_disclosure": false,
+      "count": 0,
+      "cut": "tree-row-empty"
+    },
+    "current": {
+      "selection_fill": true,
+      "leading_indicator": true,
+      "cut": "tree-row-current"
+    },
+    "hover": {
+      "changes_directory": false,
+      "cut": "tree-row-hover"
+    },
+    "focus": {
+      "changes_directory": false,
+      "cut": "tree-row-focus"
+    },
+    "long_name": {
+      "elide": "none; horizontal scroll",
+      "full_path_available": true,
+      "cut": "tree-name-tooltip"
+    },
+    "deep_hierarchy": {
+      "horizontal_scroll": true,
+      "count_pinned": false,
+      "cut": "tree-deep-hierarchy"
+    },
+    "large_type": {
+      "font_scale": 2,
+      "grow_row": true,
+      "cut": "tree-large-type"
+    },
+    "loading": {
+      "count": null,
+      "publish_partial_nodes": false,
+      "navigation_enabled": false,
+      "cut": "tree-loading"
+    },
+    "empty_archive": {
+      "count": 0,
+      "list_physical_count": 0,
+      "cut": "tree-empty-archive"
+    },
+    "root_files_only": {
+      "count": 6,
+      "list_physical_count": 6,
+      "cut": "tree-root-files"
+    },
+    "navigation_limited": {
+      "list_available": true,
+      "search_available": true,
+      "publish_partial_nodes": false,
+      "cut": "tree-nav-limit"
+    },
+    "read_failed": {
+      "count": null,
+      "navigation_enabled": false,
+      "recovery": "reopen-archive",
+      "cut": "tree-read-failed"
+    },
+    "hidden_current": {
+      "current_directory": "ice",
+      "collapsed_ancestor": "photos",
+      "branch_marker": "photos",
+      "selected_visible_row": null,
+      "list_path_changes": false,
+      "cut": "tree-hidden-current"
+    }
+  },
+  "event_rules": {
+    "disclosure_click": "toggle expansion only; preserve directory query and file selection",
+    "label_click": "activate directory through its current-session node ID",
+    "up_down": "move focus among visible rows; do not activate",
+    "right": "expand a collapsed parent; otherwise focus its first child",
+    "left": "collapse an expanded parent; otherwise focus its parent",
+    "enter": "activate the focused directory",
+    "collapse_current_ancestor": "preserve current directory and file list; move hidden focus to nearest visible ancestor",
+    "query_replace": "successful directory activation resets page, file selection and details per readonly-browser contract",
+    "new_session": "discard expansion, focus, current node IDs and branch markers from the previous session"
+  },
+  "integration": {
+    "html": "Recursive example tree, guide lines, full labels without visual counts, disclosure, current/focus separation, collapsed-current marker and directory context menu",
+    "qt": "Complete real read-only index, guide roles, full labels without visual counts, disclosure, keyboard navigation, collapsed-current marker and directory context menu",
+    "remaining": [
+      "Boundary notice glyphs and skeleton are design resources; no new loading skeleton or error-card consumer",
+      "Full dark component board and manual native screen-reader/HiDPI review remain pending"
+    ]
+  },
+  "coordinate_mapping": {
+    "qt": "Use geometry values directly as logical pixels",
+    "html_source_canvas": "source CSS pixels = logical value / XDZIP_DISPLAY_SPEC.sourceToLogical",
+    "source_to_logical_ratio": [
+      1024,
+      1548
+    ],
+    "review_zoom": "Apply outside this coordinate conversion; never change source geometry to cancel preview zoom",
+    "device_pixel_ratio": "DPR selects raster density and stroke snapping; it does not determine logical size",
+    "examples": [
+      {
+        "logical": 32.0,
+        "source_css": 48.375
+      },
+      {
+        "logical": 11.200000000000001,
+        "source_css": 16.93125
+      },
+      {
+        "logical": 16.0,
+        "source_css": 24.1875
+      },
+      {
+        "logical": 12.8,
+        "source_css": 19.35
+      }
+    ]
+  },
+  "presentation": {
+    "show_counts": false,
+    "left_corners": "square",
+    "indicator_height": "full row",
+    "horizontal_extent": "visible expanded rows only",
+    "legacy_geometry_note": "count geometry fields remain for historical boards and generated compatibility; current rows have no count consumer"
+  },
+  "listing": {
+    "root_label": "根目录",
+    "archive_caption": "压缩包",
+    "ordinary_scope": "direct files and directories only",
+    "search_scope": "recursive physical entries in current directory",
+    "ordinary_name": "basename",
+    "search_name": "full archive-relative path",
+    "implicit_directory": "navigation identity only; unknown sizes and dates; cannot enter physical-record preflight"
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "units": "CSS pixels / Qt device-independent pixels; physical screenshot pixels are divided by DPR",
+  "main": {
+    "previous_logical_width": 1280,
+    "density": 0.8,
+    "logical_window": [
+      1024,
+      622
+    ],
+    "minimum_window": [
+      832,
+      544
+    ],
+    "inspector_collapse_width": 928,
+    "source_to_logical": [
+      1024,
+      1548
+    ],
+    "titlebar": {
+      "height": 48,
+      "tab_height": 32,
+      "tab_vertical_inset": 8,
+      "tab_radius": 16,
+      "style": "floating capsule"
+    },
+    "interaction": {
+      "iconButtonSize": 28,
+      "toolbarContentGap": 6,
+      "breadcrumbHeight": 28,
+      "popupGap": 4,
+      "treeTrailingInset": 16,
+      "gridInset": 16,
+      "gridCheckboxInset": 8,
+      "gridCellWidth": 144,
+      "gridCellHeight": 124,
+      "gridGap": 12,
+      "gridIconSize": 40,
+      "formatBadgeMinimumWidth": 32,
+      "formatBadgeInset": 6,
+      "entryBandTopInset": 1,
+      "entryBandBottomInset": 2,
+      "entrySeparatorHeight": 1,
+      "captionButtonWidth": 46,
+      "captionIconSize": 18,
+      "captionRestoreOffset": 3
+    },
+    "windows_frame": {
+      "strategy": "Native resizable frame, client-extended titlebar",
+      "frame_margin_native_pixels": 1,
+      "restored_top_edge_native_pixels": 1,
+      "maximized_top_inset": "Native resize metric for the window DPI",
+      "border": "System DWM border",
+      "corner_preference": "Round on supported Windows 11 builds, OS default otherwise",
+      "shadow": "DWM non-client rendering",
+      "caption_controls": "Existing QML caption controls"
+    }
+  },
+  "operation": {
+    "source_to_logical": [
+      1280,
+      1548
+    ],
+    "density": 1,
+    "oversized_source_density": {},
+    "footer": {
+      "fontSize": 13,
+      "noteSize": 12,
+      "iconSize": 16
+    },
+    "logical_widths": {
+      "default": 612,
+      "extract": 491,
+      "progress": 491,
+      "archive-test": 491,
+      "create": 491,
+      "result": 491,
+      "conflict": 491
+    },
+    "components": {
+      "bodySize": 16,
+      "titleSize": 25,
+      "noteSize": 14,
+      "metricLabelSize": 15,
+      "metricValueSize": 19,
+      "gutter": 24,
+      "fieldHeight": 41,
+      "fieldRadius": 8,
+      "cardInset": 16,
+      "cardGap": 12,
+      "extractContentInset": 22.5,
+      "progressContentInset": 25,
+      "headerHeight": 108,
+      "footerHeight": 64,
+      "progressTrackHeight": 20,
+      "progressPercentageLineHeight": 30,
+      "progressBodyLineHeight": 22.5,
+      "pathRowHeight": 46,
+      "pathFontSize": 18,
+      "controlIndicatorSize": 20,
+      "controlGap": 10,
+      "extractClientHeight": 866,
+      "progressClientHeight": 612,
+      "extractNoteSize": 12,
+      "destinationIndicatorSlotSize": 24,
+      "destinationIndicatorSize": 16,
+      "destinationIndicatorGap": 8,
+      "createClientHeight": 736,
+      "createContentInset": 18,
+      "createCardInset": 13,
+      "createBodySize": 13,
+      "createTitleSize": 20,
+      "createNoteSize": 12,
+      "createInputRowHeight": 38,
+      "createFieldHeight": 28,
+      "conflictClientHeight": 560
+    },
+    "source_to_logical_by_view": {
+      "extract": [
+        819.2,
+        1548
+      ],
+      "progress": [
+        819.2,
+        1548
+      ],
+      "archive-test": [
+        819.2,
+        1548
+      ],
+      "create": [
+        819.2,
+        1548
+      ],
+      "result": [
+        677,
+        1274
+      ]
+    },
+    "extract_density": 0.8,
+    "progress_density": 0.8,
+    "create_density": 0.8,
+    "controls": {
+      "radius": 5,
+      "bodyButtonHeight": 28,
+      "footerButtonHeight": 32,
+      "footerButtonMinWidth": 77,
+      "footerPrimaryMinWidth": 94,
+      "horizontalInset": 12,
+      "verticalInset": 4,
+      "fieldTextInset": 8,
+      "selectIndicatorSize": 18,
+      "selectIndicatorRightInset": 6,
+      "selectIndicatorTextGap": 8,
+      "removeHitSize": 28,
+      "removeArtworkSize": 24,
+      "segmentedHeight": 28,
+      "segmentedRadius": 5
+    },
+    "conflict_density": 0.8,
+    "confirmation": {
+      "logicalWidth": 491,
+      "maximumHeight": 600,
+      "contentInset": 24,
+      "sectionGap": 12,
+      "titleSize": 20,
+      "bodySize": 13,
+      "screenMargin": 80
+    }
+  },
+  "controls": {
+    "density": 1,
+    "source": "controls.json",
+    "menu_width": 240,
+    "menu_row_min_height": 32,
+    "menu_font_size": 13
+  },
+  "rounding": {
+    "window_and_structural_boundaries": "nearest integer",
+    "qt_font_pixel_size": "nearest integer after density conversion, before accessibility font scale",
+    "geometry_tolerance": 1,
+    "alignment_tolerance": 0.5
+  },
+  "verification": {
+    "browser_zoom": [
+      1,
+      1.25
+    ],
+    "device_pixel_ratio": [
+      1,
+      1.25,
+      2
+    ],
+    "review_zoom": 1,
+    "menu_to_table_font_ratio": [
+      0.95,
+      1.1
+    ]
+  }
+}

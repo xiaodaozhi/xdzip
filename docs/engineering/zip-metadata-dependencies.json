@@ -1,0 +1,18 @@
+{
+  "scope": "ZIP metadata only",
+  "dependencies": [
+    {
+      "name": "rawzip",
+      "version": "0.5.2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "ac9999039f74cd73c03158cddfe4362991703c74efe5ce5c8073026f80a5e48c",
+      "license": "MIT",
+      "features": [
+        "std"
+      ],
+      "default_features": false,
+      "runtime_dependencies": []
+    }
+  ],
+  "advisory_database_commit": "7eebec69c352c7191b1f13eb95dd510eeca5d1de"
+}

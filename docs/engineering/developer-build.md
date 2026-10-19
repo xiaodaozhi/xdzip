@@ -1,0 +1,23 @@
+# xdzip — 开发构建与验证
+
+这是实际 ZIP 浏览、创建与解压应用的实验开发构建说明。实现提交、Qt／Rust 版本和平台见验证记录或包内 build.json；三平台检查、历史工件哈希和桌面验收状态见 [M3 验收](https://github.com/xiaodaozhi/xdzip/blob/main/docs/qa/README.md)。签名与独立安全评审尚未达到正式发行条件。
+
+- macOS ARM64：自 2026-10-14 起仅进行原生编译、测试和 SDK 环境下的 Cocoa 启动验证，不自动打包或上传开发应用。Actions 仅保留日志和 JSON；本地构建方法见 [Qt 开发应用](https://github.com/xiaodaozhi/xdzip/blob/main/apps/desktop/README.md)。
+- Windows X64：保持 windows 目录内 DLL／插件布局，运行 windows/xdzip.exe，产品采用 GUI 子系统，启动不会创建控制台窗口。主窗口在设置右侧提供最小化、最大化／还原和关闭按钮，标题空白处可拖动、双击最大化／还原，保留原生可缩放边框和 DWM 装饰，窗口边缘由系统命中测试处理。圆角与阴影遵循系统版本及合成设置。
+- Linux X64：解压 xdzip-linux-x86_64.tar.gz 后运行目录内 ./xdzip，Qt 6.8.2、QML 和插件随目录提供，不要求开发 SDK。当前验证基线为 Ubuntu 24.04、X11，OS 图形及字体运行库仍需具备；这不是通用发行版安装器。系统依赖见 share/deployment.json，真实桌面与安装专项仍单独验收。
+
+打开压缩包只浏览，不自动解压。支持 ZIP Store／Deflate／单卷 ZIP64 与 TAR／TAR.GZ 的浏览、创建和安全解压。ZIP 创建支持四档级别、AES-256 内容加密和编号分卷；加密／分卷 ZIP 读取仍不支持，输出可用兼容工具验证。安全条件满足时可恢复 ZIP 相对符号链接及受限可执行位；特殊对象与逃逸仍拒绝。实际内容预览尚未实现，完整支持边界以同提交 README 和格式契约为准。
+
+重名普通文件可询问、跳过、自动改名或明确替换。完整校验和数据同步后整文件发布；损坏、磁盘写入失败及提交前取消保留旧文件，早前已完成的文件继续保留。关闭任务窗口只隐藏它，可从状态栏重新打开；退出时等待或取消活动任务，不在 GUI 线程同步等待。
+
+输出采用受限权限，ZIP Unix 普通文件可恢复受限可执行位，不恢复扩展属性或原始修改时间；这不代表程序包安装、签名验证或系统安全审查。拒绝外部账户具有修改权限的 Windows 目标，只读／执行共享允许且输出继承目标的只读共享权限、组或其他用户可写的 POSIX 目标，以及目录链接。崩溃留下的暂存目录只提示并保留供检查，不自动恢复或删除未知内容。
+
+验收步骤：浏览根目录和子目录、搜索与五列表头排序；解压小文件、目录和全部归档；用自有文件测试四种重名策略；取消冲突等待；关闭进度窗后重新打开；检查 Cmd+Q／窗口关闭；核对浅深色、Retina、100/125/150% 字号、输入法和辅助功能。最新 macOS 桌面人工体验与独立审查单独登记，不由离屏自动检查代替。
+
+Windows/Linux 开发包中的 notices 保留当前平台依赖、Qt 与字体的上游许可原文；xdzip-source.tar 为同一提交的源码。Actions 工件保留 14 天，过期后可按锁定工具链从 build.json 的提交重建。
+
+build/、target/ 以及所有层级的 dist/ 都是生成目录，不提交到 Git。macOS 构建产生的 .app 仅是 build/ 内编译中间产物，不复制成开发交付包。先前的 Apple Silicon 包回执作为历史验证记录保留。
+
+工件中的 deployment-audit.json 区分已部署导入和 SDK 依赖。source-build.cdx.json 是源码宿主依赖图，artifact-files.cdx.json 是实际文件及已知原生导入清单，均标记完整性 incomplete，不代表完整运行时 SBOM 或许可签字。manual-desktop.json 全部待人工验证，不能把 CI 生成表格当作桌面验收。
+
+实验安装器：Windows 工件中的 xdzip-windows-x64-setup.exe 为当前用户安装，Ubuntu 工件中的 xdzip-ubuntu24.04-amd64.deb 由包管理器安装。二者均未签名，提供打开候选而不改默认。安装／升级／回退／忙时保护／卸载的自动验证及人工边界见[安装与关联](installers-associations.md)。

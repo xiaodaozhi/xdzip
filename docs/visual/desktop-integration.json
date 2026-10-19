@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "nativeChrome": true,
+  "trayDefaultEnabled": true,
+  "closeToTray": true,
+  "icon": {
+    "canvas": 22,
+    "visibleBounds": [
+      5,
+      2,
+      12,
+      18
+    ],
+    "templateMacOS": true,
+    "rasterSizes": [
+      16,
+      20,
+      22,
+      24,
+      32,
+      44,
+      48,
+      64
+    ],
+    "variants": [
+      "black",
+      "white",
+      "contrast"
+    ],
+    "linux": "dual-tone, independent of application theme"
+  },
+  "menuOrder": [
+    "application",
+    "file",
+    "edit",
+    "view",
+    "operation",
+    "window",
+    "help"
+  ],
+  "trayOrder": [
+    "show",
+    "open",
+    "new",
+    "tasks",
+    "settings",
+    "about",
+    "quit"
+  ],
+  "rules": {
+    "unavailableTray": "normal-close",
+    "lostTrayWhileHidden": "restore-window",
+    "modal": "activate-blocker",
+    "quit": "task-confirm-and-join"
+  },
+  "taskStatusIcon": {
+    "canvas": 16,
+    "dotDiameter": 8,
+    "colors": {
+      "succeeded": "#21a86a",
+      "failed": "#df4b55",
+      "waiting": "#d08a18",
+      "cancelled": "#8893a6",
+      "active": "#2364ed"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "automatic": [
+    {"id":"CI", "title":"三平台产品、文档和基础 CI", "minimum_reports":1},
+    {"id":"DEPLOY", "title":"实际导入、SBOM、安装与关联证据", "minimum_reports":3},
+    {"id":"SOURCE", "title":"完整源码材料和应用离线重建", "minimum_reports":2},
+    {"id":"QT_SOURCE", "title":"Qt 所需模块源码构建和真实产品验证", "minimum_reports":3},
+    {"id":"QT_REPLACE", "title":"隔离应用使用源码修改版 QtCore", "minimum_reports":1},
+    {"id":"PERFORMANCE", "title":"30 次交互、稳定空闲和真实解压观测", "minimum_reports":1},
+    {"id":"RESOURCES", "title":"三平台实际内嵌资源对应", "minimum_reports":3},
+    {"id":"LINKAGE", "title":"三平台实际链接输入", "minimum_reports":3},
+    {"id":"MATERIALS", "title":"逐项组件审查材料和校验清单", "minimum_reports":1},
+    {"id":"PACKAGES", "title":"开发安装器及本地 DMG 校验", "minimum_reports":3}
+  ],
+  "external": [
+    {"id":"DESKTOP", "title":"未覆盖的真实桌面输入法、读屏、GPU、系统操作及重启", "reason":"需要对应设备及操作者的专项记录，既有 macOS 常规验收继续有效"},
+    {"id":"REFERENCE", "title":"正式参考机、供电与性能预算确认", "reason":"自动观测不能代表发布负责人已批准参考环境和预算"},
+    {"id":"LICENSE", "title":"许可分支、未知上游来源和再分发义务审查", "reason":"材料与差异可自动收集，来源未声明的部分需要上游或具备权限的审查者确认"},
+    {"id":"SECURITY", "title":"独立安全审查", "reason":"本批作者与自动测试不能充当独立审查人员"},
+    {"id":"SUPPORT", "title":"正式系统支持范围及维护政策", "reason":"需要产品和发布负责人决定"}
+  ],
+  "distribution_policy": {"channel": "github-releases", "formal_signing_required": false, "macos_signing": "ad-hoc-integrity-only", "windows_signing": "unsigned", "paid_developer_account_required": false}
+}

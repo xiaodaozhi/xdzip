@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="color-scheme" content="light dark" />
+        <title>xdzip — 高保真界面</title>
+        <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="hifi.css" />
+        <link rel="stylesheet" href="controls-tokens.css" />
+        <link rel="stylesheet" href="controls.css" />
+        <link rel="stylesheet" href="welcome.css" />
+        <script defer src="assets.js"></script>
+        <script defer src="display-spec.js"></script>
+        <script defer src="controls-tokens.js"></script>
+        <script defer src="controls.js"></script>
+        <script defer src="ui-messages.js"></script>
+        <script defer src="version.js"></script>
+        <script defer src="app.js"></script>
+        <script defer src="main-controls.js"></script>
+    </head>
+    <body data-platform="macos">
+        <div class="reviewbar">
+            <a class="review-brand" href="#"
+                >xdzip <span>DESIGN STUDIO</span></a
+            >
+            <div class="review-tools">
+                <label class="scenario-label"
+                    >平台
+                    <select id="platform" aria-label="窗口平台">
+                        <option value="macos">macOS</option>
+                        <option value="windows">Windows</option>
+                        <option value="linux">Linux</option>
+                    </select></label
+                ><span class="prototype-tag">交互原型，示例数据</span
+                ><label class="scenario-label"
+                    >场景
+                    <select id="scenario" aria-label="演示场景">
+                        <option value="normal">正常流程</option>
+                        <option value="conflict">解压重名冲突</option>
+                        <option value="permission">目标无权限</option>
+                        <option value="disk">磁盘空间不足</option>
+                        <option value="source">源文件变化</option>
+                        <option value="cancel">取消任务</option>
+                        <option value="empty">空压缩包</option>
+                        <option value="noresult">搜索无结果</option>
+                        <option value="unsupported">不支持加密</option>
+                        <option value="damaged">压缩包损坏</option>
+                        <option value="loading">读取目录</option>
+                    </select></label
+                ><button
+                    id="theme"
+                    class="review-button"
+                    aria-label="切换深色主题"
+                ></button
+                ><button id="spec-toggle" class="review-button">
+                    设计标注
+                </button>
+            </div>
+        </div>
+        <main class="stage" id="stage">
+            <section class="window" aria-label="xdzip 压缩包管理器">
+                <header class="titlebar">
+                    <div class="traffic" aria-hidden="true">
+                        <i></i><i></i><i></i>
+                    </div>
+                    <div class="app-brand" id="app-brand"></div>
+                    <div class="archive-tabs" aria-label="压缩包标签">
+                    <div class="archive-tab">
+                        <span class="tab-icon" data-icon="archive"></span
+                        ><span class="tab-label">北境旅行.zip</span
+                        ><button
+                            class="tab-close"
+                            id="close-archive"
+                            aria-label="关闭当前压缩包"
+                        >
+                            <span data-icon="close"></span>
+                        </button>
+                    </div>
+                    <div class="archive-tab inactive" aria-label="其他压缩包示例"><span class="tab-icon" data-icon="archive"></span><span class="tab-label">项目素材.zip</span><button class="tab-close" id="close-example-tab" aria-label="关闭其他压缩包（设计示例）"><span data-icon="close"></span></button></div>
+                    <button
+                        id="new-tab"
+                        class="header-icon"
+                        aria-label="打开其他压缩包"
+                    >
+                        <span data-icon="plus"></span>
+                    </button>
+                    </div>
+                    <div class="title-space"></div>
+                    <button id="title-settings" class="header-icon" aria-label="设置"><span data-icon="settings"></span></button>
+                    <div class="desktop-caption-controls" aria-hidden="true"><span data-icon="minimize"></span><span data-icon="maximize"></span><span data-icon="close"></span></div>
+                </header>
+                <div class="toolbar">
+                    <button id="open" class="button">
+                        <span data-icon="folderOpen"></span><span class="action-label">打开</span></button
+                    ><button id="create" class="button">
+                        <span data-icon="new"></span><span class="action-label">新建</span>
+                    </button>
+                    <div class="toolbar-divider"></div>
+                    <button id="test-archive" class="button"><span data-icon="archive-test"></span><span class="action-label">测试</span></button>
+                    <button id="more-actions" class="icon-button" aria-label="更多操作"><span data-icon="more"></span></button>
+                    <div class="toolbar-space"></div>
+                    <div class="search-field">
+                        <span data-icon="search"></span
+                        ><input
+                            id="search"
+                            type="search"
+                            placeholder="搜索压缩包中的文件"
+                            aria-label="搜索压缩包中的文件"
+                            autocomplete="off"
+                        />
+                        <button id="search-clear" class="icon-button" aria-label="清空搜索" data-tooltip="清空搜索，Esc" hidden><span data-icon="close"></span></button>
+                    </div>
+                    <div class="split-button">
+                        <button id="extract" class="button primary">
+                            <span id="extract-label">全部解压</span></button
+                        ><button
+                            id="extract-menu-button"
+                            aria-label="选择解压范围"
+                            aria-expanded="false"
+                        >
+                            <span data-icon="chevronDown"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="workspace">
+                    <aside class="sidebar">
+                        <div class="archive-card">
+                            <span class="archive-caption">压缩包</span>
+                            <div>
+                                <strong>北境旅行.zip</strong
+                                ><div class="archive-summary"><span class="format-badge">ZIP</span><span id="archive-info">压缩包信息</span></div>
+                            </div>
+                        </div>
+
+                        <nav id="tree" aria-label="压缩包目录"></nav>
+                        <div class="sidebar-bottom">
+                            <div class="storage-heading">
+                                <span>节省</span
+                                ><strong id="saving"></strong>
+                            </div>
+                            <div class="storage-bar">
+                                <i id="saving-bar"></i>
+                            </div>
+                            <div class="storage-meta">
+                                <span>原始大小</span><b id="original-size"></b>
+                            </div>
+                            <div class="storage-meta compressed-meta">
+                                <span>压缩大小</span><b id="compressed-size"></b>
+                            </div>
+                            <div class="sidebar-tip">
+                                <span data-icon="shield"></span
+                                >浏览文件不会自动解压
+                            </div>
+                        </div>
+                    </aside>
+                    <section class="files-pane" aria-label="文件列表">
+                        <div class="location">
+                            <div id="breadcrumbs"></div>
+                            <div class="file-tools">
+                                <span id="entry-count"></span
+                                ><button id="list-view" class="icon-button view-active" aria-label="列表视图" aria-pressed="true"><span data-icon="view-list"></span></button><button id="grid-view" class="icon-button" aria-label="网格视图" aria-pressed="false"><span data-icon="view-grid"></span></button><button
+                                    id="sort-direction"
+                                    class="icon-button"
+                                    aria-label="切换排序方向"
+                                >
+                                    <span data-icon="sort"></span>
+                                </button>
+                                <button id="properties-toggle" class="icon-button" aria-label="切换详情面板"><span data-icon="panel"></span></button>
+                            </div>
+                        </div>
+                        <div
+                            id="search-notice"
+                            class="search-notice"
+                            hidden
+                        ></div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="check-col">
+                                            <input
+                                                type="checkbox"
+                                                id="select-all"
+                                                aria-label="选择当前列表全部文件"
+                                            />
+                                        </th>
+                                        <th>
+                                            <button id="sort-name">
+                                                名称
+                                                <span
+                                                    data-icon="sort-ascending"
+                                                ></span>
+                                            </button>
+                                        </th>
+                                        <th><button class="sort-header" data-sort="size">原始大小</button></th>
+                                        <th><button class="sort-header" data-sort="compressed">压缩大小</button></th>
+                                        <th class="type-col"><button class="sort-header" data-sort="type">类型</button></th>
+                                        <th class="date-col"><button class="sort-header" data-sort="modified">修改日期</button></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="file-rows"></tbody>
+                            </table>
+                            <div id="file-grid" class="grid-entries" aria-label="文件网格" hidden></div>
+                            <div
+                                id="empty-state"
+                                class="empty-state"
+                                hidden
+                            ></div>
+                        </div>
+                        <div class="selection-hint">
+                            点击选择，⌘ / Ctrl 多选，Shift 连选<span
+                                >双击文件夹进入目录</span
+                            >
+                        </div>
+                    </section>
+                    <aside
+                        class="inspector"
+                        id="inspector"
+                        aria-label="属性面板"
+                    ></aside>
+                </div>
+                <footer class="statusbar">
+                    <span id="selection-status"></span
+                    ><span class="status-spacer"></span
+                    ><span class="read-status"
+                        ><span data-icon="completed"></span><span id="read-status">目录已读取</span></span
+                    ><button id="tasks">
+                        <span data-icon="task-list"></span
+                        ><span id="task-count">任务 0</span><span class="task-chevron" data-icon="chevron-up"></span></button
+                    ><button id="settings" aria-label="设置">
+                        <span data-icon="settings"></span>
+                    </button>
+                </footer>
+                <div id="welcome" class="welcome" hidden></div>
+            </section>
+        </main>
+        <section
+            id="spec"
+            class="spec-panel"
+            hidden
+            aria-label="设计标注"
+        ></section>
+        <div class="review-footer">
+            <span><i></i> xdzip / v0.1 功能设计</span
+            ><span id="state-label">B01，压缩包浏览</span
+            ><button id="reset">重置演示</button>
+        </div>
+        <dialog id="modal" aria-label="操作对话框"></dialog>
+        <div id="toast" role="status" aria-live="polite"></div>
+    </body>
+</html>

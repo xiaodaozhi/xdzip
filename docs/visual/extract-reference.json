@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "source": "design/hifi/screens/extract-macos.png",
+  "sha256": "e21f7e9b90e4b2076618cf6c1d0d00e00f8696d21d722bc152b43b06699218f0",
+  "coordinate_system": "Original pixels; bitmap remains unchanged. Normal extraction density is 819.2/1548.",
+  "source_to_logical": [
+    819.2,
+    1548
+  ],
+  "source_client_width": 927,
+  "source_title_font": 38,
+  "source_body_font": 24,
+  "source_field_height": 66,
+  "source_card_left_inset": 34,
+  "source_change_button": [
+    130,
+    46
+  ],
+  "source_checkbox_size": 32,
+  "colors": {
+    "card": "#F4F6FA",
+    "card_border": "#DFE5EF",
+    "field_border": "#C9D1E0"
+  },
+  "sample_pixels": [
+    [
+      125,
+      310
+    ],
+    [
+      130,
+      335
+    ],
+    [
+      400,
+      325
+    ],
+    [
+      135,
+      545
+    ]
+  ],
+  "color_channel_tolerance": 4,
+  "footer_font_size": 13,
+  "footer_note_size": 12,
+  "approved_adjustments": [
+    "Normal density matches extraction opened from the 1024-wide main window.",
+    "Host target check, permission warning and high-ratio permission remain real product controls.",
+    "The scope body is white; its heading band has the same card background.",
+    "Footer actions use the shared normal 13-pixel size.",
+    "2026-10-15: current neutral field border is #DCE2EC, superseding the historical #C9D1E0 sample contract. Source pixels remain unchanged."
+  ],
+  "source_footer_widths": [
+    145,
+    190
+  ]
+}

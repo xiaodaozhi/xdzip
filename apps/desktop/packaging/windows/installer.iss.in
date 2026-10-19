@@ -1,0 +1,70 @@
+[Setup]
+AppId={{56DF0D26-2B26-40C4-9E85-FF0F8C8937CA}
+AppName=xdzip
+AppVersion=@VERSION@
+VersionInfoVersion=@FILEVERSION@
+AppPublisher=xdzip contributors
+DefaultDirName={localappdata}\Programs\xdzip
+DefaultGroupName=xdzip
+DisableProgramGroupPage=yes
+PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+OutputDir=@OUTPUT@
+OutputBaseFilename=@FILENAME@
+SetupIconFile=@APPICON@
+UninstallDisplayIcon=@RUNTIME_DIR@\xdzip.exe
+Compression=lzma2
+SolidCompression=yes
+AppMutex=Local\xdzip.desktop.running
+CloseApplications=no
+RestartApplications=no
+ChangesAssociations=yes
+UninstallLogMode=append
+WizardStyle=modern
+DisableWelcomePage=no
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "chinesesimplified"; MessagesFile: "@CHINESE@"
+
+[CustomMessages]
+english.IncompatibleSettings=This installation uses newer settings. Downgrade was refused to protect your data.
+chinesesimplified.IncompatibleSettings=现有安装使用了更新的设置格式。为保护数据，已拒绝回退。
+
+english.InvalidInstalledFiles=The installed file manifest is invalid. Repair or uninstall the existing installation before trying again.
+chinesesimplified.InvalidInstalledFiles=现有安装文件清单无效。请修复或卸载现有安装后重试。
+english.ModifiedInstalledFiles=An obsolete installed file was modified or cannot be verified. Installation was stopped to preserve it.
+chinesesimplified.ModifiedInstalledFiles=旧版安装文件已被修改或无法核验。为保留该文件，已停止安装。
+english.InstalledFilesCleanupFailed=Installation completed, but some obsolete files could not be removed. Close programs using the installation directory and run Setup again.
+chinesesimplified.InstalledFilesCleanupFailed=安装已完成，但部分旧文件未能清理。请关闭占用安装目录的程序后重新运行安装程序。
+
+[Files]
+@MANIFEST_FILES@
+Source: "@PAYLOAD@\*"; DestDir: "@RUNTIME_DIR@"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{userprograms}\xdzip"; Filename: "@RUNTIME_DIR@\xdzip.exe"
+
+[Registry]
+Root: HKCU; Subkey: "Software\Classes\xdzip.Archive"; ValueType: string; ValueData: "ZIP, TAR, TAR.GZ"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\DefaultIcon"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip-zip.ico"",0"
+Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\shell\open\command"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip.exe"" -- ""%1"""
+Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe\shell\open\command"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip.exe"" -- ""%1"""
+Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "xdzip"; ValueData: "Software\xdzip\Capabilities"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "xdzip"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "ZIP, TAR, TAR.GZ"
+Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: dword; ValueName: "SettingsSchema"; ValueData: "1"; Flags: uninsdeletekey
+@ASSOCIATIONS@
+
+[Code]
+@CLEANUP_CODE@
+
+function InitializeSetup(): Boolean;
+var Schema: Cardinal;
+begin
+  Result := not RegQueryDWordValue(HKCU, 'Software\xdzip\Install', 'SettingsSchema', Schema) or (Schema <= 1);
+  if not Result then
+    SuppressibleMsgBox(ExpandConstant('{cm:IncompatibleSettings}'), mbCriticalError, MB_OK, IDOK);
+end;

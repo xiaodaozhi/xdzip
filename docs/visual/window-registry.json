@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "units": "Qt device-independent pixels and CSS pixels",
+  "windows": {
+    "OperationWindow": {
+      "parent": "Window",
+      "role": "base",
+      "reason": "平台装饰与固定客户区约束"
+    },
+    "OperationConfirmationWindow": {
+      "parent": "OperationWindow",
+      "role": "base",
+      "width": "Theme.confirmationLogicalWidth",
+      "reason": "退出与重启共用确认布局"
+    },
+    "Browser": {
+      "parent": "ApplicationWindow",
+      "role": "main",
+      "width": "Theme.mainWindowWidth",
+      "reason": "主窗口独立密度与最小尺寸"
+    },
+    "Preview": {
+      "parent": "ApplicationWindow",
+      "role": "preview",
+      "width": "1040",
+      "reason": "明确标识的组件开发预览，不是产品操作窗口"
+    },
+    "CreateWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationCreateWidth",
+      "design": "design/html/canvas.html?view=create"
+    },
+    "ExtractWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationExtractWidth",
+      "design": "design/html/canvas.html?view=extract"
+    },
+    "TaskWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationProgressWidth",
+      "design": "design/html/canvas.html?view=progress"
+    },
+    "IntegrityWindow": {
+      "parent": "TaskWindow",
+      "role": "inherited",
+      "design": "design/html/canvas.html?view=archive-test"
+    },
+    "ConflictWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationConflictWidth",
+      "design": "design/html/canvas.html?view=conflict"
+    },
+    "PreflightWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.preflightLogicalWidth",
+      "design": "design/html/canvas.html?view=preflight"
+    },
+    "SettingsWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.settingsLogicalWidth",
+      "reason": "已批准的设置主题卡片布局，612 宽",
+      "design": "design/html/canvas.html?view=settings"
+    },
+    "AboutWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.aboutLogicalWidth",
+      "reason": "关于标题 24，遵循独立品牌规格",
+      "design": "design/html/canvas.html?view=about"
+    },
+    "QuitWindow": {
+      "parent": "OperationConfirmationWindow",
+      "role": "confirmation",
+      "design": "design/hifi/sources/confirmations.html"
+    },
+    "RestartWindow": {
+      "parent": "OperationConfirmationWindow",
+      "role": "confirmation",
+      "design": "design/hifi/sources/confirmations.html"
+    }
+  },
+  "inline_windows": {
+    "Browser.inspectorWindow": {
+      "source": "Browser",
+      "object_name": "inspectorWindow",
+      "width": 360,
+      "height": 600,
+      "reason": "大字号时的独立属性查看器，可调整大小，无操作 footer"
+    }
+  },
+  "native_dialogs": {
+    "reason": "打开文件、添加输入与目标选择器由系统负责样式，经 NativeDialogPolicy 关联调用窗口；不套用操作窗口尺寸"
+  }
+}

@@ -1,0 +1,12 @@
+--- a/src/corelib/global/qglobal.cpp
++++ b/src/corelib/global/qglobal.cpp
+@@ -375,3 +375,9 @@
+ }
+ 
+ QT_END_NAMESPACE
++
++// Local source-rebuild proof, adds an export without changing existing APIs.
++extern "C" Q_DECL_EXPORT const char *xdzip_qt_source_rebuild_proof()
++{
++    return "xdzip-qt-6.8.2-source-proof-v1";
++}

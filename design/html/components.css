@@ -1,0 +1,233 @@
+:root {
+    --font: "Xdzip Design Sans SC", system-ui, sans-serif;
+    --accent: #1959ff;
+    --selection: #e7edff;
+    --text: var(--ui-menu-text);
+    --secondary: var(--ui-menu-secondary);
+    --border: var(--ui-menu-border);
+    --surface: var(--ui-menu-surface);
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    background: #f3f5f9;
+    color: var(--text);
+    font: 14px/1.6 var(--font);
+}
+:root[data-theme="dark"] body {
+    background: #181f2c;
+    --accent: #78a6ff;
+    --selection: #34435c;
+}
+.catalog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 28px max(24px, calc((100vw - 1100px) / 2));
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+.catalog-header strong {
+    font-size: 24px;
+}
+.catalog-header h1 {
+    display: inline;
+    margin-left: 14px;
+    font-size: 20px;
+}
+.catalog-header p {
+    margin: 4px 0 0;
+    color: var(--secondary);
+}
+main {
+    max-width: 1100px;
+    margin: auto;
+    padding: 24px;
+    display: grid;
+    gap: 20px;
+}
+section {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+h2 {
+    font-size: 18px;
+    margin: 0 0 8px;
+}
+p {
+    margin: 0 0 18px;
+    color: var(--secondary);
+}
+.specimens {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 22px;
+}
+.specimens > div {
+    display: grid;
+    gap: 10px;
+}
+.specimens small {
+    color: var(--secondary);
+    font-size: 12px;
+}
+.button {
+    min-height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 12px;
+    background: var(--surface);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font: inherit;
+    cursor: default;
+}
+.button svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+.button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+.button.primary:hover {
+    filter: brightness(0.95);
+}
+.button.primary svg {
+    stroke: currentColor;
+}
+.button.danger {
+    color: var(--ui-menu-danger);
+}
+.button.danger:hover {
+    background: var(--ui-control-hover);
+}
+.button:disabled {
+    color: var(--ui-menu-disabled);
+    cursor: default;
+}
+.button:disabled svg {
+    opacity: 0.45;
+}
+.busy svg {
+    animation: component-spin 1s linear infinite;
+}
+@keyframes component-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+.component-split {
+    display: inline-flex;
+}
+.component-split .button:first-child {
+    border-radius: 7px 0 0 7px;
+}
+.component-split .button:last-child {
+    border-radius: 0 7px 7px 0;
+    border-left: 1px solid #ffffff55;
+    padding: 7px 10px;
+}
+.component-context {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 560px;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #1959ff33;
+    background: var(--selection);
+    cursor: default;
+}
+.component-context svg {
+    width: 40px;
+    height: 40px;
+}
+.component-context > div {
+    flex: 1;
+    min-width: 0;
+}
+.component-context > div span {
+    display: block;
+    color: var(--secondary);
+    font-size: 12px;
+}
+.component-context:focus-visible { outline:none; }
+.selection-badge {
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--accent);
+}
+.check-label {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 18px;
+}
+input {
+    accent-color: var(--accent);
+}
+.component-notice {
+    margin-top: 22px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    background: var(--ui-control-hover);
+    font-size: 13px;
+}
+.component-notice[data-error="true"] {
+    color: var(--ui-menu-danger);
+}
+.component-footnote {
+    margin: 20px 0 0;
+    font-size: 12px;
+}
+#component-confirmation {
+    margin-top: 16px;
+}
+#component-confirmation[hidden],
+#component-confirmation button[hidden],
+#component-context[hidden] {
+    display: none;
+}
+@media (max-width: 600px) {
+    .catalog-header {
+        padding: 20px 16px;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .catalog-header h1 {
+        display: block;
+        margin: 4px 0;
+    }
+    .catalog-header p {
+        font-size: 12px;
+    }
+    main {
+        padding: 16px;
+    }
+    section {
+        padding: 18px;
+    }
+    .specimens {
+        gap: 18px;
+    }
+    .selection-badge {
+        display: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .busy svg {
+        animation: none;
+    }
+}

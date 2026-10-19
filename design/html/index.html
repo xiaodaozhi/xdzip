@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip — HTML 高保真设计</title><link rel="stylesheet" href="../assets/fonts/fonts.css"><link rel="stylesheet" href="review.css"><script defer src="display-spec.js"></script><script defer src="review.js"></script></head>
+<body>
+<header><div><strong>xdzip</strong><span>HTML 高保真设计</span></div><nav><a href="desktop-integration.html">系统菜单与托盘</a>，<a href="components.html">组件与交互</a>，<a href="../README.md">设计目录说明</a></nav></header>
+<nav aria-label="设计审阅工具">
+<label>画面<select id="view"><option value="welcome">欢迎页</option><option value="welcome-narrow">欢迎页，最小窗口</option><option value="main" selected>主窗口，文件预览</option><option value="extract">解压确认</option><option value="create">创建压缩包</option><option value="progress">任务进度</option><option value="archive-test">完整性检查进度</option><option value="result">解压结果与明细</option><option value="conflict">重名冲突流程</option><option value="settings">设置</option><option value="quit">任务未完成退出确认</option><option value="restart">重启确认</option><option value="preflight">解压元数据预检</option><option value="empty">空压缩包</option><option value="damaged">损坏压缩包</option></select></label>
+<label>平台<select id="platform"><option value="macos">macOS</option><option value="windows">Windows</option><option value="linux">Linux</option></select></label>
+<label>主题<select id="theme"><option value="light">浅色</option><option value="dark">深色适配</option></select></label>
+<label>缩放<select id="zoom"><option value="fit">适应屏幕</option><option value="1">100%，设计尺寸</option><option value="pixels">原稿像素 1:1</option></select></label>
+<button id="reference-toggle" aria-expanded="false">对照原稿</button><button id="separate">独立预览窗口</button>
+</nav>
+<p class="notice">可操作的设计演示，使用示例数据。正常设计尺寸为 1024 px 主窗口逻辑宽度；“原稿像素 1:1”用于逐像素复核。HTML 与原稿共用缩放倍率，手机默认适应屏幕。HTML 预览不执行压缩解压，系统窗口外观用于说明 Qt 的独立窗口规范。</p>
+<main><section id="viewport" class="canvas-viewport" aria-label="HTML 界面"><div id="scaled" class="scaled-canvas"><iframe id="design-frame" title="xdzip 可操作高保真画布" src="canvas.html"></iframe></div></section><section id="reference" hidden><h2>已确认原稿</h2><p id="reference-message" role="status">原稿与 HTML 独立展示；图片没有覆盖在界面上。</p><div id="reference-viewport" class="canvas-viewport"><div id="reference-scaled" class="scaled-canvas"><img hidden id="reference-image" alt="当前界面的已确认高保真原稿"></div></div></section></main>
+<footer><span id="status" role="status">正在加载设计画布…</span><a href="README.md">交付范围与差异</a></footer>
+</body></html>

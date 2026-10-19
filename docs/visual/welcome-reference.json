@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "implemented-html-and-qt-manual-acceptance-pending",
+  "units": "CSS px / Qt device-independent pixels",
+  "source": "../../design/hifi/sources/welcome.html",
+  "theme_source": "tokens.json",
+  "window_source": "layout-scale.json",
+  "window": [
+    1024,
+    622
+  ],
+  "minimum_window": [
+    832,
+    544
+  ],
+  "titlebar_height": 48,
+  "statusbar_height": 32,
+  "content_width": 608,
+  "action_gap": 16,
+  "action_height": 124,
+  "action_inset": 20,
+  "action_radius": 8,
+  "action_icon": 28,
+  "action_title_size": 16,
+  "action_body_size": 12,
+  "headline_size": 30,
+  "narrow_headline_size": 28,
+  "drop_height": 64,
+  "drop_gap": 16,
+  "menu_width": 240,
+  "menu_font_size": 13,
+  "main_body_size": 13,
+  "menu_to_body_font_ratio": 1,
+  "titlebar_policy": "reuse existing main titlebar unchanged; welcome content only",
+  "titlebar_source": "qt-main-reference.json",
+  "opening_card_width": 360,
+  "opening_inset": 24,
+  "opening_gap": 12,
+  "opening_radius": 8,
+  "opening_title_size": 16,
+  "opening_dim_opacity": 0.86
+}

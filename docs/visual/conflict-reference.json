@@ -1,0 +1,15 @@
+{
+  "source": "design/hifi/screens/conflict.png",
+  "sha256": "29681423821a03f3f1c422c01ec8cc009140f817e07f8bc8b0597a662ce7ca0e",
+  "logical_width": 491,
+  "maximum_client_height": 560,
+  "title_size": 20,
+  "body_size": 13,
+  "note_size": 12,
+  "footer_font_size": 13,
+  "density": 0.8,
+  "notes": [
+    "2026-10-15 revision replaces the oversized 612px runtime layout. Original bitmap is historical.",
+    "Use shared operation footer; scale source-space content dimensions before layout, never Item.scale."
+  ]
+}

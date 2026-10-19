@@ -1,0 +1,36 @@
+{
+  "purpose": "Shared operation artwork and large file glyphs exported from the canonical 24-unit SVGs",
+  "canvas": [
+    24,
+    24
+  ],
+  "scale": 9,
+  "pixel_canvas": [
+    216,
+    216
+  ],
+  "maximum_qt_logical_canvas": 81,
+  "verified_dpr": [
+    1,
+    1.25,
+    2
+  ],
+  "icons": [
+    "document-download",
+    "document-check",
+    "status-success",
+    "cancelled-large",
+    "conflict-warning",
+    "document-conflict",
+    "file-text",
+    "file-code",
+    "file-pdf",
+    "file-markdown",
+    "image-file",
+    "image-amber",
+    "folder",
+    "archive",
+    "archive-add",
+    "document-warning"
+  ]
+}

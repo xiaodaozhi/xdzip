@@ -1,0 +1,29 @@
+/target/
+/build/
+# Generated distribution/review files are never source, at any directory depth.
+dist/
+# QA specifications are text; captures and reports belong in ignored build/.
+/docs/qa/**/*.png
+/docs/qa/**/*.json
+/docs/qa/**/*.html
+/docs/qa/**/*.log
+/docs/qa/**/*.xml
+/docs/qa/**/*.js
+/docs/qa/**/*.svg
+/docs/qa/**/*.txt
+/design/html/screenshots/
+/design/assets/preview/
+/design/assets/validation.json
+/design/assets/fonts/validation.json
+/docs/html/
+/.cache/
+.DS_Store
+Thumbs.db
+*.user
+*.swp
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/

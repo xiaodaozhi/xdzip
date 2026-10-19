@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN" data-ui-scale="logical" data-theme="light">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>xdzip — 组件与交互</title>
+        <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+        <link rel="stylesheet" href="controls-tokens.css" />
+        <link rel="stylesheet" href="controls.css" />
+        <link rel="stylesheet" href="components.css" />
+        <script defer src="assets.js"></script>
+        <script defer src="controls-tokens.js"></script>
+        <script defer src="controls.js"></script>
+        <script defer src="components.js"></script>
+    </head>
+    <body>
+        <header class="catalog-header">
+            <div>
+                <strong>xdzip</strong>
+                <h1>组件与交互</h1>
+                <p>与主窗口共用控件、图标和参数，1:1 逻辑尺寸</p>
+            </div>
+            <button id="component-theme" class="button" aria-label="切换主题">
+                深色主题
+            </button>
+        </header>
+        <main>
+            <section>
+                <h2>按钮与状态</h2>
+                <p>
+                    悬停、按下或用 Tab
+                    聚焦控件；尺寸和基线在状态变化时保持稳定。
+                </p>
+                <div class="specimens">
+                    <div>
+                        <button
+                            class="button"
+                            id="component-open"
+                            data-icon="open"
+                            data-tooltip="打开压缩包，⌘O"
+                        >
+                            打开</button
+                        ><small>普通 / 悬停 / 按下</small>
+                    </div>
+                    <div>
+                        <button
+                            id="component-primary"
+                            class="button primary"
+                            data-icon="archive"
+                        >
+                            开始解压</button
+                        ><small>主动作</small>
+                    </div>
+                    <div>
+                        <button
+                            class="button"
+                            disabled
+                            data-icon="archive-test"
+                            aria-description="当前运行时尚未提供 CRC 校验"
+                        >
+                            测试压缩包</button
+                        ><small>禁用，保留原因</small>
+                    </div>
+                    <div>
+                        <button
+                            class="button busy"
+                            disabled
+                            aria-busy="true"
+                            data-icon="spinner"
+                        >
+                            正在读取…</button
+                        ><small>忙碌，阻止重复提交</small>
+                    </div>
+                    <div>
+                        <button
+                            id="component-remove"
+                            class="button danger"
+                            data-icon="remove"
+                        >
+                            移除示例</button
+                        ><small>危险动作，明确确认</small>
+                    </div>
+                </div>
+                <div
+                    id="component-notice"
+                    class="component-notice"
+                    role="status"
+                >
+                    点击按钮验证动作反馈；本页只操作示例状态。
+                </div>
+                <div id="component-confirmation" hidden>
+                    <button id="component-cancel-remove" class="button">
+                        取消</button
+                    ><button
+                        id="component-confirm-remove"
+                        class="button danger"
+                    >
+                        确认移除</button
+                    ><button id="component-restore" class="button" hidden>
+                        恢复示例
+                    </button>
+                </div>
+            </section>
+            <section>
+                <h2>下拉菜单与分段按钮</h2>
+                <p>
+                    图标、名称、快捷键与子菜单箭头各有固定槽位。禁用项解释原因；勾选与单选同步状态。
+                </p>
+                <div class="specimens">
+                    <div>
+                        <button
+                            id="component-more"
+                            class="button"
+                            data-icon="more"
+                            aria-haspopup="menu"
+                            aria-expanded="false"
+                        >
+                            更多操作</button
+                        ><small>标准动作 / 分隔线 / 子菜单</small>
+                    </div>
+                    <div>
+                        <span class="component-split"
+                            ><button
+                                id="component-extract"
+                                class="button primary"
+                            >
+                                解压所选</button
+                            ><button
+                                id="component-scope"
+                                class="button primary"
+                                data-icon="chevron-down"
+                                aria-label="选择解压范围"
+                                aria-haspopup="menu"
+                                aria-expanded="false"
+                            ></button></span
+                        ><small>主动作与范围菜单分别操作</small>
+                    </div>
+                    <div>
+                        <button
+                            id="component-sort"
+                            class="button"
+                            data-icon="sort"
+                        >
+                            排序方式</button
+                        ><small>单选项，当前值</small>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h2>右键菜单</h2>
+                <p>
+                    右击或 Shift+F10
+                    打开菜单；上下键定位，右键盘箭头进入子菜单，左箭头返回，Esc
+                    恢复焦点。
+                </p>
+                <div
+                    id="component-context"
+                    tabindex="0"
+                    class="component-context"
+                >
+                    <span data-icon="file-pdf"></span>
+                    <div>
+                        <strong>行程手册.pdf</strong
+                        ><span>12.8 MB，PDF 文档</span>
+                    </div>
+                    <span class="selection-badge">已选择</span>
+                </div>
+                <label class="check-label"
+                    ><input
+                        id="component-inspector"
+                        type="checkbox"
+                        checked
+                    />显示文件预览</label
+                >
+            </section>
+            <section>
+                <h2>边界与恢复</h2>
+                <p>
+                    菜单跟随视口避让底边和右边；点击外部、滚动或调整窗口大小时关闭。键盘焦点、当前选择与悬停分别表达。
+                </p>
+                <div class="specimens">
+                    <button id="component-edge" class="button" data-icon="more">
+                        在右下边缘展开</button
+                    ><button id="component-error" class="button">
+                        演示错误与恢复
+                    </button>
+                </div>
+                <p class="component-footnote">
+                    HTML 与 Qt
+                    共享视觉参数和动作结构，输入机制各由宿主管理。正式 Qt
+                    的压缩、解压及 CRC 校验能力尚未接入，相关动作保持禁用。
+                </p>
+            </section>
+        </main>
+    </body>
+</html>

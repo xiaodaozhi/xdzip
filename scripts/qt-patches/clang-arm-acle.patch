@@ -1,0 +1,13 @@
+--- a/src/corelib/thread/qyieldcpu.h
++++ b/src/corelib/thread/qyieldcpu.h
+@@ -17,6 +17,10 @@
+ extern "C"
+ #  endif
+ void _mm_pause(void);       // the compiler recognizes as intrinsic
++#endif
++
++#if defined(Q_PROCESSOR_ARM) && defined(Q_CC_CLANG)
++#  include <arm_acle.h>
+ #endif
+ 
+ QT_BEGIN_NAMESPACE
