@@ -1,0 +1,9 @@
+{
+  "purpose": "CI-only full historical product source fixture, never merge into main",
+  "original_revision": "4cf0f8ca44bac3c0deaadbdaf5594504c5a6afa6",
+  "original_tree": "7748231bbcd6938e6afcac2d65e71c7b0cb71403",
+  "retained_files": 1093,
+  "retained_source_and_resources": "Original source, build files, dependencies, regression inputs and runtime assets are byte-for-byte preserved. Execution reports, design pages and workflow history are not needed to build this product.",
+  "independent_review": false,
+  "official_release_artifact": false
+}

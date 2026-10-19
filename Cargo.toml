@@ -1,0 +1,21 @@
+[workspace]
+members = ["crates/xdzip-io", "crates/xdzip-extract-plan", "crates/xdzip-runtime", "crates/xdzip-qt-bridge", "crates/xdzip-domain", "crates/xdzip-codec-api", "crates/xdzip-codec-zip", "crates/xdzip-codec-tar", "tools/bridge-probe", "tools/m2-probe", "tools/m3-probe", "tools/m4-probe"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0-dev.1"
+edition = "2024"
+rust-version = "1.99"
+license = "Apache-2.0"
+publish = false
+
+[workspace.dependencies]
+cxx = "=1.0.205"
+cxx-build = "=1.0.205"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = "warn"

@@ -1,0 +1,12 @@
+[package]
+name = "xdzip-m2-probe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[dependencies]
+xdzip-runtime = { path = "../../crates/xdzip-runtime" }
+xdzip-codec-api = { path = "../../crates/xdzip-codec-api" }
+[lints]
+workspace = true

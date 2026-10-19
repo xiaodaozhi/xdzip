@@ -1,0 +1,4 @@
+singleton Theme 1.0 Theme.qml
+singleton AssetLibrary 1.0 AssetLibrary.qml
+
+AboutWindow 1.0 AboutWindow.qml
