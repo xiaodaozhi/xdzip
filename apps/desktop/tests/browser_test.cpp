@@ -149,6 +149,52 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void globalWaitForExitDoesNotCloseACompletedPageEarly() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *first = window->findChild<BrowserController *>();
+        DesktopIntegration desktop(window, first, preferences, false);
+        sessions.setDesktop(&desktop);
+        sessions.newSession();
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *second = page->findChild<BrowserController *>();
+        QTRY_VERIFY(first->runtimeAvailable() && second->runtimeAvailable());
+        // Controlled task metadata isolates the global waiting decision from
+        // worker speed; no synthetic task command is sent to either runtime.
+        xdzip::reader::Event task{};
+        task.kind = xdzip::reader::EventKind::TaskUpdate;
+        task.task.id = 71;
+        task.task.status = rust::String("running");
+        first->receive(task);
+        second->receive(task);
+        QCOMPARE(sessions.activeTaskCount(), 2);
+        auto *confirmation = page->findChild<QQuickWindow *>("quitWindow");
+        sessions.requestQuit();
+        QTRY_VERIFY(confirmation->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(confirmation, "waitRequested"));
+        QTRY_VERIFY(!confirmation->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        task.task.status = rust::String("succeeded");
+        second->receive(task);
+        QCoreApplication::processEvents();
+        QCOMPARE(sessions.activeTaskCount(), 1);
+        QVERIFY(window->isVisible());
+        QVERIFY(!confirmation->isVisible());
+        QVERIFY(joined.isEmpty());
+        first->receive(task);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(!window->isVisible());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
     void closedSessionRetainsPasswordPromptUntilTaskIsOpened() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));

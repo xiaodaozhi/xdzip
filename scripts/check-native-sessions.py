@@ -16,7 +16,8 @@ CASES = ['desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNative
          'sessionLimitKeepsBackgroundTaskEntryReachable', 'independentSessionsAndOpenModes',
          'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery',
          'backgroundTasksKeepSessionIdentityAndSerialAdmission',
-         'closedSessionRetainsPasswordPromptUntilTaskIsOpened']
+         'closedSessionRetainsPasswordPromptUntilTaskIsOpened',
+         'globalWaitForExitDoesNotCloseACompletedPageEarly']
 
 
 def main():

@@ -222,7 +222,7 @@ Item {
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
             if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
             if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId) conflictWindow.close();
-            if (root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
+            if (!root.sessionManager && root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
         }
         onChanged: {
             if (root.welcomeVisible && !busy && root.welcomeWasBusy) Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
