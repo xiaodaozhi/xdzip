@@ -252,6 +252,7 @@ void ApplicationSessions::activate(Session *session, bool reveal) {
         disconnect(connection);
     m_modalConnections.clear();
     session->closed = false;
+    session->page->setProperty("sessionClosed", false);
     session->page->setProperty("closedPage", false);
     auto *window = session->window.data();
     window->setProperty("retiredWindow", false);
@@ -308,6 +309,7 @@ void ApplicationSessions::closeSession(const QString &id) {
             continue;
         auto *value = session.get();
         value->closed = true;
+        value->page->setProperty("sessionClosed", true);
         value->page->setProperty("visible", false);
         QMetaObject::invokeMethod(value->page, "hideSessionWindows");
         Session *next = nullptr;
@@ -372,6 +374,7 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
     for (const auto &session : m_sessions)
         if (session->window == window) {
             session->closed = true;
+            session->page->setProperty("sessionClosed", true);
             QMetaObject::invokeMethod(session->page, "hideSessionWindows");
             reap(session.get());
         }

@@ -51,6 +51,7 @@
 #endif
 #ifdef Q_OS_MACOS
 void scheduleNativeFileDialogCancellation();
+bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 #endif
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
@@ -115,6 +116,55 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void closedSessionRetainsPasswordPromptUntilTaskIsOpened() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QTRY_VERIFY(!controller->busy());
+        const auto identity =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        // Controlled receiver metadata exercises UI ownership without secrets or
+        // a synthetic request being sent to the Rust password channel.
+        xdzip::reader::Event waiting{};
+        waiting.kind = xdzip::reader::EventKind::TaskUpdate;
+        waiting.task.id = 71;
+        waiting.task.status = rust::String("waiting_password");
+        waiting.task.password_prompt_id = 4;
+        waiting.task.password_prompt_name = rust::String("owned.txt");
+        controller->receive(waiting);
+        auto *prompt = window->findChild<QQuickWindow *>("passwordWindow");
+        QVERIFY(prompt);
+        sessions.closeSession(identity);
+        QCoreApplication::processEvents();
+        QVERIFY(!prompt->isVisible());
+        QCOMPARE(controller->passwordPrompt().value("promptId").toString(), "4");
+        sessions.showTask(identity + "/71");
+        QTRY_VERIFY(prompt->isVisible());
+        QCOMPARE(prompt->property("shownPromptId").toString(), "4");
+        sessions.closeSession(identity);
+        waiting.task.password_prompt_id = 5;
+        controller->receive(waiting);
+        QCoreApplication::processEvents();
+        QVERIFY(!prompt->isVisible());
+        sessions.showTask(identity + "/71");
+        QTRY_VERIFY(prompt->isVisible());
+        QCOMPARE(prompt->property("shownPromptId").toString(), "5");
+        waiting.task.status = rust::String("succeeded");
+        waiting.task.password_prompt_id = 0;
+        controller->receive(waiting);
+        QTRY_VERIFY(!prompt->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void modalOpenDefersNewWindowUntilUnblocked() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -383,6 +433,7 @@ class BrowserTest : public QObject {
         QVERIFY(!overlapping);
         QVERIFY(QFileInfo::exists(output.filePath("first.zip")));
         QVERIFY(QFileInfo::exists(output.filePath("second.zip")));
+        QVERIFY(!window->findChild<QQuickWindow *>("taskWindow")->isVisible());
         QSet<QString> identities;
         for (const auto &value : sessions.tasks())
             identities.insert(value.toMap().value("id").toString());
@@ -477,8 +528,23 @@ class BrowserTest : public QObject {
                 // preceding minimize/restore before measuring popup activation.
                 QTest::qWait(150);
                 QCOMPARE(window->windowState(), state);
+#ifdef Q_OS_MACOS
+                if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                    QTRY_VERIFY(nativeWindowMatchesState(window, state));
+#endif
             }
             QSignalSpy changes(window, &QWindow::windowStateChanged);
+#ifdef Q_OS_WIN
+            if (state == Qt::WindowFullScreen &&
+                QGuiApplication::platformName() == QStringLiteral("windows")) {
+                auto *frame = window->findChild<QObject *>("windowsNativeFrame");
+                QVariantMap diagnostics;
+                QVERIFY(QMetaObject::invokeMethod(frame, "diagnostics",
+                                                  Q_RETURN_ARG(QVariantMap, diagnostics)));
+                QCOMPARE(diagnostics.value("topInsetPixels").toInt(), 0);
+                QVERIFY(!diagnostics.value("resizeStyle").toBool());
+            }
+#endif
             for (const auto &command : {"settings", "about", "new"}) {
                 qInfo() << "Activating" << command << "from" << state;
                 desktop.execute(command);
@@ -522,12 +588,41 @@ class BrowserTest : public QObject {
             for (const auto &change : changes)
                 QVERIFY(change.first().value<Qt::WindowState>() != Qt::WindowNoState);
             window->hide();
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
+                QTRY_VERIFY(!window->isExposed());
+            qInfo() << "Restoring hidden window" << window->windowStates() << "saved"
+                    << window->property("xdzipRestoreState");
             desktop.restore();
             QTRY_COMPARE(window->windowState(), state);
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
+                QVERIFY(QTest::qWaitForWindowExposed(window));
             window->showMinimized();
             QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
+                QTRY_VERIFY(!window->isExposed());
+            qInfo() << "Restoring native minimized state" << window->windowStates() << "saved"
+                    << window->property("xdzipRestoreState");
             desktop.restore();
             QTRY_COMPARE(window->windowState(), state);
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
+                QVERIFY(QTest::qWaitForWindowExposed(window));
+                QVERIFY(QTest::qWaitForWindowActive(window));
+                QTRY_COMPARE(window->windowState(), state);
+#ifdef Q_OS_MACOS
+                if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                    QTRY_VERIFY(nativeWindowMatchesState(window, state));
+#endif
+            }
+            // A second activation may arrive while native minimization is still
+            // in flight. It must be retained rather than cancelling that transition.
+            window->showMinimized();
+            desktop.restore();
+            QTRY_COMPARE(window->windowState(), state);
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
+                QVERIFY(QTest::qWaitForWindowExposed(window));
+                QVERIFY(QTest::qWaitForWindowActive(window));
+                QTRY_COMPARE(window->windowState(), state);
+            }
         }
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());

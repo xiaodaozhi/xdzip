@@ -57,8 +57,6 @@ def stage(source, output, platform, version):
     with tarfile.open(materials, 'w:gz') as archive:
         for path in sorted(source.glob('*.json')): archive.add(path, arcname=path.name)
         notices = source/'notices'
-        if not notices.is_dir() and platform == 'macos':
-            notices = source/f'xdzip-{version}-macos-arm64-stage/xdzip.app/Contents/Resources/notices'
         if not notices.is_dir(): raise ValueError('Required notices are missing')
         archive.add(notices, arcname='notices')
 

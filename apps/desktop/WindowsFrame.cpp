@@ -110,11 +110,16 @@ bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qint
         DefWindowProcW(hwnd, msg->message, msg->wParam, msg->lParam);
         // Keep native side/bottom resize borders and a DWM top edge. At maximum
         // size Windows hides the resize band outside the monitor work area.
-        params->rgrc[0].top = outer.top + (IsZoomed(hwnd) ? resizeBorder(hwnd, SM_CYSIZEFRAME) : 1);
+        // Fullscreen has no caption. Keep DefWindowProc's zero-inset client
+        // rectangle there, or Qt mistakes the restored window for normal mode.
+        if ((GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_CAPTION) == WS_CAPTION)
+            params->rgrc[0].top =
+                outer.top + (IsZoomed(hwnd) ? resizeBorder(hwnd, SM_CYSIZEFRAME) : 1);
         *result = 0;
         return true;
     }
-    if (msg->message == WM_NCHITTEST && !IsZoomed(hwnd)) {
+    if (msg->message == WM_NCHITTEST && !IsZoomed(hwnd) &&
+        (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_THICKFRAME)) {
         RECT bounds;
         if (!GetWindowRect(hwnd, &bounds))
             return false;

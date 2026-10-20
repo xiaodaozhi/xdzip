@@ -10,6 +10,7 @@ OperationWindow {
     property var prompt: controller.passwordPrompt || ({})
     property real availableClientHeight: Screen.desktopAvailableHeight - Theme.passwordScreenMargin
     property bool uiReady: false
+    property bool automaticPresentation: true
     property bool pending: false
     property bool rejected: false
     property bool showPassword: false
@@ -80,7 +81,7 @@ OperationWindow {
         shownTaskId = task;
         shownPromptId = token;
         Qt.callLater(() => {
-            if (root.shownTaskId === task && root.shownPromptId === token) {
+            if (root.automaticPresentation && root.shownTaskId === task && root.shownPromptId === token) {
                 root.present();
                 password.forceActiveFocus();
             }

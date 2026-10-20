@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit local-only Apple Silicon developer DMG; no Developer ID or upload."""
+"""Native Apple Silicon DMG and optional release app ZIP; ad-hoc integrity only."""
 import argparse
 import configparser
 import json
@@ -67,6 +67,16 @@ def configure_translation_path(app):
     paths.set('Paths', 'Translations', 'Resources/translations')
     with path.open('w', encoding='utf-8') as stream:
         paths.write(stream)
+
+
+def export_release_app(app, output):
+    """Archive the signed app while its disposable staging copy still exists."""
+    archive = output.with_suffix('.app.zip')
+    notices = output.parent/'notices'
+    if archive.exists() or notices.exists():
+        raise ValueError('Use a fresh release output directory')
+    checked(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', app, archive])
+    shutil.copytree(app/'Contents/Resources/notices', notices)
 
 
 def build(source, qt, output, release_distribution=False):
@@ -146,6 +156,8 @@ def build(source, qt, output, release_distribution=False):
         checked(['hdiutil', 'create', '-volname', 'xdzip', '-srcfolder', stage,
                  '-format', 'UDZO', '-fs', 'HFS+', output])
         checked(['hdiutil', 'verify', output])
+        if release_distribution:
+            export_release_app(app, output)
         report.update(identity_text=identity, file=output.name, sha256=digest(output),
                       dmg_bytes=output.stat().st_size,
                       signing='ad-hoc', developer_id_signed=False, notarized=False,

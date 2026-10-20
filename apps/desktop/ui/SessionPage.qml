@@ -15,6 +15,7 @@ Item {
     property string sessionIdentity: ""
     property bool retainShellPage: false
     property bool closedPage: false
+    property bool sessionClosed: false
     readonly property var contentItem: root
     readonly property int visibility: windowHost.visibility
     readonly property bool windowsTitlebar: windowHost.windowsTitlebar
@@ -213,13 +214,13 @@ Item {
         objectName: "browserController"
         onReadyToClose: if (!root.sessionManager) root.close()
         onArchiveOpened: path => AppSettings.rememberArchive(path)
-        onPreflightReady: preflightWindow.present()
-        onExtractionReady: extractWindow.configure()
-        onCreationStarted: id => { createWindow.close(); root.showTask(id); }
-        onExtractionStarted: id => { extractWindow.close(); root.showTask(id); }
+        onPreflightReady: if (!root.sessionClosed) preflightWindow.present()
+        onExtractionReady: if (!root.sessionClosed) extractWindow.configure()
+        onCreationStarted: id => { createWindow.close(); if (!root.sessionClosed) root.showTask(id); }
+        onExtractionStarted: id => { extractWindow.close(); if (!root.sessionClosed) root.showTask(id); }
         onTasksChanged: {
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
-            if (root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
+            if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
             if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId) conflictWindow.close();
             if (root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
         }
@@ -279,6 +280,7 @@ Item {
         id: passwordWindow
         owner: root.windowHost
         controller: reader
+        automaticPresentation: !root.sessionClosed
     }
     QuitWindow {
         id: quitWindow

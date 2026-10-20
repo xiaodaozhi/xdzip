@@ -60,7 +60,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
-      "reason": "应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer",
+      "reason": "应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示",
       "design": "design/hifi/sources/password-extraction.html"
     },
     "PreflightWindow": {

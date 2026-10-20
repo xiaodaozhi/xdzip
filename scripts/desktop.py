@@ -413,9 +413,9 @@ class Workflow:
                 raise ValueError('Source changed during packaging; use a new output directory and rebuild')
             files = [dmg, dmg.with_suffix('.json'), dmg.with_suffix('.cdx.json')]
             if self.args.release_distribution:
-                app = self.output/(dmg.stem+'-stage')/'xdzip.app'
                 archive = self.output/('xdzip-'+display+'-macos-arm64.app.zip')
-                self.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', app, archive])
+                if not archive.is_file():
+                    raise ValueError('DMG builder did not preserve the signed application ZIP')
                 files.append(archive)
             return {'source': self.source(), 'artifacts': self.hashes(files)}
         if self.args.kind in ('runtime', 'all'):

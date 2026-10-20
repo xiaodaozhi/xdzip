@@ -23,6 +23,37 @@ IDENTITY = {'version': '0.1.0-dev.9', 'build': 9, 'revision': '0123456789ab', 'd
 
 
 class DmgVerificationTests(unittest.TestCase):
+    def test_release_archive_survives_disposable_application_cleanup(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            app = root/'build/staging/xdzip.app'
+            dmg = root/'build/release/xdzip-0.1.0-alpha.1-macos-arm64.dmg'
+            dmg.parent.mkdir(parents=True)
+            def ditto(command):
+                self.assertEqual(command[:5], ['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent'])
+                self.assertEqual(command[5], app)
+                self.assertTrue(app.is_dir())
+                with zipfile.ZipFile(command[6], 'w') as archive:
+                    for path in app.rglob('*'):
+                        if path.is_file(): archive.write(path, path.relative_to(app.parent))
+                return ''
+            with patch.object(ls, 'ROOT', root), patch.object(verify.macdmg, 'checked', side_effect=ditto):
+                with ls.temporary_bundle_path(app):
+                    notices = app/'Contents/Resources/notices'
+                    notices.mkdir(parents=True)
+                    (notices/'LICENSE').write_bytes(b'owned notice fixture')
+                    signature = app/'Contents/_CodeSignature/CodeResources'
+                    signature.parent.mkdir()
+                    signature.write_bytes(b'owned signature fixture')
+                    verify.macdmg.export_release_app(app, dmg)
+                    with self.assertRaisesRegex(ValueError, 'fresh release output'):
+                        verify.macdmg.export_release_app(app, dmg)
+                self.assertFalse(app.exists())
+            with zipfile.ZipFile(dmg.with_suffix('.app.zip')) as archive:
+                self.assertEqual(archive.read('xdzip.app/Contents/_CodeSignature/CodeResources'), b'owned signature fixture')
+                self.assertEqual(archive.read('xdzip.app/Contents/Resources/notices/LICENSE'), b'owned notice fixture')
+            self.assertEqual((dmg.parent/'notices/LICENSE').read_bytes(), b'owned notice fixture')
+
     def test_native_environment_discards_sdk_style_and_probe_overrides(self):
         inherited = {'QT_PLUGIN_PATH': '/private/sdk/plugins', 'QML_IMPORT_PATH': '/private/sdk/qml',
                      'QML2_IMPORT_PATH': '/private/sdk/qml', 'DYLD_FRAMEWORK_PATH': '/private/sdk/lib',
