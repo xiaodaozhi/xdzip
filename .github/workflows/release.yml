@@ -5,9 +5,14 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing immutable version tag to rebuild
+        description: Existing version tag, or commit SHA for validation only
         required: true
         type: string
+      validate_only:
+        description: Build and verify all assets without creating a Release
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -23,6 +28,7 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref_name }}
       - name: Keep a draft until all native packages pass
+        if: ${{ !inputs.validate_only }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -108,8 +114,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          VALIDATE_ONLY: ${{ inputs.validate_only || false }}
         run: |
           mkdir -p build/packages
           find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS build/downloaded/release-source -maxdepth 1 -type f -exec cp {} build/packages/ \;
           python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY"
-          python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+          if [ "$VALIDATE_ONLY" != true ]; then
+            python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+          fi
+      - name: Preserve the complete validated candidate
+        if: ${{ inputs.validate_only }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-validation
+          path: build/public-release/*
+          if-no-files-found: error
+          retention-days: 30
