@@ -561,12 +561,12 @@ function render() {
 }
 function activateEntry(id) {
     const e = byId.get(id);
+    if (!e) return;
     if (e.folder) choosePath(id);
     else {
-        state.selected = new Set([id]);
-        render();
-        $("#inspector").classList.remove("collapsed-narrow");
-        $("#inspector").hidden = false;
+        if (jobRunning()) return;
+        state.plan = {target: "应用私有临时目录", policy: "ask", open: false, temporaryOpen: true};
+        startTask([e], "extract");
     }
 }
 function renderEmpty(list) {
@@ -1040,6 +1040,7 @@ function startTask(items, kind) {
         target: kind === "create" ? state.createTarget : state.plan.target,
         policy: state.plan?.policy || "ask",
         open: kind === "extract" && state.plan.open,
+        temporaryOpen: kind === "extract" && Boolean(state.plan?.temporaryOpen),
         skipped: [],
         renamed: false,
         archiveTitle: state.archiveTitle,
@@ -1047,7 +1048,7 @@ function startTask(items, kind) {
         result: null,
     };
     updateTaskCount();
-    if (kind === "extract" && state.scenario === "conflict") {
+    if (kind === "extract" && !state.task.temporaryOpen && state.scenario === "conflict") {
         if (state.task.policy === "ask") {
             state.task.status = "conflict";
             showConflict();
@@ -1242,6 +1243,11 @@ function finishTask(result) {
         t.failed = [];
     }
     updateTaskCount();
+    if (t.temporaryOpen && result === "success") {
+        if (state.modal === "progress") closeModal();
+        toast("原型演示：临时文件交给系统打开，接受打开后隐藏进度。");
+        return;
+    }
     if (state.modal === "progress") showResult();
 }
 function resultFileRow(entry, status, reason = "") {
@@ -1266,7 +1272,8 @@ function showResult() {
         "result", "R01"
     );
     bindClose();
-    $("#reveal-result").onclick = () => toast("原型演示：正式产品将在系统文件管理器中打开目标位置。");
+    if (t.temporaryOpen) $("#reveal-result").textContent = "打开文件";
+    $("#reveal-result").onclick = () => toast(t.temporaryOpen ? "原型演示：通过系统关联打开临时文件。" : "原型演示：正式产品将在系统文件管理器中打开目标位置。");
     if ($("#reopen-result")) $("#reopen-result").onclick = () => { closeModal(); openPicker(); };
     if ($("#retry-result")) $("#retry-result").onclick = () => {
         state.scenario = "normal"; $("#scenario").value = "normal";

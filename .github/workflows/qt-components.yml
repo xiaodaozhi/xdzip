@@ -24,7 +24,7 @@ jobs:
             libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 \
             libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 \
             libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 \
-            libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb xauth openbox x11-utils
+            libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip zip patchelf xvfb xauth openbox x11-utils
       - name: Build and validate native product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1

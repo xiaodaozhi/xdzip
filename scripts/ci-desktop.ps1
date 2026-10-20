@@ -124,6 +124,10 @@ Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
 Invoke-Checked python @('scripts/check-create-controls.py', '--input', 'build/desktop/create-controls', '--output', 'build/review/create-controls.json')
 Copy-Item -Recurse 'build/desktop/create-controls' 'build/review/create-controls'
 Remove-Item Env:XDZIP_CREATE_CONTROLS_AUDIT
+$env:XDZIP_OPENING_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/temporary-opening'
+Invoke-Checked $browserTests @('temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance', 'terminalTemporaryOpenBeforeAcceptanceDoesNotReopenProgress')
+Copy-Item -Recurse 'build/desktop/temporary-opening' 'build/review/temporary-opening'
+Remove-Item Env:XDZIP_OPENING_VISUAL_AUDIT
 Copy-Item -Recurse 'build/desktop/m4-operations' 'build/review/m4-operations'
 Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', 'build/desktop/m4-operations', '--output', 'build/review/m4-operation-ui.json')
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m4-probe')

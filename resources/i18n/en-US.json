@@ -236,7 +236,7 @@
     "ui.053461ce86d2": "Succeeded",
     "ui.3ce2b5b2c6e8": "Incomplete files",
     "ui.4a4f9c0beda1": "Destination",
-    "ui.92ccb53e91dc": "Split archives can be opened with compatible tools such as 7-Zip.",
+    "ui.92ccb53e91dc": "Place all volumes in the same directory, then open any volume.",
     "ui.c0e1b58aa792": "Showing the latest %1 records; %2 earlier records were not retained. Totals include all files.",
     "ui.aa3597f4a1f9": "No file processing records yet.",
     "ui.8f708e0b80e2": "Some commit results are uncertain. Check the destination and recovery data.",
@@ -403,13 +403,13 @@
     "ui.a27358be0e89": "The archive session changed. Open the archive again.",
     "ui.a3562bc1ea59": "Reading canceled.",
     "ui.faf573ec7fbf": "The operation exceeds a memory, record, or byte limit.",
-    "ui.48a1b719a41d": "This archive uses unsupported volumes, encryption, or compression methods.",
+    "ui.48a1b719a41d": "This archive uses an unsupported volume layout, encryption, or compression method.",
     "ui.f4e564347a6a": "The query results expired. Try again.",
     "ui.b0783c10a988": "The source file changed while reading. Open it again.",
     "ui.14df9062a079": "Unable to read the file. Check its type and permissions.",
     "ui.bcd73815bcd5": "This source path cannot be represented without loss in this version.",
     "ui.cd2a579ed2df": "Unable to read the archive. It may be damaged, exceed resource limits, or use an unsupported format.",
-    "ui.8f69a61727d2": "Archives (*.zip *.tar *.tar.gz *.tgz);;All files (*)",
+    "ui.8f69a61727d2": "Archives (*.zip *.zip.??? *.zip.???? *.z?? *.z??? *.z???? *.tar *.tar.gz *.tgz);;All files (*)",
     "ui.e827041f3805": "Drop a single local ZIP, TAR, or TAR.GZ archive.",
     "ui.3fb3d26f0ffd": "Choose destination folder",
     "ui.0ae60dd37b14": "Quitting…",
@@ -539,6 +539,11 @@
     "sessions.unavailable": "Unable to contact the running xdzip. Please try again.",
     "sessions.openMode": "Open archives",
     "sessions.tabs": "Open in a new tab",
-    "sessions.windows": "Open in a new window"
+    "sessions.windows": "Open in a new window",
+    "error.missingVolume": "Archive volumes are missing. Place all volumes in the same directory and try again.",
+    "error.openExtractedFile": "The file was extracted, but the system could not open it. Check its file association and try again.",
+    "action.openExtractedFile": "Open file",
+    "error.temporaryFileExpired": "The temporary file was removed or is no longer available. Double-click the archive entry to extract it again.",
+    "result.fileOpenFailed": "Unable to open file"
   }
 }

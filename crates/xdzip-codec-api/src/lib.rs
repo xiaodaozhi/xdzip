@@ -117,7 +117,7 @@ pub enum ScanError {
     Io,
     /// Invalid or inconsistent archive metadata.
     Invalid,
-    /// Archive feature not admitted by this slice (e.g. multi-volume).
+    /// Archive feature not admitted by the host (e.g. an unsupported volume layout).
     Unsupported,
     /// A resource admission limit was reached.
     Limit,
@@ -125,6 +125,8 @@ pub enum ScanError {
     Cancelled,
     /// File size or modification time changed during the scan.
     SourceChanged,
+    /// One or more required adjacent archive volumes are absent.
+    MissingVolume,
 }
 impl std::fmt::Display for ScanError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -135,6 +137,7 @@ impl std::fmt::Display for ScanError {
             Self::Limit => "resource_limit",
             Self::Cancelled => "cancelled",
             Self::SourceChanged => "source_changed",
+            Self::MissingVolume => "missing_volume",
         })
     }
 }

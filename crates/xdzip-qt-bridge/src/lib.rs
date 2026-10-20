@@ -27,6 +27,7 @@ mod ffi {
         CheckTarget,
         Create,
         InspectInputs,
+        OpenEntry,
     }
     struct MetadataLimits {
         entries: u64,
@@ -103,6 +104,7 @@ mod ffi {
         session: u64,
         status: String,
         target: String,
+        open_path: String,
         current: String,
         files: u64,
         declared_bytes: u64,
@@ -342,6 +344,11 @@ impl CommandClient {
                     selected,
                 }
             }
+            ffi::CommandKind::OpenEntry => Command::OpenEntry {
+                session: command.session,
+                entry: command.offset,
+                cache: command.path,
+            },
             ffi::CommandKind::Extract => {
                 let Some(conflict) =
                     xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
@@ -566,6 +573,7 @@ fn empty_task() -> ffi::TaskSnapshot {
         session: 0,
         status: String::new(),
         target: String::new(),
+        open_path: String::new(),
         current: String::new(),
         files: 0,
         declared_bytes: 0,
@@ -606,6 +614,7 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
         session: s.session,
         status: s.status.code().into(),
         target: s.target,
+        open_path: s.open_path,
         current: s.current,
         files: s.files,
         declared_bytes: s.declared_bytes,

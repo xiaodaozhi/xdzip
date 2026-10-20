@@ -3285,6 +3285,171 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(controller.requestClose());
 #endif
     }
+    void temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("factor");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const double factor : {1., 1.25, 1.5})
+                QTest::newRow(qPrintable(language + QString::number(factor))) << language << factor;
+    }
+    void temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir cache;
+        QVERIFY(cache.isValid());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        QQmlComponent changes(&engine);
+        changes.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+            "QtObject { property real factor: 1; onFactorChanged: Ui.Theme.fontScale = factor }",
+            QUrl());
+        std::unique_ptr<QObject> appearance(changes.create());
+        QVERIFY(appearance);
+        appearance->setProperty("factor", factor);
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->m_temporaryCacheOverride = cache.filePath(QStringLiteral("缓存 % & space"));
+        bool accepted = false;
+        QList<QUrl> opened;
+        controller->m_fileOpener = [&](const QUrl &url) {
+            opened.append(url);
+            return accepted;
+        };
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QSignalSpy started(controller, &BrowserController::extractionStarted);
+        controller->enterDirectory(0);
+        QTRY_VERIFY(started.count() > 0 || !controller->busy());
+        QVERIFY2(started.count() == 1, qPrintable(controller->message()));
+        QTRY_COMPARE(opened.size(), 1);
+        auto task = controller->tasks().first().toMap();
+        QCOMPARE(task.value("status").toString(), QStringLiteral("succeeded"));
+        QCOMPARE(task.value("committedFiles").toString(), QStringLiteral("1"));
+        QVERIFY(!task.value("openAccepted").toBool());
+        QVERIFY(!task.value("error").toString().isEmpty());
+        QVERIFY(opened.first().isLocalFile());
+        QVERIFY(QFileInfo(opened.first().toLocalFile()).isFile());
+        QVERIFY(opened.first().toLocalFile().startsWith(cache.path()));
+        QVERIFY(opened.first().toLocalFile().contains(QStringLiteral("缓存 % & space")));
+        auto *progress = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(progress);
+        QTRY_VERIFY(progress->isVisible());
+        auto *openButton = findVisual(progress->contentItem(), "openOutputButton");
+        QVERIFY(openButton && openButton->isVisible());
+        const auto point = openButton->mapToItem(progress->contentItem(), QPointF(0, 0));
+        QVERIFY(point.x() >= 0 && point.x() + openButton->width() <= progress->width());
+        QVERIFY(point.y() >= 0 && point.y() + openButton->height() <= progress->height());
+        auto *scroll = progress->findChild<QObject *>("taskScroll");
+        auto *viewport =
+            scroll ? qobject_cast<QQuickItem *>(scroll->property("contentItem").value<QObject *>())
+                   : nullptr;
+        auto *content =
+            viewport
+                ? qobject_cast<QQuickItem *>(viewport->property("contentItem").value<QObject *>())
+                : nullptr;
+        auto *errorMessage = findVisual(progress->contentItem(), "resultError");
+        QVERIFY(viewport && content && errorMessage);
+        QTest::qWait(80); // Let translated multiline text finish its layout pass.
+        const auto errorY = errorMessage->mapToItem(content, QPointF()).y();
+        viewport->setProperty(
+            "contentY", std::clamp(errorY - 16, 0.,
+                                   std::max(0., viewport->property("contentHeight").toDouble() -
+                                                    viewport->height())));
+        QTest::qWait(30);
+        const auto errorPoint = errorMessage->mapToItem(viewport, QPointF());
+        QVERIFY2(errorPoint.y() >= -1 &&
+                     errorPoint.y() + errorMessage->height() <= viewport->height() + 1,
+                 qPrintable(QString("error y=%1 height=%2 viewport=%3 scroll=%4")
+                                .arg(errorPoint.y())
+                                .arg(errorMessage->height())
+                                .arg(viewport->height())
+                                .arg(viewport->property("contentY").toDouble())));
+        if (!qEnvironmentVariableIsEmpty("XDZIP_OPENING_VISUAL_AUDIT")) {
+            QVERIFY(QDir().mkpath(qEnvironmentVariable("XDZIP_OPENING_VISUAL_AUDIT")));
+            QVERIFY(visual_audit::save(progress, qEnvironmentVariable("XDZIP_OPENING_VISUAL_AUDIT"),
+                                       language + "-" + QString::number(factor) + "-" +
+                                           QString::number(progress->devicePixelRatio())));
+        }
+        accepted = true;
+        controller->openOutput(task.value("id").toString());
+        QCOMPARE(opened.size(), 2);
+        QTRY_VERIFY(!progress->isVisible());
+        QVERIFY(controller->tasks().first().toMap().value("openAccepted").toBool());
+        QVERIFY(QFileInfo(opened.first().toLocalFile()).isFile());
+        QTRY_VERIFY(!controller->busy());
+        auto *page = window->property("activePage").value<QObject *>();
+        QVERIFY(page);
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask",
+                                          Q_ARG(QString, task.value("id").toString())));
+        QTRY_VERIFY(progress->isVisible());
+        emit controller->tasksChanged();
+        QVERIFY(progress->isVisible()); // Manually reopened history stays visible.
+        progress->close();
+        controller->enterDirectory(0);
+        QTRY_COMPARE(started.count(), 2);
+        QTRY_COMPARE(opened.size(), 3);
+        QTRY_VERIFY(!progress->isVisible());
+        QVERIFY(opened.first() != opened.last());
+        QVERIFY(QFile::remove(opened.last().toLocalFile()));
+        controller->openOutput(controller->tasks().first().toMap().value("id").toString());
+        QCOMPARE(opened.size(), 3);
+        QVERIFY(!controller->tasks().first().toMap().value("openAccepted").toBool());
+        QVERIFY(!controller->tasks().first().toMap().value("error").toString().isEmpty());
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+        // External applications may open asynchronously after the request.
+        QVERIFY(QFileInfo(opened.first().toLocalFile()).isFile());
+    }
+    void terminalTemporaryOpenBeforeAcceptanceDoesNotReopenProgress() {
+        QTemporaryDir cache;
+        QVERIFY(cache.isValid());
+        const auto path = cache.filePath("owned.txt");
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("owned fixture"), qint64(13));
+        file.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *progress = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(controller && progress);
+        int opens = 0;
+        controller->m_fileOpener = [&](const QUrl &url) {
+            ++opens;
+            return url.toLocalFile() == path;
+        };
+        controller->m_pending = 10001;
+        controller->m_busy = true;
+        controller->m_result = {};
+        controller->m_result.extraction = true;
+        QSignalSpy visibility(progress, &QWindow::visibleChanged);
+        xdzip::reader::Event event{};
+        event.kind = xdzip::reader::EventKind::TaskUpdate;
+        event.task.id = 9;
+        event.task.status = rust::String("succeeded");
+        event.task.committed_files = 1;
+        event.task.open_path = rust::String(path.toStdString());
+        controller->receive(event);
+        QCOMPARE(opens, 1);
+        event.kind = xdzip::reader::EventKind::TaskAccepted;
+        event.request_id = 10001;
+        controller->receive(event);
+        event.kind = xdzip::reader::EventKind::Finished;
+        controller->receive(event);
+        QTest::qWait(20);
+        QCOMPARE(visibility.count(), 0);
+        QVERIFY(!progress->isVisible());
+        QCOMPARE(opens, 1);
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
     void m3ExtractionWindowsAndRealOutput() {
         QTemporaryDir target;
         QVERIFY(target.isValid());

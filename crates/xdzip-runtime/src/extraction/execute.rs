@@ -42,6 +42,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         session: job.session,
         status: Status::Queued,
         target: job.options.target.clone(),
+        open_path: job.open_path.clone(),
         current: String::new(),
         files: job
             .planned
@@ -202,8 +203,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 )
             })?;
         }
-        let source_id = job.source.identity().map_err(|_| "source_changed")?;
-        let root = Grant::open(Path::new(&job.options.target), source_id).map_err(output)?;
+        let source_ids = job.source.identities().map_err(|_| "source_changed")?;
+        let root = if let Some(temporary) = &job.temporary {
+            temporary.validate().map_err(output)?;
+            temporary.clone()
+        } else {
+            Grant::open_sources(Path::new(&job.options.target), &source_ids).map_err(output)?
+        };
         grant = Some(root.clone());
         stats.leftovers = root.leftover_count().map_err(output)? as u64;
         let target = if job.options.create_folder {

@@ -2,6 +2,7 @@
 mod admission;
 mod aes;
 mod payload;
+pub mod split;
 mod writer;
 use std::io::{Read, Seek, SeekFrom};
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ReadSource, ScanError, ScanLimits};

@@ -4,7 +4,7 @@
 
 ## 能力与格式边界
 
-支持单卷 ZIP／ZIP64 的 WinZip AES-256，AE-1 和 AE-2，实际压缩方法为 Store 或 Deflate。可以选择明文、加密及混合条目，空文件也须验证认证码；各文件密码可以不同。AES-128／192、传统 ZipCrypto、其他加密方式和分卷读取仍不支持。文件名、目录结构和普通 ZIP 元数据可见，密码功能不为它们提供加密或真实性保证。
+支持 ZIP／ZIP64 的 WinZip AES-256，AE-1 和 AE-2，实际压缩方法为 Store 或 Deflate。可以选择明文、加密及混合条目，空文件也须验证认证码；各文件密码可以不同。AES-128／192、传统 ZipCrypto、其他加密方式仍不支持；受支持分卷使用[统一逻辑输入](archive-opening.md)，密码和认证规则不变。文件名、目录结构和普通 ZIP 元数据可见，密码功能不为它们提供加密或真实性保证。
 
 AES 字段遵循 [WinZip 格式规范](https://www.winzip.com/en/support/aes-encryption/)：标记方法为 99、加密位开启，唯一的 AES extra 使用 AE vendor、已知版本、256-bit strength 和受支持的实际方法。当前只接受 7 字节已定义数据，未知扩展保持拒绝。AE-1 另外核对解码内容 CRC，AE-2 的存储 CRC 必须为零。中央目录、本地头、数据描述符的声明一致性仍独立检查，不以认证码代替结构验证。
 

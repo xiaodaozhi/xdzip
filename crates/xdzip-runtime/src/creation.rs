@@ -131,7 +131,8 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         password_prompt: None,
         details: Default::default(),
         omitted_details: 0,
-        external_reader: job.options.volume_bytes > 0,
+        external_reader: false,
+        open_path: String::new(),
         output_parts: 0,
     }
 }

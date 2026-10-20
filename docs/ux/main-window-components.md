@@ -13,7 +13,7 @@
 | 压缩包摘要 | ArchiveSummary、格式徽章、统计条 | 就绪、读取、空内容、读取失败分别显示，不用未知值冒充零 |
 | 目录导航 | DirectoryTree、DirectoryRow、Disclosure、连接线 | 多级展开、叶子空箭头槽、当前 / 焦点独立、可访问完整路径、祖先收起标记、目录右键动作 |
 | 文件区域标题 | PaneHeader、Breadcrumb、ViewToggle | 路径分级返回、列表 / 网格切换、排序菜单；共享行高和垂直中心 |
-| 列表与网格 | EntryView、SelectableEntry、复选框、SortHeader | 单选、多选、范围选择、全选、清除、反选、方向键；文件夹进入，文件查看属性 |
+| 列表与网格 | EntryView、SelectableEntry、复选框、SortHeader | 单选、多选、范围选择、全选、清除、反选、方向键；目录双击或 Enter 进入，普通文件双击或 Enter 临时解压并由系统关联打开，属性仍通过右键或详情入口查看 |
 | 文件右键 | ContextMenu、CommandMenuItem、Submenu | 保留已有多选；右击未选中项先单选该项；按当前选择启用解压、属性、复制名称 / 路径、目录导航 |
 | 空白右键 | ContextMenu、RadioMenuItem、CheckboxMenuItem | 当前列表选择、视图、排序、详情栏；不擅自取消已有选择 |
 | 表头右键 | 排序菜单 | 排序字段、方向、恢复压缩包顺序；全部查询结果先排序，不只排序当前可见条目 |

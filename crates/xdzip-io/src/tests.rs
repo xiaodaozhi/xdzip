@@ -38,6 +38,53 @@ pub(crate) fn path(value: &str) -> PortablePath {
 }
 
 #[test]
+fn all_source_volumes_are_protected_and_temporary_cache_only_sweeps_expired_unlocked_outputs() {
+    let root = Owned::new();
+    let mut ids = Vec::new();
+    for name in ["archive.zip.001", "archive.zip.002"] {
+        fs::write(root.0.join(name), b"source").unwrap();
+        ids.push(FileIdentity::read(&File::open(root.0.join(name)).unwrap()).unwrap());
+    }
+    let grant = Grant::open_sources(&root.0, &ids).unwrap();
+    for name in ["archive.zip.001", "archive.zip.002"] {
+        assert!(
+            grant
+                .existing(&path(name))
+                .unwrap()
+                .unwrap()
+                .source_protected
+        );
+    }
+    let first = Grant::temporary(&root.0, &ids).unwrap();
+    let directory = first.display_path().parent().unwrap().to_path_buf();
+    let marker = fs::OpenOptions::new()
+        .write(true)
+        .open(directory.join("lease"))
+        .unwrap();
+    marker
+        .set_times(
+            fs::FileTimes::new()
+                .set_modified(std::time::UNIX_EPOCH + std::time::Duration::from_secs(1)),
+        )
+        .unwrap();
+    drop(marker);
+    let second = Grant::temporary(&root.0, &ids).unwrap();
+    assert!(
+        directory.exists(),
+        "active cache lease must survive age-based cleanup"
+    );
+    drop(first);
+    let foreign = root.0.join(format!("open-{}", "0".repeat(32)));
+    fs::create_dir(&foreign).unwrap();
+    fs::write(foreign.join("lease"), [1u8; 16]).unwrap();
+    let third = Grant::temporary(&root.0, &ids).unwrap();
+    assert!(!directory.exists());
+    assert!(foreign.exists());
+    assert!(second.display_path().is_dir());
+    assert!(third.display_path().is_dir());
+}
+
+#[test]
 fn verified_publication_conflict_and_conditional_replace_keep_old_bytes() {
     let root = Owned::new();
     let grant = root.grant();
@@ -208,6 +255,9 @@ fn windows_read_only_acl_allows_output_but_mutation_does_not() {
             fs::read(root.0.join("nested/private.txt")).unwrap(),
             b"verified private bytes"
         );
+        let id = FileIdentity::read(&File::open(root.0.join("source.zip")).unwrap()).unwrap();
+        let temporary = Grant::temporary(&root.0, &[id]).unwrap();
+        assert!(temporary.display_path().is_dir());
         drop(grant);
     }
     // Read-only sharing does not authorize mutation. Both effective and

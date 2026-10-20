@@ -34,8 +34,7 @@ impl Archive {
     /// Length/mtime checks are best-effort mutation detection, not an atomic source snapshot.
     pub fn open(path: &Path, control: &Cancellation) -> Result<Self, ScanError> {
         control.check()?;
-        let mut source = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
-        let version = source::SourceVersion::read(&source)?;
+        let mut source = source::Source::open(path, control)?;
         let mut format = formats::detect(&mut source)?;
         let scanned = formats::codec(format).scan(&mut source, control, formats::limits(format));
         // Preserve validated self-extracting ZIP sources without using the suffix.
@@ -58,9 +57,11 @@ impl Archive {
             scanned
         };
         control.check()?;
-        let source = source::Source::new(source, path.to_owned(), version);
         source.validate()?;
         let rows = scanned?;
+        if source.is_split() && format != xdzip_codec_api::Format::Zip {
+            return Err(ScanError::Unsupported);
+        }
         let next = NEXT_SESSION
             .try_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
             .map_err(|_| ScanError::Limit)?;

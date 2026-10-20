@@ -13,6 +13,7 @@
 #include <QGuiApplication>
 #include <QLocale>
 #include <QPointer>
+#include <QRegularExpression>
 #include <QScopeGuard>
 #include <QStandardPaths>
 #include <QTime>
@@ -271,6 +272,8 @@ QString BrowserController::explain(const QString &code) {
         return qtTrId("ui.b0783c10a988");
     if (code == "source_io")
         return qtTrId("ui.14df9062a079");
+    if (code == "missing_volume")
+        return qtTrId("error.missingVolume");
     if (code == "invalid_path")
         return qtTrId("ui.bcd73815bcd5");
     return qtTrId("ui.cd2a579ed2df");
@@ -295,8 +298,11 @@ bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
             return false;
         const QFileInfo file(url.toLocalFile());
         const auto name = file.fileName().toLower();
-        if (!file.isFile() || !(name.endsWith(".zip") || name.endsWith(".tar") ||
-                                name.endsWith(".tar.gz") || name.endsWith(".tgz")))
+        static const QRegularExpression splitSuffix(
+            QStringLiteral("(?:\\.zip\\.[0-9]{3,4}|\\.z[0-9]{2,4})$"));
+        if (!file.isFile() ||
+            !(name.endsWith(".zip") || name.endsWith(".tar") || name.endsWith(".tar.gz") ||
+              name.endsWith(".tgz") || splitSuffix.match(name).hasMatch()))
             return false;
     }
     return true;
@@ -491,8 +497,31 @@ void BrowserController::enterDirectory(int row) {
     if (m_busy || !m_ready)
         return;
     const auto *item = m_model.rowAt(row);
-    if (!item || !item->navigable)
+    if (!item)
         return;
+    if (!item->navigable) {
+        if (!item->physical || item->directory || taskStarting() || m_closing ||
+            !runtimeAvailable())
+            return;
+        const auto cache =
+            m_temporaryCacheOverride.isEmpty()
+                ? QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/opened-files"
+                : m_temporaryCacheOverride;
+        if (cache.isEmpty() || !QDir().mkpath(cache)) {
+            m_message = explain("output_io");
+            emit changed();
+            return;
+        }
+        xdzip::reader::Command command{};
+        command.kind = xdzip::reader::CommandKind::OpenEntry;
+        command.session = m_session.toULongLong();
+        command.offset = item->id.toULongLong();
+        command.path = rust::String(cache.toStdString());
+        m_extractionIntent.insert("archive", m_title);
+        m_pendingOpenAfter = false;
+        submit(std::move(command));
+        return;
+    }
     m_directory = item->navigationId.isEmpty() ? m_directoryPaths.value(item->path, item->id)
                                                : item->navigationId;
     m_location = item->path;
@@ -840,11 +869,34 @@ bool BrowserController::submitPassword(const QString &id, const QString &prompt,
 }
 void BrowserController::openOutput(const QString &id) {
     const auto task = m_tasks.value(id.toULongLong());
+    if (!task.value("openPath").toString().isEmpty()) {
+        openTemporaryOutput(id.toULongLong());
+        return;
+    }
     if (!task.isEmpty())
         QDesktopServices::openUrl(
             QUrl::fromLocalFile(task.value("creating").toBool()
                                     ? QFileInfo(task.value("target").toString()).absolutePath()
                                     : task.value("target").toString()));
+}
+bool BrowserController::openTemporaryOutput(quint64 id) {
+    auto it = m_tasks.find(id);
+    if (it == m_tasks.end() || it->value("status") != "succeeded" ||
+        it->value("committedFiles").toString() != "1" || it->value("openPath").toString().isEmpty())
+        return false;
+    const auto url = QUrl::fromLocalFile(it->value("openPath").toString());
+    const QFileInfo file(url.toLocalFile());
+    const bool available = file.isFile() && !file.isSymLink();
+    const bool accepted =
+        available && (m_fileOpener ? m_fileOpener(url) : QDesktopServices::openUrl(url));
+    it->insert("openAccepted", accepted);
+    const auto openError = accepted    ? QString{}
+                           : available ? qtTrId("error.openExtractedFile")
+                                       : qtTrId("error.temporaryFileExpired");
+    it->insert("openError", openError);
+    it->insert("error", openError);
+    emit tasksChanged();
+    return accepted;
 }
 void BrowserController::inspectSelection() {
     if (!canPreflight())
@@ -950,7 +1002,8 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_preflightReport.clear();
     m_result = {};
     m_result.preflight = preflight;
-    m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract;
+    m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
+                          command.kind == xdzip::reader::CommandKind::OpenEntry;
     m_result.creating = command.kind == xdzip::reader::CommandKind::Create;
     m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
@@ -974,6 +1027,7 @@ void BrowserController::attemptSubmission() {
     // queued controller retains its bounded command and remains cancellable.
     static QPointer<BrowserController> heavyOwner;
     const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::Create ||
+                       m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
                        m_waiting->kind == xdzip::reader::CommandKind::Extract;
     if (heavy && heavyOwner && heavyOwner != this &&
         (heavyOwner->activeTaskCount() > 0 || heavyOwner->taskStarting())) {
@@ -1046,6 +1100,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                        {"errorCode", text(entry.error)},
                                        {"error", explain(text(entry.error))}});
         QVariantMap value{
+            {"openPath", text(t.open_path)},
+            {"openAccepted", m_tasks.value(t.id).value("openAccepted", false)},
+            {"openError", m_tasks.value(t.id).value("openError")},
             {"details", details},
             {"omittedDetails", QString::number(t.omitted_details)},
             {"externalReader", t.external_reader},
@@ -1071,8 +1128,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"createdDirectories", QString::number(t.created_directories)},
             {"elapsedMs", QString::number(t.elapsed_ms)},
             {"errorCode", text(t.error)},
-            {"error",
-             text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31") : explain(text(t.error))},
+            {"error", t.error.empty() ? m_tasks.value(t.id).value("openError").toString()
+                      : text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31")
+                                                     : explain(text(t.error))},
             {"cleanupWarning", t.cleanup_warning},
             {"outcomeUncertain", t.outcome_uncertain},
             {"leftovers", QString::number(t.leftovers)},
@@ -1102,7 +1160,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         const bool firstSuccess =
             status == "succeeded" && !m_tasks.value(t.id).value("terminal").toBool();
         m_tasks.insert(t.id, value);
-        if (t.creating && firstSuccess && t.output_parts <= 1) {
+        if (firstSuccess && !t.open_path.empty())
+            openTemporaryOutput(t.id);
+        if (t.creating && firstSuccess) {
             m_createdArchivesToOpen.append(text(t.target));
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
         }

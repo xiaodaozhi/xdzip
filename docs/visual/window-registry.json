@@ -42,6 +42,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
+      "reason": "复用既有解压进度尺寸，临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件",
       "design": "design/html/canvas.html?view=progress"
     },
     "IntegrityWindow": {

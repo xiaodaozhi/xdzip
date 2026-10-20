@@ -2,7 +2,7 @@ use crate::{FileIdentity, FileVersion, OutputError, failure, private};
 use cap_fs_ext::{DirExt, FollowSymlinks, OpenOptionsFollowExt, OpenOptionsMaybeDirExt};
 use cap_std::fs::{Dir, DirBuilder, OpenOptions};
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -13,9 +13,10 @@ pub struct Grant {
     dir: Dir,
     path: PathBuf,
     identity: FileIdentity,
-    source: Option<FileIdentity>,
+    source: Arc<[FileIdentity]>,
     created_directories: Arc<AtomicU64>,
     parent_grant: Option<Arc<Grant>>,
+    _temporary_lock: Option<File>,
 }
 struct Parent {
     dir: Dir,
@@ -32,13 +33,20 @@ pub struct ExistingFile {
 impl Grant {
     /// Authorize an existing directory chosen by the host. Broadly writable or linked roots fail.
     pub fn open(path: &Path, source: FileIdentity) -> Result<Arc<Self>, OutputError> {
-        Self::authorize(path, Some(source))
+        Self::open_sources(path, &[source])
+    }
+    /// Protect every source volume against replacement through an output alias.
+    pub fn open_sources(path: &Path, sources: &[FileIdentity]) -> Result<Arc<Self>, OutputError> {
+        if sources.is_empty() || sources.len() > 1024 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        Self::authorize(path, Arc::from(sources))
     }
     /// Authorize creation output; the host must protect every frozen input identity.
     pub fn for_creation(path: &Path) -> Result<Arc<Self>, OutputError> {
-        Self::authorize(path, None)
+        Self::authorize(path, Arc::from([]))
     }
-    fn authorize(path: &Path, source: Option<FileIdentity>) -> Result<Arc<Self>, OutputError> {
+    fn authorize(path: &Path, source: Arc<[FileIdentity]>) -> Result<Arc<Self>, OutputError> {
         let m = std::fs::symlink_metadata(path).map_err(failure)?;
         if m.file_type().is_symlink() || !m.is_dir() {
             return Err(OutputError::UnsafeTarget);
@@ -54,6 +62,7 @@ impl Grant {
             source,
             created_directories: Arc::new(AtomicU64::new(0)),
             parent_grant: None,
+            _temporary_lock: None,
         });
         grant.validate()?;
         Ok(grant)
@@ -150,9 +159,10 @@ impl Grant {
             dir,
             path: self.path.join(leaf),
             identity,
-            source: self.source,
+            source: Arc::clone(&self.source),
             created_directories: Arc::clone(&self.created_directories),
             parent_grant: Some(Arc::clone(self)),
+            _temporary_lock: None,
         });
         child.validate()?;
         Ok(child)
@@ -187,7 +197,7 @@ impl Grant {
         private::check(&file, false)?;
         let version = FileVersion::read(&file).map_err(failure)?;
         Ok(Some(ExistingFile {
-            source_protected: Some(version.identity) == self.source,
+            source_protected: self.source.contains(&version.identity),
             version,
         }))
     }
@@ -248,6 +258,124 @@ impl Grant {
             }
         }
         Ok(count)
+    }
+    /// Allocate a private persistent temporary output. Expired unlocked outputs
+    /// are swept only below an authorized application cache, never a user target.
+    /// The seven-day grace period accommodates asynchronous external readers.
+    pub fn temporary(path: &Path, sources: &[FileIdentity]) -> Result<Arc<Self>, OutputError> {
+        let root = Self::open_sources(path, sources)?;
+        let now = std::time::SystemTime::now();
+        let mut count = 0usize;
+        for item in root.dir.entries().map_err(failure)? {
+            count += 1;
+            if count > 4096 {
+                return Err(OutputError::Limit);
+            }
+            let item = item.map_err(failure)?;
+            let name = item.file_name();
+            let Some(text) = name.to_str() else {
+                continue;
+            };
+            let Some(hex) = text.strip_prefix("open-") else {
+                continue;
+            };
+            if hex.len() != 32 || !hex.bytes().all(|c| c.is_ascii_hexdigit()) {
+                continue;
+            }
+            let Ok(dir) = root.dir.open_dir_nofollow(&name) else {
+                continue;
+            };
+            if private::check(&directory_file(&dir)?, true).is_err() {
+                continue;
+            }
+            let mut options = private_options();
+            options.read(true).write(true);
+            let Ok(mut file) = dir.open_with("lease", &options).map(|f| f.into_std()) else {
+                continue;
+            };
+            if private::check(&file, false).is_err()
+                || file.metadata().map_err(failure)?.len() != 16
+            {
+                continue;
+            }
+            let mut marker = [0u8; 16];
+            if file.read_exact(&mut marker).is_err()
+                || marker
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<String>()
+                    != hex
+            {
+                continue;
+            }
+            let expired = file
+                .metadata()
+                .and_then(|m| m.modified())
+                .ok()
+                .and_then(|t| now.duration_since(t).ok())
+                .is_some_and(|age| age.as_secs() > 7 * 24 * 60 * 60);
+            if !expired || file.try_lock().is_err() {
+                continue;
+            }
+            // cap-std's removal stays below this directory and does not traverse
+            // symlinks. Private ownership is rechecked before mutating the cache.
+            root.validate()?;
+            drop(file);
+            drop(dir);
+            if root.dir.remove_dir_all(&name).is_ok() {
+                count -= 1;
+            }
+        }
+        if count >= 256 {
+            return Err(OutputError::Limit);
+        }
+        let mut nonce = [0u8; 16];
+        getrandom::fill(&mut nonce).map_err(|_| OutputError::Io)?;
+        let name = format!(
+            "open-{}",
+            nonce.iter().map(|b| format!("{b:02x}")).collect::<String>()
+        );
+        root.dir
+            .create_dir_with(&name, &private_builder())
+            .map_err(failure)?;
+        let dir = root.dir.open_dir_nofollow(&name).map_err(failure)?;
+        #[cfg(windows)]
+        {
+            use cap_std::fs::OpenOptionsExt;
+            use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_READ, WRITE_DAC};
+            let mut options = OpenOptions::new();
+            options
+                .read(true)
+                .maybe_dir(true)
+                .follow(FollowSymlinks::No)
+                .access_mode(FILE_GENERIC_READ | WRITE_DAC);
+            let handle = dir.open_with(".", &options).map_err(failure)?.into_std();
+            private::secure_temporary_directory(&handle)?;
+        }
+        private::check_confidential(&directory_file(&dir)?, true)?;
+        let mut options = private_options();
+        options.write(true).read(true).create_new(true);
+        let mut lease = dir
+            .open_with("lease", &options)
+            .map_err(failure)?
+            .into_std();
+        lease.write_all(&nonce).map_err(failure)?;
+        lease.lock().map_err(failure)?;
+        let identity = FileIdentity::read(&directory_file(&dir)?).map_err(failure)?;
+        let grant = Arc::new(Self {
+            dir,
+            path: root.path.join(&name),
+            identity,
+            source: Arc::clone(&root.source),
+            created_directories: Arc::new(AtomicU64::new(0)),
+            parent_grant: Some(root),
+            _temporary_lock: Some(lease),
+        });
+        let child =
+            grant.subdirectory(&PortablePath::parse("payload").expect("fixed portable name"))?;
+        child.validate()?;
+        private::check_confidential(&directory_file(&child.dir)?, true)?;
+        Ok(child)
     }
 }
 fn directory_file(dir: &Dir) -> Result<File, OutputError> {

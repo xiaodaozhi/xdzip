@@ -166,17 +166,17 @@ def main():
         password = 'public fixture 密码'
         expected = manifest(source)
         expected_directories = directories(source)
-        def extract_with_xdzip(archive, target, secret=password):
+        def extract_with_xdzip(archive, target, secret=password, profile=source):
             target.mkdir()
             result = subprocess.run([extract, str(archive), str(target), '--generic', '--fixture-password-stdin'],
-                                    input=secret.encode('utf-8'), capture_output=True, timeout=90)
+                                    input=secret.encode('utf-8') if secret is not None else b'', capture_output=True, timeout=90)
             if result.returncode:
                 raise RuntimeError('Owned AES extraction fixture failed')
             report = json.loads(result.stdout)
-            assert report['password_prompts'] == 1
-            assert report['files'] == len(expected)
-            assert manifest(target/'input') == expected
-            assert directories(target/'input') == expected_directories
+            assert report['password_prompts'] == int(secret is not None)
+            assert report['files'] == len(manifest(profile))
+            assert manifest(target/'input') == manifest(profile)
+            assert directories(target/'input') == directories(profile)
             assert {path.name for path in target.iterdir()} == {'input'}
         for method in [0, 8]:
             for split in [False, True]:
@@ -207,10 +207,10 @@ def main():
                         seven_zip([args.reader, 't', str(archive)], 'wrong fixture', succeeds=False)
                         if not split:
                             check_aes_profile(archive, method)
-                            extract_with_xdzip(archive, root/f'xdzip-decoded-{method}')
+                    extract_with_xdzip(archive, root/f'xdzip-decoded-{method}-{split}-{encrypt}', password if encrypt else None)
                     cases.append(dict(method=method, split=split, encrypted=encrypt, parts=len(parts),
                                       direction='xdzip_to_7zip', all_bytes=True,
-                                      xdzip_roundtrip=encrypt and not split, passed=True))
+                                      xdzip_roundtrip=True, passed=True))
             external = root/f'external-{method}.zip'
             # 7-Zip's ZIP writer rejects non-ASCII passwords on some hosts. The
             # existing xdzip -> 7-Zip direction still covers a UTF-8 password.
@@ -220,6 +220,32 @@ def main():
             check_aes_profile(external, method)
             extract_with_xdzip(external, root/f'external-decoded-{method}', external_password)
             cases.append(dict(method=method, direction='7zip_to_xdzip', encrypted=True, all_bytes=True, passed=True))
+            split_external = root/f'external-split-{method}.zip'
+            seven_zip([args.reader, 'a', '-tzip', '-mem=AES256', '-mm='+('Copy' if method == 0 else 'Deflate'),
+                       '-v64k', '-p', str(split_external), 'input'], external_password, cwd=root)
+            extract_with_xdzip(Path(str(split_external)+'.002'), root/f'external-split-decoded-{method}', external_password)
+            cases.append(dict(method=method, direction='7zip_to_xdzip', split=True, encrypted=True, all_bytes=True, passed=True))
+            zip_tool = shutil.which('zip')
+            if not zip_tool:
+                raise RuntimeError('Info-ZIP is required for independent PKZIP volume coverage')
+            pkzip = root/f'pkzip-{method}.zip'
+            # Info-ZIP's legacy Unicode extra-field profile is outside the
+            # product's UTF-8-flag policy. Independently exercise disk layout
+            # using ASCII names; the other directions retain Unicode coverage.
+            pk_work = root/f'infozip-{method}'
+            pk_input = pk_work/'input'
+            pk_input.mkdir(parents=True)
+            for index, path in enumerate(sorted(source.iterdir())):
+                if path.is_dir():
+                    (pk_input/f'directory-{index}').mkdir()
+                else:
+                    (pk_input/f'file-{index}.bin').write_bytes(path.read_bytes())
+            result = subprocess.run([zip_tool, '-0' if method == 0 else '-6', '-s', '64k', '-r', str(pkzip), 'input'],
+                                    cwd=pk_work, capture_output=True, timeout=90)
+            if result.returncode:
+                raise RuntimeError('Owned Info-ZIP split fixture creation failed')
+            extract_with_xdzip(pkzip.with_suffix('.z01'), root/f'pkzip-decoded-{method}', None, pk_input)
+            cases.append(dict(method=method, direction='infozip_to_xdzip', split=True, layout='pkzip', all_bytes=True, passed=True))
     args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.write_text(json.dumps(dict(cases=cases, independent_reader=Path(args.reader).name,
                                          password_transport='terminal_and_fixture_stdin'), indent=2)+'\n',encoding='utf-8')

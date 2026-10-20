@@ -24,7 +24,7 @@ fn read32(bytes: &[u8]) -> usize {
 }
 /// Assemble complete independently encoded single-record streams. Only central offsets
 /// and explicitly requested Unix types are changed, never ciphertext or authentication.
-fn archive_bytes(records: &[(&str, &[u8], Option<&str>, bool)], method: u16) -> Vec<u8> {
+pub(super) fn archive_bytes(records: &[(&str, &[u8], Option<&str>, bool)], method: u16) -> Vec<u8> {
     let mut output = Vec::new();
     let mut directory = Vec::new();
     for (name, data, password, link) in records {

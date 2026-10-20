@@ -17,6 +17,15 @@ pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Extract one regular physical entry into a host-selected private cache.
+    OpenEntry {
+        /// Immutable archive session identity.
+        session: u64,
+        /// Physical record identity, never a display row.
+        entry: u64,
+        /// Absolute application-private cache root selected by the host.
+        cache: String,
+    },
     /// Replace the single development-stage session and return its first page.
     Open(String),
     /// Query an immutable session; session mismatch fails before reading metadata.
@@ -71,6 +80,7 @@ pub enum Command {
 impl Command {
     fn bytes(&self) -> usize {
         match self {
+            Self::OpenEntry { cache, .. } => cache.capacity(),
             Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
             Self::Browse {
                 directory, text, ..
@@ -87,6 +97,13 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
+            Self::OpenEntry { cache, entry, .. } => {
+                *entry > 0
+                    && !cache.is_empty()
+                    && cache.len() <= 4096
+                    && !cache.contains('\0')
+                    && Path::new(cache).is_absolute()
+            }
             Self::Open(path) => !path.is_empty() && path.len() <= 4096 && !path.contains('\0'),
             Self::CheckTarget { path, .. } => {
                 !path.is_empty()
@@ -638,9 +655,24 @@ fn execute(
         xdzip_codec_api::ScanError::Limit => "resource_limit",
         xdzip_codec_api::ScanError::Cancelled => "cancelled",
         xdzip_codec_api::ScanError::SourceChanged => "source_changed",
+        xdzip_codec_api::ScanError::MissingVolume => "missing_volume",
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::OpenEntry {
+                session,
+                entry,
+                cache,
+            } => {
+                let archive = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = archive.open_entry_job(entry, Path::new(&cache), control)?;
+                return shared
+                    .enqueue_task(tasks::Job::Extract(job))
+                    .map(Payload::TaskAccepted);
+            }
             Command::InspectInputs(paths) => {
                 let mut rows = Vec::with_capacity(paths.len());
                 for path in paths {
@@ -665,8 +697,8 @@ fn execute(
                         .filter(|a| a.key().session.get() == session)
                         .ok_or("stale_session")?;
                     archive.source.validate().map_err(|_| "source_changed")?;
-                    let id = archive.source.identity().map_err(|_| "source_changed")?;
-                    xdzip_io::Grant::open(Path::new(&path), id)
+                    let ids = archive.source.identities().map_err(|_| "source_changed")?;
+                    xdzip_io::Grant::open_sources(Path::new(&path), &ids)
                 }
                 .map_err(|e| match e {
                     xdzip_io::OutputError::UnsafeTarget => "unsafe_target",

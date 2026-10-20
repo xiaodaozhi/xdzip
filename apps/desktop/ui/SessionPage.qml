@@ -217,9 +217,15 @@ Item {
         onPreflightReady: if (!root.sessionClosed) preflightWindow.present()
         onExtractionReady: if (!root.sessionClosed) extractWindow.configure()
         onCreationStarted: id => { createWindow.close(); if (!root.sessionClosed) root.showTask(id); }
-        onExtractionStarted: id => { extractWindow.close(); if (!root.sessionClosed) root.showTask(id); }
+        onExtractionStarted: id => {
+            extractWindow.close();
+            const task = reader.tasks.find(t => t.id === id);
+            if (!root.sessionClosed && !(task && task.openAccepted)) root.showTask(id);
+        }
         onTasksChanged: {
+            const previous = root.taskSnapshot;
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
+            if (root.taskSnapshot.openAccepted && (!previous.openAccepted || previous.id !== root.taskSnapshot.id)) taskWindow.close();
             if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
             if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId) conflictWindow.close();
             if (!root.sessionManager && root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }

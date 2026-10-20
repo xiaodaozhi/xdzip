@@ -19,6 +19,8 @@ pub(crate) struct Job {
     pub options: Options,
     pub session: u64,
     pub links_pending: bool,
+    pub temporary: Option<Arc<xdzip_io::Grant>>,
+    pub open_path: String,
 }
 /// Canonical admission key accounts for common Unicode/case aliases. Exclusive native
 /// publication remains authoritative on filesystems with different name semantics.
@@ -210,5 +212,7 @@ impl Job {
                 })
                 .sum::<usize>()
             + self.options.bytes()
+            + self.open_path.capacity()
+            + self.source.retained_bytes()
     }
 }

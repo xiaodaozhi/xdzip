@@ -30,7 +30,7 @@
 - **按习惯打开**：默认新标签页，也可设置为新窗口；每个登录会话共用一个进程和托盘，关闭页面后任务继续运行。
 - **适应你的桌面**：浅色、深色与跟随系统主题，100%／125%／150% 字号、列表密度、中文 (简体) 与 English (US)，配合 macOS 系统菜单和全平台托盘。
 
-打开文件先浏览内容，不自动解压。创建成功后在应用内打开可浏览的单卷结果，不自动弹出 Finder 或 Explorer。
+打开压缩包先浏览内容，不自动解压。双击其中的普通文件会安全解压到私有临时目录，再通过系统关联打开；系统接受打开请求后自动隐藏进度窗口。临时副本的修改不会写回压缩包，缓存保留七天后在后续打开文件时清理。创建成功后在应用内打开可浏览的结果，不自动弹出 Finder 或 Explorer。
 
 ## 格式支持
 
@@ -40,14 +40,14 @@
 | TAR | ✓ | ✓ | ✓ |
 | TAR.GZ | ✓ | ✓ | ✓ |
 | AES-256 ZIP | ✓ | ✓ | ✓ |
-| 分卷 ZIP | — | — | ✓ |
+| 分卷 ZIP | ✓ | ✓ | ✓ |
 
 ✓ 已支持，— 尚不支持。
 
-- **ZIP**：支持单卷 ZIP64，解压与创建支持 Store／Deflate，创建提供四档级别，默认正常压缩。
+- **ZIP**：支持 ZIP64，解压与创建支持 Store／Deflate，创建提供四档级别，默认正常压缩。
 - **TAR 与 TAR.GZ**：处理普通文件与目录，TAR.GZ 也支持 `.tgz` 扩展名；TAR 仅打包，TAR.GZ 提供四档级别。
-- **AES-256 ZIP**：单卷 WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 及加密分卷读取尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
-- **编号分卷**：创建为 `.zip.001`、`.zip.002` 等文件，当前不能跨卷读取或解压，可使用兼容外部工具读取。
+- **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
+- **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
 
 解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)与 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。
 

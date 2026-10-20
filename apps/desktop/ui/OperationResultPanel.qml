@@ -65,7 +65,7 @@ ColumnLayout {
         ColumnLayout {
             id: failed
             anchors.fill: parent; anchors.margins: Theme.operationResultCardInset; spacing: 8
-            Text { text: qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
+            Text { text: root.task.openError ? qsTrId("result.fileOpenFailed") : qsTrId("ui.3ce2b5b2c6e8"); font.pixelSize: Math.round(Theme.operationResultSectionSize); font.bold: true; color: Theme.text }
             Repeater { model: root.failures; delegate: ResultFileRow { required property var modelData; Layout.fillWidth: true; entry: modelData; showReason: true } }
             Rectangle {
                 visible: Boolean(root.task.error); Layout.fillWidth: true
@@ -73,6 +73,7 @@ ColumnLayout {
                 color: Theme.resultWarningSurface; radius: 5
                 InfoRow {
                     id: message
+                    objectName: "resultError"
                     anchors.left: parent.left; anchors.right: parent.right; anchors.margins: 8; anchors.verticalCenter: parent.verticalCenter
                     iconSource: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "status-warning.png"
                     text: root.task.error || ""; labelSize: Math.round(Theme.operationResultNoteSize); iconSize: 20

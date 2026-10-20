@@ -325,6 +325,9 @@ class BrowserController : public QObject {
     void invalidateSnapshot();
     void showRowDetail(int row);
     void updateSelectionSummary() const;
+    bool openTemporaryOutput(quint64 id);
+    std::function<bool(const QUrl &)> m_fileOpener;
+    QString m_temporaryCacheOverride;
     mutable quint64 m_summaryRevision = std::numeric_limits<quint64>::max();
     mutable QString m_summaryBytes;
     mutable bool m_summaryPhysical = true;

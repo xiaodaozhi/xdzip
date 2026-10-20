@@ -161,7 +161,7 @@ OperationWindow {
             OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
             OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }
-            OperationFooterButton { visible: root.terminal && !root.checking; text: qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
+            OperationFooterButton { objectName: "openOutputButton"; visible: root.terminal && !root.checking; enabled: !root.resultTask.openPath || root.taskStatus === "succeeded"; text: root.resultTask.openPath ? qsTrId("action.openExtractedFile") : qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
             OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }
     }

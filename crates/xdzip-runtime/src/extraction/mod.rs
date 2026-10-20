@@ -3,6 +3,8 @@ mod control;
 mod execute;
 mod links;
 #[cfg(test)]
+mod opening_tests;
+#[cfg(test)]
 mod password_tests;
 mod plan;
 #[cfg(test)]
@@ -215,6 +217,8 @@ pub struct Snapshot {
     pub status: Status,
     /// Display-only output location.
     pub target: String,
+    /// Local file produced by an explicit temporary-open intent, never an archive URL.
+    pub open_path: String,
     /// Escaped current relative filename.
     pub current: String,
     /// Declared admitted file count, excluding directories.
@@ -305,6 +309,69 @@ impl Archive {
             options,
             session: self.key.session.get(),
             links_pending,
+            temporary: None,
+            open_path: String::new(),
         })
+    }
+    pub(crate) fn open_entry_job(
+        &self,
+        entry: u64,
+        cache: &std::path::Path,
+        cancel: &Cancellation,
+    ) -> Result<Job, &'static str> {
+        let index = entry
+            .checked_sub(1)
+            .and_then(|n| usize::try_from(n).ok())
+            .ok_or("invalid_selection")?;
+        self.rows
+            .get(index)
+            .filter(|r| {
+                r.id.get() == entry
+                    && !r.directory
+                    && !r.link
+                    && (r.unix_mode & 0o170000 == 0 || r.unix_mode & 0o170000 == 0o100000)
+            })
+            .ok_or("unsupported_feature")?;
+        let options = Options {
+            target: cache.to_string_lossy().into_owned(),
+            all: false,
+            selected: vec![entry.to_string()],
+            directory: String::new(),
+            create_folder: false,
+            conflict: ConflictPolicy::Ask,
+            allow_high_ratio: false,
+        };
+        let mut job = self.extraction_job(options, cancel)?;
+        if job.planned.len() != 1 {
+            return Err("invalid_selection");
+        }
+        let filename = job.planned[0]
+            .path
+            .parts()
+            .last()
+            .ok_or("invalid_selection")?
+            .clone();
+        let path = xdzip_domain::path::PortablePath::parse(&filename).ok_or("invalid_selection")?;
+        // Validate original names before flattening. Random private destinations
+        // isolate duplicate archive names and separate open requests.
+        let ids = self.source.identities().map_err(|_| "source_changed")?;
+        let grant = xdzip_io::Grant::temporary(cache, &ids).map_err(|e| match e {
+            xdzip_io::OutputError::Limit => "resource_limit",
+            xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
+            _ => "output_io",
+        })?;
+        cancel.check().map_err(|_| "cancelled")?;
+        job.options.target = grant.display_path().to_string_lossy().into_owned();
+        job.open_path = grant
+            .display_path()
+            .join(&filename)
+            .to_string_lossy()
+            .into_owned();
+        if job.options.target.len() > 4096 || job.open_path.len() > 4096 {
+            return Err("invalid_options");
+        }
+        job.planned[0].path = path;
+        job.temporary = Some(grant);
+        Ok(job)
     }
 }

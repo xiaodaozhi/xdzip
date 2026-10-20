@@ -16,7 +16,7 @@ pub(crate) fn check(file: &File, directory: bool) -> Result<(), OutputError> {
             return Err(OutputError::UnsafeTarget);
         }
         #[cfg(target_os = "macos")]
-        macos::check_acl(file)?;
+        macos::check_acl(file, false)?;
     }
     #[cfg(windows)]
     {
@@ -32,9 +32,32 @@ pub(crate) fn check(file: &File, directory: bool) -> Result<(), OutputError> {
         {
             return Err(OutputError::UnsafeTarget);
         }
-        windows::check_acl(file)?;
+        windows::check_acl(file, false)?;
     }
     Ok(())
+}
+
+/// Temporary plaintext must also exclude unrelated readers, while ordinary
+/// user-selected extraction targets keep their existing read-sharing policy.
+pub(crate) fn check_confidential(file: &File, directory: bool) -> Result<(), OutputError> {
+    check(file, directory)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if file.metadata().map_err(failure)?.mode() & 0o077 != 0 {
+            return Err(OutputError::UnsafeTarget);
+        }
+    }
+    #[cfg(target_os = "macos")]
+    macos::check_acl(file, true)?;
+    #[cfg(windows)]
+    windows::check_acl(file, true)?;
+    Ok(())
+}
+#[cfg(windows)]
+pub(crate) fn secure_temporary_directory(file: &File) -> Result<(), OutputError> {
+    check(file, true)?;
+    windows::secure_temporary_directory(file)
 }
 
 #[cfg(target_os = "macos")]
@@ -112,7 +135,7 @@ mod macos {
         Ok(kind == ID_TYPE_UID && id == rustix::process::geteuid().as_raw())
     }
 
-    pub(super) fn check_acl(file: &File) -> Result<(), OutputError> {
+    pub(super) fn check_acl(file: &File, confidential: bool) -> Result<(), OutputError> {
         // SAFETY: the descriptor stays borrowed and live; this returns an owned
         // ACL snapshot, not pointers into filesystem state that can be mutated.
         let acl = unsafe { acl_get_fd_np(file.as_raw_fd(), ACL_TYPE_EXTENDED) };
@@ -163,8 +186,10 @@ mod macos {
                     // Inspect effective and inherit-only ACEs alike: permitting
                     // outsider mutation on future children is also unsafe. A
                     // current-user group can include other accounts, so only a
-                    // user UUID resolving to the effective UID may modify.
-                    if permissions & !READ_ONLY != 0 && !current_user(entry)? {
+                    // user UUID resolving to the effective UID may modify or,
+                    // for temporary plaintext, read inherited payloads.
+                    let allowed_mask = if confidential { 0 } else { READ_ONLY };
+                    if permissions & !allowed_mask != 0 && !current_user(entry)? {
                         return Err(OutputError::UnsafeTarget);
                     }
                 }
@@ -182,7 +207,10 @@ mod windows {
     use std::os::windows::io::{AsRawHandle, FromRawHandle, OwnedHandle};
     use std::ptr::{addr_of, null_mut};
     use windows_sys::Win32::Foundation::{GENERIC_EXECUTE, GENERIC_READ, LocalFree};
-    use windows_sys::Win32::Security::Authorization::{GetSecurityInfo, SE_FILE_OBJECT};
+    use windows_sys::Win32::Security::Authorization::{
+        ConvertStringSecurityDescriptorToSecurityDescriptorW, GetSecurityInfo, SDDL_REVISION_1,
+        SE_FILE_OBJECT, SetSecurityInfo,
+    };
     use windows_sys::Win32::Security::*;
     use windows_sys::Win32::Storage::FileSystem::{FILE_GENERIC_EXECUTE, FILE_GENERIC_READ};
     use windows_sys::Win32::System::SystemServices::{
@@ -193,14 +221,68 @@ mod windows {
     struct Descriptor(PSECURITY_DESCRIPTOR);
     impl Drop for Descriptor {
         fn drop(&mut self) {
-            // SAFETY: GetSecurityInfo allocated this descriptor with LocalAlloc;
+            // SAFETY: GetSecurityInfo or SDDL conversion allocated with LocalAlloc;
             // its ACL pointers are no longer used when this owner is dropped.
             unsafe {
                 LocalFree(self.0);
             }
         }
     }
-    pub(super) fn check_acl(file: &File) -> Result<(), OutputError> {
+    pub(super) fn secure_temporary_directory(file: &File) -> Result<(), OutputError> {
+        // Only a freshly created empty directory below an owned grant reaches
+        // this function. Protect its DACL before any plaintext is written. OW is
+        // OWNER RIGHTS, inherited by children; SYSTEM and administrators remain
+        // trusted platform actors. The borrowed handle has WRITE_DAC access.
+        let sddl = "D:P(A;OICI;FA;;;OW)(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)\0"
+            .encode_utf16()
+            .collect::<Vec<_>>();
+        let mut descriptor = null_mut();
+        // SAFETY: fixed NUL-terminated UTF-16 input, initialized output slot;
+        // the allocated descriptor stays live through SetSecurityInfo below.
+        let converted = unsafe {
+            ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                sddl.as_ptr(),
+                SDDL_REVISION_1,
+                &mut descriptor,
+                null_mut(),
+            )
+        };
+        let _descriptor = Descriptor(descriptor);
+        if converted == 0 || descriptor.is_null() {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let mut present = 0;
+        let mut defaulted = 0;
+        let mut acl = null_mut();
+        // SAFETY: live native descriptor and initialized output slots. Reject a
+        // null/absent DACL explicitly; it would otherwise grant everyone access.
+        if unsafe { GetSecurityDescriptorDacl(descriptor, &mut present, &mut acl, &mut defaulted) }
+            == 0
+            || present == 0
+            || acl.is_null()
+            || unsafe { IsValidAcl(acl) } == 0
+        {
+            return Err(OutputError::UnsafeTarget);
+        }
+        // SAFETY: the file handle and ACL allocation are live. Change only this
+        // empty directory's DACL; failure stops allocation before payload output.
+        let status = unsafe {
+            SetSecurityInfo(
+                file.as_raw_handle(),
+                SE_FILE_OBJECT,
+                DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                null_mut(),
+                null_mut(),
+                acl,
+                null_mut(),
+            )
+        };
+        if status != 0 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        check_acl(file, true)
+    }
+    pub(super) fn check_acl(file: &File, confidential: bool) -> Result<(), OutputError> {
         // SAFETY: file is borrowed for the whole operation; output pointers target
         // initialized stack storage. The returned descriptor is RAII-owned below.
         let mut acl = null_mut();
@@ -320,13 +402,15 @@ mod windows {
             // preserved, including on newly inherited output; it is not a promise
             // of confidentiality. Generic read/execute have the same bounded
             // mapping for file objects; write, delete, ACL and unknown bits fail.
+            // Temporary plaintext additionally excludes unrelated read grants.
             let trusted = unsafe { EqualSid(sid, user_sid) != 0 }
                 || allowed
                     .iter()
                     .any(|known| unsafe { EqualSid(sid, known.as_ptr().cast_mut().cast()) != 0 });
             let read_only =
                 FILE_GENERIC_READ | FILE_GENERIC_EXECUTE | GENERIC_READ | GENERIC_EXECUTE;
-            if !trusted && unsafe { (*entry).Mask } & !read_only != 0 {
+            let allowed_mask = if confidential { 0 } else { read_only };
+            if !trusted && unsafe { (*entry).Mask } & !allowed_mask != 0 {
                 return Err(OutputError::UnsafeTarget);
             }
         }
