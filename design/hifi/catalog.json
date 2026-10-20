@@ -215,8 +215,8 @@
     },
     {
       "file": "screens/settings-current-light.png",
-      "title": "设置，外观、隐私与语言，浅色",
-      "group": "current",
+      "title": "设置，外观、隐私与语言，浅色，打开方式设置之前",
+      "group": "historical",
       "sha256": "9c2020d1886caaf87037377613fcdf25dd3422b5d9fdf093cb1594c89da181b6",
       "role": "code-authored-design",
       "source": "sources/settings.html",
@@ -224,8 +224,8 @@
     },
     {
       "file": "screens/settings-current-dark.png",
-      "title": "设置，外观、隐私与语言，深色",
-      "group": "current",
+      "title": "设置，外观、隐私与语言，深色，打开方式设置之前",
+      "group": "historical",
       "sha256": "5a40147e54e223273165fdceae83007b9ca1bae4ed7b7ce69b01c94eaf592ada",
       "role": "code-authored-design",
       "source": "sources/settings.html",
@@ -254,6 +254,24 @@
       "title": "P01 解压元数据预检，说明置于正文，深色",
       "group": "current",
       "sha256": "22c8a7db8a2857b9e572cc62bd96551bbe3f8af7e81bbcad00b0a5b89a4946f5"
+    },
+    {
+      "file": "screens/settings-open-mode-light.png",
+      "title": "设置，打开方式、外观与隐私，浅色",
+      "group": "current",
+      "sha256": "51400c5ef4f5397aabce8a9b6320ec2c4a5f3b9e231d37ba37de612ba392b261",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-open-mode-dark.png",
+      "title": "设置，打开方式、外观与隐私，深色",
+      "group": "current",
+      "sha256": "37c253d188bbf21f0652347e2acad3566e5f4f9471d0da084c4cfe2a0211bf90",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
     }
   ],
   "schema_version": 1

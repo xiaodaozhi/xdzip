@@ -328,7 +328,13 @@ class BrowserTest : public QObject {
         SingleInstance recovery;
         QCOMPARE(recovery.start({}, crashSpace), SingleInstance::Primary);
     }
+    void backgroundTasksKeepSessionIdentityAndSerialAdmission_data() {
+        QTest::addColumn<bool>("separateWindows");
+        QTest::newRow("closed-tab") << false;
+        QTest::newRow("closed-window") << true;
+    }
     void backgroundTasksKeepSessionIdentityAndSerialAdmission() {
+        QFETCH(bool, separateWindows);
         QTemporaryDir output;
         QVERIFY(output.isValid());
         const auto input = output.filePath("input.txt");
@@ -342,14 +348,16 @@ class BrowserTest : public QObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(
-            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         separateWindows ? "windows" : "tabs"));
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
         auto *first = window->findChild<BrowserController *>();
         sessions.newSession();
-        auto *second =
-            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        auto *second = sessions.activeWindow()
+                           ->property("activePage")
+                           .value<QObject *>()
+                           ->findChild<BrowserController *>();
         QVERIFY(second != first);
         QSignalSpy firstStarted(first, &BrowserController::creationStarted);
         QSignalSpy secondStarted(second, &BrowserController::creationStarted);
@@ -362,7 +370,10 @@ class BrowserTest : public QObject {
         QVERIFY(second->taskStarting());
         const auto firstTab =
             window->property("sessionTabs").toList().first().toMap().value("id").toString();
-        sessions.closeSession(firstTab);
+        if (separateWindows)
+            sessions.closeWindow(window);
+        else
+            sessions.closeSession(firstTab);
         QTRY_VERIFY(!firstStarted.isEmpty());
         QTRY_VERIFY_WITH_TIMEOUT(!secondStarted.isEmpty(), 10000);
         QTRY_COMPARE_WITH_TIMEOUT(sessions.activeTaskCount(), 0, 10000);
