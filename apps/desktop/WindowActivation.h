@@ -22,6 +22,11 @@ class WindowActivation final : public QObject {
         if (!window)
             return;
         const bool minimized = window->windowStates().testFlag(Qt::WindowMinimized);
+        if (!minimized && window->isExposed() && window->isActive() &&
+            int(window->windowStates()) == window->property("xdzipRestoreState").toInt()) {
+            window->setProperty("xdzipWasMinimized", false);
+            window->setProperty("xdzipWakePending", false);
+        }
         // Cocoa finishes leaving fullscreen before it miniaturizes. Keep this
         // activation pending until the native minimized window is no longer
         // exposed, instead of cancelling a transition halfway through it.
@@ -33,7 +38,9 @@ class WindowActivation final : public QObject {
         }
         if (window->windowStates().testFlag(Qt::WindowMinimized)) {
             auto state = window->windowStates() & ~Qt::WindowMinimized;
-            if (state == Qt::WindowNoState && window->property("xdzipRestoreState").isValid())
+            // Cocoa may retain the older zoomed bit after leaving fullscreen
+            // to miniaturize. The saved pre-minimize target is authoritative.
+            if (window->property("xdzipRestoreState").isValid())
                 state = Qt::WindowStates(window->property("xdzipRestoreState").toInt());
             // showMinimized() replaces the previous state bits. Prepare the
             // saved target while still minimized, then remove only Minimized;
@@ -62,9 +69,12 @@ class WindowActivation final : public QObject {
                     [window](Qt::WindowState) { remember(window); });
             remember(window);
         }
-        if (event->type() == QEvent::FocusIn && !window->property("xdzipWakePending").toBool() &&
-            window->isExposed() && !window->windowStates().testFlag(Qt::WindowMinimized)) {
+        if (event->type() == QEvent::FocusIn && window->isExposed() &&
+            !window->windowStates().testFlag(Qt::WindowMinimized) &&
+            (!window->property("xdzipWakePending").toBool() ||
+             int(window->windowStates()) == window->property("xdzipRestoreState").toInt())) {
             window->setProperty("xdzipWasMinimized", false);
+            window->setProperty("xdzipWakePending", false);
             remember(window);
         }
         if (event->type() == QEvent::Expose)
@@ -86,10 +96,15 @@ class WindowActivation final : public QObject {
     static void remember(QWindow *window) {
         const auto state = window->windowStates();
         if (state.testFlag(Qt::WindowMinimized)) {
-            window->setProperty("xdzipWasMinimized", true);
-            if (state.testFlag(Qt::WindowMaximized) || state.testFlag(Qt::WindowFullScreen))
+            if (!window->property("xdzipWasMinimized").toBool() &&
+                (state.testFlag(Qt::WindowMaximized) || state.testFlag(Qt::WindowFullScreen)))
                 window->setProperty("xdzipRestoreState", int(state & ~Qt::WindowMinimized));
-        } else if (!window->property("xdzipWasMinimized").toBool()) {
+            window->setProperty("xdzipWasMinimized", true);
+        } else if (!window->property("xdzipWasMinimized").toBool() ||
+                   QGuiApplication::platformName() != QStringLiteral("cocoa") ||
+                   state.testFlag(Qt::WindowFullScreen) ||
+                   int(state) == window->property("xdzipRestoreState").toInt()) {
+            window->setProperty("xdzipWasMinimized", false);
             window->setProperty("xdzipRestoreState", int(state));
         }
         // Observe the requested Minimized signal as well as native events:

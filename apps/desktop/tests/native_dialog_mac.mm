@@ -1,12 +1,60 @@
 // apps/desktop/tests/native_dialog_mac.mm
 
 #import <AppKit/AppKit.h>
+#include <QPointer>
+#include <QVariant>
 #include <QWindow>
+
+bool watchNativeWindowTransitions(QWindow *window) {
+    if (window->property("xdzipNativeStateWatched").toBool())
+        return true;
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    NSWindow *native = view.window;
+    if (!native)
+        return false;
+    window->setProperty("xdzipNativeStateWatched", true);
+    const QPointer<QWindow> guarded(window);
+    NSMutableArray *tokens = [[NSMutableArray alloc] init];
+    for (NSNotificationName name in @[
+             NSWindowWillEnterFullScreenNotification, NSWindowWillExitFullScreenNotification,
+             NSWindowWillMiniaturizeNotification
+         ]) {
+        [tokens addObject:[[NSNotificationCenter defaultCenter]
+                              addObserverForName:name
+                                          object:native
+                                           queue:nil
+                                      usingBlock:^(NSNotification *notification) {
+                                        Q_UNUSED(notification);
+                                        if (guarded)
+                                            guarded->setProperty("xdzipNativeTransition", true);
+                                      }]];
+    }
+    for (NSNotificationName name in @[
+             NSWindowDidEnterFullScreenNotification, NSWindowDidExitFullScreenNotification,
+             NSWindowDidMiniaturizeNotification, NSWindowDidDeminiaturizeNotification
+         ]) {
+        [tokens addObject:[[NSNotificationCenter defaultCenter]
+                              addObserverForName:name
+                                          object:native
+                                           queue:nil
+                                      usingBlock:^(NSNotification *notification) {
+                                        Q_UNUSED(notification);
+                                        if (guarded)
+                                            guarded->setProperty("xdzipNativeTransition", false);
+                                      }]];
+    }
+    QObject::connect(window, &QObject::destroyed, [tokens] {
+        for (id token in tokens)
+            [[NSNotificationCenter defaultCenter] removeObserver:token];
+        [tokens release];
+    });
+    return true;
+}
 
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state) {
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     NSWindow *native = view.window;
-    if (!native)
+    if (!native || window->property("xdzipNativeTransition").toBool())
         return false;
     if (state == Qt::WindowMinimized)
         return native.miniaturized;

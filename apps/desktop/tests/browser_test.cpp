@@ -52,6 +52,7 @@
 #ifdef Q_OS_MACOS
 void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
+bool watchNativeWindowTransitions(QWindow *window);
 #endif
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
@@ -519,20 +520,25 @@ class BrowserTest : public QObject {
         DesktopIntegration desktop(window, controller, preferences, false);
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());
-        for (const auto state : {Qt::WindowMaximized, Qt::WindowFullScreen}) {
+#ifdef Q_OS_MACOS
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+            QTRY_VERIFY(watchNativeWindowTransitions(window));
+#endif
+        for (const auto state : {Qt::WindowNoState, Qt::WindowMaximized, Qt::WindowFullScreen}) {
             window->setWindowState(state);
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
                 QVERIFY(QTest::qWaitForWindowExposed(window));
-                // X11/Cocoa acknowledge state changes asynchronously. Drain the
-                // preceding minimize/restore before measuring popup activation.
-                QTest::qWait(150);
-                QCOMPARE(window->windowState(), state);
 #ifdef Q_OS_MACOS
                 if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                     QTRY_VERIFY(nativeWindowMatchesState(window, state));
 #endif
             }
+            // Native and offscreen backends can deliver old state events after
+            // the setter returns. Drain the preceding minimize/restore before
+            // starting the strict popup-state measurement.
+            QTest::qWait(150);
+            QTRY_COMPARE(window->windowState(), state);
             QSignalSpy changes(window, &QWindow::windowStateChanged);
 #ifdef Q_OS_WIN
             if (state == Qt::WindowFullScreen &&
@@ -586,7 +592,7 @@ class BrowserTest : public QObject {
             controller->chooseArchive(window);
             QCOMPARE(window->windowState(), state);
             for (const auto &change : changes)
-                QVERIFY(change.first().value<Qt::WindowState>() != Qt::WindowNoState);
+                QCOMPARE(change.first().value<Qt::WindowState>(), state);
             window->hide();
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QTRY_VERIFY(!window->isExposed());
@@ -596,6 +602,10 @@ class BrowserTest : public QObject {
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QVERIFY(QTest::qWaitForWindowExposed(window));
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                QTRY_VERIFY(nativeWindowMatchesState(window, state));
+#endif
             window->showMinimized();
             QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
@@ -622,6 +632,10 @@ class BrowserTest : public QObject {
                 QVERIFY(QTest::qWaitForWindowExposed(window));
                 QVERIFY(QTest::qWaitForWindowActive(window));
                 QTRY_COMPARE(window->windowState(), state);
+#ifdef Q_OS_MACOS
+                if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                    QTRY_VERIFY(nativeWindowMatchesState(window, state));
+#endif
             }
         }
         controller->requestClose();
