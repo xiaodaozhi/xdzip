@@ -137,7 +137,10 @@ impl Source {
                 }
             }
         }
-        if numbered.is_empty() && lower.ends_with(".zip") {
+        if numbered.is_empty()
+            && lower.ends_with(".zip")
+            && xdzip_codec_zip::split::end_disk(&mut file).is_err()
+        {
             return Ok(Self::new(file, path.into(), version));
         }
         if numbered.is_empty()

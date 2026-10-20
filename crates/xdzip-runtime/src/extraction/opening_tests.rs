@@ -58,6 +58,17 @@ fn missing_or_ambiguous_parts_are_rejected_without_partial_rows() {
         crate::Archive::open(&parts[0], &Cancellation::default()),
         Err(xdzip_codec_api::ScanError::MissingVolume)
     ));
+    let mut footer = bytes("stored.zip").split_off(bytes("stored.zip").len() - 22);
+    footer[4..6].copy_from_slice(&1u16.to_le_bytes());
+    let final_only = source.0.join("final-only.zip");
+    std::fs::write(&final_only, footer).unwrap();
+    assert!(
+        matches!(
+            crate::Archive::open(&final_only, &Cancellation::default()),
+            Err(xdzip_codec_api::ScanError::MissingVolume)
+        ),
+        "a known final disk must report missing preceding volumes"
+    );
 }
 #[cfg(unix)]
 #[test]
