@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import urllib.request
+import uuid
 
 from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, locked_rust_version
 
@@ -469,8 +470,11 @@ class Workflow:
                 raise ValueError('Installer and runtime package identities differ')
             self.verify_hashes(installer['artifacts'])
         if self.system == 'windows':
+            # Each invocation owns a fresh harness; retain earlier evidence and
+            # keep the verifier's refusal to reuse or delete an existing tree.
+            harness = self.output/('windows-runtime-test-'+uuid.uuid4().hex)
             self.script('verify_windows_runtime.py', '--root', self.runtime, '--qt-prefix', self.qt,
-                        '--tests', self.tests, '--output', self.output/'windows-runtime-test', env=self.deployed_env())
+                        '--tests', self.tests, '--output', harness, env=self.deployed_env())
         else:
             self.script('verify_linux_runtime.py', '--root', self.runtime,
                         '--fixture', self.build/'apps/desktop/m2-flat.zip',

@@ -67,6 +67,8 @@ jobs:
           path: |
             build/review/*.json
             build/review/native-sessions*.log
+            build/review/windows-runtime-test-*/*.log
+            build/review/windows-runtime-test-*/result.json
             build/desktop/apps/desktop/*tests.log
             build/desktop/Testing/Temporary/LastTest.log
             build/release-package/*.json

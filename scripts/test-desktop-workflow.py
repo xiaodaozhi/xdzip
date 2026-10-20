@@ -274,6 +274,28 @@ class WorkflowTests(unittest.TestCase):
                 workflow.installer_package()
             script.assert_not_called()
 
+    def test_repeated_windows_verification_preserves_previous_harness(self):
+        workflow = self.workflow('windows')
+        workflow.args.kind = 'runtime'
+        workflow.output.mkdir(parents=True)
+        for required in (workflow.tests, workflow.qt/'bin/Qt6Test.dll',
+                         workflow.qt/'plugins/platforms/qoffscreen.dll'):
+            required.parent.mkdir(parents=True, exist_ok=True)
+            required.write_bytes(b'fixture')
+        previous = workflow.output/'windows-runtime-test'
+        previous.mkdir()
+        evidence = previous/'result.json'
+        evidence.write_text('previous evidence')
+        with patch.object(workflow, 'doctor'), patch.object(workflow, 'runtime_receipt', return_value={'source': self.source}), \
+                patch.object(workflow, 'script') as script:
+            workflow.verify()
+            workflow.verify()
+        calls = [call.args for call in script.call_args_list if call.args[0] == 'verify_windows_runtime.py']
+        directories = [args[args.index('--output')+1] for args in calls]
+        self.assertEqual(len(set(directories)), 2)
+        self.assertTrue(all(path.parent == workflow.output and not path.exists() for path in directories))
+        self.assertEqual(evidence.read_text(), 'previous evidence')
+
     def test_all_verification_rejects_receipt_from_another_platform(self):
         workflow = self.workflow('linux')
         workflow.output.mkdir(parents=True)
