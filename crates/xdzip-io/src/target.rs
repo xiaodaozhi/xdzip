@@ -22,6 +22,15 @@ struct Parent {
     dir: Dir,
     identities: Vec<FileIdentity>,
 }
+impl Drop for Grant {
+    fn drop(&mut self) {
+        // Release a temporary lease before directory/parent handles are torn
+        // down. Do not depend on platform-specific last-handle close ordering.
+        if let Some(lease) = &self._temporary_lock {
+            let _ = lease.unlock();
+        }
+    }
+}
 /// Current leaf fingerprint for one explicit overwrite decision.
 #[derive(Clone, Debug)]
 pub struct ExistingFile {

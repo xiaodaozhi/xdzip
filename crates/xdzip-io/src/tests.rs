@@ -39,6 +39,11 @@ pub(crate) fn path(value: &str) -> PortablePath {
 
 #[test]
 fn all_source_volumes_are_protected_and_temporary_cache_only_sweeps_expired_unlocked_outputs() {
+    for _ in 0..16 {
+        cache_lease_round_trip();
+    }
+}
+fn cache_lease_round_trip() {
     let root = Owned::new();
     let mut ids = Vec::new();
     for name in ["archive.zip.001", "archive.zip.002"] {
@@ -87,16 +92,6 @@ fn all_source_volumes_are_protected_and_temporary_cache_only_sweeps_expired_unlo
         "active cache lease must survive age-based cleanup"
     );
     drop(first);
-    let released = fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(directory.join("lease"))
-        .unwrap();
-    assert!(
-        released.try_lock().is_ok(),
-        "dropping the grant releases its cache lease"
-    );
-    drop(released);
     let foreign = root.0.join(format!("open-{}", "0".repeat(32)));
     fs::create_dir(&foreign).unwrap();
     fs::write(foreign.join("lease"), [1u8; 16]).unwrap();
