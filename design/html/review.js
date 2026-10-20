@@ -51,7 +51,7 @@
         const image = document.querySelector("#reference-image");
         image.hidden = !source;
         document.querySelector("#reference-message").textContent = source
-            ? current("view") === "main" ? "当前胶囊标签设计导出与 HTML 采用相同画布和倍率，横向滚动同步；独立量测沿用历史原图。" : "原稿与 HTML 独立展示，采用相同画布尺寸与缩放倍率；横向滚动同步。"
+            ? current("view") === "main" ? "当前设计图与 HTML 采用相同画布和倍率，横向滚动同步；独立量测使用原图。" : "原稿与 HTML 独立展示，采用相同画布尺寸与缩放倍率；横向滚动同步。"
             : "此状态暂无独立的已确认原稿。";
         if (source) image.src = window.XDZIP_REFERENCES?.[source] || source;
         else image.removeAttribute("src");
