@@ -234,6 +234,7 @@ void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)
         return;
     session->closed = false;
+    session->page->setProperty("closedPage", false);
     auto *window = session->window.data();
     window->setProperty("retiredWindow", false);
     for (const auto &other : m_sessions)
@@ -278,9 +279,17 @@ void ApplicationSessions::closeSession(const QString &id) {
                 next = other.get();
                 break;
             }
-        if (!next)
+        if (!next && m_sessions.size() < 32)
             next = create(false);
-        activate(next);
+        if (next)
+            activate(next);
+        else {
+            // All slots can be retained by background tasks. The existing page
+            // becomes an empty shell with the global task entry, without a 33rd
+            // runtime or cancelling the closed archive's work.
+            value->page->setProperty("closedPage", true);
+            value->page->setProperty("visible", true);
+        }
         reap(value);
         refresh();
         return;
@@ -357,6 +366,9 @@ void ApplicationSessions::command(const QString &command) {
     }
     if (auto *session = current())
         QMetaObject::invokeMethod(session->page, "runDesktopCommand", Q_ARG(QVariant, command));
+    else if (QStringList{"open", "new", "settings", "about"}.contains(command))
+        QMetaObject::invokeMethod(m_active->property("activePage").value<QObject *>(),
+                                  "runDesktopCommand", Q_ARG(QVariant, command));
 }
 QVariantList ApplicationSessions::tasks() const {
     QVariantList result;

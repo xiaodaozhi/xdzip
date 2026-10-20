@@ -13,8 +13,8 @@ Rectangle {
         const index = tabs.findIndex(t => t.selected);
         if (tabs.length > 1) tabSelected(tabs[(index + step + tabs.length) % tabs.length].id);
     }
-    Shortcut { sequence: StandardKey.NextChild; enabled: root.visible && root.tabs.length > 1; onActivated: root.selectRelative(1) }
-    Shortcut { sequence: StandardKey.PreviousChild; enabled: root.visible && root.tabs.length > 1; onActivated: root.selectRelative(-1) }
+    Shortcut { sequences: [StandardKey.NextChild]; enabled: root.visible && root.tabs.length > 1; onActivated: root.selectRelative(1) }
+    Shortcut { sequences: [StandardKey.PreviousChild]; enabled: root.visible && root.tabs.length > 1; onActivated: root.selectRelative(-1) }
     property bool integratedTitlebar: false
     property bool windowsControls: false
     property bool maximized: false

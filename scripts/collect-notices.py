@@ -67,7 +67,7 @@ source_inventory = {
                           for n in metadata['resolve']['nodes'] if n['id'] in references],
     'rust_runtime_candidates': runtime_candidates(metadata, references),
     'assets': assets,
-    'qt_declared_product_modules': ['Core', 'Gui', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
+    'qt_declared_product_modules': ['Core', 'Gui', 'Network', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
     'qt_version': '6.8.2',
     'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
     'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}

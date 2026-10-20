@@ -14,7 +14,7 @@ ApplicationWindow {
     visible: true
     flags: Qt.Window
     color: Theme.surface
-    title: activePage && activePage.controller.title.length ? activePage.controller.title : "xdzip"
+    title: activePage && !activePage.closedPage && activePage.controller.title.length ? activePage.controller.title : "xdzip"
     readonly property bool windowsTitlebar: Qt.platform.os === "windows"
     property bool integratedTitlebar: false
     property var desktopShell: null

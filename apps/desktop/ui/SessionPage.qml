@@ -14,6 +14,7 @@ Item {
     readonly property var sessionManager: windowHost.sessionManager
     property string sessionIdentity: ""
     property bool retainShellPage: false
+    property bool closedPage: false
     readonly property var contentItem: root
     readonly property int visibility: windowHost.visibility
     readonly property bool windowsTitlebar: windowHost.windowsTitlebar
@@ -31,8 +32,8 @@ Item {
         inspectorWindow.close(); conflictWindow.hide(); passwordWindow.clearSecret(); passwordWindow.hide();
     }
     function presentQuit() { quitWindow.present(); }
-    readonly property var globalTasks: sessionManager ? sessionManager.tasks : reader.tasks
-    readonly property var globalTaskModel: sessionManager ? sessionManager.taskModel : reader.taskModel
+    readonly property var globalTasks: sessionManager ? (visible ? sessionManager.tasks : []) : reader.tasks
+    readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
     readonly property var controller: reader
     readonly property color accentTextColor: Theme.accentText
@@ -42,7 +43,7 @@ Item {
         Theme.dark = AppSettings.dark;
         Theme.fontScale = AppSettings.textScale;
     }
-    readonly property bool welcomeVisible: !reader.ready
+    readonly property bool welcomeVisible: closedPage || !reader.ready
     property bool externalFileOpening: false
     property bool welcomeWasBusy: false
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
@@ -72,7 +73,7 @@ Item {
         else runDesktopCommand(command);
     }
     function runDesktopCommand(command) {
-        const ready = reader.ready && !reader.browsingBusy;
+        const ready = !closedPage && reader.ready && !reader.browsingBusy;
         switch (command) {
         case "open": if (reader.runtimeAvailable && !reader.browsingBusy) reader.chooseArchive(windowHost); break;
         case "new": if (reader.runtimeAvailable && !reader.browsingBusy) createWindow.configure(); break;
@@ -572,14 +573,14 @@ Item {
         spacing: 0
         ArchiveTabs {
             Layout.fillWidth: true
-            archiveTitle: reader.title
-            tabs: root.sessionManager ? root.windowHost.sessionTabs : []
+            archiveTitle: root.closedPage ? "" : reader.title
+            tabs: root.sessionManager && root.visible ? root.windowHost.sessionTabs : []
             onTabSelected: identity => root.sessionManager.activateId(identity)
             onTabClosed: identity => root.sessionManager.closeSession(identity)
             integratedTitlebar: root.integratedTitlebar
             windowsControls: root.windowsTitlebar
             maximized: root.visibility === Window.Maximized
-            canOpen: reader.runtimeAvailable && !reader.browsingBusy
+            canOpen: root.sessionManager !== null || (reader.runtimeAvailable && !reader.browsingBusy)
             canClose: reader.ready && !reader.browsingBusy
             onOpenRequested: root.sessionManager ? root.sessionManager.newSession() : root.dispatchDesktopCommand("open")
             onCloseRequested: root.dispatchDesktopCommand("closeArchive")
@@ -1608,7 +1609,7 @@ Item {
                             delegate: CommandMenuItem {
                                 required property var taskData
                                 objectName: "taskMenuItem-" + taskData.id
-                                text: (taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.id)
+                                text: (taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.backendId || taskData.id) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
                                 asset: "task-list"
                                 statusLabel: root.taskStateLabel(taskData.status)
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk

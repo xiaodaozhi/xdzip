@@ -313,7 +313,8 @@ bool DesktopIntegration::enabled(const QString &command) const {
 #endif
     if (blocked())
         return false;
-    const bool ready = m_controller->ready() && !m_controller->browsingBusy();
+    const bool ready = m_controller->ready() && !m_controller->browsingBusy() &&
+                       !m_window->property("welcomeVisible").toBool();
     if (QStringList{"copy", "selectAll", "find"}.contains(command) &&
         QGuiApplication::focusWindow() != m_window)
         return false;
@@ -480,9 +481,12 @@ void DesktopIntegration::syncActions() {
                     QMetaObject::invokeMethod(m_window, "taskStateLabel",
                                               Q_RETURN_ARG(QString, state),
                                               Q_ARG(QString, task.value("status").toString()));
-                    item->setText(text("task").arg(
-                        text(task.value("creating").toBool() ? "createTask" : "extractTask"),
-                        task.value("id").toString(), state));
+                    item->setText(
+                        text("task").arg(
+                            text(task.value("creating").toBool() ? "createTask" : "extractTask"),
+                            task.value("backendId", task.value("id")).toString(), state) +
+                        (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
+                                    : QString{}));
                     item->setIcon(statusIcon(task.value("status").toString()));
                     item->setEnabled(!blocked());
                 }
@@ -505,7 +509,9 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
                                   Q_ARG(QString, task.value("status").toString()));
         auto *item = menu->addAction(
             text("task").arg(text(task.value("creating").toBool() ? "createTask" : "extractTask"),
-                             task.value("id").toString(), state));
+                             task.value("backendId", task.value("id")).toString(), state) +
+            (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
+                        : QString{}));
         item->setData(task.value("id"));
         item->setIcon(statusIcon(task.value("status").toString()));
         item->setEnabled(!blocked());

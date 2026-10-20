@@ -112,6 +112,46 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void sessionLimitKeepsBackgroundTaskEntryReachable() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        for (int i = 1; i < 32; ++i)
+            sessions.newSession();
+        QCOMPARE(sessions.sessionCount(), 32);
+        // Controlled snapshots keep all 32 real connections alive. This test
+        // checks the UI/admission boundary, not backend extraction semantics.
+        for (auto *controller : window->findChildren<BrowserController *>()) {
+            controller->m_tasks[1] = {{"id", "1"}, {"status", "running"}, {"terminal", false}};
+            emit controller->tasksChanged();
+        }
+        const auto tabs = window->property("sessionTabs").toList();
+        QCOMPARE(tabs.size(), 32);
+        for (const auto &value : tabs)
+            sessions.closeSession(value.toMap().value("id").toString());
+        QCOMPARE(sessions.sessionCount(), 32);
+        QCOMPARE(sessions.activeTaskCount(), 32);
+        QVERIFY(window->property("welcomeVisible").toBool());
+        QVERIFY(window->property("activePage").value<QObject *>()->property("visible").toBool());
+        auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+        auto *taskEntry = findVisual(page, "browserTasks");
+        QVERIFY(taskEntry && taskEntry->isVisible());
+        sessions.showTask(tabs.first().toMap().value("id").toString() + "/1");
+        QVERIFY(
+            !window->property("activePage").value<QObject *>()->property("closedPage").toBool());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
     void coldOpenSessionsWaitForNativeLaunch() {
         QQmlApplicationEngine engine;
         engine.setInitialProperties({{"visible", false}});
@@ -235,6 +275,8 @@ class BrowserTest : public QObject {
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
     }
     void independentSessionsAndOpenModes() {
         QQmlApplicationEngine engine;
@@ -305,6 +347,8 @@ class BrowserTest : public QObject {
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         DesktopIntegration desktop(window, controller, preferences, false);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
         for (const auto state : {Qt::WindowMaximized, Qt::WindowFullScreen}) {
             window->setWindowState(state);
             QTRY_COMPARE(window->windowState(), state);
@@ -315,7 +359,34 @@ class BrowserTest : public QObject {
                 QCOMPARE(window->windowState(), state);
                 for (auto *popup : window->findChildren<QQuickWindow *>())
                     popup->close();
+                QTRY_VERIFY(!controller->busy());
             }
+            desktop.execute("extractAll");
+            auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+            QTRY_VERIFY(extract->isVisible());
+            QCOMPARE(window->windowState(), state);
+            extract->close();
+            QTRY_VERIFY(!controller->busy());
+            for (const auto &name : {"taskWindow", "passwordWindow", "conflictWindow", "quitWindow",
+                                     "preflightWindow"}) {
+                auto *popup = window->findChild<QQuickWindow *>(name);
+                QVERIFY(popup);
+                QVERIFY(QMetaObject::invokeMethod(popup, "present"));
+                QCoreApplication::processEvents();
+                QCOMPARE(window->windowState(), state);
+                popup->close();
+            }
+            auto *inspector = window->findChild<QQuickWindow *>("inspectorWindow");
+            WindowActivation::reveal(inspector);
+            QCOMPARE(window->windowState(), state);
+            inspector->close();
+            QTimer::singleShot(100, qApp, [] {
+                for (auto *widget : QApplication::topLevelWidgets())
+                    if (auto *dialog = qobject_cast<QFileDialog *>(widget))
+                        dialog->reject();
+            });
+            controller->chooseArchive(window);
+            QCOMPARE(window->windowState(), state);
             for (const auto &change : changes)
                 QVERIFY(change.first().value<Qt::WindowState>() != Qt::WindowNoState);
             window->hide();
