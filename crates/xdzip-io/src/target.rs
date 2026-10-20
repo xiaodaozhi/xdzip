@@ -293,9 +293,10 @@ impl Grant {
             let Ok(mut file) = dir.open_with("lease", &options).map(|f| f.into_std()) else {
                 continue;
             };
-            if private::check(&file, false).is_err()
-                || file.metadata().map_err(failure)?.len() != 16
-            {
+            let marker_private = private::check(&file, false).is_ok();
+            if !marker_private || file.metadata().map_err(failure)?.len() != 16 {
+                #[cfg(test)]
+                eprintln!("cache marker private={marker_private}");
                 continue;
             }
             let mut marker = [0u8; 16];
@@ -314,7 +315,14 @@ impl Grant {
                 .ok()
                 .and_then(|t| now.duration_since(t).ok())
                 .is_some_and(|age| age.as_secs() > 7 * 24 * 60 * 60);
-            if !expired || file.try_lock().is_err() {
+            if !expired {
+                continue;
+            }
+            if let Err(error) = file.try_lock() {
+                #[cfg(test)]
+                eprintln!("expired cache lease unavailable: {error:?}");
+                #[cfg(not(test))]
+                let _ = error;
                 continue;
             }
             // cap-std's removal stays below this directory and does not traverse
@@ -322,8 +330,14 @@ impl Grant {
             root.validate()?;
             drop(file);
             drop(dir);
-            if root.dir.remove_dir_all(&name).is_ok() {
-                count -= 1;
+            match root.dir.remove_dir_all(&name) {
+                Ok(()) => count -= 1,
+                Err(error) => {
+                    #[cfg(test)]
+                    eprintln!("expired cache cleanup: {:?}", error.kind());
+                    #[cfg(not(test))]
+                    let _ = error;
+                }
             }
         }
         if count >= 256 {

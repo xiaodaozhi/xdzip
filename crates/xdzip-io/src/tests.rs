@@ -68,12 +68,35 @@ fn all_source_volumes_are_protected_and_temporary_cache_only_sweeps_expired_unlo
         )
         .unwrap();
     drop(marker);
+    assert!(
+        std::time::SystemTime::now()
+            .duration_since(
+                fs::metadata(directory.join("lease"))
+                    .unwrap()
+                    .modified()
+                    .unwrap()
+            )
+            .unwrap()
+            .as_secs()
+            > 7 * 24 * 60 * 60,
+        "fixture lease is actually expired"
+    );
     let second = Grant::temporary(&root.0, &ids).unwrap();
     assert!(
         directory.exists(),
         "active cache lease must survive age-based cleanup"
     );
     drop(first);
+    let released = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(directory.join("lease"))
+        .unwrap();
+    assert!(
+        released.try_lock().is_ok(),
+        "dropping the grant releases its cache lease"
+    );
+    drop(released);
     let foreign = root.0.join(format!("open-{}", "0".repeat(32)));
     fs::create_dir(&foreign).unwrap();
     fs::write(foreign.join("lease"), [1u8; 16]).unwrap();
