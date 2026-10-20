@@ -48,6 +48,11 @@ class VersionTests(unittest.TestCase):
         for channel, suffix in [('development','-dev.2'),('alpha','-alpha.2'),('beta','-beta.2'),('rc','-rc.2'),('stable','')]:
             with self.subTest(channel=channel):
                 self.assertEqual(self.evaluate(dict(version='1.2.3',channel=channel,build=2))['display_version'],'1.2.3'+suffix)
+    def test_prerelease_sequence_is_independent(self):
+        self.assertEqual(self.evaluate(dict(version='0.1.0',channel='alpha',build=14,prerelease_number=1))['display_version'], '0.1.0-alpha.1')
+        for value in [0, True, '1', 65536]:
+            with self.assertRaises(ValueError):
+                self.evaluate(dict(version='0.1.0',channel='alpha',build=14,prerelease_number=value))
     def test_reject_invalid_os_and_semver_values(self):
         for key,value in [('version','01.2.3'),('version','1.2'),('version','65536.0.0'),('version','1.2.3-beta'),('build',0),('build',65536),('build',True),('build',1.5),('channel','release')]:
             with self.subTest(key=key,value=value):

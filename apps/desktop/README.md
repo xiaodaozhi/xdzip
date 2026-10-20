@@ -1,5 +1,7 @@
 # Qt 开发应用与组件预览
 
+应用级 ApplicationSessions 管理独立 SessionPage、BrowserController 与 Rust 连接，单实例 IPC 在创建窗口与托盘前选举。任务聚合和关闭策略见[应用会话契约](../../docs/engineering/application-sessions.md)。
+
 `xdzip` 是连接 Rust 核心的真实产品入口，Windows 文件名为 `xdzip.exe`；`xdzip-ui-preview` 只展示明确标识的本地示例任务，不访问用户文件，也不模拟真实压缩进度。产品能力以根目录 [README](../../README.md)为准，交互与窗口规则见[主窗口契约](../../docs/ux/main-window-components.md)及[任务窗口契约](../../docs/ux/task-windows.md)。
 
 ## 构建运行

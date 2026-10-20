@@ -3,13 +3,19 @@
 #include <QEvent>
 #include <QPointer>
 #include <QQuickWindow>
+#include <functional>
 
 // Native Quit and window close share the QML task decision, then the asynchronous join barrier.
 class AppQuitGuard final : public QObject {
   public:
+    std::function<void()> quitHandler;
     QPointer<BrowserController> controller;
     QPointer<QQuickWindow> window;
     bool eventFilter(QObject *, QEvent *event) override {
+        if (event->type() == QEvent::Quit && quitHandler) {
+            quitHandler();
+            return true;
+        }
         if (event->type() != QEvent::Quit || !controller)
             return false;
         if (window && controller->runtimeAvailable()) {

@@ -14,7 +14,7 @@
 | 构建与验证 | [统一构建入口](engineering/developer-build.md)、[开发指南](engineering/development.md)、[Qt 应用模块](../apps/desktop/README.md)、[CI 策略](engineering/ci-policy.md)、[验证方法](qa/README.md) |
 | 部署与来源 | [部署核验](engineering/deployment-audit.md)、[运行时归属](engineering/runtime-attribution.md)、[Linux 部署](engineering/linux-deployment.md)、[Mac DMG](engineering/macos-deployment.md)、[安装与关联](engineering/installers-associations.md) |
 | 源码与候选 | [对应源码](engineering/source-delivery.md)、[SDK 对应核验](engineering/qt-sdk-correspondence.md)、[自动证据汇总](engineering/wp12-automation.md)、[候选材料](engineering/release-candidate.md) |
-| 版本与发行 | [版本机制](engineering/versioning.md)、[支持政策](engineering/support-policy.md)、[发行审查流程](qa/release-review.md)、[发布手册](engineering/release-runbook.md) |
+| 版本与发行 | [版本机制](engineering/versioning.md)、[发布协议](engineering/release-protocol.md)、[应用会话](engineering/application-sessions.md)、[支持政策](engineering/support-policy.md)、[发行审查流程](qa/release-review.md)、[发布手册](engineering/release-runbook.md) |
 | 执行与风险 | [工作包路线](planning/backlog.md)、[风险控制](planning/risks.md)、[就绪评审方法](planning/readiness.md) |
 | 仓库管理 | [内容与历史管理](engineering/repository-hygiene.md)、[目录与依赖](engineering/repository-layout.md)、[贡献指南](../CONTRIBUTING.md)、[变更日志](../CHANGELOG.md) |
 | 开源协作 | [治理](../GOVERNANCE.md)、[行为规范](../CODE_OF_CONDUCT.md)、[安全政策](../SECURITY.md) |

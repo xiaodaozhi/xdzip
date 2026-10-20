@@ -1,6 +1,8 @@
 #include "DesktopIntegration.h"
+#include "ApplicationSessions.h"
 #include "BrowserController.h"
 #include "UiPreferences.h"
+#include "WindowActivation.h"
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -230,6 +232,16 @@ DesktopIntegration::~DesktopIntegration() {
     // QSystemTrayIcon does not own its QMenu. Detach before deleting the menu.
     m_tray.setContextMenu(nullptr);
 }
+void DesktopIntegration::bind(QQuickWindow *window, BrowserController *controller) {
+    m_window = window;
+    m_controller = controller;
+    window->setProperty("desktopShell", QVariant::fromValue(static_cast<QObject *>(this)));
+    connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions,
+            Qt::UniqueConnection);
+    connect(controller, &BrowserController::tasksChanged, this, &DesktopIntegration::syncActions,
+            Qt::UniqueConnection);
+    syncActions();
+}
 bool DesktopIntegration::nativeMenuAvailable() const {
 #ifdef Q_OS_MACOS
     return QGuiApplication::platformName() == QStringLiteral("cocoa");
@@ -364,7 +376,10 @@ void DesktopIntegration::execute(const QString &command) {
     restore();
     if (blocked())
         return;
-    QMetaObject::invokeMethod(m_window, "runDesktopCommand", Q_ARG(QVariant, command));
+    if (m_sessions)
+        m_sessions->command(command);
+    else
+        QMetaObject::invokeMethod(m_window, "runDesktopCommand", Q_ARG(QVariant, command));
     syncActions();
 }
 void DesktopIntegration::requestQuit() {
@@ -375,7 +390,10 @@ void DesktopIntegration::requestQuit() {
         return;
     }
     restore();
-    QMetaObject::invokeMethod(m_window, "requestDesktopExit");
+    if (m_sessions)
+        m_sessions->requestQuit();
+    else
+        QMetaObject::invokeMethod(m_window, "requestDesktopExit");
 }
 void DesktopIntegration::hideWindows() {
     if (blocked()) {
@@ -403,19 +421,14 @@ void DesktopIntegration::restore() {
         return;
     }
     if (auto *modal = QGuiApplication::modalWindow()) {
-        modal->show();
-        modal->raise();
-        modal->requestActivate();
+        WindowActivation::reveal(modal);
         return;
     }
-    if (m_window->windowState() == Qt::WindowMinimized)
-        m_window->showNormal();
-    else
-        m_window->show();
+    WindowActivation::reveal(m_window);
     m_hidden = false;
     for (auto &window : m_hiddenWindows)
         if (window)
-            window->show();
+            WindowActivation::reveal(window);
     m_hiddenWindows.clear();
     m_window->raise();
     m_window->requestActivate();
@@ -429,7 +442,7 @@ void DesktopIntegration::refresh() {
             restore();
         m_available = available;
         m_tray.setVisible(available);
-        QApplication::setQuitOnLastWindowClosed(!available);
+        QApplication::setQuitOnLastWindowClosed(!m_sessions && !available);
         emit availabilityChanged();
     }
     updateIcon();
@@ -453,11 +466,11 @@ void DesktopIntegration::syncActions() {
         if (command == "inspector")
             item->setChecked(m_window->property("desktopInspectorVisible").toBool());
     }
-    const auto count = m_controller->activeTaskCount();
+    const auto count = m_sessions ? m_sessions->activeTaskCount() : m_controller->activeTaskCount();
     for (auto *menu : m_taskMenus) {
         menu->setTitle(text("tasks").arg(count));
         if (menu->isVisible()) {
-            const auto tasks = m_controller->tasks();
+            const auto tasks = m_sessions ? m_sessions->tasks() : m_controller->tasks();
             for (auto *item : menu->actions()) {
                 for (const auto &value : tasks) {
                     const auto task = value.toMap();
@@ -480,7 +493,7 @@ void DesktopIntegration::syncActions() {
 }
 void DesktopIntegration::rebuildTasks(QMenu *menu) {
     menu->clear();
-    const auto tasks = m_controller->tasks();
+    const auto tasks = m_sessions ? m_sessions->tasks() : m_controller->tasks();
     if (tasks.isEmpty()) {
         menu->addAction(text("noTasks"))->setEnabled(false);
         return;
@@ -498,8 +511,12 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
         item->setEnabled(!blocked());
         connect(item, &QAction::triggered, this, [this, id = task.value("id")] {
             restore();
-            if (!blocked())
-                QMetaObject::invokeMethod(m_window, "showTask", Q_ARG(QString, id.toString()));
+            if (!blocked()) {
+                if (m_sessions)
+                    m_sessions->showTask(id.toString());
+                else
+                    QMetaObject::invokeMethod(m_window, "showTask", Q_ARG(QString, id.toString()));
+            }
         });
     }
 }
@@ -518,7 +535,7 @@ void DesktopIntegration::rebuildRecent() {
             if (!enabled("open"))
                 return;
             restore();
-            m_controller->openPath(path);
+            m_controller->requestOpen(path);
         });
     }
 }
@@ -527,7 +544,11 @@ void DesktopIntegration::rebuildWindows() {
         if (item->property("desktopWindow").toBool())
             delete item;
     for (auto *window : QGuiApplication::topLevelWindows()) {
-        if (!ownedWindow(window, m_window) || (!window->isVisible() && window != m_window))
+        if ((!m_sessions && !ownedWindow(window, m_window)) ||
+            (m_sessions && !window->property("managedWindow").toBool() &&
+             !ownedWindow(window, m_window)) ||
+            window->property("retiredWindow").toBool() ||
+            (!window->isVisible() && window != m_window))
             continue;
         auto *item = m_windowMenu->addAction(window->title().replace('&', "&&"));
         item->setProperty("desktopWindow", true);
@@ -537,9 +558,7 @@ void DesktopIntegration::rebuildWindows() {
         connect(item, &QAction::triggered, this, [this, target] {
             restore();
             if (target && !blocked()) {
-                target->show();
-                target->raise();
-                target->requestActivate();
+                WindowActivation::reveal(target);
             }
         });
     }
@@ -576,7 +595,7 @@ void DesktopIntegration::updateIcon() {
     m_tray.setIcon(icon);
 }
 bool DesktopIntegration::eventFilter(QObject *watched, QEvent *event) {
-    if (watched == m_window && event->type() == QEvent::Close && m_available &&
+    if (!m_sessions && watched == m_window && event->type() == QEvent::Close && m_available &&
         !m_window->property("desktopExitRequested").toBool() &&
         !m_window->property("restartAfterClose").toBool()) {
         event->ignore();

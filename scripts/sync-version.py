@@ -17,7 +17,10 @@ def version_info():
     if info['channel'] not in channels or type(info['build']) is not int or not 1 <= info['build'] <= 65535:
         raise ValueError('Invalid channel or build number')
     suffix = channels[info['channel']]
-    info['display_version'] = info['version'] + (f'-{suffix}.{info["build"]}' if suffix else '')
+    number = info.get('prerelease_number', info['build'])
+    if type(number) is not int or not 1 <= number <= 65535 or ('prerelease_number' in info and not suffix):
+        raise ValueError('Invalid prerelease number')
+    info['display_version'] = info['version'] + (f'-{suffix}.{number}' if suffix else '')
     return info
 
 def set_version(source, section, value):

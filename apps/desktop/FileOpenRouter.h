@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QQuickWindow>
 #include <QTimer>
+#include <functional>
 
 // Capture macOS events before QML is ready; serialize intents through the
 // existing controller idle barrier instead of dropping opens during a task.
@@ -12,6 +13,12 @@ class FileOpenRouter final : public QObject {
     QPointer<BrowserController> m_controller;
     QPointer<QQuickWindow> m_window;
     void pump() {
+        if (m_handler) {
+            const auto pending = std::exchange(m_pending, {});
+            for (const auto &path : pending)
+                m_handler(path);
+            return;
+        }
         if (!m_controller || !m_window || m_controller->busy())
             return;
         if (!m_controller->runtimeAvailable() || m_pending.isEmpty()) {
@@ -32,6 +39,10 @@ class FileOpenRouter final : public QObject {
     }
 
   public:
+    void attach(std::function<void(const QString &)> handler) {
+        m_handler = std::move(handler);
+        pump();
+    }
     void enqueue(const QString &path) {
         if (path.isEmpty() || path.contains(QChar::Null) || m_pending.size() >= 128)
             return;
@@ -56,4 +67,7 @@ class FileOpenRouter final : public QObject {
         event->accept();
         return true;
     }
+
+  private:
+    std::function<void(const QString &)> m_handler;
 };

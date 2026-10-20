@@ -6,7 +6,7 @@
     "ui.8f1009f1369b": "Start",
     "ui.6eff18378890": "Close current archive",
     "ui.1b59353f1874": "Open archive",
-    "ui.e5ab37895edd": "Open an archive; replaces the current session",
+    "ui.e5ab37895edd": "Create a blank tab or window using the current setting",
     "settings.title": "Settings",
     "ui.c771248e511f": "Open",
     "ui.50ef2f4cf6a4": "New",
@@ -534,6 +534,10 @@
     "password.open": "Enter password",
     "password.submitRejected": "Unable to submit the password. Try again.",
     "password.attemptLimit": "The password retry limit was reached. The task has stopped.",
-    "password.preflight": "This file requires a password. You will be asked during extraction."
+    "password.preflight": "This file requires a password. You will be asked during extraction.",
+    "sessions.limit": "Up to 32 sessions can remain open. Close idle pages and try again.",
+    "sessions.openMode": "Open archives",
+    "sessions.tabs": "Open in a new tab",
+    "sessions.windows": "Open in a new window"
   }
 }

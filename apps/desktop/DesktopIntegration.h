@@ -13,6 +13,7 @@ class QMenuBar;
 class QQuickWindow;
 class BrowserController;
 class UiPreferences;
+class ApplicationSessions;
 
 // Platform presentation only: all archive commands stay in the existing controller.
 class DesktopIntegration final : public QObject {
@@ -24,11 +25,18 @@ class DesktopIntegration final : public QObject {
                        bool interactive = true,
                        std::function<bool()> availability = QSystemTrayIcon::isSystemTrayAvailable);
     ~DesktopIntegration() override;
+    void bind(QQuickWindow *window, BrowserController *controller);
+    void setSessions(ApplicationSessions *sessions) {
+        m_sessions = sessions;
+    }
     bool nativeMenuAvailable() const;
     bool trayAvailable() const {
         return m_available;
     }
     Q_INVOKABLE void restore();
+    void hideToTray() {
+        hideWindows();
+    }
     Q_INVOKABLE void execute(const QString &command);
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void requestQuit();
@@ -70,4 +78,5 @@ class DesktopIntegration final : public QObject {
     bool m_hidden = false;
     QString m_iconVariant;
     QString m_session;
+    ApplicationSessions *m_sessions = nullptr;
 };

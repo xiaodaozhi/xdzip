@@ -1,4 +1,5 @@
 #include "AppQuitGuard.h"
+#include "ApplicationSessions.h"
 #include "AssociationProbe.h"
 #include "BrowserController.h"
 #include "BuildInfo.h"
@@ -7,12 +8,15 @@
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
+#include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
+#include "WindowActivation.h"
 #include <QApplication>
 #include <QEvent>
 #include <QIcon>
+#include <QMessageBox>
 #include <QPointer>
 #include <QProcess>
 #include <QQmlApplicationEngine>
@@ -33,6 +37,8 @@ int main(int argc, char *argv[]) {
     if (BuildInfo::printVersionIfRequested(argc, argv))
         return 0;
     QApplication application(argc, argv);
+    application.setApplicationName(QStringLiteral("xdzip"));
+    WindowActivation::install(&application);
     InstalledRuntimeGuard installedRuntime;
     if (!installedRuntime.acquire())
         return 11;
@@ -42,13 +48,29 @@ int main(int argc, char *argv[]) {
     const bool literalPaths = args.contains(QStringLiteral("--"));
     const auto probeArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--desktop-probe"));
     const bool smokeTest = !literalPaths && args.contains(QStringLiteral("--smoke-test"));
+    QStringList startupPaths;
     if (!smokeTest && probeArgument < 0) {
         const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
         for (int i = start; i < args.size(); ++i) {
             if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
-                fileOpens.enqueue(args.at(i));
+                startupPaths.append(QFileInfo(args.at(i)).absoluteFilePath());
         }
     }
+    SingleInstance instance;
+    const bool interactive = !smokeTest && probeArgument < 0;
+    if (interactive) {
+        const auto election = instance.start(startupPaths);
+        if (election == SingleInstance::Forwarded)
+            return 0;
+        if (election == SingleInstance::Failed) {
+            QMessageBox::critical(
+                nullptr, QStringLiteral("xdzip"),
+                QString::fromUtf8("无法与已运行的 xdzip 通信，请稍后重试。未启动第二个实例。"));
+            return 12;
+        }
+    }
+    for (const auto &path : startupPaths)
+        fileOpens.enqueue(path);
     FocusDismissPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setApplicationVersion(BuildInfo::version());
@@ -79,16 +101,36 @@ int main(int argc, char *argv[]) {
     if (!controller)
         return 1;
     auto *mainWindow = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-    fileOpens.attach(controller, mainWindow);
+    if (!interactive)
+        fileOpens.attach(controller, mainWindow);
     installAssociationProbe(controller, mainWindow);
     AppQuitGuard guard;
     guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     guard.controller = controller;
     application.installEventFilter(&guard);
-    QObject::connect(controller, &BrowserController::readyToClose, &application,
-                     &QApplication::quit, Qt::QueuedConnection);
+    if (!interactive)
+        QObject::connect(controller, &BrowserController::readyToClose, &application,
+                         &QApplication::quit, Qt::QueuedConnection);
     auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
     DesktopIntegration desktop(mainWindow, controller, settings, !smokeTest && probeArgument < 0);
+    std::unique_ptr<ApplicationSessions> sessions;
+    if (interactive) {
+        QApplication::setQuitOnLastWindowClosed(false);
+        sessions = std::make_unique<ApplicationSessions>(&engine, settings);
+        sessions->adopt(mainWindow);
+        sessions->setDesktop(&desktop);
+        guard.quitHandler = [&] { sessions->requestQuit(); };
+        QObject::connect(
+            sessions.get(), &ApplicationSessions::readyToQuit, &application,
+            [&] {
+                guard.quitHandler = {};
+                guard.controller = nullptr;
+                application.quit();
+            },
+            Qt::QueuedConnection);
+        fileOpens.attach([&](const QString &path) { sessions->openPath(path); });
+        instance.attach([&](const QStringList &paths) { sessions->open(paths); });
+    }
     std::unique_ptr<DesktopProbe> probe;
     if (probeArgument >= 0) {
         if (probeArgument + 1 >= application.arguments().size() ||
@@ -169,8 +211,9 @@ int main(int argc, char *argv[]) {
     const auto result = application.exec();
     // Window close completes the existing task decision and runtime join barrier first.
     // Relaunch only the application, never replay diagnostic flags or a previously opened file.
-    if (result == 0 && !engine.rootObjects().isEmpty() &&
-        engine.rootObjects().first()->property("restartAfterClose").toBool()) {
+    if (result == 0 && ((sessions && sessions->restartRequested()) ||
+                        (!sessions && !engine.rootObjects().isEmpty() &&
+                         engine.rootObjects().first()->property("restartAfterClose").toBool()))) {
         if (!QProcess::startDetached(QCoreApplication::applicationFilePath(), QStringList{}))
             return 6;
     }

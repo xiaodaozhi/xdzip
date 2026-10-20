@@ -20,13 +20,14 @@
 
 ![xdzip 主界面设计预览](design/hifi/screens/main-capsule-light.png)
 
-<p align="center"><sub>主界面高保真设计参考。图中的多标签与图片预览为设计示例，当前产品能力见下文。</sub></p>
+<p align="center"><sub>主界面高保真设计参考。图中的图片预览为设计示例，当前产品能力见下文。</sub></p>
 
 ## 功能亮点
 
 - **清晰地浏览内容**：目录树、列表与网格、搜索、全结果排序和文件属性，支持最多十万条物理记录。
 - **按需要解压**：选择文件或文件夹，确认目标与重名策略，查看真实进度，随时请求取消；已完成的文件有明确结果记录。
 - **创建压缩包**：支持 ZIP、TAR 与 TAR.GZ，提供压缩级别、ZIP AES-256 内容加密和编号分卷，写后校验通过后保存。
+- **按习惯打开**：默认新标签页，也可设置为新窗口；每个登录会话共用一个进程和托盘，关闭页面后任务继续运行。
 - **适应你的桌面**：浅色、深色与跟随系统主题，100%／125%／150% 字号、列表密度、中文 (简体) 与 English (US)，配合 macOS 系统菜单和全平台托盘。
 
 打开文件先浏览内容，不自动解压。创建成功后在应用内打开可浏览的单卷结果，不自动弹出 Finder 或 Explorer。
@@ -52,11 +53,13 @@
 
 ## 获取与安装
 
-当前可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
+预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 包保留应用目录内 VC++ 运行库和图形兼容库，Mac 包仅 ad-hoc 完整性签名。独立审查状态与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+
+当前也可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
 
 | 平台 | 支持范围 | 开发交付方式 |
 | --- | --- | --- |
-| macOS | macOS 14+，Apple Silicon arm64 | 本地构建 `.app`，可按[部署指南](docs/engineering/macos-deployment.md)制作开发 DMG；CI 不提供应用包 |
+| macOS | macOS 14+，Apple Silicon arm64 | 本地构建 `.app`，可按[部署指南](docs/engineering/macos-deployment.md)制作开发 DMG；普通 CI 不提供应用包，专用发布流程提供 app.zip 与 DMG |
 | Windows | 仍受维护的 Windows 11，x86_64 | 当前用户安装器，或含 Qt 运行库的目录包 |
 | Linux | Ubuntu 24.04 LTS，x86_64，X11，glibc 2.39+ | `.deb` 安装包，或保留执行权限的 `.tar.gz` 运行目录 |
 
@@ -85,7 +88,7 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 
 ## 当前限制
 
-- 当前使用单个真实压缩包会话，尚未实现多标签会话、文件内容预览和独立完整性检查命令。
+- 支持独立标签页或多窗口会话，文件内容预览和独立完整性检查命令尚未实现。
 - 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
 - [独立发行审查](https://github.com/xiaodaozhi/xdzip/issues/4)尚未完成，开发验证不等于独立安全审查。
 - 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。

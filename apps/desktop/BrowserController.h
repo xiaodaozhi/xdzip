@@ -11,6 +11,7 @@
 #include <QVariantMap>
 #include <QWindow>
 #include <QtQml/qqmlregistration.h>
+#include <functional>
 #include <limits>
 #include <memory>
 
@@ -114,6 +115,19 @@ class BrowserController : public QObject {
     Q_PROPERTY(QString sessionId READ sessionId NOTIFY changed)
   public:
     explicit BrowserController(QObject *parent = nullptr);
+    std::function<void(const QString &)> openIntent;
+    QString sourcePath() const {
+        return m_sourcePath;
+    }
+    bool shutdownComplete() const {
+        return m_connection->stopped();
+    }
+    Q_INVOKABLE void requestOpen(const QString &path) {
+        if (openIntent)
+            openIntent(path);
+        else
+            openPath(path);
+    }
     ~BrowserController() override;
     QAbstractItemModel *entries() {
         return &m_model;

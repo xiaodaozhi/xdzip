@@ -18,6 +18,8 @@ class UiPreferences : public QObject {
     Q_PROPERTY(QString savedDensity READ savedDensity NOTIFY savedChanged)
     Q_PROPERTY(bool recentEnabled READ recentEnabled NOTIFY savedChanged)
     Q_PROPERTY(bool trayEnabled READ trayEnabled NOTIFY savedChanged)
+    Q_PROPERTY(QString openMode READ openMode NOTIFY savedChanged)
+    QString m_openMode = QStringLiteral("tabs");
     bool m_trayEnabled = true;
     QString m_density = QStringLiteral("standard");
     QString m_savedDensity = QStringLiteral("standard");
@@ -51,6 +53,12 @@ class UiPreferences : public QObject {
     bool trayEnabled() const {
         return m_trayEnabled;
     }
+    QString openMode() const {
+        return m_openMode;
+    }
+    Q_INVOKABLE bool saveDetails(const QString &theme, double textScale, const QString &language,
+                                 const QString &density, bool recentEnabled, bool clearRecent,
+                                 bool trayEnabled, const QString &openMode);
     Q_INVOKABLE QStringList recentArchives() const;
     Q_INVOKABLE void previewDensity(const QString &density);
     Q_INVOKABLE void rememberArchive(const QString &path);

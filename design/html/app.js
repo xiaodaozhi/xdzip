@@ -1482,7 +1482,7 @@ function showAbout() {
 function showSettings() {
     if (state.modal === "about" && aboutReturnDraft) { settingsResumeDraft = aboutReturnDraft; aboutReturnDraft = null; }
     restoreSettingsPreview();
-    const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, tray:true, clearRecent:false};
+    const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, tray:true, openMode:"tabs", clearRecent:false};
     const draft = {...(settingsResumeDraft || savedSettingsDemo || original)};
     settingsResumeDraft = null;
     const t = settingText;
@@ -1494,6 +1494,7 @@ function showSettings() {
         <div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${themePreviews[mode]}<span><input type="radio" name="setting-theme" value="${mode}">${t("settings."+mode)}</span></label>`).join("")}</div></fieldset>
         <div class="settings-row"><label for="setting-density">${t("settings.density")}</label><select id="setting-density" class="field-select"><option value="standard">${t("settings.standard")}</option><option value="compact">${t("settings.compact")}</option></select></div>
         <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
+        <div class="settings-row"><label for="setting-open-mode">${t("sessions.openMode")}</label><select id="setting-open-mode" class="field-select"><option value="tabs">${t("sessions.tabs")}</option><option value="windows">${t("sessions.windows")}</option></select></div>
         <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="tray-enabled" type="checkbox">${t("desktop.trayEnabled")}</label><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div><div><button id="settings-about" class="button">${t("about.title")}</button></div></div>` +
         footer(`<button id="settings-defaults" class="button">${t("settings.defaults")}</button><button class="button" data-close>${t("common.cancel")}</button><button id="settings-save" class="button">${t("settings.done")}</button>`,t("ui.5fb5c0083f18"), "shield"),
         "settings", "S01", "#settings-save",
@@ -1506,6 +1507,7 @@ function showSettings() {
         $("#setting-language").value = draft.language;
         $("#setting-density").value = draft.density;
         $("#recent-enabled").checked = draft.recent;
+        $("#setting-open-mode").value = draft.openMode || "tabs";
         $("#tray-enabled").checked = draft.tray;
         $("#clear-recent").textContent = t(draft.clearRecent ? "settings.clearPending" : "settings.clearRecent");
         $("#clear-recent").disabled = draft.clearRecent;
@@ -1521,10 +1523,11 @@ function showSettings() {
     $("#setting-text-scale").onchange = e => { draft.textScale=Number(e.target.value);refresh(); };
     $("#setting-language").onchange = e => { draft.language=e.target.value; };
     $("#setting-density").onchange = e => { draft.density=e.target.value; refresh(); };
+    $("#setting-open-mode").onchange = e => { draft.openMode=e.target.value; };
     $("#tray-enabled").onchange = e => { draft.tray=e.target.checked; };
     $("#recent-enabled").onchange = e => { draft.recent=e.target.checked; };
     $("#clear-recent").onclick = () => { draft.clearRecent=true; refresh(); };
-    $("#settings-defaults").onclick = () => { Object.assign(draft,{theme:"system",textScale:1,language:"zh-CN",density:"standard",recent:true,tray:true,clearRecent:false});refresh(); };
+    $("#settings-defaults").onclick = () => { Object.assign(draft,{theme:"system",textScale:1,language:"zh-CN",density:"standard",recent:true,tray:true,openMode:"tabs",clearRecent:false});refresh(); };
     $("#settings-save").onclick = () => {
         const restartNeeded = draft.language !== (savedSettingsDemo?.language || activeSettingsLanguage) && draft.language !== activeSettingsLanguage;
         savedSettingsDemo={...draft,clearRecent:false};state.recent=draft.recent;settingsPreview=null;closeModal();

@@ -48,7 +48,7 @@ foreach(target xdzip-ui-resources xdzip-ui-preview xdzip-ui-tests)
     endif()
 endforeach()
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets Network)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 qt_add_executable(xdzip-browser browser_main.cpp)
@@ -97,9 +97,9 @@ qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp)
+    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
-    Qt6::Widgets Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
+    Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -108,7 +108,7 @@ if(UNIX AND NOT APPLE)
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps")
 endif()
 if(BUILD_TESTING)
-    add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h DesktopIntegration.h DesktopIntegration.cpp)
+    add_executable(xdzip-browser-tests tests/browser_test.cpp BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp)
     if(APPLE)
         target_sources(xdzip-browser-tests PRIVATE MacTitlebar.mm)
         target_link_libraries(xdzip-browser-tests PRIVATE "-framework AppKit")
@@ -128,7 +128,7 @@ if(BUILD_TESTING)
     add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust
-        Qt6::Widgets Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log,txt")
     # Whole-suite ceiling includes large scans and many event-loop waits. Individual
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.

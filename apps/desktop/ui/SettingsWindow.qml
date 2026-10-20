@@ -16,6 +16,7 @@ OperationWindow {
     property string initialLanguage: "zh-CN"
     property bool saved: false
     property string draftDensity: "standard"
+    property string draftOpenMode: "tabs"
     property bool draftTray: true
     property bool draftRecent: true
     property bool clearRecent: false
@@ -28,6 +29,7 @@ OperationWindow {
         draftDensity = AppSettings.savedDensity;
         draftRecent = AppSettings.recentEnabled;
         draftTray = AppSettings.trayEnabled;
+        draftOpenMode = AppSettings.openMode;
         clearRecent = false;
         saved = false;
         syncControls();
@@ -35,6 +37,7 @@ OperationWindow {
     }
     function syncControls() {
         if (!scaleSelect || !languageSelect || !densitySelect) return;
+        openModeSelect.currentIndex = draftOpenMode === "windows" ? 1 : 0;
         densitySelect.currentIndex = draftDensity === "compact" ? 1 : 0;
         scaleSelect.currentIndex = [1, 1.25, 1.5].indexOf(draftScale);
         languageSelect.currentIndex = draftLanguage === "en-US" ? 1 : 0;
@@ -176,6 +179,19 @@ OperationWindow {
                     }
                     Text { Layout.fillWidth: true; text: qsTrId("ui.3a593f5653b1"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.textSecondary; wrapMode: Text.Wrap }
                 }
+                RowLayout {
+                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                    Text { Layout.fillWidth: true; text: qsTrId("sessions.openMode"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                    OperationSelect {
+                        id: openModeSelect
+                        objectName: "settingsOpenMode"
+                        Accessible.name: qsTrId("sessions.openMode")
+                        density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                        model: [qsTrId("sessions.tabs"), qsTrId("sessions.windows")]
+                        currentIndex: root.draftOpenMode === "windows" ? 1 : 0
+                        onActivated: root.draftOpenMode = currentIndex === 1 ? "windows" : "tabs"
+                    }
+                }
                 IntentCheckBox {
                     id: trayToggle
                     objectName: "settingsTray"
@@ -251,7 +267,7 @@ OperationWindow {
             OperationFooterButton {
                 objectName: "settingsDefaults"
                 text: qsTrId("settings.defaults")
-                onClicked: { root.draftTheme = "system"; root.draftScale = 1; root.draftLanguage = "zh-CN"; root.draftDensity = "standard"; root.draftRecent = true; root.draftTray = true; root.clearRecent = false; root.syncControls(); }
+                onClicked: { root.draftTheme = "system"; root.draftScale = 1; root.draftLanguage = "zh-CN"; root.draftDensity = "standard"; root.draftRecent = true; root.draftTray = true; root.draftOpenMode = "tabs"; root.clearRecent = false; root.syncControls(); }
             }
             OperationFooterButton { objectName: "settingsCancel"; text: qsTrId("common.cancel"); onClicked: root.close() }
             OperationFooterButton {
@@ -259,7 +275,7 @@ OperationWindow {
                 text: qsTrId("settings.done")
                 onClicked: {
                     const restartNeeded = root.draftLanguage !== root.initialLanguage && root.draftLanguage !== AppSettings.activeLanguage;
-                    if (AppSettings.saveDetails(root.draftTheme, root.draftScale, root.draftLanguage, root.draftDensity, root.draftRecent, root.clearRecent, root.draftTray)) {
+                    if (AppSettings.saveDetails(root.draftTheme, root.draftScale, root.draftLanguage, root.draftDensity, root.draftRecent, root.clearRecent, root.draftTray, root.draftOpenMode)) {
                         root.saved = true;
                         root.close();
                         if (restartNeeded) root.restartConfirmationRequested();

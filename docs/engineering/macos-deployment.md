@@ -1,5 +1,7 @@
 # 本地 macOS 开发 DMG
 
+专用 Release 工作流允许原生部署、必要的 ad-hoc 签名、app.zip 与 DMG 打包及上传，普通 macOS CI 仍保持 SDK 验证策略。同一份已部署、签名并验证的 .app 用于两个发布包，ZIP 解包后另作重定位启动核验，详见[发布协议](release-protocol.md)。
+
 本地开发 DMG 是允许的开发交付方式，CI 继续只验证 Apple Silicon 原生构建／启动，不自动打包、签名或上传 Mac 应用。本地脚本不安装应用、不改默认关联、不上传文件，不读取发行凭据。
 
 ## 制作与核验

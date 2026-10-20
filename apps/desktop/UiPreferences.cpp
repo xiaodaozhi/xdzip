@@ -43,6 +43,8 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
         m_language = language;
         const auto density = settings.value("appearance/density", "standard").toString();
         m_savedDensity = m_density = density == "compact" ? density : QStringLiteral("standard");
+        m_openMode =
+            settings.value("desktop/openMode").toString() == "windows" ? "windows" : "tabs";
         m_trayEnabled = settings.value("desktop/trayEnabled", true).toBool();
         m_recentEnabled = settings.value("privacy/recentEnabled", true).toBool();
     } else {
@@ -129,6 +131,7 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     settings.setValue("appearance/density", m_savedDensity);
     settings.setValue("privacy/recentEnabled", m_recentEnabled);
     settings.setValue("desktop/trayEnabled", m_trayEnabled);
+    settings.setValue("desktop/openMode", m_openMode);
     settings.sync();
     if (settings.status() != QSettings::NoError)
         return failed();
@@ -192,8 +195,20 @@ bool UiPreferences::saveDetails(const QString &theme, double scale, const QStrin
 bool UiPreferences::saveDetails(const QString &theme, double scale, const QString &language,
                                 const QString &density, bool recentEnabled, bool clearRecent,
                                 bool trayEnabled) {
-    if (density != "standard" && density != "compact")
+    return saveDetails(theme, scale, language, density, recentEnabled, clearRecent, trayEnabled,
+                       m_openMode);
+}
+bool UiPreferences::saveDetails(const QString &theme, double scale, const QString &language,
+                                const QString &density, bool recentEnabled, bool clearRecent,
+                                bool trayEnabled, const QString &openMode) {
+    if (openMode != "tabs" && openMode != "windows")
         return false;
+    const auto oldOpenMode = m_openMode;
+    m_openMode = openMode;
+    if (density != "standard" && density != "compact") {
+        m_openMode = oldOpenMode;
+        return false;
+    }
     const auto oldDensity = m_savedDensity;
     const auto oldRecent = m_recentEnabled;
     const auto oldTray = m_trayEnabled;
@@ -201,6 +216,7 @@ bool UiPreferences::saveDetails(const QString &theme, double scale, const QStrin
     m_savedDensity = density;
     m_recentEnabled = recentEnabled;
     if (!save(theme, scale, language)) {
+        m_openMode = oldOpenMode;
         m_savedDensity = oldDensity;
         m_recentEnabled = oldRecent;
         m_trayEnabled = oldTray;

@@ -6,7 +6,7 @@ M1 范围以 design/12 为准：产品骨架、双句柄、事件/背压、关�
 
 `xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/07-file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
 
-M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；本阶段单会话、串行 GUI pending 请求，M2 已增补完整查询 ID、GUI 代际和快照修订，见 [M2 契约](m2-readonly.md)。跨会话请求返回 stale_session。
+M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；每个 RuntimeConnection 单会话、串行 GUI pending 请求，M2 已增补完整查询 ID、GUI 代际和快照修订，见 [M2 契约](m2-readonly.md)。跨会话请求返回 stale_session。
 
 GUI 普通准入使用 try_lock，不等待队列空间，校验路径 4 KiB、搜索 1 KiB、选择 128 项、目录 ID 21 字节、排序码 0–12。拒绝不消耗 ID，Busy 可重试。取消有独立最多 128 项控制通道和自己的 Finished 确认；确认不保证目标尚未完成。关闭保留独立、幂等 RequestId，预留最后一个可用 ID，即使正常 ID 耗尽或队列满也可关闭。
 
@@ -39,3 +39,5 @@ QObject 提前销毁时，关闭 mailbox、唤醒接收线程、停止服务；�
 验证方法见[通用入口](../qa/README.md)。Rust 核心测试不需要 Qt；Qt 窗口、模型、压力和关闭用例在三平台原生构建运行。macOS CI 验证 arm64 与 SDK 环境 Cocoa 启动，不部署或上传应用；本地可按明确需求生成开发 DMG。Windows/Linux 部署随包 Qt 并验证无 SDK 运行，范围见[构建指南](developer-build.md)。这些检查不等同正式发行或独立审查。
 
 M2 的初始查询分配不可变结果身份，后续批次必须匹配全部 QueryKey 字段与参数；Qt 取消旧请求并合并最新意图，序列与请求 ID 的既有检查仍保留。单批另外限制名称 64 KiB，不重复过滤／排序。M1 历史验收不据此重写为当时已经具备 M2。
+
+应用层可创建多个独立连接，领域运行时仍以连接隔离会话；全局任务身份与串行重任务准入见[应用会话契约](application-sessions.md)。

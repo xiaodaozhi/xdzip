@@ -6,7 +6,7 @@
     "ui.8f1009f1369b": "起始页",
     "ui.6eff18378890": "关闭当前压缩包",
     "ui.1b59353f1874": "打开压缩包",
-    "ui.e5ab37895edd": "打开压缩包；当前版本替换现有会话",
+    "ui.e5ab37895edd": "按设置新建标签页或窗口",
     "settings.title": "设置",
     "ui.c771248e511f": "打开",
     "ui.50ef2f4cf6a4": "新建",
@@ -534,6 +534,10 @@
     "password.open": "输入密码",
     "password.submitRejected": "无法提交密码，请重试。",
     "password.attemptLimit": "密码重试次数已达上限，任务已停止。",
-    "password.preflight": "此文件需要密码，解压时会请求输入。"
+    "password.preflight": "此文件需要密码，解压时会请求输入。",
+    "sessions.limit": "最多可保留 32 个会话，请关闭其他页面后重试。",
+    "sessions.openMode": "打开压缩包",
+    "sessions.tabs": "在新标签页打开",
+    "sessions.windows": "在新窗口打开"
   }
 }

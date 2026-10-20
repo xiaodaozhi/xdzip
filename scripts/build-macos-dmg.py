@@ -69,7 +69,7 @@ def configure_translation_path(app):
         paths.write(stream)
 
 
-def build(source, qt, output):
+def build(source, qt, output, release_distribution=False):
     if sys.platform != 'darwin':
         raise ValueError('DMG requires native macOS')
     if not within(output, ROOT/'build') or output.exists() or output.suffix != '.dmg':
@@ -149,7 +149,7 @@ def build(source, qt, output):
         report.update(identity_text=identity, file=output.name, sha256=digest(output),
                       dmg_bytes=output.stat().st_size,
                       signing='ad-hoc', developer_id_signed=False, notarized=False,
-                      app_tree='xdzip.app', local_only=True, unused_sql_drivers_omitted=sorted(omitted_sql))
+                      app_tree='xdzip.app', local_only=not release_distribution, unused_sql_drivers_omitted=sorted(omitted_sql))
     output.with_suffix('.json').write_text(json.dumps(report, indent=2)+'\n')
     return report
 
@@ -159,8 +159,9 @@ def main():
     parser.add_argument('--app', type=Path, required=True)
     parser.add_argument('--qt-prefix', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--release-distribution', action='store_true')
     args = parser.parse_args()
-    result = build(args.app.resolve(), args.qt_prefix.resolve(), args.output.resolve())
+    result = build(args.app.resolve(), args.qt_prefix.resolve(), args.output.resolve(), args.release_distribution)
     print('Local developer DMG verified, SDK-independent native imports, ad-hoc only: '+result['file'])
 
 

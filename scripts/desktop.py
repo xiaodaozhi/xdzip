@@ -270,7 +270,7 @@ class Workflow:
                 'rendering': 'offscreen/software, native desktop acceptance remains separate'}
 
     def package_preflight(self):
-        if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true':
+        if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true' and not self.args.release_distribution:
             raise ValueError('macOS CI must not deploy, sign or package an application')
         if self.system == 'windows' and self.args.configuration == 'Debug':
             raise ValueError('Windows packages require Release or RelWithDebInfo; Debug Qt deployment is not supported')
@@ -402,16 +402,22 @@ class Workflow:
             raise ValueError('macOS local packaging uses --kind all (DMG); CI uses SDK verification only')
         source = self.package_preflight()['source']
         if self.system == 'macos':
-            version = json.loads((ROOT/'VERSION.json').read_text())
-            display = version['version']
-            if version['channel'] != 'stable':
-                display += '-'+('dev' if version['channel'] == 'development' else version['channel'])+'.'+str(version['build'])
+            import runpy
+            version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()
+            display = version['display_version']
             dmg = self.output/('xdzip-'+display+'-macos-arm64.dmg')
-            self.script('build-macos-dmg.py', '--app', self.app.parents[2], '--qt-prefix', self.qt, '--output', dmg)
+            self.script('build-macos-dmg.py', '--app', self.app.parents[2], '--qt-prefix', self.qt, '--output', dmg,
+                        *(['--release-distribution'] if self.args.release_distribution else []))
             self.script('validate-sbom.py', dmg.with_suffix('.cdx.json'))
             if self.require_clean() != source:
                 raise ValueError('Source changed during packaging; use a new output directory and rebuild')
-            return {'source': self.source(), 'artifacts': self.hashes([dmg, dmg.with_suffix('.json'), dmg.with_suffix('.cdx.json')])}
+            files = [dmg, dmg.with_suffix('.json'), dmg.with_suffix('.cdx.json')]
+            if self.args.release_distribution:
+                app = self.output/(dmg.stem+'-stage')/'xdzip.app'
+                archive = self.output/('xdzip-'+display+'-macos-arm64.app.zip')
+                self.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', app, archive])
+                files.append(archive)
+            return {'source': self.source(), 'artifacts': self.hashes(files)}
         if self.args.kind in ('runtime', 'all'):
             self.save('package-runtime', self.runtime_package())
         if self.args.kind in ('installer', 'all'):
@@ -423,7 +429,7 @@ class Workflow:
     def verify(self):
         if self.args.kind not in ('runtime', 'all'):
             raise ValueError('Verify supports --kind runtime or all')
-        if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true':
+        if self.system == 'macos' and os.environ.get('CI', '').lower() == 'true' and not self.args.release_distribution:
             raise ValueError('macOS CI does not validate a deployed application or DMG')
         self.doctor('verify')
         if self.system == 'macos':
@@ -439,6 +445,10 @@ class Workflow:
                 raise ValueError('Package receipt must identify exactly one DMG')
             dmg = images[0]
             self.script('verify-macos-dmg.py', '--dmg', dmg, '--output', self.output/'verification')
+            if self.args.release_distribution:
+                archives = [self.output/item['file'] for item in receipt['artifacts'] if item['file'].endswith('.app.zip')]
+                if len(archives) != 1: raise ValueError('Missing application ZIP')
+                self.script('verify-macos-app-zip.py', '--archive', archives[0], '--output', self.output/'zip-verification')
             self.script('validate-sbom.py', dmg.with_suffix('.cdx.json'))
             return {'artifacts': receipt['artifacts'], 'deployment': 'passed',
                     'limits': 'Ad-hoc integrity only, no Developer ID or notarization'}
@@ -493,6 +503,7 @@ def parser():
     value.add_argument('--skip-rust', action='store_true', help='Test only, delegate Rust tests to a separate Foundation job')
     value.add_argument('--macos-handler-rank', choices=['None', 'Alternate'], default='None')
     value.add_argument('--kind', choices=['runtime', 'installer', 'all'], default='all')
+    value.add_argument('--release-distribution', action='store_true', help='Dedicated release only: permit native Apple Silicon deployment, ad-hoc signing and both app ZIP/DMG')
     return value
 
 

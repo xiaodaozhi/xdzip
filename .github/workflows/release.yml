@@ -1,0 +1,114 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable version tag to rebuild
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  draft:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - name: Keep a draft until all native packages pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: python3 scripts/publish-release.py --draft-only --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
+  native:
+    needs: draft
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-14, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - name: Install Linux build and X11 dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb
+      - name: Native build, validation, deployment and package lifecycle
+        shell: pwsh
+        run: ./scripts/ci-release.ps1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-${{ runner.os }}
+          path: build/release-assets/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-evidence-${{ runner.os }}
+          path: |
+            build/review/*.json
+            build/desktop/apps/desktop/*tests.log
+            build/desktop/Testing/Temporary/LastTest.log
+            build/release-package/*.json
+          retention-days: 30
+  source:
+    needs: draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - name: Check version and release contracts
+        run: |
+          python3 scripts/sync-version.py --check
+          python3 scripts/test-version.py
+          python3 scripts/test-release-protocol.py
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+          cargo test --workspace --locked
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          python3 scripts/prepare-source-delivery.py --output build/release-source
+          mkdir -p build/release-assets
+          VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
+          tar -C build/release-source -czf "build/release-assets/xdzip-$VERSION-corresponding-source.tar.gz" .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-source
+          path: build/release-assets/*
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: [draft, native, source]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: release-*
+          path: build/downloaded
+      - name: Assemble complete immutable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          mkdir -p build/packages
+          find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS build/downloaded/release-source -maxdepth 1 -type f -exec cp {} build/packages/ \;
+          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY"
+          python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"

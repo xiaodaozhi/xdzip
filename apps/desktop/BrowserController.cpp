@@ -281,17 +281,25 @@ void BrowserController::chooseArchive(QWindow *owner) {
         return;
     QFileDialog dialog(nullptr, systemDialogText("ui.1b59353f1874"), {},
                        systemDialogText("ui.8f69a61727d2"));
-    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setFileMode(QFileDialog::ExistingFiles);
     if (execOwnedFileDialog(dialog, owner) && !dialog.selectedFiles().isEmpty())
-        openPath(dialog.selectedFiles().first());
+        for (const auto &path : dialog.selectedFiles())
+            requestOpen(path);
 }
 bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
-    if (m_busy || !runtimeAvailable() || urls.size() != 1 || !urls.first().isLocalFile())
+    if (m_busy || !runtimeAvailable() || urls.isEmpty() || urls.size() > 128 ||
+        (!openIntent && urls.size() != 1))
         return false;
-    const QFileInfo file(urls.first().toLocalFile());
-    const auto name = file.fileName().toLower();
-    return file.isFile() && (name.endsWith(".zip") || name.endsWith(".tar") ||
-                             name.endsWith(".tar.gz") || name.endsWith(".tgz"));
+    for (const auto &url : urls) {
+        if (!url.isLocalFile())
+            return false;
+        const QFileInfo file(url.toLocalFile());
+        const auto name = file.fileName().toLower();
+        if (!file.isFile() || !(name.endsWith(".zip") || name.endsWith(".tar") ||
+                                name.endsWith(".tar.gz") || name.endsWith(".tgz")))
+            return false;
+    }
+    return true;
 }
 bool BrowserController::openDroppedUrls(const QList<QUrl> &urls) {
     if (m_busy || !runtimeAvailable())
@@ -303,7 +311,8 @@ bool BrowserController::openDroppedUrls(const QList<QUrl> &urls) {
     }
     // This is an input hint only. The existing runtime probes content and applies
     // admission limits; a matching extension never asserts that an archive is valid.
-    openPath(urls.first().toLocalFile());
+    for (const auto &url : urls)
+        requestOpen(url.toLocalFile());
     return true;
 }
 void BrowserController::openPath(const QString &path) {
@@ -595,7 +604,7 @@ QVariantList BrowserController::tasks() const {
 }
 int BrowserController::activeTaskCount() const {
     const bool preparing =
-        m_busy && m_result.extraction &&
+        m_busy && (m_result.extraction || m_result.creating) &&
         (m_result.taskId.isEmpty() || !m_tasks.contains(m_result.taskId.toULongLong()));
     return static_cast<int>(
                std::count_if(m_tasks.cbegin(), m_tasks.cend(),
@@ -683,7 +692,7 @@ void BrowserController::drainCreationUiWhenIdle() {
     if (m_busy || m_pending || m_closing || !runtimeAvailable())
         return;
     if (!m_createdArchivesToOpen.isEmpty()) {
-        openPath(m_createdArchivesToOpen.takeFirst());
+        requestOpen(m_createdArchivesToOpen.takeFirst());
     } else if (!m_pendingCreationTarget.isEmpty()) {
         const auto path = std::exchange(m_pendingCreationTarget, QString{});
         checkCreationTarget(path);
@@ -884,6 +893,8 @@ void BrowserController::cancel() {
 bool BrowserController::requestClose() {
     if (m_connection->stopped())
         return true;
+    if (m_closing)
+        return false;
     m_closing = true;
     m_deferredQuery.reset();
     m_admissionRetry.stop();
@@ -959,6 +970,19 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
 void BrowserController::attemptSubmission() {
     if (!m_waiting)
         return;
+    // One process-wide heavy operation, including preparation and cleanup. A
+    // queued controller retains its bounded command and remains cancellable.
+    static QPointer<BrowserController> heavyOwner;
+    const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::Create ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Extract;
+    if (heavy && heavyOwner && heavyOwner != this &&
+        (heavyOwner->activeTaskCount() > 0 || heavyOwner->taskStarting())) {
+        m_admissionRetry.start(100);
+        emit changed();
+        return;
+    }
+    if (heavy)
+        heavyOwner = this;
     // A short try_lock collision is not a failed user operation. Keep only this bounded DTO
     // and retry on a later event-loop turn; persistent saturation still reports Busy.
     const auto result = m_connection->submit(*m_waiting);

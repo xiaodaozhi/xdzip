@@ -1,13 +1,16 @@
 #include "../BuildInfo.h"
 #include "AppQuitGuard.h"
+#include "ApplicationSessions.h"
 #include "BrowserController.h"
 #include "DesktopIntegration.h"
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "NativeDialogPolicy.h"
+#include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
+#include "WindowActivation.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QAccessible>
@@ -38,7 +41,9 @@
 #include <QScreen>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QTextStream>
 #include <QTimer>
+#include <QUuid>
 #include <QtTest>
 #include <thread>
 #ifdef Q_OS_WIN
@@ -107,6 +112,185 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void singleInstanceConcurrentStartupAndCrashRecovery() {
+        const auto nameSpace = QUuid::createUuid().toString();
+        SingleInstance owner;
+        QCOMPARE(owner.start({}, nameSpace), SingleInstance::Primary);
+        SingleInstance unresponsive;
+        // This thread deliberately does not dispatch the owner's server while
+        // the isolated client waits. Timeout is failure, never another primary.
+        QCOMPARE(unresponsive.start({}, nameSpace, 200), SingleInstance::Failed);
+        std::vector<std::unique_ptr<QProcess>> clients;
+        for (int i = 0; i < 4; ++i) {
+            auto client = std::make_unique<QProcess>();
+            client->start(QCoreApplication::applicationFilePath(),
+                          {"--instance-client", nameSpace,
+                           QDir::current().absoluteFilePath(QString::number(i) + " file.zip")});
+            clients.push_back(std::move(client));
+        }
+        for (const auto &client : clients) {
+            QTRY_COMPARE_WITH_TIMEOUT(client->state(), QProcess::NotRunning, 20000);
+            QCOMPARE(client->exitCode(), 0);
+        }
+        QStringList accepted;
+        owner.attach([&](const QStringList &paths) { accepted += paths; });
+        QCOMPARE(accepted.size(), 4); // Intents accepted while QML is not yet attached.
+        const auto crashSpace = QUuid::createUuid().toString();
+        QProcess primary;
+        primary.start(QCoreApplication::applicationFilePath(), {"--instance-primary", crashSpace});
+        QTRY_VERIFY_WITH_TIMEOUT(primary.bytesAvailable() > 0, 10000);
+        QVERIFY(primary.readAllStandardOutput().contains("PRIMARY"));
+        primary.kill(); // Only our isolated test child, leaving the election/socket residue.
+        QTRY_COMPARE(primary.state(), QProcess::NotRunning);
+        SingleInstance recovery;
+        QCOMPARE(recovery.start({}, crashSpace), SingleInstance::Primary);
+    }
+    void backgroundTasksKeepSessionIdentityAndSerialAdmission() {
+        QTemporaryDir output;
+        QVERIFY(output.isValid());
+        const auto input = output.filePath("input.txt");
+        QFile file(input);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write(QByteArray(1024 * 1024, 'a')), 1024 * 1024);
+        file.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *first = window->findChild<BrowserController *>();
+        sessions.newSession();
+        auto *second =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QVERIFY(second != first);
+        QSignalSpy firstStarted(first, &BrowserController::creationStarted);
+        QSignalSpy secondStarted(second, &BrowserController::creationStarted);
+        bool overlapping = false;
+        connect(second, &BrowserController::creationStarted, this,
+                [&] { overlapping |= first->activeTaskCount() > 0; });
+        first->startCreation({input}, output.path(), "first.zip", 0, 6, false);
+        second->startCreation({input}, output.path(), "second.zip", 0, 6, false);
+        QVERIFY(first->taskStarting());
+        QVERIFY(second->taskStarting());
+        const auto firstTab =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        sessions.closeSession(firstTab);
+        QTRY_VERIFY(!firstStarted.isEmpty());
+        QTRY_VERIFY_WITH_TIMEOUT(!secondStarted.isEmpty(), 10000);
+        QTRY_COMPARE_WITH_TIMEOUT(sessions.activeTaskCount(), 0, 10000);
+        QVERIFY(!overlapping);
+        QVERIFY(QFileInfo::exists(output.filePath("first.zip")));
+        QVERIFY(QFileInfo::exists(output.filePath("second.zip")));
+        QSet<QString> identities;
+        for (const auto &value : sessions.tasks())
+            identities.insert(value.toMap().value("id").toString());
+        QCOMPARE(identities.size(), 2);
+        sessions.showTask(firstTab + '/' + firstStarted.first().first().toString());
+        QCOMPARE(
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
+            first);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void independentSessionsAndOpenModes() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, window->findChild<BrowserController *>(), preferences,
+                                   false);
+        sessions.setDesktop(&desktop);
+        sessions.open(
+            {QStringLiteral(XDZIP_FIXTURES "/normal.zip"), QStringLiteral(XDZIP_M2_FIXTURE)});
+        QCOMPARE(sessions.sessionCount(), 2);
+        QCOMPARE(sessions.windows().size(), 1);
+        const auto controllers = window->findChildren<BrowserController *>();
+        QCOMPARE(controllers.size(), 2);
+        for (auto *controller : controllers)
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+        controllers.first()->selectAll(true);
+        QVERIFY(controllers.first()->selectedCount() > 0);
+        QCOMPARE(controllers.last()->selectedCount(), 0);
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QCOMPARE(sessions.sessionCount(), 2);
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         "windows"));
+        sessions.newSession();
+        QCOMPARE(sessions.windows().size(), 2);
+        auto *second = sessions.activeWindow();
+        QVERIFY(second != window);
+        auto *secondController = second->findChild<BrowserController *>();
+        QTRY_VERIFY(!secondController->busy());
+        sessions.closeWindow(second);
+        QVERIFY(!second->isVisible());
+        QCOMPARE(sessions.activeWindow(), window);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
+    void singleInstanceStructuredForwarding() {
+        const auto nameSpace = QUuid::createUuid().toString();
+        SingleInstance owner;
+        QCOMPARE(owner.start({}, nameSpace), SingleInstance::Primary);
+        QStringList received;
+        owner.attach([&](const QStringList &paths) { received += paths; });
+        QProcess client;
+        client.start(QCoreApplication::applicationFilePath(),
+                     {"--instance-client", nameSpace,
+                      QDir::current().absoluteFilePath(QString::fromUtf8("中文 空格;&.zip"))});
+        QTRY_COMPARE_WITH_TIMEOUT(client.state(), QProcess::NotRunning, 20000);
+        QCOMPARE(client.exitCode(), 0);
+        QCOMPARE(received.size(), 1);
+        QVERIFY(received.first().endsWith(QString::fromUtf8("中文 空格;&.zip")));
+    }
+    void desktopActivationPreservesWindowState() {
+        WindowActivation::install(qApp);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        DesktopIntegration desktop(window, controller, preferences, false);
+        for (const auto state : {Qt::WindowMaximized, Qt::WindowFullScreen}) {
+            window->setWindowState(state);
+            QTRY_COMPARE(window->windowState(), state);
+            QSignalSpy changes(window, &QWindow::windowStateChanged);
+            for (const auto &command : {"settings", "about", "new"}) {
+                desktop.execute(command);
+                QCoreApplication::processEvents();
+                QCOMPARE(window->windowState(), state);
+                for (auto *popup : window->findChildren<QQuickWindow *>())
+                    popup->close();
+            }
+            for (const auto &change : changes)
+                QVERIFY(change.first().value<Qt::WindowState>() != Qt::WindowNoState);
+            window->hide();
+            desktop.restore();
+            QTRY_COMPARE(window->windowState(), state);
+            window->showMinimized();
+            QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
+            desktop.restore();
+            QTRY_COMPARE(window->windowState(), state);
+        }
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
     void nativeEditRoleTranslationsFollowMenuLanguage() {
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
             UiTranslator translator(nullptr);
@@ -4165,5 +4349,23 @@ class BrowserTest : public QObject {
         detailsWindow->close();
     }
 };
-QTEST_MAIN(BrowserTest)
+int main(int argc, char **argv) {
+    QApplication application(argc, argv);
+    if (application.arguments().value(1) == "--instance-client") {
+        SingleInstance instance;
+        return instance.start({application.arguments().value(3)},
+                              application.arguments().value(2)) == SingleInstance::Forwarded
+                   ? 0
+                   : 1;
+    }
+    if (application.arguments().value(1) == "--instance-primary") {
+        SingleInstance instance;
+        if (instance.start({}, application.arguments().value(2)) != SingleInstance::Primary)
+            return 2;
+        QTextStream(stdout) << "PRIMARY\n" << Qt::flush;
+        return application.exec();
+    }
+    BrowserTest test;
+    return QTest::qExec(&test, argc, argv);
+}
 #include "browser_test.moc"
