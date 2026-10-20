@@ -77,7 +77,7 @@ def main():
     else:
         package = output/'previous.deb'
         run([sys.executable, ROOT/'scripts/build-linux-installer.py', '--root', runtime, '--audit', audit,
-             '--output', package, '--report', report])
+             '--output', package, '--report', report, '--qa-legacy-version'])
     provenance = {'revision': BASELINE, 'original_source_revision': ORIGINAL_BASELINE, 'executable_sha256': digest(executable), 'installer_sha256': digest(package),
                   'identity': record['identity'], 'scope': 'Historical product sources preserved in a single-commit fixture and rebuilt with the current SDK, QA only; not an original signed release artifact.'}
     (output/'previous-product.json').write_text(json.dumps(provenance, indent=2)+'\n')

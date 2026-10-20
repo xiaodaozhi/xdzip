@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -27,18 +28,26 @@ def installed_desktop_entry(desktop):
     return desktop.replace('Exec=xdzip -- %f', 'Exec=/usr/bin/xdzip -- %f')
 
 
-def package_tree(payload,audit,stage,qa=None,failure=None):
+def debian_version(identity, qa=None, legacy=False):
+    revision=identity['revision']
+    if not re.fullmatch('[0-9a-f]{12}',revision):raise ValueError('Invalid build revision')
+    # Epoch 1 bridges historical dev packages (which dpkg sorts after alpha).
+    # Only the explicitly isolated historical fixture keeps the original epoch.
+    version=('' if legacy else '1:')+identity['version'].replace('-', '~',1)+'+git'+revision+('+qa'+qa if qa else '')
+    if not re.fullmatch(r'(?:[1-9][0-9]*:)?[0-9][a-zA-Z0-9.+~]*',version):raise ValueError('Invalid Debian version')
+    return version
+
+
+def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False):
     if failure and (qa != '2' or failure != 'postinst-once'):
         raise ValueError('Failure injection is limited to QA variant 2')
     if audit['status']!='passed' or audit['platform']!='linux' or audit['mode']!='deployed':
         raise ValueError('Installer requires independently deployed Linux audit')
     if audit['identity']['dirty']:raise ValueError('Installer requires a clean build identity')
     identity=audit['identity'];revision=identity['revision']
-    if not re.fullmatch('[0-9a-f]{12}',revision):raise ValueError('Invalid build revision')
+    version=debian_version(identity,qa,legacy)
     verify_payload(payload,audit)
     app_hash=digest(payload/'bin/xdzip');runtime_id=revision+'-'+app_hash[:12]+('-qa'+qa if qa else '')
-    version=identity['version'].replace('-', '~',1)+'+git'+revision+('+qa'+qa if qa else '')
-    if not re.fullmatch(r'[0-9][a-zA-Z0-9.+~]*',version):raise ValueError('Invalid Debian version')
     if stage.exists():raise ValueError('Refusing existing package stage')
     runtime=stage/'opt/xdzip/versions'/runtime_id
     shutil.copytree(payload,runtime)
@@ -76,7 +85,7 @@ rm -f /run/xdzip/qa-postinst-failed
         path.chmod(0o755)
     doc=share/'doc/xdzip';doc.mkdir(parents=True)
     shutil.copy2(ROOT/'LICENSE',doc/'copyright')
-    return {'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None,'failure_injection':failure}
+    return {'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None or legacy,'failure_injection':failure,'legacy_version':legacy}
 
 
 def main():
@@ -85,9 +94,11 @@ def main():
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--report',type=Path,required=True)
     parser.add_argument('--qa-variant',choices=['1','2'])
     parser.add_argument('--qa-failure',choices=['postinst-once'])
+    parser.add_argument('--qa-legacy-version',action='store_true',help='CI-only original version mapping for the pinned historical installer')
     args=parser.parse_args();stage=staging_directory(args.output)
+    if args.qa_legacy_version and os.environ.get('CI')!='true':parser.error('Historical versions are restricted to disposable CI fixtures')
     if not within(args.output,ROOT/'build'):parser.error('Generated installer belongs under build/')
-    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure)
+    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure,args.qa_legacy_version)
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(args.output)],check=True)
     result.update(file=args.output.name,sha256=digest(args.output),baseline='Ubuntu 24.04 amd64 X11',signed=False)
     args.report.write_text(json.dumps(result,indent=2)+'\n')

@@ -75,3 +75,9 @@ Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使
 真实升级／回退使用固定的旧版完整产品源码，不从已重写的 main 历史获取。`prepare-previous-product.py` 锁定独立 `codex/installer-compat-baseline` 分支中的单根源码快照；该分支只保存构建和回归所需的原始源码及资源，不携带旧 main 父历史、执行报告或工作流。快照内 `COMPAT-BASELINE.json` 记录原始来源提交与树身份，不能合并回 main，也不作为发行包或安全审查结论。
 
 构建后 CLI 身份必须匹配快照自身的固定 SHA，回执另记原始来源身份，不能伪装成原发布二进制。设置组件另以三份原始小型源码作为持久测试输入，逐文件哈希固定，双向读写及未来 schema 拒写不依赖网络或历史 commit。不要随当前实现修改这些回归输入；需要新基线时另行评审并保留来源。
+
+## Debian 版本迁移
+
+首个公开预发布开始使用 Debian epoch 1，包版本为 `1:语义版本映射+git提交`，例如 `1:0.1.0~alpha.1+git...`。历史 `0.1.0~dev.9` 按 dpkg 规则会排在无 epoch 的 alpha.1 之后，不能直接沿用旧映射。epoch 只用于系统包排序，产品界面、版本标签和 release.json 仍使用原语义版本，后续 Debian 包保持 epoch 1，alpha、beta、rc、stable 的顺序继续由上游版本表达，规则见 [Debian Policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version)。
+
+真实历史产品夹具使用仅 CI 允许的 `--qa-legacy-version` 保留原无 epoch 身份，不能把旧包改成新排序来掩盖升级问题。当前包必须在实际 dpkg 升级、回退和安装生命周期验收中通过；用户配置与外部默认关联保持原契约。

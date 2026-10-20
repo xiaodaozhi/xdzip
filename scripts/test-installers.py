@@ -4,6 +4,7 @@ import importlib.util
 import configparser
 import copy
 import json
+import os
 from pathlib import Path
 import plistlib
 import re
@@ -22,6 +23,30 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_legacy_debian_version_flag_is_ci_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp)
+            result=subprocess.run([__import__('sys').executable,str(ROOT/'scripts/build-linux-installer.py'),
+                '--root',str(base/'payload'),'--audit',str(base/'audit.json'),
+                '--output',str(base/'old.deb'),'--report',str(base/'old.json'),'--qa-legacy-version'],
+                env=dict(os.environ,CI=''),capture_output=True,text=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('restricted to disposable CI',result.stderr)
+            self.assertFalse((base/'old.deb').exists())
+    def test_debian_epoch_preserves_upgrade_from_historical_development(self):
+        previous=dict(version='0.1.0-dev.9',revision='a'*12)
+        current=dict(version='0.1.0-alpha.1',revision='b'*12)
+        old=linux.debian_version(previous,legacy=True)
+        new=linux.debian_version(current)
+        self.assertEqual(old,'0.1.0~dev.9+git'+'a'*12)
+        self.assertEqual(new,'1:0.1.0~alpha.1+git'+'b'*12)
+        if shutil.which('dpkg'):
+            subprocess.run(['dpkg','--compare-versions',new,'gt',old],check=True)
+            versions=['0.1.0-alpha.2','0.1.0-beta.1','0.1.0-rc.1','0.1.0','0.1.1-alpha.1']
+            for version in versions:
+                following=linux.debian_version(dict(version=version,revision='c'*12))
+                subprocess.run(['dpkg','--compare-versions',following,'gt',new],check=True)
+                new=following
     def test_linux_candidates_with_same_filename_have_distinct_staging(self):
         first=ROOT/'build/candidate-a/xdzip-ubuntu24.04-amd64.deb'
         second=ROOT/'build/candidate-b/xdzip-ubuntu24.04-amd64.deb'
