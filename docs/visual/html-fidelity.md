@@ -1,6 +1,6 @@
 # HTML 视觉一致性复核
 
-高保真图片是视觉依据，HTML 是可编辑实现。顶部与工具栏下方内容均从 [已确认主窗口](../../design/hifi/screens/main-light.png) 独立量取尺寸，不从当前 CSS 反推“设计应当如此”。原稿存在柔化边缘和生成式字形，不能凭测试数量声明整页逐像素一致。
+高保真图片是视觉依据，HTML 是可编辑实现。顶部与工具栏下方内容均从 [冻结的初版主窗口](../../design/hifi/screens/main-light.png) 独立量取尺寸，不从当前 CSS 反推“设计应当如此”。当前展示使用[胶囊标签浅色稿](../../design/hifi/screens/main-capsule-light.png)与[深色稿](../../design/hifi/screens/main-capsule-dark.png)，它们由[可编辑源](../../design/hifi/sources/main.html)导出，不替代独立量测。标题栏按 layout-scale.json 的显式修订验收；原稿存在柔化边缘和生成式字形，不能凭测试数量声明整页逐像素一致。
 
 ## 固定可重复条件
 

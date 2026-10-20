@@ -43,6 +43,21 @@ try:
                     return !image.hidden && image.complete && image.naturalWidth > 0;
                 }''')
                 checks.append(f'{mode}: {view} reference decoded')
+                if view == 'main':
+                    for theme in ['light', 'dark']:
+                        page.select_option('#theme', theme)
+                        page.wait_for_function('''theme => {
+                            const image = document.querySelector('#reference-image');
+                            const source = window.XDZIP_DISPLAY_SPEC.views.main[theme === 'dark' ? 'darkSource' : 'source'];
+                            return image.complete && image.naturalWidth === 1586 &&
+                                image.getAttribute('src') === (window.XDZIP_REFERENCES?.[source] || source);
+                        }''', arg=theme)
+                        # Sources may be data URLs offline; compare the selected
+                        # contract as well as decoding, rather than URL suffixes.
+                        selected = page.evaluate('theme => window.XDZIP_DISPLAY_SPEC.views.main[theme === "dark" ? "darkSource" : "source"]', theme)
+                        assert selected.endswith(f'main-capsule-{theme}.png'), selected
+                        checks.append(f'{mode}: main {theme} uses current capsule design')
+                    page.select_option('#theme', 'light')
             for view in ['empty', 'damaged']:
                 page.select_option('#view', view)
                 expect(page.locator('#reference-image')).to_be_hidden()

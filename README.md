@@ -18,7 +18,7 @@
 
 > **开发预览**：xdzip 目前处于实验性开发阶段，尚无获批的正式发行版本。试用前请阅读[当前限制](#当前限制)与[已知问题](https://github.com/xiaodaozhi/xdzip/issues)，并为重要文件保留备份。
 
-![xdzip 主界面设计预览](design/hifi/screens/main-light.png)
+![xdzip 主界面设计预览](design/hifi/screens/main-capsule-light.png)
 
 <p align="center"><sub>主界面高保真设计参考。图中的多标签与图片预览为设计示例，当前产品能力见下文。</sub></p>
 

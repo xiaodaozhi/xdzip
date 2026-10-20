@@ -10,7 +10,7 @@ import json
 import mimetypes
 from pathlib import Path
 import re
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,12 +34,13 @@ def generate():
              ROOT / 'docs/visual/tokens.json', ROOT / 'LICENSE'}
     boards = []
     for entry in catalog['screens']:
-        if entry.get('component') != 'directory-tree':
+        if entry.get('component') != 'directory-tree' or entry['group'] == 'historical':
             continue
         path = OUTPUT_ROOT / entry['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256']
         files.add(path)
-        boards.append(f'<figure>{image(path, entry["title"])}<figcaption>{html.escape(entry["title"])}，1024×1536 原图</figcaption></figure>')
+        size = entry.get('size', [1024, 1536])
+        boards.append(f'<figure>{image(path, entry["title"])}<figcaption>{html.escape(entry["title"])}，{size[0]}×{size[1]} 设计图</figcaption></figure>')
     cut_cards = []
     labels = {'shared-svg': '共享透明图标', 'native-component': '动态组件', 'native-geometry': '动态几何'}
     references = manifest['component_reference_coverage']
@@ -48,6 +49,11 @@ def generate():
         path = ROOT / 'design/assets' / entry['reference']
         assert hashlib.sha256(path.read_bytes()).hexdigest() == record['sha256']
         files.add(path)
+        if record.get('source'):
+            source = (ROOT/'design/assets'/record['source']).resolve()
+            assert source.is_relative_to(ROOT)
+            assert hashlib.sha256(source.read_bytes()).hexdigest() == record['source_sha256']
+            files.add(source)
         width, height = record['size']
         cut_cards.append(f'<figure class="cut"><div class="cut-image">{image(path, entry["title"], width, height)}</div><figcaption>{html.escape(entry["title"])}<small>{html.escape(path.name)}，原稿切片</small><small>{labels[entry["implementation"]]}</small></figcaption></figure>')
     glyph_cards = []
@@ -76,7 +82,7 @@ def generate():
 <h1>xdzip — 目录树 B 设计交付</h1>
 <p class="note">三张已确认图板、26 张原像素切片、共享透明图标与精确组件规格。设计和素材已交付，HTML / Qt 已接入目录导航与核心交互；本页仅展示原稿与素材，不模拟目录交互。</p>
 <nav><a href="#boards">正式图板</a><a href="#geometry">规范</a><a href="#behavior">行为与状态</a><a href="#cuts">逐项切图</a><a href="#icons">共享透明图标</a></nav>
-<p>图板是放大的视觉说明，局部卡片比例不同。组件规则参见规范；切片保留原稿背景。原始主稿保持不变，此处只修订左侧目录组件。完整深色图板仍待补齐。</p>
+<p>多级目录图使用当前胶囊标题栏，来自 <a href="sources/main.html?tree=expanded">可编辑设计源</a>。图板比例不同，组件规则参见规范；26 张切片继续绑定 <a href="screens/directory-tree.png">历史目录树原图</a>，不更换其像素或来源哈希。当前图不作为独立量测依据，完整深色状态与边界图板仍待补齐。</p>
 <h2 id="boards">正式图板</h2><div class="boards">''' + ''.join(boards) + '''</div>
 <h2 id="geometry">组件规范</h2><p>设计参数与大字号规则见 <a href="../../docs/visual/directory-tree.json">目录树规范</a>；各主题共享形状，颜色遵循主题参数。文件夹保持自然比例，运行控件按统一逻辑槽绘制。</p>
 <h2 id="behavior">行为与状态</h2><p>有无子目录决定箭头；运行树不显示计数；原稿中的数字保留其设计参考身份。只有文件或为空的叶子都没有箭头，同层级保留空槽。方向键焦点、展开、当前目录及文件复选框状态相互独立。</p>
@@ -102,8 +108,10 @@ def standalone(page):
         target = html.unescape(match[1])
         if target.startswith('#'):
             return match[0]
-        path = (OUTPUT_ROOT / target).resolve().relative_to(ROOT)
-        return 'href="' + REPOSITORY_URL + quote(path.as_posix()) + '"'
+        parsed = urlsplit(target)
+        path = (OUTPUT_ROOT / parsed.path).resolve().relative_to(ROOT)
+        suffix = ('?'+parsed.query if parsed.query else '')+('#'+parsed.fragment if parsed.fragment else '')
+        return 'href="' + REPOSITORY_URL + quote(path.as_posix()) + html.escape(suffix, quote=True) + '"'
 
     return re.sub(r'href="([^"]+)"', link, re.sub(r'src="([^"]+)"', embed, page))
 
@@ -126,20 +134,24 @@ def package(path, page, files):
                     raw = match[2]
                     if raw.startswith('#') or '://' in raw:
                         return match[0]
-                    target = (member.parent / raw.split('#', 1)[0]).resolve()
+                    parsed = urlsplit(raw)
+                    target = (member.parent / parsed.path).resolve()
                     if target in members:
                         return match[0]
-                    return match[1] + '(' + REPOSITORY_URL + quote(target.relative_to(ROOT).as_posix()) + ')'
+                    suffix = ('?'+parsed.query if parsed.query else '')+('#'+parsed.fragment if parsed.fragment else '')
+                    return match[1] + '(' + REPOSITORY_URL + quote(target.relative_to(ROOT).as_posix()) + suffix + ')'
                 payload = re.sub(r'(!?\[[^\]]*\])\(([^)]+)\)', supporting_link, payload.decode('utf-8')).encode('utf-8')
             elif member.suffix == '.html':
                 def supporting_html_link(match):
                     raw = html.unescape(match[1])
                     if raw.startswith('#') or '://' in raw:
                         return match[0]
-                    target = (member.parent / raw.split('#', 1)[0]).resolve()
+                    parsed = urlsplit(raw)
+                    target = (member.parent / parsed.path).resolve()
                     if target in members:
                         return match[0]
-                    return 'href="' + REPOSITORY_URL + quote(target.relative_to(ROOT).as_posix()) + '"'
+                    suffix = ('?'+parsed.query if parsed.query else '')+('#'+parsed.fragment if parsed.fragment else '')
+                    return 'href="' + REPOSITORY_URL + quote(target.relative_to(ROOT).as_posix()) + html.escape(suffix, quote=True) + '"'
                 payload = re.sub(r'href="([^"]+)"', supporting_html_link, payload.decode('utf-8')).encode('utf-8')
             archive.writestr(relative, payload)
             record = {'file': relative, 'sha256': hashlib.sha256(payload).hexdigest()}

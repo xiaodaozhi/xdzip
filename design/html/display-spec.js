@@ -150,11 +150,12 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             ]
         },
         "main": {
-            "source": "../hifi/screens/main-light.png",
+            "source": "../hifi/screens/main-capsule-light.png",
             "size": [
                 1586,
                 992
-            ]
+            ],
+            "darkSource": "../hifi/screens/main-capsule-dark.png"
         },
         "extract": {
             "source": "../hifi/screens/extract-macos.png",

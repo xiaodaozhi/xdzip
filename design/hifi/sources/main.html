@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xdzip，主窗口与目录树胶囊标签修订</title>
+<style>
+body{margin:0;background:#e8ebf0;color:#141827;font:14px/1.6 system-ui,sans-serif}
+header{padding:16px 24px}nav{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+a{color:#1956ff}p{margin:8px 0}iframe{display:block;border:0;margin:0 auto}
+body.export header{display:none}body.export iframe{margin:0}
+</style>
+<script src="../../html/display-spec.js"></script>
+</head>
+<body>
+<header><nav><strong>主窗口与目录树，胶囊标签修订</strong>
+<a href="?theme=light">主窗口，浅色</a><a href="?theme=dark">主窗口，深色</a>
+<a href="?tree=expanded">目录树，多级展开</a>
+<a href="?platform=windows">Windows 标题栏</a>
+<a href="../../../docs/visual/design-standard.md">标题区规范</a><a href="../index.html">完整画廊</a></nav>
+<p>复用现行 HTML 标题栏与共享素材，标题栏高 48，胶囊高 32、圆角 16，上下各留 8 逻辑像素。
+本页以源画布坐标展示，正常主窗口为 1024×622；菜单保持正常密度。</p>
+<p>当前 PNG 从此可编辑设计源导出。旧原图与量测哈希保留，导出图不作为独立量测依据，也不代表原生桌面验收。</p></header>
+<iframe title="胶囊标签主窗口设计稿"></iframe>
+<script>
+"use strict";
+const query=new URLSearchParams(location.search),frame=document.querySelector('iframe');
+const theme=query.get('theme')==='dark'?'dark':'light';
+const platform=['windows','linux'].includes(query.get('platform'))?query.get('platform'):'macos';
+const [width,height]=window.XDZIP_DISPLAY_SPEC.views.main.size;
+frame.width=width;frame.height=height;
+if(query.has('export'))document.body.classList.add('export');
+frame.addEventListener('load',async()=>{
+    frame.contentWindow.postMessage({type:'xdzip-review-configure',view:'main',platform,theme},'*');
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const doc=frame.contentDocument;
+    await doc.fonts.ready;
+    if(query.get('tree')==='expanded'){
+        for(const id of ['photos','ice'])doc.querySelector(`[data-toggle="${id}"]`).click();
+    }
+    await Promise.all([...doc.images].map(image=>image.decode()));
+    document.documentElement.dataset.ready='true';
+});
+frame.src='../../html/canvas.html?view=main';
+</script>
+</body></html>

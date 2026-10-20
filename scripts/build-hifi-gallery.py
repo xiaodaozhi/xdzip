@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build the unified image gallery from a hash-verified catalog (stdlib only)."""
+"""Build current and archived design galleries from a hash-verified catalog."""
 import argparse
 import base64
 import re
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 import hashlib
 import html
 import json
@@ -30,17 +30,26 @@ def main():
             raise ValueError(f"Image integrity mismatch: {screen['file']}")
         title = html.escape(screen['title'])
         source = html.escape(screen['file'], quote=True)
+        design_link = ''
+        if screen.get('design_source'):
+            design_source = screen['design_source']
+            parsed = urlsplit(design_source)
+            design_path = (ROOT/parsed.path).resolve()
+            if parsed.scheme or parsed.netloc or not design_path.is_relative_to(ROOT) or not design_path.is_file():
+                raise ValueError('Invalid editable design source')
+            design_link = f'，<a href="{html.escape(design_source, quote=True)}">可编辑设计源</a>'
         groups[screen['group']].append(
-            f'<figure><figcaption>{title}</figcaption>'
+            f'<figure><figcaption>{title}{design_link}</figcaption>'
             f'<a href="{source}"><img src="{source}" alt="{title}" loading="lazy"></a></figure>')
     page = '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>xdzip — 高保真设计总览</title>
 <style>*{box-sizing:border-box}body{margin:auto;max-width:1200px;padding:24px;background:#f5f5f3;color:#20232a;font:16px/1.7 system-ui,sans-serif}a{color:#2455cd}nav{display:flex;flex-wrap:wrap;gap:16px}figure{margin:28px 0;padding:16px;background:white;border:1px solid #dcdfe3;border-radius:12px}figcaption{font-weight:600;margin-bottom:12px}img{display:block;width:100%;height:auto}summary{cursor:pointer;font-size:22px;font-weight:600}.note{padding:16px;background:#e9eefb;border-radius:8px}@media(max-width:600px){body{padding:16px}figure{padding:8px}h1{font-size:26px}}</style></head><body>
-<h1>xdzip 高保真设计总览</h1><p>当前主界面与操作窗口的原稿入口。下方展示原始设计图片，HTML 仅用于浏览，不是界面原型。</p>
-<nav><a href="#current">当前视觉参考</a><a href="#components">目录树 B 组件设计</a><a href="../html/index.html">HTML 高保真界面</a><a href="terminology.html">当前中文术语修订稿</a><a href="sources/welcome.html">欢迎页候选</a><a href="sources/desktop-integration.html">系统菜单与托盘</a><a href="sources/settings.html">设置，主题与语言</a><a href="sources/password-extraction.html">密码解压，P02</a><a href="README.md">目录与用途说明</a><a href="../../docs/visual/tokens.json">颜色尺寸规范</a><a href="../assets/index.html">统一素材库</a></nav>
-<p class="note">主窗口、独立解压确认及各操作状态共用一套视觉基线。历史原图中的用词由 <a href="terminology.html">中文术语修订稿</a> 替代，图像与几何依据保持不变。完整原稿在此展示，图标、示例照片与原像素对照切片统一从素材库查看。当前主窗口的完整深色原稿尚缺；生成式图像不等于逐像素规范或已实现功能。</p>
+<h1>xdzip 高保真设计总览</h1><p>当前主界面与操作窗口的设计入口。主窗口与多级目录图已同步悬浮胶囊标签；旧原图在历史区保存，供量测和素材溯源。</p>
+<nav><a href="#current">当前视觉参考</a><a href="#components">目录树 B 组件设计</a><a href="#historical">历史原图</a><a href="sources/main.html">主窗口，胶囊标签修订</a><a href="../html/index.html">HTML 高保真界面</a><a href="terminology.html">当前中文术语修订稿</a><a href="sources/welcome.html">欢迎页候选</a><a href="sources/desktop-integration.html">系统菜单与托盘</a><a href="sources/settings.html">设置，主题与语言</a><a href="sources/password-extraction.html">密码解压，P02</a><a href="README.md">目录与用途说明</a><a href="../../docs/visual/tokens.json">颜色尺寸规范</a><a href="../assets/index.html">统一素材库</a></nav>
+<p class="note">主窗口、独立解压确认及各操作状态共用一套视觉基线。当前主窗口浅深色与多级目录 PNG 从 <a href="sources/main.html">可编辑设计源</a> 导出，采用 48 高标题栏、32 高胶囊、16 圆角和上下各 8 的逻辑尺寸。导出图不作为独立量测依据；旧原稿与几何哈希保持不变。历史原图中的用词由 <a href="terminology.html">中文术语修订稿</a> 替代。设计示例不等于产品能力或原生桌面验收。</p>
 <h2 id="current">当前视觉参考</h2>''' + ''.join(groups['current']) + '''
-<h2 id="components">目录树 B，已确认组件设计</h2><p>下列三张图板定义多级目录、节点状态与导航边界，补充主稿中的侧栏。设计已交付，HTML 与 Qt 的目录树仍待按此稿接入；图板为放大的视觉说明，准确控件尺寸和行为见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>，逐项切图见 <a href="../assets/index.html#directory-tree">统一素材库</a>。</p>''' + ''.join(groups['component']) + '''
+<h2 id="components">目录树 B，已确认组件设计</h2><p>下列三张图板定义多级目录、节点状态与导航边界，补充主稿中的侧栏。多级目录图同步当前胶囊标题栏；HTML 与 Qt 已接入核心目录交互。图板比例不同，准确控件尺寸和行为见 <a href="../../docs/ux/directory-tree.md">目录树规格</a>，历史原像素切图见 <a href="../assets/index.html#directory-tree">统一素材库</a>。</p>''' + ''.join(groups['component']) + '''
+<details id="historical"><summary>历史原图，保留量测与切片来源</summary><p>以下图片已被对应修订替代，不定义当前标题栏或功能。旧主窗口和目录树原图的字节与哈希保持不变。</p>''' + ''.join(groups['historical']) + '''</details>
 <footer><p>图片 SHA-256 与迁移来源见 <a href="catalog.json">统一清单</a>。测试截图只生成到本地或 CI 工件，参见 <a href="../../docs/qa/README.md">验收入口</a>。</p></footer></body></html>
 '''
     target = ROOT / 'index.html'
@@ -59,12 +68,14 @@ def main():
             href = html.unescape(match.group(1))
             if href.startswith('#'):
                 return match.group(0)
-            path = (ROOT / href).resolve().relative_to(ROOT.parents[1])
-            return 'href="https://github.com/xiaodaozhi/xdzip/blob/main/' + quote(path.as_posix()) + '"'
+            parsed = urlsplit(href)
+            path = (ROOT / parsed.path).resolve().relative_to(ROOT.parents[1])
+            suffix = ('?'+parsed.query if parsed.query else '')+('#'+parsed.fragment if parsed.fragment else '')
+            return 'href="https://github.com/xiaodaozhi/xdzip/blob/main/' + quote(path.as_posix()) + html.escape(suffix, quote=True) + '"'
         standalone = re.sub(r'href="([^"]+)"', repository_link, standalone)
         args.standalone.parent.mkdir(parents=True, exist_ok=True)
         args.standalone.write_text(standalone, encoding='utf-8')
-    print(f'High-fidelity catalog: {len(seen)} original images verified; gallery up to date')
+    print(f'High-fidelity catalog: {len(seen)} design images verified; gallery up to date')
 
 
 if __name__ == '__main__':

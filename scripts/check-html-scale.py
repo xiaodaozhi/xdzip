@@ -22,7 +22,7 @@ SOURCE_WINDOW = [20, 30, 1548, 940]
 NORMAL_SCALE = LOGICAL_WIDTH / SOURCE_WINDOW[2]
 # Approved source paths are independent of the reviewer implementation.
 SOURCES = {
-    "main": "design/hifi/screens/main-light.png",
+    "main": "design/hifi/screens/main-capsule-light.png",
     "extract": "design/hifi/screens/extract-macos.png",
     "create": "design/hifi/screens/create.png",
     "progress": "design/hifi/screens/progress.png",
@@ -136,7 +136,11 @@ def main():
             "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         }
     independent = json.loads((ROOT / "design/html/header-reference.json").read_text())
-    check("approved main source hash", report["sources"]["main"]["sha256"] == independent["sha256"])
+    frozen_source = ROOT / independent['source']
+    check("frozen main measurement source hash", hashlib.sha256(frozen_source.read_bytes()).hexdigest() == independent["sha256"])
+    catalog = json.loads((ROOT/'design/hifi/catalog.json').read_text())
+    current = next(item for item in catalog['screens'] if 'design/hifi/'+item['file'] == SOURCES['main'])
+    check("current main design hash", report["sources"]["main"]["sha256"] == current['sha256'])
     check("independent source window", independent["window"] == SOURCE_WINDOW)
     token_width = json.loads((ROOT / "docs/visual/tokens.json").read_text())["size"]["initialWindow"][0]
     check("declared logical width", token_width == LOGICAL_WIDTH, actual=token_width, expected=LOGICAL_WIDTH)

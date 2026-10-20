@@ -34,15 +34,19 @@ def main():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == record['sha256'], record['file']
         verified_sources.append(record['file'])
 
-    boards = {item['file']: item for item in catalog['screens'] if item.get('component') == 'directory-tree'}
-    assert set(boards) == {'screens/directory-tree.png', 'screens/directory-tree-states.png',
+    boards = {item['file']: item for item in catalog['screens']
+              if item.get('component') == 'directory-tree' and item['group'] != 'historical'}
+    assert set(boards) == {'screens/directory-tree-capsule.png', 'screens/directory-tree-states.png',
                            'screens/directory-tree-boundaries.png'}
     for item in boards.values():
         path = ROOT / 'design/hifi' / item['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest() == item['sha256']
         with Image.open(path) as original:
-            assert original.size == (1024, 1536), item['file']
-        assert item['status'] == 'approved-design-with-core-interactions'
+            assert original.size == tuple(item.get('size', [1024, 1536])), item['file']
+        if item.get('role') == 'editable-design-export':
+            assert item['supersedes'] == 'screens/directory-tree.png'
+        else:
+            assert item['status'] == 'approved-design-with-core-interactions'
 
     records = {item['file']: item for item in manifest['assets']}
     cuts = manifest['component_reference_coverage']

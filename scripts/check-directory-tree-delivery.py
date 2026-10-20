@@ -16,6 +16,7 @@ REPORT_ROOT = ROOT / 'build/review/directory-tree'
 
 
 def main():
+    REPORT_ROOT.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(DIST / 'xdzip-directory-tree.zip') as package:
         assert package.testzip() is None, 'Corrupt ZIP member'
         ledger = json.loads(package.read('handoff-manifest.json'))
@@ -30,7 +31,12 @@ def main():
                 assert item['source'] in names
                 assert hashlib.sha256(package.read(item['source'])).hexdigest() == item['source_sha256']
         assert len([name for name in names if name.startswith('design/assets/reference/tree-')]) == 26
-        assert len([name for name in names if name.startswith('design/hifi/screens/')]) == 3
+        assert {name for name in names if name.startswith('design/hifi/screens/')} == {
+            'design/hifi/screens/directory-tree-capsule.png',
+            'design/hifi/screens/directory-tree-states.png',
+            'design/hifi/screens/directory-tree-boundaries.png',
+            'design/hifi/screens/directory-tree.png',  # Frozen source for the 26 pixel cuts.
+        }
 
     reports = []
     with sync_playwright() as playwright:

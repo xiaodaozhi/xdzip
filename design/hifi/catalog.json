@@ -1,11 +1,52 @@
 {
-  "notes": "完整高保真原稿按功能平铺保存，SHA-256固定原稿；统一切片与透明运行素材位于design/assets。历史路径见../assets/migration.json。",
+  "notes": "当前设计与历史原稿按功能平铺保存，SHA-256 固定图片。主窗口及多级目录胶囊修订由可编辑源导出，不替代独立量测；旧图片与切片来源保持不变。统一素材位于 design/assets，历史迁移见 ../assets/migration.json。",
   "screens": [
     {
-      "file": "screens/main-light.png",
-      "title": "主窗口，浅色",
+      "file": "screens/main-capsule-light.png",
+      "title": "主窗口，浅色胶囊标签",
       "group": "current",
-      "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9"
+      "role": "editable-design-export",
+      "design_source": "sources/main.html?theme=light",
+      "supersedes": "screens/main-light.png",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "3cc9e29d473490d3ef5b2f59c9b371226e0b0e9424fabaf2573a8fb921e8140c"
+    },
+    {
+      "file": "screens/main-capsule-dark.png",
+      "title": "主窗口，深色胶囊标签",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/main.html?theme=dark",
+      "supersedes": "screens/main-light.png",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "0f01f577ad0722b1e4cebfcc17d2b464e41af1e2883b4d9a6337e1d495a8f905"
+    },
+    {
+      "file": "screens/directory-tree-capsule.png",
+      "title": "目录树 B，多级展开与胶囊标签",
+      "group": "component",
+      "role": "editable-design-export",
+      "design_source": "sources/main.html?theme=light&tree=expanded",
+      "supersedes": "screens/directory-tree.png",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "27b1a5cfd000405d8490b823213469e9eb0c036e5aa7262f7b3f6e173a2015a1",
+      "component": "directory-tree"
+    },
+    {
+      "file": "screens/main-light.png",
+      "title": "主窗口，浅色，历史底部吸附标签",
+      "group": "historical",
+      "sha256": "90f19bc599b1a399a3495a05b078a6793ae87fbd301cecb28537c12acdc984f9",
+      "status": "superseded-titlebar-revision"
     },
     {
       "file": "screens/extract-macos.png",
@@ -63,9 +104,9 @@
     },
     {
       "file": "screens/directory-tree.png",
-      "title": "目录树 B，多级展开",
-      "group": "component",
-      "status": "approved-design-with-core-interactions",
+      "title": "目录树 B，多级展开，历史底部吸附标签",
+      "group": "historical",
+      "status": "superseded-titlebar-revision",
       "spec": "../../docs/ux/directory-tree.md",
       "sha256": "df8be441bae2d9e6000d4e3d6d183345fadca41c2bb038b9834493658b2b58c0",
       "component": "directory-tree"

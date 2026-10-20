@@ -41,7 +41,7 @@
         const dimensions = windowView ? [windowWidth,windowHeight] : [width,height];
         const logical = dimensions.map(value => number(value * logicalScale()));
         const mode = current("zoom") === "pixels" ? "原稿像素 1:1" : current("zoom") === "fit" ? "适应屏幕" : "100% 设计尺寸";
-        const theme = current("theme") === "dark" && !["welcome", "welcome-narrow"].includes(current("view")) ? "深色适配（无对应完整主稿）" : current("theme") === "dark" ? "深色" : "浅色";
+        const theme = current("theme") === "dark" && !displaySpec.views[current("view")].darkSource ? "深色适配（无对应完整主稿）" : current("theme") === "dark" ? "深色" : "浅色";
         document.querySelector("#status").textContent = `${current("platform")}，${theme}，设计${windowView ? "窗口" : "图板"} ${logical.join(" × ")} CSS px，${mode}，当前 ${number(scale / logicalScale() * 100)}% 审阅倍率，DPR ${window.devicePixelRatio}（${number(scale * 100)}% 原稿倍率）`;
     }
 
@@ -51,7 +51,7 @@
         const image = document.querySelector("#reference-image");
         image.hidden = !source;
         document.querySelector("#reference-message").textContent = source
-            ? "原稿与 HTML 独立展示，采用相同画布尺寸与缩放倍率；横向滚动同步。"
+            ? current("view") === "main" ? "当前胶囊标签设计导出与 HTML 采用相同画布和倍率，横向滚动同步；独立量测沿用历史原图。" : "原稿与 HTML 独立展示，采用相同画布尺寸与缩放倍率；横向滚动同步。"
             : "此状态暂无独立的已确认原稿。";
         if (source) image.src = window.XDZIP_REFERENCES?.[source] || source;
         else image.removeAttribute("src");

@@ -2,17 +2,19 @@
 
 [完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../docs/visual/tokens.json)
 
-十张页面原稿与三张目录树 B 组件图板统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。图片是生成式设计稿，功能边界和精确几何仍以对应规范为准。
+页面原稿、当前可编辑修订与目录树 B 组件图板统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。原始生成式设计图与可编辑源导出图在清单中区分，功能边界和精确几何仍以对应规范为准。
 
 ## 主界面与解压确认
 
 | 原稿 | 状态 |
 | --- | --- |
-| [主窗口，浅色](screens/main-light.png) | 当前主界面视觉参考 |
-| 主窗口，深色 | **完整原稿待补齐**；深色图标适配不等于完整页面设计 |
+| [主窗口，浅色](screens/main-capsule-light.png) | 当前胶囊标签修订 |
+| [主窗口，深色](screens/main-capsule-dark.png) | 同源深色设计导出 |
 | [解压确认，macOS 独立窗口](screens/extract-macos.png) | 当前解压确认视觉参考 |
 
-![当前浅色主界面](screens/main-light.png)
+![当前浅色主界面](screens/main-capsule-light.png)
+
+[主窗口与目录树可编辑设计源](sources/main.html)复用现行 HTML 标题栏，冻结 48 高标题栏、32 高胶囊、16 圆角、上下各 8 的逻辑尺寸。浅深色主窗口与多级目录图均从该源导出；它们用于查看当前设计，不作为独立量测输入或原生 Qt 验收证据。
 
 ## 操作窗口与功能状态
 
@@ -34,15 +36,15 @@
 
 | 原稿 | 定义范围 |
 | --- | --- |
-| [多级展开](screens/directory-tree.png) | 独立箭头槽、多级连接线、同层对齐 |
+| [多级展开](screens/directory-tree-capsule.png) | 当前胶囊标题栏、独立箭头槽、多级连接线、同层对齐 |
 | [节点与交互状态](screens/directory-tree-states.png) | 折叠 / 展开、空 / 非空叶子、当前 / 悬停 / 焦点、长名称、大字号 |
 | [空态与导航边界](screens/directory-tree-boundaries.png) | 读取、空归档、根文件、超限、失败、隐藏当前目录 |
 
-[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../docs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订，不覆盖旧主窗口原稿；图板按放大比例展示，HTML 示例与 Qt 只读目录树已接入核心交互，专用边界图标／骨架与完整深色图板仍待补齐；既有人工专项以 [WP-12 issue](https://github.com/xiaodaozhi/xdzip/issues/5)结论为准，不以图板交付替代实际验收。
+[集中查看图板与切图](directory-tree.html)，[交互与接入规格](../../docs/ux/directory-tree.md)，[逻辑参数](../../docs/visual/directory-tree.json)，[实际交付检查（本地／CI 工件）](../../docs/qa/README.md)。B 为已确认的目录树修订。多级目录图已同步当前标题栏，其余状态图不包含标题栏；26 张原像素切片继续绑定[历史目录树图](screens/directory-tree.png)。图板比例不同，HTML 示例与 Qt 只读目录树已接入核心交互，专用边界图标／骨架与完整深色状态图板仍待补齐；既有人工专项以 [WP-12 issue](https://github.com/xiaodaozhi/xdzip/issues/5)结论为准，不以图板交付替代实际验收。
 
 ## 原稿与素材的职责
 
-`hifi/` 只保留完整原稿、清单与画廊。原来放在此处的图标、PNG、切片和素材预览全部合入 [design/assets](../assets/README.md)，从统一入口查看与维护。
+`hifi/` 保留完整原稿、可编辑设计源、当前修订导出、清单与画廊。图标、切片和素材预览统一放在 [design/assets](../assets/README.md)，从统一入口查看与维护。
 
 - `assets/svg/`、`assets/png/`：HTML 和 Qt 共用的透明运行图标。
 - `assets/reference/`：原图直接裁切的精美对照素材；保留原背景和原像素，用于评审透明重建的差异。
@@ -50,9 +52,11 @@
 - `docs/visual/`：视觉规范与实现约束。
 - `docs/qa/`：可复用验证方法与清单；实际证据放本地 build/ 或 CI 工件，结论由 issue 跟踪。
 
-目录合并保持十张原稿及原像素切片的字节不变。历史 QA JSON 保留当时输入路径与哈希，结合 [迁移清单](../assets/migration.json) 或其记录的 Git 提交追溯，不回写历史测量。
+目录合并及后续修订保持旧原稿和原像素切片的字节不变。[历史主窗口](screens/main-light.png)与[历史目录树](screens/directory-tree.png)在画廊历史区展示，继续作为原始锚点和切片来源，不定义当前 tab 样式。历史 QA JSON 保留当时输入路径与哈希，结合 [迁移清单](../assets/migration.json) 或其记录的 Git 提交追溯，不回写历史测量。
 
 新增原稿时更新 `catalog.json` 的用途、标题和 SHA-256，再运行 `python scripts/build-hifi-gallery.py`。CI 通过 `--check` 校验图片完整性及画廊同步，不重新生成图像。清单中的 schema 版本仅用于数据兼容，不是素材分组。
+
+主窗口与多级目录修订可执行 `python scripts/export-hifi-titlebars.py --write-design` 重新导出，再显式更新清单哈希。省略 `--write-design` 时只写入 `build/review/hifi-titlebars/`；同一流程量测胶囊完整边框、上下留白、DPR 1／1.25／2 及主窗口与菜单比例，不自动覆盖冻结的原图或量测记录。
 
 手机离线阅读可运行 `python scripts/build-hifi-gallery.py --standalone dist/xdzip-hifi-gallery.html`，导出内嵌全部原图的单文件 HTML；其他文档链接仍需仓库访问权限。
 

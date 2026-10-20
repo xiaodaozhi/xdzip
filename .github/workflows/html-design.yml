@@ -25,6 +25,7 @@ on:
       - 'docs/visual/controls.json'
       - 'docs/visual/layout-scale.json'
       - 'scripts/generate-display-spec.py'
+      - 'scripts/export-hifi-titlebars.py'
       - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
       - 'build/review/asset-review/**'
@@ -63,6 +64,7 @@ on:
       - 'docs/visual/controls.json'
       - 'docs/visual/layout-scale.json'
       - 'scripts/generate-display-spec.py'
+      - 'scripts/export-hifi-titlebars.py'
       - 'scripts/native_browser_zoom.py'
       - 'scripts/generate-control-tokens.py'
       - 'build/review/asset-review/**'
@@ -104,6 +106,7 @@ jobs:
           .venv-design/bin/python scripts/generate-ui-messages.py --check
           .venv-design/bin/python scripts/build-html-design.py
           .venv-design/bin/python scripts/generate-display-spec.py --check
+          .venv-design/bin/python scripts/export-hifi-titlebars.py
           .venv-design/bin/python scripts/generate-control-tokens.py --check
           .venv-design/bin/python scripts/sync-version.py --check
           .venv-design/bin/python scripts/check-html-about.py
@@ -142,6 +145,7 @@ jobs:
             build/review/desktop-integration/html/
             build/review/html-welcome/
             build/review/html-header/
+            build/review/hifi-titlebars/
             build/review/html-body/
             build/review/pane-header-alignment.md
             build/review/pane-header-alignment/
