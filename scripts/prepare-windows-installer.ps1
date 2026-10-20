@@ -1,4 +1,4 @@
-# CI tool only; fixed official binary and source resources, never bundled compiler.
+# Explicit local/CI preparation; fixed official tools, never bundled compiler.
 param([Parameter(Mandatory=$true)][string]$OutputDirectory)
 $ErrorActionPreference = 'Stop'
 $config = (Get-Content 'scripts/installer-toolchain.json' -Raw | ConvertFrom-Json).inno_setup

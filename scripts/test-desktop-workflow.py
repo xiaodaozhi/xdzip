@@ -19,6 +19,9 @@ class WorkflowTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.addCleanup(patch.stopall)
+        # Tests simulating a local Mac must not inherit the host runner's CI
+        # policy. The explicit CI guard cases below set CI=true themselves.
+        patch.dict(os.environ, {'CI': ''}).start()
         patch.object(desktop, 'ROOT', self.root).start()
         self.qt = self.root/'sdk'
         for name in ['qmake', 'qmake.exe']:

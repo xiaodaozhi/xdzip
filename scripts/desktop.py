@@ -53,6 +53,7 @@ def label(path):
 class Workflow:
     def __init__(self, args, *, system=None):
         self.args = args
+        self.preflights = []
         actual = PLATFORMS.get(platform.system())
         if actual is None and system is None:
             raise ValueError('Unsupported native build host')
@@ -127,8 +128,10 @@ class Workflow:
     def doctor(self, stage):
         report = check_environment(self.qt, stage=stage, system=self.system,
                                    python_executable=self.python, env=self.env)
+        self.preflights.append({'stage': stage, **report})
         for item in report['checks']:
             print(item['status'].upper() + ' ' + item['name'] +
+                  (' '+item['version'] if item.get('version') else '') +
                   (': ' + item['hint'] if item.get('hint') else ''), flush=True)
         if report['status'] != 'passed':
             raise ValueError('Environment preflight failed; fix the listed checks before ' + stage)
@@ -517,6 +520,7 @@ def main(argv=None):
             report.update(status='failed', failure_type=type(error).__name__)
             raise
         finally:
+            report['preflights'] = workflow.preflights
             report_path.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
         print(args.stage + ' passed, receipt: ' + label(report_path))
         return 0

@@ -43,7 +43,9 @@ def locked_rust_version() -> str:
 
 
 def _version(text: str) -> str | None:
-    match = re.search(r"(?<![\d.])(\d+\.\d+(?:\.\d+){0,2})(?![\d.])", text)
+    # Git for Windows appends .windows.1 to its numeric release. Permit a
+    # textual suffix, while refusing to truncate an additional numeric part.
+    match = re.search(r"(?<![\d.])(\d+\.\d+(?:\.\d+){0,2})(?!\d|\.\d)", text)
     return match[1] if match else None
 
 
@@ -51,7 +53,7 @@ def _numbers(version: str) -> tuple[int, ...]:
     return tuple(int(part) for part in version.split("."))
 
 
-def _run(command: list[str], *, allowed: tuple[int, ...] = (0,),
+def _run(command: list[str], *, allowed: tuple[int, ...] | None = (0,),
          timeout: int = 20, env: dict[str, str] | None = None,
          include_stderr: bool = True) -> str | None:
     # rustup shims otherwise attempt network installation while merely reading
@@ -63,7 +65,7 @@ def _run(command: list[str], *, allowed: tuple[int, ...] = (0,),
                                 text=True, errors="replace", timeout=timeout)
     except (OSError, subprocess.SubprocessError):
         return None
-    if result.returncode not in allowed:
+    if allowed is not None and result.returncode not in allowed:
         return None
     return result.stdout + ("\n" + result.stderr if include_stderr else "")
 
@@ -183,7 +185,18 @@ def check_environment(qt_prefix: Path | None = None, *, stage: str,
             target = environment.get("VSCMD_ARG_TGT_ARCH", "").lower()
             add("compiler.target", output is not None and re.search(r"\bx64\b", output, re.I) is not None and
                 target in {"", "x64", "amd64"}, "Select the x64 MSVC developer environment, not x86 or ARM64.")
-            tool("link", ["/?"])
+            linker, _ = tool("link")
+            if linker:
+                # Microsoft LINK's read-only help query has nonzero statuses on
+                # some SDKs. Its banner, not that status or its filename, proves
+                # this is the MSVC linker rather than a GNU utility in PATH.
+                link_output = run([linker, "/?"], allowed=None)
+                link_version = _version(link_output or "")
+                microsoft = re.search(r"\bMicrosoft\b[^\r\n]*\bIncremental\s+Linker\b",
+                                      link_output or "", re.I) is not None
+                add("version.link", microsoft and link_version is not None,
+                    "Select the Microsoft Incremental Linker from the MSVC x64 Native Tools environment, not GNU link.",
+                    version=link_version)
             tool("rc", ["/?"])
             # Windows os.environ normalizes keys to uppercase; a plain copied
             # dictionary no longer provides its case-insensitive lookup.

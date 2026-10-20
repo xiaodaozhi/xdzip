@@ -197,6 +197,40 @@ class EnvironmentTests(unittest.TestCase):
         self.qt_sdk()
         self.assertEqual(self.check()["status"], "passed")
 
+    def test_git_for_windows_textual_release_suffix_is_supported(self):
+        self.system, self.machine = "windows", "AMD64"
+        for release in ["2.49.0.windows.1", "2.51.2.windows.2"]:
+            with self.subTest(release=release):
+                self.overrides[("git", ("--version",))] = (0, "git version " + release, "")
+                report = self.check("prepare", qt_prefix=None)
+                self.assertEqual(report["status"], "passed", report)
+                git = next(check for check in report["checks"] if check["name"] == "version.git")
+                self.assertEqual(git["version"], release.split(".windows")[0])
+
+    def test_numeric_release_is_not_silently_truncated(self):
+        self.overrides[("git", ("--version",))] = (0, "git version 2.49.0.1.2.windows.1", "")
+        self.assertIn("version.git", self.failed(self.check("prepare", qt_prefix=None)))
+
+    def test_microsoft_link_help_banner_accepts_nonzero_query_status(self):
+        self.system, self.machine = "windows", "AMD64"
+        banner = "Microsoft (R) Incremental Linker Version 14.44.35218.0\nCopyright (C) Microsoft Corporation.\n"
+        for code in [0, 1, 2, 1100, 9876]:
+            with self.subTest(code=code):
+                self.overrides[("link", ("/?",))] = (code, "", banner)
+                report = self.check("prepare", qt_prefix=None)
+                self.assertEqual(report["status"], "passed", report)
+                link = next(check for check in report["checks"] if check["name"] == "version.link")
+                self.assertEqual(link["version"], "14.44.35218.0")
+
+    def test_non_microsoft_or_missing_linker_is_rejected(self):
+        self.system, self.machine = "windows", "AMD64"
+        for banner in ["link (GNU coreutils) 9.5", "GNU ld (GNU Binutils) 2.42", "Microsoft Incremental Linker, unavailable"]:
+            with self.subTest(banner=banner):
+                self.overrides[("link", ("/?",))] = (0, banner, "")
+                self.assertIn("version.link", self.failed(self.check("prepare", qt_prefix=None)))
+        self.missing.add("link")
+        self.assertIn("tool.link", self.failed(self.check("prepare", qt_prefix=None)))
+
     def test_missing_qml_or_platform_plugin_is_not_a_complete_sdk(self):
         self.qt_sdk()
         (self.qt / "libexec/qmlimportscanner").unlink()
