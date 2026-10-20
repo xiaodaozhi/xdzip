@@ -13,7 +13,7 @@ cmake --build build/ui
 ctest --test-dir build/ui --output-on-failure
 ```
 
-以上直接启动命令适用于 Linux。macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip.exe`。内部 CMake 目标继续使用 `xdzip-browser`，可通过 `cmake --build build/ui --target xdzip-browser` 单独构建；该目标名不作为产品文件名。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
+以上直接启动命令适用于 Linux。macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip.exe`。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
 
 macOS 的 `XDZIP_MACOS_HANDLER_RANK` 只接受 `None`、`Alternate`，默认 `None`，使普通开发构建和 CTest 运行的副本不进入系统“打开方式”候选。需要长期使用的主应用或用于 DMG 的构建显式配置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`；保留一个主包即可，测试配置继续使用 `None`。这不设置默认应用，文件拖入、命令行和显式指定应用的打开流程仍可用。
 

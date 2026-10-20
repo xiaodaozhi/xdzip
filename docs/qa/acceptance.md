@@ -171,7 +171,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 
 ## 版本与关于窗口
 
-产品构建文件名统一为 Linux 的 `xdzip`、Windows 的 `xdzip.exe` 和 macOS 的 `xdzip.app/Contents/MacOS/xdzip`，普通构建与部署包均核对实际入口。`xdzip-browser` 仅为内部 CMake 目标；测试和诊断程序各自保留名称，不作为用户运行入口。
+产品构建文件名统一为 Linux 的 `xdzip`、Windows 的 `xdzip.exe` 和 macOS 的 `xdzip.app/Contents/MacOS/xdzip`，普通构建与部署包均核对实际入口。测试和诊断程序各自保留名称，不作为用户运行入口。
 
 验证 `VERSION.json`、Cargo workspace、CLI、Windows 版本资源、macOS bundle 与关于窗口一致。覆盖开发／稳定渠道、非法版本与构建号边界、无 Git 的 unknown、dirty 提示、两种语言、浅深色、100/125/150% 字号和高 DPR；复制 JSON 不含个人文件路径，关闭后返回原设置窗口。HTML 不伪造原生 Qt 或提交。完整进程资源观测及其限制见 [WP-12](https://github.com/xiaodaozhi/xdzip/issues/5)。
 

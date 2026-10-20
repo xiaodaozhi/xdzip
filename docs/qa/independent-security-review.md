@@ -4,7 +4,7 @@
 
 ## 取得与复验
 
-先核对清单和源码哈希，读取 README、SECURITY.md、docs/design/07-file-security.md、docs/engineering/m3-extraction.md、docs/engineering/m4-creation.md、docs/engineering/m4-tar-gzip.md 与 docs/engineering/installers-associations.md。按源码包 REBUILD.md 离线构建，保留工具链、平台、测试命令及结果。测试只在隔离临时目录使用可再分发的自造样本，不使用用户文件或关闭系统安全保护。
+先核对清单和源码哈希，读取 README、SECURITY.md、docs/design/07-file-security.md、docs/engineering/m3-extraction.md、[密码解压契约](../engineering/password-extraction.md)、docs/engineering/m4-creation.md、docs/engineering/m4-tar-gzip.md 与 docs/engineering/installers-associations.md。按源码包 REBUILD.md 离线构建，保留工具链、平台、测试命令及结果。测试只在隔离临时目录使用可再分发的自造样本，不使用用户文件或关闭系统安全保护。
 
 ## 优先审查路径
 
@@ -12,9 +12,9 @@
 | --- | --- | --- |
 | 不可信元数据 | crates/xdzip-codec-zip、xdzip-codec-tar、xdzip-extract-plan | ZIP64、重叠区间、截断、编码、重复名、TAR PAX、计数与大小上限不会溢出或绕过策略 |
 | 目标文件系统 | crates/xdzip-runtime、xdzip-domain，M3 文件安全契约 | 绝对／相对逃逸、Unicode／大小写碰撞、符号链接与重解析点不使输出越过授权根；竞态和失败不会静默覆盖旧文件 |
-| 内容与资源 | ZIP／TAR payload、runtime 服务与限制 | 解压炸弹、伪造大小、CRC、过量目录、磁盘满、取消与提交竞争，终态和回执可解释 |
+| 内容与资源 | ZIP／TAR payload、runtime 服务与限制 | 解压炸弹、伪造大小、CRC、AES 内容认证、重试预算、过量目录、磁盘满、取消与提交竞争，终态和回执可解释 |
 | 创建与整体提交 | ZIP／TAR writer、runtime 创建流程 | 输入树变化、链接策略、暂存清理、写后校验、失败保护旧目标、加密密码生命周期 |
-| Rust／Qt 桥接 | crates/xdzip-qt-bridge、apps/desktop/BrowserController、任务控制器 | FFI 所有权、异步事件、重复关闭、取消与 join 不产生悬空引用、跨线程访问或重复终态 |
+| Rust／Qt 桥接 | crates/xdzip-qt-bridge、apps/desktop/BrowserController、任务控制器 | FFI 所有权、异步事件、密码响应与清理、重复关闭、取消与 join 不产生悬空引用、跨线程访问或重复终态 |
 | 系统打开与驻留 | FileOpenRouter、DesktopIntegration、NativeDialogPolicy、设置保存 | 外部路径不被当作命令，模态／托盘／退出不丢任务，配置文件原子写入及版本兼容保护 |
 | 安装与供应链 | Windows installed-files.iss、安装器生成器、Linux 打包、部署／源码收集脚本 | 只清理自有可验证文件，拒绝路径／清单逃逸，保留用户文件；Qt 插件与 DLL 加载不依赖不可信当前目录 |
 
@@ -24,7 +24,7 @@ Windows 清单清理明确假设安装目录不被外部并发恶意修改，路
 
 每次交接必须提供与实际候选提交及包哈希绑定的 CI、源码、SBOM、通知、性能和包核验材料。已有执行状态由相应 issue 及 Actions 记录，历史提交的成功不当作新候选已复验，也不因一次自动检查通过推定独立审查完成。
 
-能力范围以 README 为准：不把创建 AES／分卷 ZIP 等同于已支持读取，不把元数据预览等同于安全内容预览。未来扩展 IPC、额外格式、自动更新器不作为已实现功能审查；若当前代码可意外到达这些入口，仍应报告。
+能力范围以 README 及实现契约为准：单卷 WinZip AE-1／AE-2 AES-256 的 Store／Deflate 已支持密码解压，其他加密方式和分卷读取仍不支持，不能由创建能力推断读取能力；元数据预览也不等同于安全内容预览。未来扩展 IPC、额外格式、自动更新器不作为已实现功能审查；若当前代码可意外到达这些入口，仍应报告。实际审查进度由[独立发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪，本方法不表示已获得独立结论。
 
 ## 交付结论格式
 

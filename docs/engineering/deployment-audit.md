@@ -1,6 +1,6 @@
 # 部署依赖核验与 SBOM
 
-WP-12 使用两类清单，均为开发审阅材料，完整性明确标记 `incomplete`，不自动提升为可发行结论。格式使用 [CycloneDX 1.6 官方 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。schema 的上游提交与三个文件 SHA-256 固定在 [配置](../../scripts/sbom-schemas.json)，验证时只下载并解析这些资源，缓存到 build/，不会从 SBOM 中的任意 URL 下载 schema。
+部署核验使用源码与实际工件清单，均为开发审阅材料，完整性明确标记 `incomplete`，不自动提升为可发行结论。格式使用 [CycloneDX 1.6 官方 schema](https://github.com/CycloneDX/specification/blob/55343ba19dee1785acf1ce9191540d5fd7b590db/schema/bom-1.6.schema.json)。schema 的上游提交与三个文件 SHA-256 固定在 [配置](../../scripts/sbom-schemas.json)，验证时只下载并解析这些资源，缓存到 build/，不会从 SBOM 中的任意 URL 下载 schema。
 
 | 工件 | 数据来源与用途 | 不能证明的事项 |
 | --- | --- | --- |
@@ -43,4 +43,4 @@ python3 scripts/sbom.py \
 
 已接入[实际组件归属](runtime-attribution.md)：使用 SDK SPDX 关联实际文件、Qt 模块与内嵌第三方，交付固定哈希的官方许可文本，记录 SDK 与上游哈希差异及未确认归属。Rust 普通运行时候选与构建／开发／过程宏工具分开。新增组件关系绑定实际审计并合入工件 SBOM，仍明确标记不完整。
 
-在批准的平台部署环境获得真实安装目录后，重新核验并逐一将 DLL／framework／插件与上游组件、版本、许可证和对应源码关联，补全 Qt 内嵌第三方、静态 Rust 链接归属、重链接材料和工具链来源。只有同时具备人工干净安装证据、发布身份及所需安全审查，才提交 WP-12 准入评审。当前脚本不会自动签发该结论。
+在批准的平台部署环境获得真实安装目录后，重新核验并逐一将 DLL／framework／插件与上游组件、版本、许可证和对应源码关联，补全 Qt 内嵌第三方、静态 Rust 链接归属、重链接材料和工具链来源。发行评审还须核对同一候选的版本、提交和工件哈希、适用的干净安装证据及所需安全审查，剩余事项由[独立发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。交付沿用[个人开源发行政策](release-runbook.md)，不要求付费签名身份；脚本不会自动签发发行结论，也不重开已完成的 WP-12 开发验收。

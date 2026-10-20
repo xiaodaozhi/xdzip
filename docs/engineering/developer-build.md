@@ -6,7 +6,7 @@
 
 使用根目录锁定的 Rust、Cargo.lock、Qt 与平台编译器。完整配置、构建、CTest 及离屏环境命令见[Qt 开发应用](../../apps/desktop/README.md)。Rust 核心可独立执行 `cargo test --workspace --locked`，不需要 Qt。
 
-真实产品在所有平台统一使用 `xdzip` 名称，Windows 为 `xdzip.exe`，macOS 为 `xdzip.app` 内的 `xdzip`。内部 CMake 目标保留 `xdzip-browser`，仅用于构建调用；组件示例入口为 `xdzip-ui-preview`，测试程序保留各自测试名称。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
+真实产品在所有平台统一使用 `xdzip` 名称，Windows 为 `xdzip.exe`，macOS 为 `xdzip.app` 内的 `xdzip`。组件示例入口为 `xdzip-ui-preview`，测试程序保留各自测试名称。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
 
 macOS 默认以 `XDZIP_MACOS_HANDLER_RANK=None` 构建开发与测试包，避免普通 CMake/CTest 在系统“打开方式”中增加候选。仅为保留的主应用或 DMG 输入显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。参数仅接受这两个值，不更改用户默认关联；原生候选查询与历史副本维护见[Mac 部署指南](macos-deployment.md)。
 
@@ -24,7 +24,7 @@ macOS 默认以 `XDZIP_MACOS_HANDLER_RANK=None` 构建开发与测试包，避�
 
 打开只浏览，不自动解压。普通同名文件支持询问、跳过、改名及明确替换；内容校验和同步后才整文件发布。提交前取消或写入失败保留旧文件，早前已提交的解压项继续保留。关闭任务窗口仅隐藏详情，退出由活动任务决策和异步 shutdown 屏障处理。
 
-ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](m3-extraction.md)；已知输入竞态和 macOS ACL 兼容问题见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
+ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢复特权位、扩展属性或原始修改时间，不代表应用包安装或签名验证。来源与目标必须满足[安全解压契约](m3-extraction.md)；文件输入竞态和 macOS ACL 兼容修复的范围与验证记录见 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)。崩溃暂存只提示并保留供检查，不自动恢复或删除未知内容。
 
 ## 证据与复验
 

@@ -1,6 +1,6 @@
 # Linux 独立运行目录与验证
 
-当前开发部署基线为 Ubuntu 24.04、x86_64、X11。目标是脱离开发 Qt SDK 运行当前产品，不据此承诺其他发行版、旧 glibc、Wayland 或完整安装器支持。macOS 仍只做原生开发构建与启动，不受本流程影响。
+当前开发部署基线为 Ubuntu 24.04、x86_64、X11。目标是脱离开发 Qt SDK 运行当前产品，不据此承诺其他发行版、旧 glibc、Wayland 或完整安装器支持。macOS CI 保持原生编译、测试与启动验证，本地开发 DMG 按[Mac 部署指南](macos-deployment.md)处理，不受本流程影响。
 
 ## 布局和生成
 
@@ -44,6 +44,6 @@ linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quic
 
 CI 生成 xdzip-linux-x86_64.tar.gz 并记录 SHA-256 和可执行文件哈希。tar.gz 保留执行权限，避免 Actions ZIP 解压丢失入口执行位；归档路径、UID/GID 和时间规范化，不写入私人目录。下载后解压并运行目录内 `./xdzip`，不能只搬走 bin/xdzip。原始 linux/ 不重复上传。
 
-该运行目录仍是实验开发交付，其 tar.gz 不自动安装或改默认，另提供实验 .deb 安装与打开候选，仍未签名。其他发行版与桌面、Wayland、真实输入法／读屏、干净安装升级卸载、完整组件许可归属与独立安全审查继续按 [WP-12 准入](https://github.com/xiaodaozhi/xdzip/issues/5)登记。目录运行通过不自动完成这些门槛。
+该运行目录仍是实验开发交付，其 tar.gz 不自动安装或改默认，另提供实验 .deb 安装与打开候选，仍未签名。平台范围以[支持政策](support-policy.md)为准，其他发行版与桌面、Wayland 等扩展另建 issue。已有桌面验收保留于 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，后续变更按受影响项复验真实输入法／读屏及干净安装升级卸载，不因重建目录重复要求既有验收。完整组件许可归属与独立安全审查由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪，目录运行通过不自动完成发行门槛。
 
-Ubuntu .deb 的安装／升级／回退／卸载、运行锁与桌面 MIME 自动验证见[安装与关联](installers-associations.md)，运行容器的通过不替代真实桌面与签名准入。
+Ubuntu .deb 的安装／升级／回退／卸载、运行锁与桌面 MIME 自动验证见[安装与关联](installers-associations.md)，运行容器的通过不替代真实桌面专项与独立发行审查。

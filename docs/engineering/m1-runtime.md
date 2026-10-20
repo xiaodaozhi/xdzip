@@ -4,7 +4,7 @@ M1 范围以 design/12 为准：产品骨架、双句柄、事件/背压、关�
 
 ## 已落地的服务
 
-`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 生成 ABI 胶水是唯一 unsafe 边界。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
+`xdzip-runtime::service` 是产品实现，诊断探针继续独立保留。GUI 只持有 `CommandClient`，专用 Qt 接收线程独占 `EventReceiver`；两个句柄各取一次，cxx 负责该桥接的 ABI 胶水，平台文件访问的安全边界另见[文件安全规范](../design/07-file-security.md)。源文件与归档快照由单个 Rust 工作线程拥有，不再向 Qt 暴露 Archive 句柄或同步扫描入口。
 
 M1 命令为 Open、Browse、Preflight、CloseSession、Snapshot；现有真实浏览和预检全部接入。每个 accepted 普通请求分配不复用 ID，返回至多一个有界数据事件，再返回恰好一次 Finished；错误直接 Finished。页面携带会话、请求和偏移身份；本阶段单会话、串行 GUI pending 请求，M2 已增补完整查询 ID、GUI 代际和快照修订，见 [M2 契约](m2-readonly.md)。跨会话请求返回 stale_session。
 
@@ -28,11 +28,11 @@ Qt 控制器仅保留一个待准入命令。短暂 Busy 在事件循环中以 1
 
 原生窗口关闭和应用 Quit（含 macOS Cmd+Q）进入同一异步关闭路径。停止准入，取消已接收工作，继续 drain 终态，Rust 释放会话后标记工作结束；接收线程 join Rust 工作线程，再收到 ShutdownReady 和 EOF。Qt 接收线程结束且 mailbox 排空后，GUI 才允许退出。GUI 从不 join 等待事件/文件工作的线程。
 
-取消/关闭控制使用只含有界状态操作的短临界区，不受数据队列容量约束。协作取消不能打断操作系统阻塞读，这不是硬实时退出保证。M1 没有输出事务，因此不存在关闭时未提交文件的恢复承诺。
+取消/关闭控制使用只含有界状态操作的短临界区，不受数据队列容量约束。协作取消不能打断操作系统阻塞读，这不是硬实时退出保证。本节的只读请求不产生输出事务；创建与解压的提交、暂存清理和退出结果分别按[创建](m4-creation.md)与[安全解压](m3-extraction.md)契约处理。
 
 QObject 提前销毁时，关闭 mailbox、唤醒接收线程、停止服务；后台仅持有共享队列和 Rust 接收句柄，不捕获控制器指针。Qt 自动撤销针对已销毁对象的通知。事件消费回调若同步销毁连接也有 QPointer 生命周期防护。放弃接收时不在析构函数 join，工作协作结束；正常 ShutdownReady 才是已 join 的证明。
 
-只读工作处理函数发生可展开 panic 时，边界捕获后废弃整个服务，发送 RuntimeFault，并将未完成请求终结为 runtime_unavailable，不继续使用该会话。不恢复半完成事务；目前没有文件写入。分配失败、进程 abort、poisoned 内部锁等不可恢复错误不承诺发送终态。Qt 对意外 EOF/连接失败统一结束 pending 状态，防止永久忙碌。
+只读工作处理函数发生可展开 panic 时，边界捕获后废弃整个服务，发送 RuntimeFault，并将未完成请求终结为 runtime_unavailable，不继续使用该会话。此处只定义只读请求的故障行为，不承诺恢复半完成的创建或解压事务；写入任务的已提交项、结果不确定性与清理按对应契约处理。分配失败、进程 abort、poisoned 内部锁等不可恢复错误不承诺发送终态。Qt 对意外 EOF/连接失败统一结束 pending 状态，防止永久忙碌。
 
 ## 验证与构建
 
