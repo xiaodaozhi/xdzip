@@ -1124,6 +1124,12 @@ class BrowserTest : public QObject {
                  child.readAllStandardOutput().constData());
         window->close();
     }
+    void qtRuntimeTranslations() {
+        QTranslator translator;
+        QVERIFY(loadQtSystemTranslation(translator, QLocale(QStringLiteral("zh_CN")),
+                                        QLibraryInfo::path(QLibraryInfo::TranslationsPath)));
+        QVERIFY(translator.translate("QFileDialog", "Open").contains(QStringLiteral("打开")));
+    }
     void settingsEnglishStartup() {
         if (qEnvironmentVariable("XDZIP_SETTINGS_CHILD") != "1")
             QSKIP("Covered by the isolated settings restart child process");

@@ -4,6 +4,12 @@
 
 ## Windows
 
+便携包与安装器使用同一部署目录，由 [deploy_windows.py](../../scripts/deploy_windows.py) 调用 windeployqt，再按已固定的 Qt Quick Basic 策略移除 FluentWinUI3、Fusion、Imagine、Material、Universal、Windows、仅样式引用的 NativeStyle／Effects、qmltooling 和 .qmltypes。Basic、Controls impl、Templates、运行时 QML 与 qmldir 保留；Qt Widgets 的 qmodernwindowsstyle 继续服务原生控件。opengl32sw、DXC、DXIL、D3DCompiler 图形回退库保留。增加新样式或 Effects 功能时必须同时调整部署策略并复验。
+
+VC++ 采用应用目录内部署，使用 [固定来源与文件哈希](../../scripts/windows-runtime.json) 的微软官方 x64 14.44.35211 运行库。[准备脚本](../../scripts/prepare-windows-runtime.py) 用固定 WiX 工具解包，再校验每个 DLL 和许可正文，不执行 EXE 或 MSI 安装、不从 System32 复制文件。交付所需 MSVCP／VCRUNTIME DLL 与许可、来源记录，工具、CAB、MSI 和未执行的 vc_redist 安装程序不进入产品；Windows 10／11 自带 UCRT。应用目录内运行库须随产品更新维护，不能依赖系统集中运行库更新替换它们，参见 [Microsoft 部署方式](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method)。
+
+[部署回归](../../scripts/test-windows-deployment.py) 检查裁剪与运行库缺失边界；[实际运行检查](../../scripts/verify_windows_runtime.py) 在独立副本中加入测试 DLL，清除 SDK 搜索路径，执行系统翻译、设置重启、原生标题栏和双语启动。测试文件不写入产品目录，此检查不替代干净 Windows 上的安装／升级／卸载验收。
+
 build-windows-installer.py 只接受干净构建的 deployed 审计，重新核对每个文件的 SHA-256。固定 Inno Setup 6.7.3、官方安装程序哈希、源码提交、简体中文资源与许可正文见 [工具链配置](../../scripts/installer-toolchain.json)。编译器不进入产品，许可正文随 notices 交付；向导支持简体中文与 English，遵循系统语言。
 
 安装器使用固定 AppId、PrivilegesRequired=lowest，默认安装至当前用户 LocalAppData/Programs/xdzip，不需要管理员权限。主程序固定为安装根目录的 xdzip.exe，Qt 库位于同目录，插件、QML、翻译与通知保留各自必要子目录。快捷方式、文件关联与卸载显示图标均指向根目录，不再创建 versions/提交号-哈希 的产品层级。提交与二进制哈希继续保留在构建和安装器回执中，不作为安装路径。Inno Setup 的[累计卸载日志](https://jrsoftware.org/ishelp/topic_appendnotes.htm)登记各次安装拥有的文件，不递归删除额外内容。设置和最近记录位于既有用户配置目录，不由安装器删除。

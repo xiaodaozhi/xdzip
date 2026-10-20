@@ -138,11 +138,15 @@ def audit(root, app, qt_prefix, platform, mode):
                 if name.lower().startswith(('api-ms-win-', 'ext-ms-win-')):
                     edges.append({'from': source, 'import': name, 'scope': 'system-api-contract'})
                     continue
-                candidates = [binary.parent/name, app.parent/name, system_root/'System32'/name]
+                # VC++ is redistributable, not part of the Windows ABI. A deployed
+                # package must carry it even when this build host has it installed.
+                local_crt = mode == 'deployed' and re.match(r'(?i)^(msvcp|vcruntime|concrt|vcomp|vcamp|vccorlib)\d', name)
+                parents = [binary.parent, app.parent] + ([] if local_crt else [system_root/'System32'])
+                candidates = [parent/name for parent in parents]
                 # Windows lookup is case-insensitive, including on parser-test hosts.
                 resolved = next((p.resolve() for p in candidates if p.is_file()), None)
                 if resolved is None:
-                    for parent in [binary.parent, app.parent, system_root/'System32']:
+                    for parent in parents:
                         if parent.is_dir():
                             resolved = next((p.resolve() for p in parent.iterdir() if p.name.lower() == name.lower()), None)
                             if resolved:

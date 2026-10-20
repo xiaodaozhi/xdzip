@@ -18,6 +18,6 @@
 
 下拉菜单按全部选项的实际字体宽度加勾选列与内边距量测，右边缘对齐触发按钮，向左扩展。最小宽度为按钮宽度，扩展宽度上限为 360 逻辑像素，按钮本身更宽时沿用按钮宽度，并受当前窗口可用宽度约束；超长项省略显示。共享 footer 的动作始终横向排列，提示文字在宽度不足时单独占上一行，不因字号阈值把按钮改为纵向。设置仅提供 100%、125%、150%；历史 200% 配置读取为 150%，下次保存写入新值，其他已保存设置保留。
 
-系统文件和文件夹选择器遵循系统语言，独立于应用自身的语言选择。macOS 包显式声明 zh-Hans、en，并允许系统框架混合本地化；应用提供的对话框标题和过滤说明读取系统语言资源，Qt 标准控件加载系统 locale 的 qtbase 翻译。未覆盖的系统原生文案交由平台框架提供，不修改用户的 AppleLanguages。原理见 [Qt macOS 国际化说明](https://doc.qt.io/qt-6.8/macos-issues.html#internationalization)。
+系统文件和文件夹选择器遵循系统语言，独立于应用自身的语言选择。macOS 包显式声明 zh-Hans、en，并允许系统框架混合本地化；应用提供的对话框标题和过滤说明读取系统语言资源，Qt 标准控件按系统 locale 加载 SDK 的 qtbase 翻译，缺失时加载 windeployqt 合并生成的 qt 翻译。未覆盖的系统原生文案交由平台框架提供，不修改用户的 AppleLanguages。原理见 [Qt macOS 国际化说明](https://doc.qt.io/qt-6.8/macos-issues.html#internationalization)。
 
 桌面集成增加 `desktop/trayEnabled`，默认 true，保存后立即生效。关闭托盘前恢复隐藏窗口，取消设置不改变开关，详见[系统菜单与托盘](desktop-integration.md)。schema 保持 1，旧版可保留未知字段。

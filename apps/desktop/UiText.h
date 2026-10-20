@@ -63,6 +63,13 @@ class UiTranslator final : public QTranslator {
     }
 };
 
+inline bool loadQtSystemTranslation(QTranslator &translator, const QLocale &locale,
+                                    const QString &directory) {
+    // SDKs provide qtbase catalogs; windeployqt merges runtime catalogs as qt_*.qm.
+    return translator.load(locale, QStringLiteral("qtbase"), QStringLiteral("_"), directory) ||
+           translator.load(locale, QStringLiteral("qt"), QStringLiteral("_"), directory);
+}
+
 inline bool initializeUiText(const QString &forcedLanguage = {}) {
     QCoreApplication::setOrganizationName(QStringLiteral("xdzip"));
     QSettings settings(uiSettingsPath(), QSettings::IniFormat);
@@ -76,8 +83,8 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
         language = QStringLiteral("zh-CN");
     // Qt-owned controls use the OS language, independently of the product locale.
     auto *systemTranslator = new QTranslator(QCoreApplication::instance());
-    if (systemTranslator->load(QLocale::system(), QStringLiteral("qtbase"), QStringLiteral("_"),
-                               QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
+    if (loadQtSystemTranslation(*systemTranslator, QLocale::system(),
+                                QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
         QCoreApplication::installTranslator(systemTranslator);
     else
         delete systemTranslator;

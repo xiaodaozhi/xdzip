@@ -48,9 +48,10 @@ def main():
         runtime.mkdir()
         shutil.copy2(app, runtime/'xdzip.exe')
         shutil.copy2(source/'design/assets/brand/xdzip-zip.ico', runtime/'xdzip-zip.ico')
-        run([qt/'bin/windeployqt.exe', '--release', '--qmldir', source/'apps/desktop/ui',
-             '--qmlimport', build/'qml', runtime/'xdzip.exe'])
-        shutil.copytree(args.notices, runtime/'share/notices')
+        run([sys.executable, ROOT/'scripts/deploy_windows.py', '--root', runtime,
+             '--qt-prefix', qt, '--qml-dir', source/'apps/desktop/ui',
+             '--qml-import', build/'qml', '--runtime', ROOT/'build/windows-runtime/runtime'])
+        shutil.copytree(args.notices, runtime/'share/notices', dirs_exist_ok=True)
         executable = runtime/'xdzip.exe'
     else:
         # Use the historical QML import set, not the current UI's import graph.

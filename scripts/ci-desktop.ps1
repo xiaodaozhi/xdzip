@@ -24,8 +24,10 @@ Invoke-Checked python @('scripts/test-source-delivery.py')
 Invoke-Checked python @('scripts/test-qt-sdk-correspondence.py')
 Invoke-Checked python @('scripts/test-deployment-audit.py')
 Invoke-Checked python @('scripts/test-linux-deployment.py')
+Invoke-Checked python @('scripts/test-windows-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
 if ($IsWindows) {
+    Invoke-Checked python @('scripts/prepare-windows-runtime.py', '--output', 'build/windows-runtime')
     Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain')
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
 }
@@ -224,14 +226,15 @@ if ($IsMacOS) {
     New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
     Copy-Item $productExe 'build/review/windows/xdzip.exe'
     Copy-Item 'design/assets/brand/xdzip-zip.ico' 'build/review/windows/'
-    Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'build/review/windows/xdzip.exe')
+    Invoke-Checked python @('scripts/deploy_windows.py', '--root', 'build/review/windows', '--qt-prefix', $qtPrefix, '--qml-dir', 'apps/desktop/ui', '--qml-import', 'build/desktop/qml', '--runtime', 'build/windows-runtime/runtime')
     $env:QT_QPA_PLATFORM = 'windows'
     $env:QT_PLUGIN_PATH = ''
     $env:QML_IMPORT_PATH = ''
     $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -ne $qtBin }) -join ';'
     Invoke-Checked 'build/review/windows/xdzip.exe' @('--smoke-test')
     New-Item -ItemType Directory -Force 'build/review/windows/share' | Out-Null
-    Copy-Item -Recurse 'build/review/notices' 'build/review/windows/share/notices'
+    Copy-Item -Recurse 'build/review/notices/*' 'build/review/windows/share/notices/'
+    Invoke-Checked python @('scripts/verify_windows_runtime.py', '--root', 'build/review/windows', '--qt-prefix', $qtPrefix, '--tests', $browserTests, '--output', 'build/review/windows-runtime-test')
 } else {
     Invoke-Checked python @('scripts/deploy_linux.py', '--app', $productExe, '--qt-prefix', $qtPrefix, '--notices', 'build/review/notices', '--output', 'build/review/linux')
     Copy-Item 'build/review/linux/share/deployment.json' 'build/review/linux-deployment.json'
