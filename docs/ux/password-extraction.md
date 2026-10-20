@@ -1,6 +1,6 @@
 # 密码解压交互
 
-单卷 AES ZIP 的任务在遇到需要密码的条目时进入 `waiting_password`。运行时发布带任务 ID 和请求 ID 的密码请求；QML 只表达输入与取消意图，不负责解密、认证或文件提交。密码请求与重名冲突是不同状态，不能把密码请求交给重名窗口。格式、认证、重试次数及输出边界以[工程契约](../engineering/password-extraction.md)为准。
+AES ZIP（含受支持分卷）的任务在遇到需要密码的条目时进入 `waiting_password`。运行时发布带任务 ID 和请求 ID 的密码请求；QML 只表达输入与取消意图，不负责解密、认证或文件提交。密码请求与重名冲突是不同状态，不能把密码请求交给重名窗口。格式、认证、重试次数及输出边界以[工程契约](../engineering/password-extraction.md)为准。
 
 PasswordWindow 使用应用模态和现有系统标题栏，客户区宽 491，最高 600，并受当前屏幕可用高度约束。标题 20、正文 13、说明 12，正文随内容增长或独立滚动，footer 固定可达。尺寸来自 [password-reference.json](../visual/password-reference.json)，高保真依据为 [P02 独立状态稿](../../design/hifi/sources/password-extraction.html)。中英文、浅深色、100%／125%／150% 字号使用同一几何政策。
 
