@@ -49,6 +49,9 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
+#ifdef Q_OS_MACOS
+void scheduleNativeFileDialogCancellation();
+#endif
 
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
@@ -504,6 +507,11 @@ class BrowserTest : public QObject {
             WindowActivation::reveal(inspector);
             QCOMPARE(window->windowState(), state);
             inspector->close();
+            qInfo() << "Opening native file chooser from" << state;
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                scheduleNativeFileDialogCancellation();
+#endif
             QTimer::singleShot(100, qApp, [] {
                 for (auto *widget : QApplication::topLevelWidgets())
                     if (auto *dialog = qobject_cast<QFileDialog *>(widget))

@@ -51,12 +51,20 @@ def main():
                 if ready.returncode == 0 and 'window id #' in ready.stdout: break
                 time.sleep(.05)
             else: raise ValueError('X11 window manager did not become ready')
-        result = subprocess.run([str(args.tests.resolve()), *CASES, '-o', str(log)+',txt'],
-                                env=env, timeout=150, check=False, capture_output=True, text=True)
+        command = [str(args.tests.resolve()), *CASES, '-o', str(log)+',txt']
+        timed_out = False
+        try:
+            result = subprocess.run(command, env=env, timeout=150, check=False, capture_output=True, text=True)
+        except subprocess.TimeoutExpired as error:
+            timed_out = True
+            def decoded(value):
+                return value.decode('utf-8', errors='replace') if isinstance(value, bytes) else value or ''
+            result = subprocess.CompletedProcess(command, 124, decoded(error.stdout), decoded(error.stderr))
         output.with_suffix('.console.log').write_text(sanitized(result.stdout+result.stderr), encoding='utf-8')
         report = dict(status='passed' if result.returncode == 0 else 'failed', platform=sys.platform,
                       native_plugin=env['QT_QPA_PLATFORM'], window_manager='Openbox' if window_manager else 'system',
-                      cases=CASES, limits='Native window/session automation. Not manual visual, GPU, IME or screen-reader acceptance.')
+                      cases=CASES, timed_out=timed_out,
+                      limits='Native window/session automation. Not manual visual, GPU, IME or screen-reader acceptance.')
         output.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
         if result.returncode: raise ValueError('Native session regression failed; inspect its log')
     finally:

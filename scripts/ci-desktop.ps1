@@ -70,6 +70,8 @@ if ($IsMacOS) {
     Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--output', 'build/review/macos-registration.json')
 }
 # Foundation independently executes locked workspace Rust tests.
+$browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
+Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
 Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
@@ -93,7 +95,6 @@ Remove-Item Env:XDZIP_PRIVATE_TEST_AUDIT
 # Gate the repaired geometry and palette contracts on each native host.
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
-$browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $browserTests @('treeExpansionAndColumnInteraction', 'realContextMenusAndGrid', 'mainWindowFidelityAndSessionClose', 'reviewedMainControlsAndMenus', 'rootListingAndReviewedInteractions', 'm2LargeArchiveLatestQueryAndSourceChange', 'renderRealArchive')
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 $env:XDZIP_WELCOME_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/welcome'
@@ -244,7 +245,6 @@ if ($IsWindows) {
     Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Output','build/review/windows-install-lifecycle.json')
 }
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
-Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
     'Native macOS SDK validation only; no Apple Silicon developer package'
