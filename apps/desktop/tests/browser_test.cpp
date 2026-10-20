@@ -140,7 +140,7 @@ class BrowserTest : public QObject {
         QCOMPARE(window->windowState(), Qt::WindowMaximized);
         blocker.close();
         QTRY_VERIFY(last->isVisible());
-        QCOMPARE(sessions.activeWindow(), last);
+        QTRY_COMPARE(sessions.activeWindow(), last);
         QCOMPARE(window->windowState(), Qt::WindowMaximized);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
@@ -468,8 +468,16 @@ class BrowserTest : public QObject {
         for (const auto state : {Qt::WindowMaximized, Qt::WindowFullScreen}) {
             window->setWindowState(state);
             QTRY_COMPARE(window->windowState(), state);
+            if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
+                QVERIFY(QTest::qWaitForWindowExposed(window));
+                // X11/Cocoa acknowledge state changes asynchronously. Drain the
+                // preceding minimize/restore before measuring popup activation.
+                QTest::qWait(150);
+                QCOMPARE(window->windowState(), state);
+            }
             QSignalSpy changes(window, &QWindow::windowStateChanged);
             for (const auto &command : {"settings", "about", "new"}) {
+                qInfo() << "Activating" << command << "from" << state;
                 desktop.execute(command);
                 QCoreApplication::processEvents();
                 QCOMPARE(window->windowState(), state);
