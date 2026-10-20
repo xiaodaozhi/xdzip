@@ -34,7 +34,7 @@ def main():
             if any(set(re.findall(r'%(?:L?\d+|n)', text)) != placeholders for text in texts):
                 errors.append(f'{locale}/{key}: mismatched placeholders')
     used = set()
-    paths = list((ROOT/'apps/desktop/ui').glob('*.qml')) + [ROOT/'apps/desktop'/name for name in ['BrowserController.cpp','UiPreferences.cpp','DesktopIntegration.cpp','ApplicationSessions.cpp']]
+    paths = list((ROOT/'apps/desktop/ui').glob('*.qml')) + [ROOT/'apps/desktop'/name for name in ['BrowserController.cpp','UiPreferences.cpp','DesktopIntegration.cpp','ApplicationSessions.cpp','browser_main.cpp']]
     for path in paths:
         text = path.read_text(encoding='utf-8')
         for line in text.splitlines():

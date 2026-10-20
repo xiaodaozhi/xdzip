@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
         return 0;
     QApplication application(argc, argv);
     application.setApplicationName(QStringLiteral("xdzip"));
+    Q_INIT_RESOURCE(ui);
     WindowActivation::install(&application);
     InstalledRuntimeGuard installedRuntime;
     if (!installedRuntime.acquire())
@@ -67,9 +68,9 @@ int main(int argc, char *argv[]) {
         if (election == SingleInstance::Forwarded)
             return 0;
         if (election == SingleInstance::Failed) {
-            QMessageBox::critical(
-                nullptr, QStringLiteral("xdzip"),
-                QString::fromUtf8("无法与已运行的 xdzip 通信，请稍后重试。未启动第二个实例。"));
+            if (!initializeUiText())
+                return 5;
+            QMessageBox::critical(nullptr, QStringLiteral("xdzip"), qtTrId("sessions.unavailable"));
             return 12;
         }
     }
@@ -80,7 +81,6 @@ int main(int argc, char *argv[]) {
     application.setApplicationVersion(BuildInfo::version());
     application.setDesktopFileName(QStringLiteral("xdzip"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
-    Q_INIT_RESOURCE(ui);
     if (!initializeUiText())
         return 5;
     if (!installUiFont())

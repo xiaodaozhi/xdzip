@@ -536,6 +536,7 @@
     "password.attemptLimit": "密码重试次数已达上限，任务已停止。",
     "password.preflight": "此文件需要密码，解压时会请求输入。",
     "sessions.limit": "最多可保留 32 个会话，请关闭其他页面后重试。",
+    "sessions.unavailable": "无法连接正在运行的 xdzip，请稍后重试。",
     "sessions.openMode": "打开压缩包",
     "sessions.tabs": "在新标签页打开",
     "sessions.windows": "在新窗口打开"

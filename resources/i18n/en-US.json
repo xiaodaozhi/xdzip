@@ -536,6 +536,7 @@
     "password.attemptLimit": "The password retry limit was reached. The task has stopped.",
     "password.preflight": "This file requires a password. You will be asked during extraction.",
     "sessions.limit": "Up to 32 sessions can remain open. Close idle pages and try again.",
+    "sessions.unavailable": "Unable to contact the running xdzip. Please try again.",
     "sessions.openMode": "Open archives",
     "sessions.tabs": "Open in a new tab",
     "sessions.windows": "Open in a new window"
