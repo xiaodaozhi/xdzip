@@ -168,7 +168,14 @@ Item {
             compare(passwordWindow.modality,Qt.ApplicationModal);
             verify(passwordWindow.height <= Math.min(600,Screen.desktopAvailableHeight - 80));
             const footer = passwordWindow.footerItem;
-            verify(Math.abs(footer.y + footer.height - passwordWindow.height) <= 1);
+            // A rendered frame need not include the layout polish queued by a
+            // native resize notification after language or font changes.
+            tryVerify(() => Math.abs(footer.y + footer.height - passwordWindow.height) <= 1, 5000,
+                      "Footer must settle at the client bottom: " + JSON.stringify({
+                          tag:data.tag,windowHeight:passwordWindow.height,
+                          requestedHeight:passwordWindow.requestedHeight,
+                          footerY:footer.y,footerHeight:footer.height,
+                          bodyHeight:passwordWindow.bodyItem.height}));
             let top = -1;
             for (const name of ["passwordCancel","passwordSubmit"]) {
                 const button = findChild(passwordWindow,name), point = button.mapToItem(passwordWindow.contentItem,0,0);

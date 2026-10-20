@@ -503,17 +503,34 @@ fn password_control_bypasses_a_full_command_queue_and_shutdown_wakes_waiting_tas
                 break;
             }
         }
-        submit(&mut || Command::Extract {
+        let extract = submit(&mut || Command::Extract {
             session,
             options: target.options(),
         });
-        let (task, prompt) = loop {
-            if let Payload::Task(snapshot) = receiver.receive().unwrap().payload
-                && let Some(prompt) = snapshot.password_prompt
-            {
-                break (snapshot.id, prompt.id);
+        let mut waiting = None;
+        let mut accepted = None;
+        let mut extraction_finished = false;
+        // Task snapshots can arrive before the initiating request's terminal.
+        // Consume that terminal explicitly: until then Extract itself retains one
+        // ordinary admission slot, so filling MAX_OUTSTANDING would block forever.
+        while waiting.is_none() || accepted.is_none() || !extraction_finished {
+            let event = receiver.receive().unwrap();
+            match event.payload {
+                Payload::Task(snapshot) => {
+                    if let Some(prompt) = snapshot.password_prompt {
+                        waiting = Some((snapshot.id, prompt.id));
+                    }
+                }
+                Payload::TaskAccepted(task) if event.request == extract => accepted = Some(task),
+                Payload::Finished(error) if event.request == extract => {
+                    assert_eq!(error, "");
+                    extraction_finished = true;
+                }
+                _ => {}
             }
-        };
+        }
+        let (task, prompt) = waiting.unwrap();
+        assert_eq!(accepted, Some(task));
         assert!(
             client
                 .respond_password(task + 1, prompt, secret("right"))

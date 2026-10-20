@@ -44,6 +44,7 @@ def native_zoom_cases():
                                 page.goto(f'http://127.0.0.1:{server.server_port}/design/html/index.html?view=password&zoom=1')
                                 keyboard.set_zoom(page, dpr, zoom)
                                 child = next(frame for frame in page.frames if frame.parent_frame)
+                                child.evaluate('document.fonts.ready')
                                 child.evaluate('''language=>{
                                     history.replaceState(null,'','?view=password&lang='+language);
                                     document.documentElement.style.setProperty('--settings-text-scale',1.5);
@@ -52,15 +53,29 @@ def native_zoom_cases():
                                     child.evaluate('''dark=>{XdzipDesign.theme(dark?'dark':'light');showPasswordPrompt(true);}''', dark)
                                     modal = page.frame_locator('#design-frame').locator('#modal')
                                     expect(modal).to_be_visible()
-                                    box = modal.bounding_box()
-                                    assert abs(box['width'] - 491) <= 1, box
-                                    footer = modal.locator('.modal-footer').bounding_box()
-                                    assert abs(footer['y'] + footer['height'] - box['y'] - box['height']) <= 1
+                                    child.evaluate('''()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))''')
+                                    # Measure one layout snapshot, inside the frame. CDP's separate
+                                    # boxes can straddle a layout update or page-zoom pixel rounding.
+                                    # The footer meets the dialog's inner border, not its outside edge.
+                                    geometry = modal.evaluate('''el=>{
+                                        const box=el.getBoundingClientRect(),footer=el.querySelector('.modal-footer').getBoundingClientRect();
+                                        const frame=window.frameElement,scale=frame.getBoundingClientRect().width/frame.offsetWidth;
+                                        const border=parseFloat(getComputedStyle(el).borderBottomWidth);
+                                        return {width:box.width*scale,footerGap:(box.bottom-border-footer.bottom)*scale,
+                                            sourceBottom:box.bottom,footerBottom:footer.bottom,border,frameScale:scale,fonts:document.fonts.status};
+                                    }''')
+                                    case = {'dpr': dpr, 'browserZoom': zoom, 'language': language,
+                                            'dark': dark, 'textScale': 1.5, **geometry,
+                                            'effectiveDpr': page.evaluate('devicePixelRatio'),
+                                            'reviewZoom': page.locator('#zoom').input_value()}
+                                    if abs(geometry['width'] - 491) > 1 or abs(geometry['footerGap']) > 1:
+                                        tag = f'zoom-failure-{dpr}-{zoom}-{language}-{dark}'
+                                        (OUT / (tag + '.json')).write_text(json.dumps(case, indent=2) + '\n')
+                                        modal.screenshot(path=str(OUT / (tag + '.png')))
+                                    assert abs(geometry['width'] - 491) <= 1, case
+                                    assert abs(geometry['footerGap']) <= 1, case
                                     assert child.locator('#extraction-password').input_value() == ''
-                                    records.append({'dpr': dpr, 'browserZoom': zoom, 'language': language,
-                                                    'dark': dark, 'textScale': 1.5, 'width': box['width'],
-                                                    'effectiveDpr': page.evaluate('devicePixelRatio'),
-                                                    'reviewZoom': page.locator('#zoom').input_value()})
+                                    records.append(case)
                         context.close()
             finally:
                 keyboard.close()
