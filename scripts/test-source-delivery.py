@@ -13,6 +13,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from deployment_audit import digest
+from desktop_product import built_product
 import macos_launch_services as ls
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,38 @@ replace_qt = module('verify-qt-replacement')
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_current_product_and_historical_rebuild_names(self):
+        for platform, name, legacy in [('linux', 'xdzip', 'xdzip-browser'),
+                                       ('win32', 'xdzip.exe', 'xdzip-browser.exe')]:
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory() as temp:
+                build = Path(temp)
+                desktop = build/'apps/desktop'
+                desktop.mkdir(parents=True)
+                old = desktop/legacy
+                current = desktop/name
+                old.write_bytes(b'owned historical executable')
+                self.assertEqual(built_product(build, platform=platform, allow_legacy_name=True), old)
+                with self.assertRaisesRegex(ValueError, 'exactly one'):
+                    built_product(build, platform=platform)
+                current.write_bytes(b'owned current executable')
+                self.assertEqual(built_product(build, platform=platform), current)
+                with self.assertRaisesRegex(ValueError, 'exactly one'):
+                    built_product(build, platform=platform, allow_legacy_name=True)
+                old.unlink()
+                self.assertEqual(built_product(build, platform=platform, allow_legacy_name=True), current)
+                current.unlink()
+                with self.assertRaisesRegex(ValueError, 'exactly one'):
+                    built_product(build, platform=platform, allow_legacy_name=True)
+
+    def test_macos_product_remains_inside_its_bundle(self):
+        with tempfile.TemporaryDirectory() as temp:
+            build = Path(temp)
+            app = build/'apps/desktop/xdzip.app/Contents/MacOS/xdzip'
+            app.parent.mkdir(parents=True)
+            app.write_bytes(b'owned bundle executable')
+            for historical in [False, True]:
+                self.assertEqual(built_product(build, platform='darwin', allow_legacy_name=historical), app)
+
     def archive(self, root, member='owned-src-1/file.txt'):
         path = root/'owned-src-1.tar.xz'
         with tarfile.open(path, 'w:xz') as archive:

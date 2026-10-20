@@ -20,7 +20,7 @@ BEGIN
             VALUE "FileVersion", "@XDZIP_DISPLAY_VERSION@\0"
             VALUE "ProductName", "xdzip\0"
             VALUE "ProductVersion", "@XDZIP_DISPLAY_VERSION@\0"
-            VALUE "OriginalFilename", "xdzip-browser.exe\0"
+            VALUE "OriginalFilename", "xdzip.exe\0"
         END
     END
     BLOCK "VarFileInfo"

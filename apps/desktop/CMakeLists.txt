@@ -52,6 +52,8 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Widgets)
 include(${PROJECT_SOURCE_DIR}/cmake/RustStaticLibrary.cmake)
 xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 qt_add_executable(xdzip-browser browser_main.cpp)
+# Keep the internal target stable while using the product name on every platform.
+set_target_properties(xdzip-browser PROPERTIES OUTPUT_NAME xdzip)
 # Linker evidence remains a local/CI artifact. It does not change optimization,
 # safety checks or runtime behavior, and is not a complete license attribution.
 if(APPLE)
@@ -77,7 +79,7 @@ if(APPLE)
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
     target_sources(xdzip-browser PRIVATE MacTitlebar.mm)
     target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
-    set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE OUTPUT_NAME xdzip
+    set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in"
         MACOSX_BUNDLE_BUNDLE_NAME "xdzip"

@@ -14,6 +14,8 @@ WP-12 候选材料整理批次递增为 `0.1.0-dev.6`，同步未正式签名的
 
 密码解压功能构建递增为 `0.1.0-dev.7`，新增受支持单卷 AES-256 的密码任务交互与认证后发布。设置 schema 仍为 1，其他加密与分卷读取边界按[密码解压契约](password-extraction.md)声明，开发构建不表示独立发行审查已完成。
 
+主程序文件命名修正构建递增为 `0.1.0-dev.8`，三平台统一输出 `xdzip`（Windows 为 `xdzip.exe`），源码重建与历史升级验证区分当前和旧文件名。设置 schema、应用身份与安装入口保持兼容。
+
 - `version` 使用无前导零的 `major.minor.patch`。不兼容变更、兼容功能与修复分别按版本范围管理，0.x 阶段仍须说明兼容边界。
 - `channel` 支持 development、alpha、beta、rc、stable。非 stable 显示为 `version-渠道缩写.build`，development 缩写为 dev；stable 显示基础版本。
 - `build` 为 1～65535 的整数。准备新的对外交付构建时递增，不按本机每次编译自动递增，也不自动创建标签或发布。数字版本各段同样不超过 65535，以兼容 Windows 资源。

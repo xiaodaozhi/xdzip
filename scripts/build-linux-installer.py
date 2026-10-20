@@ -12,6 +12,13 @@ from installer_payload import verify_payload
 ROOT=Path(__file__).resolve().parents[1]
 
 
+def installed_desktop_entry(desktop):
+    commands=[line for line in desktop.splitlines() if line.startswith('Exec=')]
+    if commands != ['Exec=xdzip -- %f']:
+        raise ValueError('Desktop entry must invoke the xdzip product with a file argument boundary')
+    return desktop.replace('Exec=xdzip -- %f', 'Exec=/usr/bin/xdzip -- %f')
+
+
 def package_tree(payload,audit,stage,qa=None,failure=None):
     if failure and (qa != '2' or failure != 'postinst-once'):
         raise ValueError('Failure injection is limited to QA variant 2')
@@ -31,7 +38,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None):
     launcher=bindir/'xdzip'
     launcher.write_text('#!/bin/sh\nexec "/opt/xdzip/versions/'+runtime_id+'/xdzip" "$@"\n');launcher.chmod(0o755)
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
-    desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8').replace('Exec=xdzip-browser','Exec=/usr/bin/xdzip')
+    desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',icons/'xdzip.png')

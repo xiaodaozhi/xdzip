@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 from deployment_audit import digest, within
+from desktop_product import built_product
 
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = '286fe9239a1d2d0d5a599f59953c502fb37a58a0'
@@ -40,11 +41,12 @@ def main():
          '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', '-DXDZIP_BUILD_QT_PROBE=OFF', '-DBUILD_TESTING=OFF',
          '-DCMAKE_PREFIX_PATH='+str(qt)])
     run(['cmake', '--build', build, '--target', 'xdzip-browser', '--parallel', '3'])
+    app = built_product(build, allow_legacy_name=True)
     runtime = output/'runtime'
     windows = sys.platform == 'win32'
     if windows:
         runtime.mkdir()
-        shutil.copy2(build/'apps/desktop/xdzip-browser.exe', runtime/'xdzip.exe')
+        shutil.copy2(app, runtime/'xdzip.exe')
         shutil.copy2(source/'design/assets/brand/xdzip-zip.ico', runtime/'xdzip-zip.ico')
         run([qt/'bin/windeployqt.exe', '--release', '--qmldir', source/'apps/desktop/ui',
              '--qmlimport', build/'qml', runtime/'xdzip.exe'])
@@ -52,7 +54,7 @@ def main():
         executable = runtime/'xdzip.exe'
     else:
         # Use the historical QML import set, not the current UI's import graph.
-        run([sys.executable, source/'scripts/deploy_linux.py', '--app', build/'apps/desktop/xdzip-browser',
+        run([sys.executable, source/'scripts/deploy_linux.py', '--app', app,
              '--qt-prefix', qt, '--notices', args.notices.resolve(), '--output', source/'build/runtime'])
         runtime = source/'build/runtime'
         executable = runtime/'bin/xdzip'

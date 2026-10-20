@@ -79,8 +79,9 @@ Invoke-Checked cmake $cmakeArgs
 Assert-CleanSources
 Invoke-Checked cmake @('--build', 'build/desktop', '--parallel', '3')
 Assert-CleanSources
+$productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip' }
 if ($IsWindows) {
-    Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', 'build/desktop/apps/desktop/xdzip-browser.exe', '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
+    Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', $productExe, '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
 }
 if ($IsMacOS) {
     Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist')
@@ -91,7 +92,6 @@ Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
-$productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip-browser' }
 Invoke-Checked python @('scripts/check-build-version.py', '--app', $productExe, '--output', 'build/review/build-version.json')
 $metricsExe = if ($IsWindows) { 'build/desktop/tools/process-metrics/xdzip-process-metrics.exe' } else { 'build/desktop/tools/process-metrics/xdzip-process-metrics' }
 Invoke-Checked python @('scripts/test-performance.py','--metrics',$metricsExe)
@@ -222,7 +222,7 @@ if ($IsMacOS) {
     $env:QT_QPA_PLATFORM = 'windows'
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
     New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
-    Copy-Item 'build/desktop/apps/desktop/xdzip-browser.exe' 'build/review/windows/xdzip.exe'
+    Copy-Item $productExe 'build/review/windows/xdzip.exe'
     Copy-Item 'design/assets/brand/xdzip-zip.ico' 'build/review/windows/'
     Invoke-Checked windeployqt @('--release', '--qmldir', 'apps/desktop/ui', '--qmlimport', 'build/desktop/qml', 'build/review/windows/xdzip.exe')
     $env:QT_QPA_PLATFORM = 'windows'

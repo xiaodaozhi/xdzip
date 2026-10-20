@@ -83,8 +83,8 @@ macOS 开发与测试构建默认使用 `XDZIP_MACOS_HANDLER_RANK=None`，可正
 | 平台 | 构建后的运行入口 |
 | --- | --- |
 | macOS | `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip` |
-| Windows | `build/ui/apps/desktop/xdzip-browser.exe` |
-| Linux | `build/ui/apps/desktop/xdzip-browser` |
+| Windows | `build/ui/apps/desktop/xdzip.exe` |
+| Linux | `build/ui/apps/desktop/xdzip` |
 
 更完整的依赖、离屏测试与平台说明见 [Qt 开发应用](apps/desktop/README.md)和[开发构建指南](docs/engineering/developer-build.md)。仅验证 Rust 核心可运行 `cargo test --workspace --locked`。
 

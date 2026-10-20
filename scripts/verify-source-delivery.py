@@ -10,6 +10,7 @@ import sys
 import tarfile
 from macos_launch_services import transient_registrations
 from deployment_audit import digest, within
+from desktop_product import built_product
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,8 +51,7 @@ def main():
         with (output/'rebuild.log').open('w') as log:
             for command in [configure, ['cmake', '--build', str(build), '--target', 'xdzip-browser', '--parallel', '3']]:
                 subprocess.run(command, cwd=source, env=environment, stdout=log, stderr=log, check=True)
-            app = build/'apps/desktop'/('xdzip.app/Contents/MacOS/xdzip' if sys.platform == 'darwin' else
-                                       'xdzip-browser.exe' if os.name == 'nt' else 'xdzip-browser')
+            app = built_product(build)
             identity = subprocess.check_output([str(app), '--version'], env=environment, text=True).strip()
             environment.update(QT_QPA_PLATFORM='cocoa' if sys.platform == 'darwin' else 'offscreen',
                                QT_PLUGIN_PATH=str(qt/'plugins'), QML_IMPORT_PATH=str(qt/'qml'))

@@ -1,6 +1,6 @@
 # Qt 开发应用与组件预览
 
-`xdzip-browser` 是连接 Rust 核心的真实产品入口；`xdzip-ui-preview` 只展示明确标识的本地示例任务，不访问用户文件，也不模拟真实压缩进度。产品能力以根目录 [README](../../README.md)为准，交互与窗口规则见[主窗口契约](../../docs/ux/main-window-components.md)及[任务窗口契约](../../docs/ux/task-windows.md)。
+`xdzip` 是连接 Rust 核心的真实产品入口，Windows 文件名为 `xdzip.exe`；`xdzip-ui-preview` 只展示明确标识的本地示例任务，不访问用户文件，也不模拟真实压缩进度。产品能力以根目录 [README](../../README.md)为准，交互与窗口规则见[主窗口契约](../../docs/ux/main-window-components.md)及[任务窗口契约](../../docs/ux/task-windows.md)。
 
 ## 构建运行
 
@@ -9,11 +9,11 @@
 ```sh
 cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
 cmake --build build/ui
-./build/ui/apps/desktop/xdzip-browser
+./build/ui/apps/desktop/xdzip
 ctest --test-dir build/ui --output-on-failure
 ```
 
-macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip-browser.exe`。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
+以上直接启动命令适用于 Linux。macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip.exe`。内部 CMake 目标继续使用 `xdzip-browser`，可通过 `cmake --build build/ui --target xdzip-browser` 单独构建；该目标名不作为产品文件名。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
 
 macOS 的 `XDZIP_MACOS_HANDLER_RANK` 只接受 `None`、`Alternate`，默认 `None`，使普通开发构建和 CTest 运行的副本不进入系统“打开方式”候选。需要长期使用的主应用或用于 DMG 的构建显式配置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`；保留一个主包即可，测试配置继续使用 `None`。这不设置默认应用，文件拖入、命令行和显式指定应用的打开流程仍可用。
 

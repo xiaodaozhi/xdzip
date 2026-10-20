@@ -8,6 +8,7 @@ import subprocess
 import sys
 from macos_launch_services import transient_registrations
 from deployment_audit import ROOT, digest, within
+from desktop_product import built_product
 
 
 def main():
@@ -25,7 +26,7 @@ def main():
         with (out/'validation.log').open('w') as log:
             for command in [configure,['cmake','--build',str(out/'compiled'),'--parallel',str(a.parallel)],['ctest','--test-dir',str(out/'compiled'),'--output-on-failure']]:
                 subprocess.run(command,stdout=log,stderr=log,env=env,check=True)
-            app=out/'compiled/apps/desktop'/('xdzip.app/Contents/MacOS/xdzip' if sys.platform=='darwin' else 'xdzip-browser.exe' if os.name=='nt' else 'xdzip-browser')
+            app=built_product(out/'compiled')
             identity=subprocess.check_output([str(app),'--version'],env=env,text=True).strip()
             if 'dirty' in identity or 'unknown' in identity or report['revision'][:12] not in identity:raise ValueError('Source Qt/product identity mismatch')
             if sys.platform=='darwin':env.update(QT_QPA_PLATFORM='cocoa',QSG_RHI_BACKEND='metal');env.pop('QT_QUICK_BACKEND',None)

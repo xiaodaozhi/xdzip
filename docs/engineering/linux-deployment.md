@@ -18,7 +18,7 @@
 每个 ELF 使用 patchelf 设置相对 `$ORIGIN` RPATH，插件按自身目录到 lib/ 的相对距离计算。Qt 的路径重定向按 [qt.conf 官方规则](https://doc.qt.io/qt-6.8/qt-conf.html)执行，允许整个目录迁移。库保持动态链接和可替换，不限制用户更换兼容 Qt。通用 Linux 部署边界见 [Qt Linux 部署说明](https://doc.qt.io/qt-6.8/linux-deployment.html)。
 
 ```sh
-python3 scripts/deploy_linux.py --app build/desktop/apps/desktop/xdzip-browser \
+python3 scripts/deploy_linux.py --app build/desktop/apps/desktop/xdzip \
   --qt-prefix /path/to/Qt/6.8.2/gcc_64 --notices build/review/notices \
   --output build/review/linux
 python3 scripts/verify_linux_runtime.py --root build/review/linux \

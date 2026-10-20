@@ -6,6 +6,8 @@ import copy
 import json
 from pathlib import Path
 import plistlib
+import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -34,11 +36,23 @@ class InstallerTests(unittest.TestCase):
             base=Path(temp);root,audit=self.payload(base,'linux');stage=base/'stage';r=linux.package_tree(root,audit,stage)
             self.assertIn('~dev.1+git',r['version'])
             self.assertIn('libc6 (>= 2.39)',(stage/'DEBIAN/control').read_text(encoding='utf-8'))
-            self.assertIn('-- %f',(stage/'usr/share/applications/xdzip.desktop').read_text(encoding='utf-8'))
+            source_entry=configparser.ConfigParser(interpolation=None)
+            source_entry.read(ROOT/'apps/desktop/packaging/linux/xdzip.desktop',encoding='utf-8')
+            self.assertEqual(shlex.split(source_entry['Desktop Entry']['Exec']),['xdzip','--','%f'])
+            installed_entry=configparser.ConfigParser(interpolation=None)
+            installed_entry.read(stage/'usr/share/applications/xdzip.desktop',encoding='utf-8')
+            self.assertEqual(shlex.split(installed_entry['Desktop Entry']['Exec']),['/usr/bin/xdzip','--','%f'])
             self.assertTrue((stage/'usr/bin/xdzip').read_text(encoding='utf-8').startswith('#!/bin/sh\nexec "/opt/xdzip/versions/'))
             self.assertIn('installing',(stage/'DEBIAN/preinst').read_text(encoding='utf-8'))
             self.assertNotIn('xdg-mime default',(stage/'DEBIAN/postinst').read_text(encoding='utf-8'))
             self.assertNotIn('rm -rf',(stage/'DEBIAN/postrm').read_text(encoding='utf-8'))
+
+    def test_linux_installer_rejects_stale_or_ambiguous_desktop_commands(self):
+        desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8')
+        for invalid in ['Exec=xdzip-browser -- %f','Exec=xdzip %f','Exec=xdzip -- %f\nExec=xdzip -- %f']:
+            with self.subTest(command=invalid):
+                with self.assertRaisesRegex(ValueError,'Desktop entry'):
+                    linux.installed_desktop_entry(desktop.replace('Exec=xdzip -- %f',invalid))
 
     def test_changed_audit_and_sdk_only_build_are_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -77,6 +91,9 @@ class InstallerTests(unittest.TestCase):
             text,record=windows.render(root,audit,base/'setup.exe',base/'Chinese.isl')
             self.assertEqual(record['layout'],'flat')
             self.assertEqual(record['executable_relative_path'],'xdzip.exe')
+            resource=(ROOT/'apps/desktop/packaging/windows/app.rc.in').read_text(encoding='utf-8')
+            original=re.findall(r'VALUE\s+"OriginalFilename",\s*"([^"\\]+)\\0"',resource)
+            self.assertEqual(original,[record['executable_relative_path']])
             self.assertIn('DestDir: "{app}"; Flags: ignoreversion recursesubdirs',text)
             self.assertIn('Filename: "{app}\\xdzip.exe"',text)
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)

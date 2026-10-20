@@ -6,7 +6,7 @@
 
 使用根目录锁定的 Rust、Cargo.lock、Qt 与平台编译器。完整配置、构建、CTest 及离屏环境命令见[Qt 开发应用](../../apps/desktop/README.md)。Rust 核心可独立执行 `cargo test --workspace --locked`，不需要 Qt。
 
-`xdzip-browser` 为真实产品目标，`xdzip-ui-preview` 为示例组件入口。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
+真实产品在所有平台统一使用 `xdzip` 名称，Windows 为 `xdzip.exe`，macOS 为 `xdzip.app` 内的 `xdzip`。内部 CMake 目标保留 `xdzip-browser`，仅用于构建调用；组件示例入口为 `xdzip-ui-preview`，测试程序保留各自测试名称。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
 
 macOS 默认以 `XDZIP_MACOS_HANDLER_RANK=None` 构建开发与测试包，避免普通 CMake/CTest 在系统“打开方式”中增加候选。仅为保留的主应用或 DMG 输入显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。参数仅接受这两个值，不更改用户默认关联；原生候选查询与历史副本维护见[Mac 部署指南](macos-deployment.md)。
 
