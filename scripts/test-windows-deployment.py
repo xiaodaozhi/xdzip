@@ -27,12 +27,14 @@ class WindowsDeploymentTests(unittest.TestCase):
 
     def test_crt_cannot_be_satisfied_by_host_system32(self):
         with tempfile.TemporaryDirectory() as temp:
-            base = Path(temp); root = base/'product'; root.mkdir()
+            base = Path(temp)
+            (base/'intermediate').mkdir()
+            root = base/'intermediate/../product'; root.mkdir()
             app = root/'xdzip.exe'; app.write_bytes(b'MZowned')
             system = base/'Windows/System32'; system.mkdir(parents=True)
             (system/'msvcp140.dll').write_bytes(b'MZhost')
             def imports(*command):
-                return '    MSVCP140.dll\n' if Path(command[-1]) == app else ''
+                return '    MSVCP140.dll\n' if Path(command[-1]).resolve() == app.resolve() else ''
             with patch.dict(os.environ, {'SystemRoot': str(base/'Windows')}), patch.object(audit, 'run', side_effect=imports):
                 report = audit.audit(root, app, None, 'windows', 'deployed')
                 self.assertEqual(report['status'], 'failed')
