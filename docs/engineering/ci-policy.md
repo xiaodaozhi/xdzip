@@ -17,9 +17,15 @@
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
-Qt components 通过 scripts/ci-desktop.ps1 在三平台安装固定 Qt 6.8.2，构建真实浏览应用、执行 qmllint 与 6 组 CTest，将并发生命周期套件重复 10 次。macOS 使用已安装的 Qt SDK 和原生 cocoa 平台插件执行启动/关闭冒烟检查，不执行 macdeployqt、签名或应用归档；此检查证明原生开发构建可启动，不代表独立发行包验证。Windows 部署 Qt 后清除开发搜索路径，用 windows 插件验证部署结果。离屏截图不证明 GPU、输入法或辅助功能的人工验收已完成。
+Qt components 通过 [scripts/desktop.py](../../scripts/desktop.py)复用本地的 prepare、build、基础 test，以及 Windows/Linux package／verify。参数和本地顺序统一见[开发构建指南](developer-build.md)。共用阶段不依赖 RUNNER_TEMP 或 RUNNER_ARCH；工作流显式提供 CI 路径，普通本地使用仓库默认目录。系统编译器／SDK 和 Linux 图形开发依赖仍由宿主／工作流准备，SDK 与打包工具下载使用 prepare 的显式开关。
 
-macOS CI 不自动生成部署包或上传 Apple Silicon 开发应用包。macOS 仅上传 xdzip-checks-macOS-ARM64 日志与 JSON 测量记录；Windows/Linux 仍上传实验开发构建、同提交源码与许可通知。记录或工件保存 14 天，均不作为正式签名发行。原生 CI 中间产物统一位于 build/desktop 和 build/review。
+[ci-desktop.ps1](../../scripts/ci-desktop.ps1)只保留 CI 扩展编排和平台策略，不另实现基础构建链。Qt CI 使用 `test --skip-rust`，同提交的 Rust fmt、Clippy 和 workspace 测试由 Foundation probes 负责；qmllint 与 6 组 CTest 仍由共用 test 执行。测试仅对子进程设置 offscreen／software，之后的原生或部署检查使用各自平台环境。CI 另外重复并发生命周期套件 10 次，保留性能协议、资源与链接证据、双语和多 DPR 视觉、M3／M4 互操作、设置兼容、来源及 SBOM 检查，不因入口复用缩减门槛。
+
+历史完整产品、安装升级／回退、忙时拒绝、卸载和关联生命周期是 CI 显式扩展，继续限定一次性 Windows/Linux 主机或隔离容器。普通本地 verify 不安装产品、不写 HKCU 或更改默认关联；不得为了复用命令移除历史兼容脚本的 CI 与平台限制。运行时核验通过也不替代安装生命周期及人工桌面验收。
+
+macOS 使用已安装的 Qt SDK、sdk 模式部署审计和原生 cocoa 插件执行启动／关闭及文件打开检查。CI 禁止调用 Mac package 或 DMG 核验，不执行 macdeployqt、签名或应用归档，只上传 xdzip-checks-macOS-ARM64 日志与 JSON。这证明原生开发构建可启动，不代表独立发行包验证。Windows 部署后清除 SDK 搜索路径，Linux 使用 SDK-free 运行容器；离屏或软件渲染不证明 GPU、输入法和辅助功能人工验收。
+
+Windows/Linux 继续上传实验运行包、安装器、同提交源码、许可及证据；CI 的 output-dir 保持 build/review，构建目录为 build/desktop，普通本地打包默认 build/package。macOS 不上传 Apple Silicon 应用包。所有记录或工件保存 14 天，均不作为正式签名发行。
 
 所有层级的 dist/ 及其全部内容都在 .gitignore 中排除，build/、target/ 也不进入 Git 源码树。Documentation 的 scripts/check-docs.py 检查 Git 索引，即使强制暂存 dist/ 文件也会失败。HTML 离线审阅工具仍可在本地生成 dist/，但生成结果只能作为本地文件或 Actions 工件，不能提交到仓库。
 

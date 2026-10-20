@@ -4,20 +4,22 @@
 
 ## 制作与核验
 
-先从干净提交构建 Release，主应用必须显式启用文档候选，再执行：
+环境预检和阶段参数以[开发构建指南](developer-build.md)为准。先准备打包工具，从干净提交构建独立 Release 主应用，再依次打包和验证：
 
 ```sh
-cmake -S . -B build/ui-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
-  -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DXDZIP_MACOS_HANDLER_RANK=Alternate \
-  -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
-cmake --build build/ui-release
-python3 scripts/build-macos-dmg.py --app build/ui-release/apps/desktop/xdzip.app \
-  --qt-prefix .cache/Qt/6.8.2/macos --output build/review/xdzip-macos-arm64.dmg
-python3 scripts/verify-macos-dmg.py --dmg build/review/xdzip-macos-arm64.dmg \
-  --output build/review/macos-dmg-verification
+python3 scripts/desktop.py prepare --packaging
+python3 scripts/desktop.py build --build-dir build/desktop-dmg --macos-handler-rank Alternate
+python3 scripts/desktop.py test --build-dir build/desktop-dmg
+python3 scripts/desktop.py doctor --for-stage package --build-dir build/desktop-dmg
+python3 scripts/desktop.py package --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
+python3 scripts/desktop.py verify --build-dir build/desktop-dmg --output-dir build/package-macos --kind all
 ```
 
-配置前按[开发构建指南](developer-build.md)设置 Qt 前缀。输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
+各阶段不隐式补跑前序阶段。Qt SDK 默认位于 `.cache/Qt/6.8.2/macos`，其他位置在各命令传入 `--qt-prefix`。普通开发／测试构建默认 `None`；上面的主应用显式选择 `Alternate`，不改变用户默认关联。macOS 本地 package 仅支持 `all`；CI 不允许此打包阶段，也不通过共用入口引入 Mac 应用上传。
+
+共用 package 在运行 macdeployqt 前检查原生 arm64、系统 SDK、部署工具、Rust PATH／锁定元数据、Python 校验依赖、Qt 许可与 schema 材料。build、test 允许未提交源码；package 要求干净提交且实际 CLI 身份一致，不能借已有编译缓存绕过。系统编译器、SDK、lipo、codesign 和 hdiutil 由系统工具链提供，不由准备阶段安装。
+
+底层 [build-macos-dmg.py](../../scripts/build-macos-dmg.py)和 [verify-macos-dmg.py](../../scripts/verify-macos-dmg.py)继续负责镜像与原生验证细节；需要故障定位时使用各自 `--help`，不另外维护日常步骤。底层输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
 
 Qt 可选 QML LocalStorage 引入 QtSql 后，部署工具会顺带复制数据库驱动。本项目不提供服务器数据库能力，因此移除除内置 SQLite 外的驱动，避免 PostgreSQL、ODBC、Mimer 等 SDK 外部客户端依赖进入镜像；移除列表写入回执，不把 unresolved 导入隐藏为通过。
 

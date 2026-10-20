@@ -1,4 +1,5 @@
-# Native product build, lifecycle tests and validation evidence.
+# CI extension: shared local stages plus historical, visual and installer gates.
+param([string]$QtRoot, [string]$ToolsDirectory)
 $ErrorActionPreference = 'Stop'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
@@ -14,6 +15,25 @@ function Assert-CleanSources {
         throw 'Installer build requires clean source; relative changed paths shown above'
     }
 }
+# RUNNER_TEMP is an optional CI cache location, never a local prerequisite.
+$cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) '.cache' }
+$qtRoot = if ($QtRoot) { $QtRoot } else { Join-Path $cacheRoot 'Qt' }
+$qtEnvironment = if ($ToolsDirectory) { $ToolsDirectory } else { Join-Path $cacheRoot 'xdzip-desktop-tools' }
+$qtHost = if ($IsMacOS) { 'mac' } elseif ($IsWindows) { 'windows' } else { 'linux' }
+$qtFolder = if ($IsMacOS) { 'macos' } elseif ($IsWindows) { 'msvc2022_64' } else { 'gcc_64' }
+if ($IsWindows) {
+    $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+    $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+    if (!$installation) { throw 'MSVC installation not found' }
+    Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+    Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+}
+$qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
+$shared = @('--qt-prefix', $qtPrefix, '--qt-root', $qtRoot,
+    '--build-dir', 'build/desktop', '--output-dir', 'build/review', '--tools-dir', $qtEnvironment)
+# Fail on PATH/compiler/SDK issues before downloads, compilation or license collection.
+Invoke-Checked python (@('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared)
+$aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
 Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 Invoke-Checked python @('scripts/check-window-contracts.py','--self-test','--output','build/review/window-contract-audit.json')
@@ -27,41 +47,8 @@ Invoke-Checked python @('scripts/test-linux-deployment.py')
 Invoke-Checked python @('scripts/test-windows-deployment.py')
 Invoke-Checked python @('scripts/test-runtime-attribution.py')
 if ($IsWindows) {
-    Invoke-Checked python @('scripts/prepare-windows-runtime.py', '--output', 'build/windows-runtime')
-    Invoke-Checked pwsh @('-File', 'scripts/prepare-windows-installer.ps1', '-OutputDirectory', 'build/installer-toolchain')
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
 }
-$qtRoot = Join-Path $env:RUNNER_TEMP 'Qt'
-$qtHost = 'linux'
-$qtArchitecture = 'linux_gcc_64'
-$qtFolder = 'gcc_64'
-if ($IsMacOS) {
-    $qtHost = 'mac'
-    $qtArchitecture = 'clang_64'
-    $qtFolder = 'macos'
-    $env:MACOSX_DEPLOYMENT_TARGET = '14.0'
-    if ((& uname -m) -ne 'arm64') { throw 'Apple Silicon gate requires a native arm64 runner' }
-}
-if ($IsWindows) {
-    $qtHost = 'windows'
-    $qtArchitecture = 'win64_msvc2022_64'
-    $qtFolder = 'msvc2022_64'
-    $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
-    $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-    if (!$installation) { throw 'MSVC installation not found' }
-    Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
-    Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
-}
-$qtEnvironment = Join-Path $env:RUNNER_TEMP 'xdzip-aqt'
-Invoke-Checked python @('-m', 'venv', $qtEnvironment)
-$aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
-Invoke-Checked $aqtPython @('-m', 'pip', 'install', 'aqtinstall==3.3.0', 'jsonschema==4.23.0')
-New-Item -ItemType Directory -Force 'build/qt-install-tool' | Out-Null
-Push-Location 'build/qt-install-tool'
-try { Invoke-Checked $aqtPython @('-m', 'aqt', 'install-qt', $qtHost, 'desktop', '6.8.2', $qtArchitecture, '-O', $qtRoot) }
-finally { Pop-Location }
-$qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
-New-Item -ItemType Directory -Force 'build/review' | Out-Null
 # Source bytes and installed configuration are evidence, not a Qt rebuild claim.
 Invoke-Checked python @('scripts/qt_sdk_correspondence.py', '--qt-prefix', $qtPrefix, '--fetch', '--output', 'build/review/qt-sdk-correspondence.json')
 $qtBin = Join-Path $qtPrefix 'bin'
@@ -73,14 +60,7 @@ $env:XDZIP_CI_POWERSHELL = (Get-Process -Id $PID).Path
 Invoke-Checked python @('scripts/check-settings-compat.py', '--qt-prefix', $qtPrefix, '--output', 'build/settings-compat')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-compat.json'
-Invoke-Checked rustup @('toolchain', 'install', '1.99.0', '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy')
-Invoke-Checked rustc @('-vV')
-$cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', "-DCMAKE_PREFIX_PATH=$qtPrefix")
-if ($IsMacOS) { $cmakeArgs += @('-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0', '-DXDZIP_MACOS_HANDLER_RANK=None') }
-Invoke-Checked cmake $cmakeArgs
-Assert-CleanSources
-Invoke-Checked cmake @('--build', 'build/desktop', '--parallel', '3')
-Assert-CleanSources
+Invoke-Checked python (@('scripts/desktop.py', 'build') + $shared)
 $productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip' }
 if ($IsWindows) {
     Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', $productExe, '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
@@ -89,8 +69,8 @@ if ($IsMacOS) {
     Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist')
     Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--output', 'build/review/macos-registration.json')
 }
-Invoke-Checked qmllint (@('-I', 'build/desktop/qml') + (Get-ChildItem 'apps/desktop/ui/*.qml').FullName)
-Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
+# Foundation independently executes locked workspace Rust tests.
+Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
@@ -196,11 +176,12 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
-Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
-Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
-if ($IsWindows) { Copy-Item 'build/installer-toolchain/InnoSetup-license.txt' 'build/review/notices/' }
-Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
-if (!$IsMacOS) {
+if ($IsMacOS) {
+    Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
+    Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
+    Copy-Item 'build/review/notices/source-build.cdx.json' 'build/review/source-build.cdx.json'
+} else {
+    Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'runtime') + $shared)
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
     Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
     Invoke-Checked python @('scripts/prepare-previous-product.py', '--qt-prefix', $qtPrefix, '--output', 'build/previous-product', '--notices', 'build/review/notices')
@@ -223,42 +204,27 @@ if ($IsMacOS) {
 } elseif ($IsWindows) {
     $env:QT_QPA_PLATFORM = 'windows'
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
-    New-Item -ItemType Directory -Force 'build/review/windows' | Out-Null
-    Copy-Item $productExe 'build/review/windows/xdzip.exe'
-    Copy-Item 'design/assets/brand/xdzip-zip.ico' 'build/review/windows/'
-    Invoke-Checked python @('scripts/deploy_windows.py', '--root', 'build/review/windows', '--qt-prefix', $qtPrefix, '--qml-dir', 'apps/desktop/ui', '--qml-import', 'build/desktop/qml', '--runtime', 'build/windows-runtime/runtime')
-    $env:QT_QPA_PLATFORM = 'windows'
-    $env:QT_PLUGIN_PATH = ''
-    $env:QML_IMPORT_PATH = ''
-    $env:PATH = (($env:PATH -split ';') | Where-Object { $_ -ne $qtBin }) -join ';'
-    Invoke-Checked 'build/review/windows/xdzip.exe' @('--smoke-test')
-    New-Item -ItemType Directory -Force 'build/review/windows/share' | Out-Null
-    Copy-Item -Recurse 'build/review/notices/*' 'build/review/windows/share/notices/'
-    Invoke-Checked python @('scripts/verify_windows_runtime.py', '--root', 'build/review/windows', '--qt-prefix', $qtPrefix, '--tests', $browserTests, '--output', 'build/review/windows-runtime-test')
+    Invoke-Checked python (@('scripts/desktop.py', 'verify', '--kind', 'runtime') + $shared)
 } else {
-    Invoke-Checked python @('scripts/deploy_linux.py', '--app', $productExe, '--qt-prefix', $qtPrefix, '--notices', 'build/review/notices', '--output', 'build/review/linux')
-    Copy-Item 'build/review/linux/share/deployment.json' 'build/review/linux-deployment.json'
-    Invoke-Checked python @('scripts/verify_linux_runtime.py', '--root', 'build/review/linux', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/linux-runtime.json')
-    $env:LD_LIBRARY_PATH = ''
-    $env:QT_PLUGIN_PATH = ''
-    $env:QML_IMPORT_PATH = ''
-    $env:QML2_IMPORT_PATH = ''
+    Invoke-Checked python (@('scripts/desktop.py', 'verify', '--kind', 'runtime') + $shared)
 }
 $auditRoot = if ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app' } elseif ($IsWindows) { 'build/review/windows' } else { 'build/review/linux' }
 $auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/bin/xdzip' }
 $auditMode = if ($IsMacOS) { 'sdk' } else { 'deployed' }
-Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
-Invoke-Checked python @('scripts/native-redistribution.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--output','build/review/native-redistribution.json')
-$attributionArgs = @('scripts/runtime_attribution.py', '--audit', 'build/review/deployment-audit.json', '--root', $auditRoot, '--qt-prefix', $qtPrefix, '--output', 'build/review/runtime-attribution.json')
-if ($IsLinux) { $attributionArgs += @('--deployment', 'build/review/linux-deployment.json') }
-Invoke-Checked python $attributionArgs
-Invoke-Checked python @('scripts/classify-qt-binary-differences.py','--attribution','build/review/runtime-attribution.json','--qt-prefix',$qtPrefix,'--output','build/review/qt-binary-differences.json')
-Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json', '--attribution', 'build/review/runtime-attribution.json')
-Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
-if ($IsLinux) { Invoke-Checked python @('scripts/package_linux.py', '--root', 'build/review/linux', '--output', 'build/review/xdzip-linux-x86_64.tar.gz', '--report', 'build/review/linux-package.json') }
+if ($IsMacOS) {
+    Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
+    Invoke-Checked python @('scripts/native-redistribution.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--output','build/review/native-redistribution.json')
+    $attributionArgs = @('scripts/runtime_attribution.py', '--audit', 'build/review/deployment-audit.json', '--root', $auditRoot, '--qt-prefix', $qtPrefix, '--output', 'build/review/runtime-attribution.json')
+    if ($IsLinux) { $attributionArgs += @('--deployment', 'build/review/linux-deployment.json') }
+    Invoke-Checked python $attributionArgs
+    Invoke-Checked python @('scripts/classify-qt-binary-differences.py','--attribution','build/review/runtime-attribution.json','--qt-prefix',$qtPrefix,'--output','build/review/qt-binary-differences.json')
+    Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json', '--attribution', 'build/review/runtime-attribution.json')
+    Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
+} else {
+    Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'installer') + $shared)
+}
 if ($IsLinux) {
     New-Item -ItemType Directory -Force 'build/installer-tests/linux-packages' | Out-Null
-    Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/review/xdzip-ubuntu24.04-amd64.deb', '--report', 'build/review/linux-installer.json')
     Copy-Item 'build/review/xdzip-ubuntu24.04-amd64.deb' 'build/installer-tests/linux-packages/product.deb'
     Copy-Item 'build/previous-product/previous.deb' 'build/installer-tests/linux-packages/previous.deb'
     foreach ($variant in @('1','2')) {
@@ -270,7 +236,6 @@ if ($IsLinux) {
 if ($IsWindows) {
     New-Item -ItemType Directory -Force 'build/installer-tests/windows-packages' | Out-Null
     $installerBase = @('scripts/build-windows-installer.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--iscc','build/installer-toolchain/compiler/ISCC.exe','--chinese','build/installer-toolchain/ChineseSimplified.isl')
-    Invoke-Checked python ($installerBase + @('--output','build/review/xdzip-windows-x64-setup.exe','--report','build/review/windows-installer.json'))
     Copy-Item 'build/review/xdzip-windows-x64-setup.exe' 'build/installer-tests/windows-packages/product.exe'
     Copy-Item 'build/previous-product/previous.exe' 'build/installer-tests/windows-packages/previous.exe'
     foreach ($variant in @('1','2')) {
@@ -285,5 +250,5 @@ $distribution = if ($IsMacOS) {
 } else {
     'M4 ZIP Store/Deflate creation and safe extraction developer review; independent security audit and signed public release pending'
 }
-@{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = $env:RUNNER_ARCH; qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
+@{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
     ConvertTo-Json | Set-Content 'build/review/build.json'

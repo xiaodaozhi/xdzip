@@ -66,27 +66,22 @@ Windows 安装器未签名；本地 macOS DMG 使用必要的 ad-hoc 完整性�
 
 界面采用 **Qt Quick/QML + 薄 C++ 适配层**，格式、查询与任务由 **Rust 核心**负责，核心不依赖 Qt。
 
-准备仓库锁定的 Rust 工具链、Qt 6.8.2、CMake 3.24+、Ninja、Python 3 与平台编译器，并将 Qt 安装前缀加入 `CMAKE_PREFIX_PATH`。克隆后构建：
+使用 Python 3.10+、Git、CMake 3.24+、Ninja、rustup 和平台编译器／SDK。统一入口负责准备仓库锁定的 Rust 与 Qt 6.8.2，先检查环境，再构建和测试：
 
 ```sh
 git clone https://github.com/xiaodaozhi/xdzip.git
 cd xdzip
-cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
-cmake --build build/ui
-ctest --test-dir build/ui --output-on-failure
+python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root .cache/Qt
+python3 scripts/desktop.py doctor
+python3 scripts/desktop.py build
+python3 scripts/desktop.py test
 ```
 
-macOS 配置时另加 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`。Windows 使用 MSVC x64 开发环境。
+Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；macOS 使用 Apple Silicon 原生终端与有效 Xcode Command Line Tools。已有 Qt 时用 `--qt-prefix` 指定 SDK 前缀，无需重新下载。
 
-macOS 开发与测试构建默认使用 `XDZIP_MACOS_HANDLER_RANK=None`，可正常启动和拖入文件，但不作为系统“打开方式”候选。仅为准备保留的主应用或 DMG 配置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`，避免多个测试副本出现在菜单中，详见 [Mac 部署指南](docs/engineering/macos-deployment.md)。
+同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。仅验证 Rust 核心可运行 `cargo test --workspace --locked`。
 
-| 平台 | 构建后的运行入口 |
-| --- | --- |
-| macOS | `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip` |
-| Windows | `build/ui/apps/desktop/xdzip.exe` |
-| Linux | `build/ui/apps/desktop/xdzip` |
-
-更完整的依赖、离屏测试与平台说明见 [Qt 开发应用](apps/desktop/README.md)和[开发构建指南](docs/engineering/developer-build.md)。仅验证 Rust 核心可运行 `cargo test --workspace --locked`。
+默认运行入口为 `build/desktop/apps/desktop/xdzip`，Windows 加 `.exe`，macOS 为该目录下 `xdzip.app/Contents/MacOS/xdzip`。普通 Mac 开发／测试副本不进入系统“打开方式”候选；主应用与本地开发 DMG 的构建方式见[Mac 部署指南](docs/engineering/macos-deployment.md)。
 
 ## 当前限制
 

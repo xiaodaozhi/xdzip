@@ -17,15 +17,17 @@
 
 每个 ELF 使用 patchelf 设置相对 `$ORIGIN` RPATH，插件按自身目录到 lib/ 的相对距离计算。Qt 的路径重定向按 [qt.conf 官方规则](https://doc.qt.io/qt-6.8/qt-conf.html)执行，允许整个目录迁移。库保持动态链接和可替换，不限制用户更换兼容 Qt。通用 Linux 部署边界见 [Qt Linux 部署说明](https://doc.qt.io/qt-6.8/linux-deployment.html)。
 
+日常使用[统一构建入口](developer-build.md)分阶段生成和核验；先完成同配置 build／test 与打包准备，再执行：
+
 ```sh
-python3 scripts/deploy_linux.py --app build/desktop/apps/desktop/xdzip \
-  --qt-prefix /path/to/Qt/6.8.2/gcc_64 --notices build/review/notices \
-  --output build/review/linux
-python3 scripts/verify_linux_runtime.py --root build/review/linux \
-  --fixture build/desktop/apps/desktop/m2-flat.zip --output build/review/linux-runtime.json
+python3 scripts/desktop.py doctor --for-stage package
+python3 scripts/desktop.py package --kind all
+python3 scripts/desktop.py verify --kind all
 ```
 
-脚本只在原生 Linux x86_64 部署，不覆盖既有目录。它依赖构建工具 qmlimportscanner、ldd、patchelf 和 dpkg-query；这些工具不进入产品。运行容器验证另外需要 Docker，其构建只针对固定 Ubuntu 镜像和所记录的 OS 包。
+默认构建目录为 build/desktop，交付输出为 build/package，Qt SDK 默认 `.cache/Qt/6.8.2/gcc_64`；其他位置在各阶段传入共用参数。`package --kind runtime` 生成运行目录与审计材料；随后在同一 output-dir 执行 `package --kind installer`，生成 tar.gz 与 .deb。默认 `all` 依次完成两部分。底层 [deploy_linux.py](../../scripts/deploy_linux.py)、[package_linux.py](../../scripts/package_linux.py)和 [verify_linux_runtime.py](../../scripts/verify_linux_runtime.py)保留平台逻辑，需要定位故障时参考各自 `--help`。
+
+部署只在原生 Linux x86_64 执行，不覆盖既有目录。打包前预检 qmlimportscanner、ldd、patchelf、dpkg-query 与安装器所需的 dpkg-deb；这些构建工具不进入产品。运行容器验证另外需要 Docker 和可访问的 daemon，其构建只针对固定 Ubuntu 镜像和记录的 OS 包。Docker 缺失不阻止普通 build／test，verify 则明确失败，不把未执行隔离检查写成通过。普通 verify 不在宿主安装 .deb 或修改文件关联，安装生命周期仍由一次性 CI 环境执行。
 
 ## 脱离 SDK 的自动化证据
 

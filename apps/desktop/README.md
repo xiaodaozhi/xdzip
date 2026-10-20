@@ -4,20 +4,32 @@
 
 ## 构建运行
 
-准备根目录锁定的 Rust、CMake、Ninja 和 Qt Core、Gui、Qml、Quick、QuickControls2、QuickTest、Widgets。将 Qt 前缀加入 `CMAKE_PREFIX_PATH`，版本与支持范围见[工具链](../../docs/engineering/toolchain.md)及[支持政策](../../docs/engineering/support-policy.md)。
+日常环境准备、预检、构建、测试、打包与核验统一使用 [desktop.py](../../scripts/desktop.py)，完整参数及平台前置条件见[开发构建指南](../../docs/engineering/developer-build.md)：
 
 ```sh
-cmake -S . -B build/ui -G Ninja -DCMAKE_BUILD_TYPE=Debug -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
-cmake --build build/ui
-./build/ui/apps/desktop/xdzip
-ctest --test-dir build/ui --output-on-failure
+python3 scripts/desktop.py doctor
+python3 scripts/desktop.py build
+python3 scripts/desktop.py test
 ```
 
-以上直接启动命令适用于 Linux。macOS 另设置 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`，真实应用为 `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip`。Windows 构建入口为 `build/ui/apps/desktop/xdzip.exe`。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。Linux 开发环境需要 OpenGL/EGL 和 xkbcommon 开发包，Ubuntu 可安装 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`。
+默认构建目录为 build/desktop。Linux 直接启动 `build/desktop/apps/desktop/xdzip`，Windows 为同目录 `xdzip.exe`，macOS 为 `xdzip.app/Contents/MacOS/xdzip`。组件示例另运行同目录的 `xdzip-ui-preview`（Windows 加 `.exe`），不用于真实文件验收。更换构建目录时同步调整路径。
 
-macOS 的 `XDZIP_MACOS_HANDLER_RANK` 只接受 `None`、`Alternate`，默认 `None`，使普通开发构建和 CTest 运行的副本不进入系统“打开方式”候选。需要长期使用的主应用或用于 DMG 的构建显式配置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`；保留一个主包即可，测试配置继续使用 `None`。这不设置默认应用，文件拖入、命令行和显式指定应用的打开流程仍可用。
+共用 test 仅对子进程启用 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software`，普通桌面启动不设置这些变量。离屏渲染不证明 GPU、系统输入法或读屏已验收。生成物位于忽略的构建目录，实际状态由 issue 与 Actions 记录。
 
-无显示服务时可设置 `QT_QPA_PLATFORM=offscreen` 与 `QT_QUICK_BACKEND=software` 测试；普通桌面运行不设置这些变量。离屏渲染不证明 GPU、系统输入法或读屏已验收。产物、截图和日志位于 `build/`，不提交 Git；实际执行状态由对应 issue 与 Actions 记录。
+## 低层 CMake 调试
+
+排查 CMake 或 IDE 集成时仍可直接运行底层工具；这不是另一套日常编排。准备锁定 Rust、Ninja 与 Qt Core、Gui、Qml、Quick、QuickControls2、Widgets，测试还需要 QuickTest／Test，然后按需要设置 SDK 前缀：
+
+```sh
+cmake -S . -B build/ui-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+  -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DCMAKE_PREFIX_PATH=/path/to/Qt/6.8.2/gcc_64
+cmake --build build/ui-debug
+ctest --test-dir build/ui-debug --output-on-failure
+```
+
+上述 SDK 子目录示例适用于 Linux。macOS 使用 macos 前缀，并在配置时加 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`；Windows 使用 msvc2022_64 前缀及 x64 MSVC 开发环境。工具版本、系统依赖与支持范围见[统一构建说明](../../docs/engineering/developer-build.md)和[工具链](../../docs/engineering/toolchain.md)。
+
+macOS 的 `XDZIP_MACOS_HANDLER_RANK` 仅接受 `None`、`Alternate`，普通开发和测试默认为 `None`，避免副本进入系统“打开方式”。主应用或 DMG 输入由共用入口的 `build --macos-handler-rank Alternate` 显式选择；低层 CMake 对应 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。此设置不更改默认关联，文件拖入、命令行与显式指定应用仍可用。
 
 ## 模块与开发边界
 

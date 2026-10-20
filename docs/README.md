@@ -11,7 +11,7 @@
 | 浏览与任务 | [运行时](engineering/m1-runtime.md)、[只读索引](engineering/m2-readonly.md)、[浏览契约](engineering/readonly-browser.md)、[解压预检](engineering/extraction-preflight.md) |
 | 文件与格式 | [安全解压](engineering/m3-extraction.md)、[密码解压](engineering/password-extraction.md)、[ZIP 创建](engineering/m4-creation.md)、[TAR/GZIP](engineering/m4-tar-gzip.md) |
 | 工具链与依赖 | [工具链策略](engineering/toolchain.md)、[依赖准入](engineering/dependencies.md)、[cxx 桥接依据](engineering/cxx-admission.md)、[许可](engineering/licensing.md) |
-| 构建与验证 | [开发指南](engineering/development.md)、[Qt 应用](../apps/desktop/README.md)、[CI 策略](engineering/ci-policy.md)、[验证方法](qa/README.md) |
+| 构建与验证 | [统一构建入口](engineering/developer-build.md)、[开发指南](engineering/development.md)、[Qt 应用模块](../apps/desktop/README.md)、[CI 策略](engineering/ci-policy.md)、[验证方法](qa/README.md) |
 | 部署与来源 | [部署核验](engineering/deployment-audit.md)、[运行时归属](engineering/runtime-attribution.md)、[Linux 部署](engineering/linux-deployment.md)、[Mac DMG](engineering/macos-deployment.md)、[安装与关联](engineering/installers-associations.md) |
 | 源码与候选 | [对应源码](engineering/source-delivery.md)、[SDK 对应核验](engineering/qt-sdk-correspondence.md)、[自动证据汇总](engineering/wp12-automation.md)、[候选材料](engineering/release-candidate.md) |
 | 版本与发行 | [版本机制](engineering/versioning.md)、[支持政策](engineering/support-policy.md)、[发行审查流程](qa/release-review.md)、[发布手册](engineering/release-runbook.md) |
@@ -21,7 +21,7 @@
 
 ## 按任务阅读
 
-- 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，实际命令见 [Qt 应用](../apps/desktop/README.md)。
+- 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，使用同一入口分阶段准备、构建、测试、打包与验证；平台部署文档只补充差异，Qt 应用文档说明模块与低层调试。
 - 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；设计中的外部 SDK、磁盘索引和内容预览仍属于后续能力。
 - 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
 - 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与独立发行审查。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build an experimental Ubuntu 24.04 amd64 package from the audited runtime."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -10,6 +11,13 @@ from deployment_audit import digest, within
 from installer_payload import verify_payload
 
 ROOT=Path(__file__).resolve().parents[1]
+
+
+def staging_directory(output):
+    # Identical product filenames in separate candidate directories must not
+    # share a staging tree. Retain the existing refusal to overwrite owned stages.
+    key=hashlib.sha256(str(output.resolve()).encode()).hexdigest()[:16]
+    return ROOT/'build/installer-staging'/(output.stem+'-'+key)
 
 
 def installed_desktop_entry(desktop):
@@ -77,7 +85,7 @@ def main():
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--report',type=Path,required=True)
     parser.add_argument('--qa-variant',choices=['1','2'])
     parser.add_argument('--qa-failure',choices=['postinst-once'])
-    args=parser.parse_args();stage=ROOT/'build/installer-staging'/args.output.stem
+    args=parser.parse_args();stage=staging_directory(args.output)
     if not within(args.output,ROOT/'build'):parser.error('Generated installer belongs under build/')
     result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure)
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(args.output)],check=True)

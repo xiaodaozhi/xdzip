@@ -22,6 +22,13 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_linux_candidates_with_same_filename_have_distinct_staging(self):
+        first=ROOT/'build/candidate-a/xdzip-ubuntu24.04-amd64.deb'
+        second=ROOT/'build/candidate-b/xdzip-ubuntu24.04-amd64.deb'
+        self.assertNotEqual(linux.staging_directory(first),linux.staging_directory(second))
+        self.assertEqual(linux.staging_directory(first),linux.staging_directory(first.parent/'.'/first.name))
+        self.assertTrue(linux.staging_directory(first).is_relative_to(ROOT/'build/installer-staging'))
+
     def payload(self,base,platform):
         root=base/'payload';root.mkdir()
         app=root/('xdzip.exe' if platform=='windows' else 'bin/xdzip');app.parent.mkdir(exist_ok=True);app.write_bytes(b'MZowned' if platform=='windows' else b'\x7fELFowned')

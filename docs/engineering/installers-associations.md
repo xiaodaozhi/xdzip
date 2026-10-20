@@ -2,6 +2,14 @@
 
 提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表独立发行审查获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
+## 共用构建入口
+
+环境准备与操作顺序统一见[开发构建指南](developer-build.md)。已有同提交的干净构建与测试后，使用 `python3 scripts/desktop.py prepare --packaging` 准备锁定材料，再执行 package 和 verify，不直接把 CI 全量脚本用于日常构建。
+
+Windows/Linux 的 `package --kind runtime|installer|all` 共用同一部署与审计链，默认 `all`。runtime 先生成部署目录，installer 从同一 output-dir 已核验的运行目录生成安装器，Linux 同时生成 tar.gz；macOS 只支持本地 `all` 开发 DMG。产物及回执位于指定 output-dir，默认 build/package。准备阶段可下载固定打包工具与材料，但不安装 xdzip，不自动安装系统编译器／SDK。Windows 准备 CRT／Inno Setup，Linux 预先安装 patchelf 与 Debian 包工具，Mac 使用系统部署与 ad-hoc 完整性工具。
+
+普通 `verify` 检查已有运行时／包，Windows 在独立副本清除 SDK 搜索路径，Linux 使用隔离运行容器，Mac 使用 DMG 重定位与 Cocoa／Metal。它不默认执行安装、升级／回退或关联生命周期，不写用户默认打开方式。下面的安装机制与一次性 CI 专项仍是独立门槛，不能用运行时通过替代。
+
 ## Windows
 
 便携包与安装器使用同一部署目录，由 [deploy_windows.py](../../scripts/deploy_windows.py) 调用 windeployqt，再按已固定的 Qt Quick Basic 策略移除 FluentWinUI3、Fusion、Imagine、Material、Universal、Windows、仅样式引用的 NativeStyle／Effects、qmltooling 和 .qmltypes。Basic、Controls impl、Templates、运行时 QML 与 qmldir 保留；Qt Widgets 的 qmodernwindowsstyle 继续服务原生控件。opengl32sw、DXC、DXIL、D3DCompiler 图形回退库保留。增加新样式或 Effects 功能时必须同时调整部署策略并复验。
@@ -26,7 +34,7 @@ ZIP、TAR、TGZ 和 GZ 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP
 
 ## Ubuntu 24.04
 
-build-linux-installer.py 从同一核验目录生成 .deb，包名 xdzip，版本绑定产品渠道和提交，架构 amd64。系统依赖来自实际部署清单，补充桌面数据库和锁工具，glibc 至少 2.39。Qt／QML／插件及通知位于 /opt/xdzip/versions/；/usr/bin/xdzip 是固定目标的引号化转发入口。dpkg 负责替换和清除旧包文件，回退需保留原 .deb。
+build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录按输出路径区分，允许相同包名在不同候选目录重新打包，不覆盖既有暂存。包名 xdzip，版本绑定产品渠道和提交，架构 amd64。系统依赖来自实际部署清单，补充桌面数据库和锁工具，glibc 至少 2.39。Qt／QML／插件及通知位于 /opt/xdzip/versions/；/usr/bin/xdzip 是固定目标的引号化转发入口。dpkg 负责替换和清除旧包文件，回退需保留原 .deb。
 
 桌面文件按 [MimeType 与 Exec 规范](https://specifications.freedesktop.org/desktop-entry/latest-single/)注册 ZIP、TAR、压缩 TAR，使用 %f 逐文件启动和 -- 参数边界。不执行 xdg-mime default，不修改 mimeapps.list 或全局 MIME 图标。卸载删除自有启动项、图标、运行文件并刷新缓存，保留用户设置及额外文件。
 
