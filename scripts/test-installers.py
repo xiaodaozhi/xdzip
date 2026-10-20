@@ -5,8 +5,12 @@ import configparser
 import copy
 import json
 from pathlib import Path
+import plistlib
+import shutil
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 from deployment_audit import digest
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -138,10 +142,58 @@ class InstallerTests(unittest.TestCase):
             macos.configure_translation_path(app)
             self.assertEqual(path.read_bytes(),first)
 
-    def test_macos_alternate_documents_preserve_system_localizations(self):
-        text=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').read_text(encoding='utf-8')
-        self.assertIn('<string>Alternate</string>',text);self.assertIn('xdzip-zip.icns',text)
-        self.assertIn('<string>public.zip-archive</string>',text);self.assertIn('<string>org.gnu.gnu-zip-tar-archive</string>',text)
-        self.assertIn('<string>zh-Hans</string>',text)
+    @unittest.skipUnless(shutil.which('cmake'), 'CMake unavailable')
+    def test_macos_generated_document_ranks_and_system_localizations(self):
+        # Run the actual product's configuration before Qt discovery so this
+        # metadata contract also runs on hosts without an installed Qt SDK.
+        configure=(ROOT/'apps/desktop/CMakeLists.txt').read_text(encoding='utf-8').split('find_package(Qt6',1)[0]
+        with tempfile.TemporaryDirectory() as directory:
+            base=Path(directory);script=base/'render.cmake'
+            template=(ROOT/'apps/desktop/packaging/macos/Info.plist.in').as_posix()
+            script.write_text(configure+'\nconfigure_file("'+template+'" "${OUTPUT}")\n')
+            for requested in [None,'None','Alternate','Owner','Default','none',' Alternate','Alternate;None','']:
+                with self.subTest(rank=requested):
+                    output=base/'Info.plist'
+                    if output.exists():output.unlink()
+                    command=['cmake','-DOUTPUT='+str(output)]
+                    if requested is not None:command+=['-DXDZIP_MACOS_HANDLER_RANK='+requested]
+                    result=subprocess.run(command+['-P',str(script)],capture_output=True,text=True)
+                    if requested not in [None,'None','Alternate']:
+                        self.assertNotEqual(result.returncode,0)
+                        self.assertIn('must be None or Alternate',result.stderr)
+                        self.assertFalse(output.exists())
+                        continue
+                    self.assertEqual(result.returncode,0,result.stderr)
+                    info=plistlib.loads(output.read_bytes())
+                    document=info['CFBundleDocumentTypes'][0]
+                    self.assertEqual(document['LSHandlerRank'],requested or 'None')
+                    self.assertEqual(document['CFBundleTypeRole'],'Viewer')
+                    self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
+                    self.assertTrue({'public.zip-archive','org.gnu.gnu-zip-tar-archive'}<=set(document['LSItemContentTypes']))
+                    self.assertEqual(info['CFBundleAllowMixedLocalizations'],True)
+                    self.assertTrue({'zh-Hans','en'}<=set(info['CFBundleLocalizations']))
+
+    def test_macos_dmg_rejects_nonhandler_builds_without_modifying_them(self):
+        with tempfile.TemporaryDirectory() as directory:
+            app=Path(directory)/'xdzip.app';(app/'Contents/MacOS').mkdir(parents=True)
+            (app/'Contents/MacOS/xdzip').write_bytes(b'owned')
+            path=app/'Contents/Info.plist'
+            base={'CFBundleIdentifier':'org.xdzip.desktop','CFBundleExecutable':'xdzip'}
+            accepted={'LSHandlerRank':'Alternate','CFBundleTypeRole':'Viewer'}
+            for documents in [None,[],[{'LSHandlerRank':'None','CFBundleTypeRole':'Viewer'}],
+                              [accepted,{'LSHandlerRank':'None','CFBundleTypeRole':'Viewer'}],
+                              [{'LSHandlerRank':'Alternate','CFBundleTypeRole':'None'}],['Alternate']]:
+                with self.subTest(documents=documents):
+                    info=dict(base)
+                    if documents is not None:info['CFBundleDocumentTypes']=documents
+                    original=plistlib.dumps(info);path.write_bytes(original)
+                    with patch.object(macos,'checked') as checked:
+                        with self.assertRaisesRegex(ValueError,'XDZIP_MACOS_HANDLER_RANK=Alternate'):
+                            macos.validate_bundle(app,require_handler=True)
+                        checked.assert_not_called()
+                    self.assertEqual(path.read_bytes(),original)
+            path.write_bytes(plistlib.dumps(dict(base,CFBundleDocumentTypes=[accepted])))
+            with patch.object(macos,'checked',return_value='arm64'):
+                self.assertEqual(macos.validate_bundle(app,require_handler=True),app/'Contents/MacOS/xdzip')
 
 if __name__=='__main__':unittest.main()

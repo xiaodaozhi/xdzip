@@ -34,6 +34,8 @@ Item {
             verify(select.popup.width >= select.width);
             verify(select.popup.width <= Ui.Theme.selectPopupMaxWidth);
             verify(Math.abs(select.popup.x + select.popup.width - select.width) <= 1);
+            // ListView count can update before its asynchronous delegates exist.
+            tryVerify(() => findChild(select.popup.contentItem, "settingsSelectRegressionOption-1") !== null);
             const option = findChild(select.popup.contentItem, "settingsSelectRegressionOption-1");
             verify(option !== null);
             const label = findChild(option, option.objectName + "Label");

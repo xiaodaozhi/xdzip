@@ -78,6 +78,8 @@ ctest --test-dir build/ui --output-on-failure
 
 macOS 配置时另加 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0`。Windows 使用 MSVC x64 开发环境。
 
+macOS 开发与测试构建默认使用 `XDZIP_MACOS_HANDLER_RANK=None`，可正常启动和拖入文件，但不作为系统“打开方式”候选。仅为准备保留的主应用或 DMG 配置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`，避免多个测试副本出现在菜单中，详见 [Mac 部署指南](docs/engineering/macos-deployment.md)。
+
 | 平台 | 构建后的运行入口 |
 | --- | --- |
 | macOS | `build/ui/apps/desktop/xdzip.app/Contents/MacOS/xdzip` |

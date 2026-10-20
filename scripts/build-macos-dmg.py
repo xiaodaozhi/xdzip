@@ -22,10 +22,16 @@ def checked(command, **kwargs):
     return result.stdout
 
 
-def validate_bundle(app):
+def validate_bundle(app, *, require_handler=False):
     info = plistlib.loads((app/'Contents/Info.plist').read_bytes())
     if info.get('CFBundleIdentifier') != 'org.xdzip.desktop':
         raise ValueError('Unexpected application identity')
+    if require_handler:
+        documents = info.get('CFBundleDocumentTypes')
+        if (not isinstance(documents, list) or not documents or
+                any(not isinstance(item, dict) or item.get('LSHandlerRank') != 'Alternate'
+                    or item.get('CFBundleTypeRole') != 'Viewer' for item in documents)):
+            raise ValueError('DMG requires an Alternate document handler; rebuild with XDZIP_MACOS_HANDLER_RANK=Alternate')
     binary = app/'Contents/MacOS'/info['CFBundleExecutable']
     if 'arm64' not in checked(['lipo', '-archs', binary]).split():
         raise ValueError('Native arm64 executable required')
@@ -66,7 +72,7 @@ def build(source, qt, output):
         raise ValueError('DMG requires native macOS')
     if not within(output, ROOT/'build') or output.exists() or output.suffix != '.dmg':
         raise ValueError('Use a new .dmg under build/')
-    binary = validate_bundle(source)
+    binary = validate_bundle(source, require_handler=True)
     identity = checked([binary, '--version']).strip()
     if 'dirty' in identity or 'unknown' in identity:
         raise ValueError('DMG requires a clean verifiable product build')

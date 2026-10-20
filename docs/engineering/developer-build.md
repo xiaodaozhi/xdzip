@@ -8,6 +8,8 @@
 
 `xdzip-browser` 为真实产品目标，`xdzip-ui-preview` 为示例组件入口。用实际产品进行文件、任务及系统集成验收，不用示例进度替代真实操作。版本、渠道、提交与脏状态由构建身份及包内 build.json 记录。
 
+macOS 默认以 `XDZIP_MACOS_HANDLER_RANK=None` 构建开发与测试包，避免普通 CMake/CTest 在系统“打开方式”中增加候选。仅为保留的主应用或 DMG 输入显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。参数仅接受这两个值，不更改用户默认关联；原生候选查询与历史副本维护见[Mac 部署指南](macos-deployment.md)。
+
 ## 平台交付
 
 | 平台 | 开发工件与入口 | 验证边界 |

@@ -1,3 +1,9 @@
+set(XDZIP_MACOS_HANDLER_RANK "None" CACHE STRING "macOS document handling rank: None for development/test copies, Alternate for the primary application")
+set_property(CACHE XDZIP_MACOS_HANDLER_RANK PROPERTY STRINGS None Alternate)
+if(NOT XDZIP_MACOS_HANDLER_RANK MATCHES "^(None|Alternate)$")
+    message(FATAL_ERROR "XDZIP_MACOS_HANDLER_RANK must be None or Alternate")
+endif()
+
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)

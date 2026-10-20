@@ -74,7 +74,7 @@ Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-co
 Invoke-Checked rustup @('toolchain', 'install', '1.99.0', '--profile', 'minimal', '--component', 'rustfmt', '--component', 'clippy')
 Invoke-Checked rustc @('-vV')
 $cmakeArgs = @('-S', '.', '-B', 'build/desktop', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON', "-DCMAKE_PREFIX_PATH=$qtPrefix")
-if ($IsMacOS) { $cmakeArgs += @('-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0') }
+if ($IsMacOS) { $cmakeArgs += @('-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0', '-DXDZIP_MACOS_HANDLER_RANK=None') }
 Invoke-Checked cmake $cmakeArgs
 Assert-CleanSources
 Invoke-Checked cmake @('--build', 'build/desktop', '--parallel', '3')
@@ -82,7 +82,10 @@ Assert-CleanSources
 if ($IsWindows) {
     Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', 'build/desktop/apps/desktop/xdzip-browser.exe', '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
 }
-if ($IsMacOS) { Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist') }
+if ($IsMacOS) {
+    Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist')
+    Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--output', 'build/review/macos-registration.json')
+}
 Invoke-Checked qmllint (@('-I', 'build/desktop/qml') + (Get-ChildItem 'apps/desktop/ui/*.qml').FullName)
 Invoke-Checked ctest @('--test-dir', 'build/desktop', '--output-on-failure')
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.

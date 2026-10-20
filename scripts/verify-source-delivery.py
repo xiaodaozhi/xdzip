@@ -45,7 +45,8 @@ def main():
                      '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
                      '-DBUILD_TESTING=OFF', '-DXDZIP_BUILD_QT_PROBE=OFF', '-DCMAKE_PREFIX_PATH='+str(qt)]
         if sys.platform == 'darwin':
-            configure += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0']
+            configure += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+                          '-DXDZIP_MACOS_HANDLER_RANK=None']
         with (output/'rebuild.log').open('w') as log:
             for command in [configure, ['cmake', '--build', str(build), '--target', 'xdzip-browser', '--parallel', '3']]:
                 subprocess.run(command, cwd=source, env=environment, stdout=log, stderr=log, check=True)

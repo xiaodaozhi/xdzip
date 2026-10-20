@@ -4,16 +4,20 @@
 
 ## 制作与核验
 
-先从干净提交构建 Release，再执行：
+先从干净提交构建 Release，主应用必须显式启用文档候选，再执行：
 
 ```sh
+cmake -S . -B build/ui-release -G Ninja -DCMAKE_BUILD_TYPE=Release \
+  -DXDZIP_BUILD_DESKTOP_PREVIEW=ON -DXDZIP_MACOS_HANDLER_RANK=Alternate \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0
+cmake --build build/ui-release
 python3 scripts/build-macos-dmg.py --app build/ui-release/apps/desktop/xdzip.app \
   --qt-prefix .cache/Qt/6.8.2/macos --output build/review/xdzip-macos-arm64.dmg
 python3 scripts/verify-macos-dmg.py --dmg build/review/xdzip-macos-arm64.dmg \
   --output build/review/macos-dmg-verification
 ```
 
-输出路径必须位于 build/ 且尚不存在。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
+配置前按[开发构建指南](developer-build.md)设置 Qt 前缀。输出路径必须位于 build/ 且尚不存在。DMG 输入的文档类型必须全部声明 `Viewer/Alternate`，否则要求重新构建，不在原包上改写 plist 或签名。macdeployqt 扫描实际 QML，部署 Qt frameworks、插件和 QML；补充 Qt 系统控件翻译、项目通知、Rust 上游通知、字体许可、源码 SBOM 和固定 Qt 许可材料。保留 framework 内部符号链接，拒绝逃逸应用目录的链接；移除开发机绝对 RPATH，递归检查全部原生导入只解析到应用或系统。构建身份不能为 dirty 或 unknown，必须匹配当前干净提交以绑定实际通知。
 
 Qt 可选 QML LocalStorage 引入 QtSql 后，部署工具会顺带复制数据库驱动。本项目不提供服务器数据库能力，因此移除除内置 SQLite 外的驱动，避免 PostgreSQL、ODBC、Mimer 等 SDK 外部客户端依赖进入镜像；移除列表写入回执，不把 unresolved 导入隐藏为通过。
 
@@ -33,7 +37,11 @@ ARM64 的已修改 Mach-O 需要有效代码目录，因此复制／重写后使
 
 LaunchServices 会记住曾打开过的应用包，构建树中相同 bundle id 的多个副本可能同时出现在系统或 Codex 的“打开方式”菜单。不要为此删除系统数据库、重启 Finder、删除验证包或更改用户默认关联。
 
-`scripts/macos_launch_services.py` 只识别 `org.xdzip.desktop`。DMG 重定位、源码离线重建、源码 Qt 产品验证、QtCore 替换和系统文件打开验证在受限 `build/` 范围内记录运行前的注册集合，结束时（含失败）仅撤销新增的测试副本注册，保留原有主应用及其他产品。清理失败使验证命令失败，不能静默写成成功。该收尾不阻止用户以后在 Finder 主动打开旧副本而重新注册。
+新开发包默认在生成 Info.plist 时写入 `LSHandlerRank=None`，仅保留指定主应用和交付包的 `Alternate`。CMake 参数 `XDZIP_MACOS_HANDLER_RANK` 严格限定这两个值；源码离线重建、源码 Qt 产品验证和 Mac 产品 CI 也显式传入 `None`，避免以后更改默认值使测试副本重新进入候选。[Apple 对 `None` 的定义](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)保留文件拖入能力，不把该包选为此类型的打开应用。这个设置不影响应用内选择文件或显式指定应用的打开流程，不设置默认关联。
+
+Mac 产品 CI 运行 `scripts/check-macos-registration.py`，通过原生 `NSWorkspace` 的文件候选查询检查新构建包。候选数量与按 bundle id 枚举的注册数量分别判断，不能用后者代替用户实际的“打开方式”候选。
+
+`scripts/macos_launch_services.py` 只识别 `org.xdzip.desktop`。DMG 重定位、源码离线重建、源码 Qt 产品验证、QtCore 替换和系统文件打开验证在受限 `build/` 范围内记录运行前的注册集合，结束时（含失败）仅撤销新增的测试副本注册，保留原有主应用及其他产品。清理失败使验证命令失败，不能静默写成成功。交付包的验证副本仍保留原始文档声明，因此继续需要该收尾；旧 `Alternate` 包也可能被系统或其他应用重新发现并注册，退注册不能保证永久不复发。
 
 历史残留用以下工具预览，再显式应用；`--keep` 必须指定仍存在且身份正确的主应用，可以是当前开发构建或 Applications 中的安装版：
 
