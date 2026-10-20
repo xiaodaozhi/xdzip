@@ -126,6 +126,9 @@ class DisposableBundleTests(unittest.TestCase):
                 identity = 'xdzip (development, '+revision+')'
                 protected = {path: digest(path) for path in [binary, core, source/'Contents/Info.plist']}
                 staged = output.parent/'package-stage/xdzip.app'
+                phases = []
+                optimization = {'before_bytes': 150, 'after_bytes': 80, 'bytes_saved': 70}
+                bundle_validation = {'status': 'passed', 'architectures': ['arm64'], 'control_style': 'Basic'}
                 def checked(command, **_):
                     if str(command[0]) == 'lipo':return 'arm64'
                     if '--version' in command:return identity
@@ -139,10 +142,23 @@ class DisposableBundleTests(unittest.TestCase):
                         if command[1] == 'create':output.write_bytes(b'owned image')
                         elif failed:raise ValueError('owned verify failure')
                     return ''
+                def optimize(app):
+                    self.assertEqual(app, staged)
+                    phases.append('optimize')
+                    return optimization
+                def sign(app):
+                    self.assertEqual(app, staged)
+                    phases.append('sign')
+                def validate(app):
+                    self.assertEqual(app, staged)
+                    phases.append('validate')
+                    return bundle_validation
                 with patch.object(ls,'ROOT',root), patch.object(mac,'ROOT',root), \
                      patch.object(mac.sys,'platform','darwin'), patch.object(mac,'checked',side_effect=checked), \
                      patch.object(mac,'transient_registrations',side_effect=lambda _:nullcontext()), \
-                     patch.object(mac,'sign_local'), patch.object(mac,'native',return_value=False), \
+                     patch.object(mac,'optimize_bundle',side_effect=optimize), \
+                     patch.object(mac,'validate_optimized_bundle',side_effect=validate), \
+                     patch.object(mac,'sign_local',side_effect=sign), patch.object(mac,'native',return_value=False), \
                      patch.object(mac,'audit',return_value={'status':'passed'}), \
                      patch.object(mac,'artifact_bom',return_value={'owned':'sbom'}):
                     if failed:
@@ -150,11 +166,36 @@ class DisposableBundleTests(unittest.TestCase):
                     else:
                         report = mac.build(source,qt,output)
                         self.assertEqual(report['sha256'],digest(output))
+                        self.assertEqual(report['bundle_optimization'], optimization)
+                        self.assertEqual(report['bundle'], bundle_validation)
+                self.assertEqual(phases, ['optimize', 'sign', 'validate'])
                 self.assertFalse(staged.exists())
                 self.assertTrue(output.is_file())
                 self.assertTrue(output.with_suffix('.cdx.json').is_file())
                 self.assertEqual(output.with_suffix('.json').exists(),not failed)
                 self.assertEqual(protected,{path:digest(path) for path in protected})
+
+    def test_dmg_optimization_failure_stops_before_signing_and_discards_stage(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve();source, binary, core = self.bundle(root/'input')
+            output = root/'build/package.dmg';qt = root/'qt';revision = 'a'*12
+            protected = {path:digest(path) for path in [binary,core,source/'Contents/Info.plist']}
+            def checked(command, **_):
+                if str(command[0]) == 'lipo':return 'arm64'
+                if '--version' in command:return 'xdzip (development, '+revision+')'
+                if 'rev-parse' in command:return revision
+                return ''
+            with patch.object(ls,'ROOT',root), patch.object(mac,'ROOT',root), \
+                 patch.object(mac.sys,'platform','darwin'), patch.object(mac,'checked',side_effect=checked), \
+                 patch.object(mac,'transient_registrations',side_effect=lambda _:nullcontext()), \
+                 patch.object(mac,'optimize_bundle',side_effect=ValueError('invalid deployment')), \
+                 patch.object(mac,'sign_local') as sign, patch.object(mac,'audit') as audit:
+                with self.assertRaisesRegex(ValueError,'invalid deployment'):mac.build(source,qt,output)
+                sign.assert_not_called();audit.assert_not_called()
+            self.assertFalse((output.parent/'package-stage/xdzip.app').exists())
+            self.assertFalse(output.exists())
+            self.assertFalse(output.with_suffix('.json').exists())
+            self.assertEqual(protected,{path:digest(path) for path in protected})
 
     def test_dmg_verifier_freezes_hashes_and_removes_copy_on_success_or_failure(self):
         for failed in [False, True]:
@@ -180,6 +221,10 @@ class DisposableBundleTests(unittest.TestCase):
                 with patch.object(ls,'ROOT',root), patch.object(verify_dmg,'ROOT',root), \
                      patch.object(verify_dmg,'transient_registrations',side_effect=lambda _:nullcontext()), \
                      patch.object(verify_dmg,'audit',return_value={'status':'passed'}), \
+                     patch.object(verify_dmg,'validate_optimized_bundle',return_value={'status':'passed'}), \
+                     patch.object(verify_dmg,'verify_signatures',return_value={'status':'passed'}), \
+                     patch.object(verify_dmg,'product_identity',return_value=('xdzip owned fixture',{})), \
+                     patch.object(verify_dmg,'verify_extraction',return_value={'status':'passed'}), \
                      patch.object(verify_dmg.macdmg,'checked',side_effect=checked), \
                      patch.object(verify_dmg.macdmg,'sign_local'), \
                      patch.object(verify_dmg.subprocess,'check_output',return_value=mounted), \

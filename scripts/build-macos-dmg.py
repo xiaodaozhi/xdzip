@@ -12,6 +12,7 @@ import sys
 from deployment_audit import audit, digest, mac_rpaths, native, within
 from sbom import artifact_bom
 from macos_launch_services import temporary_bundle_path, transient_registrations
+from macos_bundle import optimize_bundle, validate_optimized_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -98,12 +99,6 @@ def build(source, qt, output):
             if driver.name != 'libqsqlite.dylib':
                 omitted_sql.append(driver.name)
                 driver.unlink()
-        # Absolute development RPATHs must not survive into a portable application.
-        for path in {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')}:
-            rpaths = mac_rpaths(checked(['otool', '-l', path]))
-            for value in rpaths:
-                if value.startswith('/') and not value.startswith(('/usr/lib/', '/System/Library/')):
-                    checked(['install_name_tool', '-delete_rpath', value, path])
         notices = app/'Contents/Resources/notices'
         notices.mkdir(parents=True, exist_ok=True)
         checked([sys.executable, ROOT/'scripts/collect-notices.py', notices])
@@ -117,7 +112,17 @@ def build(source, qt, output):
         checked([sys.executable, ROOT/'scripts/prepare-runtime-notices.py', '--qt-prefix', qt,
                  '--output', notices/'Qt-runtime'])
         configure_translation_path(app)
+        # Deployment copies universal libraries and optional Controls styles from
+        # the SDK. Trim only this disposable copy, before hashes and signatures.
+        optimization = optimize_bundle(app)
+        # Absolute development RPATHs must not survive into a portable application.
+        for path in {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')}:
+            rpaths = mac_rpaths(checked(['otool', '-l', path]))
+            for value in rpaths:
+                if value.startswith('/') and not value.startswith(('/usr/lib/', '/System/Library/')):
+                    checked(['install_name_tool', '-delete_rpath', value, path])
         sign_local(app)
+        final_bundle = validate_optimized_bundle(app)
         binary = validate_bundle(app)
         report = audit(app, binary, None, 'macos', 'deployed')
         if report['status'] != 'passed':
@@ -127,6 +132,8 @@ def build(source, qt, output):
         inventory = json.loads((notices/'build-inventory.json').read_text(encoding='utf-8'))
         report['identity'] = {'version': inventory['display_version'], 'build': inventory['version_source']['build'],
                               'revision': revision, 'dirty': False}
+        report['bundle_optimization'] = optimization
+        report['bundle'] = final_bundle
         source_bom = json.loads((notices/'source-build.cdx.json').read_text(encoding='utf-8'))
         file_bom = artifact_bom(report, source_bom)
         output.with_suffix('.cdx.json').write_text(json.dumps(file_bom, indent=2)+'\n')
@@ -140,6 +147,7 @@ def build(source, qt, output):
                  '-format', 'UDZO', '-fs', 'HFS+', output])
         checked(['hdiutil', 'verify', output])
         report.update(identity_text=identity, file=output.name, sha256=digest(output),
+                      dmg_bytes=output.stat().st_size,
                       signing='ad-hoc', developer_id_signed=False, notarized=False,
                       app_tree='xdzip.app', local_only=True, unused_sql_drivers_omitted=sorted(omitted_sql))
     output.with_suffix('.json').write_text(json.dumps(report, indent=2)+'\n')

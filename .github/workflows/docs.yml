@@ -19,6 +19,8 @@ jobs:
           python3 scripts/test-runtime-attribution.py
           python3 scripts/test-installers.py
           python3 scripts/test-macos-launch-services.py
+          python3 scripts/test-macos-bundle.py
+          python3 scripts/test-macos-dmg.py
           python3 scripts/test-repository-contents.py
           python3 scripts/test-source-delivery.py
           python3 scripts/test-qt-sdk-correspondence.py

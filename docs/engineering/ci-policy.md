@@ -47,6 +47,8 @@ Linux 增加[独立部署与运行容器](linux-deployment.md)：固定 SDK 的 
 
 本地部署与 CI 分开：用户明确要求时可制作开发 DMG，允许本地 Qt 部署与必需的 ad-hoc 完整性签名，见[Mac 部署](macos-deployment.md)。此例外不改变上述 CI 禁止生成／上传 Mac 应用的范围，不授权 Developer ID、公证或发布。三平台 CI 另编译固定历史／当前设置适配器并验证同 schema 往返和较新 schema 拒写；Linux 安装测试增加一次真实 postinst 配置失败、运行阻止与 dpkg 恢复。
 
+Mac 包体积规则在 Documentation 的跨平台夹具测试 `scripts/test-macos-bundle.py` 中检查：覆盖嵌套 Mach-O 架构识别及 `arm64` 裁剪、Basic 样式与共享依赖保留、未知或缺失依赖拒绝，以及输入应用／SDK 不变。CI 不为这些测试调用 macdeployqt、lipo 或 codesign，不因此引入 Mac 包部署。真实开发 DMG 在本地部署后递归复验全部原生分片和样式集合，记录优化前后字节数，并完成重定位 Cocoa／Metal 与兼容 QtCore 修改副本启动核验；实际执行结果独立登记，不以夹具测试代替。
+
 独立源码验证使用[Qt 源码专用工作流](../../.github/workflows/qt-source.yml)，由可信 main 显式分派，单独运行三平台所需模块的源码编译与真实产品测试。Mac 仍只上传有界日志和 JSON，不缓存或上传 SDK／应用；Windows/Linux 依赖缓存以 runner 镜像、源码配置和脚本指纹区分，源码恢复后重新校验。普通 Qt CI 同时校验原生指标协议、实际资源与链接证据；不在共享 runner 用单次性能数字批准发行预算。
 
 源码库内容边界由 `scripts/repository_contents.py` 对 Git 索引核验，禁止强制暂存生成目录、文档阅读版、已退役阶段报告、QA 执行输出及超过审查阈值的大 blob。具体执行状态使用 issue，不把 CI 或验收报告重新提交到 docs。
