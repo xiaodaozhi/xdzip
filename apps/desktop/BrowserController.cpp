@@ -113,9 +113,57 @@ void ArchiveTableModel::selectRange(int first, int last) {
     emit dataChanged(index(0, 0), index(rowCount() - 1, 4), {Qt::UserRole + 2});
 }
 
+int TaskListModel::rowCount(const QModelIndex &parent) const {
+    return parent.isValid() ? 0 : static_cast<int>(m_rows.size());
+}
+QVariant TaskListModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid() || index.row() < 0 || index.row() >= m_rows.size() ||
+        index.column() != 0 || role != TaskDataRole)
+        return {};
+    return m_rows.at(index.row());
+}
+QHash<int, QByteArray> TaskListModel::roleNames() const {
+    return {{TaskDataRole, "taskData"}};
+}
+void TaskListModel::sync(const QVariantList &snapshots) {
+    QSet<QString> retained;
+    for (const auto &value : snapshots)
+        retained.insert(value.toMap().value("id").toString());
+    for (int row = rowCount() - 1; row >= 0; --row) {
+        if (retained.contains(m_rows.at(row).value("id").toString()))
+            continue;
+        beginRemoveRows({}, row, row);
+        m_rows.removeAt(row);
+        endRemoveRows();
+    }
+    for (int row = 0; row < snapshots.size(); ++row) {
+        const auto snapshot = snapshots.at(row).toMap();
+        const auto id = snapshot.value("id").toString();
+        int previous = row;
+        while (previous < rowCount() && m_rows.at(previous).value("id").toString() != id)
+            ++previous;
+        if (previous == rowCount()) {
+            beginInsertRows({}, row, row);
+            m_rows.insert(row, snapshot);
+            endInsertRows();
+        } else {
+            if (previous != row) {
+                beginMoveRows({}, previous, previous, {}, row);
+                m_rows.move(previous, row);
+                endMoveRows();
+            }
+            if (m_rows.at(row) != snapshot) {
+                m_rows[row] = snapshot;
+                emit dataChanged(index(row), index(row), {TaskDataRole});
+            }
+        }
+    }
+}
+
 BrowserController::BrowserController(QObject *parent)
-    : QObject(parent), m_model(this), m_directories(this),
+    : QObject(parent), m_model(this), m_taskModel(this), m_directories(this),
       m_connection(std::make_unique<RuntimeConnection>(this)) {
+    connect(this, &BrowserController::tasksChanged, this, [this] { m_taskModel.sync(tasks()); });
     m_directories.setItemRoleNames({{Qt::DisplayRole, "nodeName"},
                                     {Qt::UserRole, "nodeId"},
                                     {Qt::UserRole + 1, "entryCount"},

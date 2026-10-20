@@ -13,14 +13,18 @@
 #include <QAccessible>
 #include <QAction>
 #include <QClipboard>
+#include <QCursor>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QInputMethodEvent>
+#include <QJSValue>
 #include <QJsonDocument>
 #include <QLockFile>
 #include <QMenu>
+#include <QPersistentModelIndex>
+#include <QPointer>
 #include <QProcess>
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
@@ -1827,6 +1831,282 @@ class BrowserTest : public QObject {
         QCOMPARE(resets.count(), 0);
         QCOMPARE(controller->entries()->rowCount(), rows);
         QCOMPARE(controller->selectedCount(), selected);
+        window->close();
+    }
+    void taskModelUpdatesRowsWithoutResettingRetainedTasks() {
+        BrowserController controller;
+        auto *model = controller.taskModel();
+        QVERIFY(model);
+        QAbstractItemModelTester modelCheck(model,
+                                            QAbstractItemModelTester::FailureReportingMode::QtTest);
+        const auto role = model->roleNames().key(QByteArrayLiteral("taskData"), -1);
+        QVERIFY(role >= Qt::UserRole);
+        QSignalSpy resets(model, &QAbstractItemModel::modelReset);
+        QSignalSpy inserts(model, &QAbstractItemModel::rowsInserted);
+        QSignalSpy removals(model, &QAbstractItemModel::rowsRemoved);
+        QSignalSpy changes(model, &QAbstractItemModel::dataChanged);
+        xdzip::reader::Event progress{};
+        progress.kind = xdzip::reader::EventKind::TaskUpdate;
+        progress.task.id = 1;
+        progress.task.status = rust::String("running");
+        progress.task.total_known = true;
+        progress.task.declared_bytes = 100;
+        controller.receive(progress);
+        QCOMPARE(model->rowCount(), 1);
+        const QPersistentModelIndex active(model->index(0, 0));
+        QCOMPARE(model->data(active, role).toMap().value("id").toString(), "1");
+        for (quint64 id = 2; id <= 65; ++id) {
+            xdzip::reader::Event finished{};
+            finished.kind = xdzip::reader::EventKind::TaskUpdate;
+            finished.task.id = id;
+            finished.task.status = rust::String("succeeded");
+            controller.receive(finished);
+            QVERIFY(active.isValid());
+            QCOMPARE(model->data(active, role).toMap().value("id").toString(), "1");
+            QCOMPARE(model->data(model->index(0, 0), role).toMap().value("id").toString(),
+                     QString::number(id));
+        }
+        // Retaining at most 64 rows evicts terminal history, never an active task.
+        QCOMPARE(model->rowCount(), 64);
+        QCOMPARE(inserts.count(), 65);
+        QCOMPARE(removals.count(), 1);
+        QCOMPARE(active.row(), 63);
+        changes.clear();
+        for (quint64 bytes = 1; bytes <= 24; ++bytes) {
+            progress.task.decoded_bytes = bytes;
+            controller.receive(progress);
+            QCOMPARE(model->data(active, role).toMap().value("decodedBytes").toString(),
+                     QString::number(bytes));
+        }
+        QCOMPARE(changes.count(), 24);
+        controller.receive(progress); // An identical snapshot must not invalidate delegates.
+        QCOMPARE(changes.count(), 24);
+        progress.task.status = rust::String("cancelled");
+        controller.receive(progress);
+        QCOMPARE(model->data(active, role).toMap().value("status").toString(), "cancelled");
+        QVERIFY(model->data(active, role).toMap().value("terminal").toBool());
+        QCOMPARE(model->rowCount(), 64);
+        QCOMPARE(resets.count(), 0);
+    }
+    void taskMenuProgressPreservesHoverAndFocus_data() {
+        QTest::addColumn<bool>("creating");
+        QTest::newRow("extraction") << false;
+        QTest::newRow("creation") << true;
+    }
+    void taskMenuProgressPreservesHoverAndFocus() {
+        QFETCH(bool, creating);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window && QTest::qWaitForWindowExposed(window));
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+
+        // Exercise the production receiver with controlled bridge snapshots. Real
+        // I/O is covered separately; every progress tick here remains observable.
+        xdzip::reader::Event progress{};
+        progress.kind = xdzip::reader::EventKind::TaskUpdate;
+        progress.task.id = creating ? 102 : 101;
+        progress.task.creating = creating;
+        progress.task.total_known = true;
+        progress.task.status = rust::String("running");
+        progress.task.declared_bytes = 64 * 1024;
+        progress.task.files = 1;
+        // A multi-part creation snapshot does not enqueue auto-opening a real file.
+        progress.task.output_parts = creating ? 2 : 0;
+        controller->receive(progress);
+        const auto taskId = QString::number(progress.task.id);
+        const auto objectName = QStringLiteral("taskMenuItem-") + taskId;
+        auto *menu = window->findChild<QObject *>("browserTaskMenu");
+        auto *button = findVisual(window->contentItem(), "browserTasks");
+        QVERIFY(menu && button);
+        window->raise();
+        window->requestActivate();
+        QTRY_VERIFY(window->isActive());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QPointer<QQuickItem> entry =
+            qobject_cast<QQuickItem *>(window->findChild<QObject *>(objectName));
+        QVERIFY(entry);
+        QTRY_VERIFY(entry->isVisible() && entry->width() > 0 && entry->height() > 0);
+        QSignalSpy frames(window, &QQuickWindow::afterAnimating);
+        window->requestUpdate();
+        QTRY_VERIFY(frames.count() > 0);
+        const auto pointer =
+            entry->mapToScene(QPointF(entry->width() / 2, entry->height() / 2)).toPoint();
+        QVERIFY2(QRect(QPoint(), window->size()).contains(pointer),
+                 "The task row must finish popup positioning before pointer input");
+        // The offscreen platform disables desktop hover effects in its style
+        // hints. Enable only this test item for synthetic pointer coverage.
+        if (QGuiApplication::platformName() == QStringLiteral("offscreen"))
+            QVERIFY(entry->setProperty("hoverEnabled", true));
+        QVERIFY(entry->property("hoverEnabled").toBool());
+        const auto platform = QGuiApplication::platformName();
+        const bool nativePointer = platform == QStringLiteral("cocoa") ||
+                                   platform == QStringLiteral("windows") ||
+                                   platform == QStringLiteral("xcb");
+        const auto originalCursor = QCursor::pos();
+        const auto restoreCursor = qScopeGuard([&] {
+            if (nativePointer)
+                QCursor::setPos(originalCursor);
+        });
+        const auto expectedCursor = window->mapToGlobal(pointer);
+        // QTest injects Qt mouse events without moving the native cursor. Align
+        // them once so subsequent native enter/leave events use the same point.
+        if (nativePointer)
+            QCursor::setPos(expectedCursor);
+        QTest::mouseMove(window, QPoint(1, 1));
+        QTest::mouseMove(window, pointer);
+        QTRY_VERIFY(entry && entry->property("hovered").toBool());
+        QTRY_VERIFY(entry->property("highlighted").toBool());
+        entry->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(entry->hasActiveFocus());
+        const auto selectedIndex = menu->property("currentIndex").toInt();
+        QVERIFY(selectedIndex >= 0);
+        const auto runningLabel = entry->property("statusLabel").toString();
+        QVERIFY(!runningLabel.isEmpty());
+        QSignalSpy destroyed(entry, &QObject::destroyed);
+        QSignalSpy hoverChanges(entry, SIGNAL(hoveredChanged()));
+        QSignalSpy highlightChanges(entry, SIGNAL(highlightedChanged()));
+        QSignalSpy focusChanges(entry, &QQuickItem::activeFocusChanged);
+        QVERIFY(hoverChanges.isValid() && highlightChanges.isValid());
+        const auto auditDirectory = qEnvironmentVariable("XDZIP_TASK_MENU_AUDIT");
+        const auto scene = creating ? QStringLiteral("creation") : QStringLiteral("extraction");
+        if (!auditDirectory.isEmpty()) {
+            QVERIFY(QDir().mkpath(auditDirectory));
+            QVERIFY(visual_audit::save(window, auditDirectory, scene + "-hover-before"));
+        }
+        for (quint64 tick = 1; tick <= 48; ++tick) {
+            progress.task.decoded_bytes = tick * 1024;
+            progress.task.written_bytes = tick * 1024;
+            progress.task.elapsed_ms = tick * 100;
+            controller->receive(progress);
+            const auto frameCount = frames.count();
+            window->requestUpdate();
+            QTRY_VERIFY(frames.count() > frameCount);
+            const auto pointText = [](QPointF point) {
+                return QStringLiteral("(%1,%2)").arg(point.x()).arg(point.y());
+            };
+            const auto center =
+                entry ? entry->mapToScene(QPointF(entry->width() / 2, entry->height() / 2))
+                      : QPointF(-1, -1);
+            const auto diagnostic =
+                QStringLiteral("tick=%1 physicalCursor=%2 expectedCursor=%3 rowCenter=%4 "
+                               "expectedCenter=%5 rowSize=%6 windowPosition=%7 windowSize=%8")
+                    .arg(tick)
+                    .arg(pointText(QCursor::pos()))
+                    .arg(pointText(expectedCursor))
+                    .arg(pointText(center))
+                    .arg(pointText(pointer))
+                    .arg(pointText(entry ? QPointF(entry->width(), entry->height()) : QPointF()))
+                    .arg(pointText(window->position()))
+                    .arg(pointText(QPointF(window->width(), window->height())));
+            // These checks detect delegate replacement even if the new row happens
+            // to acquire the same objectName or highlight on the following frame.
+            QVERIFY2(entry,
+                     qPrintable("A progress snapshot destroyed the hovered task menu item, " +
+                                diagnostic));
+            QCOMPARE(window->findChild<QObject *>(objectName), entry.data());
+            QVERIFY2(entry->property("hovered").toBool(), qPrintable(diagnostic));
+            QVERIFY2(entry->property("highlighted").toBool(), qPrintable(diagnostic));
+            QVERIFY2(entry->hasActiveFocus(), qPrintable(diagnostic));
+            QCOMPARE(menu->property("currentIndex").toInt(), selectedIndex);
+            QCOMPARE(controller->tasks().first().toMap().value("decodedBytes").toString(),
+                     QString::number(tick * 1024));
+        }
+        progress.task.status = rust::String("succeeded");
+        controller->receive(progress);
+        QTRY_VERIFY(entry && entry->property("statusLabel").toString() != runningLabel);
+        QVERIFY(entry->property("hovered").toBool());
+        QVERIFY(entry->property("highlighted").toBool());
+        QVERIFY(entry->hasActiveFocus());
+        QCOMPARE(menu->property("currentIndex").toInt(), selectedIndex);
+        QCOMPARE(destroyed.count(), 0);
+        QCOMPARE(hoverChanges.count(), 0);
+        QCOMPARE(highlightChanges.count(), 0);
+        QCOMPARE(focusChanges.count(), 0);
+
+        if (!auditDirectory.isEmpty()) {
+            QVERIFY(visual_audit::save(window, auditDirectory, scene + "-hover-after"));
+            auto *cell = findVisual(window->contentItem(), "entry-0-0");
+            auto *label = findVisual(entry, objectName + "Label");
+            QVERIFY(cell && label);
+            int rowFont = 0;
+            for (auto *child : cell->childItems())
+                if (child->property("text") == cell->property("display"))
+                    rowFont = child->property("font").value<QFont>().pixelSize();
+            const auto menuFont = label->property("font").value<QFont>().pixelSize();
+            QVERIFY(rowFont > 0);
+            const auto ratio = qreal(menuFont) / rowFont;
+            QVERIFY(ratio >= 0.95 && ratio <= 1.10);
+            const QJsonObject evidence{
+                {"taskKind", scene},
+                {"ticks", 48},
+                {"platform", QGuiApplication::platformName()},
+                {"graphicsApi", int(window->rendererInterface()->graphicsApi())},
+                {"dpr", window->devicePixelRatio()},
+                {"windowWidth", window->width()},
+                {"windowHeight", window->height()},
+                {"menuWidth", menu->property("width").toDouble()},
+                {"menuHeight", menu->property("height").toDouble()},
+                {"rowHeight", cell->height()},
+                {"menuRowHeight", entry->height()},
+                {"rowFontPixels", rowFont},
+                {"menuFontPixels", menuFont},
+                {"menuToRowFontRatio", ratio},
+                {"delegateReplacements", destroyed.count()},
+                {"hoverChanges", hoverChanges.count()},
+                {"highlightChanges", highlightChanges.count()},
+                {"focusChanges", focusChanges.count()}};
+            QFile file(auditDirectory + "/" + scene + "-stability.json");
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QVERIFY(file.write(QJsonDocument(evidence).toJson()) > 0);
+        }
+        xdzip::reader::Event another{};
+        another.kind = xdzip::reader::EventKind::TaskUpdate;
+        another.task.id = progress.task.id + 1;
+        another.task.status = rust::String("succeeded");
+        controller->receive(another);
+        const auto frameCount = frames.count();
+        window->requestUpdate();
+        QTRY_VERIFY(frames.count() > frameCount);
+        QVERIFY(entry);
+        QCOMPARE(window->findChild<QObject *>(objectName), entry.data());
+        QTRY_VERIFY(entry->property("hovered").toBool());
+        QVERIFY(entry->property("highlighted").toBool());
+        QVERIFY(entry->hasActiveFocus());
+        QCOMPARE(menu->property("currentIndex").toInt(), selectedIndex + 1);
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, pointer);
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QCOMPARE(window->property("activeTaskId").toString(), taskId);
+        auto *task = window->findChild<QQuickWindow *>("taskWindow");
+        QTRY_VERIFY(task && task->isVisible());
+        auto snapshot = window->property("taskSnapshot");
+        if (snapshot.metaType() == QMetaType::fromType<QJSValue>())
+            snapshot = snapshot.value<QJSValue>().toVariant();
+        QCOMPARE(snapshot.toMap().value("id").toString(), taskId);
+        QCOMPARE(snapshot.toMap().value("status").toString(), "succeeded");
+        task->close();
+        window->requestActivate();
+        QTRY_VERIFY(window->isActive());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QTest::keyClick(window, Qt::Key_Home);
+        QTRY_COMPARE(menu->property("currentIndex").toInt(), selectedIndex);
+        QTest::keyClick(window, Qt::Key_Down);
+        QTRY_VERIFY(entry->hasActiveFocus());
+        QCOMPARE(menu->property("currentIndex").toInt(), selectedIndex + 1);
+        QTest::keyClick(window, Qt::Key_Return);
+        QTRY_VERIFY(!menu->property("visible").toBool() && task->isVisible());
+        QCOMPARE(window->property("activeTaskId").toString(), taskId);
+        task->close();
         window->close();
     }
     void extractionSubmissionKeepsBrowserPresentationStable() {

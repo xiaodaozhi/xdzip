@@ -1,5 +1,6 @@
 #pragma once
 #include "RuntimeConnection.h"
+#include <QAbstractListModel>
 #include <QAbstractTableModel>
 #include <QObject>
 #include <QSet>
@@ -57,6 +58,22 @@ class ArchiveTableModel final : public QAbstractTableModel {
     quint64 m_selectionRevision = 0;
 };
 
+// A view projection of bounded task snapshots. Rows retain their identity while
+// progress changes; the runtime remains the owner of task state and ordering.
+class TaskListModel final : public QAbstractListModel {
+    Q_OBJECT
+  public:
+    enum { TaskDataRole = Qt::UserRole + 1 };
+    explicit TaskListModel(QObject *parent = nullptr) : QAbstractListModel(parent) {}
+    int rowCount(const QModelIndex &parent = {}) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
+    void sync(const QVariantList &snapshots);
+
+  private:
+    QList<QVariantMap> m_rows;
+};
+
 class BrowserController : public QObject {
     Q_OBJECT
     QML_ELEMENT
@@ -91,6 +108,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap extractionIntent READ extractionIntent NOTIFY extractionChanged)
     Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
+    Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
     Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(QVariantMap passwordPrompt READ passwordPrompt NOTIFY tasksChanged)
     Q_PROPERTY(QString sessionId READ sessionId NOTIFY changed)
@@ -186,6 +204,9 @@ class BrowserController : public QObject {
         return m_targetCheck;
     }
     QVariantList tasks() const;
+    QAbstractItemModel *taskModel() {
+        return &m_taskModel;
+    }
     int activeTaskCount() const;
     QVariantMap passwordPrompt() const;
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
@@ -297,6 +318,7 @@ class BrowserController : public QObject {
     static QString explain(const QString &code);
     void replaceDirectories(const QList<DirectoryRow> &rows);
     ArchiveTableModel m_model;
+    TaskListModel m_taskModel;
     QString m_selectionAnchor;
     int m_archiveTotal = 0;
     QStandardItemModel m_directories;

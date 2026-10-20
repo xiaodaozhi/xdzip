@@ -1575,24 +1575,42 @@ ApplicationWindow {
                         objectName: "browserTaskMenu"
                         x: parent.width - width
                         y: -implicitHeight - Theme.mainPopupGap
+                        function restoreCurrentItem(item) {
+                            if (!item)
+                                return;
+                            for (let index = 0; index < count; ++index) {
+                                if (itemAt(index) === item) {
+                                    currentIndex = index;
+                                    return;
+                                }
+                            }
+                        }
                         CommandMenuItem {
                             text: qsTrId("ui.da9688984cdc")
                             commandVisible: reader.tasks.length === 0
                             enabled: false
                         }
                         Instantiator {
-                            model: reader.tasks
+                            model: reader.taskModel
                             delegate: CommandMenuItem {
-                                required property var modelData
-                                objectName: "taskMenuItem-" + modelData.id
-                                text: (modelData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(modelData.id)
+                                required property var taskData
+                                objectName: "taskMenuItem-" + taskData.id
+                                text: (taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.id)
                                 asset: "task-list"
-                                statusLabel: root.taskStateLabel(modelData.status)
-                                statusInk: modelData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(modelData.status) ? Theme.resultWarningInk : modelData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
-                                onTriggered: root.showTask(modelData.id)
+                                statusLabel: root.taskStateLabel(taskData.status)
+                                statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
+                                onTriggered: root.showTask(taskData.id)
                             }
-                            onObjectAdded: (index, object) => taskMenu.insertItem(index + 1, object)
-                            onObjectRemoved: (index, object) => taskMenu.removeItem(object)
+                            onObjectAdded: (index, object) => {
+                                const selected = taskMenu.itemAt(taskMenu.currentIndex);
+                                taskMenu.insertItem(index + 1, object);
+                                taskMenu.restoreCurrentItem(selected);
+                            }
+                            onObjectRemoved: (index, object) => {
+                                const selected = taskMenu.itemAt(taskMenu.currentIndex);
+                                taskMenu.removeItem(object);
+                                taskMenu.restoreCurrentItem(selected);
+                            }
                         }
                         CommandMenuSeparator { commandVisible: reader.browsingBusy }
                         CommandMenuItem {
