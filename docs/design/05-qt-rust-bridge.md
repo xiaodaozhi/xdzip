@@ -8,7 +8,7 @@
 
 以下表格定义概念类型与语义，不是可直接编译的 `cxx::bridge` 声明。实施阶段根据 cxx 允许的共享类型拆分结构，生成代码纳入构建而非手工编辑。禁止为性能方便引入未定义生命周期的裸指针。
 
-当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。Qt 仍为单会话、串行普通请求；第三方进程协议、完整多会话调度和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [M1 运行时](../engineering/m1-runtime.md)、[M2 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
+当前已落地双句柄、取消／关闭控制通道、Qt mailbox、查询代际与来源版本，以及创建／解压 TaskId 和独立输出授权。应用支持独立归档会话，每个 BrowserController 使用自己的单会话 RuntimeConnection，普通请求仍在各连接内串行，重任务由应用统一串行准入，见[应用会话契约](../engineering/application-sessions.md)。第三方进程协议、CPU token 池和下表中的部分目标命令仍属后续设计。实际 API 与资源／失败边界见 [M1 运行时](../engineering/m1-runtime.md)、[M2 查询](../engineering/m2-readonly.md)、[安全解压](../engineering/m3-extraction.md)及[创建契约](../engineering/m4-creation.md)，不能将设计表当作当前 cxx 声明。
 
 ## 2. 客户端和事件接收
 

@@ -1,6 +1,6 @@
 # xdzip：08 任务状态、资源准入和并发
 
-本页同时描述调度目标设计与已实现规则。当前运行时使用单会话和单重任务 worker，完整 CPU token 池、双重任务并发、外部工作进程及通用暂停属于后续设计；不能将下方目标预算当作当前设置。实际任务边界见[安全解压](../engineering/m3-extraction.md)、[创建](../engineering/m4-creation.md)和[密码解压](../engineering/password-extraction.md)契约。
+本页同时描述调度目标设计与已实现规则。应用为多个独立会话分别持有运行时连接，每个连接保留单会话和单重任务 worker，创建与解压由应用级串行准入协调，关闭页面不取消后台任务，见[应用会话契约](../engineering/application-sessions.md)。完整 CPU token 池、双重任务并发、外部工作进程及通用暂停属于后续设计；不能将下方目标预算当作当前设置。实际任务边界见[安全解压](../engineering/m3-extraction.md)、[创建](../engineering/m4-creation.md)和[密码解压](../engineering/password-extraction.md)契约。
 
 ## 1. 状态机
 

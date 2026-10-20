@@ -64,7 +64,7 @@ ZIP 只显示四档压缩级别，默认 2-正常压缩；不另设算法控件�
 
 主窗口当前交付两个独立示例压缩包会话、列表 / 网格、字段排序、递归目录树、分级面包屑、右键 / 下拉 / 子菜单以及按钮状态，详见[组件与交互契约](main-window-components.md)及[验证方法](../qa/README.md)。`scripts/check-html-controls.py` 使用真实浏览器输入检查这些行为；[组件审阅页](../../design/html/components.html)使用与主界面相同的实现。
 
-HTML 仅验证示例状态，不证明真实任务调度、授权、路径竞态、CRC 或平台辅助功能。Qt 已接入真实创建／解压、拖放、系统选择器及持久设置，实际边界见[浏览](../engineering/readonly-browser.md)、[安全解压](../engineering/m3-extraction.md)和[设置契约](settings-localization.md)，验收在对应 issue 登记。Qt 多压缩包会话、额外格式、百万条索引和受限内容预览仍属后续能力。HTML 设置只在页面内保存演示状态，不跨启动持久化，不作为原生系统主题跟随或辅助功能的通过依据。
+HTML 仅验证示例状态，不证明真实任务调度、授权、路径竞态、CRC 或平台辅助功能。Qt 已接入真实创建／解压、拖放、系统选择器、持久设置及可选标签页或多窗口的独立归档会话，实际边界见[浏览](../engineering/readonly-browser.md)、[应用会话](../engineering/application-sessions.md)、[安全解压](../engineering/m3-extraction.md)和[设置契约](settings-localization.md)，验收在对应 issue 登记。额外格式、百万条索引和受限内容预览仍属后续能力。HTML 设置只在页面内保存演示状态，不跨启动持久化，不作为原生系统主题跟随或辅助功能的通过依据。
 
 这些限制不改变软件设计中的目标能力。原型中的“已完成”仅描述演示任务状态，不代表真实压缩解压功能已交付。
 
