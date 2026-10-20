@@ -69,7 +69,7 @@ class ApplicationSessions final : public QObject {
     Session *add(QQuickWindow *window, QObject *page);
     Session *create(bool newWindow);
     Session *current() const;
-    void activate(Session *session);
+    void activate(Session *session, bool reveal = true);
     void refresh();
     void reap(Session *session);
     void checkQuit();
@@ -81,4 +81,5 @@ class ApplicationSessions final : public QObject {
     std::vector<std::unique_ptr<Session>> m_sessions;
     TaskListModel m_tasks;
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
+    bool m_presentationReady = false;
 };

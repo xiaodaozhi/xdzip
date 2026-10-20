@@ -15,7 +15,7 @@ $tools = Join-Path $cacheRoot 'xdzip-desktop-tools'
 $shared = @('--qt-prefix', $qt, '--tools-dir', $tools, '--build-dir', 'build/desktop', '--output-dir', 'build/review')
 $tests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 # Validate the real platform state transitions, not the offscreen emulation.
-$nativeCases = @('desktopActivationPreservesWindowState', 'independentSessionsAndOpenModes', 'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery', 'backgroundTasksKeepSessionIdentityAndSerialAdmission')
+$nativeCases = @('desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch', 'independentSessionsAndOpenModes', 'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery', 'backgroundTasksKeepSessionIdentityAndSerialAdmission')
 if ($IsLinux) {
     $env:QT_QPA_PLATFORM = 'xcb'
     Checked xvfb-run (@('-a', $tests) + $nativeCases)

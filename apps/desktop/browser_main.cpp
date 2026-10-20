@@ -57,7 +57,8 @@ int main(int argc, char *argv[]) {
         }
     }
     SingleInstance instance;
-    const bool interactive = !smokeTest && probeArgument < 0;
+    const bool interactive =
+        !smokeTest && probeArgument < 0 && qEnvironmentVariableIsEmpty("XDZIP_ASSOCIATION_PROBE");
     if (interactive) {
         const auto election = instance.start(startupPaths);
         if (election == SingleInstance::Forwarded)
@@ -112,7 +113,7 @@ int main(int argc, char *argv[]) {
         QObject::connect(controller, &BrowserController::readyToClose, &application,
                          &QApplication::quit, Qt::QueuedConnection);
     auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-    DesktopIntegration desktop(mainWindow, controller, settings, !smokeTest && probeArgument < 0);
+    DesktopIntegration desktop(mainWindow, controller, settings, interactive);
     std::unique_ptr<ApplicationSessions> sessions;
     if (interactive) {
         QApplication::setQuitOnLastWindowClosed(false);

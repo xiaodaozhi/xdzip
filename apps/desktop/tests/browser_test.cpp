@@ -112,6 +112,44 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void coldOpenSessionsWaitForNativeLaunch() {
+        QQmlApplicationEngine engine;
+        engine.setInitialProperties({{"visible", false}});
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         "windows"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        sessions.open(
+            {QStringLiteral(XDZIP_FIXTURES "/normal.zip"), QStringLiteral(XDZIP_M2_FIXTURE)});
+        QCOMPARE(sessions.windows().size(), 2);
+        for (auto *candidate : sessions.windows()) {
+            QVERIFY(!candidate->isVisible());
+            QVERIFY(candidate->property("activePage")
+                        .value<QObject *>()
+                        ->property("externalFileOpening")
+                        .toBool());
+        }
+        WindowActivation::reveal(window);
+        for (auto *candidate : sessions.windows()) {
+            QTRY_VERIFY(candidate->isVisible());
+            auto *controller = candidate->findChild<BrowserController *>();
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+            QVERIFY(!candidate->property("activePage")
+                         .value<QObject *>()
+                         ->property("externalFileOpening")
+                         .toBool());
+        }
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
     void singleInstanceConcurrentStartupAndCrashRecovery() {
         const auto nameSpace = QUuid::createUuid().toString();
         SingleInstance owner;

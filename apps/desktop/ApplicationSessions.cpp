@@ -54,13 +54,23 @@ void ApplicationSessions::adopt(QQuickWindow *window) {
     window->setProperty("sessionManager", QVariant::fromValue(static_cast<QObject *>(this)));
     window->setProperty("managedWindow", true);
     m_windows.append(window);
+    m_presentationReady |= window->isVisible();
+    connect(window, &QWindow::visibleChanged, this, [this](bool visible) {
+        if (!visible || m_presentationReady)
+            return;
+        m_presentationReady = true;
+        for (auto *candidate : windows())
+            if (!candidate->property("retiredWindow").toBool())
+                WindowActivation::reveal(candidate);
+        WindowActivation::reveal(m_active);
+    });
     connect(window, &QWindow::activeChanged, this, [this, window] {
         if (window->isActive())
             focusWindow(window);
     });
     auto *page = window->property("activePage").value<QObject *>();
     auto *session = add(window, page);
-    activate(session);
+    activate(session, false);
 }
 ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QObject *page) {
     if (!page)
@@ -82,8 +92,12 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
                     reap(session);
             });
     }
-    connect(session->controller, &BrowserController::changed, this, [this] { refresh(); });
-    connect(session->controller, &BrowserController::tasksChanged, this, [this, session] {
+    connect(session->controller, &BrowserController::changed, this, [this, session] {
+        if (session->page && !session->controller->browsingBusy())
+            session->page->setProperty("externalFileOpening", false);
+        refresh();
+    });
+    connect(session->controller, &BrowserController::tasksChanged, this, [this] {
         refresh();
         checkQuit();
     });
@@ -212,10 +226,11 @@ void ApplicationSessions::openPath(const QString &path) {
     if (!session)
         return;
     session->path = identity;
+    session->page->setProperty("externalFileOpening", true);
     session->controller->openPath(QFileInfo(path).absoluteFilePath());
     activate(session);
 }
-void ApplicationSessions::activate(Session *session) {
+void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)
         return;
     session->closed = false;
@@ -227,6 +242,8 @@ void ApplicationSessions::activate(Session *session) {
     window->setProperty("activePage", QVariant::fromValue(session->page.data()));
     focusWindow(window);
     refresh();
+    if (!reveal || !m_presentationReady)
+        return;
     if (auto *modal = QGuiApplication::modalWindow())
         WindowActivation::reveal(modal);
     else
