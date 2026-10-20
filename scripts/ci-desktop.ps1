@@ -244,6 +244,7 @@ if ($IsWindows) {
     Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Output','build/review/windows-install-lifecycle.json')
 }
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
+Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
     'Native macOS SDK validation only; no Apple Silicon developer package'

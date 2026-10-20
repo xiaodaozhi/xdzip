@@ -112,6 +112,83 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void modalOpenDefersNewWindowUntilUnblocked() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         "windows"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        window->showMaximized();
+        QTRY_COMPARE(window->windowState(), Qt::WindowMaximized);
+        QQuickWindow blocker;
+        blocker.resize(240, 120);
+        blocker.setTransientParent(window);
+        blocker.setModality(Qt::ApplicationModal);
+        blocker.show();
+        QTRY_COMPARE(QGuiApplication::modalWindow(), &blocker);
+        sessions.open(
+            {QStringLiteral(XDZIP_FIXTURES "/normal.zip"), QStringLiteral(XDZIP_M2_FIXTURE)});
+        QCOMPARE(sessions.windows().size(), 2);
+        auto *last = sessions.activeWindow();
+        QVERIFY(last != window);
+        QVERIFY(!last->isVisible());
+        QCOMPARE(window->windowState(), Qt::WindowMaximized);
+        blocker.close();
+        QTRY_VERIFY(last->isVisible());
+        QCOMPARE(sessions.activeWindow(), last);
+        QCOMPARE(window->windowState(), Qt::WindowMaximized);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
+    void globalSettingsKeepDraftAndAboutCallerAcrossWindows() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         "windows"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, window->findChild<BrowserController *>(), preferences,
+                                   false);
+        sessions.setDesktop(&desktop);
+        window->showMaximized();
+        QTRY_COMPARE(window->windowState(), Qt::WindowMaximized);
+        QSignalSpy changes(window, &QWindow::windowStateChanged);
+        desktop.execute("settings");
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        QTRY_VERIFY(settings->isVisible());
+        settings->setProperty("draftTheme", "dark");
+        sessions.newSession();
+        QVERIFY(sessions.activeWindow() != window);
+        desktop.execute("settings");
+        QCOMPARE(settings->property("draftTheme").toString(), "dark");
+        QVERIFY(QMetaObject::invokeMethod(settings, "aboutRequested"));
+        auto *about = window->findChild<QQuickWindow *>("aboutWindow");
+        QTRY_VERIFY(about->isVisible());
+        QCOMPARE(about->transientParent(), settings);
+        about->close();
+        settings->close();
+        QCOMPARE(preferences->theme(), preferences->savedTheme());
+        QCOMPARE(window->windowState(), Qt::WindowMaximized);
+        for (const auto &change : changes)
+            QVERIFY(change.first().value<Qt::WindowState>() != Qt::WindowNoState);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
     void sessionLimitKeepsBackgroundTaskEntryReachable() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -126,6 +203,14 @@ class BrowserTest : public QObject {
         for (int i = 1; i < 32; ++i)
             sessions.newSession();
         QCOMPARE(sessions.sessionCount(), 32);
+        sessions.newSession();
+        QTRY_VERIFY(QApplication::activeModalWidget());
+        auto *limitDialog = QApplication::activeModalWidget();
+        sessions.newSession();
+        QCOMPARE(QApplication::activeModalWidget(), limitDialog);
+        QCOMPARE(sessions.sessionCount(), 32);
+        limitDialog->close();
+        QTRY_VERIFY(!QApplication::activeModalWidget());
         // Controlled snapshots keep all 32 real connections alive. This test
         // checks the UI/admission boundary, not backend extraction semantics.
         for (auto *controller : window->findChildren<BrowserController *>()) {
@@ -213,6 +298,26 @@ class BrowserTest : public QObject {
         QStringList accepted;
         owner.attach([&](const QStringList &paths) { accepted += paths; });
         QCOMPARE(accepted.size(), 4); // Intents accepted while QML is not yet attached.
+        owner.stopAccepting();
+        QProcess rejected;
+        rejected.start(
+            QCoreApplication::applicationFilePath(),
+            {"--instance-client", nameSpace, QDir::current().absoluteFilePath("closing.zip")});
+        QTRY_COMPARE_WITH_TIMEOUT(rejected.state(), QProcess::NotRunning, 20000);
+        QCOMPARE(rejected.exitCode(), 1);
+        QCOMPARE(accepted.size(), 4);
+        owner.release();
+        SingleInstance replacement;
+        QCOMPARE(replacement.start({}, nameSpace), SingleInstance::Primary);
+        replacement.attach([&](const QStringList &paths) { accepted += paths; });
+        owner.release(); // Idempotent teardown cannot remove the replacement endpoint.
+        QProcess reopened;
+        reopened.start(
+            QCoreApplication::applicationFilePath(),
+            {"--instance-client", nameSpace, QDir::current().absoluteFilePath("restart.zip")});
+        QTRY_COMPARE_WITH_TIMEOUT(reopened.state(), QProcess::NotRunning, 20000);
+        QCOMPARE(reopened.exitCode(), 0);
+        QCOMPARE(accepted.size(), 5);
         const auto crashSpace = QUuid::createUuid().toString();
         QProcess primary;
         primary.start(QCoreApplication::applicationFilePath(), {"--instance-primary", crashSpace});

@@ -17,3 +17,9 @@
 验收包括实际原生窗口状态变化、并发启动与崩溃残留、Unicode 和批量路由、两种打开模式、保存与取消及重启、跨会话 ID 冲突、后台任务、密码与冲突、全局退出和接收线程回收。离屏测试只能证明状态契约，不能代替原生视觉、辅助功能和桌面人工验收。证据保存在 build/ 或 CI 工件。
 
 English: One normal product process and tray serve each user login session. Each archive owns an independent controller and Rust connection. The saved open mode selects tabs or windows for future opens; duplicate archives activate their existing session. Closing a page keeps its tasks and results accessible through composite session/task identities. Heavy operations are admitted serially across the application. Explicit quit waits for cancellation, cleanup and asynchronous joins across every session. Activation preserves normal, maximized and fullscreen state and prioritizes blocking dialogs. Diagnostic runs remain isolated. Automated evidence does not claim manual desktop acceptance.
+
+退出进入实际取消与 join 阶段后，IPC 明确拒绝新意图。关闭通道后才释放选举锁，全部连接完成后才启动重启进程，旧实例的重复清理不能移除新端点。Windows 重启同样转交本次用户操作的前台权限。
+
+阻塞弹窗期间接收的外部打开保留最后一个激活意图，先激活阻塞窗口，待其关闭后显示对应新窗口，不使隐藏的新窗口失去入口。设置中的关于窗口保留实际设置调用者，不因另一主窗口获得焦点而改变所属关系。
+
+原生回归入口为 `python3 scripts/check-native-sessions.py --tests <browser-tests> --output build/review/native-sessions.json`。Linux 使用 Xvfb 和 Openbox 的真实 X11 窗口管理路径，Windows、macOS 使用系统窗口管理器；脚本只管理自己启动的验证进程。普通 CI 与 Release 共用此入口，原生日志和 JSON 保存在 build/ 或 CI 工件，不能据此宣称完成人工视觉、GPU、输入法或屏幕阅读验收。

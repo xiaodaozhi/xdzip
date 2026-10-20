@@ -25,6 +25,9 @@
 #include <QResource>
 #include <QTimer>
 #include <memory>
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
 
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
@@ -120,7 +123,12 @@ int main(int argc, char *argv[]) {
         sessions = std::make_unique<ApplicationSessions>(&engine, settings);
         sessions->adopt(mainWindow);
         sessions->setDesktop(&desktop);
-        guard.quitHandler = [&] { sessions->requestQuit(); };
+        QObject::connect(sessions.get(), &ApplicationSessions::closing, &instance,
+                         &SingleInstance::stopAccepting);
+        guard.quitHandler = [&] {
+            if (!sessions->isClosing())
+                desktop.requestQuit();
+        };
         QObject::connect(
             sessions.get(), &ApplicationSessions::readyToQuit, &application,
             [&] {
@@ -210,13 +218,20 @@ int main(int argc, char *argv[]) {
     QTimer::singleShot(0, mainWindow, &QWindow::show);
 #endif
     const auto result = application.exec();
+    instance.release(); // All joins are complete; a restart must elect a new primary.
     // Window close completes the existing task decision and runtime join barrier first.
     // Relaunch only the application, never replay diagnostic flags or a previously opened file.
     if (result == 0 && ((sessions && sessions->restartRequested()) ||
                         (!sessions && !engine.rootObjects().isEmpty() &&
                          engine.rootObjects().first()->property("restartAfterClose").toBool()))) {
-        if (!QProcess::startDetached(QCoreApplication::applicationFilePath(), QStringList{}))
+        qint64 restartedPid = 0;
+        if (!QProcess::startDetached(QCoreApplication::applicationFilePath(), QStringList{},
+                                     QString{}, &restartedPid))
             return 6;
+#ifdef Q_OS_WIN
+        if (restartedPid > 0)
+            AllowSetForegroundWindow(static_cast<DWORD>(restartedPid));
+#endif
     }
     return result;
 }

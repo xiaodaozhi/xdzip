@@ -1,5 +1,7 @@
 # CI 与合入策略
 
+窗口状态、单实例与会话原生回归共用 `scripts/check-native-sessions.py`，在打标签前执行。Linux 安装 Xvfb、Openbox 和 xprop，以窗口管理器的 X11 状态验证最大化、全屏及弹窗行为；Windows、macOS 使用系统插件和窗口管理器。此步骤不部署或上传普通 macOS 应用包。
+
 专用 Release 工作流是经用户明确授权的例外，允许 Apple Silicon 原生部署、ad-hoc 签名、app.zip 和 DMG 打包及上传。上述 Mac 禁止条件仅约束普通 CI。专用流程必须通过同提交原生回归、包核验并齐备六类资产后才公开，详见[发布协议](release-protocol.md)。
 
 已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流和 HTML design review，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。检查方法见[验证入口](../qa/README.md)，具体结果绑定提交并记录到 issue 与 Actions 工件。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发行还须按[发行审查流程](../qa/release-review.md)单独确认。

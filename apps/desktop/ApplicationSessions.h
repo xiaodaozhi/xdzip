@@ -9,6 +9,7 @@
 class QQmlEngine;
 class DesktopIntegration;
 class UiPreferences;
+class QMessageBox;
 
 class ApplicationSessions final : public QObject {
     Q_OBJECT
@@ -29,15 +30,21 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void closeWindow(QQuickWindow *window);
     Q_INVOKABLE void focusWindow(QQuickWindow *window);
     Q_INVOKABLE void command(const QString &command);
+    Q_INVOKABLE void showAboutFor(QObject *page);
     Q_INVOKABLE void showTask(const QString &identity);
     Q_INVOKABLE void requestQuit();
     Q_INVOKABLE void requestRestart();
     Q_INVOKABLE void cancelQuit() {
+        if (m_quitting)
+            return;
         m_wait = false;
         m_restart = false;
     }
     bool restartRequested() const {
         return m_restart;
+    }
+    bool isClosing() const {
+        return m_quitting;
     }
     Q_INVOKABLE void confirmQuit(bool wait);
     QVariantList tasks() const;
@@ -55,6 +62,7 @@ class ApplicationSessions final : public QObject {
   signals:
     void tasksChanged();
     void sessionsChanged();
+    void closing();
     void readyToQuit();
 
   private:
@@ -75,11 +83,14 @@ class ApplicationSessions final : public QObject {
     void checkQuit();
     QQmlEngine *m_engine;
     UiPreferences *m_settings;
-    DesktopIntegration *m_desktop = nullptr;
+    QPointer<DesktopIntegration> m_desktop;
     QPointer<QQuickWindow> m_active;
     QList<QPointer<QQuickWindow>> m_windows;
     std::vector<std::unique_ptr<Session>> m_sessions;
     TaskListModel m_tasks;
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
     bool m_presentationReady = false;
+    quint64 m_activationGeneration = 0;
+    QList<QMetaObject::Connection> m_modalConnections;
+    QPointer<QMessageBox> m_limitDialog;
 };

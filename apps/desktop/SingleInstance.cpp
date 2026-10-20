@@ -55,8 +55,26 @@ QByteArray readLine(QLocalSocket &socket, QElapsedTimer &timer, int timeoutMs) {
 }
 } // namespace
 SingleInstance::SingleInstance(QObject *parent) : QObject(parent) {}
+SingleInstance::~SingleInstance() {
+    release();
+}
+void SingleInstance::release() {
+    m_accepting = false;
+    m_handler = {};
+    m_pending.clear();
+    if (m_server.isListening())
+        m_server.close();
+    for (auto *socket : m_server.findChildren<QLocalSocket *>())
+        socket->abort();
+    // Close the endpoint before releasing election ownership. A replacement
+    // process must never have its socket removed by this instance's teardown.
+    m_lock.reset();
+}
 SingleInstance::Result SingleInstance::start(const QStringList &paths, const QString &nameSpace,
                                              int testTimeoutMs) {
+    if (m_lock)
+        return Failed;
+    m_accepting = true;
     const int timeoutMs = nameSpace.isEmpty() ? 15000 : qBound(100, testTimeoutMs, 15000);
     if (paths.size() > 128 || identity().isEmpty())
         return Failed;
@@ -75,7 +93,8 @@ SingleInstance::Result SingleInstance::start(const QStringList &paths, const QSt
         m_server.setSocketOptions(QLocalServer::UserAccessOption);
         if (!m_server.listen(name))
             return Failed;
-        connect(&m_server, &QLocalServer::newConnection, this, &SingleInstance::accept);
+        connect(&m_server, &QLocalServer::newConnection, this, &SingleInstance::accept,
+                Qt::UniqueConnection);
         return Primary;
     }
     QElapsedTimer timer;
@@ -152,7 +171,7 @@ void SingleInstance::accept() {
                          QFileInfo(path).isAbsolute();
                 paths.append(path);
             }
-            valid &= m_handler || m_pending.size() < 128;
+            valid &= m_accepting && (m_handler || m_pending.size() < 128);
             if (valid && !m_seen.contains(id)) {
                 m_seen.append(id);
                 if (m_seen.size() > 128)

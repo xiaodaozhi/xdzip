@@ -15,9 +15,14 @@ class SingleInstance final : public QObject {
   public:
     enum Result { Primary, Forwarded, Failed };
     explicit SingleInstance(QObject *parent = nullptr);
+    ~SingleInstance() override;
     Result start(const QStringList &paths, const QString &nameSpace = {},
                  int testTimeoutMs = 15000);
     void attach(std::function<void(const QStringList &)> handler);
+    void stopAccepting() {
+        m_accepting = false;
+    }
+    void release();
 
   private:
     void accept();
@@ -26,4 +31,5 @@ class SingleInstance final : public QObject {
     QList<QStringList> m_pending;
     QStringList m_seen;
     std::function<void(const QStringList &)> m_handler;
+    bool m_accepting = true;
 };

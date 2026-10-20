@@ -11,6 +11,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -26,7 +27,7 @@ class InstallerTests(unittest.TestCase):
     def test_legacy_debian_version_flag_is_ci_only(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp)
-            result=subprocess.run([__import__('sys').executable,str(ROOT/'scripts/build-linux-installer.py'),
+            result=subprocess.run([sys.executable,str(ROOT/'scripts/build-linux-installer.py'),
                 '--root',str(base/'payload'),'--audit',str(base/'audit.json'),
                 '--output',str(base/'old.deb'),'--report',str(base/'old.json'),'--qa-legacy-version'],
                 env=dict(os.environ,CI=''),capture_output=True,text=True)

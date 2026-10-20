@@ -5,6 +5,7 @@
 #include "UiPreferences.h"
 #include "WindowActivation.h"
 #include <QApplication>
+#include <QDialog>
 #include <QDir>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -36,6 +37,9 @@ ApplicationSessions::ApplicationSessions(QQmlEngine *engine, UiPreferences *sett
 }
 ApplicationSessions::~ApplicationSessions() {
     m_quitting = true;
+    for (const auto &connection : m_modalConnections)
+        disconnect(connection);
+    delete m_limitDialog.data();
     for (const auto &session : m_sessions) {
         if (session->controller) {
             disconnect(session->controller, nullptr, this, nullptr);
@@ -160,7 +164,17 @@ ApplicationSessions::Session *ApplicationSessions::create(bool newWindow) {
     if (m_quitting)
         return nullptr;
     if (m_sessions.size() >= 32) {
-        QMessageBox::information(nullptr, QStringLiteral("xdzip"), qtTrId("sessions.limit"));
+        if (!m_limitDialog) {
+            m_limitDialog = new QMessageBox(QMessageBox::Information, QStringLiteral("xdzip"),
+                                            qtTrId("sessions.limit"), QMessageBox::Ok);
+            m_limitDialog->setAttribute(Qt::WA_DeleteOnClose);
+            m_limitDialog->setWindowModality(Qt::ApplicationModal);
+            m_limitDialog->winId();
+            m_limitDialog->windowHandle()->setTransientParent(m_active);
+            m_limitDialog->show();
+        }
+        m_limitDialog->raise();
+        m_limitDialog->activateWindow();
         return nullptr;
     }
     if (newWindow || !m_active) {
@@ -233,6 +247,10 @@ void ApplicationSessions::openPath(const QString &path) {
 void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)
         return;
+    const auto generation = ++m_activationGeneration;
+    for (const auto &connection : m_modalConnections)
+        disconnect(connection);
+    m_modalConnections.clear();
     session->closed = false;
     session->page->setProperty("closedPage", false);
     auto *window = session->window.data();
@@ -245,13 +263,32 @@ void ApplicationSessions::activate(Session *session, bool reveal) {
     refresh();
     if (!reveal || !m_presentationReady)
         return;
-    if (auto *modal = QGuiApplication::modalWindow())
+    const auto wake = [this, id = session->id, generation] {
+        QTimer::singleShot(0, this, [this, id, generation] {
+            if (!m_quitting && generation == m_activationGeneration)
+                activateId(id);
+        });
+    };
+    if (auto *widget = QApplication::activeModalWidget()) {
+        widget->raise();
+        widget->activateWindow();
+        if (auto *dialog = qobject_cast<QDialog *>(widget))
+            m_modalConnections.append(
+                connect(dialog, &QDialog::finished, this, [wake](int) { wake(); }));
+        m_modalConnections.append(connect(widget, &QObject::destroyed, this, wake));
+    } else if (auto *modal = QGuiApplication::modalWindow()) {
         WindowActivation::reveal(modal);
-    else
+        m_modalConnections.append(
+            connect(modal, &QWindow::visibleChanged, this, [wake](bool visible) {
+                if (!visible)
+                    wake();
+            }));
+        m_modalConnections.append(connect(modal, &QObject::destroyed, this, wake));
+    } else
         WindowActivation::reveal(window);
 }
 void ApplicationSessions::focusWindow(QQuickWindow *window) {
-    if (!window)
+    if (!window || m_quitting)
         return;
     m_active = window;
     auto *session = current();
@@ -370,6 +407,23 @@ void ApplicationSessions::command(const QString &command) {
         QMetaObject::invokeMethod(m_active->property("activePage").value<QObject *>(),
                                   "runDesktopCommand", Q_ARG(QVariant, command));
 }
+void ApplicationSessions::showAboutFor(QObject *page) {
+    if (!page)
+        return;
+    for (const auto &session : m_sessions) {
+        auto *popup =
+            session->page ? session->page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
+        if (popup && popup->isVisible()) {
+            WindowActivation::reveal(popup);
+            return;
+        }
+    }
+    for (const auto &session : m_sessions)
+        if (session->page == page && !session->retiring) {
+            QMetaObject::invokeMethod(page, "presentAbout");
+            return;
+        }
+}
 QVariantList ApplicationSessions::tasks() const {
     QVariantList result;
     for (const auto &session : m_sessions)
@@ -434,10 +488,13 @@ void ApplicationSessions::requestRestart() {
     requestQuit();
 }
 void ApplicationSessions::confirmQuit(bool wait) {
+    if (m_quitting)
+        return;
     m_wait = wait;
     if (wait && activeTaskCount())
         return;
     m_quitting = true;
+    emit closing();
     for (const auto &session : m_sessions)
         if (session->controller)
             session->controller->requestClose();

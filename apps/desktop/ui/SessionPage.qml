@@ -32,6 +32,7 @@ Item {
         inspectorWindow.close(); conflictWindow.hide(); passwordWindow.clearSecret(); passwordWindow.hide();
     }
     function presentQuit() { quitWindow.present(); }
+    function presentAbout() { aboutWindow.present(); }
     readonly property var globalTasks: sessionManager ? (visible ? sessionManager.tasks : []) : reader.tasks
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
@@ -326,7 +327,7 @@ Item {
         }
     }
     AboutWindow { id: aboutWindow; owner: settingsWindow.visible ? settingsWindow : root.windowHost }
-    SettingsWindow { id: settingsWindow; owner: root.windowHost; onAboutRequested: root.sessionManager ? root.sessionManager.command("about") : aboutWindow.present(); onRestartConfirmationRequested: restartWindow.present() }
+    SettingsWindow { id: settingsWindow; owner: root.windowHost; onAboutRequested: root.sessionManager ? root.sessionManager.showAboutFor(root) : root.presentAbout(); onRestartConfirmationRequested: restartWindow.present() }
     RestartWindow {
         id: restartWindow
         owner: root.windowHost
@@ -575,6 +576,7 @@ Item {
             Layout.fillWidth: true
             archiveTitle: root.closedPage ? "" : reader.title
             tabs: root.sessionManager && root.visible ? root.windowHost.sessionTabs : []
+            sessionControls: root.sessionManager !== null
             onTabSelected: identity => root.sessionManager.activateId(identity)
             onTabClosed: identity => root.sessionManager.closeSession(identity)
             integratedTitlebar: root.integratedTitlebar

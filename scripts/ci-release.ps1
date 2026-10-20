@@ -13,16 +13,7 @@ $qtFolder = if ($IsMacOS) { 'macos' } elseif ($IsWindows) { 'msvc2022_64' } else
 $qt = Join-Path $cacheRoot "Qt/6.8.2/$qtFolder"
 $tools = Join-Path $cacheRoot 'xdzip-desktop-tools'
 $shared = @('--qt-prefix', $qt, '--tools-dir', $tools, '--build-dir', 'build/desktop', '--output-dir', 'build/review')
-$tests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
-# Validate the real platform state transitions, not the offscreen emulation.
-$nativeCases = @('desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch', 'sessionLimitKeepsBackgroundTaskEntryReachable', 'independentSessionsAndOpenModes', 'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery', 'backgroundTasksKeepSessionIdentityAndSerialAdmission')
-if ($IsLinux) {
-    $env:QT_QPA_PLATFORM = 'xcb'
-    Checked xvfb-run (@('-a', $tests) + $nativeCases)
-} else {
-    $env:QT_QPA_PLATFORM = if ($IsMacOS) { 'cocoa' } else { 'windows' }
-    Checked $tests $nativeCases
-}
+# ci-desktop already completed the shared native session/activation regression.
 if ($IsMacOS) {
     $shared = @('--qt-prefix', $qt, '--tools-dir', $tools, '--build-dir', 'build/release-desktop',
         '--output-dir', 'build/release-package', '--macos-handler-rank', 'Alternate', '--release-distribution')

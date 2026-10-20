@@ -43,7 +43,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb
+          sudo apt-get install -y libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 libxcb-xfixes0 libxcb-sync1 libxcb-shm0 libxcb-util1 libxcb-xinerama0 libxcb-xkb1 libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip patchelf xvfb xauth openbox x11-utils
       - name: Native build, validation, deployment and package lifecycle
         shell: pwsh
         run: ./scripts/ci-release.ps1
@@ -60,6 +60,7 @@ jobs:
           name: release-evidence-${{ runner.os }}
           path: |
             build/review/*.json
+            build/review/native-sessions*.log
             build/desktop/apps/desktop/*tests.log
             build/desktop/Testing/Temporary/LastTest.log
             build/release-package/*.json

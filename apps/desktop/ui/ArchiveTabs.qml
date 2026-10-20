@@ -7,6 +7,7 @@ Rectangle {
     objectName: "archiveTitlebar"
     required property string archiveTitle
     property var tabs: []
+    property bool sessionControls: false
     signal tabSelected(string identity)
     signal tabClosed(string identity)
     function selectRelative(step: int) {
@@ -199,7 +200,7 @@ Rectangle {
         glyphSize: Theme.mainUnits(26)
         asset: "plus"
         enabled: root.canOpen
-        Accessible.name: qsTrId("ui.1b59353f1874")
+        Accessible.name: root.sessionControls ? qsTrId("ui.e5ab37895edd") : qsTrId("ui.1b59353f1874")
         explanation: qsTrId("ui.e5ab37895edd")
         onClicked: root.openRequested()
     }

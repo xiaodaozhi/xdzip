@@ -26,9 +26,7 @@ class DesktopIntegration final : public QObject {
                        std::function<bool()> availability = QSystemTrayIcon::isSystemTrayAvailable);
     ~DesktopIntegration() override;
     void bind(QQuickWindow *window, BrowserController *controller);
-    void setSessions(ApplicationSessions *sessions) {
-        m_sessions = sessions;
-    }
+    void setSessions(ApplicationSessions *sessions);
     bool nativeMenuAvailable() const;
     bool trayAvailable() const {
         return m_available;
@@ -78,5 +76,5 @@ class DesktopIntegration final : public QObject {
     bool m_hidden = false;
     QString m_iconVariant;
     QString m_session;
-    ApplicationSessions *m_sessions = nullptr;
+    QPointer<ApplicationSessions> m_sessions;
 };

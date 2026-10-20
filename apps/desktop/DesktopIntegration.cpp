@@ -232,6 +232,9 @@ DesktopIntegration::~DesktopIntegration() {
     // QSystemTrayIcon does not own its QMenu. Detach before deleting the menu.
     m_tray.setContextMenu(nullptr);
 }
+void DesktopIntegration::setSessions(ApplicationSessions *sessions) {
+    m_sessions = sessions;
+}
 void DesktopIntegration::bind(QQuickWindow *window, BrowserController *controller) {
     m_window = window;
     m_controller = controller;
