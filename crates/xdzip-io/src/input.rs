@@ -25,8 +25,6 @@ pub enum InputError {
     Collision,
     /// A source admission budget was exceeded.
     Limit,
-    /// No source entries remain after excluding the exact creation outputs.
-    Empty,
     /// Cooperative cancellation was observed.
     Cancelled,
 }
@@ -40,7 +38,6 @@ impl InputError {
             Self::Name => "unsafe_name",
             Self::Collision => "input_collision",
             Self::Limit => "resource_limit",
-            Self::Empty => "empty_input",
             Self::Cancelled => "cancelled",
         }
     }
@@ -83,7 +80,7 @@ pub struct InputTree {
     entries: Vec<InputEntry>,
     directories: Vec<Directory>,
     directory_index: BTreeMap<(usize, PathBuf), usize>,
-    excluded: Vec<(PathBuf, Option<FileIdentity>)>,
+    excluded: Vec<(PathBuf, FileIdentity)>,
     names: BTreeSet<String>,
     name_bytes: usize,
     total_bytes: u64,
@@ -140,48 +137,12 @@ fn file(dir: &Dir, name: &Path) -> Result<File, InputError> {
     }
     Ok(f)
 }
-// Resolve a regular directory entry's actual spelling without granting authority
-// through that ambient path. Distinct hard-link names remain distinct paths.
-fn regular_resolved(path: &Path) -> Result<PathBuf, InputError> {
-    let parent_path = path.parent().ok_or(InputError::Unsafe)?;
-    let leaf = path.file_name().ok_or(InputError::Unsafe)?;
-    let parent = Dir::open_ambient_dir(parent_path, cap_std::ambient_authority())
-        .map_err(|_| InputError::Changed)?;
-    let parent_identity = id(&parent)?;
-    let source = file(&parent, Path::new(leaf)).map_err(|_| InputError::Changed)?;
-    let version = FileVersion::read(&source).map_err(|_| InputError::Io)?;
-    let resolved = path.canonicalize().map_err(|_| InputError::Changed)?;
-    let resolved_parent = Dir::open_ambient_dir(
-        resolved.parent().ok_or(InputError::Changed)?,
-        cap_std::ambient_authority(),
-    )
-    .map_err(|_| InputError::Changed)?;
-    let resolved_source = file(
-        &resolved_parent,
-        Path::new(resolved.file_name().ok_or(InputError::Changed)?),
-    )
-    .map_err(|_| InputError::Changed)?;
-    let current_parent = Dir::open_ambient_dir(parent_path, cap_std::ambient_authority())
-        .map_err(|_| InputError::Changed)?;
-    let current_source = file(&parent, Path::new(leaf)).map_err(|_| InputError::Changed)?;
-    if id(&resolved_parent)? != parent_identity
-        || id(&current_parent)? != parent_identity
-        || FileVersion::read(&resolved_source).map_err(|_| InputError::Io)? != version
-        || FileVersion::read(&current_source).map_err(|_| InputError::Io)? != version
-        || FileVersion::read(&source).map_err(|_| InputError::Io)? != version
-    {
-        return Err(InputError::Changed);
-    }
-    Ok(resolved)
-}
 impl InputTree {
-    /// Freeze selected inputs and explicitly excluded output/workspace paths.
-    /// The workspace exclusion is checked by identity, never by a filename prefix.
-    /// Explicit ordinary output files are omitted just like outputs found in a directory;
-    /// selecting the private workspace or a non-file output is still rejected.
+    /// Freeze selected inputs, excluding only explicitly identity-bound private workspaces.
+    /// Ordinary output candidates remain inputs; publication protects their identities.
     pub fn scan(
         paths: &[PathBuf],
-        excluded: Vec<(PathBuf, Option<FileIdentity>)>,
+        excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
     ) -> Result<Self, InputError> {
         if paths.is_empty() || paths.len() > 100_000 {
@@ -189,27 +150,7 @@ impl InputTree {
         }
         let excluded = excluded
             .into_iter()
-            .map(|(path, identity)| {
-                let mut path = parent_resolved(&path)?;
-                if identity.is_none() {
-                    match std::fs::symlink_metadata(&path) {
-                        Ok(m) if m.is_file() && !m.file_type().is_symlink() => {
-                            #[cfg(windows)]
-                            {
-                                use std::os::windows::fs::MetadataExt;
-                                if m.file_attributes() & 0x400 != 0 {
-                                    return Ok((path, identity));
-                                }
-                            }
-                            path = regular_resolved(&path)?;
-                        }
-                        Ok(_) => {}
-                        Err(e) if e.kind() == io::ErrorKind::NotFound => {}
-                        Err(_) => return Err(InputError::Io),
-                    }
-                }
-                Ok((path, identity))
-            })
+            .map(|(path, identity)| Ok((parent_resolved(&path)?, identity)))
             .collect::<Result<Vec<_>, InputError>>()?;
         let mut selected = BTreeMap::new();
         for p in paths {
@@ -217,7 +158,7 @@ impl InputTree {
             if !p.is_absolute() {
                 return Err(InputError::Unsafe);
             }
-            let mut p = parent_resolved(p)?;
+            let p = parent_resolved(p)?;
             let m = std::fs::symlink_metadata(&p).map_err(|_| InputError::Io)?;
             if m.file_type().is_symlink() || (!m.is_file() && !m.is_dir()) {
                 return Err(InputError::Unsafe);
@@ -229,15 +170,7 @@ impl InputTree {
                     return Err(InputError::Unsafe);
                 }
             }
-            if m.is_file()
-                && !excluded.iter().any(|(e, _)| e == &p)
-                && excluded
-                    .iter()
-                    .any(|(e, identity)| identity.is_none() && e.parent() == p.parent())
-            {
-                p = regular_resolved(&p)?;
-            }
-            if m.is_dir() && excluded.iter().any(|(_, identity)| identity.is_some()) {
+            if m.is_dir() && !excluded.is_empty() {
                 let parent = Dir::open_ambient_dir(
                     p.parent().ok_or(InputError::Unsafe)?,
                     cap_std::ambient_authority(),
@@ -247,18 +180,12 @@ impl InputTree {
                     .open_dir_nofollow(p.file_name().ok_or(InputError::Unsafe)?)
                     .map_err(|_| InputError::Changed)?;
                 let identity = id(&directory)?;
-                if excluded
-                    .iter()
-                    .any(|(_, expected)| *expected == Some(identity))
-                {
+                if excluded.iter().any(|(_, expected)| *expected == identity) {
                     return Err(InputError::Unsafe);
                 }
             }
-            if let Some((_, identity)) = excluded.iter().find(|(e, _)| e == &p) {
-                if identity.is_some() || !m.is_file() {
-                    return Err(InputError::Unsafe);
-                }
-                continue;
+            if excluded.iter().any(|(e, _)| e == &p) {
+                return Err(InputError::Unsafe);
             }
             selected.insert(p, m.is_dir());
         }
@@ -310,7 +237,7 @@ impl InputTree {
             tree.visit(root, relative, name, *directory, stop)?;
         }
         if tree.entries.is_empty() {
-            return Err(InputError::Empty);
+            return Err(InputError::Name);
         }
         tree.validate(stop)?;
         Ok(tree)
@@ -323,7 +250,7 @@ impl InputTree {
     pub fn total_bytes(&self) -> u64 {
         self.total_bytes
     }
-    /// Whether publication would replace an input object under another name.
+    /// Whether a publication candidate has one of the frozen source identities.
     pub fn contains_identity(&self, identity: FileIdentity) -> bool {
         self.entries.iter().any(|e| e.version.identity == identity)
     }
@@ -372,13 +299,11 @@ impl InputTree {
             let name = item.map_err(|_| InputError::Io)?.file_name();
             let absolute = absolute.join(&name);
             if let Some((_, expected)) = self.excluded.iter().find(|(p, _)| p == &absolute) {
-                if let Some(expected) = expected {
-                    let excluded = dir
-                        .open_dir_nofollow(&name)
-                        .map_err(|_| InputError::Changed)?;
-                    if id(&excluded)? != *expected {
-                        return Err(InputError::Changed);
-                    }
+                let excluded = dir
+                    .open_dir_nofollow(&name)
+                    .map_err(|_| InputError::Changed)?;
+                if id(&excluded)? != *expected {
+                    return Err(InputError::Changed);
                 }
                 continue;
             }

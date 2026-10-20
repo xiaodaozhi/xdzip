@@ -52,6 +52,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationConflictWidth",
+      "reason": "重名守卫保持 491 宽、最高 560，长标题与说明在正文内换行，禁止辅助字号撑宽内容，共享 footer 固定可达",
       "design": "design/html/canvas.html?view=conflict"
     },
     "PasswordWindow": {

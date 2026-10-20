@@ -953,6 +953,11 @@ dialog::backdrop {
     gap: 16px;
     align-items: flex-start;
 }
+.modal-header > div:not(.modal-symbol) {
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+}
 .modal-symbol {
     display: grid;
     place-items: center;

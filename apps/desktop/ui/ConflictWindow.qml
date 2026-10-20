@@ -29,8 +29,8 @@ OperationWindow {
                         Layout.fillWidth: true; spacing: root.unit(20)
                         OperationHero { source: "qrc:/xdzip/assets/conflict-document.png"; canvasWidth: root.unit(60); canvasHeight: root.unit(68); artworkWidth: root.unit(56); artworkHeight: root.unit(65); Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight }
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            Text { text: root.task.creating ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393"); font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.text }
+                            Layout.fillWidth: true; Layout.minimumWidth: 0
+                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.creating ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393"); wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.text }
                             Text { Layout.fillWidth: true; text: qsTrId("ui.25dad65a6ae3"); textFormat: Text.PlainText; wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: 13 * Theme.fontScale }
                         }
                     }

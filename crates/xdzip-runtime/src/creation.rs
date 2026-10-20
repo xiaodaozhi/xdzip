@@ -282,17 +282,9 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let w = workspace.as_mut().expect("workspace created");
         let (excluded, identity) = w.input_exclusion();
         let paths: Vec<_> = job.options.inputs.iter().map(PathBuf::from).collect();
-        let mut exclusions = vec![(excluded, Some(identity))];
-        if job.options.volume_bytes == 0 {
-            exclusions.push((root.display_path().join(&job.options.name), None));
-        } else {
-            for path in volume_paths(&job.options.name, 1024)? {
-                let output = root.display_path().join(path.display());
-                exclusions.push((output, None));
-            }
-        }
         let stopped = || control.cancel.check().is_err();
-        let tree = InputTree::scan(&paths, exclusions, &stopped).map_err(|e| e.code())?;
+        let tree =
+            InputTree::scan(&paths, vec![(excluded, identity)], &stopped).map_err(|e| e.code())?;
         stats.files = tree.entries().iter().filter(|e| !e.directory).count() as u64;
         stats.declared_bytes = tree.total_bytes();
         stats.total_known = true;
@@ -457,9 +449,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let mut path = PortablePath::parse(&job.options.name).ok_or("unsafe_name")?;
         let mut overwrite: Option<ExistingFile> = None;
         if let Some(existing) = root.existing(&path).map_err(output_code)? {
-            if tree.contains_identity(existing.version.identity) {
-                return Err("unsafe_input");
-            }
+            let protected = tree.contains_identity(existing.version.identity);
             let policy = if job.options.conflict == ConflictPolicy::Ask {
                 control.arm(1);
                 stats.status = Status::Waiting;
@@ -475,7 +465,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                         .ok()
                         .map(|d| d.as_secs()),
                     incoming_modified_dos: 0,
-                    overwrite_allowed: true,
+                    overwrite_allowed: !protected,
                 });
                 emit(&mut stats, start, publish);
                 control.wait()?.0
@@ -488,6 +478,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 ConflictPolicy::Rename => {
                     path = fresh_name(&root, &job.options.name, &control.cancel)?
                 }
+                ConflictPolicy::Overwrite if protected => return Err("protected_source"),
                 ConflictPolicy::Overwrite => overwrite = Some(existing),
                 ConflictPolicy::Ask => return Err("invalid_decision"),
             }
@@ -567,9 +558,6 @@ fn publish_volumes(
     let mut conflict = None;
     for path in &paths {
         if let Some(existing) = root.existing(path).map_err(output_code)? {
-            if tree.contains_identity(existing.version.identity) {
-                return Err("unsafe_input");
-            }
             conflict = Some((path.display(), existing));
             break;
         }

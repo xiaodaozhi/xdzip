@@ -1714,20 +1714,21 @@ class BrowserTest : public QObject {
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
     }
-    void creationExcludesSelectedOutput_data() {
+    void creationPreservesSelectedDestination_data() {
         QTest::addColumn<int>("formatIndex");
         QTest::addColumn<QString>("decision");
         QTest::addColumn<bool>("onlyOutput");
-        QTest::newRow("zip-overwrite") << 0 << QString("conflictOverwrite") << false;
-        QTest::newRow("zip-rename") << 0 << QString("conflictRename") << false;
-        QTest::newRow("zip-cancel") << 0 << QString("conflictSkip") << false;
-        QTest::newRow("tar-overwrite") << 1 << QString("conflictOverwrite") << false;
-        QTest::newRow("tar-gzip-overwrite") << 2 << QString("conflictOverwrite") << false;
-        QTest::newRow("zip-only-output") << 0 << QString{} << true;
-        QTest::newRow("tar-only-output") << 1 << QString{} << true;
-        QTest::newRow("tar-gzip-only-output") << 2 << QString{} << true;
+        for (int index = 0; index < 3; ++index) {
+            const QByteArray format = QList<QByteArray>{"zip", "tar", "tar-gzip"}.at(index);
+            QTest::newRow((format + "-rename").constData())
+                << index << QString("conflictRename") << false;
+            QTest::newRow((format + "-cancel").constData())
+                << index << QString("conflictSkip") << false;
+            QTest::newRow((format + "-only-output").constData())
+                << index << QString("conflictRename") << true;
+        }
     }
-    void creationExcludesSelectedOutput() {
+    void creationPreservesSelectedDestination() {
         QFETCH(int, formatIndex);
         QFETCH(QString, decision);
         QFETCH(bool, onlyOutput);
@@ -1736,8 +1737,8 @@ class BrowserTest : public QObject {
         const QString extension = QStringList{".zip", ".tar", ".tar.gz"}.at(formatIndex);
         const auto name = QStringLiteral("owned") + extension;
         const auto archive = output.filePath(name);
-        const QByteArray original("owned destination must remain until explicit replacement");
-        const QByteArray payload("owned payload, not the previous archive\n");
+        const QByteArray original("owned destination is also a selected input\n");
+        const QByteArray payload("owned additional payload\n");
         const auto source = input.filePath("payload.txt");
         const auto write = [](const QString &path, const QByteArray &data) {
             QFile file(path);
@@ -1781,29 +1782,80 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(!create->isVisible() && taskWindow->isVisible());
         QTRY_COMPARE(controller->tasks().size(), 1);
         const auto taskId = started.first().first().toString();
-        if (!onlyOutput) {
-            // Selecting the existing output must reach the ordinary conflict flow;
-            // it must not fail in preparation or count the old archive as input.
-            QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
-            const auto waiting = controller->tasks().first().toMap();
-            QCOMPARE(waiting.value("id").toString(), taskId);
-            QCOMPARE(waiting.value("status").toString(), "waiting");
-            QVERIFY(waiting.value("errorCode").toString().isEmpty());
-            QVERIFY(waiting.value("totalKnown").toBool());
-            QCOMPARE(waiting.value("files").toString(), "1");
-            QCOMPARE(waiting.value("declaredBytes").toULongLong(), qulonglong(payload.size()));
-            QVERIFY(waiting.value("overwriteAllowed").toBool());
-            auto *applyAll = findVisual(conflict->contentItem(), "conflictApplyAll");
-            auto *action = findVisual(conflict->contentItem(), decision);
-            QVERIFY(applyAll && !applyAll->isVisible() && action && action->isEnabled());
-            QFile existing(archive);
-            QVERIFY(existing.open(QIODevice::ReadOnly));
-            QCOMPARE(existing.readAll(), original);
-            existing.close();
-            QTest::mouseClick(
-                conflict, Qt::LeftButton, Qt::NoModifier,
-                action->mapToScene(QPointF(action->width() / 2, action->height() / 2)).toPoint());
+        // All selected files are encoded, including the existing destination. The
+        // final publication guard asks for rename/cancel and forbids replacing input.
+        QTRY_VERIFY_WITH_TIMEOUT(conflict->isVisible(), 10000);
+        const auto waiting = controller->tasks().first().toMap();
+        QCOMPARE(waiting.value("id").toString(), taskId);
+        QCOMPARE(waiting.value("status").toString(), "waiting");
+        QVERIFY(waiting.value("errorCode").toString().isEmpty());
+        QVERIFY(waiting.value("totalKnown").toBool());
+        QCOMPARE(waiting.value("files").toInt(), onlyOutput ? 1 : 2);
+        const auto expectedBytes = qulonglong(original.size() + (onlyOutput ? 0 : payload.size()));
+        QCOMPARE(waiting.value("declaredBytes").toULongLong(), expectedBytes);
+        QCOMPARE(waiting.value("decodedBytes").toULongLong(), expectedBytes);
+        QVERIFY(!waiting.value("overwriteAllowed").toBool());
+        auto *applyAll = findVisual(conflict->contentItem(), "conflictApplyAll");
+        auto *overwrite = findVisual(conflict->contentItem(), "conflictOverwrite");
+        auto *action = findVisual(conflict->contentItem(), decision);
+        auto *notice = findVisual(conflict->contentItem(), "conflictNotice");
+        QVERIFY(applyAll && !applyAll->isVisible() && overwrite && action && notice);
+        QVERIFY(!overwrite->isEnabled() && action->isEnabled());
+        QCOMPARE(notice->property("text").toString(), qtTrId("ui.baaef55f9a78"));
+        QFile existing(archive);
+        QVERIFY(existing.open(QIODevice::ReadOnly));
+        QCOMPARE(existing.readAll(), original);
+        existing.close();
+
+        // The source-protection explanation remains reachable in the scrolling
+        // body while the real conflict actions stay fixed at the window bottom.
+        auto *scroll = notice->parentItem();
+        while (scroll && !scroll->inherits("QQuickScrollView"))
+            scroll = scroll->parentItem();
+        QVERIFY(scroll);
+        auto *flickable = scroll->property("contentItem").value<QQuickItem *>();
+        auto *footer = action->parentItem();
+        while (footer && !footer->property("minimumFooterHeight").isValid())
+            footer = footer->parentItem();
+        QVERIFY(flickable && footer);
+        QTRY_VERIFY(notice->height() > 0 && flickable->height() > 0);
+        QTRY_VERIFY(notice->mapToScene(QPointF()).x() >= 0);
+        QTRY_VERIFY(notice->mapToScene(QPointF(notice->width(), 0)).x() <= conflict->width() + 1);
+        const auto textFits = [&](auto &&self, QQuickItem *item) -> bool {
+            if (item->isVisible() && item->inherits("QQuickText")) {
+                if (item->mapToScene(QPointF()).x() < -1 ||
+                    item->mapToScene(QPointF(item->width(), 0)).x() > conflict->width() + 1 ||
+                    item->property("contentWidth").toReal() > item->width() + 1)
+                    return false;
+            }
+            for (auto *child : item->childItems())
+                if (!self(self, child))
+                    return false;
+            return true;
+        };
+        QTRY_VERIFY(textFits(textFits, conflict->contentItem()));
+        const auto maximum =
+            std::max(qreal(0), flickable->property("contentHeight").toReal() - flickable->height());
+        const auto noticeTop = notice->mapToItem(flickable, QPointF()).y();
+        QVERIFY(flickable->setProperty("contentY", std::clamp(noticeTop, qreal(0), maximum)));
+        QTRY_VERIFY(notice->mapToItem(flickable, QPointF()).y() >= -1);
+        QTRY_VERIFY(notice->mapToItem(flickable, QPointF(0, notice->height())).y() <=
+                    flickable->height() + 1);
+        QCOMPARE(footer->mapToScene(QPointF(0, footer->height())).y(), qreal(conflict->height()));
+        QVERIFY(action->mapToScene(QPointF()).y() >= footer->mapToScene(QPointF()).y());
+        QVERIFY(action->mapToScene(QPointF(action->width(), action->height())).x() <=
+                conflict->width() + 1);
+        QVERIFY(action->mapToScene(QPointF(action->width(), action->height())).y() <=
+                conflict->height() + 1);
+        const auto audit = qEnvironmentVariable("XDZIP_CREATE_OVERLAP_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(conflict, audit,
+                                       QString::fromLatin1(QTest::currentDataTag()) + "-conflict"));
         }
+        QTest::mouseClick(
+            conflict, Qt::LeftButton, Qt::NoModifier,
+            action->mapToScene(QPointF(action->width() / 2, action->height() / 2)).toPoint());
         QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
         QTRY_VERIFY(!conflict->isVisible());
         const auto task = controller->tasks().first().toMap();
@@ -1811,78 +1863,36 @@ class BrowserTest : public QObject {
         QVERIFY(!task.value("cleanupWarning").toBool());
         QVERIFY(!task.value("outcomeUncertain").toBool());
         const bool cancelled = decision == "conflictSkip";
-        const bool renamed = decision == "conflictRename";
-        if (onlyOutput || cancelled) {
-            QCOMPARE(task.value("status").toString(), onlyOutput ? "failed" : "cancelled");
-            QCOMPARE(task.value("errorCode").toString(), onlyOutput ? "empty_input" : "cancelled");
+        if (cancelled) {
+            QCOMPARE(task.value("status").toString(), "cancelled");
+            QCOMPARE(task.value("errorCode").toString(), "cancelled");
             QCOMPARE(task.value("committedFiles").toString(), "0");
             QCOMPARE(task.value("outputParts").toString(), "0");
             QVERIFY(!controller->ready());
         } else {
             QCOMPARE(task.value("status").toString(), "succeeded");
             QVERIFY(task.value("errorCode").toString().isEmpty());
-            QCOMPARE(task.value("committedFiles").toString(), "1");
-            const auto resultName = renamed ? QStringLiteral("owned (2)") + extension : name;
+            QCOMPARE(task.value("committedFiles").toInt(), onlyOutput ? 1 : 2);
+            const auto resultName = QStringLiteral("owned (2)") + extension;
             QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
                                          controller->title() == resultName,
                                      10000);
-            QCOMPARE(controller->archiveTotal(), 1);
-            QCOMPARE(controller->entries()->rowCount(), 1);
-            QCOMPARE(controller->entries()
-                         ->data(controller->entries()->index(0, 0), Qt::DisplayRole)
-                         .toString(),
-                     "payload.txt");
+            QCOMPARE(controller->archiveTotal(), onlyOutput ? 1 : 2);
+            QCOMPARE(controller->entries()->rowCount(), onlyOutput ? 1 : 2);
         }
-        if (onlyOutput || cancelled || renamed) {
-            QFile existing(archive);
-            QVERIFY(existing.open(QIODevice::ReadOnly));
-            QCOMPARE(existing.readAll(), original);
-        }
-        // Count all names, including hidden ones, so staging leaks are observable.
+        QVERIFY(existing.open(QIODevice::ReadOnly));
+        QCOMPARE(existing.readAll(), original);
+        existing.close();
+        // Count hidden names too, so successful rename and cancellation cannot hide
+        // a leaked staging workspace in an otherwise correct output directory.
         QCOMPARE(
             QDir(output.path())
                 .entryList(QDir::NoDotAndDotDot | QDir::AllEntries | QDir::Hidden | QDir::System)
                 .size(),
-            renamed ? 2 : 1);
-        if (onlyOutput) {
-            const auto message = qtTrId("error.emptyCreationInput");
-            QVERIFY(message != QStringLiteral("error.emptyCreationInput"));
-            QCOMPARE(task.value("error").toString(), message);
-            QTRY_COMPARE(taskWindow->property("errorSummary").toString(), message);
-            auto *failures = findVisual(taskWindow->contentItem(), "resultFailures");
-            QVERIFY(failures && failures->isVisible());
-            QQuickItem *visibleMessage = nullptr;
-            const auto inspect = [&](auto &&self, QQuickItem *item) -> void {
-                if (item->isVisible() && item->property("text").toString() == message)
-                    visibleMessage = item;
-                for (auto *child : item->childItems())
-                    self(self, child);
-            };
-            inspect(inspect, failures);
-            QVERIFY(visibleMessage);
-            auto *scroll = findVisual(taskWindow->contentItem(), "taskScroll");
-            QVERIFY(scroll);
-            auto *flickable = scroll->property("contentItem").value<QQuickItem *>();
-            auto *footer = findVisual(taskWindow->contentItem(), "taskFooter");
-            QVERIFY(flickable && footer);
-            QTRY_VERIFY(visibleMessage->height() > 0 && flickable->height() > 0);
-            const auto maximum = std::max(qreal(0), flickable->property("contentHeight").toReal() -
-                                                        flickable->height());
-            const auto messageTop = visibleMessage->mapToItem(flickable, QPointF()).y();
-            QVERIFY(flickable->setProperty("contentY", std::clamp(messageTop, qreal(0), maximum)));
-            QTRY_VERIFY(visibleMessage->mapToItem(flickable, QPointF()).y() >= -1);
-            QTRY_VERIFY(
-                visibleMessage->mapToItem(flickable, QPointF(0, visibleMessage->height())).y() <=
-                flickable->height() + 1);
-            QCOMPARE(footer->mapToScene(QPointF(0, footer->height())).y(),
-                     qreal(taskWindow->height()));
-        }
-        const auto audit = qEnvironmentVariable("XDZIP_CREATE_OVERLAP_AUDIT");
-        if (!audit.isEmpty()) {
-            QVERIFY(QDir().mkpath(audit));
+            cancelled ? 1 : 2);
+        if (!audit.isEmpty())
             QVERIFY(visual_audit::save(taskWindow, audit, QTest::currentDataTag()));
-        }
-        if (!onlyOutput && !cancelled) {
+        if (!cancelled) {
             controller->prepareExtraction(true);
             QTRY_VERIFY(!controller->busy());
             controller->checkTarget(extracted.path());
@@ -1891,13 +1901,21 @@ class BrowserTest : public QObject {
             QTRY_COMPARE_WITH_TIMEOUT(controller->tasks().size(), 2, 10000);
             QTRY_COMPARE_WITH_TIMEOUT(controller->activeTaskCount(), 0, 10000);
             QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
-            QFile actual(extracted.filePath("payload.txt"));
-            QVERIFY(actual.open(QIODevice::ReadOnly));
-            QCOMPARE(actual.readAll(), payload);
+            QFile oldArchive(extracted.filePath(name));
+            QVERIFY(oldArchive.open(QIODevice::ReadOnly));
+            QCOMPARE(oldArchive.readAll(), original);
+            QStringList expectedNames{name};
+            if (!onlyOutput) {
+                QFile actual(extracted.filePath("payload.txt"));
+                QVERIFY(actual.open(QIODevice::ReadOnly));
+                QCOMPARE(actual.readAll(), payload);
+                expectedNames.append("payload.txt");
+            }
+            expectedNames.sort();
             QCOMPARE(QDir(extracted.path())
                          .entryList(QDir::NoDotAndDotDot | QDir::AllEntries | QDir::Hidden |
                                     QDir::System),
-                     QStringList{"payload.txt"});
+                     expectedNames);
         }
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
