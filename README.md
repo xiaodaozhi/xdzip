@@ -90,7 +90,7 @@ macOS 配置时另加 `-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TA
 
 - 当前使用单个真实压缩包会话，尚未实现多标签会话、文件内容预览和独立完整性检查命令。
 - 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
-- 已知的文件输入竞态与 macOS ACL 兼容问题仍在 [#6](https://github.com/xiaodaozhi/xdzip/issues/6)跟踪；[独立发行审查](https://github.com/xiaodaozhi/xdzip/issues/4)尚未完成，开发验证不等于独立安全审查。
+- [独立发行审查](https://github.com/xiaodaozhi/xdzip/issues/4)尚未完成，开发验证不等于独立安全审查。
 - 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。
 
 版本、渠道和构建身份可在“关于 xdzip”或 `xdzip --version` 查看。项目采取尽力维护，优先处理最新版本反馈，不承诺固定响应时限。

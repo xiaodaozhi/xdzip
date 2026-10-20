@@ -2,6 +2,8 @@
 //! Path syntax is not authority. Every relative operation is anchored to held directories.
 mod identity;
 mod input;
+#[cfg(all(test, target_os = "macos"))]
+mod macos_tests;
 mod private;
 mod target;
 #[cfg(test)]

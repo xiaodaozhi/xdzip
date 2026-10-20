@@ -16,9 +16,7 @@ pub(crate) fn check(file: &File, directory: bool) -> Result<(), OutputError> {
             return Err(OutputError::UnsafeTarget);
         }
         #[cfg(target_os = "macos")]
-        if macos::has_extended_acl(file)? {
-            return Err(OutputError::UnsafeTarget);
-        }
+        macos::check_acl(file)?;
     }
     #[cfg(windows)]
     {
@@ -45,32 +43,135 @@ mod macos {
     use super::*;
     use std::os::fd::AsRawFd;
     use std::os::raw::{c_int, c_void};
+    use std::ptr::null_mut;
 
     // macOS exposes extended ACLs through acl_get_fd_np, but libc does not
     // provide a portable Rust abstraction for this platform-specific API.
     unsafe extern "C" {
         fn acl_get_fd_np(fd: c_int, acl_type: c_int) -> *mut c_void;
+        fn acl_valid(acl: *mut c_void) -> c_int;
+        fn acl_get_entry(acl: *mut c_void, entry_id: c_int, entry: *mut *mut c_void) -> c_int;
+        fn acl_get_tag_type(entry: *mut c_void, tag: *mut c_int) -> c_int;
+        fn acl_get_permset_mask_np(entry: *mut c_void, permissions: *mut u64) -> c_int;
+        fn acl_get_qualifier(entry: *mut c_void) -> *mut c_void;
         fn acl_free(obj: *mut c_void) -> c_int;
+        fn mbr_uuid_to_id(uuid: *const u8, id: *mut libc::id_t, kind: *mut c_int) -> c_int;
         fn __error() -> *mut c_int;
     }
     const ACL_TYPE_EXTENDED: c_int = 0x0000_0100;
+    const ACL_FIRST_ENTRY: c_int = 0;
+    const ACL_NEXT_ENTRY: c_int = -1;
+    const ACL_EXTENDED_ALLOW: c_int = 1;
+    const ACL_EXTENDED_DENY: c_int = 2;
+    const ID_TYPE_UID: c_int = 0;
+    // sys/acl.h: read/list, execute/search, read attributes, read extended
+    // attributes, read security and synchronize do not authorize modification.
+    const READ_ONLY: u64 = (1 << 1) | (1 << 3) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 20);
+    const KNOWN_PERMISSIONS: u64 = 0x3ffe | (1 << 20);
 
-    pub(super) fn has_extended_acl(file: &File) -> Result<bool, OutputError> {
+    struct Allocation(*mut c_void);
+    impl Allocation {
+        fn release(mut self) -> Result<(), OutputError> {
+            let pointer = std::mem::replace(&mut self.0, null_mut());
+            // SAFETY: only acl_get_fd_np/acl_get_qualifier allocations enter
+            // this owner. Taking the pointer prevents a second free in Drop.
+            if unsafe { acl_free(pointer) } == 0 {
+                Ok(())
+            } else {
+                Err(OutputError::UnsafeTarget)
+            }
+        }
+    }
+    impl Drop for Allocation {
+        fn drop(&mut self) {
+            if !self.0.is_null() {
+                // SAFETY: error paths still own this unfreed ACL allocation;
+                // success explicitly releases it and checks the cleanup result.
+                unsafe { acl_free(self.0) };
+            }
+        }
+    }
+
+    fn current_user(entry: *mut c_void) -> Result<bool, OutputError> {
+        // SAFETY: entry borrows the validated ACL and remains live throughout;
+        // its returned qualifier is a separately owned 16-byte UUID allocation.
+        let qualifier = unsafe { acl_get_qualifier(entry) };
+        if qualifier.is_null() {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let qualifier = Allocation(qualifier);
+        let mut id = 0;
+        let mut kind = -1;
+        // SAFETY: the qualifier holds a complete UUID; outputs are initialized
+        // stack values. Resolve both real and synthetic UUIDs to their UID.
+        let status = unsafe { mbr_uuid_to_id(qualifier.0.cast(), &mut id, &mut kind) };
+        qualifier.release()?;
+        if status != 0 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        Ok(kind == ID_TYPE_UID && id == rustix::process::geteuid().as_raw())
+    }
+
+    pub(super) fn check_acl(file: &File) -> Result<(), OutputError> {
+        // SAFETY: the descriptor stays borrowed and live; this returns an owned
+        // ACL snapshot, not pointers into filesystem state that can be mutated.
         let acl = unsafe { acl_get_fd_np(file.as_raw_fd(), ACL_TYPE_EXTENDED) };
-        if !acl.is_null() {
-            if unsafe { acl_free(acl) } != 0 {
+        if acl.is_null() {
+            // SAFETY: __error is the current thread's errno slot. Read it before
+            // another native call can overwrite the failed query's error.
+            let errno = unsafe { *__error() };
+            return if errno == libc::ENOENT || errno == libc::ENODATA {
+                Ok(())
+            } else {
+                Err(OutputError::UnsafeTarget)
+            };
+        }
+        let acl = Allocation(acl);
+        // SAFETY: this live ACL was allocated by acl_get_fd_np. Validate before
+        // using Darwin's EINVAL end-of-iteration convention below.
+        if unsafe { acl_valid(acl.0) } != 0 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let mut entry_id = ACL_FIRST_ENTRY;
+        // sys/acl.h bounds extended ACLs at ACL_MAX_ENTRIES (128). Include one
+        // final query for the terminator; any other iteration error fails closed.
+        for _ in 0..=128 {
+            let mut entry = null_mut();
+            // SAFETY: acl owns all borrowed entries; output storage is valid.
+            if unsafe { acl_get_entry(acl.0, entry_id, &mut entry) } != 0 {
+                if unsafe { *__error() } == libc::EINVAL {
+                    return acl.release();
+                }
                 return Err(OutputError::UnsafeTarget);
             }
-            return Ok(true);
+            if entry.is_null() {
+                return Err(OutputError::UnsafeTarget);
+            }
+            entry_id = ACL_NEXT_ENTRY;
+            let mut tag = 0;
+            let mut permissions = 0;
+            // SAFETY: validated, borrowed entry and initialized output slots.
+            if unsafe { acl_get_tag_type(entry, &mut tag) } != 0
+                || unsafe { acl_get_permset_mask_np(entry, &mut permissions) } != 0
+                || permissions & !KNOWN_PERMISSIONS != 0
+            {
+                return Err(OutputError::UnsafeTarget);
+            }
+            match tag {
+                ACL_EXTENDED_DENY => {}
+                ACL_EXTENDED_ALLOW => {
+                    // Inspect effective and inherit-only ACEs alike: permitting
+                    // outsider mutation on future children is also unsafe. A
+                    // current-user group can include other accounts, so only a
+                    // user UUID resolving to the effective UID may modify.
+                    if permissions & !READ_ONLY != 0 && !current_user(entry)? {
+                        return Err(OutputError::UnsafeTarget);
+                    }
+                }
+                _ => return Err(OutputError::UnsafeTarget),
+            }
         }
-        // No ACL is safe to accept. Any query error is fail-closed because
-        // treating an unreadable ACL as absent would recreate the bypass.
-        let errno = unsafe { *__error() };
-        if errno == libc::ENOENT || errno == libc::ENODATA {
-            Ok(false)
-        } else {
-            Err(OutputError::UnsafeTarget)
-        }
+        Err(OutputError::UnsafeTarget)
     }
 }
 

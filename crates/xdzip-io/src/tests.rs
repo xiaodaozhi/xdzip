@@ -33,7 +33,7 @@ impl Drop for Owned {
         let _ = fs::remove_dir_all(&self.0);
     }
 }
-fn path(value: &str) -> PortablePath {
+pub(crate) fn path(value: &str) -> PortablePath {
     PortablePath::parse(value).unwrap()
 }
 

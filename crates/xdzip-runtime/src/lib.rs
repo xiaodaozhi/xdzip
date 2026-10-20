@@ -8,7 +8,6 @@ pub mod navigation;
 pub mod query;
 pub mod service;
 mod source;
-use std::fs::File;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -35,14 +34,7 @@ impl Archive {
     /// Length/mtime checks are best-effort mutation detection, not an atomic source snapshot.
     pub fn open(path: &Path, control: &Cancellation) -> Result<Self, ScanError> {
         control.check()?;
-        if !path.is_file() {
-            return Err(ScanError::Io);
-        }
-        let mut source = File::open(path).map_err(|_| ScanError::Io)?;
-        let before = source.metadata().map_err(|_| ScanError::Io)?;
-        if !before.is_file() {
-            return Err(ScanError::Io);
-        }
+        let mut source = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
         let version = source::SourceVersion::read(&source)?;
         let mut format = formats::detect(&mut source)?;
         let scanned = formats::codec(format).scan(&mut source, control, formats::limits(format));
@@ -292,6 +284,22 @@ fn entry_type(entry: &Entry) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
+    #[test]
+    #[allow(unsafe_code)]
+    fn initial_source_open_uses_nonblocking_classification() {
+        use std::os::fd::AsRawFd;
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip");
+        let mut archive = Archive::open(&path, &Cancellation::default()).unwrap();
+        // SAFETY: F_GETFL only queries the live, borrowed source descriptor.
+        let flags = unsafe { libc::fcntl(archive.source.file().as_raw_fd(), libc::F_GETFL) };
+        assert_ne!(flags, -1);
+        // A pre-open path check is insufficient: its regular file can become a
+        // FIFO before open. Check the actual product handle, not a helper alone.
+        assert_ne!(flags & libc::O_NONBLOCK, 0);
+    }
+
     #[test]
     fn sorting_spans_pages_and_virtual_directory_keeps_physical_ids() {
         let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/pages.zip");

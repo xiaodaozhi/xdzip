@@ -120,11 +120,48 @@ mod tests {
     #[cfg(unix)]
     #[test]
     #[allow(unsafe_code)]
-    fn special_file_reopen_is_rejected_without_blocking() {
+    fn replaced_source_and_special_aliases_are_rejected_without_blocking() {
         use std::ffi::CString;
         use std::os::unix::ffi::OsStrExt;
+        use std::os::unix::fs::symlink;
+        use std::process::{Command, Stdio};
 
-        let path = std::env::temp_dir().join(format!(
+        const VARIABLE: &str = "XDZIP_OWNED_SPECIAL_SOURCE";
+        if let Some(root) = std::env::var_os(VARIABLE) {
+            let root = PathBuf::from(root);
+            let path = root.join("source.zip");
+            let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../tests/fixtures/zip/normal.zip");
+            let original = std::fs::read(fixture).unwrap();
+            std::fs::write(&path, &original).unwrap();
+            let archive = crate::Archive::open(&path, &Default::default()).unwrap();
+            let alias = root.join("alias.zip");
+            symlink(&path, &alias).unwrap();
+            let alias_archive = crate::Archive::open(&alias, &Default::default()).unwrap();
+            assert_eq!(archive.len(), alias_archive.len());
+            let source = archive.source;
+            source.validate().unwrap();
+            source.fork().unwrap();
+            std::fs::rename(&path, root.join("original.zip")).unwrap();
+            let raw = CString::new(path.as_os_str().as_bytes()).unwrap();
+            // SAFETY: a valid NUL-terminated path under the owned fixture.
+            assert_eq!(unsafe { libc::mkfifo(raw.as_ptr(), 0o600) }, 0);
+            assert!(xdzip_io::open_regular_readonly(&path).is_err());
+            assert_eq!(source.validate(), Err(ScanError::SourceChanged));
+            assert!(matches!(source.fork(), Err(ScanError::SourceChanged)));
+            assert!(matches!(
+                crate::Archive::open(&path, &Default::default()),
+                Err(ScanError::Io)
+            ));
+            assert!(xdzip_io::open_regular_readonly(&alias).is_err());
+            assert!(matches!(
+                crate::Archive::open(&alias, &Default::default()),
+                Err(ScanError::Io)
+            ));
+            assert_eq!(std::fs::read(root.join("original.zip")).unwrap(), original);
+            return;
+        }
+        let root = std::env::temp_dir().join(format!(
             "xdzip-source-fifo-{}-{}",
             std::process::id(),
             std::time::SystemTime::now()
@@ -132,10 +169,35 @@ mod tests {
                 .unwrap()
                 .as_nanos()
         ));
-        let raw = CString::new(path.as_os_str().as_bytes()).unwrap();
-        assert_eq!(unsafe { libc::mkfifo(raw.as_ptr(), 0o600) }, 0);
-        let result = xdzip_io::open_regular_readonly(&path);
-        let _ = std::fs::remove_file(&path);
-        assert!(result.is_err());
+        std::fs::create_dir(&root).unwrap();
+        // A regression must fail in bounded time rather than hanging the test
+        // runner on FIFO open. The child can be killed without leaking a thread.
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "source::tests::replaced_source_and_special_aliases_are_rejected_without_blocking",
+            ])
+            .env(VARIABLE, &root)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+        let status = loop {
+            if let Some(status) = child.try_wait().unwrap() {
+                break Some(status);
+            }
+            if std::time::Instant::now() >= deadline {
+                child.kill().unwrap();
+                child.wait().unwrap();
+                break None;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(10));
+        };
+        std::fs::remove_dir_all(root).unwrap();
+        assert!(
+            status.is_some_and(|status| status.success()),
+            "special source rejected within deadline"
+        );
     }
 }
