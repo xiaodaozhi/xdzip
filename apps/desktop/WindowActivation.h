@@ -28,11 +28,12 @@ class WindowActivation final : public QObject {
             window->setProperty("xdzipWakePending", false);
         }
         // Cocoa finishes leaving fullscreen before it miniaturizes. Keep this
-        // activation pending until the native minimized window is no longer
-        // exposed, instead of cancelling a transition halfway through it.
-        if (QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+        // activation pending until the native minimized event is confirmed,
+        // instead of cancelling a transition halfway through it. A fullscreen
+        // Space can become unexposed before the window is actually minimized.
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa") && window->isVisible() &&
             (minimized || window->property("xdzipWasMinimized").toBool()) &&
-            (!minimized || window->isExposed())) {
+            !window->property("xdzipNativeMinimized").toBool()) {
             window->setProperty("xdzipWakePending", true);
             return;
         }
@@ -77,6 +78,12 @@ class WindowActivation final : public QObject {
             window->setProperty("xdzipWakePending", false);
             remember(window);
         }
+        if (event->type() == QEvent::WindowStateChange && event->spontaneous()) {
+            remember(window);
+            window->setProperty("xdzipNativeMinimized",
+                                window->windowStates().testFlag(Qt::WindowMinimized));
+            queueWake(window);
+        }
         if (event->type() == QEvent::Expose)
             queueWake(window);
         if (event->type() == QEvent::Hide)
@@ -86,7 +93,8 @@ class WindowActivation final : public QObject {
 
   private:
     static void queueWake(QWindow *window) {
-        if (window->property("xdzipWakePending").toBool() && !window->isExposed() &&
+        if (window->property("xdzipWakePending").toBool() &&
+            window->property("xdzipNativeMinimized").toBool() &&
             window->windowStates().testFlag(Qt::WindowMinimized))
             QTimer::singleShot(0, window, [window] {
                 if (window->property("xdzipWakePending").toBool())
@@ -96,19 +104,23 @@ class WindowActivation final : public QObject {
     static void remember(QWindow *window) {
         const auto state = window->windowStates();
         if (state.testFlag(Qt::WindowMinimized)) {
+            if (!window->property("xdzipWasMinimized").toBool())
+                window->setProperty("xdzipNativeMinimized", false);
             if (!window->property("xdzipWasMinimized").toBool() &&
                 (state.testFlag(Qt::WindowMaximized) || state.testFlag(Qt::WindowFullScreen)))
                 window->setProperty("xdzipRestoreState", int(state & ~Qt::WindowMinimized));
             window->setProperty("xdzipWasMinimized", true);
         } else if (!window->property("xdzipWasMinimized").toBool() ||
-                   QGuiApplication::platformName() != QStringLiteral("cocoa") ||
                    state.testFlag(Qt::WindowFullScreen) ||
+                   (state.testFlag(Qt::WindowMaximized) &&
+                    !(window->property("xdzipRestoreState").toInt() & Qt::WindowFullScreen)) ||
                    int(state) == window->property("xdzipRestoreState").toInt()) {
             window->setProperty("xdzipWasMinimized", false);
             window->setProperty("xdzipRestoreState", int(state));
         }
-        // Observe the requested Minimized signal as well as native events:
-        // Cocoa can report an intermediate normal state while minimizing.
+        // Observe requests and native acknowledgements. X11 can remove the
+        // maximized state before iconifying; Cocoa first leaves fullscreen.
+        // Neither intermediate state replaces the pre-minimize target.
         queueWake(window);
     }
     explicit WindowActivation(QObject *parent) : QObject(parent) {}

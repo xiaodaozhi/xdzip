@@ -55,6 +55,38 @@ bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
 #endif
 
+// Read the native WM state, not the value optimistically set by QWindow.
+static bool nativeStateSettled(QWindow *window, Qt::WindowState state) {
+#ifdef Q_OS_MACOS
+    if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+        return nativeWindowMatchesState(window, state);
+#endif
+#ifdef Q_OS_LINUX
+    if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+        QProcess property;
+        property.start(QStringLiteral("xprop"),
+                       {QStringLiteral("-id"),
+                        QStringLiteral("0x") + QString::number(window->winId(), 16),
+                        QStringLiteral("_NET_WM_STATE")});
+        if (!property.waitForFinished(1000) || property.exitCode())
+            return false;
+        const auto flags = property.readAllStandardOutput();
+        const bool hidden = flags.contains("_NET_WM_STATE_HIDDEN");
+        const bool full = flags.contains("_NET_WM_STATE_FULLSCREEN");
+        const bool maximum = flags.contains("_NET_WM_STATE_MAXIMIZED_VERT") &&
+                             flags.contains("_NET_WM_STATE_MAXIMIZED_HORZ");
+        if (state == Qt::WindowMinimized)
+            return hidden;
+        if (state == Qt::WindowFullScreen)
+            return !hidden && full;
+        if (state == Qt::WindowMaximized)
+            return !hidden && !full && maximum;
+        return !hidden && !full && !maximum;
+    }
+#endif
+    return window->windowState() == state;
+}
+
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
     if (item->property("inReusePool").toBool())
@@ -539,6 +571,7 @@ class BrowserTest : public QObject {
             // starting the strict popup-state measurement.
             QTest::qWait(150);
             QTRY_COMPARE(window->windowState(), state);
+            QTRY_VERIFY(nativeStateSettled(window, state));
             QSignalSpy changes(window, &QWindow::windowStateChanged);
 #ifdef Q_OS_WIN
             if (state == Qt::WindowFullScreen &&
@@ -602,6 +635,8 @@ class BrowserTest : public QObject {
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QVERIFY(QTest::qWaitForWindowExposed(window));
+            QTRY_VERIFY(nativeStateSettled(window, state));
+            QTRY_COMPARE(window->windowState(), state);
 #ifdef Q_OS_MACOS
             if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                 QTRY_VERIFY(nativeWindowMatchesState(window, state));
@@ -610,6 +645,7 @@ class BrowserTest : public QObject {
             QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QTRY_VERIFY(!window->isExposed());
+            QTRY_VERIFY(nativeStateSettled(window, Qt::WindowMinimized));
             qInfo() << "Restoring native minimized state" << window->windowStates() << "saved"
                     << window->property("xdzipRestoreState");
             desktop.restore();
@@ -618,6 +654,7 @@ class BrowserTest : public QObject {
                 QVERIFY(QTest::qWaitForWindowExposed(window));
                 QVERIFY(QTest::qWaitForWindowActive(window));
                 QTRY_COMPARE(window->windowState(), state);
+                QTRY_VERIFY(nativeStateSettled(window, state));
 #ifdef Q_OS_MACOS
                 if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                     QTRY_VERIFY(nativeWindowMatchesState(window, state));
@@ -632,6 +669,7 @@ class BrowserTest : public QObject {
                 QVERIFY(QTest::qWaitForWindowExposed(window));
                 QVERIFY(QTest::qWaitForWindowActive(window));
                 QTRY_COMPARE(window->windowState(), state);
+                QTRY_VERIFY(nativeStateSettled(window, state));
 #ifdef Q_OS_MACOS
                 if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                     QTRY_VERIFY(nativeWindowMatchesState(window, state));
