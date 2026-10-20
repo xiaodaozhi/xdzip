@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import plistlib
 import re
+import shutil
 import subprocess
 import sys
 
@@ -45,6 +46,33 @@ def unregister(app):
     result = subprocess.run([str(LSREGISTER), '-u', str(app)], capture_output=True, text=True)
     if result.returncode:
         raise RuntimeError('Could not unregister owned test application')
+
+
+@contextmanager
+def temporary_bundle_path(app):
+    """Reserve a new build-only bundle path and remove the disposable copy on exit.
+
+    The source app/DMG is never accepted as this destination: callers must copy
+    into a previously absent path. Historical bundles are not modified here.
+    """
+    app = Path(app)
+    if (app.suffix != '.app' or app.exists() or app.is_symlink()
+            or not app.resolve().is_relative_to(ROOT/'build')):
+        raise ValueError('Temporary bundle must be a new .app under build/')
+    try:
+        yield app
+    finally:
+        # A partial copy must also be cleaned on failure. Never follow a leaf
+        # symlink, and check the parent again in case a copy routine moved it.
+        if not app.parent.resolve().is_relative_to(ROOT/'build'):
+            raise RuntimeError('Temporary bundle parent escaped build/')
+        try:
+            if app.is_symlink() or app.is_file():
+                app.unlink()
+            elif app.exists():
+                shutil.rmtree(app)
+        except OSError:
+            raise RuntimeError('Could not remove owned temporary bundle') from None
 
 
 @contextmanager

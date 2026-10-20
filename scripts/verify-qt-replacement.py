@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-from macos_launch_services import transient_registrations
+from macos_launch_services import temporary_bundle_path, transient_registrations
 from deployment_audit import ROOT, audit, digest, within, mac_rpaths
 
 
@@ -24,8 +24,9 @@ def main():
     source_record=json.loads((a.qt_build/'qt-source-build.json').read_text());new_core=a.qt_build/'qt-install/lib/QtCore.framework/Versions/A/QtCore'
     if digest(new_core)!=source_record['qtcore_sha256']:raise ValueError('Source-built QtCore changed')
     mac=module('build-macos-dmg');out.mkdir(parents=True)
-    with transient_registrations(out):
-        app=out/'中文 relocated/xdzip.app';shutil.copytree(a.app,app,symlinks=True);binary=mac.validate_bundle(app)
+    app=out/'中文 relocated/xdzip.app'
+    with temporary_bundle_path(app), transient_registrations(out):
+        shutil.copytree(a.app,app,symlinks=True);binary=mac.validate_bundle(app)
         identity=mac.checked([binary,'--version']).strip()
         if 'dirty' in identity or 'unknown' in identity or source_record['revision'][:12] not in identity:raise ValueError('Replacement source/product identity mismatch')
         core=app/'Contents/Frameworks/QtCore.framework/Versions/A/QtCore';before=digest(core)
@@ -34,7 +35,8 @@ def main():
             if value.startswith('/') and not value.startswith(('/usr/lib/','/System/Library/')):mac.checked(['install_name_tool','-delete_rpath',value,core])
         mac.sign_local(app)
         closure=audit(app,binary,None,'macos','deployed')
-        if closure['status']!='passed' or before==digest(core):raise ValueError('Replacement not SDK-independent or unchanged')
+        replaced_core=digest(core)
+        if closure['status']!='passed' or before==replaced_core:raise ValueError('Replacement not SDK-independent or unchanged')
         env=dict(os.environ,PATH='/usr/bin:/bin:/usr/sbin:/sbin',QT_QPA_PLATFORM='cocoa',QSG_RHI_BACKEND='metal',XDZIP_EXPECT_QT_SOURCE_PROOF='xdzip-qt-6.8.2-source-proof-v1')
         for key in ['QT_PLUGIN_PATH','QML_IMPORT_PATH','QML2_IMPORT_PATH','DYLD_LIBRARY_PATH','DYLD_FRAMEWORK_PATH','QT_QUICK_BACKEND','QT_QPA_PLATFORM_PLUGIN_PATH']:env.pop(key,None)
         metadata=out/'metadata.zip';payload=out/'payload.zip'
@@ -47,9 +49,10 @@ def main():
         for run in runs:
             proof=next(e for e in run['events'] if e['event']=='qt_source_proof')
             if proof['value']!=env['XDZIP_EXPECT_QT_SOURCE_PROOF']:raise ValueError('Actually loaded QtCore marker missing')
+        app_sha256=digest(binary)
     result={'schema_version':1,'status':'passed','platform':'macos','revision':source_record['revision'],'identity':identity,
             'source_build_sha256':digest(a.qt_build/'qt-source-build.json'),'source_qtcore_sha256':source_record['qtcore_sha256'],
-            'original_qtcore_sha256':before,'replaced_signed_qtcore_sha256':digest(core),'app_sha256':digest(binary),
+            'original_qtcore_sha256':before,'replaced_signed_qtcore_sha256':replaced_core,'app_sha256':app_sha256,
             'source_marker_verified':True,'sdk_independent':True,'independent_extraction_verified':runs[1]['extraction']['independent_byte_crc_check'],
             'developer_id_signed':False,'notarized':False,
             'reports':[{'file':k+'.json','sha256':digest(out/(k+'.json'))} for k in ['metadata','extract']],

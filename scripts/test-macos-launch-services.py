@@ -21,6 +21,47 @@ class RegistrationTests(unittest.TestCase):
         with patch.object(ls.subprocess, 'check_output', return_value=data):
             self.assertEqual(ls.registered_apps(), {Path('/tmp/中文 space/xdzip.app')})
 
+    def test_temporary_bundle_preserves_inputs_and_removes_failed_new_copy(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve();build = root/'build';build.mkdir()
+            source = self.app(build, 'primary.app')
+            original = (source/'Contents/Info.plist').read_bytes()
+            target = build/'copy.app'
+            with patch.object(ls, 'ROOT', root):
+                with self.assertRaisesRegex(RuntimeError, 'probe failed'):
+                    with ls.temporary_bundle_path(target):
+                        self.app(build, 'copy.app')
+                        raise RuntimeError('probe failed')
+                self.assertFalse(target.exists())
+                self.assertEqual((source/'Contents/Info.plist').read_bytes(), original)
+                with ls.temporary_bundle_path(target):
+                    self.app(build, 'copy.app')
+                self.assertFalse(target.exists())
+
+    def test_temporary_bundle_rejects_existing_and_outside_paths(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve();build = root/'build';build.mkdir()
+            source = self.app(build, 'primary.app')
+            external = self.app(root, 'external.app')
+            alias = build/'alias.app';alias.symlink_to(external)
+            (build/'parent').symlink_to(root)
+            with patch.object(ls, 'ROOT', root):
+                for target in [source, alias, root/'new.app', build/'parent/new.app', build/'copy']:
+                    with self.subTest(target=target.name):
+                        with self.assertRaises(ValueError):
+                            with ls.temporary_bundle_path(target):
+                                self.fail('Invalid temporary destination accepted')
+                self.assertTrue(source.is_dir());self.assertTrue(external.is_dir())
+
+    def test_temporary_bundle_does_not_follow_a_new_leaf_symlink(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve();build = root/'build';build.mkdir()
+            external = self.app(root, 'external.app');target = build/'copy.app'
+            with patch.object(ls, 'ROOT', root):
+                with ls.temporary_bundle_path(target):
+                    target.symlink_to(external)
+            self.assertFalse(target.is_symlink());self.assertTrue(external.is_dir())
+
     def test_copies_cannot_escape_or_claim_another_products_bundle(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve();build = root/'build';build.mkdir()
