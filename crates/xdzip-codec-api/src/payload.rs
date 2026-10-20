@@ -10,6 +10,10 @@ pub enum DecodeError {
     Integrity,
     /// Method, encryption or special entry is not supported.
     Unsupported,
+    /// This supported encrypted record requires a task-scoped password.
+    PasswordRequired,
+    /// The encryption header's password verifier did not match.
+    WrongPassword,
     /// Host resource budget was reached.
     Limit,
     /// Cooperative cancellation was observed.
@@ -23,6 +27,8 @@ impl std::fmt::Display for DecodeError {
             Self::SourceIo => "source_io",
             Self::Integrity => "integrity_error",
             Self::Unsupported => "unsupported_feature",
+            Self::PasswordRequired => "password_required",
+            Self::WrongPassword => "wrong_password",
             Self::Limit => "resource_limit",
             Self::Cancelled => "cancelled",
             Self::Output => "output_io",
@@ -45,6 +51,18 @@ pub trait PayloadReader {
         sink: &mut dyn DecodedSink,
         control: &Cancellation,
     ) -> Result<(), DecodeError>;
+
+    /// Decode with a borrowed task secret. Unsupported formats retain normal decoding.
+    /// Authentication failures are integrity errors, not proof of a wrong password.
+    fn decode_with_password(
+        &mut self,
+        entry: &Entry,
+        sink: &mut dyn DecodedSink,
+        control: &Cancellation,
+        _password: Option<&str>,
+    ) -> Result<(), DecodeError> {
+        self.decode(entry, sink, control)
+    }
 }
 /// Built-in extension point independent of Qt and output filesystem policy.
 pub trait PayloadCodec {

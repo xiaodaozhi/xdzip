@@ -236,7 +236,7 @@
     "ui.053461ce86d2": "Succeeded",
     "ui.3ce2b5b2c6e8": "Incomplete files",
     "ui.4a4f9c0beda1": "Destination",
-    "ui.92ccb53e91dc": "AES-encrypted and split archives can be opened with compatible tools such as 7-Zip.",
+    "ui.92ccb53e91dc": "Split archives can be opened with compatible tools such as 7-Zip.",
     "ui.c0e1b58aa792": "Showing the latest %1 records; %2 earlier records were not retained. Totals include all files.",
     "ui.aa3597f4a1f9": "No file processing records yet.",
     "ui.8f708e0b80e2": "Some commit results are uncertain. Check the destination and recovery data.",
@@ -517,6 +517,23 @@
     "desktop.createTask": "Create",
     "desktop.extractTask": "Extract",
     "desktop.trayEnabled": "Show tray icon and keep running when the main window closes",
-    "desktop.trayTip": "xdzip, %1 active tasks"
+    "desktop.trayTip": "xdzip, %1 active tasks",
+    "password.title": "Extraction password",
+    "password.heading": "Enter a password to continue",
+    "password.description": "This file is encrypted. Enter its password to continue.",
+    "password.label": "Password",
+    "password.placeholder": "Enter the archive password",
+    "password.show": "Show password",
+    "password.hide": "Hide password",
+    "password.retry": "Incorrect password. Try again.",
+    "password.limit": "Passwords can contain up to 1,024 UTF-8 bytes.",
+    "password.privacy": "Your password is used only for this task and is not saved. Closing this window cancels the task.",
+    "password.continue": "Continue extraction",
+    "password.submitting": "Submitting…",
+    "password.waiting": "Waiting for password",
+    "password.open": "Enter password",
+    "password.submitRejected": "Unable to submit the password. Try again.",
+    "password.attemptLimit": "The password retry limit was reached. The task has stopped.",
+    "password.preflight": "This file requires a password. You will be asked during extraction."
   }
 }

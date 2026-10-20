@@ -1,5 +1,6 @@
 //! Bounded central-directory scanning. No payload decoding, CRC claim or extraction.
 mod admission;
+mod aes;
 mod payload;
 mod writer;
 use std::io::{Read, Seek, SeekFrom};
@@ -153,6 +154,9 @@ fn scan(
             method: record.compression_method().as_u16(),
             modified_dos: validated_dos(record.last_modified_dos()),
             encrypted: record.flags().is_encrypted(),
+            password_supported: record.flags().is_encrypted()
+                && record.compression_method().as_u16() == 99
+                && aes::supported(record.extra_fields(), record.crc32()),
             warning,
         });
     }

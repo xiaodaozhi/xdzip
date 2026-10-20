@@ -1,5 +1,5 @@
 //! Strict Store/Deflate streams. The host retains every output and commit capability.
-use crate::{ZipCodec, admission};
+use crate::{ZipCodec, admission, aes};
 use flate2::{Decompress, FlushDecompress, Status};
 use rawzip::{ReaderAt, ZipArchive, ZipArchiveEntryWayfinder};
 use std::cell::Cell;
@@ -40,6 +40,8 @@ struct Record {
     flags: u16,
     crc: u32,
     local_offset: u64,
+    central_wide_sizes: bool,
+    aes: Result<Option<aes::Profile>, DecodeError>,
 }
 struct ZipPayload<R> {
     archive: ZipArchive<R>,
@@ -82,15 +84,26 @@ impl PayloadCodec for ZipCodec {
                 || header.compressed_size_hint() != expected.packed_size
                 || header.compression_method().as_u16() != expected.method
                 || header.flags().is_encrypted() != expected.encrypted
+                || (header.flags().is_encrypted()
+                    && header.compression_method().as_u16() == 99
+                    && aes::supported(header.extra_fields(), header.crc32()))
+                    != expected.password_supported
             {
                 return Err(DecodeError::Integrity);
             }
             admission::entry_disk(&archive, &header).map_err(|_| DecodeError::Integrity)?;
+            let mut fixed = [0; 46];
+            archive
+                .get_ref()
+                .read_exact_at(&mut fixed, header.central_directory_offset())
+                .map_err(read_error)?;
             records.push(Record {
                 finder: header.wayfinder(),
                 flags: header.flags().bits(),
                 crc: header.crc32(),
                 local_offset: header.local_header_offset(),
+                central_wide_sizes: fixed[20..24] == [255; 4] || fixed[24..28] == [255; 4],
+                aes: aes::profile(header.extra_fields()),
             });
         }
         if records.len() != snapshot.len() {
@@ -113,14 +126,32 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
         sink: &mut dyn DecodedSink,
         control: &Cancellation,
     ) -> Result<(), DecodeError> {
+        self.decode_with_password(expected, sink, control, None)
+    }
+
+    fn decode_with_password(
+        &mut self,
+        expected: &Entry,
+        sink: &mut dyn DecodedSink,
+        control: &Cancellation,
+        password: Option<&str>,
+    ) -> Result<(), DecodeError> {
         check(control)?;
-        if expected.warning || expected.encrypted || !matches!(expected.method, 0 | 8) {
+        if expected.warning || !matches!(expected.method, 0 | 8 | 99) {
             return Err(DecodeError::Unsupported);
         }
         let index = usize::try_from(expected.id.get() - 1).map_err(|_| DecodeError::Integrity)?;
         let record = self.records.get(index).ok_or(DecodeError::Integrity)?;
+        let aes = if expected.encrypted && expected.method == 99 {
+            Some(record.aes?.ok_or(DecodeError::Integrity)?)
+        } else if expected.encrypted || expected.method == 99 {
+            return Err(DecodeError::Unsupported);
+        } else {
+            None
+        };
         // Only UTF-8, data descriptor and Deflate-level flags are admitted.
-        if record.flags & !0x080e != 0 || (expected.directory && expected.size != 0) {
+        let admitted_flags = if aes.is_some() { 0x080f } else { 0x080e };
+        if record.flags & !admitted_flags != 0 || (expected.directory && expected.size != 0) {
             return Err(DecodeError::Unsupported);
         }
         let entry = self
@@ -133,6 +164,8 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
         if header.file_path().as_bytes() != expected.raw_name
             || header.flags().bits() != record.flags
             || header.compression_method().as_u16() != expected.method
+            || (aes.is_some()
+                && aes::profile(header.extra_fields()).map_err(|_| DecodeError::Integrity)? != aes)
         {
             return Err(DecodeError::Integrity);
         }
@@ -157,7 +190,6 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
         {
             return Err(DecodeError::Integrity);
         }
-        let compressed = entry.reader();
         if descriptor {
             // Streaming writers can force ZIP64 locally while retaining 32-bit
             // central sizes. rawzip's descriptor width uses central sentinels;
@@ -169,6 +201,7 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
                 .map_err(read_error)?;
             let wide = fixed[18..22] == [255; 4]
                 || fixed[22..26] == [255; 4]
+                || record.central_wide_sizes
                 || expected.size >= u64::from(u32::MAX)
                 || expected.packed_size >= u64::from(u32::MAX);
             verify_descriptor(
@@ -180,6 +213,48 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
                 expected,
             )?;
         }
+        if let Some(aes) = aes {
+            // WinZip AE-2 does not use CRC and requires its stored value to be zero.
+            // The private crypto framing never hides an invalid original checksum.
+            if aes.version == 2 && record.crc != 0 {
+                return Err(DecodeError::Integrity);
+            }
+            let packed = expected
+                .packed_size
+                .checked_sub(28)
+                .ok_or(DecodeError::Integrity)?;
+            if aes.method == 0 && expected.size != packed {
+                return Err(DecodeError::Integrity);
+            }
+            let password = password.ok_or(DecodeError::PasswordRequired)?;
+            let view = aes::CryptoView::new(self.archive.get_ref(), start, expected.packed_size)?;
+            let mut crypto = zip::ZipArchive::new(view).map_err(zip_error)?;
+            let mut plain = crypto
+                .by_index_decrypt(0, password.as_bytes())
+                .map_err(zip_error)?;
+            let mut payload: Box<dyn Read + '_> = if aes.method == 0 {
+                Box::new(&mut plain)
+            } else {
+                Box::new(StrictDeflate::new(&mut plain, packed))
+            };
+            read_to_sink(
+                &mut payload,
+                &mut self.output,
+                expected.size,
+                (aes.version == 1).then_some(record.crc),
+                sink,
+                control,
+            )?;
+            drop(payload);
+            // A zero-length Store entry still needs a real read for its HMAC.
+            // For Deflate, do not rely on its StreamEnd to authenticate ciphertext.
+            let mut last = [0u8; 1];
+            if plain.read(&mut last).map_err(read_error)? != 0 {
+                return Err(DecodeError::Integrity);
+            }
+            return check(control);
+        }
+        let compressed = entry.reader();
         if expected.method == 0 && expected.size != expected.packed_size {
             return Err(DecodeError::Integrity);
         }
@@ -189,23 +264,53 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
             Box::new(StrictDeflate::new(compressed, expected.packed_size))
         };
         let mut verified = entry.verifying_reader(payload);
-        let mut actual = 0u64;
-        loop {
-            check(control)?;
-            let count = verified.read(&mut self.output).map_err(read_error)?;
-            if count == 0 {
-                break;
-            }
-            actual = actual.checked_add(count as u64).ok_or(DecodeError::Limit)?;
-            if actual > expected.size {
-                return Err(DecodeError::Integrity);
-            }
-            sink.write_chunk(&self.output[..count])?;
+        read_to_sink(
+            &mut verified,
+            &mut self.output,
+            expected.size,
+            None,
+            sink,
+            control,
+        )
+    }
+}
+
+fn read_to_sink(
+    input: &mut dyn Read,
+    buffer: &mut [u8],
+    size: u64,
+    crc: Option<u32>,
+    sink: &mut dyn DecodedSink,
+    control: &Cancellation,
+) -> Result<(), DecodeError> {
+    let mut checksum = rawzip::Crc32::new();
+    let mut actual = 0u64;
+    loop {
+        check(control)?;
+        let count = input.read(buffer).map_err(read_error)?;
+        if count == 0 {
+            break;
         }
-        if actual != expected.size {
+        actual = actual.checked_add(count as u64).ok_or(DecodeError::Limit)?;
+        if actual > size {
             return Err(DecodeError::Integrity);
         }
-        check(control)
+        if crc.is_some() {
+            checksum.update(&buffer[..count]);
+        }
+        sink.write_chunk(&buffer[..count])?;
+    }
+    if actual != size || crc.is_some_and(|expected| checksum.checksum() != expected) {
+        return Err(DecodeError::Integrity);
+    }
+    check(control)
+}
+
+fn zip_error(error: zip::result::ZipError) -> DecodeError {
+    match error {
+        zip::result::ZipError::InvalidPassword => DecodeError::WrongPassword,
+        zip::result::ZipError::Io(error) => read_error(error),
+        _ => DecodeError::Integrity,
     }
 }
 
@@ -361,6 +466,10 @@ impl<R: Read> Read for StrictDeflate<R> {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "payload_aes_tests.rs"]
+mod aes_tests;
 
 #[cfg(test)]
 mod tests {

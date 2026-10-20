@@ -98,7 +98,7 @@ fn aes_creation_authenticates_all_files_and_rejects_wrong_password() {
         job.options.password = Some(Password::new("中文 password 123".into()).unwrap());
         let result = execute(job, &Control::default(), |_| {});
         assert_eq!(result.status, Status::Succeeded, "{}", result.error);
-        assert!(result.external_reader);
+        assert!(!result.external_reader);
         assert_eq!(result.output_parts, 1);
         let names = [
             ("输入", true, 0),

@@ -1,4 +1,4 @@
-use super::ConflictPolicy;
+use super::{ConflictPolicy, Password};
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::{Condvar, Mutex};
 use xdzip_codec_api::Cancellation;
@@ -14,6 +14,8 @@ pub struct Control {
 struct Answer {
     prompt: u64,
     decision: Option<(ConflictPolicy, bool)>,
+    password_prompt: bool,
+    password: Option<Password>,
 }
 impl Default for Control {
     fn default() -> Self {
@@ -46,7 +48,8 @@ impl Control {
         }
         self.cancel.cancel();
         // Synchronize wakeup with the waiter's check-to-wait interval; no I/O under this lock.
-        let _answer = self.answer.lock().expect("task control poisoned");
+        let mut answer = self.answer.lock().expect("task control poisoned");
+        answer.password = None;
         self.changed.notify_all();
         true
     }
@@ -56,7 +59,13 @@ impl Control {
             return false;
         }
         let mut answer = self.answer.lock().expect("task control poisoned");
-        if prompt == 0 || answer.prompt != prompt || answer.decision.is_some() {
+        if prompt == 0
+            || answer.prompt != prompt
+            || answer.password_prompt
+            || answer.decision.is_some()
+            || self.cancel.check().is_err()
+            || self.gate.load(Ordering::Acquire) == 4
+        {
             return false;
         }
         answer.decision = Some((policy, apply_all));
@@ -67,6 +76,46 @@ impl Control {
         let mut a = self.answer.lock().expect("task control poisoned");
         a.prompt = id;
         a.decision = None;
+        a.password_prompt = false;
+        a.password = None;
+    }
+    /// Submit only to an armed password prompt; rejected secrets are dropped and zeroed.
+    pub fn respond_password(&self, prompt: u64, password: Password) -> bool {
+        let mut answer = self.answer.lock().expect("task control poisoned");
+        if prompt == 0
+            || answer.prompt != prompt
+            || !answer.password_prompt
+            || answer.password.is_some()
+            || self.cancel.check().is_err()
+            || self.gate.load(Ordering::Acquire) == 4
+        {
+            return false;
+        }
+        answer.password = Some(password);
+        self.changed.notify_all();
+        true
+    }
+    pub(crate) fn arm_password(&self, id: u64) {
+        let mut answer = self.answer.lock().expect("task control poisoned");
+        answer.prompt = id;
+        answer.decision = None;
+        answer.password_prompt = true;
+        answer.password = None;
+    }
+    pub(crate) fn wait_password(&self) -> Result<Password, &'static str> {
+        let mut answer = self.answer.lock().expect("task control poisoned");
+        loop {
+            if self.cancel.check().is_err() {
+                answer.prompt = 0;
+                answer.password = None;
+                return Err("cancelled");
+            }
+            if let Some(password) = answer.password.take() {
+                answer.prompt = 0;
+                return Ok(password);
+            }
+            answer = self.changed.wait(answer).expect("task control poisoned");
+        }
     }
     pub(crate) fn wait(&self) -> Result<(ConflictPolicy, bool), &'static str> {
         let mut a = self.answer.lock().expect("task control poisoned");
@@ -107,6 +156,10 @@ impl Control {
         // Failure and cancellation also close control admission after cleanup.
         // Otherwise a late cancel could replace an undelivered terminal snapshot.
         self.gate.store(4, Ordering::Release);
+        let mut answer = self.answer.lock().expect("task control poisoned");
+        answer.prompt = 0;
+        answer.password = None;
+        answer.decision = None;
     }
     pub(crate) fn complete(&self) -> Result<(), &'static str> {
         match self

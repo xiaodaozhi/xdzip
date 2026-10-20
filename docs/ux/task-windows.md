@@ -28,3 +28,5 @@ HTML 的检查按钮运行明确标注的界面演示。关闭或返回浏览保
 QuitWindow 和 RestartWindow 继承 OperationConfirmationWindow，统一应用模态、正常密度、自适应高度、可滚动正文与固定 footer。按钮继续表达原有返回、等待、取消退出、稍后和重启意图，文件提交与任务清理仍由既有控制器处理。正在停止时禁用决策动作与 Escape 关闭，标题和说明变化不恢复旧尺寸。
 
 此前仅验证任务退出成功而遗漏确认框视觉，现将功能与视觉证据分开记录。窗口完整性、基类和尺寸检查见[强制流程](../visual/design-workflow.md)，对应状态稿见[确认窗口](../../design/hifi/sources/confirmations.html)。
+
+密码解压使用独立的 `waiting_password` 状态和请求身份，TaskWindow 显示等待输入密码并提供重开动作，应用模态 PasswordWindow 处理输入与取消。它不使用重名冲突的 `promptId`；具体生命周期见[密码解压交互](password-extraction.md)。

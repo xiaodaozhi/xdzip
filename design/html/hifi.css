@@ -1028,3 +1028,20 @@ dialog:is([data-kind="quit"],[data-kind="restart"])>.os-titlebar,dialog:is([data
 /* Keep the action row together; large translated labels may wrap inside buttons. */
 .operation-footer-actions { min-width:0; flex-shrink:1; align-items:stretch; }
 dialog[data-kind] .modal-footer .button { flex-shrink:1; white-space:normal; height:auto; padding-top:var(--operation-control-vertical-inset); padding-bottom:var(--operation-control-vertical-inset); }
+.button.operation-body-button { height:auto; min-height:var(--operation-control-body-button-height); padding:var(--operation-control-vertical-inset) var(--operation-control-horizontal-inset); font-size:calc(var(--operation-footer-font-size) * var(--settings-text-scale,1)); line-height:1.35; font-weight:400; }
+
+/* Password requests share normal operation density; only the body scrolls. */
+dialog[data-kind="password"] { width:calc(var(--password-logical-width) * 1px * var(--ui-source-factor)); max-height:min(calc(var(--password-maximum-height) * 1px * var(--ui-source-factor)),calc(100dvh - 40px)); }
+dialog[data-kind="password"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="password"]>.os-titlebar,dialog[data-kind="password"]>.modal-footer { flex-shrink:0; }
+.password-content { padding:calc(var(--password-content-inset) * 1px * var(--ui-source-factor)); display:flex; flex-direction:column; gap:calc(var(--password-section-gap) * 1px * var(--ui-source-factor)); overflow:auto; min-height:0; }
+.password-content h1 { margin:0; font-size:calc(var(--password-title-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.4; }
+.password-content p,.password-content label { margin:0; font-size:calc(var(--password-body-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.5; color:var(--secondary); }
+.password-content label { color:var(--text); font-weight:600; }
+.password-content .password-file { color:var(--text); overflow-wrap:anywhere; }
+.password-field-row { display:flex; align-items:center; gap:calc(var(--password-field-gap) * 1px * var(--ui-source-factor)); min-width:0; }
+.password-field-row input { flex:1; min-width:0; width:0; min-height:calc(var(--password-field-height) * 1px * var(--ui-source-factor)); padding:calc(var(--password-field-vertical-inset) * 1px * var(--ui-source-factor)) var(--operation-control-field-text-inset); border:calc(1px * var(--ui-source-factor)) solid var(--operation-field-border); border-radius:var(--operation-control-radius); background:var(--surface); color:var(--text); font:inherit; font-size:calc(var(--password-body-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.35; }
+.password-field-row input::placeholder { color:var(--secondary); }
+.password-content .password-note { font-size:calc(var(--password-note-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+.password-content .password-error { color:var(--danger); }
+.password-content .password-error[hidden] { display:none; }

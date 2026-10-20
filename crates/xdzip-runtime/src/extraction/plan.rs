@@ -18,6 +18,7 @@ pub(crate) struct Job {
     pub planned: Vec<Planned>,
     pub options: Options,
     pub session: u64,
+    pub links_pending: bool,
 }
 /// Canonical admission key accounts for common Unicode/case aliases. Exclusive native
 /// publication remains authoritative on filesystems with different name semantics.
@@ -93,7 +94,9 @@ pub(crate) fn prepare(
         {
             return Err("unsupported_link");
         }
-        if entry.warning || entry.encrypted || (!entry.directory && !matches!(entry.method, 0 | 8))
+        if entry.warning
+            || (entry.encrypted && !entry.password_supported)
+            || (!entry.encrypted && !entry.directory && !matches!(entry.method, 0 | 8))
         {
             return Err("unsupported_entry");
         }
@@ -171,9 +174,16 @@ pub(crate) fn prepare(
     {
         return Err("high_ratio");
     }
-    super::links::prepare(archive, &mut result, cancel)?;
+    // Encrypted link targets require an interactive task. Keep the whole graph private
+    // until Preparing can authenticate all targets before any output capability is used.
+    if !result
+        .iter()
+        .any(|p| archive.rows[p.index].link && archive.rows[p.index].encrypted)
+    {
+        super::links::prepare(archive, &mut result, cancel)?;
+    }
     // No subsequent filesystem write may traverse an archive-created link.
-    result.sort_by_key(|p| p.link_target.is_some());
+    result.sort_by_key(|p| archive.rows[p.index].link);
     Ok(result)
 }
 

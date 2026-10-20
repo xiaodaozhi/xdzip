@@ -1,6 +1,7 @@
 #pragma once
 #include "rust/cxx.h"
 #include "xdzip-qt-bridge/src/lib.rs.h"
+#include <QByteArray>
 #include <QObject>
 #include <QThread>
 #include <functional>
@@ -36,6 +37,7 @@ class RuntimeConnection final : public QObject {
     void cancel(quint64 request);
     bool cancelTask(quint64 task);
     bool decideTask(quint64 task, quint64 prompt, quint8 policy, bool all);
+    bool submitPassword(quint64 task, quint64 prompt, QByteArray password);
     void shutdown();
     struct Statistics {
         std::size_t peakQueued;

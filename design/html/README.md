@@ -85,3 +85,5 @@ welcome.css 承担欢迎页样式，逻辑参数来自 [welcome-reference.json](
 [系统菜单与托盘交互稿](desktop-integration.html)展示 macOS 顶部菜单与三平台托盘、驻留及退出状态；原生尺寸由系统决定。离线导出同步生成 `dist/xdzip-desktop-integration.html`。
 
 退出与重启确认可从审阅入口选择 quit/restart，或打开[独立状态稿](../hifi/sources/confirmations.html)。共享确认布局与 Qt 同源参数，覆盖停止禁用、长文案滚动及英文大字号按钮内换行。执行 `scripts/check-html-confirmations.py` 验证实际布局；浏览器图不代替原生装饰验收。
+
+密码解压从审阅入口选择 password，支持 `?view=password&retry=1` 或 `pending=1` 检查重试与提交中状态，[独立 P02 状态稿](../hifi/sources/password-extraction.html)为冻结设计依据。空密码可提交，提交与取消会清空字段，演示不执行解密、不保留密码。执行 `scripts/check-html-password.py` 验证中英文、浅深色、多字号、字节边界与固定 footer。

@@ -90,9 +90,16 @@ pub fn inspect(
             }
         }
         if row.encrypted {
-            report.add(row.id, "encrypted");
+            report.add(
+                row.id,
+                if row.password_supported {
+                    "password_required"
+                } else {
+                    "encrypted"
+                },
+            );
         }
-        if !matches!(row.method, 0 | 8) {
+        if !matches!(row.method, 0 | 8) && !row.password_supported {
             report.add(row.id, "method");
         }
         if row.warning {
@@ -168,6 +175,7 @@ mod tests {
             method: 0,
             modified_dos: 0,
             encrypted: false,
+            password_supported: false,
             warning: false,
         }
     }
@@ -279,5 +287,19 @@ mod tests {
         assert_eq!(report.findings.len(), 64);
         assert!(report.finding_count > report.findings.len());
         assert!(report.findings.iter().any(|f| f.reason == "encrypted"));
+    }
+    #[test]
+    fn supported_password_is_advisory_not_an_unsupported_method() {
+        let mut encrypted = entry(1, "secret.txt");
+        encrypted.encrypted = true;
+        encrypted.method = 99;
+        encrypted.password_supported = true;
+        let report = run(&[encrypted.clone()]);
+        assert_eq!(report.finding_count, 1);
+        assert_eq!(report.findings[0].reason, "password_required");
+        encrypted.password_supported = false;
+        let report = run(&[encrypted]);
+        assert!(report.findings.iter().any(|f| f.reason == "encrypted"));
+        assert!(report.findings.iter().any(|f| f.reason == "method"));
     }
 }

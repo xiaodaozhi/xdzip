@@ -34,13 +34,7 @@ pub(super) fn prepare(
             DecodeError::Cancelled => "cancelled",
             _ => "integrity_error",
         })?;
-    let mut total = 0usize;
-    for p in planned.iter_mut().filter(|p| archive.rows[p.index].link) {
-        cancel.check().map_err(|_| "cancelled")?;
-        let entry = &archive.rows[p.index];
-        if entry.directory || entry.size == 0 || entry.size > 4096 {
-            return Err("unsupported_link");
-        }
+    prepare_decoded(&archive.rows, planned, cancel, |entry| {
         let mut sink = Target(Vec::new());
         let decoded = decoder.decode(entry, &mut sink, cancel);
         archive.source.validate().map_err(|_| "source_changed")?;
@@ -49,11 +43,30 @@ pub(super) fn prepare(
             DecodeError::Limit => "resource_limit",
             _ => "integrity_error",
         })?;
+        Ok(sink.0)
+    })
+}
+
+/// Run an authenticated payload callback before validating the complete selected link graph.
+pub(super) fn prepare_decoded(
+    rows: &[xdzip_codec_api::Entry],
+    planned: &mut [Planned],
+    cancel: &Cancellation,
+    mut decode: impl FnMut(&xdzip_codec_api::Entry) -> Result<Vec<u8>, &'static str>,
+) -> Result<(), &'static str> {
+    let mut total = 0usize;
+    for p in planned.iter_mut().filter(|p| rows[p.index].link) {
+        cancel.check().map_err(|_| "cancelled")?;
+        let entry = &rows[p.index];
+        if entry.directory || entry.size == 0 || entry.size > 4096 {
+            return Err("unsupported_link");
+        }
+        let bytes = decode(entry)?;
         total = total
-            .checked_add(sink.0.len())
+            .checked_add(bytes.len())
             .filter(|n| *n <= 4 * 1024 * 1024)
             .ok_or("resource_limit")?;
-        let target = String::from_utf8(sink.0).map_err(|_| "unsupported_link")?;
+        let target = String::from_utf8(bytes).map_err(|_| "unsupported_link")?;
         // Deliberately conservative: no absolute, dot/parent, device, ambiguous or control components.
         PortablePath::parse(&target).ok_or("unsupported_link")?;
         p.link_target = Some(target);
@@ -71,10 +84,7 @@ pub(super) fn prepare(
                 .entry(p.path.parts()[..at].join("/"))
                 .or_insert((true, None));
         }
-        nodes.insert(
-            name,
-            (archive.rows[p.index].directory, p.link_target.as_deref()),
-        );
+        nodes.insert(name, (rows[p.index].directory, p.link_target.as_deref()));
     }
     for p in planned.iter().filter(|p| p.link_target.is_some()) {
         resolve(&p.path, &nodes, cancel)?;

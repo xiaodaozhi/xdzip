@@ -54,7 +54,8 @@ impl Queue {
 }
 impl Shared {
     pub(super) fn enqueue_task(&self, job: Job) -> Result<u64, &'static str> {
-        let bytes = job.retained_bytes();
+        // Reserve a bounded control slot/cache even though secrets bypass the ordinary queue.
+        let bytes = job.retained_bytes() + 2 * extraction::MAX_PASSWORD_BYTES;
         let mut state = self.lock();
         if state.shutdown.is_some() || !state.receiver_alive {
             return Err("runtime_closed");
@@ -94,6 +95,7 @@ impl Shared {
         {
             snapshot.status = Status::Cancelling;
             snapshot.prompt = None;
+            snapshot.password_prompt = None;
         }
         // At most 32 tasks, bounded 128-record display history (1024-byte names).
         // Arc-backed records are shared by latest/pending snapshots; chunks do
@@ -152,6 +154,8 @@ pub(super) fn worker(shared: Arc<Shared>) {
             fallback.error = "task_abandoned".into();
             // Unwind drops private stages. A panic is not proof of successful cleanup.
             fallback.cleanup_warning = true;
+            fallback.prompt = None;
+            fallback.password_prompt = None;
             control.mark_terminal();
             shared.publish_task(fallback);
             let mut state = shared.lock();
@@ -183,6 +187,7 @@ impl Client {
         {
             current.status = Status::Cancelling;
             current.prompt = None;
+            current.password_prompt = None;
             state.tasks.latest.insert(id, current.clone());
             state.tasks.pending.insert(id, current);
             self.0.changed.notify_all();
@@ -200,6 +205,21 @@ impl Client {
         let state = self.0.lock();
         let control = state.tasks.controls.get(&id).ok_or(Rejection::Invalid)?;
         if control.decide(prompt, policy, all) {
+            Ok(())
+        } else {
+            Err(Rejection::Invalid)
+        }
+    }
+    /// Deliver a bounded secret directly to the current one-use password control slot.
+    pub fn respond_password(
+        &self,
+        id: u64,
+        prompt: u64,
+        password: extraction::Password,
+    ) -> Result<(), Rejection> {
+        let state = self.0.lock();
+        let control = state.tasks.controls.get(&id).ok_or(Rejection::Invalid)?;
+        if control.respond_password(prompt, password) {
             Ok(())
         } else {
             Err(Rejection::Invalid)

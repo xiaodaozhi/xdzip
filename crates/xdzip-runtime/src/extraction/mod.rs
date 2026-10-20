@@ -2,6 +2,8 @@
 mod control;
 mod execute;
 mod links;
+#[cfg(test)]
+mod password_tests;
 mod plan;
 #[cfg(test)]
 mod tests;
@@ -18,6 +20,31 @@ pub const MAX_FILE_BYTES: u64 = 8 * 1024 * 1024 * 1024;
 pub const MAX_TASK_BYTES: u64 = 20 * 1024 * 1024 * 1024;
 /// Maximum accepted tasks, including undelivered terminal snapshots.
 pub const MAX_TASKS: usize = 32;
+/// UTF-8 bytes accepted from a password response, independently of creation policy.
+pub const MAX_PASSWORD_BYTES: usize = 1024;
+
+/// One task-local extraction secret. It is never cloned into events or commands.
+pub struct Password(zeroize::Zeroizing<String>);
+impl Password {
+    /// Preserve all UTF-8 bytes, including empty values, whitespace and controls.
+    pub fn new(value: String) -> Result<Self, &'static str> {
+        let value = zeroize::Zeroizing::new(value);
+        if value.len() > MAX_PASSWORD_BYTES || value.capacity() > 4 * MAX_PASSWORD_BYTES {
+            return Err("invalid_password");
+        }
+        // Copy only the bounded contents, rather than retaining an oversized caller capacity.
+        Ok(Self(zeroize::Zeroizing::new(value.as_str().to_owned())))
+    }
+    /// Borrow only for the synchronous codec call.
+    pub fn expose(&self) -> &str {
+        &self.0
+    }
+}
+impl std::fmt::Debug for Password {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("[REDACTED]")
+    }
+}
 
 /// Existing regular-file policy. Links and source archives remain protected.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -95,6 +122,8 @@ pub enum Status {
     Verifying,
     /// Awaiting an explicit conflict response.
     Waiting,
+    /// Awaiting a one-use password response through the independent control lane.
+    WaitingPassword,
     /// Publishing one complete file.
     Committing,
     /// Cancellation was requested; it has not yet finished.
@@ -117,6 +146,7 @@ impl Status {
             Self::Running => "running",
             Self::Verifying => "verifying",
             Self::Waiting => "waiting",
+            Self::WaitingPassword => "waiting_password",
             Self::Committing => "committing",
             Self::Cancelling => "cancelling",
             Self::Cleaning => "cleaning",
@@ -147,6 +177,16 @@ pub struct Prompt {
     pub incoming_modified_dos: u32,
     /// False when replacing would overwrite the selected archive.
     pub overwrite_allowed: bool,
+}
+/// A password request contains display metadata only, never a secret or verifier.
+#[derive(Clone, Debug)]
+pub struct PasswordPrompt {
+    /// Fresh per-task response identity, shared with conflict prompt numbering.
+    pub id: u64,
+    /// Escaped relative name requiring this password.
+    pub name: String,
+    /// A previous password failed the entry's password verifier.
+    pub retry: bool,
 }
 /// Actual completed file observation, independent of UI strings and icons.
 #[derive(Clone, Debug)]
@@ -205,11 +245,13 @@ pub struct Snapshot {
     pub leftovers: u64,
     /// Present only for the latest outstanding conflict.
     pub prompt: Option<Prompt>,
+    /// Present only while waiting for the latest one-use password response.
+    pub password_prompt: Option<PasswordPrompt>,
     /// Recent actual file outcomes, at most 128 records, shared by progress snapshots.
     pub details: std::sync::Arc<Vec<Outcome>>,
     /// Number of older records omitted from this bounded display history.
     pub omitted_details: u64,
-    /// True if the result needs an external reader: AES or numbered split ZIP.
+    /// True if the result needs an external reader: numbered split ZIP.
     pub external_reader: bool,
     /// Number of published archive parts; zero for extraction or failed creation.
     pub output_parts: u64,
@@ -252,6 +294,9 @@ impl Archive {
         self.source.validate().map_err(|_| "source_changed")?;
         let source = self.source.fork().map_err(|_| "source_changed")?;
         let planned = plan::prepare(self, &options, cancel)?;
+        let links_pending = planned
+            .iter()
+            .any(|p| self.rows[p.index].link && self.rows[p.index].encrypted);
         Ok(Job {
             source,
             format: self.format,
@@ -259,6 +304,7 @@ impl Archive {
             planned,
             options,
             session: self.key.session.get(),
+            links_pending,
         })
     }
 }

@@ -82,11 +82,11 @@ bool ownedWindow(QWindow *window, QWindow *main) {
     return false;
 }
 QIcon statusIcon(const QString &status) {
-    QColor color = status == "succeeded"   ? QColor("#21a86a")
-                   : status == "failed"    ? QColor("#df4b55")
-                   : status == "waiting"   ? QColor("#d08a18")
-                   : status == "cancelled" ? QColor("#8893a6")
-                                           : QColor("#2364ed");
+    QColor color = status == "succeeded"                                 ? QColor("#21a86a")
+                   : status == "failed"                                  ? QColor("#df4b55")
+                   : status == "waiting" || status == "waiting_password" ? QColor("#d08a18")
+                   : status == "cancelled"                               ? QColor("#8893a6")
+                                                                         : QColor("#2364ed");
     QPixmap image(32, 32);
     image.fill(Qt::transparent);
     QPainter painter(&image);

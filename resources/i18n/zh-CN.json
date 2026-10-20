@@ -236,7 +236,7 @@
     "ui.053461ce86d2": "成功",
     "ui.3ce2b5b2c6e8": "未完成的文件",
     "ui.4a4f9c0beda1": "目标位置",
-    "ui.92ccb53e91dc": "AES 或分卷文件可使用 7-Zip 等兼容工具打开。",
+    "ui.92ccb53e91dc": "分卷压缩包可使用 7-Zip 等兼容工具打开。",
     "ui.c0e1b58aa792": "显示最近 %1 条记录，较早的 %2 条未保留；统计包含全部文件。",
     "ui.aa3597f4a1f9": "尚未产生文件处理记录。",
     "ui.8f708e0b80e2": "无法确认全部提交结果，请检查目标目录及恢复材料。",
@@ -517,6 +517,23 @@
     "desktop.createTask": "创建",
     "desktop.extractTask": "解压",
     "desktop.trayEnabled": "显示托盘图标，关闭主窗口后继续运行",
-    "desktop.trayTip": "xdzip，%1 个活动任务"
+    "desktop.trayTip": "xdzip，%1 个活动任务",
+    "password.title": "解压密码",
+    "password.heading": "输入密码以继续解压",
+    "password.description": "此文件已加密，需要密码才能继续。",
+    "password.label": "密码",
+    "password.placeholder": "输入此压缩包的密码",
+    "password.show": "显示密码",
+    "password.hide": "隐藏密码",
+    "password.retry": "密码不正确，请重试。",
+    "password.limit": "密码不能超过 1,024 个 UTF-8 字节。",
+    "password.privacy": "密码仅用于当前任务，不会保存。关闭此窗口将取消任务。",
+    "password.continue": "继续解压",
+    "password.submitting": "正在提交…",
+    "password.waiting": "等待输入密码",
+    "password.open": "输入密码",
+    "password.submitRejected": "无法提交密码，请重试。",
+    "password.attemptLimit": "密码重试次数已达上限，任务已停止。",
+    "password.preflight": "此文件需要密码，解压时会请求输入。"
   }
 }

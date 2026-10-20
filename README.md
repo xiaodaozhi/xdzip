@@ -38,14 +38,14 @@
 | ZIP | ✓ | ✓ | ✓ |
 | TAR | ✓ | ✓ | ✓ |
 | TAR.GZ | ✓ | ✓ | ✓ |
-| AES ZIP | 元数据 | — | ✓ |
+| AES-256 ZIP | ✓ | ✓ | ✓ |
 | 分卷 ZIP | — | — | ✓ |
 
 ✓ 已支持，— 尚不支持；“元数据”表示仅浏览名称与属性。
 
 - **ZIP**：支持单卷 ZIP64，解压与创建支持 Store／Deflate，创建提供四档级别，默认正常压缩。
 - **TAR 与 TAR.GZ**：处理普通文件与目录，TAR.GZ 也支持 `.tgz` 扩展名；TAR 仅打包，TAR.GZ 提供四档级别。
-- **AES-256 ZIP**：仅加密文件内容，文件名仍可见；当前可以浏览元数据，尚不支持密码解压。
+- **AES-256 ZIP**：单卷 WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 及加密分卷读取尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **编号分卷**：创建为 `.zip.001`、`.zip.002` 等文件，当前不能跨卷读取或解压，可使用兼容外部工具读取。
 
 解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)与 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。

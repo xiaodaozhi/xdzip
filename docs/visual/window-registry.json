@@ -54,6 +54,13 @@
       "width": "Theme.operationConflictWidth",
       "design": "design/html/canvas.html?view=conflict"
     },
+    "PasswordWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.passwordLogicalWidth",
+      "reason": "应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer",
+      "design": "design/hifi/sources/password-extraction.html"
+    },
     "PreflightWindow": {
       "parent": "OperationWindow",
       "role": "operation",

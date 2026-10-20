@@ -108,3 +108,9 @@ CMake 构建 Qt 应用，Cargo 构建 Rust 静态库和 cxx 生成产物。使�
 创建与解压共用后台任务身份、取消、提示 ID、事件预算与异步退出。TaskSnapshot 增加 creating、total_known，扫描未知总量不能伪装为零字节任务；Verifying 阶段不把再次读取的校验量计入已处理输入。创建只保存完整归档一次，输入条目不能提前计为已保存。字段、错误及整体提交语义见 [WP-10 契约](../engineering/m4-creation.md)。
 
 创建选择摘要通过内部 InspectInputs 命令读取，返回按输入顺序的 Inputs，再返回唯一 Finished。一次最多 256 个绝对路径、每条最多 4 KiB，纳入已有请求与事件字节预算。后台使用 symlink_metadata，不递归目录、不跟随所选叶链接；普通文件报告大小，目录、错误与特殊对象不伪装为已知总量。Qt 仅展示当前路径集合对应的结果，快速变更合并为最新集合。目标检查与摘要请求在元数据通道空闲后执行，不创建重任务；开始创建仍重新授权、扫描并冻结输入树，不使用这些展示数据作为提交依据。
+
+## WP-14 密码解压切片
+
+密码响应使用独立 `respond_password(task, prompt, password)` 控制入口，不加入普通 `Command`。cxx 边界将传入字符串先移入解压专用的零化容器，再判断当前任务、提示、取消与容量准入；拒绝也消费并清理秘密。Qt 只在同步调用中临时持有有界 UTF-8 缓冲，不发送带密码的 queued signal。创建与解压密码的规则分别校验，不能因复用窗口控件而混同。
+
+`TaskSnapshot` 的 `password_prompt_id`、`password_prompt_name`、`password_retry` 与重名 `prompt_id` 分开。`waiting_password` 只描述等待，不含秘密或摘要。GUI 依据任务和提示的精确字符串 ID 提交响应，防止重复、过期和跨类型响应。取消／退出唤醒等待，原生菜单与任务窗口使用同一等待状态。协议、认证和清理边界见[密码解压契约](../engineering/password-extraction.md)。

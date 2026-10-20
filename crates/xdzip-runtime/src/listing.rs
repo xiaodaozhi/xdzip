@@ -224,6 +224,7 @@ mod tests {
             method: 0,
             modified_dos: 0,
             encrypted: false,
+            password_supported: false,
             warning: false,
         })
         .collect::<Vec<_>>()

@@ -79,6 +79,7 @@
     <file>ui/AssetLibrary.qml</file>
     <file>ui/ExtractWindow.qml</file>
     <file>ui/ConflictWindow.qml</file>
+    <file>ui/PasswordWindow.qml</file>
     <file>ui/QuitWindow.qml</file>
     <file>ui/TaskPathCard.qml</file>
     <file>ui/TaskMetric.qml</file>

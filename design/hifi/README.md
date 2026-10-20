@@ -86,3 +86,5 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 [系统菜单与托盘，D01](sources/desktop-integration.html)：原生菜单结构、关闭驻留及恢复交互，实际装饰由系统绘制。
 
 [退出与重启确认状态稿](sources/confirmations.html)覆盖退出、正在停止及重启确认，采用共享 491 宽、20 标题、13 正文和内容自适应高度。中英文、大字号、正文滚动与 footer 规则见[窗口规范](../../docs/visual/design-standard.md)。
+
+[密码解压，P02](sources/password-extraction.html)冻结输入、错误重试与提交中三种状态。采用 491 宽、20 标题、13 正文、12 说明和固定共享 footer，密码字段在截图时保持为空。参数见 [password-reference.json](../../docs/visual/password-reference.json)，真实行为见[密码解压交互](../../docs/ux/password-extraction.md)。

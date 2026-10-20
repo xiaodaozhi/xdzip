@@ -128,9 +128,10 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         outcome_uncertain: false,
         leftovers: 0,
         prompt: None,
+        password_prompt: None,
         details: Default::default(),
         omitted_details: 0,
-        external_reader: job.options.volume_bytes > 0 || job.options.password.is_some(),
+        external_reader: job.options.volume_bytes > 0,
         output_parts: 0,
     }
 }

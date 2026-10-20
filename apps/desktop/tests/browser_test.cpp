@@ -18,6 +18,7 @@
 #include <QElapsedTimer>
 #include <QFile>
 #include <QInputMethodEvent>
+#include <QJsonDocument>
 #include <QLockFile>
 #include <QMenu>
 #include <QProcess>
@@ -1969,6 +1970,177 @@ class BrowserTest : public QObject {
         QCOMPARE(controller->tasks().size(), 0);
         QCOMPARE(QDir(target.path()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).size(), 0);
         window->close();
+    }
+    void receiverFaultClearsPasswordDraftImmediately() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        // Inject receiver metadata, not an archive task or a secret-bearing event.
+        xdzip::reader::Event waiting{};
+        waiting.kind = xdzip::reader::EventKind::TaskUpdate;
+        waiting.task.id = 71;
+        waiting.task.status = rust::String("waiting_password");
+        waiting.task.password_prompt_id = 4;
+        waiting.task.password_prompt_name = rust::String("owned.txt");
+        controller->receive(waiting);
+        auto *promptWindow = window->findChild<QQuickWindow *>("passwordWindow");
+        QVERIFY(promptWindow);
+        QTRY_VERIFY(promptWindow->isVisible());
+        auto *field = findVisual(promptWindow->contentItem(), "extractionPassword");
+        QVERIFY(field);
+        field->setProperty("text", QStringLiteral("discarded local draft"));
+        xdzip::reader::Event fault{};
+        fault.kind = xdzip::reader::EventKind::RuntimeFault;
+        controller->receive(fault);
+        QTRY_VERIFY(!promptWindow->isVisible());
+        QVERIFY(field->property("text").toString().isEmpty());
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
+    void passwordExtractionRetriesCancelsAndStopsWithApplication() {
+        QTemporaryDir input, archives, generated, target, cancelled, exiting;
+        QVERIFY(input.isValid() && archives.isValid() && target.isValid() && cancelled.isValid() &&
+                exiting.isValid() && generated.isValid());
+        const auto source = input.filePath(QStringLiteral("owned.txt"));
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write("owned AES payload\n"), qint64(18));
+        file.close();
+        // An owned fixture secret, never compared with value-printing test macros.
+        const auto password = QStringLiteral(" owned AES 密码 ");
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->startCreation({source}, archives.path(), QStringLiteral("encrypted.zip"), 8, 6,
+                                  false, 0, password);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy() &&
+                                     controller->title() == QStringLiteral("encrypted.zip"),
+                                 10000);
+        QCOMPARE(controller->archiveTotal(), 1);
+        QVERIFY(!controller->tasks().first().toMap().value("externalReader").toBool());
+        const auto start = [&](const QString &destination) {
+            controller->prepareExtraction(true);
+            auto *extract = window->findChild<QQuickWindow *>("extractWindow");
+            auto *targetField =
+                extract ? findVisual(extract->contentItem(), "extractTarget") : nullptr;
+            return targetField && targetField->setProperty("text", destination);
+        };
+        QVERIFY(start(generated.path()));
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(generated.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(generated.path()));
+        controller->startExtraction(generated.path(), true, false, 0, false, false);
+        QTRY_VERIFY(!controller->passwordPrompt().isEmpty());
+        const auto generatedPrompt = controller->passwordPrompt();
+        QVERIFY(controller->submitPassword(generatedPrompt.value("taskId").toString(),
+                                           generatedPrompt.value("promptId").toString(), password));
+        QTRY_VERIFY(controller->activeTaskCount() == 0);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
+        QFile generatedResult(generated.filePath("owned.txt"));
+        QVERIFY(generatedResult.open(QIODevice::ReadOnly));
+        QCOMPARE(generatedResult.readAll(), QByteArray("owned AES payload\n"));
+        // This fixed salt's verifier deterministically rejects the wrong fixture
+        // secret. Random writer salts would make the retry assertion flaky.
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/password-retry.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->title() == QStringLiteral("password-retry.zip"));
+        QVERIFY(start(target.path()));
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(target.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(target.path()));
+        QSignalSpy extractionStarted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 10000);
+        QVERIFY2(!extractionStarted.isEmpty(),
+                 qPrintable(controller->extractionIntent().value("error").toString()));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty() ||
+                                     controller->tasks().first().toMap().value("terminal").toBool(),
+                                 10000);
+        QVERIFY2(!controller->passwordPrompt().isEmpty(),
+                 qPrintable(controller->tasks().first().toMap().value("errorCode").toString()));
+        auto *promptWindow = window->findChild<QQuickWindow *>("passwordWindow");
+        QVERIFY(promptWindow);
+        QTRY_VERIFY(promptWindow->isVisible());
+        QCOMPARE(promptWindow->modality(), Qt::ApplicationModal);
+        QCOMPARE(promptWindow->width(), 491);
+        auto *field = findVisual(promptWindow->contentItem(), "extractionPassword");
+        auto *submit = findVisual(promptWindow->contentItem(), "passwordSubmit");
+        QVERIFY(field && submit);
+        QCOMPARE(field->property("echoMode").toInt(), 2);
+        auto *editable = QAccessible::queryAccessibleInterface(field);
+        QVERIFY(editable && editable->role() == QAccessible::EditableText);
+        QVERIFY(editable->state().passwordEdit);
+        QVERIFY(!editable->text(QAccessible::Name).isEmpty());
+        auto *visibility = findVisual(promptWindow->contentItem(), "passwordVisibility");
+        QVERIFY(visibility);
+        auto *visibilityInterface = QAccessible::queryAccessibleInterface(visibility);
+        QVERIFY(visibilityInterface && visibilityInterface->actionInterface());
+        visibilityInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(field->property("echoMode").toInt(), 0);
+        visibilityInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(field->property("echoMode").toInt(), 2);
+        const auto first = controller->passwordPrompt();
+        const auto task = first.value("taskId").toString();
+        const auto token = first.value("promptId").toString();
+        QVERIFY(!controller->submitPassword(task, "0", QStringLiteral("ignored")));
+        QVERIFY(!controller->submitPassword(task, token, QString(400, QChar(0x4e2d))));
+        QVERIFY(!QFile::exists(target.filePath("owned.txt")));
+        field->setProperty("text", QStringLiteral("wrong owned fixture"));
+        auto *submitInterface = QAccessible::queryAccessibleInterface(submit);
+        QVERIFY(submitInterface && submitInterface->actionInterface());
+        submitInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_VERIFY_WITH_TIMEOUT(controller->passwordPrompt().value("retry").toBool() &&
+                                     controller->passwordPrompt().value("promptId") != token,
+                                 10000);
+        QTRY_VERIFY(field->property("text").toString().isEmpty());
+        QVERIFY(!controller->submitPassword(task, token, password));
+        QVERIFY(!QFile::exists(target.filePath("owned.txt")));
+        QTRY_VERIFY(submit->isEnabled());
+        field->setProperty("text", password);
+        field->forceActiveFocus();
+        QTest::keyClick(promptWindow, Qt::Key_Return);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
+        QTRY_VERIFY(!promptWindow->isVisible());
+        QVERIFY(field->property("text").toString().isEmpty());
+        QFile result(target.filePath("owned.txt"));
+        QVERIFY(result.open(QIODevice::ReadOnly));
+        QCOMPARE(result.readAll(), QByteArray("owned AES payload\n"));
+        const auto snapshots = QJsonDocument::fromVariant(controller->tasks()).toJson();
+        QVERIFY(!snapshots.contains(password.toUtf8()));
+
+        QVERIFY(start(cancelled.path()));
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(cancelled.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(cancelled.path()));
+        controller->startExtraction(cancelled.path(), true, false, 0, false, false);
+        QTRY_VERIFY(!controller->passwordPrompt().isEmpty() && promptWindow->isVisible());
+        field->setProperty("text", QStringLiteral("discarded fixture"));
+        promptWindow->close();
+        QTRY_VERIFY(controller->activeTaskCount() == 0);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "cancelled");
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QVERIFY(field->property("text").toString().isEmpty());
+        QVERIFY(!QFile::exists(cancelled.filePath("owned.txt")));
+
+        QVERIFY(start(exiting.path()));
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(exiting.path());
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(exiting.path()));
+        controller->startExtraction(exiting.path(), true, false, 0, false, false);
+        QTRY_VERIFY(!controller->passwordPrompt().isEmpty());
+        QVERIFY(!controller->requestClose());
+        QTRY_VERIFY_WITH_TIMEOUT(controller->requestClose(), 10000);
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QVERIFY(field->property("text").toString().isEmpty());
+        QVERIFY(!QFile::exists(exiting.filePath("owned.txt")));
     }
     void unixBundleExtractionThroughNativeController() {
 #ifndef Q_OS_UNIX

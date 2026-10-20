@@ -1,5 +1,8 @@
 use super::plan::Job;
-use super::{ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Prompt, Snapshot, Status};
+use super::{
+    ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Password, PasswordPrompt, Prompt,
+    Snapshot, Status,
+};
 use std::io::Write;
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -27,6 +30,8 @@ fn decoding(error: DecodeError) -> &'static str {
         DecodeError::Limit => "resource_limit",
         DecodeError::Cancelled => "cancelled",
         DecodeError::Output => "output_io",
+        DecodeError::PasswordRequired => "password_required",
+        DecodeError::WrongPassword => "wrong_password",
     }
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
@@ -61,6 +66,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         outcome_uncertain: false,
         leftovers: 0,
         prompt: None,
+        password_prompt: None,
         details: Default::default(),
         omitted_details: 0,
         external_reader: false,
@@ -71,8 +77,70 @@ fn emit(stats: &mut Snapshot, start: Instant, publish: &mut dyn FnMut(Snapshot))
     stats.elapsed_ms = start.elapsed().as_millis().min(u128::from(u64::MAX)) as u64;
     publish(stats.clone());
 }
+#[derive(Default)]
+struct Interaction {
+    next_prompt: u64,
+    password: Option<Password>,
+}
+impl Interaction {
+    fn fresh_prompt(&mut self) -> Result<u64, &'static str> {
+        self.next_prompt = self.next_prompt.checked_add(1).ok_or("resource_limit")?;
+        Ok(self.next_prompt)
+    }
+    fn decode<T>(
+        &mut self,
+        entry: &xdzip_codec_api::Entry,
+        control: &Control,
+        stats: &mut Snapshot,
+        start: Instant,
+        publish: &mut dyn FnMut(Snapshot),
+        mut attempt: impl FnMut(
+            Option<&str>,
+            &mut Snapshot,
+            &mut dyn FnMut(Snapshot),
+        ) -> Result<T, &'static str>,
+    ) -> Result<T, &'static str> {
+        let mut failures = 0;
+        loop {
+            control.cancel.check().map_err(|_| "cancelled")?;
+            let result = attempt(self.password.as_ref().map(Password::expose), stats, publish);
+            match result {
+                Err(error @ ("password_required" | "wrong_password")) => {
+                    if !entry.password_supported {
+                        return Err("unsupported_feature");
+                    }
+                    let retry = error == "wrong_password";
+                    if retry {
+                        failures += 1;
+                        if failures >= 10 {
+                            return Err("wrong_password");
+                        }
+                    }
+                    // The failed attempt has dropped its entire private stage. Never retain
+                    // both the rejected cache and the next pending response while waiting.
+                    self.password = None;
+                    let id = self.fresh_prompt()?;
+                    control.arm_password(id);
+                    let previous = stats.status;
+                    stats.status = Status::WaitingPassword;
+                    stats.password_prompt = Some(PasswordPrompt {
+                        id,
+                        name: entry.display_name.clone(),
+                        retry,
+                    });
+                    emit(stats, start, publish);
+                    self.password = Some(control.wait_password()?);
+                    stats.password_prompt = None;
+                    stats.status = previous;
+                    emit(stats, start, publish);
+                }
+                other => return other,
+            }
+        }
+    }
+}
 /// Finish cleanup and publish exactly one terminal snapshot even after a decode/output failure.
-pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
+pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
     let start = Instant::now();
     let mut stats = initial(&job, id);
     stats.status = Status::Preparing;
@@ -83,6 +151,57 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
+        let mut interaction = Interaction::default();
+        let mut source = job.source.fork().map_err(|_| "source_changed")?;
+        let opened = crate::formats::codec(job.format).open_payload(
+            source.file(),
+            &job.rows,
+            &control.cancel,
+        );
+        job.source.validate().map_err(|_| "source_changed")?;
+        let mut decoder = opened.map_err(decoding)?;
+        if job.links_pending {
+            // Authentication and the complete graph precede even derived output folders.
+            super::links::prepare_decoded(&job.rows, &mut job.planned, &control.cancel, |entry| {
+                stats.current = entry.display_name.clone();
+                interaction.decode(
+                    entry,
+                    control,
+                    &mut stats,
+                    start,
+                    publish,
+                    |password, stats, publish| {
+                        let mut bytes = Vec::new();
+                        let mut meter = Meter {
+                            writer: &mut bytes,
+                            stats,
+                            control,
+                            file_bytes: 0,
+                            file_limit: 4096,
+                            count_written: false,
+                            error: None,
+                            start,
+                            last: Instant::now(),
+                            publish,
+                        };
+                        let decoded = decoder.decode_with_password(
+                            entry,
+                            &mut meter,
+                            &control.cancel,
+                            password,
+                        );
+                        let actual = meter.file_bytes;
+                        let write_error = meter.error;
+                        job.source.validate().map_err(|_| "source_changed")?;
+                        decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))?;
+                        if actual != entry.size {
+                            return Err("integrity_error");
+                        }
+                        Ok(bytes)
+                    },
+                )
+            })?;
+        }
         let source_id = job.source.identity().map_err(|_| "source_changed")?;
         let root = Grant::open(Path::new(&job.options.target), source_id).map_err(output)?;
         grant = Some(root.clone());
@@ -99,14 +218,6 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         stats.target = target.display_path().to_string_lossy().into_owned();
         workspace = Some(target.workspace(id).map_err(output)?);
         let workspace = workspace.as_mut().expect("workspace just created");
-        let mut source = job.source.fork().map_err(|_| "source_changed")?;
-        let opened = crate::formats::codec(job.format).open_payload(
-            source.file(),
-            &job.rows,
-            &control.cancel,
-        );
-        job.source.validate().map_err(|_| "source_changed")?;
-        let mut decoder = opened.map_err(decoding)?;
         let has_links = job.planned.iter().any(|p| p.link_target.is_some());
         if has_links {
             // Renaming/skipping a dependency would change the frozen link graph. Refuse
@@ -118,7 +229,6 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             }
         }
         let mut policy = job.options.conflict;
-        let mut prompt_id = 0u64;
         for planned in &job.planned {
             control.cancel.check().map_err(|_| "cancelled")?;
             job.source.validate().map_err(|_| "source_changed")?;
@@ -126,22 +236,39 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             stats.current = entry.display_name.clone();
             stats.status = Status::Running;
             stats.prompt = None;
+            stats.password_prompt = None;
             if entry.directory {
                 // Validate even empty directory local headers/CRC before creating a visible directory.
-                let mut sink = Meter {
-                    writer: std::io::sink(),
-                    stats: &mut stats,
+                interaction.decode(
+                    entry,
                     control,
-                    file_bytes: 0,
-                    error: None,
+                    &mut stats,
                     start,
-                    last: Instant::now(),
                     publish,
-                };
-                decoder
-                    .decode(entry, &mut sink, &control.cancel)
-                    .map_err(decoding)?;
-                job.source.validate().map_err(|_| "source_changed")?;
+                    |password, stats, publish| {
+                        let mut sink = Meter {
+                            writer: std::io::sink(),
+                            stats,
+                            control,
+                            file_bytes: 0,
+                            file_limit: MAX_FILE_BYTES,
+                            count_written: true,
+                            error: None,
+                            start,
+                            last: Instant::now(),
+                            publish,
+                        };
+                        let decoded = decoder.decode_with_password(
+                            entry,
+                            &mut sink,
+                            &control.cancel,
+                            password,
+                        );
+                        let write_error = sink.error;
+                        job.source.validate().map_err(|_| "source_changed")?;
+                        decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))
+                    },
+                )?;
                 target.ensure_directory(&planned.path).map_err(output)?;
                 continue;
             }
@@ -149,17 +276,25 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 pending_file = Some(entry.size);
                 // Payload was fully decoded and CRC checked before output admission. Source
                 // identity is rechecked above; no untrusted link is ever used as a write path.
+                let link_target = PortablePath::parse(link_target).ok_or("unsupported_link")?;
                 control.begin_commit()?;
-                let committed = workspace
-                    .commit_symlink(
-                        &planned.path,
-                        &PortablePath::parse(link_target).ok_or("unsupported_link")?,
-                    )
-                    .map_err(output);
+                stats.status = Status::Committing;
+                emit(&mut stats, start, publish);
+                let committed = job
+                    .source
+                    .validate()
+                    .map_err(|_| "source_changed")
+                    .and_then(|_| {
+                        workspace
+                            .commit_symlink(&planned.path, &link_target)
+                            .map_err(output)
+                    });
                 let cancelled = control.end_commit(false);
                 if let Ok(receipt) = &committed {
                     stats.committed_files += 1;
-                    stats.decoded_bytes += entry.size;
+                    if !job.links_pending {
+                        stats.decoded_bytes += entry.size;
+                    }
                     stats.written_bytes += entry.size;
                     stats.committed_bytes += entry.size;
                     stats.cleanup_warning |= receipt.cleanup_warning;
@@ -180,7 +315,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 }
                 let mut decision = policy;
                 if decision == ConflictPolicy::Ask {
-                    prompt_id = prompt_id.checked_add(1).ok_or("resource_limit")?;
+                    let prompt_id = interaction.fresh_prompt()?;
                     control.arm(prompt_id);
                     stats.status = Status::Waiting;
                     stats.prompt = Some(Prompt {
@@ -224,26 +359,39 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             }
             stats.current = path.display();
             emit(&mut stats, start, publish);
-            let mut stage = workspace.stage().map_err(output)?;
-            let mut meter = Meter {
-                writer: &mut stage,
-                stats: &mut stats,
+            let (mut stage, actual) = interaction.decode(
+                entry,
                 control,
-                file_bytes: 0,
-                error: None,
+                &mut stats,
                 start,
-                last: Instant::now(),
                 publish,
-            };
-            let decoded = decoder.decode(entry, &mut meter, &control.cancel);
-            let actual = meter.file_bytes;
-            let write_error = meter.error;
-            // Source mutation takes precedence over a derivative CRC/header failure.
-            job.source.validate().map_err(|_| "source_changed")?;
-            decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))?;
-            if actual != entry.size {
-                return Err("integrity_error");
-            }
+                |password, stats, publish| {
+                    let mut stage = workspace.stage().map_err(output)?;
+                    let mut meter = Meter {
+                        writer: &mut stage,
+                        stats,
+                        control,
+                        file_bytes: 0,
+                        file_limit: MAX_FILE_BYTES,
+                        count_written: true,
+                        error: None,
+                        start,
+                        last: Instant::now(),
+                        publish,
+                    };
+                    let decoded =
+                        decoder.decode_with_password(entry, &mut meter, &control.cancel, password);
+                    let actual = meter.file_bytes;
+                    let write_error = meter.error;
+                    // Source mutation takes precedence over derivative password/header failures.
+                    job.source.validate().map_err(|_| "source_changed")?;
+                    decoded.map_err(|e| write_error.unwrap_or_else(|| decoding(e)))?;
+                    if actual != entry.size {
+                        return Err("integrity_error");
+                    }
+                    Ok((stage, actual))
+                },
+            )?;
             if entry.unix_mode != 0 {
                 stage.restore_mode(entry.unix_mode).map_err(output)?;
             }
@@ -273,6 +421,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         control.complete()
     })();
     stats.prompt = None;
+    stats.password_prompt = None;
     stats.status = if control.cancel.check().is_err() {
         Status::Cancelling
     } else {
@@ -333,6 +482,8 @@ struct Meter<'a, W: Write> {
     stats: &'a mut Snapshot,
     control: &'a Control,
     file_bytes: u64,
+    file_limit: u64,
+    count_written: bool,
     error: Option<&'static str>,
     start: Instant,
     last: Instant,
@@ -347,7 +498,7 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
         if self
             .file_bytes
             .checked_add(n)
-            .is_none_or(|n| n > MAX_FILE_BYTES)
+            .is_none_or(|n| n > self.file_limit)
         {
             self.error = Some("file_quota");
             return Err(DecodeError::Output);
@@ -391,7 +542,9 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
                             limit.set(Some(remaining - n as u64));
                         }
                     });
-                    self.stats.written_bytes += n as u64;
+                    if self.count_written {
+                        self.stats.written_bytes += n as u64;
+                    }
                     rest = &rest[n..];
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
@@ -445,6 +598,8 @@ mod meter_tests {
             stats: &mut stats,
             control: &control,
             file_bytes: MAX_FILE_BYTES,
+            file_limit: MAX_FILE_BYTES,
+            count_written: true,
             error: None,
             start: Instant::now(),
             last: Instant::now(),
@@ -458,6 +613,54 @@ mod meter_tests {
         assert_eq!(meter.error, Some("disk_full"));
         assert_eq!(meter.stats.decoded_bytes, 4);
         assert_eq!(meter.stats.written_bytes, 2);
+    }
+    #[test]
+    fn failed_password_attempts_do_not_reset_actual_task_byte_quota() {
+        let mut stats = ArchiveForTest::snapshot();
+        stats.decoded_bytes = MAX_TASK_BYTES - 5;
+        let mut entry = super::super::tests::archive("stored.zip").rows[0].clone();
+        entry.encrypted = true;
+        entry.password_supported = true;
+        let control = Control::default();
+        let mut interaction = Interaction::default();
+        let mut attempts = 0;
+        let mut prompts = 0;
+        let mut publish = |snapshot: Snapshot| {
+            if let Some(prompt) = snapshot.password_prompt {
+                prompts += 1;
+                control.respond_password(prompt.id, Password::new("answer".into()).unwrap());
+            }
+        };
+        let result = interaction.decode(
+            &entry,
+            &control,
+            &mut stats,
+            Instant::now(),
+            &mut publish,
+            |_, stats, publish| {
+                attempts += 1;
+                let mut sink = Meter {
+                    writer: std::io::sink(),
+                    stats,
+                    control: &control,
+                    file_bytes: 0,
+                    file_limit: MAX_FILE_BYTES,
+                    count_written: true,
+                    error: None,
+                    start: Instant::now(),
+                    last: Instant::now(),
+                    publish,
+                };
+                let written = sink.write_chunk(b"123");
+                written.map_err(|error| sink.error.unwrap_or_else(|| decoding(error)))?;
+                Err::<(), _>("wrong_password")
+            },
+        );
+        assert_eq!(result, Err("task_quota"));
+        assert_eq!(attempts, 2);
+        assert_eq!(prompts, 1);
+        assert_eq!(stats.decoded_bytes, MAX_TASK_BYTES - 2);
+        assert_eq!(stats.written_bytes, 3);
     }
     struct ArchiveForTest;
     impl ArchiveForTest {

@@ -150,3 +150,7 @@ macOS 顶部系统菜单和全平台托盘菜单使用平台原生绘制，字�
 退出、停止任务和设置重启确认共用 [operation.confirmation](layout-scale.json)：客户区宽 491、标题 20、正文 13、内容内距 24、段间距 12，最高 600，并受可用屏幕高度约束。高度由真实正文与共享 footer 决定，禁止使用 270/540 等分档固定高度，禁止从旧默认操作窗的 612/25/16 套用。正文滚动，footer 不随正文移动。三按钮在英文 150% 字号下允许文字在按钮内换行并增加共享行高，不减字号、不越界、不改为纵向三个按钮。停止时维持相同几何政策且禁用决策按钮。
 
 [独立状态稿](../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽、AboutWindow 的品牌标题及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。完整窗口清单与例外理由见 [window-registry.json](window-registry.json)。
+
+## 密码解压请求
+
+PasswordWindow 按 [password-reference.json](password-reference.json) 和 [P02 独立稿](../../design/hifi/sources/password-extraction.html) 采用 491 宽、最高 600、24 正文内距、20 标题、13 正文和 12 说明。原生标题栏保持平台绘制，不更改主窗口标题栏。正文滚动、共享 footer 固定，输入框复用 OperationField 与 OperationFrame，显示／隐藏动作和 footer 使用共享按钮。普通、hover、pressed、disabled、pending、错误重试与浅深色均使用既有角色；不新增 outline、不覆盖 footer 外观。密码清理、请求身份、取消及空密码规则见[交互契约](../ux/password-extraction.md)。

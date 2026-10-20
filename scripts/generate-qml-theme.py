@@ -17,6 +17,7 @@ welcome = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text())
 about = json.loads((ROOT / 'docs/visual/about-reference.json').read_text())
 settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text())
 preflight = json.loads((ROOT / 'docs/visual/preflight-reference.json').read_text())
+password = json.loads((ROOT / 'docs/visual/password-reference.json').read_text())
 result = json.loads((ROOT / 'docs/visual/result-reference.json').read_text())
 main_scale = main['logical_width'] / main['source_window'][2]
 
@@ -59,6 +60,11 @@ for key in ['logical_width', 'maximum_height', 'content_inset', 'section_gap', '
 for key, value in layout['operation']['logical_widths'].items():
     identifier = ''.join(part.title() for part in key.split('-'))
     lines.append(f'    readonly property int operation{identifier}Width: {value}')
+for key, value in password.items():
+    if key != 'schema_version' and isinstance(value, (int, float)):
+        name = 'password' + ''.join(part.title() for part in key.split('_'))
+        scale = ' * fontScale' if key.endswith('_size') else ''
+        lines.append(f'    readonly property real {name}: {value}{scale}')
 lines.append(f'    readonly property real operationExtractDensity: {layout["operation"]["extract_density"]}')
 lines.append(f'    readonly property real operationProgressDensity: {layout["operation"]["progress_density"]}')
 lines.append(f'    readonly property real operationCreateDensity: {layout["operation"]["create_density"]}')

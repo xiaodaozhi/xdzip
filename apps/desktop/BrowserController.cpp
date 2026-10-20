@@ -13,6 +13,7 @@
 #include <QGuiApplication>
 #include <QLocale>
 #include <QPointer>
+#include <QScopeGuard>
 #include <QStandardPaths>
 #include <QTime>
 #include <QUrl>
@@ -152,6 +153,7 @@ BrowserController::BrowserController(QObject *parent)
                 task.insert("outcomeUncertain", true);
                 task.insert("cleanupWarning", true);
                 task.insert("promptId", QString{});
+                task.insert("passwordPromptId", QString{});
             }
             m_openAfterTasks.clear();
             m_createdArchivesToOpen.clear();
@@ -183,6 +185,8 @@ QString BrowserController::explain(const QString &code) {
         {"input_collision", qtTrId("ui.96d580ed8b8a")},
         {"unsafe_name", qtTrId("ui.c9aa9ad002f7")},
         {"invalid_password", qtTrId("ui.a35179e5025f")},
+        {"wrong_password", qtTrId("password.attemptLimit")},
+        {"password_required", qtTrId("password.waiting")},
         {"invalid_creation_options", qtTrId("ui.674e51a0a214")},
         {"split_overwrite_not_supported", qtTrId("ui.930e2ed5950e")},
         {"ambiguous_name", qtTrId("ui.1f3e5278a2e1")},
@@ -550,6 +554,20 @@ int BrowserController::activeTaskCount() const {
                              [](const auto &v) { return !v.value("terminal").toBool(); })) +
            (preparing ? 1 : 0);
 }
+QVariantMap BrowserController::passwordPrompt() const {
+    if (!runtimeAvailable())
+        return {};
+    for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
+        const auto &task = it.value();
+        if (task.value("status") == "waiting_password" &&
+            !task.value("passwordPromptId").toString().isEmpty())
+            return {{"taskId", QString::number(it.key())},
+                    {"promptId", task.value("passwordPromptId")},
+                    {"name", task.value("passwordPromptName")},
+                    {"retry", task.value("passwordRetry")}};
+    }
+    return {};
+}
 void BrowserController::prepareExtraction(bool all, const QStringList &selectors) {
     if (!m_ready || m_busy || !runtimeAvailable())
         return;
@@ -749,6 +767,20 @@ bool BrowserController::decideTask(const QString &id, const QString &prompt, int
            m_connection->decideTask(id.toULongLong(), prompt.toULongLong(),
                                     static_cast<quint8>(policy), all);
 }
+bool BrowserController::submitPassword(const QString &id, const QString &prompt,
+                                       const QString &password) {
+    if (!runtimeAvailable() || password.size() > 1024)
+        return false;
+    const auto task = m_tasks.constFind(id.toULongLong());
+    if (task == m_tasks.cend() || task->value("status") != "waiting_password" || prompt.isEmpty() ||
+        task->value("passwordPromptId").toString() != prompt)
+        return false;
+    auto bytes = password.toUtf8();
+    const auto clear = qScopeGuard([&] { bytes.fill('\0'); });
+    if (bytes.size() > 1024 || QString::fromUtf8(bytes) != password)
+        return false;
+    return m_connection->submitPassword(id.toULongLong(), prompt.toULongLong(), std::move(bytes));
+}
 void BrowserController::openOutput(const QString &id) {
     const auto task = m_tasks.value(id.toULongLong());
     if (!task.isEmpty())
@@ -811,6 +843,7 @@ bool BrowserController::requestClose() {
     m_preflightReport.clear();
     m_message = qtTrId("ui.0ae60dd37b14");
     m_connection->shutdown();
+    emit tasksChanged(); // Hide password input immediately when shutdown starts.
     emit changed();
     return false;
 }
@@ -925,6 +958,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_detail.clear();
         m_preflightReport.clear();
         m_message = explain("runtime_unavailable");
+        emit tasksChanged(); // Invalidate the password binding at the fault boundary.
         emit changed();
         return;
     }
@@ -939,42 +973,46 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                        {"status", text(entry.status)},
                                        {"errorCode", text(entry.error)},
                                        {"error", explain(text(entry.error))}});
-        QVariantMap value{{"details", details},
-                          {"omittedDetails", QString::number(t.omitted_details)},
-                          {"externalReader", t.external_reader},
-                          {"outputParts", QString::number(t.output_parts)},
-                          {"creating", t.creating},
-                          {"totalKnown", t.total_known},
-                          {"archive", t.creating
-                                          ? QVariant(QFileInfo(text(t.target)).fileName())
-                                          : m_tasks.value(t.id).value(
-                                                "archive", m_extractionIntent.value("archive"))},
-                          {"id", QString::number(t.id)},
-                          {"session", QString::number(t.session)},
-                          {"status", status},
-                          {"terminal", terminal},
-                          {"target", text(t.target)},
-                          {"current", text(t.current)},
-                          {"files", QString::number(t.files)},
-                          {"declaredBytes", QString::number(t.declared_bytes)},
-                          {"decodedBytes", QString::number(t.decoded_bytes)},
-                          {"writtenBytes", QString::number(t.written_bytes)},
-                          {"committedBytes", QString::number(t.committed_bytes)},
-                          {"committedFiles", QString::number(t.committed_files)},
-                          {"skippedFiles", QString::number(t.skipped_files)},
-                          {"createdDirectories", QString::number(t.created_directories)},
-                          {"elapsedMs", QString::number(t.elapsed_ms)},
-                          {"errorCode", text(t.error)},
-                          {"error", text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31")
-                                                                 : explain(text(t.error))},
-                          {"cleanupWarning", t.cleanup_warning},
-                          {"outcomeUncertain", t.outcome_uncertain},
-                          {"leftovers", QString::number(t.leftovers)},
-                          {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
-                          {"promptName", text(t.prompt_name)},
-                          {"existingBytes", QString::number(t.existing_bytes)},
-                          {"incomingBytes", QString::number(t.incoming_bytes)},
-                          {"overwriteAllowed", t.overwrite_allowed}};
+        QVariantMap value{
+            {"details", details},
+            {"omittedDetails", QString::number(t.omitted_details)},
+            {"externalReader", t.external_reader},
+            {"outputParts", QString::number(t.output_parts)},
+            {"creating", t.creating},
+            {"totalKnown", t.total_known},
+            {"archive", t.creating ? QVariant(QFileInfo(text(t.target)).fileName())
+                                   : m_tasks.value(t.id).value(
+                                         "archive", m_extractionIntent.value("archive"))},
+            {"id", QString::number(t.id)},
+            {"session", QString::number(t.session)},
+            {"status", status},
+            {"terminal", terminal},
+            {"target", text(t.target)},
+            {"current", text(t.current)},
+            {"files", QString::number(t.files)},
+            {"declaredBytes", QString::number(t.declared_bytes)},
+            {"decodedBytes", QString::number(t.decoded_bytes)},
+            {"writtenBytes", QString::number(t.written_bytes)},
+            {"committedBytes", QString::number(t.committed_bytes)},
+            {"committedFiles", QString::number(t.committed_files)},
+            {"skippedFiles", QString::number(t.skipped_files)},
+            {"createdDirectories", QString::number(t.created_directories)},
+            {"elapsedMs", QString::number(t.elapsed_ms)},
+            {"errorCode", text(t.error)},
+            {"error",
+             text(t.error) == "cancelled" ? qtTrId("ui.d7df27ca8d31") : explain(text(t.error))},
+            {"cleanupWarning", t.cleanup_warning},
+            {"outcomeUncertain", t.outcome_uncertain},
+            {"leftovers", QString::number(t.leftovers)},
+            {"promptId", t.prompt_id ? QString::number(t.prompt_id) : QString{}},
+            {"promptName", text(t.prompt_name)},
+            {"passwordPromptId",
+             t.password_prompt_id ? QString::number(t.password_prompt_id) : QString{}},
+            {"passwordPromptName", text(t.password_prompt_name)},
+            {"passwordRetry", t.password_retry},
+            {"existingBytes", QString::number(t.existing_bytes)},
+            {"incomingBytes", QString::number(t.incoming_bytes)},
+            {"overwriteAllowed", t.overwrite_allowed}};
         const auto incoming = t.incoming_modified_dos;
         const QDate date(1980 + (incoming >> 25), (incoming >> 21) & 15, (incoming >> 16) & 31);
         const QTime time((incoming >> 11) & 31, (incoming >> 5) & 63, (incoming & 31) * 2);
@@ -1147,10 +1185,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Preflight) {
         const auto &report = event.report;
         const QHash<QString, QString> reasons = {
-            {"path", qtTrId("ui.10fee48a2a5d")},        {"collision", qtTrId("ui.179c1af47cd2")},
-            {"metadata", qtTrId("ui.5f62429e8f2b")},    {"encrypted", qtTrId("ui.bd832c169421")},
-            {"method", qtTrId("ui.b3ac882336b4")},      {"file_limit", qtTrId("ui.db4ca98ebb0e")},
-            {"total_limit", qtTrId("ui.eca46ec574de")}, {"high_ratio", qtTrId("ui.998c9646d2cd")}};
+            {"path", qtTrId("ui.10fee48a2a5d")},
+            {"collision", qtTrId("ui.179c1af47cd2")},
+            {"metadata", qtTrId("ui.5f62429e8f2b")},
+            {"encrypted", qtTrId("ui.bd832c169421")},
+            {"password_required", qtTrId("password.preflight")},
+            {"method", qtTrId("ui.b3ac882336b4")},
+            {"file_limit", qtTrId("ui.db4ca98ebb0e")},
+            {"total_limit", qtTrId("ui.eca46ec574de")},
+            {"high_ratio", qtTrId("ui.998c9646d2cd")}};
         QStringList findings;
         for (const auto &finding : report.findings) {
             const auto value = text(finding);

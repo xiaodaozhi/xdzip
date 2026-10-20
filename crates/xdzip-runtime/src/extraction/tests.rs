@@ -3,9 +3,9 @@ use crate::Archive;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 static NEXT: AtomicU64 = AtomicU64::new(1);
-struct Target(PathBuf);
+pub(super) struct Target(pub(super) PathBuf);
 impl Target {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let p = std::env::temp_dir().join(format!(
             "xdzip-task-{}-{}",
             std::process::id(),
@@ -14,7 +14,7 @@ impl Target {
         std::fs::create_dir(&p).unwrap();
         Self(p)
     }
-    fn options(&self) -> Options {
+    pub(super) fn options(&self) -> Options {
         Options {
             target: self.0.to_string_lossy().into(),
             all: true,
@@ -31,7 +31,7 @@ impl Drop for Target {
         std::fs::remove_dir_all(&self.0).unwrap();
     }
 }
-fn archive(name: &str) -> Archive {
+pub(super) fn archive(name: &str) -> Archive {
     Archive::open(
         &Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tests/fixtures/extract")
@@ -40,7 +40,7 @@ fn archive(name: &str) -> Archive {
     )
     .unwrap()
 }
-fn execute(
+pub(super) fn execute(
     archive: &Archive,
     options: Options,
     control: &Control,

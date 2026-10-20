@@ -1,6 +1,6 @@
 # ZIP 解压与输出依赖准入
 
-日期：2026-10-13。用于 M3 实验开发包；正式发行的独立安全评审尚未完成。精确版本、来源、许可证、传递依赖、启用特性、build script 与 crates.io 校验和见 [锁定材料](zip-extraction-dependencies.json)和根目录 Cargo.lock。
+本页定义安全解压及密码解压复用的依赖边界，正式发行的独立安全评审尚未完成。M3 基础准入的来源、许可与特性摘录见[基础锁定材料](zip-extraction-dependencies.json)；含 AES 的当前精确版本与 crates.io 校验和以根目录 Cargo.lock 为准，完整启用图通过 `cargo tree --locked -e features` 核对，不能把基础摘录当作当前完整依赖清单。
 
 | 依赖 | 用途和决定 |
 | --- | --- |
@@ -10,6 +10,8 @@
 | rustix 1.1.5 | POSIX 有效用户身份、传递文件系统原语，复用已锁版本；关闭默认特性，仅启用 std/process，加上传递所需 fs。 |
 | windows-sys 0.61.2 | 查询 Windows 对象所有者和 DACL、检查 SID；隔离手写 unsafe，借用有效句柄、DWORD 对齐缓冲区和 RAII LocalFree。相比只检测只读属性，DACL 能检查私有输出前提；新增 FFI 必须在正式发行前独立评审。 |
 | unicode-normalization 0.1.25 | 为任务名称别名生成 NFD＋小写 admission key；原始输出拼写保留，不把此键当作文件系统完整 casefold。相比只用 ASCII 小写能覆盖常见 macOS Unicode 等价名称。 |
+| zip 9.0.3 | 密码解压复用已有创建依赖，保持 aes-crypto 与纯 Rust Deflate 特性；只向其提供已经验证的单条密文范围，复用密钥派生、AES 与 HMAC，不调用 unpack，不使用其解压流替代宿主严格 StreamEnd／CRC／大小检查。原始元数据准入与 EOF 认证边界见[密码解压契约](password-extraction.md)。 |
+| zeroize 1.8.2 | 复用既有创建秘密依赖，为解压独立密码类型及测试探针的有界 stdin 缓冲提供归零生命周期；不保证 Qt、输入法及密码依赖内部所有历史内存副本均被擦除。 |
 
 已阅读这些包的 Cargo 配置、许可和涉及的 API／源码。flate2 上游持续维护、cap 系列由 Bytecode Alliance 维护、getrandom 和 rustix 为系统接口项目、Unicode normalization 为通用 Unicode 库；升级仍须锁版本并重跑原生边界回归，不以维护主体代替安全审计。新增包无运行时网络请求；含 build script 的包只探测编译器／目标配置或选择 Rust 系统调用后端，没有下载外部代码或编译 C 解码器。MIT／Apache-2.0／Zlib 等许可通知通过开发包 notices 收集完整上游原文；实际许可表达式以锁定材料为准。
 

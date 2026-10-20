@@ -175,6 +175,7 @@ const state = {
 };
 const specs = {
     P01: ["解压元数据预检", "仅检查元数据", "展开所选目录并检查路径、容量与碰撞", "问题列表滚动，返回浏览不改变选择", "不允许输出，不替代真实内容验证"],
+    P02: ["密码解压", "单卷 AES ZIP", "当前任务等待密码，显示条目名称、掩码输入与明确的显示密码动作。", "错误请求清空重试，提交后防重复，关闭窗口取消对应任务。", "此页仅为设计演示，不执行解密、不保留密码。"],
     W01: ["欢迎页", "设计演示，不读取压缩包或写入文件", "打开与新建为主要入口，文件在本机处理。", "支持键盘、拖入反馈、打开后浏览以及取消返回。", "文件选择与拖入仅选择示例数据，不读取用户文件。"],
     B01: [
         "压缩包浏览",
@@ -223,7 +224,7 @@ const specs = {
         "P04 / P05，AC-04 / AC-05",
         "示例输入支持添加、移除。ZIP 可选 Store/Deflate；TAR 无压缩级别，TAR.GZ 使用 GZIP。",
         "更改格式同步扩展名和参数。输入为空或名称为空时不可提交。",
-        "首版不提供加密和分卷。已有目标进入独立覆盖确认，取消保留旧压缩包。",
+        "ZIP 提供 AES-256 内容加密和编号分卷。已有目标进入独立覆盖确认，取消保留旧压缩包。",
     ],
     A01: ["关于 xdzip", "版本与构建来源", "版本信息来自 VERSION.json，Qt 显示实际构建信息。", "复制不含个人文件或路径的信息，关闭后返回原窗口。", "HTML 预览不伪造原生 Qt 版本与 Git 提交。"],
     Q01: ["退出 xdzip", "仍有任务正在进行", "可以等待任务完成，或取消未完成的工作后退出。已提交的文件会保留。", "返回应用", "等待完成，取消并退出"],
@@ -688,6 +689,11 @@ function updateTaskCount() {
 }
 // Web chrome is a design simulation. Production uses separate QQuickWindows.
 function windowClose() {
+    if (state.modal === "password") {
+        $("#modal").dataset.passwordDecision = "cancel";
+        $("#extraction-password").value = "";
+        return closeModal();
+    }
     if (state.modal === "conflict") return cancelTask();
     if (state.modal === "create-overwrite") return showCreate();
     closeModal(); // Closing a task view never cancels its underlying task.
@@ -767,7 +773,7 @@ function closeModal({ preserveReview = false } = {}) {
     if (state.modal === "settings" || (state.modal === "about" && settingsPreview)) restoreSettingsPreview();
     if (state.modal === "about") aboutReturnDraft = null;
     if ($("#modal").open) $("#modal").close();
-    $("#modal").querySelectorAll('input[type="password"]').forEach(input => input.value = "");
+    $("#modal").querySelectorAll('input[type="password"],#extraction-password').forEach(input => input.value = "");
     state.modal = null;
     if (!preserveReview && !resumeSettings && document.body.dataset.standalone === "true") {
         document.body.dataset.standalone = "false";
@@ -1532,6 +1538,43 @@ function confirmationText(id) {
 function confirmationBody(heading, message = "") {
     return `<section class="confirmation-content"><h1>${esc(heading)}</h1>${message ? `<p>${esc(message)}</p>` : ""}</section>`;
 }
+function showPasswordPrompt(retry = false, pending = false) {
+    const t = confirmationText;
+    const english = new URLSearchParams(location.search).get("lang") === "en-US";
+    const disabled = pending ? " disabled" : "";
+    dialog(`<section class="password-content"><h1>${esc(t("password.heading"))}</h1><p>${esc(t("password.description"))}</p><p class="password-file">${english ? "Project materials / Design document.pdf" : "项目资料 / 设计文件.pdf"}</p><label for="extraction-password">${esc(t("password.label"))}</label><div class="password-field-row"><input id="extraction-password" type="password" maxlength="1024" autocomplete="off" spellcheck="false" aria-label="${esc(t("password.label"))}" placeholder="${esc(t("password.placeholder"))}"${disabled}><button class="button operation-body-button" id="password-visibility"${disabled}>${esc(t("password.show"))}</button></div><p id="password-error" class="password-error" role="status"${retry ? "" : " hidden"}>${esc(t("password.retry"))}</p><p class="password-note">${esc(t("password.privacy"))}</p></section>` +
+        footer(`<button id="password-cancel" class="button">${esc(t("ui.537d17f1c531"))}</button><button id="password-submit" class="button primary"${disabled}>${esc(t(pending ? "password.submitting" : "password.continue"))}</button>`, ""), "password", "P02", pending ? "#password-cancel" : "#extraction-password");
+    const field = $("#extraction-password"), show = $("#password-visibility"), submit = $("#password-submit"), error = $("#password-error"), modal = $("#modal");
+    modal.querySelector(".os-title").textContent = t("password.title");
+    modal.dataset.passwordPending = String(pending);
+    modal.dataset.passwordDecision = "";
+    show.onclick = () => {
+        field.type = field.type === "password" ? "text" : "password";
+        show.textContent = t(field.type === "password" ? "password.show" : "password.hide");
+    };
+    field.oninput = () => {
+        const tooLong = new TextEncoder().encode(field.value).length > 1024;
+        submit.disabled = tooLong;
+        error.hidden = !tooLong && !retry;
+        error.textContent = t(tooLong ? "password.limit" : "password.retry");
+    };
+    const send = () => {
+        if (submit.disabled || modal.dataset.passwordPending === "true") return;
+        // Design-only acknowledgement: no secret is stored in demo state or a task record.
+        field.value = "";
+        field.type = "password";
+        field.disabled = show.disabled = submit.disabled = true;
+        show.textContent = t("password.show");
+        submit.textContent = t("password.submitting");
+        modal.dataset.passwordPending = "true";
+        modal.dataset.passwordDecision = "submit";
+    };
+    field.onkeydown = event => {
+        if (event.key === "Enter" && !event.isComposing) { event.preventDefault(); send(); }
+    };
+    submit.onclick = send;
+    $("#password-cancel").onclick = windowClose;
+}
 function showQuitConfirmation(stopping = false) {
     const t = confirmationText;
     const disabled = stopping ? " disabled" : "";
@@ -1806,6 +1849,7 @@ window.XdzipDesign = {
         else if (view === "about") showAbout();
         else if (view === "quit") showQuitConfirmation(new URLSearchParams(location.search).get("stopping") === "1");
         else if (view === "restart") showRestartConfirmation();
+        else if (view === "password") showPasswordPrompt(new URLSearchParams(location.search).get("retry") === "1", new URLSearchParams(location.search).get("pending") === "1");
         else if (view === "preflight") showPreflight();
         else if (view === "result") {
             state.task = null; showExtract("selected");
@@ -1865,7 +1909,7 @@ window.addEventListener("message", (event) => {
             "result",
             "conflict",
             "settings",
-            "about", "quit", "restart", "preflight",
+            "about", "quit", "restart", "preflight", "password",
             "empty",
             "damaged",
         ].includes(config.view) ||

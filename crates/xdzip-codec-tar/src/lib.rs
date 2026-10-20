@@ -360,6 +360,7 @@ fn scan(
             method: if gzip { 8 } else { 0 },
             modified_dos: modified,
             encrypted: false,
+            password_supported: false,
             warning,
             format: if gzip { Format::TarGzip } else { Format::Tar },
         });

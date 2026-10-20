@@ -38,6 +38,7 @@ OperationWindow {
     signal cancelRequested()
     signal openOutputRequested()
     signal conflictRequested()
+    signal passwordRequested()
     Connections {
         target: root
         function onActiveFocusItemChanged() { root.revealFocus(scroll); }
@@ -46,7 +47,7 @@ OperationWindow {
     readonly property alias closingHint: footer.hint
     readonly property string heading: checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
         : taskStatus === "failed" ? (creating ? qsTrId("ui.b5926b78a037") : Number(resultTask.committedFiles || 0) > 0 ? qsTrId("ui.cf06124d3ffd") : qsTrId("ui.5bef0b169e84")) : taskStatus === "cancelled" ? qsTrId("ui.6f96c2add214")
-        : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : stopping ? qsTrId("ui.af48159f380f")
+        : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : stopping ? qsTrId("ui.af48159f380f")
         : taskStatus === "queued" ? qsTrId("ui.402ce5b3351f") : taskStatus === "verifying" ? qsTrId("ui.ceecf5089636") : (creating ? qsTrId("ui.34ee864936c6") : qsTrId("ui.09eb6850c88c"))
     ColumnLayout {
         anchors.fill: parent; spacing: 0
@@ -159,6 +160,7 @@ OperationWindow {
             note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.terminal ? qsTrId("ui.7235cf9b27c3") : qsTrId("ui.188180d3d3d3") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
             OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
+            OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }
             OperationFooterButton { visible: root.terminal && !root.checking; text: qsTrId("ui.aee023c587c7"); onClicked: root.openOutputRequested() }
             OperationFooterButton { objectName: "cancelButton"; visible: !root.terminal; text: root.stopping ? qsTrId("ui.8a99be840844") : root.checking ? qsTrId("ui.4d761bdef85f") : qsTrId("ui.537d17f1c531"); enabled: !root.stopping; onClicked: root.cancelRequested() }
         }

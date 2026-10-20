@@ -30,7 +30,9 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 ## ZIP AES 创建
 
-精确固定 `zip = 9.0.3`（crates.io、https://github.com/zip-rs/zip2，MIT），仅启用 aes-crypto 和 deflate-flate2；flate2 延续现有 Rust backend，关闭 bzip2、zstd、lzma、ppmd、time、原生 zlib 等默认能力。只有 AES 创建及写后认证校验使用 zip-rs，普通 ZIP 元数据、解压和明文创建继续使用已准入的 rawzip；没有通用 unpack 或文件路径授权。上游提供纯 Write 流包装器，保持现有扩展边界。
+精确固定 `zip = 9.0.3`（crates.io、https://github.com/zip-rs/zip2，MIT），仅启用 aes-crypto 和 deflate-flate2；flate2 延续现有 Rust backend，关闭 bzip2、zstd、lzma、ppmd、time、原生 zlib 等默认能力。AES 创建、写后认证及受限单条 AES 解密使用 zip-rs，普通 ZIP 元数据、解压和明文创建继续使用已准入的 rawzip；没有通用 unpack 或文件路径授权。上游提供纯流包装器，保持现有扩展边界。
+
+密码解压复用上述已锁定依赖，不增加密码学包或默认特性。原始 local／central／descriptor 先由本项目校验，单条密文的受限私有视图只复用 zip-rs 的密钥派生、AES 与 HMAC；宿主保留严格 StreamEnd、大小、AE-1 CRC、AE-2 零 CRC 及认证 EOF 的责任，见[密码解压契约](password-extraction.md)。不因库能返回数据便提前发布文件，不把自检记为独立密码学审查。
 
 AES、cipher、hmac、pbkdf2、sha1、zeroize 等 RustCrypto 依赖、随机源和常量时间比较锁定在 Cargo.lock；这些包采用 MIT 或 Apache-2.0 双许可。SHA-1/PBKDF2 参数来自 WinZip AES 格式，并非另选的用户密码存储方案。禁用原生压缩库与网络下载构建行为，构建脚本只做平台配置；不增加应用进程、运行下载或 subprocess 后端。直接依赖 zeroize 1.8.2 为宿主密码容器归零，Debug 固定脱敏。
 

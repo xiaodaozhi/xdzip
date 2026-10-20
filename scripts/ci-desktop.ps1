@@ -146,7 +146,7 @@ Invoke-Checked python @('scripts/check-m4-operation-windows.py', '--input', 'bui
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m4-probe')
 $m4Probe = if ($IsWindows) { 'target/release/xdzip-m4-probe.exe' } else { 'target/release/xdzip-m4-probe' }
 if ($IsLinux) {
-    Invoke-Checked python @('scripts/check-advanced-creation.py', '--binary', $m4Probe, '--output', 'build/review/advanced-creation.json')
+    Invoke-Checked python @('scripts/check-advanced-creation.py', '--binary', $m4Probe, '--extract-binary', $m3Probe, '--output', 'build/review/advanced-creation.json')
 }
 Invoke-Checked python @('scripts/check-tar-interop.py', '--create-binary', $m4Probe, '--extract-binary', $m3Probe, '--output', 'build/review/tar-interop.json')
 Invoke-Checked python @('scripts/measure-m4-core.py', '--binary', $m4Probe, '--output', 'build/review/m4-core-performance.json')

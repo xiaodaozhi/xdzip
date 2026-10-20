@@ -82,12 +82,12 @@ ApplicationWindow {
     }
     function phaseLabel(status: string): string {
         return ({queued: qsTrId("ui.03f07c12d5fa"), preparing: qsTrId("ui.a1b9ba49c8a2"), running: taskSnapshot.creating ? qsTrId("ui.f066ff44699e") : qsTrId("ui.8865f5103610"), verifying: qsTrId("ui.b87ef7da7959"),
-                 waiting: qsTrId("ui.9a6cfa6abc53"), committing: qsTrId("ui.f5312f1e339a"), cancelling: qsTrId("ui.684398ae6c51"),
+                 waiting: qsTrId("ui.9a6cfa6abc53"), waiting_password: qsTrId("password.waiting"), committing: qsTrId("ui.f5312f1e339a"), cancelling: qsTrId("ui.684398ae6c51"),
                  cleaning: qsTrId("ui.b4966391542e"), succeeded: qsTrId("ui.c0b3fbff51cc"), failed: qsTrId("ui.28384d7afd2e"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
     }
     function taskStateLabel(status: string): string {
         return ({queued: qsTrId("ui.d6f766f2adf5"), preparing: qsTrId("ui.b53be09930f4"), running: qsTrId("ui.dc9591e56d50"),
-                 verifying: qsTrId("ui.784f9b54ae2b"), waiting: qsTrId("ui.8fb3a3261b43"), committing: qsTrId("ui.a1a1720d3eb5"),
+                 verifying: qsTrId("ui.784f9b54ae2b"), waiting: qsTrId("ui.8fb3a3261b43"), waiting_password: qsTrId("password.waiting"), committing: qsTrId("ui.a1a1720d3eb5"),
                  cancelling: qsTrId("ui.72eea71385de"), cleaning: qsTrId("ui.718b6372d7fb"), succeeded: qsTrId("ui.f28461bb49c8"),
                  failed: qsTrId("ui.6707de42c29d"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
     }
@@ -95,7 +95,8 @@ ApplicationWindow {
         activeTaskId = id;
         taskSnapshot = reader.tasks.find(t => t.id === id) || {};
         taskWindow.present();
-        if (taskSnapshot.promptId) conflictWindow.present();
+        if (taskSnapshot.status === "waiting" && taskSnapshot.promptId) conflictWindow.present();
+        if (taskSnapshot.status === "waiting_password" && taskSnapshot.passwordPromptId) passwordWindow.revealPrompt();
     }
     function taskFraction(): real {
         const t = taskSnapshot;
@@ -206,8 +207,8 @@ ApplicationWindow {
         onExtractionStarted: id => { extractWindow.close(); root.showTask(id); }
         onTasksChanged: {
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
-            if (root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
-            if (!root.taskSnapshot.promptId) conflictWindow.close();
+            if (root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
+            if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId) conflictWindow.close();
             if (root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
         }
         onChanged: {
@@ -255,11 +256,17 @@ ApplicationWindow {
         onCancelRequested: reader.cancelTask(root.activeTaskId)
         onOpenOutputRequested: reader.openOutput(root.activeTaskId)
         onConflictRequested: conflictWindow.present()
+        onPasswordRequested: passwordWindow.revealPrompt()
     }
     ConflictWindow {
         id: conflictWindow
         owner: root; task: root.taskSnapshot; sizeFormatter: root.formatSize
         onDecision: (policy, all) => { if (reader.decideTask(root.activeTaskId, root.taskSnapshot.promptId || "", policy, all)) conflictWindow.close(); }
+    }
+    PasswordWindow {
+        id: passwordWindow
+        owner: root
+        controller: reader
     }
     QuitWindow {
         id: quitWindow
@@ -1581,7 +1588,7 @@ ApplicationWindow {
                                 text: (modelData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(modelData.id)
                                 asset: "task-list"
                                 statusLabel: root.taskStateLabel(modelData.status)
-                                statusInk: modelData.status === "failed" ? Theme.menuDanger : modelData.status === "waiting" ? Theme.resultWarningInk : modelData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
+                                statusInk: modelData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(modelData.status) ? Theme.resultWarningInk : modelData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
                                 onTriggered: root.showTask(modelData.id)
                             }
                             onObjectAdded: (index, object) => taskMenu.insertItem(index + 1, object)

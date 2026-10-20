@@ -42,6 +42,10 @@ def main():
     for name, value in layout['operation']['confirmation'].items():
         key = re.sub(r'(?<!^)(?=[A-Z])', '-', name).lower()
         declarations.append(f'  --confirmation-{key}: {value};')
+    password = json.loads((ROOT / 'docs/visual/password-reference.json').read_text())
+    for name, value in password.items():
+        if name != 'schema_version' and isinstance(value, (int, float)):
+            declarations.append(f'  --password-{name.replace("_", "-")}: {value};')
     for name, value in layout['operation']['footer'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-footer-{key}: calc({value}px * var(--ui-source-factor));')

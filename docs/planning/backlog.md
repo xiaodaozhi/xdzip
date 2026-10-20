@@ -25,4 +25,4 @@
 
 后续 WP-13～15 的开发可基于已完成的 WP-12 推进；实际公开发行仍执行[独立审查流程](../qa/release-review.md)。
 
-WP-14 优先推进单卷 AES-256 ZIP 密码解压，当前仅登记为下一项开发任务，尚未实现，也不承诺完成日期。具体范围、密码交互、认证后发布、错误重试与取消、互操作和三平台验证的验收条件由 [#11](https://github.com/xiaodaozhi/xdzip/issues/11)跟踪；不等待 WP-13 完成。
+WP-14 的首个切片为[单卷 AES-256 ZIP 密码解压](../engineering/password-extraction.md)，包含密码交互、认证后发布、错误重试与取消。实际进展、互操作与三平台验证结论由 [#11](https://github.com/xiaodaozhi/xdzip/issues/11)跟踪，不等待 WP-13 完成；其他加密方式及分卷读取仍单独准入。

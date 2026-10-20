@@ -77,6 +77,19 @@ QtObject {
     readonly property int operationCreateWidth: 491
     readonly property int operationResultWidth: 491
     readonly property int operationConflictWidth: 491
+    readonly property real passwordLogicalWidth: 491
+    readonly property real passwordMaximumHeight: 600
+    readonly property real passwordContentInset: 24
+    readonly property real passwordSectionGap: 12
+    readonly property real passwordTitleSize: 20 * fontScale
+    readonly property real passwordBodySize: 13 * fontScale
+    readonly property real passwordNoteSize: 12 * fontScale
+    readonly property real passwordScreenMargin: 80
+    readonly property real passwordFieldHeight: 28
+    readonly property real passwordFieldVerticalInset: 4
+    readonly property real passwordFieldGap: 10
+    readonly property real passwordTitleLineFactor: 1.4
+    readonly property real passwordBodyLineFactor: 1.5
     readonly property real operationExtractDensity: 0.8
     readonly property real operationProgressDensity: 0.8
     readonly property real operationCreateDensity: 0.8

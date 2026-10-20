@@ -95,6 +95,8 @@ def main():
     output.write_text(review)
     welcome_review = review.replace('<option value="main" selected>', '<option value="main">', 1).replace('<option value="welcome">', '<option value="welcome" selected>', 1)
     output.with_name('xdzip-welcome-design.html').write_text(welcome_review)
+    password_review = review.replace('<option value="main" selected>', '<option value="main">', 1).replace('<option value="password">', '<option value="password" selected>', 1)
+    output.with_name('xdzip-password-design.html').write_text(password_review)
     # Give the corrected logical-size delivery a distinct download name.
     output.with_name('xdzip-hifi-design-1to1.html').write_text(review)
     components = inline_html('components.html', [FONT_STYLESHEET, 'controls-tokens.css', 'controls.css', 'components.css'],

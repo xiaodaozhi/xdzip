@@ -102,8 +102,10 @@ pub struct Entry {
     pub method: u16,
     /// DOS-shaped date/time bits. ZIP uses local time, TAR uses UTC; zero is unavailable.
     pub modified_dos: u32,
-    /// Metadata encryption flag. No password is requested in this read-only slice.
+    /// Metadata encryption flag. Browsing alone never requests a password.
     pub encrypted: bool,
+    /// Supported password profile from container metadata, not payload authentication.
+    pub password_supported: bool,
     /// Suspicious name, non-UTF8 bytes or unsupported special record; never safe-to-extract approval.
     pub warning: bool,
 }

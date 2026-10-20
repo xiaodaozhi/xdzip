@@ -1,6 +1,7 @@
 #include "RuntimeConnection.h"
 #include <QElapsedTimer>
 #include <QPointer>
+#include <QScopeGuard>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -27,7 +28,8 @@ std::size_t payloadBytes(const xdzip::reader::Event &event) {
     for (const auto &finding : event.report.findings)
         bytes += finding.size();
     bytes += event.task.status.size() + event.task.target.size() + event.task.current.size() +
-             event.task.error.size() + event.task.prompt_name.size();
+             event.task.error.size() + event.task.prompt_name.size() +
+             event.task.password_prompt_name.size();
     return bytes;
 }
 } // namespace
@@ -151,6 +153,16 @@ bool RuntimeConnection::cancelTask(quint64 task) {
 }
 bool RuntimeConnection::decideTask(quint64 task, quint64 prompt, quint8 policy, bool all) {
     return m_client && !m_stopped && (*m_client)->decide_task(task, prompt, policy, all);
+}
+bool RuntimeConnection::submitPassword(quint64 task, quint64 prompt, QByteArray password) {
+    const auto clear = qScopeGuard([&] { password.fill('\0'); });
+    if (!m_client || m_stopped)
+        return false;
+    // The ABI string is moved directly into Rust's task secret container. No Qt
+    // queued invocation, retained command or event contains the password.
+    return (*m_client)->respond_password(
+        task, prompt,
+        rust::String(password.constData(), static_cast<std::size_t>(password.size())));
 }
 void RuntimeConnection::shutdown() {
     if (m_client)

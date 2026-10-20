@@ -128,6 +128,9 @@ mod ffi {
         existing_modified: String,
         incoming_modified_dos: u32,
         overwrite_allowed: bool,
+        password_prompt_id: u64,
+        password_prompt_name: String,
+        password_retry: bool,
     }
     enum EventKind {
         Page,
@@ -177,6 +180,8 @@ mod ffi {
         fn cancel(self: &CommandClient, request_id: u64) -> Submission;
         fn cancel_task(self: &CommandClient, task: u64) -> bool;
         fn decide_task(self: &CommandClient, task: u64, prompt: u64, policy: u8, all: bool)
+        -> bool;
+        fn respond_password(self: &CommandClient, task: u64, prompt: u64, password: String)
         -> bool;
         fn shutdown(self: &CommandClient) -> u64;
         fn next_event(self: &mut EventReceiver) -> Event;
@@ -381,6 +386,14 @@ impl CommandClient {
         };
         self.0.decide_task(task, prompt, policy, all).is_ok()
     }
+    /// Move a foreign-owned secret into zeroizing storage before any rejection.
+    /// This uses the task's bounded control slot, never the command/event queues.
+    pub fn respond_password(&self, task: u64, prompt: u64, password: String) -> bool {
+        let Ok(password) = xdzip_runtime::extraction::Password::new(password) else {
+            return false;
+        };
+        self.0.respond_password(task, prompt, password).is_ok()
+    }
     /// Idempotently stop admission and request cooperative cancellation.
     pub fn shutdown(&self) -> u64 {
         self.0.shutdown()
@@ -578,10 +591,14 @@ fn empty_task() -> ffi::TaskSnapshot {
         existing_modified: String::new(),
         incoming_modified_dos: 0,
         overwrite_allowed: false,
+        password_prompt_id: 0,
+        password_prompt_name: String::new(),
+        password_retry: false,
     }
 }
 fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
     let prompt = s.prompt;
+    let password = s.password_prompt;
     ffi::TaskSnapshot {
         creating: s.creating,
         total_known: s.total_known,
@@ -626,6 +643,9 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
             .map_or(String::new(), |n| n.to_string()),
         incoming_modified_dos: prompt.as_ref().map_or(0, |p| p.incoming_modified_dos),
         overwrite_allowed: prompt.as_ref().is_some_and(|p| p.overwrite_allowed),
+        password_prompt_id: password.as_ref().map_or(0, |p| p.id),
+        password_prompt_name: password.as_ref().map_or(String::new(), |p| p.name.clone()),
+        password_retry: password.as_ref().is_some_and(|p| p.retry),
     }
 }
 
@@ -674,8 +694,11 @@ mod tests {
             allow_high_ratio: false,
         };
         assert!(client.submit(invalid).status == ffi::Admission::Invalid);
+        assert!(!client.respond_password(0, 0, String::new()));
+        assert!(!client.respond_password(1, 1, "x".repeat(1025)));
         let shutdown = client.shutdown();
         assert_eq!(shutdown, client.shutdown());
+        assert!(!client.respond_password(1, 1, String::new()));
         let event = receiver.next_event();
         assert!(event.kind == ffi::EventKind::ShutdownReady);
         assert_eq!(event.request_id, shutdown);

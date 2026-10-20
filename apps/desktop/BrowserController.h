@@ -92,6 +92,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
     Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
+    Q_PROPERTY(QVariantMap passwordPrompt READ passwordPrompt NOTIFY tasksChanged)
     Q_PROPERTY(QString sessionId READ sessionId NOTIFY changed)
   public:
     explicit BrowserController(QObject *parent = nullptr);
@@ -186,6 +187,7 @@ class BrowserController : public QObject {
     }
     QVariantList tasks() const;
     int activeTaskCount() const;
+    QVariantMap passwordPrompt() const;
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
     Q_INVOKABLE QString chooseTarget(const QString &initial, QWindow *owner = nullptr);
     Q_INVOKABLE QStringList chooseCreationInputs(bool directories, QWindow *owner = nullptr);
@@ -211,6 +213,8 @@ class BrowserController : public QObject {
                                      int conflict, bool allowHighRatio, bool openAfter);
     Q_INVOKABLE void cancelTask(const QString &id);
     Q_INVOKABLE bool decideTask(const QString &id, const QString &prompt, int policy, bool all);
+    Q_INVOKABLE bool submitPassword(const QString &id, const QString &prompt,
+                                    const QString &password);
     Q_INVOKABLE void openOutput(const QString &id);
     Q_INVOKABLE void inspectSelection();
     Q_INVOKABLE void selectRow(int row);
@@ -242,6 +246,7 @@ class BrowserController : public QObject {
     void tasksChanged();
 
   private:
+    friend class BrowserTest; // The native test suite injects a receiver-fault event.
     struct DirectoryRow {
         QString id, parent, name, path;
         int count = 0;
