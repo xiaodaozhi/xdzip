@@ -381,6 +381,7 @@
     "ui.74b624993d20": "The file system does not support safe commits. Choose a local disk folder.",
     "ui.491bda01a7fa": "The selection contains unsupported methods, encryption, encodings, or special objects.",
     "ui.2c68fedd118c": "Input contains links or special objects, or output matches input. Choose another input or destination.",
+    "error.emptyCreationInput": "No content remains after excluding the destination archive. Add other files or folders, or change the destination name or folder.",
     "ui.96d580ed8b8a": "Input names collide after case folding or Unicode normalization. Rename them before continuing.",
     "ui.c9aa9ad002f7": "A selected file name does not meet safe output rules.",
     "ui.a35179e5025f": "Passwords must contain 1–128 UTF-8 bytes and no control characters.",

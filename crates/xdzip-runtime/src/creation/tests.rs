@@ -253,6 +253,346 @@ fn output_inside_input_excludes_only_this_output_and_private_workspace() {
     );
 }
 #[test]
+fn explicitly_selected_output_is_excluded_and_normal_conflict_choices_are_preserved() {
+    for (extension, method, format) in [
+        (".zip", 8, Format::Zip),
+        (".tar", 0, Format::Tar),
+        (".tar.gz", 8, Format::TarGzip),
+    ] {
+        for policy in [
+            ConflictPolicy::Ask,
+            ConflictPolicy::Rename,
+            ConflictPolicy::Overwrite,
+        ] {
+            let f = Fixture::new();
+            let name = format!("archive{extension}");
+            let output = f.0.join("output").join(&name);
+            std::fs::write(&output, b"previous archive").unwrap();
+            let same_name_input = f.0.join("输入").join(&name);
+            std::fs::write(&same_name_input, b"separate same-name input").unwrap();
+            let mut job = f.job(method);
+            job.options.name = name.clone();
+            job.options.inputs = [
+                f.0.join("输入/文件.txt"),
+                f.0.join("输入/empty.bin"),
+                same_name_input,
+                output.clone(),
+            ]
+            .into_iter()
+            .map(|p| p.to_string_lossy().into_owned())
+            .collect();
+            job.options.conflict = policy;
+            let control = Control::default();
+            let mut prompts = 0;
+            let result = execute(job, &control, |s| {
+                if s.status == Status::Waiting {
+                    prompts += 1;
+                    let prompt = s.prompt.as_ref().unwrap();
+                    assert!(prompt.overwrite_allowed);
+                    assert!(control.decide(prompt.id, ConflictPolicy::Overwrite, false));
+                }
+            });
+            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+            assert_eq!(prompts, u8::from(policy == ConflictPolicy::Ask));
+            assert_eq!(result.committed_files, 3);
+            let published = if policy == ConflictPolicy::Rename {
+                assert_eq!(std::fs::read(&output).unwrap(), b"previous archive");
+                f.0.join("output").join(format!("archive (2){extension}"))
+            } else {
+                output
+            };
+            let rows = codec(format)
+                .scan(
+                    &mut std::fs::File::open(published).unwrap(),
+                    &Cancellation::default(),
+                    crate::formats::limits(format),
+                )
+                .unwrap();
+            assert_eq!(rows.len(), 3);
+            assert!(rows.iter().any(|r| r.display_name == name));
+            assert!(rows.iter().any(|r| r.display_name == "文件.txt"));
+            assert!(rows.iter().any(|r| r.display_name == "empty.bin"));
+        }
+    }
+}
+
+#[test]
+fn output_case_and_unicode_aliases_follow_the_actual_filesystem() {
+    for (input_name, output_name) in [
+        ("ExactCase.zip", "exactcase.zip"),
+        ("caf\u{e9}.zip", "cafe\u{301}.zip"),
+    ] {
+        for select_directory in [false, true] {
+            let f = Fixture::new();
+            let directory = f.0.join("输入");
+            let source = directory.join(input_name);
+            let output = directory.join(output_name);
+            std::fs::write(&source, b"previous archive").unwrap();
+            // CI also runs on case/normalization-sensitive filesystems. A missing
+            // target there is a distinct output, so the original must stay input.
+            let same_entry = output.exists();
+            let mut job = f.job(8);
+            job.options.target = directory.to_string_lossy().into_owned();
+            job.options.name = output_name.into();
+            job.options.conflict = ConflictPolicy::Overwrite;
+            if !select_directory {
+                job.options.inputs = [directory.join("文件.txt"), source.clone()]
+                    .into_iter()
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .collect();
+            }
+            let result = execute(job, &Control::default(), |_| {});
+            assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+            let mut expected_files = if select_directory { 2 } else { 1 };
+            expected_files += u64::from(!same_entry);
+            assert_eq!(result.committed_files, expected_files);
+            let rows = ZipCodec
+                .scan(
+                    &mut std::fs::File::open(&output).unwrap(),
+                    &Cancellation::default(),
+                    ScanLimits::default(),
+                )
+                .unwrap();
+            assert_eq!(
+                rows.iter().any(|r| {
+                    r.display_name
+                        .rsplit('/')
+                        .next()
+                        .is_some_and(|name| name == input_name)
+                }),
+                !same_entry
+            );
+            if !same_entry {
+                assert_eq!(std::fs::read(source).unwrap(), b"previous archive");
+            }
+        }
+    }
+}
+
+#[test]
+fn directory_selection_aliases_use_actual_parent_spelling_for_output_exclusion() {
+    let f = Fixture::new();
+    let directory = f.0.join("CaseParent");
+    std::fs::create_dir(&directory).unwrap();
+    std::fs::write(directory.join("payload.txt"), b"ordinary input").unwrap();
+    std::fs::write(directory.join("ExactCase.zip"), b"previous archive").unwrap();
+    let alias = f.0.join("caseparent");
+    let selected = if alias.is_dir() {
+        alias
+    } else {
+        directory.clone()
+    };
+    let mut job = f.job(8);
+    job.options.inputs = vec![selected.to_string_lossy().into_owned()];
+    job.options.target = directory.to_string_lossy().into_owned();
+    job.options.name = "ExactCase.zip".into();
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    assert_eq!(result.committed_files, 1);
+    let rows = ZipCodec
+        .scan(
+            &mut std::fs::File::open(directory.join("ExactCase.zip")).unwrap(),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(rows.len(), 2);
+    assert!(
+        rows.iter()
+            .any(|r| r.display_name.ends_with("/payload.txt"))
+    );
+    assert!(!rows.iter().any(|r| r.display_name.ends_with(".zip")));
+}
+
+#[test]
+fn selected_directory_and_its_output_file_share_the_exact_exclusion_policy() {
+    let f = Fixture::new();
+    let directory = f.0.join("输入");
+    let output = directory.join("archive.zip");
+    std::fs::write(&output, b"previous archive").unwrap();
+    std::fs::write(directory.join(".xdzip-keep.txt"), b"ordinary input").unwrap();
+    let mut job = f.job(8);
+    job.options.target = directory.to_string_lossy().into_owned();
+    job.options
+        .inputs
+        .push(output.to_string_lossy().into_owned());
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    assert_eq!(result.committed_files, 3);
+    let rows = ZipCodec
+        .scan(
+            &mut std::fs::File::open(output).unwrap(),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(rows.len(), 5);
+    assert!(
+        rows.iter()
+            .any(|r| r.display_name == "输入/.xdzip-keep.txt")
+    );
+    assert!(!rows.iter().any(|r| r.display_name.ends_with("archive.zip")));
+}
+
+#[test]
+fn selecting_only_the_output_has_a_specific_empty_input_result_and_keeps_it_unchanged() {
+    let f = Fixture::new();
+    std::fs::write(f.output(), b"previous archive").unwrap();
+    let mut job = f.job(8);
+    job.options.inputs = vec![f.output().to_string_lossy().into_owned()];
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Failed);
+    assert_eq!(result.error, "empty_input");
+    assert_eq!(result.written_bytes, 0);
+    assert_eq!(std::fs::read(f.output()).unwrap(), b"previous archive");
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+}
+
+#[test]
+fn explicitly_selecting_an_identity_bound_workspace_is_still_rejected() {
+    let f = Fixture::new();
+    let root = Grant::for_creation(&f.0.join("output")).unwrap();
+    let workspace = root.workspace(1).unwrap();
+    let (path, identity) = workspace.input_exclusion();
+    let result = InputTree::scan(
+        std::slice::from_ref(&path),
+        vec![(path.clone(), Some(identity))],
+        &|| false,
+    );
+    assert!(matches!(result, Err(xdzip_io::InputError::Unsafe)));
+    let alias = path.with_file_name(path.file_name().unwrap().to_string_lossy().to_uppercase());
+    if alias.is_dir() {
+        assert!(matches!(
+            InputTree::scan(&[alias], vec![(path, Some(identity))], &|| false),
+            Err(xdzip_io::InputError::Unsafe)
+        ));
+    }
+    workspace.cleanup().unwrap();
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 0);
+}
+
+#[test]
+fn declining_a_conflict_after_excluding_the_selected_output_keeps_the_old_archive() {
+    let f = Fixture::new();
+    std::fs::write(f.output(), b"previous archive").unwrap();
+    let mut job = f.job(8);
+    job.options
+        .inputs
+        .push(f.output().to_string_lossy().into_owned());
+    let control = Control::default();
+    let mut prompts = 0;
+    let result = execute(job, &control, |s| {
+        if s.status == Status::Waiting {
+            prompts += 1;
+            control.cancel();
+        }
+    });
+    assert_eq!(prompts, 1);
+    assert_eq!(result.status, Status::Cancelled);
+    assert_eq!(std::fs::read(f.output()).unwrap(), b"previous archive");
+    assert_eq!(std::fs::read_dir(f.0.join("output")).unwrap().count(), 1);
+}
+
+#[test]
+fn selected_numbered_outputs_are_excluded_without_filtering_nearby_ordinary_names() {
+    let f = Fixture::new();
+    let first = f.0.join("output/archive.zip.001");
+    let last = f.0.join("output/archive.zip.1024");
+    let ordinary = f.0.join("output/archive.zip.1025");
+    let base = f.output();
+    for path in [&first, &last, &ordinary, &base] {
+        std::fs::write(path, b"previous part").unwrap();
+    }
+    let mut job = f.job(0);
+    job.options.volume_bytes = 1024;
+    job.options.inputs.extend(
+        [&first, &last, &ordinary, &base]
+            .into_iter()
+            .map(|p| p.to_string_lossy().into_owned()),
+    );
+    job.options.conflict = ConflictPolicy::Rename;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    assert_eq!(result.committed_files, 4);
+    let mut joined = Vec::new();
+    for index in 1..=result.output_parts {
+        joined
+            .extend(std::fs::read(f.0.join(format!("output/archive (2).zip.{index:03}"))).unwrap());
+    }
+    let rows = ZipCodec
+        .scan(
+            &mut std::io::Cursor::new(joined),
+            &Cancellation::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+    assert_eq!(rows.len(), 6);
+    assert!(rows.iter().any(|r| r.display_name == "archive.zip.1025"));
+    assert!(rows.iter().any(|r| r.display_name == "archive.zip"));
+    assert!(!rows.iter().any(|r| matches!(
+        r.display_name.as_str(),
+        "archive.zip.001" | "archive.zip.1024"
+    )));
+    for path in [&first, &last, &ordinary, &base] {
+        assert_eq!(std::fs::read(path).unwrap(), b"previous part");
+    }
+}
+
+#[test]
+fn output_exclusion_does_not_admit_a_selected_directory_or_hard_link() {
+    let f = Fixture::new();
+    std::fs::create_dir(f.output()).unwrap();
+    let mut job = f.job(8);
+    job.options
+        .inputs
+        .push(f.output().to_string_lossy().into_owned());
+    assert_eq!(
+        execute(job, &Control::default(), |_| {}).error,
+        "unsafe_input"
+    );
+    std::fs::remove_dir(f.output()).unwrap();
+    std::fs::write(f.output(), b"previous archive").unwrap();
+    let alias = f.0.join("输入/output-alias.zip");
+    std::fs::hard_link(f.output(), &alias).unwrap();
+    let mut job = f.job(8);
+    job.options
+        .inputs
+        .push(f.output().to_string_lossy().into_owned());
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Failed);
+    assert_eq!(result.error, "unsafe_target");
+    assert_eq!(std::fs::read(f.output()).unwrap(), b"previous archive");
+    assert_eq!(std::fs::read(alias).unwrap(), b"previous archive");
+}
+
+#[cfg(unix)]
+#[test]
+fn selected_output_parent_alias_is_excluded_but_its_leaf_link_is_still_rejected() {
+    let f = Fixture::new();
+    std::fs::write(f.output(), b"previous archive").unwrap();
+    std::os::unix::fs::symlink(f.0.join("output"), f.0.join("alias")).unwrap();
+    let mut job = f.job(8);
+    job.options
+        .inputs
+        .push(f.0.join("alias/archive.zip").to_string_lossy().into_owned());
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+    std::fs::remove_file(f.output()).unwrap();
+    std::os::unix::fs::symlink(f.0.join("输入/文件.txt"), f.output()).unwrap();
+    let mut job = f.job(8);
+    job.options
+        .inputs
+        .push(f.output().to_string_lossy().into_owned());
+    job.options.conflict = ConflictPolicy::Overwrite;
+    let result = execute(job, &Control::default(), |_| {});
+    assert_eq!(result.error, "unsafe_input");
+    assert!(std::fs::symlink_metadata(f.output()).unwrap().is_symlink());
+}
+#[test]
 fn source_mutation_before_publication_keeps_existing_destination() {
     let f = Fixture::new();
     std::fs::write(f.output(), b"keep").unwrap();

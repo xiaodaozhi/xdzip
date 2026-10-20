@@ -230,6 +230,7 @@ QString BrowserController::explain(const QString &code) {
         {"unsupported_link", qtTrId("error.unsupportedLink")},
         {"unsupported_entry", qtTrId("ui.491bda01a7fa")},
         {"unsafe_input", qtTrId("ui.2c68fedd118c")},
+        {"empty_input", qtTrId("error.emptyCreationInput")},
         {"input_collision", qtTrId("ui.96d580ed8b8a")},
         {"unsafe_name", qtTrId("ui.c9aa9ad002f7")},
         {"invalid_password", qtTrId("ui.a35179e5025f")},

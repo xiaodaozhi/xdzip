@@ -278,26 +278,16 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         emit(&mut stats, start, publish);
         let root = Grant::for_creation(Path::new(&job.options.target)).map_err(output_code)?;
         stats.leftovers = root.leftover_count().map_err(output_code)? as u64;
-        let output_path = Path::new(&job.options.target).join(&job.options.name);
-        if job
-            .options
-            .inputs
-            .iter()
-            .any(|p| Path::new(p) == output_path)
-        {
-            return Err("unsafe_input");
-        }
         workspace = Some(root.workspace(id).map_err(output_code)?);
         let w = workspace.as_mut().expect("workspace created");
         let (excluded, identity) = w.input_exclusion();
         let paths: Vec<_> = job.options.inputs.iter().map(PathBuf::from).collect();
-        let mut exclusions = vec![(output_path, None), (excluded, Some(identity))];
-        if job.options.volume_bytes != 0 {
+        let mut exclusions = vec![(excluded, Some(identity))];
+        if job.options.volume_bytes == 0 {
+            exclusions.push((root.display_path().join(&job.options.name), None));
+        } else {
             for path in volume_paths(&job.options.name, 1024)? {
                 let output = root.display_path().join(path.display());
-                if paths.contains(&output) {
-                    return Err("unsafe_input");
-                }
                 exclusions.push((output, None));
             }
         }
