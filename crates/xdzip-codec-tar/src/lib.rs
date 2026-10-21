@@ -858,17 +858,15 @@ mod tests {
             )
             .unwrap_err();
         assert_eq!(error, ScanError::Limit);
-        for kind in [tar::EntryType::GNULongLink] {
-            let mut header = tar::Header::new_gnu();
-            header.set_path("extension").unwrap();
-            header.set_size(0);
-            header.set_entry_type(kind);
-            header.set_cksum();
-            assert_eq!(
-                scan_bytes(header.as_bytes().to_vec(), false).unwrap_err(),
-                ScanError::Unsupported
-            );
-        }
+        let mut header = tar::Header::new_gnu();
+        header.set_path("extension").unwrap();
+        header.set_size(0);
+        header.set_entry_type(tar::EntryType::GNULongLink);
+        header.set_cksum();
+        assert_eq!(
+            scan_bytes(header.as_bytes().to_vec(), false).unwrap_err(),
+            ScanError::Unsupported
+        );
     }
     #[test]
     fn source_length_mismatch_and_non_tar_capabilities_never_succeed() {
