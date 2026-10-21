@@ -5,6 +5,7 @@ Button {
     id: root
     focusPolicy: Qt.StrongFocus
     property string asset: ""
+    property bool glyphMirrored: false
     property bool primary: false
     property bool toolbarStyle: false
     property bool tooltipEnabled: true
@@ -38,6 +39,7 @@ Button {
             spacing: root.toolbarStyle ? Theme.mainToolbarContentGap : Theme.mainUnits(8)
             Image {
                 objectName: "actionIcon"
+                mirror: root.glyphMirrored
                 visible: root.asset.length > 0
                 source: visible ? "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + root.asset + ".png" : ""
                 width: root.glyphSize

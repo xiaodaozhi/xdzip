@@ -50,12 +50,14 @@ body.welcome-artboard.welcome-narrow .stage { width:1296px; }
 /* W01 opening only covers the welcome body; the shared titlebar is unchanged. */
 .welcome-opening { position:absolute; inset:0; z-index:20; display:grid; place-items:center; padding:calc(16px * var(--ui-source-factor)); background:color-mix(in srgb,var(--canvas) 86%,transparent); }
 #welcome.external-opening .welcome-content { visibility:hidden; }
-.welcome-opening-card { width:var(--welcome-opening-card-width); max-width:100%; max-height:100%; overflow:auto; padding:var(--welcome-opening-inset); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:var(--welcome-opening-radius); background:var(--surface); display:flex; flex-direction:column; gap:var(--welcome-opening-gap); text-align:left; }
-.welcome-opening-card h2 { margin:0; font-size:var(--welcome-opening-title-size); color:var(--text); }
-.welcome-opening-card p { margin:0; color:var(--secondary); font-size:calc(13px * var(--ui-source-factor)); line-height:1.6; }
+.welcome-opening-card { width:var(--welcome-opening-card-width); max-width:100%; max-height:100%; overflow:hidden; padding:var(--welcome-opening-inset); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:var(--welcome-opening-radius); background:var(--surface); display:flex; flex-direction:column; gap:var(--welcome-opening-gap); text-align:left; }
+.welcome-opening-body { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:var(--welcome-opening-gap); }
+.welcome-opening-footer { flex-shrink:0; display:flex; justify-content:flex-end; }
+.welcome-opening-card h2 { margin:0; font-size:calc(var(--welcome-opening-title-size) * var(--settings-text-scale,1)); color:var(--text); }
+.welcome-opening-card p { margin:0; color:var(--secondary); font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); line-height:1.6; }
 .welcome-opening-name { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .welcome-opening-progress { height:calc(4px * var(--ui-source-factor)); border-radius:calc(2px * var(--ui-source-factor)); background:var(--task-track); overflow:hidden; }
 .welcome-opening-progress span { display:block; height:100%; width:35%; background:var(--accent); animation:welcome-reading 1.2s ease-in-out infinite alternate; }
-.welcome-opening-card .button { align-self:flex-end; height:var(--operation-control-body-button-height); min-height:var(--operation-control-body-button-height); padding:var(--operation-control-vertical-inset) var(--operation-control-horizontal-inset); font-size:calc(13px * var(--ui-source-factor)); }
+.welcome-opening-footer .button { min-height:var(--operation-control-footer-button-height); min-width:var(--operation-control-footer-button-min-width); border-radius:var(--operation-control-radius); padding:0 var(--operation-control-horizontal-inset); font-size:calc(13px * var(--ui-source-factor) * var(--settings-text-scale,1)); font-weight:400; }
 @keyframes welcome-reading { from { transform:translateX(-100%); } to { transform:translateX(285%); } }
 @media(prefers-reduced-motion:reduce) { .welcome-opening-progress span { animation:none; transform:translateX(90%); } }

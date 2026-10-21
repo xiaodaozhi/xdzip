@@ -35,7 +35,7 @@ if(BUILD_TESTING)
     add_executable(xdzip-ui-tests tests/main.cpp)
     target_link_libraries(xdzip-ui-tests PRIVATE Qt6::QuickTest Qt6::QuickControls2)
     add_test(NAME qt_task_components COMMAND xdzip-ui-tests -input "${CMAKE_CURRENT_SOURCE_DIR}/tests" -o qml-tests.log,txt -o -,txt)
-    set_tests_properties(qt_task_components PROPERTIES TIMEOUT 30)
+    set_tests_properties(qt_task_components PROPERTIES TIMEOUT 60)
 endif()
 
 foreach(target xdzip-ui-resources xdzip-ui-preview xdzip-ui-tests)

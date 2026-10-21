@@ -502,6 +502,13 @@ class BrowserTest : public QObject {
         QVERIFY(second->taskStarting());
         const auto firstTab =
             window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        if (!separateWindows) {
+            sessions.moveTab(firstTab, 1);
+            QCOMPARE(window->property("sessionTabs").toList().last().toMap().value("id").toString(),
+                     firstTab);
+            QCOMPARE(sessions.sessionCount(), 2);
+            QVERIFY(first->taskStarting() && second->taskStarting());
+        }
         if (separateWindows)
             sessions.closeWindow(window);
         else
@@ -521,6 +528,146 @@ class BrowserTest : public QObject {
         QCOMPARE(
             window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
             first);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
+    void sessionTabReorderingPreservesControllers_data() {
+        QTest::addColumn<double>("scale");
+        QTest::newRow("100") << 1.;
+        QTest::newRow("125") << 1.25;
+        QTest::newRow("150") << 1.5;
+    }
+    void sessionTabReorderingPreservesControllers() {
+        QFETCH(double, scale);
+        const bool previousAccessibility = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(previousAccessibility); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        const auto restorePreferences = qScopeGuard([&] {
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs");
+        });
+        QVERIFY(preferences->saveDetails("system", scale, "zh-CN", "standard", true, false, false,
+                                         "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *first = window->findChild<BrowserController *>();
+        first->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY(first->ready() && !first->busy());
+        first->selectAll(true);
+        const auto selection = first->selectedCount();
+        QVERIFY(selection > 0);
+        sessions.newSession();
+        auto *second =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        sessions.newSession();
+        const auto activePage = window->property("activePage").value<QObject *>();
+        const auto ids = [](QQuickWindow *owner) {
+            QStringList result;
+            for (const auto &value : owner->property("sessionTabs").toList())
+                result.append(value.toMap().value("id").toString());
+            return result;
+        };
+        const auto original = ids(window);
+        QCOMPARE(original.size(), 3);
+        auto *header = findVisual(qobject_cast<QQuickItem *>(activePage), "archiveTitlebar");
+        QVERIFY(header);
+        QTRY_VERIFY(findVisual(header, "archiveTab-0"));
+        QTRY_VERIFY(findVisual(header, "activeArchiveTab"));
+        auto *source = findVisual(header, "archiveTab-0");
+        auto *target = findVisual(header, "activeArchiveTab");
+        QVERIFY(source && target);
+        const auto start =
+            source->mapToScene(QPointF(source->width() / 2, source->height() / 2)).toPoint();
+        const auto finish =
+            target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint();
+        QSignalSpy nativeDrag(header, SIGNAL(dragRequested()));
+        const auto position = window->position();
+        QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
+        QTest::mouseMove(window, start + QPoint(24, 0), 20);
+        QTest::mouseMove(window, finish, 20);
+        QTRY_VERIFY(header->property("reordering").toBool());
+        QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, finish);
+        QTRY_COMPARE(ids(window), QStringList({original[1], original[2], original[0]}));
+        QCOMPARE(window->property("activePage").value<QObject *>(), activePage);
+        QCOMPARE(window->position(), position);
+        QCOMPARE(nativeDrag.count(), 0);
+        QCOMPARE(first->selectedCount(), selection);
+        QCOMPARE(sessions.sessionCount(), 3);
+        QTest::keyClick(window, Qt::Key_PageUp, Qt::ControlModifier | Qt::ShiftModifier);
+        QTRY_COMPARE(ids(window), QStringList({original[2], original[1], original[0]}));
+        const auto ordered = ids(window);
+        sessions.moveTab("unknown", 0);
+        sessions.moveTab(original[0], -1);
+        sessions.moveTab(original[0], 32);
+        QCOMPARE(ids(window), ordered);
+        QVERIFY(preferences->saveDetails("system", scale, "zh-CN", "standard", true, false, false,
+                                         "windows"));
+        sessions.newSession();
+        auto *other = sessions.activeWindow();
+        QVERIFY(other != window);
+        QVERIFY(preferences->saveDetails("system", scale, "zh-CN", "standard", true, false, false,
+                                         "tabs"));
+        sessions.newSession();
+        const auto otherOrder = ids(other);
+        const auto otherPage = other->property("activePage").value<QObject *>();
+        sessions.moveTab(original[0], 0);
+        QCOMPARE(ids(other), otherOrder);
+        QCOMPARE(other->property("activePage").value<QObject *>(), otherPage);
+        QCOMPARE(sessions.activeWindow(), other);
+        QTRY_VERIFY(findVisual(header, "archiveTab-2"));
+        auto *inactive = findVisual(header, "archiveTab-2");
+        auto *accessible = QAccessible::queryAccessibleInterface(inactive);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(sessions.activeWindow(), window);
+        QTRY_COMPARE(
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
+            second);
+        const auto selectedPage = window->property("activePage").value<QObject *>();
+        sessions.closeSession(original[2]);
+        QCOMPARE(window->property("activePage").value<QObject *>(), selectedPage);
+        QCOMPARE(ids(other), otherOrder);
+        for (int index = 0; index < 8; ++index)
+            sessions.newSession();
+        const auto beforeClose = ids(window);
+        sessions.closeSession(beforeClose.last());
+        QTRY_VERIFY(
+            window->property("sessionTabs").toList().last().toMap().value("selected").toBool());
+        QCOMPARE(ids(window).last(), beforeClose[beforeClose.size() - 2]);
+        window->resize(832, window->height());
+        auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+        header = findVisual(page, "archiveTitlebar");
+        QVERIFY(header);
+        QTRY_VERIFY(header->property("overflowing").toBool());
+        auto *strip = findVisual(header, "archiveTabStrip");
+        QVERIFY(strip);
+        QTRY_VERIFY(findVisual(header, "activeArchiveTab"));
+        auto *selected = findVisual(header, "activeArchiveTab");
+        QTRY_VERIFY(selected->mapToItem(strip, QPointF()).x() >= -.5 &&
+                    selected->mapToItem(strip, QPointF(selected->width(), 0)).x() <=
+                        strip->width() + .5);
+        auto *list = findVisual(header, "archiveTabList");
+        auto *settings = findVisual(header, "archiveSettings");
+        QVERIFY(list && settings);
+        QVERIFY(list->mapToItem(header, QPointF(list->width(), 0)).x() <= settings->x());
+        const auto captures = qEnvironmentVariable("XDZIP_TABS_VISUAL_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures,
+                                       preferences->activeLanguage() + "-tabs-" +
+                                           QString::number(scale)));
+        }
+        QCOMPARE(first->selectedCount(), selection);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());

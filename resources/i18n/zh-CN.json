@@ -4,7 +4,6 @@
   "name": "中文 (简体)",
   "messages": {
     "ui.8f1009f1369b": "起始页",
-    "ui.6eff18378890": "关闭当前压缩包",
     "ui.1b59353f1874": "打开压缩包",
     "ui.e5ab37895edd": "按设置新建标签页或窗口",
     "settings.title": "设置",
@@ -544,6 +543,13 @@
     "error.openExtractedFile": "文件已解压，但系统未能打开。请检查文件关联后重试。",
     "action.openExtractedFile": "打开文件",
     "error.temporaryFileExpired": "临时文件已清理或不再可用，请重新双击解压打开。",
-    "result.fileOpenFailed": "无法打开文件"
+    "result.fileOpenFailed": "无法打开文件",
+    "welcome.opening.cancel": "取消加载",
+    "welcome.opening.cancelling": "正在取消…",
+    "tabs.previous": "向左滚动标签",
+    "tabs.next": "向右滚动标签",
+    "tabs.list": "标签列表",
+    "tabs.close": "关闭标签，%1",
+    "tabs.reorderHint": "拖动排序，或按 Control+Shift+Page Up/Down。"
   }
 }

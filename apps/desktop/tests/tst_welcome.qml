@@ -3,6 +3,7 @@ import QtTest
 import "../ui" as Ui
 
 Item {
+    id: surface
     width: 1024; height: 542
     Ui.WelcomePage { id: page; anchors.fill: parent }
     SignalSpy { id: openSpy; target: page; signalName: "openRequested" }
@@ -39,8 +40,8 @@ Item {
             compare(openSpy.count, 2);
         }
         function test_opening_overlay_data() {
-            return [{tag: "light", dark: false, scale: 1}, {tag: "dark", dark: true, scale: 1},
-                    {tag: "large", dark: true, scale: 1.5}];
+            return [{tag: "light", dark: false, scale: 1, height:542}, {tag: "dark", dark: true, scale: 1, height:542},
+                    {tag: "large", dark: true, scale: 1.5, height:542}, {tag:"short",dark:false,scale:1.5,height:160}];
         }
         function test_external_open_hides_welcome_until_cancel_or_failure() {
             page.externalOpening = true;
@@ -58,6 +59,7 @@ Item {
         }
         function test_opening_overlay(data) {
             Ui.Theme.dark = data.dark; Ui.Theme.fontScale = data.scale;
+            surface.height = data.height;
             page.openingName = "very-long-name.zip";
             page.canOpen = false; page.busy = true;
             cancelSpy.clear();
@@ -71,14 +73,19 @@ Item {
             verify(card.width <= page.width && card.height <= page.height);
             const bottom = cancel.mapToItem(card, 0, cancel.height);
             verify(bottom.y <= card.height, "Cancel must remain reachable");
+            verify(Math.abs(card.height-bottom.y-Ui.Theme.welcomeOpeningInset)<1);
             grabImage(page).save("welcome-opening-" + data.tag + ".png");
             mouseClick(cancel, cancel.width / 2, cancel.height / 2);
             compare(cancelSpy.count, 1);
+            verify(!cancel.enabled);
+            mouseClick(cancel);
+            compare(cancelSpy.count,1);
             const count = openSpy.count;
             mouseClick(findChild(page, "welcomeOpen"));
             compare(openSpy.count, count);
             grabImage(page).save("welcome-opening-" + data.tag + ".png");
             page.busy = false;
+            surface.height=542;
             verify(!overlay.visible);
         }
         function test_large_type_scroll() {

@@ -181,10 +181,17 @@ window.XdzipMain = (() => {
         if ($("#modal").open) closeModal();
         switchTab(tab.id, true);
     }
+    function moveTab(id, target) {
+        const from = tabs.findIndex(tab => tab.id === id);
+        if (from < 0 || target < 0 || target >= tabs.length || from === target) return;
+        tabs.splice(target, 0, tabs.splice(from, 1)[0]);
+        renderTabs();
+    }
     function renderTabs() {
         const bar = $(".archive-tabs");
         bar.setAttribute("role", "tablist");
         bar.innerHTML =
+            `<div class="tab-viewport">` +
             (state.activeTab === null ? `<div class="archive-tab welcome-tab" role="tab" aria-selected="true"><span class="tab-icon">${icon("archive")}</span><span class="tab-label">起始页</span></div>` : "") +
             (state.activeTab === null ? [] : tabs)
                 .map(
@@ -192,7 +199,7 @@ window.XdzipMain = (() => {
                         `<div class="archive-tab ${tab.id === state.activeTab ? "" : "inactive"}" data-tab="${tab.id}" role="tab" aria-selected="${tab.id === state.activeTab}" tabindex="${tab.id === state.activeTab ? 0 : -1}" data-tooltip="${esc(tab.title)}"><span class="tab-icon">${icon(tab.id === state.activeTab ? "archive" : "archive-grey")}</span><span class="tab-label">${esc(tab.title)}</span><button class="tab-close" ${tab.id === "travel" ? 'id="close-archive"' : 'id="close-example-tab"'} data-close-tab="${tab.id}" aria-label="关闭 ${esc(tab.title)}" data-tooltip="关闭压缩包，${shortcut("W")}">${icon("close")}</button></div>`,
                 )
                 .join("") +
-            `<button id="new-tab" class="header-icon" aria-label="打开其他压缩包" data-tooltip="打开其他压缩包，${shortcut("O")}">${icon("plus")}</button>`;
+            `</div><div class="tab-strip-actions"><button id="new-tab" class="header-icon" aria-label="打开其他压缩包" data-tooltip="打开其他压缩包，${shortcut("O")}">${icon("plus")}</button><button id="tabs-previous" class="header-icon tab-overflow-control" aria-label="${settingText("tabs.previous")}" hidden>${icon("chevron-right")}</button><button id="tabs-next" class="header-icon tab-overflow-control" aria-label="${settingText("tabs.next")}" hidden>${icon("chevron-right")}</button><button id="tabs-list" class="header-icon tab-overflow-control" aria-label="${settingText("tabs.list")}" hidden>${icon("chevron-down")}</button></div>`;
         bar.querySelectorAll("[data-tab]").forEach((node) => {
             node.onclick = (event) => {
                 if (!event.target.closest("[data-close-tab]"))
@@ -249,6 +256,16 @@ window.XdzipMain = (() => {
                 }),
         );
         $("#new-tab").onclick = () => dispatch("open");
+        window.XdzipTabStrip.attach(bar, {
+            tabs: () => state.activeTab === null ? [] : tabs,
+            active: () => state.activeTab,
+            move: moveTab,
+            close: closeTab,
+            list: trigger => { ui.open({trigger, label: settingText("tabs.list"), items: tabs.map(tab => ({
+                type: "radio", id: "activate-" + tab.id, label: tab.title, checked: tab.id === state.activeTab,
+                run: () => switchTab(tab.id, true),
+            }))}); document.querySelector(".ui-menu")?.classList.add("tab-list-menu"); },
+        });
     }
     function tabMenu(id, trigger, point) {
         const index = tabs.findIndex((tab) => tab.id === id);
@@ -1324,6 +1341,7 @@ window.XdzipMain = (() => {
         enterWelcome,
         switchTab,
         closeTab,
+        moveTab,
         commands,
         resetJobs,
         menuState: () => ({

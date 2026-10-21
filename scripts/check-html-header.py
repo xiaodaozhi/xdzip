@@ -63,13 +63,16 @@ with sync_playwright() as playwright:
         factor = 1548 / 1024
         title_delta = title['height'] * factor - 57
         center_y = 31 + title['height'] * factor / 2
+        active_tab = spec['dom_rect_targets']['.archive-tab:not(.inactive)']
+        tab_step = active_tab[2] + title['tab_gap'] * factor
         for selector, expected in spec['dom_rect_targets'].items():
             expected = list(expected)
             if selector.startswith('.archive-tab'):
                 expected[1] = center_y - title['tab_height'] * factor / 2
                 expected[3] = title['tab_height'] * factor
                 if selector == '.archive-tab.inactive':
-                    expected[0] += 5
+                    expected[0] = active_tab[0] + tab_step
+                    expected[2] = active_tab[2]
             elif selector != '.window':
                 expected[1] += title_delta
             rect = page.locator(selector).bounding_box()
@@ -78,7 +81,12 @@ with sync_playwright() as playwright:
             measurements.append({'kind':'DOM rect', 'selector':selector, 'expected':expected, 'actual':actual, 'maximum_delta_px':delta})
             assert delta <= 1, measurements[-1]
         for selector, expected in spec['dom_center_targets'].items():
-            expected = [expected[0] + (5 if selector == '#close-example-tab svg' else 10 if selector == '#new-tab svg' else 0), center_y]
+            x = expected[0]
+            if selector == '#close-example-tab svg':
+                x = spec['dom_center_targets']['#close-archive svg'][0] + tab_step
+            elif selector == '#new-tab svg':
+                x = active_tab[0] + 2 * tab_step + 20
+            expected = [x, center_y]
             rect = page.locator(selector).bounding_box()
             actual = [rect['x'] + rect['width']/2, rect['y'] + rect['height']/2]
             delta = max(abs(a - b) for a, b in zip(actual, expected))
@@ -108,11 +116,19 @@ with sync_playwright() as playwright:
                              'test':[316,108,36,38], 'more':[446,117,34,20]}.items():
             expected = ink_bounds(original, region)
             target_region = list(region)
-            dx = 5 if name == 'inactive-close' else 10 if name == 'plus' else 0
+            dx = (spec['dom_center_targets']['#close-archive svg'][0] + tab_step -
+                  spec['dom_center_targets']['#close-example-tab svg'][0]) if name == 'inactive-close' else (
+                  active_tab[0] + 2 * tab_step + 20 - spec['dom_center_targets']['#new-tab svg'][0]) if name == 'plus' else 0
             dy = title_delta if name in ['open', 'new', 'test', 'more'] else center_y - (expected[1] + expected[3] / 2)
-            target_region[0] += dx
+            target_region[0] += round(dx)
             target_region[1] += round(dy)
-            actual = ink_bounds(shot, target_region)
+            if name == 'inactive-close':
+                page.locator('.archive-tab.inactive').hover()
+                hovered = Image.open(io.BytesIO(page.screenshot())).convert('RGB')
+                actual = ink_bounds(hovered, target_region)
+                page.mouse.move(0, 0)
+            else:
+                actual = ink_bounds(shot, target_region)
             expected[0] += dx
             expected[1] += dy
             delta = max(abs(a - b) for a, b in zip(actual, expected))

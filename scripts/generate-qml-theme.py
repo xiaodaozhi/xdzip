@@ -123,6 +123,10 @@ lines.append(f'    readonly property real mainControlRadius: {tokens["radius"]["
 lines.append(f'    readonly property real mainToolbarRadius: {tokens["radius"]["toolbar"] * layout["main"]["density"]}')
 for key, value in layout['main']['interaction'].items():
     lines.append(f'    readonly property real main{key[0].upper() + key[1:]}: {value}')
+for key, value in layout['main']['titlebar'].items():
+    if key.startswith('tab_') and key not in ('tab_height', 'tab_vertical_inset', 'tab_radius'):
+        name = 'main' + ''.join(part.title() for part in key.split('_'))
+        lines.append(f'    readonly property real {name}: {value}')
 for key, value in main['source_geometry'].items():
     name = 'main' + key[0].upper() + key[1:]
     converted = value * main_scale

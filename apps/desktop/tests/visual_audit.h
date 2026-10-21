@@ -49,6 +49,8 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
     if (fontValue.isValid()) {
         const auto font = fontValue.value<QFont>();
         node["fontPixelSize"] = font.pixelSize();
+        node["fontWeight"] = int(font.weight());
+        node["fontBold"] = font.bold();
         node["fontPointSize"] = font.pointSizeF();
         node["fontFamily"] = QFontInfo(font).family();
         node["resolvedPixelSize"] = QFontInfo(font).pixelSize();

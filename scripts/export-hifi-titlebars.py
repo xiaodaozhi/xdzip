@@ -18,6 +18,8 @@ ARTBOARDS = (
     ('main-capsule-light.png', 'theme=light'),
     ('main-capsule-dark.png', 'theme=dark'),
     ('directory-tree-capsule.png', 'theme=light&tree=expanded'),
+    ('tabs-overflow-light.png', 'theme=light&tabs=overflow'),
+    ('tabs-overflow-dark.png', 'theme=dark&tabs=overflow'),
 )
 
 

@@ -26,6 +26,7 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void openPath(const QString &path);
     Q_INVOKABLE void newSession();
     Q_INVOKABLE void activateId(const QString &id);
+    Q_INVOKABLE void moveTab(const QString &id, int targetIndex);
     Q_INVOKABLE void closeSession(const QString &id);
     Q_INVOKABLE void closeWindow(QQuickWindow *window);
     Q_INVOKABLE void focusWindow(QQuickWindow *window);
@@ -68,6 +69,7 @@ class ApplicationSessions final : public QObject {
   private:
     struct Session {
         QString id, path;
+        quint64 tabOrder = 0;
         QPointer<QObject> page;
         QPointer<BrowserController> controller;
         QPointer<QQuickWindow> window;
@@ -77,6 +79,7 @@ class ApplicationSessions final : public QObject {
     Session *add(QQuickWindow *window, QObject *page);
     Session *create(bool newWindow);
     Session *current() const;
+    std::vector<Session *> visibleTabs(QQuickWindow *window) const;
     void activate(Session *session, bool reveal = true);
     void refresh();
     void reap(Session *session);

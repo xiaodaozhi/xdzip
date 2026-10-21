@@ -8,6 +8,8 @@
 
 `desktop/openMode=tabs|windows` 默认 tabs，schema 保持 1，未知字段保留。设置草稿保存后影响后续打开，取消不生效，不迁移已打开页面。标题栏加号按此设置新建页面或窗口。
 
+标签排序通过稳定会话身份和窗口内目标索引提交，只改变同一窗口未关闭会话的展示顺序，不重排用于任务准入的控制器集合。拖动释放或键盘排序后保持当前活动页、归档、控制器、选择和任务身份，其他窗口与已关闭后台会话的相对顺序不变。关闭非活动标签不切换页面，关闭活动标签优先选择视觉顺序中的右邻，否则选择左邻。无效身份、已关闭会话、越界或退出期间的排序请求忽略；不创建或销毁 Rust 连接。当前仅支持窗口内重排，不支持跨窗口拖放、分离窗口或跨启动恢复顺序。标签栏溢出仅改变可视区域，不能丢弃会话；菜单与键盘激活后保证活动标签可见。
+
 最多保留 32 个存活会话，达到限额明确提示。所有槽均由后台任务保留时，关闭最后浏览页复用原页显示欢迎与全局任务入口，不创建额外运行时。关闭标签或非最后主窗口不取消任务。仍有任务或完成结果的页面保留所属控制器，统一任务菜单使用“会话 UUID/后端任务 ID”，不能把另一个连接中相同数字 ID 当作同一任务。密码、冲突和结果窗口仍由原会话控制器处理。无任务的关闭页面先请求异步关闭，接收线程完成 join 后才从会话集合移除。
 
 会话关闭后，延迟到达的开始、预检、密码与冲突事件不自动弹窗或抢焦点。任务与请求令牌继续保留，用户从全局任务入口主动打开时再显示原会话的进度和待处理请求，关闭页面不等于取消请求。
@@ -22,7 +24,7 @@
 
 验收包括实际原生窗口状态变化、并发启动与崩溃残留、Unicode 和批量路由、两种打开模式、保存与取消及重启、跨会话 ID 冲突、后台任务、密码与冲突、全局退出和接收线程回收。离屏测试只能证明状态契约，不能代替原生视觉、辅助功能和桌面人工验收。证据保存在 build/ 或 CI 工件。
 
-English: One normal product process and tray serve each user login session. Each archive owns an independent controller and Rust connection. The saved open mode selects tabs or windows for future opens; duplicate archives activate their existing session. Closing a page keeps its tasks and results accessible through composite session/task identities. Heavy operations are admitted serially across the application. Explicit quit waits for cancellation, cleanup and asynchronous joins across every session. Activation preserves normal, maximized and fullscreen state and prioritizes blocking dialogs. Diagnostic runs remain isolated. Automated evidence does not claim manual desktop acceptance.
+English: One normal product process and tray serve each user login session. Each archive owns an independent controller and Rust connection. The saved open mode selects tabs or windows for future opens; duplicate archives activate their existing session. Tab reordering changes only the visual order within one window, preserving the active page, controller identity and task admission order. Closing an inactive tab preserves selection; closing the active tab selects its right neighbor, or its left neighbor when last. Overflow scrolling and the tab list preserve all sessions and reveal the selected tab. Cross-window dragging and order persistence are not supported. Closing a page keeps its tasks and results accessible through composite session/task identities. Heavy operations are admitted serially across the application. Explicit quit waits for cancellation, cleanup and asynchronous joins across every session. Activation preserves normal, maximized and fullscreen state and prioritizes blocking dialogs. Diagnostic runs remain isolated. Automated evidence does not claim manual desktop acceptance.
 
 退出进入实际取消与 join 阶段后，IPC 明确拒绝新意图。关闭通道后才释放选举锁，全部连接完成后才启动重启进程，旧实例的重复清理不能移除新端点。Windows 重启同样转交本次用户操作的前台权限。
 

@@ -4,6 +4,7 @@ on:
     paths:
       - 'scripts/check-extract-fidelity.py'
       - 'scripts/check-integrity-progress.py'
+      - 'scripts/check-tab-strip.py'
       - 'docs/visual/create-reference.json'
       - 'docs/visual/result-reference.json'
       - 'build/review/create-controls/**'
@@ -41,6 +42,7 @@ on:
       - '.gitattributes'
   pull_request:
     paths:
+      - 'scripts/check-tab-strip.py'
       - 'scripts/check-extract-fidelity.py'
       - 'scripts/check-integrity-progress.py'
       - 'docs/visual/create-reference.json'
@@ -83,7 +85,7 @@ permissions:
 jobs:
   visual-anchors:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install isolated review tooling
@@ -117,6 +119,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-preflight.py
           .venv-design/bin/python scripts/check-html-welcome.py
           .venv-design/bin/python scripts/check-html-controls.py
+          .venv-design/bin/python scripts/check-tab-strip.py
           .venv-design/bin/python scripts/check-html-header.py
           .venv-design/bin/python scripts/check-html-preview.py
           .venv-design/bin/python scripts/check-html-references.py
@@ -144,6 +147,7 @@ jobs:
             build/review/html-settings/
             build/review/desktop-integration/html/
             build/review/html-welcome/
+            build/review/tab-strip/
             build/review/html-header/
             build/review/hifi-titlebars/
             build/review/html-body/

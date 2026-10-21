@@ -587,6 +587,7 @@ Item {
             sessionControls: root.sessionManager !== null
             onTabSelected: identity => root.sessionManager.activateId(identity)
             onTabClosed: identity => root.sessionManager.closeSession(identity)
+            onTabMoved: (identity, index) => root.sessionManager.moveTab(identity, index)
             integratedTitlebar: root.integratedTitlebar
             windowsControls: root.windowsTitlebar
             maximized: root.visibility === Window.Maximized

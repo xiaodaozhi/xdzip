@@ -21,11 +21,19 @@ def main():
     source_factor = ratio[1] / ratio[0]
     javascript = '// Generated from docs/visual/controls.json; edit the specification.\n'
     javascript += 'window.XDZIP_CONTROL_TOKENS = Object.freeze(' + json.dumps(tokens, ensure_ascii=False) + ');\n'
+    main_reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
+    tab_tokens = dict(layout['main']['titlebar'], tab_preferred_width=main_reference['source_geometry']['tabWidth'] / source_factor)
+    javascript += 'window.XDZIP_TAB_TOKENS = Object.freeze(' + json.dumps(tab_tokens, ensure_ascii=False) + ');\n'
     declarations = ['/* Generated logical tokens; artboards convert them to source coordinates. */', ':root {',
                     f'  --ui-source-factor: {source_factor};',
                     f'  --main-density: {layout["main"]["density"]};',
                     '  --tree-source-factor: calc(var(--ui-source-factor) * var(--main-density));']
     welcome = json.loads((ROOT / 'docs/visual/welcome-reference.json').read_text())
+    for key, value in layout['main']['titlebar'].items():
+        if key.startswith('tab_') and isinstance(value, (int, float)):
+            name = key.replace('_', '-')
+            css = str(value) if key.endswith(('weight', 'interval')) else f'calc({value}px * var(--ui-source-factor))'
+            declarations.append(f'  --{name}: {css};')
     for key, value in welcome.items():
         if key.startswith('opening_') and isinstance(value, (int, float)):
             name = key.replace('_', '-')

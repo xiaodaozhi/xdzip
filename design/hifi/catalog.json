@@ -12,7 +12,7 @@
         1586,
         992
       ],
-      "sha256": "3cc9e29d473490d3ef5b2f59c9b371226e0b0e9424fabaf2573a8fb921e8140c"
+      "sha256": "98dc8808399f07fd2506b08e52a5021b2e12495c6b0b394dabd55d3c91f2f53b"
     },
     {
       "file": "screens/main-capsule-dark.png",
@@ -25,7 +25,31 @@
         1586,
         992
       ],
-      "sha256": "0f01f577ad0722b1e4cebfcc17d2b464e41af1e2883b4d9a6337e1d495a8f905"
+      "sha256": "6ff7d05b44cff2f3256cd6e73d555f447598435d02f842a03bf77af599021393"
+    },
+    {
+      "file": "screens/tabs-overflow-light.png",
+      "title": "主窗口，浅色横向滚动标签栏",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/main.html?theme=light&tabs=overflow",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "05f816d2acf454fe8f19c882f99d24dcf0afcd3cb1920aaabd62244431db58c5"
+    },
+    {
+      "file": "screens/tabs-overflow-dark.png",
+      "title": "主窗口，深色横向滚动标签栏",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/main.html?theme=dark&tabs=overflow",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "47e43727e2ed7771d36462a8655c1f11af1404c63824dc12b452da2de2b5288e"
     },
     {
       "file": "screens/directory-tree-capsule.png",
@@ -38,7 +62,7 @@
         1586,
         992
       ],
-      "sha256": "27b1a5cfd000405d8490b823213469e9eb0c036e5aa7262f7b3f6e173a2015a1",
+      "sha256": "0b176941aa8e611550d4eeebed85cd5eb5df54ddfb9b82f455b7876aa9a54b74",
       "component": "directory-tree"
     },
     {

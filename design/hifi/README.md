@@ -10,11 +10,15 @@
 | --- | --- |
 | [主窗口，浅色](screens/main-capsule-light.png) | 当前胶囊标签修订 |
 | [主窗口，深色](screens/main-capsule-dark.png) | 同源深色设计导出 |
+| [多标签溢出，浅色](screens/tabs-overflow-light.png) | 横向视口、滚动按钮、标签列表与常规字重的非活动标签 |
+| [多标签溢出，深色](screens/tabs-overflow-dark.png) | 同源深色设计导出，支持窗口内拖动排序 |
 | [解压确认，macOS 独立窗口](screens/extract-macos.png) | 当前解压确认视觉参考 |
 
 ![当前浅色主界面](screens/main-capsule-light.png)
 
 [主窗口与目录树可编辑设计源](sources/main.html)复用现行 HTML 标题栏，冻结 48 高标题栏、32 高胶囊、16 圆角、上下各 8 的逻辑尺寸。浅深色主窗口与多级目录图均从该源导出；它们用于查看当前设计，不作为独立量测输入或原生 Qt 验收证据。
+
+[多标签交互稿](sources/main.html?tabs=overflow)展示标签收窄与溢出、左右滚动及标签列表，支持拖动和 Control+Shift+Page Up/Down 重排。活动标签字重 600，其他标签字重 400；原历史主图及量测哈希继续保留。
 
 ## 操作窗口与功能状态
 

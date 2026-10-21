@@ -22,6 +22,16 @@
       "tab_height": 32,
       "tab_vertical_inset": 8,
       "tab_radius": 16,
+      "tab_minimum_width": 112,
+      "tab_gap": 6.4,
+      "tab_control_size": 28,
+      "tab_control_gap": 4,
+      "tab_drag_edge": 28,
+      "tab_drag_scroll_step": 12,
+      "tab_drag_scroll_interval": 30,
+      "tab_drop_indicator_width": 2,
+      "tab_active_weight": 600,
+      "tab_inactive_weight": 400,
       "style": "floating capsule"
     },
     "interaction": {

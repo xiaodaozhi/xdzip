@@ -306,6 +306,16 @@ QtObject {
     readonly property real mainCaptionButtonWidth: 46
     readonly property real mainCaptionIconSize: 18
     readonly property real mainCaptionRestoreOffset: 3
+    readonly property real mainTabMinimumWidth: 112
+    readonly property real mainTabGap: 6.4
+    readonly property real mainTabControlSize: 28
+    readonly property real mainTabControlGap: 4
+    readonly property real mainTabDragEdge: 28
+    readonly property real mainTabDragScrollStep: 12
+    readonly property real mainTabDragScrollInterval: 30
+    readonly property real mainTabDropIndicatorWidth: 2
+    readonly property real mainTabActiveWeight: 600
+    readonly property real mainTabInactiveWeight: 400
     readonly property real mainTitleHeight: 48.00000000
     readonly property real mainToolbarHeight: 53.00000000
     readonly property real mainToolbarControlHeight: 33.73643411

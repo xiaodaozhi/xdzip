@@ -83,6 +83,9 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
     auto *session = value.get();
     session->id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     session->window = window;
+    for (const auto &existing : m_sessions)
+        if (existing->window == window && !existing->closed)
+            session->tabOrder = std::max(session->tabOrder, existing->tabOrder + 1);
     session->page = page;
     session->controller = page->findChild<BrowserController *>();
     if (!session->controller)
@@ -303,26 +306,56 @@ void ApplicationSessions::activateId(const QString &id) {
             return;
         }
 }
+void ApplicationSessions::moveTab(const QString &id, int targetIndex) {
+    if (m_quitting || targetIndex < 0)
+        return;
+    const auto found = std::find_if(m_sessions.begin(), m_sessions.end(), [&](const auto &value) {
+        return value->id == id && !value->closed;
+    });
+    if (found == m_sessions.end())
+        return;
+    auto ordered = visibleTabs((*found)->window);
+    const auto from = std::find(ordered.begin(), ordered.end(), found->get()) - ordered.begin();
+    if (targetIndex >= int(ordered.size()) || targetIndex == from)
+        return;
+    if (from < targetIndex)
+        std::rotate(ordered.begin() + from, ordered.begin() + from + 1,
+                    ordered.begin() + targetIndex + 1);
+    else
+        std::rotate(ordered.begin() + targetIndex, ordered.begin() + from,
+                    ordered.begin() + from + 1);
+    // Presentation order must not change controller ownership or admission order.
+    for (size_t index = 0; index < ordered.size(); ++index)
+        ordered[index]->tabOrder = index;
+    refresh();
+}
 void ApplicationSessions::closeSession(const QString &id) {
     for (const auto &session : m_sessions) {
         if (session->id != id || session->closed)
             continue;
         auto *value = session.get();
+        const auto ordered = visibleTabs(value->window);
+        const auto position = std::find(ordered.begin(), ordered.end(), value) - ordered.begin();
+        const auto activePage = value->window->property("activePage").value<QObject *>();
+        const bool wasActive = value->page == activePage;
         value->closed = true;
         value->page->setProperty("sessionClosed", true);
         value->page->setProperty("visible", false);
         QMetaObject::invokeMethod(value->page, "hideSessionWindows");
         Session *next = nullptr;
-        for (const auto &other : m_sessions)
-            if (other->window == value->window && !other->closed) {
-                next = other.get();
+        for (auto *other : ordered)
+            if (other != value && other->page == activePage) {
+                next = other;
                 break;
             }
+        if (!next && ordered.size() > 1)
+            next =
+                ordered[size_t(position + 1 < int(ordered.size()) ? position + 1 : position - 1)];
         if (!next && m_sessions.size() < 32)
             next = create(false);
-        if (next)
+        if (next && (wasActive || next->page != activePage))
             activate(next);
-        else {
+        else if (!next) {
             // All slots can be retained by background tasks. The existing page
             // becomes an empty shell with the global task entry, without a 33rd
             // runtime or cancelling the closed archive's work.
@@ -459,15 +492,25 @@ void ApplicationSessions::showTask(const QString &identity) {
             return;
         }
 }
+std::vector<ApplicationSessions::Session *>
+ApplicationSessions::visibleTabs(QQuickWindow *window) const {
+    std::vector<Session *> result;
+    for (const auto &session : m_sessions)
+        if (session->window == window && !session->closed)
+            result.push_back(session.get());
+    std::stable_sort(result.begin(), result.end(), [](const auto *left, const auto *right) {
+        return left->tabOrder < right->tabOrder;
+    });
+    return result;
+}
 void ApplicationSessions::refresh() {
     for (auto *window : windows()) {
         QVariantList tabs;
         const auto page = window->property("activePage").value<QObject *>();
-        for (const auto &session : m_sessions)
-            if (session->window == window && !session->closed)
-                tabs.append(QVariantMap{{"id", session->id},
-                                        {"title", session->controller->title()},
-                                        {"selected", session->page == page}});
+        for (const auto *session : visibleTabs(window))
+            tabs.append(QVariantMap{{"id", session->id},
+                                    {"title", session->controller->title()},
+                                    {"selected", session->page == page}});
         if (window->property("sessionTabs").toList() != tabs)
             window->setProperty("sessionTabs", tabs);
     }

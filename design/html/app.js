@@ -836,7 +836,7 @@ function beginWelcomeOpening(name, complete = null, external = false) {
     const overlay = document.createElement("div");
     overlay.id = "welcome-opening";
     overlay.className = "welcome-opening";
-    overlay.innerHTML = `<section class="welcome-opening-card" role="dialog" aria-modal="true" aria-labelledby="welcome-opening-title"><h2 id="welcome-opening-title">${settingText("ui.821ffb8cd6a2")}</h2><p class="welcome-opening-name">${esc(name)}</p><div class="welcome-opening-progress" role="progressbar" aria-label="${settingText("welcome.opening.progress")}"><span></span></div><p role="status">${settingText("welcome.opening.note")}</p><button id="welcome-opening-cancel" class="button">${settingText("ui.caf06adff4f1")}</button></section>`;
+    overlay.innerHTML = `<section class="welcome-opening-card" role="dialog" aria-modal="true" aria-labelledby="welcome-opening-title"><div class="welcome-opening-body"><h2 id="welcome-opening-title">${settingText("ui.821ffb8cd6a2")}</h2><p class="welcome-opening-name">${esc(name)}</p><div class="welcome-opening-progress" role="progressbar" aria-label="${settingText("welcome.opening.progress")}"><span></span></div><p role="status">${settingText("welcome.opening.note")}</p></div><div class="welcome-opening-footer"><button id="welcome-opening-cancel" class="button">${settingText("welcome.opening.cancel")}</button></div></section>`;
     $("#welcome").append(overlay);
     const cancel = $("#welcome-opening-cancel");
     cancel.onclick = () => cancelWelcomeOpening();
@@ -1448,7 +1448,7 @@ let savedSettingsDemo = null;
 let settingsPreview = null;
 let aboutReturnDraft = null;
 let settingsResumeDraft = null;
-const settingText = id => window.XDZIP_UI_MESSAGES["zh-CN"].messages[id];
+const settingText = id => window.XDZIP_UI_MESSAGES[document.documentElement.lang === "en-US" ? "en-US" : "zh-CN"].messages[id];
 function restoreSettingsPreview() {
     if (!settingsPreview) return;
     const original = settingsPreview.original;

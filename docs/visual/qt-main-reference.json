@@ -129,7 +129,7 @@
   "intentional_exceptions": [
     "New logo and directory tree B supersede those parts of the original main artwork.",
     "Native system window decorations require Cocoa/Win32 desktop evidence, not offscreen screenshots.",
-    "Single real archive session; no decorative second tab. Plus opens/replaces an archive and says so.",
+    "Single-session fidelity scene keeps its original calibrated width. Real sessions support window-local ordering and bounded overflow using layout-scale.json; plus follows the saved open mode.",
     "Image preview, archive-wide totals and modification time are not supplied by the current metadata bridge; unsupported data stays explicit.",
     "Large font and narrow-window layouts reflow; 1024-wide default is the calibrated baseline.",
     "Floating capsule titlebar uses layout-scale.json: height48, tab32, equal8 insets. Original source title anchors remain archived; top-anchored content shifts by the explicit title delta."

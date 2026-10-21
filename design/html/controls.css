@@ -155,6 +155,28 @@
 .archive-tabs {
     min-width: 0;
 }
+.tab-viewport {
+    display:flex;
+    gap:var(--tab-gap);
+    min-width:0;
+    flex-shrink:1;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+}
+.tab-viewport::-webkit-scrollbar { display:none; }
+.tab-strip-actions { display:flex; flex-shrink:0; align-items:center; gap:var(--tab-control-gap); }
+.tab-strip-actions [hidden] { display:none; }
+.tab-overflow-control { width:var(--tab-control-size); height:var(--tab-control-size); }
+.tab-overflow-control svg { width:calc(18px * var(--ui-source-factor)); height:calc(18px * var(--ui-source-factor)); }
+#tabs-previous svg { transform:rotate(180deg); }
+.archive-tab { touch-action:pan-y; user-select:none; }
+.archive-tab.inactive .tab-close { opacity:0; }
+.archive-tab.inactive:is(:hover,:focus-within) .tab-close { opacity:1; }
+.archive-tab.drag-origin { opacity:.35; }
+.tab-drag-preview { position:fixed; z-index:1000; pointer-events:none; border-color:var(--accent); }
+.tab-drop-indicator { position:fixed; z-index:1001; width:var(--tab-drop-indicator-width); background:var(--accent); pointer-events:none; }
+.tab-list-menu { font-size:calc(var(--ui-menu-label-size) * var(--settings-text-scale,1)); }
 #sort-name,
 .sort-header {
     color: inherit;

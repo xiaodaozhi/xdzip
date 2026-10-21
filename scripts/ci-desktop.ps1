@@ -92,6 +92,14 @@ $env:XDZIP_PRIVATE_TEST_AUDIT = Join-Path (Get-Location) 'build/review'
 $desktopProbe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $desktopProbe @('privateTestDesktopInputAndAccessibility')
 Remove-Item Env:XDZIP_PRIVATE_TEST_AUDIT
+$tabLanguage = $env:XDZIP_UI_TEST_LANGUAGE
+$env:XDZIP_TABS_VISUAL_AUDIT = Join-Path (Get-Location) 'build/review/tab-strip-native'
+foreach ($language in @('zh-CN','en-US')) {
+    $env:XDZIP_UI_TEST_LANGUAGE = $language
+    Invoke-Checked $browserTests @('sessionTabReorderingPreservesControllers')
+}
+if ($tabLanguage) { $env:XDZIP_UI_TEST_LANGUAGE = $tabLanguage } else { Remove-Item Env:XDZIP_UI_TEST_LANGUAGE }
+Remove-Item Env:XDZIP_TABS_VISUAL_AUDIT
 # Gate the repaired geometry and palette contracts on each native host.
 # Unresolved font evidence remains explicitly unverified; this is not golden-image approval.
 $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/visual-audit'
