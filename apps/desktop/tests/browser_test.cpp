@@ -88,6 +88,40 @@ static bool nativeStateSettled(QWindow *window, Qt::WindowState state) {
     return window->windowState() == state;
 }
 
+// Preserve the failed window before teardown; a later window cannot explain a cold-start failure.
+static bool waitForNativeExposure(QWindow *window) {
+    if (QTest::qWaitForWindowExposed(window))
+        return true;
+    qInfo() << "Window exposure failure" << QGuiApplication::platformName() << "visible"
+            << window->isVisible() << "exposed" << window->isExposed() << "active"
+            << window->isActive() << "state" << window->windowStates() << "geometry"
+            << window->geometry() << "screen"
+            << (window->screen() ? window->screen()->geometry() : QRect()) << "cursor"
+            << QCursor::pos();
+#ifdef Q_OS_LINUX
+    if (QGuiApplication::platformName() == QStringLiteral("xcb")) {
+        const auto id = QStringLiteral("0x") + QString::number(window->winId(), 16);
+        const auto inspect = [](const QString &program, const QStringList &arguments) {
+            QProcess process;
+            process.start(program, arguments);
+            if (process.waitForFinished(1000))
+                qInfo().noquote() << program << process.readAllStandardOutput()
+                                  << process.readAllStandardError();
+            else
+                qInfo() << program << "diagnostic timed out";
+        };
+        inspect(QStringLiteral("xwininfo"), {QStringLiteral("-id"), id});
+        inspect(QStringLiteral("xprop"),
+                {QStringLiteral("-id"), id, QStringLiteral("WM_STATE"),
+                 QStringLiteral("_NET_WM_STATE"), QStringLiteral("_NET_WM_DESKTOP")});
+        inspect(QStringLiteral("xprop"),
+                {QStringLiteral("-root"), QStringLiteral("_NET_CURRENT_DESKTOP"),
+                 QStringLiteral("_NET_ACTIVE_WINDOW"), QStringLiteral("_NET_CLIENT_LIST")});
+    }
+#endif
+    return false;
+}
+
 // TableView delegates belong to its visual tree, not necessarily its QObject tree.
 static QQuickItem *findVisual(QQuickItem *item, const QString &name) {
     if (item->property("inReusePool").toBool())
@@ -1498,7 +1532,7 @@ class BrowserTest : public QObject {
         button->setPosition(QPointF(40, 40));
         button->setSize(QSizeF(100, 40));
         window.show();
-        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(waitForNativeExposure(&window));
         window.requestActivate();
         QVERIFY(QTest::qWaitForWindowActive(&window));
         const auto hover = [&] {
