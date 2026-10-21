@@ -14,6 +14,7 @@
 | crates/xdzip-qt-bridge | cxx 类型桥接、双句柄及生命周期；依赖 runtime |
 | tools | 独立桥接、格式、I/O 与进程计数探针，不作为 GUI 产品入口 |
 | scripts、.github | 生成、检查、部署工具与 CI、协作模板 |
+| release-notes | 可审阅的版本专属发布说明及 version/build 元数据，不存执行报告或生成包 |
 | design/hifi、design/html、design/assets | 高保真原稿、可操作设计及运行素材输入 |
 | docs | 持久设计、工程契约与可复用验证方法；不累积执行报告 |
 | third_party | 随代码保留的第三方来源与许可材料 |

@@ -17,7 +17,7 @@
 | WP-11 / M4 TAR/GZIP（已实现，平台验收按实际证据） | WP-05/07/10 | 组合能力、流式扫描、未知总量、特殊项拒绝及双向互操作 |
 | WP-12 / M5 私测准备（开发与验收完成） | WP-03～11 | 10 项自动门槛通过，八项人工验收完成，支持政策已批准；[WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)收口，剩余[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)独立跟踪 |
 | WP-13 / M6 索引/预览 | WP-12 | 百万条预算、磁盘索引、受限预览与清理 |
-| WP-14 / M7 额外格式 | WP-12 | 首个子项为[单卷 AES-256 ZIP 密码解压 #11](https://github.com/xiaodaozhi/xdzip/issues/11)，支持 Store／Deflate，不依赖 WP-13；7z／RAR、其他加密方式与分卷读取分别准入、逐项声明 |
+| WP-14 / M7 额外格式 | WP-12 | [AES-256 ZIP 密码解压 #11](https://github.com/xiaodaozhi/xdzip/issues/11)与[分卷 ZIP 读取 #20](https://github.com/xiaodaozhi/xdzip/issues/20)已实现，支持 Store／Deflate，不依赖 WP-13；7z／RAR及其他加密方式继续分别准入、逐项声明 |
 | WP-15 / M8 外部 SDK | WP-12 | 两个独立协议实现、越权测试、平台沙箱；未达标不启用 |
 | WP-16 / M9 稳定发行 | WP-13～15 中实际纳入项 | 稳定能力完整验收、独立安全审查、许可与支持政策，沿用未正式签名的开源发行方式 |
 
@@ -25,4 +25,4 @@
 
 后续 WP-13～15 的开发可基于已完成的 WP-12 推进；实际公开发行仍执行[独立审查流程](../qa/release-review.md)。
 
-WP-14 的首个切片为[单卷 AES-256 ZIP 密码解压](../engineering/password-extraction.md)，包含密码交互、认证后发布、错误重试与取消。实际进展、互操作与三平台验证结论由 [#11](https://github.com/xiaodaozhi/xdzip/issues/11)跟踪，不等待 WP-13 完成；其他加密方式及分卷读取仍单独准入。
+WP-14 的首个切片为[AES-256 ZIP 密码解压](../engineering/password-extraction.md)，包含密码交互、认证后发布、错误重试与取消。后续[分卷 ZIP](../engineering/archive-opening.md)支持连续编号卷及 PKZIP 卷，沿用密码和安全任务路径。实际进展、互操作与三平台验证结论由 [#11](https://github.com/xiaodaozhi/xdzip/issues/11)和 [#20](https://github.com/xiaodaozhi/xdzip/issues/20)跟踪，不等待 WP-13 完成；其他格式和加密方式仍单独准入。

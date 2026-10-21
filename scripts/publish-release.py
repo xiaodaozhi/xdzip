@@ -4,11 +4,32 @@
 import argparse
 import json
 from pathlib import Path
+import re
 import runpy
 import subprocess
 from release_protocol import sha256, validate
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_notes(path, version):
+    source = path.read_text(encoding='utf-8')
+    metadata = re.findall(r'^<!-- xdzip-release (\{[^\n]+\}) -->$', source, re.M)
+    if len(metadata) != 1:
+        raise ValueError('Release notes require one xdzip-release version/build header')
+    identity = json.loads(metadata[0])
+    if (set(identity) != {'version', 'build'} or type(identity['build']) is not int or
+            identity['version'] != version['display_version'] or identity['build'] != version['build']):
+        raise ValueError('Release notes version/build differs from VERSION.json')
+    body = re.sub(r'\A(?:<!--[ \t]+[^\n]+[ \t]+-->[ \t]*\n\s*)+', '', source).strip()
+    heading = '# xdzip ' + version['display_version']
+    if not body.startswith(heading + '\n') or not body[len(heading):].strip():
+        raise ValueError('Release notes require a matching heading and reviewed content')
+    return body + '\n'
+
+
+def comparable_notes(body):
+    return body.replace('\r\n', '\n').rstrip()
 
 
 def gh(*args, capture=False):
@@ -18,41 +39,37 @@ def gh(*args, capture=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory', type=Path)
-    parser.add_argument('--tag', required=True)
-    parser.add_argument('--repository', required=True)
+    parser.add_argument('--tag')
+    parser.add_argument('--repository')
+    parser.add_argument('--notes-file', type=Path, help='Reviewed version-specific notes; defaults to release-notes/<version>.md')
+    parser.add_argument('--check-notes', action='store_true', help='Validate notes without contacting GitHub')
     parser.add_argument('--draft-only', action='store_true')
     args = parser.parse_args()
     version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()
-    if args.tag != 'v'+version['display_version'] or version['channel'] == 'stable':
+    if (args.tag and args.tag != 'v'+version['display_version']) or version['channel'] == 'stable':
         raise ValueError('This workflow only publishes the exact configured prerelease tag')
+    reviewed = load_notes(args.notes_file or ROOT/'release-notes'/(version['display_version']+'.md'), version)
+    if args.check_notes:
+        print('Version-specific release notes verified: '+version['display_version'])
+        return
+    if not args.tag or not args.repository:
+        parser.error('--tag and --repository are required for publishing')
     work = ROOT/'build/release-publish'
     work.mkdir(parents=True, exist_ok=True)
     notes = work/'notes.md'
-    notes.write_text(f'''xdzip {version['display_version']}，首个实验性跨平台预发布。
-
-- 修复弹窗激活使主窗口退出最大化的问题。
-- 每个登录会话共用一个进程和托盘，支持在新标签页或新窗口打开归档。
-- 关闭页面后任务继续运行，明确退出时执行取消、清理与异步关闭。
-- 提供 Windows x86_64 便携 ZIP 和安装器，macOS 14+ arm64 app ZIP 和 DMG，Ubuntu 24.04 x86_64 X11 运行包和 deb。
-
-Windows 包包含应用目录内 VC++ 运行库及图形兼容库。macOS 仅 ad-hoc 完整性签名，未经 Developer ID 签名和 Apple 公证。Linux 要求 Ubuntu 24.04、glibc 2.39、X11。
-
-`release.json` 是更新协议 v1，按语义版本、允许渠道、平台、架构及包类型选择资产。预发布列表须分页获取，不能依赖 `/releases/latest`。每个资产以 SHA-256 验证；本版本尚未实现自动更新器。
-
-本版本仍属实验性，独立安全审查、独立许可审查及完整桌面人工验收尚未完成，跟踪见 #4。自动化记录不等同于人工视觉验收或签名发行。对应源码、通知、许可、SBOM 与重建材料见附件。
-
-Experimental prerelease. Independent security/licensing review and full manual desktop acceptance remain pending. macOS uses ad-hoc integrity signing only, without Developer ID or notarization. No automatic updater is included.
-''', encoding='utf-8')
-    query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json', 'isDraft,assets'],
+    notes.write_text(reviewed, encoding='utf-8')
+    query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json', 'isDraft,assets,body'],
                            capture_output=True, text=True)
     if query.returncode:
         gh('release', 'create', args.tag, '--repo', args.repository, '--verify-tag', '--draft', '--prerelease',
            '--title', 'xdzip '+version['display_version'], '--notes-file', notes)
-        state = dict(isDraft=True, assets=[])
+        state = dict(isDraft=True, assets=[], body=reviewed)
     else:
         state = json.loads(query.stdout)
     if not state['isDraft']:
         raise ValueError('Public release is immutable; publish a new version for revisions')
+    if comparable_notes(state['body']) != comparable_notes(reviewed):
+        raise ValueError('Draft notes differ from the reviewed file; reconcile them explicitly before publishing')
     if args.draft_only: return
     if not args.directory: raise ValueError('Missing complete asset directory')
     directory = args.directory.resolve()

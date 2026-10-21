@@ -34,7 +34,7 @@ python3 scripts/sbom.py --audit build/review/deployment-audit.json \
   --output build/review/artifact-files.cdx.json
 ```
 
-Linux 传入部署重写记录；其他平台省略 --deployment。报告写在核验根外，避免自身清单递归。CI 在部署／最终哈希之前准备许可材料，Windows 和 Linux 将 notices 放入实际运行目录，Linux tar.gz 同时交付这些材料；macOS 只做 SDK 读取与本地／CI 记录，仍不部署 Qt、签名、压缩或上传应用。
+Linux 传入部署重写记录；其他平台省略 --deployment。报告写在核验根外，避免自身清单递归。CI 在部署／最终哈希之前准备许可材料，Windows 和 Linux 将 notices 放入实际运行目录，Linux tar.gz 同时交付这些材料。普通 macOS CI 只做 SDK 读取与日志／JSON 记录；经明确授权的专用 Release 工作流另行部署、ad-hoc 签名、打包并核对实际发布材料，按[发布协议](release-protocol.md)保留独立的部署范围与哈希，不以 SDK 记录替代最终应用包归属。
 
 runtime-attribution.json 包含文件、组件、关系、上游声明、版权、文本来源与缺口。artifact-files.cdx.json 增加相同组件与已知所有者关系，并绑定该报告和同一实际审计的哈希／构建身份。官方 CycloneDX schema 与引用检查继续执行，compositions 仍为 incomplete。
 

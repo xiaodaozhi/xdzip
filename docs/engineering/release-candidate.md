@@ -4,15 +4,17 @@
 
 ## 交付内容
 
-固定干净提交后生成 macOS arm64 DMG、Windows x86_64 安装器、Ubuntu 24.04 x86_64 .deb，并收集同提交的项目源码、Rust vendor、Qt 固定源码与补丁、通知、实际文件 SBOM、构建和生命周期回执。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
+固定干净提交后生成 Windows x86_64 ZIP／安装器、macOS arm64 app ZIP／DMG、Ubuntu 24.04 x86_64 tar.gz／deb，并收集同提交的项目源码、Rust vendor、Qt 固定源码与补丁、通知、实际文件 SBOM、构建和生命周期回执。候选总清单记录相对文件路径、SHA-256、大小、平台、构建版本和源码提交；不将不同提交的包拼成一个候选。
 
-CI 的 macOS 仍只保留日志与 JSON，本地按已有授权构建 DMG、验证 ad-hoc 完整性和无 SDK 搜索路径下的重定位启动。Windows/Linux 的包由实际成功的产品 CI 获取，不把 QA-only 安装器当作产品。历史完整源码 Qt／性能记录只作为历史材料引用，不改写提交，也不要求人工验收重做。
+普通 macOS CI 只保留日志与 JSON。经所有者明确授权，专用 Release 工作流可在 Apple Silicon runner 部署 Qt、执行必要的 ad-hoc 签名，并从同一应用导出 app ZIP 与 DMG，验证完整性和无 SDK 搜索路径下的重定位启动；本地开发 DMG 仍遵循已有授权。Windows/Linux 的包由实际成功的产品 CI 获取，不把 QA-only 安装器当作产品。历史完整源码 Qt／性能记录只作为历史材料引用，不改写提交，也不要求人工验收重做。
 
 源码包的离线重建与实际启动另行核验；这不等于完全可复现的上游 SDK 二进制或已批准许可。macOS DMG 部署后字节与 SDK 模式 CI 字节有差异，两套 SBOM 保留各自审计范围，不混作同一工件。
 
 ## 许可与来源核对
 
 已有 runtime-attribution.json、qt-sdk-correspondence.json、qt-binary-differences.json、链接输入和内嵌资源记录。逐项审查输出到 build/，区分已精确解释的二进制转换、上游未声明构建来源、系统包装依赖、实际再分发库、主程序复合代码和待选许可分支。原始 gap 与 incomplete 保留，不把一个技术解释直接改为法律批准。
+
+审查清单须逐平台核对报告的实际可用性与范围：最终文件 SBOM、部署后组件归属和 SDK 参考是三类输入。只有文件哈希或 SDK 模式归属时，将部署后的组件关联登记为缺失；裁剪架构、重定位、签名后的应用不能直接沿用 SDK 文件身份。历史候选与当前候选的观察数量只有在范围、文件与组件均匹配后才能比较，不能把数量变化当作已解决项。
 
 Qt 动态链接、通知及对应源码／替换材料是核对依据，不自动消除其他许可义务；参见 [Qt 官方义务说明](https://www.qt.io/development/open-source-lgpl-obligations)。Windows 再分发逐文件对照 [Visual Studio 2022 官方可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)，并保留工具链及 DLL 来源，不能以“来自 Qt SDK”代替具体授权。字体按现有 OFL 材料，项目原创按 Apache-2.0，生成式图标按来源说明分别登记。
 

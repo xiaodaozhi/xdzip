@@ -4,6 +4,10 @@
 
 完整标签等于 `v` 加 VERSION.json 派生的语义版本。`prerelease_number` 是可选正整数，缺省兼容历史构建号；alpha.1 与 build 14 是不同身份。Windows 数值资源和 macOS CFBundleVersion 仍使用单调递增构建号。公开同一版本的资产不可替换，修订必须使用新版本；草稿可重跑。
 
+发布说明是持久且可审阅的版本输入，默认读取 `release-notes/<完整版本>.md`；CLI 也可通过 `--notes-file` 指定已审阅文件。文件含一个 `<!-- xdzip-release {"version":"0.1.0-alpha.6","build":19} -->` 元数据行及对应版本标题，版本与构建号必须匹配 VERSION.json。先运行 `python3 scripts/publish-release.py --check-notes`，该检查不联系 GitHub，专用工作流在构建前执行同样的预检。更新版本须新建对应说明，不自动借用旧版功能列表或验收状态。
+
+说明按平台、实际提交和证据记录中英文验收边界，已有人工验收与未执行项分别保留；阶段进展仍由 issue 管理。初建草稿和公开使用同一份说明快照。草稿重跑若发现其正文与已审阅文件不同，会在上传／删除资产前停止，要求显式对齐输入；公开版本继续拒绝重跑替换资产。`CHANGELOG.md` 只归档实际公开版本，本地开发交付不补造为公开版本史。
+
 冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、签名、核验并汇总完整附件，保留 release-validation 工件，不创建草稿或公开 Release。正式发布仍使用版本标签，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
 
 Windows 每次部署核验使用独立的临时测试副本，保留此前日志；重复核验不复用或删除已有目录，产品运行目录不包含测试 DLL。
@@ -29,3 +33,5 @@ English: Every immutable release includes schema-v1 release.json and SHA256SUMS.
 Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag.
 
 Each Windows deployment verification uses a fresh test copy and preserves prior evidence. Repeated verification never reuses or deletes an existing harness, and test DLLs stay outside the product runtime.
+
+Release notes come from a reviewed, version-specific Markdown file with matching version/build metadata. Offline notes preflight runs before native builds. Draft creation, retries and publication use the same reviewed body; a changed draft stops publication before any asset mutation. Manual acceptance remains scoped to the recorded platform and commit, in both languages. Missing notes for a new version never inherit old acceptance. Only actually published versions are archived in the changelog.
