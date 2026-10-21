@@ -105,6 +105,7 @@ Item {
         function test_feedback_preserves_top_anchors(data) {
             Ui.Theme.dark=data.dark; Ui.Theme.fontScale=data.scale;
             const headline=findChild(page,"welcomeHeadline"), open=findChild(page,"welcomeOpen");
+            verify(waitForPolish(headline.parent));
             waitForRendering(page,100);
             const headlineY=headline.mapToItem(page,0,0).y, openY=open.mapToItem(page,0,0).y;
             page.message=(data.language==="zh-CN"?"暂不支持此压缩包的卷布局、加密或压缩方法。":"Unsupported archive layout, encryption or compression method. ").repeat(8);
@@ -117,8 +118,12 @@ Item {
             waitForRendering(page,100);
             grabImage(page).save("welcome-feedback-"+data.tag+".png");
             surface.height=800;
+            verify(waitForPolish(headline.parent));
             waitForRendering(page,100);
-            compare(headline.mapToItem(page,0,0).y,headlineY);
+            compare(headline.parent.y,Ui.Theme.welcomeContentTopInset);
+            // Fractional native DPR may round the text baseline by one pixel on resize.
+            // Error-only movement above remains an exact comparison.
+            verify(Math.abs(headline.mapToItem(page,0,0).y-headlineY)<=1);
             page.message="";
             surface.height=542;
         }
