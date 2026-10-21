@@ -13,8 +13,8 @@ def main():
     args = parser.parse_args()
     layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
     reference = json.loads((ROOT / 'docs/visual/qt-main-reference.json').read_text())
-    sizes = {'password': (None, [780, 900]), 'quit': (None, [780, 900]), 'restart': (None, [780, 900]), 'about': (None, [780, 900]), 'welcome': ('welcome-titlebar-light.png', [1586, 992]),
-             'welcome-narrow': ('welcome-titlebar-narrow.png', [1296, 875]),
+    sizes = {'password': (None, [780, 900]), 'quit': (None, [780, 900]), 'restart': (None, [780, 900]), 'about': (None, [780, 900]), 'welcome': ('welcome-top-light.png', [1586, 992]),
+             'welcome-narrow': ('welcome-top-narrow.png', [1296, 875]),
              'main': ('main-capsule-light.png', [1586, 992]),
              'extract': ('extract-macos.png', [1092, 1440]),
              'create': ('create.png', [1073, 1466]),
@@ -46,7 +46,7 @@ def main():
     spec['views']['welcome-narrow']['window'] = [20, 30, 832 / spec['sourceToLogical'], 544 / spec['sourceToLogical']]
     spec['views']['preflight']['darkSource'] = '../hifi/screens/' + Path(preflight['dark_source_image']).name
     spec['views']['settings']['darkSource'] = '../hifi/screens/settings-current-dark.png'
-    spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-titlebar-dark.png'
+    spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-top-dark.png'
     spec['views']['main']['darkSource'] = '../hifi/screens/main-capsule-dark.png'
     output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'
               'window.XDZIP_DISPLAY_SPEC = Object.freeze(' + json.dumps(spec, indent=4) + ');\n')

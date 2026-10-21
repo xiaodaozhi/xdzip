@@ -462,11 +462,14 @@ class BrowserTest : public QObject {
     }
     void backgroundTasksKeepSessionIdentityAndSerialAdmission_data() {
         QTest::addColumn<bool>("separateWindows");
-        QTest::newRow("closed-tab") << false;
-        QTest::newRow("closed-window") << true;
+        QTest::addColumn<bool>("wholeWindow");
+        QTest::newRow("closed-tab") << false << false;
+        QTest::newRow("closed-window") << true << true;
+        QTest::newRow("tray-window") << false << true;
     }
     void backgroundTasksKeepSessionIdentityAndSerialAdmission() {
         QFETCH(bool, separateWindows);
+        QFETCH(bool, wholeWindow);
         QTemporaryDir output;
         QVERIFY(output.isValid());
         const auto input = output.filePath("input.txt");
@@ -480,11 +483,18 @@ class BrowserTest : public QObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false,
+                                         wholeWindow && !separateWindows,
                                          separateWindows ? "windows" : "tabs"));
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
         auto *first = window->findChild<BrowserController *>();
+        std::unique_ptr<DesktopIntegration> desktop;
+        if (wholeWindow && !separateWindows) {
+            desktop = std::make_unique<DesktopIntegration>(window, first, preferences, true,
+                                                           [] { return true; });
+            sessions.setDesktop(desktop.get());
+        }
         sessions.newSession();
         auto *second = sessions.activeWindow()
                            ->property("activePage")
@@ -509,13 +519,27 @@ class BrowserTest : public QObject {
             QCOMPARE(sessions.sessionCount(), 2);
             QVERIFY(first->taskStarting() && second->taskStarting());
         }
-        if (separateWindows)
+        if (wholeWindow)
             sessions.closeWindow(window);
         else
             sessions.closeSession(firstTab);
+        if (desktop) {
+            QVERIFY(!window->isVisible());
+            const auto tabs = window->property("sessionTabs").toList();
+            QCOMPARE(tabs.size(), 1);
+            QVERIFY(tabs.first().toMap().value("title").toString().isEmpty());
+            desktop->restore();
+            QVERIFY(window->property("welcomeVisible").toBool());
+        }
         QTRY_VERIFY(!firstStarted.isEmpty());
         QTRY_VERIFY_WITH_TIMEOUT(!secondStarted.isEmpty(), 10000);
         QTRY_COMPARE_WITH_TIMEOUT(sessions.activeTaskCount(), 0, 10000);
+        if (desktop) {
+            QTRY_COMPARE(desktop->trayToolTip(), qtTrId("desktop.trayTip").arg(0));
+            for (auto *item : desktop->trayMenu()->actions())
+                if (item->menu())
+                    QCOMPARE(item->menu()->title(), qtTrId("desktop.tasks").arg(0));
+        }
         QVERIFY(!overlapping);
         QVERIFY(QFileInfo::exists(output.filePath("first.zip")));
         QVERIFY(QFileInfo::exists(output.filePath("second.zip")));
@@ -533,6 +557,118 @@ class BrowserTest : public QObject {
         QTRY_VERIFY(!joined.isEmpty());
         QVERIFY(
             preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
+    void gitSourceArchivesCanBeBrowsed() {
+        QTemporaryDir output;
+        QVERIFY(output.isValid());
+        auto archive = qEnvironmentVariable("XDZIP_REGRESSION_SOURCE_TAR");
+        if (archive.isEmpty()) {
+            archive = output.filePath("source.tar");
+            QProcess git;
+            git.start("git",
+                      {"-C", QDir(QStringLiteral(XDZIP_FIXTURES)).absoluteFilePath("../../.."),
+                       "archive", "--format=tar", "--output=" + archive, "HEAD", "README.md"});
+            QVERIFY(git.waitForFinished(10000));
+            QCOMPARE(git.exitStatus(), QProcess::NormalExit);
+            QCOMPARE(git.exitCode(), 0);
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        controller->openPath(archive);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QVERIFY(!window->property("welcomeVisible").toBool());
+        QVERIFY(controller->entries()->rowCount() > 0);
+        QTRY_VERIFY(visibleImagesReady(window->contentItem()));
+        if (!qEnvironmentVariableIsEmpty("XDZIP_SOURCE_TAR_AUDIT")) {
+            QVERIFY(QDir().mkpath(qEnvironmentVariable("XDZIP_SOURCE_TAR_AUDIT")));
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+            QVERIFY(visual_audit::save(window, qEnvironmentVariable("XDZIP_SOURCE_TAR_AUDIT"),
+                                       "source-tar-browser"));
+        }
+    }
+    void closingWindowClearsTabsBeforeTrayRestore_data() {
+        QTest::addColumn<int>("count");
+        QTest::addColumn<bool>("loading");
+        QTest::addColumn<bool>("retainedTasks");
+        QTest::newRow("archives") << 3 << false << false;
+        QTest::newRow("loading") << 3 << true << false;
+        QTest::newRow("limit-quiet") << 32 << false << false;
+        QTest::newRow("limit-tasks") << 32 << false << true;
+    }
+    void closingWindowClearsTabsBeforeTrayRestore() {
+        QFETCH(int, count);
+        QFETCH(bool, loading);
+        QFETCH(bool, retainedTasks);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, window->findChild<BrowserController *>(), preferences,
+                                   true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        auto *first = window->findChild<BrowserController *>();
+        QTRY_VERIFY(first->ready() && !first->busy());
+        for (int index = 1; index < count; ++index)
+            sessions.newSession();
+        const auto oldTabs = window->property("sessionTabs").toList();
+        QCOMPARE(oldTabs.size(), count);
+        if (retainedTasks) {
+            for (auto *controller : window->findChildren<BrowserController *>()) {
+                controller->m_tasks[1] = {{"id", "1"}, {"status", "running"}, {"terminal", false}};
+                emit controller->tasksChanged();
+            }
+            QCOMPARE(sessions.activeTaskCount(), count);
+            QTRY_COMPARE(desktop.trayToolTip(), qtTrId("desktop.trayTip").arg(count));
+            for (auto *item : desktop.trayMenu()->actions())
+                if (item->menu())
+                    QCOMPARE(item->menu()->title(), qtTrId("desktop.tasks").arg(count));
+        }
+        if (loading) {
+            sessions.activateId(oldTabs.first().toMap().value("id").toString());
+            first->openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+            QVERIFY(first->browsingBusy());
+        }
+        // Use the actual QML close handler and the native tray restore entry.
+        window->close();
+        QVERIFY(!window->isVisible());
+        if (!retainedTasks) {
+            QTRY_COMPARE(sessions.sessionCount(), 1);
+            QVERIFY(!window->isVisible());
+        }
+        desktop.restore();
+        QVERIFY(window->isVisible());
+        QTRY_VERIFY(window->property("welcomeVisible").toBool());
+        if (!retainedTasks) {
+            QTRY_COMPARE(sessions.sessionCount(), 1);
+            const auto tabs = window->property("sessionTabs").toList();
+            QCOMPARE(tabs.size(), 1);
+            const auto tab = tabs.first().toMap();
+            QVERIFY(tab.value("title").toString().isEmpty() && tab.value("selected").toBool());
+            QVERIFY(!oldTabs.contains(tabs.first()));
+        } else {
+            QCOMPARE(sessions.sessionCount(), 32);
+            QCOMPARE(sessions.activeTaskCount(), 32);
+            QVERIFY(window->property("sessionTabs").toList().isEmpty());
+        }
+        auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+        QTRY_VERIFY(findVisual(page, "activeArchiveTab"));
+        QTRY_VERIFY(!findVisual(page, "archiveTab-1"));
+        QVERIFY(!findVisual(page, "welcomeOpeningOverlay")->isVisible());
+        QVERIFY(!findVisual(page, "welcomeFeedbackRow")->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
     }
     void sessionTabReorderingPreservesControllers_data() {
         QTest::addColumn<double>("scale");

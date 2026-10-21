@@ -127,16 +127,16 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             ]
         },
         "welcome": {
-            "source": "../hifi/screens/welcome-titlebar-light.png",
+            "source": "../hifi/screens/welcome-top-light.png",
             "size": [
                 1586,
                 992
             ],
             "sourceToLogical": 0.661498708010336,
-            "darkSource": "../hifi/screens/welcome-titlebar-dark.png"
+            "darkSource": "../hifi/screens/welcome-top-dark.png"
         },
         "welcome-narrow": {
-            "source": "../hifi/screens/welcome-titlebar-narrow.png",
+            "source": "../hifi/screens/welcome-top-narrow.png",
             "size": [
                 1296,
                 875

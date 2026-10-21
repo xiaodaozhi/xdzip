@@ -42,6 +42,9 @@ class DesktopIntegration final : public QObject {
     QMenu *trayMenu() const {
         return m_trayMenu.get();
     }
+    QString trayToolTip() const {
+        return m_tray.toolTip();
+    }
   signals:
     void availabilityChanged();
 

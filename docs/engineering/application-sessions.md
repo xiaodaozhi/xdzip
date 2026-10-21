@@ -31,3 +31,9 @@ English: One normal product process and tray serve each user login session. Each
 阻塞弹窗期间接收的外部打开保留最后一个激活意图，先激活阻塞窗口，待其关闭后显示对应新窗口，不使隐藏的新窗口失去入口。设置中的关于窗口保留实际设置调用者，不因另一主窗口获得焦点而改变所属关系。
 
 原生回归入口为 `python3 scripts/check-native-sessions.py --tests <browser-tests> --output build/review/native-sessions.json`。Linux 使用 Xvfb 和 Openbox 的真实 X11 窗口管理路径，Windows、macOS 使用系统窗口管理器；脚本只管理自己启动的验证进程。普通 CI 与 Release 共用此入口，原生日志和 JSON 保存在 build/ 或 CI 工件，不能据此宣称完成人工视觉、GPU、输入法或屏幕阅读验收。
+
+关闭主窗口与最小化不同。关闭有托盘的最后窗口会清空该窗口所有浏览标签并关闭所属操作窗，再隐藏窗口；从托盘、Dock 或无文件参数的第二次启动唤出后仅显示一个起始页，不恢复旧标签或草稿。非最后窗口继续关闭并清理自己的浏览标签，其他窗口不受影响。存在阻塞模态窗口时先激活它，不接受主窗口关闭。
+
+关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。主动从全局任务入口或文件打开请求进入保留会话，仍可显示相应归档及任务。
+
+English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Explicit task/file requests may reopen a retained session. Other open windows are unaffected, and blocking dialogs prevent closing their owner.

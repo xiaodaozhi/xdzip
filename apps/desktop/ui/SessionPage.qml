@@ -629,10 +629,10 @@ Item {
             Layout.fillHeight: true
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canCreate: reader.runtimeAvailable && !reader.browsingBusy
-            busy: reader.browsingBusy && reader.title.length > 0
-            externalOpening: root.externalFileOpening
+            busy: !root.closedPage && reader.browsingBusy && reader.title.length > 0
+            externalOpening: !root.closedPage && root.externalFileOpening
             openingName: reader.title
-            message: reader.browsingBusy ? "" : reader.message || AppSettings.error
+            message: root.closedPage || reader.browsingBusy ? "" : reader.message || AppSettings.error
             onOpenRequested: root.dispatchDesktopCommand("open")
             onCreateRequested: createWindow.configure()
             onCancelRequested: reader.cancel()

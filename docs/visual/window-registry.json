@@ -17,7 +17,7 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签自适应横向溢出和窗口内拖动排序，加载取消固定于卡片底部",
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签自适应横向溢出和窗口内拖动排序，起始页顶部定位、语义错误反馈，关闭窗口清除标签并保留后台任务入口",
       "design": "design/hifi/sources/main.html"
     },
     "Preview": {

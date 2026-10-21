@@ -15,6 +15,7 @@ CASES = ['desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNative
          'globalSettingsKeepDraftAndAboutCallerAcrossWindows',
          'settingsOpenModeSelectionPersists',
          'sessionTabReorderingPreservesControllers',
+         'closingWindowClearsTabsBeforeTrayRestore',
          'sessionLimitKeepsBackgroundTaskEntryReachable', 'independentSessionsAndOpenModes',
          'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery',
          'backgroundTasksKeepSessionIdentityAndSerialAdmission',

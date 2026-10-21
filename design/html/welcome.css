@@ -2,8 +2,8 @@
    Only source artboards multiply by ui-source-factor; DPR is never a layout input. */
 .welcome-mode .toolbar,.welcome-mode .workspace { display:none; }
 .welcome-mode .window { container-type:inline-size; }
-.welcome-mode .welcome { position:relative; inset:auto; order:1; flex:1; min-height:0; padding:calc(28px * var(--ui-source-factor)) calc(40px * var(--ui-source-factor)); }
-.welcome-content { width:calc(608px * var(--ui-source-factor)); max-width:100%; display:flex; flex-direction:column; align-items:center; position:relative; }
+.welcome-mode .welcome { position:relative; inset:auto; order:1; flex:1; min-height:0; padding:var(--welcome-content-top-inset) calc(40px * var(--ui-source-factor)); justify-content:flex-start; overflow:auto; }
+.welcome-content { flex-shrink:0; width:calc(608px * var(--ui-source-factor)); max-width:100%; display:flex; flex-direction:column; align-items:center; position:relative; }
 .welcome-identity { display:flex; align-items:center; gap:calc(10px * var(--ui-source-factor)); font-size:calc(14px * var(--ui-source-factor)); letter-spacing:calc(1px * var(--ui-source-factor)); color:var(--secondary); }
 .welcome-identity>svg { width:calc(26px * var(--ui-source-factor)); height:calc(26px * var(--ui-source-factor)); }
 .welcome-mode .welcome h1 { font-size:calc(30px * var(--ui-source-factor)); line-height:1.45; font-weight:650; letter-spacing:calc(-.6px * var(--ui-source-factor)); margin:calc(17px * var(--ui-source-factor)) 0 calc(8px * var(--ui-source-factor)); }
@@ -29,7 +29,10 @@
 .welcome-drop.drag-over { border:calc(2px * var(--ui-source-factor)) solid var(--accent-ink); background:var(--selection); color:var(--accent-ink); }
 .welcome-formats { display:flex; align-items:center; gap:calc(8px * var(--ui-source-factor)); margin-top:calc(22px * var(--ui-source-factor)); color:var(--secondary); font-size:calc(11px * var(--ui-source-factor)); }
 .welcome-formats b { font:500 calc(11px * var(--ui-source-factor))/normal system-ui,sans-serif; background:var(--canvas); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:calc(4px * var(--ui-source-factor)); padding:calc(3px * var(--ui-source-factor)) calc(7px * var(--ui-source-factor)); }
-.welcome-mode .welcome-feedback { position:absolute; top:100%; width:100%; font-size:calc(12px * var(--ui-source-factor)); margin:calc(8px * var(--ui-source-factor)) 0 0; color:var(--secondary); text-align:center; }
+.welcome-mode .welcome-feedback { display:flex; align-items:flex-start; gap:var(--welcome-feedback-gap); width:100%; font-size:calc(12px * var(--ui-source-factor) * var(--settings-text-scale,1)); margin:var(--welcome-feedback-top-gap) 0 0; color:var(--ui-menu-danger); text-align:left; }
+.welcome-feedback-icon { flex-shrink:0; width:var(--welcome-feedback-icon-size); height:var(--welcome-feedback-icon-size); }
+.welcome-feedback-icon svg { display:block; width:100%; height:100%; }
+.welcome-feedback[hidden] { display:none; }
 .welcome-mode .statusbar { order:2; height:calc(32px * var(--ui-source-factor)); padding:0 calc(14px * var(--ui-source-factor)); font-size:calc(11px * var(--ui-source-factor)); line-height:normal; }
 .welcome-mode #selection-status::before { content:""; display:inline-block; width:calc(6px * var(--ui-source-factor)); height:calc(6px * var(--ui-source-factor)); border-radius:50%; background:var(--accent-ink); margin-right:calc(9px * var(--ui-source-factor)); }
 .welcome-mode .read-status,.welcome-mode #settings,.welcome-mode .task-chevron { display:none; }

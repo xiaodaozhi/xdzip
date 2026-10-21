@@ -132,7 +132,8 @@ if(BUILD_TESTING)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log,txt")
     # Whole-suite ceiling includes large scans and many event-loop waits. Individual
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
-    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 120)
+    # The session lifecycle matrix includes multiple 32-connection shutdown cases.
+    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 180)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
 endif()
 foreach(target xdzip-browser xdzip-browser-tests)

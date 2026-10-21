@@ -15,6 +15,10 @@ QtObject {
     readonly property real welcomeTitlebarHeight: 48
     readonly property real welcomeStatusbarHeight: 32
     readonly property real welcomeContentWidth: 608
+    readonly property real welcomeContentTopInset: 28
+    readonly property real welcomeFeedbackIconSize: 18
+    readonly property real welcomeFeedbackGap: 8
+    readonly property real welcomeFeedbackTopGap: 10
     readonly property real welcomeActionGap: 16
     readonly property real welcomeActionHeight: 124
     readonly property real welcomeActionInset: 20

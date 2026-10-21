@@ -2,6 +2,54 @@
   "notes": "当前设计与历史原稿按功能平铺保存，SHA-256 固定图片。主窗口及多级目录胶囊修订由可编辑源导出，不替代独立量测；旧图片与切片来源保持不变。统一素材位于 design/assets，历史迁移见 ../assets/migration.json。",
   "screens": [
     {
+      "file": "screens/welcome-top-light.png",
+      "title": "W01 起始页，顶部布局，浅色",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/welcome.html?theme=light",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "3723a4b1446d9a5bb896b421fc13eb06ad86a95eb3f7c45757fdf60831c69cc0"
+    },
+    {
+      "file": "screens/welcome-top-dark.png",
+      "title": "W01 起始页，顶部布局，深色",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/welcome.html?theme=dark",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "f720dba049216583731ed63156a2fa8b4c837e758251b27dea06457bb455e03c"
+    },
+    {
+      "file": "screens/welcome-top-narrow.png",
+      "title": "W01 起始页，顶部布局，最小窗口",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/welcome.html?narrow=1",
+      "size": [
+        1296,
+        875
+      ],
+      "sha256": "1307afbfcfaf884e55eafc80a3186865a5116c8e9d115d50de1781a75e976fa2"
+    },
+    {
+      "file": "screens/welcome-top-error.png",
+      "title": "W01 起始页，错误反馈",
+      "group": "current",
+      "role": "editable-design-export",
+      "design_source": "sources/welcome.html?error=1",
+      "size": [
+        1586,
+        992
+      ],
+      "sha256": "fd5c56e71603c243f7460dace3cf0d4d08a337bd697aa84b67ceb4f5194424f9"
+    },
+    {
       "file": "screens/main-capsule-light.png",
       "title": "主窗口，浅色胶囊标签",
       "group": "current",
@@ -208,32 +256,32 @@
     {
       "file": "screens/welcome-titlebar-light.png",
       "title": "W01 欢迎页，浅色，沿用主窗口标题栏",
-      "group": "current",
-      "status": "titlebar-preserved",
+      "group": "historical",
+      "status": "superseded-top-alignment",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "9fbbe8f16273e823514b93a1bcc2eca6be87377a5077ee970b128309732989c6"
     },
     {
       "file": "screens/welcome-titlebar-dark.png",
       "title": "W01 欢迎页，深色，沿用主窗口标题栏",
-      "group": "current",
-      "status": "titlebar-preserved",
+      "group": "historical",
+      "status": "superseded-top-alignment",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "b432a01276e2e264a208e01b181a4ea07f9dfda968f1799d8839b7d19bbaf211"
     },
     {
       "file": "screens/welcome-titlebar-narrow.png",
       "title": "W01 欢迎页，最小窗口，沿用主窗口标题栏",
-      "group": "current",
-      "status": "titlebar-preserved",
+      "group": "historical",
+      "status": "superseded-top-alignment",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "1f166867662e0be38e0250dd246b6d2ddd165b887db8545ccca8d8bde6c03793"
     },
     {
       "file": "screens/welcome-titlebar-drag.png",
       "title": "W01 欢迎页，拖入状态，沿用主窗口标题栏",
-      "group": "current",
-      "status": "titlebar-preserved",
+      "group": "historical",
+      "status": "superseded-top-alignment",
       "spec": "../../docs/ux/welcome.md",
       "sha256": "c6ca53a32ce0e73c7860bad921dcf8785b5f1c74e1f1c7b4d386842ff46ff937"
     },

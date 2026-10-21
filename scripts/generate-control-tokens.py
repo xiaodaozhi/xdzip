@@ -35,7 +35,7 @@ def main():
             css = str(value) if key.endswith(('weight', 'interval')) else f'calc({value}px * var(--ui-source-factor))'
             declarations.append(f'  --{name}: {css};')
     for key, value in welcome.items():
-        if key.startswith('opening_') and isinstance(value, (int, float)):
+        if key.startswith(('opening_', 'feedback_', 'content_top_')) and isinstance(value, (int, float)):
             name = key.replace('_', '-')
             css = str(value) if key.endswith('opacity') else f'calc({value}px * var(--ui-source-factor))'
             declarations.append(f'  --welcome-{name}: {css};')

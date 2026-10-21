@@ -16,6 +16,10 @@
   --tab-drop-indicator-width: calc(2px * var(--ui-source-factor));
   --tab-active-weight: 600;
   --tab-inactive-weight: 400;
+  --welcome-content-top-inset: calc(28px * var(--ui-source-factor));
+  --welcome-feedback-icon-size: calc(18px * var(--ui-source-factor));
+  --welcome-feedback-gap: calc(8px * var(--ui-source-factor));
+  --welcome-feedback-top-gap: calc(10px * var(--ui-source-factor));
   --welcome-opening-card-width: calc(360px * var(--ui-source-factor));
   --welcome-opening-inset: calc(24px * var(--ui-source-factor));
   --welcome-opening-gap: calc(12px * var(--ui-source-factor));

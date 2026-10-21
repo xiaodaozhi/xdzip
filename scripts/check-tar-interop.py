@@ -11,6 +11,8 @@ import subprocess
 import tarfile
 import tempfile
 
+ROOT = Path(__file__).resolve().parents[1]
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -76,6 +78,16 @@ def main():
                 assert digest_tree(target) == {n: hashlib.sha256(v).hexdigest() for n,v in manifest.items()}
                 assert (target/'空目录').is_dir()
                 checks.append({'case': f'Python format {fmt} -> xdzip {mode}', 'all_bytes': True})
+        # git archive emits a global PAX comment containing its commit identity.
+        git_tar = run(['git', '-C', ROOT, 'archive', 'HEAD', 'README.md']).stdout
+        git_readme = run(['git', '-C', ROOT, 'show', 'HEAD:README.md']).stdout
+        assert git_tar[156:157] == b'g'
+        for mode, encoded in [('tar', git_tar), ('gzip', gzip.compress(git_tar))]:
+            archive = root/f'git-source-{mode}.data'; archive.write_bytes(encoded)
+            target = root/f'git-source-{mode}'; target.mkdir()
+            run([extract, archive, target, '--generic'])
+            assert digest_tree(target) == {'README.md':hashlib.sha256(git_readme).hexdigest()}
+            checks.append({'case': f'Git global PAX comment -> xdzip {mode}', 'all_bytes':True})
         invalid = []
         for name, kind in [('../escape', tarfile.REGTYPE), ('link', tarfile.SYMTYPE), ('hardlink', tarfile.LNKTYPE), ('device', tarfile.CHRTYPE), ('fifo', tarfile.FIFOTYPE)]:
             payload = io.BytesIO()

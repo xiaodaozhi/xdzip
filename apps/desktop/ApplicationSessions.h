@@ -77,7 +77,8 @@ class ApplicationSessions final : public QObject {
         bool retiring = false;
     };
     Session *add(QQuickWindow *window, QObject *page);
-    Session *create(bool newWindow);
+    Session *create(bool newWindow, QQuickWindow *target = nullptr);
+    void ensureWelcome(QQuickWindow *window);
     Session *current() const;
     std::vector<Session *> visibleTabs(QQuickWindow *window) const;
     void activate(Session *session, bool reveal = true);

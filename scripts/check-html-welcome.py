@@ -45,6 +45,14 @@ with sync_playwright() as p:
                     assert not rects['overflow'], rects
                     assert all(abs(card['width'] - 296) <= 1 and abs(card['height'] - 124) <= 1 for card in rects['cards']), rects
                     frame.locator('.window').screenshot(path=str(OUT / f'{view}-{theme}-dpr{dpr}.png'))
+                    anchors = frame.locator('.welcome-content').evaluate('el=>[el.getBoundingClientRect().top,el.querySelector("h1").getBoundingClientRect().top,el.querySelector("#welcome-open").getBoundingClientRect().top]')
+                    frame.locator('body').evaluate('()=>setWelcomeFeedback("暂不支持此压缩包的卷布局、加密或压缩方法。".repeat(8))')
+                    expect(frame.locator('.welcome-feedback')).to_be_visible()
+                    assert anchors == frame.locator('.welcome-content').evaluate('el=>[el.getBoundingClientRect().top,el.querySelector("h1").getBoundingClientRect().top,el.querySelector("#welcome-open").getBoundingClientRect().top]')
+                    expect(frame.locator('.welcome-feedback-icon svg')).to_be_visible()
+                    assert frame.locator('.welcome-feedback').evaluate('el=>getComputedStyle(el).color') == ('rgb(255, 160, 173)' if theme=='dark' else 'rgb(185, 56, 72)')
+                    frame.locator('.window').screenshot(path=str(OUT / f'{view}-error-{theme}-dpr{dpr}.png'))
+                    frame.locator('body').evaluate('()=>setWelcomeFeedback("")')
                     page.locator('#reference-toggle').click()
                     if theme == 'light' or view == 'welcome':
                         expect(page.locator('#reference-image')).to_be_visible()

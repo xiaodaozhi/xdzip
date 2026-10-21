@@ -171,6 +171,35 @@ fn display(name: &[u8]) -> String {
         })
         .collect()
 }
+fn validate_global_comments(mut data: &[u8]) -> Result<(), ScanError> {
+    while !data.is_empty() {
+        let space = data
+            .iter()
+            .position(|b| *b == b' ')
+            .ok_or(ScanError::Invalid)?;
+        if space == 0 || !data[..space].iter().all(u8::is_ascii_digit) {
+            return Err(ScanError::Invalid);
+        }
+        let length = std::str::from_utf8(&data[..space])
+            .map_err(|_| ScanError::Invalid)?
+            .parse::<usize>()
+            .map_err(|_| ScanError::Invalid)?;
+        let record = data.get(..length).ok_or(ScanError::Invalid)?;
+        let value = record.get(space + 1..).ok_or(ScanError::Invalid)?;
+        if value.last() != Some(&b'\n') {
+            return Err(ScanError::Invalid);
+        }
+        let equals = value
+            .iter()
+            .position(|b| *b == b'=')
+            .ok_or(ScanError::Invalid)?;
+        if &value[..equals] != b"comment" {
+            return Err(ScanError::Unsupported);
+        }
+        data = &data[length..];
+    }
+    Ok(())
+}
 fn scan(
     stream: &mut Stream<'_>,
     gzip: bool,
@@ -185,6 +214,7 @@ fn scan(
     let mut next_time = None;
     let mut next_special = false;
     let mut extensions = 0usize;
+    let mut local_extensions = 0usize;
     loop {
         let mut block = [0; 512];
         stream
@@ -193,7 +223,7 @@ fn scan(
         if block.iter().all(|b| *b == 0) {
             // Require both TAR end blocks and drain the GZIP trailer. Reject concatenated
             // hidden TAR records/nonzero garbage rather than silently showing a partial index.
-            if next_name.is_some() || next_size.is_some() || extensions != 0 {
+            if local_extensions != 0 {
                 return Err(ScanError::Invalid);
             }
             stream
@@ -239,9 +269,8 @@ fn scan(
             if extensions > 4 || size > EXTENSION_LIMIT {
                 return Err(ScanError::Limit);
             }
-            // Global PAX and long link targets could change the interpretation of later records.
-            // They are explicit unsupported capabilities, never silently ignored.
-            if kind.is_pax_global_extensions() || kind.is_gnu_longlink() {
+            // Long link targets change payload interpretation and remain unsupported.
+            if kind.is_gnu_longlink() {
                 return Err(ScanError::Unsupported);
             }
             let mut data = vec![0; size as usize];
@@ -249,6 +278,14 @@ fn scan(
                 .read_exact(&mut data)
                 .map_err(|_| ScanError::Invalid)?;
             skip(stream, padded(size)? - size)?;
+            if kind.is_pax_global_extensions() {
+                // Git archives carry their commit in a global comment. Only this
+                // inert annotation is admitted; never ignore global path, size,
+                // link, sparse or unknown semantics. No global state is retained.
+                validate_global_comments(&data)?;
+                continue;
+            }
+            local_extensions += 1;
             if kind.is_gnu_longname() {
                 if next_name.is_some() {
                     return Err(ScanError::Invalid);
@@ -315,6 +352,7 @@ fn scan(
         name.drain(..prefix);
         if directory && (name.is_empty() || name == b".") && size == 0 {
             extensions = 0;
+            local_extensions = 0;
             next_special = false;
             continue;
         }
@@ -366,6 +404,7 @@ fn scan(
         });
         skip(stream, padded(size)?)?;
         extensions = 0;
+        local_extensions = 0;
         next_special = false;
     }
 }
@@ -532,6 +571,94 @@ mod tests {
             &Cancellation::default(),
             ScanLimits::default(),
         )
+    }
+    fn global_header(data: &[u8]) -> Vec<u8> {
+        let mut header = tar::Header::new_ustar();
+        header.set_path("pax_global_header").unwrap();
+        header.set_entry_type(tar::EntryType::XGlobalHeader);
+        header.set_size(data.len() as u64);
+        header.set_cksum();
+        let mut bytes = header.as_bytes().to_vec();
+        bytes.extend(data);
+        bytes.resize(512 + padded(data.len() as u64).unwrap() as usize, 0);
+        bytes
+    }
+    fn pax_record(key: &str, value: &str) -> Vec<u8> {
+        let mut length = key.len() + value.len() + 4;
+        loop {
+            let record = format!("{length} {key}={value}\n");
+            if record.len() == length {
+                return record.into_bytes();
+            }
+            length = record.len();
+        }
+    }
+    #[test]
+    fn git_global_comments_preserve_local_paths_and_payload_offsets() {
+        let mut comment = pax_record("comment", "0123456789abcdef0123456789abcdef01234567");
+        comment.extend(pax_record("comment", "annotation\nwith a newline"));
+        let mut plain = global_header(&comment);
+        plain.extend(encoded(false));
+        for gzip in [false, true] {
+            let bytes = if gzip {
+                let mut encoder = flate2::write::GzEncoder::new(Vec::new(), Default::default());
+                encoder.write_all(&plain).unwrap();
+                encoder.finish().unwrap()
+            } else {
+                plain.clone()
+            };
+            let codec = TarCodec { gzip };
+            let cancel = Cancellation::default();
+            let mut source = Cursor::new(bytes);
+            let rows = codec
+                .scan(&mut source, &cancel, ScanLimits::default())
+                .unwrap();
+            assert_eq!(rows.len(), 3);
+            assert_eq!(rows[1].raw_name, input().entries[1].name.as_bytes());
+            assert!(rows.iter().all(|row| !row.warning));
+            let mut payload = codec.open_payload(&mut source, &rows, &cancel).unwrap();
+            let mut sink = Sink(vec![]);
+            payload.decode(&rows[1], &mut sink, &cancel).unwrap();
+            assert_eq!(sink.0, b"payload");
+        }
+        let mut empty = global_header(&comment);
+        empty.extend([0; 1024]);
+        assert!(scan_bytes(empty, false).unwrap().is_empty());
+    }
+    #[test]
+    fn global_overrides_malformed_records_and_extension_floods_are_rejected() {
+        for key in [
+            "path",
+            "size",
+            "mtime",
+            "linkpath",
+            "GNU.sparse.map",
+            "SCHILY.filetype",
+            "unknown",
+        ] {
+            let mut bytes = global_header(&pax_record(key, "value"));
+            bytes.extend(encoded(false));
+            assert_eq!(
+                scan_bytes(bytes, false).unwrap_err(),
+                ScanError::Unsupported
+            );
+        }
+        for record in [
+            b"0 comment=x\n".as_slice(),
+            b"999 comment=x\n",
+            b"\n12 path=x\n",
+            b"13 comment=x",
+            b"+13 comment=x\n",
+        ] {
+            let mut bytes = global_header(record);
+            bytes.extend(encoded(false));
+            assert_eq!(scan_bytes(bytes, false).unwrap_err(), ScanError::Invalid);
+        }
+        let mut bytes = global_header(&pax_record("comment", "git")).repeat(5);
+        bytes.extend(encoded(false));
+        assert_eq!(scan_bytes(bytes, false).unwrap_err(), ScanError::Limit);
+        let bytes = global_header(&vec![b'x'; EXTENSION_LIMIT as usize + 1]);
+        assert_eq!(scan_bytes(bytes, false).unwrap_err(), ScanError::Limit);
     }
     #[test]
     fn host_read_failures_keep_their_stable_io_class() {
@@ -731,7 +858,7 @@ mod tests {
             )
             .unwrap_err();
         assert_eq!(error, ScanError::Limit);
-        for kind in [tar::EntryType::XGlobalHeader, tar::EntryType::GNULongLink] {
+        for kind in [tar::EntryType::GNULongLink] {
             let mut header = tar::Header::new_gnu();
             header.set_path("extension").unwrap();
             header.set_size(0);

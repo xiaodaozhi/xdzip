@@ -131,6 +131,8 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
                 std::remove_if(m_sessions.begin(), m_sessions.end(),
                                [session](const auto &value) { return value.get() == session; }),
                 m_sessions.end());
+            for (auto *candidate : windows())
+                ensureWelcome(candidate);
             if (owner && owner->property("retiredWindow").toBool() &&
                 std::none_of(m_sessions.cbegin(), m_sessions.cend(),
                              [&](const auto &other) { return other->window == owner; }))
@@ -163,7 +165,7 @@ ApplicationSessions::Session *ApplicationSessions::current() const {
             return session.get();
     return nullptr;
 }
-ApplicationSessions::Session *ApplicationSessions::create(bool newWindow) {
+ApplicationSessions::Session *ApplicationSessions::create(bool newWindow, QQuickWindow *target) {
     if (m_quitting)
         return nullptr;
     if (m_sessions.size() >= 32) {
@@ -180,7 +182,7 @@ ApplicationSessions::Session *ApplicationSessions::create(bool newWindow) {
         m_limitDialog->activateWindow();
         return nullptr;
     }
-    if (newWindow || !m_active) {
+    if (newWindow || (!target && !m_active)) {
         QQmlComponent component(m_engine, QUrl("qrc:/xdzip/ui/Browser.qml"));
         auto *window = qobject_cast<QQuickWindow *>(
             component.createWithInitialProperties({{"visible", false}}));
@@ -194,14 +196,35 @@ ApplicationSessions::Session *ApplicationSessions::create(bool newWindow) {
         adopt(window);
         return current();
     }
+    auto *owner = target ? target : m_active.data();
     QQmlComponent component(m_engine, QUrl("qrc:/xdzip/ui/SessionPage.qml"));
-    auto *page = qobject_cast<QQuickItem *>(component.createWithInitialProperties(
-        {{"windowHost", QVariant::fromValue(m_active.data())}}));
+    auto *page = qobject_cast<QQuickItem *>(
+        component.createWithInitialProperties({{"windowHost", QVariant::fromValue(owner)}}));
     if (!page)
         return nullptr;
-    page->setParent(m_active);
-    page->setParentItem(m_active->contentItem());
-    return add(m_active, page);
+    page->setParent(owner);
+    page->setParentItem(owner->contentItem());
+    return add(owner, page);
+}
+void ApplicationSessions::ensureWelcome(QQuickWindow *window) {
+    if (m_quitting || !window || !window->property("needsWelcome").toBool() ||
+        m_sessions.size() >= 32)
+        return;
+    auto *oldPage = window->property("activePage").value<QObject *>();
+    auto *blank = create(false, window);
+    if (!blank)
+        return;
+    window->setProperty("needsWelcome", false);
+    if (oldPage)
+        oldPage->setProperty("visible", false);
+    blank->page->setProperty("visible", true);
+    window->setProperty("activePage", QVariant::fromValue(blank->page.data()));
+    if (m_active == window)
+        focusWindow(window);
+    for (const auto &session : m_sessions)
+        if (session->page == oldPage && session->closed)
+            reap(session.get());
+    refresh();
 }
 void ApplicationSessions::newSession() {
     activate(create(m_settings->openMode() == "windows"));
@@ -258,6 +281,7 @@ void ApplicationSessions::activate(Session *session, bool reveal) {
     session->page->setProperty("sessionClosed", false);
     session->page->setProperty("closedPage", false);
     auto *window = session->window.data();
+    window->setProperty("needsWelcome", false);
     window->setProperty("retiredWindow", false);
     for (const auto &other : m_sessions)
         if (other->window == window && other->page)
@@ -389,6 +413,11 @@ void ApplicationSessions::reap(Session *session) {
 void ApplicationSessions::closeWindow(QQuickWindow *window) {
     if (m_quitting)
         return;
+    if (QApplication::activeModalWidget() || QGuiApplication::modalWindow()) {
+        if (m_desktop)
+            m_desktop->restore();
+        return;
+    }
     int visibleWindows = 0;
     for (auto *candidate : windows())
         if (!candidate->property("retiredWindow").toBool())
@@ -396,6 +425,25 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
     if (visibleWindows <= 1) {
         if (m_desktop && m_desktop->trayAvailable()) {
             focusWindow(window);
+            // Retain only the presentation shell while connections with tasks
+            // keep their identities. A fresh blank session replaces it as soon
+            // as an asynchronous join frees a slot; never create a 33rd runtime.
+            auto *shell = window->property("activePage").value<QObject *>();
+            window->setProperty("needsWelcome", true);
+            for (const auto &session : m_sessions)
+                if (session->window == window) {
+                    session->closed = true;
+                    session->page->setProperty("sessionClosed", true);
+                    session->page->setProperty("closedPage", true);
+                    session->page->setProperty("visible", session->page == shell);
+                    QMetaObject::invokeMethod(session->page, "hideSessionWindows");
+                    if (session->page != shell)
+                        reap(session.get());
+                    else if (session->controller->browsingBusy())
+                        session->controller->cancel();
+                }
+            ensureWelcome(window);
+            refresh();
             m_desktop->hideToTray();
             return;
         }

@@ -45,13 +45,13 @@ Rectangle {
         Flickable {
             id: scroller
             contentWidth: width
-            contentHeight: Math.max(height, contentColumn.implicitHeight + 56)
+            contentHeight: Math.max(height, contentColumn.y + contentColumn.implicitHeight + Theme.welcomeContentTopInset)
             ColumnLayout {
                 id: contentColumn
                 height: implicitHeight
                 width: Math.min(Theme.welcomeContentWidth, root.width - 64)
                 x: (root.width - width) / 2
-                y: Math.max(28, (root.height - implicitHeight) / 2)
+                y: Theme.welcomeContentTopInset
                 spacing: 0
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
@@ -216,18 +216,31 @@ Rectangle {
                         }
                     }
                 }
-                Text {
-                    objectName: "welcomeFeedback"
-                    Layout.topMargin: visible ? 10 : 0
+                RowLayout {
+                    objectName: "welcomeFeedbackRow"
+                    Layout.topMargin: visible ? Theme.welcomeFeedbackTopGap : 0
                     Layout.fillWidth: true
-                    visible: text.length > 0
-                    text: root.message
-                    textFormat: Text.PlainText
-                    font.pixelSize: 12 * Theme.fontScale
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.Wrap
-                    color: Theme.textSecondary
-                    Accessible.role: Accessible.AlertMessage
+                    visible: root.message.length > 0
+                    spacing: Theme.welcomeFeedbackGap
+                    Image {
+                        objectName: "welcomeFeedbackIcon"
+                        Layout.preferredWidth: Theme.welcomeFeedbackIconSize
+                        Layout.preferredHeight: Theme.welcomeFeedbackIconSize
+                        Layout.alignment: Qt.AlignTop
+                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "status-warning.png"
+                        fillMode: Image.PreserveAspectFit
+                        Accessible.ignored: true
+                    }
+                    Text {
+                        objectName: "welcomeFeedback"
+                        Layout.fillWidth: true
+                        text: root.message
+                        textFormat: Text.PlainText
+                        font.pixelSize: 12 * Theme.fontScale
+                        wrapMode: Text.Wrap
+                        color: Theme.menuDanger
+                        Accessible.role: Accessible.AlertMessage
+                    }
                 }
 
             }

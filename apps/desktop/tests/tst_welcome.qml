@@ -11,7 +11,7 @@ Item {
     SignalSpy { id: cancelSpy; target: page; signalName: "cancelRequested" }
     TestCase {
         name: "WelcomePage"; when: windowShown
-        function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.canOpen = true; page.busy = false; page.externalOpening = false; openSpy.clear(); createSpy.clear(); }
+        function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.message=""; page.canOpen = true; page.busy = false; page.externalOpening = false; openSpy.clear(); createSpy.clear(); }
         function cleanup() { Ui.Theme.fontScale = 1; }
         function test_actions_and_states_data() { return [{tag:"light", dark:false}, {tag:"dark", dark:true}]; }
         function test_actions_and_states(data) {
@@ -94,6 +94,33 @@ Item {
             const create = findChild(page, "welcomeCreate");
             tryVerify(() => open.height > 124 && create.height === open.height);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
+        }
+        function test_feedback_preserves_top_anchors_data() {
+            const cases=[];
+            for (const scale of [1,1.25,1.5])
+                for (const language of ["zh-CN","en-US"])
+                    cases.push({tag:language+scale,dark:language==="en-US",language:language,scale:scale});
+            return cases;
+        }
+        function test_feedback_preserves_top_anchors(data) {
+            Ui.Theme.dark=data.dark; Ui.Theme.fontScale=data.scale;
+            const headline=findChild(page,"welcomeHeadline"), open=findChild(page,"welcomeOpen");
+            waitForRendering(page,100);
+            const headlineY=headline.mapToItem(page,0,0).y, openY=open.mapToItem(page,0,0).y;
+            page.message=(data.language==="zh-CN"?"暂不支持此压缩包的卷布局、加密或压缩方法。":"Unsupported archive layout, encryption or compression method. ").repeat(8);
+            const feedback=findChild(page,"welcomeFeedback"), icon=findChild(page,"welcomeFeedbackIcon");
+            tryVerify(()=>feedback.visible && feedback.lineCount>1 && icon.status===Image.Ready);
+            compare(headline.mapToItem(page,0,0).y,headlineY);
+            compare(open.mapToItem(page,0,0).y,openY);
+            compare(feedback.color,Ui.Theme.menuDanger);
+            verify(icon.visible);
+            waitForRendering(page,100);
+            grabImage(page).save("welcome-feedback-"+data.tag+".png");
+            surface.height=800;
+            waitForRendering(page,100);
+            compare(headline.mapToItem(page,0,0).y,headlineY);
+            page.message="";
+            surface.height=542;
         }
     }
 }
