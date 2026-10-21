@@ -2,6 +2,7 @@
 #include "FocusDismissPolicy.h"
 #include "UiFont.h"
 #include "UiText.h"
+#include "WindowHoverPolicy.h"
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
         return 0;
     QGuiApplication application(argc, argv);
     FocusDismissPolicy::install(&application);
+    WindowHoverPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setApplicationVersion(BuildInfo::version());
     application.setOrganizationName(QStringLiteral("xdzip"));

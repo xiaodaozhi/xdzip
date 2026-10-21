@@ -29,6 +29,45 @@ void macNativeEditorExecute(const QString &command);
 #endif
 
 namespace {
+void hideForTray(QWindow *window) {
+    window->hide();
+#ifdef Q_OS_WIN
+    auto *quick = qobject_cast<QQuickWindow *>(window);
+    if (!quick || QGuiApplication::platformName() != QStringLiteral("windows"))
+        return;
+    // DWM may reuse the last presented image before Quick paints after a show.
+    // Keep the HWND/state and reveal it only after the first fresh frame, without
+    // readback, nested event processing or a timer. Re-arming deletes old callbacks.
+    const auto saved = window->property("xdzipTrayRestoreOpacity");
+    const qreal opacity = saved.isValid() ? saved.toReal() : window->opacity();
+    delete window->findChild<QObject *>(QStringLiteral("xdzipTrayPresentation"),
+                                        Qt::FindDirectChildrenOnly);
+    auto *gate = new QObject(window);
+    gate->setObjectName(QStringLiteral("xdzipTrayPresentation"));
+    window->setProperty("xdzipTrayRestoreOpacity", opacity);
+    window->setOpacity(0);
+    QObject::connect(quick, &QQuickWindow::afterAnimating, gate, [quick, gate, opacity] {
+        if (!quick->isVisible() || quick->windowState() == Qt::WindowMinimized ||
+            gate->property("armed").toBool())
+            return;
+        gate->setProperty("armed", true);
+        // afterAnimating runs on the GUI thread before this frame's sync. A new
+        // connection cannot consume a queued swap from the previous hidden frame.
+        QObject::connect(
+            quick, &QQuickWindow::frameSwapped, gate,
+            [quick, gate, opacity] {
+                if (!quick->isVisible() || quick->windowState() == Qt::WindowMinimized ||
+                    gate->property("completed").toBool())
+                    return;
+                gate->setProperty("completed", true);
+                quick->setOpacity(opacity);
+                quick->setProperty("xdzipTrayRestoreOpacity", QVariant());
+                gate->deleteLater();
+            },
+            Qt::QueuedConnection);
+    });
+#endif
+}
 QString text(const QString &command) {
     static const QHash<QString, QString> labels{
         {QStringLiteral("application"), qtTrId("desktop.application")},
@@ -409,11 +448,11 @@ void DesktopIntegration::hideWindows() {
     for (auto *window : QGuiApplication::topLevelWindows()) {
         if (ownedWindow(window, m_window) && window->isVisible() && window != m_window) {
             m_hiddenWindows.append(window);
-            window->hide();
+            hideForTray(window);
         }
     }
     m_hidden = true;
-    m_window->hide();
+    hideForTray(m_window);
 }
 void DesktopIntegration::restore() {
     if (!m_window)

@@ -1,6 +1,7 @@
 #include "../FocusDismissPolicy.h"
 #include "../UiFont.h"
 #include "../UiText.h"
+#include "../WindowHoverPolicy.h"
 #include <QQmlEngine>
 #include <QQuickStyle>
 #include <QResource>
@@ -16,6 +17,7 @@ class Setup : public QObject {
   public slots:
     void applicationAvailable() {
         FocusDismissPolicy::install(QCoreApplication::instance());
+        WindowHoverPolicy::install(QCoreApplication::instance());
         if (!initializeUiText(QStringLiteral("zh-CN")))
             qFatal("Unable to load UI language");
         if (!installUiFont())

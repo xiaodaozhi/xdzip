@@ -13,6 +13,7 @@
 #include "UiPreferences.h"
 #include "UiText.h"
 #include "WindowActivation.h"
+#include "WindowHoverPolicy.h"
 #include <QApplication>
 #include <QEvent>
 #include <QIcon>
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
     for (const auto &path : startupPaths)
         fileOpens.enqueue(path);
     FocusDismissPolicy::install(&application);
+    WindowHoverPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
     application.setApplicationVersion(BuildInfo::version());
     application.setDesktopFileName(QStringLiteral("xdzip"));

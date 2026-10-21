@@ -11,6 +11,7 @@
 #include "UiPreferences.h"
 #include "UiText.h"
 #include "WindowActivation.h"
+#include "WindowHoverPolicy.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QAccessible>
@@ -1469,6 +1470,312 @@ class BrowserTest : public QObject {
         }
         QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
     }
+    void windowHoverEndsBeforeRestore_data() {
+        QTest::addColumn<QString>("component");
+        QTest::addColumn<bool>("minimize");
+        for (const auto &component :
+             {"WindowCaptionButton", "ArchiveAction", "OperationFooterButton"}) {
+            QTest::newRow(qPrintable(QString(component) + "-hide")) << QString(component) << false;
+            QTest::newRow(qPrintable(QString(component) + "-minimize"))
+                << QString(component) << true;
+        }
+    }
+    void windowHoverEndsBeforeRestore() {
+        QFETCH(QString, component);
+        QFETCH(bool, minimize);
+        QQmlEngine engine;
+        QQmlComponent factory(&engine, QUrl("qrc:/xdzip/ui/" + component + ".qml"));
+        std::unique_ptr<QObject> object(factory.createWithInitialProperties(
+            component == "WindowCaptionButton"
+                ? QVariantMap{{"captionAction", "close"}, {"text", "Close"}}
+                : QVariantMap{{"text", "Action"}}));
+        QVERIFY2(object, qPrintable(factory.errorString()));
+        auto *button = qobject_cast<QQuickItem *>(object.get());
+        QVERIFY(button);
+        QQuickWindow window;
+        window.resize(320, 160);
+        button->setParentItem(window.contentItem());
+        button->setPosition(QPointF(40, 40));
+        button->setSize(QSizeF(100, 40));
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        window.requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(&window));
+        const auto hover = [&] {
+            const QPointF point(70, 60);
+            QMouseEvent move(QEvent::MouseMove, point, point, window.mapToGlobal(point.toPoint()),
+                             Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(&window, &move);
+        };
+        hover();
+        QVERIFY(button->property("hovered").toBool());
+        if (minimize)
+            window.showMinimized();
+        else
+            window.hide();
+        // Assert synchronously, before a native leave or another frame can mask stale input.
+        QVERIFY(!button->property("hovered").toBool());
+        if (minimize)
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+        QCursor::setPos(window.mapToGlobal(QPoint(260, 120)));
+        WindowActivation::reveal(&window);
+        QVERIFY(!button->property("hovered").toBool());
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(QTest::qWaitForWindowActive(&window));
+        hover();
+        QVERIFY(button->property("hovered").toBool());
+        QSignalSpy clicked(button, SIGNAL(clicked()));
+        QTest::mouseClick(&window, Qt::LeftButton, Qt::NoModifier, QPoint(70, 60));
+        QCOMPARE(clicked.size(), 1);
+        QVERIFY(!button->property("down").toBool());
+        button->forceActiveFocus(Qt::TabFocusReason);
+        QTest::keyClick(&window, Qt::Key_Space);
+        QCOMPARE(clicked.size(), 2);
+        auto *accessible = QAccessible::queryAccessibleInterface(button);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QCOMPARE(clicked.size(), 3);
+    }
+    void trayCaptionHoverEndsBeforeRestore_data() {
+        QTest::addColumn<bool>("delayNativeLeave");
+        QTest::addColumn<Qt::WindowState>("state");
+        QTest::addColumn<bool>("rapidRestore");
+        QTest::addColumn<qreal>("originalOpacity");
+        for (const auto state : {Qt::WindowNoState, Qt::WindowMaximized, Qt::WindowFullScreen}) {
+            QTest::newRow(qPrintable(QString::number(state) + "-native-leave"))
+                << false << state << false << 1.;
+            QTest::newRow(qPrintable(QString::number(state) + "-delayed-native-leave"))
+                << true << state << false << 1.;
+        }
+        QTest::newRow("rapid-restore") << true << Qt::WindowNoState << true << 1.;
+        QTest::newRow("original-opacity") << true << Qt::WindowNoState << true << .8;
+    }
+    void trayCaptionHoverEndsBeforeRestore() {
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() != QStringLiteral("windows"))
+            QSKIP("Native Windows presentation requires a real desktop; shared input is tested "
+                  "separately");
+        QFETCH(bool, delayNativeLeave);
+        QFETCH(Qt::WindowState, state);
+        QFETCH(bool, rapidRestore);
+        QFETCH(qreal, originalOpacity);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, window->findChild<BrowserController *>(), preferences,
+                                   true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        window->setOpacity(originalOpacity);
+        window->setWindowState(state);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTRY_VERIFY(nativeStateSettled(window, state));
+        if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+            if (state == Qt::WindowMaximized) {
+                QTRY_VERIFY(IsZoomed(reinterpret_cast<HWND>(window->winId())));
+                QTRY_VERIFY(qAbs(window->width() - window->screen()->availableGeometry().width()) <=
+                            1);
+            } else if (state == Qt::WindowFullScreen) {
+                QTRY_COMPARE(window->geometry(), window->screen()->geometry());
+            }
+        }
+        window->requestActivate();
+        QVERIFY(QTest::qWaitForWindowActive(window));
+        const auto currentClose = [window] {
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            return page ? findVisual(page, "windowClose") : nullptr;
+        };
+        auto *close = currentClose();
+        QVERIFY(close);
+        QTRY_COMPARE(close->mapToScene(QPointF(close->width(), 0)).x(), qreal(window->width()));
+        QVERIFY(
+            !window->grabWindow().isNull()); // Finish the initial state transition before hovering.
+        // Position the real pointer while the window is active. Some windowing
+        // transitions reject cursor warps after hiding. Then deliberately render
+        // a stale hover image via Quick input, without changing OS pointer state.
+        const auto restoredPointer =
+            window->mapToGlobal(QPoint(window->width() / 2, window->height() / 2));
+        const auto moveRestoredPointer = [&] {
+            QCursor::setPos(restoredPointer);
+            return QCursor::pos() == restoredPointer;
+        };
+        QTRY_VERIFY(moveRestoredPointer());
+        QTest::qWait(1);
+        // Reproduce the ordering where the WM Leave arrives after hiding. Only
+        // delay the native event; the application's synchronous Leave must run.
+        class NativeLeaveDelay final : public QObject {
+          public:
+            bool eventFilter(QObject *, QEvent *event) override {
+                return event->type() == QEvent::Leave && event->spontaneous();
+            }
+        } nativeLeaveDelay;
+        const auto point =
+            close->mapToScene(QPointF(close->width() / 2, close->height() / 2)).toPoint();
+        const auto deliver = [&](QEvent::Type type, Qt::MouseButton button,
+                                 Qt::MouseButtons buttons) {
+            QMouseEvent event(type, point, point, window->mapToGlobal(point), button, buttons,
+                              Qt::NoModifier);
+            QCoreApplication::sendEvent(window, &event);
+        };
+        QSignalSpy paintedHover(window, &QQuickWindow::frameSwapped);
+        const auto establishHover = [&] {
+            deliver(QEvent::MouseMove, Qt::NoButton, Qt::NoButton);
+            return close->property("hovered").toBool() && !paintedHover.isEmpty();
+        };
+        QTRY_VERIFY(establishHover());
+        const auto hoverColor = close->property("faceColor").value<QColor>();
+        // Materialize the red frame: checking only QML state after restoring can
+        // miss DWM briefly presenting the previous HWND image before a fresh frame.
+        const auto lastImage = window->grabWindow();
+        QVERIFY(!lastImage.isNull());
+        const auto sample =
+            QPointF(close->mapToScene(QPointF(4, 4)).x() * lastImage.width() / window->width(),
+                    close->mapToScene(QPointF(4, 4)).y() * lastImage.height() / window->height());
+        const auto audit = qEnvironmentVariable("XDZIP_WINDOWS_AUDIT");
+        const auto stem = QString::number(int(window->rendererInterface()->graphicsApi())) + "-" +
+                          QString::fromLatin1(QTest::currentDataTag());
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(lastImage.save(audit + "/tray-before-" + stem + ".png"));
+        }
+        if (lastImage.pixelColor(sample.toPoint()) != hoverColor)
+            qInfo() << "Hover sample" << window->size() << lastImage.size() << sample
+                    << window->devicePixelRatio() << lastImage.devicePixelRatio()
+                    << close->property("faceColor") << QCursor::pos()
+                    << close->mapToGlobal(QPointF(4, 4));
+        QCOMPARE(lastImage.pixelColor(sample.toPoint()), hoverColor);
+        if (delayNativeLeave)
+            window->installEventFilter(&nativeLeaveDelay);
+        // The standard button action runs the real clicked/close path without
+        // QTest's input flushing consuming a delayed native Leave first.
+        QVERIFY(QMetaObject::invokeMethod(close, "click", Qt::DirectConnection));
+        QVERIFY(!window->isVisible());
+        if (QGuiApplication::platformName() == QStringLiteral("windows"))
+            QCOMPARE(window->opacity(), 0.); // The retained image is masked until a fresh swap.
+        QVERIFY(!close->property("hovered").toBool());
+        const auto normalColor = close->property("faceColor").value<QColor>();
+        QVERIFY(normalColor != hoverColor);
+        QColor firstFrameColor;
+        const auto frame = connect(window, &QQuickWindow::afterAnimating, window, [&] {
+            if (!firstFrameColor.isValid()) {
+                firstFrameColor = currentClose()->property("faceColor").value<QColor>();
+                if (firstFrameColor != normalColor)
+                    qInfo() << "Restore pointer" << QCursor::pos() << restoredPointer
+                            << window->geometry() << window->isVisible() << window->opacity()
+                            << window->property("xdzipHoverRefreshPending")
+                            << window->property("xdzipHoverRestoring")
+                            << currentClose()->mapToGlobal(QPointF(0, 0));
+            }
+        });
+        desktop.restore();
+        window->removeEventFilter(&nativeLeaveDelay);
+        if (rapidRestore) {
+            desktop.hideToTray();
+            QVERIFY(!window->isVisible());
+            desktop.restore();
+        }
+        QVERIFY(window->handle());
+        auto *restoredClose = currentClose();
+        QVERIFY(restoredClose);
+        QCOMPARE(restoredClose->property("faceColor").value<QColor>(), normalColor);
+        QTRY_VERIFY(firstFrameColor.isValid());
+        QCOMPARE(firstFrameColor, normalColor);
+        QTRY_COMPARE(window->opacity(), originalOpacity);
+        QTRY_VERIFY(nativeStateSettled(window, state));
+        auto *frameAdapter = window->findChild<QObject *>("windowsNativeFrame");
+        QVariantMap frameState;
+        QVERIFY(QMetaObject::invokeMethod(frameAdapter, "diagnostics",
+                                          Q_RETURN_ARG(QVariantMap, frameState)));
+        if (QGuiApplication::platformName() == QStringLiteral("windows")) {
+            QVERIFY(frameState.value("attached").toBool());
+            QCOMPARE(frameState.value("resizeStyle").toBool(), state != Qt::WindowFullScreen);
+            if (originalOpacity == 1.)
+                QVERIFY(!(GetWindowLongPtrW(reinterpret_cast<HWND>(window->winId()), GWL_EXSTYLE) &
+                          WS_EX_LAYERED));
+            if (frameState.value("cornerPreferenceSupported").toBool())
+                QCOMPARE(frameState.value("cornerPreference").toInt(), 2);
+        }
+        const auto restoredImage = window->grabWindow();
+        QVERIFY(!restoredImage.isNull());
+        const auto restoredSample = QPointF(restoredClose->mapToScene(QPointF(4, 4)).x() *
+                                                restoredImage.width() / window->width(),
+                                            restoredClose->mapToScene(QPointF(4, 4)).y() *
+                                                restoredImage.height() / window->height());
+        QCOMPARE(restoredImage.pixelColor(restoredSample.toPoint()), normalColor);
+        if (!audit.isEmpty()) {
+            QVERIFY(restoredImage.save(audit + "/tray-restored-" + stem + ".png"));
+        }
+        disconnect(frame);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+#else
+        QSKIP(
+            "Windows custom caption/tray regression; shared hover lifecycle is tested separately");
+#endif
+    }
+    void windowHoverSensorsEndBeforeRestore_data() {
+        QTest::addColumn<bool>("minimize");
+        QTest::newRow("hide") << false;
+        QTest::newRow("minimize") << true;
+    }
+    void windowHoverSensorsEndBeforeRestore() {
+        QFETCH(bool, minimize);
+        QQmlEngine engine;
+        QQmlComponent factory(&engine);
+        factory.setData(R"(
+            import QtQuick
+            Item {
+                readonly property bool areaHovered: area.containsMouse
+                readonly property bool handlerHovered: pointer.hovered
+                MouseArea { id: area; anchors.fill: parent; hoverEnabled: true }
+                HoverHandler { id: pointer; target: null }
+            })",
+                        QUrl());
+        std::unique_ptr<QObject> object(factory.create());
+        QVERIFY2(object, qPrintable(factory.errorString()));
+        auto *item = qobject_cast<QQuickItem *>(object.get());
+        QVERIFY(item);
+        QQuickWindow window;
+        window.resize(320, 160);
+        item->setParentItem(window.contentItem());
+        item->setPosition(QPointF(40, 40));
+        item->setSize(QSizeF(100, 40));
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        const auto hover = [&] {
+            const QPointF point(70, 60);
+            QMouseEvent move(QEvent::MouseMove, point, point, window.mapToGlobal(point.toPoint()),
+                             Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(&window, &move);
+        };
+        hover();
+        QVERIFY(item->property("areaHovered").toBool());
+        QVERIFY(item->property("handlerHovered").toBool());
+        if (minimize)
+            window.showMinimized();
+        else
+            window.hide();
+        QVERIFY(!item->property("areaHovered").toBool());
+        QVERIFY(!item->property("handlerHovered").toBool());
+        if (minimize)
+            QTRY_VERIFY(nativeStateSettled(&window, Qt::WindowMinimized));
+        QCursor::setPos(window.mapToGlobal(QPoint(260, 120)));
+        WindowActivation::reveal(&window);
+        QVERIFY(!item->property("areaHovered").toBool());
+        QVERIFY(!item->property("handlerHovered").toBool());
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        hover();
+        QVERIFY(item->property("areaHovered").toBool());
+        QVERIFY(item->property("handlerHovered").toBool());
+    }
     void windowsCaptionControlsAndWindowState() {
 #ifdef Q_OS_WIN
         QQmlApplicationEngine engine;
@@ -1599,7 +1906,9 @@ class BrowserTest : public QObject {
 #endif
     }
     void initTestCase() {
+        WindowActivation::install(QCoreApplication::instance());
         FocusDismissPolicy::install(QCoreApplication::instance());
+        WindowHoverPolicy::install(QCoreApplication::instance());
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
         QVERIFY(m_settingsProfile.isValid());

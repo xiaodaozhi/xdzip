@@ -18,6 +18,18 @@ macOS 菜单按 xdzip、文件、编辑、显示、操作、窗口、帮助排�
 
 ## 验证
 
+应用自己的 Qt Quick 窗口隐藏或最小化时，同步结束原窗口的指针悬停，清除按钮、MouseArea、HoverHandler 及 tooltip 的旧位置记录。恢复首帧同步前按系统实际指针位置重新核对，不能沿用关闭前的 hover 底色或旧坐标；晚到的原生进入事件也按实际位置处理，直至真实鼠标移动或按下同步坐标。此规则适用于主窗口与操作窗口，不改变焦点、按钮绑定或原生文件选择器行为。
+
+Windows 托盘隐藏后保留原生窗口、状态、QML 对象、控制器与后台任务，在隐藏状态下暂时遮蔽窗口透明度，恢复后首个新帧完成提交才恢复原透明度。仅清理 hovered 属性不能防止 DWM 在新帧提交前短暂显示窗口的最后一帧。新一轮隐藏使旧帧回调失效；此策略只适用于托盘隐藏，不用于最小化或仍可见的窗口，不通过截图读回、固定延时或禁用系统动画实现。
+
+English: Hiding or minimizing an application-owned Qt Quick window ends pointer hover and its cached position before restoration. The first restored frame reconciles against the current system pointer position before scene synchronization. Late native enter events remain normalized until real mouse movement or a press supplies current coordinates. Controls, MouseAreas, HoverHandlers and tooltips resume from fresh pointer input instead of the old hover color or coordinates. Focus, control bindings and native file choosers retain their existing behavior.
+
+没有系统全局指针的后端以注入事件为准，不查询物理鼠标覆盖其状态。offscreen／minimal 的组件检查与原生桌面恢复检查分开，不能用离屏检查替代 DWM、Cocoa 或 X11 的实际窗口验收。
+
+Backends without a system-wide pointer treat injected events as authoritative instead of overriding them with physical cursor queries. Offscreen/minimal component checks remain separate from native DWM, Cocoa and X11 window acceptance.
+
+On Windows, tray hiding retains the native window, state, QML objects, controllers and background tasks. While hidden, its opacity is masked until the first newly submitted frame after restoration, preventing DWM from revealing the previous hover-colored image. Hiding again invalidates old callbacks. This does not affect minimization or visible windows, and uses no screenshot readback, fixed delay or animation override.
+
 自动化覆盖菜单结构和角色、状态同步、命令与编辑路由、配置兼容与取消、驻留及退出策略、无托盘回退、任务菜单、模态阻塞与重启。原生桌面另核验 macOS 顶部菜单、Dock 恢复，Windows 通知区与 Linux StatusNotifier/XEmbed，深浅外观、高 DPR、键盘与屏幕阅读。离屏验证不等于原生桌面验收；截图与报告仅输出 build/ 或 dist/。
 
 原生编辑角色仅在 `QCocoaMenuItem` 的 Cut、Copy、Paste、Select All 翻译上下文中使用应用语言目录，`QCocoaMenuBar/Edit` 也使用同源标题，使 Qt 的文本角色检测与编辑菜单识别不依赖系统语言。系统文件选择器及其他 Qt 控件继续使用系统 locale 的 qtbase 翻译。须同时验证中文应用与英文系统，以及英文应用与中文系统，不通过修改用户全局 AppleLanguages 来测试。

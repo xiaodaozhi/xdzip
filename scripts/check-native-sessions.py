@@ -10,7 +10,9 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-CASES = ['desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch',
+CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
+         'trayCaptionHoverEndsBeforeRestore',
+         'desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch',
          'modalOpenDefersNewWindowUntilUnblocked',
          'globalSettingsKeepDraftAndAboutCallerAcrossWindows',
          'settingsOpenModeSelectionPersists',
