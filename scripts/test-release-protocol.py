@@ -88,6 +88,15 @@ class ReleaseNotesTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError): self.invoke('--check-notes', use_override=False)
         self.assertEqual(self.commands, [])
 
+    def test_gh_captures_multilingual_output_without_changing_characters(self):
+        original_run = subprocess.run
+        message = '已验收，仍待审查'
+        def utf8_output(args, **kwargs):
+            code = 'import sys;sys.stdout.buffer.write('+repr(message.encode('utf-8'))+')'
+            return original_run([sys.executable, '-c', code], **kwargs)
+        with patch.object(PUBLISH.subprocess, 'run', side_effect=utf8_output):
+            self.assertEqual(PUBLISH.gh('test-output', capture=True), message)
+
     def test_mismatched_version_build_and_unreviewed_notes_fail_before_github(self):
         valid = self.notes.read_text(encoding='utf-8')
         for invalid in [valid.replace('"build":20', '"build":19'), valid.replace('alpha.7', 'alpha.6'),

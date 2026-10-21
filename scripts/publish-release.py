@@ -33,7 +33,7 @@ def comparable_notes(body):
 
 
 def gh(*args, capture=False):
-    return subprocess.run(['gh', *map(str, args)], check=True, text=True, capture_output=capture).stdout
+    return subprocess.run(['gh', *map(str, args)], check=True, text=True, encoding='utf-8', capture_output=capture).stdout
 
 
 def main():
@@ -59,7 +59,7 @@ def main():
     notes = work/'notes.md'
     notes.write_text(reviewed, encoding='utf-8')
     query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json', 'isDraft,assets,body'],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, encoding='utf-8')
     if query.returncode:
         gh('release', 'create', args.tag, '--repo', args.repository, '--verify-tag', '--draft', '--prerelease',
            '--title', 'xdzip '+version['display_version'], '--notes-file', notes)
