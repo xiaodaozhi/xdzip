@@ -2,6 +2,8 @@
 
 新增 `desktop/openMode=tabs|windows`，默认 tabs，保存后影响后续所有打开入口及标题栏加号，取消不生效，不调整已打开会话。单例设置入口避免多份可见草稿，见[应用会话契约](../engineering/application-sessions.md)。
 
+共享 OperationSelect 的鼠标选项与菜单内 Enter／Space 确认均更新 currentIndex 并发出一次 activated(index)，与收起状态的原生键盘选择保持相同语义，调用方据此提交设置草稿。仅移动菜单高亮、Escape 取消及程序同步索引不发出该信号。打开方式验收必须实际操作下拉菜单，检查保存后的会话路由、重开设置与跨进程恢复，不能仅通过直接改写草稿验证。
+
 当前设置高保真包含[浅色打开方式修订](../../design/hifi/screens/settings-open-mode-light.png)和[深色修订](../../design/hifi/screens/settings-open-mode-dark.png)，保留原宽度、共享控件与滚动正文规则，历史几何量测图不覆盖。
 
 主题卡片与创建格式分段复用基于 Qt RadioButton 的 IntentRadioButton，鼠标、键盘及原生辅助功能 press/toggle 动作均提交同一选择意图；checked 只反映草稿或 currentIndex，不由平台适配器独立翻转。原生控件与辅助功能的 checkable 状态须一致，避免客户端晚启用时覆盖声明状态。重复激活已选项仍保持选中，禁用项不改变选择。HTML 的互斥单选行为保持不变，Qt 验收同时检查真实主题和格式扩展名，不以勾选图形自证选择成功。

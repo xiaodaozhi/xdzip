@@ -8,6 +8,13 @@ ComboBox {
     property real density: 1
     property bool numericOnly: false
     property string editPlaceholder: qsTrId("ui.2449d5ec999a")
+    function activateOption(index) {
+        if (!enabled || index < 0 || index >= count) return;
+        currentIndex = index;
+        popup.close();
+        // Custom menu delegates bypass ComboBox's native activation path.
+        activated(index);
+    }
     implicitHeight: Math.max(Theme.operationFieldHeight * density, contentItem.implicitHeight + 16 * density)
     font.pixelSize: Math.round(Theme.operationBodySize * density)
     leftPadding: Theme.operationControlFieldTextInset
@@ -70,10 +77,7 @@ ComboBox {
         checkable: true
         checked: root.currentIndex === index
         highlighted: choices.currentIndex === index
-        onTriggered: {
-            root.currentIndex = index;
-            root.popup.close();
-        }
+        onTriggered: root.activateOption(index)
     }
     popup: CommandMenu {
         // Keep the normal gap on either side of the field, including short windows.
@@ -113,8 +117,9 @@ ComboBox {
                     next = Math.max(0, currentIndex - 1);
                 else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Space) {
                     if (currentIndex >= 0)
-                        root.currentIndex = currentIndex;
-                    root.popup.close();
+                        root.activateOption(currentIndex);
+                    else
+                        root.popup.close();
                 } else if (event.key === Qt.Key_Escape)
                     root.popup.close();
                 else

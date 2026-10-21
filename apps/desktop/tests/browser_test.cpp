@@ -1605,6 +1605,132 @@ class BrowserTest : public QObject {
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QCOMPARE(controller->selectedCount(), 0);
     }
+    void settingsOpenModeSelectionPersists_data() {
+        QTest::addColumn<bool>("pointer");
+        QTest::newRow("pointer") << true;
+        QTest::newRow("popup-keyboard") << false;
+    }
+    void settingsOpenModeSelectionPersists() {
+        QFETCH(bool, pointer);
+        if (qEnvironmentVariable("XDZIP_OPEN_MODE_CHILD") == "1") {
+            UiPreferences restored;
+            QCOMPARE(restored.openMode(), QStringLiteral("windows"));
+            return;
+        }
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
+        const auto restore = qScopeGuard([previous] { qputenv("XDZIP_SETTINGS_PATH", previous); });
+        const auto path = profile.filePath("settings.ini");
+        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings);
+        auto *choice = findVisual(settings->contentItem(), "settingsOpenMode");
+        auto *save = findVisual(settings->contentItem(), "settingsSave");
+        auto *cancel = findVisual(settings->contentItem(), "settingsCancel");
+        auto *defaults = findVisual(settings->contentItem(), "settingsDefaults");
+        auto *footer = findVisual(settings->contentItem(), "settingsFooter");
+        QVERIFY(choice && save && cancel && defaults && footer);
+        const auto click = [](QQuickWindow *owner, QQuickItem *item) {
+            QTest::mouseClick(
+                owner, Qt::LeftButton, Qt::NoModifier,
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
+        };
+        auto *popup = choice->property("popup").value<QObject *>();
+        QVERIFY(popup);
+        QSignalSpy activated(choice, SIGNAL(activated(int)));
+        const auto selectWindows = [&] {
+            choice->forceActiveFocus(Qt::TabFocusReason);
+            QTRY_VERIFY(choice->mapToScene(QPointF(0, choice->height())).y() <= footer->y() + 1);
+            click(settings, choice);
+            QTRY_VERIFY(popup->property("visible").toBool());
+            if (pointer) {
+                auto *content = popup->property("contentItem").value<QQuickItem *>();
+                QVERIFY(content);
+                QTRY_VERIFY(findVisual(content, "settingsOpenModeOption-1"));
+                click(settings, findVisual(content, "settingsOpenModeOption-1"));
+            } else {
+                QTest::keyClick(settings, Qt::Key_End);
+                QTest::keyClick(settings, Qt::Key_Return);
+            }
+            QTRY_VERIFY(!popup->property("visible").toBool());
+        };
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        choice->forceActiveFocus(Qt::TabFocusReason);
+        QVERIFY(QMetaObject::invokeMethod(popup, "open"));
+        QTRY_VERIFY(popup->property("visible").toBool());
+        QTest::keyClick(settings, Qt::Key_End);
+        QTest::keyClick(settings, Qt::Key_Escape);
+        QTRY_VERIFY(!popup->property("visible").toBool());
+        QCOMPARE(choice->property("currentIndex").toInt(), 0);
+        QCOMPARE(activated.count(), 0);
+        selectWindows();
+        QTRY_COMPARE(choice->property("currentIndex").toInt(), 1);
+        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
+        QCOMPARE(activated.count(), 1);
+        QCOMPARE(activated.first().first().toInt(), 1);
+        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
+        click(settings, cancel);
+        QTRY_VERIFY(!settings->isVisible());
+        QVERIFY(!QFile::exists(path));
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QTRY_COMPARE(choice->property("currentIndex").toInt(), 0);
+        selectWindows();
+        settings->setProperty("draftTheme", "dark"); // Other controls must not undo the choice.
+        QCOMPARE(choice->property("currentIndex").toInt(), 1);
+        QLockFile lock(path + ".xdzip-lock");
+        QVERIFY(lock.tryLock());
+        click(settings, save);
+        QVERIFY(settings->isVisible());
+        QVERIFY(!preferences->error().isEmpty());
+        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
+        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
+        lock.unlock();
+        click(settings, save);
+        QTRY_VERIFY(!settings->isVisible());
+        QCOMPARE(preferences->openMode(), QStringLiteral("windows"));
+        QSettings persisted(path, QSettings::IniFormat);
+        QCOMPARE(persisted.value("desktop/openMode").toString(), QStringLiteral("windows"));
+        QProcess child;
+        child.setProcessChannelMode(QProcess::MergedChannels);
+        auto environment = QProcessEnvironment::systemEnvironment();
+        environment.insert("XDZIP_OPEN_MODE_CHILD", "1");
+        child.setProcessEnvironment(environment);
+        child.start(QCoreApplication::applicationFilePath(),
+                    {QStringLiteral("settingsOpenModeSelectionPersists:") +
+                     QString::fromLatin1(QTest::currentDataTag())});
+        QVERIFY(child.waitForFinished(20000));
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
+                 child.readAllStandardOutput().constData());
+        sessions.newSession();
+        QCOMPARE(sessions.windows().size(), 2);
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
+        QCOMPARE(choice->property("currentIndex").toInt(), 1);
+        activated.clear();
+        click(settings, defaults);
+        QCOMPARE(choice->property("currentIndex").toInt(), 0);
+        QCOMPARE(activated.count(),
+                 0); // Programmatic draft synchronization is not user activation.
+        QCOMPARE(preferences->openMode(), QStringLiteral("windows"));
+        click(settings, save);
+        QTRY_VERIFY(!settings->isVisible());
+        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
+        sessions.newSession();
+        QCOMPARE(sessions.windows().size(), 2);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void settingsWindowPersistsAndRollsBack() {
         QTemporaryDir profile;
         QVERIFY(profile.isValid());

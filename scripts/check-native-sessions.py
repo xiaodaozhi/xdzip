@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CASES = ['desktopActivationPreservesWindowState', 'coldOpenSessionsWaitForNativeLaunch',
          'modalOpenDefersNewWindowUntilUnblocked',
          'globalSettingsKeepDraftAndAboutCallerAcrossWindows',
+         'settingsOpenModeSelectionPersists',
          'sessionLimitKeepsBackgroundTaskEntryReachable', 'independentSessionsAndOpenModes',
          'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery',
          'backgroundTasksKeepSessionIdentityAndSerialAdmission',
