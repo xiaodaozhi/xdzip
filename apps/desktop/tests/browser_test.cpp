@@ -593,15 +593,18 @@ class BrowserTest : public QObject {
         QTest::addColumn<int>("count");
         QTest::addColumn<bool>("loading");
         QTest::addColumn<bool>("retainedTasks");
-        QTest::newRow("archives") << 3 << false << false;
-        QTest::newRow("loading") << 3 << true << false;
-        QTest::newRow("limit-quiet") << 32 << false << false;
-        QTest::newRow("limit-tasks") << 32 << false << true;
+        QTest::addColumn<bool>("queuedActivation");
+        QTest::newRow("archives") << 3 << false << false << false;
+        QTest::newRow("loading") << 3 << true << false << false;
+        QTest::newRow("limit-quiet") << 32 << false << false << false;
+        QTest::newRow("limit-tasks") << 32 << false << true << false;
+        QTest::newRow("deferred-modal") << 3 << false << true << true;
     }
     void closingWindowClearsTabsBeforeTrayRestore() {
         QFETCH(int, count);
         QFETCH(bool, loading);
         QFETCH(bool, retainedTasks);
+        QFETCH(bool, queuedActivation);
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
@@ -639,18 +642,32 @@ class BrowserTest : public QObject {
             first->openPath(QStringLiteral(XDZIP_M2_FIXTURE));
             QVERIFY(first->browsingBusy());
         }
+        QDialog modal;
+        if (queuedActivation) {
+            modal.setWindowModality(Qt::ApplicationModal);
+            modal.show();
+            QTRY_VERIFY(QApplication::activeModalWidget());
+            sessions.activateId(oldTabs.last().toMap().value("id").toString());
+            modal.close();
+            QVERIFY(!QApplication::activeModalWidget());
+        }
         // Use the actual QML close handler and the native tray restore entry.
         window->close();
         QVERIFY(!window->isVisible());
-        if (!retainedTasks) {
-            QTRY_COMPARE(sessions.sessionCount(), 1);
+        if (queuedActivation) {
+            // Dispatch the activation queued by the dismissed modal dialog.
+            QTest::qWait(50);
+            QVERIFY(!window->isVisible());
+        }
+        if (!retainedTasks || count < 32) {
+            QTRY_COMPARE(sessions.sessionCount(), retainedTasks ? count + 1 : 1);
             QVERIFY(!window->isVisible());
         }
         desktop.restore();
         QVERIFY(window->isVisible());
         QTRY_VERIFY(window->property("welcomeVisible").toBool());
-        if (!retainedTasks) {
-            QTRY_COMPARE(sessions.sessionCount(), 1);
+        if (!retainedTasks || count < 32) {
+            QTRY_COMPARE(sessions.sessionCount(), retainedTasks ? count + 1 : 1);
             const auto tabs = window->property("sessionTabs").toList();
             QCOMPARE(tabs.size(), 1);
             const auto tab = tabs.first().toMap();

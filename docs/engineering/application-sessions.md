@@ -37,3 +37,5 @@ English: One normal product process and tray serve each user login session. Each
 关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。主动从全局任务入口或文件打开请求进入保留会话，仍可显示相应归档及任务。
 
 English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Explicit task/file requests may reopen a retained session. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
+
+接受主窗口关闭时递增激活世代并断开模态等待连接，已经排队的旧唤醒回调也必须检查世代，不能在模态弹窗刚关闭后重新显示主窗口或恢复旧标签。此失效处理与正常打开入口共用，不取消后台任务。

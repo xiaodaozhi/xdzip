@@ -273,10 +273,8 @@ void ApplicationSessions::openPath(const QString &path) {
 void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)
         return;
-    const auto generation = ++m_activationGeneration;
-    for (const auto &connection : m_modalConnections)
-        disconnect(connection);
-    m_modalConnections.clear();
+    cancelPendingActivation();
+    const auto generation = m_activationGeneration;
     session->closed = false;
     session->page->setProperty("sessionClosed", false);
     session->page->setProperty("closedPage", false);
@@ -314,6 +312,12 @@ void ApplicationSessions::activate(Session *session, bool reveal) {
         m_modalConnections.append(connect(modal, &QObject::destroyed, this, wake));
     } else
         WindowActivation::reveal(window);
+}
+void ApplicationSessions::cancelPendingActivation() {
+    ++m_activationGeneration;
+    for (const auto &connection : m_modalConnections)
+        disconnect(connection);
+    m_modalConnections.clear();
 }
 void ApplicationSessions::focusWindow(QQuickWindow *window) {
     if (!window || m_quitting)
@@ -411,13 +415,14 @@ void ApplicationSessions::reap(Session *session) {
     // Otherwise the receiver emits readyToClose after its asynchronous join.
 }
 void ApplicationSessions::closeWindow(QQuickWindow *window) {
-    if (m_quitting)
+    if (m_quitting || !window)
         return;
     if (QApplication::activeModalWidget() || QGuiApplication::modalWindow()) {
         if (m_desktop)
             m_desktop->restore();
         return;
     }
+    cancelPendingActivation();
     int visibleWindows = 0;
     for (auto *candidate : windows())
         if (!candidate->property("retiredWindow").toBool())
