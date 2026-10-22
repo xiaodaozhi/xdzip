@@ -71,6 +71,9 @@ if ($IsMacOS) {
 }
 # Foundation independently executes locked workspace Rust tests.
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
+if ($IsLinux) {
+    Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
+}
 Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
 Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
 # Repeat only the concurrent lifecycle suite to expose nondeterministic races.

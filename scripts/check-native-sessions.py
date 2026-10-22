@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import time
+from native_window_manager import OpenboxSession
 
 ROOT = Path(__file__).resolve().parents[1]
 CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
@@ -48,16 +48,7 @@ def main():
     window_manager = None
     try:
         if sys.platform == 'linux':
-            window_manager = subprocess.Popen(['openbox', '--sm-disable'], env=env,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            deadline = time.monotonic() + 10
-            while time.monotonic() < deadline:
-                if window_manager.poll() is not None: raise ValueError('X11 window manager exited')
-                ready = subprocess.run(['xprop', '-root', '_NET_SUPPORTING_WM_CHECK'], env=env,
-                    capture_output=True, text=True, timeout=3)
-                if ready.returncode == 0 and 'window id #' in ready.stdout: break
-                time.sleep(.05)
-            else: raise ValueError('X11 window manager did not become ready')
+            window_manager = OpenboxSession(env, output.parent).start()
         command = [str(args.tests.resolve()), *CASES, '-o', str(log)+',txt']
         timed_out = False
         try:
@@ -70,6 +61,7 @@ def main():
         output.with_suffix('.console.log').write_text(sanitized(result.stdout+result.stderr), encoding='utf-8')
         report = dict(status='passed' if result.returncode == 0 else 'failed', platform=sys.platform,
                       native_plugin=env['QT_QPA_PLATFORM'], window_manager='Openbox' if window_manager else 'system',
+                      window_manager_ready_ms=window_manager.ready_ms if window_manager else None,
                       cases=CASES, timed_out=timed_out,
                       limits='Native window/session automation. Not manual visual, GPU, IME or screen-reader acceptance.')
         output.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
@@ -78,11 +70,7 @@ def main():
         if log.is_file():
             log.write_text(sanitized(log.read_text(encoding='utf-8', errors='replace')), encoding='utf-8')
         if window_manager:
-            window_manager.terminate()
-            try: window_manager.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                window_manager.kill()
-                window_manager.wait(timeout=5)
+            window_manager.close()
 
 
 if __name__ == '__main__':
