@@ -14,6 +14,50 @@ import time
 from update_fixture import ROOT, OLD, NEW, run, dump, digest, build_helpers, compile_product, manifest, request, await_file
 
 
+def installer_windows():
+    """Read only captions from owned Inno processes on the disposable runner."""
+    import ctypes
+    from ctypes import wintypes
+    user32=ctypes.WinDLL('user32',use_last_error=True)
+    kernel32=ctypes.WinDLL('kernel32',use_last_error=True)
+    kernel32.OpenProcess.restype=wintypes.HANDLE
+    kernel32.OpenProcess.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.DWORD]
+    kernel32.QueryFullProcessImageNameW.argtypes=[wintypes.HANDLE,wintypes.DWORD,wintypes.LPWSTR,ctypes.POINTER(wintypes.DWORD)]
+    kernel32.CloseHandle.argtypes=[wintypes.HANDLE]
+    callback_type=ctypes.WINFUNCTYPE(wintypes.BOOL,wintypes.HWND,wintypes.LPARAM)
+    user32.GetWindowTextW.argtypes=[wintypes.HWND,wintypes.LPWSTR,ctypes.c_int]
+    user32.GetWindowThreadProcessId.argtypes=[wintypes.HWND,ctypes.POINTER(wintypes.DWORD)]
+    user32.EnumWindows.argtypes=[callback_type,wintypes.LPARAM]
+    user32.EnumChildWindows.argtypes=[wintypes.HWND,callback_type,wintypes.LPARAM]
+    records=[]
+    def caption(window):
+        text=ctypes.create_unicode_buffer(2048)
+        user32.GetWindowTextW(window,text,len(text))
+        return text.value
+    def visit(window,_):
+        pid=wintypes.DWORD()
+        user32.GetWindowThreadProcessId(window,ctypes.byref(pid))
+        handle=kernel32.OpenProcess(0x1000,False,pid.value)
+        if not handle:return True
+        try:
+            image=ctypes.create_unicode_buffer(32768);size=wintypes.DWORD(len(image))
+            if not kernel32.QueryFullProcessImageNameW(handle,0,image,ctypes.byref(size)):return True
+            name=Path(image.value).name.lower()
+            if not (name.endswith('.tmp') or name.endswith('-setup.exe')):return True
+            children=[]
+            def child(value,_):
+                text=caption(value)
+                if text:children.append(text)
+                return True
+            user32.EnumChildWindows(window,callback_type(child),0)
+            records.append({'pid':pid.value,'image':name,'caption':caption(window),'controls':children})
+        finally:
+            kernel32.CloseHandle(handle)
+        return True
+    user32.EnumWindows(callback_type(visit),0)
+    return records
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -56,10 +100,15 @@ def main():
         # Only this owned test installer automatically confirms its wizard. The
         # exact production LicenseFile and notice remain compiled and validated;
         # neither the production template nor helper receives a silent bypass.
+        text=text.replace('[Setup]\n','[Setup]\nShowLanguageDialog=no\nSetupLogging=yes\n',1)
         text += '''
 procedure CurPageChanged(CurPageID: Integer);
 begin
-  if CurPageID = wpLicense then WizardForm.LicenseAcceptedRadio.Checked := True;
+  Log(Format('Owned fixture wizard page: %d', [CurPageID]));
+  if CurPageID = wpLicense then begin
+    WizardForm.LicenseAcceptedRadio.Checked := True;
+    WizardForm.LicenseAcceptedRadio.OnClick(WizardForm.LicenseAcceptedRadio);
+  end;
   if (CurPageID <> wpInstalling) and WizardForm.NextButton.Enabled then
     WizardForm.NextButton.OnClick(WizardForm.NextButton);
 end;
@@ -101,7 +150,9 @@ end;
             raise RuntimeError('Fixture parent did not start')
         transaction = request(job, parent.pid, install_root, job / candidate.name)
         log = (output / (label + '.log')).open('w')
-        process = subprocess.Popen([str(job / 'xdzip-update-helper.exe'), '--request', str(job / 'request.json')], stdout=log, stderr=subprocess.STDOUT)
+        installer_temp=job/'installer-temp';installer_temp.mkdir()
+        process = subprocess.Popen([str(job / 'xdzip-update-helper.exe'), '--request', str(job / 'request.json')],
+                                   env={**os.environ,'TEMP':str(installer_temp),'TMP':str(installer_temp)},stdout=log, stderr=subprocess.STDOUT)
         try:
             if expected != 'untrusted_signature':
                 ready = await_file(job / 'ready.json', process)
@@ -122,6 +173,9 @@ end;
             assert subprocess.run([str(install_root / 'xdzip.exe'), '--gate-probe']).returncode == 0
             results.append(dict(case=label, status='passed', error=expected))
         finally:
+            dump(output/(label+'-installer-windows.json'),installer_windows())
+            for index,setup_log in enumerate(installer_temp.glob('Setup Log*.txt')):
+                shutil.copyfile(setup_log,output/(label+'-setup-'+str(index)+'.log'))
             if (job / 'result.json').is_file():
                 shutil.copy2(job / 'result.json', output / (label + '-receipt.json'))
             stop.touch()

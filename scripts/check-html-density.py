@@ -95,7 +95,9 @@ def main():
                                 expect(frame.locator('.ui-menu')).to_have_count(1)
                                 for kind in ['dropdown', 'submenu', 'context']:
                                     if kind == 'submenu':
-                                        frame.locator('[data-command=more-view]').focus()
+                                        page.keyboard.press('Escape')
+                                        frame.locator('#file-rows [data-id=lake]').click(button='right')
+                                        frame.locator('[data-command=view-menu]').focus()
                                         page.keyboard.press('ArrowRight')
                                         expect(frame.locator('.ui-menu')).to_have_count(2)
                                     elif kind == 'context':

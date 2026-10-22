@@ -1970,9 +1970,23 @@ class BrowserTest : public QObject {
                         service->setProperty("busy", busy);
                         service->setProperty("downloaded", state == "downloaded");
                         service->setProperty("state", state);
+                        // Animation advances before layout polish. Offscreen operation
+                        // windows do not emit frameSwapped, so also wait for geometry.
                         QSignalSpy frames(about, &QQuickWindow::afterAnimating);
                         about->requestUpdate();
-                        QTRY_VERIFY(!frames.isEmpty());
+                        QTRY_VERIFY2(
+                            !frames.isEmpty() &&
+                                footer->y() + footer->height() <= about->height() + 1,
+                            qPrintable(QString("language=%1 dark=%2 scale=%3 state=%4 window=%5 "
+                                               "requested=%6 footerBottom=%7 parentHeight=%8")
+                                           .arg(language)
+                                           .arg(dark)
+                                           .arg(scale)
+                                           .arg(state)
+                                           .arg(about->height())
+                                           .arg(about->property("requestedHeight").toInt())
+                                           .arg(footer->y() + footer->height())
+                                           .arg(footer->parentItem()->height())));
                         QCOMPARE(about->width(), 491);
                         QVERIFY(about->height() <= 640);
                         QVERIFY(status->width() <= 443.1);
@@ -1985,7 +1999,6 @@ class BrowserTest : public QObject {
                             QStringList{"downloading", "verifying", "preparing"}.contains(state);
                         QCOMPARE(progress->isVisible(), showProgress);
                         QVERIFY(scroll->property("contentWidth").toReal() <= scroll->width() + 1);
-                        QVERIFY(footer->y() + footer->height() <= about->height() + 1);
                         for (auto *control : {check, cancel, install})
                             if (control->isVisible()) {
                                 QVERIFY(control->property("implicitWidth").toReal() <= 443.1);

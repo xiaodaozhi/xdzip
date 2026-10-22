@@ -16,12 +16,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QSaveFile>
+#include <QSslSocket>
 #include <QTest>
 #include <QTimer>
 
@@ -30,6 +33,45 @@ bool save(const QString &path, const QJsonObject &value) {
     QSaveFile file(path);
     const auto bytes = QJsonDocument(value).toJson();
     return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size() && file.commit();
+}
+int httpsProbe(QApplication &application, const QString &directory) {
+    qputenv("XDZIP_SETTINGS_PATH", (directory + "/https-settings.ini").toUtf8());
+    QNetworkAccessManager network;
+    UpdateController updates(nullptr, &network);
+    int encrypted = 0, httpsResponses = 0;
+    QObject::connect(&network, &QNetworkAccessManager::encrypted, &application,
+                     [&](QNetworkReply *) { ++encrypted; });
+    QObject::connect(
+        &network, &QNetworkAccessManager::finished, &application, [&](QNetworkReply *reply) {
+            if (reply->url().scheme() == "https" && reply->error() == QNetworkReply::NoError &&
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200)
+                ++httpsResponses;
+        });
+    const auto finish = [&](bool timeout) {
+        const bool passed = !timeout && QSslSocket::supportsSsl() && encrypted > 0 &&
+                            httpsResponses > 0 && updates.errorCode().isEmpty() &&
+                            (updates.state() == "available" || updates.state() == "up_to_date");
+        const bool written =
+            save(directory + "/https.json", {{"success", passed},
+                                             {"ssl_available", QSslSocket::supportsSsl()},
+                                             {"ssl_backend", QSslSocket::activeBackend()},
+                                             {"ssl_library", QSslSocket::sslLibraryVersionString()},
+                                             {"state", updates.state()},
+                                             {"error", updates.errorCode()},
+                                             {"timeout", timeout},
+                                             {"encrypted_connections", encrypted},
+                                             {"https_responses", httpsResponses}});
+        application.exit(passed && written ? 0 : 69);
+    };
+    QObject::connect(&updates, &UpdateController::changed, &application, [&] {
+        if (!updates.busy() && updates.state() != "idle")
+            // The network manager's finished handlers must all run before the
+            // final evidence counts are read, regardless of connection order.
+            QTimer::singleShot(0, &application, [&] { finish(false); });
+    });
+    QTimer::singleShot(180000, &application, [&] { finish(true); });
+    QTimer::singleShot(0, &updates, &UpdateController::check);
+    return application.exec();
 }
 } // namespace
 
@@ -154,6 +196,9 @@ int main(int argc, char **argv) {
         !path.contains("/build/"))
         return 60;
     const auto directory = QFileInfo(path).absolutePath();
+    Q_INIT_RESOURCE(ui);
+    if (application.arguments().contains("--update-https-probe"))
+        return httpsProbe(application, directory);
     QFile configuration(directory + "/probe.json");
     if (!configuration.open(QIODevice::ReadOnly) || configuration.size() > 65536)
         return 61;
@@ -176,7 +221,6 @@ int main(int argc, char **argv) {
                    : 64;
     }
     qputenv("XDZIP_SETTINGS_PATH", (directory + "/settings.ini").toUtf8());
-    Q_INIT_RESOURCE(ui);
     QQuickStyle::setStyle("Basic");
     qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     if (!initializeUiText() || !installUiFont())

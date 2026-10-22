@@ -9,6 +9,7 @@ from pathlib import Path
 import plistlib
 import runpy
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -114,6 +115,30 @@ class SparkleBundleTests(unittest.TestCase):
             self.assertEqual(calls[0][calls[0].index('--archive')+1], str(package))
             self.assertEqual(calls[1][0], 'verify-archive')
             self.assertNotIn('fixture-only', repr(calls))
+
+    def test_https_probe_has_no_sdk_fallback_and_requires_native_success(self):
+        probe = runpy.run_path(str(Path(__file__).with_name('check-macos-update.py')))['https_probe']
+        sdk_variables = {'QT_PLUGIN_PATH': '/fixture/sdk/plugins', 'QML2_IMPORT_PATH': '/fixture/sdk/qml',
+                         'DYLD_FRAMEWORK_PATH': '/fixture/sdk/lib', 'XDZIP_QT_PREFIX': '/fixture/sdk',
+                         'CMAKE_PREFIX_PATH': '/fixture/sdk', 'QTDIR': '/fixture/sdk'}
+        calls = []
+        def native_https(arguments, **options):
+            calls.append((arguments, options))
+            self.assertTrue(all(name not in options['env'] for name in sdk_variables))
+            self.assertEqual(options['env']['PATH'], '/usr/bin:/bin:/usr/sbin:/sbin')
+            self.assertEqual(arguments[-1], '--update-https-probe')
+            (self.app.parent/'https.json').write_text(json.dumps({'success': True, 'ssl_backend': 'fixture'}))
+            return SimpleNamespace(returncode=0, stdout=b'', stderr=b'')
+        with patch.dict(probe.__globals__, {'audit': lambda *args: {'status': 'passed'}}), \
+                patch.dict(os.environ, sdk_variables), patch('subprocess.run', side_effect=native_https):
+            result = probe(self.app, self.root)
+        self.assertTrue(result['sdk_environment_cleared'])
+        self.assertEqual(len(calls), 1)
+        with patch.dict(probe.__globals__, {'audit': lambda *args: {'status': 'failed'}}), \
+                patch('subprocess.run') as launch:
+            with self.assertRaisesRegex(RuntimeError, 'dependencies outside'):
+                probe(self.app, self.root)
+            launch.assert_not_called()
 
 
 if __name__ == '__main__':

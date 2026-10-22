@@ -43,7 +43,11 @@ frame.addEventListener('load',async()=>{
         await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }
     if(query.get('tree')==='expanded'){
-        for(const id of ['photos','ice'])doc.querySelector(`[data-toggle="${id}"]`).click();
+        for(const id of ['photos','ice']){
+            const row=doc.querySelector(`[data-directory="${id}"]`);
+            if(row?.getAttribute('aria-expanded')!=='true')
+                doc.querySelector(`[data-toggle="${id}"]`)?.click();
+        }
     }
     await Promise.all([...doc.images].map(image=>image.decode()));
     document.documentElement.dataset.ready='true';

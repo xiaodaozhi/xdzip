@@ -20,7 +20,7 @@ import threading
 import time
 import xml.etree.ElementTree as ET
 
-from deployment_audit import mac_rpaths, native
+from deployment_audit import audit, mac_rpaths, native
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import configuration, embed, signing_metadata
 from update_fixture import ROOT, digest, dump
@@ -120,6 +120,33 @@ def feed_bytes(url, signature, length):
     ET.SubElement(item, 'enclosure', {'url': url, 'length': str(length),
                   'type': 'application/octet-stream', '{'+SPARKLE+'}edSignature': signature})
     return ET.tostring(rss, encoding='utf-8', xml_declaration=True)+b'\n'
+
+
+def https_probe(app, output):
+    """Read GitHub through the deployed Qt stack with no SDK environment fallback."""
+    binary = app/'Contents/MacOS/xdzip-update-probe'
+    deployment = audit(app, binary, None, 'macos', 'deployed')
+    dump(output/'https-deployment.json', deployment)
+    if deployment['status'] != 'passed':
+        raise RuntimeError('HTTPS probe has dependencies outside the deployed application')
+    environment = clean_environment()
+    for key in list(environment):
+        if (key.startswith(('QT_', 'QML_', 'QML2_', 'DYLD_')) or
+                key in ('QTDIR', 'XDZIP_QT_PREFIX', 'CMAKE_PREFIX_PATH', 'LD_LIBRARY_PATH')):
+            environment.pop(key)
+    environment['PATH'] = '/usr/bin:/bin:/usr/sbin:/sbin'
+    result = subprocess.run([str(binary), '--update-https-probe'], env=environment,
+                            capture_output=True, timeout=200)
+    (output/'https.log').write_bytes(result.stdout+result.stderr)
+    evidence = app.parent/'https.json'
+    if not evidence.is_file():
+        raise RuntimeError('Deployed Qt HTTPS probe did not produce evidence')
+    record = json.loads(evidence.read_bytes())
+    record.update(sdk_environment_cleared=True, dependency_audit='https-deployment.json')
+    dump(output/'https.json', record)
+    if result.returncode or not record.get('success'):
+        raise RuntimeError('Deployed Qt HTTPS probe failed')
+    return record
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -245,6 +272,7 @@ def main():
                 '-DXDZIP_SPARKLE_SDK='+str(sdk)], output/(label+'-configure.log'))
         invoke(['cmake', '--build', build, '--target', 'xdzip-mac-update-probe', '--parallel', '3'], output/(label+'-build.log'))
         apps.append(deploy(source, build, qt, sdk, output, label))
+    https = https_probe(apps[0], output)
     archive = output/('xdzip-'+VERSION+'-macos-arm64.app.zip')
     invoke(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', apps[1], archive])
     metadata = output/'archive.json'
@@ -276,7 +304,7 @@ def main():
     dump(output/'verification.json', dict(schema_version=1, platform='macos', architecture='arm64',
          status='passed', sdk=configuration()['version'], production_trust_unchanged=True,
          scope='Real About controls, two managed sessions, Sparkle signed feed/archive, cancellation, replacement and relaunch; candidate discovery is independently tested.',
-         scenarios=results))
+         https=https, scenarios=results))
     print('Native signed Sparkle regression passed: '+str(len(results))+' scenarios')
 
 
