@@ -309,11 +309,16 @@ def main():
     applications.mkdir(exist_ok=True)
     installed=applications/name; require_owned(installed,applications)
     session=output/'session';session.mkdir()
-    associations=Associations();original=associations.snapshot()
-    dump(output/'association-original.json',original)
-    if not original['2']:raise RuntimeError('Cannot safely restore a missing initial ZIP Viewer handler')
+    associations=Associations();before_preparation=associations.snapshot()
+    dump(output/'association-before-preparation.json',before_preparation)
     production={str(path.relative_to(ROOT)):digest(path) for path in (ROOT/'resources/update-trust.json',ROOT/'resources/sparkle-update-key.json')}
     products,signing,sdk=prepare(output,qt,session,name)
+    # Explicitly register the owned, formal Alternate product during preparation.
+    # Restore its defined pre-mutation Viewer, not an invented missing handler.
+    run([LSREGISTER,'-f',products['old']['app']])
+    original=associations.snapshot()
+    dump(output/'association-original.json',original)
+    if not original['2']:raise RuntimeError('Cannot safely restore a missing pre-mutation ZIP Viewer handler')
     manifest,archive=signed_candidate(output,products['new'],signing,sdk)
     server=ThreadingHTTPServer(('127.0.0.1',0),partial(Handler,directory=str(output)))
     server.evidence_lock=threading.Lock();server.evidence=[]
@@ -392,6 +397,9 @@ def main():
                     production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,
                     zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; Editor/Shell checked read-only, all-roles aggregate informational only',
+                    before_preparation_zip_handlers=before_preparation,
+                    preparation_registration='Explicit lsregister of the owned prepared old product with formal Alternate document handlers',
+                    restoration_scope='Pre-mutation handlers after private product preparation; preparation-time LaunchServices discovery is recorded, not reversed',
                     original_zip_handlers=original,owned_zip_handlers=baseline,after_zip_handlers=after_associations,
                     network_seam='Private Qt metadata transport and exact feed URL mapping; public Sparkle download-request delegate maps only the matched authenticated GitHub asset request, preserving item URL/signature/length',
                     archive_transport=redirect,
@@ -419,8 +427,8 @@ def main():
                     associations.set(2,original['2'])
                 else:raise RuntimeError('Unowned default Viewer association changed during fixture')
             after_restore=associations.snapshot();dump(output/'association-after-restore.json',after_restore)
-            if not same_roles(after_restore,original):raise RuntimeError('Could not restore initial ZIP handlers')
-            record['initial_zip_handlers_restored']=True
+            if not same_roles(after_restore,original):raise RuntimeError('Could not restore pre-mutation ZIP handlers')
+            record['pre_mutation_zip_handlers_restored']=True
         except Exception as error:cleanup.append(dict(stage='restore_associations',error=type(error).__name__,detail=str(error)))
         for app in (installed,other):
             if not app or not app.exists():continue
@@ -432,7 +440,7 @@ def main():
             except Exception as error:cleanup.append(dict(stage='remove_owned_application',error=type(error).__name__))
         try:
             after_unregister=associations.snapshot();dump(output/'association-after-unregister.json',after_unregister)
-            if not same_roles(after_unregister,original):raise RuntimeError('Unregistering owned applications changed initial handlers')
+            if not same_roles(after_unregister,original):raise RuntimeError('Unregistering owned applications changed pre-mutation handlers')
         except Exception as error:cleanup.append(dict(stage='verify_restored_associations',error=type(error).__name__,detail=str(error)))
         subprocess.run(['defaults','delete',PRODUCT],capture_output=True)
         for path in roots:

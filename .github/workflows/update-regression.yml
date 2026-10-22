@@ -10,6 +10,11 @@ on:
         default: all
         type: choice
         options: [all, windows, macos, linux]
+      macos_product_only:
+        description: Diagnose the macOS product chain only, ignored for all-platform verification
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: read
 concurrency:
@@ -80,6 +85,7 @@ jobs:
           python3 -m pip install aqtinstall==3.3.0
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
       - name: Real owned old-to-new native Sparkle updater regression
+        if: ${{ inputs.platform != 'macos' || !inputs.macos_product_only }}
         run: python3 scripts/check-macos-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos
       - name: Complete the real macOS product controller update and ordinary restart
         env:
