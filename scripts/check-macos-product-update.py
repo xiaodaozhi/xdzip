@@ -123,6 +123,7 @@ def deploy(source, build, qt, sdk, destination, log):
 
 def prepare(output, qt, session, app_name):
     source = private_source(output)
+    run(['cargo', 'fetch', '--locked', '--manifest-path', source/'Cargo.toml'], output/'cargo-fetch.log')
     sdk = output/'sdk'
     run([sys.executable, source/'scripts/prepare-sparkle.py', '--output', sdk], output/'sdk.log')
     build = source/'build/desktop'
