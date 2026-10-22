@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 from unittest.mock import patch
 from release_protocol import TARGETS, create, select, validate
@@ -17,6 +18,31 @@ from release_protocol import TARGETS, create, select, validate
 SPEC = importlib.util.spec_from_file_location('publish_release', Path(__file__).with_name('publish-release.py'))
 PUBLISH = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PUBLISH)
+PREPARE_SPEC = importlib.util.spec_from_file_location('prepare_release', Path(__file__).with_name('prepare-release.py'))
+PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
+PREPARE_SPEC.loader.exec_module(PREPARE)
+
+
+class MaterialsTests(unittest.TestCase):
+    def test_referenced_license_texts_are_delivered_and_tampering_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)/'source'; (source/'notices').mkdir(parents=True)
+            text = source/'runtime-notices/license-texts/owned.txt'
+            text.parent.mkdir(parents=True); text.write_bytes(b'owned license')
+            report = {'license_materials_base': 'runtime-notices',
+                      'license_materials': {'owned': {'file': 'license-texts/owned.txt', 'sha256': PREPARE.sha256(text)}}}
+            (source/'runtime-attribution.json').write_text(json.dumps(report))
+            output = Path(temp)/'materials.tar.gz'
+            PREPARE.materials_archive(source, output)
+            with tarfile.open(output) as archive:
+                self.assertEqual(archive.extractfile('runtime-notices/license-texts/owned.txt').read(), b'owned license')
+            text.write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError, 'missing or changed'):
+                PREPARE.materials_archive(source, output)
+            report['license_materials_base'] = '../outside'
+            (source/'runtime-attribution.json').write_text(json.dumps(report))
+            with self.assertRaisesRegex(ValueError, 'Unbounded'):
+                PREPARE.materials_archive(source, output)
 
 
 class ReleaseProtocolTests(unittest.TestCase):

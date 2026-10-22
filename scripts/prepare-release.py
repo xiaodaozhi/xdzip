@@ -3,7 +3,7 @@
 """Assemble six verified native package assets and immutable updater metadata."""
 import argparse
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import runpy
 import shutil
 import subprocess
@@ -12,6 +12,33 @@ import zipfile
 from release_protocol import TARGETS, create, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def materials_archive(source, output):
+    notices = source/'notices'
+    if not notices.is_dir():
+        raise ValueError('Required notices are missing')
+    roots = {notices}
+    attribution = source/'runtime-attribution.json'
+    if attribution.is_file():
+        report = json.loads(attribution.read_text(encoding='utf-8'))
+        relative = report.get('license_materials_base', '')
+        if not relative or PurePosixPath(relative).is_absolute() or '..' in PurePosixPath(relative).parts or '\\' in relative or ':' in relative:
+            raise ValueError('Unbounded runtime license material base')
+        base = source/relative
+        if not base.resolve().is_relative_to(source.resolve()):
+            raise ValueError('Runtime license material escapes package')
+        for item in report['license_materials'].values():
+            path = base/item['file']
+            if not path.resolve().is_relative_to(base.resolve()) or not path.is_file() or sha256(path) != item['sha256']:
+                raise ValueError('Referenced runtime license text is missing or changed')
+        if not base.is_relative_to(notices):
+            roots.add(base)
+    with tarfile.open(output, 'w:gz') as archive:
+        for path in sorted(source.glob('*.json')):
+            archive.add(path, arcname=path.name)
+        for path in sorted(roots):
+            archive.add(path, arcname=path.relative_to(source))
 
 
 def stage(source, output, platform, version):
@@ -54,11 +81,7 @@ def stage(source, output, platform, version):
         with zipfile.ZipFile(target) as archive:
             if archive.testzip() is not None: raise ValueError('Portable ZIP integrity failure')
     materials = output/f'xdzip-{version}-{platform}-materials.tar.gz'
-    with tarfile.open(materials, 'w:gz') as archive:
-        for path in sorted(source.glob('*.json')): archive.add(path, arcname=path.name)
-        notices = source/'notices'
-        if not notices.is_dir(): raise ValueError('Required notices are missing')
-        archive.add(notices, arcname='notices')
+    materials_archive(source, materials)
 
 
 def main():

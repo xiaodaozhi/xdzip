@@ -99,3 +99,22 @@ def prepare(output, platform, cache=None):
               'limits': ['Pinned upstream notices and source references do not prove full supplier build equivalence or approve redistribution.']}
     (output/'native-runtime-materials.json').write_text(json.dumps(report, indent=2)+'\n')
     return report
+
+
+def installer_notices(tools, output):
+    config = json.loads((ROOT/'scripts/installer-toolchain.json').read_text())['inno_setup']
+    items = [i for i in config['materials'] if i['file'] in {'InnoSetup-license.txt', 'InnoSetup-PascalScript-license.md'}]
+    if len(items) != 2 or any(digest(tools/i['file']) != i['sha256'] for i in items):
+        raise ValueError('Installer notice hash mismatch')
+    output.mkdir(parents=True, exist_ok=True)
+    for item in items:
+        shutil.copyfile(tools/item['file'], output/item['file'])
+    # Pascal Script's license explicitly requires an acknowledgement in the
+    # program's About box OR documentation, not just a generic license label.
+    (output/'Installer-CREDITS.txt').write_text(
+        'Windows 安装程序使用 Inno Setup 6.7.3，https://jrsoftware.org/。\n'
+        '安装程序使用 RemObjects Pascal Script 制作，https://www.remobjects.com/ps。\n'
+        '完整许可见 InnoSetup-license.txt 和 InnoSetup-PascalScript-license.md。\n\n'
+        'The Windows installer is made using Inno Setup 6.7.3 (https://jrsoftware.org/)\n'
+        'and RemObjects Pascal Script (https://www.remobjects.com/ps).\n'
+        'Original licenses accompany this acknowledgement.\n', encoding='utf-8')

@@ -81,12 +81,25 @@ def main():
     if args.qa_legacy_layout and os.environ.get('CI')!='true':parser.error('Legacy layout is restricted to disposable CI fixtures')
     if not within(args.output,ROOT/'build'):parser.error('Installer belongs under build/')
     audit=json.loads(args.audit.read_text(encoding='utf-8'))
+    toolchain=json.loads((ROOT/'scripts/installer-toolchain.json').read_text())['inno_setup']
+    notice_records=[]
+    for item in toolchain['materials']:
+        if item['file'] == 'ChineseSimplified.isl':continue
+        path=args.root/'share/notices'/item['file']
+        if not path.is_file() or digest(path)!=item['sha256']:
+            raise ValueError('Installer payload lacks exact upstream engine notices')
+        notice_records.append({'file':'share/notices/'+item['file'],'sha256':item['sha256'],'source':item['url']})
+    credits=args.root/'share/notices/Installer-CREDITS.txt'
+    if not credits.is_file() or 'RemObjects Pascal Script (https://www.remobjects.com/ps)' not in credits.read_text(encoding='utf-8'):
+        raise ValueError('Installer payload lacks Pascal Script documentation acknowledgement')
     text,result=render(args.root,audit,args.output,args.chinese,args.qa_variant,args.qa_legacy_layout)
     args.output.parent.mkdir(parents=True,exist_ok=True);source=args.output.with_suffix('.iss')
     args.output.with_suffix('.files').write_bytes(payload_manifest(audit).encode('utf-8'))
     source.write_text(text,encoding='utf-8-sig')
     subprocess.run([str(args.iscc),str(source)],check=True)
     result.update(file=args.output.name,sha256=digest(args.output),compiler='Inno Setup 6.7.3',scope='current user',signed=False)
+    result.update(compiler_source_commit=toolchain['source_commit'],compiler_package_sha256=toolchain['sha256'],
+                  engine_notice_files=notice_records,pascal_script_acknowledgement={'file':'share/notices/Installer-CREDITS.txt','sha256':digest(credits)})
     args.report.write_text(json.dumps(result,indent=2)+'\n')
     print('Windows current-user installer compiled, defaults preserved')
 

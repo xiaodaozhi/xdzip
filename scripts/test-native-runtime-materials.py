@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from native_runtime_materials import archive_notices, fetch, prepare
+from native_runtime_materials import ROOT, archive_notices, fetch, installer_notices, prepare
 
 
 class NativeMaterialsTests(unittest.TestCase):
@@ -54,6 +54,26 @@ class NativeMaterialsTests(unittest.TestCase):
                 report = prepare(output, 'linux', cache)
             self.assertEqual(report['files'][0]['sha256'], hashlib.sha256(data).hexdigest())
             self.assertEqual((output/'ICU-73.2/ICU.txt').read_bytes(), data)
+
+    def test_installer_acknowledgement_is_delivered_with_exact_original_licenses(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); tools = root/'tools'; tools.mkdir(); output = root/'notices'
+            import json
+            config = json.loads((ROOT/'scripts/installer-toolchain.json').read_text())['inno_setup']
+            entries = [i for i in config['materials'] if i['file'] != 'ChineseSimplified.isl']
+            for entry in entries:
+                (tools/entry['file']).write_bytes(b'tampered')
+            with self.assertRaisesRegex(ValueError, 'hash mismatch'):
+                installer_notices(tools, output)
+            self.assertFalse(output.exists())
+            # Owned fixtures exercise successful delivery without network I/O.
+            for entry in entries:
+                entry['sha256'] = hashlib.sha256((tools/entry['file']).read_bytes()).hexdigest()
+            with patch('native_runtime_materials.json.loads', return_value={'inno_setup': {'materials': entries}}):
+                installer_notices(tools, output)
+            text = (output/'Installer-CREDITS.txt').read_text(encoding='utf-8')
+            self.assertIn('RemObjects Pascal Script (https://www.remobjects.com/ps)', text)
+            self.assertTrue((output/'InnoSetup-PascalScript-license.md').is_file())
 
 
 if __name__ == '__main__':

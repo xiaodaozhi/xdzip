@@ -302,7 +302,8 @@ class Workflow:
         self.script('collect-notices.py', notices)
         self.script('prepare-runtime-notices.py', '--qt-prefix', self.qt, '--output', notices/'Qt-runtime')
         if self.system == 'windows':
-            shutil.copy2(self.installer_tools/'InnoSetup-license.txt', notices)
+            from native_runtime_materials import installer_notices
+            installer_notices(self.installer_tools, notices)
         shutil.copy2(notices/'source-build.cdx.json', self.output/'source-build.cdx.json')
         return notices
 
