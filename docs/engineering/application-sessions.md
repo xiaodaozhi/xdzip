@@ -1,5 +1,7 @@
 # 应用会话与退出契约
 
+标签右键菜单提供“关闭、关闭其他、关闭右侧”，Shift+F10 或菜单键作用于焦点标签。右击不切换当前页，命令冻结标签稳定身份，仅按该标签所属窗口的当前视觉顺序操作，不能影响其他窗口。重排、窗口尺寸变化、目标消失或进入模态操作时关闭菜单；没有对应目标时禁用批量项。批量关闭一次提交，保留未被关闭的当前页，否则切换到锚点标签，避免逐页闪切。最后一页关闭后恢复起始页，任务和结果继续留在全局任务入口。
+
 一个用户登录会话仅运行一个正常产品进程，共用一个托盘和应用菜单。版本查询在创建 GUI 前返回；烟测、桌面探针和测试使用独立路径，不连接真实用户实例。
 
 `SingleInstance` 在创建主窗口前用 QLockFile 选举，持锁者才可移除崩溃残留的本地服务器。QLocalServer 使用 UserAccessOption，结构化 JSON 协议版本为 1，限制单条 256 KiB、128 个绝对路径和 32 个连接。后启动者等待主实例就绪，收到请求 ID 对应的确认后退出，15 秒内通信失败明确报错，不创建第二个正常 UI。Windows 根据服务器握手中的 PID 转交本次用户启动的前台激活权限，不设置永久置顶。IPC 不经过命令解释器，不记录用户路径。
@@ -14,7 +16,7 @@
 
 会话关闭后，延迟到达的开始、预检、密码与冲突事件不自动弹窗或抢焦点。任务与请求令牌继续保留，用户从全局任务入口主动打开时再显示原会话的进度和待处理请求，关闭页面不等于取消请求。
 
-创建和解压在应用级串行准入，包括准备、密码或冲突等待、提交与清理阶段。等待准入的控制器仅保留一个有界命令，可取消，不占用 GUI 线程。单个 Rust 连接的任务顺序和安全语义继续有效。明确退出时，先对所有会话作统一确认，选择等待则全部任务结束后退出，选择取消则等待全部连接完成取消、清理与 join；只检查关闭完成状态，不在状态检查中再次触发关闭。
+创建、解压和完整性检查在应用级串行准入，包括准备、密码或冲突等待、提交与清理阶段。等待准入的控制器仅保留一个有界命令，可取消，不占用 GUI 线程。单个 Rust 连接的任务顺序和安全语义继续有效。明确退出时，先对所有会话作统一确认，选择等待则全部任务结束后退出，选择取消则等待全部连接完成取消、清理与 join；只检查关闭完成状态，不在状态检查中再次触发关闭。
 
 等待全部任务退出只由应用级任务总数与 join 屏障收敛。某一页面先完成任务时，不执行旧单页自动关闭，也不因该页结束而隐藏最后窗口或再次显示退出确认。
 
@@ -39,3 +41,7 @@ English: One normal product process and tray serve each user login session. Each
 English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Explicit task/file requests may reopen a retained session. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
 
 接受主窗口关闭时递增激活世代并断开模态等待连接，已经排队的旧唤醒回调也必须检查世代，不能在模态弹窗刚关闭后重新显示主窗口或恢复旧标签。此失效处理与正常打开入口共用，不取消后台任务。
+
+更新交接使用独立 `prepareForUpdate` 屏障，不复用立即重启。存在任务、任务启动或模态交互时拒绝交接；下载可继续，等待可取消。接受后关闭新意图入口并清理全部 Rust 连接，所有 join 完成仅发 `readyForUpdate`，不提前退出。更新提供者在释放安装提交之前发出退出屏障信号，主程序此时才解除正常退出拦截。安装提交失败时保留关于页恢复入口，用户可正常退出，不启动旧版本自动重启。详细行为见[主动更新](software-update.md)。
+
+English: Updates use a distinct prepareForUpdate barrier. Active/starting tasks and modal interaction reject handoff. Once accepted, new work is blocked and every Rust connection joins before readyForUpdate. The provider releases the application's normal quit interceptor only after this barrier and before committing installation. Failed handoff keeps a recovery entry and permits explicit exit without blindly restarting the old application.

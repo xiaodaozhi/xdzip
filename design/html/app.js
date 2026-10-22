@@ -331,19 +331,21 @@ function visibleEntries() {
 }
 
 function fileIcon(e) {
-    return e.folder
-        ? "folder"
-        : e.name.toLowerCase().endsWith(".zip")
-          ? "archive"
-          : e.type?.includes("JPEG")
-          ? "image"
-          : e.type?.includes("PDF")
-            ? "pdf"
-            : e.name.endsWith(".gpx")
-              ? "code"
-              : e.name.endsWith(".md")
-                ? "markdown"
-                : "file";
+    const suffix = e.name.toLowerCase().split(".").pop();
+    return e.folder ? "folder" : ["pdf"].includes(suffix) ? "file-pdf"
+            : ["doc", "docx", "odt", "rtf", "pages", "epub", "mobi", "azw3"].includes(suffix) ? "file-document"
+            : ["xls", "xlsx", "xlsm", "ods", "csv", "tsv", "numbers"].includes(suffix) ? "file-spreadsheet"
+            : ["ppt", "pptx", "pps", "ppsx", "odp", "key"].includes(suffix) ? "file-presentation"
+            : ["md", "markdown", "mdown", "mdx"].includes(suffix) ? "file-markdown"
+            : ["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "heif", "bmp", "tif", "tiff", "svg", "ico", "psd", "ai", "raw", "cr2", "nef"].includes(suffix) ? "image-file"
+            : ["js", "jsx", "mjs", "cjs", "ts", "tsx", "vue", "qml", "rs", "c", "cpp", "cc", "cxx", "h", "hpp", "cs", "java", "kt", "swift", "go", "py", "rb", "php", "html", "css", "scss", "json", "jsonc", "xml", "yaml", "yml", "toml", "ini", "cfg", "conf", "sql", "sh", "bat", "cmd", "ps1", "gpx"].includes(suffix) ? "file-code"
+            : ["mp3", "wav", "flac", "aac", "m4a", "ogg", "opus", "wma", "aiff", "mid", "midi"].includes(suffix) ? "file-audio"
+            : ["mp4", "mkv", "mov", "avi", "webm", "wmv", "m4v", "mpeg", "mpg", "flv", "3gp"].includes(suffix) ? "file-video"
+            : ["zip", "7z", "rar", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "lz", "cab", "001"].includes(suffix) ? "file-archive"
+            : ["exe", "msi", "msix", "appx", "deb", "rpm", "pkg", "apk", "appimage"].includes(suffix) ? "file-installer"
+            : ["ttf", "otf", "woff", "woff2", "ttc"].includes(suffix) ? "file-font"
+            : ["iso", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"].includes(suffix) ? "file-disk"
+            : "file-text";
 }
 function choosePath(path) {
     state.path = path;
@@ -1477,7 +1479,7 @@ function showAbout() {
     const spec = window.XDZIP_DISPLAY_SPEC.about;
     const rows = [[t("about.version"), version.display_version], [t("about.build"), String(version.build)],
                   [t("about.revision"), t("about.unknown")], [t("about.runtime"), "HTML"]];
-    dialog(`<div class="modal-content about-content"><span class="about-artwork">${window.XDZIP_ASSETS.brand[document.body.dataset.platform === "macos" ? "applicationMac" : "application"]}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button">${t("about.homepage")}</button></div>` +
+    dialog(`<div class="modal-content about-content"><span class="about-artwork">${window.XDZIP_ASSETS.brand[document.body.dataset.platform === "macos" ? "applicationMac" : "application"]}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button operation-body-button">${t("about.homepage")}</button></div>` +
         footer(`<button id="about-copy" class="button">${t("about.copy")}</button><button class="button" data-close>${t("about.done")}</button>`, ""), "about", "A01", "#about-copy");
     const modal = $("#modal");
     modal.querySelector(".os-title").textContent = t("about.title");
@@ -1485,6 +1487,24 @@ function showAbout() {
     Object.entries(spec).forEach(([key,value])=>{if(typeof value === "number") modal.style.setProperty("--about-"+key.replaceAll("_","-"),String(value));});
     bindClose();
     $("#about-homepage").onclick = () => window.open("https://github.com/xiaodaozhi/xdzip", "_blank", "noopener");
+    const updateSection = document.createElement("section");
+    updateSection.className = "about-update-section";
+    modal.querySelector(".about-content").append(updateSection);
+    // State fixtures only: preview actions never download, install or contact a server.
+    const updatePreview = (options = {}) => {
+        const update = {state:"idle", trusted:true, canInstall:true, downloaded:false, progress:.42, version:"99.20.12-preview.123", ...options};
+        const busy = ["checking","downloading","verifying","waiting_tasks","preparing","installing"].includes(update.state);
+        const keys = {idle:"idle", checking:"checking", up_to_date:"current", updated:"updated", available:"available", downloading:"downloading", verifying:"verifying", downloaded:"downloaded", waiting_tasks:"waitingTasks", preparing:"preparing", installing:"installing", recovery_required:"recovery", error:"failed", unavailable:"preview"};
+        let message = t("update." + (keys[update.state] || "idle")).replace("%1",update.version);
+        if (update.state === "error") message = t("update." + ({network:"network",tls:"tls",timeout:"timeout",rate_limited:"rateLimited",disk:"disk",minimum_system:"minimumSystem",verification_hash:"verificationFailed",authorization_cancelled:"authorizationCancelled",authorization_failed:"authorizationFailed"}[update.errorCode] || "failed"));
+        const progress = ["downloading","verifying","preparing"].includes(update.state);
+        const install = ["available","downloaded"].includes(update.state);
+        updateSection.dataset.state = update.state;
+        updateSection.innerHTML = `<p id="about-update-status" aria-live="polite"${["error","recovery_required"].includes(update.state)?' class="update-error"':""}>${esc(message)}</p>${progress?`<progress aria-label="${esc(t("update.progress"))}"${update.state==="downloading"?` value="${update.progress}" max="1"`:""}></progress>`:""}${install&&!update.canInstall?`<p class="about-update-note">${esc(t(update.trusted?"update.manual":"update.unsigned"))}</p>`:""}<div class="about-update-actions"><button id="about-check-update" class="button operation-body-button"${busy?" disabled":""}>${esc(t("update.check"))}</button>${busy&&update.state!=="installing"?`<button id="about-cancel-update" class="button operation-body-button">${esc(t("update.cancel"))}</button>`:""}</div>${install?`<button id="about-install-update" class="button operation-body-button">${esc(t(update.canInstall?"update.install":update.trusted?"update.download":"update.release"))}</button>`:""}${update.state==="recovery_required"?`<button id="about-recovery-update" class="button operation-body-button">${esc(t("update.release"))}</button>`:""}${update.downloaded?`<button id="about-open-update" class="button operation-body-button">${esc(t("update.openDownload"))}</button>`:""}`;
+        updateSection.querySelectorAll("button").forEach(button => { button.onclick = () => { $("#about-update-status").textContent = t("update.preview"); }; });
+    };
+    window.XdzipAboutUpdatePreview = updatePreview;
+    updatePreview();
     $("#about-copy").onclick = async () => {
         try {
             await navigator.clipboard.writeText(JSON.stringify({product:"xdzip",version:version.display_version,build:version.build,channel:version.channel,preview:"HTML"},null,2));

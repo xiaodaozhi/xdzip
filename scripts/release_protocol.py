@@ -25,12 +25,38 @@ def sha256(path):
     return result.hexdigest()
 
 
-def semantic_version(value):
-    match = re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(alpha|beta|rc)\.([1-9]\d*))?', value)
+def semantic_version(value, allow_development=False):
+    channels = 'dev|alpha|beta|rc' if allow_development else 'alpha|beta|rc'
+    match = re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-('+channels+r')\.([1-9]\d*))?', value)
     if not match:
         raise ValueError('Unsupported semantic version')
     major, minor, patch, channel, number = match.groups()
-    return (int(major), int(minor), int(patch), CHANNEL_ORDER[channel or 'stable'], int(number or 0))
+    if any(int(part) > 65535 for part in (major, minor, patch)) or int(number or 0) > 65535:
+        raise ValueError('Version components exceed the native identity range')
+    return (int(major), int(minor), int(patch), -1 if channel == 'dev' else CHANNEL_ORDER[channel or 'stable'], int(number or 0))
+
+
+def compare_versions(left, right):
+    """Match the product ABI: -1/0/1, or 2 for unsupported input."""
+    try:
+        left = semantic_version(left, allow_development=True)
+        right = semantic_version(right, allow_development=True)
+        return (left > right) - (left < right)
+    except (TypeError, ValueError):
+        return 2
+
+
+def release_tag_eligible(tag, current, current_channel):
+    """Channel progression is independent of a higher base version."""
+    try:
+        if not tag.startswith('v'):
+            return False
+        candidate = semantic_version(tag[1:])
+        current_version = semantic_version(current, allow_development=True)
+        rank = -1 if current_channel == 'development' else CHANNEL_ORDER.get(current_channel)
+        return rank is not None and current_version[3] == rank and candidate > current_version and candidate[3] >= rank
+    except (TypeError, ValueError):
+        return False
 
 
 def validate(manifest, directory=None):
@@ -69,6 +95,9 @@ def validate(manifest, directory=None):
                 raise ValueError('Missing or corrupted release asset')
     if seen != set(TARGETS):
         raise ValueError('Incomplete cross-platform release')
+    appcast = manifest.get('macos_appcast_url', '')
+    if appcast and appcast != f'https://github.com/{repository}/releases/download/v{version}/appcast.xml':
+        raise ValueError('Unpinned macOS appcast URL')
     return manifest
 
 
@@ -88,7 +117,7 @@ def create(directory, version, repository, commit):
 def select(manifest, current, allowed_channels, platform, architecture, package_type):
     """Future client selection. Callers must still verify downloaded bytes before applying."""
     validate(manifest)
-    if manifest['channel'] not in allowed_channels or semantic_version(manifest['version']) <= semantic_version(current):
+    if manifest['channel'] not in allowed_channels or semantic_version(manifest['version']) <= semantic_version(current, allow_development=True):
         return None
     return next((asset for asset in manifest['assets'] if (asset['platform'], asset['architecture'], asset['package_type']) ==
                  (platform, architecture, package_type)), None)

@@ -5,24 +5,28 @@ use crate::extraction::{self, ConflictPolicy, Control, Snapshot, Status};
 pub(super) enum Job {
     Extract(extraction::Job),
     Create(crate::creation::Job),
+    Check(crate::checking::Job),
 }
 impl Job {
     fn retained_bytes(&self) -> usize {
         match self {
             Self::Extract(j) => j.retained_bytes(),
             Self::Create(j) => j.retained_bytes(),
+            Self::Check(j) => j.retained_bytes(),
         }
     }
     fn initial(&self, id: u64) -> Snapshot {
         match self {
             Self::Extract(j) => extraction::initial(j, id),
             Self::Create(j) => crate::creation::initial(j, id),
+            Self::Check(j) => crate::checking::initial(j, id),
         }
     }
     fn run(self, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
         match self {
             Self::Extract(j) => extraction::run(j, id, control, publish),
             Self::Create(j) => crate::creation::run(j, id, control, publish),
+            Self::Check(j) => crate::checking::run(j, id, control, publish),
         }
     }
 }
@@ -49,7 +53,7 @@ impl Queue {
             self.retained.remove(&id);
             self.latest.remove(&id);
         }
-        Some(Payload::Task(snapshot))
+        Some(Payload::Task(Box::new(snapshot)))
     }
 }
 impl Shared {
@@ -153,7 +157,7 @@ pub(super) fn worker(shared: Arc<Shared>) {
             fallback.outcome_uncertain = true;
             fallback.error = "task_abandoned".into();
             // Unwind drops private stages. A panic is not proof of successful cleanup.
-            fallback.cleanup_warning = true;
+            fallback.cleanup_warning = fallback.kind != extraction::TaskKind::Check;
             fallback.prompt = None;
             fallback.password_prompt = None;
             control.mark_terminal();

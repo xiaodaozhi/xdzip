@@ -25,6 +25,7 @@ Item {
         name: "IntegrityWindow"; when: windowShown
         function init() {
             Ui.Theme.dark = false; Ui.Theme.fontScale = 1;
+            task.sampleData = true; task.resultTask = ({}); task.errorSummary = "";
             task.taskStatus = "running"; task.totalKnown = true;
             cancelSpy.clear(); outputSpy.clear(); task.present();
             waitForRendering(task.contentItem);
@@ -78,6 +79,21 @@ Item {
             verify(top.y >= 0 && top.y + cancel.height <= task.height);
             verify(cancel.width >= cancel.contentItem.implicitWidth);
             grabImage(task.contentItem).save("integrity-progress-large-dark.png");
+        }
+        function test_real_check_password_and_failure() {
+            task.sampleData = false;
+            task.resultTask = ({kind: "check", format: "ZIP"});
+            task.taskStatus = "waiting_password";
+            compare(task.heading, qsTrId("password.waiting"));
+            verify(!findChild(task, "openOutputButton").visible);
+            task.taskStatus = "failed";
+            task.errorSummary = "integrity_error";
+            verify(findChild(task, "checkFailureEntry").visible);
+            verify(findChild(task, "checkFailureEntry").text.includes(task.currentFile));
+            verify(!findChild(task, "taskResultPanel").visible);
+            compare(task.closingHint.text, qsTrId("integrity.readOnlyNote"));
+            task.resultTask = ({kind: "check", format: "TAR"});
+            compare(task.closingHint.text, qsTrId("integrity.tarNote"));
         }
     }
 }

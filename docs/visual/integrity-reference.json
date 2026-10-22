@@ -24,7 +24,7 @@
   "notes": [
     "Operation semantics change; shared progress geometry and density remain fixed",
     "Native window decorations excluded from Qt content capture",
-    "Qt component preview and HTML demonstration do not execute a CRC task",
+    "Component preview and HTML demonstration stay marked as samples; the product toolbar executes a real read-only check",
     "Reference crops stay in the canonical asset library; captures and measurements stay outside Git",
     "2026-10-15: shared task width is now 491 logical pixels; content-driven height with 600px upper bound. Original bitmap is historical."
   ]

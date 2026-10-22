@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "default_icon": "file-text",
+  "folder_icon": "folder",
+  "categories": {
+    "file-pdf": ["pdf"],
+    "file-document": ["doc", "docx", "odt", "rtf", "pages", "epub", "mobi", "azw3"],
+    "file-spreadsheet": ["xls", "xlsx", "xlsm", "ods", "csv", "tsv", "numbers"],
+    "file-presentation": ["ppt", "pptx", "pps", "ppsx", "odp", "key"],
+    "file-markdown": ["md", "markdown", "mdown", "mdx"],
+    "image-file": ["jpg", "jpeg", "png", "gif", "webp", "avif", "heic", "heif", "bmp", "tif", "tiff", "svg", "ico", "psd", "ai", "raw", "cr2", "nef"],
+    "file-code": ["js", "jsx", "mjs", "cjs", "ts", "tsx", "vue", "qml", "rs", "c", "cpp", "cc", "cxx", "h", "hpp", "cs", "java", "kt", "swift", "go", "py", "rb", "php", "html", "css", "scss", "json", "jsonc", "xml", "yaml", "yml", "toml", "ini", "cfg", "conf", "sql", "sh", "bat", "cmd", "ps1", "gpx"],
+    "file-audio": ["mp3", "wav", "flac", "aac", "m4a", "ogg", "opus", "wma", "aiff", "mid", "midi"],
+    "file-video": ["mp4", "mkv", "mov", "avi", "webm", "wmv", "m4v", "mpeg", "mpg", "flv", "3gp"],
+    "file-archive": ["zip", "7z", "rar", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "lz", "cab", "001"],
+    "file-installer": ["exe", "msi", "msix", "appx", "deb", "rpm", "pkg", "apk", "appimage"],
+    "file-font": ["ttf", "otf", "woff", "woff2", "ttc"],
+    "file-disk": ["iso", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"]
+  }
+}

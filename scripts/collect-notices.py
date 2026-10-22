@@ -7,16 +7,27 @@ import shutil
 import subprocess
 import sys
 import runpy
+import argparse
 from sbom import source_bom
 from runtime_rust import runtime_candidates
 from native_runtime_materials import prepare
 
 root = Path(__file__).resolve().parents[1]
-out = Path(sys.argv[1])
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('output', type=Path)
+parser.add_argument('--sparkle-sdk', type=Path)
+arguments = parser.parse_args()
+out = arguments.output
 out.mkdir(parents=True, exist_ok=True)
 native_materials = prepare(out, {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, 'linux'))
 notice_files = []
 notice_files.extend(out/item['file'] for item in native_materials['files'])
+native_dependencies = []
+if sys.platform == 'darwin':
+    from sparkle_bundle import configuration, write_notice
+    sparkle_sdk = arguments.sparkle_sdk or root/'build/desktop/_deps/sparkle-2.10.0'
+    notice_files += write_notice(sparkle_sdk.resolve(), out)
+    native_dependencies.append(configuration())
 shutil.copyfile(root / 'LICENSE', out / 'xdzip-Apache-2.0.txt')
 notice_files.append(out / 'xdzip-Apache-2.0.txt')
 host = next(line.removeprefix('host: ') for line in subprocess.check_output(['rustc', '-vV'], text=True).splitlines() if line.startswith('host: '))
@@ -72,6 +83,7 @@ source_inventory = {
     'assets': assets,
     'qt_declared_product_modules': ['Core', 'Gui', 'Network', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
     'qt_version': '6.8.2',
+    'native_dependencies': native_dependencies,
     'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
     'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
                       for p in sorted(notice_files)],

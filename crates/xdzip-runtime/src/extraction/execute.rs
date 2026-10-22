@@ -1,8 +1,6 @@
 use super::plan::Job;
-use super::{
-    ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Password, PasswordPrompt, Prompt,
-    Snapshot, Status,
-};
+use super::{ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Prompt, Snapshot, Status};
+use crate::task_interaction::{Interaction, decoding, emit};
 use std::io::Write;
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -22,20 +20,11 @@ fn output(error: OutputError) -> &'static str {
         OutputError::Limit => "resource_limit",
     }
 }
-fn decoding(error: DecodeError) -> &'static str {
-    match error {
-        DecodeError::SourceIo => "source_io",
-        DecodeError::Integrity => "integrity_error",
-        DecodeError::Unsupported => "unsupported_feature",
-        DecodeError::Limit => "resource_limit",
-        DecodeError::Cancelled => "cancelled",
-        DecodeError::Output => "output_io",
-        DecodeError::PasswordRequired => "password_required",
-        DecodeError::WrongPassword => "wrong_password",
-    }
-}
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
+        kind: super::TaskKind::Extract,
+        source: String::new(),
+        format: "",
         creating: false,
         total_known: true,
         id,
@@ -56,6 +45,9 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
             .map(|p| job.rows[p.index].size)
             .sum(),
         decoded_bytes: 0,
+        read_bytes: 0,
+        verified_files: 0,
+        verified_bytes: 0,
         written_bytes: 0,
         committed_bytes: 0,
         committed_files: 0,
@@ -72,72 +64,6 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         omitted_details: 0,
         external_reader: false,
         output_parts: 0,
-    }
-}
-fn emit(stats: &mut Snapshot, start: Instant, publish: &mut dyn FnMut(Snapshot)) {
-    stats.elapsed_ms = start.elapsed().as_millis().min(u128::from(u64::MAX)) as u64;
-    publish(stats.clone());
-}
-#[derive(Default)]
-struct Interaction {
-    next_prompt: u64,
-    password: Option<Password>,
-}
-impl Interaction {
-    fn fresh_prompt(&mut self) -> Result<u64, &'static str> {
-        self.next_prompt = self.next_prompt.checked_add(1).ok_or("resource_limit")?;
-        Ok(self.next_prompt)
-    }
-    fn decode<T>(
-        &mut self,
-        entry: &xdzip_codec_api::Entry,
-        control: &Control,
-        stats: &mut Snapshot,
-        start: Instant,
-        publish: &mut dyn FnMut(Snapshot),
-        mut attempt: impl FnMut(
-            Option<&str>,
-            &mut Snapshot,
-            &mut dyn FnMut(Snapshot),
-        ) -> Result<T, &'static str>,
-    ) -> Result<T, &'static str> {
-        let mut failures = 0;
-        loop {
-            control.cancel.check().map_err(|_| "cancelled")?;
-            let result = attempt(self.password.as_ref().map(Password::expose), stats, publish);
-            match result {
-                Err(error @ ("password_required" | "wrong_password")) => {
-                    if !entry.password_supported {
-                        return Err("unsupported_feature");
-                    }
-                    let retry = error == "wrong_password";
-                    if retry {
-                        failures += 1;
-                        if failures >= 10 {
-                            return Err("wrong_password");
-                        }
-                    }
-                    // The failed attempt has dropped its entire private stage. Never retain
-                    // both the rejected cache and the next pending response while waiting.
-                    self.password = None;
-                    let id = self.fresh_prompt()?;
-                    control.arm_password(id);
-                    let previous = stats.status;
-                    stats.status = Status::WaitingPassword;
-                    stats.password_prompt = Some(PasswordPrompt {
-                        id,
-                        name: entry.display_name.clone(),
-                        retry,
-                    });
-                    emit(stats, start, publish);
-                    self.password = Some(control.wait_password()?);
-                    stats.password_prompt = None;
-                    stats.status = previous;
-                    emit(stats, start, publish);
-                }
-                other => return other,
-            }
-        }
     }
 }
 /// Finish cleanup and publish exactly one terminal snapshot even after a decode/output failure.
@@ -579,6 +505,7 @@ pub(super) fn inject_disk_full(bytes: Option<u64>) {
 #[cfg(test)]
 mod meter_tests {
     use super::*;
+    use crate::extraction::Password;
     #[test]
     fn quota_is_checked_before_write_and_partial_disk_full_is_counted() {
         struct Full(bool);

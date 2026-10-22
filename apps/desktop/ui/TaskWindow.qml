@@ -45,7 +45,7 @@ OperationWindow {
     }
     readonly property alias timingHint: timingHint
     readonly property alias closingHint: footer.hint
-    readonly property string heading: checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
+    readonly property string heading: checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
         : taskStatus === "failed" ? (creating ? qsTrId("ui.b5926b78a037") : Number(resultTask.committedFiles || 0) > 0 ? qsTrId("ui.cf06124d3ffd") : qsTrId("ui.5bef0b169e84")) : taskStatus === "cancelled" ? qsTrId("ui.6f96c2add214")
         : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : stopping ? qsTrId("ui.af48159f380f")
         : taskStatus === "queued" ? qsTrId("ui.402ce5b3351f") : taskStatus === "verifying" ? qsTrId("ui.ceecf5089636") : (creating ? qsTrId("ui.34ee864936c6") : qsTrId("ui.09eb6850c88c"))
@@ -136,6 +136,7 @@ OperationWindow {
                         value: root.checking && root.terminal ? root.resultSummary : root.outcomeUncertain ? qsTrId("ui.e43731762133") : root.terminal ? root.resultSummary : root.currentFile
                         iconSource: root.terminal ? "qrc:/xdzip/assets/" + (root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning") + ".png" : AssetLibrary.fileIcon(root.currentFile, root.currentFile.endsWith("/"), false)
                     }
+                    Text { objectName: "checkFailureEntry"; Layout.fillWidth: true; visible: root.checking && root.terminal && root.taskStatus !== "succeeded" && !!root.currentFile; text: qsTrId("integrity.stoppedAt").arg(root.currentFile); textFormat: Text.PlainText; color: Theme.textSecondary; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     Text { Layout.fillWidth: true; visible: !!root.errorSummary; text: root.errorSummary; textFormat: Text.PlainText; color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     Text { Layout.fillWidth: true; visible: root.cleanupWarning; text: qsTrId("ui.6739af981bf5"); color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     InfoRow { id: timingHint; Layout.fillWidth: true; text: qsTrId("ui.77ec1e1ef2e8"); labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); lineFactor: 1.4; iconSize: Theme.operationFooterIconSize }
@@ -157,7 +158,7 @@ OperationWindow {
             contentInset: root.unit(Theme.operationProgressContentInset)
             verticalInset: root.unit(12); minimumFooterHeight: root.unit(Theme.operationFooterHeight)
             Layout.fillWidth: true
-            note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.terminal ? qsTrId("ui.7235cf9b27c3") : qsTrId("ui.188180d3d3d3") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
+            note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.resultTask.format === "TAR" ? qsTrId("integrity.tarNote") : qsTrId("integrity.readOnlyNote") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
             OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
             OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }

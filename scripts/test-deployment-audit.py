@@ -65,6 +65,14 @@ class AuditTests(unittest.TestCase):
         bom=artifact_bom(observed,source)
         self.assertEqual([c['type'] for c in bom['components']],['file'])
         self.assertEqual(bom['compositions'][0]['aggregate'],'incomplete')
+        observed['system_runtime_requirements']=[{'package':'libssl3t64','version':'3.0.13-1ubuntu1',
+            'source_package':'openssl','source_version':'3.0.13-1ubuntu1','reason':'OpenSSL backend runtime loading',
+            'evidence':'Ubuntu dpkg-query installed package and source identity'}]
+        tls_bom=artifact_bom(observed,source)
+        tls=next(c for c in tls_bom['components'] if c['bom-ref']=='system-runtime:libssl3t64')
+        self.assertEqual(tls['version'],'3.0.13-1ubuntu1')
+        self.assertTrue(tls['purl'].startswith('pkg:deb/ubuntu/libssl3t64@'))
+        self.assertIn({'name':'xdzip:source_package','value':'openssl'},tls['properties'])
         observed['identity']['dirty']=True
         with self.assertRaisesRegex(ValueError,'identities differ'):artifact_bom(observed,source)
         observed['status']='failed'

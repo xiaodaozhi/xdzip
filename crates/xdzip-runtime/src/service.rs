@@ -63,6 +63,11 @@ pub enum Command {
         /// Explicit selected output intent.
         options: crate::extraction::Options,
     },
+    /// Queue a whole-archive read-only integrity check of the frozen source.
+    Check {
+        /// Immutable source session.
+        session: u64,
+    },
     /// Validate a selected target and private staging primitives on the metadata worker.
     CheckTarget {
         /// Current input session, used to protect the source archive.
@@ -209,7 +214,7 @@ pub enum Payload {
     /// Target staging check succeeded; number of untouched possible recovery workspaces.
     TargetChecked(u64),
     /// Latest coalesced actual task state, independent of query request IDs.
-    Task(crate::extraction::Snapshot),
+    Task(Box<crate::extraction::Snapshot>),
     /// Worker panicked; the service is abandoned and pending requests fail.
     RuntimeFault,
 }
@@ -722,6 +727,16 @@ fn execute(
             Command::Create(options) => {
                 return shared
                     .enqueue_task(tasks::Job::Create(crate::creation::Job { options }))
+                    .map(Payload::TaskAccepted);
+            }
+            Command::Check { session } => {
+                let archive = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = archive.check_job(control)?;
+                return shared
+                    .enqueue_task(tasks::Job::Check(job))
                     .map(Payload::TaskAccepted);
             }
             Command::Snapshot => {

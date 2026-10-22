@@ -10,6 +10,7 @@ import tarfile
 import urllib.request
 from deployment_audit import digest, within
 from native_runtime_materials import configuration, fetch
+from sparkle_bundle import collect_sources as collect_sparkle_sources
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -64,6 +65,7 @@ def main():
     for source, item in zip(sources, all_archives):
         shutil.copy2(source, output/source.name)
         materials.append(dict(item))
+    materials += collect_sparkle_sources(output, args.cache)
     # Preserve original Mesa/LLVM inputs, not only URLs, for the retained Windows
     # software renderer. These are source references, not invented build records.
     native_sources = configuration()
@@ -113,6 +115,11 @@ def main():
    cmake --build build/relink --parallel 3
    ctest --test-dir build/relink --output-on-failure
    macOS 另加 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0。
+   Mac 重建前从交付目录的 Sparkle-2.10.0.tar.xz 离线准备 SDK：
+   python3 scripts/prepare-sparkle.py --archive <交付目录>/Sparkle-2.10.0.tar.xz \\
+     --output build/sparkle-sdk
+   CMake 另传 -DXDZIP_SPARKLE_SDK="$PWD/build/sparkle-sdk"。Sparkle 原始源码归档
+   与固定 SDK 均随本目录交付，不将 SDK 分片核对冒充上游源码重建证明。
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。

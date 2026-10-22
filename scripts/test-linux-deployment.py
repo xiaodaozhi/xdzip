@@ -6,12 +6,39 @@ import sys
 from pathlib import Path
 import tempfile
 import unittest
-from deploy_linux import qml_roots, relative_rpath, runtime_origin
-from verify_linux_runtime import check_events
+from unittest.mock import patch
+from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN
+from verify_linux_runtime import check_events, check_https
 from package_linux import archive_payload
 
 
 class LinuxDeploymentTests(unittest.TestCase):
+    def test_https_requires_backend_system_ssl_and_nonempty_ca_store(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);sdk=root/'sdk'
+            plugin=sdk/TLS_PLUGIN;plugin.parent.mkdir(parents=True);plugin.touch()
+            cert=root/'etc/ssl/certs/ca-certificates.crt';cert.parent.mkdir(parents=True);cert.write_text('owned CA fixture')
+            library=root/'usr/lib/x86_64-linux-gnu';library.mkdir(parents=True)
+            for name in ('libssl.so.3','libcrypto.so.3'):(library/name).touch()
+            with patch('deploy_linux.command',return_value='install ok installed\t3.0.13-1\topenssl\t3.0.13-1'),patch('deploy_linux.system_package',return_value='libssl3t64:amd64'):
+                selected,records=tls_requirements(sdk,root)
+                self.assertEqual(selected,plugin)
+                self.assertEqual({p['package'] for p in records},{'libssl3t64','ca-certificates'})
+                self.assertEqual(records[0]['source_package'],'openssl')
+                cert.write_text('')
+                with self.assertRaisesRegex(ValueError,'trust store'):tls_requirements(sdk,root)
+            plugin.unlink()
+            with self.assertRaisesRegex(ValueError,'backend missing'):tls_requirements(sdk,root)
+
+    def test_sdk_free_https_evidence_requires_real_success_and_openssl(self):
+        value={'ssl_supported':True,'ssl_backend':'openssl','state':'up_to_date','error':''}
+        def output():return 'XDZIP_UPDATE_HTTPS '+json.dumps(value)
+        self.assertEqual(check_https(output()),value)
+        value['ssl_backend']=''
+        with self.assertRaisesRegex(ValueError,'OpenSSL'):check_https(output())
+        value['ssl_backend']='openssl';value['state']='error';value['error']='network'
+        with self.assertRaisesRegex(ValueError,'GitHub'):check_https(output())
+
     def test_only_sdk_modules_and_explicit_static_or_optional_modules(self):
         with tempfile.TemporaryDirectory() as temp:
             sdk=Path(temp)

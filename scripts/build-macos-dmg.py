@@ -14,6 +14,8 @@ from sbom import artifact_bom
 from macos_launch_services import temporary_bundle_path, transient_registrations
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from macos_attribution import deployment_record
+from sparkle_bundle import (attribute as attribute_sparkle, embed as embed_sparkle,
+                            sdk_from_build, signing_metadata, sign_helpers)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,14 +46,27 @@ def validate_bundle(app, *, require_handler=False):
     return binary
 
 
-def sign_local(app):
+def sign_local(app, sparkle_metadata=None, work=None):
     # ARM64 modified Mach-O images require a valid code directory. Ad-hoc signing
     # is local integrity only, never a Developer ID or Gatekeeper trust claim.
-    images = {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')}
+    sparkle = app/'Contents/Frameworks/Sparkle.framework'
+    images = {p.resolve() for p in app.rglob('*') if p.is_file() and native(p, 'macos')
+              and not p.resolve().is_relative_to(sparkle.resolve())}
     for path in sorted(images):
         checked(['codesign', '--force', '--sign', '-', '--timestamp=none', path])
     for framework in sorted((app/'Contents/Frameworks').glob('*.framework')):
+        if framework == sparkle:
+            continue
         checked(['codesign', '--force', '--sign', '-', '--timestamp=none', framework])
+    if sparkle.exists():
+        if sparkle_metadata is None:
+            # Qt replacement probes do not change Sparkle. Preserve its nested
+            # signatures rather than applying a generic signing recipe to them.
+            checked(['codesign', '--verify', '--deep', '--strict', sparkle])
+        else:
+            if work is None:
+                raise ValueError('Sparkle helper signing needs a private work directory')
+            sign_helpers(sparkle, sparkle_metadata, checked, work)
     checked(['codesign', '--force', '--sign', '-', '--timestamp=none', app])
     checked(['codesign', '--verify', '--deep', '--strict', app])
 
@@ -96,12 +111,15 @@ def build(source, qt, output, release_distribution=False):
     if stage.exists():
         raise ValueError('Refusing an existing staging directory')
     stage.mkdir(parents=True)
+    sparkle_sdk = sdk_from_build(source)
     app = stage/'xdzip.app'
     with temporary_bundle_path(app), transient_registrations(stage):
         shutil.copytree(source, app, symlinks=True)
         checked([qt/'bin/macdeployqt', app, '-always-overwrite', '-no-strip',
                  '-qmldir='+str(ROOT/'apps/desktop/ui'),
                  '-qmlimport='+str(source.parents[2]/'qml'), '-verbose=1'])
+        sparkle = embed_sparkle(sparkle_sdk, app, installable=release_distribution)
+        sparkle_metadata = signing_metadata(sparkle, checked)
         # macdeployqt copies every SQL driver when QML's optional LocalStorage pulls
         # QtSql in. Only SQLite is self-contained here; server/ODBC drivers are not
         # product capabilities and require SDK-external client libraries.
@@ -112,7 +130,8 @@ def build(source, qt, output, release_distribution=False):
                 driver.unlink()
         notices = app/'Contents/Resources/notices'
         notices.mkdir(parents=True, exist_ok=True)
-        checked([sys.executable, ROOT/'scripts/collect-notices.py', notices])
+        checked([sys.executable, ROOT/'scripts/collect-notices.py', notices,
+                 '--sparkle-sdk', sparkle_sdk])
         for name in ['LICENSE', 'NOTICE']:
             if (ROOT/name).exists():
                 shutil.copy2(ROOT/name, notices/name)
@@ -132,7 +151,9 @@ def build(source, qt, output, release_distribution=False):
             for value in rpaths:
                 if value.startswith('/') and not value.startswith(('/usr/lib/', '/System/Library/')):
                     checked(['install_name_tool', '-delete_rpath', value, path])
-        sign_local(app)
+        sign_local(app, sparkle_metadata, stage)
+        for path in stage.glob('sparkle-helper-*.entitlements'):
+            path.unlink()
         final_bundle = validate_optimized_bundle(app)
         binary = validate_bundle(app)
         report = audit(app, binary, None, 'macos', 'deployed')
@@ -156,6 +177,8 @@ def build(source, qt, output, release_distribution=False):
                  '--root', app, '--qt-prefix', qt, '--deployment', deployment_path,
                  '--output', attribution_path])
         attribution = json.loads(attribution_path.read_text())
+        attribute_sparkle(attribution, app, sparkle_sdk, report)
+        attribution_path.write_text(json.dumps(attribution, indent=2)+'\n')
         source_bom = json.loads((notices/'source-build.cdx.json').read_text(encoding='utf-8'))
         file_bom = artifact_bom(report, source_bom, attribution)
         output.with_suffix('.cdx.json').write_text(json.dumps(file_bom, indent=2)+'\n')

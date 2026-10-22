@@ -104,6 +104,9 @@ impl Job {
 }
 pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
+        kind: crate::extraction::TaskKind::Create,
+        source: String::new(),
+        format: "",
         creating: true,
         total_known: false,
         id,
@@ -117,6 +120,9 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         files: 0,
         declared_bytes: 0,
         decoded_bytes: 0,
+        read_bytes: 0,
+        verified_files: 0,
+        verified_bytes: 0,
         written_bytes: 0,
         committed_bytes: 0,
         committed_files: 0,

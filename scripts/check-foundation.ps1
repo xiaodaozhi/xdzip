@@ -17,6 +17,8 @@ Invoke-Checked rustc @('-vV')
 Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
 Invoke-Checked cargo @('test', '--workspace', '--locked')
+$updatePython = if ($IsWindows) { 'python' } else { 'python3' }
+Invoke-Checked $updatePython @('scripts/test-release-updates.py')
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
 Invoke-Checked cmake @('--build', 'build/foundation')
 Invoke-Checked ctest @('--test-dir', 'build/foundation', '--output-on-failure')

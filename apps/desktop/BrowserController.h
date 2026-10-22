@@ -157,10 +157,11 @@ class BrowserController : public QObject {
     }
     bool queryAvailable() const {
         return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession &&
-               !m_result.extraction && !m_result.targetCheck;
+               !m_result.extraction && !m_result.checking && !m_result.targetCheck;
     }
     bool taskStarting() const {
-        return m_busy && !m_closing && !m_faulted && (m_result.extraction || m_result.creating);
+        return m_busy && !m_closing && !m_faulted &&
+               (m_result.extraction || m_result.creating || m_result.checking);
     }
     bool browsingBusy() const {
         // Operation-window preparation does not replace the committed browser snapshot.
@@ -246,6 +247,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE bool targetMatches(const QString &path) const;
     Q_INVOKABLE void startExtraction(const QString &target, bool all, bool createFolder,
                                      int conflict, bool allowHighRatio, bool openAfter);
+    Q_INVOKABLE void startArchiveTest();
     Q_INVOKABLE void cancelTask(const QString &id);
     Q_INVOKABLE bool decideTask(const QString &id, const QString &prompt, int policy, bool all);
     Q_INVOKABLE bool submitPassword(const QString &id, const QString &prompt,
@@ -277,11 +279,13 @@ class BrowserController : public QObject {
     void extractionReady();
     void extractionStarted(const QString &task);
     void creationStarted(const QString &task);
+    void archiveTestStarted(const QString &task);
     void creationInputsChanged();
     void tasksChanged();
 
   private:
-    friend class BrowserTest; // The native test suite injects a receiver-fault event.
+    friend class BrowserTest;          // The native test suite injects a receiver-fault event.
+    friend class UpdateControllerTest; // Controlled task states exercise the global update barrier.
     struct DirectoryRow {
         QString id, parent, name, path;
         int count = 0;
@@ -294,6 +298,7 @@ class BrowserController : public QObject {
         bool preflight = false;
         bool extraction = false;
         bool creating = false;
+        bool checking = false;
         bool inputPreview = false;
         QStringList previewPaths;
         QVariantList inputInfo;

@@ -361,39 +361,89 @@ void ApplicationSessions::closeSession(const QString &id) {
     for (const auto &session : m_sessions) {
         if (session->id != id || session->closed)
             continue;
-        auto *value = session.get();
-        const auto ordered = visibleTabs(value->window);
-        const auto position = std::find(ordered.begin(), ordered.end(), value) - ordered.begin();
-        const auto activePage = value->window->property("activePage").value<QObject *>();
-        const bool wasActive = value->page == activePage;
+        closeTabSet(session.get(), {session.get()});
+        return;
+    }
+}
+void ApplicationSessions::closeOtherSessions(const QString &id) {
+    closeAround(id, false);
+}
+void ApplicationSessions::closeSessionsToRight(const QString &id) {
+    closeAround(id, true);
+}
+void ApplicationSessions::closeAround(const QString &id, bool rightOnly) {
+    if (QApplication::activeModalWidget() || QGuiApplication::modalWindow())
+        return;
+    const auto found = std::find_if(m_sessions.begin(), m_sessions.end(), [&](const auto &value) {
+        return value->id == id && !value->closed;
+    });
+    if (found == m_sessions.end())
+        return;
+    auto *anchor = found->get();
+    const auto ordered = visibleTabs(anchor->window);
+    std::vector<Session *> targets;
+    bool afterAnchor = false;
+    for (auto *candidate : ordered) {
+        if (candidate == anchor) {
+            afterAnchor = true;
+            continue;
+        }
+        if (!rightOnly || afterAnchor)
+            targets.push_back(candidate);
+    }
+    closeTabSet(anchor, targets);
+}
+void ApplicationSessions::closeTabSet(Session *anchor, const std::vector<Session *> &targets) {
+    if (m_quitting || !anchor || !anchor->window || targets.empty())
+        return;
+    cancelPendingActivation();
+    auto *owner = anchor->window.data();
+    const auto ordered = visibleTabs(owner);
+    const auto activePage = owner->property("activePage").value<QObject *>();
+    const auto closing = [&](Session *candidate) {
+        return std::find(targets.begin(), targets.end(), candidate) != targets.end();
+    };
+    Session *next = nullptr;
+    for (auto *candidate : ordered)
+        if (!closing(candidate) && candidate->page == activePage)
+            next = candidate;
+    if (!next && !closing(anchor))
+        next = anchor;
+    if (!next) {
+        const auto position = std::find(ordered.begin(), ordered.end(), anchor);
+        for (auto iterator = position; iterator != ordered.end(); ++iterator)
+            if (!closing(*iterator)) {
+                next = *iterator;
+                break;
+            }
+        if (!next)
+            for (auto iterator = position; iterator != ordered.begin();) {
+                --iterator;
+                if (!closing(*iterator)) {
+                    next = *iterator;
+                    break;
+                }
+            }
+    }
+    for (auto *value : targets) {
         value->closed = true;
         value->page->setProperty("sessionClosed", true);
         value->page->setProperty("visible", false);
         QMetaObject::invokeMethod(value->page, "hideSessionWindows");
-        Session *next = nullptr;
-        for (auto *other : ordered)
-            if (other != value && other->page == activePage) {
-                next = other;
-                break;
-            }
-        if (!next && ordered.size() > 1)
-            next =
-                ordered[size_t(position + 1 < int(ordered.size()) ? position + 1 : position - 1)];
-        if (!next && m_sessions.size() < 32)
-            next = create(false);
-        if (next && (wasActive || next->page != activePage))
-            activate(next);
-        else if (!next) {
-            // All slots can be retained by background tasks. The existing page
-            // becomes an empty shell with the global task entry, without a 33rd
-            // runtime or cancelling the closed archive's work.
-            value->page->setProperty("closedPage", true);
-            value->page->setProperty("visible", true);
-        }
-        reap(value);
-        refresh();
-        return;
     }
+    if (!next && m_sessions.size() < 32)
+        next = create(false, owner);
+    if (next && next->page != activePage)
+        activate(next);
+    else if (!next) {
+        owner->setProperty("needsWelcome", true);
+        anchor->page->setProperty("closedPage", true);
+        anchor->page->setProperty("visible", true);
+        owner->setProperty("activePage", QVariant::fromValue(anchor->page.data()));
+    }
+    for (auto *value : targets)
+        reap(value);
+    refresh();
 }
 void ApplicationSessions::reap(Session *session) {
     if (session->retiring)
@@ -574,6 +624,14 @@ void ApplicationSessions::refresh() {
         confirmQuit(false);
 }
 void ApplicationSessions::requestQuit() {
+    if (m_updatePending && m_quitEmitted) {
+        for (auto *window : windows()) {
+            window->setProperty("allowManagedClose", true);
+            window->close();
+        }
+        emit readyToQuit();
+        return;
+    }
     if (m_quitting || !m_active)
         return;
     if (activeTaskCount()) {
@@ -585,6 +643,24 @@ void ApplicationSessions::requestQuit() {
 void ApplicationSessions::requestRestart() {
     m_restart = true;
     requestQuit();
+}
+bool ApplicationSessions::prepareForUpdate() {
+    if (m_quitting || QApplication::activeModalWidget() || QGuiApplication::modalWindow())
+        return false;
+    for (const auto &session : m_sessions)
+        if (session->controller &&
+            (session->controller->activeTaskCount() || session->controller->taskStarting()))
+            return false;
+    m_updatePending = true;
+    m_restart = false;
+    m_quitting = true;
+    cancelPendingActivation();
+    emit closing();
+    for (const auto &session : m_sessions)
+        if (session->controller)
+            session->controller->requestClose();
+    checkQuit();
+    return true;
 }
 void ApplicationSessions::confirmQuit(bool wait) {
     if (m_quitting)
@@ -606,6 +682,10 @@ void ApplicationSessions::checkQuit() {
         if (session->controller && !session->controller->shutdownComplete())
             return;
     m_quitEmitted = true;
+    if (m_updatePending) {
+        emit readyForUpdate();
+        return;
+    }
     for (auto *window : windows()) {
         window->setProperty("allowManagedClose", true);
         window->close();

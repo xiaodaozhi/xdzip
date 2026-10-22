@@ -8,7 +8,10 @@ MenuSeparator {
     width: parent ? parent.width : implicitWidth
     implicitWidth: Theme.menuWidth - Theme.menuPadding * 2
     implicitHeight: commandVisible ? Theme.menuPadding * 2 + 1 : 0
-    padding: Theme.menuPadding
+    topPadding: Theme.menuPadding
+    bottomPadding: Theme.menuPadding
+    leftPadding: Theme.menuPadding
+    rightPadding: Theme.menuPadding
     contentItem: Rectangle {
         implicitHeight: 1
         color: Theme.menuBorder

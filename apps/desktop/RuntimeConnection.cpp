@@ -27,7 +27,8 @@ std::size_t payloadBytes(const xdzip::reader::Event &event) {
         bytes += node.id.size() + node.parent.size() + node.name.size() + node.path.size();
     for (const auto &finding : event.report.findings)
         bytes += finding.size();
-    bytes += event.task.status.size() + event.task.target.size() + event.task.current.size() +
+    bytes += event.task.kind.size() + event.task.source.size() + event.task.format.size() +
+             event.task.status.size() + event.task.target.size() + event.task.current.size() +
              event.task.error.size() + event.task.prompt_name.size() +
              event.task.password_prompt_name.size();
     return bytes;

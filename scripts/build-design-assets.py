@@ -19,6 +19,8 @@ from asset_definitions import (
 from brand_assets import brand_export_specs, brand_shapes
 from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_reference_coverage, tree_shapes
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
+from menu_shadow_assets import menu_shadow_entries
+from file_type_assets import FILE_CATEGORY_GLYPHS
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO / 'design/assets'
@@ -49,6 +51,7 @@ GROUPS = {
 }
 GROUP_TITLES = {'brand': '品牌与归档', 'file': '文件与目录', 'tool': '工具栏与导航',
                 'status': '任务状态', 'illustration': '操作窗口插图'}
+GROUPS['file'].update(FILE_CATEGORY_GLYPHS)
 
 
 def digest(path: Path) -> str:
@@ -64,7 +67,7 @@ def aliases() -> dict[tuple[str, str], list[str]]:
     result: dict[tuple[str, str], list[str]] = {}
     for node in ET.parse(REPO / 'apps/desktop/ui.qrc').iter('file'):
         if node.text and node.text.endswith('.png'):
-            if Path(node.text).parent.name == 'tray':
+            if Path(node.text).parent.name in ('tray', 'menu'):
                 continue  # Native 22-unit status icons have their own provenance entries.
             if ((node.attrib.get('alias'), node.text) in (
                     ('assets/app-icon.png', '../../design/assets/brand/xdzip.png'),
@@ -328,7 +331,7 @@ def main() -> None:
         args.check = True  # Build expected descriptors without recropping or drawing.
     for folder in ('reference', 'demo', 'svg/light', 'svg/dark', 'png/light', 'png/dark', 'preview'):
         (ROOT / folder).mkdir(parents=True, exist_ok=True)
-    entries = crop_entries(args.check) + svg_entries(args.check) + brand_entries() + tray_entries()
+    entries = crop_entries(args.check) + svg_entries(args.check) + brand_entries() + tray_entries() + menu_shadow_entries(args.check)
     manifest = {
         'schema_version': 2, 'status': 'canonical-runtime-and-design-library',
         'coordinate_system': 'source physical pixels, top-left origin; rect = x,y,width,height',
@@ -345,7 +348,7 @@ def main() -> None:
         existing = json.loads((ROOT / 'manifest.json').read_text())
         recorded = {item['file']: item for item in existing['assets']}
         for item in entries:
-            if item['file'] not in recorded and item['kind'] in ('tray-vector', 'tray-rasterization'):
+            if item['file'] not in recorded and item['kind'] in ('tray-vector', 'tray-rasterization', 'menu-shadow-rasterization'):
                 existing['assets'].append(item)
                 recorded[item['file']] = item
             assert item['file'] in recorded, 'Generate a new image before refreshing its metadata'

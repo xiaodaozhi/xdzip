@@ -22,6 +22,17 @@ def check_events(output):
     return events
 
 
+def check_https(output):
+    records=[json.loads(line[len('XDZIP_UPDATE_HTTPS '):]) for line in output.splitlines() if line.startswith('XDZIP_UPDATE_HTTPS ')]
+    if len(records)!=1:raise ValueError('SDK-free HTTPS probe did not produce exactly one result')
+    record=records[0]
+    if record.get('ssl_supported') is not True or record.get('ssl_backend')!='openssl':
+        raise ValueError('SDK-free HTTPS probe did not load the OpenSSL backend')
+    if record.get('state') not in {'up_to_date','available'} or record.get('error'):
+        raise ValueError('SDK-free HTTPS probe did not complete the real GitHub update request')
+    return record
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--fixture',type=Path,required=True)
@@ -48,11 +59,24 @@ def main():
     if result.returncode:raise SystemExit('SDK-free relocated application check failed; see runtime log')
     try:events=check_events(result.stdout)
     except ValueError as error:raise SystemExit(str(error))
+    # Network remains disabled for archive/runtime validation. A separate process
+    # proves QtNetwork HTTPS and the system CA store without mounting the Qt SDK.
+    https=subprocess.run(['docker','run','--rm','--read-only','--cap-drop=ALL',
+        '--security-opt=no-new-privileges','--user','1000:1000','--tmpfs','/tmp:exec,mode=1777',
+        '--volume',str(payload)+':/opt/xdzip runtime:ro',
+        '--volume',str(ROOT/'apps/desktop/packaging/linux/verify-https.sh')+':/verify-https.sh:ro',
+        image,'/bin/sh','/verify-https.sh'],capture_output=True,text=True,timeout=80)
+    args.output.with_suffix('.https.log').write_text(https.stdout+https.stderr)
+    if https.returncode:raise SystemExit('SDK-free HTTPS update request failed; see HTTPS log')
+    try:https_record=check_https(https.stdout)
+    except ValueError as error:raise SystemExit(str(error))
+    args.output.with_suffix('.https.json').write_text(json.dumps(https_record,indent=2)+'\n')
     report={'schema_version':1,'status':'passed','baseline':manifest['baseline'],
         'executable_sha256':digest(payload/'bin/xdzip'),'read_only_payload':True,'network':'none',
         'system_qt_and_compiler':'absent','rendering':'Xvfb X11, Qt Quick software; not physical GPU acceptance',
         'events':events,'limits':['Runtime-only container is not a full desktop clean-install, IME or reader acceptance.',
                                  'Installer, file associations, other distributions and Wayland remain unverified.']}
+    report['https']={'network':'GitHub HTTPS, separate SDK-free process','result':https_record}
     args.output.write_text(json.dumps(report,indent=2)+'\n')
     print('Linux SDK-free runtime passed: version, X11 startup, 100k open, active cancel and shutdown')
 

@@ -82,6 +82,8 @@ class InstallerTests(unittest.TestCase):
     def payload(self,base,platform):
         root=base/'payload';root.mkdir()
         app=root/('xdzip.exe' if platform=='windows' else 'bin/xdzip');app.parent.mkdir(exist_ok=True);app.write_bytes(b'MZowned' if platform=='windows' else b'\x7fELFowned')
+        helper=root/('xdzip-update-helper.exe' if platform=='windows' else 'bin/xdzip-update-helper')
+        helper.write_bytes(b'MZowned helper' if platform=='windows' else b'\x7fELFowned helper')
         (root/'share').mkdir();(root/'share/deployment.json').write_text(json.dumps({'system_packages':['libc6:amd64','libxcb1:amd64']}))
         (root/'xdzip').write_text('#!/bin/sh\n');(root/'xdzip').chmod(0o755)
         audit={'status':'passed','platform':platform,'mode':'deployed','identity':{'version':'0.1.0-dev.1','build':1,'revision':'a'*12,'dirty':False},
@@ -91,6 +93,8 @@ class InstallerTests(unittest.TestCase):
     def test_linux_has_dependencies_literal_argument_and_no_default_takeover(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp);root,audit=self.payload(base,'linux');stage=base/'stage';r=linux.package_tree(root,audit,stage)
+            control=(stage/'DEBIAN/control').read_text()
+            self.assertIn('libssl3t64',control);self.assertIn('ca-certificates',control)
             self.assertIn('~dev.1+git',r['version'])
             self.assertIn('libc6 (>= 2.39)',(stage/'DEBIAN/control').read_text(encoding='utf-8'))
             source_entry=configparser.ConfigParser(interpolation=None)
@@ -103,6 +107,14 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('installing',(stage/'DEBIAN/preinst').read_text(encoding='utf-8'))
             self.assertNotIn('xdg-mime default',(stage/'DEBIAN/postinst').read_text(encoding='utf-8'))
             self.assertNotIn('rm -rf',(stage/'DEBIAN/postrm').read_text(encoding='utf-8'))
+            self.assertEqual((stage/'usr/libexec/xdzip-update-helper').read_bytes(),(root/'bin/xdzip-update-helper').read_bytes())
+            marker=json.loads(next((stage/'opt/xdzip/versions').glob('*/share/xdzip-install.json')).read_text())
+            self.assertEqual((marker['product'],marker['package_type']),('xdzip','deb'))
+            policy=(stage/'usr/share/polkit-1/actions/org.xdzip.update.policy').read_text(encoding='utf-8')
+            self.assertIn('<allow_active>auth_admin</allow_active>',policy)
+            self.assertNotIn('auth_admin_keep',policy)
+            self.assertIn('/usr/libexec/xdzip-update-helper',policy)
+            self.assertIn('pkexec',(stage/'DEBIAN/control').read_text())
 
     def test_linux_installer_rejects_stale_or_ambiguous_desktop_commands(self):
         desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8')
@@ -160,6 +172,10 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)
             self.assertNotIn('{app}\\versions\\',text)
             self.assertIn('install-manifest.txt',text)
+            self.assertIn('ValueName: "Location"; ValueData: "{app}"',text)
+            self.assertIn('ValueName: "InstallId"',text)
+            self.assertIn('SetupMutex=Local\\xdzip.desktop.installing',text)
+            self.assertIn('AcquireUpdateGate()',text)
             self.assertLess(text.index('DestName: "xdzip-package-files.txt"'),text.index('recursesubdirs createallsubdirs'))
             self.assertIn('CurStep <> ssDone',text)
             self.assertIn('FILE_ATTRIBUTE_REPARSE_POINT',text)

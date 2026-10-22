@@ -1,6 +1,7 @@
 find_program(CARGO_EXECUTABLE cargo REQUIRED)
 find_program(RUSTC_EXECUTABLE rustc REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 if(CMAKE_CROSSCOMPILING OR CMAKE_CONFIGURATION_TYPES OR CMAKE_OSX_ARCHITECTURES MATCHES ";")
     message(FATAL_ERROR "Diagnostic probe requires a native, single-configuration build")
 endif()
@@ -34,13 +35,15 @@ endif()
 add_custom_command(OUTPUT "${rust_archive}"
     BYPRODUCTS "${rust_target_dir}/cxxbridge/xdzip-bridge-probe/src/lib.rs.h"
         "${rust_target_dir}/cxxbridge/rust/cxx.h"
-    COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${CARGO_EXECUTABLE}" build --locked -p xdzip-bridge-probe
-        --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml"
+    COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${Python3_EXECUTABLE}"
+        "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py" --cargo "${CARGO_EXECUTABLE}"
+        --root "${PROJECT_SOURCE_DIR}" --package xdzip-bridge-probe
         --target-dir "${rust_target_dir}" --target "${rust_host}" --profile "${cargo_profile}"
     WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
     DEPENDS src/lib.rs src/transport.rs build.rs Cargo.toml
         "${PROJECT_SOURCE_DIR}/Cargo.toml" "${PROJECT_SOURCE_DIR}/Cargo.lock"
         "${PROJECT_SOURCE_DIR}/rust-toolchain.toml"
+        "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py"
     VERBATIM)
 add_custom_target(xdzip-probe-rust-build DEPENDS "${rust_archive}")
 add_library(xdzip-probe-rust STATIC IMPORTED)

@@ -1,4 +1,5 @@
 //! First read-only session service. Called only on a bounded background worker.
+pub mod checking;
 pub mod creation;
 pub mod extraction;
 mod formats;
@@ -8,6 +9,7 @@ pub mod navigation;
 pub mod query;
 pub mod service;
 mod source;
+mod task_interaction;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};

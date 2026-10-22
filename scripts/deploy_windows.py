@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
-from deployment_audit import ROOT, digest, within
+from deployment_audit import ROOT, digest, run, windows_imports, within
 from native_runtime_materials import configuration
 
 STYLES = ('FluentWinUI3', 'Fusion', 'Imagine', 'Material', 'Universal', 'Windows')
@@ -17,6 +17,17 @@ LIBRARIES = tuple('Qt6QuickControls2'+name+'.dll' for name in (
     'Material', 'MaterialStyleImpl', 'Universal', 'UniversalStyleImpl', 'WindowsStyleImpl')) + (
     'Qt6QuickEffects.dll', 'vc_redist.x64.exe')
 FALLBACKS = ('opengl32sw.dll', 'dxcompiler.dll', 'dxil.dll', 'd3dcompiler_47.dll')
+
+
+def standalone_update_helper(path):
+    imports=windows_imports(run('dumpbin','/dependents',str(path)))
+    system={'kernel32.dll','kernelbase.dll','advapi32.dll','ntdll.dll','bcrypt.dll',
+            'bcryptprimitives.dll','userenv.dll','ws2_32.dll','secur32.dll','shell32.dll',
+            'user32.dll','ole32.dll'}
+    if not imports or any(name.lower() not in system and
+                          not name.lower().startswith(('api-ms-win-','ext-ms-win-')) for name in imports):
+        raise ValueError('Update helper must use static CRT and Windows system imports only')
+    return imports
 
 
 def prune(root):
@@ -119,14 +130,16 @@ def main():
     sdk = Path(os.environ.get('WindowsSdkDir', ''))
     sdk_version = os.environ.get('WindowsSDKVersion', '').strip('\\/')
     copy_graphics(args.qt_prefix.resolve(), sdk.resolve(), sdk_version, root)
-    required = FALLBACKS + ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
+    required = FALLBACKS + ('xdzip-update-helper.exe', 'styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):
         raise ValueError('Required Basic/native/translation/graphics runtime missing')
+    helper_imports=standalone_update_helper(root/'xdzip-update-helper.exe')
     (root/'share/deployment.json').write_text(json.dumps({
         'schema_version': 1, 'quick_style': 'Basic', 'removed': removed,
         'graphics_fallbacks': list(FALLBACKS), 'vc_runtime': 'app-local',
-        'vc_runtime_config_sha256': digest(ROOT/'scripts/windows-runtime.json')}, indent=2)+'\n')
+        'vc_runtime_config_sha256': digest(ROOT/'scripts/windows-runtime.json'),
+        'update_helper_imports':helper_imports}, indent=2)+'\n')
     print(f'Windows runtime deployed, {len(removed)} redundant files removed; graphics retained')
 
 

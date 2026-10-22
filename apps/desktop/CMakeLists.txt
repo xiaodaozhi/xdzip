@@ -75,9 +75,14 @@ if(WIN32)
 endif()
 if(APPLE)
     enable_language(OBJCXX)
+    include(${PROJECT_SOURCE_DIR}/cmake/Sparkle.cmake)
     set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
     target_sources(xdzip-browser PRIVATE MacTitlebar.mm)
+    target_sources(xdzip-browser PRIVATE MacUpdateProvider.mm MacUpdateProvider.h)
+    set_source_files_properties(MacUpdateProvider.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
+    target_link_libraries(xdzip-browser PRIVATE "${XDZIP_SPARKLE_FRAMEWORK}")
+    set_property(TARGET xdzip-browser APPEND PROPERTY BUILD_RPATH "${XDZIP_SPARKLE_SDK}")
     target_link_libraries(xdzip-browser PRIVATE "-framework AppKit")
     set_target_properties(xdzip-browser PROPERTIES MACOSX_BUNDLE TRUE
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.desktop"
@@ -97,9 +102,10 @@ qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp)
+    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
     Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
+include(${PROJECT_SOURCE_DIR}/cmake/UpdateHelper.cmake)
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -132,11 +138,54 @@ if(BUILD_TESTING)
     add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log,txt")
     # Whole-suite ceiling includes large scans and many event-loop waits. Individual
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
-    # The session lifecycle matrix includes multiple 32-connection shutdown cases.
-    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 180)
+    # The session, resizable-list and About-state matrices run together here.
+    # Their per-assertion and separate cold-menu budgets remain unchanged.
+    set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
+    add_executable(xdzip-update-tests tests/update_controller_test.cpp
+        UpdateController.cpp UpdateController.h UpdateHandoff.cpp UpdateHandoff.h
+        BrowserController.cpp BrowserController.h RuntimeConnection.cpp RuntimeConnection.h
+        DesktopIntegration.cpp DesktopIntegration.h ApplicationSessions.cpp ApplicationSessions.h
+        SingleInstance.cpp SingleInstance.h)
+    target_include_directories(xdzip-update-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_definitions(xdzip-update-tests PRIVATE XDZIP_UPDATE_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/update")
+    target_link_libraries(xdzip-update-tests PRIVATE xdzip-reader-rust xdzip-ui-resourcesplugin
+        Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
+    if(APPLE)
+        target_sources(xdzip-update-tests PRIVATE MacTitlebar.mm MacUpdateProvider.mm)
+        target_compile_definitions(xdzip-update-tests PRIVATE XDZIP_UPDATE_TESTS)
+        target_link_libraries(xdzip-update-tests PRIVATE "-framework AppKit" "${XDZIP_SPARKLE_FRAMEWORK}")
+        set_property(TARGET xdzip-update-tests APPEND PROPERTY BUILD_RPATH "${XDZIP_SPARKLE_SDK}")
+        set_target_properties(xdzip-update-tests PROPERTIES OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON)
+        option(XDZIP_BUILD_MAC_UPDATE_REGRESSION "Build the isolated native Mac update probe" OFF)
+        if(XDZIP_BUILD_MAC_UPDATE_REGRESSION)
+            set(XDZIP_MAC_UPDATE_PROBE_BUILD "730" CACHE STRING "Owned native updater fixture build")
+            if(NOT XDZIP_MAC_UPDATE_PROBE_BUILD MATCHES "^[0-9]+$")
+                message(FATAL_ERROR "Invalid Mac updater fixture build")
+            endif()
+            get_target_property(probe_sources xdzip-update-tests SOURCES)
+            list(FILTER probe_sources EXCLUDE REGEX "tests/update_controller_test\\.cpp$")
+            add_executable(xdzip-mac-update-probe MACOSX_BUNDLE tests/mac_update_probe.mm ${probe_sources})
+            target_include_directories(xdzip-mac-update-probe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+            target_link_libraries(xdzip-mac-update-probe PRIVATE xdzip-reader-rust xdzip-ui-resourcesplugin
+                Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test
+                "-framework AppKit" "${XDZIP_SPARKLE_FRAMEWORK}")
+            target_compile_options(xdzip-mac-update-probe PRIVATE -Wall -Wextra -Werror)
+            set_property(TARGET xdzip-mac-update-probe APPEND PROPERTY BUILD_RPATH "${XDZIP_SPARKLE_SDK}")
+            set_source_files_properties(tests/mac_update_probe.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks")
+            set_target_properties(xdzip-mac-update-probe PROPERTIES
+                OBJCXX_STANDARD 17 OBJCXX_STANDARD_REQUIRED ON OUTPUT_NAME "xdzip-update-probe"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "org.xdzip.update-regression"
+                MACOSX_BUNDLE_BUNDLE_NAME "xdzip update regression"
+                MACOSX_BUNDLE_BUNDLE_VERSION "${XDZIP_MAC_UPDATE_PROBE_BUILD}"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING "99.0.0"
+                MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/packaging/macos/Info.plist.in")
+        endif()
+    endif()
+    add_test(NAME qt_updates COMMAND xdzip-update-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/update-tests.log,txt")
+    set_tests_properties(qt_updates PROPERTIES TIMEOUT 60)
 endif()
-foreach(target xdzip-browser xdzip-browser-tests)
+foreach(target xdzip-browser xdzip-browser-tests xdzip-update-tests)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)

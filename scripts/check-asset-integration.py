@@ -6,6 +6,8 @@ import hashlib
 import json
 import re
 import struct
+import subprocess
+import sys
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -163,6 +165,14 @@ def check_qt(base, assets, qrc):
         aliases.add(alias_path)
         entry = assets.get(path)
         require(entry is not None, f'Untracked runtime image: {node.text}')
+        if path.is_relative_to((base / 'menu').resolve()):
+            require(entry['kind'] == 'menu-shadow-rasterization', 'Invalid menu shadow raster')
+            require(png_dimensions(path) == entry['size'], 'Invalid menu shadow dimensions')
+            require(entry['border'] * 2 < entry['size'][0], 'Invalid menu shadow center')
+            require(hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], 'Stale menu shadow')
+            require(hashlib.sha256((base / entry['source']).read_bytes()).hexdigest() == entry['source_sha256'], 'Stale menu shadow specification')
+            checked += 1
+            continue
         if path.is_relative_to((base / 'tray').resolve()):
             require(entry['kind'] == 'tray-rasterization', 'Invalid native tray raster')
             require(entry['logical_size'] == [22, 22], 'Invalid native tray canvas')
@@ -271,6 +281,7 @@ def check_html(base, assets, html_root):
 
 
 def main():
+    subprocess.run([sys.executable, str(ROOT / "scripts/generate-file-icons.py"), "--check"], check=True)
     assets = load_assets(ASSET_ROOT)
     qt_count = check_qt(ASSET_ROOT, assets, ROOT / 'apps/desktop/ui.qrc')
     html_count, dynamic_count = check_html(ASSET_ROOT, assets, ROOT / 'design/html')

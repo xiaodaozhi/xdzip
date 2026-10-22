@@ -9,6 +9,38 @@ OperationWindow {
     objectName: "aboutWindow"
     title: qsTrId("about.title")
     property bool copied: false
+    property var updater: typeof UpdateService === "undefined" ? null : UpdateService
+    readonly property string updateState: updater ? updater.state : "unavailable"
+    function updateMessage() {
+        switch (updateState) {
+        case "checking": return qsTrId("update.checking");
+        case "up_to_date": return qsTrId("update.current");
+        case "updated": return qsTrId("update.updated");
+        case "available": return qsTrId("update.available").arg(updater.candidateVersion);
+        case "downloading": return qsTrId("update.downloading");
+        case "verifying": return qsTrId("update.verifying");
+        case "downloaded": return qsTrId("update.downloaded");
+        case "waiting_tasks": return qsTrId("update.waitingTasks");
+        case "preparing": return qsTrId("update.preparing");
+        case "installing": return qsTrId("update.installing");
+        case "recovery_required": return qsTrId("update.recovery");
+        case "error": {
+            const code = updater.errorCode;
+            if (code === "rate_limited") return qsTrId("update.rateLimited");
+            if (code === "tls") return qsTrId("update.tls");
+            if (code === "network" || code === "download") return qsTrId("update.network");
+            if (code === "timeout" || code === "authorization_timeout") return qsTrId("update.timeout");
+            if (code === "authorization_cancelled") return qsTrId("update.authorizationCancelled");
+            if (code.startsWith("authorization_") || code === "helper_exit") return qsTrId("update.authorizationFailed");
+            if (code === "disk" || code === "cache") return qsTrId("update.disk");
+            if (code === "minimum_system") return qsTrId("update.minimumSystem");
+            if (code.includes("signature") || code.includes("hash") || code === "download_size") return qsTrId("update.verificationFailed");
+            return qsTrId("update.failed");
+        }
+        case "unavailable": return qsTrId("update.preview");
+        default: return qsTrId("update.idle");
+        }
+    }
     width: Theme.aboutLogicalWidth
     requestedHeight: Math.min(Theme.aboutMaximumHeight, Screen.desktopAvailableHeight - 80,
                               body.implicitHeight + footer.implicitHeight)
@@ -84,6 +116,84 @@ OperationWindow {
                     Layout.alignment: Qt.AlignHCenter
                     text: qsTrId("about.homepage")
                     onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip")
+                }
+                ColumnLayout {
+                    objectName: "aboutUpdateSection"
+                    Layout.leftMargin: Theme.aboutContentInset
+                    Layout.rightMargin: Theme.aboutContentInset
+                    Layout.fillWidth: true
+                    spacing: Theme.aboutRowGap
+                    Text {
+                        objectName: "aboutUpdateStatus"
+                        Layout.fillWidth: true
+                        text: root.updateMessage()
+                        textFormat: Text.PlainText
+                        horizontalAlignment: Text.AlignHCenter
+                        font.pixelSize: Theme.aboutBodySize * Theme.fontScale
+                        color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary
+                        wrapMode: Text.Wrap
+                        Accessible.name: text
+                    }
+                    ProgressBar {
+                        objectName: "aboutUpdateProgress"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Theme.aboutUpdateProgressHeight
+                        visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
+                        indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
+                        value: root.updater ? Math.max(0, root.updater.progress) : 0
+                        Accessible.name: qsTrId("update.progress")
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
+                        text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
+                        font.pixelSize: Theme.aboutNoteSize * Theme.fontScale
+                        color: Theme.textSecondary
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                    }
+                    RowLayout {
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: Theme.aboutRowGap
+                        OperationButton {
+                            objectName: "aboutCheckUpdate"
+                            text: qsTrId("update.check")
+                            enabled: root.updater && !root.updater.busy
+                            onClicked: root.updater.check()
+                        }
+                        OperationButton {
+                            objectName: "aboutCancelUpdate"
+                            visible: root.updater && root.updater.busy && root.updateState !== "installing"
+                            enabled: root.updater && root.updateState !== "installing"
+                            text: qsTrId("update.cancel")
+                            onClicked: root.updater.cancel()
+                        }
+                    }
+                    OperationButton {
+                        objectName: "aboutInstallUpdate"
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: root.updater && ["available", "downloaded"].includes(root.updateState)
+                        text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
+                        onClicked: {
+                            if (root.updater.canInstall) root.updater.downloadAndInstall();
+                            else if (root.updater.trusted) root.updater.download();
+                            else root.updater.openReleasePage();
+                        }
+                    }
+                    OperationButton {
+                        objectName: "aboutUpdateRecovery"
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: root.updater && root.updateState === "recovery_required"
+                        text: qsTrId("update.release")
+                        onClicked: root.updater.openReleasePage()
+                    }
+                    OperationButton {
+                        objectName: "aboutOpenUpdate"
+                        Layout.alignment: Qt.AlignHCenter
+                        visible: root.updater && root.updater.downloaded
+                        text: qsTrId("update.openDownload")
+                        onClicked: root.updater.openDownloadFolder()
+                    }
                 }
                 Item { Layout.preferredHeight: Theme.aboutContentInset - Theme.aboutSectionGap }
             }

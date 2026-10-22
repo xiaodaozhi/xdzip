@@ -1,0 +1,13 @@
+# tests/fixtures/native/update-linux.Dockerfile.dockerignore
+
+**
+!Cargo.toml
+!Cargo.lock
+!rust-toolchain.toml
+!crates/
+!crates/**
+!tools/
+!tools/**
+**/target/
+**/build/
+**/dist/

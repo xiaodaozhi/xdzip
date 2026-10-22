@@ -146,6 +146,18 @@ window.XdzipMain = (() => {
             switchTab(tabs[Math.min(index, tabs.length - 1)].id, true);
         else renderTabs();
     }
+    function closeTabRange(anchor, rightOnly) {
+        const index = tabs.findIndex(tab => tab.id === anchor);
+        if (index < 0) return;
+        const closing = tabs.filter((tab, offset) => tab.id !== anchor && (!rightOnly || offset > index));
+        const ids = new Set(closing.map(tab => tab.id));
+        saveTab();
+        closedTabs.push(...closing);
+        if (closedTabs.length > 10) closedTabs.splice(0, closedTabs.length - 10);
+        tabs = tabs.filter(tab => !ids.has(tab.id));
+        if (ids.has(state.activeTab)) switchTab(anchor, true);
+        else renderTabs();
+    }
     function enterWelcome(view = "welcome") {
         saveTab();
         document.body.classList.add("welcome-artboard");
@@ -268,51 +280,16 @@ window.XdzipMain = (() => {
         });
     }
     function tabMenu(id, trigger, point) {
-        const index = tabs.findIndex((tab) => tab.id === id);
+        const index = tabs.findIndex(tab => tab.id === id);
+        if (index < 0) return;
         ui.open({
-            trigger,
-            point,
+            trigger, point,
             label: "压缩包标签操作",
             origin: () => $(`[data-tab="${state.activeTab}"]`) || $("#new-tab"),
             items: [
-                {
-                    id: "tab-close",
-                    label: "关闭压缩包",
-                    shortcut: shortcut("W"),
-                    run: () => closeTab(id),
-                },
-                {
-                    id: "tab-close-others",
-                    label: "关闭其他压缩包",
-                    disabled: tabs.length < 2,
-                    run: () =>
-                        tabs
-                            .filter((tab) => tab.id !== id)
-                            .forEach((tab) => closeTab(tab.id)),
-                },
-                {
-                    id: "tab-close-right",
-                    label: "关闭右侧压缩包",
-                    disabled: index === tabs.length - 1,
-                    run: () =>
-                        tabs
-                            .slice(index + 1)
-                            .forEach((tab) => closeTab(tab.id)),
-                },
-                separator(),
-                {
-                    id: "tab-reopen",
-                    label: "重新打开关闭的压缩包",
-                    disabled: closedTabs.length === 0,
-                    shortcut: shortcut("⇧T"),
-                    run: () => {
-                        const tab = closedTabs.pop();
-                        if (tab) {
-                            tabs.push(tab);
-                            switchTab(tab.id, true);
-                        }
-                    },
-                },
+                { id: "tab-close", label: settingText("tabs.closeCommand"), run: () => closeTab(id) },
+                { id: "tab-close-others", label: settingText("tabs.closeOthers"), disabled: tabs.length < 2, run: () => closeTabRange(id, false) },
+                { id: "tab-close-right", label: settingText("tabs.closeRight"), disabled: index === tabs.length - 1, run: () => closeTabRange(id, true) },
             ],
         });
     }
@@ -1204,23 +1181,7 @@ window.XdzipMain = (() => {
             ui.open({
                 trigger: $("#more-actions"),
                 label: "更多压缩包操作",
-                items: [
-                    item("archive-properties"),
-                    item("test"),
-                    separator(),
-                    item("select-all"),
-                    item("select-none"),
-                    item("select-invert"),
-                    separator(),
-                    { id: "more-view", label: "视图", children: viewItems() },
-                    {
-                        id: "more-sort",
-                        label: "排序方式",
-                        children: sortItems(),
-                    },
-                    separator(),
-                    item("settings"),
-                ],
+                items: [item("settings")],
             });
         $("#extract-menu-button").onclick = () =>
             ui.open({

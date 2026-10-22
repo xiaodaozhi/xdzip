@@ -7,6 +7,7 @@ These definitions describe reconstructed assets, never recovered alpha layers.
 
 import math
 from directory_tree_assets import TREE_CUTS
+from file_type_assets import FILE_CATEGORY_GLYPHS, desktop_file_shapes
 
 # These bounds include the outer stroke. Canvas alignment belongs to the asset,
 # so consumers can use one 24-unit viewBox and never stretch individual types.
@@ -19,6 +20,8 @@ FILE_OPTICAL_SPECS = {
     'image-file': {'bounds': [3.2, 1, 20.8, 23], 'center': [12, 12]},
     'image-amber': {'bounds': [3.2, 1, 20.8, 23], 'center': [12, 12]},
 }
+FILE_OPTICAL_SPECS.update({name: {'bounds': [3.75, 1, 20.25, 23], 'center': [12, 12]}
+                           for name in FILE_CATEGORY_GLYPHS})
 
 EXTRA_CONTROL_PATHS = {
     'plus': 'M12 5v14 M5 12h14',
@@ -61,7 +64,7 @@ def file_shapes(theme):
         'file-text': f'''<path fill="{paper}" stroke="{border}" stroke-width="1" d="M5.8 1.5h8.55l5.4 5.4v14a1.6 1.6 0 0 1-1.6 1.6H5.8a1.55 1.55 0 0 1-1.55-1.55V3.05A1.55 1.55 0 0 1 5.8 1.5Z"/><path stroke="{border}" stroke-width="1" d="M14.35 1.75v4.1a1.05 1.05 0 0 0 1.05 1.05h4.1"/><path stroke="{rule}" stroke-width="1" d="M7.25 7.9h4.7 M7.25 10.85h9 M7.25 13.8h9 M7.25 16.75h9"/>''',
         'file-code': f'''<rect x="2.5" y="1.5" width="19" height="21" rx="2.15" fill="{paper}" stroke="{border}" stroke-width="1"/><path d="m8.45 9.1-2.9 2.9 2.9 2.9m7.1-5.8 2.9 2.9-2.9 2.9m-2.35-6.5-2.4 7.2" stroke="{symbol}" stroke-width="1.15"/>''',
         'file-markdown': f'''<rect x="2.5" y="1.5" width="19" height="21" rx="2.15" fill="{paper}" stroke="{border}" stroke-width="1"/><path d="M6.582 15.5V10l2.666 3.7 2.666-3.7v5.5 M16.386 10.35v5.1m-1.849-2.15 1.849 2.15 1.849-2.15" stroke="{symbol}" stroke-width="1.2"/>''',
-    }
+    } | desktop_file_shapes(theme)
 
 
 def rounded_gear_path():

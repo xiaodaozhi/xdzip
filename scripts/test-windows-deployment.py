@@ -12,6 +12,14 @@ import deployment_audit as audit
 
 
 class WindowsDeploymentTests(unittest.TestCase):
+    def test_update_helper_does_not_depend_on_the_replaced_runtime(self):
+        with patch.object(deployment,'run',return_value='    KERNEL32.dll\n    api-ms-win-core-synch-l1-2-0.dll\n'):
+            self.assertEqual(len(deployment.standalone_update_helper(Path('owned.exe'))),2)
+        for name in ['Qt6Core.dll','VCRUNTIME140.dll','MSVCP140.dll','third-party.dll']:
+            with self.subTest(import_name=name), patch.object(deployment,'run',return_value='    '+name+'\n'):
+                with self.assertRaisesRegex(ValueError,'static CRT'):
+                    deployment.standalone_update_helper(Path('owned.exe'))
+
     def test_graphics_use_explicit_redist_with_notices_and_never_path(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp); qt = base/'qt'; sdk = base/'sdk'; root = base/'product'

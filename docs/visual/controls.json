@@ -19,6 +19,13 @@
     "focusWidth": 0,
     "selectPopupMaxWidth": 360
   },
+  "menuShadowAsset": {
+    "blurRadius": 12,
+    "offsetY": 4,
+    "inset": 24,
+    "fontScales": [1, 1.25, 1.5, 2],
+    "implementation": "Pre-rendered nine-slice PNG, shared by all in-app menus"
+  },
   "motion": {
     "hoverDelayMs": 1200,
     "submenuDelayMs": 120,

@@ -17,7 +17,7 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签自适应横向溢出和窗口内拖动排序，起始页顶部定位、语义错误反馈，关闭窗口清除标签并保留后台任务入口",
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口",
       "design": "design/hifi/sources/main.html"
     },
     "Preview": {
@@ -42,7 +42,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "复用既有解压进度尺寸，临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件",
+      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件",
       "design": "design/html/canvas.html?view=progress"
     },
     "IntegrityWindow": {
@@ -61,7 +61,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
-      "reason": "应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示",
+      "reason": "解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示",
       "design": "design/hifi/sources/password-extraction.html"
     },
     "PreflightWindow": {
@@ -81,7 +81,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.aboutLogicalWidth",
-      "reason": "关于标题 24，遵循独立品牌规格",
+        "reason": "关于标题 24，遵循独立品牌规格，更新检查与安装状态使用可滚动正文及共享控件",
       "design": "design/html/canvas.html?view=about"
     },
     "QuitWindow": {

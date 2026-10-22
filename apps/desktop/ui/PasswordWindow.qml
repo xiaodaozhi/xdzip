@@ -22,7 +22,7 @@ OperationWindow {
     readonly property alias bodyItem: scroll
     readonly property alias footerItem: footer
     readonly property alias fieldItem: password
-    title: qsTrId("password.title")
+    title: root.prompt.kind === "check" ? qsTrId("integrity.passwordTitle") : qsTrId("password.title")
     modality: Qt.ApplicationModal
     width: Theme.passwordLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight),
@@ -244,7 +244,7 @@ OperationWindow {
             }
             OperationFooterButton {
                 objectName: "passwordSubmit"
-                text: root.pending ? qsTrId("password.submitting") : qsTrId("password.continue")
+                text: root.pending ? qsTrId("password.submitting") : root.prompt.kind === "check" ? qsTrId("integrity.continue") : qsTrId("password.continue")
                 primary: true
                 enabled: !root.pending && !root.tooLong && root.shownPromptId.length > 0
                 onClicked: root.submit()

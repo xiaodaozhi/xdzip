@@ -1,5 +1,14 @@
 <RCC>
   <qresource prefix="/xdzip">
+    <file alias="update-trust.json">../../resources/update-trust.json</file>
+    <file alias="assets/menu/light-100.png">../../design/assets/menu/light-100.png</file>
+    <file alias="assets/menu/light-125.png">../../design/assets/menu/light-125.png</file>
+    <file alias="assets/menu/light-150.png">../../design/assets/menu/light-150.png</file>
+    <file alias="assets/menu/light-200.png">../../design/assets/menu/light-200.png</file>
+    <file alias="assets/menu/dark-100.png">../../design/assets/menu/dark-100.png</file>
+    <file alias="assets/menu/dark-125.png">../../design/assets/menu/dark-125.png</file>
+    <file alias="assets/menu/dark-150.png">../../design/assets/menu/dark-150.png</file>
+    <file alias="assets/menu/dark-200.png">../../design/assets/menu/dark-200.png</file>
     <file alias="assets/tray-contrast-16.png">../../design/assets/tray/contrast-16.png</file>
     <file alias="assets/tray-contrast-20.png">../../design/assets/tray/contrast-20.png</file>
     <file alias="assets/tray-contrast-22.png">../../design/assets/tray/contrast-22.png</file>
@@ -35,8 +44,45 @@
     <file alias="assets/light/radio-unselected.png">../../design/assets/png/light/radio-unselected@3x.png</file>
     <file alias="assets/dark/radio-unselected.png">../../design/assets/png/dark/radio-unselected@3x.png</file>
     <file alias="fonts/xdzip-design-sans-sc.ttf">../../design/assets/fonts/xdzip-design-sans-sc.ttf</file>
+    <file alias="assets/light/file-document.png">../../design/assets/png/light/file-document@3x.png</file>
+    <file alias="assets/light/file-document-large.png">../../design/assets/png/light/file-document@9x.png</file>
+    <file alias="assets/light/file-spreadsheet.png">../../design/assets/png/light/file-spreadsheet@3x.png</file>
+    <file alias="assets/light/file-spreadsheet-large.png">../../design/assets/png/light/file-spreadsheet@9x.png</file>
+    <file alias="assets/light/file-presentation.png">../../design/assets/png/light/file-presentation@3x.png</file>
+    <file alias="assets/light/file-presentation-large.png">../../design/assets/png/light/file-presentation@9x.png</file>
+    <file alias="assets/light/file-audio.png">../../design/assets/png/light/file-audio@3x.png</file>
+    <file alias="assets/light/file-audio-large.png">../../design/assets/png/light/file-audio@9x.png</file>
+    <file alias="assets/light/file-video.png">../../design/assets/png/light/file-video@3x.png</file>
+    <file alias="assets/light/file-video-large.png">../../design/assets/png/light/file-video@9x.png</file>
+    <file alias="assets/light/file-archive.png">../../design/assets/png/light/file-archive@3x.png</file>
+    <file alias="assets/light/file-archive-large.png">../../design/assets/png/light/file-archive@9x.png</file>
+    <file alias="assets/light/file-installer.png">../../design/assets/png/light/file-installer@3x.png</file>
+    <file alias="assets/light/file-installer-large.png">../../design/assets/png/light/file-installer@9x.png</file>
+    <file alias="assets/light/file-font.png">../../design/assets/png/light/file-font@3x.png</file>
+    <file alias="assets/light/file-font-large.png">../../design/assets/png/light/file-font@9x.png</file>
+    <file alias="assets/light/file-disk.png">../../design/assets/png/light/file-disk@3x.png</file>
+    <file alias="assets/light/file-disk-large.png">../../design/assets/png/light/file-disk@9x.png</file>
+    <file alias="assets/dark/file-document.png">../../design/assets/png/dark/file-document@3x.png</file>
+    <file alias="assets/dark/file-document-large.png">../../design/assets/png/dark/file-document@9x.png</file>
+    <file alias="assets/dark/file-spreadsheet.png">../../design/assets/png/dark/file-spreadsheet@3x.png</file>
+    <file alias="assets/dark/file-spreadsheet-large.png">../../design/assets/png/dark/file-spreadsheet@9x.png</file>
+    <file alias="assets/dark/file-presentation.png">../../design/assets/png/dark/file-presentation@3x.png</file>
+    <file alias="assets/dark/file-presentation-large.png">../../design/assets/png/dark/file-presentation@9x.png</file>
+    <file alias="assets/dark/file-audio.png">../../design/assets/png/dark/file-audio@3x.png</file>
+    <file alias="assets/dark/file-audio-large.png">../../design/assets/png/dark/file-audio@9x.png</file>
+    <file alias="assets/dark/file-video.png">../../design/assets/png/dark/file-video@3x.png</file>
+    <file alias="assets/dark/file-video-large.png">../../design/assets/png/dark/file-video@9x.png</file>
+    <file alias="assets/dark/file-archive.png">../../design/assets/png/dark/file-archive@3x.png</file>
+    <file alias="assets/dark/file-archive-large.png">../../design/assets/png/dark/file-archive@9x.png</file>
+    <file alias="assets/dark/file-installer.png">../../design/assets/png/dark/file-installer@3x.png</file>
+    <file alias="assets/dark/file-installer-large.png">../../design/assets/png/dark/file-installer@9x.png</file>
+    <file alias="assets/dark/file-font.png">../../design/assets/png/dark/file-font@3x.png</file>
+    <file alias="assets/dark/file-font-large.png">../../design/assets/png/dark/file-font@9x.png</file>
+    <file alias="assets/dark/file-disk.png">../../design/assets/png/dark/file-disk@3x.png</file>
+    <file alias="assets/dark/file-disk-large.png">../../design/assets/png/dark/file-disk@9x.png</file>
     <file>ui/qmldir</file>
     <file>ui/Theme.qml</file>
+    <file>ui/BrowserLayout.qml</file>
     <file>ui/SettingsWindow.qml</file>
     <file>ui/RestartWindow.qml</file>
     <file>ui/AboutWindow.qml</file>

@@ -51,10 +51,22 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False):
     if stage.exists():raise ValueError('Refusing existing package stage')
     runtime=stage/'opt/xdzip/versions'/runtime_id
     shutil.copytree(payload,runtime)
+    helper=payload/'bin/xdzip-update-helper'
+    if not helper.is_file() or helper.is_symlink():
+        raise ValueError('Debian package requires the audited standalone update helper')
+    libexec=stage/'usr/libexec';libexec.mkdir(parents=True)
+    shutil.copy2(helper,libexec/'xdzip-update-helper')
+    (libexec/'xdzip-update-helper').chmod(0o755)
+    (runtime/'share/xdzip-install.json').write_text(json.dumps({
+        'schema_version':1,'product':'xdzip','package_type':'deb',
+        'version':identity['version'],'build':identity['build'],'revision':revision,
+    },sort_keys=True)+'\n')
     bindir=stage/'usr/bin';bindir.mkdir(parents=True)
     launcher=bindir/'xdzip'
     launcher.write_text('#!/bin/sh\nexec "/opt/xdzip/versions/'+runtime_id+'/xdzip" "$@"\n');launcher.chmod(0o755)
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
+    policy=share/'polkit-1/actions';policy.mkdir(parents=True)
+    shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
     desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
@@ -65,7 +77,7 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False):
     manifest=json.loads((payload/'share/deployment.json').read_text(encoding='utf-8'))
     packages={p.removesuffix(':amd64') for p in manifest['system_packages']}
     if any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*',p) for p in packages):raise ValueError('Invalid runtime dependency')
-    packages.update(['desktop-file-utils','shared-mime-info','util-linux'])
+    packages.update(['desktop-file-utils','shared-mime-info','util-linux','pkexec','apt','libssl3t64','ca-certificates'])
     depends=', '.join('libc6 (>= 2.39)' if p=='libc6' else p for p in sorted(packages))
     (control/'control').write_text(f'Package: xdzip\nVersion: {version}\nArchitecture: amd64\nMaintainer: xdzip contributors <noreply@xdzip.invalid>\nSection: utils\nPriority: optional\nX-Xdzip-Settings-Schema: 1\nDepends: {depends}\nDescription: Experimental ZIP and TAR archive manager\n Ubuntu 24.04 x86_64 X11 developer installer, unsigned; release review pending.\n')
     hook=(ROOT/'apps/desktop/packaging/linux/package-hook.sh').read_text(encoding='utf-8')

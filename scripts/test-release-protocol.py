@@ -98,6 +98,7 @@ class ReleaseNotesTests(unittest.TestCase):
         with patch.object(PUBLISH, 'ROOT', self.root), patch.object(PUBLISH.runpy, 'run_path',
                 return_value={'version_info': lambda: self.version}), patch.object(PUBLISH.subprocess, 'run', side_effect=command), \
                 patch.object(sys, 'argv', ['publish-release.py', *(['--notes-file', str(self.notes)] if use_override else []), *arguments]), \
+                patch('release_updates.verify_release_updates'), \
                 redirect_stdout(io.StringIO()):
             PUBLISH.main()
 

@@ -28,6 +28,8 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void activateId(const QString &id);
     Q_INVOKABLE void moveTab(const QString &id, int targetIndex);
     Q_INVOKABLE void closeSession(const QString &id);
+    Q_INVOKABLE void closeOtherSessions(const QString &id);
+    Q_INVOKABLE void closeSessionsToRight(const QString &id);
     Q_INVOKABLE void closeWindow(QQuickWindow *window);
     Q_INVOKABLE void focusWindow(QQuickWindow *window);
     Q_INVOKABLE void command(const QString &command);
@@ -35,6 +37,12 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void showTask(const QString &identity);
     Q_INVOKABLE void requestQuit();
     Q_INVOKABLE void requestRestart();
+    // Called only after an update provider has prepared its installation handoff.
+    // Busy tasks are never cancelled implicitly for an update.
+    bool prepareForUpdate();
+    bool updatePending() const {
+        return m_updatePending;
+    }
     Q_INVOKABLE void cancelQuit() {
         if (m_quitting)
             return;
@@ -65,6 +73,7 @@ class ApplicationSessions final : public QObject {
     void sessionsChanged();
     void closing();
     void readyToQuit();
+    void readyForUpdate();
 
   private:
     struct Session {
@@ -85,6 +94,8 @@ class ApplicationSessions final : public QObject {
     void activate(Session *session, bool reveal = true);
     void refresh();
     void reap(Session *session);
+    void closeTabSet(Session *anchor, const std::vector<Session *> &targets);
+    void closeAround(const QString &id, bool rightOnly);
     void checkQuit();
     QQmlEngine *m_engine;
     UiPreferences *m_settings;
@@ -95,6 +106,7 @@ class ApplicationSessions final : public QObject {
     TaskListModel m_tasks;
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
     bool m_presentationReady = false;
+    bool m_updatePending = false;
     quint64 m_activationGeneration = 0;
     QList<QMetaObject::Connection> m_modalConnections;
     QPointer<QMessageBox> m_limitDialog;

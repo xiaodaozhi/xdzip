@@ -3,6 +3,7 @@
 """Assemble six verified native package assets and immutable updater metadata."""
 import argparse
 import json
+import os
 from pathlib import Path, PurePosixPath
 import runpy
 import shutil
@@ -71,6 +72,10 @@ def stage(source, output, platform, version):
     }[platform]
     for suffix, path in files:
         shutil.copy2(path, output/f'xdzip-{version}-{suffix}')
+    if platform == 'macos':
+        from sparkle_bundle import sign_staged_archive
+        build_number = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()['build']
+        sign_staged_archive(output, version, build_number)
     if platform == 'windows':
         # The runtime was already audited byte-for-byte. Include its complete
         # relative tree, with no SDK tools or developer filesystem locations.
@@ -90,6 +95,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--platform', choices=['windows', 'linux', 'macos'])
     parser.add_argument('--repository', default='xiaodaozhi/xdzip')
+    parser.add_argument('--update-key-id', default=os.environ.get('XDZIP_UPDATE_KEY_ID'))
+    parser.add_argument('--require-update-signature', action='store_true')
     args = parser.parse_args()
     for value in (args.packages, args.output):
         if not value.resolve().is_relative_to(ROOT/'build'):
@@ -103,7 +110,13 @@ def main():
         if path.is_file(): shutil.copy2(path, args.output/path.name)
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=ROOT).strip()
     manifest = create(args.output, version, args.repository, revision)
+    from release_updates import prepare_appcast, sign_manifest
+    appcast_signed = prepare_appcast(args.output, manifest, required=args.require_update_signature)
     (args.output/'release.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
+    manifest_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature)
+    (args.output/'update-readiness.json').write_text(json.dumps(dict(schema_version=1,
+        signed_manifest=manifest_signed, signed_appcast=appcast_signed,
+        status='authenticated' if manifest_signed and appcast_signed else 'signing_not_configured'), indent=2)+'\n', encoding='utf-8')
     files = sorted(path for path in args.output.iterdir() if path.is_file() and path.name != 'SHA256SUMS')
     (args.output/'SHA256SUMS').write_text(''.join(f'{sha256(path)}  {path.name}\n' for path in files), encoding='utf-8')
     print('Complete immutable release manifest verified: ' + manifest['tag'])

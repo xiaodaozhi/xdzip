@@ -3,6 +3,7 @@ function(xdzip_rust_library target package stem)
     find_program(CARGO_EXECUTABLE cargo REQUIRED)
     find_program(RUSTC_EXECUTABLE rustc REQUIRED)
     find_package(Threads REQUIRED)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
     if(CMAKE_CROSSCOMPILING OR CMAKE_CONFIGURATION_TYPES OR CMAKE_OSX_ARCHITECTURES MATCHES ";")
         message(FATAL_ERROR "Use a native single-configuration build for the current Rust bridge")
     endif()
@@ -32,13 +33,19 @@ function(xdzip_rust_library target package stem)
         "${PROJECT_SOURCE_DIR}/crates/*.rs" "${PROJECT_SOURCE_DIR}/crates/Cargo.toml"
         "${PROJECT_SOURCE_DIR}/crates/*/Cargo.toml")
     file(MAKE_DIRECTORY "${output}/cxxbridge")
+    set(bridge_headers "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h")
+    if(package STREQUAL "xdzip-qt-bridge")
+        list(APPEND bridge_headers "${output}/cxxbridge/${package}/src/update.rs.h")
+    endif()
     add_custom_command(OUTPUT "${archive}"
-        BYPRODUCTS "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h"
-        COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${CARGO_EXECUTABLE}" build
-            --locked -p "${package}" --manifest-path "${PROJECT_SOURCE_DIR}/Cargo.toml"
+        BYPRODUCTS ${bridge_headers}
+        COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${Python3_EXECUTABLE}"
+            "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py" --cargo "${CARGO_EXECUTABLE}"
+            --root "${PROJECT_SOURCE_DIR}" --package "${package}"
             --target-dir "${output}" --target "${rust_host}" --profile "${cargo_profile}"
         DEPENDS ${rust_sources} "${PROJECT_SOURCE_DIR}/Cargo.lock" "${PROJECT_SOURCE_DIR}/Cargo.toml"
             "${PROJECT_SOURCE_DIR}/rust-toolchain.toml"
+            "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py"
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" VERBATIM)
     add_custom_target(${target}-build DEPENDS "${archive}")
     add_library(${target} STATIC IMPORTED GLOBAL)

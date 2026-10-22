@@ -14,6 +14,25 @@
 
 应用型 Rust workspace 提交 Cargo.lock。新增原生库和网络下载 build script 需专门审查；禁用未使用 features。弃用或漏洞无修复时按实际可达性决定升级、替换或关闭能力，记录原因。
 
+## 更新元数据与发行者验签
+
+`xdzip-update` 是不依赖 Qt 的清单、渠道和签名验证核心，产品通过独立 cxx 边界调用；发布工具和安装助手使用相同规则。选择 `ed25519-dalek = 2.2.0` 的安全 `VerifyingKey::verify_strict`、弱公钥拒绝和精确原始字节验签，不自行实现签名运算，不把 TLS 或 SHA-256 当作发行者签名。默认启用上游 fast、std、zeroize，未启用 batch、hazmat、legacy_compatibility、rand_core 或 PKCS#8；发布工具仅导入由所有者配置的 32 字节 seed，不生成生产私钥。
+
+| 直接或关键传递依赖 | 精确版本 | 来源、许可与用途 |
+| --- | --- | --- |
+| ed25519-dalek、curve25519-dalek | 2.2.0、4.1.3 | [dalek-cryptography](https://github.com/dalek-cryptography/curve25519-dalek)，BSD-3-Clause，Ed25519 与曲线运算 |
+| base64ct | 1.8.3，alloc | [RustCrypto/formats](https://github.com/RustCrypto/formats)，Apache-2.0 或 MIT，Sparkle 兼容签名编码 |
+| sha2 | 0.10.9 | [RustCrypto/hashes](https://github.com/RustCrypto/hashes)，MIT 或 Apache-2.0，安装包摘要 |
+| semver | 1.0.28 | [dtolnay/semver](https://github.com/dtolnay/semver)，MIT 或 Apache-2.0，有界产品版本解析 |
+| subtle | 2.6.1 | [dalek-cryptography/subtle](https://github.com/dalek-cryptography/subtle)，BSD-3-Clause，上游常量时间运算支持 |
+| zeroize | 1.8.2 | [RustCrypto/utils](https://github.com/RustCrypto/utils)，Apache-2.0 或 MIT，发布进程私钥临时容器归零 |
+
+serde 1.0.229 和 serde_json 1.0.154 复用锁定版本。其余传递依赖以 Cargo.lock 和实际特性树为准，包括 digest、block-buffer、crypto-common、generic-array、typenum、cpufeatures 与 derive 宏。curve25519-dalek 的构建脚本仅检测本地编译器能力，运行时可选择上游的 CPU 特定实现；不下载外部源码、不新增 C/C++ 密码学库或 OpenSSL 运行依赖。已有通知和 vendor 收集入口根据 Cargo metadata 纳入这些包，实际包的归属与许可仍由发行材料核验。
+
+保留系统密码学 API 的替代方案会分裂三平台验证规则，外部 OpenSSL CLI 会扩大运行依赖及参数边界，因此采用同一 Rust 核心。已知历史 [RUSTSEC-2022-0093](https://rustsec.org/advisories/RUSTSEC-2022-0093.html) 的旧版 Keypair API 不用于当前实现；[RUSTSEC-2024-0344](https://rustsec.org/advisories/RUSTSEC-2024-0344.html) 要求的 curve25519-dalek 修复边界为 4.1.3，锁定版本满足该边界。这两项核对不是全部依赖无漏洞的证明，后续升级继续核对维护与公告。
+
+回归同时验证精确字节变更、错误签名、未知／重复／弱公钥、空生产信任集、渠道回退、版本与 build 绑定、六包完整性和签名 feed。工具临时测试密钥只存在于测试代码和隔离工件，禁止写入产品信任资源。原生安装和跨平台结果分别记录，不以单平台核心测试替代安装验收。
+
 ## Windows 来源身份
 
 M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `file::information(&File)` 安全封装，比较卷序列号与文件索引。长度、修改／创建时间无法可靠检测 NTFS 同名替换；标准库对应文件索引接口尚非稳定 API，自行写 Win32 unsafe 会扩大审查范围。因此复用锁文件已有的库，不新增包版本。
@@ -48,6 +67,19 @@ GZIP 复用已锁定的 flate2 1.1.10、Rust backend、miniz_oxide，无新增�
 
 2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
 
+
+## macOS 更新提供者
+
+Mac 更新集成锁定 Sparkle 2.10.0，SDK、源码归档及完整许可正文的哈希统一见
+[依赖配置](../../scripts/sparkle-dependency.json)。它只负责应用更新，不参与归档解码。
+官方 SDK 原始许可包含 MIT、BSD-2-Clause 和 Zlib 授权正文，随 Mac notices 保留；
+对应源码交付同时保留锁定源码与 SDK 原始归档，支持离线准备和动态框架重链接。
+SDK 与实际部署包的字节或 arm64 分片对照分别记录，不宣称已重建上游二进制。
+
+普通 Mac CI 外部链接 SDK，不部署框架。专用打包在临时副本嵌入框架，删除非沙盒应用
+未启用的 XPC 服务，保留必要安装助手。裁剪、重定位后按助手、framework、应用顺序
+做 ad-hoc 完整性签名，助手保留所需 Hardened Runtime 和专属 entitlements，禁止套用
+通用原生库的重签命令。部署归属、SBOM、许可及源码材料随同版本记录。
 
 ## 实验安装器工具
 

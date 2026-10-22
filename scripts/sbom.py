@@ -45,6 +45,14 @@ def source_bom(inventory):
         bom['components'].append({'type':'library', 'bom-ref':'declared-qt-'+module,
             'name':'Qt '+module, 'version':inventory['qt_version'],
             'properties':properties(evidence='declared CMake module; transitive and plugin licenses require deployment review')})
+    for dependency in inventory.get('native_dependencies', []):
+        bom['components'].append({'type':'library', 'bom-ref':'declared-native-'+dependency['name'],
+            'name':dependency['name'], 'version':dependency['version'],
+            'licenses':[{'expression':dependency['license']}],
+            'externalReferences':[{'type':'distribution', 'url':dependency['sdk']['url']},
+                                  {'type':'vcs', 'url':dependency['source']['url']}],
+            'properties':properties(evidence='pinned native SDK declaration; deployed files require separate attribution',
+                                    sdk_sha256=dependency['sdk']['sha256'], source_sha256=dependency['source']['sha256'])})
     for asset in inventory['assets']:
         item = {'type':'file', 'bom-ref':'asset:'+asset['path'], 'name':asset['path'],
                 'hashes':[{'alg':'SHA-256','content':asset['sha256']} ]}
@@ -84,6 +92,14 @@ def artifact_bom(audit, source, attribution=None):
         if edge['from'] in refs and edge.get('to') in refs:
             dependencies.setdefault(edge['from'],set()).add(edge['to'])
     bom['dependencies'] = [{'ref':ref,'dependsOn':sorted(deps)} for ref,deps in sorted(dependencies.items())]
+    for package in audit.get('system_runtime_requirements',[]):
+        ref='system-runtime:'+package['package']
+        bom['components'].append({'type':'library','bom-ref':ref,'name':package['package'],'version':package['version'],
+            'purl':'pkg:deb/ubuntu/'+quote(package['package'],safe='')+'@'+quote(package['version'],safe=''),
+            'properties':properties(evidence=package['evidence'],source_package=package['source_package'],
+                source_version=package['source_version'],reason=package['reason'],scope='Required OS package; not bundled into application')})
+    if audit.get('system_runtime_requirements'):
+        bom['dependencies'].append({'ref':'xdzip-product','dependsOn':['system-runtime:'+p['package'] for p in audit['system_runtime_requirements']]})
     if attribution is not None:
         expected=hashlib.sha256(json.dumps(audit,sort_keys=True,separators=(',',':')).encode()).hexdigest()
         if attribution['audit_sha256']!=expected or attribution['identity']!=identity:

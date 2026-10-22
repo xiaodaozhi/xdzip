@@ -22,18 +22,40 @@ Item {
     readonly property bool integratedTitlebar: windowHost.integratedTitlebar
     width: windowHost.contentItem.width
     height: windowHost.contentItem.height
-    function close() { windowHost.close(); }
-    function raise() { windowHost.raise(); }
-    function requestActivate() { windowHost.requestActivate(); }
-    function startSystemMove() { windowHost.startSystemMove(); }
-    function showMinimized() { windowHost.showMinimized(); }
-    function toggleMaximized() { windowHost.toggleMaximized(); }
-    function hideSessionWindows() {
-        createWindow.close(); extractWindow.close(); taskWindow.close(); preflightWindow.close();
-        inspectorWindow.close(); conflictWindow.hide(); passwordWindow.clearSecret(); passwordWindow.hide();
+    function close() {
+        windowHost.close();
     }
-    function presentQuit() { quitWindow.present(); }
-    function presentAbout() { aboutWindow.present(); }
+    function raise() {
+        windowHost.raise();
+    }
+    function requestActivate() {
+        windowHost.requestActivate();
+    }
+    function startSystemMove() {
+        windowHost.startSystemMove();
+    }
+    function showMinimized() {
+        windowHost.showMinimized();
+    }
+    function toggleMaximized() {
+        windowHost.toggleMaximized();
+    }
+    function hideSessionWindows() {
+        createWindow.close();
+        extractWindow.close();
+        taskWindow.close();
+        preflightWindow.close();
+        inspectorWindow.close();
+        conflictWindow.hide();
+        passwordWindow.clearSecret();
+        passwordWindow.hide();
+    }
+    function presentQuit() {
+        quitWindow.present();
+    }
+    function presentAbout() {
+        aboutWindow.present();
+    }
     readonly property var globalTasks: sessionManager ? (visible ? sessionManager.tasks : []) : reader.tasks
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
@@ -50,7 +72,10 @@ Item {
     property bool welcomeWasBusy: false
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
         inspectorWindow.close();
-        Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
+        Qt.callLater(() => {
+            if (root.welcomeVisible && welcomePage.canOpen)
+                welcomePage.focusOpen();
+        });
     }
     property bool inspectorRequested: true
     readonly property bool inspectorVisible: inspectorRequested && width >= Theme.inspectorCollapseWidth
@@ -66,72 +91,159 @@ Item {
     readonly property bool desktopInspectorVisible: root.inspectorVisible || inspectorWindow.visible
     readonly property bool nativeMenuAvailable: desktopShell ? desktopShell.nativeMenuAvailable : false
     function requestDesktopExit() {
-        if (sessionManager) { sessionManager.requestQuit(); return; }
+        if (sessionManager) {
+            sessionManager.requestQuit();
+            return;
+        }
         desktopExitRequested = true;
         root.close();
     }
     function dispatchDesktopCommand(command) {
-        if (desktopShell) desktopShell.execute(command);
-        else runDesktopCommand(command);
+        if (desktopShell)
+            desktopShell.execute(command);
+        else
+            runDesktopCommand(command);
     }
     function runDesktopCommand(command) {
         const ready = !closedPage && reader.ready && !reader.browsingBusy;
         switch (command) {
-        case "open": if (reader.runtimeAvailable && !reader.browsingBusy) reader.chooseArchive(windowHost); break;
-        case "new": if (reader.runtimeAvailable && !reader.browsingBusy) createWindow.configure(); break;
-        case "settings": settingsWindow.configure(); break;
-        case "about": aboutWindow.present(); break;
-        case "closeArchive": if (sessionManager) sessionManager.closeSession(sessionIdentity); else if (ready) reader.closeArchive(); break;
-        case "copy": if (ready && reader.selectedCount > 0) { entryMenu.close(); reader.copySelection(false); } break;
-        case "selectAll": if (ready) reader.selectAll(true); break;
-        case "find": if (reader.browserQueryAvailable) toolbar.focusSearch(); break;
-        case "list": root.viewMode = "list"; break;
-        case "grid": root.viewMode = "grid"; break;
-        case "inspector": root.toggleInspector(); break;
-        case "extractAll": if (ready) reader.prepareExtraction(true); break;
-        case "extractSelected": if (ready && reader.selectedCount > 0) reader.prepareExtraction(false); break;
-        case "preflight": if (ready && reader.canPreflight) reader.inspectSelection(); break;
-        case "minimize": root.showMinimized(); break;
-        case "zoom": root.toggleMaximized(); break;
+        case "open":
+            if (reader.runtimeAvailable && !reader.browsingBusy)
+                reader.chooseArchive(windowHost);
+            break;
+        case "new":
+            if (reader.runtimeAvailable && !reader.browsingBusy)
+                createWindow.configure();
+            break;
+        case "testArchive":
+            if (ready && !reader.taskStarting)
+                reader.startArchiveTest();
+            break;
+        case "settings":
+            settingsWindow.configure();
+            break;
+        case "about":
+            aboutWindow.present();
+            break;
+        case "closeArchive":
+            if (sessionManager)
+                sessionManager.closeSession(sessionIdentity);
+            else if (ready)
+                reader.closeArchive();
+            break;
+        case "copy":
+            if (ready && reader.selectedCount > 0) {
+                entryMenu.close();
+                reader.copySelection(false);
+            }
+            break;
+        case "selectAll":
+            if (ready)
+                reader.selectAll(true);
+            break;
+        case "find":
+            if (reader.browserQueryAvailable)
+                toolbar.focusSearch();
+            break;
+        case "list":
+            root.viewMode = "list";
+            break;
+        case "grid":
+            root.viewMode = "grid";
+            break;
+        case "inspector":
+            root.toggleInspector();
+            break;
+        case "extractAll":
+            if (ready)
+                reader.prepareExtraction(true);
+            break;
+        case "extractSelected":
+            if (ready && reader.selectedCount > 0)
+                reader.prepareExtraction(false);
+            break;
+        case "preflight":
+            if (ready && reader.canPreflight)
+                reader.inspectSelection();
+            break;
+        case "minimize":
+            root.showMinimized();
+            break;
+        case "zoom":
+            root.toggleMaximized();
+            break;
         }
     }
     function phaseLabel(status: string): string {
-        return ({queued: qsTrId("ui.03f07c12d5fa"), preparing: qsTrId("ui.a1b9ba49c8a2"), running: taskSnapshot.creating ? qsTrId("ui.f066ff44699e") : qsTrId("ui.8865f5103610"), verifying: qsTrId("ui.b87ef7da7959"),
-                 waiting: qsTrId("ui.9a6cfa6abc53"), waiting_password: qsTrId("password.waiting"), committing: qsTrId("ui.f5312f1e339a"), cancelling: qsTrId("ui.684398ae6c51"),
-                 cleaning: qsTrId("ui.b4966391542e"), succeeded: qsTrId("ui.c0b3fbff51cc"), failed: qsTrId("ui.28384d7afd2e"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
+        return ({
+                queued: qsTrId("ui.03f07c12d5fa"),
+                preparing: qsTrId("ui.a1b9ba49c8a2"),
+                running: taskSnapshot.creating ? qsTrId("ui.f066ff44699e") : qsTrId("ui.8865f5103610"),
+                verifying: qsTrId("ui.b87ef7da7959"),
+                waiting: qsTrId("ui.9a6cfa6abc53"),
+                waiting_password: qsTrId("password.waiting"),
+                committing: qsTrId("ui.f5312f1e339a"),
+                cancelling: qsTrId("ui.684398ae6c51"),
+                cleaning: qsTrId("ui.b4966391542e"),
+                succeeded: qsTrId("ui.c0b3fbff51cc"),
+                failed: qsTrId("ui.28384d7afd2e"),
+                cancelled: qsTrId("ui.a37778f17c5f")
+            })[status] || qsTrId("ui.b53be09930f4");
     }
     function taskStateLabel(status: string): string {
-        return ({queued: qsTrId("ui.d6f766f2adf5"), preparing: qsTrId("ui.b53be09930f4"), running: qsTrId("ui.dc9591e56d50"),
-                 verifying: qsTrId("ui.784f9b54ae2b"), waiting: qsTrId("ui.8fb3a3261b43"), waiting_password: qsTrId("password.waiting"), committing: qsTrId("ui.a1a1720d3eb5"),
-                 cancelling: qsTrId("ui.72eea71385de"), cleaning: qsTrId("ui.718b6372d7fb"), succeeded: qsTrId("ui.f28461bb49c8"),
-                 failed: qsTrId("ui.6707de42c29d"), cancelled: qsTrId("ui.a37778f17c5f")})[status] || qsTrId("ui.b53be09930f4");
+        return ({
+                queued: qsTrId("ui.d6f766f2adf5"),
+                preparing: qsTrId("ui.b53be09930f4"),
+                running: qsTrId("ui.dc9591e56d50"),
+                verifying: qsTrId("ui.784f9b54ae2b"),
+                waiting: qsTrId("ui.8fb3a3261b43"),
+                waiting_password: qsTrId("password.waiting"),
+                committing: qsTrId("ui.a1a1720d3eb5"),
+                cancelling: qsTrId("ui.72eea71385de"),
+                cleaning: qsTrId("ui.718b6372d7fb"),
+                succeeded: qsTrId("ui.f28461bb49c8"),
+                failed: qsTrId("ui.6707de42c29d"),
+                cancelled: qsTrId("ui.a37778f17c5f")
+            })[status] || qsTrId("ui.b53be09930f4");
     }
     function showTask(id: string) {
         activeTaskId = id;
         taskSnapshot = reader.tasks.find(t => t.id === id) || {};
         taskWindow.present();
-        if (taskSnapshot.status === "waiting" && taskSnapshot.promptId) conflictWindow.present();
-        if (taskSnapshot.status === "waiting_password" && taskSnapshot.passwordPromptId) passwordWindow.revealPrompt();
+        if (taskSnapshot.status === "waiting" && taskSnapshot.promptId)
+            conflictWindow.present();
+        if (taskSnapshot.status === "waiting_password" && taskSnapshot.passwordPromptId)
+            passwordWindow.revealPrompt();
     }
     function taskFraction(): real {
         const t = taskSnapshot;
-        if (t.status === "succeeded") return 1;
+        if (t.status === "succeeded")
+            return 1;
         const bytes = Number(t.declaredBytes || 0);
         const files = Number(t.files || 0);
-        return Math.min(.99, bytes ? Number(t.decodedBytes || 0) / bytes : files ?
-            (Number(t.committedFiles || 0) + Number(t.skippedFiles || 0)) / files : 0);
+        if (t.kind === "check")
+            return Math.min(.99, bytes ? Number(t.verifiedBytes || 0) / bytes : files ? Number(t.verifiedFiles || 0) / files : 0);
+        return Math.min(.99, bytes ? Number(t.decodedBytes || 0) / bytes : files ? (Number(t.committedFiles || 0) + Number(t.skippedFiles || 0)) / files : 0);
     }
     function averageSpeed(): string {
         const seconds = Number(taskSnapshot.elapsedMs || 0) / 1000;
-        if (taskSnapshot.terminal && seconds < 2) return "—";
-        return seconds >= 2 && Number(taskSnapshot.writtenBytes || 0) > 0 ?
-            formatSize(String(Math.round(Number(taskSnapshot.writtenBytes) / seconds))) + "/s" : qsTrId("ui.f4199761edc9");
+        if (taskSnapshot.terminal && seconds < 2)
+            return "—";
+        const processed = Number(taskSnapshot.kind === "check" ? taskSnapshot.readBytes || 0 : taskSnapshot.writtenBytes || 0);
+        return seconds >= 2 && processed > 0 ? formatSize(String(Math.round(processed / seconds))) + "/s" : qsTrId("ui.f4199761edc9");
     }
     function remainingTime(): string {
         const t = taskSnapshot;
         const seconds = Number(t.elapsedMs || 0) / 1000;
+        if (t.kind === "check" && !t.totalKnown)
+            return "—";
+        if (t.kind === "check") {
+            const verified = Number(t.verifiedBytes || 0);
+            return seconds >= 2 && verified > 0 && t.status === "running" ? qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - verified) / (verified / seconds))) : "—";
+        }
         const written = Number(t.creating ? t.decodedBytes || 0 : t.writtenBytes || 0);
-        if (seconds < 2 || !written || t.status !== "running") return "—";
+        if (seconds < 2 || !written || t.status !== "running")
+            return "—";
         return qsTrId("ui.d6c40aaea130").arg(Math.ceil(Math.max(0, Number(t.declaredBytes || 0) - Number(t.decodedBytes || 0)) / (written / seconds)));
     }
     property string viewMode: "list"
@@ -151,7 +263,10 @@ Item {
             inspectorWindow.requestActivate();
         } else {
             inspectorWindow.close();
-            extractWindow.close(); taskWindow.close(); conflictWindow.close(); quitWindow.close();
+            extractWindow.close();
+            taskWindow.close();
+            conflictWindow.close();
+            quitWindow.close();
             root.inspectorRequested = !root.inspectorVisible;
         }
     }
@@ -199,7 +314,8 @@ Item {
     }
     // Human-readable display only; exact integer strings remain in the model.
     function formatSize(value: string): string {
-        if (!/^\d+$/.test(value)) return "—";
+        if (!/^\d+$/.test(value))
+            return "—";
         const size = Number(value);
         if (size < 1024)
             return value + " B";
@@ -212,26 +328,48 @@ Item {
     BrowserController {
         id: reader
         objectName: "browserController"
-        onReadyToClose: if (!root.sessionManager) root.close()
+        onReadyToClose: if (!root.sessionManager)
+            root.close()
         onArchiveOpened: path => AppSettings.rememberArchive(path)
-        onPreflightReady: if (!root.sessionClosed) preflightWindow.present()
-        onExtractionReady: if (!root.sessionClosed) extractWindow.configure()
-        onCreationStarted: id => { createWindow.close(); if (!root.sessionClosed) root.showTask(id); }
+        onPreflightReady: if (!root.sessionClosed)
+            preflightWindow.present()
+        onExtractionReady: if (!root.sessionClosed)
+            extractWindow.configure()
+        onCreationStarted: id => {
+            createWindow.close();
+            if (!root.sessionClosed)
+                root.showTask(id);
+        }
         onExtractionStarted: id => {
             extractWindow.close();
             const task = reader.tasks.find(t => t.id === id);
-            if (!root.sessionClosed && !(task && task.openAccepted)) root.showTask(id);
+            if (!root.sessionClosed && !(task && task.openAccepted))
+                root.showTask(id);
+        }
+        onArchiveTestStarted: id => {
+            if (!root.sessionClosed)
+                root.showTask(id);
         }
         onTasksChanged: {
             const previous = root.taskSnapshot;
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
-            if (root.taskSnapshot.openAccepted && (!previous.openAccepted || previous.id !== root.taskSnapshot.id)) taskWindow.close();
-            if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible) conflictWindow.present();
-            if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId) conflictWindow.close();
-            if (!root.sessionManager && root.waitBeforeExit && activeTaskCount === 0) { root.allowExit = true; root.close(); }
+            if (root.taskSnapshot.openAccepted && (!previous.openAccepted || previous.id !== root.taskSnapshot.id))
+                taskWindow.close();
+            if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible)
+                conflictWindow.present();
+            if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId)
+                conflictWindow.close();
+            if (!root.sessionManager && root.waitBeforeExit && activeTaskCount === 0) {
+                root.allowExit = true;
+                root.close();
+            }
         }
         onChanged: {
-            if (root.welcomeVisible && !busy && root.welcomeWasBusy) Qt.callLater(() => { if (root.welcomeVisible && welcomePage.canOpen) welcomePage.focusOpen(); });
+            if (root.welcomeVisible && !busy && root.welcomeWasBusy)
+                Qt.callLater(() => {
+                    if (root.welcomeVisible && welcomePage.canOpen)
+                        welcomePage.focusOpen();
+                });
             root.welcomeWasBusy = root.welcomeVisible && busy && title.length > 0;
             if (browsingBusy || root.contextEntry.session !== sessionId) {
                 entryMenu.close();
@@ -249,26 +387,35 @@ Item {
             }
         }
     }
-    CreateWindow { id: createWindow; owner: root.windowHost; controller: reader }
-    ExtractWindow { id: extractWindow; owner: root.windowHost; controller: reader }
+    CreateWindow {
+        id: createWindow
+        owner: root.windowHost
+        controller: reader
+    }
+    ExtractWindow {
+        id: extractWindow
+        owner: root.windowHost
+        controller: reader
+    }
     TaskWindow {
         id: taskWindow
         owner: root.windowHost
         archiveName: root.taskSnapshot.archive || reader.extractionIntent.archive || ""
-        destination: root.taskSnapshot.target || reader.extractionIntent.target || ""
+        destination: taskWindow.checking ? root.taskSnapshot.source || "" : root.taskSnapshot.target || reader.extractionIntent.target || ""
         currentFile: root.taskSnapshot.current || qsTrId("ui.f07335163e36")
         fraction: root.taskFraction()
         creating: root.taskSnapshot.creating || false
+        operationKind: root.taskSnapshot.kind || (creating ? "create" : "extract")
         totalKnown: root.taskSnapshot.totalKnown || false
         stopping: ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
         taskStatus: root.taskSnapshot.status || "queued"
-        phaseSummary: root.phaseLabel(taskStatus)
+        phaseSummary: taskWindow.checking && taskStatus === "running" ? qsTrId("integrity.running") : root.phaseLabel(taskStatus)
         errorSummary: root.taskSnapshot.error || ""
         cleanupWarning: root.taskSnapshot.cleanupWarning || false
         outcomeUncertain: root.taskSnapshot.outcomeUncertain || false
-        processedSummary: taskWindow.creating ? qsTrId("ui.a1c9c21cfbef").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTrId("ui.8bce13df4816").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
-        fileCountSummary: taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
-        resultSummary: qsTrId("ui.51fe7c80c764").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
+        processedSummary: taskWindow.checking ? qsTrId("integrity.processed").arg(root.formatSize(root.taskSnapshot.readBytes || "0")).arg(root.formatSize(root.taskSnapshot.verifiedBytes || "0")) : taskWindow.creating ? qsTrId("ui.a1c9c21cfbef").arg(root.formatSize(root.taskSnapshot.decodedBytes || "0")).arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")) : qsTrId("ui.8bce13df4816").arg(root.formatSize(root.taskSnapshot.writtenBytes || "0")).arg(root.formatSize(root.taskSnapshot.committedBytes || "0"))
+        fileCountSummary: taskWindow.checking ? qsTrId("integrity.files").arg(root.taskSnapshot.verifiedFiles || "0").arg(root.taskSnapshot.files || "0") : taskWindow.creating ? qsTrId("ui.1f43814c240b").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.terminal ? qsTrId("ui.b61825c80ed6") : qsTrId("ui.483f8dd01321")) : qsTrId("ui.ed52971e9256").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.files || "0").arg(root.taskSnapshot.skippedFiles || "0")
+        resultSummary: taskWindow.checking ? qsTrId("integrity.result").arg(root.taskSnapshot.verifiedFiles || "0").arg(Math.max(0, Number(root.taskSnapshot.files || 0) - Number(root.taskSnapshot.verifiedFiles || 0))) : qsTrId("ui.51fe7c80c764").arg(root.taskSnapshot.committedFiles || "0").arg(root.taskSnapshot.skippedFiles || "0").arg(root.taskSnapshot.createdDirectories || "0")
         resultTask: root.taskSnapshot
         speedSummary: root.averageSpeed()
         remainingSummary: root.remainingTime()
@@ -279,8 +426,13 @@ Item {
     }
     ConflictWindow {
         id: conflictWindow
-        owner: root.windowHost; task: root.taskSnapshot; sizeFormatter: root.formatSize
-        onDecision: (policy, all) => { if (reader.decideTask(root.activeTaskId, root.taskSnapshot.promptId || "", policy, all)) conflictWindow.close(); }
+        owner: root.windowHost
+        task: root.taskSnapshot
+        sizeFormatter: root.formatSize
+        onDecision: (policy, all) => {
+            if (reader.decideTask(root.activeTaskId, root.taskSnapshot.promptId || "", policy, all))
+                conflictWindow.close();
+        }
     }
     PasswordWindow {
         id: passwordWindow
@@ -291,9 +443,27 @@ Item {
     QuitWindow {
         id: quitWindow
         owner: root.windowHost
-        onClosing: if (!stopping && !root.waitBeforeExit) { if (root.sessionManager) root.sessionManager.cancelQuit(); root.restartAfterClose = false; root.desktopExitRequested = false; }
-        onWaitRequested: { root.waitBeforeExit = true; if (root.sessionManager) root.sessionManager.confirmQuit(true); close(); }
-        onCancelAndQuitRequested: { stopping = true; if (root.sessionManager) root.sessionManager.confirmQuit(false); else { root.allowExit = true; reader.requestClose(); } }
+        onClosing: if (!stopping && !root.waitBeforeExit) {
+            if (root.sessionManager)
+                root.sessionManager.cancelQuit();
+            root.restartAfterClose = false;
+            root.desktopExitRequested = false;
+        }
+        onWaitRequested: {
+            root.waitBeforeExit = true;
+            if (root.sessionManager)
+                root.sessionManager.confirmQuit(true);
+            close();
+        }
+        onCancelAndQuitRequested: {
+            stopping = true;
+            if (root.sessionManager)
+                root.sessionManager.confirmQuit(false);
+            else {
+                root.allowExit = true;
+                reader.requestClose();
+            }
+        }
     }
     PreflightWindow {
         id: preflightWindow
@@ -331,15 +501,32 @@ Item {
     Connections {
         target: createWindow
         function onVisibleChanged() {
-            if (!createWindow.visible && root.welcomeVisible) welcomePage.focusCreate();
+            if (!createWindow.visible && root.welcomeVisible)
+                welcomePage.focusCreate();
         }
     }
-    AboutWindow { id: aboutWindow; owner: settingsWindow.visible ? settingsWindow : root.windowHost }
-    SettingsWindow { id: settingsWindow; owner: root.windowHost; onAboutRequested: root.sessionManager ? root.sessionManager.showAboutFor(root) : root.presentAbout(); onRestartConfirmationRequested: restartWindow.present() }
+    AboutWindow {
+        id: aboutWindow
+        owner: settingsWindow.visible ? settingsWindow : root.windowHost
+    }
+    SettingsWindow {
+        id: settingsWindow
+        owner: root.windowHost
+        onAboutRequested: root.sessionManager ? root.sessionManager.showAboutFor(root) : root.presentAbout()
+        onRestartConfirmationRequested: restartWindow.present()
+    }
     RestartWindow {
         id: restartWindow
         owner: root.windowHost
-        onRestartRequested: { close(); if (root.sessionManager) root.sessionManager.requestRestart(); else { root.restartAfterClose = true; root.requestDesktopExit(); } }
+        onRestartRequested: {
+            close();
+            if (root.sessionManager)
+                root.sessionManager.requestRestart();
+            else {
+                root.restartAfterClose = true;
+                root.requestDesktopExit();
+            }
+        }
     }
     Connections {
         target: AppSettings
@@ -587,6 +774,8 @@ Item {
             sessionControls: root.sessionManager !== null
             onTabSelected: identity => root.sessionManager.activateId(identity)
             onTabClosed: identity => root.sessionManager.closeSession(identity)
+            onOtherTabsClosed: identity => root.sessionManager.closeOtherSessions(identity)
+            onRightTabsClosed: identity => root.sessionManager.closeSessionsToRight(identity)
             onTabMoved: (identity, index) => root.sessionManager.moveTab(identity, index)
             integratedTitlebar: root.integratedTitlebar
             windowsControls: root.windowsTitlebar
@@ -609,10 +798,12 @@ Item {
             canOpen: reader.runtimeAvailable && !reader.browsingBusy
             canSelect: reader.ready && !reader.browsingBusy
             canSearch: reader.browserQueryAvailable
+            canTest: reader.ready && !reader.browsingBusy && !reader.taskStarting
             canInspect: reader.ready && !reader.browsingBusy && reader.canPreflight
             hasSelection: reader.selectedCount > 0
             onNewRequested: root.dispatchDesktopCommand("new")
             onOpenRequested: root.dispatchDesktopCommand("open")
+            onTestRequested: root.dispatchDesktopCommand("testArchive")
             onInspectRequested: root.dispatchDesktopCommand("preflight")
             onExtractRequested: all => root.dispatchDesktopCommand(all ? "extractAll" : "extractSelected")
             onResetSortRequested: reader.sortByColumn(-1)
@@ -643,7 +834,10 @@ Item {
             onArchiveDropped: urls => {
                 if (reader.openDroppedUrls(urls)) {
                     // Activate after DropArea has accepted the drag and Finder has ended it.
-                    Qt.callLater(function () { root.raise(); root.requestActivate(); });
+                    Qt.callLater(function () {
+                        root.raise();
+                        root.requestActivate();
+                    });
                 }
             }
         }
@@ -1006,11 +1200,6 @@ Item {
                         color: Theme.textSecondary
                         font.pixelSize: Theme.mainSecondarySize
                     }
-                    Text {
-                        text: qsTrId("ui.7fe646004f2a")
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.mainSecondarySize
-                    }
                 }
             }
             ColumnLayout {
@@ -1020,117 +1209,136 @@ Item {
                 PaneHeader {
                     id: fileHeader
                     rightInset: root.inspectorVisible ? Theme.mainPaneInset : Theme.mainInspectorRightInset
-                    actionInset: root.inspectorVisible ? 0 : Theme.mainIconButtonSize + Theme.mainUnits(10)
+                    actionInset: fileActions.width + Theme.mainFileActionGap
                     objectName: "filePaneHeader"
                     Layout.fillWidth: true
-                    Breadcrumb {
+                    Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        available: reader.browserQueryAvailable
-                        entries: reader.title.length ? [
-                            {
-                                id: "",
-                                label: reader.title,
-                                current: false
-                            },
-                            ...(reader.breadcrumbs.length ? reader.breadcrumbs : [
-                                    {
-                                        id: "",
-                                        label: qsTrId("ui.42ee2863b6d7"),
-                                        current: true
-                                    }
-                                ])] : [
-                            {
-                                id: "",
-                                label: qsTrId("ui.989ea71171f9"),
-                                current: true
+                        Layout.minimumWidth: 0
+                        Breadcrumb {
+                            anchors.fill: parent
+                            available: reader.browserQueryAvailable
+                            entries: reader.title.length ? [
+                                {
+                                    id: "",
+                                    label: reader.title,
+                                    current: false
+                                },
+                                ...(reader.breadcrumbs.length ? reader.breadcrumbs : [
+                                        {
+                                            id: "",
+                                            label: qsTrId("ui.42ee2863b6d7"),
+                                            current: true
+                                        }
+                                    ])] : [
+                                {
+                                    id: "",
+                                    label: qsTrId("ui.989ea71171f9"),
+                                    current: true
+                                }
+                            ]
+                            onActivated: function (nodeId) {
+                                if (nodeId.length)
+                                    reader.navigateDirectory(nodeId);
+                                else
+                                    reader.showRoot();
                             }
-                        ]
-                        onActivated: function (nodeId) {
-                            if (nodeId.length)
-                                reader.navigateDirectory(nodeId);
-                            else
-                                reader.showRoot();
                         }
                     }
-                    Text {
-                        text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.total)) : ""
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.mainSummarySize
-                    }
-                    ArchiveAction {
-                        id: viewButton
-                        objectName: "browserViewMenuButton"
-                        Layout.minimumWidth: Theme.mainIconButtonSize
-                        Layout.preferredWidth: Theme.mainIconButtonSize
-                        Layout.maximumWidth: Theme.mainIconButtonSize
-                        Layout.minimumHeight: Theme.mainIconButtonSize
-                        Layout.preferredHeight: Theme.mainIconButtonSize
-                        Layout.maximumHeight: Theme.mainIconButtonSize
-                        Layout.alignment: Qt.AlignVCenter
-                        asset: root.viewMode === "list" ? "view-list-selected" : "view-list"
-                        leftPadding: Theme.mainUnits(8)
-                        rightPadding: Theme.mainUnits(8)
-                        selected: root.viewMode === "list"
-                        Accessible.name: qsTrId("ui.d56220435194")
-                        explanation: Accessible.name
-                        onClicked: root.viewMode = "list"
-                        TapHandler {
-                            acceptedButtons: Qt.RightButton
-                            onTapped: viewMenu.popup(viewButton, 0, viewButton.height + Theme.mainPopupGap)
-                        }
-                    }
-                    ArchiveAction {
-                        objectName: "browserGridButton"
-                        Layout.minimumWidth: Theme.mainIconButtonSize
-                        Layout.preferredWidth: Theme.mainIconButtonSize
-                        Layout.maximumWidth: Theme.mainIconButtonSize
-                        Layout.minimumHeight: Theme.mainIconButtonSize
-                        Layout.preferredHeight: Theme.mainIconButtonSize
-                        Layout.maximumHeight: Theme.mainIconButtonSize
-                        Layout.alignment: Qt.AlignVCenter
-                        asset: root.viewMode === "grid" ? "view-grid-selected" : "view-grid"
-                        leftPadding: Theme.mainUnits(5)
-                        rightPadding: Theme.mainUnits(5)
-                        selected: root.viewMode === "grid"
-                        Accessible.name: qsTrId("ui.a35441db5cd1")
-                        explanation: Accessible.name
-                        onClicked: root.viewMode = "grid"
-                    }
-                    ArchiveAction {
-                        objectName: "browserSortMenuButton"
-                        Layout.minimumWidth: Theme.mainIconButtonSize
-                        Layout.preferredWidth: Theme.mainIconButtonSize
-                        Layout.maximumWidth: Theme.mainIconButtonSize
-                        Layout.minimumHeight: Theme.mainIconButtonSize
-                        Layout.preferredHeight: Theme.mainIconButtonSize
-                        Layout.maximumHeight: Theme.mainIconButtonSize
-                        Layout.alignment: Qt.AlignVCenter
-                        asset: "sort"
-                        leftPadding: 2
-                        rightPadding: 2
-                        glyphSize: Theme.mainUnits(28)
-                        Accessible.name: qsTrId("ui.1ce6b1d7c95c")
-                        explanation: Accessible.name
-                        enabled: reader.browserQueryAvailable
-                        onClicked: {
-                            const p = mapToItem(root.contentItem, width, height);
-                            sortMenu.popup(root.contentItem, p.x - sortMenu.width, p.y + Theme.mainPopupGap);
-                        }
-                    }
-                    ArchiveAction {
-                        objectName: "inspectorToggle"
+                    Row {
+                        id: fileActions
+                        objectName: "filePaneActions"
                         parent: fileHeader
                         anchors.right: parent.right
                         anchors.rightMargin: fileHeader.rightInset
                         anchors.verticalCenter: parent.verticalCenter
-                        width: Theme.mainIconButtonSize
+                        width: implicitWidth
                         height: Theme.mainIconButtonSize
-                        visible: !root.inspectorVisible
-                        asset: "panel"
-                        Accessible.name: qsTrId("ui.749ca86aef0e")
-                        explanation: Accessible.name
-                        onClicked: root.toggleInspector()
+                        spacing: Theme.mainFileActionGap
+                        Text {
+                            height: Theme.mainIconButtonSize
+                            verticalAlignment: Text.AlignVCenter
+                            text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.total)) : ""
+                            color: Theme.textSecondary
+                            font.pixelSize: Theme.mainSummarySize
+                        }
+                        ArchiveAction {
+                            id: viewButton
+                            width: Theme.mainIconButtonSize
+                            height: Theme.mainIconButtonSize
+                            objectName: "browserViewMenuButton"
+                            Layout.minimumWidth: Theme.mainIconButtonSize
+                            Layout.preferredWidth: Theme.mainIconButtonSize
+                            Layout.maximumWidth: Theme.mainIconButtonSize
+                            Layout.minimumHeight: Theme.mainIconButtonSize
+                            Layout.preferredHeight: Theme.mainIconButtonSize
+                            Layout.maximumHeight: Theme.mainIconButtonSize
+                            Layout.alignment: Qt.AlignVCenter
+                            asset: root.viewMode === "list" ? "view-list-selected" : "view-list"
+                            leftPadding: Theme.mainUnits(8)
+                            rightPadding: Theme.mainUnits(8)
+                            selected: root.viewMode === "list"
+                            Accessible.name: qsTrId("ui.d56220435194")
+                            explanation: Accessible.name
+                            onClicked: root.viewMode = "list"
+                            TapHandler {
+                                acceptedButtons: Qt.RightButton
+                                onTapped: viewMenu.popup(viewButton, 0, viewButton.height + Theme.mainPopupGap)
+                            }
+                        }
+                        ArchiveAction {
+                            objectName: "browserGridButton"
+                            width: Theme.mainIconButtonSize
+                            height: Theme.mainIconButtonSize
+                            Layout.minimumWidth: Theme.mainIconButtonSize
+                            Layout.preferredWidth: Theme.mainIconButtonSize
+                            Layout.maximumWidth: Theme.mainIconButtonSize
+                            Layout.minimumHeight: Theme.mainIconButtonSize
+                            Layout.preferredHeight: Theme.mainIconButtonSize
+                            Layout.maximumHeight: Theme.mainIconButtonSize
+                            Layout.alignment: Qt.AlignVCenter
+                            asset: root.viewMode === "grid" ? "view-grid-selected" : "view-grid"
+                            leftPadding: Theme.mainUnits(5)
+                            rightPadding: Theme.mainUnits(5)
+                            selected: root.viewMode === "grid"
+                            Accessible.name: qsTrId("ui.a35441db5cd1")
+                            explanation: Accessible.name
+                            onClicked: root.viewMode = "grid"
+                        }
+                        ArchiveAction {
+                            objectName: "browserSortMenuButton"
+                            width: Theme.mainIconButtonSize
+                            height: Theme.mainIconButtonSize
+                            Layout.minimumWidth: Theme.mainIconButtonSize
+                            Layout.preferredWidth: Theme.mainIconButtonSize
+                            Layout.maximumWidth: Theme.mainIconButtonSize
+                            Layout.minimumHeight: Theme.mainIconButtonSize
+                            Layout.preferredHeight: Theme.mainIconButtonSize
+                            Layout.maximumHeight: Theme.mainIconButtonSize
+                            Layout.alignment: Qt.AlignVCenter
+                            asset: "sort"
+                            leftPadding: 2
+                            rightPadding: 2
+                            glyphSize: Theme.mainUnits(28)
+                            Accessible.name: qsTrId("ui.1ce6b1d7c95c")
+                            explanation: Accessible.name
+                            enabled: reader.browserQueryAvailable
+                            onClicked: {
+                                const p = mapToItem(root.contentItem, width, height);
+                                sortMenu.popup(root.contentItem, p.x - sortMenu.width, p.y + Theme.mainPopupGap);
+                            }
+                        }
+                        ArchiveAction {
+                            objectName: "inspectorToggle"
+                            width: Theme.mainIconButtonSize
+                            height: Theme.mainIconButtonSize
+                            visible: !root.inspectorVisible
+                            asset: "panel"
+                            Accessible.name: qsTrId("ui.749ca86aef0e")
+                            explanation: Accessible.name
+                            onClicked: root.toggleInspector()
+                        }
                     }
                 }
                 Rectangle {
@@ -1150,12 +1358,14 @@ Item {
                                 required property int index
                                 width: table.columnSize(index)
                                 height: parent && parent.parent ? parent.parent.height : 0
-                                leftPadding: table.columnLeftInset(index, true)
+                                readonly property bool sorted: reader.sortOrder > 0 && (reader.sortOrder < 9 ? Math.floor((reader.sortOrder - 1) / 2) : Math.floor((reader.sortOrder - 3) / 2)) === index
+                                leftPadding: Math.max(table.columnLeftInset(index, true), sorted ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
                                 rightPadding: table.columnRightInset(index)
                                 horizontalAlignment: index === 1 || index === 2 ? Text.AlignRight : Text.AlignLeft
                                 verticalAlignment: Text.AlignVCenter
                                 objectName: "sort-column-" + index
                                 text: modelData
+                                elide: Text.ElideRight
                                 color: Theme.text
                                 font.pixelSize: Theme.mainHeaderSize
                                 activeFocusOnTab: true
@@ -1172,7 +1382,10 @@ Item {
                                     reader.sortByColumn(index)
                                 TapHandler {
                                     enabled: reader.browserQueryAvailable
-                                    onTapped: reader.sortByColumn(columnHeader.index)
+                                    onTapped: eventPoint => {
+                                        if (eventPoint.position.x < columnHeader.width - Theme.mainColumnResizeHitWidth)
+                                            reader.sortByColumn(columnHeader.index);
+                                    }
                                 }
                                 TapHandler {
                                     acceptedButtons: Qt.RightButton
@@ -1188,11 +1401,18 @@ Item {
                                     border.width: 0
                                     border.color: Theme.accent
                                 }
+                                TextMetrics {
+                                    id: headerMetrics
+                                    font: columnHeader.font
+                                    text: columnHeader.text
+                                }
                                 Text {
+                                    id: sortIndicator
+                                    objectName: "sort-indicator-" + columnHeader.index
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: columnHeader.index === 0 ? Theme.mainNameHeaderInset + Theme.mainUnits(44) * Theme.fontScale : Theme.mainUnits(4)
+                                    x: (columnHeader.index === 1 || columnHeader.index === 2 ? Math.max(columnHeader.leftPadding, columnHeader.width - columnHeader.rightPadding - headerMetrics.advanceWidth) : columnHeader.leftPadding) - width - Theme.mainSortIndicatorGap
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
-                                    visible: reader.sortOrder > 0 && (reader.sortOrder < 9 ? Math.floor((reader.sortOrder - 1) / 2) : Math.floor((reader.sortOrder - 3) / 2)) === columnHeader.index
+                                    visible: columnHeader.sorted
                                     color: Theme.accentInk
                                     font.pixelSize: Theme.mainHeaderSize
                                 }
@@ -1203,6 +1423,35 @@ Item {
                                     height: Theme.mainUnits(22)
                                     visible: columnHeader.index < 4
                                     color: Theme.border
+                                }
+                                MouseArea {
+                                    id: resizeHandle
+                                    objectName: "column-resize-" + columnHeader.index
+                                    x: parent.width - width
+                                    width: Theme.mainColumnResizeHitWidth
+                                    height: parent.height
+                                    z: 3
+                                    cursorShape: Qt.SplitHCursor
+                                    acceptedButtons: Qt.LeftButton
+                                    preventStealing: true
+                                    property real originX: 0
+                                    property real originWidth: 0
+                                    property bool resetting: false
+                                    onPressed: mouse => {
+                                        resetting = false;
+                                        originX = mapToItem(root, mouse.x, mouse.y).x;
+                                        originWidth = table.columnSize(columnHeader.index);
+                                    }
+                                    onPositionChanged: mouse => {
+                                        if (!pressed || resetting)
+                                            return;
+                                        const width = originWidth + mapToItem(root, mouse.x, mouse.y).x - originX;
+                                        BrowserLayout.resizeColumn(columnHeader.index, Math.max(table.minimumColumnWidth(columnHeader.index), width) / Math.max(1, Theme.fontScale));
+                                    }
+                                    onDoubleClicked: {
+                                        resetting = true;
+                                        BrowserLayout.resetColumn(columnHeader.index);
+                                    }
                                 }
                                 SelectionCheck {
                                     objectName: "selectPage"
@@ -1232,6 +1481,7 @@ Item {
                     }
                     TableView {
                         id: table
+                        objectName: "archiveTable"
                         visible: root.viewMode === "list"
                         anchors.fill: parent
                         clip: true
@@ -1239,13 +1489,20 @@ Item {
                         HoverHandler {
                             enabled: root.viewMode === "list"
                             onPointChanged: table.hoveredRow = table.cellAtPosition(point.position, true).y
-                            onHoveredChanged: if (!hovered) table.hoveredRow = -1
+                            onHoveredChanged: if (!hovered)
+                                table.hoveredRow = -1
                         }
                         model: reader.entries
                         function columnSize(column: int): real {
                             const scale = Math.max(1, Theme.fontScale);
                             const other = [Theme.mainOriginalColumnWidth, Theme.mainPackedColumnWidth, Theme.mainTypeColumnWidth, Theme.mainDateColumnWidth];
-                            return column === 0 ? Math.max(Theme.mainUnits(250), width - other.reduce((a, b) => a + b, 0) * scale) : other[column - 1] * scale;
+                            const custom = BrowserLayout.columnWidths;
+                            if (custom[column] > 0)
+                                return Math.round(Math.max(minimumColumnWidth(column), custom[column] * scale));
+                            return Math.round(column === 0 ? Math.max(Theme.mainUnits(250), width - other.reduce((sum, value, index) => sum + Math.round((custom[index + 1] || value) * scale), 0)) : other[column - 1] * scale);
+                        }
+                        function minimumColumnWidth(column: int): real {
+                            return (column === 0 ? Theme.mainNameColumnMinimumWidth : Theme.mainColumnMinimumWidth) * Math.max(1, Theme.fontScale);
                         }
                         function columnLeftInset(column, header) {
                             return column === 0 ? (header ? Theme.mainNameHeaderInset : Theme.mainNameTextInset) : column === 3 ? Theme.mainTypeColumnInset : column === 4 ? Theme.mainDateColumnInset : 0;
@@ -1261,6 +1518,12 @@ Item {
                         Connections {
                             target: Theme
                             function onFontScaleChanged() {
+                                table.forceLayout();
+                            }
+                        }
+                        Connections {
+                            target: BrowserLayout
+                            function onColumnWidthsChanged() {
                                 table.forceLayout();
                             }
                         }
@@ -1637,7 +1900,9 @@ Item {
                                 taskMenu.restoreCurrentItem(selected);
                             }
                         }
-                        CommandMenuSeparator { commandVisible: reader.browsingBusy }
+                        CommandMenuSeparator {
+                            commandVisible: reader.browsingBusy
+                        }
                         CommandMenuItem {
                             text: qsTrId("ui.caf06adff4f1")
                             commandVisible: reader.browsingBusy

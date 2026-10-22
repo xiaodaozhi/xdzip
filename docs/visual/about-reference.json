@@ -19,8 +19,16 @@
     "125%",
     "150%",
     "dirty",
-    "unknown-revision"
+    "unknown-revision",
+    "update-checking",
+    "update-current",
+    "update-available",
+    "update-downloading",
+    "update-waiting-tasks",
+    "update-error",
+    "update-manual-install"
   ],
   "artwork_source": "design/assets/brand/xdzip.svg",
-  "macos_artwork_source": "design/assets/brand/macos/xdzip.png"
+  "macos_artwork_source": "design/assets/brand/macos/xdzip.png",
+  "update_progress_height": 6
 }

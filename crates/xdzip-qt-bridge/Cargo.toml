@@ -9,6 +9,7 @@ publish.workspace = true
 crate-type = ["staticlib", "rlib"]
 [dependencies]
 xdzip-domain = { path = "../xdzip-domain" }
+xdzip-update = { path = "../xdzip-update" }
 cxx.workspace = true
 xdzip-runtime = { path = "../xdzip-runtime" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }

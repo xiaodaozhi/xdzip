@@ -18,15 +18,28 @@ class InstalledRuntimeGuard final {
   public:
     bool acquire() {
 #ifdef Q_OS_WIN
+        // The updater/installer holds this gate before waiting for the old runtime.
+        // Check both sides of registration so a concurrent install cannot admit a launch.
+        const auto updating = [] {
+            const HANDLE gate = OpenMutexW(SYNCHRONIZE, FALSE, L"Local\\xdzip.desktop.updating");
+            if (gate) {
+                CloseHandle(gate);
+                return true;
+            }
+            return GetLastError() != ERROR_FILE_NOT_FOUND;
+        };
+        if (updating())
+            return false;
         m_handle = CreateMutexW(nullptr, FALSE, L"Local\\xdzip.desktop.running");
-        return m_handle != nullptr;
+        return m_handle != nullptr && !updating();
 #elif defined(Q_OS_LINUX)
         if (!QCoreApplication::applicationFilePath().startsWith(
                 QStringLiteral("/opt/xdzip/versions/")))
             return true;
         m_lock.setFileName(QStringLiteral("/run/xdzip/usage.lock"));
         return m_lock.open(QIODevice::ReadOnly) && flock(m_lock.handle(), LOCK_SH | LOCK_NB) == 0 &&
-               !QFile::exists(QStringLiteral("/run/xdzip/installing"));
+               !QFile::exists(QStringLiteral("/run/xdzip/installing")) &&
+               !QFile::exists(QStringLiteral("/run/xdzip/updating"));
 #else
         return true;
 #endif

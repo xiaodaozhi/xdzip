@@ -19,6 +19,8 @@ from deployment_audit import digest, linux_imports, native, within
 ROOT=Path(__file__).resolve().parents[1]
 STATIC_MODULES={'Xdzip.Settings','Xdzip.Native'}
 OPTIONAL_NATIVE=('QtQuick.Controls.Windows','QtQuick.Controls.macOS','QtQuick.Controls.iOS','QtQuick.NativeStyle')
+TLS_PLUGIN='plugins/tls/libqopensslbackend.so'
+TLS_SYSTEM_PACKAGES=('libssl3t64','ca-certificates')
 
 
 def command(*args,env=None):
@@ -72,6 +74,29 @@ def runtime_origin(path,sdk,output):
     raise ValueError('Unexpected external runtime dependency: '+path.name)
 
 
+def tls_requirements(sdk,system_root=Path('/')):
+    plugin=sdk/TLS_PLUGIN
+    if not plugin.is_file() or not within(plugin,sdk):
+        raise ValueError('Required OpenSSL TLS backend missing from pinned Qt SDK')
+    records=[]
+    for name in TLS_SYSTEM_PACKAGES:
+        fields=command('dpkg-query','-W','-f=${Status}\t${Version}\t${source:Package}\t${source:Version}',name).split('\t')
+        if len(fields)!=4 or fields[0]!='install ok installed' or not all(fields[1:]):
+            raise ValueError('Required TLS system package is not installed: '+name)
+        records.append({'package':name,'version':fields[1],'source_package':fields[2],'source_version':fields[3],
+                        'reason':'OpenSSL backend runtime loading' if name=='libssl3t64' else 'System HTTPS certificate trust store',
+                        'evidence':'Ubuntu dpkg-query installed package and source identity'})
+    bundle=system_root/'etc/ssl/certs/ca-certificates.crt'
+    if not bundle.is_file() or not bundle.stat().st_size:
+        raise ValueError('System HTTPS certificate trust store is missing or empty')
+    # The OpenSSL backend can dlopen these SONAMEs, so ldd alone is insufficient.
+    for name in ('libssl.so.3','libcrypto.so.3'):
+        library=system_root/'usr/lib/x86_64-linux-gnu'/name
+        if not library.is_file() or system_package(library.resolve()).split(':')[0]!='libssl3t64':
+            raise ValueError('TLS runtime library has an unexpected system owner: '+name)
+    return plugin,records
+
+
 def deploy(app,sdk,output,notices):
     if sys.platform!='linux' or platform.machine()!='x86_64':raise ValueError('Deployment requires native Linux x86_64')
     app,sdk,output=app.resolve(),sdk.resolve(),output.resolve()
@@ -83,6 +108,7 @@ def deploy(app,sdk,output,notices):
     env=dict(os.environ,LD_LIBRARY_PATH=str(sdk/'lib'))
     if command(str(sdk/'bin/qmake'),'-query','QT_VERSION',env=env).strip()!='6.8.2':
         raise ValueError('Linux deployment requires the pinned Qt 6.8.2 SDK')
+    tls_plugin,tls_packages=tls_requirements(sdk)
     scanner=sdk/'libexec/qmlimportscanner'
     entries=json.loads(command(str(scanner),'-rootPath',str(ROOT/'apps/desktop/ui'),'-importPath',str(sdk/'qml'),env=env))
     roots,omitted=qml_roots(entries,sdk)
@@ -94,6 +120,13 @@ def deploy(app,sdk,output,notices):
         copied.append({'source':'qt-sdk/'+source.relative_to(sdk).as_posix() if within(source,sdk) else 'product',
                        'path':dest.relative_to(output).as_posix()})
     copy(app,output/'bin/xdzip')
+    helper = app.with_name('xdzip-update-helper')
+    if not helper.is_file() or helper.is_symlink() or not native(helper, 'linux'):
+        raise ValueError('Expected standalone native update helper beside application')
+    helper_imports=linux_imports(command('ldd',str(helper)))
+    if any(location is None or runtime_origin(location,sdk,output)!='system' for _,location in helper_imports):
+        raise ValueError('Update helper must not depend on the replaced Qt runtime')
+    copy(helper,output/'bin/xdzip-update-helper')
     for name in roots:
         source=sdk/'qml'/name
         for item in source.rglob('*'):
@@ -108,11 +141,12 @@ def deploy(app,sdk,output,notices):
     for group in ['imageformats','iconengines','platforminputcontexts','xcbglintegrations']:
         source=sdk/'plugins'/group
         if source.is_dir():shutil.copytree(source,output/'plugins'/group)
+    copy(tls_plugin,output/TLS_PLUGIN)
     translations=output/'translations';translations.mkdir()
     for path in (sdk/'translations').glob('qtbase_*.qm'):copy(path,translations/path.name)
     if not (translations/'qtbase_zh_CN.qm').is_file():raise ValueError('System Chinese Qt translations missing')
     pending=[p for p in output.rglob('*') if p.is_file() and native(p,'linux')]
-    inspected=set();packages=set();system_libraries=set()
+    inspected=set();packages=set(TLS_SYSTEM_PACKAGES);system_libraries={'libssl.so.3','libcrypto.so.3'}
     while pending:
         binary=pending.pop()
         if binary in inspected:continue
@@ -160,6 +194,7 @@ exec "$xdzip_dir/bin/xdzip" "$@"
             'entry':'xdzip','executable':'bin/xdzip','qml_roots':roots,'optional_native_modules_omitted':omitted,
             'patched_elf_files':len(inspected),'copied_libraries':[x for x in copied if x['path'].startswith('lib/')],
             'system_packages':sorted(packages),'system_libraries':sorted(system_libraries),
+            'system_runtime_requirements':tls_packages,
             'limits':['Relocatable runtime directory, not an installer or universal Linux compatibility claim.',
                       'Desktop IME/readers, physical GPU, Wayland, clean install/upgrade and full license attribution remain separate gates.']}
     # Bind original SDK bytes to final bytes after patchelf; filenames alone do

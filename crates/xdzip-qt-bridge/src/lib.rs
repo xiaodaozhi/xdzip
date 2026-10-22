@@ -1,4 +1,6 @@
 //! Product cxx boundary: unique command and blocking event handles, no GUI archive calls.
+mod update;
+
 use xdzip_domain::identity::EntryId;
 use xdzip_runtime::service;
 
@@ -28,6 +30,7 @@ mod ffi {
         Create,
         InspectInputs,
         OpenEntry,
+        Check,
     }
     struct MetadataLimits {
         entries: u64,
@@ -98,6 +101,9 @@ mod ffi {
         error: String,
     }
     struct TaskSnapshot {
+        kind: String,
+        source: String,
+        format: String,
         creating: bool,
         total_known: bool,
         id: u64,
@@ -109,6 +115,9 @@ mod ffi {
         files: u64,
         declared_bytes: u64,
         decoded_bytes: u64,
+        read_bytes: u64,
+        verified_files: u64,
+        verified_bytes: u64,
         written_bytes: u64,
         committed_bytes: u64,
         committed_files: u64,
@@ -301,6 +310,9 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         }
         let value = match command.kind {
+            ffi::CommandKind::Check => Command::Check {
+                session: command.session,
+            },
             ffi::CommandKind::InspectInputs => Command::InspectInputs(command.inputs),
             ffi::CommandKind::Create => {
                 let Some(conflict) =
@@ -545,7 +557,7 @@ impl EventReceiver {
             }
             service::Payload::Task(task) => {
                 event.kind = ffi::EventKind::TaskUpdate;
-                event.task = task_snapshot(task);
+                event.task = task_snapshot(*task);
             }
             service::Payload::Snapshot(session) => {
                 event.kind = ffi::EventKind::Snapshot;
@@ -567,6 +579,9 @@ impl EventReceiver {
 
 fn empty_task() -> ffi::TaskSnapshot {
     ffi::TaskSnapshot {
+        kind: String::new(),
+        source: String::new(),
+        format: String::new(),
         creating: false,
         total_known: false,
         id: 0,
@@ -578,6 +593,9 @@ fn empty_task() -> ffi::TaskSnapshot {
         files: 0,
         declared_bytes: 0,
         decoded_bytes: 0,
+        read_bytes: 0,
+        verified_files: 0,
+        verified_bytes: 0,
         written_bytes: 0,
         committed_bytes: 0,
         committed_files: 0,
@@ -608,6 +626,9 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
     let prompt = s.prompt;
     let password = s.password_prompt;
     ffi::TaskSnapshot {
+        kind: s.kind.code().into(),
+        source: s.source,
+        format: s.format.into(),
         creating: s.creating,
         total_known: s.total_known,
         id: s.id,
@@ -619,6 +640,9 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
         files: s.files,
         declared_bytes: s.declared_bytes,
         decoded_bytes: s.decoded_bytes,
+        read_bytes: s.read_bytes,
+        verified_files: s.verified_files,
+        verified_bytes: s.verified_bytes,
         written_bytes: s.written_bytes,
         committed_bytes: s.committed_bytes,
         committed_files: s.committed_files,
@@ -661,6 +685,87 @@ fn task_snapshot(s: xdzip_runtime::extraction::Snapshot) -> ffi::TaskSnapshot {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn check_command_delivers_read_only_kind_and_verified_counters() {
+        fn command(kind: ffi::CommandKind, session: u64, path: String) -> ffi::Command {
+            ffi::Command {
+                kind,
+                session,
+                path,
+                directory: String::new(),
+                text: String::new(),
+                offset: 0,
+                query: 0,
+                generation: 0,
+                revision: 0,
+                sort: 0,
+                selected: Vec::new(),
+                selectors: Vec::new(),
+                inputs: Vec::new(),
+                method: 0,
+                level: 0,
+                volume_bytes: 0,
+                encrypt: false,
+                password: String::new(),
+                all: false,
+                create_folder: false,
+                conflict: 0,
+                allow_high_ratio: false,
+            }
+        }
+        let mut runtime = new_runtime().unwrap();
+        let client = runtime.take_client().unwrap();
+        let mut receiver = runtime.take_receiver().unwrap();
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/extract/stored.zip");
+        let request = client.submit(command(
+            ffi::CommandKind::Open,
+            0,
+            path.to_string_lossy().into_owned(),
+        ));
+        assert!(request.status == ffi::Admission::Accepted);
+        let mut session = 0;
+        loop {
+            let event = receiver.next_event();
+            if event.kind == ffi::EventKind::Page {
+                session = event.session;
+            }
+            if event.kind == ffi::EventKind::Finished && event.request_id == request.request_id {
+                assert!(event.error.is_empty());
+                break;
+            }
+        }
+        assert_ne!(session, 0);
+        let request = client.submit(command(ffi::CommandKind::Check, session, String::new()));
+        assert!(request.status == ffi::Admission::Accepted);
+        let (mut accepted, mut finished, mut terminal) = (false, false, false);
+        while !accepted || !finished || !terminal {
+            let event = receiver.next_event();
+            if event.kind == ffi::EventKind::TaskAccepted {
+                accepted = true;
+            }
+            if event.kind == ffi::EventKind::Finished && event.request_id == request.request_id {
+                assert!(event.error.is_empty());
+                finished = true;
+            }
+            if event.kind == ffi::EventKind::TaskUpdate && event.task.status == "succeeded" {
+                assert_eq!(event.task.kind, "check");
+                assert!(
+                    !event.task.creating
+                        && event.task.target.is_empty()
+                        && event.task.open_path.is_empty()
+                );
+                assert_eq!(event.task.verified_files, 1);
+                assert!(event.task.verified_bytes > 0 && event.task.read_bytes > 0);
+                assert_eq!(event.task.written_bytes, 0);
+                assert_eq!(event.task.committed_files, 0);
+                terminal = true;
+            }
+        }
+        client.shutdown();
+        while receiver.next_event().kind != ffi::EventKind::ShutdownReady {}
+        assert!(receiver.next_event().kind == ffi::EventKind::End);
+    }
     #[test]
     fn metadata_summary_is_exact_above_64_bits_and_bounded() {
         assert_eq!(sum_declared_sizes(&[]), "0");

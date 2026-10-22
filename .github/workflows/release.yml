@@ -37,6 +37,7 @@ jobs:
         run: python3 scripts/publish-release.py --draft-only --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
   native:
     needs: draft
+    environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
     strategy:
       fail-fast: false
       matrix:
@@ -55,6 +56,11 @@ jobs:
       - name: Native build, validation, deployment and package lifecycle
         shell: pwsh
         run: ./scripts/ci-release.ps1
+      - name: Sign the final immutable macOS update archive
+        if: runner.os == 'macOS' && !inputs.validate_only
+        env:
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python3 scripts/sign-macos-update.py --directory build/release-assets
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: release-${{ runner.os }}
@@ -93,6 +99,7 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           cargo test --workspace --locked
           cargo clippy --workspace --all-targets --locked -- -D warnings
+          python3 scripts/test-release-updates.py
           python3 scripts/prepare-source-delivery.py --output build/release-source
           mkdir -p build/release-assets
           VERSION=$(python3 -c 'import runpy; print(runpy.run_path("scripts/sync-version.py")["version_info"]()["display_version"])')
@@ -105,6 +112,7 @@ jobs:
           retention-days: 30
   publish:
     needs: [draft, native, source]
+    environment: ${{ inputs.validate_only && 'release-validation' || 'release-signing' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -112,6 +120,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: release-*
@@ -121,10 +130,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
           VALIDATE_ONLY: ${{ inputs.validate_only || false }}
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
         run: |
           mkdir -p build/packages
           find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS build/downloaded/release-source -maxdepth 1 -type f -exec cp {} build/packages/ \;
-          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY"
+          rustup toolchain install 1.99.0 --profile minimal
+          UPDATE_ARGS=()
+          if [ "$VALIDATE_ONLY" != true ]; then UPDATE_ARGS+=(--require-update-signature); fi
+          python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" "${UPDATE_ARGS[@]}"
           if [ "$VALIDATE_ONLY" != true ]; then
             python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"
           fi

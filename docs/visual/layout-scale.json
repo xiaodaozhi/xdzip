@@ -36,6 +36,11 @@
     },
     "interaction": {
       "iconButtonSize": 28,
+      "fileActionGap": 6.4,
+      "sortIndicatorGap": 6,
+      "columnResizeHitWidth": 8,
+      "columnMinimumWidth": 64,
+      "nameColumnMinimumWidth": 160,
       "toolbarContentGap": 6,
       "breadcrumbHeight": 28,
       "popupGap": 4,

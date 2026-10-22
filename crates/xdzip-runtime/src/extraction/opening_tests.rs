@@ -20,6 +20,24 @@ fn numbered(root: &Path, b: &[u8], size: usize) -> Vec<PathBuf> {
         })
         .collect()
 }
+fn assert_read_only_check(archive: &crate::Archive) {
+    let job = archive.check_job(&Cancellation::default()).unwrap();
+    let mut done = None;
+    crate::checking::run(job, 71, &Control::default(), &mut |s| {
+        if s.status.terminal() {
+            done = Some(s);
+        }
+    });
+    let done = done.unwrap();
+    assert_eq!(done.status, Status::Succeeded, "{}", done.error);
+    assert_eq!(done.kind, crate::extraction::TaskKind::Check);
+    assert_eq!(
+        done.verified_files,
+        archive.rows.iter().filter(|r| !r.directory).count() as u64
+    );
+    assert_eq!(done.committed_files, 0);
+    assert_eq!(done.written_bytes, 0);
+}
 #[test]
 fn numbered_parts_browse_from_any_volume_and_extract_across_headers_and_payload() {
     for fixture in [
@@ -39,6 +57,7 @@ fn numbered_parts_browse_from_any_volume_and_extract_across_headers_and_payload(
             assert_eq!(a.output_folder(), "分卷");
         }
         let a = crate::Archive::open(&parts[0], &Cancellation::default()).unwrap();
+        assert_read_only_check(&a);
         let done = execute(&a, output.options(), &Control::default(), |_| {});
         assert_eq!(done.status, Status::Succeeded, "{fixture}: {}", done.error);
         assert_eq!(done.committed_files, 1);
@@ -137,6 +156,7 @@ fn pkzip_disk_relative_directory_is_normalized_without_reassembling_payload() {
             assert_eq!(a.len(), archive(fixture).len());
         }
         let a = crate::Archive::open(&parts[0], &Cancellation::default()).unwrap();
+        assert_read_only_check(&a);
         let done = execute(&a, output.options(), &Control::default(), |_| {});
         assert_eq!(done.status, Status::Succeeded, "{fixture}: {}", done.error);
         std::fs::remove_file(parts.last().unwrap()).unwrap();

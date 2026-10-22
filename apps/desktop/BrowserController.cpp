@@ -633,7 +633,7 @@ QVariantList BrowserController::tasks() const {
 }
 int BrowserController::activeTaskCount() const {
     const bool preparing =
-        m_busy && (m_result.extraction || m_result.creating) &&
+        m_busy && (m_result.extraction || m_result.creating || m_result.checking) &&
         (m_result.taskId.isEmpty() || !m_tasks.contains(m_result.taskId.toULongLong()));
     return static_cast<int>(
                std::count_if(m_tasks.cbegin(), m_tasks.cend(),
@@ -650,6 +650,7 @@ QVariantMap BrowserController::passwordPrompt() const {
             return {{"taskId", QString::number(it.key())},
                     {"promptId", task.value("passwordPromptId")},
                     {"name", task.value("passwordPromptName")},
+                    {"kind", task.value("kind")},
                     {"retry", task.value("passwordRetry")}};
     }
     return {};
@@ -845,6 +846,15 @@ void BrowserController::startExtraction(const QString &target, bool all, bool cr
     m_pendingOpenAfter = openAfter;
     submit(std::move(command));
 }
+void BrowserController::startArchiveTest() {
+    if (m_busy || !m_ready || !runtimeAvailable())
+        return;
+    m_pendingOpenAfter = false;
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Check;
+    command.session = m_session.toULongLong();
+    submit(std::move(command));
+}
 void BrowserController::cancelTask(const QString &id) {
     m_connection->cancelTask(id.toULongLong());
 }
@@ -1005,6 +1015,7 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
     m_result.creating = command.kind == xdzip::reader::CommandKind::Create;
+    m_result.checking = command.kind == xdzip::reader::CommandKind::Check;
     m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
@@ -1012,6 +1023,7 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_busy = true;
     m_message = m_result.inputPreview  ? qtTrId("ui.013b4f811abe")
                 : m_result.creating    ? qtTrId("ui.33495b6653c6")
+                : m_result.checking    ? qtTrId("integrity.starting")
                 : m_result.extraction  ? qtTrId("ui.8cf09709f8f6")
                 : m_result.targetCheck ? qtTrId("ui.2ae4afff62f1")
                 : preflight            ? qtTrId("ui.d37d23d13df0")
@@ -1028,7 +1040,8 @@ void BrowserController::attemptSubmission() {
     static QPointer<BrowserController> heavyOwner;
     const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::Create ||
                        m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
-                       m_waiting->kind == xdzip::reader::CommandKind::Extract;
+                       m_waiting->kind == xdzip::reader::CommandKind::Extract ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Check;
     if (heavy && heavyOwner && heavyOwner != this &&
         (heavyOwner->activeTaskCount() > 0 || heavyOwner->taskStarting())) {
         m_admissionRetry.start(100);
@@ -1108,10 +1121,16 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"externalReader", t.external_reader},
             {"outputParts", QString::number(t.output_parts)},
             {"creating", t.creating},
+            {"kind", text(t.kind)},
+            {"format", text(t.format)},
+            {"source", text(t.source)},
             {"totalKnown", t.total_known},
-            {"archive", t.creating ? QVariant(QFileInfo(text(t.target)).fileName())
-                                   : m_tasks.value(t.id).value(
-                                         "archive", m_extractionIntent.value("archive"))},
+            {"archive", t.creating
+                            ? QVariant(QFileInfo(text(t.target)).fileName())
+                            : m_tasks.value(t.id).value(
+                                  "archive", text(t.kind) == "check"
+                                                 ? QVariant(QFileInfo(text(t.source)).fileName())
+                                                 : m_extractionIntent.value("archive"))},
             {"id", QString::number(t.id)},
             {"session", QString::number(t.session)},
             {"status", status},
@@ -1121,6 +1140,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"files", QString::number(t.files)},
             {"declaredBytes", QString::number(t.declared_bytes)},
             {"decodedBytes", QString::number(t.decoded_bytes)},
+            {"readBytes", QString::number(t.read_bytes)},
+            {"verifiedFiles", QString::number(t.verified_files)},
+            {"verifiedBytes", QString::number(t.verified_bytes)},
             {"writtenBytes", QString::number(t.written_bytes)},
             {"committedBytes", QString::number(t.committed_bytes)},
             {"committedFiles", QString::number(t.committed_files)},
@@ -1374,8 +1396,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         // Fetch bounded transport batches until the current query is complete. The model
         // commits once, preserving row identity and avoiding visible paging or partial sorts.
         if (m_result.error.isEmpty() && !m_result.preflight && !m_result.closeSession &&
-            !m_result.extraction && !m_result.creating && !m_result.targetCheck &&
-            m_result.rows.size() < m_result.total) {
+            !m_result.extraction && !m_result.creating && !m_result.checking &&
+            !m_result.targetCheck && m_result.rows.size() < m_result.total) {
             xdzip::reader::Command command{};
             command.kind = xdzip::reader::CommandKind::Browse;
             command.session = m_result.session.toULongLong();
@@ -1392,9 +1414,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             return;
         }
         m_message = explain(m_result.error);
-        if (m_result.extraction || m_result.creating || m_result.targetCheck) {
+        if (m_result.extraction || m_result.creating || m_result.checking || m_result.targetCheck) {
             const bool extraction = m_result.extraction;
             const bool creating = m_result.creating;
+            const bool checking = m_result.checking;
             if (creating)
                 m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
             const QString taskId = m_result.taskId;
@@ -1416,6 +1439,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 emit extractionStarted(taskId);
             if (creating && !taskId.isEmpty())
                 emit creationStarted(taskId);
+            if (checking && !taskId.isEmpty())
+                emit archiveTestStarted(taskId);
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
             return;
         }

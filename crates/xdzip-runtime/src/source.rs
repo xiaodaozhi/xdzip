@@ -282,6 +282,9 @@ impl Source {
     pub fn name(&self) -> &str {
         source_name(&self.name)
     }
+    pub fn display_path(&self) -> &std::path::Path {
+        &self.name
+    }
     pub fn is_split(&self) -> bool {
         self.split
     }

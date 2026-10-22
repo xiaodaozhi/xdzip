@@ -150,7 +150,7 @@ class DisposableBundleTests(unittest.TestCase):
                     self.assertEqual(app, staged)
                     phases.append('optimize')
                     return optimization
-                def sign(app):
+                def sign(app, *_):
                     self.assertEqual(app, staged)
                     phases.append('sign')
                 def validate(app):
@@ -161,6 +161,10 @@ class DisposableBundleTests(unittest.TestCase):
                      patch.object(mac.sys,'platform','darwin'), patch.object(mac,'checked',side_effect=checked), \
                      patch.object(mac,'transient_registrations',side_effect=lambda _:nullcontext()), \
                      patch.object(mac,'optimize_bundle',side_effect=optimize), \
+                     patch.object(mac,'sdk_from_build',return_value=qt), \
+                     patch.object(mac,'embed_sparkle',return_value=staged/'Contents/Frameworks/Sparkle.framework'), \
+                     patch.object(mac,'signing_metadata',return_value=[]), \
+                     patch.object(mac,'attribute_sparkle'), \
                      patch.object(mac,'validate_optimized_bundle',side_effect=validate), \
                      patch.object(mac,'sign_local',side_effect=sign), patch.object(mac,'native',return_value=False), \
                      patch.object(mac,'audit',return_value={'status':'passed'}), \
@@ -193,6 +197,9 @@ class DisposableBundleTests(unittest.TestCase):
             with patch.object(ls,'ROOT',root), patch.object(mac,'ROOT',root), \
                  patch.object(mac.sys,'platform','darwin'), patch.object(mac,'checked',side_effect=checked), \
                  patch.object(mac,'transient_registrations',side_effect=lambda _:nullcontext()), \
+                 patch.object(mac,'sdk_from_build',return_value=qt), \
+                 patch.object(mac,'embed_sparkle',return_value=root/'Sparkle.framework'), \
+                 patch.object(mac,'signing_metadata',return_value=[]), \
                  patch.object(mac,'optimize_bundle',side_effect=ValueError('invalid deployment')), \
                  patch.object(mac,'sign_local') as sign, patch.object(mac,'audit') as audit:
                 with self.assertRaisesRegex(ValueError,'invalid deployment'):mac.build(source,qt,output)

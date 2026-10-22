@@ -31,6 +31,15 @@
     "folder",
     "archive",
     "archive-add",
-    "document-warning"
+    "document-warning",
+    "file-document",
+    "file-spreadsheet",
+    "file-presentation",
+    "file-audio",
+    "file-video",
+    "file-archive",
+    "file-installer",
+    "file-font",
+    "file-disk"
   ]
 }

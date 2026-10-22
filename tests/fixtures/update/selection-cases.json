@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "comparisons": [
+    ["0.1.0-alpha.9", "0.1.0-alpha.10", -1],
+    ["0.1.0-dev.99", "0.1.0-alpha.1", -1],
+    ["0.1.0-beta.1", "0.1.0-alpha.99", 1],
+    ["0.1.0-rc.1", "0.1.0", -1],
+    ["0.2.0", "0.1.99", 1],
+    ["0.1.0", "0.1.0", 0],
+    ["0.1.0-alpha.01", "0.1.0", 2],
+    ["0.1.0-alpha.0", "0.1.0", 2],
+    ["0.1.0-alpha.1+metadata", "0.1.0", 2],
+    ["65536.0.0", "0.1.0", 2]
+  ],
+  "eligibility": [
+    ["v0.1.0-beta.1", "0.1.0-alpha.6", "alpha", true],
+    ["v0.2.0-alpha.1", "0.1.0-beta.1", "beta", false],
+    ["v0.2.0-beta.1", "0.1.0-rc.1", "rc", false],
+    ["v0.2.0-rc.1", "0.1.0", "stable", false],
+    ["v0.2.0", "0.1.0", "stable", true],
+    ["v0.1.0-alpha.1", "0.1.0-dev.99", "development", true],
+    ["v0.1.0", "0.1.0-alpha.6", "stable", false],
+    ["0.2.0", "0.1.0", "stable", false],
+    ["v0.1.0-alpha.6", "0.1.0-alpha.6", "alpha", false]
+  ]
+}

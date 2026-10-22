@@ -17,6 +17,7 @@ UninstallDisplayIcon=@RUNTIME_DIR@\xdzip.exe
 Compression=lzma2
 SolidCompression=yes
 AppMutex=Local\xdzip.desktop.running
+SetupMutex=Local\xdzip.desktop.installing
 CloseApplications=no
 RestartApplications=no
 ChangesAssociations=yes
@@ -37,6 +38,8 @@ chinesesimplified.LicenseLabel3=以下协议仅适用于 Microsoft VC++ 运行�
 [CustomMessages]
 english.IncompatibleSettings=This installation uses newer settings. Downgrade was refused to protect your data.
 chinesesimplified.IncompatibleSettings=现有安装使用了更新的设置格式。为保护数据，已拒绝回退。
+english.UpdateAlreadyRunning=Another xdzip update is in progress. Wait for it to finish and try again.
+chinesesimplified.UpdateAlreadyRunning=另一个 xdzip 更新正在进行，请等待完成后重试。
 
 english.InvalidInstalledFiles=The installed file manifest is invalid. Repair or uninstall the existing installation before trying again.
 chinesesimplified.InvalidInstalledFiles=现有安装文件清单无效。请修复或卸载现有安装后重试。
@@ -62,10 +65,37 @@ Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueN
 Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "xdzip"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "ZIP, TAR, TAR.GZ"
 Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: dword; ValueName: "SettingsSchema"; ValueData: "1"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: string; ValueName: "Location"; ValueData: "{app}"
+Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: string; ValueName: "InstallId"; ValueData: "56DF0D26-2B26-40C4-9E85-FF0F8C8937CA"
 @ASSOCIATIONS@
 
 [Code]
+var UpdateGateHandle: THandle;
+
 @CLEANUP_CODE@
+
+function NativeCreateMutex(Attributes: LongWord; InitialOwner: Boolean; Name: String): THandle;
+external 'CreateMutexW@kernel32.dll stdcall';
+function NativeGetLastError(): LongWord;
+external 'GetLastError@kernel32.dll stdcall';
+
+function AcquireUpdateGate(): Boolean;
+var Transaction: String; I: Integer;
+begin
+  Result := False;
+  Transaction := ExpandConstant('{param:XDZIPUPDATE|}');
+  if Transaction <> '' then begin
+    if Length(Transaction) <> 32 then exit;
+    for I := 1 to Length(Transaction) do
+      if Pos(Transaction[I], '0123456789abcdef') = 0 then exit;
+    { The already-running updater owns both handles through Setup completion. }
+    Result := CheckForMutexes('Local\xdzip.desktop.updating') and
+      CheckForMutexes('Local\xdzip.desktop.update.' + Transaction);
+    exit;
+  end;
+  UpdateGateHandle := NativeCreateMutex(0, False, 'Local\xdzip.desktop.updating');
+  Result := (UpdateGateHandle <> 0) and (NativeGetLastError() <> 183);
+end;
 
 function InitializeSetup(): Boolean;
 var Schema: Cardinal;
@@ -73,4 +103,9 @@ begin
   Result := not RegQueryDWordValue(HKCU, 'Software\xdzip\Install', 'SettingsSchema', Schema) or (Schema <= 1);
   if not Result then
     SuppressibleMsgBox(ExpandConstant('{cm:IncompatibleSettings}'), mbCriticalError, MB_OK, IDOK);
+  if Result then begin
+    Result := AcquireUpdateGate();
+    if not Result then
+      SuppressibleMsgBox(ExpandConstant('{cm:UpdateAlreadyRunning}'), mbError, MB_OK, IDOK);
+  end;
 end;

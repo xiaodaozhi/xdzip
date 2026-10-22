@@ -35,47 +35,25 @@ Menu {
             returnFocusItem.forceActiveFocus(Qt.PopupFocusReason);
     }
     background: Item {
-        // Rasterize one blurred rounded silhouette. Stacked expanded rectangles
-        // produce visible bands and disproportionately dark corners.
-        Canvas {
+        // Shared nine-slice pixels are ready with the menu's first frame.
+        // Stretch only the straight edges, preserving the authored corner blur.
+        BorderImage {
             id: shadow
             objectName: "menuShadowLayer-0"
             readonly property real inset: Theme.menuShadowRadius * 2
+            readonly property int fontPercent: Math.round(Theme.fontScale * 100)
             x: -inset; y: -inset
             width: parent.width + inset * 2
             height: parent.height + inset * 2
-            renderTarget: Canvas.Image
-            onWidthChanged: requestPaint()
-            onHeightChanged: requestPaint()
-            Connections {
-                target: Theme
-                function onDarkChanged() { shadow.requestPaint(); }
-                function onFontScaleChanged() { shadow.requestPaint(); }
-            }
-            onPaint: {
-                const ctx = getContext("2d");
-                ctx.reset();
-                ctx.clearRect(0, 0, width, height);
-                ctx.shadowColor = Theme.menuShadow;
-                ctx.shadowBlur = Theme.menuShadowRadius * 2;
-                ctx.shadowOffsetY = Theme.menuShadowOffsetY;
-                ctx.fillStyle = Theme.menuSurface;
-                const left = inset, top = inset;
-                const right = width - inset, bottom = height - inset;
-                const radius = Theme.menuRadius;
-                ctx.beginPath();
-                ctx.moveTo(left + radius, top);
-                ctx.lineTo(right - radius, top);
-                ctx.quadraticCurveTo(right, top, right, top + radius);
-                ctx.lineTo(right, bottom - radius);
-                ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
-                ctx.lineTo(left + radius, bottom);
-                ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
-                ctx.lineTo(left, top + radius);
-                ctx.quadraticCurveTo(left, top, left + radius, top);
-                ctx.closePath();
-                ctx.fill();
-            }
+            source: "qrc:/xdzip/assets/menu/" + (Theme.dark ? "dark" : "light") + "-" + fontPercent + ".png"
+            border.left: inset + Math.round(Theme.menuRadius)
+            border.top: border.left
+            border.right: border.left
+            border.bottom: border.left
+            horizontalTileMode: BorderImage.Stretch
+            verticalTileMode: BorderImage.Stretch
+            asynchronous: false
+            cache: true
         }
         Rectangle {
             anchors.fill: parent

@@ -461,7 +461,12 @@ th:not(:first-child):not(:last-child)::after {
     background:var(--border);
 }
 .check-col { width:84px; padding-left:27px; }
-th button { gap:19px; font-size:18px; font-weight:500; }
+th button { gap:var(--main-sort-indicator-gap); font-size:18px; font-weight:500; }
+th .column-resize-handle { position:absolute; right:0; top:0; width:var(--main-column-resize-hit-width); height:100%; padding:0; cursor:col-resize; z-index:2; touch-action:none; }
+th .column-resize-handle:hover { background:var(--ui-control-hover); }
+th[aria-sort="ascending"]>button:first-child::before,th[aria-sort="descending"]>button:first-child::before { color:var(--accent-ink); }
+th:not(:nth-child(2))[aria-sort="ascending"]>button:first-child::before { content:"↑"; }
+th:not(:nth-child(2))[aria-sort="descending"]>button:first-child::before { content:"↓"; }
 th button svg { width:20px; height:20px; }
 #sort-name .descending { transform:rotate(180deg); }
 .workspace input[type="checkbox"] {
@@ -1008,7 +1013,10 @@ dialog[data-kind] .action-only-footer { min-height:var(--operation-footer-height
 dialog[data-kind] .text-input::placeholder { color:var(--secondary); opacity:1; }
 
 /* A01 uses the same logical contract as AboutWindow.qml. */
-dialog[data-kind="about"] { width:calc(var(--about-logical-width,491) * 1px * var(--ui-source-factor)); max-height:calc(var(--about-maximum-height,640) * 1px * var(--ui-source-factor)); }
+dialog[data-kind="about"],body[data-standalone="true"] dialog[data-kind="about"] { width:calc(var(--about-logical-width,491) * 1px * var(--ui-source-factor)); max-height:min(calc(var(--about-maximum-height,640) * 1px * var(--ui-source-factor)),calc(100dvh - 100px)); }
+dialog[data-kind="about"][open] { display:flex; flex-direction:column; overflow:hidden; }
+dialog[data-kind="about"]>.os-titlebar,dialog[data-kind="about"]>.modal-footer { flex-shrink:0; }
+dialog[data-kind="about"]>.about-content { min-height:0; overflow:auto; }
 dialog[data-kind="about"] .about-content { display:flex; flex-direction:column; align-items:center; gap:calc(var(--about-section-gap,16) * 1px * var(--ui-source-factor)); padding:calc(var(--about-content-inset,24) * 1px * var(--ui-source-factor)); font-size:calc(var(--about-body-size,13) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
 .about-content .about-artwork { width:calc(var(--about-artwork-size,64) * 1px * var(--ui-source-factor)); height:calc(var(--about-artwork-size,64) * 1px * var(--ui-source-factor)); }
 .about-artwork svg { width:100%; height:100%; stroke:none; }
@@ -1017,6 +1025,13 @@ dialog[data-kind="about"] .about-content { display:flex; flex-direction:column; 
 .about-content .about-description { text-align:center; }
 .about-content dl { display:grid; grid-template-columns:auto minmax(0,1fr); width:100%; gap:calc(var(--about-row-gap,10) * 1px * var(--ui-source-factor)) calc(var(--about-section-gap,16) * 1px * var(--ui-source-factor)); margin:0; }
 .about-content dt { color:var(--secondary); }.about-content dd { margin:0; overflow-wrap:anywhere; }
+.about-update-section { width:100%; display:flex; flex-direction:column; align-items:center; gap:calc(var(--about-row-gap,10) * 1px * var(--ui-source-factor)); }
+.about-content .about-update-section #about-update-status { text-align:center; font-size:calc(var(--about-body-size,13) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
+.about-update-section .about-update-note { text-align:center; }
+.about-update-actions { display:flex; justify-content:center; gap:calc(var(--about-row-gap,10) * 1px * var(--ui-source-factor)); max-width:100%; }
+.about-update-section .button { max-width:100%; white-space:normal; }
+.about-update-section progress { width:100%; height:calc(var(--about-update-progress-height,6) * 1px * var(--ui-source-factor)); }
+.about-update-section .update-error { color:var(--ui-menu-danger); }
 
 .about-content p:not(.about-description) { font-size:calc(var(--about-note-size,12) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1)); }
 

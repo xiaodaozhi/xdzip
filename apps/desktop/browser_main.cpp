@@ -12,6 +12,7 @@
 #include "UiFont.h"
 #include "UiPreferences.h"
 #include "UiText.h"
+#include "UpdateController.h"
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
 #include <QApplication>
@@ -21,9 +22,12 @@
 #include <QPointer>
 #include <QProcess>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QQuickStyle>
 #include <QQuickWindow>
 #include <QResource>
+#include <QSaveFile>
+#include <QSslSocket>
 #include <QTimer>
 #include <memory>
 #ifdef Q_OS_WIN
@@ -52,9 +56,11 @@ int main(int argc, char *argv[]) {
     const auto args = application.arguments();
     const bool literalPaths = args.contains(QStringLiteral("--"));
     const auto probeArgument = literalPaths ? -1 : args.indexOf(QStringLiteral("--desktop-probe"));
+    const auto updateProbeArgument =
+        literalPaths ? -1 : args.indexOf(QStringLiteral("--update-probe"));
     const bool smokeTest = !literalPaths && args.contains(QStringLiteral("--smoke-test"));
     QStringList startupPaths;
-    if (!smokeTest && probeArgument < 0) {
+    if (!smokeTest && probeArgument < 0 && updateProbeArgument < 0) {
         const auto start = literalPaths ? args.indexOf(QStringLiteral("--")) + 1 : 1;
         for (int i = start; i < args.size(); ++i) {
             if (literalPaths || !args.at(i).startsWith(QLatin1Char('-')))
@@ -62,8 +68,8 @@ int main(int argc, char *argv[]) {
         }
     }
     SingleInstance instance;
-    const bool interactive =
-        !smokeTest && probeArgument < 0 && qEnvironmentVariableIsEmpty("XDZIP_ASSOCIATION_PROBE");
+    const bool interactive = !smokeTest && probeArgument < 0 && updateProbeArgument < 0 &&
+                             qEnvironmentVariableIsEmpty("XDZIP_ASSOCIATION_PROBE");
     if (interactive) {
         const auto election = instance.start(startupPaths);
         if (election == SingleInstance::Forwarded)
@@ -87,12 +93,47 @@ int main(int argc, char *argv[]) {
         return 5;
     if (!installUiFont())
         return 5;
+    if (updateProbeArgument >= 0) {
+        if (updateProbeArgument + 1 >= args.size() ||
+            qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
+            return 8;
+        UpdateController updates;
+        const auto report = args.at(updateProbeArgument + 1);
+        bool done = false;
+        const auto finish = [&](bool timeout) {
+            if (done || (!timeout && (updates.state() == "idle" || updates.busy())))
+                return;
+            done = true;
+            const QJsonObject result{
+                {"schema_version", 1},
+                {"state", updates.state()},
+                {"error", timeout ? QStringLiteral("probe_timeout") : updates.errorCode()},
+                {"candidate", updates.candidateVersion()},
+                {"trusted", updates.trusted()},
+                {"ssl_supported", QSslSocket::supportsSsl()},
+                {"ssl_backend", QSslSocket::activeBackend()},
+                {"version", BuildInfo::version()},
+                {"build", BuildInfo::buildNumber()}};
+            QSaveFile file(report);
+            const auto bytes = QJsonDocument(result).toJson();
+            const bool written = file.open(QIODevice::WriteOnly) &&
+                                 file.write(bytes) == bytes.size() && file.commit();
+            application.exit(written && !timeout && updates.state() != "error" ? 0 : 13);
+        };
+        QObject::connect(&updates, &UpdateController::changed, &application,
+                         [&] { finish(false); });
+        QTimer::singleShot(60000, &application, [&] { finish(true); });
+        QTimer::singleShot(0, &updates, &UpdateController::check);
+        return application.exec();
+    }
 #ifdef Q_OS_MACOS
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon-macos.png")));
 #else
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
 #endif
     QQmlApplicationEngine engine;
+    UpdateController updates;
+    engine.rootContext()->setContextProperty(QStringLiteral("UpdateService"), &updates);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(
         &engine, &QQmlApplicationEngine::objectCreationFailed, &application,
@@ -114,6 +155,19 @@ int main(int argc, char *argv[]) {
     guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     guard.controller = controller;
     application.installEventFilter(&guard);
+    QObject::connect(&updates, &UpdateController::exitBarrierReached, &application, [&] {
+        guard.quitHandler = {};
+        guard.controller = nullptr;
+        for (auto *window : QGuiApplication::allWindows())
+            if (window->property("sessionManager").isValid())
+                window->setProperty("allowManagedClose", true);
+        QApplication::setQuitOnLastWindowClosed(true);
+    });
+    QObject::connect(&updates, &UpdateController::quitForUpdate, &application, [&] {
+        guard.quitHandler = {};
+        guard.controller = nullptr;
+        application.quit();
+    });
     if (!interactive)
         QObject::connect(controller, &BrowserController::readyToClose, &application,
                          &QApplication::quit, Qt::QueuedConnection);
@@ -125,6 +179,7 @@ int main(int argc, char *argv[]) {
         sessions = std::make_unique<ApplicationSessions>(&engine, settings);
         sessions->adopt(mainWindow);
         sessions->setDesktop(&desktop);
+        updates.setSessions(sessions.get());
         QObject::connect(sessions.get(), &ApplicationSessions::closing, &instance,
                          &SingleInstance::stopAccepting);
         guard.quitHandler = [&] {

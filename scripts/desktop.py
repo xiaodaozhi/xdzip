@@ -314,6 +314,7 @@ class Workflow:
         if self.system == 'windows':
             self.runtime.mkdir(parents=True)
             shutil.copy2(self.app, self.runtime/'xdzip.exe')
+            shutil.copy2(self.app.parent/'xdzip-update-helper.exe', self.runtime/'xdzip-update-helper.exe')
             shutil.copy2(ROOT/'design/assets/brand/xdzip-zip.ico', self.runtime)
             self.script('deploy_windows.py', '--root', self.runtime, '--qt-prefix', self.qt,
                         '--qml-dir', ROOT/'apps/desktop/ui', '--qml-import', self.build/'qml',

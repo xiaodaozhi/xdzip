@@ -66,6 +66,12 @@ Item {
             tryCompare(passwordWindow,"visible",false);
             compare(testController.cancelledCount,0);
         }
+        function test_check_password_uses_check_operation_text() {
+            testController.passwordPrompt = {taskId:"check-1",promptId:"check-password",name:"secret.pdf",retry:false,kind:"check"};
+            tryCompare(passwordWindow,"visible",true);
+            compare(passwordWindow.title,qsTrId("integrity.passwordTitle"));
+            compare(findChild(passwordWindow,"passwordSubmit").text,qsTrId("integrity.continue"));
+        }
         function test_control_characters_are_not_trimmed() {
             request("controls",false);
             testController.expectedInput = " \t\u0000\r\n ";

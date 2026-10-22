@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "product": "xdzip",
+  "version": "9.0.0",
+  "channel": "stable",
+  "build": 65535,
+  "tag": "v9.0.0",
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "repository": "xiaodaozhi/xdzip",
+  "assets": [
+    {
+      "filename": "xdzip-9.0.0-windows-x86_64.zip",
+      "platform": "windows",
+      "architecture": "x86_64",
+      "package_type": "zip",
+      "minimum_system": {
+        "windows": "11"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-windows-x86_64.zip"
+    },
+    {
+      "filename": "xdzip-9.0.0-windows-x86_64-setup.exe",
+      "platform": "windows",
+      "architecture": "x86_64",
+      "package_type": "exe",
+      "minimum_system": {
+        "windows": "11"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-windows-x86_64-setup.exe"
+    },
+    {
+      "filename": "xdzip-9.0.0-macos-arm64.app.zip",
+      "platform": "macos",
+      "architecture": "arm64",
+      "package_type": "app.zip",
+      "minimum_system": {
+        "macos": "14.0"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-macos-arm64.app.zip"
+    },
+    {
+      "filename": "xdzip-9.0.0-macos-arm64.dmg",
+      "platform": "macos",
+      "architecture": "arm64",
+      "package_type": "dmg",
+      "minimum_system": {
+        "macos": "14.0"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-macos-arm64.dmg"
+    },
+    {
+      "filename": "xdzip-9.0.0-linux-x86_64.tar.gz",
+      "platform": "linux",
+      "architecture": "x86_64",
+      "package_type": "tar.gz",
+      "minimum_system": {
+        "distribution": "ubuntu",
+        "version": "24.04",
+        "glibc": "2.39",
+        "display_server": "X11"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-linux-x86_64.tar.gz"
+    },
+    {
+      "filename": "xdzip-9.0.0-ubuntu24.04-x86_64.deb",
+      "platform": "linux",
+      "architecture": "x86_64",
+      "package_type": "deb",
+      "minimum_system": {
+        "distribution": "ubuntu",
+        "version": "24.04",
+        "glibc": "2.39",
+        "display_server": "X11"
+      },
+      "bytes": 4,
+      "sha256": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7",
+      "url": "https://github.com/xiaodaozhi/xdzip/releases/download/v9.0.0/xdzip-9.0.0-ubuntu24.04-x86_64.deb"
+    }
+  ]
+}

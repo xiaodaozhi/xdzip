@@ -26,9 +26,25 @@ macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临
 
 顺序为同提交验证、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后公开 Pre-release、再次下载并核对所有附件。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
 
-未来更新客户端分页获取 GitHub Releases 列表，跳过草稿，校验清单版本，按语义版本、用户允许渠道、平台、架构、包类型选择。不能按发布时间排序判断升级，也不能猜测文件名。预发布不使用排除预发布的 `/releases/latest`。下载后校验大小与 SHA-256，任何缺失或不一致拒绝使用。本次仅准备发布协议与选择测试，不实现自动更新或自替换。
+更新客户端分页获取 GitHub Releases 列表，跳过草稿，校验清单版本，按语义版本、用户允许渠道、平台、架构、包类型选择。不能按发布时间排序判断升级，也不能猜测文件名。预发布不使用排除预发布的 `/releases/latest`。稳定渠道只接收稳定版本，alpha 允许 alpha、beta、rc 和稳定版，beta 不回到 alpha，rc 仅接收 rc 和稳定版；开发版本比较支持 dev。升级的语义版本与单调 build 均须递增。下载后校验大小与 SHA-256，任何缺失或不一致拒绝使用。
 
-English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Future clients paginate Releases, filter allowed channels, compare semantic versions and verify downloaded bytes; they must not use publication dates, filename guesses or /releases/latest for prereleases. No updater is implemented by this change. macOS uses ad-hoc integrity signing only. Incomplete licensing checks and unperformed manual acceptance remain explicit.
+## 可信更新附件
+
+新发行附带 `release.json.sig`，格式为 schema_version=1、algorithm=ed25519、key_id 和 128 字符小写十六进制 signature。签名覆盖 `release.json` 的精确原始字节，不能解析后重新序列化再验签。客户端和无 Qt 安装助手使用各自内置的 `resources/update-trust.json` 公钥集；不接受下载的清单或用户请求携带的信任根。未知公钥、重复 key_id、弱公钥和空信任集均拒绝安装。
+
+macOS 原生阶段在最终 app.zip 定名后，通过 `xdzip-update-tool sign-archive` 输出 `macos-update.json`，记录 schema_version、version、build、filename、bytes、sha256 与 Sparkle base64 `ed_signature`。汇总阶段重新核对归档及其签名，生成只含同一个不可变候选的 `appcast.xml`，清单可选字段 `macos_appcast_url` 固定指向同一标签下的该文件。feed 使用 build 作 Sparkle version、完整语义版本作 shortVersionString、macOS 14.0 作最低系统版本，发布说明内嵌，避免读取未签名的外部说明。
+
+归档和 feed 使用独立 Sparkle 密钥，feed 自身也必须签名。跨平台发布工具按 [Sparkle 上游签名格式](https://github.com/sparkle-project/Sparkle/blob/2.x/common_cli/Signing.swift)对完整原始 XML 签名，并在末尾追加 sparkle-signatures 注释块，包含 base64 edSignature 与原始字节 length；这不是只给 enclosure 添加签名。生成后再次独立验证，修改任意字节须重新签名。Mac 包的 SUPublicEDKey 必须与 `resources/sparkle-update-key.json` 中的公钥一致。
+
+发布环境通过 `XDZIP_UPDATE_SIGNING_KEY_HEX`、`XDZIP_UPDATE_KEY_ID` 和 `XDZIP_SPARKLE_SIGNING_KEY_HEX` 提供已有密钥和公开 key ID。两份生产公钥资源初始保持未配置，不填测试公钥，也不在构建时生成私钥。所有者先将公开信任根纳入客户端版本，再在可信发布环境配置匹配私钥；密钥轮换先交付新公钥，再改为新密钥签名，不能使旧客户端失去验证路径。
+
+发布脚本先在移除两份私钥环境变量的子进程中构建签名工具，仅已编译的工具进程接收签名私钥；Cargo build script、编译器和依赖解析不获得发布签名权限。
+
+正式原生签名与汇总阶段绑定受保护的 `release-signing` GitHub environment，所有者须配置匹配的秘密和环境保护规则。Mac 私钥只注入原生构建后的独立归档签名步骤，构建阶段不接收。validate_only 使用 `release-validation` 环境，不要求生产密钥；专用更新回归使用自己的临时测试密钥。配置环境和生产信任根是实际发布前提，不由普通 CI 自动创建。
+
+`prepare-release.py --require-update-signature` 在缺少任一密钥、签名或原生归档元数据时停止；`publish-release.py` 独立复验清单、同候选 feed 与归档后才上传。validate_only 可以生成明确标记 signing_not_configured 的候选，`update-readiness.json` 不作为授权依据，也不把未签名演练称为可安装更新。签名、appcast 和状态附件均进入完整 SHA256SUMS。已有公开版本不补传或替换这些新附件。
+
+English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Clients paginate Releases, compare semantic versions and builds, and never regress from beta/rc to an earlier channel. They must not use publication dates, filename guesses or /releases/latest for prereleases. Installation additionally requires an Ed25519 release.json.sig over exact JSON bytes and a locally embedded trusted public key. macOS uses a separate Sparkle key to sign both the final app.zip and the entire single-candidate appcast, with embedded notes and a pinned macos_appcast_url. Production public keys start unconfigured, and test keys must never be embedded. Validation-only candidates may explicitly report signing_not_configured; publication independently rejects missing or invalid signatures and never changes existing public assets. macOS application code signing remains ad-hoc; update signatures do not impersonate Developer ID or notarization. Incomplete licensing checks and unperformed manual acceptance remain explicit.
 
 Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag.
 

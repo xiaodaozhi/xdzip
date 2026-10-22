@@ -5,7 +5,7 @@ mod links;
 #[cfg(test)]
 mod opening_tests;
 #[cfg(test)]
-mod password_tests;
+pub(crate) mod password_tests;
 mod plan;
 #[cfg(test)]
 mod tests;
@@ -202,9 +202,35 @@ pub struct Outcome {
     /// Fixed error code, never arbitrary OS text.
     pub error: &'static str,
 }
+/// Operation identity shared by task scheduling and display snapshots.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TaskKind {
+    /// Publish selected archive entries.
+    Extract,
+    /// Publish a new complete archive.
+    Create,
+    /// Read and validate an archive without filesystem output.
+    Check,
+}
+impl TaskKind {
+    /// Stable bridge label, independent of translated text.
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::Extract => "extract",
+            Self::Create => "create",
+            Self::Check => "check",
+        }
+    }
+}
 /// Bounded replaceable display snapshot. Counters describe actual work, not a timer simulation.
 #[derive(Clone, Debug)]
 pub struct Snapshot {
+    /// Operation identity. Checking never grants output authority.
+    pub kind: TaskKind,
+    /// Original check input for display, never a destination or output authority.
+    pub source: String,
+    /// Validated check format, independent of a user-controlled extension.
+    pub format: &'static str,
     /// True for whole-archive creation; false for per-file extraction.
     pub creating: bool,
     /// False while a creation input tree is still being scanned.
@@ -227,6 +253,12 @@ pub struct Snapshot {
     pub declared_bytes: u64,
     /// Actual decoded bytes accepted by the host meter.
     pub decoded_bytes: u64,
+    /// Actual source reads during a read-only check, including header reads and retries.
+    pub read_bytes: u64,
+    /// Non-directory files whose required checks completed, including empty files.
+    pub verified_files: u64,
+    /// Declared payload bytes in fully verified non-directory files, never written bytes.
+    pub verified_bytes: u64,
     /// Actual bytes successfully written into private stages.
     pub written_bytes: u64,
     /// Actual bytes in successfully published complete files.

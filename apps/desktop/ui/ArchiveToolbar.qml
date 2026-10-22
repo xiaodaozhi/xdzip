@@ -13,6 +13,8 @@ Rectangle {
     signal extractRequested(bool all)
     signal newRequested
     signal openRequested
+    property bool canTest: false
+    signal testRequested
     signal resetSortRequested
     signal inspectRequested
     signal searchRequested(string query)
@@ -94,8 +96,9 @@ Rectangle {
                 rightPadding: 0
                 text: qsTrId("ui.6aa8f49cc992")
                 asset: "archive-test"
-                enabled: false
-                explanation: qsTrId("ui.8a96ab493fb0")
+                enabled: root.canTest
+                explanation: qsTrId("desktop.testArchive")
+                onClicked: root.testRequested()
             }
             ArchiveAction {
                 toolbarStyle: true
@@ -114,34 +117,6 @@ Rectangle {
                     id: more
                     y: parent.height + Theme.mainPopupGap
                     objectName: "archiveMoreMenu"
-                    CommandMenuItem {
-                        text: qsTrId("ui.897c9681c945")
-                        enabled: root.canSearch
-                        onTriggered: root.resetSortRequested()
-                    }
-                    CommandMenuItem {
-                        text: qsTrId("ui.994e3891e9d5")
-                        enabled: root.canInspect
-                        onTriggered: root.inspectRequested()
-                    }
-                    CommandMenuSeparator {}
-                    CommandMenuItem {
-                        text: qsTrId("ui.64f51f30dabc")
-                        shortcutLabel: Qt.platform.os === "osx" ? "⌘A" : "Ctrl+A"
-                        enabled: root.canSelect
-                        onTriggered: root.selectAllRequested()
-                    }
-                    CommandMenuItem {
-                        text: qsTrId("ui.74966e20df2e")
-                        enabled: root.hasSelection && root.canSelect
-                        onTriggered: root.clearSelectionRequested()
-                    }
-                    CommandMenuSeparator {}
-                    CommandMenuItem {
-                        text: qsTrId("ui.27b6154b3fd3")
-                        enabled: root.canSearch
-                        onTriggered: root.detailsRequested()
-                    }
                     CommandMenuItem {
                         text: qsTrId("settings.title")
                         onTriggered: root.settingsRequested()

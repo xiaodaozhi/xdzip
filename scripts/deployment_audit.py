@@ -162,9 +162,18 @@ def audit(root, app, qt_prefix, platform, mode):
                 pending.append(resolved)
     unresolved = sum(e['scope'] == 'unresolved' for e in edges)
     portable = not unresolved and not external
+    requirements=[]
+    deployment=root/'share/deployment.json'
+    if platform=='linux' and deployment.is_file():
+        requirements=json.loads(deployment.read_text()).get('system_runtime_requirements',[])
+        for item in requirements:
+            if (not isinstance(item,dict) or set(item)!={'package','version','source_package','source_version','reason','evidence'}
+                or item['package'] not in {'libssl3t64','ca-certificates'} or any(not isinstance(v,str) or not v for v in item.values())):
+                raise ValueError('Invalid explicit system runtime package evidence')
     return {'schema_version': 1, 'platform': platform, 'mode': mode,
             'app': app.relative_to(root).as_posix(), 'files': files, 'binary_imports': edges,
             'external_files': sorted(external.values(), key=lambda x:x['path']),
+            'system_runtime_requirements':requirements,
             'unresolved_imports': unresolved, 'uninspected_external_libraries': sum(not key.startswith('qt-sdk/') for key in external), 'sdk_independent_imports': portable,
             'status': 'passed' if not unresolved and (mode == 'sdk' or portable) else 'failed',
             'limits': ['Recursion is limited to the artifact and declared Qt SDK; other external libraries are hashed but not recursively inspected.',

@@ -89,17 +89,57 @@ def main():
         page.keyboard.press('End')
         expect(page.locator('[data-command=settings]')).to_be_focused()
         page.keyboard.press('Home')
-        expect(page.locator('[data-command=archive-properties]')).to_be_focused()
-        page.locator('[data-command=more-view]').focus()
+        expect(page.locator('[data-command=settings]')).to_be_focused()
+        expect(page.locator('.ui-menu [role=menuitem]')).to_have_count(1)
+        page.keyboard.press('Escape')
+        expect(page.locator('#more-actions')).not_to_be_focused()
+        page.locator('#file-rows [data-id=lake]').click(button='right')
+        page.locator('[data-command=view-menu]').focus()
         page.keyboard.press('ArrowRight')
         expect(page.locator('.ui-menu')).to_have_count(2)
         expect(page.locator('[data-command=view-list]')).to_have_attribute('aria-checked', 'true')
         page.keyboard.press('ArrowLeft')
         expect(page.locator('.ui-menu')).to_have_count(1)
-        expect(page.locator('[data-command=more-view]')).to_be_focused()
+        expect(page.locator('[data-command=view-menu]')).to_be_focused()
         page.keyboard.press('Escape')
-        expect(page.locator('#more-actions')).not_to_be_focused()
-        checks.append('More menu: Home/End, submenu arrows, checked state, Escape and focus dismissal')
+        checks.append('More menu contains settings only; context submenu preserves Home/End, arrows, checked state and Escape')
+
+        expect(page.locator('.column-resize-handle')).to_have_count(5)
+        before = page.locator('th:nth-child(3)').bounding_box()['width']
+        original_sort = page.evaluate('({sort:state.sort,key:state.sortKey})')
+        handle = page.locator('.column-resize-handle[data-column="1"]')
+        boundary = handle.bounding_box()
+        page.mouse.move(boundary['x'] + boundary['width']/2, boundary['y'] + boundary['height']/2)
+        page.mouse.down()
+        page.mouse.move(boundary['x'] + boundary['width']/2 + 35, boundary['y'] + boundary['height']/2)
+        page.mouse.up()
+        assert page.locator('th:nth-child(3)').bounding_box()['width'] > before + 30
+        assert page.evaluate('({sort:state.sort,key:state.sortKey})') == original_sort
+        alignment = page.evaluate('''() => [...document.querySelectorAll('thead th')].map((header,index)=>Math.abs(header.getBoundingClientRect().width-document.querySelector('#file-rows tr').children[index].getBoundingClientRect().width))''')
+        assert max(alignment) < 1
+        handle.dblclick()
+        assert abs(page.locator('th:nth-child(3)').bounding_box()['width'] - before) < 1
+        handle.focus()
+        page.keyboard.press('ArrowRight')
+        assert page.locator('th:nth-child(3)').bounding_box()['width'] > before + 6
+        page.keyboard.press('Home')
+        assert abs(page.locator('th:nth-child(3)').bounding_box()['width'] - before) < 1
+        checks.append('Five resize boundaries drag without sorting, align rows, support keyboard and reset to defaults')
+        geometry = page.evaluate('''() => {
+            const frame=document.querySelector('.window'), saved=frame.style.width;
+            const factor=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
+            const results=[];
+            for (const width of [832,928,1024,1440]) {
+                frame.style.width=width*factor+'px';
+                const buttons=[...document.querySelectorAll('.file-tools .icon-button')].filter(button=>button.getBoundingClientRect().width>0);
+                results.push(...buttons.map(button=>button.getBoundingClientRect().width/factor));
+                results.push(...buttons.slice(1).map((button,index)=>(button.getBoundingClientRect().left-buttons[index].getBoundingClientRect().right)/factor));
+            }
+            frame.style.width=saved;
+            return results;
+        }''')
+        assert all(abs(value-28)<.1 or abs(value-6.4)<.1 for value in geometry)
+        checks.append('File action buttons stay 28 units with 6.4-unit gaps at narrow and wide window widths')
 
         page.locator('#extract-menu-button').click()
         expect(page.locator('[data-command=extract-results]')).to_have_attribute('aria-disabled', 'true')

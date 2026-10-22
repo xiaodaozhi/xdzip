@@ -87,7 +87,7 @@ def main() -> None:
                 bounds = visible_bounds(target, scale)
                 raster = {
                     'id': f'raster/{entry["theme"]}/{target.stem}',
-                    'file': str(target.relative_to(ROOT)), 'kind': 'vector-rasterization',
+                    'file': target.relative_to(ROOT).as_posix(), 'kind': 'vector-rasterization',
                     'size': [size, size], 'canvas': [24, 24], 'logical_size': [24, 24],
                     'scale': scale, 'theme': entry['theme'], 'category': entry['category'],
                     'source': entry['file'], 'source_sha256': entry['sha256'], 'visible_bounds': bounds,

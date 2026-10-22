@@ -99,6 +99,7 @@ QString text(const QString &command) {
         {QStringLiteral("list"), qtTrId("desktop.list")},
         {QStringLiteral("grid"), qtTrId("desktop.grid")},
         {QStringLiteral("inspector"), qtTrId("desktop.inspector")},
+        {QStringLiteral("testArchive"), qtTrId("desktop.testArchive")},
         {QStringLiteral("extractAll"), qtTrId("desktop.extractAll")},
         {QStringLiteral("extractSelected"), qtTrId("desktop.extractSelected")},
         {QStringLiteral("preflight"), qtTrId("desktop.preflight")},
@@ -109,6 +110,7 @@ QString text(const QString &command) {
         {QStringLiteral("task"), qtTrId("desktop.task")},
         {QStringLiteral("createTask"), qtTrId("desktop.createTask")},
         {QStringLiteral("extractTask"), qtTrId("desktop.extractTask")},
+        {QStringLiteral("checkTask"), qtTrId("desktop.checkTask")},
         {QStringLiteral("trayEnabled"), qtTrId("desktop.trayEnabled")},
         {QStringLiteral("trayTip"), qtTrId("desktop.trayTip")},
     };
@@ -196,6 +198,7 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         view->setSeparatorsCollapsible(false);
         view->addSeparator();
         auto *operation = m_bar->addMenu(text("operation"));
+        add(operation, "testArchive");
         add(operation, "extractAll");
         add(operation, "extractSelected");
         add(operation, "preflight");
@@ -366,6 +369,8 @@ bool DesktopIntegration::enabled(const QString &command) const {
         return ready;
     if (command == "extractSelected" || command == "copy")
         return ready && m_controller->selectedCount() > 0;
+    if (command == "testArchive")
+        return ready && !m_controller->busy() && m_controller->runtimeAvailable();
     if (command == "preflight")
         return ready && m_controller->canPreflight();
     if (command == "find")
@@ -524,9 +529,11 @@ void DesktopIntegration::syncActions() {
                                               Q_RETURN_ARG(QString, state),
                                               Q_ARG(QString, task.value("status").toString()));
                     item->setText(
-                        text("task").arg(
-                            text(task.value("creating").toBool() ? "createTask" : "extractTask"),
-                            task.value("backendId", task.value("id")).toString(), state) +
+                        text("task").arg(text(task.value("kind") == "check"     ? "checkTask"
+                                              : task.value("creating").toBool() ? "createTask"
+                                                                                : "extractTask"),
+                                         task.value("backendId", task.value("id")).toString(),
+                                         state) +
                         (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
                                     : QString{}));
                     item->setIcon(statusIcon(task.value("status").toString()));
@@ -550,7 +557,9 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
         QMetaObject::invokeMethod(m_window, "taskStateLabel", Q_RETURN_ARG(QString, state),
                                   Q_ARG(QString, task.value("status").toString()));
         auto *item = menu->addAction(
-            text("task").arg(text(task.value("creating").toBool() ? "createTask" : "extractTask"),
+            text("task").arg(text(task.value("kind") == "check"     ? "checkTask"
+                                  : task.value("creating").toBool() ? "createTask"
+                                                                    : "extractTask"),
                              task.value("backendId", task.value("id")).toString(), state) +
             (m_sessions ? qtTrId("common.separator") + task.value("archive").toString()
                         : QString{}));

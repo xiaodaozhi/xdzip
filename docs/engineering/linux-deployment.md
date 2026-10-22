@@ -9,11 +9,13 @@
 - `xdzip` 为启动入口，使用当前目录的库、插件和 QML，不继承开发 SDK 搜索路径。
 - `bin/xdzip` 为产品，旁边 `qt.conf` 将 Qt 路径改为相对布局。
 - `lib/` 为实际导入的 Qt／SDK 共享库，`qml/` 为扫描得到的 Qt QML 模块根目录，保留控件样式及实现子模块。
-- `plugins/` 包含 xcb、离屏验证、图片、图标、平台输入与 xcb 图形集成插件；不把 EGLFS、帧缓冲或 Wayland 平台插件作为已验证交付。
+- `plugins/` 包含 xcb、离屏验证、图片、图标、平台输入、xcb 图形集成和必需的 `tls/libqopensslbackend.so`；缺少 OpenSSL 后端时部署失败。不把 EGLFS、帧缓冲或 Wayland 平台插件作为已验证交付。
 - `translations/` 保留 Qt 标准控件翻译，`share/notices/` 交付当前通知和源码依赖材料。
 - `share/deployment.json` 记录 QML、系统运行依赖、复制的 SDK 库和边界，README.md 提供使用方法。
 
 扫描器使用固定 Qt 版本的 [qmlimportscanner](https://doc.qt.io/qt-6.8/qtqml-tooling-qmlimportscanner.html)。Xdzip.Settings／Xdzip.Native 是产品内建注册模块，不复制开发静态库。缺少普通依赖、QML 路径逃逸 SDK、同名库冲突或未知外部库均失败。原生导入递归收集只复制 SDK 库，不捎带宿主 glibc 或图形驱动；系统依赖按实际 Debian 包归属列出。
+
+HTTPS 另显式要求 Ubuntu 的 `libssl3t64` 与 `ca-certificates`，验证 `libssl.so.3`、`libcrypto.so.3` 的系统包归属及非空系统 CA 信任库。Qt OpenSSL 后端可能在运行时加载这些库，不能仅凭 ldd 推断依赖完整。部署清单保留已安装的二进制包版本、源包与源包版本；安装器声明两项依赖，实际文件 SBOM 将其记录为必需 OS 包，不把系统库打包进应用。
 
 每个 ELF 使用 patchelf 设置相对 `$ORIGIN` RPATH，插件按自身目录到 lib/ 的相对距离计算。Qt 的路径重定向按 [qt.conf 官方规则](https://doc.qt.io/qt-6.8/qt-conf.html)执行，允许整个目录迁移。库保持动态链接和可替换，不限制用户更换兼容 Qt。通用 Linux 部署边界见 [Qt Linux 部署说明](https://doc.qt.io/qt-6.8/linux-deployment.html)。
 
@@ -31,7 +33,7 @@ python3 scripts/desktop.py verify --kind all
 
 ## 脱离 SDK 的自动化证据
 
-容器基于固定 digest 的 Ubuntu 24.04，安装实际 OS 运行依赖和 Xvfb／字体／locale 测试支持，不安装 Qt、Rust 或编译器，并再次检查其不存在。容器不挂载开发 SDK 或整个源码树，只挂载只读产品目录、单独的自有十万条目 ZIP 和验证脚本。运行时关闭网络、禁止提权，仅临时配置目录可写。
+容器基于固定 digest 的 Ubuntu 24.04，安装实际 OS 运行依赖和 Xvfb／字体／locale 测试支持，不安装 Qt、Rust 或编译器，并再次检查其不存在。容器不挂载开发 SDK 或整个源码树，只挂载只读产品目录、单独的自有十万条目 ZIP 和验证脚本。归档运行验证关闭网络、禁止提权，仅临时配置目录可写。
 
 应用被挂载到带空格的新路径，在清除开发搜索变量后，经启动入口检查：
 
@@ -39,6 +41,7 @@ python3 scripts/desktop.py verify --kind all
 2. X11 下真实 QML 窗口启动并安全关闭。
 3. 原生产品探针完成首帧、十万条目读取、活动请求取消与退出，计数和取消结果须符合契约。
 4. 宿主清除开发变量后，以 deployed 模式核验全部打包 ELF；不允许回退 SDK。实际文件 SBOM 保持同一版本／提交身份并通过官方 schema。
+5. 在相同无 SDK 镜像的新进程中启用网络，以隔离的 `XDZIP_SETTINGS_PATH` 执行产品 `--update-probe`，实际请求 GitHub HTTPS。必须报告 OpenSSL 后端可用并完成更新检查，单独保留 `.https.json` 与 `.https.log`；网络、证书或 TLS 失败均阻止验证通过。
 
 linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quick 软件渲染仅用于运行闭环，不能证明物理 GPU、中文候选窗口、真实读屏或完整桌面安装通过。
 
