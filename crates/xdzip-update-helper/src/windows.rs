@@ -11,7 +11,7 @@ use windows_sys::Win32::Foundation::{
     CloseHandle, ERROR_ALREADY_EXISTS, GetLastError, HANDLE, WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::Storage::FileSystem::{
-    FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ,
+    FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ, FILE_SHARE_WRITE,
 };
 use windows_sys::Win32::System::Registry::{HKEY_CURRENT_USER, RRF_RT_REG_SZ, RegGetValueW};
 use windows_sys::Win32::System::Threading::{
@@ -54,7 +54,9 @@ impl Job {
         let grant = xdzip_io::Grant::for_creation(&path).map_err(|_| "unsafe_job_directory")?;
         let directory = fs::OpenOptions::new()
             .read(true)
-            .share_mode(FILE_SHARE_READ)
+            // Permit receipt creation/rename inside this held directory. Denying
+            // FILE_SHARE_DELETE still prevents the job directory from moving.
+            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE)
             .custom_flags(FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT)
             .open(&path)
             .map_err(|_| "unsafe_job_directory")?;
@@ -290,6 +292,36 @@ pub(super) fn restart(_job: &Job, request: &Request, _parent: &Parent) -> Result
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn held_job_directory_allows_atomic_receipts_but_refuses_directory_move() {
+        let path = std::env::temp_dir().join(format!(
+            "xdzip-job-control-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&path).unwrap();
+        let acl = Command::new("icacls.exe")
+            .arg(&path)
+            .args(["/inheritance:r", "/grant:r", "*S-1-3-4:(OI)(CI)F"])
+            .output()
+            .unwrap();
+        assert!(acl.status.success());
+        let job = Job::load(&path.join("request.json")).unwrap();
+        job.write("ready.json", br#"{"transaction":"owned"}"#)
+            .unwrap();
+        assert_eq!(
+            fs::read(path.join("ready.json")).unwrap(),
+            br#"{"transaction":"owned"}"#
+        );
+        assert!(fs::rename(&path, path.with_extension("moved")).is_err());
+        drop(job);
+        fs::remove_file(path.join("ready.json")).unwrap();
+        fs::remove_dir(path).unwrap();
+    }
+
     #[test]
     fn verified_package_handle_refuses_replacement_and_concurrent_writes() {
         let path = std::env::temp_dir().join(format!(

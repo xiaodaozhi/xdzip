@@ -191,6 +191,7 @@ class WorkflowTests(unittest.TestCase):
     def test_windows_notice_merge_preserves_deployer_runtime_materials(self):
         workflow = self.workflow('windows')
         self.receipt(workflow)
+        (workflow.app.parent/'xdzip-update-helper.exe').write_bytes(b'updater fixture')
         notices = workflow.output/'notices'
         notices.mkdir(parents=True)
         (notices/'source-license.txt').write_text('source')
@@ -216,6 +217,7 @@ class WorkflowTests(unittest.TestCase):
                 patch.object(workflow, 'audit_runtime', side_effect=audit), patch.object(workflow, 'source', return_value=self.source):
             workflow.runtime_package()
         self.assertEqual((workflow.runtime/'share/notices/source-license.txt').read_text(), 'source')
+        self.assertEqual((workflow.runtime/'xdzip-update-helper.exe').read_bytes(), b'updater fixture')
         self.assertEqual((workflow.runtime/'share/notices/Microsoft-VC-runtime/LICENSE.txt').read_text(), 'CRT notice')
         for relative in ['Microsoft-VC-runtime/LICENSE.txt', 'Windows-SDK-graphics/sdk_license.rtf',
                          'Windows-SDK-graphics/provenance.json', 'Windows-runtime-NOTICE.txt']:

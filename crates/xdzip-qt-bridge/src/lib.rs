@@ -687,6 +687,25 @@ mod tests {
     use super::*;
     #[test]
     fn check_command_delivers_read_only_kind_and_verified_counters() {
+        fn submit(client: &CommandClient, make: impl Fn() -> ffi::Command) -> ffi::Submission {
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+            loop {
+                let request = client.submit(make());
+                if request.status != ffi::Admission::Busy {
+                    assert!(request.status == ffi::Admission::Accepted);
+                    assert_ne!(request.request_id, 0);
+                    return request;
+                }
+                // Startup and event delivery share the short state lock with admission.
+                // Busy is retryable and must not consume a request identity.
+                assert_eq!(request.request_id, 0);
+                assert!(
+                    std::time::Instant::now() < deadline,
+                    "command admission remained Busy beyond the bounded retry window"
+                );
+                std::thread::yield_now();
+            }
+        }
         fn command(kind: ffi::CommandKind, session: u64, path: String) -> ffi::Command {
             ffi::Command {
                 kind,
@@ -718,12 +737,13 @@ mod tests {
         let mut receiver = runtime.take_receiver().unwrap();
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tests/fixtures/extract/stored.zip");
-        let request = client.submit(command(
-            ffi::CommandKind::Open,
-            0,
-            path.to_string_lossy().into_owned(),
-        ));
-        assert!(request.status == ffi::Admission::Accepted);
+        let request = submit(&client, || {
+            command(
+                ffi::CommandKind::Open,
+                0,
+                path.to_string_lossy().into_owned(),
+            )
+        });
         let mut session = 0;
         loop {
             let event = receiver.next_event();
@@ -736,8 +756,9 @@ mod tests {
             }
         }
         assert_ne!(session, 0);
-        let request = client.submit(command(ffi::CommandKind::Check, session, String::new()));
-        assert!(request.status == ffi::Admission::Accepted);
+        let request = submit(&client, || {
+            command(ffi::CommandKind::Check, session, String::new())
+        });
         let (mut accepted, mut finished, mut terminal) = (false, false, false);
         while !accepted || !finished || !terminal {
             let event = receiver.next_event();
@@ -748,7 +769,13 @@ mod tests {
                 assert!(event.error.is_empty());
                 finished = true;
             }
-            if event.kind == ffi::EventKind::TaskUpdate && event.task.status == "succeeded" {
+            if event.kind == ffi::EventKind::TaskUpdate
+                && matches!(
+                    event.task.status.as_str(),
+                    "succeeded" | "failed" | "cancelled"
+                )
+            {
+                assert_eq!(event.task.status, "succeeded", "{}", event.task.error);
                 assert_eq!(event.task.kind, "check");
                 assert!(
                     !event.task.creating

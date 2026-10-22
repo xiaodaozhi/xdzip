@@ -541,7 +541,7 @@ void UpdateController::beginDownload(bool install) {
                 }
                 m_output.reset();
                 m_packagePath = m_directory->filePath(file);
-        m_directory->setAutoRemove(false);
+                m_directory->setAutoRemove(false);
                 m_progress = 1;
                 setState("downloaded");
                 if (m_installAfterDownload)

@@ -122,7 +122,7 @@ QString text(NSString *value) {
         [self failure];
         return;
     }
-    if (state.stage == SPUUpdateStateInstalling) {
+    if (state.stage == SPUUserUpdateStageInstalling) {
         [self showReadyToInstallAndRelaunch:reply];
     } else {
         reply(SPUUserUpdateChoiceInstall);

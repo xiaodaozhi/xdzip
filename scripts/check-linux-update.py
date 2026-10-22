@@ -38,7 +38,11 @@ def main():
     def export():
         for pattern in ('*.log', '*.json'):
             for path in output.glob(pattern):
-                shutil.copy2(path, evidence / path.name)
+                target=evidence / path.name
+                shutil.copy2(path, target)
+                # Only public fixture records are exported. Keep the live job
+                # private, while allowing the unprivileged CI uploader to read.
+                target.chmod(0o644)
     atexit.register(export)
     helper, signing = build_helpers(output, args.offline)
     try:

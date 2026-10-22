@@ -122,6 +122,8 @@ end;
             assert subprocess.run([str(install_root / 'xdzip.exe'), '--gate-probe']).returncode == 0
             results.append(dict(case=label, status='passed', error=expected))
         finally:
+            if (job / 'result.json').is_file():
+                shutil.copy2(job / 'result.json', output / (label + '-receipt.json'))
             stop.touch()
             parent.wait(timeout=10)
             if process.poll() is None:

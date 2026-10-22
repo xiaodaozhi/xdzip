@@ -60,15 +60,28 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             "125%",
             "150%",
             "dirty",
-            "unknown-revision"
+            "unknown-revision",
+            "update-checking",
+            "update-current",
+            "update-available",
+            "update-downloading",
+            "update-waiting-tasks",
+            "update-error",
+            "update-manual-install"
         ],
         "artwork_source": "design/assets/brand/xdzip.svg",
-        "macos_artwork_source": "design/assets/brand/macos/xdzip.png"
+        "macos_artwork_source": "design/assets/brand/macos/xdzip.png",
+        "update_progress_height": 6
     },
     "version": 2,
     "logicalWindowWidth": 1024,
     "windowsCaption": {
         "iconButtonSize": 28,
+        "fileActionGap": 6.4,
+        "sortIndicatorGap": 6,
+        "columnResizeHitWidth": 8,
+        "columnMinimumWidth": 64,
+        "nameColumnMinimumWidth": 160,
         "toolbarContentGap": 6,
         "breadcrumbHeight": 28,
         "popupGap": 4,
