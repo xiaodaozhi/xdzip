@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -153,48 +154,38 @@ bool click(QQuickWindow *window, QQuickItem *item) {
 }
 } // namespace
 
-// The signed feed keeps the fixed GitHub enclosure URL. Only that exact asset
-// request is redirected to this runner's archive by the private URL protocol;
-// Sparkle still downloads, verifies and installs the original signed bytes.
-@interface XdzipOwnedAssetProtocol : NSURLProtocol
-@end
-@implementation XdzipOwnedAssetProtocol
-+ (BOOL)canInitWithRequest:(NSURLRequest *)request {
-    const auto config = configuration();
-    return oldProduct() && !config.isEmpty() &&
-           QString::fromUtf8(request.URL.absoluteString.UTF8String) ==
-               config.value("fixed_asset_url").toString();
-}
-+ (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request {
-    return request;
-}
-- (void)startLoading {
-    const auto config = configuration();
-    const auto target = config.value("loopback_asset_url").toString();
-    const QUrl url(target);
-    if (url.scheme() != "http" || url.host() != "127.0.0.1" || !url.path().startsWith("/owned/")) {
-        [self.client URLProtocol:self
-                didFailWithError:[NSError errorWithDomain:@"org.xdzip.owned-fixture"
-                                                     code:1
-                                                 userInfo:nil]];
+void macProductUpdateFixtureEvent(const QString &stage, const QJsonObject &details) {
+    if (stage.isEmpty() || stage != QFileInfo(stage).fileName() || stage.contains('\\'))
         return;
-    }
-    NSURL *destination =
-        [NSURL URLWithString:[NSString stringWithUTF8String:target.toUtf8().constData()]];
-    NSMutableURLRequest *redirect = [self.request mutableCopy];
-    redirect.URL = destination;
-    NSHTTPURLResponse *response =
-        [[NSHTTPURLResponse alloc] initWithURL:self.request.URL
-                                    statusCode:302
-                                   HTTPVersion:@"HTTP/1.1"
-                                  headerFields:@{@"Location" : destination.absoluteString}];
-    write("asset-redirect.json",
-          {{"fixed_asset_url", config.value("fixed_asset_url")}, {"loopback_asset_url", target}});
-    [self.client URLProtocol:self wasRedirectedToRequest:redirect redirectResponse:response];
+    const auto bounded = [](const auto &recurse, const QJsonValue &value, int depth) -> QJsonValue {
+        if (depth > 5)
+            return QStringLiteral("bounded");
+        if (value.isString()) {
+            auto text = value.toString();
+            text.replace(QDir::currentPath(), QStringLiteral("$WORKSPACE"));
+            text.replace(QDir::homePath(), QStringLiteral("$HOME"));
+            return text.left(1024);
+        }
+        if (value.isObject()) {
+            QJsonObject result;
+            const auto input = value.toObject();
+            for (auto it = input.begin(); it != input.end() && result.size() < 64; ++it)
+                result.insert(it.key(), recurse(recurse, it.value(), depth + 1));
+            return result;
+        }
+        if (value.isArray()) {
+            QJsonArray result;
+            for (const auto &entry : value.toArray()) {
+                if (result.size() == 64)
+                    break;
+                result.append(recurse(recurse, entry, depth + 1));
+            }
+            return result;
+        }
+        return value;
+    };
+    write("native-" + stage + ".json", bounded(bounded, details, 0).toObject());
 }
-- (void)stopLoading {
-}
-@end
 
 QNetworkAccessManager *macProductUpdateFixtureTransport(QObject *parent) {
     if (!qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH") || configuration().isEmpty()) {
@@ -203,10 +194,6 @@ QNetworkAccessManager *macProductUpdateFixtureTransport(QObject *parent) {
     }
     if (!oldProduct())
         return nullptr; // Normal constructor must restore the real persisted receipt.
-    if (![NSURLProtocol registerClass:XdzipOwnedAssetProtocol.class]) {
-        failure("asset_protocol_registration");
-        return nullptr;
-    }
     return new Network(parent);
 }
 QString macProductUpdateFixtureFeed(const QJsonObject &candidate) {
@@ -220,6 +207,25 @@ QString macProductUpdateFixtureFeed(const QJsonObject &candidate) {
         return {};
     write("feed-redirect.json", {{"fixed_appcast_url", candidate.value("appcast_url")},
                                  {"loopback_appcast_url", target}});
+    return target;
+}
+QString macProductUpdateFixtureAsset(const QJsonObject &candidate, const QString &requestUrl) {
+    const auto config = configuration();
+    const auto target = config.value("loopback_asset_url").toString();
+    const QUrl url(target);
+    if (!oldProduct() || candidate.value("appcast_url") != config.value("fixed_appcast_url") ||
+        candidate.value("asset_url") != config.value("fixed_asset_url") ||
+        requestUrl != candidate.value("asset_url").toString() ||
+        candidate.value("version") != "0.2.0-alpha.2" || candidate.value("build").toInt() != 201 ||
+        url.scheme() != "http" || url.host() != "127.0.0.1" || url.port() <= 0 ||
+        !url.userInfo().isEmpty() || url.hasQuery() || url.hasFragment() ||
+        url.path() != "/owned/" + QUrl(requestUrl).fileName()) {
+        failure("authenticated_asset_request_mapping");
+        return {};
+    }
+    write("asset-redirect.json", {{"fixed_asset_url", requestUrl},
+                                  {"loopback_asset_url", target},
+                                  {"transport", "Sparkle public willDownloadUpdate delegate"}});
     return target;
 }
 void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessions *sessions,

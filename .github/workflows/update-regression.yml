@@ -3,13 +3,21 @@
 name: Native update regression
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: Native platform to diagnose, or all for final verification
+        required: true
+        default: all
+        type: choice
+        options: [all, windows, macos, linux]
 permissions:
   contents: read
 concurrency:
-  group: update-regression-${{ github.ref }}
+  group: update-regression-${{ github.ref }}-${{ inputs.platform || 'all' }}
   cancel-in-progress: false
 jobs:
   windows:
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'windows' }}
     runs-on: windows-2022
     timeout-minutes: 70
     steps:
@@ -58,6 +66,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   macos:
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'macos' }}
     runs-on: macos-14
     timeout-minutes: 60
     steps:
@@ -92,6 +101,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   linux:
+    if: ${{ inputs.platform == 'all' || inputs.platform == 'linux' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 70
     steps:

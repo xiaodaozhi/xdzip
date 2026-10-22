@@ -269,6 +269,15 @@ def stop_pid(pid, timeout=30):
 
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self,*_):pass
+    def log_request(self,code='-',size='-'):
+        with self.server.evidence_lock:
+            self.server.evidence.append(dict(path=self.path[:1024],status=code))
+            dump(Path(self.directory)/'http-requests.json',self.server.evidence[-64:])
+
+
+def same_roles(left,right):
+    # kLSRolesAll is a query over a role set, not a separately restorable slot.
+    return all(left[str(role)]==right[str(role)] for role in (2,4,8))
 
 
 def main():
@@ -300,10 +309,14 @@ def main():
     applications.mkdir(exist_ok=True)
     installed=applications/name; require_owned(installed,applications)
     session=output/'session';session.mkdir()
+    associations=Associations();original=associations.snapshot()
+    dump(output/'association-original.json',original)
+    if not original['2']:raise RuntimeError('Cannot safely restore a missing initial ZIP Viewer handler')
     production={str(path.relative_to(ROOT)):digest(path) for path in (ROOT/'resources/update-trust.json',ROOT/'resources/sparkle-update-key.json')}
     products,signing,sdk=prepare(output,qt,session,name)
     manifest,archive=signed_candidate(output,products['new'],signing,sdk)
     server=ThreadingHTTPServer(('127.0.0.1',0),partial(Handler,directory=str(output)))
+    server.evidence_lock=threading.Lock();server.evidence=[]
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
     address='http://127.0.0.1:'+str(server.server_port)
     base='https://github.com/xiaodaozhi/xdzip/releases/download/'+manifest['tag']+'/'
@@ -316,9 +329,6 @@ def main():
          fixed_asset_url=base+archive.name,fixed_appcast_url=base+'appcast.xml',loopback_appcast_url=address+'/owned/appcast.xml',
          loopback_asset_url=address+'/owned/'+archive.name,routes={base+'release.json':'release.json',base+'release.json.sig':'release.json.sig',
          'https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1':'releases.json'}))
-    associations=Associations();original=associations.snapshot()
-    dump(output/'association-original.json',original)
-    if not original['2']:raise RuntimeError('Cannot safely restore a missing initial ZIP Viewer handler')
     other=None;old=None;new=None;log=None;record={'status':'failed'};stage='association_setup'
     try:
         other_id='org.xdzip.owned-zip-handler.'+token
@@ -331,7 +341,7 @@ def main():
         stage='install_old'
         shutil.copytree(products['old']['app'],installed,symlinks=True)
         run([LSREGISTER,'-f',installed])
-        if associations.snapshot()!=baseline:raise RuntimeError('Old product registration changed ZIP defaults')
+        if not same_roles(associations.snapshot(),baseline):raise RuntimeError('Old product registration changed ZIP defaults')
         log=(output/'product.log').open('wb')
         executable=installed/'Contents/MacOS/xdzip'
         launch_env=environment();launch_env['PATH']='/usr/bin:/bin:/usr/sbin:/sbin'
@@ -348,6 +358,11 @@ def main():
         stage='upgrade'
         dump(session/'upgrade.json',{'owned':True})
         new=await_json(session/'201-started.json',timeout=240,session=session)
+        redirect=await_json(session/'asset-redirect.json',session=session)
+        if (redirect.get('transport')!='Sparkle public willDownloadUpdate delegate' or
+            redirect.get('fixed_asset_url')!=base+archive.name or
+            redirect.get('loopback_asset_url')!=address+'/owned/'+archive.name):
+            raise RuntimeError('Private request mapping did not bind the authenticated native asset')
         if old.wait(timeout=20)!=0:raise RuntimeError('Old process failed ordinary exit')
         barrier=await_json(session/'200-exit-barrier.json',session=session)
         if not (barrier['about_check_clicked'] and barrier['about_install_clicked'] and barrier['trusted'] and
@@ -367,7 +382,8 @@ def main():
             raise RuntimeError('Product profile changed across update')
         stage='verify_associations'
         run([LSREGISTER,'-f',installed]);after_associations=associations.snapshot()
-        if after_associations!=baseline:raise RuntimeError('Native Sparkle replacement changed default ZIP handlers')
+        dump(output/'association-after-update.json',after_associations)
+        if not same_roles(after_associations,baseline):raise RuntimeError('Native Sparkle replacement changed default ZIP handlers')
         run(['codesign','--verify','--deep','--strict',installed],output/'codesign.log')
         stage='single_instance_new'
         peer=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
@@ -375,9 +391,10 @@ def main():
         record=dict(status='passed',scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
                     production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,
-                    zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; all-roles aggregate, Editor and Shell observed read-only',
+                    zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; Editor/Shell checked read-only, all-roles aggregate informational only',
                     original_zip_handlers=original,owned_zip_handlers=baseline,after_zip_handlers=after_associations,
-                    network_seam='Private Qt metadata transport, exact authenticated feed URL to loopback, exact GitHub archive URL protocol redirect; signatures remain real',
+                    network_seam='Private Qt metadata transport and exact feed URL mapping; public Sparkle download-request delegate maps only the matched authenticated GitHub asset request, preserving item URL/signature/length',
+                    archive_transport=redirect,
                     limits=['Idle successful upgrade only; rejection/cancellation use the separate native Sparkle scenarios.',
                             'Default handlers for other archive UTIs and physical user acceptance are not claimed.'])
     except Exception as error:
@@ -401,7 +418,8 @@ def main():
                 if current in ('org.xdzip.owned-zip-handler.'+token,PRODUCT):
                     associations.set(2,original['2'])
                 else:raise RuntimeError('Unowned default Viewer association changed during fixture')
-            if associations.snapshot()!=original:raise RuntimeError('Could not restore initial ZIP handlers')
+            after_restore=associations.snapshot();dump(output/'association-after-restore.json',after_restore)
+            if not same_roles(after_restore,original):raise RuntimeError('Could not restore initial ZIP handlers')
             record['initial_zip_handlers_restored']=True
         except Exception as error:cleanup.append(dict(stage='restore_associations',error=type(error).__name__,detail=str(error)))
         for app in (installed,other):
@@ -413,7 +431,8 @@ def main():
                 finally:shutil.rmtree(app)
             except Exception as error:cleanup.append(dict(stage='remove_owned_application',error=type(error).__name__))
         try:
-            if associations.snapshot()!=original:raise RuntimeError('Unregistering owned applications changed initial handlers')
+            after_unregister=associations.snapshot();dump(output/'association-after-unregister.json',after_unregister)
+            if not same_roles(after_unregister,original):raise RuntimeError('Unregistering owned applications changed initial handlers')
         except Exception as error:cleanup.append(dict(stage='verify_restored_associations',error=type(error).__name__,detail=str(error)))
         subprocess.run(['defaults','delete',PRODUCT],capture_output=True)
         for path in roots:

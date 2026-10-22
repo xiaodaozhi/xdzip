@@ -70,6 +70,20 @@ NSString *native(const QString &value) {
 QString text(NSString *value) {
     return value ? QString::fromUtf8(value.UTF8String) : QString{};
 }
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+QJsonObject fixtureError(NSError *error, int depth = 0) {
+    if (!error)
+        return {};
+    QJsonObject result{{"domain", text(error.domain)},
+                       {"code", qint64(error.code)},
+                       {"description", text(error.localizedDescription)},
+                       {"reason", text(error.localizedFailureReason)}};
+    id underlying = error.userInfo[NSUnderlyingErrorKey];
+    if (depth < 3 && [underlying isKindOfClass:NSError.class])
+        result.insert("underlying", fixtureError((NSError *)underlying, depth + 1));
+    return result;
+}
+#endif
 using InstallerObservation = std::function<void(bool, QSet<qint64>)>;
 bool installerPids(const QByteArray &output, const QString &path, QSet<qint64> &pids) {
     if (output.trimmed().isEmpty())
@@ -161,14 +175,36 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
 
 @implementation XdzipUpdateDriver
 - (BOOL)matches:(SUAppcastItem *)item {
-    return item.signingValidationStatus == SPUAppcastSigningValidationStatusSucceeded &&
-           !item.informationOnlyUpdate &&
-           text(item.versionString) == QString::number(candidate.value("build").toInt()) &&
-           text(item.displayVersionString) == candidate.value("version").toString() &&
-           text(item.fileURL.absoluteString) == candidate.value("asset_url").toString() &&
-           item.contentLength == quint64(candidate.value("bytes").toDouble());
+    const bool accepted =
+        item.signingValidationStatus == SPUAppcastSigningValidationStatusSucceeded &&
+        !item.informationOnlyUpdate &&
+        text(item.versionString) == QString::number(candidate.value("build").toInt()) &&
+        text(item.displayVersionString) == candidate.value("version").toString() &&
+        text(item.fileURL.absoluteString) == candidate.value("asset_url").toString() &&
+        item.contentLength == quint64(candidate.value("bytes").toDouble());
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent("candidate-match",
+                                 {{"accepted", accepted},
+                                  {"signing_status", int(item.signingValidationStatus)},
+                                  {"information_only", bool(item.informationOnlyUpdate)},
+                                  {"build", text(item.versionString)},
+                                  {"version", text(item.displayVersionString)},
+                                  {"asset_url", text(item.fileURL.absoluteString)},
+                                  {"bytes", qint64(item.contentLength)},
+                                  {"candidate", candidate}});
+#endif
+    return accepted;
 }
 - (void)failure {
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent("provider-failure",
+                                 {{"cancelled", bool(cancelled)},
+                                  {"committed", bool(committed)},
+                                  {"prepared_reported", bool(preparationReported)},
+                                  {"installer_required", bool(installerRequired)},
+                                  {"installer_seen", bool(installerSeenAtReady)},
+                                  {"observer_error", bool(installerObservationError)}});
+#endif
     if (cancelled)
         return;
     if (owner)
@@ -221,6 +257,26 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
     (void)item;
     return NO;
 }
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+- (void)updater:(SPUUpdater *)sender
+    willDownloadUpdate:(SUAppcastItem *)item
+           withRequest:(NSMutableURLRequest *)request {
+    (void)sender;
+    const bool accepted = [self matches:item];
+    const auto original = text(request.URL.absoluteString);
+    const auto destination =
+        macProductUpdateFixtureAsset(accepted ? candidate : QJsonObject{}, original);
+    // Only this private build changes the transport request after the original
+    // authenticated appcast item has matched. Its URL, length and signatures
+    // stay unchanged and Sparkle verifies the downloaded archive normally.
+    request.URL = destination.isEmpty() ? [NSURL URLWithString:@"xdzip-owned-rejected://archive"]
+                                        : [NSURL URLWithString:native(destination)];
+    macProductUpdateFixtureEvent("download-request",
+                                 {{"item_matches", accepted},
+                                  {"original_request_url", original},
+                                  {"mapped_request_url", text(request.URL.absoluteString)}});
+}
+#endif
 - (void)showUpdatePermissionRequest:(SPUUpdatePermissionRequest *)request
                               reply:(void (^)(SUUpdatePermissionResponse *))reply {
     (void)request;
@@ -260,12 +316,18 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
 - (void)showUpdateNotFoundWithError:(NSError *)error
                     acknowledgement:(void (^)(void))acknowledgement {
     (void)error;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent("not-found", fixtureError(error));
+#endif
     cancelDownload = nil;
     [self failure];
     acknowledgement();
 }
 - (void)showUpdaterError:(NSError *)error acknowledgement:(void (^)(void))acknowledgement {
     (void)error;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent("updater-error", fixtureError(error));
+#endif
     cancelDownload = nil;
     [self failure];
     acknowledgement();
@@ -321,6 +383,10 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
     // successful observation without ever binding it to this ready installer.
     observeInstaller(installerPath, [self, reply](bool valid, QSet<qint64> pids) {
         self->readyObservationPending = NO;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+        macProductUpdateFixtureEvent("ready-helper",
+                                     {{"valid", valid}, {"matching_processes", pids.size()}});
+#endif
         if (!valid || pids.isEmpty()) {
             self->installerObservationError = YES;
             reply(SPUUserUpdateChoiceSkip);
@@ -452,6 +518,15 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     const auto helper = [framework.executableURL.URLByDeletingLastPathComponent
         URLByAppendingPathComponent:@"Autoupdate"];
     driver->installerPath = QFileInfo(text(helper.path)).canonicalFilePath();
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    macProductUpdateFixtureEvent(
+        "start",
+        {{"candidate", candidate},
+         {"bundle_build",
+          text([NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"])},
+         {"public_key", text([NSBundle.mainBundle objectForInfoDictionaryKey:@"SUPublicEDKey"])},
+         {"helper_exists", !driver->installerPath.isEmpty()}});
+#endif
     driver->updater = [[SPUUpdater alloc] initWithHostBundle:NSBundle.mainBundle
                                            applicationBundle:NSBundle.mainBundle
                                                   userDriver:driver
@@ -460,6 +535,9 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     driver->updater.automaticallyDownloadsUpdates = NO;
     NSError *error = nil;
     if (![driver->updater startUpdater:&error]) {
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+        macProductUpdateFixtureEvent("start-error", fixtureError(error));
+#endif
         [driver failure];
         driver->updater = nil;
         return;

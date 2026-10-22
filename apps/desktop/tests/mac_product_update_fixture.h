@@ -13,3 +13,6 @@ QNetworkAccessManager *macProductUpdateFixtureTransport(QObject *parent);
 void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessions *sessions,
                                     UiPreferences *settings, QQuickWindow *window);
 QString macProductUpdateFixtureFeed(const QJsonObject &authenticatedCandidate);
+QString macProductUpdateFixtureAsset(const QJsonObject &authenticatedCandidate,
+                                     const QString &requestUrl);
+void macProductUpdateFixtureEvent(const QString &stage, const QJsonObject &details);
