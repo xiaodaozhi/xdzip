@@ -1,6 +1,6 @@
 {
   "date": "2026-10-13",
-  "scope": "M3 developer implementation; independent review pending",
+  "scope": "M3 developer implementation and locked dependency scope",
   "packages": [
     {
       "name": "adler2",

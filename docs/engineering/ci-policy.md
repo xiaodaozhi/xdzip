@@ -53,7 +53,7 @@ ZIP 高级创建增加真实 AES-256 与编号分卷输出，核心覆盖错误�
 
 密码解压增加三平台格式与任务回归：AE-1／AE-2、严格结构及认证 EOF、错误重试、不同条目密码、空密码、满队列控制、取消／退出、来源变化、旧目标与链接保护。Qt 通过真实 AES 创建、自动打开、密码请求、重试、解压与关闭链路，核对密码输入角色及辅助功能动作。HTML 与 Qt 分别检查中英文、浅深色、多字号、小屏与 DPR，生成记录不含输入密码；原生装饰与系统读屏人工结果继续独立登记。互操作按[密码解压契约](password-extraction.md)及实际 CI 工件记录。
 
-WP-11 复用三平台核心和 Qt 门槛，增加 TAR/TAR.GZ 真实创建、浏览及解压，以及 scripts/check-tar-interop.py 的 Python tarfile 与可用系统 tar 双向字节核对。GNU/PAX 长名称、空目录、多 member GZIP、逃逸及特殊项、CRC／截断、配额和取消均由实际测试登记。桌面人工验收和独立安全审查不随自动化结果标记通过。
+WP-11 复用三平台核心和 Qt 门槛，增加 TAR/TAR.GZ 真实创建、浏览及解压，以及 scripts/check-tar-interop.py 的 Python tarfile 与可用系统 tar 双向字节核对。GNU/PAX 长名称、空目录、多 member GZIP、逃逸及特殊项、CRC／截断、配额和取消均由实际测试登记。桌面人工验收不随自动化结果标记通过。
 
 WP-12 对实际工件递归核验原生导入，Windows/Linux 使用 deployed 模式，macOS 使用 sdk 模式并保留外部 SDK 限制。源码与实际文件分别生成 CycloneDX 1.6，绑定实际 CLI 身份并校验锁定官方 schema；不把文件清单称为完整运行时组件合规证明。所有平台生成八项全 pending 的人工表作为新候选模板，不覆盖 issue 中既有验收结论，具体边界见[部署核验](deployment-audit.md)。macOS 新增上传仍仅限 JSON，禁止应用包自动部署、签名或上传。
 

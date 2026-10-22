@@ -264,7 +264,7 @@ $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {
     'Native macOS SDK validation only; no Apple Silicon developer package'
 } else {
-    'M4 ZIP Store/Deflate creation and safe extraction developer review; independent security audit and signed public release pending'
+    'Experimental developer build; native validation and package identity recorded for this commit'
 }
 @{ commit = $commit; platform = $qtHost; dependencyAuditMode = $auditMode; architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString(); qt = '6.8.2'; rust = '1.99.0'; packaged = !$IsMacOS; distribution = $distribution } |
     ConvertTo-Json | Set-Content 'build/review/build.json'

@@ -14,7 +14,7 @@
 
 ## 产品工具链准备
 
-macOS 准备 Xcode Command Line Tools 与 Qt；Windows 准备 MSVC Build Tools、Windows SDK 与相匹配的 Qt；Linux 准备编译器、目标 glibc 环境和 Qt Wayland/X11 依赖。当前开发版本按根目录工具链文件与 CI 锁定，来源与许可按[工具链冻结表](toolchain.md)记录，不依赖开发者机器的“最新版本”。正式系统支持与维护方式见[支持政策](support-policy.md)，具体来源许可复核使用独立发行审查 issue。
+macOS 准备 Xcode Command Line Tools 与 Qt；Windows 准备 MSVC Build Tools、Windows SDK 与相匹配的 Qt；Linux 准备编译器、目标 glibc 环境和 Qt Wayland/X11 依赖。当前开发版本按根目录工具链文件与 CI 锁定，来源与许可按[工具链冻结表](toolchain.md)记录，不依赖开发者机器的“最新版本”。正式系统支持与维护方式见[支持政策](support-policy.md)，具体来源许可复核使用发行许可复核 issue。
 
 从干净 checkout 构建与运行的命令见[Qt 开发应用](../../apps/desktop/README.md)，包含 CMake 开关、macOS 架构和部署目标、离屏测试边界。构建或安装逻辑变更应复验空格／中文路径。当前个人项目不要求付费签名身份；本地 DMG 的 ad-hoc 完整性与 CI 不部署 Mac 应用的边界见[构建指南](developer-build.md)。
 

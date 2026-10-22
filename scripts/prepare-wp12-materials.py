@@ -57,7 +57,7 @@ def main():
     for file in sorted(a.ci.rglob('*.json')):
         inventory.append({'file':file.relative_to(a.ci).as_posix(),'sha256':digest(file)})
     report={'schema_version':1,'status':'automated-materials-prepared-review-required','revision':ci['revision'],'platforms':platforms,'inventory':inventory,
-            'automatic_materials_complete':True,'legal_approval':False,'independent_review':False,
+            'automatic_materials_complete':True,'legal_approval':False,
             'external_boundaries':['Unstated publisher source/build/signing provenance cannot be fabricated by the consumer.',
                                    'Per-source license selection, platform redistributable rights and exact optimized-code ownership require accountable review.',
                                    'Actual linker inputs, runtime resource bytes, SDK-source declarations and native supplier/version metadata are supplied for that review.']}

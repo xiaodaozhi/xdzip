@@ -90,7 +90,7 @@ def evaluate(manifest):
         if json.loads((ROOT/rebuilt['path']).read_text())['source_manifest_sha256']!=delivered['sha256']:raise ValueError('Offline rebuild bound to another source delivery')
     return {'schema_version':1,'revision':expected,'status':'automatic-scope-complete-external-gates-pending','automatic_complete':True,
             'release_ready':False,'automatic':results,'external':[dict(g,status='pending') for g in GATES['external']],
-            'limits':['Verified automation evidence is not formal release approval, license choice or independent review.',
+            'limits':['Verified automation evidence is not formal release approval or license choice.',
                       'Previously accepted macOS routine checks remain valid; only uncovered specialties need additional records.']}
 
 
@@ -101,6 +101,6 @@ def main():
     result=evaluate(json.loads(a.manifest.read_text()));result['input_manifest_sha256']=digest(a.manifest)
     a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
     print('WP-12 automation evidence passed; external gates remain pending')
-    if a.require_release_pass:raise SystemExit('Release gate remains blocked by external review/device/policy requirements')
+    if a.require_release_pass:raise SystemExit('Release gate remains blocked by license, device and support-policy requirements')
 
 if __name__=='__main__':main()

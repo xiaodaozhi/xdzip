@@ -21,4 +21,4 @@ QML 模块、桥接协议和设置 schema 的版本独立于产品版本，不�
 
 关于窗口的逻辑参数来自 [about-reference.json](../visual/about-reference.json)，Qt 复用操作窗口及 footer，支持简体中文、English (US)、浅深色与 100%／125%／150% 字号。当前设计见 [A01 高保真](../../design/hifi/about.html)，HTML 版本信息由同一 JSON 生成，原生 Qt／提交未知时不伪造数值。
 
-验证入口：`scripts/check-build-version.py` 对照实际 CLI 与原生版本资源，`scripts/test-version.py`、`scripts/check-html-about.py`、`BrowserTest::versionAboutWindow`。截图与测量仅保存在 `build/review/about/`。源码、系统元数据与实际运行版本一致是检查条件；版本号本身不证明签名、私测准入、兼容性或独立安全审查已经通过。
+验证入口：`scripts/check-build-version.py` 对照实际 CLI 与原生版本资源，`scripts/test-version.py`、`scripts/check-html-about.py`、`BrowserTest::versionAboutWindow`。截图与测量仅保存在 `build/review/about/`。源码、系统元数据与实际运行版本一致是检查条件；版本号本身不证明签名、人工验收或兼容性已经通过。

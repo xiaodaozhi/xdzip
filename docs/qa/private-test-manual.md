@@ -41,4 +41,4 @@ python3 scripts/prepare-private-test.py --validate build/review/private-test/man
 
 第一条仅校验记录结构，不把 pending 当成通过；第二条要求八项均通过。缩减范围必须填写发布负责人决策引用，并单独进行准入评审，不能靠改成 not_applicable 绕过检查。实际记录和截图不提交 Git，使用本地／CI 工件保存。
 
-三平台表格、部署依赖与 SBOM、性能记录、所需独立安全审查和发行配置汇总到 [发行审查流程](release-review.md)。记录完整也不自动代表签名、许可合规或独立审查已通过。
+三平台表格、部署依赖与 SBOM、性能记录和发行配置汇总到 [发行审查流程](release-review.md)。记录完整也不自动代表签名或许可合规已通过。

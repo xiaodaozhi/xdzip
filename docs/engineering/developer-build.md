@@ -2,7 +2,7 @@
 
 本文是三平台环境准备、构建、测试、打包和验证的统一入口。共用编排由 [scripts/desktop.py](../../scripts/desktop.py) 实现；平台文档仅补充部署布局、工具行为和系统限制，不再另维护一套日常命令。
 
-开发构建仍标记实验性。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。工作包开发与验收完成不代表正式发行获批，许可来源、独立安全审查与私密报告演练在[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。
+开发构建仍标记实验性。能力和限制见根目录 [README](../../README.md)，支持范围见[支持政策](support-policy.md)。工作包开发与验收完成不代表正式发行获批，许可来源与再分发义务在[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。
 
 ## 环境与入口
 
@@ -120,6 +120,6 @@ ZIP 在受限 POSIX 条件下可恢复相对符号链接和可执行位，不恢
 
 按[通用验证方法](../qa/README.md)和[桌面清单](../qa/private-test-manual.md)选择受影响项。构建与测试收据分别保存在 build-dir 下的 `desktop-build.json`、`desktop-test.json`，prepare、package 和 verify 回执位于 output-dir 的 `<stage>.json`，并关联底层验证证据。自动化收据记录实际阶段与来源；离屏／软件渲染、原生 Cocoa 检查和人工专项分别登记，不相互替代。既有验收在 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)保留，不因重新生成候选清单而重做。
 
-Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作独立安全或许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
+Windows/Linux 工件交付同提交源码和许可通知，Actions 保存 14 天；过期后按身份和锁定输入重建。deployment-audit.json、源码及文件级 CycloneDX 清单用于来源核验，覆盖仍可能为 incomplete，不能当作许可批准。源码重建与 Qt 替换方法见[源码交付](source-delivery.md)及[自动验证契约](wp12-automation.md)。
 
 所有构建、截图、量测、报告与包只保留为忽略的本地或 CI 工件。不要把生成的 pending 表、离屏检查或部分 SBOM 写成干净环境与全部发行门槛通过。

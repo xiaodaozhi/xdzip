@@ -15,6 +15,16 @@ class ReadinessTests(unittest.TestCase):
         file=root/'build/ci.json';file.parent.mkdir();file.write_text(json.dumps({'status':'passed','revision':'a'*40,'all_jobs_succeeded':True,'product_platforms':['macos','windows','linux']}))
         return file,{'revision':'a'*40,'automatic':{'CI':[{'path':'build/ci.json','sha256':gate.digest(file),'kind':'ci'}]}}
 
+    def test_configured_external_requirements_reach_report(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);_,manifest=self.fixture(root)
+            gates=dict(gate.GATES,automatic=[next(g for g in gate.GATES['automatic'] if g['id']=='CI')])
+            with patch.object(gate,'ROOT',root),patch.object(gate,'GATES',gates):
+                result=gate.evaluate(manifest)
+            self.assertEqual({g['id'] for g in result['external']},{'DESKTOP','REFERENCE','LICENSE','SUPPORT'})
+            self.assertTrue(all(g['status']=='pending' for g in result['external']))
+            self.assertTrue(result['automatic_complete']);self.assertFalse(result['release_ready'])
+
     def test_hash_identity_and_path_are_enforced(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);file,manifest=self.fixture(root)

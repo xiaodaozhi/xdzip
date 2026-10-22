@@ -108,7 +108,7 @@ def main():
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
 
-该流程不宣称任意 ABI 不兼容的 Qt 都可替换。独立安全审查、许可分支选择、完整
+该流程不宣称任意 ABI 不兼容的 Qt 都可替换。许可分支选择、完整
 平台对应源码与配置核对、修改版 Qt 的行为验证仍在 WP-12 准入中单独登记。
 '''
     (output/'REBUILD.md').write_text(instructions, encoding='utf-8')
@@ -117,7 +117,7 @@ def main():
     report = {'schema_version': 1, 'revision': commit, 'qt_version': config['qt_version'],
               'source_delivery': 'collected-not-compliance-verified', 'materials': materials, 'files': files,
               'limits': ['Pinned Qt module archives and locked Cargo vendor inputs, not a proof of SDK build equivalence.',
-                         'Exact linked components, platform runtimes, license selection and independent review remain pending.']}
+                         'Exact linked components, platform runtimes and license selection require verification.']}
     (output/'source-delivery.json').write_text(json.dumps(report, indent=2)+'\n')
     print('Collected project source, locked Rust vendor inputs and verified Qt/runtime-tool/Rust-stdlib source archives')
 

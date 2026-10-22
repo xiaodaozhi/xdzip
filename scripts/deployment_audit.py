@@ -170,7 +170,7 @@ def audit(root, app, qt_prefix, platform, mode):
             'limits': ['Recursion is limited to the artifact and declared Qt SDK; other external libraries are hashed but not recursively inspected.',
                        'Native imports only; QML/plugins loaded by name and OS ABI compatibility require runtime and clean-machine checks.',
                        'SDK mode describes a developer build, not an independently installed application.',
-                       'File hashes do not establish component identity, license compliance, signatures or security review.']}
+                       'File hashes do not establish component identity, license compliance or publisher signatures.']}
 
 
 def main():

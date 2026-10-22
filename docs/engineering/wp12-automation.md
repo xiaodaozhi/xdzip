@@ -43,4 +43,4 @@ scripts/collect-wp12-ci.py 从固定项目的精确提交收集 CI 元数据及�
 
 scripts/assemble-wp12-evidence.py 自动组装 CI、源码、Qt 替换、性能和三平台包记录，再调用严格门槛，不需要人工拼接 JSON。scripts/wp12-readiness.py 校验每项证据路径、哈希、提交、平台覆盖和类型，拒绝脏构建、混合身份、缺失源码加载标记及不足的采样。所有自动项齐全才输出 automatic_complete=true；release_ready 始终为 false，--require-release-pass 在外部门槛未完时拒绝通过。
 
-最终应交付开发安装器／本地 DMG、源码与通知、同提交 SBOM、性能报告、逐项审查材料和一个汇总报告。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。来源与许可、独立安全审查及私密报告演练继续由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。新候选或平台扩展仍须按实际变更选择桌面和性能复验，脚本不代替所有者或独立审查结论。
+最终应交付开发安装器／本地 DMG、源码与通知、同提交 SBOM、性能报告、逐项审查材料和一个汇总报告。自动项完成与正式发行获批分别判断。WP-12 的八项人工验收及支持政策已按所有者结论收口，见 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)与[支持政策](support-policy.md)；后续不因重建证据而要求重复。来源与许可复核继续由[发行审查 #4](https://github.com/xiaodaozhi/xdzip/issues/4)跟踪。新候选或平台扩展仍须按实际变更选择桌面和性能复验，脚本不代替所有者的发行决定或许可复核结论。

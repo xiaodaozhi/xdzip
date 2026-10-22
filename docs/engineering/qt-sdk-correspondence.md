@@ -23,4 +23,4 @@ python3 scripts/qt_sdk_correspondence.py \
 
 模块是否提供源码 SPDX、匹配／缺失／未覆盖数量、配置和补丁状态均以本次生成的 JSON 为准，不把某个 SDK 的观测推广到其他 SDK。没有逐文件声明时不能推断对应通过，必须保留具体缺口。
 
-报告状态固定为 evidence-collected-not-build-equivalence。[实际 Qt 源码构建和加载／替换](wp12-automation.md#qt-源码与兼容替换)已有独立流程，但不能由此推断原 SDK 的字节级重现。完整工具链与系统 SDK 材料、未覆盖／生成文件、运行库来源及许可履约尚未全部核清时，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择、平台运行库及独立审查门槛继续保留。
+报告状态固定为 evidence-collected-not-build-equivalence。[实际 Qt 源码构建和加载／替换](wp12-automation.md#qt-源码与兼容替换)已有独立流程，但不能由此推断原 SDK 的字节级重现。完整工具链与系统 SDK 材料、未覆盖／生成文件、运行库来源及许可履约尚未全部核清时，不宣称全部对应源码义务已履行，不宣称字节级可重复构建。既有[运行时归属](runtime-attribution.md)的 incomplete、许可选择及平台运行库复核继续保留。

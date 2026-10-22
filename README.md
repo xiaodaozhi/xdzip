@@ -53,7 +53,7 @@
 
 ## 获取与安装
 
-预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 包保留应用目录内 VC++ 运行库和图形兼容库，Mac 包仅 ad-hoc 完整性签名。独立审查状态与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 包保留应用目录内 VC++ 运行库和图形兼容库，Mac 包仅 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
 
 当前也可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
 
@@ -90,7 +90,7 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 
 - 支持独立标签页或多窗口会话，文件内容预览和独立完整性检查命令尚未实现。
 - 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
-- [独立发行审查](https://github.com/xiaodaozhi/xdzip/issues/4)尚未完成，开发验证不等于独立安全审查。
+- [发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)仍需逐项确认实际交付组件的来源与再分发义务。
 - 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。
 
 版本、渠道和构建身份可在“关于 xdzip”或 `xdzip --version` 查看。项目采取尽力维护，优先处理最新版本反馈，不承诺固定响应时限。

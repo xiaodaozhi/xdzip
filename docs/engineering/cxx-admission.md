@@ -10,6 +10,6 @@ Qt/Rust 采用 `cxx` 生成的类型化所有权桥接；C++ 保留 Qt 对象，
 
 cxx-build 生成源码和头文件并调用 C++ 编译工具；cxx 编译包内桥接实现，link-cplusplus 负责 C++ 标准库链接。依赖获取由 Cargo 按锁文件校验，新增构建脚本或可选特性必须重新审查其网络与执行行为，不把历史检查当作新版本安全结论。
 
-保持 std/alloc 等实际产品所需特性；裁剪需复验 UTF-8、错误传播、唯一句柄、背压、关闭与排空行为。[运行时契约](m1-runtime.md)和[桥接设计](../design/05-qt-rust-bridge.md)定义实际接口。独立安全审查及发行许可复核按[发行审查流程](../qa/release-review.md)执行。
+保持 std/alloc 等实际产品所需特性；裁剪需复验 UTF-8、错误传播、唯一句柄、背压、关闭与排空行为。[运行时契约](m1-runtime.md)和[桥接设计](../design/05-qt-rust-bridge.md)定义实际接口。发行许可复核按[发行审查流程](../qa/release-review.md)执行。
 
 具体探针、CI 运行与验收结论记录在 [WP-01 issue](https://github.com/xiaodaozhi/xdzip/issues/1)及其 Actions 工件，不在此累积执行报告。

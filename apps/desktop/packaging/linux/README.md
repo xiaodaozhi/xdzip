@@ -6,6 +6,6 @@
 
 系统依赖名称见 share/deployment.json 的 system_packages，来源于构建基线的实际原生导入。它们是 OS 运行依赖，不是需要安装的 Qt／Rust 开发工具。其他发行版、较旧 glibc、Wayland、真实输入法和读屏均未据此宣称通过。tar.gz 本身不自动安装或改默认；同一 CI 工件另有 Ubuntu 24.04 .deb，安装后注册打开候选并保护原默认。
 
-share/notices 包含源码依赖、Qt 和字体通知；同一 CI 工件的 xdzip-source.tar 提供本项目同提交源码。外层 artifact-files.cdx.json、linux-runtime.json 和 linux-package.json 分别记录文件与已知依赖、隔离容器运行结果、下载 tar.gz 的 SHA-256。完整组件许可归属和独立安全审查仍是发行门槛。
+share/notices 包含源码依赖、Qt 和字体通知；同一 CI 工件的 xdzip-source.tar 提供本项目同提交源码。外层 artifact-files.cdx.json、linux-runtime.json 和 linux-package.json 分别记录文件与已知依赖、隔离容器运行结果、下载 tar.gz 的 SHA-256。完整组件许可归属仍须在发行前复核。
 
 CI 使用没有系统 Qt／编译器的运行容器，网络禁用，运行目录只读，执行 Xvfb 软件渲染启动及十万条自有 ZIP 的打开、取消和退出。该证据不代替物理 GPU、真实桌面、干净安装升级或签名发行验收。

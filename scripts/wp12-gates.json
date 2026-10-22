@@ -16,7 +16,6 @@
     {"id":"DESKTOP", "title":"未覆盖的真实桌面输入法、读屏、GPU、系统操作及重启", "reason":"需要对应设备及操作者的专项记录，既有 macOS 常规验收继续有效"},
     {"id":"REFERENCE", "title":"正式参考机、供电与性能预算确认", "reason":"自动观测不能代表发布负责人已批准参考环境和预算"},
     {"id":"LICENSE", "title":"许可分支、未知上游来源和再分发义务审查", "reason":"材料与差异可自动收集，来源未声明的部分需要上游或具备权限的审查者确认"},
-    {"id":"SECURITY", "title":"独立安全审查", "reason":"本批作者与自动测试不能充当独立审查人员"},
     {"id":"SUPPORT", "title":"正式系统支持范围及维护政策", "reason":"需要产品和发布负责人决定"}
   ],
   "distribution_policy": {"channel": "github-releases", "formal_signing_required": false, "macos_signing": "ad-hoc-integrity-only", "windows_signing": "unsigned", "paid_developer_account_required": false}

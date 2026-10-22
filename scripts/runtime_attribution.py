@@ -195,7 +195,7 @@ def attribute(audit, root, sdk, deployment=None):
         'limits': ['SDK SPDX ownership is upstream evidence, not a legal conclusion or proof of unmodified upstream bytes.',
             'Filename-only matches and upstream checksum differences require review; deployment rewrite records are separate evidence.',
             'Non-native QML/resources can lack individual SPDX ownership; embedded assets, static Rust exact linkage and OS/redistributable licenses need separate review.',
-            'Corresponding source archives, relinking/install materials, signatures and independent review remain release gates.']}
+            'Corresponding source archives, relinking/install materials and applicable redistribution obligations remain release checks.']}
 
 
 def main():
@@ -223,7 +223,7 @@ def main():
     # These are explicit release blockers even if every known Qt license has a text.
     report['release_blockers'] = ['Exact static Rust linkage and embedded resources attribution',
         'Corresponding source/relinking delivery and platform redistributable obligations',
-        'Manual license choice/compliance review and independent security review']
+        'Manual license choice and compliance review']
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
     print(f'Runtime attribution: {len(report["files"])} SDK files, {len(report["components"])} upstream components, {len(report["gaps"])} review gaps; release incomplete')

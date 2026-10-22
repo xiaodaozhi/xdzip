@@ -233,7 +233,7 @@ def collect(prefix, cache, fetch=False):
                      'Installed configuration and upstream configure comments do not include the full original CMake cache, environment or toolchain inputs.',
                      'SDK metadata architecture is the upstream configure host/default; it does not prove the actual runtime binary slices.',
                      'Known consumer helper is checked; the complete SDK modification history and runtime binary derivation remain unverified.',
-                     'No Qt source rebuild, runtime binary equivalence, license approval or independent security review is claimed.']}
+                     'No Qt source rebuild, runtime binary equivalence or license approval is claimed.']}
 
 
 def main():

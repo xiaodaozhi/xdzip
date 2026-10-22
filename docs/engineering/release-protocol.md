@@ -24,11 +24,11 @@ Windows 每次部署核验使用独立的临时测试副本，保留此前日志
 
 macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临时应用仍存活时导出，随后才清理暂存 `.app` 和临时注册。不能在暂存清理后重新部署另一份应用来补 ZIP。
 
-顺序为同提交验证、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后公开 Pre-release、再次下载并核对所有附件。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。独立安全或许可审查未执行时必须在说明中保留限制，不以自动化测试冒充审查通过。
+顺序为同提交验证、冻结版本提交、创建并推送不可变标签、三平台构建与独立启动及安装生命周期核验、汇总草稿清单、全部齐备后公开 Pre-release、再次下载并核对所有附件。任何平台失败时草稿保持未公开。发布前后均按 SHA256SUMS 复验。许可来源复核或人工验收未完成时必须在说明中保留限制，不以自动化测试冒充其实际结论。
 
 未来更新客户端分页获取 GitHub Releases 列表，跳过草稿，校验清单版本，按语义版本、用户允许渠道、平台、架构、包类型选择。不能按发布时间排序判断升级，也不能猜测文件名。预发布不使用排除预发布的 `/releases/latest`。下载后校验大小与 SHA-256，任何缺失或不一致拒绝使用。本次仅准备发布协议与选择测试，不实现自动更新或自替换。
 
-English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Future clients paginate Releases, filter allowed channels, compare semantic versions and verify downloaded bytes; they must not use publication dates, filename guesses or /releases/latest for prereleases. No updater is implemented by this change. macOS uses ad-hoc integrity signing only. Unperformed independent reviews remain explicit.
+English: Every immutable release includes schema-v1 release.json and SHA256SUMS. All six native package targets must be present and hash-verified before a draft becomes public. Metadata binds the complete semantic version, channel, monotonic build, tag and full commit to platform/architecture/package requirements and pinned URLs. Future clients paginate Releases, filter allowed channels, compare semantic versions and verify downloaded bytes; they must not use publication dates, filename guesses or /releases/latest for prereleases. No updater is implemented by this change. macOS uses ad-hoc integrity signing only. Incomplete licensing checks and unperformed manual acceptance remain explicit.
 
 Validation-only dispatches accept a candidate commit SHA and build, deploy, sign, verify and assemble the complete attachment set without creating a draft or public Release. Normal publication requires the exact version tag.
 

@@ -1,6 +1,6 @@
 # 实验安装器与文件关联
 
-提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表独立发行审查获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
+提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表发行许可复核获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
 ## 共用构建入口
 
@@ -72,7 +72,7 @@ Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使
 
 ## 兼容基线的长期输入
 
-真实升级／回退使用固定的旧版完整产品源码，不从已重写的 main 历史获取。`prepare-previous-product.py` 锁定独立 `codex/installer-compat-baseline` 分支中的单根源码快照；该分支只保存构建和回归所需的原始源码及资源，不携带旧 main 父历史、执行报告或工作流。快照内 `COMPAT-BASELINE.json` 记录原始来源提交与树身份，不能合并回 main，也不作为发行包或安全审查结论。
+真实升级／回退使用固定的旧版完整产品源码，不从已重写的 main 历史获取。`prepare-previous-product.py` 锁定独立 `codex/installer-compat-baseline` 分支中的单根源码快照；该分支只保存构建和回归所需的原始源码及资源，不携带旧 main 父历史、执行报告或工作流。快照内 `COMPAT-BASELINE.json` 记录原始来源提交与树身份，不能合并回 main，也不作为发行包或当前产品的验收结论。
 
 构建后 CLI 身份必须匹配快照自身的固定 SHA，回执另记原始来源身份，不能伪装成原发布二进制。设置组件另以三份原始小型源码作为持久测试输入，逐文件哈希固定，双向读写及未来 schema 拒写不依赖网络或历史 commit。不要随当前实现修改这些回归输入；需要新基线时另行评审并保留来源。
 

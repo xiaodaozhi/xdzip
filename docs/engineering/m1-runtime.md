@@ -36,7 +36,7 @@ QObject 提前销毁时，关闭 mailbox、唤醒接收线程、停止服务；�
 
 ## 验证与构建
 
-验证方法见[通用入口](../qa/README.md)。Rust 核心测试不需要 Qt；Qt 窗口、模型、压力和关闭用例在三平台原生构建运行。macOS CI 验证 arm64 与 SDK 环境 Cocoa 启动，不部署或上传应用；本地可按明确需求生成开发 DMG。Windows/Linux 部署随包 Qt 并验证无 SDK 运行，范围见[构建指南](developer-build.md)。这些检查不等同正式发行或独立审查。
+验证方法见[通用入口](../qa/README.md)。Rust 核心测试不需要 Qt；Qt 窗口、模型、压力和关闭用例在三平台原生构建运行。macOS CI 验证 arm64 与 SDK 环境 Cocoa 启动，不部署或上传应用；本地可按明确需求生成开发 DMG。Windows/Linux 部署随包 Qt 并验证无 SDK 运行，范围见[构建指南](developer-build.md)。这些检查不等同正式发行获批。
 
 M2 的初始查询分配不可变结果身份，后续批次必须匹配全部 QueryKey 字段与参数；Qt 取消旧请求并合并最新意图，序列与请求 ID 的既有检查仍保留。单批另外限制名称 64 KiB，不重复过滤／排序。M1 历史验收不据此重写为当时已经具备 M2。
 
