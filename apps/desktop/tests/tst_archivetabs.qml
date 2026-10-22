@@ -29,6 +29,33 @@ Item {
         }
         function init() { Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.integratedTitlebar=false; moves.clear(); windowDrags.clear(); populate(3,0); }
         function cleanup() { bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function test_release_position_controls_drop_data() {
+            return [{tag:"final-tab",outside:false},{tag:"outside-titlebar",outside:true}];
+        }
+        function test_release_position_controls_drop(data) {
+            const strip=findChild(bar,"archiveTabStrip");
+            tryVerify(()=>strip.itemAtIndex(0)!==null && strip.itemAtIndex(2)!==null);
+            waitForRendering(bar,100);
+            const first=strip.itemAtIndex(0), second=strip.itemAtIndex(1), third=strip.itemAtIndex(2);
+            const start=first.mapToItem(surface,first.width/2,first.height/2);
+            const intermediate=second.mapToItem(surface,second.width/2,second.height/2);
+            const finish=third.mapToItem(surface,third.width/2,third.height/2);
+            mousePress(surface,start.x,start.y,Qt.LeftButton);
+            mouseMove(surface,intermediate.x,intermediate.y,20);
+            tryCompare(bar,"reordering",true);
+            tryCompare(bar,"dropIndex",1);
+            // A release carries its own final position without requiring another move.
+            mouseRelease(surface,finish.x,data.outside ? bar.height+20 : finish.y,Qt.LeftButton);
+            tryCompare(bar,"reordering",false);
+            compare(moves.count,data.outside ? 0 : 1);
+            if (!data.outside) {
+                compare(moves.signalArguments[0][0],"tab0");
+                compare(moves.signalArguments[0][1],2);
+            }
+            compare(bar.tabs.map(tab=>tab.id).join(","),data.outside ? "tab0,tab1,tab2" : "tab1,tab2,tab0");
+            compare(bar.tabs.find(tab=>tab.selected).id,"tab0");
+            compare(windowDrags.count,0);
+        }
         function test_weight_and_drag() {
             const strip=findChild(bar,"archiveTabStrip");
             tryVerify(()=>strip.itemAtIndex(0)!==null && strip.itemAtIndex(2)!==null);

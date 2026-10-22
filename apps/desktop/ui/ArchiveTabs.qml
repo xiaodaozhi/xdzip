@@ -369,8 +369,13 @@ Rectangle {
                     if (reordering)
                         root.updateReorder(point.x, point.y);
                 }
-                onReleased: if (reordering && root.reordering)
-                    root.finishReorder()
+                onReleased: mouse => {
+                    if (reordering && root.reordering) {
+                        const point = mapToItem(root, mouse.x, mouse.y);
+                        root.updateReorder(point.x, point.y);
+                        root.finishReorder();
+                    }
+                }
                 onCanceled: root.cancelReorder()
                 onClicked: mouse => {
                     if (reordering)
