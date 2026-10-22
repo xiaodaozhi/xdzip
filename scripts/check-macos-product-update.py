@@ -221,14 +221,18 @@ class Associations:
     def set(self,role,identity):
         uti,value=self.string('public.zip-archive'),self.string(identity)
         try:
-            if self.ls.LSSetDefaultRoleHandlerForContentType(uti,role,value):raise RuntimeError('Cannot set owned default ZIP handler')
+            status=self.ls.LSSetDefaultRoleHandlerForContentType(uti,role,value)
+            if status:raise RuntimeError('Cannot set owned default ZIP Viewer handler, OSStatus='+str(status))
         finally:self.cf.CFRelease(uti);self.cf.CFRelease(value)
-    def snapshot(self):return {str(role):self.get(role) for role in (0xffffffff,2)}
+    def snapshot(self):return {str(role):self.get(role) for role in (0xffffffff,2,4,8)}
 
 
 def other_handler(output, identity):
     app=output/'owned-other-handler.app'; (app/'Contents/MacOS').mkdir(parents=True)
-    shutil.copy2('/usr/bin/true',app/'Contents/MacOS/handler')
+    # Copy executable bytes only. System binaries carry protected BSD flags
+    # which an owned fixture must neither copy nor attempt to set.
+    handler=app/'Contents/MacOS/handler'
+    shutil.copyfile('/usr/bin/true',handler);handler.chmod(0o755)
     info=dict(CFBundleIdentifier=identity,CFBundleExecutable='handler',CFBundleName='Owned ZIP regression handler',
               CFBundlePackageType='APPL',CFBundleVersion='1',LSUIElement=True,CFBundleDocumentTypes=[{
               'CFBundleTypeName':'Owned ZIP fixture','CFBundleTypeRole':'Viewer','LSHandlerRank':'Owner',
@@ -313,14 +317,17 @@ def main():
          loopback_asset_url=address+'/owned/'+archive.name,routes={base+'release.json':'release.json',base+'release.json.sig':'release.json.sig',
          'https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1':'releases.json'}))
     associations=Associations();original=associations.snapshot()
-    if not all(original.values()):raise RuntimeError('Cannot safely restore missing initial ZIP handler')
+    dump(output/'association-original.json',original)
+    if not original['2']:raise RuntimeError('Cannot safely restore a missing initial ZIP Viewer handler')
     other=None;old=None;new=None;log=None;record={'status':'failed'};stage='association_setup'
     try:
         other_id='org.xdzip.owned-zip-handler.'+token
-        other=other_handler(output,other_id)
-        for role in (0xffffffff,2):associations.set(role,other_id)
+        other=output/'owned-other-handler.app'
+        other_handler(output,other_id)
+        associations.set(2,other_id)
         baseline=associations.snapshot()
-        if any(value!=other_id for value in baseline.values()):raise RuntimeError('Owned default handler did not register')
+        dump(output/'association-baseline.json',baseline)
+        if baseline['2']!=other_id:raise RuntimeError('Owned default Viewer handler did not register')
         stage='install_old'
         shutil.copytree(products['old']['app'],installed,symlinks=True)
         run([LSREGISTER,'-f',installed])
@@ -368,10 +375,10 @@ def main():
         record=dict(status='passed',scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
                     production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,
-                    zip_association_scope='LaunchServices public.zip-archive default handlers for all roles and Viewer',
+                    zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; all-roles aggregate, Editor and Shell observed read-only',
                     original_zip_handlers=original,owned_zip_handlers=baseline,after_zip_handlers=after_associations,
                     network_seam='Private Qt metadata transport, exact authenticated feed URL to loopback, exact GitHub archive URL protocol redirect; signatures remain real',
-                    limits=['Idle successful upgrade only; rejection/cancellation use the separate four native Sparkle scenarios.',
+                    limits=['Idle successful upgrade only; rejection/cancellation use the separate native Sparkle scenarios.',
                             'Default handlers for other archive UTIs and physical user acceptance are not claimed.'])
     except Exception as error:
         record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error));raise
@@ -389,23 +396,25 @@ def main():
             if old and old.poll() is None:old.terminate();old.wait(timeout=10)
         if log:log.close()
         try:
-            for role in (0xffffffff,2):
-                current=associations.get(role)
-                if current in (original[str(role)],'org.xdzip.owned-zip-handler.'+token,PRODUCT):
-                    associations.set(role,original[str(role)])
-                else:raise RuntimeError('Unowned default association changed during fixture')
+            current=associations.get(2)
+            if current!=original['2']:
+                if current in ('org.xdzip.owned-zip-handler.'+token,PRODUCT):
+                    associations.set(2,original['2'])
+                else:raise RuntimeError('Unowned default Viewer association changed during fixture')
             if associations.snapshot()!=original:raise RuntimeError('Could not restore initial ZIP handlers')
             record['initial_zip_handlers_restored']=True
-        except Exception as error:cleanup.append(dict(stage='restore_associations',error=type(error).__name__))
+        except Exception as error:cleanup.append(dict(stage='restore_associations',error=type(error).__name__,detail=str(error)))
         for app in (installed,other):
             if not app or not app.exists():continue
             try:
                 require_owned(app,applications if app==installed else output)
-                run([LSREGISTER,'-u',app]);shutil.rmtree(app)
+                try:
+                    if (app/'Contents/Info.plist').is_file():run([LSREGISTER,'-u',app])
+                finally:shutil.rmtree(app)
             except Exception as error:cleanup.append(dict(stage='remove_owned_application',error=type(error).__name__))
         try:
             if associations.snapshot()!=original:raise RuntimeError('Unregistering owned applications changed initial handlers')
-        except Exception as error:cleanup.append(dict(stage='verify_restored_associations',error=type(error).__name__))
+        except Exception as error:cleanup.append(dict(stage='verify_restored_associations',error=type(error).__name__,detail=str(error)))
         subprocess.run(['defaults','delete',PRODUCT],capture_output=True)
         for path in roots:
             try:

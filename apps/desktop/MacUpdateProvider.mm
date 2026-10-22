@@ -16,13 +16,16 @@
 #include <QSet>
 #include <QTimer>
 #ifdef XDZIP_UPDATE_TESTS
+#include <QDebug>
 #include <QEventLoop>
 #include <QFile>
+#include <QJsonDocument>
 #include <QTemporaryDir>
 #endif
 #import <Sparkle/Sparkle.h>
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 // Sparkle owns extraction, authorization, replacement, and relaunch. Only the
 // application's completed join barrier is allowed to release installReply.
@@ -171,7 +174,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
     if (owner)
         owner->reportNativeProgress(QStringLiteral("error"), -1);
     if (prepared) {
-        auto callback = std::move(prepared);
+        auto callback = std::exchange(prepared, {});
         callback(QStringLiteral("native_update"));
     }
 }
@@ -333,7 +336,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
         self->installReply = [reply copy];
         if (!self->preparationReported && self->prepared) {
             self->preparationReported = YES;
-            auto callback = std::move(self->prepared);
+            auto callback = std::exchange(self->prepared, {});
             callback({});
         }
     });
@@ -381,7 +384,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
         (!deferredQuit && !(installerRequired && !installerGone && !committed)))
         return;
     if (!installerRequired) {
-        auto quit = std::move(deferredQuit);
+        auto quit = std::exchange(deferredQuit, {});
         if (quit)
             quit();
         return;
@@ -391,7 +394,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
         self->quitObservationPending = NO;
         if (valid && pids.isEmpty()) {
             self->installerGone = YES;
-            auto quit = std::move(self->deferredQuit);
+            auto quit = std::exchange(self->deferredQuit, {});
             if (quit)
                 quit();
             return;
@@ -591,11 +594,13 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
     const bool heldUntilCycleReturns = completedQuits == 0;
     QTimer::singleShot(1000, &finished, &QEventLoop::quit);
     finished.exec();
+    const bool normalCallbackCleared = !driver->deferredQuit;
     const bool normalQuitPassed = inactiveQuit && !immediateQuit && heldUntilCycleReturns &&
                                   activeQuitDeferred && completedQuits == 1 &&
                                   helperObservations == 2 && driver->installerGone &&
-                                  !driver->deferredQuit;
+                                  normalCallbackCleared;
     bool rejectedReadyPassed = true;
+    QJsonArray rejectedObservations;
     for (const bool validObservation : {false, true}) {
         driver = [[XdzipUpdateDriver alloc] init];
         driver->owner = owner;
@@ -640,7 +645,23 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
         rejectedReadyPassed &= rejectedWithSkip && rejectedPreparation && retryHeld &&
                                aliveRetryHeld && observations == 2 && driver->installerGone &&
                                !updateSessionBlocked();
+        rejectedObservations.append(QJsonObject{{"valid_observation", validObservation},
+                                                {"reply_skip", rejectedWithSkip},
+                                                {"preparation_rejected", rejectedPreparation},
+                                                {"retry_held", retryHeld},
+                                                {"alive_retry_held", aliveRetryHeld},
+                                                {"observations", observations},
+                                                {"helper_gone", bool(driver->installerGone)},
+                                                {"retry_gate_released", !updateSessionBlocked()}});
     }
+    const QJsonObject diagnostics{
+        {"unicode_parser", unicodeParser},       {"malformed_rejected", malformedRejected},
+        {"cancellation", cancellationPassed},    {"installation", installationPassed},
+        {"normal_quit", normalQuitPassed},       {"normal_callback_cleared", normalCallbackCleared},
+        {"normal_quit_calls", completedQuits},   {"normal_helper_observations", helperObservations},
+        {"rejected_ready", rejectedReadyPassed}, {"rejected_observations", rejectedObservations}};
+    qInfo().noquote() << "Mac updater lifecycle:"
+                      << QJsonDocument(diagnostics).toJson(QJsonDocument::Compact);
     installerObservationOverride = std::move(previousObservation);
     driver = previous;
     return unicodeParser && malformedRejected && cancellationPassed && installationPassed &&

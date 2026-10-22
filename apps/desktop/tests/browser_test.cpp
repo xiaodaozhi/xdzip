@@ -203,6 +203,98 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession() {
+        const bool previousQuit = QApplication::quitOnLastWindowClosed();
+        QApplication::setQuitOnLastWindowClosed(false);
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *idle = window->findChild<BrowserController *>();
+        sessions.newSession();
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *working = page ? page->findChild<BrowserController *>() : nullptr;
+        QVERIFY(idle && working && idle != working);
+        QCOMPARE(sessions.sessionCount(), 2);
+        QTRY_VERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
+        working->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/password-retry.zip"));
+        QTRY_VERIFY(working->ready() && !working->busy());
+        working->startArchiveTest();
+        QTRY_VERIFY_WITH_TIMEOUT(!working->passwordPrompt().isEmpty(), 10000);
+        const auto prompt = working->passwordPrompt();
+        const auto taskId = prompt.value("taskId").toString();
+        QVERIFY(!taskId.isEmpty() && !prompt.value("promptId").toString().isEmpty());
+        QCOMPARE(prompt.value("kind").toString(), QStringLiteral("check"));
+        const auto snapshot = [&]() -> QVariantMap {
+            for (const auto &value : working->tasks()) {
+                const auto task = value.toMap();
+                if (task.value("id").toString() == taskId)
+                    return task;
+            }
+            return {};
+        };
+        QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
+        QCOMPARE(sessions.activeTaskCount(), 1);
+        auto *password = page->findChild<QQuickWindow *>("passwordWindow");
+        auto *confirmation = page->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(password && confirmation);
+        QTRY_VERIFY(password->isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(password));
+        QCOMPARE(password->modality(), Qt::ApplicationModal);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QSignalSpy updateReady(&sessions, &ApplicationSessions::readyForUpdate);
+
+        sessions.requestQuit();
+        QTRY_VERIFY(confirmation->isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(confirmation));
+        QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
+        auto *returnButton = findVisual(confirmation->contentItem(), "quitReturn");
+        QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
+        const auto returnPoint =
+            returnButton->mapToScene(QPointF(returnButton->width() / 2, returnButton->height() / 2))
+                .toPoint();
+        moveTestPointer(confirmation, returnPoint);
+        QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, returnPoint);
+        QTRY_VERIFY(!confirmation->isVisible());
+        QVERIFY(!sessions.isClosing() && !sessions.updatePending());
+        QCOMPARE(working->passwordPrompt(), prompt);
+        QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
+        QCOMPARE(sessions.activeTaskCount(), 1);
+        QVERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
+        QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+
+        sessions.requestQuit();
+        QTRY_VERIFY(confirmation->isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(confirmation));
+        QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
+        auto *cancelButton = findVisual(confirmation->contentItem(), "quitCancel");
+        QVERIFY(cancelButton && cancelButton->isVisible() && cancelButton->isEnabled());
+        const auto cancelPoint =
+            cancelButton->mapToScene(QPointF(cancelButton->width() / 2, cancelButton->height() / 2))
+                .toPoint();
+        moveTestPointer(confirmation, cancelPoint);
+        QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, cancelPoint);
+        QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
+        QVERIFY(sessions.isClosing() && !sessions.updatePending());
+        QVERIFY(idle->shutdownComplete() && working->shutdownComplete());
+        QCOMPARE(sessions.activeTaskCount(), 0);
+        QCOMPARE(snapshot().value("status").toString(), QStringLiteral("cancelled"));
+        QVERIFY(snapshot().value("terminal").toBool());
+        QVERIFY(working->passwordPrompt().isEmpty());
+        QCoreApplication::processEvents();
+        QCOMPARE(joined.count(), 1);
+        QVERIFY(updateReady.isEmpty());
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+    }
     void globalWaitForExitDoesNotCloseACompletedPageEarly() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
