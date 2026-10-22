@@ -39,6 +39,9 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
+#ifdef Q_OS_MACOS
+#include "MacUpdateProvider.h"
+#endif
 
 #ifdef Q_OS_MACOS
 void integrateMacTitlebar(QQuickWindow *window);
@@ -206,9 +209,16 @@ int main(int argc, char *argv[]) {
         QObject::connect(
             sessions.get(), &ApplicationSessions::readyToQuit, &application,
             [&] {
-                guard.quitHandler = {};
-                guard.controller = nullptr;
-                application.quit();
+                const auto quit = [&] {
+                    guard.quitHandler = {};
+                    guard.controller = nullptr;
+                    application.quit();
+                };
+#ifdef Q_OS_MACOS
+                if (deferMacUpdateQuit(quit))
+                    return;
+#endif
+                quit();
             },
             Qt::QueuedConnection);
         fileOpens.attach([&](const QString &path) { sessions->openPath(path); });

@@ -197,11 +197,20 @@ class MacProbeUpdate final : public QObject {
         if (m_finished)
             return;
         m_finished = true;
-        save(m_directory + "/result.json",
-             {{"success", success}, {"error", error}, {"events", m_events}});
-        if (releaseExitGuard)
-            releaseExitGuard();
-        QTimer::singleShot(0, qApp, &QCoreApplication::quit);
+        const auto quit = [this, success, error] {
+            m_events["native_cycle_settled_before_exit"] = true;
+            m_events["native_exit_status"] = macUpdateExitStatus();
+            save(m_directory + "/events.json", m_events);
+            save(m_directory + "/result.json",
+                 {{"success", success}, {"error", error}, {"events", m_events}});
+            if (releaseExitGuard)
+                releaseExitGuard();
+            QTimer::singleShot(0, qApp, &QCoreApplication::quit);
+        };
+        const bool deferred = deferMacUpdateQuit(quit);
+        m_events["native_quit_deferred"] = deferred;
+        if (!deferred)
+            quit();
     }
   signals:
     void changed();

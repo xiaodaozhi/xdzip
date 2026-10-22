@@ -126,6 +126,15 @@ QJsonObject snapshot(UpdateController *updates, UiPreferences *settings) {
                        {"primary_windows", windows},
                        {"state", updates->state()},
                        {"error", updates->errorCode()},
+                       {"trusted", updates->trusted()},
+                       {"can_install", updates->canInstall()},
+                       {"install_reason", updates->installReason()},
+                       {"configuration", BuildInfo::configuration()},
+                       {"channel", BuildInfo::channel()},
+                       {"dirty", BuildInfo::dirty()},
+                       {"executable", QCoreApplication::applicationFilePath()},
+                       {"canonical_executable",
+                        QFileInfo(QCoreApplication::applicationFilePath()).canonicalFilePath()},
                        {"theme", settings->theme()},
                        {"text_scale", settings->textScale()},
                        {"language", settings->language()},
@@ -140,6 +149,13 @@ QJsonObject snapshot(UpdateController *updates, UiPreferences *settings) {
          {"XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "XDG_STATE_HOME"})
         result.insert(QString::fromLatin1(name), qEnvironmentVariable(name));
 #else
+    QSettings registration(QStringLiteral("HKEY_CURRENT_USER\\Software\\xdzip\\Install"),
+                           QSettings::NativeFormat);
+    const auto root = registration.value("Location").toString();
+    result.insert("registered_location", root);
+    result.insert("canonical_registered_location", QFileInfo(root).canonicalFilePath());
+    result.insert("registered_install_id", registration.value("InstallId").toString());
+    result.insert("installed_manifest", QFileInfo(root + "/install-manifest.txt").isFile());
     result.insert("minimum_system_gate",
                   "Windows Server CI override, Windows 11 manual acceptance pending");
 #endif
@@ -149,13 +165,52 @@ bool click(QQuickWindow *about, QObject *button) {
     auto *item = qobject_cast<QQuickItem *>(button);
     if (!about || !about->isExposed() || !item || !item->isVisible() || !item->isEnabled())
         return false;
+    const auto rectangle = [](QQuickItem *value) {
+        const auto rect = value->mapRectToScene(QRectF(0, 0, value->width(), value->height()));
+        return QJsonObject{
+            {"x", rect.x()}, {"y", rect.y()}, {"width", rect.width()}, {"height", rect.height()}};
+    };
+    QJsonObject observation{{"button", item->objectName()},
+                            {"before_focus", rectangle(item)},
+                            {"window_width", about->width()},
+                            {"window_height", about->height()}};
+    item->forceActiveFocus(Qt::OtherFocusReason);
+    // The shared operation window reveals its focused control on the next QML
+    // turn. This is essential on short native CI desktops with a scrolled About.
+    QTest::qWait(100);
     const auto point = item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+    observation.insert("after_focus", rectangle(item));
+    QJsonArray clips;
+    bool insideClips = true;
+    for (auto *ancestor = item->parentItem(); ancestor; ancestor = ancestor->parentItem()) {
+        if (ancestor->clip()) {
+            const auto local =
+                item->mapToItem(ancestor, QPointF(item->width() / 2, item->height() / 2));
+            const bool inside = QRectF(0, 0, ancestor->width(), ancestor->height()).contains(local);
+            insideClips &= inside;
+            QJsonObject clip{{"name", ancestor->objectName()},
+                             {"rect", rectangle(ancestor)},
+                             {"contains_center", inside}};
+            if (ancestor->property("contentY").isValid())
+                clip.insert("content_y", ancestor->property("contentY").toDouble());
+            clips.append(clip);
+        }
+    }
+    observation.insert("clipping_ancestors", clips);
+    observation.insert("inside_clipping_viewport", insideClips);
+    const auto recordName = QStringLiteral("click-") + item->objectName() + ".json";
+    if (!insideClips) {
+        saveRecord(recordName, observation);
+        return false;
+    }
     if (!QRectF(0, 0, about->width(), about->height()).contains(point)) {
         saveRecord("fixture-error.json", {{"error", "about_click_outside_window"}});
         return false;
     }
     QSignalSpy pressed(item, SIGNAL(clicked()));
     QTest::mouseClick(about, Qt::LeftButton, Qt::NoModifier, point.toPoint());
+    observation.insert("clicked_count", pressed.count());
+    saveRecord(recordName, observation);
     return pressed.isValid() && pressed.count() == 1;
 }
 } // namespace
@@ -247,6 +302,13 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
             auto *page = window->property("activePage").value<QObject *>();
             const bool passwordScenario =
                 QFileInfo::exists(directory() + "/password-scenario.json");
+            if ((updates->state() == "available" || updates->state() == "downloaded") &&
+                !updates->canInstall()) {
+                saveRecord("fixture-error.json", {{"error", "install_ineligible"},
+                                                  {"details", snapshot(updates, settings)}});
+                QCoreApplication::exit(53);
+                return;
+            }
             if (passwordScenario && state->install && !state->passwordCompleted) {
                 auto *controller = window->findChild<BrowserController *>();
                 const auto fail = [](const QString &error) {

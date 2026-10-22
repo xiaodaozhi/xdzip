@@ -12,4 +12,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 RUN python3 -m venv /opt/aqt \
     && /opt/aqt/bin/pip install aqtinstall==3.3.0 \
-    && /opt/aqt/bin/python -m aqt install-qt linux desktop 6.8.2 gcc_64 --outputdir /opt/Qt
+    && /opt/aqt/bin/python -m aqt install-qt linux desktop 6.8.2 linux_gcc_64 --outputdir /opt/Qt

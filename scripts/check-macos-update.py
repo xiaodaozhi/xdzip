@@ -160,6 +160,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def scenario(output, label, old_app, archive, server_url, sdk, signing, public, secret, signature):
+    cancel = label.startswith('cancel-ready')
     directory = output/'cases'/label
     directory.mkdir(parents=True)
     installed = directory/'xdzip-update-probe.app'
@@ -184,7 +185,7 @@ def scenario(output, label, old_app, archive, server_url, sdk, signing, public, 
         data[len(data)//2] ^= 1
         candidate_archive.write_bytes(data)
     dump(directory/'probe.json', dict(marker='xdzip-owned-mac-update-regression-v1',
-         target_build=NEW_BUILD, mode='cancel' if label == 'cancel-ready' else 'install', candidate={
+         target_build=NEW_BUILD, mode='cancel' if cancel else 'install', candidate={
          'version': VERSION, 'build': NEW_BUILD, 'channel': 'alpha', 'asset_url': asset_url,
          'appcast_url': server_url+'/cases/'+label+'/appcast.xml', 'bytes': archive.stat().st_size}))
     log = (directory/'native.log').open('wb')
@@ -206,7 +207,7 @@ def scenario(output, label, old_app, archive, server_url, sdk, signing, public, 
         process.wait(timeout=20)
         # A cancelled ready installer must not install on subsequent application
         # quit. Give the detached installer time to expose that regression.
-        if label == 'cancel-ready':
+        if cancel:
             time.sleep(3)
         final_info = plistlib.loads((installed/'Contents/Info.plist').read_bytes())
         build = int(final_info['CFBundleVersion'])
@@ -216,11 +217,16 @@ def scenario(output, label, old_app, archive, server_url, sdk, signing, public, 
             passed = passed and events.get('about_install_clicked') and events.get('barrier_before_install')
             invoke(['codesign', '--verify', '--deep', '--strict', installed], directory/'verify.log')
         else:
-            error = 'cancelled' if label == 'cancel-ready' else 'native_update'
+            error = 'cancelled' if cancel else 'native_update'
             passed = result.get('success') is False and result.get('error') == error and build == OLD_BUILD
             passed = passed and events.get('about_install_clicked') and not events.get('barrier_before_install')
-            if label == 'cancel-ready':
-                passed = passed and events.get('about_cancel_clicked')
+            if cancel:
+                passed = passed and events.get('about_cancel_clicked') and events.get('native_quit_deferred')
+                passed = passed and events.get('native_cycle_settled_before_exit')
+                exit_status = events.get('native_exit_status', {})
+                passed = passed and exit_status.get('installer_seen_at_ready') and exit_status.get('installer_pids_at_ready')
+                passed = passed and exit_status.get('installer_gone_before_exit') and exit_status.get('native_cycle_finished')
+                passed = passed and not exit_status.get('installer_observation_error')
         record = dict(scenario=label, passed=bool(passed), installed_build=build,
                       signed_feed_sha256=signed_hash, result=result)
         dump(directory/'verification.json', record)
@@ -295,7 +301,8 @@ def main():
     results = []
     try:
         address = 'http://127.0.0.1:'+str(server.server_port)
-        for label in ('tampered-feed', 'tampered-archive', 'cancel-ready', 'success'):
+        for label in ('tampered-feed', 'tampered-archive', 'cancel-ready', 'cancel-ready-repeat-1',
+                      'cancel-ready-repeat-2', 'success'):
             results.append(scenario(output, label, apps[0], archive, address, sdk, signing, public, secret, archive_signature))
     finally:
         server.shutdown()

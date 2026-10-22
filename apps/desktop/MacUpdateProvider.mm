@@ -9,10 +9,20 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QPointer>
+#include <QProcess>
+#include <QProcessEnvironment>
+#include <QSet>
+#include <QTimer>
+#ifdef XDZIP_UPDATE_TESTS
+#include <QEventLoop>
+#include <QFile>
+#include <QTemporaryDir>
+#endif
 #import <Sparkle/Sparkle.h>
 #include <cstdint>
-#import <dispatch/dispatch.h>
+#include <memory>
 
 // Sparkle owns extraction, authorization, replacement, and relaunch. Only the
 // application's completed join barrier is allowed to release installReply.
@@ -21,6 +31,7 @@
     QPointer<UpdateController> owner;
     QJsonObject candidate;
     std::function<void(QString)> prepared;
+    std::function<void()> deferredQuit;
     SPUUpdater *updater;
     void (^installReply)(SPUUserUpdateChoice);
     void (^cancelDownload)(void);
@@ -29,9 +40,19 @@
     BOOL preparationReported;
     BOOL cancelled;
     BOOL committed;
+    BOOL cycleFinished;
+    BOOL installerRequired;
+    BOOL readyObservationPending;
+    BOOL installerSeenAtReady;
+    BOOL installerGone;
+    BOOL quitObservationPending;
+    BOOL installerObservationError;
+    QString installerPath;
+    QSet<qint64> readyInstallerPids;
 }
 - (BOOL)matches:(SUAppcastItem *)item;
 - (void)failure;
+- (void)finishDeferredQuit;
 @end
 
 namespace {
@@ -41,6 +62,93 @@ NSString *native(const QString &value) {
 }
 QString text(NSString *value) {
     return value ? QString::fromUtf8(value.UTF8String) : QString{};
+}
+using InstallerObservation = std::function<void(bool, QSet<qint64>)>;
+bool installerPids(const QByteArray &output, const QString &path, QSet<qint64> &pids) {
+    if (output.trimmed().isEmpty())
+        return false;
+    for (const auto &line : output.split('\n')) {
+        const auto value = line.trimmed();
+        if (value.isEmpty())
+            continue;
+        const auto separator = value.indexOf(' ');
+        if (separator < 1)
+            return false;
+        bool number = false;
+        const auto pid = value.first(separator).toLongLong(&number);
+        if (!number || pid < 1)
+            return false;
+        const auto executable = QString::fromUtf8(value.mid(separator + 1).trimmed());
+        if (QFileInfo(executable).fileName() == "Autoupdate" &&
+            QFileInfo(executable).canonicalFilePath() == path)
+            pids.insert(pid);
+    }
+    return true;
+}
+#ifdef XDZIP_UPDATE_TESTS
+std::function<void(InstallerObservation)> installerObservationOverride;
+#endif
+void observeInstaller(const QString &path, InstallerObservation completion) {
+#ifdef XDZIP_UPDATE_TESTS
+    if (installerObservationOverride) {
+        installerObservationOverride(std::move(completion));
+        return;
+    }
+#endif
+    // /bin/ps is the public OS inspection tool. Read only PID and executable
+    // path, never arguments/environment, and retain only exact bundled-helper
+    // matches. Neither process listings nor unrelated paths enter product logs.
+    if (path.isEmpty() || path.contains('\n') || path.contains('\r') || path.contains('\t')) {
+        completion(false, {});
+        return;
+    }
+    struct Query {
+        QByteArray output;
+        bool completed = false, invalid = false;
+    };
+    const auto query = std::make_shared<Query>();
+    auto *process = new QProcess(qApp);
+    auto environment = QProcessEnvironment::systemEnvironment();
+    environment.insert("LC_ALL", "en_US.UTF-8");
+    process->setProcessEnvironment(environment);
+    const auto finish = [process, query, completion = std::move(completion)](bool valid,
+                                                                             QSet<qint64> pids) {
+        if (query->completed)
+            return;
+        query->completed = true;
+        completion(valid, std::move(pids));
+        process->deleteLater();
+    };
+    QObject::connect(process, &QProcess::readyReadStandardOutput, process, [=] {
+        query->output += process->readAllStandardOutput();
+        if (query->output.size() > 4 * 1024 * 1024) {
+            query->invalid = true;
+            process->kill(); // Only this owned inspection process, never the installer.
+        }
+    });
+    QObject::connect(process, &QProcess::errorOccurred, process, [=](QProcess::ProcessError error) {
+        if (error == QProcess::FailedToStart)
+            finish(false, {});
+    });
+    QObject::connect(
+        process, &QProcess::finished, process, [=](int status, QProcess::ExitStatus exit) {
+            query->output += process->readAllStandardOutput();
+            if (query->invalid || status || exit != QProcess::NormalExit ||
+                query->output.trimmed().isEmpty() || query->output.size() > 4 * 1024 * 1024) {
+                finish(false, {});
+                return;
+            }
+            QSet<qint64> pids;
+            const bool valid = installerPids(query->output, path, pids);
+            finish(valid, std::move(pids));
+        });
+    QTimer::singleShot(5000, process, [=] {
+        if (!query->completed) {
+            query->invalid = true;
+            process->kill();
+        }
+    });
+    process->start(QStringLiteral("/bin/ps"), {"-Aww", "-o", "pid=", "-o", "comm="});
 }
 } // namespace
 
@@ -124,6 +232,7 @@ QString text(NSString *value) {
 - (void)showUpdateFoundWithAppcastItem:(SUAppcastItem *)item
                                  state:(SPUUserUpdateState *)state
                                  reply:(void (^)(SPUUserUpdateChoice))reply {
+    cancelDownload = nil;
     if (cancelled || !owner || ![self matches:item]) {
         reply(SPUUserUpdateChoiceSkip);
         [self failure];
@@ -144,11 +253,13 @@ QString text(NSString *value) {
 - (void)showUpdateNotFoundWithError:(NSError *)error
                     acknowledgement:(void (^)(void))acknowledgement {
     (void)error;
+    cancelDownload = nil;
     [self failure];
     acknowledgement();
 }
 - (void)showUpdaterError:(NSError *)error acknowledgement:(void (^)(void))acknowledgement {
     (void)error;
+    cancelDownload = nil;
     [self failure];
     acknowledgement();
 }
@@ -179,6 +290,7 @@ QString text(NSString *value) {
                                     total ? qMin(qreal(1), qreal(received) / qreal(total)) : -1);
 }
 - (void)showDownloadDidStartExtractingUpdate {
+    installerRequired = YES;
     cancelDownload = nil;
     if (!cancelled && owner)
         owner->reportNativeProgress(QStringLiteral("verifying"), -1);
@@ -190,21 +302,37 @@ QString text(NSString *value) {
 - (void)showReadyToInstallAndRelaunch:(void (^)(SPUUserUpdateChoice))reply {
     // Cancellation can arrive during extraction, when Sparkle offers no download
     // cancellation block. Cancel the pending installer when it next becomes ready.
-    if (cancelled || !owner) {
-        reply(SPUUserUpdateChoiceSkip);
-        return;
-    }
-    if (installReply) {
+    if (installReply || readyObservationPending) {
         reply(SPUUserUpdateChoiceSkip);
         [self failure];
         return;
     }
-    installReply = [reply copy];
-    if (!preparationReported && prepared) {
-        preparationReported = YES;
-        auto callback = std::move(prepared);
-        callback({});
-    }
+    installerRequired = YES;
+    readyObservationPending = YES;
+    // Hold even the cancellation reply until we have seen the real helper.
+    // Otherwise a fast cancellation can make an absent process look like a
+    // successful observation without ever binding it to this ready installer.
+    observeInstaller(installerPath, [self, reply](bool valid, QSet<qint64> pids) {
+        self->readyObservationPending = NO;
+        if (!valid || pids.isEmpty()) {
+            self->installerObservationError = YES;
+            reply(SPUUserUpdateChoiceSkip);
+            [self failure];
+            return;
+        }
+        self->installerSeenAtReady = YES;
+        self->readyInstallerPids = std::move(pids);
+        if (self->cancelled || !self->owner) {
+            reply(SPUUserUpdateChoiceSkip);
+            return;
+        }
+        self->installReply = [reply copy];
+        if (!self->preparationReported && self->prepared) {
+            self->preparationReported = YES;
+            auto callback = std::move(self->prepared);
+            callback({});
+        }
+    });
 }
 - (void)showInstallingUpdateWithApplicationTerminated:(BOOL)terminated
                           retryTerminatingApplication:(void (^)(void))retry {
@@ -237,9 +365,41 @@ QString text(NSString *value) {
     (void)error;
     // SPUUpdater retains its user driver. Release our reverse reference after
     // Sparkle returns from the completed cycle, so retries do not leak a pair.
-    dispatch_async(dispatch_get_main_queue(), ^{
-      if (self->updater == sender)
-          self->updater = nil;
+    QTimer::singleShot(0, qApp, [self, sender] {
+        if (self->updater == sender)
+            self->updater = nil;
+        self->cycleFinished = YES;
+        [self finishDeferredQuit];
+    });
+}
+- (void)finishDeferredQuit {
+    if (!cycleFinished || quitObservationPending ||
+        (!deferredQuit && !(cancelled && installerRequired && !installerGone)))
+        return;
+    if (!installerRequired) {
+        auto quit = std::move(deferredQuit);
+        if (quit)
+            quit();
+        return;
+    }
+    quitObservationPending = YES;
+    observeInstaller(installerPath, [self](bool valid, QSet<qint64> pids) {
+        self->quitObservationPending = NO;
+        if (valid && pids.isEmpty()) {
+            self->installerGone = YES;
+            auto quit = std::move(self->deferredQuit);
+            if (quit)
+                quit();
+            return;
+        }
+        if (!valid) {
+            self->installerObservationError = YES;
+            [self failure];
+        }
+        // The cycle callback only proves the cancel message was sent. The
+        // independent helper must actually exit before the app can terminate.
+        // A failed observation never releases this barrier or kills a helper.
+        QTimer::singleShot(100, qApp, [self] { [self finishDeferredQuit]; });
     });
 }
 @end
@@ -273,7 +433,8 @@ QString macUpdateInstallRoot() {
 }
 void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
                     std::function<void(QString)> prepared) {
-    if (driver && driver->updater.sessionInProgress) {
+    if (driver && (driver->updater.sessionInProgress ||
+                   (driver->cancelled && driver->installerRequired && !driver->installerGone))) {
         prepared("update_busy");
         return;
     }
@@ -281,6 +442,10 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     driver->owner = owner;
     driver->candidate = candidate;
     driver->prepared = std::move(prepared);
+    const auto framework = [NSBundle bundleForClass:SPUUpdater.class];
+    const auto helper = [framework.executableURL.URLByDeletingLastPathComponent
+        URLByAppendingPathComponent:@"Autoupdate"];
+    driver->installerPath = QFileInfo(text(helper.path)).canonicalFilePath();
     driver->updater = [[SPUUpdater alloc] initWithHostBundle:NSBundle.mainBundle
                                            applicationBundle:NSBundle.mainBundle
                                                   userDriver:driver
@@ -323,11 +488,49 @@ void cancelMacUpdate() {
         cancel();
     }
 }
+bool deferMacUpdateQuit(std::function<void()> quit) {
+    if (!driver || driver->committed ||
+        (!driver->updater.sessionInProgress &&
+         !(driver->installerRequired && !driver->installerGone)))
+        return false;
+    if (!driver->deferredQuit)
+        driver->deferredQuit = std::move(quit);
+    cancelMacUpdate();
+    [driver finishDeferredQuit];
+    return true;
+}
+QJsonObject macUpdateExitStatus() {
+    QJsonArray pids;
+    if (driver)
+        for (const auto pid : driver->readyInstallerPids)
+            pids.append(pid);
+    return {{"installer_seen_at_ready", driver && driver->installerSeenAtReady},
+            {"installer_pids_at_ready", pids},
+            {"installer_gone_before_exit", driver && driver->installerGone},
+            {"installer_observation_error", driver && driver->installerObservationError},
+            {"native_cycle_finished", driver && driver->cycleFinished}};
+}
 #ifdef XDZIP_UPDATE_TESTS
 bool macUpdateLifecycleProbe(UpdateController *owner) {
     // Exercise the real Sparkle user-driver callbacks, without starting a
     // network session, authorizing a helper, or modifying an installed app.
     auto previous = driver;
+    QTemporaryDir parserDirectory;
+    const auto helper = parserDirectory.path() + QStringLiteral("/用户目录/更新.app/Autoupdate");
+    QDir().mkpath(QFileInfo(helper).absolutePath());
+    QFile parserHelper(helper);
+    const bool helperCreated = parserHelper.open(QIODevice::WriteOnly);
+    parserHelper.close();
+    QSet<qint64> parsedPids;
+    const bool unicodeParser =
+        helperCreated &&
+        installerPids("  123 " + helper.toUtf8() + "\n 124 /unrelated/command\\nescaped\n",
+                      QFileInfo(helper).canonicalFilePath(), parsedPids) &&
+        parsedPids == QSet<qint64>{123};
+    QSet<qint64> malformedPids;
+    const bool malformedRejected = !installerPids("malformed\n", helper, malformedPids);
+    auto previousObservation = installerObservationOverride;
+    installerObservationOverride = [](InstallerObservation completion) { completion(true, {42}); };
     driver = [[XdzipUpdateDriver alloc] init];
     driver->owner = owner;
     __block int cancelledReplies = 0;
@@ -358,7 +561,34 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
     const bool held = preparedCount == 1 && installReplies == 0;
     const bool committedOnce = commitMacUpdate() && !commitMacUpdate();
     const bool installationPassed = held && committedOnce && installed && installReplies == 1;
+    driver = [[XdzipUpdateDriver alloc] init];
+    bool immediateQuit = false;
+    const bool inactiveQuit = !deferMacUpdateQuit([&] { immediateQuit = true; });
+    QEventLoop finished;
+    int completedQuits = 0;
+    int helperObservations = 0;
+    driver->installerRequired = YES;
+    driver->installerSeenAtReady = YES;
+    driver->readyInstallerPids = {42};
+    installerObservationOverride = [&](InstallerObservation completion) {
+        ++helperObservations;
+        completion(true, helperObservations == 1 ? QSet<qint64>{42} : QSet<qint64>{});
+    };
+    const bool activeQuitDeferred = deferMacUpdateQuit([&] {
+        ++completedQuits;
+        finished.quit();
+    });
+    [driver updater:nil didFinishUpdateCycleForUpdateCheck:SPUUpdateCheckUpdates error:nil];
+    const bool heldUntilCycleReturns = completedQuits == 0;
+    QTimer::singleShot(1000, &finished, &QEventLoop::quit);
+    finished.exec();
+    const bool normalQuitPassed = inactiveQuit && !immediateQuit && heldUntilCycleReturns &&
+                                  activeQuitDeferred && completedQuits == 1 &&
+                                  helperObservations == 2 && driver->installerGone &&
+                                  !driver->deferredQuit;
+    installerObservationOverride = std::move(previousObservation);
     driver = previous;
-    return cancellationPassed && installationPassed;
+    return unicodeParser && malformedRejected && cancellationPassed && installationPassed &&
+           normalQuitPassed;
 }
 #endif

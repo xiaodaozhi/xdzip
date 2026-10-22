@@ -30,7 +30,9 @@ def prepare(output, sdk, session):
                                  dir=None if sys.platform=='linux' else ROOT/'build'))
     archive=output/'owned-source.tar'
     with archive.open('wb') as stream:
-        run(['git','-C',ROOT,'archive','--format=tar','HEAD'],stdout=stream)
+        # The known read-only checkout is owned by the runner, while the SDK
+        # container builds as root. Trust this exact source for this read only.
+        run(['git','-c','safe.directory='+str(ROOT),'-C',ROOT,'archive','--format=tar','HEAD'],stdout=stream)
     with tarfile.open(archive) as stream:
         stream.extractall(source,filter='data')
     archive.unlink()

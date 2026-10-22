@@ -292,7 +292,7 @@ def main():
                 parser.error('Refusing a runner with an existing xdzip installation')
     output.mkdir(parents=True)
     token=uuid.uuid4().hex
-    name='xdzip-owned-update-'+token+'.app'
+    name='xdzip-owned-update-更新-'+token+'.app'
     applications.mkdir(exist_ok=True)
     installed=applications/name; require_owned(installed,applications)
     session=output/'session';session.mkdir()
