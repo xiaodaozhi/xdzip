@@ -59,7 +59,10 @@ def run_tool(arguments: list[str], tool: Path | None = None) -> None:
 
 
 def appcast_bytes(manifest: dict, metadata: dict) -> bytes:
-    """One immutable candidate. Notes are embedded, so no unsigned external notes."""
+    """Embed a short version description, with no client fetch of external notes.
+
+    Full release notes remain in the reviewed GitHub Release body.
+    """
     validate(manifest)
     asset = next(a for a in manifest['assets'] if a['platform'] == 'macos' and a['package_type'] == 'app.zip')
     expected_keys = {'schema_version', 'version', 'build', 'filename', 'bytes', 'sha256', 'ed_signature'}

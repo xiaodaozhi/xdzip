@@ -11,9 +11,12 @@ concurrency:
 jobs:
   windows:
     runs-on: windows-2022
-    timeout-minutes: 40
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
       - name: Prepare pinned native compiler, installer and supplier agreement
         shell: pwsh
         run: |
@@ -28,6 +31,20 @@ jobs:
           Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
           Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
           python scripts/check-windows-update.py --output build/update-regression/windows
+      - name: Build two private real Qt products and complete their native upgrade
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          python -m pip install aqtinstall==3.3.0
+          python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
+          $env:XDZIP_ISOLATED_UPDATE_FIXTURE = '1'
+          $env:PATH = "${env:USERPROFILE}/.cargo/bin;${env:PATH}"
+          $session = Join-Path $PWD 'build/update-regression/windows-qt-session'
+          python scripts/check-native-qt-update.py --prepare --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64' --output build/update-regression/windows-qt --session-directory $session
+          python scripts/check-native-qt-update.py --output build/update-regression/windows-qt --password-task
       - name: Preserve updater evidence only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -36,6 +53,8 @@ jobs:
           path: |
             build/update-regression/windows/*.json
             build/update-regression/windows/*.log
+            build/update-regression/windows-qt/*.json
+            build/update-regression/windows-qt/*.log
           if-no-files-found: error
           retention-days: 14
   macos:
@@ -53,6 +72,10 @@ jobs:
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
       - name: Real owned old-to-new native Sparkle updater regression
         run: python3 scripts/check-macos-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos
+      - name: Complete the real macOS product controller update and ordinary restart
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python3 scripts/check-macos-product-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos-product
       - name: Preserve updater records without application packages
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -63,11 +86,14 @@ jobs:
             build/update-regression/macos/*.log
             build/update-regression/macos/cases/*/*.json
             build/update-regression/macos/cases/*/*.log
+            build/update-regression/macos-product/*.json
+            build/update-regression/macos-product/*.log
+            build/update-regression/macos-product/session/*.json
           if-no-files-found: error
           retention-days: 14
   linux:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Build disposable Ubuntu native updater test image
@@ -77,6 +103,15 @@ jobs:
         run: |
           mkdir -p build/update-regression
           docker run --rm --network none --cap-add SYS_PTRACE --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --mount type=bind,source="$PWD",target=/repo,readonly --mount type=bind,source="$PWD/build/update-regression",target=/evidence xdzip-update-regression python3 scripts/check-linux-update.py --output /evidence/linux --offline
+      - name: Build two private real Qt products in a separate SDK image
+        run: |
+          docker build -f tests/fixtures/native/update-qt-build.Dockerfile -t xdzip-update-qt-build .
+          docker run --rm --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --mount type=bind,source="$PWD",target=/repo,readonly --mount type=bind,source="$PWD/build/update-regression",target=/evidence xdzip-update-qt-build python3 scripts/check-native-qt-update.py --prepare --qt-prefix /opt/Qt/6.8.2/gcc_64 --output /evidence/linux-qt --session-directory /home/xdzipfixture/qt-session
+      - name: Complete the real Qt upgrade in an independent SDK-free runtime
+        run: |
+          PACKAGES=$(python3 -c 'import json; print(" ".join(json.load(open("build/update-regression/linux-qt/new/deployment.json"))["system_packages"]))')
+          docker build --build-arg "XDZIP_RUNTIME_PACKAGES=$PACKAGES" -f apps/desktop/packaging/linux/ci-runtime.Dockerfile -t xdzip-update-qt-runtime apps/desktop/packaging/linux
+          docker run --rm --network none --cap-add SYS_PTRACE --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --mount type=bind,source="$PWD/scripts",target=/repo/scripts,readonly --mount type=bind,source="$PWD/build/update-regression",target=/evidence --workdir /repo xdzip-update-qt-runtime python3 scripts/check-native-qt-update.py --output /evidence/linux-qt --password-task
       - name: Preserve updater evidence only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -85,5 +120,7 @@ jobs:
           path: |
             build/update-regression/linux/*.json
             build/update-regression/linux/*.log
+            build/update-regression/linux-qt/*.json
+            build/update-regression/linux-qt/*.log
           if-no-files-found: error
           retention-days: 14

@@ -30,6 +30,12 @@
 #include <QSslSocket>
 #include <QTimer>
 #include <memory>
+#ifdef XDZIP_NATIVE_UPDATE_FIXTURE
+#include "tests/native_update_fixture.h"
+#endif
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+#include "tests/mac_product_update_fixture.h"
+#endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #endif
@@ -132,7 +138,18 @@ int main(int argc, char *argv[]) {
     application.setWindowIcon(QIcon(QStringLiteral(":/xdzip/assets/app-icon.png")));
 #endif
     QQmlApplicationEngine engine;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    UpdateController updates(nullptr, macProductUpdateFixtureTransport(&application));
+#elif defined(XDZIP_NATIVE_UPDATE_FIXTURE)
+#ifdef Q_OS_WIN
+    UpdateController updates(nullptr, nativeUpdateFixtureTransport(&application), {}, {},
+                             [] { return true; });
+#else
+    UpdateController updates(nullptr, nativeUpdateFixtureTransport(&application));
+#endif
+#else
     UpdateController updates;
+#endif
     engine.rootContext()->setContextProperty(QStringLiteral("UpdateService"), &updates);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(
@@ -198,6 +215,11 @@ int main(int argc, char *argv[]) {
         instance.attach([&](const QStringList &paths) { sessions->open(paths); });
     }
     std::unique_ptr<DesktopProbe> probe;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    installMacProductUpdateFixture(&updates, sessions.get(), settings, mainWindow);
+#elif defined(XDZIP_NATIVE_UPDATE_FIXTURE)
+    installNativeUpdateFixture(&updates, sessions.get(), settings, mainWindow);
+#endif
     if (probeArgument >= 0) {
         if (probeArgument + 1 >= application.arguments().size() ||
             qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))

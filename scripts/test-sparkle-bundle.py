@@ -142,6 +142,20 @@ class SparkleBundleTests(unittest.TestCase):
                 probe(self.app, self.root)
             launch.assert_not_called()
 
+    def test_product_probe_retains_home_and_uses_the_real_default_profile(self):
+        probe = runpy.run_path(str(Path(__file__).with_name('check-macos-product-update.py')))
+        supplied = {'HOME': '/fixture/unchanged-home', 'XDZIP_SETTINGS_PATH': '/fixture/override.ini',
+                    'XDZIP_LANGUAGE': 'zh-CN', 'QML_IMPORT_PATH': '/fixture/sdk/qml',
+                    'DYLD_FRAMEWORK_PATH': '/fixture/sdk/lib', 'RUSTUP_TOOLCHAIN': 'fixture-other-channel'}
+        with patch.dict(os.environ, supplied):
+            environment = probe['environment']()
+        self.assertEqual(environment['HOME'], supplied['HOME'])
+        for name in ('XDZIP_SETTINGS_PATH', 'XDZIP_LANGUAGE', 'QML_IMPORT_PATH', 'DYLD_FRAMEWORK_PATH'):
+            self.assertNotIn(name, environment)
+        self.assertEqual(environment['RUSTUP_TOOLCHAIN'], probe['locked_rust_version']())
+        with self.assertRaisesRegex(RuntimeError, 'escaped'):
+            probe['require_owned'](self.root/'other/owned.app', self.root/'expected')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,9 @@
 
 #include "MacUpdateProvider.h"
 #include "UpdateController.h"
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+#include "tests/mac_product_update_fixture.h"
+#endif
 #import <AppKit/AppKit.h>
 #include <QCoreApplication>
 #include <QDir>
@@ -62,7 +65,11 @@ QString text(NSString *value) {
 }
 - (NSString *)feedURLStringForUpdater:(SPUUpdater *)sender {
     (void)sender;
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+    return native(macProductUpdateFixtureFeed(candidate));
+#else
     return native(candidate.value("appcast_url").toString());
+#endif
 }
 - (BOOL)updaterShouldPromptForPermissionToCheckForUpdates:(SPUUpdater *)sender {
     (void)sender;

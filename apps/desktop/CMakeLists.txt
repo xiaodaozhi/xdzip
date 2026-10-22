@@ -15,6 +15,8 @@ add_custom_target(xdzip-build-info
         "-DXDZIP_CONFIGURATION=${CMAKE_BUILD_TYPE}"
         -P "${PROJECT_SOURCE_DIR}/cmake/BuildVersion.cmake"
     BYPRODUCTS "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h" VERBATIM)
+set_property(SOURCE BuildInfo.cpp APPEND PROPERTY OBJECT_DEPENDS
+    "${XDZIP_BUILD_INFO_DIR}/BuildVersion.h")
 qt_add_resources(ui_resources ui.qrc)
 add_library(xdzip-ui-resources STATIC ${ui_resources})
 add_dependencies(xdzip-ui-resources xdzip-build-info)
@@ -106,6 +108,35 @@ qt_add_qml_module(xdzip-browser
 target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
     Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
 include(${PROJECT_SOURCE_DIR}/cmake/UpdateHelper.cmake)
+option(XDZIP_NATIVE_UPDATE_FIXTURE "Compile private native updater regression instrumentation" OFF)
+option(XDZIP_NATIVE_MAC_UPDATE_FIXTURE "Compile private macOS product updater regression instrumentation" OFF)
+if(XDZIP_NATIVE_UPDATE_FIXTURE)
+    if(APPLE OR XDZIP_NATIVE_MAC_UPDATE_FIXTURE OR
+       NOT "$ENV{XDZIP_ISOLATED_UPDATE_FIXTURE}" STREQUAL "1" OR
+       NOT IS_ABSOLUTE "${XDZIP_NATIVE_UPDATE_FIXTURE_DIRECTORY}")
+        message(FATAL_ERROR "Native update fixture requires an explicit private Windows/Linux regression build")
+    endif()
+    find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    target_link_libraries(xdzip-browser PRIVATE Qt6::Test)
+    target_sources(xdzip-browser PRIVATE tests/native_update_fixture.cpp tests/native_update_fixture.h)
+    target_include_directories(xdzip-browser PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_compile_definitions(xdzip-browser PRIVATE XDZIP_NATIVE_UPDATE_FIXTURE
+        "XDZIP_NATIVE_UPDATE_FIXTURE_DIRECTORY=\"${XDZIP_NATIVE_UPDATE_FIXTURE_DIRECTORY}\"")
+endif()
+if(XDZIP_NATIVE_MAC_UPDATE_FIXTURE)
+    if(NOT APPLE OR XDZIP_NATIVE_UPDATE_FIXTURE OR
+       NOT "$ENV{XDZIP_ISOLATED_UPDATE_FIXTURE}" STREQUAL "1" OR
+       NOT IS_ABSOLUTE "${XDZIP_NATIVE_MAC_UPDATE_FIXTURE_DIRECTORY}")
+        message(FATAL_ERROR "macOS product update fixture requires an explicit private native regression build")
+    endif()
+    find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+    target_link_libraries(xdzip-browser PRIVATE Qt6::Test)
+    target_sources(xdzip-browser PRIVATE tests/mac_product_update_fixture.mm tests/mac_product_update_fixture.h)
+    target_include_directories(xdzip-browser PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    set_source_files_properties(tests/mac_product_update_fixture.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks")
+    target_compile_definitions(xdzip-browser PRIVATE XDZIP_NATIVE_MAC_UPDATE_FIXTURE
+        "XDZIP_NATIVE_MAC_UPDATE_FIXTURE_DIRECTORY=\"${XDZIP_NATIVE_MAC_UPDATE_FIXTURE_DIRECTORY}\"")
+endif()
 if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
