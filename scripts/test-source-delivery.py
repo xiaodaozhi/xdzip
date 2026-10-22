@@ -137,6 +137,10 @@ class DisposableBundleTests(unittest.TestCase):
                         notices = Path(command[2]);notices.mkdir(parents=True, exist_ok=True)
                         (notices/'build-inventory.json').write_text(json.dumps({'display_version':'0.1.0','version_source':{'build':1}}))
                         (notices/'source-build.cdx.json').write_text('{}')
+                    if len(command)>1 and Path(str(command[1])).name == 'runtime_attribution.py':
+                        self.assertTrue(staged.is_dir())
+                        self.assertTrue((output.parent/'deployment-audit.json').is_file())
+                        Path(command[command.index('--output')+1]).write_text('{"owned":"attribution"}')
                     if str(command[0]) == 'hdiutil':
                         self.assertTrue(staged.is_dir())
                         if command[1] == 'create':output.write_bytes(b'owned image')
@@ -160,6 +164,7 @@ class DisposableBundleTests(unittest.TestCase):
                      patch.object(mac,'validate_optimized_bundle',side_effect=validate), \
                      patch.object(mac,'sign_local',side_effect=sign), patch.object(mac,'native',return_value=False), \
                      patch.object(mac,'audit',return_value={'status':'passed'}), \
+                     patch.object(mac,'deployment_record',return_value={'sdk_files':[]}), \
                      patch.object(mac,'artifact_bom',return_value={'owned':'sbom'}):
                     if failed:
                         with self.assertRaisesRegex(ValueError,'owned verify failure'):mac.build(source,qt,output)

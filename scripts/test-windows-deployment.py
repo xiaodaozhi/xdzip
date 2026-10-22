@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Windows deployment policy regressions using owned fixtures, no native execution."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import tempfile
@@ -11,6 +12,38 @@ import deployment_audit as audit
 
 
 class WindowsDeploymentTests(unittest.TestCase):
+    def test_graphics_use_explicit_redist_with_notices_and_never_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); qt = base/'qt'; sdk = base/'sdk'; root = base/'product'
+            root.mkdir()
+            for name in deployment.FALLBACKS:
+                path = qt/'bin'/name if name == 'opengl32sw.dll' else sdk/'Redist/D3D/x64'/name
+                path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(b'owned SDK '+name.encode())
+            license_file = sdk/'Licenses/10.0.1.0/sdk_license.rtf'
+            license_file.parent.mkdir(parents=True); license_file.write_bytes(b'owned license')
+            config = {'mesa_binary': {'sha256': hashlib.sha256((qt/'bin/opengl32sw.dll').read_bytes()).hexdigest()}}
+            with patch.object(deployment, 'configuration', return_value=config):
+                result = deployment.copy_graphics(qt, sdk, '10.0.1.0', root)
+            self.assertEqual(len(result['files']), 4)
+            self.assertTrue((root/'share/notices/Windows-SDK-graphics/sdk_license.rtf').is_file())
+            self.assertNotIn(str(base), json.dumps(result))
+            (sdk/'Redist/D3D/x64/dxil.dll').unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing bounded'):
+                deployment.copy_graphics(qt, sdk, '10.0.1.0', root)
+            with self.assertRaisesRegex(ValueError, 'Explicit Windows SDK'):
+                deployment.copy_graphics(qt, sdk, '', root)
+
+    def test_unreviewed_mesa_is_rejected_before_copy(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); sdk = base/'sdk'; qt = base/'qt'; root = base/'product'; root.mkdir()
+            for name in deployment.FALLBACKS:
+                path = qt/'bin'/name if name == 'opengl32sw.dll' else sdk/'Redist/D3D/x64'/name
+                path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(b'unknown build')
+            (sdk/'license.rtf').write_bytes(b'owned license')
+            with self.assertRaisesRegex(ValueError, 'Unreviewed Mesa'):
+                deployment.copy_graphics(qt, sdk, '10.0.1.0', root)
+            self.assertEqual(list(root.iterdir()), [])
+
     def test_prune_preserves_basic_widgets_translations_and_graphics(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

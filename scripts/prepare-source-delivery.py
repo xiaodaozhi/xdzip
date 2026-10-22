@@ -9,6 +9,7 @@ import subprocess
 import tarfile
 import urllib.request
 from deployment_audit import digest, within
+from native_runtime_materials import configuration, fetch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -63,6 +64,14 @@ def main():
     for source, item in zip(sources, all_archives):
         shutil.copy2(source, output/source.name)
         materials.append(dict(item))
+    # Preserve original Mesa/LLVM inputs, not only URLs, for the retained Windows
+    # software renderer. These are source references, not invented build records.
+    native_sources = configuration()
+    for item in native_sources['archives'] + [native_sources['icu']]:
+        source = fetch(item, ROOT/'build/native-source-cache')
+        shutil.copy2(source, output/source.name)
+        materials.append(dict(item))
+    shutil.copy2(ROOT/'scripts/native-runtime-sources.json', output/'native-runtime-sources.json')
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'
     patch_dir.mkdir()
@@ -107,6 +116,9 @@ def main():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
+6. Mesa 和 LLVM 原始源码归档以及 ICU 完整许可随目录提供，版本和原文哈希见
+   native-runtime-sources.json。软件渲染库的供应方编译配置仍需与实际 DLL 分开核对，
+   不将上游原始归档冒充已复现供应方全部构建输入。
 
 该流程不宣称任意 ABI 不兼容的 Qt 都可替换。许可分支选择、完整
 平台对应源码与配置核对、修改版 Qt 的行为验证仍在 WP-12 准入中单独登记。

@@ -23,6 +23,8 @@ jobs:
           python3 scripts/test-deployment-audit.py
           python3 scripts/test-linux-deployment.py
           python3 scripts/test-runtime-attribution.py
+          python3 scripts/test-macos-attribution.py
+          python3 scripts/test-native-runtime-materials.py
           python3 scripts/test-installers.py
           python3 scripts/test-macos-launch-services.py
           python3 scripts/test-macos-bundle.py

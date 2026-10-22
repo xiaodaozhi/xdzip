@@ -9,11 +9,14 @@ import sys
 import runpy
 from sbom import source_bom
 from runtime_rust import runtime_candidates
+from native_runtime_materials import prepare
 
 root = Path(__file__).resolve().parents[1]
 out = Path(sys.argv[1])
 out.mkdir(parents=True, exist_ok=True)
+native_materials = prepare(out, {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, 'linux'))
 notice_files = []
+notice_files.extend(out/item['file'] for item in native_materials['files'])
 shutil.copyfile(root / 'LICENSE', out / 'xdzip-Apache-2.0.txt')
 notice_files.append(out / 'xdzip-Apache-2.0.txt')
 host = next(line.removeprefix('host: ') for line in subprocess.check_output(['rustc', '-vV'], text=True).splitlines() if line.startswith('host: '))

@@ -19,6 +19,8 @@ Qt 6.8 起提供构建对应的 [SPDX 清单](https://doc.qt.io/qt-6.8/licenses-
 
 SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续安装处理或签名；工具保留预期值、对比结果并登记差异，不自行推断原因。SDK 字节关联、部署重写记录和上游原始哈希是三种不同证据。
 
+专用 macOS 打包流程在最终签名应用仍存活时生成部署关联，按精确资源字节或 arm64 section、UUID、导入版本对应 SDK，并将该报告加入实际文件 SBOM。比较不覆盖签名、load-command 布局及 LINKEDIT，范围与原生运行库专属通知见[原生运行库来源与通知](native-runtime-materials.md)。普通 SDK 模式不据此获得部署结论。
+
 Rust 继续保存完整宿主构建图，并额外从实际静态库入口 xdzip-qt-bridge 沿普通依赖边生成 runtime candidates，排除 build、dev 和 proc-macro 工具及其依赖。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
 
 ## 执行与交付

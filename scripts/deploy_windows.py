@@ -2,10 +2,12 @@
 """Deploy the Basic-only Windows runtime, retaining native widgets and graphics fallbacks."""
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
 from deployment_audit import ROOT, digest, within
+from native_runtime_materials import configuration
 
 STYLES = ('FluentWinUI3', 'Fusion', 'Imagine', 'Material', 'Universal', 'Windows')
 MODULES = tuple('qml/QtQuick/Controls/'+name for name in STYLES) + (
@@ -54,6 +56,45 @@ def copy_runtime(runtime, root):
     (notices/'provenance.json').write_text(json.dumps(config, indent=2)+'\n')
 
 
+def copy_graphics(qt, sdk, sdk_version, root):
+    # Do not let windeployqt discover these through PATH/System32. Only the
+    # selected Windows SDK's redistributable directory and the fixed Qt SDK
+    # are admitted. This records supplier inputs, not licensee eligibility.
+    if not sdk_version or '/' in sdk_version or '\\' in sdk_version:
+        raise ValueError('Explicit Windows SDK version required for graphics provenance')
+    redist = sdk/'Redist/D3D/x64'
+    license_file = sdk/'Licenses'/sdk_version/'sdk_license.rtf'
+    if not license_file.is_file():
+        license_file = sdk/'license.rtf'
+    third_party = license_file.with_name('sdk_third_party_notices.rtf')
+    inputs = {name: redist/name for name in FALLBACKS if name != 'opengl32sw.dll'}
+    inputs['opengl32sw.dll'] = qt/'bin/opengl32sw.dll'
+    for path in [*inputs.values(), license_file]:
+        base = qt if path == inputs['opengl32sw.dll'] else sdk
+        if not within(path, base) or not path.is_file() or path.is_symlink():
+            raise ValueError('Missing bounded SDK graphics redistributable/license')
+    if digest(inputs['opengl32sw.dll']) != configuration()['mesa_binary']['sha256']:
+        raise ValueError('Unreviewed Mesa software renderer; update source and notices together')
+    notices = root/'share/notices/Windows-SDK-graphics'
+    notices.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(license_file, notices/'sdk_license.rtf')
+    if third_party.is_file() and within(third_party, sdk):
+        shutil.copyfile(third_party, notices/third_party.name)
+    files = []
+    for name, path in inputs.items():
+        shutil.copyfile(path, root/name)
+        base = qt if name == 'opengl32sw.dll' else sdk
+        files.append({'file': name, 'sha256': digest(path),
+                      'supplier': 'Qt SDK Mesa build' if name == 'opengl32sw.dll' else 'Microsoft Windows SDK REDIST',
+                      'source_relative': path.relative_to(base).as_posix()})
+    result = {'schema_version': 1, 'windows_sdk_version': sdk_version, 'files': files,
+              'license': {'file': 'sdk_license.rtf', 'sha256': digest(license_file)},
+              'redistribution_list': 'https://go.microsoft.com/fwlink/?LinkId=524842',
+              'limits': ['SDK file provenance does not certify licensee eligibility or Mesa/LLVM notice completeness.']}
+    (notices/'provenance.json').write_text(json.dumps(result, indent=2)+'\n')
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True)
@@ -66,10 +107,14 @@ def main():
     if not within(root, ROOT/'build') or root == ROOT/'build' or not (root/'xdzip.exe').is_file():
         parser.error('Use an application staging directory under build/')
     subprocess.run([str(args.qt_prefix/'bin/windeployqt.exe'), '--release', '--no-compiler-runtime',
+                    '--no-system-d3d-compiler', '--no-system-dxc-compiler',
                     '--skip-plugin-types', 'qmltooling', '--qmldir', str(args.qml_dir),
                     '--qmlimport', str(args.qml_import), str(root/'xdzip.exe')], check=True)
     removed = prune(root)
     copy_runtime(args.runtime, root)
+    sdk = Path(os.environ.get('WindowsSdkDir', ''))
+    sdk_version = os.environ.get('WindowsSDKVersion', '').strip('\\/')
+    copy_graphics(args.qt_prefix.resolve(), sdk.resolve(), sdk_version, root)
     required = FALLBACKS + ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):

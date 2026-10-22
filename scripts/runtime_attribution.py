@@ -132,6 +132,21 @@ def attribute(audit, root, sdk, deployment=None):
             p = provenance[relative]; source = p['sdk_path']; evidence = 'deployment-copy-and-rewrite-record'
             if p['artifact_sha256'] != item['sha256'] or digest(bounded(sdk, source)) != p['sdk_sha256']:
                 raise ValueError('Stale deployment copy provenance')
+            if audit['platform'] == 'macos':
+                from macos_attribution import compare_images, sdk_relative
+                expected = sdk_relative(relative)
+                if not expected or bounded(sdk, source).resolve() != bounded(sdk, expected).resolve():
+                    raise ValueError('Unexpected macOS SDK ownership path')
+                if p.get('comparison') == 'sdk-byte-identity':
+                    if item['sha256'] != p['sdk_sha256']:
+                        raise ValueError('macOS SDK byte identity mismatch')
+                elif p.get('comparison') == 'mach-o-sections-uuid-and-imports':
+                    fingerprint = compare_images(bounded(root, relative).read_bytes(), bounded(sdk, source).read_bytes())
+                    if fingerprint != p.get('fingerprint'):
+                        raise ValueError('Stale macOS section comparison')
+                else:
+                    raise ValueError('Unverified macOS deployment comparison')
+                evidence = p['comparison']
         elif not external:
             candidate = bounded(sdk, relative)
             if candidate.is_file() and digest(candidate) == item['sha256']:

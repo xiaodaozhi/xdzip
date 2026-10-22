@@ -13,6 +13,7 @@ from deployment_audit import audit, digest, mac_rpaths, native, within
 from sbom import artifact_bom
 from macos_launch_services import temporary_bundle_path, transient_registrations
 from macos_bundle import optimize_bundle, validate_optimized_bundle
+from macos_attribution import deployment_record
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -144,8 +145,19 @@ def build(source, qt, output, release_distribution=False):
                               'revision': revision, 'dirty': False}
         report['bundle_optimization'] = optimization
         report['bundle'] = final_bundle
+        # Bind the final signed/thinned images, while this exact application and
+        # its SDK inputs still exist. SDK-only CI records cannot fill this role.
+        audit_path = output.parent/'deployment-audit.json'
+        audit_path.write_text(json.dumps(report, indent=2)+'\n')
+        deployment_path = output.parent/'macos-deployment.json'
+        deployment_path.write_text(json.dumps(deployment_record(app, qt, report), indent=2)+'\n')
+        attribution_path = output.parent/'runtime-attribution.json'
+        checked([sys.executable, ROOT/'scripts/runtime_attribution.py', '--audit', audit_path,
+                 '--root', app, '--qt-prefix', qt, '--deployment', deployment_path,
+                 '--output', attribution_path])
+        attribution = json.loads(attribution_path.read_text())
         source_bom = json.loads((notices/'source-build.cdx.json').read_text(encoding='utf-8'))
-        file_bom = artifact_bom(report, source_bom)
+        file_bom = artifact_bom(report, source_bom, attribution)
         output.with_suffix('.cdx.json').write_text(json.dumps(file_bom, indent=2)+'\n')
         (stage/'Applications').symlink_to('/Applications')
         (stage/'安装说明.txt').write_text(
