@@ -57,6 +57,10 @@
 
 namespace {
 XdzipUpdateDriver *driver = nil;
+bool updateSessionBlocked() {
+    return driver && (driver->updater.sessionInProgress ||
+                      (driver->installerRequired && !driver->installerGone));
+}
 NSString *native(const QString &value) {
     return [NSString stringWithUTF8String:value.toUtf8().constData()];
 }
@@ -374,7 +378,7 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
 }
 - (void)finishDeferredQuit {
     if (!cycleFinished || quitObservationPending ||
-        (!deferredQuit && !(cancelled && installerRequired && !installerGone)))
+        (!deferredQuit && !(installerRequired && !installerGone && !committed)))
         return;
     if (!installerRequired) {
         auto quit = std::move(deferredQuit);
@@ -433,8 +437,7 @@ QString macUpdateInstallRoot() {
 }
 void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
                     std::function<void(QString)> prepared) {
-    if (driver && (driver->updater.sessionInProgress ||
-                   (driver->cancelled && driver->installerRequired && !driver->installerGone))) {
+    if (updateSessionBlocked()) {
         prepared("update_busy");
         return;
     }
@@ -578,7 +581,13 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
         ++completedQuits;
         finished.quit();
     });
-    [driver updater:nil didFinishUpdateCycleForUpdateCheck:SPUUpdateCheckUpdates error:nil];
+    // Supply the SDK's required non-null sender without starting an updater.
+    auto cycleSender = [[SPUUpdater alloc] initWithHostBundle:NSBundle.mainBundle
+                                            applicationBundle:NSBundle.mainBundle
+                                                   userDriver:driver
+                                                     delegate:driver];
+    driver->updater = cycleSender;
+    [driver updater:cycleSender didFinishUpdateCycleForUpdateCheck:SPUUpdateCheckUpdates error:nil];
     const bool heldUntilCycleReturns = completedQuits == 0;
     QTimer::singleShot(1000, &finished, &QEventLoop::quit);
     finished.exec();
@@ -586,9 +595,55 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
                                   activeQuitDeferred && completedQuits == 1 &&
                                   helperObservations == 2 && driver->installerGone &&
                                   !driver->deferredQuit;
+    bool rejectedReadyPassed = true;
+    for (const bool validObservation : {false, true}) {
+        driver = [[XdzipUpdateDriver alloc] init];
+        driver->owner = owner;
+        bool rejectedPreparation = false;
+        driver->prepared = [&](QString error) { rejectedPreparation = error == "native_update"; };
+        installerObservationOverride = [=](InstallerObservation completion) {
+            completion(validObservation, {});
+        };
+        __block bool rejectedWithSkip = false;
+        [driver showReadyToInstallAndRelaunch:^(SPUUserUpdateChoice choice) {
+          rejectedWithSkip = choice == SPUUserUpdateChoiceSkip;
+        }];
+        auto rejectedDriver = driver;
+        QString retryError;
+        startMacUpdate(owner, {}, [&](QString error) { retryError = error; });
+        const bool retryHeld = retryError == "update_busy" && driver == rejectedDriver;
+        QEventLoop settled;
+        int observations = 0;
+        bool aliveRetryHeld = false;
+        installerObservationOverride = [&](InstallerObservation completion) {
+            ++observations;
+            if (observations == 1) {
+                QString error;
+                startMacUpdate(owner, {}, [&](QString value) { error = value; });
+                aliveRetryHeld = error == "update_busy" && driver == rejectedDriver;
+                completion(true, {42});
+            } else {
+                completion(true, {});
+                QTimer::singleShot(0, &settled, &QEventLoop::quit);
+            }
+        };
+        auto rejectedSender = [[SPUUpdater alloc] initWithHostBundle:NSBundle.mainBundle
+                                                   applicationBundle:NSBundle.mainBundle
+                                                          userDriver:driver
+                                                            delegate:driver];
+        driver->updater = rejectedSender;
+        [driver updater:rejectedSender
+            didFinishUpdateCycleForUpdateCheck:SPUUpdateCheckUpdates
+                                         error:nil];
+        QTimer::singleShot(1000, &settled, &QEventLoop::quit);
+        settled.exec();
+        rejectedReadyPassed &= rejectedWithSkip && rejectedPreparation && retryHeld &&
+                               aliveRetryHeld && observations == 2 && driver->installerGone &&
+                               !updateSessionBlocked();
+    }
     installerObservationOverride = std::move(previousObservation);
     driver = previous;
     return unicodeParser && malformedRejected && cancellationPassed && installationPassed &&
-           normalQuitPassed;
+           normalQuitPassed && rejectedReadyPassed;
 }
 #endif
