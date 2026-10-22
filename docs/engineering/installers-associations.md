@@ -12,6 +12,8 @@ Windows/Linux 的 `package --kind runtime|installer|all` 共用同一部署与�
 
 ## Windows
 
+安装器展示随包的原始 Microsoft VC++ 运行库协议，许可页明确适用组件范围并要求接受，随后展示双语 Windows-runtime-NOTICE.txt。便携包附带同一原文和说明；项目原创代码仍采用 Apache-2.0，Qt 等组件的原始授权和替换权不受此页影响。编译前核对原始协议哈希和完整说明，材料附件保留同一文本，详见 [Windows 许可](windows-licensing.md)。
+
 便携包与安装器使用同一部署目录，由 [deploy_windows.py](../../scripts/deploy_windows.py) 调用 windeployqt，再按已固定的 Qt Quick Basic 策略移除 FluentWinUI3、Fusion、Imagine、Material、Universal、Windows、仅样式引用的 NativeStyle／Effects、qmltooling 和 .qmltypes。Basic、Controls impl、Templates、运行时 QML 与 qmldir 保留；Qt Widgets 的 qmodernwindowsstyle 继续服务原生控件。opengl32sw、DXC、DXIL、D3DCompiler 图形回退库保留。增加新样式或 Effects 功能时必须同时调整部署策略并复验。
 
 VC++ 采用应用目录内部署，使用 [固定来源与文件哈希](../../scripts/windows-runtime.json) 的微软官方 x64 14.44.35211 运行库。[准备脚本](../../scripts/prepare-windows-runtime.py) 用固定 WiX 工具解包，再校验每个 DLL 和许可正文，不执行 EXE 或 MSI 安装、不从 System32 复制文件。交付所需 MSVCP／VCRUNTIME DLL 与许可、来源记录，工具、CAB、MSI 和未执行的 vc_redist 安装程序不进入产品；Windows 10／11 自带 UCRT。应用目录内运行库须随产品更新维护，不能依赖系统集中运行库更新替换它们，参见 [Microsoft 部署方式](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method)。

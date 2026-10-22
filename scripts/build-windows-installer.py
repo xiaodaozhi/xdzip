@@ -17,6 +17,20 @@ EXTENSIONS=['zip','tar','tgz','gz']
 MANIFEST_NAME='install-manifest.txt'
 
 
+def runtime_agreement(root):
+    runtime=json.loads((ROOT/'scripts/windows-runtime.json').read_text())
+    license_file=root/'share/notices/Microsoft-VC-runtime/license.rtf'
+    notice=root/'share/notices/Windows-runtime-NOTICE.txt'
+    source=ROOT/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'
+    if not license_file.is_file() or digest(license_file)!=runtime['license_sha256']:
+        raise ValueError('Installer requires the original pinned Microsoft runtime agreement')
+    if not notice.is_file() or notice.read_bytes()!=b'\xef\xbb\xbf'+source.read_bytes():
+        raise ValueError('Installer requires the complete bilingual Windows runtime notice')
+    return {'file':'share/notices/Microsoft-VC-runtime/license.rtf',
+        'sha256':digest(license_file),'installer_acceptance_required':True,
+        'notice_file':'share/notices/Windows-runtime-NOTICE.txt','notice_sha256':digest(notice)}
+
+
 def payload_manifest(audit):
     entries=[]
     seen=set()
@@ -92,6 +106,7 @@ def main():
     credits=args.root/'share/notices/Installer-CREDITS.txt'
     if not credits.is_file() or 'RemObjects Pascal Script (https://www.remobjects.com/ps)' not in credits.read_text(encoding='utf-8'):
         raise ValueError('Installer payload lacks Pascal Script documentation acknowledgement')
+    agreement=runtime_agreement(args.root)
     text,result=render(args.root,audit,args.output,args.chinese,args.qa_variant,args.qa_legacy_layout)
     args.output.parent.mkdir(parents=True,exist_ok=True);source=args.output.with_suffix('.iss')
     args.output.with_suffix('.files').write_bytes(payload_manifest(audit).encode('utf-8'))
@@ -100,6 +115,7 @@ def main():
     result.update(file=args.output.name,sha256=digest(args.output),compiler='Inno Setup 6.7.3',scope='current user',signed=False)
     result.update(compiler_source_commit=toolchain['source_commit'],compiler_package_sha256=toolchain['sha256'],
                   engine_notice_files=notice_records,pascal_script_acknowledgement={'file':'share/notices/Installer-CREDITS.txt','sha256':digest(credits)})
+    result['microsoft_runtime_agreement']=agreement
     args.report.write_text(json.dumps(result,indent=2)+'\n')
     print('Windows current-user installer compiled, defaults preserved')
 

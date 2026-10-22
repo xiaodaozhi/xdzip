@@ -15,6 +15,8 @@
 
 Microsoft 的[运行库分发说明](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files)与 [VS 2022 可分发清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)将分发权与适用软件许可关联。安装许可文本不是维护者已满足资格的证明。Qt 的[开源义务说明](https://www.qt.io/development/open-source-lgpl-obligations)要求保留用户取得对应源码、修改、重新链接和运行修改库的权利；不能以“动态链接”代替其他义务。
 
+Windows 的 Community 免费路径、托管 Enterprise 的独立依据和再分发条件见 [Windows 许可说明](windows-licensing.md)。部署将 CRT／SDK 原始许可、来源记录及双语 Windows-runtime-NOTICE.txt 同时纳入运行目录和 materials，安装器编译前核对原始 CRT 协议哈希并展示许可页，不将微软 DLL 纳入 Apache-2.0 授权。
+
 ## 生成与验证
 
 `scripts/native-runtime-sources.json` 固定 Mesa、LLVM 原始源码及 ICU 许可的版本、官方 URL 和 SHA-256。`collect-notices.py` 在 Windows 收集 Mesa 和 LLVM 原始通知，附带标明范围的源码通知参考集合；在 Linux 收集 ICU 完整许可。引用集合可能包括未使用驱动和编译目标，不自动选择许可或声称全部代码都已链接。缓存和下载均重新核对哈希，损坏缓存、缺失原文及越界成员失败，不解包任意上游路径。
@@ -29,4 +31,4 @@ macOS 打包在最终签名应用仍存在时输出 `deployment-audit.json`、`m
 
 公开包发现缺失通知后，补充材料不能改写为“原包已包含”。原版本资产及校验和保持不可变，修订后的包必须使用新版本并重新验证；补充材料及其绑定对象应明确登记。
 
-English: Native runtime provenance, license conditions and delivered obligations are separate checks. Windows graphics libraries come only from the explicitly selected SDK REDIST directory and the hash-reviewed Qt Mesa input, with supplier notices and relative-path provenance. Mesa/LLVM source archives and original notices, plus the full ICU license, are collected with pinned hashes. Final macOS attribution binds the signed deployed app to SDK inputs using arm64 sections, UUID and imports, while explicitly excluding signatures, load-command layout and LINKEDIT from equivalence claims. Unknown origins and licensee eligibility remain open review items. Published assets are immutable; corrected packages require a new version.
+English: Native runtime provenance, license conditions and delivered obligations are separate checks. Windows graphics libraries come only from the explicitly selected SDK REDIST directory and the hash-reviewed Qt Mesa input, with supplier notices and relative-path provenance. Eligible Community use, GitHub-hosted Enterprise builds and downstream Microsoft terms follow the Windows licensing contract. CRT/SDK terms and a bilingual runtime notice are delivered in both the runtime and materials; Setup presents the original CRT agreement. Mesa/LLVM source archives and original notices, plus the full ICU license, are collected with pinned hashes. Final macOS attribution binds the signed deployed app to SDK inputs using arm64 sections, UUID and imports, while explicitly excluding signatures, load-command layout and LINKEDIT from equivalence claims. Origins and license eligibility require explicit review. Published assets are immutable; corrected packages require a new version.

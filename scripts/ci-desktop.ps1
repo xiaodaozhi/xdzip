@@ -27,6 +27,29 @@ if ($IsWindows) {
     if (!$installation) { throw 'MSVC installation not found' }
     Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+    $vsInstances = (& $vswhere -all -products '*' -format json | ConvertFrom-Json)
+    $selected = $vsInstances | Where-Object { $_.installationPath -eq $installation } | Select-Object -First 1
+    $compiler = (Get-Command cl.exe -ErrorAction Stop).Source
+    $relativeCompiler = [IO.Path]::GetRelativePath($installation, $compiler).Replace('\', '/')
+    if (!$selected -or $relativeCompiler.StartsWith('../') -or [IO.Path]::IsPathRooted($relativeCompiler)) {
+        throw 'Active compiler does not belong to the selected Visual Studio instance'
+    }
+    New-Item -ItemType Directory -Force 'build/review' | Out-Null
+    [ordered]@{
+        schema_version = 1
+        revision = (& git rev-parse HEAD).Trim()
+        product_id = $selected.productId
+        installation_version = $selected.installationVersion
+        prerelease = $selected.isPrerelease
+        compiler_relative_path = $relativeCompiler
+        compiler_version = (Get-Item $compiler).VersionInfo.ProductVersion
+        vc_tools_version = $env:VCToolsVersion
+        windows_sdk_version = $env:WindowsSDKVersion.Trim('\/')
+        runner_environment = $(if ($env:GITHUB_ACTIONS -eq 'true') { $env:RUNNER_ENVIRONMENT } else { 'local' })
+        runner_image = $env:ImageVersion
+        hosted_license_reference = $(if ($env:RUNNER_ENVIRONMENT -eq 'github-hosted') { 'https://github.com/actions/runner-images/issues/12945#issuecomment-3348002951' } else { $null })
+        limits = @('Tool identity is recorded; this is not automatic certification of license eligibility.')
+    } | ConvertTo-Json -Depth 4 | Set-Content 'build/review/windows-toolchain.json' -Encoding utf8
 }
 $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
 $shared = @('--qt-prefix', $qtPrefix, '--qt-root', $qtRoot,

@@ -23,10 +23,16 @@ ChangesAssociations=yes
 UninstallLogMode=append
 WizardStyle=modern
 DisableWelcomePage=no
+LicenseFile=@PAYLOAD@\share\notices\Microsoft-VC-runtime\license.rtf
+InfoBeforeFile=@PAYLOAD@\share\notices\Windows-runtime-NOTICE.txt
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "chinesesimplified"; MessagesFile: "@CHINESE@"
+
+[Messages]
+english.LicenseLabel3=The following agreement applies to the bundled Microsoft Visual C++ runtime. You must accept it to install these Microsoft components. xdzip and other components retain their respective licenses.
+chinesesimplified.LicenseLabel3=以下协议适用于随包提供的 Microsoft Visual C++ 运行库。安装这些 Microsoft 组件前须接受此协议。xdzip 及其他组件分别遵守各自的许可证。
 
 [CustomMessages]
 english.IncompatibleSettings=This installation uses newer settings. Downgrade was refused to protect your data.

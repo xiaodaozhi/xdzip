@@ -111,3 +111,5 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 ## 许可证
 
 项目原创内容采用 [Apache License 2.0](LICENSE)。Qt、编解码器、字体及其他依赖遵守各自许可证，相关来源与说明见[许可证文档](docs/engineering/licensing.md)。
+
+Windows 包中的 Microsoft 运行库保留各自原始条款，安装器展示 VC++ 运行库协议，便携包附带同一文本与双语说明。普通用户无需安装 Visual Studio；开发者的 Community 免费许可、GitHub 托管构建依据及再分发要求见 [Windows 许可说明](docs/engineering/windows-licensing.md)。

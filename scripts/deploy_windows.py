@@ -54,6 +54,10 @@ def copy_runtime(runtime, root):
         shutil.copyfile(runtime/name, root/name)
     shutil.copyfile(runtime/'Microsoft-VC-runtime-license.rtf', notices/'license.rtf')
     (notices/'provenance.json').write_text(json.dumps(config, indent=2)+'\n')
+    # Inno's text page needs a BOM to display the same Chinese/English notice
+    # independently of the installer machine's ANSI code page.
+    notice = ROOT/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'
+    (notices.parent/notice.name).write_bytes(b'\xef\xbb\xbf'+notice.read_bytes())
 
 
 def copy_graphics(qt, sdk, sdk_version, root):

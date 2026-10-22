@@ -318,7 +318,13 @@ class Workflow:
             self.script('deploy_windows.py', '--root', self.runtime, '--qt-prefix', self.qt,
                         '--qml-dir', ROOT/'apps/desktop/ui', '--qml-import', self.build/'qml',
                         '--runtime', self.runtime_tools/'runtime')
-            # deploy_windows already wrote validated VC++ runtime notices here.
+            # Keep the exact native supplier terms in both runtime and materials.
+            # The source inventory remains a source inventory, not a claim that
+            # these later deployment inputs were part of the Rust build graph.
+            native_notices = self.runtime/'share/notices'
+            for name in ('Microsoft-VC-runtime', 'Windows-SDK-graphics'):
+                shutil.copytree(native_notices/name, notices/name, dirs_exist_ok=True)
+            shutil.copy2(native_notices/'Windows-runtime-NOTICE.txt', notices)
             shutil.copytree(notices, self.runtime/'share/notices', dirs_exist_ok=True)
         else:
             self.script('deploy_linux.py', '--app', self.app, '--qt-prefix', self.qt,

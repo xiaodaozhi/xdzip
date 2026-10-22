@@ -24,6 +24,30 @@ linux=module('build-linux-installer');windows=module('build-windows-installer');
 
 
 class InstallerTests(unittest.TestCase):
+    def test_windows_runtime_agreement_rejects_changed_supplier_text_and_notice(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp); source=base/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'
+            source.parent.mkdir(parents=True); source.write_bytes('中文说明\nEnglish notice\n'.encode('utf-8'))
+            root=base/'payload'; license_file=root/'share/notices/Microsoft-VC-runtime/license.rtf'
+            license_file.parent.mkdir(parents=True); license_file.write_bytes(b'{\\rtf1 owned agreement}')
+            notice=license_file.parent.parent/source.name; notice.write_bytes(b'\xef\xbb\xbf'+source.read_bytes())
+            config=base/'scripts/windows-runtime.json'; config.parent.mkdir()
+            config.write_text(json.dumps({'license_sha256':digest(license_file)}))
+            with patch.object(windows,'ROOT',base):
+                record=windows.runtime_agreement(root)
+                self.assertEqual(record['sha256'],digest(license_file))
+                self.assertTrue(record['installer_acceptance_required'])
+                license_file.write_bytes(b'{\\rtf1 modified agreement}')
+                with self.assertRaisesRegex(ValueError,'original pinned'):
+                    windows.runtime_agreement(root)
+                license_file.write_bytes(b'{\\rtf1 owned agreement}')
+                notice.write_bytes(source.read_bytes())
+                with self.assertRaisesRegex(ValueError,'complete bilingual'):
+                    windows.runtime_agreement(root)
+                notice.unlink()
+                with self.assertRaisesRegex(ValueError,'complete bilingual'):
+                    windows.runtime_agreement(root)
+
     def test_legacy_debian_version_flag_is_ci_only(self):
         with tempfile.TemporaryDirectory() as temp:
             base=Path(temp)
@@ -111,6 +135,10 @@ class InstallerTests(unittest.TestCase):
             text,r=windows.render(root,audit,base/'setup.exe',base/'Chinese.isl')
             self.assertIn('PrivilegesRequired=lowest',text)
             self.assertIn('AppMutex=Local\\xdzip.desktop.running',text)
+            self.assertIn('LicenseFile='+str(root.resolve())+'\\share\\notices\\Microsoft-VC-runtime\\license.rtf',text)
+            self.assertIn('InfoBeforeFile='+str(root.resolve())+'\\share\\notices\\Windows-runtime-NOTICE.txt',text)
+            self.assertIn('english.LicenseLabel3=',text)
+            self.assertIn('chinesesimplified.LicenseLabel3=',text)
             self.assertIn(' -- ""%1""',text)
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
             for line in text.splitlines():
