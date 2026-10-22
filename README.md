@@ -90,7 +90,6 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 
 - 支持独立标签页或多窗口会话，文件内容预览和独立完整性检查命令尚未实现。
 - 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
-- [发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)仍需逐项确认实际交付组件的来源与再分发义务。
 - 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。
 
 版本、渠道和构建身份可在“关于 xdzip”或 `xdzip --version` 查看。项目采取尽力维护，优先处理最新版本反馈，不承诺固定响应时限。
@@ -113,3 +112,5 @@ Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；mac
 项目原创内容采用 [Apache License 2.0](LICENSE)。Qt、编解码器、字体及其他依赖遵守各自许可证，相关来源与说明见[许可证文档](docs/engineering/licensing.md)。
 
 Windows 包中的 Microsoft 运行库保留各自原始条款，安装器展示 VC++ 运行库协议，便携包附带同一文本与双语说明。普通用户无需安装 Visual Studio；开发者的 Community 免费许可、GitHub 托管构建依据及再分发要求见 [Windows 许可说明](docs/engineering/windows-licensing.md)。
+
+组件来源与再分发义务按实际发布包逐版核对，复核记录见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，不因源码开源或 CI 通过而自动批准后续发行。

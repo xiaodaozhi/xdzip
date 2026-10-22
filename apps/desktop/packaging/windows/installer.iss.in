@@ -31,8 +31,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "chinesesimplified"; MessagesFile: "@CHINESE@"
 
 [Messages]
-english.LicenseLabel3=The following agreement applies to the bundled Microsoft Visual C++ runtime. You must accept it to install these Microsoft components. xdzip and other components retain their respective licenses.
-chinesesimplified.LicenseLabel3=以下协议适用于随包提供的 Microsoft Visual C++ 运行库。安装这些 Microsoft 组件前须接受此协议。xdzip 及其他组件分别遵守各自的许可证。
+english.LicenseLabel3=This agreement covers the bundled Microsoft VC++ runtime. Accept it to install the runtime. Other components keep their own licenses.
+chinesesimplified.LicenseLabel3=以下协议仅适用于 Microsoft VC++ 运行库，安装前须接受。xdzip 及其他组件遵守各自许可证。
 
 [CustomMessages]
 english.IncompatibleSettings=This installation uses newer settings. Downgrade was refused to protect your data.

@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 from deployment_audit import digest, ROOT
@@ -18,6 +19,13 @@ def main():
     for label,variant,legacy in [('legacy','1',True),('qa1','1',False),('qa2','2',False)]:
         payload=output/('payload-'+label);payload.mkdir()
         (payload/'xdzip.exe').write_bytes(b'MZ QA file fixture, never executed\n')
+        # Compile the real agreement and bilingual notice even for the owned
+        # file stubs. Missing supplier text must not be hidden by QA-only pages.
+        license_dir=payload/'share/notices/Microsoft-VC-runtime';license_dir.mkdir(parents=True)
+        shutil.copyfile(ROOT/'build/windows-runtime/runtime/Microsoft-VC-runtime-license.rtf',license_dir/'license.rtf')
+        notice=ROOT/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'
+        (license_dir.parent/notice.name).write_bytes(b'\xef\xbb\xbf'+notice.read_bytes())
+        builder.runtime_agreement(payload)
         if variant=='1':
             (payload/'retired').mkdir();(payload/'retired/old-owned.txt').write_bytes(b'owned fixture\n')
         audit={'status':'passed','platform':'windows','mode':'deployed',
