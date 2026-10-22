@@ -91,7 +91,7 @@ def manifest(package, platform, tool, identity=NEW):
         assets.append(dict(filename=filename, platform=target, architecture=arch, package_type=kind,
                            minimum_system=minimum, bytes=size, sha256=sha, url=base + filename))
     value = dict(schema_version=1, product='xdzip', version=version, channel='alpha', build=identity['build'],
-                 tag='v' + version, commit=identity['revision'] + '0' * 28, repository='xiaodaozhi/xdzip', assets=assets)
+                 tag='v' + version, commit=identity.get('commit',identity['revision'] + '0' * 28), repository='xiaodaozhi/xdzip', assets=assets)
     path = package.parent / 'release.json'
     dump(path, value)
     ring = package.parent / 'test-keyring.json'
@@ -102,6 +102,23 @@ def manifest(package, platform, tool, identity=NEW):
          '--output', package.parent / 'release.json.sig'], env=env)
     ring.unlink()
     return path
+
+
+def qa_installer_text(text):
+    """Drive only owned test installers; retain the real supplier agreement."""
+    return text.replace('[Setup]\n','[Setup]\nShowLanguageDialog=no\nSetupLogging=yes\n',1)+'''
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  Log(Format('Owned fixture wizard page: %d', [CurPageID]));
+  if CurPageID = wpLicense then begin
+    WizardForm.LicenseAcceptedRadio.Checked := True;
+    WizardForm.LicenseAcceptedRadio.OnClick(WizardForm.LicenseAcceptedRadio);
+  end;
+  { wpReady rejects synchronous clicks before Show; queue the native button event. }
+  if (CurPageID <> wpInstalling) and WizardForm.NextButton.Enabled then
+    PostMessage(WizardForm.NextButton.Handle, $00F5, 0, 0);
+end;
+'''
 
 
 def request(job, parent_pid, install_root, package):

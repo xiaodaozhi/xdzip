@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
@@ -27,6 +28,7 @@
 #include <QSslSocket>
 #include <QTest>
 #include <QTimer>
+#import <mach-o/dyld.h>
 
 namespace {
 bool save(const QString &path, const QJsonObject &value) {
@@ -48,8 +50,25 @@ int httpsProbe(QApplication &application, const QString &directory) {
                 ++httpsResponses;
         });
     const auto finish = [&](bool timeout) {
+        QJsonArray bundledQtImages, externalQtImages;
+        const auto bundleRoot =
+            QFileInfo(QString::fromUtf8(NSBundle.mainBundle.bundlePath.UTF8String))
+                .canonicalFilePath();
+        for (uint32_t index = 0; index < _dyld_image_count(); ++index) {
+            const auto image = QFileInfo(QString::fromUtf8(_dyld_get_image_name(index)));
+            const auto name = image.fileName();
+            if (!((name.startsWith("Qt") && image.filePath().contains(".framework/")) ||
+                  (name.startsWith("libq") && name.endsWith(".dylib"))))
+                continue;
+            const auto path = image.canonicalFilePath();
+            if (!bundleRoot.isEmpty() && path.startsWith(bundleRoot + '/'))
+                bundledQtImages.append(path.mid(bundleRoot.size() + 1));
+            else
+                externalQtImages.append(name);
+        }
         const bool passed = !timeout && QSslSocket::supportsSsl() && encrypted > 0 &&
                             httpsResponses > 0 && updates.errorCode().isEmpty() &&
+                            !bundledQtImages.isEmpty() && externalQtImages.isEmpty() &&
                             (updates.state() == "available" || updates.state() == "up_to_date");
         const bool written =
             save(directory + "/https.json", {{"success", passed},
@@ -60,7 +79,9 @@ int httpsProbe(QApplication &application, const QString &directory) {
                                              {"error", updates.errorCode()},
                                              {"timeout", timeout},
                                              {"encrypted_connections", encrypted},
-                                             {"https_responses", httpsResponses}});
+                                             {"https_responses", httpsResponses},
+                                             {"bundled_qt_images", bundledQtImages},
+                                             {"external_qt_images", externalQtImages}});
         application.exit(passed && written ? 0 : 69);
     };
     QObject::connect(&updates, &UpdateController::changed, &application, [&] {

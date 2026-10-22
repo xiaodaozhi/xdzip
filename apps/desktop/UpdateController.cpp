@@ -117,7 +117,13 @@ QString UpdateController::platform() const {
 #endif
 }
 QString UpdateController::installedRoot() const {
-    if (BuildInfo::dirty() || BuildInfo::channel() == "development")
+    const auto revision = BuildInfo::revision();
+    const bool knownRevision =
+        revision.size() == 12 && std::all_of(revision.cbegin(), revision.cend(), [](QChar value) {
+            return (value >= u'0' && value <= u'9') || (value >= u'a' && value <= u'f');
+        });
+    if (BuildInfo::dirty() || BuildInfo::channel() == "development" || !knownRevision ||
+        BuildInfo::configuration() != "Release")
         return {};
     const auto current = QFileInfo(QCoreApplication::applicationFilePath()).canonicalFilePath();
 #ifdef Q_OS_WIN

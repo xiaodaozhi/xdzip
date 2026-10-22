@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import time
-from update_fixture import ROOT, OLD, NEW, run, dump, digest, build_helpers, compile_product, manifest, request, await_file
+from update_fixture import ROOT, OLD, NEW, run, dump, digest, build_helpers, compile_product, manifest, request, await_file, qa_installer_text
 
 
 def installer_windows():
@@ -100,19 +100,7 @@ def main():
         # Only this owned test installer automatically confirms its wizard. The
         # exact production LicenseFile and notice remain compiled and validated;
         # neither the production template nor helper receives a silent bypass.
-        text=text.replace('[Setup]\n','[Setup]\nShowLanguageDialog=no\nSetupLogging=yes\n',1)
-        text += '''
-procedure CurPageChanged(CurPageID: Integer);
-begin
-  Log(Format('Owned fixture wizard page: %d', [CurPageID]));
-  if CurPageID = wpLicense then begin
-    WizardForm.LicenseAcceptedRadio.Checked := True;
-    WizardForm.LicenseAcceptedRadio.OnClick(WizardForm.LicenseAcceptedRadio);
-  end;
-  if (CurPageID <> wpInstalling) and WizardForm.NextButton.Enabled then
-    WizardForm.NextButton.OnClick(WizardForm.NextButton);
-end;
-'''
+        text=qa_installer_text(text)
         path.with_suffix('.files').write_text(builder.payload_manifest(audit), encoding='utf-8')
         path.with_suffix('.iss').write_text(text, encoding='utf-8-sig')
         run([ROOT / 'build/installer-toolchain/compiler/ISCC.exe', path.with_suffix('.iss')], stdout=subprocess.DEVNULL)

@@ -126,11 +126,13 @@ class SparkleBundleTests(unittest.TestCase):
             calls.append((arguments, options))
             self.assertTrue(all(name not in options['env'] for name in sdk_variables))
             self.assertEqual(options['env']['PATH'], '/usr/bin:/bin:/usr/sbin:/sbin')
+            self.assertEqual(options['env']['RUSTUP_TOOLCHAIN'], probe.__globals__['locked_rust_version']())
             self.assertEqual(arguments[-1], '--update-https-probe')
             (self.app.parent/'https.json').write_text(json.dumps({'success': True, 'ssl_backend': 'fixture'}))
             return SimpleNamespace(returncode=0, stdout=b'', stderr=b'')
         with patch.dict(probe.__globals__, {'audit': lambda *args: {'status': 'passed'}}), \
-                patch.dict(os.environ, sdk_variables), patch('subprocess.run', side_effect=native_https):
+                patch.dict(os.environ, {**sdk_variables, 'RUSTUP_TOOLCHAIN': 'fixture-other-channel'}), \
+                patch('subprocess.run', side_effect=native_https):
             result = probe(self.app, self.root)
         self.assertTrue(result['sdk_environment_cleared'])
         self.assertEqual(len(calls), 1)

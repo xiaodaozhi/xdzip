@@ -21,6 +21,7 @@ import time
 import xml.etree.ElementTree as ET
 
 from deployment_audit import audit, mac_rpaths, native
+from desktop_environment import locked_rust_version
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import configuration, embed, signing_metadata
 from update_fixture import ROOT, digest, dump
@@ -37,6 +38,10 @@ def clean_environment():
                 'QT_QPA_PLATFORM', 'QT_QUICK_BACKEND', 'DYLD_LIBRARY_PATH', 'DYLD_FRAMEWORK_PATH'):
         environment.pop(key, None)
     environment['MACOSX_DEPLOYMENT_TARGET'] = '14.0'
+    # Preparation installs this exact minimal compiler. Explicit selection
+    # avoids rustup re-synchronizing workspace-only fmt/clippy components while
+    # the native build is running, without substituting another Rust version.
+    environment['RUSTUP_TOOLCHAIN'] = locked_rust_version()
     return environment
 
 
