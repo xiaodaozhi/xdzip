@@ -8,7 +8,7 @@ Qt 动态链接仍需逐模块确认 LGPL/GPL/商业条款；后端、图标、�
 
 平台运行库专属通知、供应方输入和许可资格的核对遵循[原生运行库来源与通知](native-runtime-materials.md)，不以通用许可正文替代供应方版权声明。
 
-Windows 维护者采用符合条件的 Visual Studio Community 免费许可路径；GitHub 标准托管 runner 实际预装的 Enterprise 构建环境、适用依据、Microsoft CRT／SDK 分发条件及下游说明见 [Windows 开发工具与运行库许可](windows-licensing.md)。这些微软组件不适用项目 Apache-2.0 许可，普通运行用户无需安装 Visual Studio。
+Windows 维护者需要自有开发环境时，可采用符合条件的 Visual Studio Community 免费许可路径。GitHub 标准托管 runner 实际预装的 Enterprise 有独立的托管使用依据，CI 构建与分发不额外要求本机安装 Community IDE。适用依据、Microsoft CRT／SDK 分发条件及下游说明见 [Windows 开发工具与运行库许可](windows-licensing.md)。这些微软组件不适用项目 Apache-2.0 许可，普通运行用户无需安装 Visual Studio。
 
 [实际组件归属流程](runtime-attribution.md)从固定 SDK 的 SPDX 提取模块、第三方、版权与上游许可表达式，并随 Windows/Linux 运行目录交付固定来源的许可文本。上游 licenseConcluded 不代表本项目已选择或批准对应许可分支；未确认归属、源码交付和重链接材料继续阻断正式发行。
 

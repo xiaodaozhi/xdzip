@@ -16,7 +16,7 @@
 
 macOS 可用 `xcode-select --install` 准备命令行工具。Ubuntu 基础开发包包含 `libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev`；打包还需要 patchelf 与 Debian 包工具，隔离运行验证另需可连接的 Docker。Windows 仅安装 Visual Studio 但未进入开发环境时，cl、link、rc 或 dumpbin 仍可能不可用，预检会指出实际缺失项。共用入口不自动安装系统编译器、SDK 或需要管理员权限的系统包。
 
-Windows 可按 [Community 免费许可路径](windows-licensing.md)准备开发工具，阅读并接受该版本条款；只装 Build Tools 或 VC_redist 不单独证明资格。GitHub 标准托管 runner 的 Enterprise 许可使用另有公开依据，不要求维护者为托管构建购买 Enterprise，也不将该依据用于自托管机器。
+Windows 可按 [Community 免费许可路径](windows-licensing.md)准备自有开发工具，阅读并接受该版本条款；只装 Build Tools 或 VC_redist 不单独证明资格。GitHub 标准托管 runner 的 Enterprise 使用及相应再分发另有公开依据，不要求维护者为托管构建购买 Enterprise 或在本机安装 Community IDE，也不将该依据用于自托管机器。现有 2019 工具无需为许可复核而卸载；本地替代配置与当前 2022 发行 SDK 的兼容性须分别验证。
 
 所有命令共用以下参数：
 
