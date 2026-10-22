@@ -4855,21 +4855,43 @@ class BrowserTest : public QObject {
                 : nullptr;
         auto *errorMessage = findVisual(progress->contentItem(), "resultError");
         QVERIFY(viewport && content && errorMessage);
-        QTest::qWait(80); // Let translated multiline text finish its layout pass.
-        const auto errorY = errorMessage->mapToItem(content, QPointF()).y();
-        viewport->setProperty(
-            "contentY", std::clamp(errorY - 16, 0.,
-                                   std::max(0., viewport->property("contentHeight").toDouble() -
-                                                    viewport->height())));
-        QTest::qWait(30);
+        auto *body = findVisual(progress->contentItem(), "taskBodyContent");
+        QVERIFY(body);
+        const auto errorGeometry = [&] {
+            return QString("error y=%1 height=%2 viewport=%3 scroll=%4 contentHeight=%5 "
+                           "bodyHeight=%6 implicitHeight=%7 requestedHeight=%8 windowHeight=%9")
+                .arg(errorMessage->mapToItem(viewport, QPointF()).y())
+                .arg(errorMessage->height())
+                .arg(viewport->height())
+                .arg(viewport->property("contentY").toDouble())
+                .arg(viewport->property("contentHeight").toDouble())
+                .arg(body->height())
+                .arg(body->implicitHeight())
+                .arg(progress->property("requestedHeight").toDouble())
+                .arg(progress->height());
+        };
+        const auto scrollErrorIntoView = [&] {
+            const auto errorY = errorMessage->mapToItem(content, QPointF()).y();
+            const auto extent = viewport->property("contentHeight").toDouble();
+            if (!errorMessage->isVisible() || errorMessage->property("text").toString().isEmpty() ||
+                errorMessage->width() <= 0 || errorMessage->height() <= 0 ||
+                viewport->height() <= 0 || body->height() <= 0 || body->implicitHeight() <= 0 ||
+                extent + 1 < std::max(body->height(), body->implicitHeight()) ||
+                extent + 1 < errorY + errorMessage->height() ||
+                progress->height() != progress->property("requestedHeight").toInt())
+                return false;
+            // Layout can change the extent after the first scroll, so use its current range each
+            // time.
+            viewport->setProperty(
+                "contentY", std::clamp(errorY - 16, 0., std::max(0., extent - viewport->height())));
+            const auto point = errorMessage->mapToItem(viewport, QPointF());
+            return point.y() >= -1 && point.y() + errorMessage->height() <= viewport->height() + 1;
+        };
+        QTRY_VERIFY2(scrollErrorIntoView(), qPrintable(errorGeometry()));
         const auto errorPoint = errorMessage->mapToItem(viewport, QPointF());
         QVERIFY2(errorPoint.y() >= -1 &&
                      errorPoint.y() + errorMessage->height() <= viewport->height() + 1,
-                 qPrintable(QString("error y=%1 height=%2 viewport=%3 scroll=%4")
-                                .arg(errorPoint.y())
-                                .arg(errorMessage->height())
-                                .arg(viewport->height())
-                                .arg(viewport->property("contentY").toDouble())));
+                 qPrintable(errorGeometry()));
         if (!qEnvironmentVariableIsEmpty("XDZIP_OPENING_VISUAL_AUDIT")) {
             QVERIFY(QDir().mkpath(qEnvironmentVariable("XDZIP_OPENING_VISUAL_AUDIT")));
             QVERIFY(visual_audit::save(progress, qEnvironmentVariable("XDZIP_OPENING_VISUAL_AUDIT"),
