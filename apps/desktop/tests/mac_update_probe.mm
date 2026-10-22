@@ -56,6 +56,12 @@ int httpsProbe(QApplication &application, const QString &directory) {
                 .canonicalFilePath();
         for (uint32_t index = 0; index < _dyld_image_count(); ++index) {
             const auto image = QFileInfo(QString::fromUtf8(_dyld_get_image_name(index)));
+            // Shared-cache system images may have no filesystem entry. Check
+            // normalized dyld paths before the Qt name heuristic, which also
+            // matches Apple's libquarantine.dylib.
+            const auto imagePath = QDir::cleanPath(image.filePath());
+            if (imagePath.startsWith("/usr/lib/") || imagePath.startsWith("/System/Library/"))
+                continue;
             const auto name = image.fileName();
             if (!((name.startsWith("Qt") && image.filePath().contains(".framework/")) ||
                   (name.startsWith("libq") && name.endsWith(".dylib"))))

@@ -9,9 +9,45 @@ import unittest
 from unittest.mock import patch
 import deploy_windows as deployment
 import deployment_audit as audit
+from installer_payload import HISTORICAL_PRODUCT_REVISION
 
 
 class WindowsDeploymentTests(unittest.TestCase):
+    def test_helper_omission_is_limited_to_the_clean_pinned_historical_product(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); (root/'xdzip.exe').write_bytes(b'MZowned')
+            pin = HISTORICAL_PRODUCT_REVISION
+            cli = f'xdzip 0.1.0-dev.1 (build 1, {pin[:12]})\n'
+            with patch.dict(os.environ, {'CI': 'true'}), patch.object(deployment, 'run', return_value=cli) as run:
+                with self.assertRaisesRegex(ValueError, 'requires the standalone'):
+                    deployment.update_helper_deployment(root)
+                run.assert_not_called()
+                record = deployment.update_helper_deployment(root, pin)
+                self.assertIsNone(record['update_helper_imports'])
+                self.assertEqual(record['historical_product_qa']['revision'], pin)
+                self.assertIs(record['historical_product_qa']['update_helper_in_historical_source'], False)
+                run.assert_called_once_with(str((root/'xdzip.exe').resolve()), '--version')
+            with patch.dict(os.environ, {'CI': 'false'}), patch.object(deployment, 'run') as run:
+                with self.assertRaisesRegex(ValueError, 'disposable CI'):
+                    deployment.update_helper_deployment(root, pin)
+                run.assert_not_called()
+            with patch.dict(os.environ, {'CI': 'true'}):
+                for invalid in [pin[:12], 'a'*40, '']:
+                    with self.subTest(revision=invalid), patch.object(deployment, 'run') as run:
+                        with self.assertRaisesRegex(ValueError, 'fixed full revision'):
+                            deployment.update_helper_deployment(root, invalid)
+                        run.assert_not_called()
+                for invalid in [cli.replace(')', ', dirty)'), cli.replace('build 1', 'build 2'),
+                                cli.replace(pin[:12], 'a'*12), cli.replace('dev.1', 'alpha.1')]:
+                    with self.subTest(identity=invalid), patch.object(deployment, 'run', return_value=invalid):
+                        with self.assertRaisesRegex(ValueError, 'pinned clean'):
+                            deployment.update_helper_deployment(root, pin)
+                (root/'xdzip-update-helper.exe').write_bytes(b'MZowned helper')
+                with self.assertRaisesRegex(ValueError, 'must not be supplied a newer'):
+                    deployment.update_helper_deployment(root, pin)
+                with patch.object(deployment, 'run', return_value='    KERNEL32.dll\n'):
+                    self.assertEqual(deployment.update_helper_deployment(root), {'update_helper_imports': ['KERNEL32.dll']})
+
     def test_update_helper_does_not_depend_on_the_replaced_runtime(self):
         with patch.object(deployment,'run',return_value='    KERNEL32.dll\n    api-ms-win-core-synch-l1-2-0.dll\n'):
             self.assertEqual(len(deployment.standalone_update_helper(Path('owned.exe'))),2)

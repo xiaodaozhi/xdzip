@@ -34,6 +34,8 @@ QString fromRust(const rust::String &value) {
     return QString::fromUtf8(value.data(), qsizetype(value.size()));
 }
 rust::Str view(const QByteArray &value) {
+    // Calls are synchronous and borrow valid UTF-8. Network JSON is checked at
+    // admission; raw manifest bytes are retained unchanged for authentication.
     return {value.constData(), size_t(value.size())};
 }
 QUrl manifestUrl(const QJsonObject &release, const QString &name) {
@@ -344,6 +346,10 @@ void UpdateController::inspectNextRelease() {
     });
 }
 void UpdateController::acceptManifest(const QJsonObject &release, const QByteArray &manifest) {
+    if (!manifest.isValidUtf8()) {
+        setState("error", "invalid_manifest_json");
+        return;
+    }
     const auto inspection = xdzip::updates::inspect_release(
         view(manifest), view(BuildInfo::version().toUtf8()), quint32(BuildInfo::buildNumber()),
         view(BuildInfo::channel().toUtf8()), view(platform().toUtf8()),
@@ -406,6 +412,11 @@ void UpdateController::acceptManifest(const QJsonObject &release, const QByteArr
         }
         m_signature = signature;
         const auto trust = m_trustOverride.isEmpty() ? trustKeys() : m_trustOverride;
+        if (!signature.isValidUtf8() || !trust.isValidUtf8()) {
+            setState("error",
+                     signature.isValidUtf8() ? "invalid_keyring" : "invalid_signature_json");
+            return;
+        }
         const auto verification = fromRust(xdzip::updates::verify_manifest(
             rust::Slice<const uint8_t>(reinterpret_cast<const uint8_t *>(m_manifest.constData()),
                                        size_t(m_manifest.size())),
@@ -438,6 +449,8 @@ void UpdateController::download() {
     beginDownload(false);
 }
 void UpdateController::downloadAndInstall() {
+    if (busy())
+        return;
     if (!canInstall()) {
         openReleasePage();
         return;
@@ -752,9 +765,11 @@ void UpdateController::cancel() {
 }
 void UpdateController::openReleasePage() {
     const auto url = QUrl(m_candidate.value("release_url").toString());
-    if (url.scheme() == "https" && url.host() == "github.com" &&
+    if (allowedUrl(url) && url.host() == "github.com" &&
         url.path().startsWith("/xiaodaozhi/xdzip/releases/tag/"))
         QDesktopServices::openUrl(url);
+    else
+        QDesktopServices::openUrl(QUrl("https://github.com/xiaodaozhi/xdzip/releases"));
 }
 void UpdateController::openDownloadFolder() {
     if (downloaded())

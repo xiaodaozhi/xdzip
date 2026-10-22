@@ -344,6 +344,39 @@ pub(super) struct Parent {
     fd: File,
     environment: BTreeMap<String, String>,
 }
+fn desktop_environment(bytes: &[u8]) -> BTreeMap<String, String> {
+    let mut environment = BTreeMap::new();
+    for entry in bytes.split(|byte| *byte == 0) {
+        if let Some((name, value)) = std::str::from_utf8(entry)
+            .ok()
+            .and_then(|text| text.split_once('='))
+            && [
+                "DISPLAY",
+                "XAUTHORITY",
+                "DBUS_SESSION_BUS_ADDRESS",
+                "XDG_RUNTIME_DIR",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_CACHE_HOME",
+                "XDG_STATE_HOME",
+                "XDG_CONFIG_DIRS",
+                "XDG_DATA_DIRS",
+                "XDG_CURRENT_DESKTOP",
+                "LANG",
+                "LANGUAGE",
+                "LC_ALL",
+                "LC_MESSAGES",
+                "LC_CTYPE",
+                "LC_TIME",
+            ]
+            .contains(&name)
+            && value.len() <= 4096
+        {
+            environment.insert(name.into(), value.into());
+        }
+    }
+    environment
+}
 impl Parent {
     pub(super) fn open(job: &Job, request: &Request) -> Result<Self> {
         // SAFETY: pidfd captures a process object and prevents a reused numeric PID from
@@ -364,24 +397,7 @@ impl Parent {
             File::open(proc.join("environ")).map_err(|_| "parent_identity")?,
             128 * 1024,
         )?;
-        let mut environment = BTreeMap::new();
-        for entry in bytes.split(|byte| *byte == 0) {
-            if let Some((name, value)) = std::str::from_utf8(entry)
-                .ok()
-                .and_then(|text| text.split_once('='))
-                && [
-                    "DISPLAY",
-                    "XAUTHORITY",
-                    "DBUS_SESSION_BUS_ADDRESS",
-                    "XDG_RUNTIME_DIR",
-                    "LANG",
-                ]
-                .contains(&name)
-                && value.len() <= 4096
-            {
-                environment.insert(name.into(), value.into());
-            }
-        }
+        let environment = desktop_environment(&bytes);
         let value = Self { fd, environment };
         if value.exited()? {
             return Err("parent_missing");
@@ -613,6 +629,26 @@ pub(super) fn restart(job: &Job, _request: &Request, parent: &Parent) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn restart_preserves_user_configuration_without_loader_overrides() {
+        let environment = desktop_environment(
+            b"XDG_CONFIG_HOME=/owned/config\0XDG_DATA_HOME=/owned/data\0\
+              XDG_CACHE_HOME=/owned/cache\0XDG_STATE_HOME=/owned/state\0\
+              LC_ALL=zh_CN.UTF-8\0DISPLAY=:9\0LD_PRELOAD=/untrusted/loader.so\0\
+              QT_PLUGIN_PATH=/untrusted/plugins\0XDZIP_SETTINGS_PATH=/test-only.ini\0",
+        );
+        assert_eq!(environment["XDG_CONFIG_HOME"], "/owned/config");
+        assert_eq!(environment["XDG_DATA_HOME"], "/owned/data");
+        assert_eq!(environment["XDG_CACHE_HOME"], "/owned/cache");
+        assert_eq!(environment["XDG_STATE_HOME"], "/owned/state");
+        assert_eq!(environment["LC_ALL"], "zh_CN.UTF-8");
+        assert_eq!(environment["DISPLAY"], ":9");
+        assert!(!environment.contains_key("LD_PRELOAD"));
+        assert!(!environment.contains_key("QT_PLUGIN_PATH"));
+        assert!(!environment.contains_key("XDZIP_SETTINGS_PATH"));
+        let oversized = format!("XDG_CONFIG_HOME={}", "x".repeat(4097));
+        assert!(desktop_environment(oversized.as_bytes()).is_empty());
+    }
     fn fixture() -> PathBuf {
         let path = std::env::temp_dir().join(format!(
             "xdzip-linux-job-{}-{}",

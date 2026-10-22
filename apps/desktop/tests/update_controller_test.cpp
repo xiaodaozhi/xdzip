@@ -8,6 +8,7 @@
 #ifdef Q_OS_MACOS
 #include "MacUpdateProvider.h"
 #endif
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -17,6 +18,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
+#include <QScopeGuard>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QtTest>
@@ -136,6 +138,13 @@ void configure(Network &network, bool signedManifest = true) {
 class UpdateControllerTest final : public QObject {
     Q_OBJECT
     QTemporaryDir m_profile;
+    QList<QUrl> m_openedUrls;
+
+  public:
+    Q_INVOKABLE void recordUrl(const QUrl &url) {
+        m_openedUrls.append(url);
+    }
+
   private slots:
 #ifdef Q_OS_MACOS
     void nativeDriverCancellationAndOneShotCommit() {
@@ -302,6 +311,34 @@ class UpdateControllerTest final : public QObject {
         QVERIFY(!updates.canInstall());
         QCOMPARE(network.requests.size(), 3);
     }
+    void malformedUtf8IsRejectedBeforeEnteringRust_data() {
+        QTest::addColumn<QString>("source");
+        QTest::addColumn<QString>("errorCode");
+        QTest::newRow("manifest") << QStringLiteral("manifest")
+                                  << QStringLiteral("invalid_manifest_json");
+        QTest::newRow("signature")
+            << QStringLiteral("signature") << QStringLiteral("invalid_signature_json");
+        QTest::newRow("trust") << QStringLiteral("trust") << QStringLiteral("invalid_keyring");
+    }
+    void malformedUtf8IsRejectedBeforeEnteringRust() {
+        QFETCH(QString, source);
+        QFETCH(QString, errorCode);
+        Network network;
+        configure(network);
+        const auto invalid = QByteArray::fromHex("ff");
+        if (source == "manifest")
+            network.responses[base + "release.json"].bytes = invalid;
+        if (source == "signature")
+            network.responses[base + "release.json.sig"].bytes = invalid;
+        UpdateController updates(nullptr, &network,
+                                 source == "trust" ? invalid : fixture("network-trust.json"), {},
+                                 [] { return true; });
+        updates.check();
+        QTRY_COMPARE(updates.state(), QStringLiteral("error"));
+        QCOMPARE(updates.errorCode(), errorCode);
+        QVERIFY(!updates.trusted());
+        QCOMPARE(network.requests.size(), source == "manifest" ? 2 : 3);
+    }
     void rateLimitIsNotCurrentVersion() {
         Network network;
         network.responses.insert(api, {{}, 429});
@@ -320,6 +357,32 @@ class UpdateControllerTest final : public QObject {
         updates.check();
         QCOMPARE(network.requests.size(), 1);
         QTRY_COMPARE(updates.state(), QStringLiteral("available"));
+        QCOMPARE(network.requests.size(), 3);
+    }
+    void unavailableCandidateKeepsManualRecoveryLink() {
+        Network network;
+        UpdateController updates(nullptr, &network);
+        m_openedUrls.clear();
+        QDesktopServices::setUrlHandler("https", this, "recordUrl");
+        const auto restore = qScopeGuard([] { QDesktopServices::unsetUrlHandler("https"); });
+        updates.openReleasePage();
+        QCOMPARE(m_openedUrls, QList<QUrl>{QUrl("https://github.com/xiaodaozhi/xdzip/releases")});
+    }
+    void repeatedInstallWhilePreparingDoesNotOpenManualFallback() {
+        Network network;
+        configure(network);
+        UpdateController updates(nullptr, &network, fixture("network-trust.json"), {},
+                                 [] { return true; });
+        updates.check();
+        QTRY_COMPARE(updates.state(), QStringLiteral("available"));
+        m_openedUrls.clear();
+        QDesktopServices::setUrlHandler("https", this, "recordUrl");
+        const auto restore = qScopeGuard([] { QDesktopServices::unsetUrlHandler("https"); });
+        updates.reportNativeProgress(QStringLiteral("preparing"), -1);
+        updates.downloadAndInstall();
+        updates.downloadAndInstall();
+        QCOMPARE(updates.state(), QStringLiteral("preparing"));
+        QVERIFY(m_openedUrls.isEmpty());
         QCOMPARE(network.requests.size(), 3);
     }
     void redirectToUntrustedHostIsRejected() {
@@ -383,13 +446,38 @@ class UpdateControllerTest final : public QObject {
         QCOMPARE(updates.errorCode(), QStringLiteral("cache"));
         QCOMPARE(network.requests.size(), 3);
     }
-    void tlsFailureIsNotCurrentVersion() {
+    void networkFailureIsNotCurrentVersion_data() {
+        QTest::addColumn<int>("networkError");
+        QTest::addColumn<QString>("errorCode");
+        QTest::newRow("offline") << int(QNetworkReply::HostNotFoundError)
+                                 << QStringLiteral("network");
+        QTest::newRow("timeout") << int(QNetworkReply::TimeoutError) << QStringLiteral("timeout");
+        QTest::newRow("tls") << int(QNetworkReply::SslHandshakeFailedError)
+                             << QStringLiteral("tls");
+    }
+    void networkFailureIsNotCurrentVersion() {
+        QFETCH(int, networkError);
+        QFETCH(QString, errorCode);
         Network network;
-        network.responses.insert(api, {{}, 0, QNetworkReply::SslHandshakeFailedError});
+        network.responses.insert(api, {{}, 0, QNetworkReply::NetworkError(networkError)});
         UpdateController updates(nullptr, &network, {}, {}, [] { return true; });
         updates.check();
         QTRY_COMPARE(updates.state(), QStringLiteral("error"));
-        QCOMPARE(updates.errorCode(), QStringLiteral("tls"));
+        QCOMPARE(updates.errorCode(), errorCode);
+        QVERIFY(!updates.busy());
+        QVERIFY(!updates.canInstall());
+    }
+    void metadataDeadlineStopsUnresponsiveServer() {
+        Network network;
+        network.responses.insert(api, {{}, 200, QNetworkReply::NoError, 60000});
+        UpdateController updates(nullptr, &network, {}, {}, [] { return true; });
+        updates.check();
+        // Exercise the real production deadline without shortening its timer.
+        QTRY_COMPARE_WITH_TIMEOUT(updates.state(), QStringLiteral("error"), 32000);
+        QCOMPARE(updates.errorCode(), QStringLiteral("timeout"));
+        QCOMPARE(network.requests.size(), 1);
+        QVERIFY(!updates.busy());
+        QVERIFY(!updates.canInstall());
     }
     void cancellationRejectsLateReplies() {
         Network network;

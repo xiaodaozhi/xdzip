@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 from deployment_audit import digest, within
-from installer_payload import verify_payload
+from installer_payload import historical_qa_identity, historical_qa_revision, verify_payload
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -38,25 +38,33 @@ def debian_version(identity, qa=None, legacy=False):
     return version
 
 
-def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False):
+def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historical_revision=None):
     if failure and (qa != '2' or failure != 'postinst-once'):
         raise ValueError('Failure injection is limited to QA variant 2')
     if audit['status']!='passed' or audit['platform']!='linux' or audit['mode']!='deployed':
         raise ValueError('Installer requires independently deployed Linux audit')
     if audit['identity']['dirty']:raise ValueError('Installer requires a clean build identity')
     identity=audit['identity'];revision=identity['revision']
+    historical_record=None
+    helper=payload/'bin/xdzip-update-helper'
+    if historical_revision is not None:
+        if not legacy or qa is not None or failure is not None:
+            raise ValueError('Historical helper omission requires only the pinned legacy version fixture')
+        historical_record=historical_qa_identity(historical_revision,identity)
+        if helper.exists() or helper.is_symlink():
+            raise ValueError('Pinned historical source must not be supplied a newer update helper')
+    elif not helper.is_file() or helper.is_symlink():
+        raise ValueError('Debian package requires the audited standalone update helper')
     version=debian_version(identity,qa,legacy)
     verify_payload(payload,audit)
     app_hash=digest(payload/'bin/xdzip');runtime_id=revision+'-'+app_hash[:12]+('-qa'+qa if qa else '')
     if stage.exists():raise ValueError('Refusing existing package stage')
     runtime=stage/'opt/xdzip/versions'/runtime_id
     shutil.copytree(payload,runtime)
-    helper=payload/'bin/xdzip-update-helper'
-    if not helper.is_file() or helper.is_symlink():
-        raise ValueError('Debian package requires the audited standalone update helper')
-    libexec=stage/'usr/libexec';libexec.mkdir(parents=True)
-    shutil.copy2(helper,libexec/'xdzip-update-helper')
-    (libexec/'xdzip-update-helper').chmod(0o755)
+    if historical_record is None:
+        libexec=stage/'usr/libexec';libexec.mkdir(parents=True)
+        shutil.copy2(helper,libexec/'xdzip-update-helper')
+        (libexec/'xdzip-update-helper').chmod(0o755)
     (runtime/'share/xdzip-install.json').write_text(json.dumps({
         'schema_version':1,'product':'xdzip','package_type':'deb',
         'version':identity['version'],'build':identity['build'],'revision':revision,
@@ -65,8 +73,9 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False):
     launcher=bindir/'xdzip'
     launcher.write_text('#!/bin/sh\nexec "/opt/xdzip/versions/'+runtime_id+'/xdzip" "$@"\n');launcher.chmod(0o755)
     share=stage/'usr/share';(share/'applications').mkdir(parents=True)
-    policy=share/'polkit-1/actions';policy.mkdir(parents=True)
-    shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
+    if historical_record is None:
+        policy=share/'polkit-1/actions';policy.mkdir(parents=True)
+        shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
     desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
@@ -97,7 +106,9 @@ rm -f /run/xdzip/qa-postinst-failed
         path.chmod(0o755)
     doc=share/'doc/xdzip';doc.mkdir(parents=True)
     shutil.copy2(ROOT/'LICENSE',doc/'copyright')
-    return {'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None or legacy,'failure_injection':failure,'legacy_version':legacy}
+    result={'version':version,'runtime_id':runtime_id,'executable_sha256':app_hash,'qa_fixture':qa is not None or legacy,'failure_injection':failure,'legacy_version':legacy}
+    if historical_record is not None:result['historical_product_qa']=historical_record
+    return result
 
 
 def main():
@@ -107,10 +118,15 @@ def main():
     parser.add_argument('--qa-variant',choices=['1','2'])
     parser.add_argument('--qa-failure',choices=['postinst-once'])
     parser.add_argument('--qa-legacy-version',action='store_true',help='CI-only original version mapping for the pinned historical installer')
+    parser.add_argument('--qa-historical-revision',help='CI-only fixed historical source without an update helper')
     args=parser.parse_args();stage=staging_directory(args.output)
     if args.qa_legacy_version and os.environ.get('CI')!='true':parser.error('Historical versions are restricted to disposable CI fixtures')
+    if args.qa_historical_revision is not None:
+        try:historical_qa_revision(args.qa_historical_revision)
+        except ValueError as error:parser.error(str(error))
+        if not args.qa_legacy_version or args.qa_variant or args.qa_failure:parser.error('Historical helper omission requires only the pinned legacy version fixture')
     if not within(args.output,ROOT/'build'):parser.error('Generated installer belongs under build/')
-    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure,args.qa_legacy_version)
+    result=package_tree(args.root,json.loads(args.audit.read_text(encoding='utf-8')),stage,args.qa_variant,args.qa_failure,args.qa_legacy_version,args.qa_historical_revision)
     subprocess.run(['dpkg-deb','--root-owner-group','--build',str(stage),str(args.output)],check=True)
     result.update(file=args.output.name,sha256=digest(args.output),baseline='Ubuntu 24.04 amd64 X11',signed=False)
     args.report.write_text(json.dumps(result,indent=2)+'\n')

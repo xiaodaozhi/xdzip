@@ -78,6 +78,8 @@ Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使
 
 构建后 CLI 身份必须匹配快照自身的固定 SHA，回执另记原始来源身份，不能伪装成原发布二进制。设置组件另以三份原始小型源码作为持久测试输入，逐文件哈希固定，双向读写及未来 schema 拒写不依赖网络或历史 commit。不要随当前实现修改这些回归输入；需要新基线时另行评审并保留来源。
 
+该冻结快照早于独立更新助手，不含助手源码或二进制。只有 `prepare-previous-product.py` 为它传入 `--qa-historical-revision`：部署／打包脚本要求一次性 CI、完整固定 SHA 和实际干净产品身份同时匹配；Linux 还要求历史版本模式，禁止与当前 QA 变体混用。Windows 直接执行旧产品的版本命令核对身份，Linux 使用独立部署审计的身份与完整文件哈希。回执明确记录历史源码不含助手，不注入当前助手，也不为不存在的 Linux 助手安装 polkit 授权。普通产品和当前 QA 变体仍必须交付并核验独立助手；已有 `--qa-legacy-version` 本身不允许缺少助手。
+
 ## Debian 版本迁移
 
 首个公开预发布开始使用 Debian epoch 1，包版本为 `1:语义版本映射+git提交`，例如 `1:0.1.0~alpha.1+git...`。历史 `0.1.0~dev.9` 按 dpkg 规则会排在无 epoch 的 alpha.1 之后，不能直接沿用旧映射。epoch 只用于系统包排序，产品界面、版本标签和 release.json 仍使用原语义版本，后续 Debian 包保持 epoch 1，alpha、beta、rc、stable 的顺序继续由上游版本表达，规则见 [Debian Policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version)。

@@ -9,9 +9,10 @@ import subprocess
 import sys
 from deployment_audit import digest, within
 from desktop_product import built_product
+from installer_payload import HISTORICAL_PRODUCT_REVISION
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = '286fe9239a1d2d0d5a599f59953c502fb37a58a0'
+BASELINE = HISTORICAL_PRODUCT_REVISION
 ORIGINAL_BASELINE = '4cf0f8ca44bac3c0deaadbdaf5594504c5a6afa6'
 
 
@@ -50,7 +51,8 @@ def main():
         shutil.copy2(source/'design/assets/brand/xdzip-zip.ico', runtime/'xdzip-zip.ico')
         run([sys.executable, ROOT/'scripts/deploy_windows.py', '--root', runtime,
              '--qt-prefix', qt, '--qml-dir', source/'apps/desktop/ui',
-             '--qml-import', build/'qml', '--runtime', ROOT/'build/windows-runtime/runtime'])
+             '--qml-import', build/'qml', '--runtime', ROOT/'build/windows-runtime/runtime',
+             '--qa-historical-revision', BASELINE])
         shutil.copytree(args.notices, runtime/'share/notices', dirs_exist_ok=True)
         executable = runtime/'xdzip.exe'
     else:
@@ -77,9 +79,10 @@ def main():
     else:
         package = output/'previous.deb'
         run([sys.executable, ROOT/'scripts/build-linux-installer.py', '--root', runtime, '--audit', audit,
-             '--output', package, '--report', report, '--qa-legacy-version'])
+             '--output', package, '--report', report, '--qa-legacy-version', '--qa-historical-revision', BASELINE])
     provenance = {'revision': BASELINE, 'original_source_revision': ORIGINAL_BASELINE, 'executable_sha256': digest(executable), 'installer_sha256': digest(package),
-                  'identity': record['identity'], 'scope': 'Historical product sources preserved in a single-commit fixture and rebuilt with the current SDK, QA only; not an original signed release artifact.'}
+                  'identity': record['identity'], 'update_helper_in_historical_source': False,
+                  'scope': 'Historical product sources preserved in a single-commit fixture and rebuilt with the current SDK, QA only; not an original signed release artifact.'}
     (output/'previous-product.json').write_text(json.dumps(provenance, indent=2)+'\n')
     log.close()
     print('Pinned full historical product rebuilt and packaged for CI upgrade/rollback')

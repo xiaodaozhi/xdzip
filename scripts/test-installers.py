@@ -16,6 +16,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from deployment_audit import digest
+from installer_payload import HISTORICAL_PRODUCT_REVISION
 
 ROOT=Path(__file__).resolve().parents[1]
 def module(name):
@@ -58,6 +59,32 @@ class InstallerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode,0)
             self.assertIn('restricted to disposable CI',result.stderr)
             self.assertFalse((base/'old.deb').exists())
+
+    def test_historical_helper_cli_rejects_unpinned_or_non_ci_requests_before_native_tools(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp)
+            commands=[
+                [str(ROOT/'scripts/deploy_windows.py'),'--root',str(base/'payload'),
+                 '--qt-prefix',str(base/'qt'),'--qml-dir',str(base/'qml'),
+                 '--qml-import',str(base/'imports'),'--runtime',str(base/'crt')],
+                [str(ROOT/'scripts/build-linux-installer.py'),'--root',str(base/'payload'),
+                 '--audit',str(base/'audit.json'),'--output',str(base/'old.deb'),'--report',str(base/'old.json')]]
+            for command in commands:
+                for ci,pin,expected in [('',HISTORICAL_PRODUCT_REVISION,'disposable CI'),
+                                        ('true','a'*40,'fixed full revision'),
+                                        ('true',HISTORICAL_PRODUCT_REVISION[:12],'fixed full revision')]:
+                    with self.subTest(script=Path(command[0]).name,ci=ci,pin=pin):
+                        result=subprocess.run([sys.executable,*command,'--qa-historical-revision',pin],
+                            env=dict(os.environ,CI=ci),capture_output=True,text=True)
+                        self.assertNotEqual(result.returncode,0)
+                        self.assertIn(expected,result.stderr)
+            for options in [[],['--qa-legacy-version','--qa-variant','1']]:
+                result=subprocess.run([sys.executable,*commands[1],'--qa-historical-revision',HISTORICAL_PRODUCT_REVISION,*options],
+                    env=dict(os.environ,CI='true'),capture_output=True,text=True)
+                self.assertNotEqual(result.returncode,0)
+                self.assertIn('only the pinned legacy version fixture',result.stderr)
+            self.assertEqual(list(base.iterdir()),[])
+
     def test_debian_epoch_preserves_upgrade_from_historical_development(self):
         previous=dict(version='0.1.0-dev.9',revision='a'*12)
         current=dict(version='0.1.0-alpha.1',revision='b'*12)
@@ -89,6 +116,51 @@ class InstallerTests(unittest.TestCase):
         audit={'status':'passed','platform':platform,'mode':'deployed','identity':{'version':'0.1.0-dev.1','build':1,'revision':'a'*12,'dirty':False},
                'files':[{'path':p.relative_to(root).as_posix(),'sha256':digest(p)} for p in root.rglob('*') if p.is_file()]}
         return root,audit
+
+    def test_linux_missing_helper_is_only_valid_for_the_exact_historical_fixture(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp);root,audit=self.payload(base,'linux');pin=HISTORICAL_PRODUCT_REVISION
+            (root/'bin/xdzip-update-helper').unlink()
+            audit['files']=[item for item in audit['files'] if item['path']!='bin/xdzip-update-helper']
+            audit['identity']['revision']=pin[:12]
+            stage=base/'stage'
+            with patch.dict(os.environ,{'CI':'true'}):
+                for options in [{},{'legacy':True},{'qa':'1'},{'qa':'2'}]:
+                    with self.subTest(options=options):
+                        with self.assertRaisesRegex(ValueError,'requires the audited standalone'):
+                            linux.package_tree(root,audit,stage,**options)
+                        self.assertFalse(stage.exists())
+                for options in [{'historical_revision':pin},
+                                {'legacy':True,'historical_revision':pin,'qa':'1'},
+                                {'legacy':True,'historical_revision':pin[:12]},
+                                {'legacy':True,'historical_revision':'b'*40}]:
+                    with self.subTest(options=options):
+                        with self.assertRaisesRegex(ValueError,'Historical helper omission'):
+                            linux.package_tree(root,audit,stage,**options)
+                        self.assertFalse(stage.exists())
+                for field,value in [('revision','b'*12),('version','0.1.0-alpha.1'),('build',2),('dirty',True)]:
+                    invalid=copy.deepcopy(audit);invalid['identity'][field]=value
+                    with self.subTest(field=field):
+                        with self.assertRaisesRegex(ValueError,'pinned clean|clean build'):
+                            linux.package_tree(root,invalid,stage,legacy=True,historical_revision=pin)
+                        self.assertFalse(stage.exists())
+                result=linux.package_tree(root,audit,stage,legacy=True,historical_revision=pin)
+                self.assertTrue(result['qa_fixture'])
+                self.assertFalse(result['version'].startswith('1:'))
+                self.assertEqual(result['historical_product_qa']['revision'],pin)
+                self.assertIs(result['historical_product_qa']['update_helper_in_historical_source'],False)
+                self.assertFalse((stage/'usr/libexec/xdzip-update-helper').exists())
+                self.assertFalse((stage/'usr/share/polkit-1/actions/org.xdzip.update.policy').exists())
+                self.assertFalse(any((stage/'opt/xdzip/versions').glob('*/bin/xdzip-update-helper')))
+            with patch.dict(os.environ,{'CI':'false'}):
+                with self.assertRaisesRegex(ValueError,'disposable CI'):
+                    linux.package_tree(root,audit,base/'not-ci',legacy=True,historical_revision=pin)
+                self.assertFalse((base/'not-ci').exists())
+            (root/'bin/xdzip-update-helper').write_bytes(b'new helper added to old source')
+            with patch.dict(os.environ,{'CI':'true'}):
+                with self.assertRaisesRegex(ValueError,'must not be supplied a newer'):
+                    linux.package_tree(root,audit,base/'injected',legacy=True,historical_revision=pin)
+                self.assertFalse((base/'injected').exists())
 
     def test_linux_has_dependencies_literal_argument_and_no_default_takeover(self):
         with tempfile.TemporaryDirectory() as temp:

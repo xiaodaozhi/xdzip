@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from deployment_audit import ROOT, digest, run, windows_imports, within
+from installer_payload import historical_qa_identity, historical_qa_revision
 from native_runtime_materials import configuration
 
 STYLES = ('FluentWinUI3', 'Fusion', 'Imagine', 'Material', 'Universal', 'Windows')
@@ -28,6 +29,25 @@ def standalone_update_helper(path):
                           not name.lower().startswith(('api-ms-win-','ext-ms-win-')) for name in imports):
         raise ValueError('Update helper must use static CRT and Windows system imports only')
     return imports
+
+
+def update_helper_deployment(root, historical_revision=None):
+    helper = root/'xdzip-update-helper.exe'
+    if historical_revision is not None:
+        historical_qa_revision(historical_revision)
+        if helper.exists() or helper.is_symlink():
+            raise ValueError('Pinned historical source must not be supplied a newer update helper')
+        cli = run(str((root/'xdzip.exe').resolve()), '--version').strip()
+        expected = f'xdzip 0.1.0-dev.1 (build 1, {historical_revision[:12]})'
+        if cli != expected:
+            raise ValueError('Historical helper omission requires the pinned clean product identity')
+        record = historical_qa_identity(historical_revision, {
+            'version': '0.1.0-dev.1', 'build': 1,
+            'revision': historical_revision[:12], 'dirty': False})
+        return {'update_helper_imports': None, 'historical_product_qa': record}
+    if not helper.is_file() or helper.is_symlink():
+        raise ValueError('Windows deployment requires the standalone update helper')
+    return {'update_helper_imports': standalone_update_helper(helper)}
 
 
 def prune(root):
@@ -117,7 +137,13 @@ def main():
     parser.add_argument('--qml-dir', type=Path, required=True)
     parser.add_argument('--qml-import', type=Path, required=True)
     parser.add_argument('--runtime', type=Path, required=True)
+    parser.add_argument('--qa-historical-revision', help='CI-only fixed historical source without an update helper')
     args = parser.parse_args()
+    if args.qa_historical_revision is not None:
+        try:
+            historical_qa_revision(args.qa_historical_revision)
+        except ValueError as error:
+            parser.error(str(error))
     root = args.root.resolve()
     if not within(root, ROOT/'build') or root == ROOT/'build' or not (root/'xdzip.exe').is_file():
         parser.error('Use an application staging directory under build/')
@@ -130,16 +156,16 @@ def main():
     sdk = Path(os.environ.get('WindowsSdkDir', ''))
     sdk_version = os.environ.get('WindowsSDKVersion', '').strip('\\/')
     copy_graphics(args.qt_prefix.resolve(), sdk.resolve(), sdk_version, root)
-    required = FALLBACKS + ('xdzip-update-helper.exe', 'styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
+    required = FALLBACKS + ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):
         raise ValueError('Required Basic/native/translation/graphics runtime missing')
-    helper_imports=standalone_update_helper(root/'xdzip-update-helper.exe')
+    helper_record = update_helper_deployment(root, args.qa_historical_revision)
     (root/'share/deployment.json').write_text(json.dumps({
         'schema_version': 1, 'quick_style': 'Basic', 'removed': removed,
         'graphics_fallbacks': list(FALLBACKS), 'vc_runtime': 'app-local',
         'vc_runtime_config_sha256': digest(ROOT/'scripts/windows-runtime.json'),
-        'update_helper_imports':helper_imports}, indent=2)+'\n')
+        **helper_record}, indent=2)+'\n')
     print(f'Windows runtime deployed, {len(removed)} redundant files removed; graphics retained')
 
 
