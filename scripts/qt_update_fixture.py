@@ -21,6 +21,46 @@ def load(path, name):
     return module
 
 
+def windows_copy_pause(text, payload, session):
+    """Pause the owned new installer after its EXE, before the remaining Qt payload."""
+    original='Source: "'+str(payload)+'\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'
+    if text.count(original)!=1:
+        raise RuntimeError('Owned installer no longer has the expected root payload entry')
+    replacement=('Source: "'+str(payload)+'\\xdzip.exe"; DestDir: "{app}"; Flags: ignoreversion; AfterInstall: OwnedPauseAfterExe\n'
+                 +original+'; Excludes: "xdzip.exe"; BeforeInstall: OwnedRemainingFiles')
+    def literal(value):return "'"+str(value).replace("'","''")+"'"
+    return text.replace(original,replacement,1)+'''
+function OwnedInstallerPid(): LongWord;
+external 'GetCurrentProcessId@kernel32.dll stdcall';
+
+procedure OwnedPauseAfterExe();
+var I: Integer;
+begin
+  { This private entry has replaced xdzip.exe; no remaining payload entry ran. }
+  if not SaveStringToFile('''+literal(session/'installer-copy-paused.json.tmp')+''',
+    '{"schema_version":1,"stage":"after_xdzip_before_remaining_files","qt_sdk":"6.8.2","installer_pid":' +
+    IntToStr(OwnedInstallerPid()) + '}', False) then
+    RaiseException('Owned installer pause marker could not be written');
+  if not RenameFile('''+literal(session/'installer-copy-paused.json.tmp')+''',
+    '''+literal(session/'installer-copy-paused.json')+''') then
+    RaiseException('Owned installer pause marker could not be published');
+  for I := 1 to 1200 do begin
+    if FileExists('''+literal(session/'installer-copy-release.json')+''') then exit;
+    Sleep(50);
+  end;
+  RaiseException('Owned installer copy pause timed out');
+end;
+
+procedure OwnedRemainingFiles();
+begin
+  if not FileExists('''+literal(session/'installer-copy-resumed.json')+''') then
+    if not SaveStringToFile('''+literal(session/'installer-copy-resumed.json')+''',
+      '{"stage":"remaining_payload_started"}', False) then
+      RaiseException('Owned remaining-copy marker could not be written');
+end;
+'''
+
+
 def prepare(output, sdk, session):
     if os.environ.get('XDZIP_ISOLATED_UPDATE_FIXTURE')!='1':
         raise RuntimeError('Private Qt fixture requires explicit isolated regression build')
@@ -58,6 +98,10 @@ def prepare(output, sdk, session):
         raise RuntimeError('Private Qt build requires Cargo and CMake on the build environment PATH')
     for name in ('XDZIP_UPDATE_SIGNING_KEY_HEX','XDZIP_SPARKLE_SIGNING_KEY_HEX','CARGO_ENCODED_RUSTFLAGS','RUSTFLAGS'):
         env.pop(name,None)
+    qt_version=subprocess.check_output([str(sdk/('bin/qmake.exe' if sys.platform=='win32' else 'bin/qmake')),
+                                        '-query','QT_VERSION'],env=env,text=True).strip()
+    if qt_version!='6.8.2':
+        raise RuntimeError('The native update regression requires the declared Qt SDK 6.8.2')
     results={}
     with (output/'prepare.log').open('w',encoding='utf-8') as log:
         def checked(argv,**kwargs):
@@ -118,6 +162,7 @@ def prepare(output, sdk, session):
                 package=asset/('xdzip-'+version+'-windows-x86_64-setup.exe')
                 text,_=builder.render(payload,audit,package,ROOT/'build/installer-toolchain/ChineseSimplified.isl')
                 package.with_suffix('.files').write_text(builder.payload_manifest(audit),encoding='utf-8')
+                if number==2:text=windows_copy_pause(text,payload,session)
                 package.with_suffix('.iss').write_text(qa_installer_text(text),encoding='utf-8-sig')
                 checked([ROOT/'build/installer-toolchain/compiler/ISCC.exe',package.with_suffix('.iss')])
             else:
@@ -137,7 +182,8 @@ def prepare(output, sdk, session):
         new=output/'new'/results['new']['package']
         manifest(new,'windows' if sys.platform=='win32' else 'linux',signer,results['new']['identity'])
     value={'schema_version':1,'scope':'Private real browser_main/QML builds with public fixture trust; not product packages',
-           'production_trust_modified':False,'session_directory':str(session),**results}
+           'production_trust_modified':False,'session_directory':str(session),
+           'qt_sdk_version':qt_version,'windows_copy_pause':sys.platform=='win32',**results}
     dump(output/'prepared.json',value)
     password_fixture=ROOT/'tests/fixtures/extract/password-retry.zip'
     assert digest(password_fixture)=='cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41'

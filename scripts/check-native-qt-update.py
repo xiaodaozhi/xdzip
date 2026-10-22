@@ -15,11 +15,14 @@ from qt_update_fixture import prepare, feed, verify_restart, load
 from update_fixture import dump, run, await_file
 
 
-def await_restart(session, timeout=240):
+def await_restart(session, timeout=240, copy_probe=None):
     deadline=time.monotonic()+timeout
     while time.monotonic()<deadline:
         if (session/'fixture-error.json').is_file():
             raise RuntimeError((session/'fixture-error.json').read_text())
+        if copy_probe and (session/'installer-copy-paused.json').is_file():
+            copy_probe(json.loads((session/'installer-copy-paused.json').read_text()))
+            copy_probe=None
         for name in ('200-state.json','201-state.json'):
             path=session/name
             if path.is_file():
@@ -30,6 +33,88 @@ def await_restart(session, timeout=240):
             return json.loads((session/'201-started.json').read_text())
         time.sleep(.1)
     raise TimeoutError('Real Qt update/restart did not finish')
+
+
+def windows_copy_probe(session, executable, launch, log, prepared, pause):
+    """Launch the real Qt EXE while the owned Inno installer holds its copy pause."""
+    import ctypes
+    from ctypes import wintypes
+    kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+    user=ctypes.WinDLL('user32',use_last_error=True)
+    kernel.OpenProcess.restype=wintypes.HANDLE
+    kernel.OpenProcess.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.DWORD]
+    kernel.OpenMutexW.restype=wintypes.HANDLE
+    kernel.OpenMutexW.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.LPCWSTR]
+    kernel.WaitForSingleObject.argtypes=[wintypes.HANDLE,wintypes.DWORD]
+    kernel.CloseHandle.argtypes=[wintypes.HANDLE]
+    callback_type=ctypes.WINFUNCTYPE(wintypes.BOOL,wintypes.HWND,wintypes.LPARAM)
+    user.EnumWindows.argtypes=[callback_type,wintypes.LPARAM]
+    user.IsWindowVisible.argtypes=[wintypes.HWND]
+    user.GetWindowThreadProcessId.argtypes=[wintypes.HWND,ctypes.POINTER(wintypes.DWORD)]
+    record={'status':'failed','stage':'after_xdzip_before_remaining_files','qt_sdk':'6.8.2'}
+    installer=None;gate=None;probe=None;identity_process=None
+    try:
+        assert pause['schema_version']==1 and pause['stage']==record['stage'] and pause['qt_sdk']=='6.8.2',pause
+        assert prepared['qt_sdk_version']=='6.8.2'
+        assert not (session/'installer-copy-resumed.json').exists()
+        assert not (session/'201-started.json').exists() and not (session/'201-state.json').exists()
+        installer=kernel.OpenProcess(0x100000,False,pause['installer_pid'])
+        gate=kernel.OpenMutexW(0x100000,False,'Local\\xdzip.desktop.updating')
+        assert installer and gate and kernel.WaitForSingleObject(installer,0)==258
+        # Observing a named mutex must not keep the gate alive on behalf of the
+        # product. Only the genuine helper/Setup may retain it during launch.
+        kernel.CloseHandle(gate);gate=None
+        identity_process=launch([executable,'--version-json'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+        identity_bytes,_=identity_process.communicate(timeout=15)
+        assert identity_process.returncode==0,identity_bytes
+        identity=json.loads(identity_bytes)
+        expected=prepared['new']['identity']
+        assert all(identity[key]==expected[key] for key in ('version','build','revision','dirty')),identity
+        assert not (session/'installer-copy-resumed.json').exists()
+        visible=set()
+        probe=launch([executable],stdout=log,stderr=subprocess.STDOUT)
+        record.update(installer_pid=pause['installer_pid'],probe_pid=probe.pid)
+        @callback_type
+        def observe(window,_):
+            pid=wintypes.DWORD()
+            user.GetWindowThreadProcessId(window,ctypes.byref(pid))
+            if pid.value==probe.pid and user.IsWindowVisible(window):visible.add(int(window))
+            return True
+        deadline=time.monotonic()+15
+        while probe.poll() is None and time.monotonic()<deadline:
+            assert user.EnumWindows(observe,0)
+            record['visible_window_count']=len(visible)
+            time.sleep(.005)
+        code=probe.wait(timeout=1)
+        record.update(installer_pid=pause['installer_pid'],probe_pid=probe.pid,exit_code=code,
+                      visible_window_count=len(visible),installed_executable=identity,
+                      installer_still_running=kernel.WaitForSingleObject(installer,0)==258,
+                      remaining_files_not_started=not (session/'installer-copy-resumed.json').exists(),
+                      fixture_sessions_not_started=not (session/'201-started.json').exists() and not (session/'201-state.json').exists())
+        assert code==11 and not visible,record
+        assert record['installer_still_running'] and record['remaining_files_not_started'] and record['fixture_sessions_not_started'],record
+        # Exit 11 is the real main's InstalledRuntimeGuard rejection, before
+        # constructing ApplicationSessions/controllers or accepting archive work.
+        record.update(status='passed',runtime_guard_rejected_before_sessions=True,
+                      limits='Same Qt 6.8.2 payload; no atomic bundle or cross-Qt-version migration guarantee')
+        return record
+    except Exception as error:
+        record.update(error=type(error).__name__,detail=str(error))
+        raise
+    finally:
+        for owned in (probe,identity_process):
+            try:
+                if owned and owned.poll() is None:
+                    owned.terminate();owned.wait(timeout=10)
+            except Exception as error:
+                record.setdefault('cleanup_errors',[]).append(type(error).__name__)
+        if installer:kernel.CloseHandle(installer)
+        if gate:kernel.CloseHandle(gate)
+        try:dump(session/'installer-copy-probe.json',record)
+        finally:
+            # Always release this owned pause, including assertion failures, so
+            # its diagnostic cannot strand the disposable real installer.
+            dump(session/'installer-copy-release.json',{'owned':True})
 
 
 def wait_exit(pid, timeout=30):
@@ -81,7 +166,13 @@ def exercise(output, prepared, session, launch, executable, association_check, s
         stage='upgrade_and_restart'
         trigger=session/'upgrade.json';dump(trigger,{'owned':True})
         if sys.platform=='linux':os.chown(trigger,19731,19731)
-        new=await_restart(session)
+        copy_evidence={}
+        def copy_probe(pause):
+            copy_evidence.update(windows_copy_probe(session,executable,launch,log,prepared,pause))
+        new=await_restart(session,copy_probe=copy_probe if sys.platform=='win32' and prepared.get('windows_copy_pause') else None)
+        if sys.platform=='win32':
+            assert prepared.get('windows_copy_pause') and copy_evidence.get('status')=='passed'
+            assert json.loads((session/'installer-copy-resumed.json').read_text())['stage']=='remaining_payload_started'
         stage='verify_new_process'
         verify_restart(new,prepared)
         assert new['settings_path']==started['settings_path'] and new['home']==started['home'],new
@@ -129,9 +220,11 @@ def exercise(output, prepared, session, launch, executable, association_check, s
              'settings_preserved':True,'default_association_preserved':True,'single_instance_before_and_after':True,
              'duplicate_install_preserved_transaction':True,
              'real_password_check_wait_cancel_resume':bool(prepared.get('password_task')),
+             'installation_launch_probe':copy_evidence if sys.platform=='win32' else None,
              'association_scope':'Classic ProgID plus unchanged UserChoice' if sys.platform=='win32' else 'Custom XDG MIME default and GIO candidate',
              'limits':['Cancel waiting uses a direct controller call while the real password window is application-modal; About mouse input is never injected through the modal.' if prepared.get('password_task') else 'Busy/password scenarios are not part of this idle run.',
                        'Physical desktop, accessibility, normal quit cancellation and manual license/authorization acceptance are separate.',
+                       'The Windows copy-pause launch regression uses Qt 6.8.2 on both sides; it does not prove atomic bundle replacement or migration between Qt versions.',
                        'Windows Server CI uses a test-only minimum-system override; Windows 11 native acceptance remains separate.' if sys.platform=='win32' else 'Ubuntu minimum-system check is unchanged.']}
     except Exception as error:
         failure={'status':'failed','stage':stage,'error':type(error).__name__,'detail':str(error),

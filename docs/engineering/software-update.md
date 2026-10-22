@@ -48,6 +48,10 @@ A macOS-only diagnostic run may select only the full product chain. All-platform
 
 另有真实双会话组件回归：AES Check 等待密码时，实际退出窗口的“返回”保留原任务及密码令牌，“取消并退出”使同任务取消、密码请求清空，全部会话完成 Rust join 后只发出一次退出就绪信号，不触发更新交接。此回归不代替完整主程序在更新等待期间的普通退出及原生安装验收。
 
+Windows 私有安装回归在新 `xdzip.exe` 复制完成、其余文件尚未开始复制时暂停真实 Inno，核对新程序身份并再次启动真实 Qt 程序，要求启动门返回 11、没有可见窗口及新会话，再放行复制并完成原有升级验收。测试观察门时立即关闭自己的句柄，不能替安装器维持门的生命周期。新旧均为 Qt 6.8.2，此回归不建立原子应用包或跨 Qt 版本迁移保证，生产安装模板不添加暂停逻辑。
+
+The private Windows regression pauses real Inno after replacing `xdzip.exe` and before copying the remaining files, checks the new identity and starts the actual Qt program. It requires gate exit 11 without visible windows or new sessions before resuming and completing the existing upgrade checks. Observation handles are closed immediately so the test cannot prolong the gate's lifetime. Both sides use Qt 6.8.2; this does not establish atomic bundle replacement or migration between Qt versions. The production installer template contains no pause.
+
 Mac 单独命名的私有 Qt 应用使用真实关于页、双会话 join、Sparkle、签名 app.zip 和新 build 重启，覆盖 feed/归档篡改和取消；仅候选发现使用 loopback 替身，公开 GitHub 清单与渠道另外由更新核心和网络回归验证。测试密钥只在私有副本中注入，生产资源不改。只有实际运行产出的证据能登记为通过。
 
 Mac 另有完整产品链回归，以两份干净 Release 源码身份构建真实主程序，保留正式 bundle ID、安装标记和 Alternate 文档类型，安装到一次性 runner 的独有 Applications 路径。旧版通过真实关于页和更新控制器完成清单认证、Sparkle 安装及 join 交接，新版普通启动核对安装身份、更新回执、默认配置目录、设置和未知键、单实例，以及 LaunchServices 的 ZIP 默认处理器。私有网络接点仅映射固定元数据 URL、已认证 feed URL 和精确归档 URL；签名仍真实验证，无 SDK HTTPS 单独执行。该回归使用原用户 HOME 和默认配置路径，不以测试路径注入代替重启恢复。
