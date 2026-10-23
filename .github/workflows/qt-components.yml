@@ -27,13 +27,15 @@ jobs:
             libx11-dev libx11-6 libx11-xcb1 libxrender1 libxext6 libxi6 libxfixes3 libxrandr2 \
             libfontconfig1 libfreetype6 libice6 libsm6 fonts-noto-cjk 7zip zip patchelf xvfb xauth openbox x11-utils
       - name: Build and validate native product
+        id: build_product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1
-      - name: Collect failed test diagnostics
-        if: failure()
+      - name: Collect test diagnostics
+        if: always()
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force 'build/review/diagnostics' | Out-Null
+          $qmlLogValid = (Test-Path 'build/desktop/apps/desktop/qml-tests.log' -PathType Leaf) -and ((Get-Item 'build/desktop/apps/desktop/qml-tests.log').Length -gt 0)
           if (Test-Path 'build/desktop/apps/desktop/browser-tests.log') { Copy-Item 'build/desktop/apps/desktop/browser-tests.log' 'build/review/diagnostics/' }
           if (Test-Path 'build/desktop/apps/desktop/qml-tests.log') { Copy-Item 'build/desktop/apps/desktop/qml-tests.log' 'build/review/diagnostics/' }
           if (Test-Path 'build/desktop/apps/desktop/update-tests.log') { Copy-Item 'build/desktop/apps/desktop/update-tests.log' 'build/review/diagnostics/' }
@@ -44,6 +46,9 @@ jobs:
             if (Test-Path 'build/desktop/visual-audit/*.json') { Copy-Item 'build/desktop/visual-audit/*.json' 'build/review/diagnostics/' }
           } elseif (Test-Path 'build/desktop/visual-audit') {
             Copy-Item -Recurse 'build/desktop/visual-audit' 'build/review/diagnostics/'
+          }
+          if ('${{ steps.build_product.outcome }}' -eq 'success' -and !$qmlLogValid) {
+            throw 'Successful native validation must retain its raw QML test log'
           }
       - name: Upload review build and evidence
         if: always() && runner.os != 'macOS'
