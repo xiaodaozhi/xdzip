@@ -335,7 +335,7 @@ def native_replacement_error(pids,installed,timeout=20):
     def sanitized(value):
         return str(value).replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:4096]
     deadline=time.monotonic()+timeout
-    attempts=[];messages=[];finalize=False;permission=False
+    attempts=[];messages=[];unaccepted_messages=[];finalize=False;permission=False
     while True:
         if attempts and time.monotonic()>=deadline:break
         try:
@@ -353,17 +353,27 @@ def native_replacement_error(pids,installed,timeout=20):
             break
         events=json.loads(raw)
         if not isinstance(events,list):raise RuntimeError('Native installer log was not an event array')
-        matched=[];unmatched_images=set();owned_image_paths=set()
+        matched=[];unmatched_images=set();image_paths=set();unaccepted_messages=[]
         for entry in events:
             image=entry.get('processImagePath','')
-            if image and installed.name in Path(image).parts:
-                owned_image_paths.add(sanitized(image))
-            if image and Path(image).is_absolute() and Path(image).resolve()==expected:
+            if image:image_paths.add(sanitized(image))
+            same_image=False
+            if image and Path(image).is_absolute():
+                try:same_image=os.path.samefile(image,expected)
+                except OSError:pass
+            if same_image:
                 matched.append(entry)
             else:
                 unmatched_images.add(Path(image).name[:128] if image else '<missing>')
+                identifiers=[entry[key] for key in ('processID','processIdentifier') if key in entry]
+                bound_pid=bool(identifiers) and all(type(value) is int and value in pids and
+                                                  value==identifiers[0] for value in identifiers)
+                if bound_pid and image and Path(image).name=='Autoupdate':
+                    unaccepted_messages.append(dict(diagnostic_only=True,accepted=False,
+                        process_identifier=identifiers[0],process_image_path=sanitized(image),
+                        message=sanitized(entry.get('eventMessage',''))))
         attempt.update(event_count=len(events),matched_event_count=len(matched),
-                       owned_image_paths=sorted(owned_image_paths)[:16],unmatched_image_names=sorted(unmatched_images)[:16])
+                       process_image_paths=sorted(image_paths)[:16],unmatched_image_names=sorted(unmatched_images)[:16])
         attempts.append(attempt)
         messages=[entry.get('eventMessage','') for entry in matched]
         finalize=any('Failed to finalize installation' in text for text in messages)
@@ -374,6 +384,7 @@ def native_replacement_error(pids,installed,timeout=20):
     return dict(finalize_failure_observed=finalize,permission_failure_observed=permission,
                 expected_process_image=sanitized(expected),queried_pids=pids,attempts=attempts,
                 logging_disabled=environment().get('OS_ACTIVITY_MODE')=='disable',
+                unaccepted_autoupdate_messages=unaccepted_messages[-32:],
                 messages=[sanitized(text) for text in messages[-32:]])
 
 

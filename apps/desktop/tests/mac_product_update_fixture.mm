@@ -553,8 +553,18 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             return;
         }
         sessions->showAboutFor(page);
-        auto *about = page ? page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
-        if (!about || !about->isVisible())
+        QQuickWindow *about = nullptr;
+        for (auto *candidate : window->findChildren<QQuickWindow *>("aboutWindow")) {
+            if (!candidate->isVisible() || !candidate->isExposed() ||
+                candidate->transientParent() != window)
+                continue;
+            if (about) {
+                failure("multiple_owned_about_windows");
+                return;
+            }
+            about = candidate;
+        }
+        if (!about)
             return;
         QScopedValueRollback<bool> pressing(state->clicking, true);
         if (!state->check) {

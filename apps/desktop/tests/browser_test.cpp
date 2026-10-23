@@ -28,6 +28,8 @@
 #include <QJsonDocument>
 #include <QLockFile>
 #include <QMenu>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QPersistentModelIndex>
 #include <QPointer>
 #include <QProcess>
@@ -64,14 +66,9 @@ bool watchNativeWindowTransitions(QWindow *window);
 
 #ifdef Q_OS_WIN
 // Do not capture another application's pixels when auditing our native client.
-static bool ownedClientUnobstructed(QQuickWindow *window) {
-    const auto owned = reinterpret_cast<HWND>(window->winId());
+static bool ownedClientUnobstructed(HWND owned, const RECT &client) {
     if (!IsWindowVisible(owned) || IsIconic(owned))
         return false;
-    RECT client;
-    if (!GetClientRect(owned, &client))
-        return false;
-    MapWindowPoints(owned, nullptr, reinterpret_cast<POINT *>(&client), 2);
     for (auto above = GetWindow(owned, GW_HWNDPREV); above; above = GetWindow(above, GW_HWNDPREV)) {
         if (!IsWindowVisible(above) || IsIconic(above))
             continue;
@@ -85,14 +82,141 @@ static bool ownedClientUnobstructed(QQuickWindow *window) {
         if (GetLayeredWindowAttributes(above, &key, &alpha, &flags) && (flags & LWA_ALPHA) &&
             alpha == 0)
             continue;
-        RECT visibleClient, intersection;
-        if (!GetClientRect(above, &visibleClient))
-            continue;
-        MapWindowPoints(above, nullptr, reinterpret_cast<POINT *>(&visibleClient), 2);
-        if (IntersectRect(&intersection, &client, &visibleClient))
+        RECT foreignFrame{}, intersection{};
+        if (FAILED(DwmGetWindowAttribute(above, DWMWA_EXTENDED_FRAME_BOUNDS, &foreignFrame,
+                                         sizeof(foreignFrame))) &&
+            !GetWindowRect(above, &foreignFrame))
+            return false;
+        if (IntersectRect(&intersection, &client, &foreignFrame))
             return false;
     }
     return true;
+}
+
+static bool nativeClientRectangle(HWND owned, RECT *client) {
+    RECT local{};
+    if (!GetClientRect(owned, &local))
+        return false;
+    POINT first{local.left, local.top}, last{local.right, local.bottom};
+    if (!ClientToScreen(owned, &first) || !ClientToScreen(owned, &last))
+        return false;
+    *client = RECT{qMin(first.x, last.x), qMin(first.y, last.y), qMax(first.x, last.x),
+                   qMax(first.y, last.y)};
+    return client->right > client->left && client->bottom > client->top;
+}
+
+static bool ownedClientUnobstructed(QQuickWindow *window) {
+    const auto owned = reinterpret_cast<HWND>(window->winId());
+    RECT client{};
+    return nativeClientRectangle(owned, &client) && ownedClientUnobstructed(owned, client);
+}
+
+struct NativeClientCaptureContext {
+    HWND owned = nullptr;
+    DWORD ownedPid = 0;
+    RECT physicalClient{};
+};
+
+struct NativeClientCapture {
+    QImage pixels;
+    qreal presentedMs = -1, capturedMs = -1;
+    bool guardRejected = false;
+    DWORD error = 0;
+};
+
+// Uses only cached native identity and Win32 APIs, so the render-thread swap
+// callback can copy the first presented frame before any subsequent sync.
+static NativeClientCapture captureOwnedNativeClient(const NativeClientCaptureContext &context,
+                                                    const QElapsedTimer *clock = nullptr) {
+    NativeClientCapture result;
+    const auto previousDpi =
+        SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    if (!previousDpi) {
+        result.error = GetLastError();
+        return result;
+    }
+    const auto restoreDpi = qScopeGuard([&] { SetThreadDpiAwarenessContext(previousDpi); });
+    const auto accepted = [&] {
+        DWORD owner = 0, foregroundOwner = 0;
+        RECT current{};
+        const auto foreground = GetForegroundWindow();
+        return IsWindow(context.owned) && GetWindowThreadProcessId(context.owned, &owner) &&
+               owner == context.ownedPid && foreground == context.owned &&
+               GetWindowThreadProcessId(foreground, &foregroundOwner) &&
+               foregroundOwner == context.ownedPid &&
+               nativeClientRectangle(context.owned, &current) &&
+               EqualRect(&current, &context.physicalClient) &&
+               ownedClientUnobstructed(context.owned, current);
+    };
+    if (!accepted()) {
+        result.guardRejected = true;
+        return result;
+    }
+    const HRESULT presented = DwmFlush();
+    if (FAILED(presented)) {
+        result.error = DWORD(presented);
+        return result;
+    }
+    if (clock)
+        result.presentedMs = clock->nsecsElapsed() / 1000000.;
+    if (!accepted()) {
+        result.guardRejected = true;
+        return result;
+    }
+    const int width = context.physicalClient.right - context.physicalClient.left;
+    const int height = context.physicalClient.bottom - context.physicalClient.top;
+    HDC screen = GetDC(nullptr);
+    if (!screen) {
+        result.error = GetLastError();
+        return result;
+    }
+    const auto releaseScreen = qScopeGuard([&] { ReleaseDC(nullptr, screen); });
+    HDC memory = CreateCompatibleDC(screen);
+    if (!memory) {
+        result.error = GetLastError();
+        return result;
+    }
+    const auto releaseMemory = qScopeGuard([&] { DeleteDC(memory); });
+    BITMAPINFO info{};
+    info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    info.bmiHeader.biWidth = width;
+    info.bmiHeader.biHeight = -height;
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    info.bmiHeader.biCompression = BI_RGB;
+    void *bits = nullptr;
+    HBITMAP bitmap = CreateDIBSection(screen, &info, DIB_RGB_COLORS, &bits, nullptr, 0);
+    if (!bitmap || !bits) {
+        result.error = GetLastError();
+        if (bitmap)
+            DeleteObject(bitmap);
+        return result;
+    }
+    const auto releaseBitmap = qScopeGuard([&] { DeleteObject(bitmap); });
+    HGDIOBJ previous = SelectObject(memory, bitmap);
+    if (!previous || previous == HGDI_ERROR) {
+        result.error = GetLastError();
+        return result;
+    }
+    const auto restoreBitmap = qScopeGuard([&] { SelectObject(memory, previous); });
+    if (!BitBlt(memory, 0, 0, width, height, screen, context.physicalClient.left,
+                context.physicalClient.top, SRCCOPY | CAPTUREBLT) ||
+        !GdiFlush()) {
+        result.error = GetLastError();
+        return result;
+    }
+    // Reject and destroy the DIB without persisting pixels if ownership,
+    // geometry, foreground or occlusion changed during readback.
+    if (!accepted()) {
+        result.guardRejected = true;
+        return result;
+    }
+    result.pixels =
+        QImage(static_cast<const uchar *>(bits), width, height, width * 4, QImage::Format_RGB32)
+            .copy();
+    if (clock)
+        result.capturedMs = clock->nsecsElapsed() / 1000000.;
+    return result;
 }
 #endif
 
@@ -2073,35 +2197,18 @@ class BrowserTest : public QObject {
         const auto directory = qEnvironmentVariable("XDZIP_MENU_FRAME_OUTPUT");
         QVERIFY(!directory.isEmpty() && QDir().mkpath(directory));
         int occlusionRejections = 0;
+#ifdef Q_OS_WIN
+        NativeClientCaptureContext nativeCapture;
+#endif
         const auto capturePresented = [&, host](const QElapsedTimer *clock = nullptr,
                                                 qreal *presentedMs = nullptr) {
 #ifdef Q_OS_WIN
-            if (!ownedClientUnobstructed(host)) {
+            const auto result = captureOwnedNativeClient(nativeCapture, clock);
+            if (result.guardRejected)
                 ++occlusionRejections;
-                QFile rejected(directory + "/occlusion-rejected.json");
-                if (rejected.open(QIODevice::WriteOnly))
-                    rejected.write(
-                        QJsonDocument(QJsonObject{{"status", "rejected_occlusion"},
-                                                  {"menu", kind},
-                                                  {"owned_hwnd",
-                                                   QString::number(quintptr(host->winId()), 16)},
-                                                  {"occlusion_rejections", occlusionRejections},
-                                                  {"revision", BuildInfo::revision()},
-                                                  { "capture_saved",
-                                                    false }})
-                            .toJson());
-                return QImage();
-            }
-            if (FAILED(DwmFlush()))
-                return QImage();
-            // The compositor has presented this frame. Bitmap readback and
-            // pixel verification are probe work, recorded separately below.
-            if (clock && presentedMs)
-                *presentedMs = clock->nsecsElapsed() / 1000000.;
-            const auto global = host->mapToGlobal(QPoint());
-            return host->screen()
-                ->grabWindow(0, global.x(), global.y(), host->width(), host->height())
-                .toImage();
+            if (presentedMs)
+                *presentedMs = result.presentedMs;
+            return result.pixels;
 #else
             const auto result = host->screen()->grabWindow(host->winId()).toImage();
             if (clock && presentedMs)
@@ -2152,7 +2259,16 @@ class BrowserTest : public QObject {
         settled.clear();
         host->requestUpdate();
         QTRY_VERIFY(!settled.isEmpty());
+        nativeCapture.owned = reinterpret_cast<HWND>(host->winId());
+        nativeCapture.ownedPid = GetCurrentProcessId();
+        DWORD actualOwner = 0;
+        QVERIFY(GetWindowThreadProcessId(nativeCapture.owned, &actualOwner));
+        QCOMPARE(actualOwner, nativeCapture.ownedPid);
+        QVERIFY(nativeClientRectangle(nativeCapture.owned, &nativeCapture.physicalClient));
 #endif
+        // All QWindow geometry and DPI reads finish before timing is armed.
+        const QSize logicalClientSize = host->size();
+        const qreal capturedDpr = host->devicePixelRatio();
         const auto baseline = capturePresented();
         QVERIFY2(!occlusionRejections, "Owned client is occluded; no capture saved");
         QVERIFY(!baseline.isNull());
@@ -2170,7 +2286,9 @@ class BrowserTest : public QObject {
             std::atomic_bool &m_received;
         } inputMarker(inputReceived);
         qApp->installEventFilter(&inputMarker);
-        bool measuring = false, done = false, shadowSameFrame = false, loggedGuard = false;
+        std::atomic_bool measuring{false}, captureClaimed{false};
+        bool done = false, shadowSameFrame = false, nativeCaptureFailed = false;
+        bool firstMenuFaceVisible = false;
         bool firstFrameSuperseded = false;
         qreal elapsedMs = -1, swapMs = -1, captureMs = -1, validationMs = -1;
         quint64 capturedGeneration = 0;
@@ -2178,47 +2296,66 @@ class BrowserTest : public QObject {
         QImage firstFace;
         QRectF popupBounds;
         QObject frameReceiver;
-        const auto observeFrame = [&](quint64 generation, qint64 swappedAt) {
-            if (!measuring || done)
+        QRectF firstMenuBounds;
+        struct FirstFramePacket {
+            quint64 generation = 0, firstVisible = 0, captureBegin = 0, captureEnd = 0;
+            qint64 swappedAt = 0;
+            QRectF popup;
+            QImage pixels;
+            qreal presentedMs = -1, capturedMs = -1;
+            bool guardRejected = false;
+            quint32 nativeError = 0;
+        };
+        quint64 captureBeginGeneration = 0, captureEndGeneration = 0;
+        quint32 nativeCaptureError = 0;
+        const auto observeFrame = [&](FirstFramePacket packet) {
+            if (!measuring.load() || done)
                 return;
-            if (generation != firstInputGeneration.load() ||
-                generation != synchronizedGeneration.load()) {
+            captureBeginGeneration = packet.captureBegin;
+            captureEndGeneration = packet.captureEnd;
+            nativeCaptureError = packet.nativeError;
+            if (packet.generation != packet.firstVisible ||
+                packet.captureBegin != packet.firstVisible ||
+                packet.captureEnd != packet.firstVisible) {
                 firstFrameSuperseded = true;
                 done = true;
                 return;
             }
             ++swaps;
-            auto *menu = combo ? target->property("popup").value<QObject *>()
-                               : window->findChild<QObject *>(menuName);
-            auto *background = menu ? menu->property("background").value<QQuickItem *>() : nullptr;
-            if (!menu || !menu->property("visible").toBool() || !background ||
-                background->width() <= 0 || background->height() <= 0) {
-                if (!loggedGuard) {
-                    qInfo() << "Cold menu first pending frame:" << kind << "target"
-                            << target->objectName() << "point" << point << "menu" << menu
-                            << "visible" << (menu && menu->property("visible").toBool())
-                            << "background" << background
-                            << (background ? background->size() : QSizeF());
-                    loggedGuard = true;
-                }
+#ifdef Q_OS_WIN
+            if (packet.guardRejected) {
+                ++occlusionRejections;
+                done = true;
+                return;
+            }
+            const auto &pixels = packet.pixels;
+            const qreal presentedMs = packet.presentedMs, capturedMs = packet.capturedMs;
+#else
+            // Other platforms keep their GUI-thread QScreen capture path.
+            // The fixed-reference native timing target is Windows D3D11.
+            if (packet.generation != synchronizedGeneration.load()) {
+                firstFrameSuperseded = true;
+                done = true;
                 return;
             }
             qreal presentedMs = -1;
             const auto pixels = capturePresented(&timer, &presentedMs);
             const qreal capturedMs = timer.nsecsElapsed() / 1000000.;
-            if (generation != synchronizedGeneration.load()) {
+            if (packet.generation != synchronizedGeneration.load()) {
                 firstFrameSuperseded = true;
                 done = true;
                 return;
             }
-            if (occlusionRejections)
+#endif
+            if (pixels.isNull() || pixels.size() != baseline.size()) {
+                nativeCaptureFailed = true;
                 done = true;
-            if (pixels.isNull() || pixels.size() != baseline.size())
                 return;
-            const qreal scaleX = pixels.width() / qreal(host->width()),
-                        scaleY = pixels.height() / qreal(host->height());
-            const auto origin = background->mapToScene(QPointF());
-            popupBounds = QRectF(origin, QSizeF(background->width(), background->height()));
+            }
+            const qreal scaleX = pixels.width() / qreal(logicalClientSize.width()),
+                        scaleY = pixels.height() / qreal(logicalClientSize.height());
+            popupBounds = packet.popup;
+            const auto origin = popupBounds.topLeft();
             const auto changed = [&](const QRectF &logical, bool darker) {
                 const auto area =
                     QRect(qFloor(logical.x() * scaleX), qFloor(logical.y() * scaleY),
@@ -2239,22 +2376,31 @@ class BrowserTest : public QObject {
                     }
                 return count;
             };
-            if (changed(popupBounds.adjusted(2, 2, -2, -2), false) < 20)
-                return;
             done = true;
-            capturedGeneration = generation;
-            swapMs = swappedAt / 1000000.;
+            firstMenuFaceVisible = changed(popupBounds.adjusted(2, 2, -2, -2), false) >= 20;
+            if (!firstMenuFaceVisible)
+                return;
+            capturedGeneration = packet.generation;
+            swapMs = packet.swappedAt / 1000000.;
             elapsedMs = presentedMs;
             captureMs = capturedMs;
             firstFace = pixels;
             shadowSameFrame =
-                changed(QRectF(origin.x() - 5, origin.y() + background->height() / 2 - 4, 3, 8),
+                changed(QRectF(origin.x() - 5, origin.y() + popupBounds.height() / 2 - 4, 3, 8),
                         true) > 3;
             validationMs = timer.nsecsElapsed() / 1000000.;
         };
+        struct CallbackGate {
+            QMutex mutex;
+            bool closed = false;
+        };
+        const auto callbackGate = std::make_shared<CallbackGate>();
         const auto synchronization = connect(
             host, &QQuickWindow::afterSynchronizing, host,
-            [&] {
+            [&, callbackGate] {
+                QMutexLocker lock(&callbackGate->mutex);
+                if (callbackGate->closed)
+                    return;
                 const auto generation = ++synchronizedGeneration;
                 if (inputReceived.load()) {
                     // Synchronization blocks the GUI thread. Read the actual
@@ -2265,29 +2411,58 @@ class BrowserTest : public QObject {
                         menu ? menu->property("background").value<QQuickItem *>() : nullptr;
                     if (menu && menu->property("visible").toBool() && background &&
                         background->width() > 0 && background->height() > 0) {
-                        quint64 empty = 0;
-                        firstInputGeneration.compare_exchange_strong(empty, generation);
+                        if (!firstInputGeneration.load()) {
+                            firstMenuBounds =
+                                QRectF(background->mapToScene(QPointF()), background->size());
+                            quint64 empty = 0;
+                            firstInputGeneration.compare_exchange_strong(empty, generation);
+                        }
                     }
                 }
             },
             Qt::DirectConnection);
         const auto connection = connect(
             host, &QQuickWindow::frameSwapped, host,
-            [&] {
+            [&, callbackGate] {
+                QMutexLocker lock(&callbackGate->mutex);
+                if (callbackGate->closed)
+                    return;
                 const auto generation = synchronizedGeneration.load();
                 const auto first = firstInputGeneration.load();
-                if (!first || generation < first)
+                if (!measuring.load() || !first || generation < first ||
+                    captureClaimed.exchange(true))
                     return;
-                const auto swappedAt = timer.nsecsElapsed();
+                FirstFramePacket packet;
+                packet.generation = generation;
+                packet.firstVisible = first;
+                packet.captureBegin = synchronizedGeneration.load();
+                packet.swappedAt = timer.nsecsElapsed();
+                packet.popup = firstMenuBounds;
+#ifdef Q_OS_WIN
+                // Do not wait for the GUI queue: this direct callback completes
+                // readback before the render loop can synchronize another frame.
+                if (generation == first && packet.captureBegin == first) {
+                    const auto native = captureOwnedNativeClient(nativeCapture, &timer);
+                    packet.pixels = native.pixels;
+                    packet.presentedMs = native.presentedMs;
+                    packet.capturedMs = native.capturedMs;
+                    packet.guardRejected = native.guardRejected;
+                    packet.nativeError = native.error;
+                }
+#endif
+                packet.captureEnd = synchronizedGeneration.load();
                 QMetaObject::invokeMethod(
-                    &frameReceiver,
-                    [&, generation, swappedAt] { observeFrame(generation, swappedAt); },
-                    Qt::QueuedConnection);
+                    &frameReceiver, [&, packet] { observeFrame(packet); }, Qt::QueuedConnection);
             },
             Qt::DirectConnection);
         const auto cleanupFrames = qScopeGuard([&] {
             disconnect(connection);
             disconnect(synchronization);
+            // Disconnect does not join a callback already executing. The shared
+            // gate drains native capture before stack receiver/state teardown;
+            // late callbacks read only the value-captured closed gate.
+            QMutexLocker lock(&callbackGate->mutex);
+            callbackGate->closed = true;
             qApp->removeEventFilter(&inputMarker);
         });
         std::unique_ptr<QSignalSpy> clicks;
@@ -2308,9 +2483,28 @@ class BrowserTest : public QObject {
                                                  .arg(firstInputGeneration.load())),
                                   2000);
         disconnect(connection);
+        QFile captureDiagnostic(directory + "/capture-diagnostic.json");
+        if (captureDiagnostic.open(QIODevice::WriteOnly))
+            captureDiagnostic.write(
+                QJsonDocument(
+                    QJsonObject{
+                        {"first_visible_menu_sync_generation", double(firstInputGeneration.load())},
+                        {"capture_begin_sync_generation", double(captureBeginGeneration)},
+                        {"capture_end_sync_generation", double(captureEndGeneration)},
+                        {"first_frame_superseded", firstFrameSuperseded},
+                        {"native_capture_failed", nativeCaptureFailed},
+                        {"native_capture_error", double(nativeCaptureError)},
+                        {"occlusion_rejections", occlusionRejections},
+                        {"pixels_saved_in_diagnostic", false}})
+                    .toJson());
         QVERIFY2(!occlusionRejections, "Owned client became occluded; no capture saved");
+        QVERIFY2(!nativeCaptureFailed,
+                 qPrintable(QString("Native capture failed with error %1; no sample saved")
+                                .arg(nativeCaptureError)));
         QVERIFY2(!firstFrameSuperseded,
                  "The first visible menu frame was superseded before capture; no sample saved");
+        QVERIFY2(firstMenuFaceVisible,
+                 "The first presented menu frame has no visible face; no sample saved");
         QCOMPARE(capturedGeneration, firstInputGeneration.load());
         baseline.save(directory + "/" + kind + "-before.png");
         firstFace.save(directory + "/" + kind + "-first-face.png");
@@ -2323,6 +2517,13 @@ class BrowserTest : public QObject {
             {"first_post_input_sync_generation", double(firstInputGeneration.load())},
             {"first_visible_menu_sync_generation", double(firstInputGeneration.load())},
             {"captured_sync_generation", double(capturedGeneration)},
+            {"capture_begin_sync_generation", double(captureBeginGeneration)},
+            {"capture_end_sync_generation", double(captureEndGeneration)},
+#ifdef Q_OS_WIN
+            {"capture_stage", "frameSwapped direct, Win32 owned-client readback"},
+#else
+            {"capture_stage", "GUI queued QScreen readback"},
+#endif
             {"observed_swaps", swaps},
             {"setup_position_attempts", setupPositionAttempts},
             {"owned_hwnd", QString::number(quintptr(host->winId()), 16)},
@@ -2331,7 +2532,7 @@ class BrowserTest : public QObject {
             {"configuration", BuildInfo::configuration()},
             {"revision", BuildInfo::revision()},
             {"platform", QGuiApplication::platformName()},
-            {"dpr", host->devicePixelRatio()},
+            {"dpr", capturedDpr},
             {"graphics_api", int(host->rendererInterface()->graphicsApi())},
             {"requested_backend", qEnvironmentVariable("QT_QUICK_BACKEND")},
             {"logical_width", host->width()},
