@@ -2,12 +2,19 @@
 
 namespace XdzipOwnedMenuQa {
     internal static class HelperEarlyExitFixture {
-        private static void Require(bool condition, string reason) {
-            if (!condition) throw new System.InvalidOperationException(reason);
+        private static string stage="not_started";
+        private static MenuQaOptions activeValidationOptions;
+        private sealed class FixtureAssertionException : System.InvalidOperationException {
+            internal readonly string Code;
+            internal FixtureAssertionException(string code) : base(code) { Code=code; }
         }
 
-        private static System.Collections.Generic.Dictionary<string, object> Core(MenuQaOptions options) {
-            var result = new System.Collections.Generic.Dictionary<string, object>();
+        private static void Require(bool condition, string reason) {
+            if (!condition) throw new FixtureAssertionException(reason);
+        }
+
+        private static void Core(MenuQaOptions options, System.Collections.Generic.Dictionary<string, object> result) {
+            stage="core_identity_guards";
             int rejected = 0;
             var exited = new MenuQaLauncher.ChildIdentityObservation { Exited=true, ExitCode=7 };
             Require(!MenuQaLauncher.ValidateObservedChildIdentity(exited, options.Tests,
@@ -24,12 +31,17 @@ namespace XdzipOwnedMenuQa {
             try { System.IO.Path.GetFullPath(""); }
             catch (System.Exception error) { oldException = error.GetType().FullName; }
             Require(oldException == "System.ArgumentException", "Old empty-path branch did not reproduce.");
+            result["static_identity_guards_passed"]=true;
+            result["old_empty_path_exception_type"]=oldException;
+            stage="core_deferred_exception_guard";
             int deferredErrors = 0;
             MenuQaLauncher.RunDeferred(delegate { throw new System.ArgumentException("Owned diagnostic exception."); },
                 delegate(System.Exception error) {
                     Require(error is System.ArgumentException, "Deferred exception type lost."); ++deferredErrors;
                 });
             Require(deferredErrors == 1, "Deferred callback escaped or failed twice.");
+            result["safe_deferred_exception_routing_passed"]=true;
+            stage="core_frame_contract_guards";
             var valid = new System.Collections.Generic.Dictionary<string, object> {
                 {options.Contract.ReferenceGeneration,1}, {"shadow_same_frame",true},
                 {"capture_stage",options.Contract.CaptureStage}, {"graphics_api",options.Contract.GraphicsApi},
@@ -49,32 +61,35 @@ namespace XdzipOwnedMenuQa {
             Require(!options.Contract.Accepts(valid, options.Source), "Non-finite timing accepted.");
             valid["trigger_to_complete_frame_ms"]=20; valid["shadow_same_frame"]=false;
             Require(!options.Contract.Accepts(valid, options.Source), "Missing same-frame shadow accepted.");
+            result["frame_generation_shadow_and_finite_timing_guards_passed"]=true;
+            stage="core_build_path_guard";
             bool outsideRejected=false;
             try { MenuQaOptions.RequireBuildChild(options.Root, System.IO.Path.Combine(options.Root,"build-sibling","escape")); }
             catch (System.ArgumentException) { outsideRejected=true; }
             Require(outsideRejected, "Build prefix sibling accepted.");
-            result["static_identity_guards_passed"]=true;
-            result["safe_deferred_exception_routing_passed"]=true;
-            result["old_empty_path_exception_type"]=oldException;
-            result["frame_generation_shadow_and_finite_timing_guards_passed"]=true;
             result["build_path_boundary_guard_passed"]=true;
-            return result;
         }
 
         private static void Full(MenuQaOptions options, System.Collections.Generic.Dictionary<string, object> result) {
+            stage="full_source_binding";
+            activeValidationOptions=options;
             options.ValidateFull();
+            result["full_source_binding_passed"]=true;
             string fixtureBinary=System.Reflection.Assembly.GetExecutingAssembly().Location;
             var liveInfo=new System.Diagnostics.ProcessStartInfo(fixtureBinary,"--owned-live-identity") {
                 UseShellExecute=false, CreateNoWindow=true, RedirectStandardInput=true, RedirectStandardOutput=true
             };
             using (var live=System.Diagnostics.Process.Start(liveInfo)) {
+                stage="live_owned_wait_ready";
                 System.IntPtr liveHandle=live.Handle;
                 var ready=live.StandardOutput.ReadLineAsync();
                 Require(ready.Wait(5000) && ready.Result == "READY", "Live fixture readiness handshake timed out.");
+                stage="live_owned_query_identity";
                 var observation=MenuQaLauncher.ObserveOwnedChildIdentity(live);
                 int rejects=0;
                 bool accepted=MenuQaLauncher.ValidateObservedChildIdentity(observation,fixtureBinary,
                     delegate(string reason,int? code,string type) { ++rejects; });
+                stage="live_owned_release";
                 live.StandardInput.WriteLine("RELEASE"); live.StandardInput.Flush(); live.StandardInput.Close();
                 Require(live.WaitForExit(5000) && live.ExitCode==0, "Live fixture release handshake failed.");
                 Require(accepted && rejects==0 && !observation.Exited && observation.Win32Error==0,
@@ -86,8 +101,10 @@ namespace XdzipOwnedMenuQa {
                 UseShellExecute=false, CreateNoWindow=true
             };
             using (var owned=System.Diagnostics.Process.Start(fastInfo)) {
+                stage="fast_owned_wait_exit";
                 System.IntPtr ownedHandle=owned.Handle;
                 Require(owned.WaitForExit(5000) && owned.ExitCode==7, "Fast owned fixture did not exit as expected.");
+                stage="fast_owned_legacy_branch";
                 string originalException=null;
                 try {
                     string actualPath=null;
@@ -101,8 +118,12 @@ namespace XdzipOwnedMenuQa {
                 var observation=MenuQaLauncher.ObserveOwnedChildIdentity(owned);
                 Require(observation.Exited && observation.ExitCode==7 && observation.ImagePath==null,
                     "Early-exit observation differs.");
+                result["real_early_exit_identity_observed"]=true;
+                stage="controlled_form_construction";
                 MenuQaOptions formOptions=options.ForOutput(System.IO.Path.Combine(options.Output,"controlled-fail"));
+                activeValidationOptions=formOptions;
                 using (var form=new MenuQaLauncher(formOptions)) {
+                    stage="controlled_form_identity_rejection";
                     var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
                     System.Action<string,object> set=delegate(string name,object value) {
                         typeof(MenuQaLauncher).GetField(name,flags).SetValue(form,value);
@@ -121,6 +142,7 @@ namespace XdzipOwnedMenuQa {
                     var report=serializer.Deserialize<System.Collections.Generic.Dictionary<string,object>>(
                         System.IO.File.ReadAllText(System.IO.Path.Combine(formOptions.Output,"review.json")));
                     var failures=(System.Collections.ArrayList)report["failures"];
+                    stage="controlled_form_failure_record";
                     var first=(System.Collections.Generic.Dictionary<string,object>)failures[0];
                     Require(System.Convert.ToString(report["status"])=="failed" &&
                         System.Convert.ToString(first["reason"])=="child_exited_before_identity" &&
@@ -145,10 +167,13 @@ namespace XdzipOwnedMenuQa {
             }
             MenuQaOptions options=null;
             var serializer=new System.Web.Script.Serialization.JavaScriptSerializer();
+            var result=new System.Collections.Generic.Dictionary<string,object>();
             try {
+                stage="parse_options";
                 options=MenuQaOptions.Parse(arguments,true);
-                var result=Core(options);
+                Core(options,result);
                 if (!options.CoreOnly) Full(options,result);
+                stage="complete";
                 result["status"]=options.CoreOnly?"core_only_passed":"passed";
                 result["full_self_test_passed"]=!options.CoreOnly;
                 result["scope"]=options.CoreOnly?"Pure identity, deferred callback and frame/path guards only; no Form or product process.":"Clean-source owned process identity and unshown Form controlled-failure regression.";
@@ -157,16 +182,25 @@ namespace XdzipOwnedMenuQa {
                 result["qt_menus_opened"]=0;
                 result["product_binary_executed"]=false;
                 result["user_input_injected"]=false;
+                result["stage"]=stage;
                 System.IO.Directory.CreateDirectory(options.Output);
                 string json=serializer.Serialize(result);
                 System.IO.File.WriteAllText(System.IO.Path.Combine(options.Output,"fixture-result.json"),json);
                 System.Console.WriteLine(json);
                 return 0;
             } catch (System.Exception error) {
-                string json=serializer.Serialize(new System.Collections.Generic.Dictionary<string,object> {
-                    {"status","failed"}, {"full_self_test_passed",false}, {"exception_type",error.GetType().FullName},
-                    {"qt_menus_opened",0}, {"product_binary_executed",false}
-                });
+                result["status"]="failed";
+                result["full_self_test_passed"]=false;
+                result["exception_type"]=error.GetType().FullName;
+                result["stage"]=stage;
+                var validation=activeValidationOptions??options;
+                result["validation_stage"]=validation==null?null:validation.ValidationStage;
+                var assertion=error as FixtureAssertionException;
+                var binding=error as MenuQaBindingException;
+                result["failure_code"]=assertion!=null?assertion.Code:binding!=null?binding.Code:"unexpected_exception";
+                result["qt_menus_opened"]=0;
+                result["product_binary_executed"]=false;
+                string json=serializer.Serialize(result);
                 if (options!=null) {
                     System.IO.Directory.CreateDirectory(options.Output);
                     System.IO.File.WriteAllText(System.IO.Path.Combine(options.Output,"fixture-result.json"),json);

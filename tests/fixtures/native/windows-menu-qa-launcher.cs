@@ -14,6 +14,11 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 namespace XdzipOwnedMenuQa {
+    internal sealed class MenuQaBindingException : InvalidOperationException {
+        internal readonly string Code;
+        internal MenuQaBindingException(string code) : base(code) { Code = code; }
+    }
+
     // Native actions use only this Form's HWND and the PID/handle of its directly
     // started child. Foreground reads inspect identity, never foreign content.
     // Query/grant failures are recorded; samples still require real foreground.
@@ -33,6 +38,7 @@ namespace XdzipOwnedMenuQa {
         public bool CoreOnly;
         public MenuQaContract Contract;
         public string QtBin;
+        public string ValidationStage = "not_started";
 
         public static MenuQaOptions Parse(string[] arguments, bool fixture) {
             var values = new Dictionary<string, string>();
@@ -99,27 +105,35 @@ namespace XdzipOwnedMenuQa {
                 RedirectStandardOutput = true, RedirectStandardError = true
             };
             using (Process process = Process.Start(info)) {
-                if (!process.WaitForExit(5000)) { process.Kill(); throw new InvalidOperationException("Source validation timed out."); }
+                if (!process.WaitForExit(5000)) { process.Kill(); throw new MenuQaBindingException("git_validation_timeout"); }
                 string text = process.StandardOutput.ReadToEnd();
-                if (process.ExitCode != 0) throw new InvalidOperationException("Source validation failed.");
+                if (process.ExitCode != 0) throw new MenuQaBindingException("git_validation_exit_failure");
                 return text.Trim();
             }
         }
 
         public void ValidateFull() {
-            if (CoreOnly) throw new InvalidOperationException("Core-only configuration cannot start a launcher.");
+            ValidationStage = "configuration";
+            if (CoreOnly) throw new MenuQaBindingException("core_only_cannot_launch");
+            ValidationStage = "build_path_boundary";
             RequireBuildChild(Root, Tests); RequireBuildChild(Root, Output);
-            if (ReadGit(Root, "rev-parse HEAD") != Source || ReadGit(Root, "status --porcelain").Length != 0)
-                throw new InvalidOperationException("The expected source must be HEAD and clean.");
+            ValidationStage = "git_head";
+            if (ReadGit(Root, "rev-parse HEAD") != Source) throw new MenuQaBindingException("source_head_mismatch");
+            ValidationStage = "git_clean";
+            if (ReadGit(Root, "status --porcelain").Length != 0) throw new MenuQaBindingException("source_not_clean");
+            ValidationStage = "browser_binary_hash";
             if (!File.Exists(Tests) || MenuQaLauncher.HashFile(Tests) != Hash)
-                throw new InvalidOperationException("Browser test SHA256 differs from the explicit binding.");
+                throw new MenuQaBindingException("browser_binary_hash_mismatch");
             string parent = Path.GetDirectoryName(Tests);
+            ValidationStage = "generated_build_metadata";
             string version = File.ReadAllText(Path.Combine(parent, "generated", "BuildVersion.h"));
             if (!Regex.IsMatch(version, "(?m)^#define XDZIP_REVISION \"" + Regex.Escape(Source.Substring(0, 12)) + "\"\\s*$") ||
                 !Regex.IsMatch(version, "(?m)^#define XDZIP_DIRTY false\\s*$") ||
                 !Regex.IsMatch(version, "(?m)^#define XDZIP_CONFIGURATION \"Release\"\\s*$"))
-                throw new InvalidOperationException("Generated build metadata differs from the explicit binding.");
+                throw new MenuQaBindingException("generated_build_metadata_mismatch");
+            ValidationStage = "qt_dll_location";
             QtBin = FindQtBin(parent);
+            ValidationStage = "complete";
         }
 
         private string FindQtBin(string testsParent) {
@@ -138,7 +152,7 @@ namespace XdzipOwnedMenuQa {
                     break;
                 }
             }
-            throw new InvalidOperationException("Qt DLLs were not found beside tests or through its CMake cache.");
+            throw new MenuQaBindingException("qt_dll_location_missing");
         }
 
         public MenuQaOptions ForOutput(string directory) {

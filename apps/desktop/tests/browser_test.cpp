@@ -2292,15 +2292,19 @@ class BrowserTest : public QObject {
         bool firstFrameSuperseded = false;
         qreal elapsedMs = -1, swapMs = -1, captureMs = -1, validationMs = -1;
         quint64 capturedGeneration = 0;
-        int swaps = 0;
+        int swaps = 0, faceChangedPixels = -1, shadowChangedPixels = -1;
+        bool capturedOwnedPixelsAccepted = false;
         QImage firstFace;
         QRectF popupBounds;
+        QJsonObject capturedMenuState;
         QObject frameReceiver;
         QRectF firstMenuBounds;
+        QJsonObject firstMenuState;
         struct FirstFramePacket {
             quint64 generation = 0, firstVisible = 0, captureBegin = 0, captureEnd = 0;
             qint64 swappedAt = 0;
             QRectF popup;
+            QJsonObject menuState;
             QImage pixels;
             qreal presentedMs = -1, capturedMs = -1;
             bool guardRejected = false;
@@ -2314,6 +2318,7 @@ class BrowserTest : public QObject {
             captureBeginGeneration = packet.captureBegin;
             captureEndGeneration = packet.captureEnd;
             nativeCaptureError = packet.nativeError;
+            capturedMenuState = packet.menuState;
             if (packet.generation != packet.firstVisible ||
                 packet.captureBegin != packet.firstVisible ||
                 packet.captureEnd != packet.firstVisible) {
@@ -2354,6 +2359,15 @@ class BrowserTest : public QObject {
             }
             const qreal scaleX = pixels.width() / qreal(logicalClientSize.width()),
                         scaleY = pixels.height() / qreal(logicalClientSize.height());
+            // These pixels passed the unchanged native ownership, foreground,
+            // geometry and occlusion checks before and after readback. Guard
+            // failures never reach this retained image or diagnostic PNGs.
+            capturedOwnedPixelsAccepted = true;
+            firstFace = pixels;
+            capturedGeneration = packet.generation;
+            swapMs = packet.swappedAt / 1000000.;
+            elapsedMs = presentedMs;
+            captureMs = capturedMs;
             popupBounds = packet.popup;
             const auto origin = popupBounds.topLeft();
             const auto changed = [&](const QRectF &logical, bool darker) {
@@ -2377,17 +2391,11 @@ class BrowserTest : public QObject {
                 return count;
             };
             done = true;
-            firstMenuFaceVisible = changed(popupBounds.adjusted(2, 2, -2, -2), false) >= 20;
-            if (!firstMenuFaceVisible)
-                return;
-            capturedGeneration = packet.generation;
-            swapMs = packet.swappedAt / 1000000.;
-            elapsedMs = presentedMs;
-            captureMs = capturedMs;
-            firstFace = pixels;
-            shadowSameFrame =
-                changed(QRectF(origin.x() - 5, origin.y() + popupBounds.height() / 2 - 4, 3, 8),
-                        true) > 3;
+            faceChangedPixels = changed(popupBounds.adjusted(2, 2, -2, -2), false);
+            shadowChangedPixels = changed(
+                QRectF(origin.x() - 5, origin.y() + popupBounds.height() / 2 - 4, 3, 8), true);
+            firstMenuFaceVisible = faceChangedPixels >= 20;
+            shadowSameFrame = firstMenuFaceVisible && shadowChangedPixels > 3;
             validationMs = timer.nsecsElapsed() / 1000000.;
         };
         struct CallbackGate {
@@ -2414,6 +2422,52 @@ class BrowserTest : public QObject {
                         if (!firstInputGeneration.load()) {
                             firstMenuBounds =
                                 QRectF(background->mapToScene(QPointF()), background->size());
+                            const auto itemState = [](const QQuickItem *item) {
+                                if (!item)
+                                    return QJsonObject{};
+                                const auto bounds = item->mapRectToScene(item->boundingRect());
+                                return QJsonObject{
+                                    {"object_name", item->objectName()},
+                                    {"class", QString::fromLatin1(item->metaObject()->className())},
+                                    {"visible", item->isVisible()},
+                                    {"opacity", item->opacity()},
+                                    {"clip", item->clip()},
+                                    {"scene_bounds", QJsonArray{bounds.x(), bounds.y(),
+                                                                bounds.width(), bounds.height()}}};
+                            };
+                            // afterSynchronizing blocks the GUI thread. Copy
+                            // actual effective visibility and ancestor state now;
+                            // the swap callback must not inspect GUI/QML objects.
+                            QJsonArray ancestors;
+                            qreal effectiveOpacity = host->opacity();
+                            int ancestorCount = 0;
+                            for (auto *ancestor = background; ancestor && ancestorCount < 64;
+                                 ancestor = ancestor->parentItem(), ++ancestorCount) {
+                                ancestors.append(itemState(ancestor));
+                                effectiveOpacity *= ancestor->opacity();
+                            }
+                            auto *parent = menu->property("parent").value<QQuickItem *>();
+                            auto *content = menu->property("contentItem").value<QQuickItem *>();
+                            auto *shadow = background->findChild<QObject *>("menuShadowLayer-0");
+                            firstMenuState = QJsonObject{
+                                {"menu_visible", menu->property("visible").toBool()},
+                                {"menu_opened", menu->property("opened").toBool()},
+                                {"menu_opacity",
+                                 QJsonValue::fromVariant(menu->property("opacity"))},
+                                {"menu_count", QJsonValue::fromVariant(menu->property("count"))},
+                                {"enter_transition_present",
+                                 menu->property("enter").value<QObject *>() != nullptr},
+                                {"window_visible", host->isVisible()},
+                                {"window_exposed", host->isExposed()},
+                                {"window_opacity", host->opacity()},
+                                {"logical_parent", itemState(parent)},
+                                {"background", itemState(background)},
+                                {"content", itemState(content)},
+                                {"background_effective_opacity", effectiveOpacity},
+                                {"background_ancestor_chain", ancestors},
+                                {"shadow_status",
+                                 shadow ? QJsonValue::fromVariant(shadow->property("status"))
+                                        : QJsonValue()}};
                             quint64 empty = 0;
                             firstInputGeneration.compare_exchange_strong(empty, generation);
                         }
@@ -2438,6 +2492,7 @@ class BrowserTest : public QObject {
                 packet.captureBegin = synchronizedGeneration.load();
                 packet.swappedAt = timer.nsecsElapsed();
                 packet.popup = firstMenuBounds;
+                packet.menuState = firstMenuState;
 #ifdef Q_OS_WIN
                 // Do not wait for the GUI queue: this direct callback completes
                 // readback before the render loop can synchronize another frame.
@@ -2483,6 +2538,18 @@ class BrowserTest : public QObject {
                                                  .arg(firstInputGeneration.load())),
                                   2000);
         disconnect(connection);
+        bool failureBaselineSaved = false, failureFirstSaved = false;
+#ifdef Q_OS_WIN
+        // Retain only this app's already-guarded first readback on a visual
+        // failure. Never request a later frame, and save zero pixels if any
+        // ownership, foreground, geometry, occlusion or first-generation gate failed.
+        if (capturedOwnedPixelsAccepted && !occlusionRejections && !nativeCaptureFailed &&
+            !firstFrameSuperseded && (!firstMenuFaceVisible || !shadowSameFrame)) {
+            failureBaselineSaved = baseline.save(directory + "/" + kind + "-failure-before.png");
+            failureFirstSaved =
+                firstFace.save(directory + "/" + kind + "-failure-first-captured.png");
+        }
+#endif
         QFile captureDiagnostic(directory + "/capture-diagnostic.json");
         if (captureDiagnostic.open(QIODevice::WriteOnly))
             captureDiagnostic.write(
@@ -2495,7 +2562,29 @@ class BrowserTest : public QObject {
                         {"native_capture_failed", nativeCaptureFailed},
                         {"native_capture_error", double(nativeCaptureError)},
                         {"occlusion_rejections", occlusionRejections},
-                        {"pixels_saved_in_diagnostic", false}})
+                        {"captured_sync_generation", double(capturedGeneration)},
+                        {"popup_bounds", QJsonArray{popupBounds.x(), popupBounds.y(),
+                                                    popupBounds.width(), popupBounds.height()}},
+                        {"logical_client_size",
+                         QJsonArray{logicalClientSize.width(), logicalClientSize.height()}},
+                        {"captured_pixel_size", QJsonArray{firstFace.width(), firstFace.height()}},
+                        {"popup_intersects_client",
+                         QRectF(QPointF(), logicalClientSize).intersects(popupBounds)},
+                        {"popup_inside_client",
+                         QRectF(QPointF(), logicalClientSize).contains(popupBounds)},
+                        {"menu_at_first_sync", capturedMenuState},
+                        {"face_changed_pixels", faceChangedPixels},
+                        {"shadow_changed_pixels", shadowChangedPixels},
+                        {"first_menu_face_visible", firstMenuFaceVisible},
+                        {"shadow_same_frame", shadowSameFrame},
+                        {"trigger_to_frame_swapped_ms", swapMs},
+                        {"trigger_to_complete_frame_ms", elapsedMs},
+                        {"trigger_to_capture_complete_ms", captureMs},
+                        {"trigger_to_validation_complete_ms", validationMs},
+                        {"captured_owned_pixels_accepted", capturedOwnedPixelsAccepted},
+                        {"failure_baseline_saved", failureBaselineSaved},
+                        {"failure_first_captured_saved", failureFirstSaved},
+                        {"pixels_saved_in_diagnostic", failureBaselineSaved || failureFirstSaved}})
                     .toJson());
         QVERIFY2(!occlusionRejections, "Owned client became occluded; no capture saved");
         QVERIFY2(!nativeCaptureFailed,
