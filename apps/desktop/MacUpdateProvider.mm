@@ -60,6 +60,8 @@
 
 namespace {
 XdzipUpdateDriver *driver = nil;
+QPointer<QObject> commitContext;
+std::function<void()> commitCallback;
 bool updateSessionBlocked() {
     return driver && (driver->updater.sessionInProgress ||
                       (driver->installerRequired && !driver->installerGone));
@@ -544,12 +546,21 @@ void startMacUpdate(UpdateController *owner, const QJsonObject &candidate,
     }
     [driver->updater checkForUpdates];
 }
+bool macUpdateInstallationCommitted() {
+    return driver && driver->committed;
+}
+void setMacUpdateCommitCallback(QObject *context, std::function<void()> callback) {
+    commitContext = context;
+    commitCallback = std::move(callback);
+}
 bool commitMacUpdate() {
     if (!driver || driver->cancelled || driver->committed || !driver->installReply)
         return false;
     driver->committed = YES;
     auto reply = driver->installReply;
     driver->installReply = nil;
+    if (commitContext && commitCallback)
+        commitCallback();
     reply(SPUUserUpdateChoiceInstall);
     return true;
 }
@@ -589,6 +600,7 @@ QJsonObject macUpdateExitStatus() {
         for (const auto pid : driver->readyInstallerPids)
             pids.append(pid);
     return {{"installer_seen_at_ready", driver && driver->installerSeenAtReady},
+            {"committed", macUpdateInstallationCommitted()},
             {"installer_pids_at_ready", pids},
             {"installer_gone_before_exit", driver && driver->installerGone},
             {"installer_observation_error", driver && driver->installerObservationError},
@@ -599,6 +611,9 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
     // Exercise the real Sparkle user-driver callbacks, without starting a
     // network session, authorizing a helper, or modifying an installed app.
     auto previous = driver;
+    const auto previousCommitContext = commitContext;
+    auto previousCommitCallback = std::exchange(commitCallback, {});
+    commitContext = nullptr;
     QTemporaryDir parserDirectory;
     const auto helper = parserDirectory.path() + QStringLiteral("/用户目录/更新.app/Autoupdate");
     QDir().mkpath(QFileInfo(helper).absolutePath());
@@ -634,6 +649,14 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
     int preparedCount = 0;
     __block int installReplies = 0;
     __block bool installed = false;
+    __block bool committedBeforeReply = false;
+    QObject commitLifetime;
+    int commitReleases = 0;
+    const auto releaseCount = &commitReleases;
+    setMacUpdateCommitCallback(&commitLifetime, [&] {
+        if (macUpdateInstallationCommitted())
+            ++commitReleases;
+    });
     driver->prepared = [&](QString error) {
         if (error.isEmpty())
             ++preparedCount;
@@ -641,10 +664,13 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
     [driver showReadyToInstallAndRelaunch:^(SPUUserUpdateChoice choice) {
       ++installReplies;
       installed = choice == SPUUserUpdateChoiceInstall;
+      committedBeforeReply = macUpdateInstallationCommitted() && *releaseCount == 1;
     }];
-    const bool held = preparedCount == 1 && installReplies == 0;
+    const bool held = preparedCount == 1 && installReplies == 0 &&
+                      !macUpdateInstallationCommitted() && commitReleases == 0;
     const bool committedOnce = commitMacUpdate() && !commitMacUpdate();
-    const bool installationPassed = held && committedOnce && installed && installReplies == 1;
+    const bool installationPassed = held && committedOnce && installed && installReplies == 1 &&
+                                    committedBeforeReply && commitReleases == 1;
     driver = [[XdzipUpdateDriver alloc] init];
     bool immediateQuit = false;
     const bool inactiveQuit = !deferMacUpdateQuit([&] { immediateQuit = true; });
@@ -733,15 +759,23 @@ bool macUpdateLifecycleProbe(UpdateController *owner) {
                                                 {"retry_gate_released", !updateSessionBlocked()}});
     }
     const QJsonObject diagnostics{
-        {"unicode_parser", unicodeParser},       {"malformed_rejected", malformedRejected},
-        {"cancellation", cancellationPassed},    {"installation", installationPassed},
-        {"normal_quit", normalQuitPassed},       {"normal_callback_cleared", normalCallbackCleared},
-        {"normal_quit_calls", completedQuits},   {"normal_helper_observations", helperObservations},
-        {"rejected_ready", rejectedReadyPassed}, {"rejected_observations", rejectedObservations}};
+        {"unicode_parser", unicodeParser},
+        {"malformed_rejected", malformedRejected},
+        {"cancellation", cancellationPassed},
+        {"installation", installationPassed},
+        {"guard_release_after_commit_before_reply", bool(committedBeforeReply)},
+        {"commit_release_calls", commitReleases},
+        {"normal_quit", normalQuitPassed},
+        {"normal_callback_cleared", normalCallbackCleared},
+        {"normal_quit_calls", completedQuits},
+        {"normal_helper_observations", helperObservations},
+        {"rejected_ready", rejectedReadyPassed},
+        {"rejected_observations", rejectedObservations}};
     qInfo().noquote() << "Mac updater lifecycle:"
                       << QJsonDocument(diagnostics).toJson(QJsonDocument::Compact);
     installerObservationOverride = std::move(previousObservation);
     driver = previous;
+    setMacUpdateCommitCallback(previousCommitContext.data(), std::move(previousCommitCallback));
     return unicodeParser && malformedRejected && cancellationPassed && installationPassed &&
            normalQuitPassed && rejectedReadyPassed;
 }

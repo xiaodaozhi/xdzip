@@ -104,21 +104,41 @@ def manifest(package, platform, tool, identity=NEW):
     return path
 
 
-def qa_installer_text(text):
+def qa_installer_text(text, outcome='upgrade'):
     """Drive only owned test installers; retain the real supplier agreement."""
-    return text.replace('[Setup]\n','[Setup]\nShowLanguageDialog=no\nSetupLogging=yes\n',1)+'''
+    if outcome not in ('upgrade','cancel-license','startup-failure'):
+        raise ValueError('Unknown owned installer outcome')
+    text=text.replace('[Setup]\n','[Setup]\nShowLanguageDialog=no\nSetupLogging=yes\n',1)
+    if outcome=='startup-failure':
+        marker='function InitializeSetup(): Boolean;\nvar Schema: Cardinal;\nbegin\n'
+        if text.count(marker)!=1:raise ValueError('Expected the real Setup initialization hook')
+        text=text.replace(marker,marker+"  Log('Owned fixture injected InitializeSetup failure');\n  Result := False;\n  exit;\n",1)
+    cancel=outcome=='cancel-license'
+    return text+'''
 procedure CurPageChanged(CurPageID: Integer);
 begin
   Log(Format('Owned fixture wizard page: %d', [CurPageID]));
   if CurPageID = wpLicense then begin
-    WizardForm.LicenseAcceptedRadio.Checked := True;
+'''+('''    Log('Owned fixture cancelled license without accepting');
+    PostMessage(WizardForm.CancelButton.Handle, $00F5, 0, 0);
+    exit;
+''' if cancel else '''    WizardForm.LicenseAcceptedRadio.Checked := True;
     WizardForm.LicenseAcceptedRadio.OnClick(WizardForm.LicenseAcceptedRadio);
+''')+'''
   end;
   { wpReady rejects synchronous clicks before Show; queue the native button event. }
   if (CurPageID <> wpInstalling) and WizardForm.NextButton.Enabled then
     PostMessage(WizardForm.NextButton.Handle, $00F5, 0, 0);
 end;
-'''
+'''+('''
+procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
+begin
+  if CurPageID = wpLicense then begin
+    Cancel := True;
+    Confirm := False;
+  end;
+end;
+''' if cancel else '')
 
 
 def request(job, parent_pid, install_root, package):

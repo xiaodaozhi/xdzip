@@ -127,8 +127,6 @@ class MacProbeUpdate final : public QObject {
         connect(sessions, &ApplicationSessions::readyForUpdate, this, [this] {
             m_events["barrier_before_install"] = true;
             save(m_directory + "/events.json", m_events);
-            if (releaseExitGuard)
-                releaseExitGuard();
             if (!commitMacUpdate())
                 finish(false, "commit_failed");
         });
@@ -156,6 +154,13 @@ class MacProbeUpdate final : public QObject {
     }
     std::function<void()> cancelControl;
     std::function<void()> releaseExitGuard;
+    void releaseCommittedQuitGuard() {
+        m_events["guard_release_after_commit"] = macUpdateInstallationCommitted();
+        m_events["guard_release_after_join"] = m_events.value("barrier_before_install").toBool();
+        save(m_directory + "/events.json", m_events);
+        if (releaseExitGuard)
+            releaseExitGuard();
+    }
     Q_INVOKABLE void check() {
         m_updates->reportNativeProgress("available", -1);
     }
@@ -248,7 +253,9 @@ int main(int argc, char **argv) {
             return 63;
         const auto evidence = QJsonDocument::fromJson(events.readAll()).object();
         const bool success = evidence.value("about_install_clicked").toBool() &&
-                             evidence.value("barrier_before_install").toBool();
+                             evidence.value("barrier_before_install").toBool() &&
+                             evidence.value("guard_release_after_commit").toBool() &&
+                             evidence.value("guard_release_after_join").toBool();
         return save(directory + "/result.json", {{"success", success},
                                                  {"relaunched_build", nativeBuild},
                                                  {"events", evidence}}) &&
@@ -287,6 +294,7 @@ int main(int argc, char **argv) {
         for (auto *sessionWindow : sessions.windows())
             sessionWindow->setProperty("allowManagedClose", true);
     };
+    setMacUpdateCommitCallback(&guard, [&] { facade.releaseCommittedQuitGuard(); });
     QObject::connect(&updates, &UpdateController::quitForUpdate, &application, &QApplication::quit);
     QQmlComponent component(&engine, QUrl("qrc:/xdzip/ui/AboutWindow.qml"));
     std::unique_ptr<QObject> aboutObject(component.createWithInitialProperties(
@@ -329,7 +337,9 @@ int main(int argc, char **argv) {
         cancelMacUpdate();
         facade.finish(false, "timeout");
     });
-    return application.exec();
+    const auto result = application.exec();
+    setMacUpdateCommitCallback(nullptr, {});
+    return result;
 }
 
 #include "mac_update_probe.moc"

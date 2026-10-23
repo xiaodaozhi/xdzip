@@ -58,7 +58,14 @@ def main():
     # container and authorizes this fixed public fixture UID, without a desktop agent.
     rules = Path('/etc/polkit-1/rules.d/00-xdzip-owned-fixture.rules')
     rules.parent.mkdir(parents=True, exist_ok=True)
-    rules.write_text('polkit.addRule(function(action, subject) { if (action.id === "org.xdzip.update" && subject.user === "xdzipfixture") return polkit.Result.YES; });\n')
+    rules.write_text('''polkit.addRule(function(action, subject) {
+  if (action.id !== "org.xdzip.update" || subject.user !== "xdzipfixture") return;
+  var command = action.lookup("command_line") || "";
+  if (command.indexOf("/authorization-denied/request.json") >= 0) return polkit.Result.NO;
+  if (command.indexOf("/authorization-no-agent/request.json") >= 0 ||
+      command.indexOf("/authorization-cancelled/request.json") >= 0) return polkit.Result.AUTH_ADMIN;
+  return polkit.Result.YES;
+});\n''')
     Path('/run/dbus').mkdir(exist_ok=True)
     run(['dbus-daemon', '--system', '--fork'])
     polkit = next((p for p in (Path('/usr/lib/polkit-1/polkitd'), Path('/usr/libexec/polkitd')) if p.is_file()))
@@ -111,7 +118,7 @@ def main():
     def reset():
         run(['dpkg', '-i', old], stdout=subprocess.DEVNULL)
         restart.unlink(missing_ok=True)
-    def scenario(label, candidate, expected='', cancel=False, corrupt=False, authorized=True):
+    def scenario(label, candidate, expected='', cancel=False, corrupt=False, authorized=True, cancel_agent=False):
         reset()
         job = home / label
         job.mkdir(mode=0o700)
@@ -132,7 +139,11 @@ def main():
             os.chown(leaf, UID, UID)
             leaf.chmod(0o600)
         log = (output / (label + '.log')).open('w')
-        if authorized:
+        if cancel_agent:
+            process=user([sys.executable, ROOT/'tests/fixtures/native/polkit-cancel-agent.py',
+                          '--request',job/'request.json','--record',job/'authorization-agent.json'],
+                         stdout=log,stderr=subprocess.STDOUT)
+        elif authorized:
             process = user(['/usr/libexec/xdzip-update-helper', '--authorize', job / 'request.json'], stdout=log, stderr=subprocess.STDOUT)
         else:
             process = subprocess.Popen(['/usr/libexec/xdzip-update-helper', '--request', str(job / 'request.json')], env={**os.environ, 'PKEXEC_UID': str(UID)}, stdout=log, stderr=subprocess.STDOUT)
@@ -151,13 +162,26 @@ def main():
             receipt = await_file(job / 'result.json', timeout=90)
             assert receipt == {'transaction': transaction, 'error': expected}, receipt
             process.wait(timeout=10)
+            if expected in ('authorization_failed','authorization_cancelled'):
+                assert not (job/'ready.json').exists() and not (job/'proceed.json').exists()
+                assert parent.poll() is None and not restart.exists()
+                identity=json.loads(subprocess.check_output([old_root/'bin/xdzip','--version-json'],text=True))
+                assert identity['version']==OLD['version'] and identity['build']==OLD['build'],identity
+            if cancel_agent:
+                agent=json.loads((job/'authorization-agent.json').read_text())
+                assert agent['challenge_observed'] and agent['action']=='org.xdzip.update',agent
+                assert agent['reply_error']=='org.freedesktop.PolicyKit1.Error.Cancelled' and not agent.get('callback_error'),agent
+                assert agent['agent_connection_closed'],agent
+                shutil.copy2(job/'authorization-agent.json',output/'authorization-agent.json')
             if not expected:
                 resumed = await_file(restart, timeout=20)
                 assert resumed['version'] == NEW['version'] and resumed['build'] == NEW['build'] and resumed['uid'] == UID, resumed
                 status = subprocess.check_output(['dpkg-query', '-W', '-f=${Status}', 'xdzip'], text=True)
                 assert status == 'install ok installed'
             assert not Path('/run/xdzip/updating').exists(), 'Update gate leaked'
-            results.append({'case': label, 'status': 'passed', 'error': expected, 'authorized_via_pkexec': authorized})
+            results.append({'case': label, 'status': 'passed', 'error': expected,
+                            'authorized_via_pkexec': authorized,
+                            'real_authentication_agent_dismissal':cancel_agent})
         finally:
             if (job / 'result.json').is_file():
                 shutil.copy2(job / 'result.json', output / (label + '-receipt.json'))
@@ -168,6 +192,9 @@ def main():
                 process.wait(timeout=5)
             log.close()
     try:
+        scenario('authorization-denied',new,'authorization_failed')
+        scenario('authorization-no-agent',new,'authorization_failed')
+        scenario('authorization-cancelled',new,'authorization_cancelled',cancel_agent=True)
         scenario('cancel', new, 'cancelled', cancel=True)
         scenario('bad-signature', new, 'untrusted_signature', corrupt=True)
         scenario('wrong-package-name', wrong_name, 'invalid_debian_package')

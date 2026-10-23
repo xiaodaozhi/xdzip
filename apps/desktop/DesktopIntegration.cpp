@@ -433,7 +433,19 @@ void DesktopIntegration::execute(const QString &command) {
 void DesktopIntegration::requestQuit() {
     if (!m_window || !m_controller)
         return;
-    if (blocked()) {
+    auto *modal = qobject_cast<QQuickWindow *>(QGuiApplication::modalWindow());
+    bool taskPrompt = false;
+    if (m_sessions && !QApplication::activeModalWidget() && modal &&
+        (modal->objectName() == QStringLiteral("passwordWindow") ||
+         modal->objectName() == QStringLiteral("conflictWindow")))
+        for (auto *owner : m_sessions->windows())
+            if (owner->findChildren<QQuickWindow *>().contains(modal)) {
+                taskPrompt = true;
+                break;
+            }
+    // A task prompt may be superseded by the global quit decision. Other
+    // modals retain their normal protection, including native file selectors.
+    if (blocked() && !taskPrompt) {
         restore();
         return;
     }

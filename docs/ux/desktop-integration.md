@@ -2,6 +2,8 @@
 
 多会话、单实例、窗口状态及全局退出以[应用会话契约](../engineering/application-sessions.md)为准。关闭非最后主窗口保留任务，最后窗口遵循托盘设置；退出确认覆盖所有会话。
 
+系统、菜单和托盘的显式退出在本应用密码或冲突提示中仍能进入全局退出确认，返回保留原任务和提示。文件选择器及其他模态控件先完成或取消，再处理退出。System, menu and tray Quit can open the global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. File selectors and other modal controls must be completed or cancelled first.
+
 macOS 顶部菜单和三平台托盘使用操作系统原生菜单，保留已有主窗口标题栏。参数见 [桌面集成参数](../visual/desktop-integration.json)，[交互稿](../../design/html/desktop-integration.html)，[高保真入口](../../design/hifi/sources/desktop-integration.html)。原生字体、行高、菜单宽度与系统高亮不套用应用内 CommandMenu 的密度参数；HTML 为交互说明，不作为原生像素验收。
 
 macOS 菜单按 xdzip、文件、编辑、显示、操作、窗口、帮助排列。“帮助”提供“使用说明”和“反馈问题”，通过默认浏览器打开项目 README 与 Issues 页面，不自动提交反馈；分隔线后提供“关于 xdzip”，打开与应用菜单、托盘相同的关于窗口。帮助菜单的关于项使用 NoRole，保留在原位置；应用菜单使用 AboutRole、PreferencesRole、QuitRole，系统提供服务、隐藏及显示全部。文件含打开、新建、最近打开、关闭压缩包、关闭窗口；编辑按当前文本焦点提供撤销、重做、剪切、复制、粘贴、全选与查找；显示含列表、网格与预览；操作含全部解压、解压所选与元数据预检；窗口含最小化、缩放、主窗口、任务及可见产品窗口。

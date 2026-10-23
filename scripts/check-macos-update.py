@@ -215,11 +215,13 @@ def scenario(output, label, old_app, archive, server_url, sdk, signing, public, 
         if label == 'success':
             passed = result.get('success') is True and result.get('relaunched_build') == NEW_BUILD and build == NEW_BUILD
             passed = passed and events.get('about_install_clicked') and events.get('barrier_before_install')
+            passed = passed and events.get('guard_release_after_commit') and events.get('guard_release_after_join')
             invoke(['codesign', '--verify', '--deep', '--strict', installed], directory/'verify.log')
         else:
             error = 'cancelled' if cancel else 'native_update'
             passed = result.get('success') is False and result.get('error') == error and build == OLD_BUILD
             passed = passed and events.get('about_install_clicked') and not events.get('barrier_before_install')
+            passed = passed and not events.get('guard_release_after_commit')
             if cancel:
                 passed = passed and events.get('about_cancel_clicked') and events.get('native_quit_deferred')
                 passed = passed and events.get('native_cycle_settled_before_exit')

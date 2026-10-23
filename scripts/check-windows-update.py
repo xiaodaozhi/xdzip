@@ -81,7 +81,7 @@ def main():
     sid = next(csv.reader([subprocess.check_output(['whoami', '/user', '/fo', 'csv', '/nh'], text=True).strip()]))[1]
     def private(path):
         run(['icacls', path, '/inheritance:r', '/grant:r', '*' + sid + ':(OI)(CI)F'], stdout=subprocess.DEVNULL)
-    def package(label, identity, executable_identity=None):
+    def package(label, identity, executable_identity=None, outcome='upgrade'):
         folder = output / label
         payload = folder / 'payload'
         payload.mkdir(parents=True)
@@ -100,7 +100,7 @@ def main():
         # Only this owned test installer automatically confirms its wizard. The
         # exact production LicenseFile and notice remain compiled and validated;
         # neither the production template nor helper receives a silent bypass.
-        text=qa_installer_text(text)
+        text=qa_installer_text(text,outcome)
         path.with_suffix('.files').write_text(builder.payload_manifest(audit), encoding='utf-8')
         path.with_suffix('.iss').write_text(text, encoding='utf-8-sig')
         run([ROOT / 'build/installer-toolchain/compiler/ISCC.exe', path.with_suffix('.iss')], stdout=subprocess.DEVNULL)
@@ -109,6 +109,8 @@ def main():
     old = package('old', OLD)
     new = package('new', NEW)
     mismatched = package('identity-mismatch', NEW, OLD)
+    license_cancel = package('license-cancel', NEW, outcome='cancel-license')
+    setup_failure = package('setup-failure', NEW, outcome='startup-failure')
     install_root = Path(os.environ['RUNNER_TEMP']) / ('xdzip updater owned fixture ' + str(os.getpid()))
     install_root.mkdir()
     private(install_root)
@@ -155,6 +157,17 @@ def main():
             receipt = await_file(job / 'result.json', timeout=180)
             assert receipt == {'transaction': transaction, 'error': expected}, receipt
             process.wait(timeout=15)
+            if expected in ('installation_cancelled','installation_failed'):
+                assert not restart.exists(),'Failed or cancelled Setup restarted the application'
+                actual=json.loads(subprocess.check_output([str(install_root/'xdzip.exe'),'--version-json'],text=True))
+                assert actual['version']==OLD['version'] and actual['build']==OLD['build'],actual
+                marker=('Owned fixture cancelled license without accepting' if expected=='installation_cancelled'
+                        else 'Owned fixture injected InitializeSetup failure')
+                setup_logs=[]
+                for setup_log in installer_temp.glob('Setup Log*.txt'):
+                    raw=setup_log.read_bytes()
+                    setup_logs.append(raw.decode('utf-16' if raw.startswith(b'\xff\xfe') else 'utf-8-sig',errors='replace'))
+                assert any(marker in text for text in setup_logs),'Actual Setup did not reach the intended owned failure/cancel hook'
             if not expected:
                 resumed = await_file(restart, timeout=20)
                 assert resumed['version'] == NEW['version'] and resumed['build'] == NEW['build'], resumed
@@ -173,6 +186,8 @@ def main():
                 process.wait(timeout=10)
             log.close()
     try:
+        scenario('real-license-cancel',license_cancel,'installation_cancelled')
+        scenario('real-setup-failure',setup_failure,'installation_failed')
         scenario('cancel', new, 'cancelled', cancel=True)
         scenario('bad-signature', new, 'untrusted_signature', corrupt=True)
         scenario('wrong-installed-identity', mismatched, 'installed_identity_mismatch')

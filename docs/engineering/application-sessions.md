@@ -20,6 +20,10 @@
 
 等待全部任务退出只由应用级任务总数与 join 屏障收敛。某一页面先完成任务时，不执行旧单页自动关闭，也不因该页结束而隐藏最后窗口或再次显示退出确认。
 
+系统 Quit、应用菜单与托盘的显式退出经过同一桌面路由。受管理会话自己的密码与冲突提示允许被全会话退出确认覆盖；选择返回保留原任务和请求令牌，取消并退出仍等待所有连接清理与 join。原生文件选择器、其他模态控件及不属于受管理窗口的提示继续阻挡退出请求并保持前台，不能用通用模态检查误吞密码等待期间的退出，也不能直接绕过确认取消任务。
+
+System Quit, application-menu and tray quit share the desktop route. An owned password or conflict prompt in a managed session may be superseded by the global quit confirmation. Returning preserves the task and prompt token; cancelling and quitting still waits for every cleanup and Rust join. Native file selectors, other modal controls and prompts outside managed windows retain their blocking behavior.
+
 主窗口可见时，“显示并激活”只提升和请求激活。隐藏或最小化时恢复先前普通、最大化或全屏状态，不先还原再最大化。阻塞的模态窗口优先激活，弹窗 transientParent 绑定实际调用窗口。关闭最后一个主窗口继续遵循托盘设置。设置与关于从统一入口进入，已有窗口优先激活，不创建另一份可见草稿。
 
 `showMinimized()` 会替换原状态位。恢复时先在仍最小化的状态下补齐保存的最大化或全屏标志，再仅移除最小化标志，不先显示普通窗口。原生回归等待窗口实际暴露、激活及最终状态确认，避免把 Qt 请求值当作窗口管理器已完成的状态。

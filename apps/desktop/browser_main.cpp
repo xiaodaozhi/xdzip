@@ -175,13 +175,32 @@ int main(int argc, char *argv[]) {
     guard.window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
     guard.controller = controller;
     application.installEventFilter(&guard);
-    QObject::connect(&updates, &UpdateController::exitBarrierReached, &application, [&] {
+#ifdef Q_OS_MACOS
+    bool macUpdateJoined = false;
+    setMacUpdateCommitCallback(&guard, [&] {
+        if (!macUpdateJoined || !macUpdateInstallationCommitted())
+            return;
         guard.quitHandler = {};
         guard.controller = nullptr;
         for (auto *window : QGuiApplication::allWindows())
             if (window->property("sessionManager").isValid())
                 window->setProperty("allowManagedClose", true);
         QApplication::setQuitOnLastWindowClosed(true);
+    });
+#endif
+    QObject::connect(&updates, &UpdateController::exitBarrierReached, &application, [&] {
+#ifdef Q_OS_MACOS
+        // Joining Rust does not commit Sparkle. Failed or cancelled native
+        // handoffs still need the normal quit/helper observation barrier.
+        macUpdateJoined = true;
+#else
+        guard.quitHandler = {};
+        guard.controller = nullptr;
+        for (auto *window : QGuiApplication::allWindows())
+            if (window->property("sessionManager").isValid())
+                window->setProperty("allowManagedClose", true);
+        QApplication::setQuitOnLastWindowClosed(true);
+#endif
     });
     QObject::connect(&updates, &UpdateController::quitForUpdate, &application, [&] {
         guard.quitHandler = {};
@@ -203,6 +222,12 @@ int main(int argc, char *argv[]) {
         QObject::connect(sessions.get(), &ApplicationSessions::closing, &instance,
                          &SingleInstance::stopAccepting);
         guard.quitHandler = [&] {
+#ifdef Q_OS_MACOS
+            if (macUpdateJoined && !macUpdateInstallationCommitted()) {
+                sessions->requestQuit();
+                return;
+            }
+#endif
             if (!sessions->isClosing())
                 desktop.requestQuit();
         };
@@ -307,6 +332,9 @@ int main(int argc, char *argv[]) {
     QTimer::singleShot(0, mainWindow, &QWindow::show);
 #endif
     const auto result = application.exec();
+#ifdef Q_OS_MACOS
+    setMacUpdateCommitCallback(nullptr, {});
+#endif
     instance.release(); // All joins are complete; a restart must elect a new primary.
     // Window close completes the existing task decision and runtime join barrier first.
     // Relaunch only the application, never replay diagnostic flags or a previously opened file.

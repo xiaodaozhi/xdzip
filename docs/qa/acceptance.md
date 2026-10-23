@@ -5,6 +5,7 @@
 - 检查核心夹具：稳定/alpha/beta/rc/dev、同版本和降级、build 不递增、分页乱序、缺包、错误平台/架构/最低系统、签名或候选身份不一致。无签名或未知信任根只提供手动入口。
 - 网络检查离线、TLS、超时、限流、受控重定向、截断、空间不足、取消、重复点击及 ETag；任何失败不显示已是最新或启动安装。部署后清除 SDK 搜索路径，验证真实 HTTPS。
 - 在隔离三平台用独立测试密钥从旧版升级到新版，核对任务/密码等待、退出取消、安装中再启动、授权取消、失败、恢复和单实例重启；设置和默认关联须保留。Windows 交互安装保留许可确认，Linux 未配置 dpkg 不报成功或回滚，Mac 必须 Apple Silicon 原生执行完整 Sparkle 归档验证、替换和重启。
+- 密码与更新等待并存时，通过真实主程序的系统 Quit 路由进入退出确认，点击返回后原任务与请求令牌不变，取消并退出后所有 Rust join 完成且没有安装交接。另核验文件选择器和不相关模态窗口仍阻挡退出，不能以直接调用会话接口代替桌面入口回归。While password and update waiting coexist, exercise the real main program's system Quit route and Return/Cancel buttons. Preserve the task/token on Return; require all joins and no install handoff on cancellation. File selectors and unrelated modals remain blocking; a direct session call does not cover the desktop route.
 - 关于页覆盖全部状态，关闭重开保持任务，取消显式执行；检查中英文、浅深色、三档字号和窄屏滚动，复用操作控件。生产密钥和真实平台未验证项独立列出，普通 CI 不部署/签名/上传 Mac 应用包。
 
 T01～T18 的权威映射见 design/requirements-traceability.md。以下是可复用的验收规格，不表示本次已执行或均未执行。实际结果在对应 issue 和工件记录，既有人工结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)；新候选按受影响项复验，不创建假的 pass 报告。

@@ -8,6 +8,7 @@
 #include "UiText.h"
 #include "UpdateController.h"
 #include <QDir>
+#include <QEvent>
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QInputMethodEvent>
@@ -234,6 +235,8 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
         bool duplicateQueued = false, duplicateAttempted = false;
         bool archiveOpened = false, testStarted = false, passwordWaiting = false;
         bool waitCancelled = false, passwordSubmitted = false, passwordCompleted = false;
+        bool quitRequested = false, quitReturned = false, quitConfirmed = false;
+        int ordinaryQuitSignals = 0, updateBarriers = 0;
         QString task, prompt;
     };
     const auto state = std::make_shared<State>();
@@ -252,6 +255,7 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
     QObject::connect(
         updates, &UpdateController::exitBarrierReached, sessions,
         [updates, sessions, settings, state, prefix] {
+            ++state->updateBarriers;
             auto record = snapshot(updates, settings);
             record.insert("update_pending", sessions->updatePending());
             record.insert("active_tasks", sessions->activeTaskCount());
@@ -267,6 +271,42 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
                 QJsonDocument::fromJson(pending.value("update/pending").toByteArray()).object());
             saveRecord(prefix + "-exit-barrier.json", record);
         });
+    QObject::connect(
+        sessions, &ApplicationSessions::readyToQuit, sessions, [updates, sessions, window, state] {
+            if (!state->quitConfirmed)
+                return;
+            ++state->ordinaryQuitSignals;
+            auto *page = window->property("activePage").value<QObject *>();
+            auto *controller = page ? page->findChild<BrowserController *>() : nullptr;
+            QVariantMap task;
+            if (controller)
+                for (const auto &value : controller->tasks())
+                    if (value.toMap().value("id").toString() == state->task)
+                        task = value.toMap();
+            bool joined = true;
+            const auto controllers = window->findChildren<BrowserController *>();
+            for (auto *connection : controllers)
+                joined &= connection->shutdownComplete();
+            const bool passed = controller && !controllers.isEmpty() && joined &&
+                                controller->passwordPrompt().isEmpty() &&
+                                task.value("status").toString() == "cancelled" &&
+                                task.value("terminal").toBool() &&
+                                sessions->activeTaskCount() == 0 && !sessions->updatePending() &&
+                                state->updateBarriers == 0 && state->ordinaryQuitSignals == 1;
+            saveRecord("normal-quit-completed.json",
+                       {{"status", passed ? "passed" : "failed"},
+                        {"method", "ordinary application Quit event and QuitWindow mouse"},
+                        {"task_id", state->task},
+                        {"prompt_id", state->prompt},
+                        {"task_status", task.value("status").toString()},
+                        {"prompt_cleared", controller && controller->passwordPrompt().isEmpty()},
+                        {"all_runtimes_joined", joined},
+                        {"runtime_count", controllers.size()},
+                        {"ready_to_quit_count", state->ordinaryQuitSignals},
+                        {"update_barriers", state->updateBarriers},
+                        {"update_pending", sessions->updatePending()},
+                        {"update_state", updates->state()}});
+        });
     auto *timer = new QTimer(sessions);
     timer->setInterval(100);
     QObject::connect(
@@ -275,16 +315,24 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
                 return;
             if (!state->started && window->isVisible()) {
                 if (oldProduct()) {
-                    if (QFileInfo::exists(uiSettingsPath()) ||
-                        !settings->saveDetails("dark", 1.25, "en-US", "compact", false, false,
-                                               false, "tabs")) {
+                    const bool resume =
+                        QFileInfo::exists(directory() + "/normal-quit-completed.json");
+                    if (!resume && (QFileInfo::exists(uiSettingsPath()) ||
+                                    !settings->saveDetails("dark", 1.25, "en-US", "compact", false,
+                                                           false, false, "tabs"))) {
                         saveRecord("fixture-error.json", {{"error", "initial_profile"}});
                         QCoreApplication::exit(51);
                         return;
                     }
                     QSettings profile(uiSettingsPath(), QSettings::IniFormat);
-                    profile.setValue("ownedFixture/sentinel", "preserve-me");
-                    profile.sync();
+                    if (!resume) {
+                        profile.setValue("ownedFixture/sentinel", "preserve-me");
+                        profile.sync();
+                    } else if (profile.value("ownedFixture/sentinel").toString() != "preserve-me") {
+                        saveRecord("fixture-error.json", {{"error", "quit_profile_restore"}});
+                        QCoreApplication::exit(51);
+                        return;
+                    }
                 }
                 state->started = true;
                 saveRecord(prefix + "-started.json", snapshot(updates, settings));
@@ -348,8 +396,48 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
                     if (!password || !password->isExposed())
                         return;
                     if (password->modality() != Qt::ApplicationModal ||
-                        QGuiApplication::modalWindow() != password) {
+                        (!state->quitRequested && QGuiApplication::modalWindow() != password)) {
                         fail("waiting_password_modality");
+                        return;
+                    }
+                    if (QFileInfo::exists(directory() + "/normal-quit-scenario.json") &&
+                        !QFileInfo::exists(directory() + "/normal-quit-completed.json")) {
+                        if (!state->quitRequested) {
+                            state->quitRequested = true;
+                            QCoreApplication::postEvent(QCoreApplication::instance(),
+                                                        new QEvent(QEvent::Quit));
+                            return;
+                        }
+                        auto *quit = page ? page->findChild<QQuickWindow *>("quitWindow") : nullptr;
+                        if (!quit || !quit->isExposed())
+                            return;
+                        QScopedValueRollback<bool> pressing(state->clicking, true);
+                        if (!state->quitReturned) {
+                            if (!click(quit, quit->findChild<QObject *>("quitReturn")))
+                                return;
+                            const auto after = controller->passwordPrompt();
+                            if (controller->activeTaskCount() != 1 || sessions->isClosing() ||
+                                after.value("taskId").toString() != state->task ||
+                                after.value("promptId").toString() != state->prompt ||
+                                updates->state() != "waiting_tasks") {
+                                fail("normal_quit_return_changed_task");
+                                return;
+                            }
+                            state->quitReturned = true;
+                            saveRecord("normal-quit-returned.json",
+                                       {{"task_id", state->task},
+                                        {"prompt_id", state->prompt},
+                                        {"active_tasks", controller->activeTaskCount()},
+                                        {"update_state", updates->state()}});
+                            QCoreApplication::postEvent(QCoreApplication::instance(),
+                                                        new QEvent(QEvent::Quit));
+                        } else if (!state->quitConfirmed) {
+                            state->quitConfirmed = true;
+                            if (!click(quit, quit->findChild<QObject *>("quitCancel"))) {
+                                state->quitConfirmed = false;
+                                fail("normal_quit_cancel_not_clicked");
+                            }
+                        }
                         return;
                     }
                     // PasswordWindow remains ApplicationModal. This controller

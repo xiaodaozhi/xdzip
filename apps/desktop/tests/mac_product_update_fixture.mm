@@ -3,6 +3,7 @@
 // Private build instrumentation. Normal product targets never compile this file.
 #include "mac_product_update_fixture.h"
 #include "ApplicationSessions.h"
+#include "BrowserController.h"
 #include "BuildInfo.h"
 #include "MacUpdateProvider.h"
 #include "UiPreferences.h"
@@ -11,9 +12,11 @@
 #import <Foundation/Foundation.h>
 #include <QCoreApplication>
 #include <QDir>
+#include <QEvent>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QInputMethodEvent>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
@@ -29,6 +32,8 @@
 #include <QUrl>
 #include <QtTest/QTest>
 #include <memory>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace {
 QString directory() {
@@ -118,6 +123,8 @@ QJsonObject snapshot(UpdateController *updates, UiPreferences *settings) {
         if (window->isVisible() && window->property("managedWindow").toBool())
             ++windows;
     QSettings profile(uiSettingsPath(), QSettings::IniFormat);
+    QSettings pending(QFileInfo(uiSettingsPath()).dir().filePath("update-state.ini"),
+                      QSettings::IniFormat);
     return {{"version", BuildInfo::version()},
             {"build", BuildInfo::buildNumber()},
             {"revision", BuildInfo::revision()},
@@ -138,7 +145,8 @@ QJsonObject snapshot(UpdateController *updates, UiPreferences *settings) {
             {"density", settings->density()},
             {"language", settings->language()},
             {"active_language", settings->activeLanguage()},
-            {"unknown_key", profile.value("ownedFixture/unknownKey").toString()}};
+            {"unknown_key", profile.value("ownedFixture/unknownKey").toString()},
+            {"pending_present", pending.contains("update/pending")}};
 }
 bool click(QQuickWindow *window, QQuickItem *item) {
     if (!window || !window->isExposed() || !item || !item->isVisible() || !item->isEnabled())
@@ -192,7 +200,7 @@ QNetworkAccessManager *macProductUpdateFixtureTransport(QObject *parent) {
         failure("fixture_configuration_or_profile_override");
         return nullptr;
     }
-    if (!oldProduct())
+    if (!oldProduct() || configuration().value("scenario") == "recovery")
         return nullptr; // Normal constructor must restore the real persisted receipt.
     return new Network(parent);
 }
@@ -240,13 +248,65 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
     }
     struct State {
         bool started = false, check = false, install = false, clicking = false, stopping = false;
+        bool created = false, opened = false, testing = false, waiting = false, cancelled = false;
+        bool submitted = false, completed = false, requestedAgain = false;
+        bool quitRequested = false, returned = false, cancelQuitRequested = false;
+        bool cancelledQuit = false, interrupted = false, joined = false;
+        int quitSignals = 0, barriers = 0;
+        QString task, prompt, idleSession, workingSession;
+        BrowserController *idle = nullptr, *working = nullptr;
     };
     const auto state = std::make_shared<State>();
+    auto *initialPage = window->property("activePage").value<QObject *>();
+    state->idle = initialPage ? initialPage->findChild<BrowserController *>() : nullptr;
+    state->idleSession =
+        initialPage ? initialPage->property("sessionIdentity").toString() : QString{};
     const auto prefix = QString::number(BuildInfo::buildNumber());
+    const auto scenario = config.value("scenario").toString("success");
+    const auto taskRecord = [=] {
+        QVariantMap task;
+        if (state->working)
+            for (const auto &value : state->working->tasks())
+                if (value.toMap().value("id").toString() == state->task)
+                    task = value.toMap();
+        return task;
+    };
+    QObject::connect(sessions, &ApplicationSessions::readyToQuit, sessions, [=] {
+        ++state->quitSignals;
+        state->joined = state->idle && state->idle->shutdownComplete() &&
+                        (!state->working || state->working->shutdownComplete());
+        write(prefix + "-join.json",
+              {{"quit_signals", state->quitSignals},
+               {"all_rust_joined", state->joined},
+               {"active_tasks", sessions->activeTaskCount()},
+               {"update_pending", sessions->updatePending()},
+               {"password_prompt_cleared",
+                !state->working || state->working->passwordPrompt().isEmpty()},
+               {"task", QJsonObject::fromVariantMap(taskRecord())}});
+    });
+    QObject::connect(qApp, &QCoreApplication::aboutToQuit, sessions, [=] {
+        write(prefix + "-normal-quit.json",
+              {{"quit_signals", state->quitSignals},
+               {"all_rust_joined", state->joined},
+               {"barriers", state->barriers},
+               {"return_clicked", state->returned},
+               {"cancel_quit_clicked", state->cancelledQuit},
+               {"quit_intent", scenario == "quit-wait"
+                                   ? "QEvent::Quit through AppQuitGuard and DesktopIntegration"
+                                   : "fixture sessions.requestQuit or native commit"},
+               {"native_exit", macUpdateExitStatus()}});
+    });
+    QObject::connect(updates, &UpdateController::quitForUpdate, sessions, [=] {
+        write(prefix + "-native-commit.json",
+              {{"committed_native_quit", macUpdateInstallationCommitted()},
+               {"active_tasks", sessions->activeTaskCount()}});
+    });
     QObject::connect(updates, &UpdateController::exitBarrierReached, sessions, [=] {
+        ++state->barriers;
         auto record = snapshot(updates, settings);
         record.insert("update_pending", sessions->updatePending());
         record.insert("active_tasks", sessions->activeTaskCount());
+        record.insert("native_exit", macUpdateExitStatus());
         record.insert("about_check_clicked", state->check);
         record.insert("about_install_clicked", state->install);
         QSettings pending(QFileInfo(uiSettingsPath()).dir().filePath("update-state.ini"),
@@ -255,6 +315,36 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             "pending",
             QJsonDocument::fromJson(pending.value("update/pending").toByteArray()).object());
         write(prefix + "-exit-barrier.json", record);
+        if (scenario == "interrupted-handoff") {
+            // An owned fault at the real join/commit boundary, never a claim
+            // that the OS disk replacement or authorization dialog failed.
+            state->interrupted = true;
+            cancelMacUpdate();
+        } else if (scenario == "immutable-replacement") {
+            // Only this fresh installed app root is locked, after Sparkle has
+            // prepared its unprivileged helper. Native commit remains unchanged.
+            struct stat before {
+            }, after{};
+            const auto path = QFile::encodeName(installed);
+            const bool owned = ::lstat(path.constData(), &before) == 0 && S_ISDIR(before.st_mode) &&
+                               before.st_uid == ::geteuid();
+            const bool changed =
+                owned && ::chflags(path.constData(), before.st_flags | UF_IMMUTABLE) == 0;
+            const bool applied = changed && ::lstat(path.constData(), &after) == 0 &&
+                                 before.st_dev == after.st_dev && before.st_ino == after.st_ino &&
+                                 (after.st_flags & UF_IMMUTABLE);
+            write("replacement-fault.json", {{"applied", applied},
+                                             {"changed", changed},
+                                             {"device", QString::number(qulonglong(before.st_dev))},
+                                             {"inode", QString::number(qulonglong(before.st_ino))},
+                                             {"flags_before", QString::number(before.st_flags)},
+                                             {"flags_after", QString::number(after.st_flags)},
+                                             {"fault", "owned UF_IMMUTABLE"}});
+            if (!applied) {
+                state->interrupted = true;
+                cancelMacUpdate();
+            }
+        }
     });
     auto *timer = new QTimer(sessions);
     timer->setInterval(100);
@@ -262,7 +352,7 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         if (state->clicking)
             return;
         if (!state->started && window->isVisible()) {
-            if (oldProduct()) {
+            if (oldProduct() && !config.value("reuse_profile").toBool()) {
                 if (QFileInfo::exists(uiSettingsPath()) ||
                     !settings->saveDetails("dark", 1.25, "en-US", "compact", false, false, false,
                                            "tabs")) {
@@ -283,6 +373,12 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         if (!state->started)
             return;
         write(prefix + "-state.json", snapshot(updates, settings));
+        if (state->interrupted && updates->state() == "recovery_required" && !state->stopping) {
+            state->stopping = true;
+            write("interrupted-handoff.json", snapshot(updates, settings));
+            sessions->requestQuit();
+            return;
+        }
         if (QFileInfo::exists(directory() + "/stop.json") && !state->stopping) {
             state->stopping = true;
             sessions->requestQuit();
@@ -290,7 +386,172 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
         }
         if (!oldProduct() || state->install || !QFileInfo::exists(directory() + "/upgrade.json"))
             return;
+        if (scenario == "recovery")
+            return;
         auto *page = window->property("activePage").value<QObject *>();
+        const bool passwordScenario = scenario == "quit-wait" || scenario == "busy-upgrade";
+        if (passwordScenario && state->check && !state->completed) {
+            if (!state->created && updates->state() == "available") {
+                state->created = true;
+                sessions->newSession();
+                return; // Observe the new active page in a subsequent event-loop turn.
+            }
+            if (state->created && !state->opened) {
+                const auto identity =
+                    page ? page->property("sessionIdentity").toString() : QString{};
+                auto *candidate = page ? page->findChild<BrowserController *>() : nullptr;
+                if (identity.isEmpty() || identity == state->idleSession || !candidate ||
+                    candidate == state->idle || !candidate->runtimeAvailable())
+                    return;
+                if (sessions->sessionCount() != 2 || state->idleSession.isEmpty()) {
+                    failure("password_second_session");
+                    return;
+                }
+                state->workingSession = identity;
+                state->working = candidate;
+                state->opened = true;
+                state->working->openPath(directory() + "/password-retry.zip");
+            }
+            if (!state->opened || !page ||
+                page->property("sessionIdentity").toString() != state->workingSession)
+                return;
+            auto *controller = state->working;
+            if (!controller)
+                return;
+            if (!state->testing && controller->ready() && !controller->busy()) {
+                state->testing = true;
+                controller->startArchiveTest();
+            }
+            const auto prompt = controller->passwordPrompt();
+            if (state->testing && !state->waiting && !prompt.isEmpty()) {
+                state->waiting = true;
+                state->task = prompt.value("taskId").toString();
+                state->prompt = prompt.value("promptId").toString();
+                auto *password = page ? page->findChild<QQuickWindow *>("passwordWindow") : nullptr;
+                if (!password || password->modality() != Qt::ApplicationModal) {
+                    failure("password_native_modality");
+                    return;
+                }
+                // A real modal password prompt prevents About pointer input.
+                // Exercise its policy through the controller and record the seam.
+                updates->downloadAndInstall();
+                write("password-waiting.json",
+                      {{"task_id", state->task},
+                       {"idle_session", state->idleSession},
+                       {"working_session", state->workingSession},
+                       {"session_count", sessions->sessionCount()},
+                       {"prompt_id", state->prompt},
+                       {"kind", prompt.value("kind").toString()},
+                       {"active_tasks", sessions->activeTaskCount()},
+                       {"state", updates->state()},
+                       {"install_request", "controller while application-modal"}});
+            }
+            if (state->waiting && !state->cancelled && updates->state() == "waiting_tasks") {
+                updates->cancel();
+                const auto after = controller->passwordPrompt();
+                if (controller->activeTaskCount() != 1 ||
+                    after.value("taskId").toString() != state->task ||
+                    after.value("promptId").toString() != state->prompt ||
+                    updates->state() != "available") {
+                    failure("waiting_cancel_changed_password_task");
+                    return;
+                }
+                state->cancelled = true;
+                write("waiting-cancelled.json", {{"method", "controller.cancel"},
+                                                 {"state", updates->state()},
+                                                 {"task_id", state->task},
+                                                 {"prompt_id", state->prompt},
+                                                 {"active_tasks", sessions->activeTaskCount()}});
+            }
+            if (!state->cancelled)
+                return;
+            if (scenario == "quit-wait") {
+                if (!state->requestedAgain) {
+                    state->requestedAgain = true;
+                    updates->downloadAndInstall();
+                    if (updates->state() != "waiting_tasks") {
+                        failure("ordinary_quit_not_waiting_update");
+                        return;
+                    }
+                }
+                auto *confirmation = page ? page->findChild<QQuickWindow *>("quitWindow") : nullptr;
+                if (!state->quitRequested) {
+                    state->quitRequested = true;
+                    QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
+                    return;
+                }
+                if (!state->returned && confirmation && confirmation->isExposed() &&
+                    QGuiApplication::modalWindow() == confirmation) {
+                    QScopedValueRollback<bool> pressing(state->clicking, true);
+                    state->returned =
+                        click(confirmation, confirmation->findChild<QQuickItem *>("quitReturn"));
+                    return;
+                }
+                if (state->returned && !state->cancelQuitRequested && confirmation &&
+                    !confirmation->isVisible()) {
+                    const auto remaining = controller->passwordPrompt();
+                    if (remaining.value("taskId").toString() != state->task ||
+                        remaining.value("promptId").toString() != state->prompt ||
+                        sessions->activeTaskCount() != 1 || sessions->isClosing() ||
+                        sessions->updatePending() || updates->state() != "waiting_tasks") {
+                        failure("ordinary_quit_return_changed_task");
+                        return;
+                    }
+                    write("quit-returned.json",
+                          {{"task_id", state->task},
+                           {"prompt_id", state->prompt},
+                           {"state", updates->state()},
+                           {"active_tasks", sessions->activeTaskCount()},
+                           {"task", QJsonObject::fromVariantMap(taskRecord())}});
+                    state->cancelQuitRequested = true;
+                    QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
+                    return;
+                }
+                if (state->cancelQuitRequested && !state->cancelledQuit && confirmation &&
+                    confirmation->isExposed() && QGuiApplication::modalWindow() == confirmation) {
+                    QScopedValueRollback<bool> pressing(state->clicking, true);
+                    state->cancelledQuit =
+                        click(confirmation, confirmation->findChild<QQuickItem *>("quitCancel"));
+                }
+                return;
+            }
+            if (!state->submitted) {
+                auto *password = page ? page->findChild<QQuickWindow *>("passwordWindow") : nullptr;
+                auto *field =
+                    password ? password->findChild<QQuickItem *>("extractionPassword") : nullptr;
+                auto *submit =
+                    password ? password->findChild<QQuickItem *>("passwordSubmit") : nullptr;
+                if (!password || !password->isExposed() || !field || !submit ||
+                    QGuiApplication::modalWindow() != password)
+                    return;
+                QScopedValueRollback<bool> pressing(state->clicking, true);
+                field->forceActiveFocus();
+                QInputMethodEvent input;
+                input.setCommitString(QStringLiteral(" owned AES 密码 "));
+                QCoreApplication::sendEvent(field, &input);
+                if (field->property("text").toString() != QStringLiteral(" owned AES 密码 ")) {
+                    failure("password_ime_commit");
+                    return;
+                }
+                state->submitted = click(password, submit);
+                return;
+            }
+            if (controller->activeTaskCount() == 0) {
+                const auto task = taskRecord();
+                if (task.value("status").toString() != "succeeded" ||
+                    !task.value("terminal").toBool() ||
+                    task.value("verifiedFiles").toString() != "1" ||
+                    task.value("verifiedBytes").toString() != "18") {
+                    failure("password_check_result");
+                    return;
+                }
+                state->completed = true;
+                write("password-completed.json",
+                      {{"task", QJsonObject::fromVariantMap(task)},
+                       {"input", "IME commit and actual confirmation click"}});
+            }
+            return;
+        }
         sessions->showAboutFor(page);
         auto *about = page ? page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
         if (!about || !about->isVisible())

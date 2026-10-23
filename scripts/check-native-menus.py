@@ -54,6 +54,12 @@ def main():
             console = (result.stdout + result.stderr).decode('utf-8', errors='replace')
             (directory / 'console.log').write_text(console.replace(str(Path.home()), '<home>'), encoding='utf-8')
             evidence = directory / f'{case}.json'
+            rejection = directory / 'occlusion-rejected.json'
+            if rejection.is_file():
+                failures.append({'menu': case, 'repetition': repetition + 1,
+                                 'failure': 'owned client occluded; capture rejected',
+                                 'occlusion_rejections': json.loads(rejection.read_text(encoding='utf-8'))['occlusion_rejections']})
+                continue
             if result.returncode or not evidence.is_file():
                 failures.append({'menu': case, 'repetition': repetition + 1,
                                  'exit_code': result.returncode, 'missing_record': not evidence.is_file()})
@@ -65,7 +71,10 @@ def main():
     p95 = values[max(0, math.ceil(len(values) * .95) - 1)] if values else None
     maximum = max(values) if values else None
     passed = (not failures and len(records) == len(args.cases) * args.repetitions
-              and p95 <= 100 and maximum <= 200 and all(record['shadow_same_frame'] for record in records))
+              and p95 <= 100 and maximum <= 200
+              and all(record['shadow_same_frame'] and
+                      record['captured_sync_generation']==record['first_visible_menu_sync_generation']
+                      for record in records))
     capture_values = sorted(record['trigger_to_capture_complete_ms'] for record in records)
     report = {'status': 'passed' if passed else 'failed', 'reference_machine': platform.platform(),
               'processor': platform.processor(),

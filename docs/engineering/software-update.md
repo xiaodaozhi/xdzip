@@ -26,7 +26,9 @@ Windows 仅从登记的当前用户安装根复制独立无 Qt 助手到私有�
 
 Ubuntu 安装版使用固定 `/usr/libexec/xdzip-update-helper`，普通用户协调器仅通过固定参数调用 polkit。root 助手将包复制到 root 私有暂存后重新验签及核对 xdzip 包名、架构、版本，只允许固定 APT 操作，不接受命令、任意包名或目标目录，不使用 sudo shell。授权取消与缺少认证代理返回独立状态。dpkg 未配置不报告成功，不自动回滚或启动旧程序。新版以原用户重启时保留有界白名单中的 XDG 设置、数据、缓存与状态目录及桌面语言，不继承动态加载器、Qt SDK 或测试环境覆盖；这些变量不传入 root 的安装命令。
 
-macOS 在全部 join 完成后才释放 Sparkle 安装回调；Sparkle 负责归档替换和重启。取消不会留下下次退出时安装的计划。Framework、XPC 与 helper 单独保留所需签名参数和 entitlements，不能套用通用重签规则。
+macOS 在全部 join 完成后才释放 Sparkle 安装回调；主程序仅在 provider 已标记实际 committed 后、调用 SDK 安装回复前同步释放退出拦截，不能在 join 屏障上提前允许末窗自动退出。提交失败或取消后，普通退出继续等待原生 helper 观察门；Sparkle 负责实际归档替换和重启。取消不会留下下次退出时安装的计划。Framework、XPC 与 helper 单独保留所需签名参数和 entitlements，不能套用通用重签规则。
+
+On macOS, completing every Rust join is necessary but does not itself commit installation. The provider marks the native installation committed, synchronously releases the application's quit interceptor, then invokes Sparkle's install reply. A failed or cancelled handoff retains the ordinary quit/helper observation barrier and cannot enable automatic last-window exit early.
 
 Sparkle 的取消回复在异步更新周期中处理，周期结束不等同于独立安装进程已经退出。未提交安装时，普通退出路径先请求取消，等待周期结束，再通过系统 `/bin/ps` 只读观察与本应用框架路径精确匹配的 Autoupdate 进程，确认其结束后才释放退出拦截。准备完成时先记录匹配的安装进程，观察失败不当作退出许可，不终止安装助手，也不记录无关进程信息。准备失败后的重试同样等待旧安装助手结束，不能替换尚未完成退出观察的更新驱动。已经提交的安装由 Sparkle 按原生流程退出和重启。
 
@@ -44,15 +46,21 @@ A macOS-only diagnostic run may select only the full product chain. All-platform
 
 [专用原生更新回归](../../.github/workflows/update-regression.yml)仅手动调度，不携带生产秘密，不上传应用包。默认验证全部平台，也可选择单个平台定位故障，各选择使用独立队列；最终验收仍要求同提交的全平台结果。Windows 在一次性 GitHub runner、Linux 在专用容器先使用拥有的 C 协议产品和真实 Inno/APT 验证助手取消、失败及恢复。另一条私有 Qt 升级链路编译两个真实 `browser_main`/QML 版本，通过实际关于页鼠标输入，执行清单与包验证、退出 join、Inno/APT、普通用户单实例重启和回执恢复，并核对设置、未知设置键、现有默认关联及安装目录的无关文件保留。Linux 将构建 SDK 和运行容器分开，运行容器没有编译器或 Qt SDK，并使用自定义 XDG 目录；Windows Server CI 仅在私有宏下替换最低系统判断，不替代 Windows 11 原生验收。该链路替换公开 GitHub URL 的网络 transport，生产 HTTPS/TLS 则单独通过无 SDK 运行验证。
 
-增强场景延迟包下载完成事件，启动真实 AES Check 直到等待密码，再验证更新进入等待任务。密码窗保持原生应用模态，此时夹具通过 controller 调用取消更新等待，并在证据中明确标记该步骤未使用关于页鼠标；取消后同任务及密码令牌保持，再通过真实输入法事件及密码确认按钮完成 Check，最后从关于页再次安装。普通退出取消、实体桌面和人工许可／授权仍需独立验收，不因空闲或增强升级通过而自动视为完成。
+增强场景延迟包下载完成事件，启动真实 AES Check 直到等待密码，再验证更新进入等待任务。密码窗保持原生应用模态，此时夹具通过 controller 调用取消更新等待，并在证据中明确标记该步骤未使用关于页鼠标；取消后同任务及密码令牌保持，再通过输入法提交事件及密码确认按钮完成 Check，最后从关于页再次安装。另一轮在更新与密码等待并存时向真实主程序投递系统 Quit，点击实际退出窗口的返回、取消并退出，核对同任务／令牌、所有 join、零安装交接以及同旧安装正常重开后再升级。实体桌面和真人输入、许可／授权仍需独立验收。
 
-另有真实双会话组件回归：AES Check 等待密码时，实际退出窗口的“返回”保留原任务及密码令牌，“取消并退出”使同任务取消、密码请求清空，全部会话完成 Rust join 后只发出一次退出就绪信号，不触发更新交接。此回归不代替完整主程序在更新等待期间的普通退出及原生安装验收。
+另有双会话组件回归，经 AppQuitGuard、DesktopIntegration 和全会话路由进入同一退出窗口，核对 AES 等待任务的返回／取消及 join。只允许受管理会话自己的密码／冲突模态被退出确认覆盖，原生 QWidget 模态仍阻挡退出。该组件检查与完整主程序在更新等待期间的系统 Quit、原生安装回归分别记录。
 
 Windows 私有安装回归在新 `xdzip.exe` 复制完成、其余文件尚未开始复制时暂停真实 Inno，核对新程序身份并再次启动真实 Qt 程序，要求启动门返回 11、没有可见窗口及新会话，再放行复制并完成原有升级验收。测试观察门时立即关闭自己的句柄，不能替安装器维持门的生命周期。新旧均为 Qt 6.8.2，此回归不建立原子应用包或跨 Qt 版本迁移保证，生产安装模板不添加暂停逻辑。
 
 The private Windows regression pauses real Inno after replacing `xdzip.exe` and before copying the remaining files, checks the new identity and starts the actual Qt program. It requires gate exit 11 without visible windows or new sessions before resuming and completing the existing upgrade checks. Observation handles are closed immediately so the test cannot prolong the gate's lifetime. Both sides use Qt 6.8.2; this does not establish atomic bundle replacement or migration between Qt versions. The production installer template contains no pause.
 
 Mac 单独命名的私有 Qt 应用使用真实关于页、双会话 join、Sparkle、签名 app.zip 和新 build 重启，覆盖 feed/归档篡改和取消；仅候选发现使用 loopback 替身，公开 GitHub 清单与渠道另外由更新核心和网络回归验证。测试密钥只在私有副本中注入，生产资源不改。只有实际运行产出的证据能登记为通过。
+
+Windows 助手专项另外驱动真实 Inno 许可页的取消按钮及私有 InitializeSetup 失败注入，要求安装日志明确到达该路径，旧身份保留、没有重启且安装门释放。Linux 通过真实 pkexec 分别验证策略拒绝、无认证代理、标准 D-Bus 代理返回 Cancelled；取消代理仅服务固定测试 UID、action 和本次请求，不接收密码、不授予权限。成功升级另核对 ZIP、TAR、GZip 的既有默认关联。自动驱动许可按钮与测试代理不构成人工许可确认或系统桌面认证代理验收。
+
+Mac 完整产品回归还区分两类恢复：在 join／commit 边界主动取消交接，以及真实 commit 后对本次拥有的旧 app 根设置可撤销 UF_IMMUTABLE，使原生替换遇到文件系统拒绝。后一场景必须记录实际安装提交、精确 helper PID 自行结束和该 helper 的权限失败日志，不能用取消交接代替安装失败。标志恢复须核对拥有范围、UID、dev/inode 和原 flags；不使用 sudo、不杀安装助手、不伪造结果。两类恢复均以旧版普通启动读取持久尝试记录验证。具体是否执行成功仍以实际 Apple Silicon 工件为准。
+
+The full-main regressions exercise system Quit while update and AES password waiting coexist, then click the actual Return/Cancel controls and verify task identity, every join, no install handoff and ordinary restart. Controller calls while the password prompt is modal are explicitly labelled; an input-method commit event is not a physical IME acceptance test. Windows additionally tests real Inno license cancellation and owned initialization failure. Linux uses real pkexec for policy denial, missing agent and a fixed-purpose D-Bus cancellation agent; it never obtains a password or grants authority. These do not replace manual license or desktop authentication acceptance. macOS distinguishes pre-commit interruption from committed replacement failure using an owned immutable app root, exact helper observations and native permission-error logs. It restores the original flags only after checking ownership and filesystem identity, without sudo, killing helpers or fabricating receipts. Executed Apple Silicon evidence determines the result.
 
 Mac 另有完整产品链回归，以两份干净 Release 源码身份构建真实主程序，保留正式 bundle ID、安装标记和 Alternate 文档类型，安装到一次性 runner 的独有 Applications 路径。旧版通过真实关于页和更新控制器完成清单认证、Sparkle 安装及 join 交接，新版普通启动核对安装身份、更新回执、默认配置目录、设置和未知键、单实例，以及 LaunchServices 的 ZIP 默认处理器。私有网络接点仅映射固定元数据 URL、已认证 feed URL 和精确归档 URL；签名仍真实验证，无 SDK HTTPS 单独执行。该回归使用原用户 HOME 和默认配置路径，不以测试路径注入代替重启恢复。
 

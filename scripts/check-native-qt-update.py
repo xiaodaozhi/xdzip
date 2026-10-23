@@ -166,6 +166,42 @@ def exercise(output, prepared, session, launch, executable, association_check, s
         stage='upgrade_and_restart'
         trigger=session/'upgrade.json';dump(trigger,{'owned':True})
         if sys.platform=='linux':os.chown(trigger,19731,19731)
+        ordinary_quit=None
+        if prepared.get('password_task'):
+            stage='normal_quit_during_update_and_password_wait'
+            ordinary_quit=await_file(session/'normal-quit-completed.json',old,timeout=90)
+            returned=json.loads((session/'normal-quit-returned.json').read_text())
+            assert ordinary_quit['status']=='passed',ordinary_quit
+            assert ordinary_quit['ready_to_quit_count']==1 and ordinary_quit['all_runtimes_joined']
+            assert ordinary_quit['runtime_count']>0 and ordinary_quit['task_status']=='cancelled'
+            assert ordinary_quit['prompt_cleared'] and not ordinary_quit['update_pending']
+            assert ordinary_quit['update_barriers']==0 and returned['active_tasks']==1
+            assert returned['task_id']==ordinary_quit['task_id'] and returned['prompt_id']==ordinary_quit['prompt_id']
+            assert returned['update_state']=='waiting_tasks'
+            assert old.wait(timeout=15)==0
+            assert not (session/'200-exit-barrier.json').exists() and not (session/'201-started.json').exists()
+            state_file=profile.parent/'update-state.ini'
+            pending=configparser.ConfigParser();pending.read(state_file,encoding='utf-8')
+            assert not pending.has_option('update','pending'),'Normal quit persisted an install handoff'
+            association_check()
+            dump(output/'normal-quit.json',{'status':'passed','quit':ordinary_quit,'returned':returned,
+                'scope':'Actual browser_main quit guard, AES Check and native QuitWindow return/cancel before ordinary restart; no installer handoff'})
+            trigger.unlink()
+            for name in ('200-started.json','200-state.json','download-requested.json','release-download.json',
+                         'password-waiting.json','waiting-cancelled.json','password-completed.json'):
+                (session/name).unlink(missing_ok=True)
+            previous_pid=old.pid
+            old=launch([executable],stdout=log,stderr=subprocess.STDOUT)
+            started=await_file(session/'200-started.json',old,timeout=40)
+            assert started['pid']!=previous_pid and started['state']=='idle',started
+            assert started['settings_path']==str(profile) and started['primary_windows']==1
+            unchanged=configparser.ConfigParser();unchanged.read(profile,encoding='utf-8')
+            for section,values in baseline.items():
+                for key,value in values.items():assert unchanged.get(section,key)==value,(section,key)
+            association_check()
+            stage='upgrade_after_normal_quit_restart'
+            dump(trigger,{'owned':True})
+            if sys.platform=='linux':os.chown(trigger,19731,19731)
         copy_evidence={}
         def copy_probe(pause):
             copy_evidence.update(windows_copy_probe(session,executable,launch,log,prepared,pause))
@@ -220,10 +256,11 @@ def exercise(output, prepared, session, launch, executable, association_check, s
              'settings_preserved':True,'default_association_preserved':True,'single_instance_before_and_after':True,
              'duplicate_install_preserved_transaction':True,
              'real_password_check_wait_cancel_resume':bool(prepared.get('password_task')),
+             'normal_quit_during_update_wait':ordinary_quit,
              'installation_launch_probe':copy_evidence if sys.platform=='win32' else None,
-             'association_scope':'Classic ProgID plus unchanged UserChoice' if sys.platform=='win32' else 'Custom XDG MIME default and GIO candidate',
+             'association_scope':'ZIP/TAR/GZip classic defaults and unchanged UserChoice; ZIP OpenWith' if sys.platform=='win32' else 'ZIP/TAR/GZip custom XDG MIME defaults and ZIP GIO candidate',
              'limits':['Cancel waiting uses a direct controller call while the real password window is application-modal; About mouse input is never injected through the modal.' if prepared.get('password_task') else 'Busy/password scenarios are not part of this idle run.',
-                       'Physical desktop, accessibility, normal quit cancellation and manual license/authorization acceptance are separate.',
+                       'Physical desktop, accessibility and manual license/authorization acceptance are separate.',
                        'The Windows copy-pause launch regression uses Qt 6.8.2 on both sides; it does not prove atomic bundle replacement or migration between Qt versions.',
                        'Windows Server CI uses a test-only minimum-system override; Windows 11 native acceptance remains separate.' if sys.platform=='win32' else 'Ubuntu minimum-system check is unchanged.']}
     except Exception as error:
@@ -272,12 +309,13 @@ def windows(output, prepared):
     if os.environ.get('CI')!='true' or os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted':
         raise RuntimeError('Real Qt installation requires a disposable GitHub-hosted Windows runner')
     import winreg
-    def user_choice():
+    extensions=('.zip','.tar','.gz')
+    def user_choice(extension):
         try:
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.zip\\UserChoice') as key:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\'+extension+'\\UserChoice') as key:
                 return sorted([winreg.EnumValue(key,index) for index in range(winreg.QueryInfoKey(key)[1])],key=lambda value:value[0])
         except FileNotFoundError:return None
-    original_choice=user_choice()
+    original_choice={extension:user_choice(extension) for extension in extensions}
     for key in ('Software\\xdzip\\Install','Software\\Classes\\xdzip.Archive'):
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER,key):
@@ -294,15 +332,17 @@ def windows(output, prepared):
     desktop_env={**os.environ,'TEMP':str(installer_temp),'TMP':str(installer_temp)}
     # Own the classic extension association in this disposable runner. Installer
     # OpenWith registration must never replace its existing default ProgID.
-    extension='Software\\Classes\\.zip'
-    with winreg.CreateKey(winreg.HKEY_CURRENT_USER,extension) as key:
-        previous,kind=winreg.QueryValueEx(key,'') if _registry_has_default(key) else (None,None)
-        winreg.SetValueEx(key,'',0,winreg.REG_SZ,'xdzip.OwnedFixtureOther')
+    previous_defaults={}
+    for suffix in extensions:
+        with winreg.CreateKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\'+suffix) as key:
+            previous_defaults[suffix]=winreg.QueryValueEx(key,'') if _registry_has_default(key) else (None,None)
+            winreg.SetValueEx(key,'',0,winreg.REG_SZ,'xdzip.OwnedFixtureOther')
     def association():
-        assert user_choice()==original_choice,'Installer modified the effective UserChoice association'
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,extension) as key:
-            assert winreg.QueryValueEx(key,'')[0]=='xdzip.OwnedFixtureOther'
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,extension+'\\OpenWithProgids') as key:
+        for suffix in extensions:
+            assert user_choice(suffix)==original_choice[suffix],'Installer modified the effective UserChoice association'
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\'+suffix) as key:
+                assert winreg.QueryValueEx(key,'')[0]=='xdzip.OwnedFixtureOther'
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\.zip\\OpenWithProgids') as key:
             winreg.QueryValueEx(key,'xdzip.Archive')
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\Applications\\xdzip.exe\\shell\\open\\command') as key:
             assert winreg.QueryValueEx(key,'')[0]=='"'+str(root/'xdzip.exe')+'" -- "%1"'
@@ -321,11 +361,12 @@ def windows(output, prepared):
         # A failed installer may still hold its own mutex. Preserve its evidence
         # and let the disposable runner reclaim it instead of blocking upload on
         # another interactive installer launched during failure cleanup.
-        with winreg.CreateKey(winreg.HKEY_CURRENT_USER,extension) as key:
-            if previous is None:
-                try:winreg.DeleteValue(key,'')
-                except FileNotFoundError:pass
-            else:winreg.SetValueEx(key,'',0,kind,previous)
+        for suffix,(previous,kind) in previous_defaults.items():
+            with winreg.CreateKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\'+suffix) as key:
+                if previous is None:
+                    try:winreg.DeleteValue(key,'')
+                    except FileNotFoundError:pass
+                else:winreg.SetValueEx(key,'',0,kind,previous)
 
 
 def _registry_has_default(key):
@@ -348,9 +389,10 @@ def linux(output, prepared):
     feed(prepared,output,session)
     for path in [session,*session.rglob('*')]:os.chown(path,19731,19731)
     settings=home/'custom-config';settings.mkdir(exist_ok=True)
-    (settings/'mimeapps.list').write_text('[Default Applications]\napplication/zip=owned-other.desktop\n')
+    mime_types=('application/zip','application/x-tar','application/gzip')
+    (settings/'mimeapps.list').write_text('[Default Applications]\n'+''.join(mime+'=owned-other.desktop\n' for mime in mime_types))
     data=home/'custom-data';applications=data/'applications';applications.mkdir(parents=True)
-    (applications/'owned-other.desktop').write_text('[Desktop Entry]\nType=Application\nName=Owned other fixture\nExec=/bin/true %f\nMimeType=application/zip;\n')
+    (applications/'owned-other.desktop').write_text('[Desktop Entry]\nType=Application\nName=Owned other fixture\nExec=/bin/true %f\nMimeType='+';'.join(mime_types)+';\n')
     cache=home/'custom-cache';cache.mkdir()
     state=home/'custom-state';state.mkdir()
     for path in [settings,data,cache,state,applications,*settings.rglob('*'),*applications.rglob('*')]:os.chown(path,19731,19731)
@@ -362,7 +404,8 @@ def linux(output, prepared):
     def launch(argv,**kwargs):
         return subprocess.Popen(['/usr/bin/setpriv','--reuid','19731','--regid','19731','--init-groups','--',*map(str,argv)],env=env,**kwargs)
     def association():
-        assert launch(['xdg-mime','query','default','application/zip'],stdout=subprocess.PIPE,text=True).communicate(timeout=10)[0].strip()=='owned-other.desktop'
+        for mime in mime_types:
+            assert launch(['xdg-mime','query','default',mime],stdout=subprocess.PIPE,text=True).communicate(timeout=10)[0].strip()=='owned-other.desktop',mime
         assert 'xdzip.desktop' in launch(['gio','mime','application/zip'],stdout=subprocess.PIPE,text=True).communicate(timeout=10)[0]
     rule=Path('/etc/polkit-1/rules.d/00-xdzip-owned-fixture.rules')
     rule.write_text('polkit.addRule(function(a,s) { if(a.id === "org.xdzip.update" && s.user === "xdzipfixture") return polkit.Result.YES; });\n')

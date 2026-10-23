@@ -79,6 +79,7 @@ def prepare(output, sdk, session):
     # Also allow local compile validation before these exact test-only files have
     # been committed. Dedicated CI otherwise uses the immutable checked-out SHA.
     for relative in ('apps/desktop/CMakeLists.txt','apps/desktop/browser_main.cpp','apps/desktop/UpdateController.cpp',
+                     'apps/desktop/DesktopIntegration.cpp',
                      'apps/desktop/tests/native_update_fixture.cpp','apps/desktop/tests/native_update_fixture.h'):
         shutil.copy2(ROOT/relative,source/relative)
         (source/relative).touch()
@@ -208,6 +209,7 @@ def feed(prepared, output, session):
     if prepared.get('password_task'):
         shutil.copyfile(output/'password-retry.zip',session/'password-retry.zip')
         dump(session/'password-scenario.json',{'owned':True})
+        dump(session/'normal-quit-scenario.json',{'owned':True})
 
 
 def verify_restart(record, prepared):

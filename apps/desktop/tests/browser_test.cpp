@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QFontMetricsF>
 #include <QInputMethodEvent>
 #include <QJSValue>
 #include <QJsonDocument>
@@ -59,6 +60,40 @@
 void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
+#endif
+
+#ifdef Q_OS_WIN
+// Do not capture another application's pixels when auditing our native client.
+static bool ownedClientUnobstructed(QQuickWindow *window) {
+    const auto owned = reinterpret_cast<HWND>(window->winId());
+    if (!IsWindowVisible(owned) || IsIconic(owned))
+        return false;
+    RECT client;
+    if (!GetClientRect(owned, &client))
+        return false;
+    MapWindowPoints(owned, nullptr, reinterpret_cast<POINT *>(&client), 2);
+    for (auto above = GetWindow(owned, GW_HWNDPREV); above; above = GetWindow(above, GW_HWNDPREV)) {
+        if (!IsWindowVisible(above) || IsIconic(above))
+            continue;
+        DWORD cloaked = 0;
+        if (SUCCEEDED(DwmGetWindowAttribute(above, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) &&
+            cloaked)
+            continue;
+        BYTE alpha = 255;
+        DWORD flags = 0;
+        COLORREF key = 0;
+        if (GetLayeredWindowAttributes(above, &key, &alpha, &flags) && (flags & LWA_ALPHA) &&
+            alpha == 0)
+            continue;
+        RECT visibleClient, intersection;
+        if (!GetClientRect(above, &visibleClient))
+            continue;
+        MapWindowPoints(above, nullptr, reinterpret_cast<POINT *>(&visibleClient), 2);
+        if (IntersectRect(&intersection, &client, &visibleClient))
+            return false;
+    }
+    return true;
+}
 #endif
 
 // Read the native WM state, not the value optimistically set by QWindow.
@@ -219,6 +254,14 @@ class BrowserTest : public QObject {
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
         auto *idle = window->findChild<BrowserController *>();
+        DesktopIntegration desktop(window, idle, preferences, false);
+        sessions.setDesktop(&desktop);
+        AppQuitGuard quitGuard;
+        quitGuard.quitHandler = [&] { desktop.requestQuit(); };
+        const auto requestQuit = [&] {
+            QEvent event(QEvent::Quit);
+            QVERIFY(quitGuard.eventFilter(qApp, &event));
+        };
         sessions.newSession();
         auto *page = window->property("activePage").value<QObject *>();
         auto *working = page ? page->findChild<BrowserController *>() : nullptr;
@@ -252,7 +295,19 @@ class BrowserTest : public QObject {
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         QSignalSpy updateReady(&sessions, &ApplicationSessions::readyForUpdate);
 
-        sessions.requestQuit();
+        QDialog selector;
+        selector.setWindowModality(Qt::ApplicationModal);
+        selector.show();
+        QTRY_COMPARE(QApplication::activeModalWidget(), &selector);
+        requestQuit();
+        QVERIFY(!confirmation->isVisible() && !sessions.isClosing());
+        QCOMPARE(working->passwordPrompt(), prompt);
+        QCOMPARE(sessions.activeTaskCount(), 1);
+        QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+        selector.close();
+        QTRY_COMPARE(QGuiApplication::modalWindow(), password);
+
+        requestQuit();
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
@@ -271,7 +326,7 @@ class BrowserTest : public QObject {
         QVERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
         QVERIFY(joined.isEmpty() && updateReady.isEmpty());
 
-        sessions.requestQuit();
+        requestQuit();
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
@@ -1131,6 +1186,12 @@ class BrowserTest : public QObject {
             auto *cell = item(QString("entry-0-%1").arg(column));
             QVERIFY(cell);
             QTRY_COMPARE(cell->width(), header->width());
+            const auto captures = qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT");
+            if (!captures.isEmpty()) {
+                QVERIFY(QDir().mkpath(captures));
+                QVERIFY(
+                    visual_audit::save(window, captures, QString("column-%1-dragged").arg(column)));
+            }
             const auto resetBoundary = header->mapToScene(QPointF(header->width(), 0)).x();
             if (resetBoundary > viewLeft + table->width() - 4)
                 table->setProperty("contentX", table->property("contentX").toDouble() +
@@ -1144,7 +1205,203 @@ class BrowserTest : public QObject {
                                         .arg(column)
                                         .arg(before)
                                         .arg(header->width())));
+            if (!captures.isEmpty())
+                QVERIFY(
+                    visual_audit::save(window, captures, QString("column-%1-reset").arg(column)));
         }
+    }
+    void nativeUiLayoutAcceptance() {
+        const auto directory = qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT");
+        if (!nativeSystemPointer() || directory.isEmpty())
+            QSKIP("Opt-in native layout evidence, separate from visual approval");
+        QVERIFY(QDir().mkpath(directory));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QJsonArray measurements;
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QVERIFY(initializeUiText(language));
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *preferences =
+                engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+            QVERIFY(preferences->saveDetails("light", 1, language, "standard", false, false, false,
+                                             "tabs"));
+            ApplicationSessions sessions(&engine, preferences);
+            sessions.adopt(window);
+            for (int index = 0; index < 3; ++index)
+                sessions.newSession();
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            auto *controller = page->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+            window->raise();
+            window->requestActivate();
+            QVERIFY(QTest::qWaitForWindowActive(window));
+            const auto item = [page](const QString &name) { return findVisual(page, name); };
+            const auto click = [window](QQuickItem *target,
+                                        Qt::MouseButton button = Qt::LeftButton) {
+                QTest::mouseClick(
+                    window, button, Qt::NoModifier,
+                    target->mapToScene(QPointF(target->width() / 2, target->height() / 2))
+                        .toPoint());
+            };
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5}) {
+                    preferences->preview(dark ? "dark" : "light", scale);
+                    for (const int width : {832, 1024, 1440}) {
+                        window->resize(width, width == 832 ? 544 : 700);
+                        QSignalSpy frames(window, &QQuickWindow::frameSwapped);
+                        window->requestUpdate();
+                        QTRY_VERIFY(!frames.isEmpty());
+                        const auto scene = language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale) + "-" + QString::number(width);
+                        QJsonArray actions, headers;
+                        QQuickItem *previous = nullptr;
+                        for (const auto *name : {"browserViewMenuButton", "browserGridButton",
+                                                 "browserSortMenuButton", "inspectorToggle"}) {
+                            auto *action = item(QString::fromLatin1(name));
+                            QVERIFY(action);
+                            if (!action->isVisible())
+                                continue;
+                            QCOMPARE(action->size(), QSizeF(28, 28));
+                            const auto position = action->mapToScene(QPointF());
+                            const auto gap =
+                                previous
+                                    ? position.x() -
+                                          previous->mapToScene(QPointF(previous->width(), 0)).x()
+                                    : 0.;
+                            if (previous)
+                                QVERIFY2(qAbs(gap - 6.4) < .5, qPrintable(scene));
+                            actions.append(QJsonObject{{"name", action->objectName()},
+                                                       {"x", position.x()},
+                                                       {"y", position.y()},
+                                                       {"width", action->width()},
+                                                       {"gap", gap}});
+                            previous = action;
+                        }
+                        for (int column = 0; column < 5; ++column) {
+                            controller->sortByColumn(column);
+                            QTRY_VERIFY(!controller->busy());
+                            auto *header = item(QString("sort-column-%1").arg(column));
+                            auto *arrow = item(QString("sort-indicator-%1").arg(column));
+                            QVERIFY(header && arrow);
+                            QTRY_VERIFY(arrow->isVisible());
+                            const auto font = header->property("font").value<QFont>();
+                            const auto advance = QFontMetricsF(font).horizontalAdvance(
+                                header->property("text").toString());
+                            const auto left = header->property("leftPadding").toDouble();
+                            const auto textStart =
+                                column == 1 || column == 2
+                                    ? qMax(left, header->width() -
+                                                     header->property("rightPadding").toDouble() -
+                                                     advance)
+                                    : left;
+                            const auto gap = textStart - arrow->x() - arrow->width();
+                            QVERIFY2(qAbs(gap - 6) < .5, qPrintable(scene));
+                            headers.append(QJsonObject{{"column", column},
+                                                       {"width", header->width()},
+                                                       {"font", font.pixelSize()},
+                                                       {"arrow_gap", gap}});
+                            if (width == 1440 && scale == 1.)
+                                QVERIFY(visual_audit::save(
+                                    window, directory, scene + "-sort-" + QString::number(column)));
+                        }
+                        controller->sortByColumn(0);
+                        QTRY_VERIFY(!controller->busy());
+                        moveTestPointer(window, QPoint(8, window->height() - 8));
+                        QVERIFY(visual_audit::save(window, directory, scene + "-main"));
+                        QJsonObject row{{"scene", scene},
+                                        {"language", language},
+                                        {"dark", dark},
+                                        {"font_scale", scale},
+                                        {"width", window->width()},
+                                        {"height", window->height()},
+                                        {"dpr", window->devicePixelRatio()},
+                                        {"actions", actions},
+                                        {"columns", headers}};
+                        if (width == 1024) {
+                            click(item("archiveMore"));
+                            auto *more = page->findChild<QObject *>("archiveMoreMenu");
+                            QTRY_VERIFY(more->property("visible").toBool());
+                            QCOMPARE(more->property("count").toInt(), 1);
+                            QVERIFY(visual_audit::save(window, directory, scene + "-more"));
+                            QTest::keyClick(window, Qt::Key_Escape);
+                            QTRY_VERIFY(!more->property("visible").toBool());
+                            click(item("directoryRoot"), Qt::RightButton);
+                            auto *menu = page->findChild<QObject *>("browserDirectoryMenu");
+                            QTRY_VERIFY(menu->property("visible").toBool());
+                            auto *content = menu->property("contentItem").value<QQuickItem *>();
+                            auto *separator = findVisual(content, "commandSeparator");
+                            QVERIFY(separator);
+                            auto *line = separator->property("contentItem").value<QQuickItem *>();
+                            QVERIFY(line);
+                            QCOMPARE(line->height(), 1.);
+                            QVERIFY(line->width() > 200);
+                            const auto menuFont = menu->property("font").value<QFont>().pixelSize();
+                            QQuickItem *cell = nullptr;
+                            QTRY_VERIFY((cell = item("entry-0-0")));
+                            int tableFont = 0;
+                            QString tableText, tableTextClass;
+                            for (auto *child : cell->childItems())
+                                if (child->inherits("QQuickText") && child->isVisible() &&
+                                    !child->property("text").toString().isEmpty() &&
+                                    child->property("text").toString() != "!") {
+                                    tableFont = child->property("font").value<QFont>().pixelSize();
+                                    tableText = child->property("text").toString();
+                                    tableTextClass =
+                                        QString::fromLatin1(child->metaObject()->className());
+                                    break;
+                                }
+                            QVERIFY(tableFont > 0);
+                            const auto ratio = menuFont / qreal(tableFont);
+                            QVERIFY(ratio >= .95 && ratio <= 1.10);
+                            row["menu_font"] = menuFont;
+                            row["table_font"] = tableFont;
+                            row["table_text"] = tableText;
+                            row["table_text_class"] = tableTextClass;
+                            row["menu_table_font_ratio"] = ratio;
+                            row["separator_height"] = line->height();
+                            QVERIFY(visual_audit::save(window, directory, scene + "-directory"));
+                            QTest::keyClick(window, Qt::Key_Escape);
+                            QTRY_VERIFY(!menu->property("visible").toBool());
+                            auto *titlebar = item("archiveTitlebar");
+                            auto *anchor = findVisual(titlebar, "archiveTab-1");
+                            QVERIFY(anchor);
+                            const auto active = window->property("activePage").value<QObject *>();
+                            click(anchor, Qt::RightButton);
+                            auto *tabs = titlebar->findChild<QObject *>("archiveTabContextMenu");
+                            QTRY_VERIFY(tabs->property("visible").toBool());
+                            QCOMPARE(window->property("activePage").value<QObject *>(), active);
+                            QCOMPARE(tabs->property("count").toInt(), 3);
+                            QVERIFY(visual_audit::save(window, directory, scene + "-tab-context"));
+                            QTest::keyClick(window, Qt::Key_Escape);
+                            QTRY_VERIFY(!tabs->property("visible").toBool());
+                        }
+                        measurements.append(row);
+                    }
+                }
+            QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+            sessions.confirmQuit(false);
+            QTRY_VERIFY(!joined.isEmpty());
+        }
+        QJsonObject result{
+            {"revision", BuildInfo::revision()},
+            {"dirty", BuildInfo::dirty()},
+            {"configuration", BuildInfo::configuration()},
+            {"qt", qVersion()},
+            {"platform", QGuiApplication::platformName()},
+            {"requested_backend", qEnvironmentVariable("QT_QUICK_BACKEND")},
+            {"qt_scale_factor_override", qEnvironmentVariable("QT_SCALE_FACTOR")},
+            {"capture", "Native QQuickWindow client image, no desktop or OS chrome capture"},
+            {"visual_approval", "Requires separate screenshot inspection"},
+            {"measurements", measurements}};
+        QFile report(directory + "/measurements.json");
+        QVERIFY(report.open(QIODevice::WriteOnly));
+        QVERIFY(report.write(QJsonDocument(result).toJson()) > 0);
     }
     void commonFileCategoryAssetsArePackaged() {
         QQmlEngine engine;
@@ -1813,9 +2070,28 @@ class BrowserTest : public QObject {
         settled.clear();
         host->requestUpdate();
         QTRY_VERIFY(!settled.isEmpty());
-        const auto capturePresented = [host](const QElapsedTimer *clock = nullptr,
-                                             qreal *presentedMs = nullptr) {
+        const auto directory = qEnvironmentVariable("XDZIP_MENU_FRAME_OUTPUT");
+        QVERIFY(!directory.isEmpty() && QDir().mkpath(directory));
+        int occlusionRejections = 0;
+        const auto capturePresented = [&, host](const QElapsedTimer *clock = nullptr,
+                                                qreal *presentedMs = nullptr) {
 #ifdef Q_OS_WIN
+            if (!ownedClientUnobstructed(host)) {
+                ++occlusionRejections;
+                QFile rejected(directory + "/occlusion-rejected.json");
+                if (rejected.open(QIODevice::WriteOnly))
+                    rejected.write(
+                        QJsonDocument(QJsonObject{{"status", "rejected_occlusion"},
+                                                  {"menu", kind},
+                                                  {"owned_hwnd",
+                                                   QString::number(quintptr(host->winId()), 16)},
+                                                  {"occlusion_rejections", occlusionRejections},
+                                                  {"revision", BuildInfo::revision()},
+                                                  { "capture_saved",
+                                                    false }})
+                            .toJson());
+                return QImage();
+            }
             if (FAILED(DwmFlush()))
                 return QImage();
             // The compositor has presented this frame. Bitmap readback and
@@ -1833,7 +2109,52 @@ class BrowserTest : public QObject {
             return result;
 #endif
         };
+        int setupPositionAttempts = 0;
+#ifdef Q_OS_WIN
+        // Choose an unobstructed owned window before arming input or opening a menu.
+        const auto available = host->screen()->availableGeometry();
+        const auto frame = host->frameGeometry();
+        const auto clientOffset = host->position() - frame.topLeft();
+        const int left = available.left() + 8, top = available.top() + 8;
+        const int right = qMax(left, available.right() - frame.width() - 7);
+        const int bottom = qMax(top, available.bottom() - frame.height() - 7);
+        bool setupReady = false;
+        for (const QPoint corner :
+             {QPoint(left, top), QPoint(right, top), QPoint(left, bottom), QPoint(right, bottom)}) {
+            ++setupPositionAttempts;
+            host->setPosition(corner + clientOffset);
+            host->raise();
+            host->requestActivate();
+            settled.clear();
+            host->requestUpdate();
+            QTRY_VERIFY(!settled.isEmpty());
+            setupReady = available.contains(host->frameGeometry()) && ownedClientUnobstructed(host);
+            if (setupReady)
+                break;
+        }
+        if (!setupReady) {
+            QFile rejected(directory + "/occlusion-rejected.json");
+            if (rejected.open(QIODevice::WriteOnly))
+                rejected.write(
+                    QJsonDocument(
+                        QJsonObject{{"status", "blocked_occlusion_setup"},
+                                    {"menu", kind},
+                                    {"owned_hwnd", QString::number(quintptr(host->winId()), 16)},
+                                    {"occlusion_rejections", setupPositionAttempts},
+                                    {"setup_position_attempts", setupPositionAttempts},
+                                    {"revision", BuildInfo::revision()},
+                                    { "capture_saved",
+                                      false }})
+                        .toJson());
+            QFAIL("No unobstructed owned client within four setup positions; no capture saved");
+        }
+        moveTestPointer(host, point);
+        settled.clear();
+        host->requestUpdate();
+        QTRY_VERIFY(!settled.isEmpty());
+#endif
         const auto baseline = capturePresented();
+        QVERIFY2(!occlusionRejections, "Owned client is occluded; no capture saved");
         QVERIFY(!baseline.isNull());
         QElapsedTimer timer;
         std::atomic_bool inputReceived{false};
@@ -1850,6 +2171,7 @@ class BrowserTest : public QObject {
         } inputMarker(inputReceived);
         qApp->installEventFilter(&inputMarker);
         bool measuring = false, done = false, shadowSameFrame = false, loggedGuard = false;
+        bool firstFrameSuperseded = false;
         qreal elapsedMs = -1, swapMs = -1, captureMs = -1, validationMs = -1;
         quint64 capturedGeneration = 0;
         int swaps = 0;
@@ -1859,6 +2181,12 @@ class BrowserTest : public QObject {
         const auto observeFrame = [&](quint64 generation, qint64 swappedAt) {
             if (!measuring || done)
                 return;
+            if (generation != firstInputGeneration.load() ||
+                generation != synchronizedGeneration.load()) {
+                firstFrameSuperseded = true;
+                done = true;
+                return;
+            }
             ++swaps;
             auto *menu = combo ? target->property("popup").value<QObject *>()
                                : window->findChild<QObject *>(menuName);
@@ -1878,6 +2206,13 @@ class BrowserTest : public QObject {
             qreal presentedMs = -1;
             const auto pixels = capturePresented(&timer, &presentedMs);
             const qreal capturedMs = timer.nsecsElapsed() / 1000000.;
+            if (generation != synchronizedGeneration.load()) {
+                firstFrameSuperseded = true;
+                done = true;
+                return;
+            }
+            if (occlusionRejections)
+                done = true;
             if (pixels.isNull() || pixels.size() != baseline.size())
                 return;
             const qreal scaleX = pixels.width() / qreal(host->width()),
@@ -1922,8 +2257,17 @@ class BrowserTest : public QObject {
             [&] {
                 const auto generation = ++synchronizedGeneration;
                 if (inputReceived.load()) {
-                    quint64 empty = 0;
-                    firstInputGeneration.compare_exchange_strong(empty, generation);
+                    // Synchronization blocks the GUI thread. Read the actual
+                    // popup here so an old queued swap cannot acquire new visibility.
+                    auto *menu = combo ? target->property("popup").value<QObject *>()
+                                       : window->findChild<QObject *>(menuName);
+                    auto *background =
+                        menu ? menu->property("background").value<QQuickItem *>() : nullptr;
+                    if (menu && menu->property("visible").toBool() && background &&
+                        background->width() > 0 && background->height() > 0) {
+                        quint64 empty = 0;
+                        firstInputGeneration.compare_exchange_strong(empty, generation);
+                    }
                 }
             },
             Qt::DirectConnection);
@@ -1964,8 +2308,10 @@ class BrowserTest : public QObject {
                                                  .arg(firstInputGeneration.load())),
                                   2000);
         disconnect(connection);
-        const auto directory = qEnvironmentVariable("XDZIP_MENU_FRAME_OUTPUT");
-        QVERIFY(!directory.isEmpty() && QDir().mkpath(directory));
+        QVERIFY2(!occlusionRejections, "Owned client became occluded; no capture saved");
+        QVERIFY2(!firstFrameSuperseded,
+                 "The first visible menu frame was superseded before capture; no sample saved");
+        QCOMPARE(capturedGeneration, firstInputGeneration.load());
         baseline.save(directory + "/" + kind + "-before.png");
         firstFace.save(directory + "/" + kind + "-first-face.png");
         QJsonObject record{
@@ -1975,8 +2321,11 @@ class BrowserTest : public QObject {
             {"trigger_to_capture_complete_ms", captureMs},
             {"trigger_to_validation_complete_ms", validationMs},
             {"first_post_input_sync_generation", double(firstInputGeneration.load())},
+            {"first_visible_menu_sync_generation", double(firstInputGeneration.load())},
             {"captured_sync_generation", double(capturedGeneration)},
             {"observed_swaps", swaps},
+            {"setup_position_attempts", setupPositionAttempts},
+            {"owned_hwnd", QString::number(quintptr(host->winId()), 16)},
             {"shadow_same_frame", shadowSameFrame},
             {"qt", qVersion()},
             {"configuration", BuildInfo::configuration()},

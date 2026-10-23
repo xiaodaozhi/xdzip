@@ -636,8 +636,8 @@ void UpdateController::startInstallation() {
 }
 void UpdateController::finishPreparation() {
     setState("installing");
-    // Release the application's normal quit interceptor only after every Rust
-    // connection joined, before a native installer can synchronously terminate it.
+    // Every Rust connection has joined. macOS retains its normal quit barrier
+    // until the provider commits, before Sparkle's install reply can terminate it.
     emit exitBarrierReached();
 #ifdef Q_OS_MACOS
     if (!commitMacUpdate())

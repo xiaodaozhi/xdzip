@@ -14,7 +14,9 @@ import os
 from pathlib import Path
 import platform
 import plistlib
+import re
 import shutil
+import stat
 import subprocess
 import sys
 import tarfile
@@ -243,7 +245,7 @@ def other_handler(output, identity):
     return app
 
 
-def await_json(path, timeout=90, process=None, session=None):
+def await_json(path, timeout=90, process=None, session=None, *, expected_recovery_error=None, allow_closing=False):
     deadline=time.monotonic()+timeout
     while time.monotonic()<deadline:
         if session and (session/'fixture-error.json').exists():raise RuntimeError((session/'fixture-error.json').read_text())
@@ -252,7 +254,16 @@ def await_json(path, timeout=90, process=None, session=None):
                 if state_path.is_file():
                     state=json.loads(state_path.read_bytes())
                     if state.get('state') in ('error','recovery_required'):
-                        raise RuntimeError('Real Mac product update failed: '+state.get('error',''))
+                        old_product=(state_path.name=='200-state.json' and state.get('build')==200 and
+                                     state.get('version')=='0.2.0-alpha.1')
+                        expected_recovery=(old_product and
+                                           state.get('state')=='recovery_required' and
+                                           expected_recovery_error is not None and
+                                           state.get('error')==expected_recovery_error)
+                        expected_closing=(old_product and allow_closing and
+                                          state.get('state')=='error' and state.get('error')=='closing')
+                        if not expected_recovery and not expected_closing:
+                            raise RuntimeError('Real Mac product update failed: '+state.get('error',''))
         if path.exists():return json.loads(path.read_bytes())
         if process and process.poll() is not None:raise RuntimeError('Owned product exited before '+path.name)
         time.sleep(.1)
@@ -279,6 +290,57 @@ class Handler(SimpleHTTPRequestHandler):
 def same_roles(left,right):
     # kLSRolesAll is a query over a role set, not a separately restorable slot.
     return all(left[str(role)]==right[str(role)] for role in (2,4,8))
+
+
+def restore_owned_flags(installed,applications,fault):
+    require_owned(installed,applications)
+    current=installed.lstat()
+    if (not stat.S_ISDIR(current.st_mode) or current.st_uid!=os.getuid() or
+        current.st_dev!=int(fault['device']) or current.st_ino!=int(fault['inode'])):
+        raise RuntimeError('Refusing to restore flags on a changed installed inode')
+    os.chflags(installed,int(fault['flags_before']),follow_symlinks=False)
+    if installed.lstat().st_flags!=int(fault['flags_before']):
+        raise RuntimeError('Owned immutable fault flags were not restored')
+
+
+def wait_owned_helpers(pids,installed,timeout=90):
+    if not pids or any(not isinstance(pid,int) or pid<=1 for pid in pids):
+        raise RuntimeError('Missing native ready helper identities')
+    expected=(installed/'Contents/Frameworks/Sparkle.framework/Autoupdate').resolve()
+    limit=time.monotonic()+timeout
+    observations=0
+    env=environment();env['LC_ALL']='en_US.UTF-8'
+    while True:
+        observations+=1
+        alive=[]
+        for pid in pids:
+            result=subprocess.run(['/bin/ps','-ww','-p',str(pid),'-o','comm='],capture_output=True,env=env,timeout=5)
+            value=result.stdout.decode('utf-8',errors='strict').strip()
+            if result.returncode==1 and not value:continue
+            if result.returncode or not value or '\n' in value:raise RuntimeError('Native helper observation failed')
+            if Path(value).resolve()!=expected:raise RuntimeError('Captured native helper identity changed')
+            alive.append(pid)
+        if not alive:return dict(captured_pids=pids,remaining_pids=[],observations=observations,gone=True)
+        if time.monotonic()>limit:raise RuntimeError('Native installer did not exit without intervention')
+        time.sleep(.1)
+
+
+def native_replacement_error(pids,installed):
+    predicate=' OR '.join('processIdentifier == '+str(pid) for pid in pids)
+    result=subprocess.run(['/usr/bin/log','show','--style','json','--last','5m','--predicate',predicate],
+                          capture_output=True,env=environment(),timeout=30)
+    if result.returncode:raise RuntimeError('Could not read owned native installer diagnostics')
+    raw=result.stdout
+    if len(raw)>1024*1024:raise RuntimeError('Owned installer log exceeded its evidence bound')
+    events=json.loads(raw)
+    expected=(installed/'Contents/Frameworks/Sparkle.framework/Autoupdate').resolve()
+    messages=[entry.get('eventMessage','') for entry in events
+              if Path(entry.get('processImagePath','')).resolve()==expected]
+    return dict(finalize_failure_observed=any('Failed to finalize installation' in text for text in messages),
+                permission_failure_observed=any('Operation not permitted' in text or 'Permission denied' in text or
+                    re.search(r'NSPOSIXErrorDomain Code=(?:1|13)\b|NSCocoaErrorDomain Code=513\b',text) for text in messages),
+                messages=[text.replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:4096]
+                          for text in messages[-32:]])
 
 
 def main():
@@ -331,10 +393,14 @@ def main():
     assets += [dict(name=f,browser_download_url=base+f) for f in ('release.json','release.json.sig')]
     dump(session/'releases.json',[dict(tag_name=manifest['tag'],draft=False,prerelease=True,
          html_url='https://github.com/xiaodaozhi/xdzip/releases/tag/'+manifest['tag'],assets=assets)])
-    dump(session/'configuration.json',dict(marker='xdzip-owned-mac-product-update-v1',install_root=str(installed),
+    dump(session/'configuration.json',dict(marker='xdzip-owned-mac-product-update-v1',install_root=str(installed),scenario='interrupted-handoff',
          fixed_asset_url=base+archive.name,fixed_appcast_url=base+'appcast.xml',loopback_appcast_url=address+'/owned/appcast.xml',
          loopback_asset_url=address+'/owned/'+archive.name,routes={base+'release.json':'release.json',base+'release.json.sig':'release.json.sig',
          'https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1':'releases.json'}))
+    password_fixture=ROOT/'tests/fixtures/extract/password-retry.zip'
+    if digest(password_fixture)!='cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41':
+        raise RuntimeError('Owned AES regression sample changed')
+    shutil.copyfile(password_fixture,session/'password-retry.zip')
     other=None;old=None;new=None;log=None;record={'status':'failed'};stage='association_setup'
     try:
         other_id='org.xdzip.owned-zip-handler.'+token
@@ -361,6 +427,116 @@ def main():
         stage='single_instance_old'
         peer=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
         if peer.wait(timeout=20)!=0:raise RuntimeError('Old normal SingleInstance startup failed')
+        stage='interrupted_native_handoff'
+        dump(session/'upgrade.json',{'owned':True})
+        interrupted=await_json(session/'interrupted-handoff.json',timeout=240,session=session,
+                               expected_recovery_error='handoff')
+        if old.wait(timeout=40)!=0:raise RuntimeError('Interrupted native handoff did not quit normally')
+        interrupted_quit=await_json(session/'200-normal-quit.json',session=session,expected_recovery_error='handoff')
+        interrupted_barrier=await_json(session/'200-exit-barrier.json',session=session,expected_recovery_error='handoff')
+        if (interrupted['state']!='recovery_required' or interrupted['error']!='handoff' or
+            not interrupted['pending_present'] or interrupted_barrier['active_tasks']!=0 or
+            interrupted_barrier['pending'].get('build')!=201 or
+            not interrupted_quit['all_rust_joined'] or interrupted_quit['quit_signals']!=1 or
+            not interrupted_quit['native_exit']['installer_seen_at_ready'] or
+            not interrupted_quit['native_exit']['installer_gone_before_exit'] or
+            interrupted_quit['native_exit']['committed'] or
+            interrupted_quit['native_exit']['installer_observation_error']):
+            raise RuntimeError('Interrupted real handoff did not preserve its receipt and settle the helper')
+        interruption_record=dict(scope='Owned cancellation at the real join/commit boundary, not an OS disk replacement failure',
+                                 state=interrupted,barrier=interrupted_barrier,quit=interrupted_quit)
+        dump(output/'interrupted-handoff-verification.json',interruption_record)
+        def change_scenario(name):
+            # Only generated records in this fresh, owned session are cleared.
+            leaves={'stop.json','upgrade.json','fixture-error.json','interrupted-handoff.json',
+                    'password-waiting.json','waiting-cancelled.json','password-completed.json','quit-returned.json',
+                    'asset-redirect.json','feed-redirect.json','replacement-fault.json'}
+            for path in session.glob('*.json'):
+                if path.name in leaves or path.name.startswith(('200-','201-','native-')):path.unlink()
+            config=json.loads((session/'configuration.json').read_bytes())
+            config.update(scenario=name,reuse_profile=True)
+            dump(session/'configuration.json',config)
+        stage='ordinary_old_recovery'
+        change_scenario('recovery')
+        old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        recovered=await_json(session/'200-started.json',process=old,session=session,
+                             expected_recovery_error='installation_interrupted')
+        if (recovered['state']!='recovery_required' or recovered['error']!='installation_interrupted' or
+            recovered['pending_present'] or recovered['unknown_key']!=started['unknown_key'] or
+            recovered['settings_path']!=started['settings_path'] or recovered['install_root']!=str(installed)):
+            raise RuntimeError('Ordinary old startup did not consume the interrupted native attempt as recovery')
+        dump(session/'stop.json',{'owned':True})
+        if old.wait(timeout=20)!=0:raise RuntimeError('Recovery product did not exit normally')
+        dump(output/'ordinary-recovery-verification.json',recovered)
+        stage='committed_native_replacement_failure'
+        change_scenario('immutable-replacement')
+        old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        await_json(session/'200-started.json',process=old,session=session)
+        dump(session/'upgrade.json',{'owned':True})
+        native_commit=await_json(session/'200-native-commit.json',timeout=180,session=session)
+        if old.wait(timeout=30)!=0:raise RuntimeError('Native committed host did not exit normally')
+        failed_barrier=await_json(session/'200-exit-barrier.json',session=session)
+        fault=await_json(session/'replacement-fault.json',session=session)
+        ready=failed_barrier['native_exit'];pids=ready['installer_pids_at_ready']
+        if (not fault['applied'] or not native_commit['committed_native_quit'] or native_commit['active_tasks']!=0 or
+            not ready['installer_seen_at_ready'] or ready['installer_observation_error'] or
+            failed_barrier['pending'].get('build')!=201):
+            raise RuntimeError('Owned immutable fault did not reach actual native commit')
+        helper_observation=wait_owned_helpers(pids,installed)
+        native_error=native_replacement_error(pids,installed)
+        dump(output/'native-replacement-error.json',native_error)
+        if not native_error['finalize_failure_observed'] or not native_error['permission_failure_observed']:
+            raise RuntimeError('Missing actual native final-replacement permission failure')
+        unchanged=json.loads(run([executable,'--version-json']))
+        if unchanged!=products['old']['identity']:raise RuntimeError('Failed replacement changed the old product')
+        restore_owned_flags(installed,applications,fault)
+        replacement_failure=dict(scope='Actual committed Sparkle final replacement rejected by an owned immutable app inode',
+                                 fault=fault,commit=native_commit,barrier=failed_barrier,error=native_error,
+                                 helper_observation=helper_observation,
+                                 helpers_exited_without_intervention=True,old_identity=unchanged,original_flags_restored=True)
+        dump(output/'replacement-failure-verification.json',replacement_failure)
+        stage='ordinary_recovery_after_native_failure'
+        change_scenario('recovery')
+        old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        failed_recovery=await_json(session/'200-started.json',process=old,session=session,
+                                   expected_recovery_error='installation_interrupted')
+        if (failed_recovery['state']!='recovery_required' or failed_recovery['error']!='installation_interrupted' or
+            failed_recovery['pending_present'] or failed_recovery['build']!=200 or
+            failed_recovery['unknown_key']!=started['unknown_key']):
+            raise RuntimeError('Ordinary startup did not report the real failed native replacement')
+        dump(output/'replacement-failure-recovery.json',failed_recovery)
+        dump(session/'stop.json',{'owned':True})
+        if old.wait(timeout=20)!=0:raise RuntimeError('Failed-replacement recovery did not exit normally')
+        stage='ordinary_quit_during_update_wait'
+        change_scenario('quit-wait')
+        old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        await_json(session/'200-started.json',process=old,session=session)
+        dump(session/'upgrade.json',{'owned':True})
+        quit_record=await_json(session/'200-normal-quit.json',timeout=180,session=session,allow_closing=True)
+        if old.wait(timeout=20)!=0:raise RuntimeError('Real task quit did not complete normally')
+        joined=await_json(session/'200-join.json',session=session,allow_closing=True)
+        returned=json.loads((session/'quit-returned.json').read_bytes())
+        quit_waiting=json.loads((session/'password-waiting.json').read_bytes())
+        quit_cancelled=json.loads((session/'waiting-cancelled.json').read_bytes())
+        if (quit_record['quit_intent']!='QEvent::Quit through AppQuitGuard and DesktopIntegration' or
+            not quit_record['return_clicked'] or not quit_record['cancel_quit_clicked'] or
+            quit_record['barriers']!=0 or not quit_record['all_rust_joined'] or quit_record['quit_signals']!=1 or
+            joined['active_tasks']!=0 or joined['update_pending'] or not joined['password_prompt_cleared'] or
+            joined['task'].get('status')!='cancelled' or not joined['task'].get('terminal') or
+            returned['state']!='waiting_tasks' or returned['active_tasks']!=1 or
+            quit_waiting['session_count']!=2 or quit_waiting['idle_session']==quit_waiting['working_session'] or
+            returned['task_id']!=quit_waiting['task_id'] or returned['prompt_id']!=quit_waiting['prompt_id'] or
+            quit_cancelled['task_id']!=quit_waiting['task_id'] or quit_cancelled['state']!='available' or
+            (session/'native-start.json').exists() or (session/'200-exit-barrier.json').exists()):
+            raise RuntimeError('Ordinary Return/Cancel quit did not preserve then cancel/join the real waiting task')
+        ordinary_quit_record=dict(quit=quit_record,joined=joined,returned=returned,waiting=quit_waiting,cancelled=quit_cancelled)
+        dump(output/'ordinary-quit-verification.json',ordinary_quit_record)
+        stage='busy_upgrade_start'
+        change_scenario('busy-upgrade')
+        old=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        started=await_json(session/'200-started.json',process=old,session=session)
+        peer=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
+        if peer.wait(timeout=20)!=0:raise RuntimeError('Busy scenario SingleInstance startup failed')
         stage='upgrade'
         dump(session/'upgrade.json',{'owned':True})
         new=await_json(session/'201-started.json',timeout=240,session=session)
@@ -371,6 +547,17 @@ def main():
             raise RuntimeError('Private request mapping did not bind the authenticated native asset')
         if old.wait(timeout=20)!=0:raise RuntimeError('Old process failed ordinary exit')
         barrier=await_json(session/'200-exit-barrier.json',session=session)
+        password_waiting=await_json(session/'password-waiting.json',session=session)
+        waiting_cancelled=await_json(session/'waiting-cancelled.json',session=session)
+        password_completed=await_json(session/'password-completed.json',session=session)
+        if (password_waiting['state']!='waiting_tasks' or password_waiting['active_tasks']!=1 or
+            password_waiting['session_count']!=2 or password_waiting['idle_session']==password_waiting['working_session'] or
+            waiting_cancelled['state']!='available' or waiting_cancelled['active_tasks']!=1 or
+            waiting_cancelled['task_id']!=password_waiting['task_id'] or waiting_cancelled['prompt_id']!=password_waiting['prompt_id'] or
+            password_completed['task'].get('status')!='succeeded' or
+            password_completed['task'].get('id')!=password_waiting['task_id'] or
+            password_completed['task'].get('verifiedFiles')!='1' or password_completed['task'].get('verifiedBytes')!='18'):
+            raise RuntimeError('Real AES update wait/cancel/IME resume did not preserve and verify the same task')
         if not (barrier['about_check_clicked'] and barrier['about_install_clicked'] and barrier['trusted'] and
                 barrier['can_install'] and barrier['update_pending'] and barrier['active_tasks']==0 and
                 barrier['pending'].get('kind')=='sparkle' and barrier['pending'].get('build')==201):
@@ -404,7 +591,11 @@ def main():
                     original_zip_handlers=original,owned_zip_handlers=baseline,after_zip_handlers=after_associations,
                     network_seam='Private Qt metadata transport and exact feed URL mapping; public Sparkle download-request delegate maps only the matched authenticated GitHub asset request, preserving item URL/signature/length',
                     archive_transport=redirect,
-                    limits=['Idle successful upgrade only; rejection/cancellation use the separate native Sparkle scenarios.',
+                    interrupted_handoff=interruption_record,ordinary_recovery=recovered,ordinary_quit=ordinary_quit_record,
+                    native_replacement_failure=replacement_failure,native_failure_recovery=failed_recovery,
+                    password_waiting=password_waiting,waiting_cancelled=waiting_cancelled,password_completed=password_completed,
+                    limits=['Busy install request/cancel use controller calls while the real password window is application-modal; the final install uses About input.',
+                            'The post-commit failure uses one owned UF_IMMUTABLE inode; system authorization, other OS failures and real-user desktop acceptance remain separate.',
                             'Default handlers for other archive UTIs and physical user acceptance are not claimed.'])
     except Exception as error:
         record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error));raise
@@ -421,6 +612,12 @@ def main():
             cleanup.append(dict(stage='stop_owned_product',error=type(error).__name__))
             if old and old.poll() is None:old.terminate();old.wait(timeout=10)
         if log:log.close()
+        try:
+            fault_path=session/'replacement-fault.json'
+            if fault_path.is_file():
+                own_fault=json.loads(fault_path.read_bytes())
+                if own_fault.get('changed'):restore_owned_flags(installed,applications,own_fault)
+        except Exception as error:cleanup.append(dict(stage='restore_owned_inode_flags',error=type(error).__name__,detail=str(error)))
         try:
             current=associations.get(2)
             if current!=original['2']:
