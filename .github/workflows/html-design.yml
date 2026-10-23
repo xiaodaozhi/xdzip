@@ -1,5 +1,6 @@
 name: HTML design review
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'scripts/check-extract-fidelity.py'
