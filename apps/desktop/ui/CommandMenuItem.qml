@@ -1,3 +1,5 @@
+// apps/desktop/ui/CommandMenuItem.qml
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
@@ -9,6 +11,7 @@ MenuItem {
     property string shortcutLabel: ""
     property string statusLabel: ""
     property color statusInk: Theme.accentInk
+    // Disabled reasons remain available to assistive technology, without a visible hint or tooltip.
     property string disabledReason: ""
     property bool dangerous: false
     property bool commandVisible: true
@@ -47,27 +50,15 @@ MenuItem {
                 fillMode: Image.PreserveAspectFit
             }
         }
-        ColumnLayout {
+        Text {
+            objectName: root.objectName + "Label"
             Layout.fillWidth: true
-            spacing: 2
-            Text {
-                objectName: root.objectName + "Label"
-                Layout.fillWidth: true
-                text: root.text
-                textFormat: Text.PlainText
-                color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
-                font.pixelSize: root.labelSize
-                elide: Text.ElideRight
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: !root.enabled && root.disabledReason.length > 0
-                text: root.disabledReason
-                textFormat: Text.PlainText
-                wrapMode: Text.Wrap
-                color: Theme.menuSecondary
-                font.pixelSize: Theme.menuShortcutSize
-            }
+            Layout.alignment: Qt.AlignVCenter
+            text: root.text
+            textFormat: Text.PlainText
+            color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
+            font.pixelSize: root.labelSize
+            elide: Text.ElideRight
         }
         Rectangle {
             objectName: root.objectName + "Status"

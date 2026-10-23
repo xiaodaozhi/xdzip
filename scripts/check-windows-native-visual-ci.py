@@ -9,6 +9,7 @@ import argparse
 from datetime import datetime, timezone
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -110,6 +111,36 @@ def check_log(text, method):
     require('Creating QRhi with backend D3D11' in text, 'actual_d3d11_log_required')
 
 
+def check_directory_command_capture(geometry, language):
+    reason = 'Root is always expanded' if language == 'en-US' else '根目录始终展开'
+    title = 'Collapse subfolders' if language == 'en-US' else '收起子目录'
+    nodes = geometry.get('nodes', [])
+    commands = [node for node in nodes if node.get('name') == 'directoryExpansionCommand'
+                and node.get('visible') is True]
+    require(len(commands) == 1, 'visible_directory_expansion_command_required')
+    command = commands[0]
+    require(command.get('enabled') is False and command.get('text') == title
+            and command.get('disabledReason') == reason
+            and command.get('accessibleDescription') == reason,
+            'disabled_command_accessible_reason_mismatch')
+    labels = [node for node in nodes if node.get('name') == 'directoryExpansionCommandLabel'
+              and node.get('visible') is True]
+    require(len(labels) == 1 and labels[0].get('text') == title
+            and all(type(labels[0].get(key)) in (int, float) and math.isfinite(labels[0][key])
+                    for key in ('width', 'height', 'contentWidth'))
+            and labels[0]['width'] > 0 and labels[0]['height'] > 0
+            and 0 <= labels[0]['contentWidth'] <= labels[0]['width'] + 1,
+            'visible_directory_command_label_missing_or_overflowing')
+    reasons = {node['disabledReason'] for node in nodes if node.get('visible') is True
+               and isinstance(node.get('disabledReason'), str)
+               and node['disabledReason']}
+    require(not any(node.get('visible') is True and isinstance(node.get('text'), str)
+                    and any(value in node['text'] for value in reasons) for node in nodes),
+            'disabled_reason_must_not_be_visible_text')
+    require(not any(node.get('visible') is True and 'tooltip' in node.get('class', '').lower()
+                    for node in nodes), 'visible_menu_tooltip_forbidden')
+
+
 def check_captures(role, images, source, fixture_hash):
     scenes = {language + '-' + theme + '-' + scale for language in ('zh-CN', 'en-US')
               for theme in ('light', 'dark') for scale in SCALES}
@@ -159,9 +190,13 @@ def check_captures(role, images, source, fixture_hash):
     require(actual == expected | ({'windows-dwm-frame'} if role == 'windows_frame' else set()),
             'capture_png_set_mismatch')
     for stem in expected:
-        paired(images, stem)
+        geometry = paired(images, stem)
+        if role == 'directory_reason':
+            language = 'en-US' if stem.startswith('directory-reason-en-US-') else 'zh-CN'
+            check_directory_command_capture(geometry, language)
     return dict(scenes=24 if role == 'file_gallery' else len(expected), client_frames=len(expected),
-                os_frame_images=1 if role == 'windows_frame' else 0, actual_dpr=1)
+                os_frame_images=1 if role == 'windows_frame' else 0, actual_dpr=1,
+                accessible_reason_only_captures=len(expected) if role == 'directory_reason' else 0)
 
 
 def run(args):
@@ -326,6 +361,22 @@ def self_test():
         empty = images / 'empty.png'
         empty.write_bytes(b'')
         rejected(lambda: png(empty))
+        command = dict(name='directoryExpansionCommand', visible=True, enabled=False,
+                       text='Collapse subfolders', disabledReason='Root is always expanded',
+                       accessibleDescription='Root is always expanded')
+        label = dict(name='directoryExpansionCommandLabel', visible=True, text=command['text'],
+                     width=180, height=24, contentWidth=140)
+        geometry = dict(nodes=[command, label])
+        check_directory_command_capture(geometry, 'en-US')
+        count += 1
+        geometry['nodes'].append(dict(visible=True, text=command['disabledReason']))
+        rejected(lambda: check_directory_command_capture(geometry, 'en-US'))
+        geometry['nodes'].pop()
+        command['accessibleDescription'] = ''
+        rejected(lambda: check_directory_command_capture(geometry, 'en-US'))
+        command['accessibleDescription'] = command['disabledReason']
+        geometry['nodes'].append(dict(visible=True, **{'class': 'ToolTip_QMLTYPE'}))
+        rejected(lambda: check_directory_command_capture(geometry, 'en-US'))
     print(json.dumps(dict(status='self_test_passed', checks=count, synthetic_data_only=True,
                           native_processes_started=0, native_visual_accepted=False)))
     return 0

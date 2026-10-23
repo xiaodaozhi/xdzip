@@ -6848,6 +6848,13 @@ QtObject {
                                                     : QString::fromUtf8("根目录始终展开");
         const auto leafReason = language == "en-US" ? QStringLiteral("This entry has no subfolders")
                                                     : QString::fromUtf8("该节点没有子目录");
+        const auto hasVisibleHint = [window](const QString &reason) {
+            for (auto *item : window->contentItem()->findChildren<QQuickItem *>())
+                if (item->isVisible() && item->inherits("QQuickText") &&
+                    item->property("text").toString() == reason)
+                    return true;
+            return false;
+        };
         const auto click = [window](QQuickItem *target) {
             const auto point =
                 target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint();
@@ -6911,47 +6918,12 @@ QtObject {
                 frames.clear();
                 window->update();
                 QTRY_VERIFY(!frames.isEmpty());
-                bool reasonVisible = false;
-                for (auto *label : command->findChildren<QQuickItem *>()) {
-                    if (!label->inherits("QQuickText") || !label->isVisible() ||
-                        label->property("text").toString() != rootReason)
-                        continue;
-                    reasonVisible = true;
-                    const bool labelFits =
-                        label->width() > 0 && label->height() + 1 >= label->implicitHeight();
-                    const auto labelFailure = [&] {
-                        if (labelFits)
-                            return QString();
-                        QJsonObject state{
-                            {"failure", "directory_reason_label_geometry"},
-                            {"original_predicate", labelFits},
-                            {"language", language},
-                            {"input", input},
-                            {"dark", dark},
-                            {"font_scale", scale},
-                            {"frames", frames.count()},
-                            {"label", failureItemGeometry(label)},
-                            {"label_text", label->property("text").toString()},
-                            {"label_font_pixel_size",
-                             label->property("font").value<QFont>().pixelSize()},
-                            {"command", failureItemGeometry(command)},
-                            {"command_enabled", command->isEnabled()},
-                            {"command_content",
-                             failureItemGeometry(
-                                 command->property("contentItem").value<QQuickItem *>())},
-                            {"menu_content",
-                             failureItemGeometry(
-                                 menu->property("contentItem").value<QQuickItem *>())}};
-                        return saveNativeFailureAudit(
-                            window, qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT"),
-                            "directory-reason-" + language + (dark ? "-dark-" : "-light-") +
-                                QString::number(scale) + "-" + input,
-                            state);
-                    };
-                    QVERIFY2(labelFits, qPrintable(labelFailure()));
-                    QVERIFY(label->property("contentWidth").toDouble() <= label->width() + 1);
-                }
-                QVERIFY(reasonVisible);
+                QVERIFY(!hasVisibleHint(rootReason));
+                auto *label = findVisual(command, "directoryExpansionCommandLabel");
+                QVERIFY(label && label->isVisible());
+                QCOMPARE(label->property("text").toString(), command->property("text").toString());
+                QVERIFY(qAbs(label->mapToItem(command, QPointF(0, label->height() / 2)).y() -
+                             command->height() / 2) <= .5);
                 const auto captures = qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT");
                 if (!captures.isEmpty()) {
                     QVERIFY(QDir().mkpath(captures));
@@ -7000,6 +6972,10 @@ QtObject {
                 }
             }
             QVERIFY(command && command->isEnabled());
+            auto *accessible = QAccessible::queryAccessibleInterface(command);
+            QVERIFY(accessible);
+            QCOMPARE(accessible->text(QAccessible::Description), QString());
+            QVERIFY(!hasVisibleHint(leafReason));
             QCOMPARE(command->property("text").toString(),
                      qtTrId(expanded ? "ui.9c9c21cc25c0" : "ui.521dbd520244"));
             click(command);
@@ -7017,6 +6993,10 @@ QtObject {
         QVERIFY(command && !command->isEnabled());
         QCOMPARE(command->property("disabledReason").toString(), leafReason);
         QCOMPARE(command->property("text").toString(), qtTrId("ui.521dbd520244"));
+        auto *accessible = QAccessible::queryAccessibleInterface(command);
+        QVERIFY(accessible);
+        QCOMPARE(accessible->text(QAccessible::Description), leafReason);
+        QVERIFY(!hasVisibleHint(leafReason));
         QSignalSpy triggered(command, SIGNAL(triggered()));
         click(command);
         QCOMPARE(triggered.count(), 0);
@@ -7996,6 +7976,68 @@ QtObject {
                                 }
                                 return false;
                             })());
+                            QList<QObject *> targetHoverHandlers;
+                            for (auto *child : hovered->findChildren<QObject *>())
+                                if (child->inherits("QQuickHoverHandler"))
+                                    targetHoverHandlers.append(child);
+                            QVERIFY(!targetHoverHandlers.isEmpty());
+                            const auto hoverHandlerStates = [&] {
+                                QJsonArray handlers;
+                                for (auto *handler : targetHoverHandlers)
+                                    handlers.append(QJsonObject{
+                                        {"hovered", handler->property("hovered").toBool()},
+                                        {"enabled", handler->property("enabled").toBool()}});
+                                return handlers;
+                            };
+                            // The anchor may move while the scene settles. Establish an actual
+                            // unhovered baseline at its current position before sampling paint.
+                            const auto clearPoint =
+                                pointerAnchor
+                                    ->mapToScene(QPointF(pointerAnchor->width() / 2,
+                                                         pointerAnchor->height() / 2))
+                                    .toPoint();
+                            QSignalSpy clearFrames(window, &QQuickWindow::frameSwapped);
+                            moveTestPointer(window, clearPoint);
+                            window->update();
+                            const auto hoverBaselineReady = [&] {
+                                if (clearFrames.isEmpty() ||
+                                    (!grid && view->property("hoveredRow").toInt() != -1) ||
+                                    QCursor::pos() != window->mapToGlobal(clearPoint))
+                                    return false;
+                                for (auto *handler : targetHoverHandlers)
+                                    if (handler->property("hovered").toBool())
+                                        return false;
+                                return true;
+                            };
+                            const auto hoverBaselineFailure = [&] {
+                                const bool clear = hoverBaselineReady();
+                                if (clear)
+                                    return QString();
+                                return saveNativeFailureAudit(
+                                    window, directory, scene + "-part" + QString::number(part),
+                                    {{"failure", "file_gallery_hover_baseline"},
+                                     {"original_predicate", clear},
+                                     {"language", language},
+                                     {"dark", dark},
+                                     {"font_scale", scale},
+                                     {"view_mode", mode},
+                                     {"part", part},
+                                     {"frames", clearFrames.count()},
+                                     {"current_color",
+                                      hoverBand->property("color").value<QColor>().name(
+                                          QColor::HexArgb)},
+                                     {"hovered_row", hoveredRow},
+                                     {"table_hovered_row",
+                                      QJsonValue::fromVariant(view->property("hoveredRow"))},
+                                     {"chosen", hovered->property("chosen").toBool()},
+                                     {"delegate_hover_handlers", hoverHandlerStates()},
+                                     {"target_pointer_client",
+                                      QJsonArray{clearPoint.x(), clearPoint.y()}},
+                                     {"delegate", failureItemGeometry(hovered)},
+                                     {"view", failureItemGeometry(view)},
+                                     {"pointer_anchor", failureItemGeometry(pointerAnchor)}});
+                            };
+                            QTRY_VERIFY2(hoverBaselineReady(), qPrintable(hoverBaselineFailure()));
                             const auto before = hoverBand->property("color").value<QColor>();
                             const auto beforeHoveredRow = view->property("hoveredRow");
                             const auto beforePointer = window->mapFromGlobal(QCursor::pos());
@@ -8011,12 +8053,6 @@ QtObject {
                                 const bool painted = !hoverFrames.isEmpty() && current != before;
                                 if (painted)
                                     return QString();
-                                QJsonArray handlers;
-                                for (auto *child : hovered->children())
-                                    if (child->inherits("QQuickHoverHandler"))
-                                        handlers.append(QJsonObject{
-                                            {"hovered", child->property("hovered").toBool()},
-                                            {"enabled", child->property("enabled").toBool()}});
                                 return saveNativeFailureAudit(
                                     window, directory, scene + "-part" + QString::number(part),
                                     {{"failure", "file_gallery_hover_paint"},
@@ -8040,7 +8076,7 @@ QtObject {
                                      {"table_hovered_row",
                                       QJsonValue::fromVariant(view->property("hoveredRow"))},
                                      {"chosen", hovered->property("chosen").toBool()},
-                                     {"delegate_hover_handlers", handlers},
+                                     {"delegate_hover_handlers", hoverHandlerStates()},
                                      {"delegate", failureItemGeometry(hovered)},
                                      {"view", failureItemGeometry(view)},
                                      {"pointer_anchor", failureItemGeometry(pointerAnchor)}});

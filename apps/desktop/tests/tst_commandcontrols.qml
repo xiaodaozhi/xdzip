@@ -27,7 +27,7 @@ Item {
             id: disabled
             text: "解压所选"
             enabled: false
-            disabledReason: "写入能力尚未接入"
+            disabledReason: "请选择至少一个条目"
         }
         Ui.CommandMenuSeparator {}
         Ui.CommandMenuItem {
@@ -64,6 +64,15 @@ Item {
     TestCase {
         name: "CommandControls"
         when: windowShown
+        function containsVisibleText(item, text) {
+            if (item.visible && item.text === text)
+                return true;
+            for (var i = 0; i < item.children.length; ++i) {
+                if (containsVisibleText(item.children[i], text))
+                    return true;
+            }
+            return false;
+        }
         function init() {
             surface.Window.window.requestActivate();
             tryCompare(surface.Window.window, "active", true);
@@ -148,6 +157,10 @@ Item {
             verify(disabled.height >= first.height);
             compare(first.Accessible.description, "");
             compare(disabled.Accessible.description, disabled.disabledReason);
+            var label = findChild(disabled, disabled.objectName + "Label");
+            verify(label && label.visible);
+            compare(label.text, disabled.text);
+            verify(!containsVisibleText(disabled, disabled.disabledReason));
             compare(first.font.pixelSize, Ui.Theme.menuLabelSize);
             verify(menu.contentItem.height > 0);
             verify(menu.contentItem.height <= surface.height);

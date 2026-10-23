@@ -18,10 +18,11 @@ body.export header{display:none}body.export iframe{margin:0}
 <a href="?tree=expanded">目录树，多级展开</a>
 <a href="?platform=windows">Windows 标题栏</a>
 <a href="?tabs=overflow">多标签溢出与拖动排序</a>
+<a href="?menu=directory-root">根目录菜单</a><a href="?menu=extract">解压菜单</a>
 <a href="../../../docs/visual/design-standard.md">标题区规范</a><a href="../index.html">完整画廊</a></nav>
 <p>复用现行 HTML 标题栏与共享素材，标题栏高 48，胶囊高 32、圆角 16，上下各留 8 逻辑像素。
 非活动标签使用常规字重，标签过多时可横向滚动，通过箭头和标签列表访问，支持窗口内拖动与 Control+Shift+Page Up/Down 排序。
-本页以源画布坐标展示，正常主窗口为 1024×622；菜单保持正常密度。</p>
+本页以源画布坐标展示，正常主窗口为 1024×622；菜单保持正常密度。禁用项保持置灰，原因仅供无障碍读取，不显示附加说明或浮动提示。</p>
 <p>当前 PNG 从此可编辑设计源导出。旧原图与量测哈希保留，导出图不作为独立量测依据，也不代表原生桌面验收。</p></header>
 <iframe title="胶囊标签主窗口设计稿"></iframe>
 <script>
@@ -37,6 +38,9 @@ frame.addEventListener('load',async()=>{
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const doc=frame.contentDocument;
     await doc.fonts.ready;
+    doc.documentElement.lang=query.get('lang')==='en-US'?'en-US':'zh-CN';
+    const textScale=Number(query.get('textScale')||1);
+    if([1,1.25,1.5].includes(textScale))doc.documentElement.style.setProperty('--settings-text-scale',textScale);
     if(query.get('tabs')==='overflow'){
         for(let index=0;index<12;index++)frame.contentWindow.XdzipMain.openSample('preview-'+index);
         frame.contentWindow.XdzipMain.switchTab('travel',true);
@@ -50,6 +54,21 @@ frame.addEventListener('load',async()=>{
         }
     }
     await Promise.all([...doc.images].map(image=>image.decode()));
+    const menu=query.get('menu');
+    if(menu==='extract')doc.querySelector('#extract-menu-button').click();
+    else if(['directory-root','directory-leaf','context','submenu'].includes(menu)){
+        const selector=menu==='directory-root'?'.tree-root[data-directory=""]':
+            menu==='directory-leaf'?'[data-directory="maps"]':'#file-rows [data-id="lake"]';
+        const target=doc.querySelector(selector),rect=target.getBoundingClientRect();
+        target.dispatchEvent(new frame.contentWindow.MouseEvent('contextmenu',{
+            bubbles:true,cancelable:true,clientX:rect.x+rect.width/2,clientY:rect.y+rect.height/2,
+        }));
+        if(menu==='submenu'){
+            const item=doc.querySelector('[data-command="view-menu"]');
+            item.focus();
+            item.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
+        }
+    }
     document.documentElement.dataset.ready='true';
 });
 frame.src='../../html/canvas.html?view=main';

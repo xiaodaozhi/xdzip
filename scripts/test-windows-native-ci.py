@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import struct
 import tempfile
 import unittest
 from unittest import mock
@@ -59,6 +60,143 @@ class FakeDisplay:
         self.raw = raw
         self.pending_failed_read = self.fail_read_after_apply and len(self.applied) == 1
         return 0
+
+
+class DirectoryCommandCaptureTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        def module(name, file):
+            specification = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / file)
+            value = importlib.util.module_from_spec(specification)
+            specification.loader.exec_module(value)
+            return value
+        cls.visual = module('directory_visual_contract', 'check-windows-native-visual-ci.py')
+        cls.layout = module('directory_layout_contract', 'check-windows-native-layout-ci.py')
+
+    def setUp(self):
+        (ROOT / 'build').mkdir(exist_ok=True)
+        temporary = tempfile.TemporaryDirectory(prefix='directory-capture-mock-', dir=ROOT / 'build')
+        self.addCleanup(temporary.cleanup)
+        self.folder = Path(temporary.name)
+        self.images = self.folder / 'images'
+        self.images.mkdir()
+
+    def geometry(self, language='zh-CN'):
+        english = language == 'en-US'
+        title = 'Collapse subfolders' if english else '收起子目录'
+        reason = 'Root is always expanded' if english else '根目录始终展开'
+        return dict(platform='windows', dpr=1, width=1024, height=700, imageWidth=1024, imageHeight=700,
+                    nodes=[dict(name='directoryExpansionCommand', visible=True, enabled=False, text=title,
+                                disabledReason=reason, accessibleDescription=reason),
+                           dict(name='directoryExpansionCommandLabel', visible=True, text=title,
+                                width=200, height=24, contentWidth=180)])
+
+    def save_pair(self, stem, geometry):
+        (self.images / (stem + '.json')).write_text(json.dumps(geometry), encoding='utf-8')
+        (self.images / (stem + '.png')).write_bytes(b'\x89PNG\r\n\x1a\n' + b'\0\0\0\rIHDR'
+            + struct.pack('>II', geometry['imageWidth'], geometry['imageHeight']))
+
+    def directory_matrix(self):
+        for language in ('zh-CN', 'en-US'):
+            for theme in ('light', 'dark'):
+                for scale in ('1', '1.25', '1.5'):
+                    for key in ('mouse', 'menu', 'shift-f10'):
+                        self.save_pair(f'directory-reason-{language}-{theme}-{scale}-{key}', self.geometry(language))
+
+    def test_exact_directory_matrix_preserves_commands_and_accessible_reasons_without_visible_hints(self):
+        self.directory_matrix()
+        result = self.visual.check_captures('directory_reason', self.images, SOURCE, '')
+        self.assertEqual(result['scenes'], 36)
+        self.assertEqual(result['client_frames'], 36)
+        self.assertEqual(result['accessible_reason_only_captures'], 36)
+        # A hidden label is not painted. The live Qt test separately checks the
+        # component and actual accessibility interfaces, without this fixture.
+        geometry = self.geometry()
+        geometry['nodes'].append(dict(visible=False, text='根目录始终展开'))
+        self.visual.check_directory_command_capture(geometry, 'zh-CN')
+
+    def test_directory_matrix_rejects_missing_input_pair_wrong_dpr_and_visible_reason(self):
+        self.directory_matrix()
+        stem = 'directory-reason-en-US-dark-1.5-shift-f10'
+        image = self.images / (stem + '.png')
+        original = image.read_bytes()
+        image.unlink()
+        with self.assertRaises(ValueError):
+            self.visual.check_captures('directory_reason', self.images, SOURCE, '')
+        image.write_bytes(original)
+        for change in ('dpr', 'hint', 'tooltip'):
+            with self.subTest(change=change):
+                geometry = self.geometry('en-US')
+                if change == 'dpr':
+                    geometry['dpr'] = 2
+                elif change == 'hint':
+                    geometry['nodes'].append(dict(visible=True, text='Root is always expanded'))
+                else:
+                    geometry['nodes'].append(dict(visible=True, **{'class': 'ToolTip_QMLTYPE'}))
+                self.save_pair(stem, geometry)
+                with self.assertRaises(ValueError):
+                    self.visual.check_captures('directory_reason', self.images, SOURCE, '')
+
+    def test_command_label_accessibility_and_any_other_disabled_reason_fail_closed(self):
+        for change in ('command_missing', 'command_enabled', 'wrong_text', 'label_missing', 'label_overflow',
+                       'description_missing', 'description_wrong', 'visible_other_reason', 'tooltip_reason'):
+            with self.subTest(change=change):
+                geometry = self.geometry()
+                command, label = geometry['nodes']
+                if change == 'command_missing': command['name'] = 'anotherCommand'
+                elif change == 'command_enabled': command['enabled'] = True
+                elif change == 'wrong_text': command['text'] = '展开子目录'
+                elif change == 'label_missing': label['visible'] = False
+                elif change == 'label_overflow': label['contentWidth'] = 500
+                elif change == 'description_missing': command.pop('accessibleDescription')
+                elif change == 'description_wrong': command['accessibleDescription'] = 'other'
+                elif change == 'visible_other_reason':
+                    geometry['nodes'].extend([dict(name='otherCommand', visible=True, disabledReason='Other reason'),
+                                              dict(visible=True, text='Other reason')])
+                else:
+                    geometry['nodes'].append(dict(visible=True, text='根目录始终展开', **{'class': 'QQuickPopupItem'}))
+                with self.assertRaises(ValueError):
+                    self.visual.check_directory_command_capture(geometry, 'zh-CN')
+
+    def test_layout_group_keeps_source_backend_geometry_and_all_36_reason_captures(self):
+        self.directory_matrix()
+        rows = []
+        for scene in sorted(self.layout.SCENES):
+            language, theme, scale, width = scene.rsplit('-', 3)
+            geometry = self.geometry(language)
+            geometry.update(width=int(width), height=544 if width == '832' else 700,
+                            imageWidth=int(width), imageHeight=544 if width == '832' else 700)
+            self.save_pair(scene + '-main', geometry)
+            rows.append(dict(scene=scene, language=language, dark=theme == 'dark', font_scale=float(scale),
+                width=geometry['width'], height=geometry['height'], dpr=1,
+                actions=[dict(width=28, gap=0), dict(width=28, gap=6.4), dict(width=28, gap=6.4)],
+                columns=[dict(column=i, width=100, font=12, arrow_gap=6) for i in range(5)],
+                menu_table_font_ratio=1, separator_height=1))
+        measurements = dict(revision=SOURCE[:12], dirty=False, configuration='Release', platform='windows',
+                            qt='6.8.2', requested_backend='', qt_scale_factor_override='1', measurements=rows)
+        file = self.images / 'measurements.json'
+        file.write_text(json.dumps(measurements), encoding='utf-8')
+        log = '\n'.join('PASS : BrowserTest::' + method + '()' for method in self.layout.METHODS[:-1])
+        log += '\n' + '\n'.join('PASS : BrowserTest::directoryContextExpansionReasons(' + lang + '-' + key + ')'
+            for lang in ('zh-CN', 'en-US') for key in ('mouse', 'menu', 'shift-f10'))
+        log += '\nCreating QRhi with backend D3D11\nTotals: 12 passed, 0 failed, 0 skipped\n'
+        (self.folder / 'qt.log').write_text(log, encoding='utf-8')
+        result = self.layout.check_group(self.folder, SOURCE, '1')
+        self.assertEqual(result['actual_layout_count'], 36)
+        self.assertEqual(result['directory_reason_captures'], 36)
+        self.assertEqual(result['accessible_reason_only_captures'], 36)
+        self.assertEqual(result['all_generated_pngs_paired_and_measured'], 72)
+        with self.assertRaises(ValueError):
+            self.layout.check_group(self.folder, '2' * 40, '1')
+        (self.folder / 'qt.log').write_text(log.replace('D3D11', 'OpenGL'), encoding='utf-8')
+        with self.assertRaises(ValueError):
+            self.layout.check_group(self.folder, SOURCE, '1')
+        (self.folder / 'qt.log').write_text(log, encoding='utf-8')
+        geometry = self.geometry()
+        geometry['nodes'].append(dict(visible=True, text='根目录始终展开'))
+        self.save_pair('directory-reason-zh-CN-light-1-menu', geometry)
+        with self.assertRaises(ValueError):
+            self.layout.check_group(self.folder, SOURCE, '1')
 
 
 class DisplayReceiptTests(unittest.TestCase):

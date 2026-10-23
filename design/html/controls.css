@@ -51,12 +51,6 @@
     min-width: 0;
     overflow-wrap: anywhere;
 }
-.ui-menu-reason {
-    display: block;
-    margin-top: 2px;
-    color: var(--ui-menu-secondary);
-    font-size: var(--ui-menu-shortcut-size);
-}
 .ui-menu-symbol,
 .ui-menu-arrow {
     display: grid;

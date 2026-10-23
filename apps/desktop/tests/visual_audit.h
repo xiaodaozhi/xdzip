@@ -1,6 +1,7 @@
 // apps/desktop/tests/visual_audit.h
 
 #pragma once
+#include <QAccessible>
 #include <QDir>
 #include <QFile>
 #include <QFont>
@@ -35,10 +36,17 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
                      {"width", item->width()},
                      {"height", item->height()},
                      {"visible", item->isVisible()},
+                     {"enabled", item->isEnabled()},
                      {"clip", item->clip()},
                      {"baselineOffset", item->baselineOffset()},
                      {"implicitWidth", item->implicitWidth()},
                      {"implicitHeight", item->implicitHeight()}};
+    const auto disabledReason = item->property("disabledReason");
+    if (disabledReason.isValid()) {
+        node["disabledReason"] = disabledReason.toString();
+        if (auto *accessible = QAccessible::queryAccessibleInterface(item))
+            node["accessibleDescription"] = accessible->text(QAccessible::Description);
+    }
     for (const auto *key :
          {"text", "color", "source", "radius", "horizontalAlignment", "verticalAlignment",
           "contentWidth", "contentHeight", "contentX", "contentY", "originX", "originY", "opacity",

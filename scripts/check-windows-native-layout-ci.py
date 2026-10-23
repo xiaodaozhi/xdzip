@@ -21,6 +21,9 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('layout_ci_owned_processes', ROOT / 'scripts/check-windows-native-ci.py')
 common = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(common)
+visual_spec = importlib.util.spec_from_file_location('layout_ci_visual_contracts', ROOT / 'scripts/check-windows-native-visual-ci.py')
+visual = importlib.util.module_from_spec(visual_spec)
+visual_spec.loader.exec_module(visual)
 METHODS = ('nativeUiLayoutAcceptance', 'fixedFileActionsAndColumnResize',
            'tabContextClosesStableWindowLocalRanges', 'aboutUpdateStateLayoutAndReadOnlyActions',
            'directoryContextExpansionReasons')
@@ -124,13 +127,11 @@ def check_group(folder, source, target):
                     stem = f'directory-reason-{language}-{theme}-{scale}-{key}'
                     data = read(images / (stem + '.json'))
                     require((images / (stem + '.png')).is_file(), 'root_reason_image_missing')
-                    text = 'Root is always expanded' if language == 'en-US' else '根目录始终展开'
-                    labels = [node for node in data.get('nodes', []) if node.get('visible') and node.get('text') == text]
-                    require(labels and all(node.get('contentWidth', 0) <= node.get('width', 0) + 1 for node in labels),
-                            'root_reason_missing_or_overflowing')
+                    visual.check_directory_command_capture(data, language)
                     reasons.append(stem)
     return dict(actual_layout_count=len(layouts), actual_dpr=float(target), layouts=layouts, clamped=clamped,
                 actual_widths=sorted({row['actual_width'] for row in layouts}), directory_reason_captures=len(reasons),
+                accessible_reason_only_captures=len(reasons),
                 all_generated_pngs_paired_and_measured=len(originals),
                 full_requested_size_matrix_realized=not clamped)
 
@@ -250,6 +251,20 @@ def self_test():
             checks += 1
         else:
             raise AssertionError('invalid_qtest_log_accepted')
+    geometry = dict(nodes=[dict(name='directoryExpansionCommand', visible=True, enabled=False,
+                               text='收起子目录', disabledReason='根目录始终展开',
+                               accessibleDescription='根目录始终展开'),
+                           dict(name='directoryExpansionCommandLabel', visible=True, text='收起子目录',
+                                width=180, height=24, contentWidth=120)])
+    visual.check_directory_command_capture(geometry, 'zh-CN')
+    checks += 1
+    geometry['nodes'].append(dict(visible=True, text='根目录始终展开'))
+    try:
+        visual.check_directory_command_capture(geometry, 'zh-CN')
+    except ValueError:
+        checks += 1
+    else:
+        raise AssertionError('visible_disabled_reason_accepted')
     return dict(status='self_test_passed', checks=checks, synthetic_data_only=True, native_processes_started=0)
 
 

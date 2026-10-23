@@ -164,9 +164,8 @@ window.XdzipControls = (() => {
                 node.setAttribute("aria-haspopup", "menu");
                 node.setAttribute("aria-expanded", "false");
             }
-            if (item.reason) {
+            if (item.disabled && item.reason) {
                 node.setAttribute("aria-description", item.reason);
-                node.dataset.tooltip = item.reason;
             }
             const symbol = document.createElement("span");
             symbol.className = "ui-menu-symbol";
@@ -178,12 +177,6 @@ window.XdzipControls = (() => {
             const text = document.createElement("span");
             text.className = "ui-menu-label";
             text.textContent = item.label;
-            if (item.disabled && item.reason) {
-                const reason = document.createElement("small");
-                reason.className = "ui-menu-reason";
-                reason.textContent = item.reason;
-                text.append(reason);
-            }
             const shortcut = document.createElement("span");
             shortcut.className = item.status ? "task-status" : "ui-menu-shortcut";
             shortcut.textContent = item.status || item.shortcut || "";

@@ -16,7 +16,7 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
 def main():
-    checks, errors, requests = [], [], []
+    checks, errors, requests, directory_cases = [], [], [], []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
                                              args=['--no-sandbox', '--disable-dev-shm-usage'])
@@ -44,40 +44,55 @@ def main():
                 row.press('ContextMenu' if method == 'menu' else 'Shift+F10')
             expect(page.locator('[data-command=directory-expand]')).to_be_visible()
 
+        def assert_description_only(owner, command, reason, hover=False):
+            expect(command).to_have_attribute('aria-disabled', 'true')
+            expect(command).to_have_attribute('aria-description', reason)
+            expect(owner.locator('.ui-menu-reason')).to_have_count(0)
+            assert reason not in command.inner_text()
+            assert command.get_attribute('data-tooltip') is None
+            assert command.get_attribute('title') is None
+            if hover:
+                command.hover()
+                owner.wait_for_timeout(owner.evaluate('XDZIP_CONTROL_TOKENS.motion.hoverDelayMs') + 80)
+                expect(owner.locator('[role=tooltip]')).to_have_count(0)
+
         for language, root_reason, leaf_reason, collapse in [
             ('zh-CN', '根目录始终展开', '该节点没有子目录', '收起子目录'),
             ('en-US', 'Root is always expanded', 'This entry has no subfolders', 'Collapse subfolders'),
         ]:
             page.evaluate('(language)=>document.documentElement.lang=language', language)
-            for method in ['mouse', 'menu', 'shift-f10']:
-                open_directory_menu(page.locator('.tree-root[data-directory=""]'), method)
-                command = page.locator('[data-command=directory-expand]')
-                expect(command).to_have_attribute('aria-disabled', 'true')
-                expect(command).to_have_attribute('aria-description', root_reason)
-                expect(command.locator('.ui-menu-reason')).to_have_text(root_reason)
-                assert command.locator('.ui-menu-label').evaluate('(n)=>n.firstChild.textContent') == collapse
-                assert command.locator('.ui-menu-reason').evaluate('(n)=>n.scrollWidth<=n.clientWidth+1 && n.scrollHeight<=n.clientHeight+1')
-                command.click(force=True)
-                expect(page.locator('.ui-menu')).to_have_count(1)
-                assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
-                page.keyboard.press('Escape')
-                for expanded in [False, True]:
-                    open_directory_menu(page.locator('[data-directory=photos]'), method)
+            for text_scale in (1, 1.25, 1.5):
+                page.evaluate('(scale)=>document.documentElement.style.setProperty("--settings-text-scale",scale)', text_scale)
+                for method in ['mouse', 'menu', 'shift-f10']:
+                    open_directory_menu(page.locator('.tree-root[data-directory=""]'), method)
                     command = page.locator('[data-command=directory-expand]')
-                    expect(command).to_have_attribute('aria-disabled', 'false')
-                    assert command.get_attribute('aria-description') is None
-                    command.click()
-                    expect(page.locator('[data-directory=photos]')).to_have_attribute('aria-expanded', str(not expanded).lower())
-                open_directory_menu(page.locator('[data-directory=maps]'), method)
-                command = page.locator('[data-command=directory-expand]')
-                expect(command).to_have_attribute('aria-disabled', 'true')
-                expect(command).to_have_attribute('aria-description', leaf_reason)
-                expect(command.locator('.ui-menu-reason')).to_have_text(leaf_reason)
-                command.click(force=True)
-                assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
-                page.keyboard.press('Escape')
+                    assert_description_only(page, command, root_reason, method == 'mouse')
+                    expect(command.locator('.ui-menu-label')).to_have_text(collapse)
+                    divider = page.locator('.ui-menu [role=separator]')
+                    expect(divider).to_be_visible()
+                    assert divider.evaluate('(n)=>n.getBoundingClientRect().height>0 && getComputedStyle(n).backgroundColor!=="rgba(0, 0, 0, 0)"')
+                    command.click(force=True)
+                    expect(page.locator('.ui-menu')).to_have_count(1)
+                    assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
+                    page.keyboard.press('Escape')
+                    for expanded in [False, True]:
+                        open_directory_menu(page.locator('[data-directory=photos]'), method)
+                        command = page.locator('[data-command=directory-expand]')
+                        expect(command).to_have_attribute('aria-disabled', 'false')
+                        assert command.get_attribute('aria-description') is None
+                        command.click()
+                        expect(page.locator('[data-directory=photos]')).to_have_attribute('aria-expanded', str(not expanded).lower())
+                    open_directory_menu(page.locator('[data-directory=maps]'), method)
+                    command = page.locator('[data-command=directory-expand]')
+                    assert_description_only(page, command, leaf_reason, method == 'mouse')
+                    command.click(force=True)
+                    assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
+                    directory_cases.append({'language':language,'text_scale':text_scale,'method':method,
+                                            'root_and_leaf_description_only':True,'parent_toggles':True,'divider_visible':True})
+                    page.keyboard.press('Escape')
         page.evaluate('document.documentElement.lang="zh-CN"')
-        checks.append('Directory root, parent and leaf: pointer/Menu/Shift+F10 share accurate bilingual disabled reasons and preserve navigation/selection')
+        page.evaluate('document.documentElement.style.setProperty("--settings-text-scale",1)')
+        checks.append('Directory root, parent and leaf: pointer/Menu/Shift+F10 preserve bilingual reasons only as accessible descriptions, without hints or tooltips at three text scales')
         for ident in ['open', 'create', 'test-archive', 'more-actions', 'extract', 'extract-menu-button']:
             assert page.locator('#' + ident).get_attribute('data-tooltip') is None
             assert page.locator('#' + ident).get_attribute('title') is None
@@ -187,6 +202,7 @@ def main():
 
         page.locator('#extract-menu-button').click()
         expect(page.locator('[data-command=extract-results]')).to_have_attribute('aria-disabled', 'true')
+        assert_description_only(page, page.locator('[data-command=extract-results]'), '仅有搜索结果时可用', True)
         page.locator('[data-command=extract-results]').click(force=True)
         expect(page.locator('.ui-menu')).to_have_count(1)
         expect(page.locator('#modal')).not_to_be_visible()
@@ -403,6 +419,8 @@ def main():
                 gallery.locator('#component-theme').click()
             gallery.locator('#component-more').click()
             expect(gallery.locator('.ui-menu')).to_be_visible()
+            assert_description_only(gallery, gallery.locator('[data-command=catalog-extract]'), '设计示例不会写出文件', True)
+            assert_description_only(gallery, gallery.locator('[data-command=catalog-test]'), '设计示例不执行真实校验', True)
             gallery.screenshot(path=str(OUTPUT / f'components-{theme}.png'))
             gallery.keyboard.press('Escape')
         button=gallery.locator('#component-open')
@@ -448,6 +466,7 @@ def main():
         assert not errors, errors
         assert not requests, requests
         report = {'status':'passed','checks':checks,'check_count':len(checks),'page_errors':errors,'external_requests':requests,
+                  'directory_menu_cases':directory_cases,
                   'limits':['HTML operations use in-memory example data','Platform decorations in HTML do not prove native window behavior',
                             'Qt and assistive-technology validation are separate']}
         (OUTPUT / 'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')

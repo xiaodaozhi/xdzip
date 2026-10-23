@@ -20,6 +20,8 @@
 
 [多标签交互稿](sources/main.html?tabs=overflow)展示标签收窄与溢出、左右滚动及标签列表，支持拖动和 Control+Shift+Page Up/Down 重排。活动标签字重 600，其他标签字重 400；原历史主图及量测哈希继续保留。
 
+当前菜单状态可直接查看：[根目录](sources/main.html?menu=directory-root)、[无子目录的节点](sources/main.html?menu=directory-leaf&theme=dark)、[解压下拉](sources/main.html?menu=extract)、[文件右键](sources/main.html?menu=context)与[视图子菜单](sources/main.html?menu=submenu)。禁用项保留置灰与无障碍描述，不在菜单下方显示原因，也不显示浮动提示。入口复用共享 HTML 菜单，支持 `lang=en-US`、`theme=dark` 和 `textScale=1.25`／`1.5` 的设计配置；截图与量测只输出到 build，不作为原生 Qt 验收或既有 PNG 已更新的声明。
+
 ## 操作窗口与功能状态
 
 | 原稿 | 状态 |
