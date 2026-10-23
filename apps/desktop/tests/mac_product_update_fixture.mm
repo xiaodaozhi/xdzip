@@ -467,6 +467,7 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
                 return;
             if (scenario == "quit-wait") {
                 auto *password = page ? page->findChild<QQuickWindow *>("passwordWindow") : nullptr;
+                auto *confirmation = page ? page->findChild<QQuickWindow *>("quitWindow") : nullptr;
                 auto *modal = QGuiApplication::modalWindow();
                 write("quit-progress.json",
                       {{"quit_requested", state->quitRequested},
@@ -477,6 +478,11 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
                        {"password_visible", password && password->isVisible()},
                        {"password_exposed", password && password->isExposed()},
                        {"password_is_modal", modal == password},
+                       {"confirmation_visible", confirmation && confirmation->isVisible()},
+                       {"confirmation_exposed", confirmation && confirmation->isExposed()},
+                       {"confirmation_is_modal", modal == confirmation},
+                       {"confirmation_owned",
+                        confirmation && confirmation->transientParent() == window},
                        {"active_tasks", sessions->activeTaskCount()},
                        {"closing", sessions->isClosing()}});
                 if (!state->requestedAgain) {
@@ -487,8 +493,22 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
                         return;
                     }
                 }
-                auto *confirmation = page ? page->findChild<QQuickWindow *>("quitWindow") : nullptr;
                 if (!state->quitRequested) {
+                    const auto current = controller->passwordPrompt();
+                    if (!password || !password->isVisible() || !password->isExposed() ||
+                        modal != password || password->transientParent() != window ||
+                        current.value("taskId").toString() != state->task ||
+                        current.value("promptId").toString() != state->prompt)
+                        return;
+                    write("quit-first-intent.json",
+                          {{"password_visible", password->isVisible()},
+                           {"password_exposed", password->isExposed()},
+                           {"password_is_modal", modal == password},
+                           {"password_owned", password->transientParent() == window},
+                           {"task_id", current.value("taskId").toString()},
+                           {"prompt_id", current.value("promptId").toString()},
+                           {"active_tasks", sessions->activeTaskCount()},
+                           {"state", updates->state()}});
                     state->quitRequested = true;
                     QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
                     return;

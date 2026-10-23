@@ -539,7 +539,8 @@ def main():
             # Only generated records in this fresh, owned session are cleared.
             leaves={'stop.json','upgrade.json','fixture-error.json','interrupted-handoff.json',
                     'password-waiting.json','waiting-cancelled.json','password-completed.json','quit-returned.json',
-                    'asset-redirect.json','feed-redirect.json','replacement-fault.json','quit-progress.json'}
+                    'asset-redirect.json','feed-redirect.json','replacement-fault.json','quit-progress.json',
+                    'quit-first-intent.json'}
             for path in session.glob('*.json'):
                 if path.name in leaves or path.name.startswith(('200-','201-','native-')):path.unlink()
             config=json.loads((session/'configuration.json').read_bytes())
@@ -627,18 +628,23 @@ def main():
         returned=json.loads((session/'quit-returned.json').read_bytes())
         quit_waiting=json.loads((session/'password-waiting.json').read_bytes())
         quit_cancelled=json.loads((session/'waiting-cancelled.json').read_bytes())
+        first_intent=json.loads((session/'quit-first-intent.json').read_bytes())
         if (quit_record['quit_intent']!='QEvent::Quit through AppQuitGuard and DesktopIntegration' or
             not quit_record['return_clicked'] or not quit_record['cancel_quit_clicked'] or
             quit_record['barriers']!=0 or not quit_record['all_rust_joined'] or quit_record['quit_signals']!=1 or
             joined['active_tasks']!=0 or joined['update_pending'] or not joined['password_prompt_cleared'] or
             joined['task'].get('status')!='cancelled' or not joined['task'].get('terminal') or
+            not all(first_intent.get(key) is True for key in ('password_visible','password_exposed','password_is_modal','password_owned')) or
+            first_intent.get('active_tasks')!=1 or first_intent.get('state')!='waiting_tasks' or
+            first_intent.get('task_id')!=quit_waiting['task_id'] or first_intent.get('prompt_id')!=quit_waiting['prompt_id'] or
             returned['state']!='waiting_tasks' or returned['active_tasks']!=1 or
             quit_waiting['session_count']!=2 or quit_waiting['idle_session']==quit_waiting['working_session'] or
             not returned.get('password_modal_restored') or returned['task_id']!=quit_waiting['task_id'] or returned['prompt_id']!=quit_waiting['prompt_id'] or
             quit_cancelled['task_id']!=quit_waiting['task_id'] or quit_cancelled['state']!='available' or
             (session/'native-start.json').exists() or (session/'200-exit-barrier.json').exists()):
             raise RuntimeError('Ordinary Return/Cancel quit did not preserve then cancel/join the real waiting task')
-        ordinary_quit_record=dict(quit=quit_record,joined=joined,returned=returned,waiting=quit_waiting,cancelled=quit_cancelled)
+        ordinary_quit_record=dict(quit=quit_record,joined=joined,returned=returned,waiting=quit_waiting,
+                                  cancelled=quit_cancelled,first_intent=first_intent)
         dump(output/'ordinary-quit-verification.json',ordinary_quit_record)
         stage='busy_upgrade_start'
         change_scenario('busy-upgrade')
@@ -691,6 +697,7 @@ def main():
         peer=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
         if peer.wait(timeout=20)!=0:raise RuntimeError('New ordinary SingleInstance startup failed')
         record=dict(status='failed' if evidence_failures else 'passed',evidence_failures=evidence_failures,
+                    quit_intent_schema_version=1,
                     scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
                     production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,

@@ -58,6 +58,10 @@ The SDK-free Mac HTTPS regression restarts the same deployed probe for at most t
 
 另有双会话组件回归，经 AppQuitGuard、DesktopIntegration 和全会话路由进入同一退出窗口，核对 AES 等待任务的返回／取消及 join。只允许受管理会话自己的密码／冲突模态被退出确认覆盖，原生 QWidget 模态仍阻挡退出。该组件检查与完整主程序在更新等待期间的系统 Quit、原生安装回归分别记录。
 
+Mac 完整产品夹具在首次投递系统 Quit 前，须实际观察同一工作会话的密码窗已可见、已 exposed、属于该主窗口且正是应用模态窗，任务与密码令牌仍一致；不能把 Rust 已产生密码请求等同于延迟呈现的窗口已经就绪。达到前提后仅投递一次 Quit，继续验证真实返回、模态恢复、取消和全部 join。超时时先冻结当前进度，再执行清理；清理期间后来生成的退出结果不能覆盖失败结论。
+
+Before its first system Quit, the full Mac product fixture must observe the owned working-session password window as visible, exposed and the current application modal, with the same task/prompt tokens and host window. A Rust password request alone does not prove that deferred presentation has completed. The fixture posts Quit once, retains the real Return/modal-restoration/Cancel/join requirements, and freezes timeout diagnostics before cleanup. Results generated later during cleanup cannot turn the timed-out scenario into a pass.
+
 Windows 私有安装回归在新 `xdzip.exe` 复制完成、其余文件尚未开始复制时暂停真实 Inno，核对新程序身份并再次启动真实 Qt 程序，要求启动门返回 11、没有可见窗口及新会话，再放行复制并完成原有升级验收。测试观察门时立即关闭自己的句柄，不能替安装器维持门的生命周期。新旧均为 Qt 6.8.2，此回归不建立原子应用包或跨 Qt 版本迁移保证，生产安装模板不添加暂停逻辑。
 
 The private Windows regression pauses real Inno after replacing `xdzip.exe` and before copying the remaining files, checks the new identity and starts the actual Qt program. It requires gate exit 11 without visible windows or new sessions before resuming and completing the existing upgrade checks. Observation handles are closed immediately so the test cannot prolong the gate's lifetime. Both sides use Qt 6.8.2; this does not establish atomic bundle replacement or migration between Qt versions. The production installer template contains no pause.
