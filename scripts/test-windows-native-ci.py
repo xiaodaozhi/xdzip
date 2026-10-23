@@ -552,6 +552,12 @@ class HostedMenuTests(unittest.TestCase):
         self.assertTrue(result['synthetic_data_only'])
         self.assertEqual(result['native_processes_started'], 0)
 
+    def test_focused_failure_diagnosis_keeps_original_failure_and_limited_scope(self):
+        spec = importlib.util.spec_from_file_location('windows_failure_ci', ROOT / 'scripts/check-windows-native-failures-ci.py')
+        focused = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(focused)
+        self.assertEqual(focused.self_test(), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

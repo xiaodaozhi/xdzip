@@ -332,6 +332,71 @@ static void moveTestPointer(QQuickWindow *window, const QPoint &position) {
     QTest::mouseMove(window, position);
 }
 
+static QJsonObject failureItemGeometry(QQuickItem *item) {
+    if (!item)
+        return {};
+    const auto position = item->mapToScene(QPointF());
+    return {{"name", item->objectName()},
+            {"x", position.x()},
+            {"y", position.y()},
+            {"width", item->width()},
+            {"height", item->height()},
+            {"implicitWidth", item->implicitWidth()},
+            {"implicitHeight", item->implicitHeight()},
+            {"contentWidth", QJsonValue::fromVariant(item->property("contentWidth"))},
+            {"contentHeight", QJsonValue::fromVariant(item->property("contentHeight"))},
+            {"visible", item->isVisible()},
+            {"opacity", item->opacity()}};
+}
+
+// Failure-only readback uses this application's Quick surface, never desktop or
+// foreign-window pixels. Native identity probes emit only booleans; query failure
+// is false, and neither capture nor diagnostics can turn the original assertion into success.
+static QString saveNativeFailureAudit(QQuickWindow *window, const QString &directory,
+                                      const QString &scene, QJsonObject state) {
+    const auto global = QCursor::pos();
+    const auto pointer = window->mapFromGlobal(global);
+    state["schema_version"] = 1;
+    state["scene"] = scene;
+    state["window_active"] = window->isActive();
+    state["window_visible"] = window->isVisible();
+    state["window_exposed"] = window->isExposed();
+    state["window_size"] = QJsonArray{window->width(), window->height()};
+    state["dpr"] = window->devicePixelRatio();
+    state["pointer_client"] = QJsonArray{pointer.x(), pointer.y()};
+    state["pointer_inside_client"] = QRect(QPoint(), window->size()).contains(pointer);
+    state["top_level_at_pointer_is_owned"] = QGuiApplication::topLevelAt(global) == window;
+#ifdef Q_OS_WIN
+    DWORD foregroundPid = 0;
+    const auto foreground = GetForegroundWindow();
+    const bool queried = foreground && GetWindowThreadProcessId(foreground, &foregroundPid);
+    state["foreground_query_succeeded"] = queried;
+    state["foreground_is_owned"] = queried && foregroundPid == GetCurrentProcessId() &&
+                                   foreground == reinterpret_cast<HWND>(window->winId());
+    state["foreground_is_same_process"] = queried && foregroundPid == GetCurrentProcessId();
+#else
+    state["foreground_is_owned"] = QGuiApplication::focusWindow() == window;
+    state["foreground_probe"] = QStringLiteral("Qt focus window, not a native foreground probe");
+#endif
+    const auto stem = "failure-" + scene + "-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+    state["capture_scope"] = QStringLiteral("owned QQuickWindow::grabWindow surface only");
+    state["capture_after_failed_predicate"] = true;
+    const bool saved = !directory.isEmpty() && QDir().mkpath(directory) &&
+                       visual_audit::save(window, directory, stem);
+    state["owned_surface_saved"] = saved;
+    state["image"] = saved ? stem + ".png" : QString();
+    state["geometry"] = saved ? stem + ".json" : QString();
+    const auto bytes = QJsonDocument(state).toJson(QJsonDocument::Compact);
+    qInfo().noquote() << "Native visual failure state" << bytes;
+    if (!directory.isEmpty()) {
+        QFile report(directory + '/' + stem + "-state.json");
+        if (!report.open(QIODevice::WriteOnly | QIODevice::NewOnly) ||
+            report.write(bytes) != bytes.size())
+            qWarning() << "Native visual failure state could not be saved";
+    }
+    return QStringLiteral("Original condition failed; native visual failure state recorded");
+}
+
 // Diagnose only owned fixture directories; never emit their absolute paths.
 static bool checkedTarget(BrowserController *controller, const QString &fixturePath) {
     const bool valid = controller->targetCheck().value("valid").toBool();
@@ -6852,7 +6917,38 @@ QtObject {
                         label->property("text").toString() != rootReason)
                         continue;
                     reasonVisible = true;
-                    QVERIFY(label->width() > 0 && label->height() + 1 >= label->implicitHeight());
+                    const bool labelFits =
+                        label->width() > 0 && label->height() + 1 >= label->implicitHeight();
+                    const auto labelFailure = [&] {
+                        if (labelFits)
+                            return QString();
+                        QJsonObject state{
+                            {"failure", "directory_reason_label_geometry"},
+                            {"original_predicate", labelFits},
+                            {"language", language},
+                            {"input", input},
+                            {"dark", dark},
+                            {"font_scale", scale},
+                            {"frames", frames.count()},
+                            {"label", failureItemGeometry(label)},
+                            {"label_text", label->property("text").toString()},
+                            {"label_font_pixel_size",
+                             label->property("font").value<QFont>().pixelSize()},
+                            {"command", failureItemGeometry(command)},
+                            {"command_enabled", command->isEnabled()},
+                            {"command_content",
+                             failureItemGeometry(
+                                 command->property("contentItem").value<QQuickItem *>())},
+                            {"menu_content",
+                             failureItemGeometry(
+                                 menu->property("contentItem").value<QQuickItem *>())}};
+                        return saveNativeFailureAudit(
+                            window, qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT"),
+                            "directory-reason-" + language + (dark ? "-dark-" : "-light-") +
+                                QString::number(scale) + "-" + input,
+                            state);
+                    };
+                    QVERIFY2(labelFits, qPrintable(labelFailure()));
                     QVERIFY(label->property("contentWidth").toDouble() <= label->width() + 1);
                 }
                 QVERIFY(reasonVisible);
@@ -7901,13 +7997,57 @@ QtObject {
                                 return false;
                             })());
                             const auto before = hoverBand->property("color").value<QColor>();
+                            const auto beforeHoveredRow = view->property("hoveredRow");
+                            const auto beforePointer = window->mapFromGlobal(QCursor::pos());
+                            const auto beforeChosen = hovered->property("chosen").toBool();
                             QSignalSpy hoverFrames(window, &QQuickWindow::frameSwapped);
-                            moveTestPointer(window, hovered
+                            const auto hoverPoint = hovered
                                                         ->mapToScene(QPointF(hovered->width() / 2,
                                                                              hovered->height() / 2))
-                                                        .toPoint());
-                            QTRY_VERIFY(!hoverFrames.isEmpty() &&
-                                        hoverBand->property("color").value<QColor>() != before);
+                                                        .toPoint();
+                            moveTestPointer(window, hoverPoint);
+                            const auto hoverFailure = [&] {
+                                const auto current = hoverBand->property("color").value<QColor>();
+                                const bool painted = !hoverFrames.isEmpty() && current != before;
+                                if (painted)
+                                    return QString();
+                                QJsonArray handlers;
+                                for (auto *child : hovered->children())
+                                    if (child->inherits("QQuickHoverHandler"))
+                                        handlers.append(QJsonObject{
+                                            {"hovered", child->property("hovered").toBool()},
+                                            {"enabled", child->property("enabled").toBool()}});
+                                return saveNativeFailureAudit(
+                                    window, directory, scene + "-part" + QString::number(part),
+                                    {{"failure", "file_gallery_hover_paint"},
+                                     {"original_predicate", painted},
+                                     {"language", language},
+                                     {"dark", dark},
+                                     {"font_scale", scale},
+                                     {"view_mode", mode},
+                                     {"part", part},
+                                     {"frames", hoverFrames.count()},
+                                     {"before_color", before.name(QColor::HexArgb)},
+                                     {"before_table_hovered_row",
+                                      QJsonValue::fromVariant(beforeHoveredRow)},
+                                     {"before_chosen", beforeChosen},
+                                     {"before_pointer_client",
+                                      QJsonArray{beforePointer.x(), beforePointer.y()}},
+                                     {"current_color", current.name(QColor::HexArgb)},
+                                     {"target_pointer_client",
+                                      QJsonArray{hoverPoint.x(), hoverPoint.y()}},
+                                     {"hovered_row", hoveredRow},
+                                     {"table_hovered_row",
+                                      QJsonValue::fromVariant(view->property("hoveredRow"))},
+                                     {"chosen", hovered->property("chosen").toBool()},
+                                     {"delegate_hover_handlers", handlers},
+                                     {"delegate", failureItemGeometry(hovered)},
+                                     {"view", failureItemGeometry(view)},
+                                     {"pointer_anchor", failureItemGeometry(pointerAnchor)}});
+                            };
+                            QTRY_VERIFY2(!hoverFrames.isEmpty() &&
+                                             hoverBand->property("color").value<QColor>() != before,
+                                         qPrintable(hoverFailure()));
                             QJsonArray icons, outside;
                             for (int row = 0; row < 15; ++row) {
                                 auto *cell = findVisual(page, name(row));

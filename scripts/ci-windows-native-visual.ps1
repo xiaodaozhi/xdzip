@@ -1,5 +1,7 @@
 # scripts/ci-windows-native-visual.ps1
 
+param([switch]$FocusedFailures)
+
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if (!$IsWindows -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
@@ -74,18 +76,24 @@ $restoreExit = $null
 $menuExit = $null
 $visualExit = $null
 $layoutExit = $null
+$focusedExit = $null
 try {
     & python 'scripts/windows_native_ci_display.py' '--prepare' '--output' $displayDirectory '--source' $revision
     $prepareExit = $LASTEXITCODE
     if ($prepareExit -eq 0) {
         $env:XDZIP_NATIVE_CI_DISPLAY_RECEIPT = $displayReceipt
-        # Both diagnostics retain their failures; one blocked route does not hide the other.
-        & python 'scripts/check-windows-native-ci.py' @common '--output' 'build/windows-native-visual/menus'
-        $menuExit = $LASTEXITCODE
-        & python 'scripts/check-windows-native-visual-ci.py' @common '--output' 'build/windows-native-visual/scenes'
-        $visualExit = $LASTEXITCODE
-        & python 'scripts/check-windows-native-layout-ci.py' @common '--output' 'build/windows-native-visual/layout'
-        $layoutExit = $LASTEXITCODE
+        if ($FocusedFailures) {
+            & python 'scripts/check-windows-native-failures-ci.py' @common '--output' 'build/windows-native-visual/failure-diagnosis'
+            $focusedExit = $LASTEXITCODE
+        } else {
+            # Each diagnostic retains its failures; one blocked route does not hide another.
+            & python 'scripts/check-windows-native-ci.py' @common '--output' 'build/windows-native-visual/menus'
+            $menuExit = $LASTEXITCODE
+            & python 'scripts/check-windows-native-visual-ci.py' @common '--output' 'build/windows-native-visual/scenes'
+            $visualExit = $LASTEXITCODE
+            & python 'scripts/check-windows-native-layout-ci.py' @common '--output' 'build/windows-native-visual/layout'
+            $layoutExit = $LASTEXITCODE
+        }
     }
 } finally {
     if (Test-Path -LiteralPath $displayReceipt) {
@@ -108,6 +116,9 @@ $unchanged = $revision -eq (& git rev-parse HEAD).Trim() -and !(& git status --p
     menu_exit_code = $menuExit
     visual_exit_code = $visualExit
     layout_exit_code = $layoutExit
+    focused_failure_exit_code = $focusedExit
+    scope = $(if ($FocusedFailures) { 'focused_failure_diagnosis' } else { 'full_hosted_visual_diagnostic' })
+    full_visual_matrix_requested = !$FocusedFailures
     source_and_binary_unchanged = $unchanged
     real_user_click = $false
     fixed_reference_performance_acceptance = $false
@@ -115,6 +126,7 @@ $unchanged = $revision -eq (& git rev-parse HEAD).Trim() -and !(& git status --p
     windows_11_decoration_acceptance = $false
     release_authorized = $false
 } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $output 'workflow-result.json') -Encoding utf8
-if ($prepareExit -ne 0 -or $restoreExit -ne 0 -or $menuExit -ne 0 -or $visualExit -ne 0 -or $layoutExit -ne 0 -or !$unchanged) {
+$casesFailed = if ($FocusedFailures) { $focusedExit -ne 0 } else { $menuExit -ne 0 -or $visualExit -ne 0 -or $layoutExit -ne 0 }
+if ($prepareExit -ne 0 -or $restoreExit -ne 0 -or $casesFailed -or !$unchanged) {
     throw 'Native CI diagnostic did not pass; inspect the preserved reports and logs'
 }

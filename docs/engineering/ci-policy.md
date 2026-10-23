@@ -31,6 +31,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 该工作流另以独立进程采集目录菜单原因、关于页初始视图、文件图标和 Windows 原生边框。截图、日志及实际运行身份只上传到临时 Actions 工件，不生成或安装发行包。共享虚拟机上的时间、系统装饰和单屏图像只用于诊断，不替代固定参考机性能、Windows 11 装饰、物理双屏切换或人工视觉验收。测试程序的实际来源和运行器环境必须与历史人工证据分开记录。
 
+手动输入 `focused_failures=true` 仅运行图标悬停与 DPR 1 混合目录菜单的失败定位，保留原断言及失败瞬间的自有窗口图像、几何与输入状态，不增加重试或放宽标准。该路线单独标记为 `focused_failure_diagnosis`，不执行完整 45 次菜单或三 DPR 的 108 项矩阵，不能作为完整视觉准入。
+
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
