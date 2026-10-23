@@ -21,6 +21,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 HELPER = Path(__file__).resolve()
 MINIMUM = (1280, 1024)
+PUBLIC_MODE_BYTES, MAX_PRIVATE_BYTES = 220, 65535
 MODE_KEYS = ('width', 'height', 'bits_per_pixel', 'frequency', 'orientation',
              'position_x', 'position_y', 'display_flags')
 
@@ -58,9 +59,12 @@ class DeviceMode(ctypes.Structure):
 
 
 def structural_mode(raw):
-    require(len(raw) == ctypes.sizeof(DeviceMode) == 220, 'invalid_devmode_size')
-    mode = DeviceMode.from_buffer_copy(raw)
-    require(mode.size == 220 and mode.driver_extra == 0, 'private_driver_mode_unsupported')
+    require(ctypes.sizeof(DeviceMode) == PUBLIC_MODE_BYTES
+            and PUBLIC_MODE_BYTES <= len(raw) <= PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES,
+            'invalid_devmode_size')
+    mode = DeviceMode.from_buffer_copy(raw[:PUBLIC_MODE_BYTES])
+    require(mode.size == PUBLIC_MODE_BYTES and 0 <= mode.driver_extra <= MAX_PRIVATE_BYTES
+            and len(raw) == PUBLIC_MODE_BYTES + mode.driver_extra, 'invalid_devmode_private_data_size')
     return mode
 
 
@@ -97,6 +101,7 @@ class NativeDisplay:
         require(sys.platform == 'win32', 'windows_only')
         self.user = ctypes.WinDLL('user32', use_last_error=True)
         self.kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+        self.query_headers = []
         self.user.EnumDisplaySettingsW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint32, ctypes.POINTER(DeviceMode)]
         self.user.EnumDisplaySettingsW.restype = ctypes.c_int32
         self.user.ChangeDisplaySettingsExW.argtypes = [ctypes.c_wchar_p, ctypes.POINTER(DeviceMode),
@@ -121,11 +126,25 @@ class NativeDisplay:
                     monitor_count=int(self.user.GetSystemMetrics(80)))
 
     def _enum(self, index):
-        mode = DeviceMode()
-        mode.size = ctypes.sizeof(DeviceMode)
-        if not self.user.EnumDisplaySettingsW(None, index, ctypes.byref(mode)):
+        # EnumDisplaySettingsW takes the available private-data capacity in
+        # dmDriverExtra and returns a complete DEVMODE plus driver data. Keep
+        # that opaque tail intact; it is required by the matching driver on CDS.
+        capacity = PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES
+        buffer = ctypes.create_string_buffer(capacity)
+        mode = DeviceMode.from_buffer(buffer)
+        mode.size, mode.driver_extra = PUBLIC_MODE_BYTES, MAX_PRIVATE_BYTES
+        success = bool(self.user.EnumDisplaySettingsW(None, index, ctypes.cast(buffer, ctypes.POINTER(DeviceMode))))
+        self.query_headers.append(dict(enum_index=index, capacity_bytes=capacity,
+            input_dm_size=PUBLIC_MODE_BYTES, input_dm_driver_extra=MAX_PRIVATE_BYTES, success=success,
+            returned_dm_size=int(mode.size) if success else None,
+            returned_dm_driver_extra=int(mode.driver_extra) if success else None))
+        if not success:
             return None
-        raw = bytes(mode)
+        require(mode.size == PUBLIC_MODE_BYTES and mode.driver_extra <= MAX_PRIVATE_BYTES,
+                'invalid_reported_devmode_header')
+        actual_bytes = PUBLIC_MODE_BYTES + mode.driver_extra
+        require(actual_bytes <= capacity, 'reported_private_mode_exceeds_buffer')
+        raw = buffer.raw[:actual_bytes]
         structural_mode(raw)
         return raw
 
@@ -145,12 +164,18 @@ class NativeDisplay:
         raise DisplayBlocked('display_mode_enumeration_limit')
 
     def test(self, raw):
-        mode = parse_mode(raw)
-        return int(self.user.ChangeDisplaySettingsExW(None, ctypes.byref(mode), None, 2, None))  # CDS_TEST
+        return self._change(raw, 2)  # CDS_TEST
 
     def apply(self, raw):
-        mode = parse_mode(raw)
-        return int(self.user.ChangeDisplaySettingsExW(None, ctypes.byref(mode), None, 0, None))
+        return self._change(raw, 0)
+
+    def _change(self, raw, flags):
+        parse_mode(raw)
+        # This stable local buffer includes every private byte. Neither the
+        # pointer nor its storage outlives the synchronous Win32 API call.
+        buffer = ctypes.create_string_buffer(raw, len(raw))
+        return int(self.user.ChangeDisplaySettingsExW(None, ctypes.cast(buffer, ctypes.POINTER(DeviceMode)),
+                                                      None, flags, None))
 
 
 def digest(raw):
@@ -246,6 +271,7 @@ def prepare(output, source, env=None, api=None):
         record.update(status='active', applied=True)
     except (DisplayBlocked, OSError) as error:
         record['reason'] = str(error) if isinstance(error, DisplayBlocked) else type(error).__name__
+    record['query_headers'] = getattr(api, 'query_headers', [])
     _write(folder / 'receipt.json', record)
     return record
 
@@ -318,6 +344,7 @@ def restore(output, source, env=None, api=None):
         require(result['restore_return_code'] == 0, 'original_mode_restore_failed')
     require(public_mode(api.current_raw()) == public_mode(before), 'original_mode_restore_readback_mismatch')
     result.update(status='restored', restored=True, restored_mode=public_mode(before),
+                  query_headers=getattr(api, 'query_headers', []),
                   completed_at_utc=datetime.now(timezone.utc).isoformat())
     # The original receipt/binaries remain immutable for before/after audit.
     _write(folder / 'restore.json', result)
@@ -350,6 +377,20 @@ def self_test():
         return bytes(value)
 
     before, fallback, preferred = mode(1024, 768), mode(1280, 1024), mode(1920, 1080)
+    tail = b'\x00\xf1owned-private-mode\x00\x7f'
+
+    def with_private(raw):
+        header = DeviceMode.from_buffer_copy(raw)
+        header.driver_extra = len(tail)
+        return bytes(header) + tail
+
+    private_before, private_preferred = with_private(before), with_private(preferred)
+    check(public_mode(private_before) == public_mode(before))
+    rejected(lambda: parse_mode(private_before[:-1]))
+    rejected(lambda: parse_mode(private_before + b'\0' * (PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES)))
+    maximum = DeviceMode.from_buffer_copy(before)
+    maximum.driver_extra = MAX_PRIVATE_BYTES
+    check(public_mode(bytes(maximum) + b'\0' * MAX_PRIVATE_BYTES) == public_mode(before))
     mixed = [mode(1920, 1080, 16), mode(1920, 1080, fields=0x5e0000), before, fallback, preferred]
     check(ctypes.sizeof(DeviceMode) == 220 and DeviceMode.width.offset == 172)
     check(select_mode(mixed, before) == preferred)
@@ -424,21 +465,40 @@ def self_test():
             failed_folder = base / 'readback-failed'
             check(prepare(failed_folder, source, {}, failed_readback)['status'] == 'blocked' and failed_readback.raw == preferred)
             check(restore(failed_folder, source, {}, failed_readback)['restored'] and failed_readback.raw == before)
+            extra_api = Fake(modes=[private_before, private_preferred])
+            extra_api.raw = private_before
+            extra_folder = base / 'private-tail'
+            check(prepare(extra_folder, source, {}, extra_api)['status'] == 'active'
+                  and (extra_folder / 'before-devmode.bin').read_bytes() == private_before
+                  and (extra_folder / 'requested-devmode.bin').read_bytes() == private_preferred
+                  and (extra_folder / 'active-devmode.bin').read_bytes() == private_preferred)
+            check(restore(extra_folder, source, {}, extra_api)['restored'] and extra_api.raw == private_before)
             rejected(lambda: _folder(ROOT / 'scripts'))
     finally:
         globals()['_binding'] = original_binding
-    flags = []
+    flags, transmitted = [], []
     adapter = object.__new__(NativeDisplay)
 
     class NoWin32:
         def ChangeDisplaySettingsExW(self, device, value, window, flag, parameter):
             flags.append(flag)
+            transmitted.append(ctypes.string_at(value, value.contents.size + value.contents.driver_extra))
             return 0
 
+        def EnumDisplaySettingsW(self, device, index, pointer):
+            check(pointer.contents.size == PUBLIC_MODE_BYTES and pointer.contents.driver_extra == MAX_PRIVATE_BYTES)
+            ctypes.memmove(pointer, private_preferred, len(private_preferred))
+            return 1
+
     adapter.user = NoWin32()
-    adapter.test(preferred)
-    adapter.apply(preferred)
-    check(flags == [2, 0])
+    adapter.test(private_preferred)
+    adapter.apply(private_preferred)
+    check(flags == [2, 0] and transmitted == [private_preferred, private_preferred])
+    adapter.query_headers = []
+    check(adapter._enum(0) == private_preferred)
+    check(adapter.query_headers[0]['returned_dm_size'] == PUBLIC_MODE_BYTES
+          and adapter.query_headers[0]['returned_dm_driver_extra'] == len(tail)
+          and adapter.query_headers[0]['capacity_bytes'] == PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES)
     return dict(status='self_test_passed', checks=checks, synthetic_data_only=True, native_display_calls=0)
 
 

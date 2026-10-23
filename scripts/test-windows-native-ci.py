@@ -146,6 +146,27 @@ class DisplayReceiptTests(unittest.TestCase):
         selected = display.select_mode([bytes(bad), self.api.target], self.api.before)
         self.assertEqual(selected, self.api.target)
 
+    def test_full_private_driver_tail_roundtrips_and_truncated_or_excess_bytes_fail(self):
+        def private_mode(raw, tail):
+            header = display.DeviceMode.from_buffer_copy(raw)
+            header.driver_extra = len(tail)
+            return bytes(header) + tail
+        self.api.before = private_mode(self.api.before, b'\x00\xfforiginal\x00')
+        self.api.target = private_mode(self.api.target, b'\xff\x00selected\x80')
+        self.api.raw = self.api.before
+        display.prepare(self.folder, SOURCE, api=self.api)
+        self.assertEqual((self.folder / 'before-devmode.bin').read_bytes(), self.api.before)
+        self.assertEqual((self.folder / 'requested-devmode.bin').read_bytes(), self.api.target)
+        self.assertEqual((self.folder / 'active-devmode.bin').read_bytes(), self.api.target)
+        self.assertEqual(self.api.applied, [self.api.target])
+        display.validate_active_receipt(self.folder / 'receipt.json', SOURCE, api=self.api)
+        self.assertTrue(display.restore(self.folder, SOURCE, api=self.api)['restored'])
+        self.assertEqual(self.api.applied[-1], self.api.before)
+        self.assertEqual(self.api.raw, self.api.before)
+        for invalid in (self.api.before[:-1], self.api.before + b'excess'):
+            with self.subTest(length=len(invalid)), self.assertRaises(display.DisplayBlocked):
+                display.parse_mode(invalid)
+
     def test_display_helper_self_test_is_synthetic_and_never_calls_native_display(self):
         result = display.self_test()
         self.assertEqual(result['status'], 'self_test_passed')
