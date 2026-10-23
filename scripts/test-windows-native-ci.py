@@ -79,6 +79,13 @@ class HostedMenuTests(unittest.TestCase):
         self.assertEqual(result['QT_QPA_PLATFORM'], 'windows')
         self.assertEqual(result['QSG_RHI_BACKEND'], 'd3d11')
 
+    def test_nested_home_and_repository_paths_are_redacted_in_specific_order(self):
+        home = Path('/synthetic-home')
+        repository = home / 'work' / 'xdzip'
+        with mock.patch.object(driver, 'ROOT', repository), mock.patch.object(Path, 'home', return_value=home):
+            self.assertEqual(driver.sanitized(str(repository / 'sample') + ' ' + str(home / 'other')),
+                             str(Path('<repo>') / 'sample') + ' ' + str(Path('<home>') / 'other'))
+
     def process(self, exit_code=7, timeout=False):
         child = mock.Mock(pid=4321, returncode=exit_code)
         child.poll.return_value = exit_code

@@ -36,7 +36,10 @@ def digest(path):
 
 
 def sanitized(text):
-    for path, label in ((Path.home(), '<home>'), (ROOT, '<repo>')):
+    # Hosted Linux/macOS checkouts can live inside the home directory. Replace
+    # the more specific root first so identity labels are stable on every host.
+    for path, label in sorted(((Path.home(), '<home>'), (ROOT, '<repo>')),
+                              key=lambda item: len(str(item[0])), reverse=True):
         for value in (str(path), str(path).replace('\\', '/')):
             text = re.sub(re.escape(value), lambda _: label, text, flags=re.I)
     return text
