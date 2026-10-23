@@ -645,6 +645,7 @@ def main():
             raise RuntimeError('Ordinary Return/Cancel quit did not preserve then cancel/join the real waiting task')
         ordinary_quit_record=dict(quit=quit_record,joined=joined,returned=returned,waiting=quit_waiting,
                                   cancelled=quit_cancelled,first_intent=first_intent)
+        shutil.copyfile(session/'quit-first-intent.json',output/'quit-first-intent.json')
         dump(output/'ordinary-quit-verification.json',ordinary_quit_record)
         stage='busy_upgrade_start'
         change_scenario('busy-upgrade')
