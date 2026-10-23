@@ -299,8 +299,12 @@ def restore_owned_flags(installed,applications,fault):
         current.st_dev!=int(fault['device']) or current.st_ino!=int(fault['inode'])):
         raise RuntimeError('Refusing to restore flags on a changed installed inode')
     os.chflags(installed,int(fault['flags_before']),follow_symlinks=False)
-    if installed.lstat().st_flags!=int(fault['flags_before']):
+    restored=installed.lstat()
+    if (restored.st_flags!=int(fault['flags_before']) or restored.st_dev!=current.st_dev or
+        restored.st_ino!=current.st_ino or restored.st_uid!=os.getuid() or not stat.S_ISDIR(restored.st_mode)):
         raise RuntimeError('Owned immutable fault flags were not restored')
+    return dict(device=str(restored.st_dev),inode=str(restored.st_ino),flags=restored.st_flags,
+                original_flags_restored=True,exact_fault_inode=True)
 
 
 def wait_owned_helpers(pids,installed,timeout=90):
@@ -325,22 +329,52 @@ def wait_owned_helpers(pids,installed,timeout=90):
         time.sleep(.1)
 
 
-def native_replacement_error(pids,installed):
+def native_replacement_error(pids,installed,timeout=20):
     predicate=' OR '.join('processIdentifier == '+str(pid) for pid in pids)
-    result=subprocess.run(['/usr/bin/log','show','--style','json','--last','5m','--predicate',predicate],
-                          capture_output=True,env=environment(),timeout=30)
-    if result.returncode:raise RuntimeError('Could not read owned native installer diagnostics')
-    raw=result.stdout
-    if len(raw)>1024*1024:raise RuntimeError('Owned installer log exceeded its evidence bound')
-    events=json.loads(raw)
     expected=(installed/'Contents/Frameworks/Sparkle.framework/Autoupdate').resolve()
-    messages=[entry.get('eventMessage','') for entry in events
-              if Path(entry.get('processImagePath','')).resolve()==expected]
-    return dict(finalize_failure_observed=any('Failed to finalize installation' in text for text in messages),
-                permission_failure_observed=any('Operation not permitted' in text or 'Permission denied' in text or
-                    re.search(r'NSPOSIXErrorDomain Code=(?:1|13)\b|NSCocoaErrorDomain Code=513\b',text) for text in messages),
-                messages=[text.replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:4096]
-                          for text in messages[-32:]])
+    def sanitized(value):
+        return str(value).replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:4096]
+    deadline=time.monotonic()+timeout
+    attempts=[];messages=[];finalize=False;permission=False
+    while True:
+        if attempts and time.monotonic()>=deadline:break
+        try:
+            result=subprocess.run(['/usr/bin/log','show','--style','json','--info','--debug','--last','5m','--predicate',predicate],
+                                  capture_output=True,env=environment(),timeout=max(1,min(10,deadline-time.monotonic())))
+        except subprocess.TimeoutExpired as error:
+            attempts.append(dict(query_error='timeout',stdout_bytes=len(error.stdout or b''),
+                                 stderr=sanitized((error.stderr or b'').decode('utf-8',errors='replace'))[:2048]))
+            break
+        raw=result.stdout
+        attempt=dict(returncode=result.returncode,stdout_bytes=len(raw),stderr=sanitized(result.stderr.decode('utf-8',errors='replace'))[:2048])
+        if result.returncode or len(raw)>1024*1024:
+            attempt['query_error']='nonzero_exit' if result.returncode else 'evidence_bound'
+            attempts.append(attempt)
+            break
+        events=json.loads(raw)
+        if not isinstance(events,list):raise RuntimeError('Native installer log was not an event array')
+        matched=[];unmatched_images=set();owned_image_paths=set()
+        for entry in events:
+            image=entry.get('processImagePath','')
+            if image and installed.name in Path(image).parts:
+                owned_image_paths.add(sanitized(image))
+            if image and Path(image).is_absolute() and Path(image).resolve()==expected:
+                matched.append(entry)
+            else:
+                unmatched_images.add(Path(image).name[:128] if image else '<missing>')
+        attempt.update(event_count=len(events),matched_event_count=len(matched),
+                       owned_image_paths=sorted(owned_image_paths)[:16],unmatched_image_names=sorted(unmatched_images)[:16])
+        attempts.append(attempt)
+        messages=[entry.get('eventMessage','') for entry in matched]
+        finalize=any('Failed to finalize installation' in text for text in messages)
+        permission=any('Operation not permitted' in text or 'Permission denied' in text or
+            re.search(r'NSPOSIXErrorDomain Code=(?:1|13)\b|NSCocoaErrorDomain Code=513\b',text) for text in messages)
+        if (finalize and permission) or time.monotonic()>=deadline:break
+        time.sleep(min(.5,max(0,deadline-time.monotonic())))
+    return dict(finalize_failure_observed=finalize,permission_failure_observed=permission,
+                expected_process_image=sanitized(expected),queried_pids=pids,attempts=attempts,
+                logging_disabled=environment().get('OS_ACTIVITY_MODE')=='disable',
+                messages=[sanitized(text) for text in messages[-32:]])
 
 
 def main():
@@ -401,7 +435,8 @@ def main():
     if digest(password_fixture)!='cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41':
         raise RuntimeError('Owned AES regression sample changed')
     shutil.copyfile(password_fixture,session/'password-retry.zip')
-    other=None;old=None;new=None;log=None;record={'status':'failed'};stage='association_setup'
+    other=None;old=None;new=None;log=None;record={'status':'failed'};stage='association_setup';evidence_failures=[]
+    fault_flags_restored=False
     try:
         other_id='org.xdzip.owned-zip-handler.'+token
         other=output/'owned-other-handler.app'
@@ -483,14 +518,34 @@ def main():
             failed_barrier['pending'].get('build')!=201):
             raise RuntimeError('Owned immutable fault did not reach actual native commit')
         helper_observation=wait_owned_helpers(pids,installed)
+        terminal=dict(helper_observation=helper_observation)
+        try:
+            unchanged=json.loads(run([executable,'--version-json']))
+            current=installed.lstat()
+            terminal.update(identity=unchanged,old_identity_unchanged=unchanged==products['old']['identity'],
+                            device=str(current.st_dev),inode=str(current.st_ino),flags=current.st_flags,
+                            fault_inode_preserved=current.st_dev==int(fault['device']) and current.st_ino==int(fault['inode']))
+        except Exception as error:
+            terminal.update(identity_error=type(error).__name__,
+                            identity_detail=str(error).replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:2048])
+            dump(output/'replacement-terminal.json',terminal)
+            raise
+        dump(output/'replacement-terminal.json',terminal)
+        if unchanged!=products['old']['identity']:raise RuntimeError('Failed replacement changed the old product')
+        if not terminal['fault_inode_preserved'] or current.st_flags!=int(fault['flags_after']):
+            raise RuntimeError('Committed native fault no longer belongs to the exact immutable inode')
         native_error=native_replacement_error(pids,installed)
         dump(output/'native-replacement-error.json',native_error)
-        if not native_error['finalize_failure_observed'] or not native_error['permission_failure_observed']:
-            raise RuntimeError('Missing actual native final-replacement permission failure')
-        unchanged=json.loads(run([executable,'--version-json']))
-        if unchanged!=products['old']['identity']:raise RuntimeError('Failed replacement changed the old product')
-        restore_owned_flags(installed,applications,fault)
-        replacement_failure=dict(scope='Actual committed Sparkle final replacement rejected by an owned immutable app inode',
+        restored=restore_owned_flags(installed,applications,fault)
+        fault_flags_restored=True
+        dump(output/'replacement-flags-restored.json',restored)
+        native_error_observed=native_error['finalize_failure_observed'] and native_error['permission_failure_observed']
+        if not native_error_observed:
+            # Preserve the failed evidence gate while collecting later, independent
+            # recovery and task cases. An incomplete native error can never pass CI.
+            evidence_failures.append(dict(stage=stage,error='native_replacement_error_evidence_incomplete'))
+        replacement_failure=dict(status='passed' if native_error_observed else 'evidence_incomplete',
+                                 scope='Committed Sparkle handoff with an owned immutable inode; actual final-replacement permission error required',
                                  fault=fault,commit=native_commit,barrier=failed_barrier,error=native_error,
                                  helper_observation=helper_observation,
                                  helpers_exited_without_intervention=True,old_identity=unchanged,original_flags_restored=True)
@@ -581,7 +636,8 @@ def main():
         stage='single_instance_new'
         peer=subprocess.Popen([str(executable)],env=launch_env,stdout=log,stderr=subprocess.STDOUT)
         if peer.wait(timeout=20)!=0:raise RuntimeError('New ordinary SingleInstance startup failed')
-        record=dict(status='passed',scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
+        record=dict(status='failed' if evidence_failures else 'passed',evidence_failures=evidence_failures,
+                    scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
                     production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,
                     zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; Editor/Shell checked read-only, all-roles aggregate informational only',
@@ -598,7 +654,7 @@ def main():
                             'The post-commit failure uses one owned UF_IMMUTABLE inode; system authorization, other OS failures and real-user desktop acceptance remain separate.',
                             'Default handlers for other archive UTIs and physical user acceptance are not claimed.'])
     except Exception as error:
-        record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error));raise
+        record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error),evidence_failures=evidence_failures);raise
     finally:
         cleanup=[]
         try:
@@ -614,10 +670,14 @@ def main():
         if log:log.close()
         try:
             fault_path=session/'replacement-fault.json'
-            if fault_path.is_file():
+            if not fault_flags_restored and fault_path.is_file():
                 own_fault=json.loads(fault_path.read_bytes())
-                if own_fault.get('changed'):restore_owned_flags(installed,applications,own_fault)
+                if own_fault.get('changed'):
+                    restored=restore_owned_flags(installed,applications,own_fault)
+                    fault_flags_restored=True
+                    dump(output/'replacement-flags-restored.json',restored)
         except Exception as error:cleanup.append(dict(stage='restore_owned_inode_flags',error=type(error).__name__,detail=str(error)))
+        if fault_flags_restored:record['owned_inode_flags_restored']=True
         try:
             current=associations.get(2)
             if current!=original['2']:
@@ -654,6 +714,7 @@ def main():
         if cleanup:record.update(status='failed',cleanup_errors=cleanup)
         dump(output/'verification.json',record)
         if cleanup:raise RuntimeError('Owned Mac product cleanup failed')
+    if evidence_failures:raise RuntimeError('Required native replacement error evidence incomplete; independent phases recorded')
     print('Real Mac product signed update, ordinary restart, profile and ZIP handlers passed')
 
 

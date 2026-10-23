@@ -68,6 +68,8 @@ jobs:
             build/update-regression/windows/*.log
             build/update-regression/windows-qt/*.json
             build/update-regression/windows-qt/*.log
+            build/update-regression/windows-qt/failed-install-recovery/*.json
+            build/update-regression/windows-qt/failed-install-recovery/*.log
           if-no-files-found: error
           retention-days: 14
   macos:
@@ -138,5 +140,7 @@ jobs:
             build/update-regression/linux/*.log
             build/update-regression/linux-qt/*.json
             build/update-regression/linux-qt/*.log
+            build/update-regression/linux-qt/failed-install-recovery/*.json
+            build/update-regression/linux-qt/failed-install-recovery/*.log
           if-no-files-found: error
           retention-days: 14

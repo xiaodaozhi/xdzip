@@ -312,7 +312,10 @@ def exercise(output, prepared, session, launch, executable, association_check, s
             old=launch([executable],stdout=log,stderr=subprocess.STDOUT)
             started=await_file(session/'200-started.json',old,timeout=40)
             assert started['pid']!=previous_pid and started['state']=='idle',started
-            assert started['settings_path']==str(profile) and started['primary_windows']==1
+            same_profile=Path(started['settings_path']).resolve(strict=True)==profile.resolve(strict=True)
+            assert same_profile and started['primary_windows']==1,{
+                'same_settings_file':same_profile,'primary_windows':started['primary_windows'],
+                'restart_state':started['state']}
             unchanged=configparser.ConfigParser();unchanged.read(profile,encoding='utf-8')
             for section,values in baseline.items():
                 for key,value in values.items():assert unchanged.get(section,key)==value,(section,key)
