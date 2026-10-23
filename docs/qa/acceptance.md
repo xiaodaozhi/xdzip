@@ -105,7 +105,7 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | UI-REV-09 | 完成多个任务，从底栏菜单重开 | 历史数准确，活动计数仍为 0，状态标记在右，菜单正常密度且可键盘导航 |
 | UI-REV-10 | 清空选择，打开全部解压下拉 | 所选及预检禁用，不出现多余选择提示行 |
 | UI-REV-11 | HTML 100%／125%，Qt DPR 1／1.25／2，长路径及辅助字号 | 逻辑尺寸不随 DPR 改变，正文与菜单比例正确，footer 可达 |
-| UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用，所有不可用菜单项均无可见 hint、原因副行或 tooltip；辅助功能仍能读取准确的根入口及叶子原因。父目录可展开和收起，禁用操作不改变选择或路径。Disabled menu actions show no hint, reason subline or tooltip; accessible descriptions retain accurate root and leaf reasons, while parent toggle and selection/navigation behavior remain intact. |
+| UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用，所有不可用菜单项均无可见 hint、原因副行或 tooltip；辅助功能仍能读取准确的根入口及叶子原因。父目录可展开和收起，禁用操作不改变选择或路径。主标签在菜单项局部坐标中的中心偏差不超过 0.5 逻辑像素，祖先平移不得改变测量结果；不能忽略局部链上的缩放、旋转或自定义变换。Disabled menu actions show no hint, reason subline or tooltip; accessible descriptions retain accurate root and leaf reasons, while parent toggle and selection/navigation behavior remain intact. Measure label centering within 0.5 logical pixels in the command's local coordinates, independently of ancestor translation; reject unhandled scale, rotation or custom transforms. |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
 

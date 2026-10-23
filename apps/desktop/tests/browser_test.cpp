@@ -6819,6 +6819,59 @@ QtObject {
     void directoryContextExpansionReasons() {
         QFETCH(QString, language);
         QFETCH(QString, input);
+        // Measure in command-local coordinates. mapToItem traverses scene space and its
+        // inverse, so fractional ancestor translations can perturb the exact .5 boundary.
+        const auto localLabelCenter = [](QQuickItem *label, QQuickItem *command) -> qreal {
+            if (!label || !command)
+                return qQNaN();
+            qreal center = label->height() / 2;
+            for (auto *item = label; item; item = item->parentItem()) {
+                auto transforms = item->transform();
+                if (!qIsFinite(item->x()) || !qIsFinite(item->y()) || !qIsFinite(item->width()) ||
+                    !qIsFinite(item->height()) || !qIsFinite(item->scale()) ||
+                    !qIsFinite(item->rotation()) || item->scale() != 1 || item->rotation() != 0 ||
+                    !transforms.count || transforms.count(&transforms) != 0 || !qIsFinite(center))
+                    return qQNaN();
+                if (item == command)
+                    return center;
+                center += item->y();
+            }
+            return qQNaN();
+        };
+        {
+            QQuickItem surface;
+            QQuickItem popup(&surface), overlay(&popup), menu(&overlay), command(&menu);
+            QQuickItem row(&command), label(&row), unrelated;
+            command.setHeight(48);
+            row.setY(6.4);
+            label.setY(3.6);
+            label.setHeight(29);
+            for (const qreal popupY : {400., 412.8, 600.4, 1000.8})
+                for (const qreal overlayY : {0., 6.4, 12.8}) {
+                    popup.setY(popupY);
+                    overlay.setY(overlayY);
+                    menu.setY(12.8);
+                    command.setY(96);
+                    QCOMPARE(localLabelCenter(&label, &command), qreal(24.5));
+                    QVERIFY(qAbs(localLabelCenter(&label, &command) - command.height() / 2) <= .5);
+                    label.setY(4.1); // The center is now genuinely 1 logical pixel too low.
+                    QCOMPARE(localLabelCenter(&label, &command), qreal(25));
+                    QVERIFY(qAbs(localLabelCenter(&label, &command) - command.height() / 2) > .5);
+                    label.setY(3.6);
+                }
+            QVERIFY(!qIsFinite(localLabelCenter(&label, &unrelated)));
+            row.setScale(1.01);
+            QVERIFY(!qIsFinite(localLabelCenter(&label, &command)));
+            row.setScale(1);
+            label.setRotation(.1);
+            QVERIFY(!qIsFinite(localLabelCenter(&label, &command)));
+            label.setRotation(0);
+            class IdentityTransform final : public QQuickTransform {
+                void applyTo(QMatrix4x4 *) const override {}
+            } transform;
+            transform.appendToItem(&command);
+            QVERIFY(!qIsFinite(localLabelCenter(&label, &command)));
+        }
         const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(initializeUiText(language));
         QQmlApplicationEngine engine;
@@ -6924,8 +6977,9 @@ QtObject {
                 QCOMPARE(label->property("text").toString(), command->property("text").toString());
                 const auto mappedCenter =
                     label->mapToItem(command, QPointF(0, label->height() / 2));
-                const auto centerDelta = mappedCenter.y() - command->height() / 2;
-                const bool labelCentered = qAbs(centerDelta) <= .5;
+                const auto localCenter = localLabelCenter(label, command);
+                const auto centerDelta = localCenter - command->height() / 2;
+                const bool labelCentered = qIsFinite(localCenter) && qAbs(centerDelta) <= .5;
                 if (!labelCentered) {
                     const auto transformState = [](QQuickItem *item) {
                         auto state = failureItemGeometry(item);
@@ -6952,11 +7006,20 @@ QtObject {
                         "directory-label-center-" + language + (dark ? "-dark-" : "-light-") +
                             QString::number(scale) + "-" + input,
                         {{"failure", "directory_command_label_center"},
-                         {"original_predicate", labelCentered},
+                         {"local_predicate", labelCentered},
+                         {"mapped_predicate", qAbs(mappedCenter.y() - command->height() / 2) <= .5},
                          {"language", language},
                          {"input", input},
                          {"dark", dark},
                          {"font_scale", scale},
+                         {"measurement_coordinate_system",
+                          "translation-only command-local parent chain"},
+                         {"local_chain_valid", qIsFinite(localCenter)},
+                         {"local_center_y_17_digits", QString::number(localCenter, 'g', 17)},
+                         {"mapped_minus_local_17_digits",
+                          QString::number(mappedCenter.y() - localCenter, 'g', 17)},
+                         {"mapped_center_delta_17_digits",
+                          QString::number(mappedCenter.y() - command->height() / 2, 'g', 17)},
                          {"mapped_center_in_command",
                           QJsonArray{mappedCenter.x(), mappedCenter.y()}},
                          {"mapped_center_y_17_digits", QString::number(mappedCenter.y(), 'g', 17)},
