@@ -11,7 +11,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / 'dist/html-controls-review'
+OUTPUT = Path(os.environ.get('XDZIP_HTML_CONTROLS_OUTPUT', ROOT / 'dist/html-controls-review'))
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 
@@ -34,6 +34,50 @@ def main():
         expect(page.locator('[data-tab]')).to_have_count(2)
         expect(page.locator('#tree [role=treeitem]')).to_have_count(4)
         checks.append('Initial archive, table and directory controls load offline')
+        tree_snapshot = page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})')
+
+        def open_directory_menu(row, method):
+            if method == 'mouse':
+                row.click(button='right')
+            else:
+                row.focus()
+                row.press('ContextMenu' if method == 'menu' else 'Shift+F10')
+            expect(page.locator('[data-command=directory-expand]')).to_be_visible()
+
+        for language, root_reason, leaf_reason, collapse in [
+            ('zh-CN', '根目录始终展开', '该节点没有子目录', '收起子目录'),
+            ('en-US', 'Root is always expanded', 'This entry has no subfolders', 'Collapse subfolders'),
+        ]:
+            page.evaluate('(language)=>document.documentElement.lang=language', language)
+            for method in ['mouse', 'menu', 'shift-f10']:
+                open_directory_menu(page.locator('.tree-root[data-directory=""]'), method)
+                command = page.locator('[data-command=directory-expand]')
+                expect(command).to_have_attribute('aria-disabled', 'true')
+                expect(command).to_have_attribute('aria-description', root_reason)
+                expect(command.locator('.ui-menu-reason')).to_have_text(root_reason)
+                assert command.locator('.ui-menu-label').evaluate('(n)=>n.firstChild.textContent') == collapse
+                assert command.locator('.ui-menu-reason').evaluate('(n)=>n.scrollWidth<=n.clientWidth+1 && n.scrollHeight<=n.clientHeight+1')
+                command.click(force=True)
+                expect(page.locator('.ui-menu')).to_have_count(1)
+                assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
+                page.keyboard.press('Escape')
+                for expanded in [False, True]:
+                    open_directory_menu(page.locator('[data-directory=photos]'), method)
+                    command = page.locator('[data-command=directory-expand]')
+                    expect(command).to_have_attribute('aria-disabled', 'false')
+                    assert command.get_attribute('aria-description') is None
+                    command.click()
+                    expect(page.locator('[data-directory=photos]')).to_have_attribute('aria-expanded', str(not expanded).lower())
+                open_directory_menu(page.locator('[data-directory=maps]'), method)
+                command = page.locator('[data-command=directory-expand]')
+                expect(command).to_have_attribute('aria-disabled', 'true')
+                expect(command).to_have_attribute('aria-description', leaf_reason)
+                expect(command.locator('.ui-menu-reason')).to_have_text(leaf_reason)
+                command.click(force=True)
+                assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
+                page.keyboard.press('Escape')
+        page.evaluate('document.documentElement.lang="zh-CN"')
+        checks.append('Directory root, parent and leaf: pointer/Menu/Shift+F10 share accurate bilingual disabled reasons and preserve navigation/selection')
         for ident in ['open', 'create', 'test-archive', 'more-actions', 'extract', 'extract-menu-button']:
             assert page.locator('#' + ident).get_attribute('data-tooltip') is None
             assert page.locator('#' + ident).get_attribute('title') is None

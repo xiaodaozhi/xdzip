@@ -61,7 +61,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
-      "reason": "解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示",
+      "reason": "解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
       "design": "design/hifi/sources/password-extraction.html"
     },
     "PreflightWindow": {
@@ -87,6 +87,7 @@
     "QuitWindow": {
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
+      "reason": "全会话退出决定优先于延迟密码提示，返回保留同一请求，取消仍等待全部 Rust join，共享确认尺寸不变",
       "design": "design/hifi/sources/confirmations.html"
     },
     "RestartWindow": {

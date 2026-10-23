@@ -20,13 +20,21 @@
 
 等待全部任务退出只由应用级任务总数与 join 屏障收敛。某一页面先完成任务时，不执行旧单页自动关闭，也不因该页结束而隐藏最后窗口或再次显示退出确认。
 
+退出确认显示前即设置应用级 `quitDecisionPending`。所有会话与窗口的排队密码提示及显式重新显示在此期间暂停，不能覆盖退出确认；返回或选择等待解除暂停后，只重新显示仍有效的同一任务与提示令牌。进入取消、清理与 join 后保持暂停，不重新打开密码窗口。该状态不隐藏或取消已有请求，也不改变关闭会话后的显式任务入口。
+
 系统 Quit、应用菜单与托盘的显式退出经过同一桌面路由。受管理会话自己的密码与冲突提示允许被全会话退出确认覆盖；选择返回保留原任务和请求令牌，取消并退出仍等待所有连接清理与 join。原生文件选择器、其他模态控件及不属于受管理窗口的提示继续阻挡退出请求并保持前台，不能用通用模态检查误吞密码等待期间的退出，也不能直接绕过确认取消任务。
+
+The application sets `quitDecisionPending` before presenting its quit confirmation. Queued and explicitly reopened password prompts in every session and window defer to this decision. Returning or choosing to wait resumes only a still-valid task and prompt token. Cancellation, cleanup and joins keep presentation paused. This state does not hide or cancel existing requests or change explicit task access after closing a session.
 
 System Quit, application-menu and tray quit share the desktop route. An owned password or conflict prompt in a managed session may be superseded by the global quit confirmation. Returning preserves the task and prompt token; cancelling and quitting still waits for every cleanup and Rust join. Native file selectors, other modal controls and prompts outside managed windows retain their blocking behavior.
 
 主窗口可见时，“显示并激活”只提升和请求激活。隐藏或最小化时恢复先前普通、最大化或全屏状态，不先还原再最大化。阻塞的模态窗口优先激活，弹窗 transientParent 绑定实际调用窗口。关闭最后一个主窗口继续遵循托盘设置。设置与关于从统一入口进入，已有窗口优先激活，不创建另一份可见草稿。
 
 `showMinimized()` 会替换原状态位。恢复时先在仍最小化的状态下补齐保存的最大化或全屏标志，再仅移除最小化标志，不先显示普通窗口。原生回归等待窗口实际暴露、激活及最终状态确认，避免把 Qt 请求值当作窗口管理器已完成的状态。
+
+密码与退出顺序回归使用真实 AES 等待，覆盖任务通知已建立请求、延迟窗口尚未显示时的同步 Quit，同页、其他会话、其他窗口及选择等待，另以窗口已显示后的真实 posted Quit 作投递对照。必须记录实际通知与投递状态，确认排队密码窗口不覆盖退出决定，返回或等待保留同一令牌，取消后完成全部 join；受控同步通知顺序不能替代某个平台历史事件顺序的证据。
+
+Password/quit ordering regressions use real AES waiting and synchronous Quit after the task prompt exists but before deferred window presentation. Coverage includes the same page, another session, another window, and choosing to wait, plus a genuinely posted Quit after presentation as a delivery control. Record actual notification and delivery states, preserve the prompt token on return or wait, and require every join after cancellation. A controlled synchronous notification does not establish an earlier platform event order.
 
 验收包括实际原生窗口状态变化、并发启动与崩溃残留、Unicode 和批量路由、两种打开模式、保存与取消及重启、跨会话 ID 冲突、后台任务、密码与冲突、全局退出和接收线程回收。离屏测试只能证明状态契约，不能代替原生视觉、辅助功能和桌面人工验收。证据保存在 build/ 或 CI 工件。
 

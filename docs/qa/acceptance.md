@@ -58,6 +58,22 @@ T01～T18 的权威映射见 design/requirements-traceability.md。以下是可�
 
 格式、秘密、输出及交互前提见[密码解压契约](../engineering/password-extraction.md)。实际执行结果在 issue #11 与本地／CI 工件记录，不把自动化接口检查记为系统读屏人工验收。
 
+## 密码提示与全会话退出顺序，AC-06 / AC-08
+
+以下是可重复的验收要求，执行结果另记 issue 与工件，不预记为通过。使用真实 AES 密码等待与正常应用 Quit 路由，不通过手动隐藏窗口、停用自动显示或直接调用会话退出接口制造时序。
+
+| 用例 | 输入与操作 | 通过标准 |
+| --- | --- | --- |
+| QUIT-PROMPT-01 | 密码窗已实际显示，系统 Quit、返回，再 Quit、取消 | 原生文件选择器仍阻挡退出，受管理密码窗允许退出确认覆盖；返回保留任务与令牌，取消后全部 Rust join 且无更新交接 |
+| QUIT-PROMPT-02 | 真实任务通知已建立 token、QML 已同步 shown token、密码窗仍隐藏时，在同一通知栈同步发送 Quit | 退出确认先显示并在排队密码回调执行后仍为当前模态；返回后同一密码请求可用，取消仍完整 join |
+| QUIT-PROMPT-03 | 同样的真实早期请求，在另一会话或另一主窗口活动时 Quit | 应用级决定阻挡所有会话的延迟密码显示，不能由非当前页或非当前窗口抢走退出确认 |
+| QUIT-PROMPT-04 | 自然显示密码窗后，在已运行且有时限的事件循环中正常 post Quit | 真实事件经过应用退出过滤器，保存实际投递窗口状态；这是已显示后的投递对照，不计为早期窗口覆盖 |
+| QUIT-PROMPT-05 | 早期 Quit 后选择等待，再 Quit、返回，再 Quit、取消 | 等待解除密码显示暂停且保留同 token；再次询问清除旧等待决定，返回后不保留退出暂停，最终取消仍等待全部连接 |
+
+记录六个数据行的自然 hook、Quit 实际处理前后、延迟回调后、当前模态、任务与提示 token、活动任务数及 join 结果。受控同步通知是顺序回归，不能证明历史 macOS 普通 posted Quit 的唯一先后关系。Qt 显示新窗口可能移除已排队的 Quit，不能把未送达事件改报为产品已处理或降低投递断言。窗口尺寸、双语多字号和原生视觉仍按窗口清单与视觉门单独验收。
+
+English: These are repeatable acceptance requirements, not execution results. Use real AES password waiting and the normal application Quit route. Cover a ready prompt, synchronous Quit while a naturally created prompt has not yet been presented, another active session and window, a genuinely posted Quit after presentation, and Wait → Quit → Return → Quit → Cancel. The quit decision must remain modal after queued callbacks; Return/Wait preserve the same token, and cancellation joins every runtime without update handoff. Preserve actual hook/delivery/modal/join records. A controlled notification order does not establish an earlier macOS event order. A dropped posted event is not a handled Quit. Native visuals and accessibility remain separate checks.
+
 ## 文件输入与 macOS ACL 回归，AC-07 / AC-14 / AC-15
 
 | 用例 | 输入与操作 | 通过标准 |
@@ -89,6 +105,7 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | UI-REV-09 | 完成多个任务，从底栏菜单重开 | 历史数准确，活动计数仍为 0，状态标记在右，菜单正常密度且可键盘导航 |
 | UI-REV-10 | 清空选择，打开全部解压下拉 | 所选及预检禁用，不出现多余选择提示行 |
 | UI-REV-11 | HTML 100%／125%，Qt DPR 1／1.25／2，长路径及辅助字号 | 逻辑尺寸不随 DPR 改变，正文与菜单比例正确，footer 可达 |
+| UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用并说明“根目录始终展开”，辅助功能描述一致；父目录可展开和收起，叶子说明无子目录，禁用操作不改变选择或路径。Root is always expanded, with matching accessible description; ordinary parents toggle and leaves retain their distinct reason without selection/navigation changes. |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
 

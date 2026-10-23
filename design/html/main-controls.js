@@ -1021,7 +1021,7 @@ window.XdzipMain = (() => {
         );
     }
     function toggleDirectory(id) {
-        if (!folders.some((node) => node.parent === id)) return;
+        if (!id || !folders.some((node) => node.parent === id)) return;
         state.expanded.has(id)
             ? state.expanded.delete(id)
             : state.expanded.add(id);
@@ -1048,9 +1048,9 @@ window.XdzipMain = (() => {
                 },
                 {
                     id: "directory-expand",
-                    label: state.expanded.has(id) ? "收起子目录" : "展开子目录",
+                    label: settingText(!id || state.expanded.has(id) ? "ui.9c9c21cc25c0" : "ui.521dbd520244"),
                     disabled: !id || !hasChildren,
-                    reason: "此目录没有可展开的子目录",
+                    reason: !id ? settingText("directory.rootAlwaysExpanded") : !hasChildren ? settingText("ui.fa58108c4823") : "",
                     run: () => toggleDirectory(id),
                 },
                 separator(),

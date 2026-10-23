@@ -1,3 +1,5 @@
+// apps/desktop/tests/browser_test.cpp
+
 #include "../BuildInfo.h"
 #include "AppQuitGuard.h"
 #include "ApplicationSessions.h"
@@ -12,18 +14,22 @@
 #include "UiText.h"
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
+#include "native_monitor_audit.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QAccessible>
 #include <QAction>
 #include <QClipboard>
+#include <QCryptographicHash>
 #include <QCursor>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QElapsedTimer>
+#include <QEventLoop>
 #include <QFile>
 #include <QFontMetricsF>
 #include <QInputMethodEvent>
+#include <QItemSelectionModel>
 #include <QJSValue>
 #include <QJsonDocument>
 #include <QLockFile>
@@ -362,7 +368,17 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession_data() {
+        QTest::addColumn<int>("quitTiming");
+        QTest::newRow("ready-password") << 0;
+        QTest::newRow("notify-send-before-password-present") << 1;
+        QTest::newRow("post-after-password-present-control") << 2;
+        QTest::newRow("other-session-notify-send-before-password-present") << 3;
+        QTest::newRow("other-window-notify-send-before-password-present") << 4;
+        QTest::newRow("notify-send-wait-resumes-password") << 5;
+    }
     void globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession() {
+        QFETCH(int, quitTiming);
         const bool previousQuit = QApplication::quitOnLastWindowClosed();
         QApplication::setQuitOnLastWindowClosed(false);
         const auto restoreQuit =
@@ -373,23 +389,127 @@ class BrowserTest : public QObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(
-            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false, "tabs"));
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, false,
+                                         quitTiming == 4 ? "windows" : "tabs"));
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
+        auto *idlePage = window->property("activePage").value<QObject *>();
         auto *idle = window->findChild<BrowserController *>();
         DesktopIntegration desktop(window, idle, preferences, false);
         sessions.setDesktop(&desktop);
+        sessions.newSession();
+        auto *workingWindow = sessions.activeWindow();
+        QVERIFY(workingWindow);
+        auto *page = workingWindow->property("activePage").value<QObject *>();
+        auto *working = page ? page->findChild<BrowserController *>() : nullptr;
+        QVERIFY(idlePage && idle && working && idle != working);
+        auto *idleConfirmation = idlePage->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(idleConfirmation);
+        QCOMPARE(workingWindow == window, quitTiming != 4);
+        auto *password = page->findChild<QQuickWindow *>("passwordWindow");
+        auto *confirmation = page->findChild<QQuickWindow *>("quitWindow");
+        QVERIFY(password && confirmation);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QSignalSpy updateReady(&sessions, &ApplicationSessions::readyForUpdate);
+
+        // A separate callLater marker drains the naturally scheduled prompt
+        // presentation. It never changes the product window or its prompt.
+        QQmlComponent fenceComponent(&engine);
+        fenceComponent.setData(R"(import QtQml
+QtObject {
+    property bool drained: false
+    function afterPromptLater() { Qt.callLater(function() { drained = true; }); }
+})",
+                               QUrl());
+        std::unique_ptr<QObject> laterFence(fenceComponent.create());
+        QVERIFY2(laterFence, qPrintable(fenceComponent.errorString()));
+        QVariantMap hookState, deliveryState, afterDeliveryState, afterLaterState, postState;
+        QEventLoop *postedDeliveryLoop = nullptr;
+        bool postScheduled = false;
+        bool earlyHookObserved = false, earlySendAccepted = false, fenceScheduled = false;
+        int quitDeliveries = 0;
+        const auto windowState = [&] {
+            const auto actual = working->passwordPrompt();
+            return QVariantMap{
+                {"password_visible", password->isVisible()},
+                {"password_exposed", password->isExposed()},
+                {"password_modal", QGuiApplication::modalWindow() == password},
+                {"password_owned", password->transientParent() == workingWindow},
+                {"presentation_blocked", password->property("presentationBlocked")},
+                {"quit_decision_pending", sessions.quitDecisionPending()},
+                {"different_session", window->property("activePage").value<QObject *>() != page},
+                {"different_window", sessions.activeWindow() != workingWindow},
+                {"automatic_presentation", password->property("automaticPresentation")},
+                {"confirmation_visible", confirmation->isVisible()},
+                {"confirmation_exposed", confirmation->isExposed()},
+                {"confirmation_modal", QGuiApplication::modalWindow() == confirmation},
+                {"task_id", actual.value("taskId")},
+                {"prompt_id", actual.value("promptId")},
+                {"shown_task_id", password->property("shownTaskId")},
+                {"shown_prompt_id", password->property("shownPromptId")},
+                {"active_tasks", sessions.activeTaskCount()},
+                {"closing", sessions.isClosing()}};
+        };
         AppQuitGuard quitGuard;
-        quitGuard.quitHandler = [&] { desktop.requestQuit(); };
+        quitGuard.quitHandler = [&] {
+            ++quitDeliveries;
+            if (quitTiming && quitDeliveries == 1)
+                deliveryState = windowState();
+            desktop.requestQuit();
+            if (quitTiming && quitDeliveries == 1)
+                afterDeliveryState = windowState();
+            if (postedDeliveryLoop && quitDeliveries == 1)
+                postedDeliveryLoop->quit();
+        };
+        qApp->installEventFilter(&quitGuard);
+        const auto removeQuitGuard = qScopeGuard([&] { qApp->removeEventFilter(&quitGuard); });
         const auto requestQuit = [&] {
             QEvent event(QEvent::Quit);
-            QVERIFY(quitGuard.eventFilter(qApp, &event));
+            return QCoreApplication::sendEvent(qApp, &event);
         };
-        sessions.newSession();
-        auto *page = window->property("activePage").value<QObject *>();
-        auto *working = page ? page->findChild<BrowserController *>() : nullptr;
-        QVERIFY(idle && working && idle != working);
+        const auto reportEarlyQuit = qScopeGuard([&] {
+            if (quitTiming)
+                qInfo().noquote() << "Early password Quit"
+                                  << QJsonDocument::fromVariant(
+                                         QVariantMap{{"timing", quitTiming},
+                                                     {"natural_hook_observed", earlyHookObserved},
+                                                     {"hook", hookState},
+                                                     {"delivery", deliveryState},
+                                                     {"post", postState},
+                                                     {"post_scheduled", postScheduled},
+                                                     {"after_delivery", afterDeliveryState},
+                                                     {"after_call_later", afterLaterState},
+                                                     {"final_state", windowState()},
+                                                     {"quit_deliveries", quitDeliveries}})
+                                         .toJson(QJsonDocument::Compact);
+        });
+        connect(
+            working, &BrowserController::tasksChanged, &quitGuard,
+            [&] {
+                if (!quitTiming || earlyHookObserved)
+                    return;
+                const auto actual = working->passwordPrompt();
+                const auto task = actual.value("taskId").toString();
+                const auto token = actual.value("promptId").toString();
+                if (task.isEmpty() || token.isEmpty() || password->isVisible() ||
+                    password->isExposed() || password->property("shownTaskId").toString() != task ||
+                    password->property("shownPromptId").toString() != token)
+                    return;
+                // The QML notify handler has accepted this real token but has not
+                // returned to the event loop to run its queued present(). The
+                // synchronous case controls that boundary; it is not a claim
+                // about the order of an earlier native macOS posted Quit.
+                earlyHookObserved = true;
+                if (quitTiming == 3 || quitTiming == 4) {
+                    sessions.activateId(idlePage->property("sessionIdentity").toString());
+                    confirmation = idleConfirmation;
+                }
+                hookState = windowState();
+                if (quitTiming != 2)
+                    earlySendAccepted = requestQuit();
+                fenceScheduled = QMetaObject::invokeMethod(laterFence.get(), "afterPromptLater");
+            },
+            Qt::DirectConnection);
         QCOMPARE(sessions.sessionCount(), 2);
         QTRY_VERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
         working->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/password-retry.zip"));
@@ -410,32 +530,78 @@ class BrowserTest : public QObject {
         };
         QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
         QCOMPARE(sessions.activeTaskCount(), 1);
-        auto *password = page->findChild<QQuickWindow *>("passwordWindow");
-        auto *confirmation = page->findChild<QQuickWindow *>("quitWindow");
-        QVERIFY(password && confirmation);
-        QTRY_VERIFY(password->isVisible());
-        QVERIFY(QTest::qWaitForWindowExposed(password));
-        QCOMPARE(password->modality(), Qt::ApplicationModal);
-        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
-        QSignalSpy updateReady(&sessions, &ApplicationSessions::readyForUpdate);
-
-        QDialog selector;
-        selector.setWindowModality(Qt::ApplicationModal);
-        selector.show();
-        QTRY_COMPARE(QApplication::activeModalWidget(), &selector);
-        requestQuit();
-        QVERIFY(!confirmation->isVisible() && !sessions.isClosing());
-        QCOMPARE(working->passwordPrompt(), prompt);
-        QCOMPARE(sessions.activeTaskCount(), 1);
-        QVERIFY(joined.isEmpty() && updateReady.isEmpty());
-        selector.close();
-        QTRY_COMPARE(QGuiApplication::modalWindow(), password);
-
-        requestQuit();
+        if (quitTiming) {
+            QTRY_VERIFY_WITH_TIMEOUT(earlyHookObserved, 10000);
+            QVERIFY2(fenceScheduled, "The independent callLater fence was not scheduled");
+            QTRY_VERIFY(laterFence->property("drained").toBool());
+            afterLaterState = windowState();
+            if (quitTiming == 2) {
+                QTRY_VERIFY(password->isVisible());
+                QVERIFY(QTest::qWaitForWindowExposed(password));
+                QTRY_COMPARE(QGuiApplication::modalWindow(), password);
+                // Showing a new QWindow removes posted Quit events in Qt.
+                // This ready-prompt control posts only after the real window
+                // is presented, from an already running bounded event loop.
+                QEventLoop deliveryLoop;
+                QTimer deadline;
+                deadline.setSingleShot(true);
+                connect(&deadline, &QTimer::timeout, &deliveryLoop, &QEventLoop::quit);
+                postedDeliveryLoop = &deliveryLoop;
+                QTimer::singleShot(0, &deliveryLoop, [&] {
+                    postScheduled = true;
+                    postState = windowState();
+                    QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
+                });
+                deadline.start(2000);
+                deliveryLoop.exec();
+                postedDeliveryLoop = nullptr;
+                QVERIFY(postScheduled);
+                QVERIFY(postState.value("password_visible").toBool());
+                QVERIFY(postState.value("password_exposed").toBool());
+            }
+            QCOMPARE(quitDeliveries, 1);
+            QVERIFY(afterDeliveryState.value("confirmation_visible").toBool());
+            QVERIFY(!hookState.value("password_visible").toBool());
+            QVERIFY(!hookState.value("password_exposed").toBool());
+            QVERIFY(hookState.value("password_owned").toBool());
+            QVERIFY(hookState.value("automatic_presentation").toBool());
+            QCOMPARE(hookState.value("task_id").toString(), taskId);
+            QCOMPARE(hookState.value("prompt_id"), prompt.value("promptId"));
+            QCOMPARE(hookState.value("shown_task_id").toString(), taskId);
+            QCOMPARE(hookState.value("shown_prompt_id"), prompt.value("promptId"));
+            if (quitTiming != 2) {
+                QVERIFY(!afterLaterState.value("password_visible").toBool());
+                QVERIFY(earlySendAccepted);
+                QVERIFY(!deliveryState.value("password_visible").toBool());
+                QVERIFY(!deliveryState.value("password_exposed").toBool());
+            }
+            if (quitTiming == 3 || quitTiming == 4)
+                QVERIFY(hookState.value(quitTiming == 4 ? "different_window" : "different_session")
+                            .toBool());
+            QVERIFY(afterDeliveryState.value("quit_decision_pending").toBool());
+            QVERIFY(afterDeliveryState.value("presentation_blocked").toBool());
+        } else {
+            QTRY_VERIFY(password->isVisible());
+            QVERIFY(QTest::qWaitForWindowExposed(password));
+            QCOMPARE(password->modality(), Qt::ApplicationModal);
+            QDialog selector;
+            selector.setWindowModality(Qt::ApplicationModal);
+            selector.show();
+            QTRY_COMPARE(QApplication::activeModalWidget(), &selector);
+            QVERIFY(requestQuit());
+            QVERIFY(!confirmation->isVisible() && !sessions.isClosing());
+            QCOMPARE(working->passwordPrompt(), prompt);
+            QCOMPARE(sessions.activeTaskCount(), 1);
+            QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+            selector.close();
+            QTRY_COMPARE(QGuiApplication::modalWindow(), password);
+            QVERIFY(requestQuit());
+        }
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
-        auto *returnButton = findVisual(confirmation->contentItem(), "quitReturn");
+        auto *returnButton =
+            findVisual(confirmation->contentItem(), quitTiming == 5 ? "quitWait" : "quitReturn");
         QVERIFY(returnButton && returnButton->isVisible() && returnButton->isEnabled());
         const auto returnPoint =
             returnButton->mapToScene(QPointF(returnButton->width() / 2, returnButton->height() / 2))
@@ -449,11 +615,42 @@ class BrowserTest : public QObject {
         QCOMPARE(sessions.activeTaskCount(), 1);
         QVERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
         QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+        QVERIFY(!sessions.quitDecisionPending());
 
-        requestQuit();
+        QTRY_VERIFY(password->isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(password));
+        QTRY_COMPARE(QGuiApplication::modalWindow(), password);
+        auto *activePage = sessions.activeWindow()->property("activePage").value<QObject *>();
+        confirmation = activePage ? activePage->findChild<QQuickWindow *>("quitWindow") : nullptr;
+        QVERIFY(confirmation);
+        QVERIFY(requestQuit());
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
+        if (quitTiming == 5) {
+            QVERIFY(!page->property("waitBeforeExit").toBool());
+            auto *returnAgain = findVisual(confirmation->contentItem(), "quitReturn");
+            QVERIFY(returnAgain && returnAgain->isVisible() && returnAgain->isEnabled());
+            const auto point =
+                returnAgain
+                    ->mapToScene(QPointF(returnAgain->width() / 2, returnAgain->height() / 2))
+                    .toPoint();
+            moveTestPointer(confirmation, point);
+            QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, point);
+            QTRY_VERIFY(!confirmation->isVisible());
+            QVERIFY(!sessions.quitDecisionPending() && !sessions.isClosing());
+            QCOMPARE(working->passwordPrompt(), prompt);
+            QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
+            QCOMPARE(sessions.activeTaskCount(), 1);
+            QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+            QTRY_VERIFY(password->isVisible());
+            QVERIFY(QTest::qWaitForWindowExposed(password));
+            QTRY_COMPARE(QGuiApplication::modalWindow(), password);
+            QVERIFY(requestQuit());
+            QTRY_VERIFY(confirmation->isVisible());
+            QVERIFY(QTest::qWaitForWindowExposed(confirmation));
+            QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
+        }
         auto *cancelButton = findVisual(confirmation->contentItem(), "quitCancel");
         QVERIFY(cancelButton && cancelButton->isVisible() && cancelButton->isEnabled());
         const auto cancelPoint =
@@ -463,6 +660,7 @@ class BrowserTest : public QObject {
         QTest::mouseClick(confirmation, Qt::LeftButton, Qt::NoModifier, cancelPoint);
         QTRY_COMPARE_WITH_TIMEOUT(joined.count(), 1, 10000);
         QVERIFY(sessions.isClosing() && !sessions.updatePending());
+        QVERIFY(sessions.quitDecisionPending());
         QVERIFY(idle->shutdownComplete() && working->shutdownComplete());
         QCOMPARE(sessions.activeTaskCount(), 0);
         QCOMPARE(snapshot().value("status").toString(), QStringLiteral("cancelled"));
@@ -1526,6 +1724,144 @@ class BrowserTest : public QObject {
         QFile report(directory + "/measurements.json");
         QVERIFY(report.open(QIODevice::WriteOnly));
         QVERIFY(report.write(QJsonDocument(result).toJson()) > 0);
+    }
+    void nativePhysicalMonitorDpiTransitions() {
+#ifdef Q_OS_WIN
+        const auto directory = qEnvironmentVariable("XDZIP_NATIVE_MONITOR_AUDIT");
+        if (directory.isEmpty())
+            QSKIP("Opt-in real attached-monitor DPI transition evidence");
+        QVERIFY(nativeSystemPointer());
+        for (const auto *name :
+             {"QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS", "QT_DEVICE_PIXEL_RATIO", "QT_FONT_DPI",
+              "QT_ENABLE_HIGHDPI_SCALING", "QT_SCALE_FACTOR_ROUNDING_POLICY"})
+            QVERIFY2(qEnvironmentVariableIsEmpty(name), name);
+        QJsonArray displays, samples;
+        QVERIFY(native_monitor_audit::activeDisplays(&displays));
+        QVERIFY2(displays.size() >= 2, "Explicit monitor audit requires two attached displays");
+        auto *primary = QGuiApplication::primaryScreen();
+        QVERIFY(primary);
+        QScreen *secondary = nullptr;
+        for (auto *screen : QGuiApplication::screens())
+            if (screen != primary &&
+                qAbs(screen->devicePixelRatio() - primary->devicePixelRatio()) > .01) {
+                secondary = screen;
+                break;
+            }
+        QVERIFY2(primary && secondary,
+                 "Two actual screens with different native DPRs are required");
+        QVERIFY(QDir().mkpath(directory));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("light", 1, "zh-CN", "standard", false, false, false, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *page = qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+        QVERIFY(page);
+        auto *controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QSignalSpy changed(window, &QWindow::screenChanged);
+        int firstDpi = 0;
+        for (int index = 0; index < 3; ++index) {
+            auto *target = index == 1 ? secondary : primary;
+            const int before = changed.count();
+            window->setPosition(target->availableGeometry().center() - QPoint(512, 311));
+            window->raise();
+            window->requestActivate();
+            QVERIFY(QTest::qWaitForWindowActive(window));
+            QTRY_COMPARE(window->screen(), target);
+            if (index)
+                QTRY_VERIFY(changed.count() > before);
+            QTRY_COMPARE(window->size(), QSize(1024, 622));
+            QJsonObject sample;
+            QTRY_VERIFY(
+                native_monitor_audit::snapshot(window, &sample) &&
+                sample["monitor_device"].toString().compare(target->name(), Qt::CaseInsensitive) ==
+                    0 &&
+                qAbs(window->devicePixelRatio() - sample["native_dpi"].toInt() / 96.) < .01);
+            const int dpi = sample["native_dpi"].toInt();
+            if (!index)
+                firstDpi = dpi;
+            else if (index == 1)
+                QVERIFY(dpi != firstDpi);
+            else
+                QCOMPARE(dpi, firstDpi);
+            const auto frame = sample["frame"].toObject();
+            QVERIFY(frame["attached"].toBool() && frame["captionStyle"].toBool() &&
+                    frame["resizeStyle"].toBool());
+            QCOMPARE(frame["topInsetPixels"].toInt(), 1);
+            auto *title = findVisual(page, "archiveTitlebar");
+            QVERIFY(title);
+            QCOMPARE(title->height(), 48.);
+            QQuickItem *previous = nullptr;
+            for (const auto *name : {"browserViewMenuButton", "browserGridButton",
+                                     "browserSortMenuButton", "inspectorToggle"}) {
+                auto *action = findVisual(page, QString::fromLatin1(name));
+                QVERIFY(action);
+                if (!action->isVisible())
+                    continue;
+                QCOMPARE(action->size(), QSizeF(28, 28));
+                if (previous)
+                    QVERIFY(qAbs(action->mapToScene(QPointF()).x() -
+                                 previous->mapToScene(QPointF(previous->width(), 0)).x() - 6.4) <
+                            .5);
+                previous = action;
+            }
+            QSignalSpy frames(window, &QQuickWindow::frameSwapped);
+            window->requestUpdate();
+            QTRY_VERIFY(!frames.isEmpty() && visibleImagesReady(window->contentItem()));
+            NativeClientCaptureContext context{
+                reinterpret_cast<HWND>(window->winId()), GetCurrentProcessId(), {}};
+            QVERIFY(nativeClientRectangle(context.owned, &context.physicalClient));
+            const auto capture = captureOwnedNativeClient(context);
+            QVERIFY2(!capture.guardRejected,
+                     "Owned client foreground/geometry/occlusion guard rejected");
+            QVERIFY2(!capture.error && !capture.pixels.isNull(),
+                     "Native owned-client readback failed");
+            const auto filename = QString("monitor-%1-client.png").arg(index);
+            QVERIFY(!QFile::exists(directory + '/' + filename));
+            QVERIFY(capture.pixels.save(directory + '/' + filename));
+            sample["image"] = filename;
+            sample["physical_image_size"] =
+                QJsonArray{capture.pixels.width(), capture.pixels.height()};
+            sample["screen_changed_count"] = changed.count();
+            sample["frame_swapped_count"] = frames.count();
+            QJsonArray nodes;
+            visual_audit::collect(window->contentItem(), nodes);
+            sample["nodes"] = nodes;
+            samples.append(sample);
+        }
+        QFile record(directory + "/monitor-transitions.json");
+        QVERIFY(record.open(QIODevice::WriteOnly | QIODevice::NewOnly));
+        QVERIFY(
+            record.write(
+                QJsonDocument(
+                    QJsonObject{{"revision", BuildInfo::revision()},
+                                {"dirty", BuildInfo::dirty()},
+                                {"configuration", BuildInfo::configuration()},
+                                {"platform", QGuiApplication::platformName()},
+                                {"graphics_api", int(window->rendererInterface()->graphicsApi())},
+                                {"capture_scope",
+                                 "Guarded owned client, no OS frame or human dragging approval"},
+                                {"os_display_settings_changed", false},
+                                {"displays", displays},
+                                { "samples",
+                                  samples }})
+                    .toJson()) > 0);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_COMPARE(joined.count(), 1);
+#else
+        QSKIP("Windows attached-monitor audit");
+#endif
     }
     void commonFileCategoryAssetsArePackaged() {
         QQmlEngine engine;
@@ -6382,6 +6718,192 @@ class BrowserTest : public QObject {
         controller.selectRangeTo(269);
         QVERIFY(controller.selectedCount() > 0);
     }
+    void directoryContextExpansionReasons_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<QString>("input");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &input :
+                 {QStringLiteral("mouse"), QStringLiteral("menu"), QStringLiteral("shift-f10")})
+                QTest::newRow(qPrintable(language + "-" + input)) << language << input;
+    }
+    void directoryContextExpansionReasons() {
+        QFETCH(QString, language);
+        QFETCH(QString, input);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *tree = findVisual(window->contentItem(), "directoryTree");
+        auto *rootNode = findVisual(window->contentItem(), "directoryRoot");
+        auto *menu = window->findChild<QObject *>("browserDirectoryMenu");
+        QVERIFY(tree && rootNode && menu);
+        auto *selection = qobject_cast<QItemSelectionModel *>(
+            tree->property("selectionModel").value<QObject *>());
+        QVERIFY(selection);
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences);
+        QCOMPARE(controller->directories()->rowCount(), 3);
+        QVERIFY(controller->directories()->rowCount(controller->directories()->index(0, 0)) > 0);
+        controller->selectOnlyRow(0);
+        const auto selected = controller->selectedCount();
+        const auto rootReason = language == "en-US" ? QStringLiteral("Root is always expanded")
+                                                    : QString::fromUtf8("根目录始终展开");
+        const auto leafReason = language == "en-US" ? QStringLiteral("This entry has no subfolders")
+                                                    : QString::fromUtf8("该节点没有子目录");
+        const auto click = [window](QQuickItem *target) {
+            const auto point =
+                target->mapToScene(QPointF(target->width() / 2, target->height() / 2)).toPoint();
+            moveTestPointer(window, point);
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, point);
+        };
+        const auto openFor = [&](QQuickItem *target, int row) {
+            if (input == "mouse") {
+                const auto point =
+                    target->mapToScene(QPointF(target->width() / 2, target->height() / 2))
+                        .toPoint();
+                const auto treePoint = tree->mapFromScene(point);
+                auto *hit = tree->childAt(treePoint.x(), treePoint.y());
+                qInfo() << "Directory context mouse target" << target->objectName() << "nodeId"
+                        << target->property("nodeId") << "row" << target->property("row")
+                        << "hasChildren" << target->property("hasChildren") << "visible"
+                        << target->isVisible() << "inReusePool" << target->property("inReusePool")
+                        << "sceneRect" << QRectF(target->mapToScene(QPointF()), target->size())
+                        << "point" << point << "treePoint" << treePoint << "treeSize"
+                        << tree->size() << "hitName" << (hit ? hit->objectName() : QString())
+                        << "hitClass" << (hit ? hit->metaObject()->className() : "null");
+                moveTestPointer(window, point);
+                QTest::mouseClick(window, Qt::RightButton, Qt::NoModifier, point);
+                auto *activePage = window->property("activePage").value<QObject *>();
+                QVERIFY(activePage);
+                qInfo() << "Directory context after input" << "visible" << menu->property("visible")
+                        << "id" << activePage->property("contextDirectoryId") << "row"
+                        << activePage->property("contextDirectoryRow") << "hasChildren"
+                        << activePage->property("contextDirectoryHasChildren") << "expanded"
+                        << activePage->property("contextDirectoryExpanded");
+            } else {
+                if (row < 0) {
+                    target->forceActiveFocus();
+                } else {
+                    selection->setCurrentIndex(controller->directories()->index(row, 0),
+                                               QItemSelectionModel::NoUpdate);
+                    tree->forceActiveFocus();
+                }
+                QCoreApplication::processEvents();
+                QTest::keyClick(window, input == "menu" ? Qt::Key_Menu : Qt::Key_F10,
+                                input == "menu" ? Qt::NoModifier : Qt::ShiftModifier);
+            }
+        };
+        for (const bool dark : {false, true})
+            for (const double scale : {1., 1.25, 1.5}) {
+                preferences->preview(dark ? "dark" : "light", scale);
+                QSignalSpy frames(window, &QQuickWindow::frameSwapped);
+                window->update();
+                QTRY_VERIFY(!frames.isEmpty());
+                openFor(rootNode, -1);
+                QTRY_VERIFY(menu->property("visible").toBool());
+                auto *command = findVisual(menu->property("contentItem").value<QQuickItem *>(),
+                                           "directoryExpansionCommand");
+                QVERIFY(command);
+                QVERIFY(!command->isEnabled());
+                QCOMPARE(command->property("text").toString(), qtTrId("ui.9c9c21cc25c0"));
+                QCOMPARE(command->property("disabledReason").toString(), rootReason);
+                auto *accessible = QAccessible::queryAccessibleInterface(command);
+                QVERIFY(accessible);
+                QCOMPARE(accessible->text(QAccessible::Description), rootReason);
+                frames.clear();
+                window->update();
+                QTRY_VERIFY(!frames.isEmpty());
+                bool reasonVisible = false;
+                for (auto *label : command->findChildren<QQuickItem *>()) {
+                    if (!label->inherits("QQuickText") || !label->isVisible() ||
+                        label->property("text").toString() != rootReason)
+                        continue;
+                    reasonVisible = true;
+                    QVERIFY(label->width() > 0 && label->height() + 1 >= label->implicitHeight());
+                    QVERIFY(label->property("contentWidth").toDouble() <= label->width() + 1);
+                }
+                QVERIFY(reasonVisible);
+                const auto captures = qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT");
+                if (!captures.isEmpty()) {
+                    QVERIFY(QDir().mkpath(captures));
+                    QVERIFY(visual_audit::save(window, captures,
+                                               "directory-reason-" + language +
+                                                   (dark ? "-dark-" : "-light-") +
+                                                   QString::number(scale) + "-" + input));
+                }
+                QSignalSpy triggered(command, SIGNAL(triggered()));
+                click(command);
+                QCOMPARE(triggered.count(), 0);
+                QCOMPARE(tree->property("rows").toInt(), 3);
+                QCOMPARE(controller->selectedCount(), selected);
+                QCOMPARE(controller->directoryId(), QString());
+                QTest::keyClick(window, Qt::Key_Escape);
+                QTRY_VERIFY(!menu->property("visible").toBool());
+            }
+        auto *parent = findVisual(window->contentItem(), "directory-d1");
+        QVERIFY(parent);
+        for (const bool expanded : {false, true}) {
+            // TreeView may reuse a delegate for a child when expansion changes rows.
+            QTRY_VERIFY((parent = findVisual(window->contentItem(), "directory-d1")) &&
+                        parent->property("nodeId").toString() == "d1" &&
+                        parent->property("row").toInt() == 0);
+            openFor(parent, 0);
+            QTRY_VERIFY(menu->property("visible").toBool());
+            auto *command = findVisual(menu->property("contentItem").value<QQuickItem *>(),
+                                       "directoryExpansionCommand");
+            if (!command || !command->isEnabled()) {
+                auto *activePage = window->property("activePage").value<QObject *>();
+                qInfo() << "Directory parent command failure" << "parentName"
+                        << parent->objectName() << "parentHasChildren"
+                        << parent->property("hasChildren") << "commandEnabled"
+                        << (command && command->isEnabled()) << "commandText"
+                        << (command ? command->property("text") : QVariant()) << "disabledReason"
+                        << (command ? command->property("disabledReason") : QVariant())
+                        << "contextId" << activePage->property("contextDirectoryId") << "contextRow"
+                        << activePage->property("contextDirectoryRow") << "contextHasChildren"
+                        << activePage->property("contextDirectoryHasChildren");
+                const auto diagnostics =
+                    qEnvironmentVariable("XDZIP_DIRECTORY_CONTEXT_DIAGNOSTICS");
+                if (!diagnostics.isEmpty()) {
+                    QVERIFY(QDir().mkpath(diagnostics));
+                    QVERIFY(visual_audit::save(window, diagnostics,
+                                               "parent-command-failure-" + language + "-" + input));
+                }
+            }
+            QVERIFY(command && command->isEnabled());
+            QCOMPARE(command->property("text").toString(),
+                     qtTrId(expanded ? "ui.9c9c21cc25c0" : "ui.521dbd520244"));
+            click(command);
+            QTRY_VERIFY(!menu->property("visible").toBool());
+            QTRY_COMPARE(tree->property("rows").toInt(), expanded ? 3 : 4);
+            QCOMPARE(controller->directoryId(), QString());
+            QCOMPARE(controller->selectedCount(), selected);
+        }
+        auto *leaf = findVisual(window->contentItem(), "directory-d3");
+        QVERIFY(leaf);
+        openFor(leaf, 1);
+        QTRY_VERIFY(menu->property("visible").toBool());
+        auto *command = findVisual(menu->property("contentItem").value<QQuickItem *>(),
+                                   "directoryExpansionCommand");
+        QVERIFY(command && !command->isEnabled());
+        QCOMPARE(command->property("disabledReason").toString(), leafReason);
+        QCOMPARE(command->property("text").toString(), qtTrId("ui.521dbd520244"));
+        QSignalSpy triggered(command, SIGNAL(triggered()));
+        click(command);
+        QCOMPARE(triggered.count(), 0);
+        QCOMPARE(tree->property("rows").toInt(), 3);
+        QCOMPARE(controller->selectedCount(), selected);
+        QCOMPARE(controller->directoryId(), QString());
+        QTest::keyClick(window, Qt::Key_Escape);
+    }
     void treeExpansionAndColumnInteraction() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -7127,6 +7649,364 @@ class BrowserTest : public QObject {
             QVERIFY(visual_audit::save(detailsWindow, qEnvironmentVariable("XDZIP_VISUAL_AUDIT"),
                                        "inspector-independent"));
         detailsWindow->close();
+    }
+    void nativeFileCategoryVisualAudit() {
+        const auto directory = qEnvironmentVariable("XDZIP_FILE_ICON_AUDIT");
+        if (directory.isEmpty())
+            QSKIP("Opt-in actual Browser file-category image evidence");
+        QVERIFY(nativeSystemPointer());
+        const auto fixture = qEnvironmentVariable("XDZIP_FILE_ICON_FIXTURE");
+        const auto sha = qEnvironmentVariable("XDZIP_FILE_ICON_FIXTURE_SHA256").toUtf8();
+        QVERIFY(QFileInfo(fixture).canonicalFilePath().startsWith(
+            QDir("build").canonicalPath() + '/', Qt::CaseInsensitive));
+        QFile input(fixture);
+        QVERIFY(input.open(QIODevice::ReadOnly));
+        const auto bytes = input.readAll();
+        QVERIFY(bytes.size() <= 4096);
+        QCOMPARE(QCryptographicHash::hash(bytes, QCryptographicHash::Sha256).toHex(), sha);
+        const QStringList expected{
+            "file-pdf.pdf",          "file-document.doc",  "file-spreadsheet.xls",
+            "file-presentation.ppt", "file-markdown.md",   "image-file.jpg",
+            "file-code.js",          "file-audio.mp3",     "file-video.mp4",
+            "file-archive.zip",      "file-installer.exe", "file-font.ttf",
+            "file-disk.iso",         "unknown.xyz",        "folder"};
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        const auto findIcon = [](auto &&self, QQuickItem *item,
+                                 const QUrl &source) -> QQuickItem * {
+            if (item->property("source").toUrl() == source)
+                return item;
+            for (auto *child : item->childItems())
+                if (auto *found = self(self, child, source))
+                    return found;
+            return nullptr;
+        };
+        QVERIFY(QDir().mkpath(directory));
+        QJsonArray captures;
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
+            QVERIFY(initializeUiText(language));
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *preferences =
+                engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+            QVERIFY(window && preferences);
+            QVERIFY(preferences->saveDetails("light", 1, language, "standard", false, false, false,
+                                             "tabs"));
+            ApplicationSessions sessions(&engine, preferences);
+            sessions.adopt(window);
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            QVERIFY(page);
+            auto *controller = page->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->openPath(fixture);
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+            QCOMPARE(controller->entries()->rowCount(), 15);
+            QCOMPARE(controller->archiveTotal(), 15);
+            QSet<QString> filenames;
+            for (int row = 0; row < 15; ++row) {
+                const auto filename =
+                    controller->entries()->data(controller->entries()->index(row, 0)).toString();
+                QVERIFY(expected.contains(filename) && !filenames.contains(filename));
+                filenames.insert(filename);
+            }
+            window->resize(1024, 900);
+            QVERIFY(QTest::qWaitForWindowExposed(window));
+            window->raise();
+            window->requestActivate();
+            QVERIFY(QTest::qWaitForWindowActive(window));
+            QVERIFY(page->setProperty("inspectorRequested", false));
+            QTRY_VERIFY(!page->property("inspectorVisible").toBool());
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5})
+                    for (const bool grid : {false, true}) {
+                        preferences->preview(dark ? "dark" : "light", scale);
+                        const auto mode = grid ? QStringLiteral("grid") : QStringLiteral("list");
+                        QVERIFY(page->setProperty("viewMode", mode));
+                        QTRY_COMPARE(page->property("viewMode").toString(), mode);
+                        auto *pointerAnchor =
+                            findVisual(page, grid ? "browserGridButton" : "browserViewMenuButton");
+                        QVERIFY(pointerAnchor);
+                        auto *view = findVisual(page, grid ? "archiveGrid" : "archiveTable");
+                        QVERIFY(view);
+                        const auto name = [grid](int row) {
+                            return grid ? QString("grid-entry-%1").arg(row)
+                                        : QString("entry-%1-0").arg(row);
+                        };
+                        const auto scene = language + (dark ? "-dark-" : "-light-") +
+                                           QString::number(scale) + (grid ? "-grid" : "-list");
+                        QJsonArray frames;
+                        QSet<QString> covered;
+                        double topY = 0;
+                        for (int part = 0; part < 2; ++part) {
+                            const auto originY = view->property("originY").toDouble();
+                            const auto targetY =
+                                part ? qMax(originY,
+                                            originY + view->property("contentHeight").toDouble() -
+                                                view->height())
+                                     : originY;
+                            if (part)
+                                QVERIFY2(targetY > topY + .5,
+                                         "Uncovered icons require a real scroll range");
+                            QVERIFY(view->setProperty("contentX", view->property("originX")));
+                            QVERIFY(view->setProperty("contentY", targetY));
+                            moveTestPointer(window,
+                                            pointerAnchor
+                                                ->mapToScene(QPointF(pointerAnchor->width() / 2,
+                                                                     pointerAnchor->height() / 2))
+                                                .toPoint());
+                            QSignalSpy polish(window, &QQuickWindow::frameSwapped);
+                            QVector<qreal> previous;
+                            int observed = 0, stable = 0;
+                            bool geometryReady = false;
+                            QTRY_VERIFY2(
+                                ([&] {
+                                    if (geometryReady)
+                                        return true;
+                                    // Quick update forces a render even when the scene graph is
+                                    // unchanged.
+                                    window->update();
+                                    if (polish.count() == observed)
+                                        return false;
+                                    observed = polish.count();
+                                    const QVector<qreal> current{
+                                        view->width(),
+                                        view->height(),
+                                        view->property("contentX").toDouble(),
+                                        view->property("contentY").toDouble(),
+                                        view->property("contentWidth").toDouble(),
+                                        view->property("contentHeight").toDouble()};
+                                    stable = current == previous ? stable + 1 : 0;
+                                    previous = current;
+                                    geometryReady = stable >= 2 && view->width() > 0 &&
+                                                    view->height() > 0 &&
+                                                    visibleImagesReady(window->contentItem());
+                                    return geometryReady;
+                                })(),
+                                qPrintable(QStringLiteral(
+                                               "scene=%1 part=%2 frames=%3 observed=%4 stable=%5 "
+                                               "viewport=%6x%7 contentX=%8 contentY=%9 "
+                                               "contentWidth=%10 contentHeight=%11 imagesReady=%12")
+                                               .arg(scene)
+                                               .arg(part)
+                                               .arg(polish.count())
+                                               .arg(observed)
+                                               .arg(stable)
+                                               .arg(view->width())
+                                               .arg(view->height())
+                                               .arg(view->property("contentX").toDouble())
+                                               .arg(view->property("contentY").toDouble())
+                                               .arg(view->property("contentWidth").toDouble())
+                                               .arg(view->property("contentHeight").toDouble())
+                                               .arg(visibleImagesReady(window->contentItem()))));
+                            QTRY_VERIFY(qAbs(view->property("contentY").toDouble() - targetY) < 1);
+                            if (!part)
+                                topY = view->property("contentY").toDouble();
+                            else
+                                QVERIFY(view->property("contentY").toDouble() > topY + .5);
+                            const QRectF viewport(0, 0, view->width(), view->height());
+                            const auto sourceFor = [&](int row) {
+                                const auto filename =
+                                    controller->entries()
+                                        ->data(controller->entries()->index(row, 0))
+                                        .toString();
+                                const auto kind = filename == "folder" ? QString("folder")
+                                                  : filename == "unknown.xyz"
+                                                      ? QString("file-text")
+                                                      : filename.left(filename.lastIndexOf('.'));
+                                return QUrl("qrc:/xdzip/assets/" +
+                                            QString(dark ? "dark/" : "light/") + kind + ".png");
+                            };
+                            QQuickItem *selected = nullptr, *selectedBand = nullptr;
+                            QColor unselectedPaint;
+                            bool selectedPaintChanged = false;
+                            if (!part) {
+                                controller->selectAll(false);
+                                QTRY_COMPARE(controller->selectedCount(), 0);
+                                QTRY_VERIFY((selected = findVisual(page, name(0))) &&
+                                            !selected->property("chosen").toBool());
+                                selectedBand =
+                                    grid ? selected : findVisual(selected, "entryBand-0-0");
+                                QVERIFY(selectedBand);
+                                auto *image = findIcon(findIcon, selected, sourceFor(0));
+                                QVERIFY(image &&
+                                        viewport.adjusted(-1, -1, 1, 1)
+                                            .contains(QRectF(image->mapToItem(view, QPointF()),
+                                                             image->size())));
+                                unselectedPaint = selectedBand->property("color").value<QColor>();
+                            }
+                            QSignalSpy selectionFrames(window, &QQuickWindow::frameSwapped);
+                            controller->selectOnlyRow(0);
+                            QTRY_COMPARE(controller->selectedCount(), 1);
+                            if (!part) {
+                                QTRY_VERIFY(selected->property("chosen").toBool() &&
+                                            !selectionFrames.isEmpty() &&
+                                            selectedBand->property("color").value<QColor>() !=
+                                                unselectedPaint);
+                                selectedPaintChanged = true;
+                            }
+                            QQuickItem *hovered = nullptr, *hoverBand = nullptr;
+                            int hoveredRow = -1;
+                            QTRY_VERIFY(([&] {
+                                for (int row = 1; row < (part ? 15 : 2); ++row) {
+                                    auto *cell = findVisual(page, name(row));
+                                    if (!cell || !cell->isVisible() ||
+                                        cell->property("chosen").toBool())
+                                        continue;
+                                    auto *image = findIcon(findIcon, cell, sourceFor(row));
+                                    if (!image || image->width() <= 0 || image->height() <= 0 ||
+                                        !viewport.adjusted(-1, -1, 1, 1)
+                                             .contains(QRectF(image->mapToItem(view, QPointF()),
+                                                              image->size())))
+                                        continue;
+                                    if (!viewport.contains(cell->mapToItem(
+                                            view, QPointF(cell->width() / 2, cell->height() / 2))))
+                                        continue;
+                                    auto *band =
+                                        grid ? cell
+                                             : findVisual(cell, QString("entryBand-%1-0").arg(row));
+                                    if (!band)
+                                        continue;
+                                    hovered = cell;
+                                    hoverBand = band;
+                                    hoveredRow = row;
+                                    return true;
+                                }
+                                return false;
+                            })());
+                            const auto before = hoverBand->property("color").value<QColor>();
+                            QSignalSpy hoverFrames(window, &QQuickWindow::frameSwapped);
+                            moveTestPointer(window, hovered
+                                                        ->mapToScene(QPointF(hovered->width() / 2,
+                                                                             hovered->height() / 2))
+                                                        .toPoint());
+                            QTRY_VERIFY(!hoverFrames.isEmpty() &&
+                                        hoverBand->property("color").value<QColor>() != before);
+                            QJsonArray icons, outside;
+                            for (int row = 0; row < 15; ++row) {
+                                auto *cell = findVisual(page, name(row));
+                                if (!cell || !cell->isVisible())
+                                    continue;
+                                const auto filename =
+                                    controller->entries()
+                                        ->data(controller->entries()->index(row, 0))
+                                        .toString();
+                                const auto kind = filename == "folder" ? QString("folder")
+                                                  : filename == "unknown.xyz"
+                                                      ? QString("file-text")
+                                                      : filename.left(filename.lastIndexOf('.'));
+                                const QUrl source("qrc:/xdzip/assets/" +
+                                                  QString(dark ? "dark/" : "light/") + kind +
+                                                  ".png");
+                                auto *image = findIcon(findIcon, cell, source);
+                                QVERIFY2(image && image->property("status").toInt() == 1,
+                                         qPrintable(source.toString()));
+                                const auto position = image->mapToItem(view, QPointF());
+                                const QRectF rectangle(position, image->size());
+                                QJsonObject icon{
+                                    {"row", row},
+                                    {"file", filename},
+                                    {"kind", kind},
+                                    {"source", source.toString()},
+                                    {"rect_in_view",
+                                     QJsonArray{rectangle.x(), rectangle.y(), rectangle.width(),
+                                                rectangle.height()}},
+                                    {"chosen", cell->property("chosen").toBool()}};
+                                if (!viewport.adjusted(-1, -1, 1, 1).contains(rectangle)) {
+                                    outside.append(icon);
+                                    continue;
+                                }
+                                QVERIFY(image->width() > 0 && image->height() > 0);
+                                const QImage pixels(source.toString().mid(3));
+                                QVERIFY(!pixels.isNull());
+                                QCOMPARE(cell->property("chosen").toBool(), row == 0);
+                                icon["source_pixels"] = QJsonArray{pixels.width(), pixels.height()};
+                                icon["inside_viewport"] = true;
+                                icons.append(icon);
+                                covered.insert(filename);
+                            }
+                            QVERIFY2(!icons.isEmpty(),
+                                     "No complete icon is visible in this actual frame");
+                            const auto stem = scene + "-part" + QString::number(part);
+                            QVERIFY(!QFile::exists(directory + '/' + stem + ".png"));
+                            QVERIFY(visual_audit::save(window, directory, stem));
+                            // Only rows actually inside this captured viewport count. Re-read
+                            // after readback so a layout change cannot make an old rect pass.
+                            for (const auto &value : icons) {
+                                const auto icon = value.toObject();
+                                auto *cell = findVisual(page, name(icon["row"].toInt()));
+                                QVERIFY(cell);
+                                auto *image =
+                                    findIcon(findIcon, cell, QUrl(icon["source"].toString()));
+                                QVERIFY(image);
+                                const auto actual = image->mapToItem(view, QPointF());
+                                const auto recorded = icon["rect_in_view"].toArray();
+                                QVERIFY(qAbs(actual.x() - recorded[0].toDouble()) < .01 &&
+                                        qAbs(actual.y() - recorded[1].toDouble()) < .01 &&
+                                        qAbs(image->width() - recorded[2].toDouble()) < .01 &&
+                                        qAbs(image->height() - recorded[3].toDouble()) < .01);
+                                QVERIFY(QRectF(0, 0, view->width(), view->height())
+                                            .adjusted(-1, -1, 1, 1)
+                                            .contains(QRectF(image->mapToItem(view, QPointF()),
+                                                             image->size())));
+                            }
+                            frames.append(QJsonObject{
+                                {"image", stem + ".png"},
+                                {"geometry", stem + ".json"},
+                                {"part", part},
+                                {"viewport_size", QJsonArray{view->width(), view->height()}},
+                                {"content_x", view->property("contentX").toDouble()},
+                                {"content_y", view->property("contentY").toDouble()},
+                                {"origin_y", view->property("originY").toDouble()},
+                                {"content_height", view->property("contentHeight").toDouble()},
+                                {"selected_row", 0},
+                                {"selected_count", controller->selectedCount()},
+                                {"selected_paint_checked", !part},
+                                {"selected_paint_changed", selectedPaintChanged},
+                                {"hovered_row", hoveredRow},
+                                {"hover_paint_changed",
+                                 hoverBand->property("color").value<QColor>() != before},
+                                {"icons", icons},
+                                {"outside_icons", outside}});
+                            if (covered.size() == 15)
+                                break;
+                        }
+                        QCOMPARE(covered.size(), 15);
+                        captures.append(QJsonObject{
+                            {"scene", scene},
+                            {"requested_size", QJsonArray{1024, 900}},
+                            {"actual_size", QJsonArray{window->width(), window->height()}},
+                            {"dpr", window->devicePixelRatio()},
+                            {"graphics_api", int(window->rendererInterface()->graphicsApi())},
+                            {"covered_files", covered.size()},
+                            {"frames", frames}});
+                    }
+            QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+            sessions.confirmQuit(false);
+            QTRY_COMPARE(joined.count(), 1);
+        }
+        QCOMPARE(captures.size(), 24);
+        QFile record(directory + "/file-icon-catalog.json");
+        QVERIFY(record.open(QIODevice::WriteOnly | QIODevice::NewOnly));
+        QVERIFY(record.write(
+                    QJsonDocument(
+                        QJsonObject{
+                            {"schema_version", 2},
+                            {"revision", BuildInfo::revision()},
+                            {"dirty", BuildInfo::dirty()},
+                            {"configuration", BuildInfo::configuration()},
+                            {"platform", QGuiApplication::platformName()},
+                            {"fixture_sha256", QString::fromLatin1(sha)},
+                            {"selection_driver",
+                             "BrowserController.selectOnlyRow(0); not mouse-selection acceptance"},
+                            {"setup_driver",
+                             "SessionPage.inspectorRequested/viewMode properties; API scene setup, "
+                             "not toolbar or inspector mouse-input acceptance"},
+                            {"capture_scope", "Native Browser client frames, pending actual visual "
+                                              "inspection; no OS frame approval"},
+                            {"captures", captures}})
+                        .toJson()) > 0);
     }
 };
 int main(int argc, char **argv) {

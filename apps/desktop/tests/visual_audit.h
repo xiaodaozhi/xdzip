@@ -1,3 +1,5 @@
+// apps/desktop/tests/visual_audit.h
+
 #pragma once
 #include <QDir>
 #include <QFile>
@@ -39,8 +41,8 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
                      {"implicitHeight", item->implicitHeight()}};
     for (const auto *key :
          {"text", "color", "source", "radius", "horizontalAlignment", "verticalAlignment",
-          "contentWidth", "contentHeight", "opacity", "leftPadding", "rightPadding", "nodeDepth",
-          "depth", "row", "expanded"}) {
+          "contentWidth", "contentHeight", "contentX", "contentY", "originX", "originY", "opacity",
+          "leftPadding", "rightPadding", "nodeDepth", "depth", "row", "expanded"}) {
         const auto value = item->property(key);
         if (value.isValid())
             node[key] = QJsonValue::fromVariant(value);

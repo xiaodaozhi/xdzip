@@ -51,6 +51,7 @@ Item {
         passwordWindow.hide();
     }
     function presentQuit() {
+        waitBeforeExit = false;
         quitWindow.present();
     }
     function presentAbout() {
@@ -439,6 +440,7 @@ Item {
         owner: root.windowHost
         controller: reader
         automaticPresentation: !root.sessionClosed
+        presentationBlocked: root.sessionManager ? root.sessionManager.quitDecisionPending : quitWindow.visible
     }
     QuitWindow {
         id: quitWindow
@@ -586,9 +588,10 @@ Item {
             }
         }
         CommandMenuItem {
+            objectName: "directoryExpansionCommand"
             text: root.contextDirectoryExpanded ? qsTrId("ui.9c9c21cc25c0") : qsTrId("ui.521dbd520244")
-            enabled: reader.ready && !reader.browsingBusy && root.contextDirectoryHasChildren
-            disabledReason: qsTrId("ui.fa58108c4823")
+            enabled: root.contextDirectoryId.length > 0 && reader.ready && !reader.browsingBusy && root.contextDirectoryHasChildren
+            disabledReason: root.contextDirectoryId.length ? qsTrId("ui.fa58108c4823") : qsTrId("directory.rootAlwaysExpanded")
             onTriggered: directoryTree.toggleExpanded(root.contextDirectoryRow)
         }
         CommandMenuItem {
@@ -975,7 +978,7 @@ Item {
                                 root.contextDirectoryId = "";
                                 root.contextDirectoryRow = -1;
                                 root.contextDirectoryHasChildren = false;
-                                root.contextDirectoryExpanded = false;
+                                root.contextDirectoryExpanded = true;
                                 const position = allFiles.mapToItem(root.contentItem, eventPoint.position.x, eventPoint.position.y);
                                 directoryMenu.popup(position.x, position.y);
                             }
@@ -985,7 +988,7 @@ Item {
                                 root.contextDirectoryId = "";
                                 root.contextDirectoryRow = -1;
                                 root.contextDirectoryHasChildren = false;
-                                root.contextDirectoryExpanded = false;
+                                root.contextDirectoryExpanded = true;
                                 const position = allFiles.mapToItem(root.contentItem, 0, allFiles.height);
                                 directoryMenu.popup(position.x, position.y);
                                 event.accepted = true;

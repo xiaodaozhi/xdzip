@@ -635,7 +635,10 @@ void ApplicationSessions::requestQuit() {
     if (m_quitting || !m_active)
         return;
     if (activeTaskCount()) {
-        QMetaObject::invokeMethod(m_active, "presentQuit");
+        m_wait = false;
+        setQuitDecisionPending(true);
+        if (!QMetaObject::invokeMethod(m_active, "presentQuit"))
+            setQuitDecisionPending(false);
         return;
     }
     confirmQuit(false);
@@ -654,6 +657,7 @@ bool ApplicationSessions::prepareForUpdate() {
     m_updatePending = true;
     m_restart = false;
     m_quitting = true;
+    setQuitDecisionPending(true);
     cancelPendingActivation();
     emit closing();
     for (const auto &session : m_sessions)
@@ -666,9 +670,12 @@ void ApplicationSessions::confirmQuit(bool wait) {
     if (m_quitting)
         return;
     m_wait = wait;
-    if (wait && activeTaskCount())
+    if (wait && activeTaskCount()) {
+        setQuitDecisionPending(false);
         return;
+    }
     m_quitting = true;
+    setQuitDecisionPending(true);
     emit closing();
     for (const auto &session : m_sessions)
         if (session->controller)

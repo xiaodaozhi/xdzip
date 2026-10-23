@@ -17,6 +17,7 @@ class ApplicationSessions final : public QObject {
     Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
     Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(int sessionCount READ sessionCount NOTIFY sessionsChanged)
+    Q_PROPERTY(bool quitDecisionPending READ quitDecisionPending NOTIFY quitDecisionPendingChanged)
   public:
     ApplicationSessions(QQmlEngine *engine, UiPreferences *settings, QObject *parent = nullptr);
     ~ApplicationSessions() override;
@@ -43,11 +44,15 @@ class ApplicationSessions final : public QObject {
     bool updatePending() const {
         return m_updatePending;
     }
+    bool quitDecisionPending() const {
+        return m_quitDecisionPending;
+    }
     Q_INVOKABLE void cancelQuit() {
         if (m_quitting)
             return;
         m_wait = false;
         m_restart = false;
+        setQuitDecisionPending(false);
     }
     bool restartRequested() const {
         return m_restart;
@@ -71,6 +76,7 @@ class ApplicationSessions final : public QObject {
   signals:
     void tasksChanged();
     void sessionsChanged();
+    void quitDecisionPendingChanged();
     void closing();
     void readyToQuit();
     void readyForUpdate();
@@ -97,6 +103,12 @@ class ApplicationSessions final : public QObject {
     void closeTabSet(Session *anchor, const std::vector<Session *> &targets);
     void closeAround(const QString &id, bool rightOnly);
     void checkQuit();
+    void setQuitDecisionPending(bool pending) {
+        if (m_quitDecisionPending == pending)
+            return;
+        m_quitDecisionPending = pending;
+        emit quitDecisionPendingChanged();
+    }
     QQmlEngine *m_engine;
     UiPreferences *m_settings;
     QPointer<DesktopIntegration> m_desktop;
@@ -107,6 +119,7 @@ class ApplicationSessions final : public QObject {
     bool m_quitting = false, m_wait = false, m_quitEmitted = false, m_restart = false;
     bool m_presentationReady = false;
     bool m_updatePending = false;
+    bool m_quitDecisionPending = false;
     quint64 m_activationGeneration = 0;
     QList<QMetaObject::Connection> m_modalConnections;
     QPointer<QMessageBox> m_limitDialog;

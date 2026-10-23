@@ -11,6 +11,7 @@ OperationWindow {
     property real availableClientHeight: Screen.desktopAvailableHeight - Theme.passwordScreenMargin
     property bool uiReady: false
     property bool automaticPresentation: true
+    property bool presentationBlocked: false
     property bool pending: false
     property bool rejected: false
     property bool showPassword: false
@@ -29,6 +30,8 @@ OperationWindow {
                               Theme.passwordMaximumHeight, availableClientHeight)
     onActiveFocusItemChanged: if (visible) Qt.callLater(() => root.revealFocus(scroll))
     onPromptChanged: if (uiReady) syncPrompt()
+    onPresentationBlockedChanged: if (uiReady && !presentationBlocked)
+        Qt.callLater(root.presentAutomaticPrompt, shownTaskId, shownPromptId)
     Component.onCompleted: { uiReady = true; syncPrompt(); }
     onClosing: {
         const task = shownTaskId;
@@ -58,7 +61,14 @@ OperationWindow {
     }
     function revealPrompt() {
         syncPrompt();
-        if (shownTaskId && shownPromptId) present();
+        if (!presentationBlocked && shownTaskId && shownPromptId) present();
+    }
+    function presentAutomaticPrompt(task: string, token: string) {
+        if (!automaticPresentation || presentationBlocked || !task || !token
+                || shownTaskId !== task || shownPromptId !== token
+                || String(prompt.taskId || "") !== task || String(prompt.promptId || "") !== token) return;
+        root.present();
+        password.forceActiveFocus();
     }
     function syncPrompt() {
         const task = String(prompt.taskId || "");
@@ -80,12 +90,7 @@ OperationWindow {
         rejected = false;
         shownTaskId = task;
         shownPromptId = token;
-        Qt.callLater(() => {
-            if (root.automaticPresentation && root.shownTaskId === task && root.shownPromptId === token) {
-                root.present();
-                password.forceActiveFocus();
-            }
-        });
+        Qt.callLater(root.presentAutomaticPrompt, task, token);
     }
     function submit() {
         if (pending || tooLong || !shownTaskId || !shownPromptId

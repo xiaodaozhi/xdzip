@@ -22,6 +22,8 @@ CASES = ['windowHoverEndsBeforeRestore', 'windowHoverSensorsEndBeforeRestore',
          'singleInstanceStructuredForwarding', 'singleInstanceConcurrentStartupAndCrashRecovery',
          'backgroundTasksKeepSessionIdentityAndSerialAdmission',
          'closedSessionRetainsPasswordPromptUntilTaskIsOpened',
+         'globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession',
+         'directoryContextExpansionReasons',
          'globalWaitForExitDoesNotCloseACompletedPageEarly']
 
 
