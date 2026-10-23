@@ -15,4 +15,6 @@
 
 截图、日志、逐次测量和机器报告输出到 `build/` 或 `dist/`，按 CI 保留政策上传 [Actions 工件](https://github.com/xiaodaozhi/xdzip/actions)。issue 引用实际运行、提交、工件摘要和限制，不粘贴整个生成报告，不将过期工件或配置成功冒充验证通过。长期发行材料由实际 Release 随包提供，发布仍需明确授权。
 
+本机暂时无法提供无遮挡前台时，可手动调度 [Windows 原生视觉诊断](../../.github/workflows/windows-native-visual.yml)，从一次性 hosted runner 收集菜单与自有窗口图像。方法和限制见 [CI 策略](../engineering/ci-policy.md)。它使用独立的自动化来源记录，保留原生捕获护栏；不得将无人值守结果填成真人点击，也不得将虚拟屏幕当成物理多显示器验收。
+
 `design/hifi/` 保存设计原稿，`design/assets/` 保存产品素材，`tests/fixtures/` 保存自有可再分发回归输入；它们是持久输入，与实际运行的截图或测量输出不同。内容边界和历史整理方法见[仓库内容管理](../engineering/repository-hygiene.md)。

@@ -23,6 +23,10 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 Documentation、Foundation probes 和 Qt components 也支持 `workflow_dispatch` 手动核对指定分支或标签。手动执行复用相同权限、检查和平台限制；按实际 `head_sha` 绑定结果，不能用旧提交的成功记录补齐当前提交的缺失检查，也不因此获得发布授权。
 
+[Windows native visual diagnostic](../../.github/workflows/windows-native-visual.yml)是仅支持手动调度的一次性 Windows hosted runner 诊断，使用同提交的 Release 测试程序和原生 windows/D3D11 路线。先执行一次菜单桌面可用性采样，成功后另启完整 15 类、各 3 次的冷进程采样，试跑不计入 45 次；真实前台、自有窗口遮挡、首帧代次和同帧阴影检查保持不变。无法捕获或记录不完整时保留失败和诊断工件，不能记为通过，也不冒充人工点击。
+
+该工作流另以独立进程采集目录菜单原因、关于页初始视图、文件图标和 Windows 原生边框。截图、日志及实际运行身份只上传到临时 Actions 工件，不生成或安装发行包。共享虚拟机上的时间、系统装饰和单屏图像只用于诊断，不替代固定参考机性能、Windows 11 装饰、物理双屏切换或人工视觉验收。测试程序的实际来源和运行器环境必须与历史人工证据分开记录。
+
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。

@@ -17,6 +17,7 @@ jobs:
           python3 scripts/test-version.py
           python3 scripts/test-release-protocol.py
           python3 scripts/test-native-window-manager.py
+          python3 scripts/test-windows-native-ci.py
           python3 scripts/publish-release.py --check-notes
           python3 scripts/test-desktop-environment.py
           python3 scripts/test-desktop-workflow.py
