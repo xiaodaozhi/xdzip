@@ -6922,8 +6922,54 @@ QtObject {
                 auto *label = findVisual(command, "directoryExpansionCommandLabel");
                 QVERIFY(label && label->isVisible());
                 QCOMPARE(label->property("text").toString(), command->property("text").toString());
-                QVERIFY(qAbs(label->mapToItem(command, QPointF(0, label->height() / 2)).y() -
-                             command->height() / 2) <= .5);
+                const auto mappedCenter =
+                    label->mapToItem(command, QPointF(0, label->height() / 2));
+                const auto centerDelta = mappedCenter.y() - command->height() / 2;
+                const bool labelCentered = qAbs(centerDelta) <= .5;
+                if (!labelCentered) {
+                    const auto transformState = [](QQuickItem *item) {
+                        auto state = failureItemGeometry(item);
+                        if (!item)
+                            return state;
+                        state["local_x"] = item->x();
+                        state["local_y"] = item->y();
+                        state["scale"] = item->scale();
+                        state["rotation"] = item->rotation();
+                        state["transform_origin"] = int(item->transformOrigin());
+                        const auto center =
+                            item->mapToScene(QPointF(item->width() / 2, item->height() / 2));
+                        state["scene_center"] = QJsonArray{center.x(), center.y()};
+                        return state;
+                    };
+                    QJsonArray hierarchy;
+                    for (auto *item = label; item; item = item->parentItem()) {
+                        hierarchy.append(transformState(item));
+                        if (item == command)
+                            break;
+                    }
+                    saveNativeFailureAudit(
+                        window, qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT"),
+                        "directory-label-center-" + language + (dark ? "-dark-" : "-light-") +
+                            QString::number(scale) + "-" + input,
+                        {{"failure", "directory_command_label_center"},
+                         {"original_predicate", labelCentered},
+                         {"language", language},
+                         {"input", input},
+                         {"dark", dark},
+                         {"font_scale", scale},
+                         {"mapped_center_in_command",
+                          QJsonArray{mappedCenter.x(), mappedCenter.y()}},
+                         {"mapped_center_y_17_digits", QString::number(mappedCenter.y(), 'g', 17)},
+                         {"command_center_y_17_digits",
+                          QString::number(command->height() / 2, 'g', 17)},
+                         {"center_delta_17_digits", QString::number(centerDelta, 'g', 17)},
+                         {"absolute_delta_17_digits", QString::number(qAbs(centerDelta), 'g', 17)},
+                         {"observed_swaps_since_menu_update", frames.count()},
+                         {"label_to_command_hierarchy", hierarchy},
+                         {"command_content",
+                          transformState(command->property("contentItem").value<QQuickItem *>())}});
+                }
+                QVERIFY(labelCentered);
                 const auto captures = qEnvironmentVariable("XDZIP_NATIVE_LAYOUT_AUDIT");
                 if (!captures.isEmpty()) {
                     QVERIFY(QDir().mkpath(captures));

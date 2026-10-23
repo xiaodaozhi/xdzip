@@ -28,7 +28,9 @@ common = load('focused_native_common', 'check-windows-native-ci.py')
 visual = load('focused_native_visual', 'check-windows-native-visual-ci.py')
 LAYOUT_METHODS = ('nativeUiLayoutAcceptance', 'fixedFileActionsAndColumnResize',
                   'tabContextClosesStableWindowLocalRanges', 'aboutUpdateStateLayoutAndReadOnlyActions',
-                  'directoryContextExpansionReasons:zh-CN-menu')
+                  'directoryContextExpansionReasons')
+DIRECTORY_ROWS = tuple(language + '-' + source for language in ('zh-CN', 'en-US')
+                       for source in ('mouse', 'menu', 'shift-f10'))
 
 
 def require(condition, code):
@@ -79,7 +81,7 @@ def initial_report(source, binary):
                 runner={key: os.environ.get(key) for key in
                         ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB', 'ImageOS', 'ImageVersion')},
                 limits=['Two independent owned native test processes, no retries or expected-failure conversion.',
-                        'Gallery runs its entire method; layout runs only DPR 1 and one directory menu row.',
+                        'Gallery runs its entire method; layout runs only DPR 1 with all six directory menu rows.',
                         'Hosted diagnostics do not approve manual visuals, reference performance, Windows 11 or physical monitors.'],
                 stages=[])
 
@@ -116,11 +118,18 @@ def stage_environment(stage, folder, fixture, fixture_hash):
     return env
 
 
+def expected_rows(methods):
+    return tuple(row for method in methods for row in
+                 (tuple(method + ':' + tag for tag in DIRECTORY_ROWS)
+                  if method == 'directoryContextExpansionReasons' else (method,)))
+
+
 def check_log(text, methods):
+    rows = expected_rows(methods)
     require(not re.search(r'FAIL!|QFATAL|SKIP', text)
-            and re.search(r'Totals:\s+' + str(len(methods) + 2) + r' passed, 0 failed, 0 skipped', text),
+            and re.search(r'Totals:\s+' + str(len(rows) + 2) + r' passed, 0 failed, 0 skipped', text),
             'qtest_failed_skipped_or_incomplete')
-    for method in methods:
+    for method in rows:
         function, _, row = method.partition(':')
         require(re.search(r'PASS\s*:\s*BrowserTest::' + re.escape(function + '(' + row + ')'), text),
                 'requested_qtest_row_missing')
@@ -222,8 +231,10 @@ def self_test():
         ('full45', 'full108', 'manual_native_acceptance', 'reference_performance_accepted', 'win11_accepted',
          'physical_dual_monitor_accepted', 'release_authorized', 'final_acceptance'))
     methods = stages[1]['methods']
+    rows = expected_rows(methods)
+    assert len(rows) == 10 and rows[-1] == 'directoryContextExpansionReasons:en-US-shift-f10'
     log = '\n'.join('PASS : BrowserTest::' + method.replace(':', '(') + (')' if ':' in method else '()')
-                    for method in methods) + '\nCreating QRhi with backend D3D11\nTotals: 7 passed, 0 failed, 0 skipped\n'
+                    for method in rows) + '\nCreating QRhi with backend D3D11\nTotals: 12 passed, 0 failed, 0 skipped\n'
     check_log(log, methods)
     rejected = 0
     for text in (log.replace('0 failed', '1 failed'), log + 'SKIP',
