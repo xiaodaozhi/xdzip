@@ -2,6 +2,7 @@
 
 """Exercise hosted diagnostic admission and owned-child cleanup without GUI."""
 import importlib.util
+import ctypes
 import json
 import os
 from pathlib import Path
@@ -21,11 +22,12 @@ SOURCE = '1' * 40
 HOSTED = dict(GITHUB_ACTIONS='true', RUNNER_ENVIRONMENT='github-hosted', RUNNER_OS='Windows')
 
 
-def fake_mode(width, height):
+def fake_mode(width, height, public_size=220, private=b''):
     mode = display.DeviceMode()
-    mode.size = 220
+    mode.size = public_size
+    mode.driver_extra = len(private)
     mode.width, mode.height, mode.bits_per_pixel, mode.frequency = width, height, 32, 60
-    return bytes(mode)
+    return bytes(mode)[:public_size] + private
 
 
 class FakeDisplay:
@@ -172,6 +174,55 @@ class DisplayReceiptTests(unittest.TestCase):
         self.assertEqual(result['status'], 'self_test_passed')
         self.assertEqual(result['native_display_calls'], 0)
         self.assertGreaterEqual(result['checks'], 23)
+
+    def test_reported_188_prefix_and_private_tail_roundtrip_without_raw_padding(self):
+        self.api.before = fake_mode(1024, 768, 188, b'\x00original\xff')
+        self.api.target = fake_mode(1920, 1080, 188, b'\x80selected\x00')
+        self.api.raw = self.api.before
+        self.assertEqual(display.parse_mode(self.api.before).size, 188)
+        self.assertEqual(display.parse_mode(self.api.before).icm_method, 0)
+        record = display.prepare(self.folder, SOURCE, api=self.api)
+        self.assertEqual(record['status'], 'active')
+        self.assertEqual((self.folder / 'before-devmode.bin').read_bytes(), self.api.before)
+        self.assertEqual((self.folder / 'requested-devmode.bin').read_bytes(), self.api.target)
+        self.assertEqual((self.folder / 'active-devmode.bin').read_bytes(), self.api.target)
+        self.assertEqual(self.api.applied, [self.api.target])
+        display.validate_active_receipt(self.folder / 'receipt.json', SOURCE, api=self.api)
+        self.assertTrue(display.restore(self.folder, SOURCE, api=self.api)['restored'])
+        self.assertEqual(self.api.applied[-1], self.api.before)
+
+    def test_reported_public_prefix_and_private_bounds_reject_truncation_or_overrun(self):
+        raw = fake_mode(1920, 1080, 188, b'private')
+        self.assertEqual(display.public_mode(raw), display.public_mode(fake_mode(1920, 1080)))
+        self.assertEqual(display.parse_mode(fake_mode(1920, 1080, 200, b'tail')).size, 200)
+        for invalid in (fake_mode(1920, 1080, 187), fake_mode(1920, 1080, 221),
+                        raw[:-1], raw + b'excess', fake_mode(1920, 1080, 188) + b'\0' * 32):
+            with self.subTest(length=len(invalid)), self.assertRaises(display.DisplayBlocked):
+                display.parse_mode(invalid)
+
+    def test_enum_and_cds_keep_driver_reported_188_blob_verbatim(self):
+        raw = fake_mode(1920, 1080, 188, b'\x00opaque\xff')
+        calls = []
+
+        class FakeWin32:
+            def EnumDisplaySettingsW(self, device, index, pointer):
+                if pointer.contents.size != 220 or pointer.contents.driver_extra != 65535:
+                    raise AssertionError('incorrect_input_capacity')
+                ctypes.memmove(pointer, raw, len(raw))
+                return 1
+
+            def ChangeDisplaySettingsExW(self, device, pointer, window, flag, parameter):
+                calls.append((flag, ctypes.string_at(pointer, pointer.contents.size + pointer.contents.driver_extra)))
+                return 0
+
+        adapter = object.__new__(display.NativeDisplay)
+        adapter.user, adapter.query_headers = FakeWin32(), []
+        self.assertEqual(adapter._enum(0), raw)
+        self.assertEqual(adapter.query_headers[0]['returned_dm_size'], 188)
+        self.assertEqual(adapter.query_headers[0]['returned_dm_driver_extra'], len(raw) - 188)
+        adapter.test(raw)
+        adapter.apply(raw)
+        self.assertEqual(calls, [(2, raw), (0, raw)])
 
 
 class HostedMenuTests(unittest.TestCase):

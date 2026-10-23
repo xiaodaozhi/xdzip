@@ -21,7 +21,7 @@ import uuid
 ROOT = Path(__file__).resolve().parents[1]
 HELPER = Path(__file__).resolve()
 MINIMUM = (1280, 1024)
-PUBLIC_MODE_BYTES, MAX_PRIVATE_BYTES = 220, 65535
+MIN_PUBLIC_MODE_BYTES, PUBLIC_MODE_BYTES, MAX_PRIVATE_BYTES = 188, 220, 65535
 MODE_KEYS = ('width', 'height', 'bits_per_pixel', 'frequency', 'orientation',
              'position_x', 'position_y', 'display_flags')
 
@@ -60,11 +60,17 @@ class DeviceMode(ctypes.Structure):
 
 def structural_mode(raw):
     require(ctypes.sizeof(DeviceMode) == PUBLIC_MODE_BYTES
-            and PUBLIC_MODE_BYTES <= len(raw) <= PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES,
+            and MIN_PUBLIC_MODE_BYTES <= len(raw) <= PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES,
             'invalid_devmode_size')
-    mode = DeviceMode.from_buffer_copy(raw[:PUBLIC_MODE_BYTES])
-    require(mode.size == PUBLIC_MODE_BYTES and 0 <= mode.driver_extra <= MAX_PRIVATE_BYTES
-            and len(raw) == PUBLIC_MODE_BYTES + mode.driver_extra, 'invalid_devmode_private_data_size')
+    # DisplayFrequency ends at byte188. A driver may report that complete
+    # supported public prefix instead of the newer 220-byte DEVMODEW. Only the
+    # read-only view is padded; private data starts at the original reported
+    # dmSize and must never be mistaken for later public fields or padded on CDS.
+    mode = DeviceMode.from_buffer_copy(raw[:MIN_PUBLIC_MODE_BYTES]
+                                      + bytes(PUBLIC_MODE_BYTES - MIN_PUBLIC_MODE_BYTES))
+    require(MIN_PUBLIC_MODE_BYTES <= mode.size <= PUBLIC_MODE_BYTES
+            and 0 <= mode.driver_extra <= MAX_PRIVATE_BYTES
+            and len(raw) == mode.size + mode.driver_extra, 'invalid_devmode_private_data_size')
     return mode
 
 
@@ -140,9 +146,9 @@ class NativeDisplay:
             returned_dm_driver_extra=int(mode.driver_extra) if success else None))
         if not success:
             return None
-        require(mode.size == PUBLIC_MODE_BYTES and mode.driver_extra <= MAX_PRIVATE_BYTES,
+        require(MIN_PUBLIC_MODE_BYTES <= mode.size <= PUBLIC_MODE_BYTES and mode.driver_extra <= MAX_PRIVATE_BYTES,
                 'invalid_reported_devmode_header')
-        actual_bytes = PUBLIC_MODE_BYTES + mode.driver_extra
+        actual_bytes = mode.size + mode.driver_extra
         require(actual_bytes <= capacity, 'reported_private_mode_exceeds_buffer')
         raw = buffer.raw[:actual_bytes]
         structural_mode(raw)
@@ -171,8 +177,9 @@ class NativeDisplay:
 
     def _change(self, raw, flags):
         parse_mode(raw)
-        # This stable local buffer includes every private byte. Neither the
-        # pointer nor its storage outlives the synchronous Win32 API call.
+        # This stable local buffer keeps the driver's original dmSize and every
+        # private byte, including a 188-byte public prefix. It is never padded to
+        # the parsing view. Storage stays alive for the synchronous API call.
         buffer = ctypes.create_string_buffer(raw, len(raw))
         return int(self.user.ChangeDisplaySettingsExW(None, ctypes.cast(buffer, ctypes.POINTER(DeviceMode)),
                                                       None, flags, None))
@@ -380,11 +387,23 @@ def self_test():
     tail = b'\x00\xf1owned-private-mode\x00\x7f'
 
     def with_private(raw):
-        header = DeviceMode.from_buffer_copy(raw)
+        header = structural_mode(raw)
         header.driver_extra = len(tail)
-        return bytes(header) + tail
+        return bytes(header)[:header.size] + tail
 
     private_before, private_preferred = with_private(before), with_private(preferred)
+    compact_header = DeviceMode.from_buffer_copy(before)
+    compact_header.size = MIN_PUBLIC_MODE_BYTES
+    compact_before = bytes(compact_header)[:MIN_PUBLIC_MODE_BYTES]
+    compact_header.width, compact_header.height = 1920, 1080
+    compact_preferred = bytes(compact_header)[:MIN_PUBLIC_MODE_BYTES]
+    compact_private_before, compact_private_preferred = with_private(compact_before), with_private(compact_preferred)
+    check(public_mode(compact_before) == public_mode(before))
+    check(public_mode(compact_private_before) == public_mode(before)
+          and structural_mode(compact_private_before).icm_method == 0)
+    rejected(lambda: parse_mode(compact_before[:-1]))
+    rejected(lambda: parse_mode(compact_private_before[:-1]))
+    rejected(lambda: parse_mode(compact_before + bytes(PUBLIC_MODE_BYTES - MIN_PUBLIC_MODE_BYTES)))
     check(public_mode(private_before) == public_mode(before))
     rejected(lambda: parse_mode(private_before[:-1]))
     rejected(lambda: parse_mode(private_before + b'\0' * (PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES)))
@@ -473,6 +492,13 @@ def self_test():
                   and (extra_folder / 'requested-devmode.bin').read_bytes() == private_preferred
                   and (extra_folder / 'active-devmode.bin').read_bytes() == private_preferred)
             check(restore(extra_folder, source, {}, extra_api)['restored'] and extra_api.raw == private_before)
+            compact_api = Fake(modes=[compact_private_before, compact_private_preferred])
+            compact_api.raw = compact_private_before
+            compact_folder = base / 'compact-private-tail'
+            check(prepare(compact_folder, source, {}, compact_api)['status'] == 'active'
+                  and (compact_folder / 'before-devmode.bin').read_bytes() == compact_private_before
+                  and (compact_folder / 'active-devmode.bin').read_bytes() == compact_private_preferred)
+            check(restore(compact_folder, source, {}, compact_api)['restored'] and compact_api.raw == compact_private_before)
             rejected(lambda: _folder(ROOT / 'scripts'))
     finally:
         globals()['_binding'] = original_binding
@@ -480,6 +506,8 @@ def self_test():
     adapter = object.__new__(NativeDisplay)
 
     class NoWin32:
+        returned_raw = private_preferred
+
         def ChangeDisplaySettingsExW(self, device, value, window, flag, parameter):
             flags.append(flag)
             transmitted.append(ctypes.string_at(value, value.contents.size + value.contents.driver_extra))
@@ -487,7 +515,7 @@ def self_test():
 
         def EnumDisplaySettingsW(self, device, index, pointer):
             check(pointer.contents.size == PUBLIC_MODE_BYTES and pointer.contents.driver_extra == MAX_PRIVATE_BYTES)
-            ctypes.memmove(pointer, private_preferred, len(private_preferred))
+            ctypes.memmove(pointer, self.returned_raw, len(self.returned_raw))
             return 1
 
     adapter.user = NoWin32()
@@ -499,6 +527,12 @@ def self_test():
     check(adapter.query_headers[0]['returned_dm_size'] == PUBLIC_MODE_BYTES
           and adapter.query_headers[0]['returned_dm_driver_extra'] == len(tail)
           and adapter.query_headers[0]['capacity_bytes'] == PUBLIC_MODE_BYTES + MAX_PRIVATE_BYTES)
+    adapter.user.returned_raw = compact_private_preferred
+    check(adapter._enum(1) == compact_private_preferred
+          and adapter.query_headers[-1]['returned_dm_size'] == MIN_PUBLIC_MODE_BYTES)
+    adapter.test(compact_private_preferred)
+    adapter.apply(compact_private_preferred)
+    check(transmitted[-2:] == [compact_private_preferred, compact_private_preferred])
     return dict(status='self_test_passed', checks=checks, synthetic_data_only=True, native_display_calls=0)
 
 
