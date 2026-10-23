@@ -8,6 +8,10 @@
 
 每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。
 
+HTTP 429 表示限流。HTTP 403 只有在剩余额度为零、有效秒数的 Retry-After，或 GitHub JSON 错误消息明确表示限流时才归为限流；其他 403 保留为网络失败，不推断配额耗尽。产品不自动重试，也不读取 GitHub 凭据。匿名额度按请求源 IP 共享，CI 的仓库读取权限不能改变匿名请求额度。
+
+HTTP 429 is a rate-limit failure. HTTP 403 is classified as rate-limited only when the remaining quota is zero, a valid seconds-based Retry-After is present, or the GitHub JSON message explicitly identifies a rate limit. Other 403 responses remain network failures. The product neither retries automatically nor reads GitHub credentials; workflow repository permissions do not raise its anonymous, source-IP quota.
+
 无 Qt Rust 核心按语义版本、渠道和单调 build 选择，验证固定仓库、完整六类包、架构、包型、最低系统契约和同候选身份。稳定版只接收稳定版；alpha 可接收 alpha、beta、rc、stable；beta 不接收 alpha；rc 只接收 rc、stable；dev 可检查公开版本。语义版本和 build 都必须递增，不按发布时间推断。客户端再检查当前系统支持范围和 Releases 资产字节数。
 
 ## 信任与下载
@@ -41,6 +45,10 @@ macOS 在释放 Sparkle 安装前保存目标版本/build 的本地尝试记录�
 Mac 单平台诊断可只运行完整产品链；全平台模式始终运行 Sparkle 六场景与完整产品链，不采纳跳过六场景的诊断选项。
 
 A macOS-only diagnostic run may select only the full product chain. All-platform verification always runs both the six Sparkle cases and the full product chain, ignoring that diagnostic option.
+
+Mac 无 SDK HTTPS 验收使用同一个已部署探针及匿名真实更新请求。记录只保存状态码、Qt 错误和白名单限流响应头，不保存原始错误正文、源 IP 或凭据。确认限流后，验收驱动最多启动三次探针，按 Retry-After 与配额重置时间中较晚者等待；缺少可用主配额重置时间时拒绝提前重试，已确认的其他限流使用至少 60 秒的递增退避。累计等待最多 3700 秒，超预算明确失败，保留每轮结果和实际等待记录。每次请求原有超时、TLS、响应大小、成功状态和 SDK 隔离要求保持；失败重试不合并成一次通过。此退避只用于专用验收驱动，不能作为产品后台重试或最终专项跳过条件。
+
+The SDK-free Mac HTTPS regression restarts the same deployed probe for at most three anonymous checks. It records only whitelisted HTTP/rate-limit diagnostics, retains every attempt and actual wait, respects the later Retry-After/quota-reset deadline, and fails rather than retrying early when the cumulative 3700-second wait budget is insufficient. Other confirmed limits use increasing backoff of at least 60 seconds. TLS, per-request timeouts, response bounds, successful controller state and SDK isolation remain mandatory. This acceptance-only retry policy does not add product polling or allow all-platform verification to skip HTTPS or the six native cases.
 
 核心夹具覆盖渠道、dev、乱序分页、缺包、错误签名、最低系统和身份冲突；网络夹具覆盖取消、重复点击、限流、TLS、响应上限、ETag 与损坏下载；会话回归核对任务保留和所有 join 后交接。真实三平台旧版到新版、授权取消、再次启动、安装失败/恢复、设置/关联保留以及无 SDK HTTPS 需要隔离平台实证，不能由单元测试或 CI 编译替代。Mac 完整更新必须在 Apple Silicon 原生环境执行。具体完成状态及证据由 issue 跟踪。
 

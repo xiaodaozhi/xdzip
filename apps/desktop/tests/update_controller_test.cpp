@@ -39,6 +39,7 @@ struct Response {
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     int delay = 0;
     QUrl redirect{};
+    QList<QPair<QByteArray, QByteArray>> headers{};
 };
 class Reply final : public QNetworkReply {
   public:
@@ -48,6 +49,8 @@ class Reply final : public QNetworkReply {
         setUrl(request.url());
         setAttribute(QNetworkRequest::HttpStatusCodeAttribute, response.status);
         setRawHeader("ETag", "\"fixture\"");
+        for (const auto &header : response.headers)
+            setRawHeader(header.first, header.second);
         if (response.error != NoError)
             setError(response.error, QStringLiteral("fixture failure"));
         open(QIODevice::ReadOnly | QIODevice::Unbuffered);
@@ -339,13 +342,64 @@ class UpdateControllerTest final : public QObject {
         QVERIFY(!updates.trusted());
         QCOMPARE(network.requests.size(), source == "manifest" ? 2 : 3);
     }
+    void rateLimitIsNotCurrentVersion_data() {
+        QTest::addColumn<int>("status");
+        QTest::addColumn<QByteArray>("bytes");
+        QTest::addColumn<QByteArray>("remaining");
+        QTest::addColumn<QByteArray>("retryAfter");
+        QTest::addColumn<QString>("errorCode");
+        QTest::newRow("429") << 429 << QByteArray{} << QByteArray{} << QByteArray{}
+                             << QStringLiteral("rate_limited");
+        QTest::newRow("primary") << 403 << QByteArray{} << QByteArray("0") << QByteArray{}
+                                 << QStringLiteral("rate_limited");
+        QTest::newRow("retry-after") << 403 << QByteArray{} << QByteArray("42") << QByteArray("60")
+                                     << QStringLiteral("rate_limited");
+        QTest::newRow("secondary-message")
+            << 403 << QByteArray("{\"message\":\"You have exceeded a secondary rate limit.\"}")
+            << QByteArray("42") << QByteArray{} << QStringLiteral("rate_limited");
+        QTest::newRow("primary-message")
+            << 403 << QByteArray("{\"message\":\"API rate limit exceeded.\"}") << QByteArray{}
+            << QByteArray{} << QStringLiteral("rate_limited");
+        QTest::newRow("forbidden") << 403 << QByteArray("{\"message\":\"Resource not accessible\"}")
+                                   << QByteArray("42") << QByteArray{} << QStringLiteral("network");
+        QTest::newRow("403-empty")
+            << 403 << QByteArray{} << QByteArray{} << QByteArray{} << QStringLiteral("network");
+        QTest::newRow("invalid-retry-after") << 403 << QByteArray{} << QByteArray("42")
+                                             << QByteArray("invalid") << QStringLiteral("network");
+        QTest::newRow("negative-retry-after") << 403 << QByteArray{} << QByteArray("42")
+                                              << QByteArray("-1") << QStringLiteral("network");
+        QTest::newRow("unrelated-message")
+            << 403 << QByteArray("{\"documentation_url\":\"https://example.invalid/rate limits\"}")
+            << QByteArray("42") << QByteArray{} << QStringLiteral("network");
+        QTest::newRow("message-mentions-documentation")
+            << 403 << QByteArray("{\"message\":\"Forbidden; see the rate limit documentation.\"}")
+            << QByteArray("42") << QByteArray{} << QStringLiteral("network");
+        QTest::newRow("message-denies-rate-limit")
+            << 403 << QByteArray("{\"message\":\"This is not a rate limit error.\"}")
+            << QByteArray("42") << QByteArray{} << QStringLiteral("network");
+        QTest::newRow("signed-retry-after") << 403 << QByteArray{} << QByteArray("42")
+                                            << QByteArray("+60") << QStringLiteral("network");
+    }
     void rateLimitIsNotCurrentVersion() {
+        QFETCH(int, status);
+        QFETCH(QByteArray, bytes);
+        QFETCH(QByteArray, remaining);
+        QFETCH(QByteArray, retryAfter);
+        QFETCH(QString, errorCode);
         Network network;
-        network.responses.insert(api, {{}, 429});
+        Response response{bytes, status};
+        if (!remaining.isEmpty())
+            response.headers.append({"X-RateLimit-Remaining", remaining});
+        if (!retryAfter.isEmpty())
+            response.headers.append({"Retry-After", retryAfter});
+        network.responses.insert(api, response);
         UpdateController updates(nullptr, &network, {}, {}, [] { return true; });
         updates.check();
         QTRY_COMPARE(updates.state(), QStringLiteral("error"));
-        QCOMPARE(updates.errorCode(), QStringLiteral("rate_limited"));
+        QCOMPARE(updates.errorCode(), errorCode);
+        QVERIFY(!updates.trusted());
+        QCOMPARE(network.requests.size(), 1);
+        QVERIFY(!network.requests.constFirst().hasRawHeader("Authorization"));
     }
     void repeatedClicksDoNotStartParallelChecks() {
         Network network;

@@ -10,6 +10,7 @@
 #include "UpdateController.h"
 #import <Foundation/Foundation.h>
 #include <QApplication>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -17,6 +18,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
+#include <QNetworkProxy>
+#include <QNetworkProxyFactory>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QQmlApplicationEngine>
@@ -28,6 +31,7 @@
 #include <QSslSocket>
 #include <QTest>
 #include <QTimer>
+#include <algorithm>
 #import <mach-o/dyld.h>
 
 namespace {
@@ -36,20 +40,92 @@ bool save(const QString &path, const QJsonObject &value) {
     const auto bytes = QJsonDocument(value).toJson();
     return file.open(QIODevice::WriteOnly) && file.write(bytes) == bytes.size() && file.commit();
 }
+class HttpsEvidenceNetwork final : public QNetworkAccessManager {
+  public:
+    int requestCount = 0;
+    bool authorizationPresent = false;
+
+  protected:
+    QNetworkReply *createRequest(Operation operation, const QNetworkRequest &request,
+                                 QIODevice *outgoingData = nullptr) override {
+        ++requestCount;
+        authorizationPresent = authorizationPresent || request.hasRawHeader("Authorization");
+        return QNetworkAccessManager::createRequest(operation, request, outgoingData);
+    }
+};
+
+QJsonValue numericHeader(QNetworkReply *reply, const char *name) {
+    if (!reply->hasRawHeader(name))
+        return QJsonValue::Null;
+    const auto value = reply->rawHeader(name).trimmed();
+    if (value.isEmpty() || value.size() > 20 ||
+        !std::all_of(value.cbegin(), value.cend(),
+                     [](char digit) { return digit >= '0' && digit <= '9'; }))
+        return QStringLiteral("invalid");
+    return QString::fromLatin1(value);
+}
+
 int httpsProbe(QApplication &application, const QString &directory) {
     qputenv("XDZIP_SETTINGS_PATH", (directory + "/https-settings.ini").toUtf8());
-    QNetworkAccessManager network;
+    HttpsEvidenceNetwork network;
     UpdateController updates(nullptr, &network);
     int encrypted = 0, httpsResponses = 0;
+    QJsonArray responses;
+    bool responsesTruncated = false, completed = false;
     QObject::connect(&network, &QNetworkAccessManager::encrypted, &application,
                      [&](QNetworkReply *) { ++encrypted; });
     QObject::connect(
         &network, &QNetworkAccessManager::finished, &application, [&](QNetworkReply *reply) {
+            const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             if (reply->url().scheme() == "https" && reply->error() == QNetworkReply::NoError &&
-                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() == 200)
+                status == 200)
                 ++httpsResponses;
+            if (responses.size() >= 32) {
+                responsesTruncated = true;
+                return;
+            }
+            const auto host = reply->url().host().toLower();
+            const bool githubApi = host == QStringLiteral("api.github.com");
+            QJsonObject headers{{"limit", numericHeader(reply, "x-ratelimit-limit")},
+                                {"remaining", numericHeader(reply, "x-ratelimit-remaining")},
+                                {"used", numericHeader(reply, "x-ratelimit-used")},
+                                {"reset", numericHeader(reply, "x-ratelimit-reset")},
+                                {"retry_after", numericHeader(reply, "retry-after")}};
+            const auto resource = reply->rawHeader("x-ratelimit-resource").trimmed();
+            const bool safeResource =
+                resource.size() <= 32 &&
+                std::all_of(resource.cbegin(), resource.cend(), [](char value) {
+                    return (value >= 'a' && value <= 'z') || value == '_' || value == '-';
+                });
+            headers.insert("resource", safeResource ? QString::fromLatin1(resource)
+                                                    : QStringLiteral("invalid"));
+            const auto date = QDateTime::fromString(QString::fromLatin1(reply->rawHeader("date")),
+                                                    Qt::RFC2822Date);
+            const QString category = reply->error() == QNetworkReply::SslHandshakeFailedError
+                                         ? "tls"
+                                     : reply->error() == QNetworkReply::TimeoutError ? "timeout"
+                                     : status >= 400                                 ? "http_error"
+                                     : reply->error() != QNetworkReply::NoError ? "network_error"
+                                                                                : "none";
+            // Only fixed public host/route categories and bounded numeric
+            // response headers are retained. No body, URL/IP or credentials.
+            responses.append(QJsonObject{
+                {"host", githubApi ? QStringLiteral("api.github.com")
+                                   : QStringLiteral("other_allowed_host")},
+                {"route", githubApi && reply->url().path() == "/repos/xiaodaozhi/xdzip/releases"
+                              ? QStringLiteral("release_list")
+                              : QStringLiteral("other")},
+                {"status", status},
+                {"network_error", int(reply->error())},
+                {"error_category", category},
+                {"rate_headers", headers},
+                {"server_date_epoch", date.isValid() ? QJsonValue(date.toSecsSinceEpoch())
+                                                     : QJsonValue(QJsonValue::Null)}});
         });
     const auto finish = [&](bool timeout) {
+        if (completed)
+            return;
+        completed = true;
         QJsonArray bundledQtImages, externalQtImages;
         const auto bundleRoot =
             QFileInfo(QString::fromUtf8(NSBundle.mainBundle.bundlePath.UTF8String))
@@ -74,20 +150,37 @@ int httpsProbe(QApplication &application, const QString &directory) {
         }
         const bool passed = !timeout && QSslSocket::supportsSsl() && encrypted > 0 &&
                             httpsResponses > 0 && updates.errorCode().isEmpty() &&
+                            !responsesTruncated && !network.authorizationPresent &&
                             !bundledQtImages.isEmpty() && externalQtImages.isEmpty() &&
                             (updates.state() == "available" || updates.state() == "up_to_date");
         const bool written =
-            save(directory + "/https.json", {{"success", passed},
-                                             {"ssl_available", QSslSocket::supportsSsl()},
-                                             {"ssl_backend", QSslSocket::activeBackend()},
-                                             {"ssl_library", QSslSocket::sslLibraryVersionString()},
-                                             {"state", updates.state()},
-                                             {"error", updates.errorCode()},
-                                             {"timeout", timeout},
-                                             {"encrypted_connections", encrypted},
-                                             {"https_responses", httpsResponses},
-                                             {"bundled_qt_images", bundledQtImages},
-                                             {"external_qt_images", externalQtImages}});
+            save(directory + "/https.json",
+                 {{"success", passed},
+                  {"ssl_available", QSslSocket::supportsSsl()},
+                  {"ssl_backend", QSslSocket::activeBackend()},
+                  {"ssl_library", QSslSocket::sslLibraryVersionString()},
+                  {"state", updates.state()},
+                  {"error", updates.errorCode()},
+                  {"timeout", timeout},
+                  {"encrypted_connections", encrypted},
+                  {"https_responses", httpsResponses},
+                  {"http_diagnostics_schema", 1},
+                  {"request_count", network.requestCount},
+                  {"http_responses", responses},
+                  {"response_records_truncated", responsesTruncated},
+                  {"authorization_present", network.authorizationPresent},
+                  {"rate_limit_confirmed", updates.errorCode() == "rate_limited"},
+                  {"confirmed_from_controller", true},
+                  {"system_proxy_configuration", QNetworkProxyFactory::usesSystemConfiguration()},
+                  {"proxy_type", int(network.proxy().type())},
+                  {"proxy_environment_present", qEnvironmentVariableIsSet("HTTPS_PROXY") ||
+                                                    qEnvironmentVariableIsSet("HTTP_PROXY") ||
+                                                    qEnvironmentVariableIsSet("ALL_PROXY") ||
+                                                    qEnvironmentVariableIsSet("https_proxy") ||
+                                                    qEnvironmentVariableIsSet("http_proxy") ||
+                                                    qEnvironmentVariableIsSet("all_proxy")},
+                  {"bundled_qt_images", bundledQtImages},
+                  {"external_qt_images", externalQtImages}});
         application.exit(passed && written ? 0 : 69);
     };
     QObject::connect(&updates, &UpdateController::changed, &application, [&] {

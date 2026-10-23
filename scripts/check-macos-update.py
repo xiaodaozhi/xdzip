@@ -7,10 +7,12 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import platform
 import plistlib
+import re
 import secrets
 import shutil
 import subprocess
@@ -30,6 +32,8 @@ VERSION, OLD_BUILD, NEW_BUILD = '99.0.0-alpha.1', 730, 731
 BUNDLE_ID = 'org.xdzip.update-regression'
 SPARKLE = 'http://www.andymatuschak.org/xml-namespaces/sparkle'
 ET.register_namespace('sparkle', SPARKLE)
+HTTPS_ATTEMPTS = 3
+HTTPS_WAIT_LIMIT = 3700
 
 
 def clean_environment():
@@ -127,7 +131,72 @@ def feed_bytes(url, signature, length):
     return ET.tostring(rss, encoding='utf-8', xml_declaration=True)+b'\n'
 
 
-def https_probe(app, output):
+def https_retry_plan(record, attempt, now):
+    """Only a newly diagnosed anonymous GitHub API limit may delay another probe."""
+    stop = lambda reason: dict(retry=False, reason=reason)
+    if (type(record.get('http_diagnostics_schema')) is not int or
+            record['http_diagnostics_schema'] != 1 or record.get('error') != 'rate_limited' or
+            record.get('rate_limit_confirmed') is not True or
+            record.get('confirmed_from_controller') is not True or record.get('timeout') is not False):
+        return stop('not_confirmed_rate_limit')
+    responses = record.get('http_responses')
+    if not isinstance(responses, list) or not responses or not isinstance(responses[-1], dict):
+        return stop('missing_http_response')
+    requests = record.get('request_count')
+    if (record.get('response_records_truncated') is not False or type(requests) is not int or
+            requests < len(responses) or requests > 32):
+        return stop('incomplete_http_diagnostics')
+    response = responses[-1]
+    status = response.get('status')
+    if (type(status) is not int or status not in (403, 429) or
+            response.get('host') != 'api.github.com' or response.get('route') != 'release_list' or
+            record.get('authorization_present') is not False):
+        return stop('not_anonymous_github_api_limit')
+    headers = response.get('rate_headers')
+    if not isinstance(headers, dict):
+        return stop('missing_rate_headers')
+    def integer_header(name):
+        value = headers.get(name)
+        if value is None:
+            return None
+        if (not isinstance(value, str) or not value.isascii() or not value.isdecimal()
+                or len(value) > 20):
+            raise ValueError(name)
+        return int(value)
+    try:
+        remaining = integer_header('remaining')
+        retry_after = integer_header('retry_after')
+    except ValueError:
+        return stop('invalid_rate_header')
+    delay, reason, clock = None, None, {}
+    if remaining == 0:
+        try:
+            reset = integer_header('reset')
+        except ValueError:
+            return stop('invalid_primary_reset')
+        if reset is None:
+            return stop('missing_primary_reset')
+        server_time = response.get('server_date_epoch')
+        server_clock = type(server_time) is int and server_time > 0
+        current = server_time if server_clock else now
+        if type(current) not in (int, float) or not math.isfinite(current) or current <= 0:
+            return stop('invalid_reference_clock')
+        if reset <= current:
+            return stop('primary_reset_not_future')
+        delay, reason = math.ceil(reset - current) + 1, 'primary_reset'
+        clock = dict(reference_epoch=current, reference_clock='http_date' if server_clock else 'runner_wall_clock')
+    if retry_after is not None:
+        delay = max(delay or 1, retry_after, 1)
+        reason = 'retry_after_and_primary_reset' if reason else 'retry_after'
+    if delay is None:
+        # Controller confirms explicit rate-limit responses; plain 403 never
+        # reaches this branch. GitHub documents at least one minute without a
+        # server deadline, followed by exponential backoff.
+        delay, reason = 60 * 2 ** (attempt - 1), 'confirmed_limit_exponential_backoff'
+    return dict(retry=True, reason=reason, delay_seconds=delay, **clock)
+
+
+def https_probe(app, output, source_sha=''):
     """Read GitHub through the deployed Qt stack with no SDK environment fallback."""
     binary = app/'Contents/MacOS/xdzip-update-probe'
     deployment = audit(app, binary, None, 'macos', 'deployed')
@@ -140,18 +209,83 @@ def https_probe(app, output):
                 key in ('QTDIR', 'XDZIP_QT_PREFIX', 'CMAKE_PREFIX_PATH', 'LD_LIBRARY_PATH')):
             environment.pop(key)
     environment['PATH'] = '/usr/bin:/bin:/usr/sbin:/sbin'
-    result = subprocess.run([str(binary), '--update-https-probe'], env=environment,
-                            capture_output=True, timeout=200)
-    (output/'https.log').write_bytes(result.stdout+result.stderr)
     evidence = app.parent/'https.json'
-    if not evidence.is_file():
-        raise RuntimeError('Deployed Qt HTTPS probe did not produce evidence')
-    record = json.loads(evidence.read_bytes())
-    record.update(sdk_environment_cleared=True, dependency_audit='https-deployment.json')
-    dump(output/'https.json', record)
-    if result.returncode or not record.get('success'):
-        raise RuntimeError('Deployed Qt HTTPS probe failed')
-    return record
+    binary_sha = digest(binary)
+    waits, waited = [], 0.0
+    for attempt in range(1, HTTPS_ATTEMPTS + 1):
+        before = digest(binary)
+        if evidence.exists():
+            evidence.unlink()  # Only the exact owned probe result, never prior attempt records.
+        try:
+            if before != binary_sha:
+                log, returncode = b'', None
+                record = dict(success=False, error='probe_binary_changed', timeout=False)
+            else:
+                result = subprocess.run([str(binary), '--update-https-probe'], env=environment,
+                                        capture_output=True, timeout=200)
+                log = result.stdout + result.stderr
+                try:
+                    record = json.loads(evidence.read_bytes())
+                    if not isinstance(record, dict):
+                        raise ValueError('Expected an object')
+                except (OSError, ValueError):
+                    record = dict(success=False, error='probe_evidence_invalid', timeout=False)
+                returncode = result.returncode
+        except subprocess.TimeoutExpired as error:
+            log = (error.stdout or b'') + (error.stderr or b'')
+            record = dict(success=False, error='probe_process_timeout', timeout=True)
+            returncode = None
+        except OSError as error:
+            log = b''
+            record = dict(success=False, error='probe_process_error', timeout=False,
+                          process_error_kind=type(error).__name__, process_error_number=error.errno)
+            returncode = None
+        (output/f'https-attempt-{attempt}.log').write_bytes(log)
+        (output/'https.log').write_bytes(log)
+        after = digest(binary)
+        unchanged = before == after == binary_sha
+        record.update(sdk_environment_cleared=True, dependency_audit='https-deployment.json',
+                      source_sha=source_sha, probe_binary_sha256=before,
+                      probe_binary_after_sha256=after, probe_binary_unchanged=unchanged,
+                      attempt=attempt, process_returncode=returncode)
+        if not unchanged:
+            record.update(success=False, error='probe_binary_changed')
+        dump(output/f'https-attempt-{attempt}.json', record)
+        dump(output/'https.json', record)
+        if returncode == 0 and record.get('success') is True:
+            dump(output/'https-waits.json', waits)
+            return record
+        plan = (https_retry_plan(record, attempt, time.time()) if returncode == 69
+                else dict(retry=False, reason='probe_process_failure'))
+        plan.update(attempt=attempt, waited_seconds=waited,
+                    remaining_wait_budget_seconds=max(0, HTTPS_WAIT_LIMIT - waited))
+        if attempt == HTTPS_ATTEMPTS:
+            plan.update(retry=False, reason='attempt_limit_reached')
+        elif plan.get('retry') and plan['delay_seconds'] > HTTPS_WAIT_LIMIT - waited:
+            # Never clamp a server deadline and then request before it expires.
+            plan.update(retry=False, reason='wait_budget_exceeded')
+        waits.append(plan)
+        dump(output/'https-waits.json', waits)
+        if not plan['retry']:
+            raise RuntimeError('Deployed Qt HTTPS probe failed: ' + plan['reason'])
+        started = time.monotonic()
+        plan['wait_status'] = 'waiting'
+        dump(output/'https-waits.json', waits)
+        finished = False
+        try:
+            time.sleep(plan['delay_seconds'])
+            finished = True
+        finally:
+            elapsed = max(0.0, time.monotonic() - started)
+            waited += elapsed
+            enough = finished and elapsed >= plan['delay_seconds']
+            plan.update(wait_status='finished' if enough else 'interrupted_or_short', actual_wait_seconds=elapsed,
+                        total_actual_wait_seconds=waited)
+            dump(output/'https-waits.json', waits)
+        if not enough:
+            raise RuntimeError('Deployed Qt HTTPS probe wait ended before the required deadline')
+        if waited > HTTPS_WAIT_LIMIT:
+            raise RuntimeError('Deployed Qt HTTPS probe wait budget exhausted')
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -255,6 +389,9 @@ def main():
     if not (qt/'bin/macdeployqt').is_file():
         parser.error('A native Qt 6.8 SDK is required')
     output.mkdir(parents=True)
+    source_sha = invoke(['git', '-C', ROOT, 'rev-parse', 'HEAD']).decode().strip()
+    if re.fullmatch('[0-9a-f]{40}', source_sha) is None:
+        raise RuntimeError('Unexpected source revision')
     production_key = ROOT/'resources/sparkle-update-key.json'
     before = digest(production_key)
     source = private_source(output)
@@ -285,7 +422,7 @@ def main():
                 '-DXDZIP_SPARKLE_SDK='+str(sdk)], output/(label+'-configure.log'))
         invoke(['cmake', '--build', build, '--target', 'xdzip-mac-update-probe', '--parallel', '3'], output/(label+'-build.log'))
         apps.append(deploy(source, build, qt, sdk, output, label))
-    https = https_probe(apps[0], output)
+    https = https_probe(apps[0], output, source_sha)
     archive = output/('xdzip-'+VERSION+'-macos-arm64.app.zip')
     invoke(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', apps[1], archive])
     metadata = output/'archive.json'

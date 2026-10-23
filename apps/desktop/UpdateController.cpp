@@ -50,6 +50,27 @@ QByteArray trustKeys() {
     QFile input(QStringLiteral(":/xdzip/update-trust.json"));
     return input.open(QIODevice::ReadOnly) ? input.read(16 * 1024) : QByteArray{};
 }
+bool rateLimitedReply(const QNetworkReply *reply, int status, const QByteArray &bytes) {
+    if (status == 429)
+        return true;
+    if (status != 403)
+        return false;
+    if (reply->rawHeader("X-RateLimit-Remaining").trimmed() == "0")
+        return true;
+    const auto retryAfter = reply->rawHeader("Retry-After").trimmed();
+    bool validDelay = false;
+    if (!retryAfter.isEmpty() &&
+        std::all_of(retryAfter.cbegin(), retryAfter.cend(),
+                    [](char value) { return value >= '0' && value <= '9'; })) {
+        const auto delay = retryAfter.toLongLong(&validDelay);
+        if (validDelay && delay >= 0)
+            return true;
+    }
+    const auto message =
+        QJsonDocument::fromJson(bytes).object().value("message").toString().trimmed().toLower();
+    return message.startsWith(QStringLiteral("api rate limit exceeded")) ||
+           message.startsWith(QStringLiteral("you have exceeded a secondary rate limit"));
+}
 bool supportedSystem() {
 #ifdef Q_OS_WIN
     const auto system = QOperatingSystemVersion::current();
@@ -253,7 +274,7 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
                     callback({}, "not_found");
                     return;
                 }
-                if (status == 403 || status == 429) {
+                if (rateLimitedReply(reply, status, *bytes)) {
                     callback({}, "rate_limited");
                     return;
                 }
