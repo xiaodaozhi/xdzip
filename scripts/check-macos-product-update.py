@@ -329,13 +329,63 @@ def wait_owned_helpers(pids,installed,timeout=90):
         time.sleep(.1)
 
 
+def native_log_pid(entry,pids):
+    values=[entry[key] for key in ('processID','processIdentifier') if key in entry]
+    if values and all(type(value) is int and value in pids and value==values[0] for value in values):return values[0]
+    return None
+
+
+def native_log_errors(entries):
+    messages=[entry.get('eventMessage','') for entry in entries if isinstance(entry.get('eventMessage',''),str)]
+    return (any('Failed to finalize installation' in text for text in messages),
+            any('Operation not permitted' in text or 'Permission denied' in text or
+                re.search(r'NSPOSIXErrorDomain Code=(?:1|13)\b|NSCocoaErrorDomain Code=513\b',text) for text in messages))
+
+
+def native_log_matches(events,pids,installed,expected):
+    matched=[];direct={};groups={};receipts=[]
+    for entry in events:
+        pid=native_log_pid(entry,pids);image=entry.get('processImagePath','')
+        if pid is None or not image or not Path(image).is_absolute():continue
+        try:same_image=os.path.samefile(image,expected)
+        except OSError:same_image=False
+        if same_image:direct.setdefault(pid,[]).append(entry)
+        elif Path(image).name=='Autoupdate':groups.setdefault((pid,image),[]).append(entry)
+    for entries in direct.values():
+        if all(native_log_errors(entries)):matched.extend(entries)
+    case_root=(ROOT/'build/update-regression/macos/cases').resolve()
+    labels=('tampered-feed','tampered-archive','cancel-ready','cancel-ready-repeat-1','cancel-ready-repeat-2','success')
+    suffix=('xdzip-update-probe.app','Contents','Frameworks','Sparkle.framework','Versions','B','Autoupdate')
+    expected_sha=digest(expected)
+    for (pid,image),entries in groups.items():
+        catalog=Path(image).resolve()
+        try:parts=catalog.relative_to(case_root).parts
+        except ValueError:continue
+        if len(parts)!=8 or parts[0] not in labels or parts[1:]!=suffix:continue
+        try:
+            owned=catalog.is_file() and catalog.stat().st_uid==os.getuid()
+            catalog_sha=digest(catalog) if owned else None
+        except OSError:continue
+        move_chain=any(isinstance(entry.get('eventMessage'),str) and
+                       ('Failed to move the old app at '+str(installed)+' to a temporary location at ') in
+                       entry['eventMessage'] for entry in entries)
+        finalize,permission=native_log_errors(entries)
+        accepted=catalog_sha==expected_sha and move_chain and finalize and permission
+        receipts.append(dict(method='captured_pid_owned_move_chain_same_sha_catalog',process_identifier=pid,
+                             accepted=accepted,catalog_path=str(catalog),expected_sha256=expected_sha,
+                             catalog_sha256=catalog_sha,current_owned_move_chain=move_chain,catalog_owned=owned,
+                             same_process_finalize=finalize,same_process_permission=permission))
+        if accepted:matched.extend(entries)
+    return matched,receipts
+
+
 def native_replacement_error(pids,installed,timeout=20):
     predicate=' OR '.join('processIdentifier == '+str(pid) for pid in pids)
     expected=(installed/'Contents/Frameworks/Sparkle.framework/Autoupdate').resolve()
     def sanitized(value):
         return str(value).replace(str(Path.home()),'$HOME').replace(str(ROOT),'$WORKSPACE')[:4096]
     deadline=time.monotonic()+timeout
-    attempts=[];messages=[];unaccepted_messages=[];finalize=False;permission=False
+    attempts=[];messages=[];unaccepted_messages=[];receipts=[];finalize=False;permission=False
     while True:
         if attempts and time.monotonic()>=deadline:break
         try:
@@ -353,36 +403,29 @@ def native_replacement_error(pids,installed,timeout=20):
             break
         events=json.loads(raw)
         if not isinstance(events,list):raise RuntimeError('Native installer log was not an event array')
-        matched=[];unmatched_images=set();image_paths=set();unaccepted_messages=[]
+        matched,receipts=native_log_matches(events,pids,installed,expected)
+        for receipt in receipts:receipt['catalog_path']=sanitized(receipt['catalog_path'])
+        accepted_ids={id(entry) for entry in matched}
+        unmatched_images=set();image_paths=set();unaccepted_messages=[]
         for entry in events:
             image=entry.get('processImagePath','')
             if image:image_paths.add(sanitized(image))
-            same_image=False
-            if image and Path(image).is_absolute():
-                try:same_image=os.path.samefile(image,expected)
-                except OSError:pass
-            if same_image:
-                matched.append(entry)
-            else:
+            if id(entry) not in accepted_ids:
                 unmatched_images.add(Path(image).name[:128] if image else '<missing>')
-                identifiers=[entry[key] for key in ('processID','processIdentifier') if key in entry]
-                bound_pid=bool(identifiers) and all(type(value) is int and value in pids and
-                                                  value==identifiers[0] for value in identifiers)
-                if bound_pid and image and Path(image).name=='Autoupdate':
+                pid=native_log_pid(entry,pids)
+                if pid is not None and image and Path(image).name=='Autoupdate':
                     unaccepted_messages.append(dict(diagnostic_only=True,accepted=False,
-                        process_identifier=identifiers[0],process_image_path=sanitized(image),
+                        process_identifier=pid,process_image_path=sanitized(image),
                         message=sanitized(entry.get('eventMessage',''))))
         attempt.update(event_count=len(events),matched_event_count=len(matched),
                        process_image_paths=sorted(image_paths)[:16],unmatched_image_names=sorted(unmatched_images)[:16])
         attempts.append(attempt)
         messages=[entry.get('eventMessage','') for entry in matched]
-        finalize=any('Failed to finalize installation' in text for text in messages)
-        permission=any('Operation not permitted' in text or 'Permission denied' in text or
-            re.search(r'NSPOSIXErrorDomain Code=(?:1|13)\b|NSCocoaErrorDomain Code=513\b',text) for text in messages)
+        finalize,permission=native_log_errors(matched)
         if (finalize and permission) or time.monotonic()>=deadline:break
         time.sleep(min(.5,max(0,deadline-time.monotonic())))
     return dict(finalize_failure_observed=finalize,permission_failure_observed=permission,
-                expected_process_image=sanitized(expected),queried_pids=pids,attempts=attempts,
+                expected_process_image=sanitized(expected),queried_pids=pids,attempts=attempts,catalog_checks=receipts,
                 logging_disabled=environment().get('OS_ACTIVITY_MODE')=='disable',
                 unaccepted_autoupdate_messages=unaccepted_messages[-32:],
                 messages=[sanitized(text) for text in messages[-32:]])
@@ -496,7 +539,7 @@ def main():
             # Only generated records in this fresh, owned session are cleared.
             leaves={'stop.json','upgrade.json','fixture-error.json','interrupted-handoff.json',
                     'password-waiting.json','waiting-cancelled.json','password-completed.json','quit-returned.json',
-                    'asset-redirect.json','feed-redirect.json','replacement-fault.json'}
+                    'asset-redirect.json','feed-redirect.json','replacement-fault.json','quit-progress.json'}
             for path in session.glob('*.json'):
                 if path.name in leaves or path.name.startswith(('200-','201-','native-')):path.unlink()
             config=json.loads((session/'configuration.json').read_bytes())
@@ -591,7 +634,7 @@ def main():
             joined['task'].get('status')!='cancelled' or not joined['task'].get('terminal') or
             returned['state']!='waiting_tasks' or returned['active_tasks']!=1 or
             quit_waiting['session_count']!=2 or quit_waiting['idle_session']==quit_waiting['working_session'] or
-            returned['task_id']!=quit_waiting['task_id'] or returned['prompt_id']!=quit_waiting['prompt_id'] or
+            not returned.get('password_modal_restored') or returned['task_id']!=quit_waiting['task_id'] or returned['prompt_id']!=quit_waiting['prompt_id'] or
             quit_cancelled['task_id']!=quit_waiting['task_id'] or quit_cancelled['state']!='available' or
             (session/'native-start.json').exists() or (session/'200-exit-barrier.json').exists()):
             raise RuntimeError('Ordinary Return/Cancel quit did not preserve then cancel/join the real waiting task')
@@ -665,7 +708,10 @@ def main():
                             'The post-commit failure uses one owned UF_IMMUTABLE inode; system authorization, other OS failures and real-user desktop acceptance remain separate.',
                             'Default handlers for other archive UTIs and physical user acceptance are not claimed.'])
     except Exception as error:
-        record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error),evidence_failures=evidence_failures);raise
+        record=dict(status='failed',stage=stage,error=type(error).__name__,detail=str(error),evidence_failures=evidence_failures)
+        if stage=='ordinary_quit_during_update_wait' and (session/'quit-progress.json').is_file():
+            dump(output/'quit-wait-failure.json',json.loads((session/'quit-progress.json').read_bytes()))
+        raise
     finally:
         cleanup=[]
         try:

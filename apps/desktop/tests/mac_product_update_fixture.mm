@@ -466,6 +466,19 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             if (!state->cancelled)
                 return;
             if (scenario == "quit-wait") {
+                auto *password = page ? page->findChild<QQuickWindow *>("passwordWindow") : nullptr;
+                auto *modal = QGuiApplication::modalWindow();
+                write("quit-progress.json",
+                      {{"quit_requested", state->quitRequested},
+                       {"return_clicked", state->returned},
+                       {"cancel_quit_requested", state->cancelQuitRequested},
+                       {"cancel_quit_clicked", state->cancelledQuit},
+                       {"modal_name", modal ? modal->objectName() : QString{}},
+                       {"password_visible", password && password->isVisible()},
+                       {"password_exposed", password && password->isExposed()},
+                       {"password_is_modal", modal == password},
+                       {"active_tasks", sessions->activeTaskCount()},
+                       {"closing", sessions->isClosing()}});
                 if (!state->requestedAgain) {
                     state->requestedAgain = true;
                     updates->downloadAndInstall();
@@ -497,8 +510,12 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
                         failure("ordinary_quit_return_changed_task");
                         return;
                     }
+                    if (!password || !password->isVisible() || !password->isExposed() ||
+                        QGuiApplication::modalWindow() != password)
+                        return;
                     write("quit-returned.json",
-                          {{"task_id", state->task},
+                          {{"password_modal_restored", true},
+                           {"task_id", state->task},
                            {"prompt_id", state->prompt},
                            {"state", updates->state()},
                            {"active_tasks", sessions->activeTaskCount()},
