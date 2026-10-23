@@ -145,6 +145,124 @@ def wait_exit(pid, timeout=30):
             os.close(fd)
 
 
+def failure_recovery(output, prepared, session, launch, executable, association_check, sentinel, repair):
+    """Consume a genuine failed receipt through an ordinary default controller."""
+    old=None;restored=None;record={'status':'failed','stage':'failure_launch'}
+    evidence=output/'failed-install-recovery';evidence.mkdir()
+    log=(evidence/'qt-product.log').open('w',encoding='utf-8')
+    def owned(name):
+        path=session/name;dump(path,{'owned':True})
+        if sys.platform=='linux':os.chown(path,19731,19731)
+    try:
+        old=launch([executable],stdout=log,stderr=subprocess.STDOUT)
+        started=await_file(session/'200-started.json',old,timeout=40)
+        assert started['pid']==old.pid and started['primary_windows']==1,started
+        profile=Path(started['settings_path'])
+        before=configparser.ConfigParser();before.read(profile,encoding='utf-8')
+        baseline={section:dict(before[section]) for section in before.sections() if section!='update'}
+        assert before.get('ownedFixture','sentinel')=='preserve-me'
+        association_check()
+        record['stage']='real_about_failed_install';owned('upgrade.json')
+        barrier=await_file(session/'200-exit-barrier.json',timeout=90)
+        assert barrier['about_check_clicked'] and barrier['about_install_clicked']
+        assert barrier['update_pending'] and barrier['active_tasks']==0
+        assert old.wait(timeout=20)==0
+        pending=barrier['pending'];job=Path(pending['directory'])
+        receipt=await_file(job/'result.json',timeout=180)
+        request=json.loads((job/'request.json').read_text())
+        dump(evidence/'helper-request.json',request);dump(evidence/'helper-result.json',receipt)
+        for name in ('installer.log','helper.log'):
+            if (job/name).is_file():shutil.copyfile(job/name,evidence/name)
+        assert request['transaction']==pending['transaction']==receipt['transaction']
+        assert receipt['error']==prepared['failure']['error'],receipt
+        # Observing the Windows mutex must not retain its launch gate ourselves.
+        deadline=time.monotonic()+30
+        while True:
+            if sys.platform=='win32':
+                import ctypes
+                from ctypes import wintypes
+                kernel=ctypes.WinDLL('kernel32',use_last_error=True)
+                kernel.OpenMutexW.restype=wintypes.HANDLE
+                kernel.OpenMutexW.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.LPCWSTR]
+                kernel.CloseHandle.argtypes=[wintypes.HANDLE]
+                handle=kernel.OpenMutexW(0x100000,False,'Local\\xdzip.desktop.updating')
+                gated=bool(handle)
+                if handle:kernel.CloseHandle(handle)
+            else:gated=Path('/run/xdzip/updating').exists()
+            if not gated:break
+            if time.monotonic()>deadline:raise TimeoutError('Failed helper did not release its launch gate')
+            time.sleep(.05)
+        assert not (session/'201-started.json').exists(),'Failed helper automatically restarted the application'
+        assert json.loads((session/'200-started.json').read_text())['pid']==old.pid
+        installed=launch([executable,'--version-json'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
+        identity_bytes,_=installed.communicate(timeout=20)
+        assert installed.returncode==0,identity_bytes
+        identity=json.loads(identity_bytes)
+        expected=prepared['old' if sys.platform=='win32' else 'new']['identity']
+        assert all(identity[key]==expected[key] for key in ('version','build','revision','dirty')),identity
+        package_status=None
+        if sys.platform=='linux':
+            package_status=subprocess.check_output(['dpkg-query','-W','-f=${Status}','xdzip'],text=True)
+            assert package_status=='install ok half-configured',package_status
+        record['stage']='ordinary_restore_only_startup'
+        (session/'upgrade.json').unlink()
+        for name in ('200-started.json','200-state.json','201-started.json','201-state.json'):
+            (session/name).unlink(missing_ok=True)
+        owned('restore-only.json')
+        # The factory returns nullptr BEFORE construction: real default-cache
+        # restoration consumes this genuine pending state and helper receipt.
+        restored=launch([executable],stdout=log,stderr=subprocess.STDOUT)
+        recovery=await_file(session/'recovery-started.json',restored,timeout=40)
+        assert recovery['pid']==restored.pid and recovery['primary_windows']==1,recovery
+        assert recovery['state']=='recovery_required' and recovery['error']==receipt['error'],recovery
+        assert all(recovery[key]==identity[key] for key in ('version','build','revision','dirty')),recovery
+        assert recovery['active_tasks']==0 and not recovery['update_pending'] and recovery['update_barriers']==0
+        assert not recovery['about_check_clicked'] and not recovery['about_install_clicked']
+        consumed=configparser.ConfigParser();consumed.read(profile.parent/'update-state.ini',encoding='utf-8')
+        assert not consumed.has_option('update','pending'),'Recovery did not consume the real pending receipt'
+        after=configparser.ConfigParser();after.read(profile,encoding='utf-8')
+        for section,values in baseline.items():
+            for key,value in values.items():assert after.get(section,key)==value,(section,key)
+        assert sentinel.read_text()=='unowned user content\n'
+        association_check()
+        owned('stop.json');assert restored.wait(timeout=20)==0
+        record.update(stage='explicit_fixture_repair',old=started,exit_barrier=barrier,
+                      receipt=receipt,request=request,recovery=recovery,installed_identity=identity,
+                      package_status_after_failure=package_status,
+                      automatic_restart=False,automatic_retry=False,automatic_rollback=False,
+                      settings_preserved=True,default_associations_preserved=True)
+        for path in session.glob('*.json'):shutil.copyfile(path,evidence/path.name)
+        # Only the fixture repairs/resets after the recovery process exits;
+        # the product never retries or rolls back an installer automatically.
+        record['explicit_fixture_repair']=repair(log)
+        feed(prepared,output,session,reset=True)
+        if sys.platform=='linux':
+            for path in [session,*session.rglob('*')]:os.chown(path,19731,19731)
+        record.update(status='passed',stage='completed',
+                      scope='Real About failure handoff, genuine receipt, ordinary main/default-controller recovery; explicit fixture repair/reset before independent successful upgrade')
+    except Exception as error:
+        record.update(error=type(error).__name__,detail=str(error))
+        raise
+    finally:
+        try:
+            if restored and restored.poll() is None:
+                owned('stop.json');restored.wait(timeout=15)
+            if old and old.poll() is None:
+                owned('stop.json');old.wait(timeout=15)
+        except Exception as error:
+            record.setdefault('cleanup_errors',[]).append({'error':type(error).__name__,'detail':str(error)})
+            for process in (restored,old):
+                if process and process.poll() is None:process.terminate();process.wait(timeout=10)
+            record['status']='failed'
+        finally:
+            for path in session.glob('*.json'):shutil.copyfile(path,evidence/('last-'+path.name))
+            if sys.platform=='win32':
+                for index,path in enumerate((session/'installer-temp').glob('Setup Log*.txt')):
+                    shutil.copyfile(path,evidence/('installer-'+str(index)+'.log'))
+            dump(evidence/'result.json',record);log.close()
+    assert record['status']=='passed',record
+
+
 def exercise(output, prepared, session, launch, executable, association_check, sentinel):
     old=None;new=None;result=None;failure=None;stage='launch_old';cleanup=[]
     log=(output/'qt-product.log').open('w',encoding='utf-8')
@@ -257,6 +375,7 @@ def exercise(output, prepared, session, launch, executable, association_check, s
              'duplicate_install_preserved_transaction':True,
              'real_password_check_wait_cancel_resume':bool(prepared.get('password_task')),
              'normal_quit_during_update_wait':ordinary_quit,
+             'failed_install_ordinary_startup_recovery':json.loads((output/'failed-install-recovery/result.json').read_text()),
              'installation_launch_probe':copy_evidence if sys.platform=='win32' else None,
              'association_scope':'ZIP/TAR/GZip classic defaults and unchanged UserChoice; ZIP OpenWith' if sys.platform=='win32' else 'ZIP/TAR/GZip custom XDG MIME defaults and ZIP GIO candidate',
              'limits':['Cancel waiting uses a direct controller call while the real password window is application-modal; About mouse input is never injected through the modal.' if prepared.get('password_task') else 'Busy/password scenarios are not part of this idle run.',
@@ -322,7 +441,7 @@ def windows(output, prepared):
                 raise RuntimeError('Refusing an existing xdzip installation')
         except FileNotFoundError:pass
     session=Path(prepared['session_directory'])
-    feed(prepared,output,session)
+    feed(prepared,output,session,candidate='failure')
     root=Path(os.environ['RUNNER_TEMP'])/('xdzip real Qt update '+str(os.getpid()))
     root.mkdir()
     sid=next(csv.reader([subprocess.check_output(['whoami','/user','/fo','csv','/nh'],text=True).strip()]))[1]
@@ -351,7 +470,13 @@ def windows(output, prepared):
         run([package,'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/DIR='+str(root),
              '/LOG='+str(output/'old-install.log')],env=desktop_env,timeout=180)
         sentinel=root/'user-kept.txt';sentinel.write_text('unowned user content\n')
-        exercise(output,prepared,session,lambda argv,**kwargs:subprocess.Popen(list(map(str,argv)),env=desktop_env,**kwargs),
+        launch=lambda argv,**kwargs:subprocess.Popen(list(map(str,argv)),env=desktop_env,**kwargs)
+        def repair(log):
+            identity=json.loads(subprocess.check_output([root/'xdzip.exe','--version-json'],env=desktop_env,text=True))
+            assert all(identity[key]==prepared['old']['identity'][key] for key in ('version','build','revision','dirty')),identity
+            return {'action':'verified unchanged old installation; no repair needed','identity':identity}
+        failure_recovery(output,prepared,session,launch,root/'xdzip.exe',association,sentinel,repair)
+        exercise(output,prepared,session,launch,
                  root/'xdzip.exe',association,sentinel)
     finally:
         result_path=output/'result.json'
@@ -386,7 +511,7 @@ def linux(output, prepared):
     home=Path('/home/xdzipfixture')
     session=Path(prepared['session_directory'])
     assert session==home/'qt-session'
-    feed(prepared,output,session)
+    feed(prepared,output,session,candidate='failure')
     for path in [session,*session.rglob('*')]:os.chown(path,19731,19731)
     settings=home/'custom-config';settings.mkdir(exist_ok=True)
     mime_types=('application/zip','application/x-tar','application/gzip')
@@ -420,6 +545,17 @@ def linux(output, prepared):
             time.sleep(.05)
         run(['dpkg','-i',output/'old'/prepared['old']['package']],stdout=subprocess.DEVNULL)
         sentinel=Path('/opt/xdzip/user-kept.txt');sentinel.write_text('unowned user content\n')
+        def repair(log):
+            run(['apt-get','-y','--no-remove','--no-install-recommends','install',output/'failure'/prepared['failure']['package']],stdout=log,stderr=subprocess.STDOUT,timeout=120)
+            status=subprocess.check_output(['dpkg-query','-W','-f=${Status}','xdzip'],text=True)
+            assert status=='install ok installed',status
+            # Explicit owned reset preserves the independent original chain.
+            run(['apt-get','-y','--allow-downgrades','--no-remove','--no-install-recommends','install',output/'old'/prepared['old']['package']],stdout=log,stderr=subprocess.STDOUT,timeout=120)
+            identity=json.loads(launch(['/usr/bin/xdzip','--version-json'],stdout=subprocess.PIPE,text=True).communicate(timeout=20)[0])
+            assert all(identity[key]==prepared['old']['identity'][key] for key in ('version','build','revision','dirty')),identity
+            return {'action':'explicit APT configure repair, then explicit verified old fixture reset',
+                    'repaired_package_status':status,'reset_identity':identity}
+        failure_recovery(output,prepared,session,launch,Path('/usr/bin/xdzip'),association,sentinel,repair)
         exercise(output,prepared,session,launch,Path('/usr/bin/xdzip'),association,sentinel)
     finally:
         display.terminate();display.wait(timeout=5)

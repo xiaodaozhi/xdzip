@@ -176,12 +176,37 @@ def prepare(output, sdk, session):
                 identity['runtime_id']=record['runtime_id']
             dump(asset/'identity.json',identity)
             results[label]={'package':package.name,'identity':identity}
+            if number==2:
+                # The same real Qt payload enters an actual failing installer.
+                # Only this private fixture changes installer control flow.
+                failed=output/'failure';failed.mkdir()
+                failed_package=failed/package.name
+                if sys.platform=='win32':
+                    failed_text,_=builder.render(payload,audit,failed_package,ROOT/'build/installer-toolchain/ChineseSimplified.isl')
+                    failed_package.with_suffix('.files').write_text(builder.payload_manifest(audit),encoding='utf-8')
+                    failed_package.with_suffix('.iss').write_text(qa_installer_text(failed_text,'startup-failure'),encoding='utf-8-sig')
+                    checked([ROOT/'build/installer-toolchain/compiler/ISCC.exe',failed_package.with_suffix('.iss')])
+                else:
+                    failed_stage=folder/'failure-deb-stage'
+                    builder.package_tree(payload,audit,failed_stage)
+                    hook=failed_stage/'DEBIAN/postinst'
+                    # Run the genuine postinst first, including clearing its
+                    # launch gate. dpkg then records a real half-configured new
+                    # payload, which ordinary startup must identify honestly.
+                    with hook.open('a') as stream:
+                        stream.write('\nif test "$1" = configure && ! test -f /run/xdzip/qt-postinst-failed; then\n'
+                                     ' install -m 0644 /dev/null /run/xdzip/qt-postinst-failed\n exit 85\nfi\n')
+                    checked(['dpkg-deb','-Zgzip','-z1','--root-owner-group','--build',failed_stage,failed_package])
+                dump(failed/'identity.json',identity)
+                results['failure']={'package':failed_package.name,'identity':identity,'error':'installation_failed'}
         # Build the shared, Qt-free signer in this private committed source tree.
         checked([cargo,'build','--locked','--manifest-path',source/'Cargo.toml','--target-dir',source/'build/signer',
                  '-p','xdzip-update','--bin','xdzip-update-tool'])
         signer=source/('build/signer/debug/xdzip-update-tool'+('.exe' if sys.platform=='win32' else ''))
         new=output/'new'/results['new']['package']
         manifest(new,'windows' if sys.platform=='win32' else 'linux',signer,results['new']['identity'])
+        manifest(output/'failure'/results['failure']['package'],
+                 'windows' if sys.platform=='win32' else 'linux',signer,results['failure']['identity'])
     value={'schema_version':1,'scope':'Private real browser_main/QML builds with public fixture trust; not product packages',
            'production_trust_modified':False,'session_directory':str(session),
            'qt_sdk_version':qt_version,'windows_copy_pause':sys.platform=='win32',**results}
@@ -192,9 +217,14 @@ def prepare(output, sdk, session):
     return value
 
 
-def feed(prepared, output, session):
-    session.mkdir(parents=True,exist_ok=False)
-    new=output/'new'/prepared['new']['package']
+def feed(prepared, output, session, candidate='new', reset=False):
+    session.mkdir(parents=True,exist_ok=reset)
+    if reset:
+        # This directory was created by this exact fixture. Preserve only its
+        # explicit owned-profile marker between independent ordinary processes.
+        for path in session.glob('*.json'):
+            if path.name!='profile-initialized.json':path.unlink()
+    new=output/candidate/prepared[candidate]['package']
     for path in (new,new.parent/'release.json',new.parent/'release.json.sig'):
         shutil.copy2(path,session/path.name)
     release=json.loads((session/'release.json').read_text())
@@ -206,7 +236,7 @@ def feed(prepared, output, session):
     routes={base+name:name for name in ('release.json','release.json.sig',new.name)}
     routes['https://api.github.com/repos/xiaodaozhi/xdzip/releases?per_page=100&page=1']='releases.json'
     dump(session/'routes.json',routes)
-    if prepared.get('password_task'):
+    if prepared.get('password_task') and candidate=='new':
         shutil.copyfile(output/'password-retry.zip',session/'password-retry.zip')
         dump(session/'password-scenario.json',{'owned':True})
         dump(session/'normal-quit-scenario.json',{'owned':True})

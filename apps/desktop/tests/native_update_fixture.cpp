@@ -222,7 +222,9 @@ QNetworkAccessManager *nativeUpdateFixtureTransport(QObject *parent) {
     // backend without adding any production environment propagation.
     QQuickWindow::setGraphicsApi(QSGRendererInterface::Software);
     // New ordinary startup must restore the real default-cache helper receipt.
-    return oldProduct() ? new Network(parent) : nullptr;
+    return oldProduct() && !QFileInfo::exists(directory() + "/restore-only.json")
+               ? new Network(parent)
+               : nullptr;
 }
 void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *sessions,
                                 UiPreferences *settings, QQuickWindow *window) {
@@ -316,7 +318,7 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
             if (!state->started && window->isVisible()) {
                 if (oldProduct()) {
                     const bool resume =
-                        QFileInfo::exists(directory() + "/normal-quit-completed.json");
+                        QFileInfo::exists(directory() + "/profile-initialized.json");
                     if (!resume && (QFileInfo::exists(uiSettingsPath()) ||
                                     !settings->saveDetails("dark", 1.25, "en-US", "compact", false,
                                                            false, false, "tabs"))) {
@@ -328,6 +330,7 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
                     if (!resume) {
                         profile.setValue("ownedFixture/sentinel", "preserve-me");
                         profile.sync();
+                        saveRecord("profile-initialized.json", {{"owned", true}});
                     } else if (profile.value("ownedFixture/sentinel").toString() != "preserve-me") {
                         saveRecord("fixture-error.json", {{"error", "quit_profile_restore"}});
                         QCoreApplication::exit(51);
@@ -343,6 +346,16 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
             if (QFileInfo::exists(directory() + "/stop.json") && !state->stopping) {
                 state->stopping = true;
                 sessions->requestQuit();
+                return;
+            }
+            if (QFileInfo::exists(directory() + "/restore-only.json")) {
+                auto record = snapshot(updates, settings);
+                record.insert("active_tasks", sessions->activeTaskCount());
+                record.insert("update_pending", sessions->updatePending());
+                record.insert("update_barriers", state->updateBarriers);
+                record.insert("about_check_clicked", state->check);
+                record.insert("about_install_clicked", state->install);
+                saveRecord("recovery-started.json", record);
                 return;
             }
             if (!oldProduct() || !QFileInfo::exists(directory() + "/upgrade.json"))
