@@ -428,9 +428,23 @@ QtObject {
         bool postScheduled = false;
         bool earlyHookObserved = false, earlySendAccepted = false, fenceScheduled = false;
         int quitDeliveries = 0;
-        const auto windowState = [&] {
+        const auto taskState = [](BrowserController *controller) {
+            QVariantList result;
+            for (const auto &value : controller->tasks()) {
+                const auto task = value.toMap();
+                result.append(QVariantMap{{"id", task.value("id")},
+                                          {"kind", task.value("kind")},
+                                          {"status", task.value("status")}});
+            }
+            return result;
+        };
+        const auto windowState = [&](const QString &stage) {
             const auto actual = working->passwordPrompt();
             return QVariantMap{
+                {"observation_stage", stage},
+                {"revision", BuildInfo::revision()},
+                {"dirty", BuildInfo::dirty()},
+                {"configuration", BuildInfo::configuration()},
                 {"password_visible", password->isVisible()},
                 {"password_exposed", password->isExposed()},
                 {"password_modal", QGuiApplication::modalWindow() == password},
@@ -447,6 +461,12 @@ QtObject {
                 {"prompt_id", actual.value("promptId")},
                 {"shown_task_id", password->property("shownTaskId")},
                 {"shown_prompt_id", password->property("shownPromptId")},
+                {"task_starting", working->taskStarting()},
+                {"busy", working->busy()},
+                {"working_active_tasks", working->activeTaskCount()},
+                {"idle_active_tasks", idle->activeTaskCount()},
+                {"working_tasks", taskState(working)},
+                {"idle_tasks", taskState(idle)},
                 {"active_tasks", sessions.activeTaskCount()},
                 {"closing", sessions.isClosing()}};
         };
@@ -454,10 +474,10 @@ QtObject {
         quitGuard.quitHandler = [&] {
             ++quitDeliveries;
             if (quitTiming && quitDeliveries == 1)
-                deliveryState = windowState();
+                deliveryState = windowState(QStringLiteral("before_quit_delivery"));
             desktop.requestQuit();
             if (quitTiming && quitDeliveries == 1)
-                afterDeliveryState = windowState();
+                afterDeliveryState = windowState(QStringLiteral("after_quit_delivery"));
             if (postedDeliveryLoop && quitDeliveries == 1)
                 postedDeliveryLoop->quit();
         };
@@ -479,7 +499,8 @@ QtObject {
                                                      {"post_scheduled", postScheduled},
                                                      {"after_delivery", afterDeliveryState},
                                                      {"after_call_later", afterLaterState},
-                                                     {"final_state", windowState()},
+                                                     {"final_state",
+                                                      windowState(QStringLiteral("scope_exit"))},
                                                      {"quit_deliveries", quitDeliveries}})
                                          .toJson(QJsonDocument::Compact);
         });
@@ -504,7 +525,8 @@ QtObject {
                     sessions.activateId(idlePage->property("sessionIdentity").toString());
                     confirmation = idleConfirmation;
                 }
-                hookState = windowState();
+                hookState =
+                    windowState(QStringLiteral("natural_tasks_changed_before_password_present"));
                 if (quitTiming != 2)
                     earlySendAccepted = requestQuit();
                 fenceScheduled = QMetaObject::invokeMethod(laterFence.get(), "afterPromptLater");
@@ -529,12 +551,15 @@ QtObject {
             return {};
         };
         QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
+        // A snapshot may arrive before TaskAccepted/Finished releases the
+        // admission placeholder. Synchronous early Quit already ran in its notify hook.
+        QTRY_VERIFY(!working->taskStarting());
         QCOMPARE(sessions.activeTaskCount(), 1);
         if (quitTiming) {
             QTRY_VERIFY_WITH_TIMEOUT(earlyHookObserved, 10000);
             QVERIFY2(fenceScheduled, "The independent callLater fence was not scheduled");
             QTRY_VERIFY(laterFence->property("drained").toBool());
-            afterLaterState = windowState();
+            afterLaterState = windowState(QStringLiteral("after_call_later_fence"));
             if (quitTiming == 2) {
                 QTRY_VERIFY(password->isVisible());
                 QVERIFY(QTest::qWaitForWindowExposed(password));
@@ -549,7 +574,7 @@ QtObject {
                 postedDeliveryLoop = &deliveryLoop;
                 QTimer::singleShot(0, &deliveryLoop, [&] {
                     postScheduled = true;
-                    postState = windowState();
+                    postState = windowState(QStringLiteral("before_posted_quit"));
                     QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit));
                 });
                 deadline.start(2000);

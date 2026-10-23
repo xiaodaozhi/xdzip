@@ -14,8 +14,143 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('windows_native_ci', ROOT / 'scripts/check-windows-native-ci.py')
 driver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(driver)
+display_spec = importlib.util.spec_from_file_location('display_tool', ROOT / 'scripts/windows_native_ci_display.py')
+display = importlib.util.module_from_spec(display_spec)
+display_spec.loader.exec_module(display)
 SOURCE = '1' * 40
 HOSTED = dict(GITHUB_ACTIONS='true', RUNNER_ENVIRONMENT='github-hosted', RUNNER_OS='Windows')
+
+
+def fake_mode(width, height):
+    mode = display.DeviceMode()
+    mode.size = 220
+    mode.width, mode.height, mode.bits_per_pixel, mode.frequency = width, height, 32, 60
+    return bytes(mode)
+
+
+class FakeDisplay:
+    def __init__(self):
+        self.before, self.target = fake_mode(1024, 768), fake_mode(1920, 1080)
+        self.raw = self.before
+        self.applied = []
+        self.test_code = 0
+        self.fail_read_after_apply = False
+        self.pending_failed_read = False
+
+    def conditions(self):
+        return dict(session_id=1, input_desktop_accessible=True, monitor_count=1)
+
+    def current_raw(self):
+        if self.pending_failed_read:
+            self.pending_failed_read = False
+            raise OSError('synthetic first readback failure')
+        return self.raw
+
+    def enumerated_raw(self):
+        return [self.before, fake_mode(1280, 1024), self.target]
+
+    def test(self, raw):
+        return self.test_code
+
+    def apply(self, raw):
+        self.applied.append(raw)
+        self.raw = raw
+        self.pending_failed_read = self.fail_read_after_apply and len(self.applied) == 1
+        return 0
+
+
+class DisplayReceiptTests(unittest.TestCase):
+    def setUp(self):
+        (ROOT / 'build').mkdir(exist_ok=True)
+        temporary = tempfile.TemporaryDirectory(prefix='display-mock-', dir=ROOT / 'build')
+        self.addCleanup(temporary.cleanup)
+        self.folder = Path(temporary.name) / 'receipt'
+        self.api = FakeDisplay()
+        self.binding = dict(full_source_sha=SOURCE, github=dict(run_id='123', run_attempt='1', job='native'),
+                            helper_sha256=display.digest(display.HELPER.read_bytes()), session_id=1)
+        self.binding_mock = mock.patch.object(display, '_binding', return_value=self.binding)
+        self.binding_mock.start()
+        self.addCleanup(self.binding_mock.stop)
+
+    def test_enumerated_mode_apply_readback_restore_and_immutable_active_receipt(self):
+        record = display.prepare(self.folder, SOURCE, api=self.api)
+        self.assertEqual(record['status'], 'active')
+        self.assertEqual(record['active']['width'], 1920)
+        file = self.folder / 'receipt.json'
+        original = file.read_bytes()
+        first = display.validate_active_receipt(file, SOURCE, api=self.api)
+        self.assertEqual(first, display.validate_active_receipt(file, SOURCE, api=self.api))
+        restored = display.restore(self.folder, SOURCE, api=self.api)
+        self.assertTrue(restored['restored'])
+        self.assertEqual(self.api.raw, self.api.before)
+        self.assertEqual(file.read_bytes(), original)
+        with self.assertRaises(display.DisplayBlocked):
+            display.validate_active_receipt(file, SOURCE, api=self.api)
+
+    def test_wrong_run_source_or_live_readback_is_rejected(self):
+        display.prepare(self.folder, SOURCE, api=self.api)
+        file = self.folder / 'receipt.json'
+        original = file.read_text()
+        for key, value in [('full_source_sha', '2' * 40), ('github', dict(run_id='124', run_attempt='1', job='native'))]:
+            with self.subTest(key=key):
+                record = json.loads(original)
+                record[key] = value
+                file.write_text(json.dumps(record), encoding='utf-8')
+                with self.assertRaises(display.DisplayBlocked):
+                    display.validate_active_receipt(file, SOURCE, api=self.api)
+        file.write_text(original, encoding='utf-8')
+        self.api.raw = fake_mode(1600, 1200)
+        with self.assertRaises(display.DisplayBlocked):
+            display.validate_active_receipt(file, SOURCE, api=self.api)
+        with self.assertRaises(display.DisplayBlocked):
+            display.restore(self.folder, SOURCE, api=self.api)
+        self.assertEqual(len(self.api.applied), 1)
+
+    def test_failed_cds_test_has_no_apply_and_remains_restorable(self):
+        self.api.test_code = -2
+        record = display.prepare(self.folder, SOURCE, api=self.api)
+        self.assertEqual(record['status'], 'blocked')
+        self.assertEqual(self.api.applied, [])
+        self.assertTrue(display.restore(self.folder, SOURCE, api=self.api)['restored'])
+        with self.assertRaises(display.DisplayBlocked):
+            display.select_mode([self.api.before], self.api.before)
+
+    def test_successful_apply_then_failed_readback_still_restores_only_its_requested_mode(self):
+        self.api.fail_read_after_apply = True
+        record = display.prepare(self.folder, SOURCE, api=self.api)
+        self.assertEqual(record['status'], 'blocked')
+        self.assertNotIn('active', record)
+        self.assertEqual(self.api.raw, self.api.target)
+        self.assertTrue(display.restore(self.folder, SOURCE, api=self.api)['restored'])
+        self.assertEqual(self.api.raw, self.api.before)
+
+    def test_binding_requires_actual_hosted_run_clean_source_and_committed_helper(self):
+        self.binding_mock.stop()
+        env = dict(HOSTED, GITHUB_RUN_ID='123', GITHUB_RUN_ATTEMPT='1', GITHUB_JOB='native')
+        with mock.patch.object(display.sys, 'platform', 'win32'):
+            with mock.patch.object(display.subprocess, 'check_output', side_effect=[SOURCE.encode(), b'', b'blob', b'blob']):
+                result = display._binding(SOURCE, env, self.api)
+                self.assertEqual(result['github'], dict(run_id='123', run_attempt='1', job='native'))
+            for values in ([b'2' * 40], [SOURCE.encode(), b' M source.py'], [SOURCE.encode(), b'', b'blob', b'changed']):
+                with self.subTest(values=values), mock.patch.object(display.subprocess, 'check_output', side_effect=values):
+                    with self.assertRaises(display.DisplayBlocked):
+                        display._binding(SOURCE, env, self.api)
+            with mock.patch.object(display.subprocess, 'check_output') as git:
+                with self.assertRaises(display.DisplayBlocked):
+                    display._binding(SOURCE, dict(env, GITHUB_RUN_ID='unbound'), self.api)
+                git.assert_not_called()
+
+    def test_unusable_enumerated_depth_is_skipped_without_weakening_selected_mode(self):
+        bad = display.DeviceMode.from_buffer_copy(self.api.before)
+        bad.bits_per_pixel = 16
+        selected = display.select_mode([bytes(bad), self.api.target], self.api.before)
+        self.assertEqual(selected, self.api.target)
+
+    def test_display_helper_self_test_is_synthetic_and_never_calls_native_display(self):
+        result = display.self_test()
+        self.assertEqual(result['status'], 'self_test_passed')
+        self.assertEqual(result['native_display_calls'], 0)
+        self.assertGreaterEqual(result['checks'], 23)
 
 
 class HostedMenuTests(unittest.TestCase):
@@ -68,7 +203,8 @@ class HostedMenuTests(unittest.TestCase):
 
     def test_environment_preserves_private_temp_and_path_without_dpi_overrides_or_tokens(self):
         inherited = dict(PATH='existing-tools', SystemRoot='Windows', TEMP='private-temp', TMP='private-temp',
-                         QT_SCALE_FACTOR='2', QT_QUICK_BACKEND='software', GITHUB_TOKEN='never-in-child')
+                         QT_SCALE_FACTOR='2', QT_QUICK_BACKEND='software', GITHUB_TOKEN='never-in-child',
+                         XDZIP_NATIVE_CI_DISPLAY_RECEIPT='controlled-receipt.json')
         with mock.patch.dict(os.environ, inherited, clear=True):
             result = driver.native_environment(self.directory)
         normalized = {key.upper(): value for key, value in result.items()}
@@ -78,6 +214,59 @@ class HostedMenuTests(unittest.TestCase):
             self.assertNotIn(key, result)
         self.assertEqual(result['QT_QPA_PLATFORM'], 'windows')
         self.assertEqual(result['QSG_RHI_BACKEND'], 'd3d11')
+        self.assertEqual(result['XDZIP_NATIVE_CI_DISPLAY_RECEIPT'], 'controlled-receipt.json')
+
+    def test_unverified_environment_boolean_cannot_claim_display_mode_change(self):
+        with mock.patch.dict(os.environ, {'XDZIP_VIRTUAL_DISPLAY_MODE_CHANGED': 'true'}, clear=True):
+            state = driver.display_state(SOURCE)
+        self.assertFalse(state['virtual_display_mode_changed'])
+        self.assertFalse(state['os_display_settings_changed'])
+        self.assertFalse(state['managed_display_receipt'])
+
+    def test_display_claim_uses_controlled_receipt_validator_and_live_mode_comparison(self):
+        mode = dict(width=1024, height=768, bits_per_pixel=32, frequency=60,
+                    orientation=0, position_x=0, position_y=0, display_flags=0)
+        receipt = dict(before=mode, active=dict(mode, width=1920, height=1080),
+                       full_source_sha=SOURCE, receipt_path='build/controlled/receipt.json', receipt_sha256='a' * 64)
+        helper = mock.Mock()
+        helper.validate_active_receipt.return_value = receipt
+        specification = mock.Mock()
+        with mock.patch.dict(os.environ, {'XDZIP_NATIVE_CI_DISPLAY_RECEIPT': 'build/controlled/receipt.json'}), \
+                mock.patch.object(driver.importlib.util, 'spec_from_file_location', return_value=specification), \
+                mock.patch.object(driver.importlib.util, 'module_from_spec', return_value=helper):
+            state = driver.display_state(SOURCE)
+            self.assertTrue(state['virtual_display_mode_changed'])
+            self.assertTrue(state['os_display_settings_changed'])
+            self.assertEqual(state['display_mode_receipt']['receipt_sha256'], 'a' * 64)
+            self.assertEqual(helper.validate_active_receipt.call_args.args[1], SOURCE)
+            # An already-target-sized runner has no actual mode change.
+            receipt['before'] = receipt['active']
+            state = driver.display_state(SOURCE)
+            self.assertFalse(state['virtual_display_mode_changed'])
+            helper.validate_active_receipt.side_effect = ValueError('wrong_source_run_or_current_mode')
+            with self.assertRaises(driver.Blocked):
+                driver.display_state(SOURCE)
+
+    def test_display_mode_change_during_child_blocks_even_if_source_and_binary_match(self):
+        first = dict(virtual_display_mode_changed=True, os_display_settings_changed=True,
+                     managed_display_receipt=True, display_mode_receipt={'receipt_sha256': 'a' * 64})
+        with mock.patch.object(driver, 'display_state', side_effect=[first, driver.Blocked('mode_changed')]):
+            with self.assertRaises(driver.Blocked):
+                self.run_child(self.process(0))
+        receipt = json.loads((self.directory / 'process-receipt.json').read_text())
+        self.assertFalse(receipt['identity_unchanged'])
+        self.assertEqual(receipt['exit_code'], 0)
+
+    def test_rejected_display_receipt_starts_no_qt_and_cannot_claim_os_unchanged(self):
+        with mock.patch.object(driver.sys, 'platform', 'win32'), mock.patch.dict(os.environ, HOSTED), \
+                mock.patch.object(driver, 'source_snapshot', return_value=self.snapshot), \
+                mock.patch.object(driver, 'display_state', side_effect=driver.Blocked('display_receipt_rejected')), \
+                mock.patch.object(driver.subprocess, 'Popen') as child:
+            code, report = driver.execute(self.tests, self.directory, SOURCE, self.binary)
+        self.assertEqual(code, 2)
+        self.assertIsNone(report['virtual_display_mode_changed'])
+        self.assertIsNone(report['os_display_settings_changed'])
+        child.assert_not_called()
 
     def test_nested_home_and_repository_paths_are_redacted_in_specific_order(self):
         home = Path('/synthetic-home')
@@ -280,6 +469,16 @@ class HostedMenuTests(unittest.TestCase):
         visual = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(visual)
         self.assertEqual(visual.self_test(), 0)
+
+    def test_layout_driver_pure_contract_checks(self):
+        spec = importlib.util.spec_from_file_location('windows_layout_ci', ROOT / 'scripts/check-windows-native-layout-ci.py')
+        layout = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(layout)
+        result = layout.self_test()
+        self.assertEqual(result['status'], 'self_test_passed')
+        self.assertGreaterEqual(result['checks'], 9)
+        self.assertTrue(result['synthetic_data_only'])
+        self.assertEqual(result['native_processes_started'], 0)
 
 
 if __name__ == '__main__':

@@ -69,6 +69,29 @@ def native_environment(output):
     return env
 
 
+def display_state(source):
+    """Use the controlled helper's source/run-bound receipt and live readback."""
+    path = os.environ.get('XDZIP_NATIVE_CI_DISPLAY_RECEIPT')
+    if not path:
+        return dict(virtual_display_mode_changed=False, os_display_settings_changed=False,
+                    managed_display_receipt=False)
+    specification = importlib.util.spec_from_file_location('native_ci_display', ROOT / 'scripts/windows_native_ci_display.py')
+    helper = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(helper)
+    try:
+        receipt = helper.validate_active_receipt(Path(path), source, os.environ)
+        before, active = receipt['before'], receipt['active']
+        fields = ('width', 'height', 'bits_per_pixel', 'frequency', 'orientation',
+                  'position_x', 'position_y', 'display_flags')
+        if any(type(mode.get(field)) is not int for mode in (before, active) for field in fields):
+            raise ValueError('invalid_display_mode_fields')
+        changed = any(before[field] != active[field] for field in fields)
+        return dict(virtual_display_mode_changed=changed, os_display_settings_changed=changed,
+                    managed_display_receipt=True, display_mode_receipt=receipt)
+    except (ValueError, KeyError, OSError, TypeError) as error:
+        raise Blocked('display_receipt_or_readback_rejected') from error
+
+
 def desktop_diagnostics():
     """Read only the current process/session/desktop; never enumerate/capture windows."""
     result = dict(available=False, desktop_pixels_captured=False, foreign_window_identifiers_recorded=False)
@@ -125,9 +148,11 @@ def owned_image_matches(process, tests):
 
 def run_owned(command, env, directory, tests, source, expected_binary, timeout=35):
     before = source_snapshot(tests, source, expected_binary)
+    display_before = display_state(source)
     if Path(command[0]).resolve() != tests.resolve():
         raise Blocked('unexpected_child_executable')
-    receipt = dict(source_before=before, started_at_utc=datetime.now(timezone.utc).isoformat(),
+    receipt = dict(source_before=before, display_before=display_before,
+                   started_at_utc=datetime.now(timezone.utc).isoformat(),
                    argv=[sanitized(str(value)) for value in command], timed_out=False)
     start = time.monotonic()
     process = subprocess.Popen(command, cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -156,7 +181,8 @@ def run_owned(command, env, directory, tests, source, expected_binary, timeout=3
                        finished_at_utc=datetime.now(timezone.utc).isoformat())
         try:
             receipt['source_after'] = source_snapshot(tests, source, expected_binary)
-            receipt['identity_unchanged'] = receipt['source_after'] == before
+            receipt['display_after'] = display_state(source)
+            receipt['identity_unchanged'] = receipt['source_after'] == before and receipt['display_after'] == display_before
         except (Blocked, OSError, subprocess.SubprocessError):
             receipt['identity_unchanged'] = False
         (directory / 'process-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
@@ -248,6 +274,7 @@ def execute(tests, output, source, binary):
                   reference_performance_approved=False, physical_dual_monitor_tested=False,
                   manual_native_acceptance=False, full_source_sha=source, binary_sha256=binary,
                   capture_complete=False, strict_menu_contract_passed=False,
+                  virtual_display_mode_changed=None, os_display_settings_changed=None,
                   started_at_utc=datetime.now(timezone.utc).isoformat(), process_receipts=[],
                   limits=['Shared hosted runner diagnostics are not fixed-machine performance, real-click or physical multi-monitor approval.'])
     try:
@@ -255,12 +282,16 @@ def execute(tests, output, source, binary):
                 or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.environ.get('RUNNER_OS') != 'Windows'):
             raise Blocked('windows_github_hosted_runner_required')
         report['source_before'] = source_snapshot(tests, source, binary)
+        display = display_state(source)
+        report.update(display)
         report['desktop'] = desktop_diagnostics()
         contract = menus.load_contract()
         report['contract_sha256'] = digest(menus.CONTRACT_PATH)
         report['pilot'] = automatic_stage('pilot', ['toolbar-more'], 1, output / 'pilot', tests, source, binary, contract, report['process_receipts'])
         report['matrix'] = automatic_stage('matrix', contract['cases'], contract['repetitions'], output / 'matrix', tests, source, binary, contract, report['process_receipts'])
         report['source_after'] = source_snapshot(tests, source, binary)
+        if display_state(source) != display:
+            raise Blocked('display_mode_or_receipt_changed_during_run')
         if report['source_before'] != report['source_after']:
             raise Blocked('source_or_binary_changed_during_run')
         report['capture_complete'] = len([item for item in report['process_receipts'] if item['stage'] == 'matrix']) == len(contract['cases']) * contract['repetitions']

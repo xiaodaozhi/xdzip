@@ -1,6 +1,7 @@
 # scripts/ci-windows-native-visual.ps1
 
 $ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $false
 if (!$IsWindows -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
     throw 'This entry is restricted to a disposable GitHub-hosted Windows runner'
 }
@@ -66,11 +67,33 @@ foreach ($name in @('QT_QUICK_BACKEND', 'QT_SCALE_FACTOR', 'QT_SCREEN_SCALE_FACT
     Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
 }
 $common = @('--tests', $tests, '--source', $revision, '--binary-sha256', $binaryHash)
-# Both diagnostics retain their own failures; one blocked route does not hide the other.
-& python 'scripts/check-windows-native-ci.py' @common '--output' 'build/windows-native-visual/menus'
-$menuExit = $LASTEXITCODE
-& python 'scripts/check-windows-native-visual-ci.py' @common '--output' 'build/windows-native-visual/scenes'
-$visualExit = $LASTEXITCODE
+$displayDirectory = 'build/windows-native-visual/display'
+$displayReceipt = Join-Path (Get-Location) "$displayDirectory/receipt.json"
+$prepareExit = $null
+$restoreExit = $null
+$menuExit = $null
+$visualExit = $null
+$layoutExit = $null
+try {
+    & python 'scripts/windows_native_ci_display.py' '--prepare' '--output' $displayDirectory '--source' $revision
+    $prepareExit = $LASTEXITCODE
+    if ($prepareExit -eq 0) {
+        $env:XDZIP_NATIVE_CI_DISPLAY_RECEIPT = $displayReceipt
+        # Both diagnostics retain their failures; one blocked route does not hide the other.
+        & python 'scripts/check-windows-native-ci.py' @common '--output' 'build/windows-native-visual/menus'
+        $menuExit = $LASTEXITCODE
+        & python 'scripts/check-windows-native-visual-ci.py' @common '--output' 'build/windows-native-visual/scenes'
+        $visualExit = $LASTEXITCODE
+        & python 'scripts/check-windows-native-layout-ci.py' @common '--output' 'build/windows-native-visual/layout'
+        $layoutExit = $LASTEXITCODE
+    }
+} finally {
+    if (Test-Path -LiteralPath $displayReceipt) {
+        & python 'scripts/windows_native_ci_display.py' '--restore' '--output' $displayDirectory '--source' $revision
+        $restoreExit = $LASTEXITCODE
+    }
+    Remove-Item -LiteralPath 'Env:XDZIP_NATIVE_CI_DISPLAY_RECEIPT' -ErrorAction SilentlyContinue
+}
 $unchanged = $revision -eq (& git rev-parse HEAD).Trim() -and !(& git status --porcelain) -and
     $binaryHash -eq (Get-FileHash -LiteralPath $tests -Algorithm SHA256).Hash.ToLowerInvariant()
 [ordered]@{
@@ -80,8 +103,11 @@ $unchanged = $revision -eq (& git rev-parse HEAD).Trim() -and !(& git status --p
     workflow_attempt = $env:GITHUB_RUN_ATTEMPT
     runner_image = $env:ImageVersion
     test_binary_sha256 = $binaryHash
+    virtual_display_prepare_exit_code = $prepareExit
+    virtual_display_restore_exit_code = $restoreExit
     menu_exit_code = $menuExit
     visual_exit_code = $visualExit
+    layout_exit_code = $layoutExit
     source_and_binary_unchanged = $unchanged
     real_user_click = $false
     fixed_reference_performance_acceptance = $false
@@ -89,6 +115,6 @@ $unchanged = $revision -eq (& git rev-parse HEAD).Trim() -and !(& git status --p
     windows_11_decoration_acceptance = $false
     release_authorized = $false
 } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $output 'workflow-result.json') -Encoding utf8
-if ($menuExit -ne 0 -or $visualExit -ne 0 -or !$unchanged) {
+if ($prepareExit -ne 0 -or $restoreExit -ne 0 -or $menuExit -ne 0 -or $visualExit -ne 0 -or $layoutExit -ne 0 -or !$unchanged) {
     throw 'Native CI diagnostic did not pass; inspect the preserved reports and logs'
 }

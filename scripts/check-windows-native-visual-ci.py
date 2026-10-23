@@ -181,7 +181,8 @@ def run(args):
     report = dict(schema_version=1, status='running', full_source_sha=args.source, binary_sha256=args.binary_sha256,
                   started_at_utc=now(), mode='automated_github_hosted_native_visual',
                   real_user_click=False, manual_visual_accepted=False, fixed_reference_performance_accepted=False,
-                  physical_dual_monitor_accepted=False, win11_accepted=False, os_display_settings_changed=False,
+                  physical_dual_monitor_accepted=False, win11_accepted=False,
+                  virtual_display_mode_changed=None, os_display_settings_changed=None,
                   platform=dict(system=platform.system(), release=platform.release(), version=platform.version()),
                   runner={key: os.environ.get(key) for key in ('GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_JOB', 'ImageOS', 'ImageVersion')},
                   limits=['Automated native client/frame capture only; actual images still need independent inspection.',
@@ -191,6 +192,8 @@ def run(args):
     result_file = output / 'result.json'
     try:
         initial = common.source_snapshot(tests, args.source, args.binary_sha256)
+        display = common.display_state(args.source)
+        report.update(display)
         (output / 'browser-test-source.cpp').write_bytes((ROOT / 'apps/desktop/tests/browser_test.cpp').read_bytes())
         (output / 'source.patch').write_bytes(subprocess.check_output(['git', 'diff'], cwd=ROOT, timeout=10))
         fixture = output / 'file-icon-coverage.zip'
@@ -237,6 +240,7 @@ def run(args):
             result_file.write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
             print(json.dumps({key: entry.get(key) for key in ('role', 'status', 'pid', 'exit_code', 'timed_out')}), flush=True)
             common.source_snapshot(tests, args.source, args.binary_sha256)
+        require(common.display_state(args.source) == display, 'display_mode_or_receipt_changed_during_run')
         report.update(final=common.source_snapshot(tests, args.source, args.binary_sha256), completed_at_utc=now())
         report['status'] = 'passed' if len(report['cases']) == len(CASES) and all(row['status'] == 'passed' for row in report['cases']) and matches(report['final'], args.source, args.binary_sha256) else 'failed'
     except (ValueError, KeyError, OSError, common.Blocked, subprocess.SubprocessError) as error:
