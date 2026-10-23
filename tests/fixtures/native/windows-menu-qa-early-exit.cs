@@ -13,6 +13,12 @@ namespace XdzipOwnedMenuQa {
             if (!condition) throw new FixtureAssertionException(reason);
         }
 
+        private static System.IO.StreamReader ReleaseReader(System.IO.Stream stream) {
+            // Process.StandardInput may emit its UTF-8 preamble at construction.
+            // Decode that preamble explicitly; the RELEASE token remains exact.
+            return new System.IO.StreamReader(stream,new System.Text.UTF8Encoding(false,true),true);
+        }
+
         private static void Core(MenuQaOptions options, System.Collections.Generic.Dictionary<string, object> result) {
             stage="core_identity_guards";
             int rejected = 0;
@@ -68,6 +74,16 @@ namespace XdzipOwnedMenuQa {
             catch (System.ArgumentException) { outsideRejected=true; }
             Require(outsideRejected, "Build prefix sibling accepted.");
             result["build_path_boundary_guard_passed"]=true;
+            stage="core_utf8_bom_release_guard";
+            byte[] protocol=System.Text.Encoding.UTF8.GetBytes("\uFEFFRELEASE\n");
+            string legacyToken, decodedToken;
+            using (var legacy=new System.IO.StreamReader(new System.IO.MemoryStream(protocol),
+                new System.Text.UTF8Encoding(false,true),false)) legacyToken=legacy.ReadLine();
+            using (var reader=ReleaseReader(new System.IO.MemoryStream(protocol))) decodedToken=reader.ReadLine();
+            Require(legacyToken=="\uFEFFRELEASE" && legacyToken!="RELEASE", "Legacy BOM token branch did not reproduce.");
+            Require(decodedToken=="RELEASE", "BOM-aware fixed release token failed.");
+            result["legacy_utf8_bom_fixed_token_rejected"]=true;
+            result["shared_bom_aware_release_reader_passed"]=true;
         }
 
         private static void Full(MenuQaOptions options, System.Collections.Generic.Dictionary<string, object> result) {
@@ -90,12 +106,18 @@ namespace XdzipOwnedMenuQa {
                 bool accepted=MenuQaLauncher.ValidateObservedChildIdentity(observation,fixtureBinary,
                     delegate(string reason,int? code,string type) { ++rejects; });
                 stage="live_owned_release";
+                result["live_owned_stdin_encoding"]=live.StandardInput.Encoding.WebName;
+                result["live_owned_stdin_preamble_hex"]=System.BitConverter.ToString(live.StandardInput.Encoding.GetPreamble()).Replace("-","");
                 live.StandardInput.WriteLine("RELEASE"); live.StandardInput.Flush(); live.StandardInput.Close();
-                Require(live.WaitForExit(5000) && live.ExitCode==0, "Live fixture release handshake failed.");
+                bool released=live.WaitForExit(5000);
+                result["live_owned_release_child_exited"]=released;
+                result["live_owned_release_child_exit_code"]=released?(object)live.ExitCode:null;
+                Require(released && live.ExitCode==0, "Live fixture release handshake failed.");
                 Require(accepted && rejects==0 && !observation.Exited && observation.Win32Error==0,
                     "Live owned handle image query rejected.");
                 result["live_owned_handle_query_api"]="QueryFullProcessImageNameW";
                 result["live_owned_readiness_and_release_handshake_passed"]=true;
+                result["live_owned_release_reader"]="UTF8 with BOM detection";
             }
             var fastInfo=new System.Diagnostics.ProcessStartInfo(fixtureBinary,"--owned-fast-exit") {
                 UseShellExecute=false, CreateNoWindow=true
@@ -162,8 +184,10 @@ namespace XdzipOwnedMenuQa {
             if (arguments.Length==1 && arguments[0]=="--owned-fast-exit") return 7;
             if (arguments.Length==1 && arguments[0]=="--owned-live-identity") {
                 System.Console.WriteLine("READY"); System.Console.Out.Flush();
-                var release=System.Console.In.ReadLineAsync();
-                return release.Wait(5000) && release.Result=="RELEASE" ? 0 : 8;
+                using (var reader=ReleaseReader(System.Console.OpenStandardInput())) {
+                    var release=reader.ReadLineAsync();
+                    return release.Wait(5000) && release.Result=="RELEASE" ? 0 : 8;
+                }
             }
             MenuQaOptions options=null;
             var serializer=new System.Web.Script.Serialization.JavaScriptSerializer();
