@@ -30,6 +30,29 @@ python3 scripts/prepare-private-test.py --output build/review/private-test/manua
 
 macOS 本地 SDK 构建可先做 IME、读屏及 GPU 等专项，但不能据此填写干净安装通过。本地开发 DMG 和 ad-hoc 完整性签名按[发行政策](../engineering/release-runbook.md)执行；CI 仍禁止部署／上传 Mac 应用，Developer ID 与公证按个人开源发行政策不再要求。后续复验缺少平台设备、安装渠道或文件关联实现时，如实记录具体限制，不将缺少正式签名身份列为阻塞。
 
+## 原生菜单首帧计时
+
+Windows 使用已构建的 Release `xdzip-browser-tests.exe` 和仓库内的交互入口。入口核对干净源码、构建身份及程序 SHA-256，用户在前台真实点击后，由入口直接创建每个自有测试子进程并向其精确 PID 授权前台。15 类菜单、每类三次及 100/200ms 门槛由[共享契约](../../tests/fixtures/native/menu-qa-contract.json)定义。
+
+先执行启动器回归，再为人工采样选择一个新的证据目录。以下命令在仓库根目录以 PowerShell 7 运行：
+
+```powershell
+pwsh -NoProfile -File scripts/check-windows-menu-launcher.ps1 -Mode SelfTest -Tests build/desktop/apps/desktop/xdzip-browser-tests.exe -OutputDirectory build/review/menu-launcher-selftest
+pwsh -NoProfile -File scripts/check-windows-menu-launcher.ps1 -Mode Launch -Tests build/desktop/apps/desktop/xdzip-browser-tests.exe -OutputDirectory build/review/menu-first-frame
+```
+
+CI 的 SelfTest 检查自有进程身份、提前退出、异常路由和清理，不显示入口或打开 Qt 菜单。`-CoreOnly` 只执行不依赖干净产品构建的核心回归，其报告保留完整回归未执行的状态。Launch 会显示“开始菜单验收”，采样期间保持测试窗口在前台。
+
+完整结论须来自同一轮的 45 个有效样本。任何子进程失败、来源变化、前台或准备门失败均停止该轮；子进程已退出时保留退出码。置顶窗口的 layered/transparent 样式不能证明其没有覆盖像素，保守矩形门拒绝时先记录实际边界和遮挡子门，再由操作者处理覆盖层。新的采样使用新目录，失败轮和部分样本继续保留。
+
+运行后用同一校验器复核原始 Qt 记录、来源、实际子进程和完整帧门。参数填入本轮真实源码 SHA 及被测程序 SHA-256，校验不会再次启动程序或覆盖原始记录：
+
+```sh
+python scripts/check-native-menus.py --validate-existing build/review/menu-first-frame --tests build/desktop/apps/desktop/xdzip-browser-tests.exe --source <full-source-sha> --binary-sha256 <executable-sha256> --output build/review/menu-first-frame-validation
+```
+
+Windows 计时保存输入至 DwmFlush 完成的首次呈现时间，另列位图读取和像素验证成本；首个可见菜单同步代次、捕获开始／结束代次和阴影同帧均须匹配。其他平台沿用各自原生采样入口及明确的呈现时间边界。应用客户区截图、自动断言和实际图像检查分别登记，原生窗口装饰、系统缩放切换及真实读屏继续按上表人工记录。
+
 ## 记录与核对
 
 每项填 `status`、`actual`、`evidence` 和可选问题引用。状态为 pending、passed、failed、blocked 或 not_applicable。不得仅填“通过”：需要实际操作结果、执行日期、操作者角色、设备和构建身份，以及 build/ 或 dist/ 中的相对证据文件路径。IME／读屏／GPU 通过还须填写对应工具或后端信息。

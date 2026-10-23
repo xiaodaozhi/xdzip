@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "cases": [
+    "toolbar-more", "toolbar-extract", "sort", "view", "entry", "directory",
+    "background", "tasks", "settings-density", "settings-scale",
+    "settings-language", "settings-open-mode", "create-level",
+    "create-volume", "create-volume-unit"
+  ],
+  "repetitions": 3,
+  "limits_ms": { "p95": 100, "max": 200 },
+  "reference_generation_field": "first_visible_menu_sync_generation",
+  "required_generation_fields": [
+    "captured_sync_generation", "capture_begin_sync_generation", "capture_end_sync_generation"
+  ],
+  "windows": {
+    "capture_stage": "frameSwapped direct, Win32 owned-client readback",
+    "graphics_api": 4,
+    "configuration": "Release",
+    "platform": "windows"
+  }
+}

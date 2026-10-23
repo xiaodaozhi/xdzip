@@ -72,6 +72,7 @@ Invoke-Checked python @('scripts/test-runtime-attribution.py')
 Invoke-Checked python @('scripts/test-macos-attribution.py')
 Invoke-Checked python @('scripts/test-sparkle-bundle.py')
 Invoke-Checked python @('scripts/test-native-runtime-materials.py')
+Invoke-Checked python @('scripts/test-native-menus.py')
 if ($IsWindows) {
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
 }
@@ -97,6 +98,9 @@ if ($IsMacOS) {
 }
 # Foundation independently executes locked workspace Rust tests.
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
+if ($IsWindows) {
+    Invoke-Checked pwsh @('-NoProfile', '-File', 'scripts/check-windows-menu-launcher.ps1', '-Tests', $browserTests, '-OutputDirectory', 'build/review/native-menu-launcher-selftest')
+}
 if ($IsLinux) {
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
