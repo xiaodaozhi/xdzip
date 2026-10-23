@@ -3,7 +3,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 
 MenuItem {
     id: root
@@ -30,11 +29,28 @@ MenuItem {
     Accessible.description: enabled ? "" : disabledReason
     indicator: null
     arrow: null
-    contentItem: RowLayout {
-        spacing: Theme.menuLabelInset
+    contentItem: Item {
+        id: content
+        readonly property real gap: Theme.menuLabelInset
+        // These describe content even while the popup is closed and its children are hidden.
+        readonly property bool hasStatus: root.statusLabel.length > 0
+        readonly property bool hasShortcut: root.shortcutLabel.length > 0
+        readonly property bool hasSubmenu: root.subMenu !== null
+        readonly property bool hasTrailing: hasStatus || hasShortcut || hasSubmenu
+        implicitWidth: iconSlot.width + gap + label.implicitWidth
+            + (hasStatus ? gap + statusBadge.width : 0)
+            + (hasShortcut ? gap + shortcut.width : 0)
+            + (hasSubmenu ? gap + submenuArrow.width : 0)
+        implicitHeight: Math.max(iconSlot.height, label.implicitHeight,
+            hasStatus ? statusBadge.height : 0,
+            hasShortcut ? shortcut.height : 0,
+            hasSubmenu ? submenuArrow.height : 0)
         Item {
-            Layout.preferredWidth: Theme.menuIconSize
-            Layout.preferredHeight: Theme.menuIconSize
+            id: iconSlot
+            width: Theme.menuIconSize
+            height: Theme.menuIconSize
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
             Image {
                 anchors.fill: parent
                 visible: root.checkable && root.checked
@@ -51,9 +67,14 @@ MenuItem {
             }
         }
         Text {
+            id: label
             objectName: root.objectName + "Label"
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
+            anchors.left: iconSlot.right
+            anchors.leftMargin: content.gap
+            anchors.right: content.hasStatus ? statusBadge.left : content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
+            anchors.rightMargin: content.hasTrailing ? content.gap : 0
+            anchors.verticalCenter: parent.verticalCenter
+            height: implicitHeight
             text: root.text
             textFormat: Text.PlainText
             color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
@@ -61,10 +82,16 @@ MenuItem {
             elide: Text.ElideRight
         }
         Rectangle {
+            id: statusBadge
             objectName: root.objectName + "Status"
-            visible: root.statusLabel.length > 0
+            visible: content.hasStatus
             implicitWidth: statusText.implicitWidth + 14
             implicitHeight: statusText.implicitHeight + 6
+            width: implicitWidth
+            height: implicitHeight
+            anchors.right: content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
+            anchors.rightMargin: content.hasShortcut || content.hasSubmenu ? content.gap : 0
+            anchors.verticalCenter: parent.verticalCenter
             radius: 4
             color: Qt.rgba(root.statusInk.r, root.statusInk.g, root.statusInk.b, 0.10)
             Text {
@@ -75,15 +102,24 @@ MenuItem {
             }
         }
         Text {
-            visible: root.shortcutLabel.length > 0
+            id: shortcut
+            visible: content.hasShortcut
+            width: implicitWidth
+            height: implicitHeight
+            anchors.right: content.hasSubmenu ? submenuArrow.left : parent.right
+            anchors.rightMargin: content.hasSubmenu ? content.gap : 0
+            anchors.verticalCenter: parent.verticalCenter
             text: root.shortcutLabel
             color: Theme.menuSecondary
             font.pixelSize: Theme.menuShortcutSize
         }
         Image {
-            Layout.preferredWidth: Theme.menuIconSize
-            Layout.preferredHeight: Theme.menuIconSize
-            visible: root.subMenu !== null
+            id: submenuArrow
+            width: Theme.menuIconSize
+            height: Theme.menuIconSize
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            visible: content.hasSubmenu
             source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-right.png"
         }
     }

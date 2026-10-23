@@ -14,9 +14,74 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = Path(os.environ.get('XDZIP_HTML_CONTROLS_OUTPUT', ROOT / 'dist/html-controls-review'))
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
+MENU_DIAGNOSTICS = r"""
+(() => {
+    const timeline = [], limit = 200;
+    const node = value => value instanceof Element ? {
+        tag:value.tagName.toLowerCase(), id:value.id, role:value.getAttribute('role'),
+        class_name:value.getAttribute('class'),
+        directory:value.getAttribute('data-directory'), command:value.getAttribute('data-command'),
+        connected:value.isConnected,
+    } : {tag:value === document ? '#document' : value === window ? '#window' : '#other'};
+    const rect = value => {
+        const box = value.getBoundingClientRect();
+        return {x:box.x,y:box.y,width:box.width,height:box.height};
+    };
+    const scroll = value => ({node:node(value),x:value.scrollLeft,y:value.scrollTop,
+        width:value.clientWidth,height:value.clientHeight,scrollWidth:value.scrollWidth,scrollHeight:value.scrollHeight});
+    const append = (type, detail) => {
+        timeline.push({at_ms:performance.now(),type,...detail});
+        if (timeline.length > limit) timeline.shift();
+    };
+    const snapshot = target => {
+        const ancestors = [];
+        for (let current = target; current instanceof Element; current = current.parentElement)
+            ancestors.push(scroll(current));
+        const root = document.scrollingElement;
+        if (root && !ancestors.some(item => item.node.tag === root.tagName.toLowerCase()))
+            ancestors.push(scroll(root));
+        let stateSnapshot;
+        try { stateSnapshot = {path:state.path,selected:[...state.selected],expanded:[...state.expanded]}; }
+        catch { stateSnapshot = {available:false}; }
+        return {active_element:node(document.activeElement),document_has_focus:document.hasFocus(),
+            target:target ? {...node(target),rect:rect(target),
+                contextmenu_handler_registered:typeof target.oncontextmenu === 'function',
+                keydown_handler_registered:typeof target.onkeydown === 'function'} : null,
+            viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio},
+            fonts_status:document.fonts.status,scroll_positions:ancestors,state:stateSnapshot,
+            menus:[...document.querySelectorAll('.ui-menu')].slice(0,8).map(menu =>
+                ({node:node(menu),rect:rect(menu),html:menu.outerHTML.slice(0,12000)})),
+            timeline:[...timeline]};
+    };
+    window.__xdzipMenuDiagnostics = {snapshot};
+    for (const capture of [true,false]) {
+        for (const type of ['contextmenu','keydown','keyup']) document.addEventListener(type,event => {
+            if (type !== 'contextmenu' && !['ContextMenu','F10','Escape'].includes(event.key)) return;
+            append(type,{phase:capture?'capture':'bubble',target:node(event.target),key:event.key,
+                shift:event.shiftKey,default_prevented:event.defaultPrevented,
+                active_element:node(document.activeElement)});
+        },capture);
+    }
+    document.addEventListener('scroll',event => {
+        const target = event.target === document ? document.scrollingElement : event.target;
+        append('scroll',{target:node(event.target),trusted:event.isTrusted,position:target ? scroll(target) : null});
+    },true);
+    window.addEventListener('resize',() => append('resize',{width:innerWidth,height:innerHeight}));
+    new MutationObserver(records => {
+        for (const record of records) for (const [action,nodes] of
+            [['menu_added',record.addedNodes],['menu_removed',record.removedNodes]]) {
+            for (const item of nodes) if (item instanceof Element) {
+                const menus = item.matches('.ui-menu') ? [item] : [...item.querySelectorAll('.ui-menu')];
+                for (const menu of menus) append(action,{menu:node(menu),rect:rect(menu)});
+            }
+        }
+    }).observe(document,{childList:true,subtree:true});
+})();
+"""
+
 
 def main():
-    checks, errors, requests, directory_cases = [], [], [], []
+    checks, errors, requests, directory_cases, queued_scroll_cases = [], [], [], [], []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'),
                                              args=['--no-sandbox', '--disable-dev-shm-usage'])
@@ -28,7 +93,10 @@ def main():
         canvas = holder.evaluate('window.XDZIP_CANVAS')
         page = context.new_page()
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.set_content(canvas)
+        # This test-only observer is installed before the design scripts. It reads
+        # events and DOM changes without preventing, dispatching or mutating them.
+        assert '<head>' in canvas
+        page.set_content(canvas.replace('<head>', '<head><script>' + MENU_DIAGNOSTICS + '</script>', 1))
         page.evaluate('document.fonts.ready')
         expect(page.locator('#file-rows tr')).to_have_count(9)
         expect(page.locator('[data-tab]')).to_have_count(2)
@@ -36,13 +104,38 @@ def main():
         checks.append('Initial archive, table and directory controls load offline')
         tree_snapshot = page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})')
 
-        def open_directory_menu(row, method):
-            if method == 'mouse':
-                row.click(button='right')
-            else:
-                row.focus()
-                row.press('ContextMenu' if method == 'menu' else 'Shift+F10')
-            expect(page.locator('[data-command=directory-expand]')).to_be_visible()
+        directory_attempt = 0
+
+        def open_directory_menu(row, method, *, language, text_scale, scenario='directory_matrix'):
+            nonlocal directory_attempt
+            directory_attempt += 1
+            context = {'attempt':directory_attempt,'language':language,'text_scale':text_scale,
+                       'method':method,'row_id':row.get_attribute('data-directory'),'scenario':scenario}
+            before = row.evaluate('(row)=>__xdzipMenuDiagnostics.snapshot(row)')
+            try:
+                if method == 'mouse':
+                    row.click(button='right')
+                else:
+                    row.focus()
+                    row.press('ContextMenu' if method == 'menu' else 'Shift+F10')
+                expect(page.locator('[data-command=directory-expand]')).to_be_visible()
+            except Exception as error:
+                failure = {'status':'failed','stage':'open_directory_menu','context':context,
+                           'before_input':before,'page_errors':list(errors),
+                           'original_exception_type':type(error).__name__,'passed_report_written':False}
+                try:
+                    failure['after_failure'] = row.evaluate('(row)=>__xdzipMenuDiagnostics.snapshot(row)')
+                    page.screenshot(path=str(OUTPUT / 'directory-menu-failure.png'))
+                    failure['owned_html_screenshot'] = 'directory-menu-failure.png'
+                except Exception as diagnostic_error:
+                    failure['diagnostic_exception_type'] = type(diagnostic_error).__name__
+                try:
+                    (OUTPUT / 'directory-menu-failure.json').write_text(
+                        json.dumps(failure,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+                    print(json.dumps(failure,ensure_ascii=False),flush=True)
+                except Exception:
+                    pass  # Diagnostic failure must not replace the original assertion.
+                raise
 
         def assert_description_only(owner, command, reason, hover=False):
             expect(command).to_have_attribute('aria-disabled', 'true')
@@ -64,7 +157,8 @@ def main():
             for text_scale in (1, 1.25, 1.5):
                 page.evaluate('(scale)=>document.documentElement.style.setProperty("--settings-text-scale",scale)', text_scale)
                 for method in ['mouse', 'menu', 'shift-f10']:
-                    open_directory_menu(page.locator('.tree-root[data-directory=""]'), method)
+                    open_directory_menu(page.locator('.tree-root[data-directory=""]'), method,
+                                        language=language, text_scale=text_scale)
                     command = page.locator('[data-command=directory-expand]')
                     assert_description_only(page, command, root_reason, method == 'mouse')
                     expect(command.locator('.ui-menu-label')).to_have_text(collapse)
@@ -76,13 +170,15 @@ def main():
                     assert page.evaluate('({path:state.path,selected:[...state.selected],expanded:[...state.expanded]})') == tree_snapshot
                     page.keyboard.press('Escape')
                     for expanded in [False, True]:
-                        open_directory_menu(page.locator('[data-directory=photos]'), method)
+                        open_directory_menu(page.locator('[data-directory=photos]'), method,
+                                            language=language, text_scale=text_scale)
                         command = page.locator('[data-command=directory-expand]')
                         expect(command).to_have_attribute('aria-disabled', 'false')
                         assert command.get_attribute('aria-description') is None
                         command.click()
                         expect(page.locator('[data-directory=photos]')).to_have_attribute('aria-expanded', str(not expanded).lower())
-                    open_directory_menu(page.locator('[data-directory=maps]'), method)
+                    open_directory_menu(page.locator('[data-directory=maps]'), method,
+                                        language=language, text_scale=text_scale)
                     command = page.locator('[data-command=directory-expand]')
                     assert_description_only(page, command, leaf_reason, method == 'mouse')
                     command.click(force=True)
@@ -93,6 +189,69 @@ def main():
         page.evaluate('document.documentElement.lang="zh-CN"')
         page.evaluate('document.documentElement.style.setProperty("--settings-text-scale",1)')
         checks.append('Directory root, parent and leaf: pointer/Menu/Shift+F10 preserve bilingual reasons only as accessible descriptions, without hints or tooltips at three text scales')
+
+        # A real scroll position change during the preceding input queues a
+        # browser scroll event. Its delivery must not close the new menu when
+        # the position is already the one recorded as the menu opened.
+        original_table_style = page.locator('.table-scroll table').get_attribute('style')
+        page.evaluate("""() => {
+            const root=document.querySelector('.tree-root[data-directory=""]');
+            const scroller=document.querySelector('.table-scroll'), table=scroller.querySelector('table');
+            table.style.minWidth='2400px'; scroller.scrollLeft=0;
+            const state=window.__xdzipQueuedScroll={input_count:0,scrolls:[],opened:null,phase:'preceding_input'};
+            root.addEventListener('contextmenu',()=>{
+                state.input_count++; state.before_capture=scroller.scrollLeft;
+                scroller.scrollLeft=32; state.after_capture=scroller.scrollLeft;
+            },{capture:true,once:true});
+            const opened=event=>{
+                if (!root.contains(event.target)) return;
+                state.opened={position:scroller.scrollLeft,menu_count:document.querySelectorAll('.ui-menu').length,
+                    scroller_is_trigger_ancestor:scroller.contains(root)};
+                document.removeEventListener('contextmenu',opened);
+            };
+            document.addEventListener('contextmenu',opened);
+            state.onScroll=event=>{
+                if(event.target===scroller) state.scrolls.push({phase:state.phase,position:scroller.scrollLeft,
+                    trusted:event.isTrusted,menu_count:document.querySelectorAll('.ui-menu').length});
+            };
+            document.addEventListener('scroll',state.onScroll,true);
+        }""")
+        assert page.locator('.table-scroll').evaluate('(node)=>node.scrollWidth>node.clientWidth && node.scrollLeft===0')
+        open_directory_menu(page.locator('.tree-root[data-directory=""]'), 'mouse', language='zh-CN', text_scale=1,
+                            scenario='queued_nonancestor_scroll_before_menu_open')
+        page.wait_for_function('__xdzipQueuedScroll.scrolls.length>0')
+        queued = page.evaluate('JSON.parse(JSON.stringify(__xdzipQueuedScroll))')
+        queued_observations = {'status':'observed','preceding_input':queued}
+        (OUTPUT / 'queued-scroll-observations.json').write_text(
+            json.dumps(queued_observations,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        assert queued['input_count'] == 1 and queued['before_capture'] == 0 and queued['after_capture'] == 32
+        assert queued['opened'] == {'position':32,'menu_count':1,'scroller_is_trigger_ancestor':False}
+        assert all(event == {'phase':'preceding_input','position':32,'trusted':True,'menu_count':1} for event in queued['scrolls'])
+        expect(page.locator('[data-command=directory-expand]')).to_be_visible()
+        queued_scroll_cases.append({'phase':'preceding_input','position_at_open':32,'event_position':32,
+                                    'browser_trusted_scroll':True,'menu_visible_after_event':True})
+        checks.append('A queued browser scroll from the preceding real contextmenu input preserves the menu at its already-recorded non-ancestor position')
+        page.evaluate("""() => {
+            __xdzipQueuedScroll.phase='after_open';
+            document.querySelector('.table-scroll').scrollLeft=64;
+        }""")
+        page.wait_for_function("__xdzipQueuedScroll.scrolls.some(event=>event.phase==='after_open')")
+        queued = page.evaluate('JSON.parse(JSON.stringify(__xdzipQueuedScroll))')
+        queued_observations['after_open'] = queued
+        (OUTPUT / 'queued-scroll-observations.json').write_text(
+            json.dumps(queued_observations,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        changed = [event for event in queued['scrolls'] if event['phase'] == 'after_open']
+        assert changed and all(event == {'phase':'after_open','position':64,'trusted':True,'menu_count':0} for event in changed)
+        expect(page.locator('.ui-menu')).to_have_count(0)
+        queued_scroll_cases.append({'phase':'after_open','position_at_open':32,'event_position':64,
+                                    'browser_trusted_scroll':True,'menu_closed_after_event':True})
+        checks.append('A real post-open non-ancestor scroll position change closes the menu')
+        page.evaluate("""original => {
+            document.removeEventListener('scroll',__xdzipQueuedScroll.onScroll,true);
+            const table=document.querySelector('.table-scroll table');
+            if(original===null) table.removeAttribute('style'); else table.setAttribute('style',original);
+            document.querySelector('.table-scroll').scrollLeft=0;
+        }""", original_table_style)
         for ident in ['open', 'create', 'test-archive', 'more-actions', 'extract', 'extract-menu-button']:
             assert page.locator('#' + ident).get_attribute('data-tooltip') is None
             assert page.locator('#' + ident).get_attribute('title') is None
@@ -467,6 +626,7 @@ def main():
         assert not requests, requests
         report = {'status':'passed','checks':checks,'check_count':len(checks),'page_errors':errors,'external_requests':requests,
                   'directory_menu_cases':directory_cases,
+                  'queued_scroll_cases':queued_scroll_cases,
                   'limits':['HTML operations use in-memory example data','Platform decorations in HTML do not prove native window behavior',
                             'Qt and assistive-technology validation are separate']}
         (OUTPUT / 'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')

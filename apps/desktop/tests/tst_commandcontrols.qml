@@ -1,3 +1,5 @@
+// apps/desktop/tests/tst_commandcontrols.qml
+
 import QtQuick
 import QtTest
 import "../ui" as Ui
@@ -51,6 +53,20 @@ Item {
         parent: trigger
         text: "<b>原始文件名</b>"
     }
+    Ui.CommandMenu {
+        id: layoutMenu
+        parent: trigger
+        Ui.CommandMenuItem {
+            id: layoutCommand
+            objectName: "layoutCommand"
+            enabled: false
+            disabledReason: "Accessible description only"
+        }
+        Ui.CommandMenu {
+            id: layoutSubmenu
+            Ui.CommandMenuItem { text: "Child" }
+        }
+    }
     SignalSpy {
         id: firstSpy
         target: first
@@ -88,11 +104,78 @@ Item {
         function cleanup() {
             tooltip.requested = false;
             menu.close();
+            layoutMenu.close();
             tryCompare(menu, "visible", false);
             firstSpy.clear();
             disabledSpy.clear();
             Ui.Theme.fontScale = 1;
             Ui.Theme.dark = false;
+        }
+        function verifyCommandGeometry(item) {
+            var content = item.contentItem;
+            var label = content.children[1];
+            compare(label.height, label.implicitHeight, "Text must use its current font height");
+            compare(label.font.pixelSize, Math.round(Ui.Theme.menuLabelSize));
+            verify(Math.abs(content.y + label.y + label.height / 2 - item.height / 2) <= 0.5);
+            verify(item.height >= Ui.Theme.menuRowHeight);
+            var previous = content.children[0];
+            compare(previous.width, Ui.Theme.menuIconSize);
+            for (var i = 1; i < content.children.length; ++i) {
+                var child = content.children[i];
+                if (!child.visible)
+                    continue;
+                verify(Math.abs(child.y + child.height / 2 - content.height / 2) <= 0.5);
+                verify(Math.abs(child.x - previous.x - previous.width - content.gap) < 0.01);
+                previous = child;
+            }
+            verify(label.width >= 0);
+            verify(Math.abs(previous.x + previous.width - content.width) < 0.01);
+            var badge = content.children[2];
+            compare(badge.width, badge.children[0].implicitWidth + 14);
+            compare(badge.height, badge.children[0].implicitHeight + 6);
+            verify(!containsVisibleText(item, item.disabledReason));
+        }
+        function test_first_render_after_font_and_slot_changes_data() {
+            return [
+                { tag: "zh-light", title: "收起子目录", dark: false },
+                { tag: "zh-dark", title: "收起子目录", dark: true },
+                { tag: "en-light", title: "Collapse subfolders", dark: false },
+                { tag: "en-dark", title: "Collapse subfolders", dark: true }
+            ];
+        }
+        function test_first_render_after_font_and_slot_changes(data) {
+            Ui.Theme.dark = data.dark;
+            layoutCommand.text = data.title;
+            layoutSubmenu.title = data.title;
+            var submenuCommand = layoutMenu.itemAt(1);
+            verify(submenuCommand && submenuCommand.subMenu === layoutSubmenu);
+            var scales = [1, 1.25, 1.5];
+            for (var slots = 0; slots < 4; ++slots) {
+                layoutCommand.statusLabel = submenuCommand.statusLabel = (slots & 1) ? "Done" : "";
+                layoutCommand.shortcutLabel = submenuCommand.shortcutLabel = (slots & 2) ? "Ctrl+A" : "";
+                for (var i = 0; i < scales.length; ++i) {
+                    layoutMenu.close();
+                    compare(layoutMenu.visible, false);
+                    Ui.Theme.fontScale = scales[i];
+                    // Hidden popup inheritance must not remove logical trailing slots.
+                    compare(layoutCommand.contentItem.hasStatus, Boolean(slots & 1));
+                    compare(layoutCommand.contentItem.hasShortcut, Boolean(slots & 2));
+                    compare(submenuCommand.contentItem.hasSubmenu, true);
+                    layoutMenu.popup();
+                    verify(waitForRendering(layoutCommand));
+                    // No geometry retry: check the first observed rendering after reopen.
+                    verifyCommandGeometry(layoutCommand);
+                    verifyCommandGeometry(submenuCommand);
+                    compare(layoutCommand.Accessible.description, layoutCommand.disabledReason);
+                    // Also leave a different value for the next closed-popup transition.
+                    var openedScale = scales[(i + 2) % scales.length];
+                    verify(Ui.Theme.fontScale !== openedScale);
+                    Ui.Theme.fontScale = openedScale;
+                    verify(waitForRendering(layoutCommand));
+                    verifyCommandGeometry(layoutCommand);
+                    verifyCommandGeometry(submenuCommand);
+                }
+            }
         }
         function test_keyboard_selection_and_disabled_guard() {
             openWithKeyboard();

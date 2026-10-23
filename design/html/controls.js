@@ -25,6 +25,11 @@ window.XdzipControls = (() => {
         );
     function scrollSnapshot(trigger) {
         const snapshot = new Map();
+        // A preceding input can queue scroll on another existing container,
+        // including one whose overflow has already disappeared before opening.
+        document.querySelectorAll("*").forEach((node) =>
+            snapshot.set(node, [node.scrollLeft, node.scrollTop]),
+        );
         for (
             let node = trigger;
             node instanceof Element;
