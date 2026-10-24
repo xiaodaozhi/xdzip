@@ -17,6 +17,13 @@ pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Move frozen selected entries to an archive directory.
+    Move {
+        /// Immutable source session.
+        session: u64,
+        /// Archive-only identities, revalidated by the worker.
+        options: crate::updating::MoveOptions,
+    },
     /// Fulfil a native file promise from a verified private export copy.
     PublishExport {
         /// Absolute application-owned payload root item.
@@ -115,6 +122,7 @@ impl Command {
         match self {
             Self::PublishExport { source, target } => source.capacity() + target.capacity(),
             Self::Update { options, .. } => options.bytes(),
+            Self::Move { options, .. } => options.bytes(),
             Self::Export { options, .. } | Self::ExportManifest { options, .. } => options.bytes(),
             Self::OpenEntry { cache, .. } => cache.capacity(),
             Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
@@ -137,6 +145,7 @@ impl Command {
                 .iter()
                 .all(|p| !p.contains('\0') && p.len() <= 4096 && Path::new(p).is_absolute()),
             Self::Update { options, .. } => options.bounded(),
+            Self::Move { options, .. } => options.bounded(),
             Self::Export { options, .. } | Self::ExportManifest { options, .. } => {
                 options.bounded()
             }
@@ -232,6 +241,8 @@ pub enum Payload {
         archive_total: u64,
         /// Whole-source editing admission, independent of the displayed page.
         update_allowed: bool,
+        /// Bit 0 encrypted, bit 1 split, bit 2 unsupported records.
+        edit_restriction: u8,
         /// Container determined from source bytes.
         format: xdzip_codec_api::Format,
         /// Host-derived same-folder name, revalidated by the output grant.
@@ -715,6 +726,17 @@ fn execute(
                     }))
                     .map(Payload::TaskAccepted);
             }
+            Command::Move { session, options } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = current.move_job(options, control)?;
+                let id = shared.enqueue_task(tasks::Job::Update(job))?;
+                // No new request may use old physical IDs once editing is admitted.
+                *archive = None;
+                return Ok(Payload::TaskAccepted(id));
+            }
             Command::Update { session, options } => {
                 let current = archive
                     .as_ref()
@@ -893,6 +915,7 @@ fn execute(
         })
     };
     let update_allowed = archive.can_update();
+    let edit_restriction = archive.edit_restriction;
     let page = archive
         .query_page(
             crate::query::QueryRequest {
@@ -911,6 +934,7 @@ fn execute(
         })?;
     Ok(Payload::Page {
         update_allowed,
+        edit_restriction,
         session,
         key: page.key,
         offset,
@@ -1091,6 +1115,7 @@ mod tests {
         let (client, receiver) = spawn(|_, _| {
             Ok(Payload::Page {
                 update_allowed: false,
+                edit_restriction: 4,
                 key: QueryKey {
                     session: 1.try_into().unwrap(),
                     query: 1.try_into().unwrap(),

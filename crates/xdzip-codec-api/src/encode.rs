@@ -73,6 +73,9 @@ pub trait CreationCodec {
 pub struct RewriteInput<'a> {
     /// One decision per original physical record. Metadata extension records are not entries.
     pub keep: &'a [bool],
+    /// Optional final container names, including directory slashes, per physical record.
+    /// Empty means no renames; otherwise its length must match keep.
+    pub renames: &'a [Option<String>],
     /// Host-authorized additions with final, collision-resolved names.
     pub additions: &'a dyn EncodeInput,
     /// Settings apply only to new content (and the outer GZIP stream).

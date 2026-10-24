@@ -109,6 +109,7 @@ QString text(const QString &command) {
         {QStringLiteral("noTasks"), qtTrId("desktop.noTasks")},
         {QStringLiteral("task"), qtTrId("desktop.task")},
         {QStringLiteral("createTask"), qtTrId("desktop.createTask")},
+        {QStringLiteral("moveTask"), qtTrId("desktop.moveTask")},
         {QStringLiteral("extractTask"), qtTrId("desktop.extractTask")},
         {QStringLiteral("checkTask"), qtTrId("desktop.checkTask")},
         {QStringLiteral("trayEnabled"), qtTrId("desktop.trayEnabled")},
@@ -541,7 +542,8 @@ void DesktopIntegration::syncActions() {
                                               Q_RETURN_ARG(QString, state),
                                               Q_ARG(QString, task.value("status").toString()));
                     item->setText(
-                        text("task").arg(text(task.value("kind") == "check"     ? "checkTask"
+                        text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
+                                              : task.value("kind") == "check"   ? "checkTask"
                                               : task.value("creating").toBool() ? "createTask"
                                                                                 : "extractTask"),
                                          task.value("backendId", task.value("id")).toString(),
@@ -569,7 +571,8 @@ void DesktopIntegration::rebuildTasks(QMenu *menu) {
         QMetaObject::invokeMethod(m_window, "taskStateLabel", Q_RETURN_ARG(QString, state),
                                   Q_ARG(QString, task.value("status").toString()));
         auto *item = menu->addAction(
-            text("task").arg(text(task.value("kind") == "check"     ? "checkTask"
+            text("task").arg(text(task.value("kind") == "move"      ? "moveTask"
+                                  : task.value("kind") == "check"   ? "checkTask"
                                   : task.value("creating").toBool() ? "createTask"
                                                                     : "extractTask"),
                              task.value("backendId", task.value("id")).toString(), state) +

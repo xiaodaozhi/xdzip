@@ -35,6 +35,7 @@ mod ffi {
         Update,
         Export,
         ExportManifest,
+        Move,
     }
     struct MetadataLimits {
         entries: u64,
@@ -170,6 +171,7 @@ mod ffi {
         total: u64,
         archive_total: u64,
         update_allowed: bool,
+        edit_restriction: u8,
         format: String,
         folder_name: String,
         query: u64,
@@ -331,6 +333,22 @@ impl CommandClient {
                 source: command.text,
                 target: command.path,
             },
+            ffi::CommandKind::Move => {
+                let Some(conflict) =
+                    xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
+                else {
+                    return admission(Err(Rejection::Invalid));
+                };
+                Command::Move {
+                    session: command.session,
+                    options: xdzip_runtime::updating::MoveOptions {
+                        selected: command.selectors,
+                        target: command.path,
+                        directory: command.directory,
+                        conflict,
+                    },
+                }
+            }
             ffi::CommandKind::Update => {
                 let Some(conflict) =
                     xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
@@ -522,6 +540,7 @@ impl EventReceiver {
             total: 0,
             archive_total: 0,
             update_allowed: false,
+            edit_restriction: 4,
             format: String::new(),
             folder_name: String::new(),
             query: 0,
@@ -567,6 +586,7 @@ impl EventReceiver {
                 total,
                 archive_total,
                 update_allowed,
+                edit_restriction,
                 format,
                 folder_name,
                 key,
@@ -580,6 +600,7 @@ impl EventReceiver {
                 event.total = total;
                 event.archive_total = archive_total;
                 event.update_allowed = update_allowed;
+                event.edit_restriction = edit_restriction;
                 event.format = format.label().into();
                 event.folder_name = folder_name;
                 event.query = key.query.get();

@@ -205,6 +205,8 @@ pub struct Outcome {
 /// Operation identity shared by task scheduling and display snapshots.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TaskKind {
+    /// Move archive entries through a verified whole-container rewrite.
+    Move,
     /// Publish a prepared private item to a native file-promise destination.
     ExportCopy,
     /// Verified private copies offered to an external copy operation.
@@ -227,6 +229,7 @@ impl TaskKind {
             Self::Extract => "extract",
             Self::Create => "create",
             Self::Update => "update",
+            Self::Move => "move",
             Self::Check => "check",
         }
     }

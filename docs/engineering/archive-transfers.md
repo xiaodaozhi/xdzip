@@ -22,6 +22,20 @@ Linux 的已支持基线为 Ubuntu 24.04 x86_64、X11。先准备私有副本，
 
 UpdateWindow 显示输入清单、移除动作、目标归档、包内目录及询问、跳过、改名、替换策略。默认询问。同名目录合并并沿用原有拼写，文件/目录冲突拒绝。替换作用于包内普通文件，不授予覆盖主机输入文件的权限。确认前不修改归档。视觉使用创建窗口的 491 逻辑宽度和共享控件，见[独立稿](../../design/hifi/sources/archive-add.html)。
 
+## 包内拖放移动
+
+文件列表和网格达到系统拖动阈值后，先以包内移动处理，冻结当前会话、查询代次、选择版本、包内源目录与稳定条目 ID。拖动未选项先单选，拖动已选项保留多选。源项保持原位绘制，目标文件夹在列表、网格及目录树使用既有选择色高亮。操作说明复用提示的字号、最大宽度和内距，最多四行，边界受当前客户区约束；这是拖放中的即时状态，不沿用普通悬停提示计时。
+
+同目录的文件夹及左侧目录树中的任意已索引目录可接收，包括从子目录移到根目录。只接受本会话的私有拖动身份，不把外部 URL 或其他会话的条目解释为移动。目标不能是选中的文件夹、选中文件夹的任一后代或源目录。搜索页、过期选择和当前不可修改的归档同样拒绝。拒绝目标保留即时说明和禁止投放状态，松手不启动任务；加密、分卷及两者组合各有明确说明。外部添加的拒绝说明也在悬停时展示，实际 drop 仍拒绝。
+
+有效目标松手后直接进入独立 move 任务，复用既有进度、重名与结果窗口。普通文件重名默认询问，支持跳过、使用新名称及替换，并可应用到后续冲突。文件夹合并，文件与文件夹的类型冲突失败。跳过的源文件仍在原位置，保留所需的显式源目录；完全移动的源条目消失，空目录与隐式目录均可移动。移空当前隐式源目录时补充空目录记录，保持浏览位置。成功或失败后重新打开原归档，保留源目录及排序，清除旧物理 ID 的选择。编辑接纳、执行和重开期间保留列表快照并冻结目录查询，不允许旧身份再发起浏览。
+
+MoveOptions 只传递有界的源目录、目标目录与选择身份，不接纳主机路径。核心再次解析直属源条目并拒绝循环、原位置及过期身份。移动与添加共用命名空间、重名决策、完整内容校验及同卷原子替换。ZIP 原样复制压缩载荷并改写名称；TAR 保留普通记录头和除 path 外的受支持 PAX 属性，路径以 UTF-8 PAX 改写，GNU 长名称转为 PAX，TAR.GZ 重建外层 GZIP。无法安全保留的扩展明确失败，提交前失败和取消保持原包字节。
+
+鼠标离开源窗口客户区或源窗口失活后，冻结选择交给原有平台外部复制流程，包内拖动结束。晋升为系统拖出后，不将返回应用的导出数据当作包内移动或新增输入。该边界防止私有暂存内容被再次添加，平台外部拖出规则保持不变。
+
+桥接新增 Move 命令，沿用有界重任务队列、任务退出屏障和稳定会话校验。Page 的 edit_restriction 位 0 表示加密，位 1 表示分卷，位 2 表示其他不支持记录；update_allowed 仅在全部位为零时成立。此原因来自整个只读源快照，不从当前页面推断。拒绝说明仅表达能力，不授予写入权限。
+
 ## 普通归档修改事务
 
 Update 支持普通单文件 ZIP、TAR、TAR.GZ，不改写加密、分卷、链接、特殊记录或无法安全保留的名称。能力由整个源快照决定，不能仅检查当前页面。任务接纳后释放元数据会话，旧条目 ID 不再接受新操作；任务保留源句柄与身份。
@@ -30,10 +44,10 @@ Update 支持普通单文件 ZIP、TAR、TAR.GZ，不改写加密、分卷、链
 
 包内命名空间包含隐式父目录，上限十万节点，名称及规范化索引共用 16 MiB 预算，避免通过深层路径生成无界索引。新归档重新扫描并逐文件解码到有界校验接收端，再复核输入、原归档及目标身份。只有绑定原文件版本的 ArchiveUpdate 能力可以整体替换它，普通创建和解压的源保护不变。原归档作为添加输入明确拒绝。文件系统缺少所需原子原语时失败，不先删除、截断或以复制/删除模拟替换。版本复核是尽力检测，不承诺同账户恶意并发写入的内容 CAS 或断电持久化。
 
-提交前取消或失败保留原归档字节。提交许可获得后成功发布胜出，清理失败单独记录。成功或失败后重新打开同一源，清除失效的物理条目选择。任务使用独立 update、export 和 export-copy 类型，不把私有准备完成当作系统复制成功。
+提交前取消或失败保留原归档字节。提交许可获得后成功发布胜出，清理失败单独记录。成功或失败后重新打开同一源，清除失效的物理条目选择。任务使用独立 update、move、export 和 export-copy 类型，不把私有准备完成当作系统复制成功。
 
 ## 验收边界
 
-核心覆盖三格式、当前目录、原内容和空目录、重名策略、来源变化、受保护输入及取消；Qt 覆盖真实右键打开与添加确认，中英文、浅深色、多字号和冻结会话。Windows 原生协议测试验证异步数据对象和实际内容流。真实 Explorer、Finder、Ubuntu Files 及桌面投放须分别登记，离屏与协议接收器不能代替桌面人工验收。阶段证据记录于对应 issue 和本地/CI 工件。
+核心覆盖三格式、当前目录、原内容和空目录、重名策略、来源变化、受保护输入及取消；Qt 覆盖真实右键打开与添加确认，中英文、浅深色、多字号和冻结会话。Windows 原生协议测试验证异步数据对象和实际内容流。移动回归覆盖列表/网格、目录树、拒绝目标、混选、目录合并、元数据保留及边界交接，三格式由独立 Python 读取器复核。真实 Explorer、Finder、Ubuntu Files 及桌面投放须分别登记，离屏与协议接收器不能代替桌面人工验收。阶段证据记录于对应 issue 和本地/CI 工件。
 
-English: Context Open acts on the clicked item through the same stable-identity entry point as double-click and Enter. External copies use Windows asynchronous virtual files, macOS file promises backed by Rust publication tasks, and prepared file URLs on the supported Linux X11 baseline. Incoming local files require confirmation and target the current archive directory. Ordinary single-file ZIP, TAR and TAR.GZ edits use a frozen source, private same-volume rewrite, full content verification and version-bound atomic replacement. Encrypted and split edits are unavailable. Failed or cancelled pre-commit edits preserve the original archive. Native desktop acceptance is recorded separately from automated tests.
+English: Context Open acts on the clicked item through the same stable-identity entry point as double-click and Enter. External copies use Windows asynchronous virtual files, macOS file promises backed by Rust publication tasks, and prepared file URLs on the supported Linux X11 baseline. Incoming local files require confirmation and target the current archive directory. Ordinary single-file ZIP, TAR and TAR.GZ edits use a frozen source, private same-volume rewrite, full content verification and version-bound atomic replacement. Internal moves freeze source identities and accept sibling folders or the current session's directory tree. Selected folders, descendants and the original location are refused with visible reasons. File conflicts reuse Ask/Skip/Rename/Replace; skipped inputs stay at their source. ZIP payloads and supported TAR metadata are retained through the same verified rewrite transaction. Encrypted and split edits are unavailable, with explicit hover feedback. Failed or cancelled pre-commit edits preserve the original archive. Native desktop acceptance is recorded separately from automated tests.

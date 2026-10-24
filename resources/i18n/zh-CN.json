@@ -617,6 +617,18 @@
     "export.preparing": "正在准备拖出文件",
     "export.ready": "文件已准备好，请再次拖动。",
     "export.failed": "无法准备拖出文件。",
-    "export.result": "拖出文件准备结果"
+    "export.result": "拖出文件准备结果",
+    "edit.encrypted": "暂不支持向加密压缩包添加或移动文件。",
+    "edit.split": "暂不支持向分卷压缩包添加或移动文件。",
+    "edit.encryptedSplit": "暂不支持向加密分卷压缩包添加或移动文件。",
+    "move.expired": "所选项目或当前目录已变化，请重新拖动。",
+    "move.same": "所选项目已在此目录中。",
+    "move.selected": "不能移动到选中的文件夹或其子目录。",
+    "move.to": "移动到 %1",
+    "move.progress": "正在移动包内文件",
+    "move.result": "包内移动结果",
+    "move.task": "移动任务 #%1",
+    "desktop.moveTask": "移动",
+    "update.invalidDrop": "仅支持添加本地普通文件和文件夹。"
   }
 }

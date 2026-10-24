@@ -17,7 +17,7 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口",
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html",
       "design": "design/hifi/sources/main.html"
     },
     "Preview": {
@@ -42,7 +42,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成",
+      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识",
       "design": "design/html/canvas.html?view=progress"
     },
     "IntegrityWindow": {
@@ -54,7 +54,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationConflictWidth",
-      "reason": "重名守卫保持 491 宽、最高 560，长标题与说明在正文内换行，禁止辅助字号撑宽内容，共享 footer 固定可达",
+      "reason": "重名守卫保持 491 宽、最高 560，长标题与说明在正文内换行，禁止辅助字号撑宽内容，共享 footer 固定可达，包内添加和移动使用文件重名分支及应用到后续冲突，普通创建仍使用整包重名分支",
       "design": "design/html/canvas.html?view=conflict"
     },
     "PasswordWindow": {

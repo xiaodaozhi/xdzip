@@ -28,6 +28,7 @@
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QElapsedTimer>
 #include <QEventLoop>
@@ -5965,7 +5966,8 @@ QtObject {
         controller.startUpdate({input.fileName()}, controller.sessionId(), controller.directoryId(),
                                0);
         QTRY_COMPARE(accepted.count(), 1);
-        QTRY_VERIFY(controller.ready() && !controller.busy() && controller.activeTaskCount() == 0);
+        QTRY_VERIFY(controller.canUpdateArchive() && !controller.busy() &&
+                    controller.activeTaskCount() == 0);
         QCOMPARE(controller.location(), path);
         QCOMPARE(controller.sortOrder(), order);
         bool found = false;
@@ -6064,7 +6066,7 @@ QtObject {
         QVERIFY(QMetaObject::invokeMethod(start, "clicked"));
         QTRY_COMPARE(updated.count(), 1);
         QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy() &&
-                    controller->ready());
+                    controller->canUpdateArchive());
         QCOMPARE(controller->tasks().first().toMap().value("kind").toString(),
                  QStringLiteral("update"));
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
@@ -6076,6 +6078,345 @@ QtObject {
         QVERIFY(found);
         QVERIFY(controller->sessionId() != session);
         QTRY_VERIFY(controller->requestClose());
+    }
+    void internalMoveDrag_data() {
+        rightClickOpenAndDropAddition_data();
+    }
+    void internalMoveDrag() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), source));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        window->requestActivate();
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
+                      "factor: 1; property bool dark: false; onFactorChanged: "
+                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+                      QUrl());
+        std::unique_ptr<QObject> appearance(theme.create());
+        QVERIFY(appearance);
+        appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", dark);
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        const auto findRow = [&](const QString &name) {
+            for (int i = 0; i < controller->m_model.rowCount(); ++i)
+                if (controller->m_model.rowAt(i)->cells[0] == name)
+                    return i;
+            return -1;
+        };
+        const int fileRow = findRow(QStringLiteral("旅行清单.txt"));
+        const int selectedFolder = findRow(QStringLiteral("02 文档"));
+        const int targetRow = findRow(QStringLiteral("01 照片"));
+        QVERIFY(fileRow >= 0 && selectedFolder >= 0 && targetRow >= 0);
+        controller->selectAll(false);
+        controller->selectRow(fileRow);
+        controller->selectRow(selectedFolder);
+        const auto selectedTarget = controller->directoryForRow(selectedFolder);
+        const auto destination = controller->directoryForRow(targetRow);
+        const auto token = controller->beginInternalDrag(fileRow);
+        QVERIFY(!controller->moveDropState(token, selectedTarget).value("permitted").toBool());
+        QVERIFY(!controller->moveDropState(token, "").value("permitted").toBool());
+        QVERIFY(controller->moveDropState(token, destination).value("permitted").toBool());
+        controller->cancelInternalDrag(token);
+        QVERIFY(!controller->moveDropState(token, destination).value("permitted").toBool());
+        auto *proxy = findVisual(window->contentItem(), "archiveMoveDrag");
+        QVERIFY(proxy);
+        QQuickItem *from = nullptr, *to = nullptr, *rejected = nullptr;
+        QTRY_VERIFY((from = findVisual(window->contentItem(), QString("entry-%1-0").arg(fileRow))));
+        QTRY_VERIFY((to = findVisual(window->contentItem(), QString("entry-%1-0").arg(targetRow))));
+        QTRY_VERIFY((rejected = findVisual(window->contentItem(),
+                                           QString("entry-%1-0").arg(selectedFolder))));
+        const auto point = [](QQuickItem *item) {
+            return item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+        };
+        const auto start = point(from), finish = point(to);
+        QSignalSpy accepted(controller, &BrowserController::updateStarted);
+        QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
+        QTest::mouseMove(window, start + QPoint(24, 0), 20);
+        QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
+        QTest::keyClick(window, Qt::Key_Escape);
+        QTRY_VERIFY(proxy->property("token").toString().isEmpty());
+        QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, start);
+        QCOMPARE(accepted.count(), 0);
+        QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
+        QTest::mouseMove(window, start + QPoint(24, 0), 20);
+        QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
+        QTest::mouseMove(window, point(rejected), 20);
+        QTRY_COMPARE(proxy->property("message").toString(), qtTrId("move.selected"));
+        QVERIFY(!proxy->property("permitted").toBool());
+        if (!qEnvironmentVariableIsEmpty("XDZIP_MOVE_VISUAL_AUDIT")) {
+            const auto output = qEnvironmentVariable("XDZIP_MOVE_VISUAL_AUDIT");
+            QVERIFY(QDir().mkpath(output));
+            QVERIFY(visual_audit::save(window, output,
+                                       "rejected-" + language + QString::number(factor) +
+                                           QString::number(dark)));
+        }
+        QTest::mouseMove(window, finish, 20);
+        QTRY_VERIFY2(
+            proxy->property("permitted").toBool(),
+            qPrintable(
+                QString(
+                    "token empty=%1, message=%2, target=%3, point=%4/%5, expected=%6/%7, valid=%8")
+                    .arg(proxy->property("token").toString().isEmpty())
+                    .arg(proxy->property("message").toString())
+                    .arg(proxy->property("targetId").toString())
+                    .arg(proxy->x())
+                    .arg(proxy->y())
+                    .arg(finish.x())
+                    .arg(finish.y())
+                    .arg(controller->moveDropState(proxy->property("token").toString(), destination)
+                             .value("message")
+                             .toString())));
+        auto *feedback = findVisual(window->contentItem(), "archiveMoveFeedback");
+        QVERIFY(feedback);
+        QVERIFY(feedback->x() >= 0 && feedback->y() >= 0 &&
+                feedback->x() + feedback->width() <= window->width() &&
+                feedback->y() + feedback->height() <= window->height());
+        QVERIFY(!controller->m_export);
+        if (!qEnvironmentVariableIsEmpty("XDZIP_MOVE_VISUAL_AUDIT"))
+            QVERIFY(visual_audit::save(window, qEnvironmentVariable("XDZIP_MOVE_VISUAL_AUDIT"),
+                                       language + QString::number(factor) + QString::number(dark)));
+        QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, finish);
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->activeTaskCount() == 0);
+        QCOMPARE(controller->tasks().first().toMap().value("kind").toString(),
+                 QStringLiteral("move"));
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QCOMPARE(findRow(QStringLiteral("旅行清单.txt")), -1);
+        QCOMPARE(findRow(QStringLiteral("02 文档")), -1);
+        controller->enterDirectory(findRow(QStringLiteral("01 照片")));
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(findRow(QStringLiteral("旅行清单.txt")) >= 0);
+        QVERIFY(findRow(QStringLiteral("02 文档")) >= 0);
+        QVERIFY(window->setProperty("viewMode", "grid"));
+        const int gridRow = findRow(QStringLiteral("旅行清单.txt"));
+        const auto targetTreeId = controller->m_directoryPaths.value(QStringLiteral("03 地图/"));
+        QVERIFY(!targetTreeId.isEmpty());
+        QQuickItem *card = nullptr, *tree = nullptr;
+        QTRY_VERIFY(
+            (card = findVisual(window->contentItem(), QString("grid-entry-%1").arg(gridRow))));
+        QTRY_VERIFY((tree = findVisual(window->contentItem(), "directory-" + targetTreeId)));
+        const auto gridStart = point(card), treeFinish = point(tree);
+        QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, gridStart);
+        QTest::mouseMove(window, gridStart + QPoint(24, 0), 20);
+        QTest::mouseMove(window, treeFinish, 20);
+        QTRY_VERIFY(proxy->property("permitted").toBool());
+        QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, treeFinish);
+        QTRY_COMPARE(accepted.count(), 2);
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->activeTaskCount() == 0);
+        QCOMPARE(controller->location(), QStringLiteral("01 照片/"));
+        QCOMPARE(findRow(QStringLiteral("旅行清单.txt")), -1);
+        controller->navigateDirectory(
+            controller->m_directoryPaths.value(QStringLiteral("03 地图/")));
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(findRow(QStringLiteral("旅行清单.txt")) >= 0);
+        QTRY_VERIFY(controller->requestClose());
+    }
+    void protectedArchivesRejectInternalAndExternalDropsWithReasons() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto split = [&](const QString &original, const QString &name) {
+            QFile source(original);
+            if (!source.open(QIODevice::ReadOnly))
+                return QString{};
+            const auto bytes = source.readAll();
+            for (int part = 0; part < 2; ++part) {
+                QFile file(
+                    fixture.filePath(name + QString(".zip.%1").arg(part + 1, 3, 10, QChar('0'))));
+                if (!file.open(QIODevice::WriteOnly))
+                    return QString{};
+                const auto chunk =
+                    part == 0 ? bytes.left(bytes.size() / 2) : bytes.mid(bytes.size() / 2);
+                if (file.write(chunk) != chunk.size())
+                    return QString{};
+            }
+            return fixture.filePath(name + ".zip.001");
+        };
+        const auto encrypted = QStringLiteral(XDZIP_FIXTURES "/../extract/password-retry.zip");
+        const auto plainSplit =
+            split(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), "split");
+        const auto encryptedSplit = split(encrypted, "encrypted");
+        QVERIFY(!plainSplit.isEmpty() && !encryptedSplit.isEmpty());
+        for (const auto &pair :
+             QList<QPair<QString, QString>>{{encrypted, "edit.encrypted"},
+                                            {plainSplit, "edit.split"},
+                                            {encryptedSplit, "edit.encryptedSplit"}}) {
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            QVERIFY(window);
+            auto *controller = window->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->openPath(pair.first);
+            QTRY_VERIFY2(controller->ready() && !controller->busy(),
+                         qPrintable(controller->message()));
+            QVERIFY(!controller->canUpdateArchive());
+            const auto expected = qtTrId(pair.second.toUtf8().constData());
+            QCOMPARE(controller->addDropMessage(), expected);
+            const auto token = controller->beginInternalDrag(0);
+            const auto state = controller->moveDropState(token, "");
+            QVERIFY(!state.value("permitted").toBool());
+            QCOMPARE(state.value("message").toString(), expected);
+            controller->cancelInternalDrag(token);
+            auto *zone = findVisual(window->contentItem(), "archiveAddDropArea");
+            QVERIFY(zone);
+            const auto pos =
+                zone->mapToScene(QPointF(zone->width() / 2, zone->height() / 2)).toPoint();
+            QMimeData mime;
+            mime.setUrls({QUrl::fromLocalFile(encrypted)});
+            QSignalSpy added(controller, &BrowserController::additionRequested);
+            QDragEnterEvent enter(pos, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(window, &enter);
+            QVERIFY(enter.isAccepted());
+            QDragMoveEvent move(pos, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(window, &move);
+            QVERIFY(!move.isAccepted() || move.dropAction() == Qt::IgnoreAction);
+            auto *feedback = findVisual(window->contentItem(), "archiveAddDropFeedback");
+            QVERIFY(feedback && feedback->isVisible());
+            QDropEvent drop(pos, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+            QCoreApplication::sendEvent(window, &drop);
+            QVERIFY(!drop.isAccepted());
+            QCOMPARE(added.count(), 0);
+            QCOMPARE(controller->activeTaskCount(), 0);
+            QTRY_VERIFY(controller->requestClose());
+        }
+    }
+    void moveConflictsUseFileActionsAndAccessibleApplyAll() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), source));
+        QStringList inputs;
+        for (const auto &name : {QStringLiteral("旅行清单.txt"), QStringLiteral("README.md")}) {
+            QFile file(fixture.filePath(name));
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            file.write("existing destination");
+            file.close();
+            inputs.append(file.fileName());
+        }
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        const auto row = [&](const QString &name) {
+            for (int i = 0; i < controller->m_model.rowCount(); ++i)
+                if (controller->m_model.rowAt(i)->cells[0] == name)
+                    return i;
+            return -1;
+        };
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        controller->enterDirectory(row(QStringLiteral("01 照片")));
+        QTRY_VERIFY(!controller->busy());
+        controller->startUpdate(inputs, controller->sessionId(), controller->directoryId(), 0);
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->activeTaskCount() == 0);
+        controller->showRoot();
+        QTRY_VERIFY(!controller->busy());
+        controller->selectAll(false);
+        controller->selectRow(row(QStringLiteral("旅行清单.txt")));
+        controller->selectRow(row(QStringLiteral("README.md")));
+        QSet<QString> prompts;
+        connect(controller, &BrowserController::tasksChanged, window, [&] {
+            for (const auto &value : controller->tasks()) {
+                const auto task = value.toMap();
+                if (task.value("kind") == "move" && task.value("status") == "waiting")
+                    prompts.insert(task.value("promptId").toString());
+            }
+        });
+        const auto token = controller->beginInternalDrag(row(QStringLiteral("旅行清单.txt")));
+        controller->moveInternalDrag(token,
+                                     controller->directoryForRow(row(QStringLiteral("01 照片"))));
+        QQuickWindow *dialog = nullptr;
+        QTRY_VERIFY((dialog = window->findChild<QQuickWindow *>("conflictWindow")) &&
+                    dialog->isVisible());
+        auto *all = findVisual(dialog->contentItem(), "conflictApplyAll");
+        QVERIFY(all && all->isVisible());
+        QVERIFY(controller->browsingBusy());
+        QVERIFY(!controller->browserQueryAvailable());
+        const auto location = controller->location();
+        const auto session = controller->sessionId();
+        controller->navigateDirectory(
+            controller->m_directoryPaths.value(QStringLiteral("01 照片/")));
+        controller->search("ignored during edit");
+        QCOMPARE(controller->location(), location);
+        QCOMPARE(controller->sessionId(), session);
+        QVERIFY(!all->property("checked").toBool());
+        auto *accessible = QAccessible::queryAccessibleInterface(all);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+        QTRY_VERIFY(all->property("checked").toBool());
+        auto *skip = findVisual(dialog->contentItem(), "conflictSkip");
+        QVERIFY(skip && skip->isEnabled());
+        QVERIFY(QMetaObject::invokeMethod(skip, "click"));
+        QTRY_VERIFY(controller->ready() && !controller->busy() &&
+                    controller->activeTaskCount() == 0);
+        const auto task = controller->tasks().first().toMap();
+        QCOMPARE(task.value("kind").toString(), QStringLiteral("move"));
+        QCOMPARE(task.value("status").toString(), QStringLiteral("succeeded"));
+        QCOMPARE(task.value("skippedFiles").toInt(), 2);
+        QCOMPARE(prompts.size(), 1);
+        QVERIFY(row(QStringLiteral("旅行清单.txt")) >= 0 && row(QStringLiteral("README.md")) >= 0);
+        QTRY_VERIFY(controller->requestClose());
+    }
+    void internalDragHandsFrozenSelectionToExternalExport() {
+        for (bool deactivate : {false, true}) {
+            QQmlApplicationEngine engine;
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            QVERIFY(window);
+            window->requestActivate();
+            auto *controller = window->findChild<BrowserController *>();
+            QVERIFY(controller);
+            controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+            QQuickItem *item = nullptr;
+            QTRY_VERIFY((item = findVisual(window->contentItem(), "entry-0-0")));
+            const auto point =
+                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+            QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, point);
+            QTest::mouseMove(window, point + QPoint(24, 0), 20);
+            const auto ids = controller->m_model.selectedIds();
+            QVERIFY(!ids.isEmpty());
+            QQuickWindow other;
+            if (deactivate) {
+                other.resize(200, 150);
+                other.show();
+                other.requestActivate();
+                QTRY_VERIFY(!window->isActive());
+                QTRY_VERIFY(controller->m_export);
+            } else {
+                QTest::mouseMove(window, QPoint(-20, point.y()), 20);
+                QVERIFY(controller->m_export);
+            }
+            QCOMPARE(controller->m_exportSelectors, ids);
+            QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, QPoint(-20, point.y()));
+            QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 0);
+            QVERIFY(!controller->m_export->entries.isEmpty());
+            for (const auto &value : controller->tasks())
+                QVERIFY(value.toMap().value("kind") != "move");
+            QTRY_VERIFY(controller->requestClose());
+        }
     }
     void temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance_data() {
         QTest::addColumn<QString>("language");

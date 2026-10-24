@@ -228,6 +228,8 @@ QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
         return {};
     const QHash<QString, QString> taskErrors = {
+        {"move_same_directory", qtTrId("move.same")},
+        {"move_selected_directory", qtTrId("move.selected")},
         {"task_abandoned", qtTrId("ui.cc72ffea1705")},
         {"integrity_error", qtTrId("ui.6adbf73c75b1")},
         {"output_io", qtTrId("ui.7735b66ae246")},
@@ -515,6 +517,8 @@ void BrowserController::openContextEntry(const QString &session, const QString &
     }
 }
 void BrowserController::enterDirectory(int row) {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     if (m_busy || !m_ready)
         return;
     const auto *item = m_model.rowAt(row);
@@ -613,6 +617,8 @@ QStringList BrowserController::directoryAncestors(const QString &id) const {
     return ancestors;
 }
 void BrowserController::navigateDirectory(const QString &id) {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     if (!m_ready || m_closing || m_result.preflight || m_result.extraction || m_result.targetCheck)
         return;
     const auto *item = m_directoryItems.value(id, nullptr);
@@ -623,6 +629,8 @@ void BrowserController::navigateDirectory(const QString &id) {
     start({}, 0);
 }
 void BrowserController::sortByColumn(int column) {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     if (!m_ready || m_closing || m_result.preflight || m_result.extraction ||
         m_result.targetCheck || column < -1 || column > 4)
         return;
@@ -631,6 +639,8 @@ void BrowserController::sortByColumn(int column) {
     start({}, 0);
 }
 void BrowserController::showRoot() {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     if (!m_ready || m_closing || m_result.preflight || m_result.extraction || m_result.targetCheck)
         return;
     m_directory.clear();
@@ -638,6 +648,8 @@ void BrowserController::showRoot() {
     start({}, 0);
 }
 void BrowserController::search(const QString &text) {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     if (!m_ready || m_closing || m_result.preflight || m_result.extraction ||
         m_result.targetCheck || text.toUtf8().size() > 1024)
         return;
@@ -997,6 +1009,8 @@ bool BrowserController::requestClose() {
     return false;
 }
 void BrowserController::start(const QString &path, int offset) {
+    if (m_updateActive || (m_busy && m_result.updating))
+        return;
     xdzip::reader::Command command{};
     command.kind =
         path.isEmpty() ? xdzip::reader::CommandKind::Browse : xdzip::reader::CommandKind::Open;
@@ -1042,7 +1056,8 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.preflight = preflight;
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
-    m_result.updating = command.kind == xdzip::reader::CommandKind::Update;
+    m_result.updating = command.kind == xdzip::reader::CommandKind::Update ||
+                        command.kind == xdzip::reader::CommandKind::Move;
     m_result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
                          command.kind == xdzip::reader::CommandKind::PublishExport;
     m_result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
@@ -1073,6 +1088,7 @@ void BrowserController::attemptSubmission() {
     static QPointer<BrowserController> heavyOwner;
     const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::PublishExport ||
                        m_waiting->kind == xdzip::reader::CommandKind::Update ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Move ||
                        m_waiting->kind == xdzip::reader::CommandKind::Export ||
                        m_waiting->kind == xdzip::reader::CommandKind::Create ||
                        m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
@@ -1229,11 +1245,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_tasks.insert(t.id, value);
         if (firstSuccess && !t.open_path.empty())
             openTemporaryOutput(t.id);
-        if (text(t.kind) == "update" && terminal &&
+        if ((text(t.kind) == "update" || text(t.kind) == "move") && terminal &&
             !m_tasks.value(t.id).value("updateRefreshed").toBool()) {
             m_tasks[t.id].insert("updateRefreshed", true);
-            m_updateActive = false;
             const auto session = QString::number(t.session), source = text(t.source);
+            if (session == m_session)
+                m_updateActive = true;
             QTimer::singleShot(0, this,
                                [this, session, source] { refreshAfterUpdate(session, source); });
         }
@@ -1340,6 +1357,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.archiveTotal = static_cast<int>(event.archive_total);
         m_format = text(event.format);
         m_updateAllowed = event.update_allowed;
+        m_editRestriction = event.edit_restriction;
         m_archiveFolder = text(event.folder_name);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);

@@ -617,6 +617,18 @@
     "export.preparing": "Preparing files to drag out",
     "export.ready": "Files are ready. Drag again to copy them out.",
     "export.failed": "Could not prepare files for dragging.",
-    "export.result": "Export preparation result"
+    "export.result": "Export preparation result",
+    "edit.encrypted": "Adding or moving files in encrypted archives is not supported yet.",
+    "edit.split": "Adding or moving files in split archives is not supported yet.",
+    "edit.encryptedSplit": "Adding or moving files in encrypted split archives is not supported yet.",
+    "move.expired": "The selection or current folder changed. Drag again.",
+    "move.same": "These items are already in this folder.",
+    "move.selected": "Cannot move into a selected folder or one of its subfolders.",
+    "move.to": "Move to %1",
+    "move.progress": "Moving files in archive",
+    "move.result": "Archive move result",
+    "move.task": "Move task #%1",
+    "desktop.moveTask": "Move",
+    "update.invalidDrop": "Only local regular files and folders can be added."
   }
 }

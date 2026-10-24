@@ -27,6 +27,7 @@ pub struct Archive {
     source: source::Source,
     format: xdzip_codec_api::Format,
     update_allowed: bool,
+    edit_restriction: u8,
     index: index::DirectoryIndex,
     cached_query: Option<query::QuerySnapshot>,
     next_query: u64,
@@ -83,12 +84,16 @@ impl Archive {
         };
         control.check()?;
         let index = index::DirectoryIndex::build(&rows, directories.as_deref(), control)?;
-        let update_allowed = !source.is_split()
-            && !rows.iter().any(|r| {
-                r.encrypted || r.link || r.warning || (!r.directory && ![0, 8].contains(&r.method))
-            });
+        let edit_restriction = u8::from(rows.iter().any(|r| r.encrypted))
+            | (u8::from(source.is_split()) << 1)
+            | (u8::from(
+                rows.iter()
+                    .any(|r| r.link || r.warning || (!r.directory && ![0, 8].contains(&r.method))),
+            ) << 2);
+        let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,
+            edit_restriction,
             directories,
             source,
             format,

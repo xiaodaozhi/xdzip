@@ -9,6 +9,7 @@ OperationWindow {
     required property var task
     required property var sizeFormatter
     signal decision(int policy, bool all)
+    readonly property bool archiveCreation: task.creating === true && task.kind !== "move" && task.kind !== "update"
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
     width: Theme.operationConflictWidth
@@ -30,7 +31,7 @@ OperationWindow {
                         OperationHero { source: "qrc:/xdzip/assets/conflict-document.png"; canvasWidth: root.unit(60); canvasHeight: root.unit(68); artworkWidth: root.unit(56); artworkHeight: root.unit(65); Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight }
                         ColumnLayout {
                             Layout.fillWidth: true; Layout.minimumWidth: 0
-                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.task.creating ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393"); wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.text }
+                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.archiveCreation ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393"); wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.text }
                             Text { Layout.fillWidth: true; text: qsTrId("ui.25dad65a6ae3"); textFormat: Text.PlainText; wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: 13 * Theme.fontScale }
                         }
                     }
@@ -42,7 +43,7 @@ OperationWindow {
                     GridLayout {
                         Layout.fillWidth: true; columns: Theme.fontScale > 1.35 ? 1 : 2; columnSpacing: root.unit(16); rowSpacing: root.unit(12)
                         Repeater {
-                            model: root.task.creating ? [qsTrId("ui.6760b8a159bb"), qsTrId("ui.d1ea7b4cf107")] : [qsTrId("ui.b20339d20b27"), qsTrId("ui.ad893b1fee61")]
+                            model: root.archiveCreation ? [qsTrId("ui.6760b8a159bb"), qsTrId("ui.d1ea7b4cf107")] : [qsTrId("ui.b20339d20b27"), qsTrId("ui.ad893b1fee61")]
                             Rectangle {
                                 id: comparisonCard
                                 required property string modelData
@@ -62,7 +63,7 @@ OperationWindow {
                         }
                     }
                     InfoRow { objectName: "conflictNotice"; Layout.fillWidth: true; text: root.task.overwriteAllowed ? qsTrId("ui.6878e39a8fb2") : qsTrId("ui.baaef55f9a78"); labelSize: Theme.operationFooterNoteSize; iconSize: 20 }
-                    OperationCheck { density: root.density; id: remaining; objectName: "conflictApplyAll"; Layout.fillWidth: true; visible: !root.task.creating; text: qsTrId("ui.5a8648b2a130") }
+                    OperationCheck { density: root.density; id: remaining; objectName: "conflictApplyAll"; Layout.fillWidth: true; visible: !root.archiveCreation; text: qsTrId("ui.5a8648b2a130") }
                 }
             }
         }
@@ -71,9 +72,9 @@ OperationWindow {
             Layout.fillWidth: true
             contentInset: root.unit(30); verticalInset: root.unit(17); minimumFooterHeight: root.unit(74)
             note: qsTrId("ui.df37976cd784"); noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
-            OperationFooterButton { objectName: "conflictSkip"; text: root.task.creating ? qsTrId("ui.f6e498e6a16d") : qsTrId("ui.fc50a99caae0"); onClicked: root.decision(1, remaining.checked) }
+            OperationFooterButton { objectName: "conflictSkip"; text: root.archiveCreation ? qsTrId("ui.f6e498e6a16d") : qsTrId("ui.fc50a99caae0"); onClicked: root.decision(1, remaining.checked) }
             OperationFooterButton { objectName: "conflictRename"; text: qsTrId("ui.7d590c4f89be"); primary: true; onClicked: root.decision(2, remaining.checked) }
-            OperationFooterButton { objectName: "conflictOverwrite"; text: root.task.creating ? qsTrId("ui.992f443cf975") : qsTrId("ui.e4b715a60c85"); dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
+            OperationFooterButton { objectName: "conflictOverwrite"; text: root.archiveCreation ? qsTrId("ui.992f443cf975") : qsTrId("ui.e4b715a60c85"); dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
         }
     }
 }

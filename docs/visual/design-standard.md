@@ -170,3 +170,7 @@ PasswordWindow 按 [password-reference.json](password-reference.json) 和 [P02 �
 ## 归档添加确认
 
 UpdateWindow 采用创建窗口的 491 逻辑宽度、正文及标题字号、共享 footer。高度按正文加 footer 自适应，并受创建窗口高度上限及屏幕约束。来源列表采用虚拟化视图，视口为 100 至 240，内距 8、行间距 6、段间距 12，权威参数位于 layout-scale.json 的 operation.adding。独立原稿见 [archive-add.html](../../design/hifi/sources/archive-add.html)。浅深色与中英文 100%/125%/150% 字号独立验证，主窗口和菜单密度不变。
+
+## 包内移动状态
+
+包内拖动不改变主窗口、菜单或行高比例。目标使用已有列表 selection 和树 treeSelectionColor，反馈使用 tooltipSurface/tooltipText、tooltipMaxWidth、tooltipPadding 和 mainBodySize，最多四行并在客户区内翻转/约束，不增加固定操作窗口。无效目标显示具体拒绝原因，源行保留既有选择色。复用进度和冲突窗口的尺寸，文件冲突分支提供跳过、改名、替换及应用到后续冲突。状态板见 [archive-move.html](../../design/hifi/sources/archive-move.html)。

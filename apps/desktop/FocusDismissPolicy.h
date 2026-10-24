@@ -96,6 +96,9 @@ class FocusDismissPolicy final : public QObject {
             }
             return true;
         }
+        // An active drag owns Escape; ordinary control dismissal must not eat it.
+        if (key->key() == Qt::Key_Escape && window->property("escapeGestureActive").toBool())
+            return false;
         if (key->key() == Qt::Key_Escape && focused && !popup &&
             event->type() != QEvent::KeyRelease) {
             event->accept();

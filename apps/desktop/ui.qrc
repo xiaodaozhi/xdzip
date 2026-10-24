@@ -132,6 +132,7 @@
     <file>ui/TaskMetric.qml</file>
     <file>ui/Preview.qml</file>
     <file>ui/Browser.qml</file>
+    <file>ui/ArchiveMoveTarget.qml</file>
     <file>ui/SessionPage.qml</file>
     <file>ui/WelcomePage.qml</file>
     <file alias="assets/light/archive-grey.png">../../design/assets/png/light/archive-grey@3x.png</file>

@@ -36,7 +36,10 @@ impl RewriteCodec for ZipCodec {
             cancel,
         })
         .map_err(|_| EncodeError::Invalid)?;
-        if source.len() != input.keep.len() || source.offset() != 0 {
+        if source.len() != input.keep.len()
+            || source.offset() != 0
+            || (!input.renames.is_empty() && input.renames.len() != input.keep.len())
+        {
             return Err(EncodeError::Unsupported);
         }
         let mut writer = zip::ZipWriter::new(output);
@@ -53,9 +56,12 @@ impl RewriteCodec for ZipCodec {
                     name: &file.name().map_err(|_| EncodeError::Unsupported)?,
                     input_bytes: 0,
                 });
-                writer
-                    .raw_copy_file(file)
-                    .map_err(|_| EncodeError::Unsupported)?;
+                if let Some(Some(name)) = input.renames.get(index) {
+                    writer.raw_copy_file_rename(file, name)
+                } else {
+                    writer.raw_copy_file(file)
+                }
+                .map_err(|_| EncodeError::Unsupported)?;
             }
         }
         let mut bytes = 0u64;
@@ -143,39 +149,51 @@ mod tests {
         writer.start_file("original.txt", options).unwrap();
         writer.write_all(b"unchanged payload").unwrap();
         let original = writer.finish().unwrap().into_inner();
-        let mut output = Cursor::new(Vec::new());
-        ZipCodec
-            .rewrite(
-                &mut Cursor::new(original.clone()),
-                RewriteInput {
-                    keep: &[true],
-                    additions: &Empty,
-                    settings: EncodeSettings {
-                        method: "deflate",
-                        level: 6,
-                        password: None,
+        for rename in [false, true] {
+            let renames = [rename.then(|| "移动/renamed.txt".to_owned())];
+            let mut output = Cursor::new(Vec::new());
+            ZipCodec
+                .rewrite(
+                    &mut Cursor::new(original.clone()),
+                    RewriteInput {
+                        keep: &[true],
+                        renames: &renames,
+                        additions: &Empty,
+                        settings: EncodeSettings {
+                            method: "deflate",
+                            level: 6,
+                            password: None,
+                        },
                     },
-                },
-                &mut output,
-                &Cancellation::default(),
-                &mut |_| {},
-            )
-            .unwrap();
-        let rewritten = output.into_inner();
-        let mut old = zip::ZipArchive::new(Cursor::new(&original)).unwrap();
-        let mut new = zip::ZipArchive::new(Cursor::new(&rewritten)).unwrap();
-        assert_eq!(old.comment(), new.comment());
-        let a = old.by_index_raw(0).unwrap();
-        let b = new.by_index_raw(0).unwrap();
-        assert_eq!(a.comment(), b.comment());
-        assert_eq!(a.last_modified(), b.last_modified());
-        assert_eq!(a.unix_mode(), b.unix_mode());
-        assert_eq!(a.extra_data(), b.extra_data());
-        let a_start = a.data_start().unwrap() as usize;
-        let b_start = b.data_start().unwrap() as usize;
-        assert_eq!(
-            &original[a_start..a_start + a.compressed_size() as usize],
-            &rewritten[b_start..b_start + b.compressed_size() as usize]
-        );
+                    &mut output,
+                    &Cancellation::default(),
+                    &mut |_| {},
+                )
+                .unwrap();
+            let rewritten = output.into_inner();
+            let mut old = zip::ZipArchive::new(Cursor::new(&original)).unwrap();
+            let mut new = zip::ZipArchive::new(Cursor::new(&rewritten)).unwrap();
+            assert_eq!(old.comment(), new.comment());
+            let a = old.by_index_raw(0).unwrap();
+            let b = new.by_index_raw(0).unwrap();
+            assert_eq!(
+                b.name().unwrap(),
+                if rename {
+                    "移动/renamed.txt"
+                } else {
+                    "original.txt"
+                }
+            );
+            assert_eq!(a.comment(), b.comment());
+            assert_eq!(a.last_modified(), b.last_modified());
+            assert_eq!(a.unix_mode(), b.unix_mode());
+            assert_eq!(a.extra_data(), b.extra_data());
+            let a_start = a.data_start().unwrap() as usize;
+            let b_start = b.data_start().unwrap() as usize;
+            assert_eq!(
+                &original[a_start..a_start + a.compressed_size() as usize],
+                &rewritten[b_start..b_start + b.compressed_size() as usize]
+            );
+        }
     }
 }

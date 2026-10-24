@@ -30,6 +30,7 @@ ApplicationWindow {
     property string viewMode: activePage ? activePage.viewMode : "list"
     onViewModeChanged: if (activePage && activePage.viewMode !== viewMode) activePage.viewMode = viewMode
     property alias darkMode: initialPage.darkMode
+    readonly property bool escapeGestureActive: activePage ? activePage.archiveInternalDragging : false
     readonly property string activeTaskId: activePage.activeTaskId
     readonly property var taskSnapshot: activePage.taskSnapshot
     readonly property color accentTextColor: activePage.accentTextColor

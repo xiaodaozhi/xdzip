@@ -16,12 +16,110 @@ Item {
     property bool retainShellPage: false
     property bool closedPage: false
     property bool sessionClosed: false
+    readonly property bool archiveInternalDragging: moveDrag.Drag.active
     readonly property var contentItem: root
     readonly property int visibility: windowHost.visibility
     readonly property bool windowsTitlebar: windowHost.windowsTitlebar
     readonly property bool integratedTitlebar: windowHost.integratedTitlebar
     width: windowHost.contentItem.width
     height: windowHost.contentItem.height
+    HoverHandler { enabled: moveDrag.Drag.active; cursorShape: Qt.ForbiddenCursor }
+    Shortcut { sequence: "Escape"; enabled: moveDrag.Drag.active; onActivated: root.cancelTransfer() }
+    // Keep a gesture internal until it leaves this window. Crossing the window
+    // hands the same frozen selection to the existing native copy/export path.
+    Item {
+        id: moveDrag
+        objectName: "archiveMoveDrag"
+        width: 1; height: 1
+        property string token: ""
+        property string message: ""
+        property string targetId: ""
+        property var feedbackOwner: null
+        property bool permitted: false
+        property bool promoting: false
+        Drag.source: moveDrag
+        Drag.keys: ["xdzip-internal-move"]
+        Drag.supportedActions: Qt.MoveAction
+        Drag.proposedAction: Qt.MoveAction
+        function feedback(owner, target, state) {
+            feedbackOwner = owner; targetId = target;
+            message = state.message; permitted = state.permitted;
+        }
+        function clearFeedback(owner) {
+            if (feedbackOwner === owner) { feedbackOwner = null; targetId = ""; message = ""; permitted = false; }
+        }
+    }
+    Rectangle {
+        objectName: "archiveMoveFeedback"
+        z: 1000
+        visible: moveDrag.Drag.active && moveDrag.message.length > 0
+        width: Math.min(Theme.tooltipMaxWidth, root.width - Theme.mainGridInset * 2)
+        height: moveHint.implicitHeight + Theme.tooltipPadding * 2
+        x: Math.max(Theme.mainGridInset, Math.min(moveDrag.x + Theme.tooltipPadding, root.width - width - Theme.mainGridInset))
+        y: Math.max(Theme.mainGridInset, Math.min(moveDrag.y + Theme.tooltipPadding, root.height - height - Theme.mainGridInset))
+        color: Theme.tooltipSurface
+        radius: Theme.mainControlRadius
+        Accessible.role: Accessible.StaticText
+        Accessible.name: moveDrag.message
+        Text {
+            id: moveHint
+            anchors.fill: parent; anchors.margins: Theme.tooltipPadding
+            text: moveDrag.message; textFormat: Text.PlainText
+            wrapMode: Text.Wrap
+            maximumLineCount: 4; elide: Text.ElideRight
+            font.pixelSize: Theme.mainBodySize
+            color: Theme.tooltipText
+        }
+    }
+    function beginTransfer(item, row, mouse) {
+        const point = item.mapToItem(root, mouse.x, mouse.y);
+        moveDrag.token = reader.beginInternalDrag(row, root.windowHost);
+        if (!moveDrag.token.length) return;
+        moveDrag.x = point.x; moveDrag.y = point.y;
+        moveDrag.Drag.start(Qt.MoveAction);
+    }
+    function continueTransfer(item, mouse) {
+        if (!moveDrag.Drag.active) return;
+        const point = item.mapToItem(root, mouse.x, mouse.y);
+        moveDrag.x = point.x; moveDrag.y = point.y;
+        if (point.x < 0 || point.y < 0 || point.x >= root.width || point.y >= root.height || !root.windowHost.active) {
+            root.promoteTransfer();
+        }
+    }
+    Connections {
+        target: root.windowHost
+        function onActiveChanged() {
+            if (!root.windowHost.active && moveDrag.Drag.active) { if (root.visible && !root.sessionClosed) root.promoteTransfer(); else root.cancelTransfer(); }
+        }
+    }
+    function promoteTransfer() {
+        if (!moveDrag.Drag.active) return;
+        const token = moveDrag.token;
+        moveDrag.promoting = true;
+        moveDrag.Drag.cancel();
+        moveDrag.clearFeedback(moveDrag.feedbackOwner);
+        reader.exportInternalDrag(token, root.windowHost);
+        moveDrag.token = "";
+        moveDrag.promoting = false;
+    }
+    function deferCancelledTransfer() {
+        Qt.callLater(function () {
+            if (!moveDrag.Drag.active) return;
+            if (!root.windowHost.active && root.visible && !root.sessionClosed) root.promoteTransfer();
+            else root.cancelTransfer();
+        });
+    }
+    function finishTransfer() {
+        if (moveDrag.Drag.active) moveDrag.Drag.drop();
+        cancelTransfer();
+    }
+    function cancelTransfer() {
+        if (moveDrag.promoting) return;
+        moveDrag.Drag.cancel();
+        reader.cancelInternalDrag(moveDrag.token);
+        moveDrag.token = "";
+        moveDrag.clearFeedback(moveDrag.feedbackOwner);
+    }
     function close() {
         windowHost.close();
     }
@@ -369,6 +467,7 @@ Item {
             }
         }
         onChanged: {
+            if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) Qt.callLater(function () { if (moveDrag.Drag.active && !reader.internalDragCurrent(moveDrag.token)) root.cancelTransfer(); });
             if (root.welcomeVisible && !busy && root.welcomeWasBusy)
                 Qt.callLater(() => {
                     if (root.welcomeVisible && welcomePage.canOpen)
@@ -942,6 +1041,7 @@ Item {
                     Button {
                         id: allFiles
                         objectName: "directoryRoot"
+                        ArchiveMoveTarget { objectName: "moveTarget-root"; anchors.fill: parent; z: 20; controller: reader; dragSource: moveDrag; directoryId: "" }
                         Layout.fillWidth: true
                         implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
                         leftPadding: Theme.mainUnits(12)
@@ -953,7 +1053,7 @@ Item {
                             radius: Theme.mainControlRadius
                             topLeftRadius: 0
                             bottomLeftRadius: 0
-                            color: reader.location.length === 0 ? Theme.treeSelectionColor : allFiles.hovered ? Theme.treeHoverColor : "transparent"
+                            color: (moveDrag.Drag.active && moveDrag.permitted && moveDrag.targetId === "" && moveDrag.feedbackOwner !== null) || reader.location.length === 0 ? Theme.treeSelectionColor : allFiles.hovered ? Theme.treeHoverColor : "transparent"
                             border.width: 0
                             border.color: Theme.accent
                             Rectangle {
@@ -1082,6 +1182,7 @@ Item {
                             TableView.onReused: inReusePool = false
                             readonly property bool hiddenCurrentBranch: reader.directoryId !== nodeId && !expanded && reader.directoryAncestors(reader.directoryId).includes(nodeId)
                             objectName: "directory-" + nodeId
+                            ArchiveMoveTarget { objectName: "moveTarget-tree-" + directoryNode.nodeId; anchors.fill: parent; z: 20; controller: reader; dragSource: moveDrag; directoryId: directoryNode.nodeId }
                             implicitHeight: Math.ceil(Math.max(Theme.treeRowMinHeight, Theme.treeBodyFontSize * Theme.fontScale * 1.6 + Theme.treeRowVerticalPadding, Theme.treeDisclosureHitMinHeight * Theme.fontScale + Theme.treeRowVerticalPadding))
                             implicitWidth: directoryTree.width
                             indentation: Theme.treeDepthIndent
@@ -1136,7 +1237,7 @@ Item {
                                 radius: Theme.mainControlRadius
                                 topLeftRadius: 0
                                 bottomLeftRadius: 0
-                                color: reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : "transparent"
+                                color: (moveDrag.Drag.active && moveDrag.permitted && moveDrag.targetId === directoryNode.nodeId) || reader.directoryId === directoryNode.nodeId ? Theme.treeSelectionColor : directoryNode.hovered ? Theme.treeHoverColor : "transparent"
                                 border.width: 0
                                 border.color: Theme.accent
                                 Rectangle {
@@ -1498,11 +1599,21 @@ Item {
                         anchors.fill: parent
                         z: 20
                         property bool permitted: false
+                        property bool observing: false
+                        keys: ["text/uri-list"]
+                        onExited: observing = false
                         onEntered: drag => {
+                            observing = drag.hasUrls && !drag.formats.includes("application/x-xdzip-export");
                             permitted = drag.hasUrls && !drag.formats.includes("application/x-xdzip-export") && reader.canAddDroppedUrls(drag.urls);
-                            drag.accepted = permitted;
+                            if (observing) drag.accept(permitted ? Qt.CopyAction : Qt.IgnoreAction);
+                            else drag.accepted = false;
+                        }
+                        onPositionChanged: drag => {
+                            permitted = observing && reader.canAddDroppedUrls(drag.urls);
+                            drag.accept(permitted ? Qt.CopyAction : Qt.IgnoreAction);
                         }
                         onDropped: drop => {
+                            observing = false;
                             if (permitted && drop.hasUrls && reader.canAddDroppedUrls(drop.urls)) {
                                 drop.accept(Qt.CopyAction);
                                 reader.addDroppedUrls(drop.urls);
@@ -1510,12 +1621,13 @@ Item {
                         }
                         Rectangle {
                             anchors.fill: parent
-                            visible: archiveDrop.containsDrag && archiveDrop.permitted
+                            objectName: "archiveAddDropFeedback"
+                            visible: archiveDrop.containsDrag && archiveDrop.observing
                             color: Theme.selection
                             opacity: 0.9
                             border.width: 2
                             border.color: Theme.accent
-                            Text { anchors.centerIn: parent; text: reader.addDropMessage; font.pixelSize: Theme.mainBodySize; color: Theme.text; wrapMode: Text.Wrap; width: parent.width - Theme.mainGridInset * 2; horizontalAlignment: Text.AlignHCenter }
+                            Text { anchors.centerIn: parent; text: archiveDrop.permitted || !reader.canUpdateArchive ? reader.addDropMessage : qsTrId("update.invalidDrop"); font.pixelSize: Theme.mainBodySize; color: Theme.text; wrapMode: Text.Wrap; width: parent.width - Theme.mainGridInset * 2; horizontalAlignment: Text.AlignHCenter }
                         }
                     }
                     TableView {
@@ -1586,6 +1698,7 @@ Item {
                             required property string entryStatus
                             required property bool attention
                             objectName: "entry-" + row + "-" + column
+                            ArchiveMoveTarget { id: cellMoveTarget; objectName: "moveTarget-list-" + cell.row + "-" + cell.column; anchors.fill: parent; z: 20; enabled: cell.isDirectory && cell.canNavigate; controller: reader; dragSource: moveDrag; directoryId: reader.directoryForRow(cell.row) }
                             Accessible.name: display
                             Accessible.description: entryStatus
                             implicitWidth: Theme.mainUnits(100)
@@ -1599,7 +1712,7 @@ Item {
                                 anchors.topMargin: Theme.mainEntryBandTopInset
                                 anchors.bottomMargin: Theme.mainEntryBandBottomInset
                                 radius: cell.column === 0 || cell.column === 4 ? Theme.mainControlRadius : 0
-                                color: cell.chosen ? Theme.selection : table.hoveredRow === cell.row ? Theme.controlHover : Theme.surface
+                                color: (moveDrag.Drag.active && moveDrag.permitted && cell.isDirectory && moveDrag.targetId === cellMoveTarget.directoryId) || cell.chosen ? Theme.selection : table.hoveredRow === cell.row ? Theme.controlHover : Theme.surface
                                 // Square the interior edge so adjacent cells form one continuous rounded band.
                                 Rectangle {
                                     visible: cell.column === 0 || cell.column === 4
@@ -1617,14 +1730,18 @@ Item {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
                                 property point pressedAt
+                                preventStealing: true
                                 property bool transferStarted: false
                                 onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
                                 onPositionChanged: mouse => {
                                     if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
                                         transferStarted = true;
-                                        reader.beginExport(cell.row, root.windowHost);
+                                        root.beginTransfer(this, cell.row, mouse);
                                     }
+                                    if (transferStarted) root.continueTransfer(this, mouse);
                                 }
+                                onReleased: if (transferStarted) root.finishTransfer()
+                                onCanceled: root.deferCancelledTransfer()
                                 onClicked: function (mouse) {
                                     if (transferStarted) return;
                                     if (mouse.button === Qt.RightButton)
@@ -1734,13 +1851,14 @@ Item {
                             required property bool canNavigate
                             required property bool canSelect
                             objectName: "grid-entry-" + index
+                            ArchiveMoveTarget { id: gridMoveTarget; objectName: "moveTarget-grid-" + gridEntry.index; anchors.fill: parent; z: 20; enabled: gridEntry.isDirectory && gridEntry.canNavigate; controller: reader; dragSource: moveDrag; directoryId: reader.directoryForRow(gridEntry.index) }
                             required property string entryStatus
                             Accessible.name: display
                             Accessible.description: entryStatus
                             width: grid.cellWidth - Theme.mainGridGap
                             height: grid.cellHeight - Theme.mainGridGap
                             radius: Theme.mainControlRadius
-                            color: gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
+                            color: (moveDrag.Drag.active && moveDrag.permitted && gridEntry.isDirectory && moveDrag.targetId === gridMoveTarget.directoryId) || gridEntry.chosen ? Theme.selection : gridHover.hovered ? Theme.controlHover : Theme.surface
                             border.color: Theme.border
                             HoverHandler {
                                 id: gridHover
@@ -1750,14 +1868,18 @@ Item {
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
                                 property point pressedAt
+                                preventStealing: true
                                 property bool transferStarted: false
                                 onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
                                 onPositionChanged: mouse => {
                                     if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
                                         transferStarted = true;
-                                        reader.beginExport(gridEntry.index, root.windowHost);
+                                        root.beginTransfer(this, gridEntry.index, mouse);
                                     }
+                                    if (transferStarted) root.continueTransfer(this, mouse);
                                 }
+                                onReleased: if (transferStarted) root.finishTransfer()
+                                onCanceled: root.deferCancelledTransfer()
                                 onClicked: function (mouse) {
                                     if (transferStarted) return;
                                     if (mouse.button === Qt.RightButton)
@@ -1942,7 +2064,7 @@ Item {
                             delegate: CommandMenuItem {
                                 required property var taskData
                                 objectName: "taskMenuItem-" + taskData.id
-                                text: (taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.backendId || taskData.id) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
+                                text: (taskData.kind === "move" ? qsTrId("move.task") : taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.backendId || taskData.id) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
                                 asset: "task-list"
                                 statusLabel: root.taskStateLabel(taskData.status)
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk

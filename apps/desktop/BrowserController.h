@@ -159,8 +159,9 @@ class BrowserController : public QObject {
         return !m_closing && !m_faulted && !m_connection->stopped();
     }
     bool queryAvailable() const {
-        return m_ready && !m_closing && !m_result.preflight && !m_result.closeSession &&
-               !m_result.extraction && !m_result.checking && !m_result.targetCheck;
+        return m_ready && !m_updateActive && !(m_busy && m_result.updating) && !m_closing &&
+               !m_result.preflight && !m_result.closeSession && !m_result.extraction &&
+               !m_result.checking && !m_result.targetCheck;
     }
     bool taskStarting() const {
         return m_busy && !m_closing && !m_faulted &&
@@ -168,11 +169,13 @@ class BrowserController : public QObject {
     }
     bool browsingBusy() const {
         // Operation-window preparation does not replace the committed browser snapshot.
-        return m_busy && (m_closing || m_faulted ||
-                          (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview));
+        return m_updateActive || (m_busy && m_result.updating) ||
+               (m_busy && (m_closing || m_faulted ||
+                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview)));
     }
     bool browserQueryAvailable() const {
-        return m_ready && runtimeAvailable() && (queryAvailable() || !browsingBusy());
+        return m_ready && !m_updateActive && runtimeAvailable() &&
+               (queryAvailable() || !browsingBusy());
     }
     bool busy() const {
         return m_busy;
@@ -236,6 +239,13 @@ class BrowserController : public QObject {
     Q_INVOKABLE void addDroppedUrls(const QList<QUrl> &urls);
     Q_INVOKABLE void startUpdate(const QStringList &inputs, const QString &session,
                                  const QString &directory, int conflict);
+    Q_INVOKABLE QString directoryForRow(int row) const;
+    Q_INVOKABLE QString beginInternalDrag(int row, QWindow *owner = nullptr);
+    Q_INVOKABLE bool internalDragCurrent(const QString &token) const;
+    Q_INVOKABLE QVariantMap moveDropState(const QString &token, const QString &target) const;
+    Q_INVOKABLE void moveInternalDrag(const QString &token, const QString &target);
+    Q_INVOKABLE void exportInternalDrag(const QString &token, QWindow *owner);
+    Q_INVOKABLE void cancelInternalDrag(const QString &token);
     Q_INVOKABLE void beginExport(int row, QWindow *owner);
     void prepareExternalExport();
     void startPreparedDrag();
@@ -396,6 +406,13 @@ class BrowserController : public QObject {
     void publishExternalExport(const std::shared_ptr<NativeExportCopy> &request);
     bool handleTransferEvent(const xdzip::reader::Event &event);
     void handleTransferTask(const xdzip::reader::TaskSnapshot &task);
+    QString editUnavailableMessage() const;
+    int m_editRestriction = 4;
+    QString m_moveToken, m_moveSession, m_moveDirectory, m_moveAnchor;
+    QStringList m_moveSelectors;
+    std::shared_ptr<void> m_moveGesture;
+    QSet<QString> m_moveFolders;
+    quint64 m_moveGeneration = 0, m_moveSelectionRevision = 0;
     bool m_updateAllowed = false;
     bool m_updateActive = false;
     bool m_restoreAfterUpdate = false;

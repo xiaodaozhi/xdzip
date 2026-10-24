@@ -19,6 +19,9 @@ use xdzip_codec_api::{
 use xdzip_domain::path::PortablePath;
 use xdzip_io::{ArchiveUpdate, InputTree};
 
+mod moving;
+pub use moving::MoveOptions;
+
 /// Explicit host edit intent; the runtime resolves the opaque directory identity.
 #[derive(Clone, Debug)]
 pub struct Options {
@@ -50,10 +53,14 @@ pub(crate) struct Job {
     options: Options,
     prefix: String,
     session: u64,
+    moving: Option<moving::Moves>,
 }
 impl Job {
     pub fn retained_bytes(&self) -> usize {
-        self.options.bytes() + self.source.retained_bytes() + self.rows.len() * 256
+        self.options.bytes()
+            + self.source.retained_bytes()
+            + self.rows.len() * 256
+            + self.moving.as_ref().map_or(0, moving::Moves::bytes)
     }
 }
 fn key(name: &str) -> String {
@@ -88,6 +95,7 @@ impl Archive {
             options,
             prefix,
             session: self.key.session.get(),
+            moving: None,
         })
     }
 }
@@ -112,14 +120,18 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         },
         id,
     );
-    snapshot.kind = TaskKind::Update;
+    snapshot.kind = if job.moving.is_some() {
+        TaskKind::Move
+    } else {
+        TaskKind::Update
+    };
     snapshot.source = path.to_string_lossy().into();
     snapshot.session = job.session;
     snapshot.format = job.format.label();
     snapshot
 }
 struct Additions<'a> {
-    tree: &'a InputTree,
+    tree: Option<&'a InputTree>,
     entries: Vec<EncodeEntry>,
     indices: Vec<usize>,
 }
@@ -130,6 +142,7 @@ impl EncodeInput for Additions<'_> {
     fn open(&self, index: usize) -> Result<Box<dyn Read + '_>, EncodeError> {
         Ok(Box::new(
             self.tree
+                .ok_or(EncodeError::Source)?
                 .open(self.indices[index])
                 .map_err(|_| EncodeError::Source)?,
         ))
@@ -208,6 +221,137 @@ fn insert_name(
     }
     Ok(())
 }
+struct Resolved {
+    name: String,
+    directory_exists: bool,
+    directory_record: bool,
+}
+struct Planner<'a> {
+    rows: &'a [Entry],
+    names: BTreeMap<String, (String, bool, Option<usize>)>,
+    namespace_bytes: usize,
+    keep: Vec<bool>,
+    renames: Vec<Option<String>>,
+    policy: ConflictPolicy,
+    prompt: u64,
+    control: &'a Control,
+    snapshot: &'a mut Snapshot,
+    start: Instant,
+    publish: &'a mut dyn FnMut(Snapshot),
+}
+impl Planner<'_> {
+    fn resolve(
+        &mut self,
+        mut name: String,
+        directory: bool,
+        size: u64,
+    ) -> Result<Option<Resolved>, &'static str> {
+        // Normalize directory spellings against already admitted ancestors.
+        let parts: Vec<_> = name.split('/').map(str::to_string).collect();
+        let mut actual = String::new();
+        for part in &parts[..parts.len() - 1] {
+            if !actual.is_empty() {
+                actual.push('/');
+            }
+            actual.push_str(part);
+            if let Some((spelling, dir, _)) = self.names.get(&key(&actual)) {
+                if !dir {
+                    return Err("name_collision");
+                }
+                actual = spelling.clone();
+            }
+        }
+        name = if actual.is_empty() {
+            parts.last().unwrap().clone()
+        } else {
+            format!("{actual}/{}", parts.last().unwrap())
+        };
+        if let Some((old, existing_directory, original)) = self.names.get(&key(&name)).cloned() {
+            if existing_directory != directory {
+                return Err("name_collision");
+            }
+            if directory {
+                return Ok(Some(Resolved {
+                    name: old,
+                    directory_exists: true,
+                    directory_record: original.is_some(),
+                }));
+            }
+            let mut decision = self.policy;
+            if decision == ConflictPolicy::Ask {
+                self.prompt += 1;
+                self.control.arm(self.prompt);
+                self.snapshot.status = Status::Waiting;
+                self.snapshot.prompt = Some(Prompt {
+                    id: self.prompt,
+                    name: name.clone(),
+                    existing_bytes: original.map_or(0, |i| self.rows[i].size),
+                    incoming_bytes: size,
+                    existing_modified: None,
+                    incoming_modified_dos: 0,
+                    overwrite_allowed: original.is_some(),
+                });
+                emit(self.snapshot, self.start, self.publish);
+                let (answer, all) = self.control.wait()?;
+                decision = answer;
+                if all {
+                    self.policy = answer;
+                }
+                self.snapshot.prompt = None;
+            }
+            match decision {
+                ConflictPolicy::Skip => {
+                    self.snapshot.skipped_files += 1;
+                    return Ok(None);
+                }
+                ConflictPolicy::Overwrite => {
+                    let i = original.ok_or("name_collision")?;
+                    self.keep[i] = false;
+                    name = old;
+                }
+                ConflictPolicy::Rename => {
+                    let stem = name.clone();
+                    let mut fresh = None;
+                    for number in 2..=10_000 {
+                        let (parent, leaf) = stem
+                            .rsplit_once('/')
+                            .map_or((String::new(), stem.as_str()), |(p, n)| {
+                                (format!("{p}/"), n)
+                            });
+                        let (base, ext) = leaf
+                            .rsplit_once('.')
+                            .filter(|(a, _)| !a.ends_with('/') && !a.is_empty())
+                            .map_or((leaf, String::new()), |(a, b)| (a, format!(".{b}")));
+                        let candidate = format!("{parent}{base} ({number}){ext}");
+                        if !self.names.contains_key(&key(&candidate)) {
+                            fresh = Some(candidate);
+                            break;
+                        }
+                    }
+                    name = fresh.ok_or("resource_limit")?;
+                }
+                ConflictPolicy::Ask => return Err("invalid_decision"),
+            }
+        }
+        PortablePath::parse(&name).ok_or("unsafe_name")?;
+        if !self.names.contains_key(&key(&name)) {
+            insert_name(
+                &mut self.names,
+                &mut self.namespace_bytes,
+                &name,
+                directory,
+                None,
+            )?;
+        }
+
+        Ok(Some(Resolved {
+            name,
+            directory_exists: false,
+            directory_record: false,
+        }))
+    }
+}
+
 pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
     let start = Instant::now();
     let mut s = initial(&job, id);
@@ -226,155 +370,98 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         job.source.validate().map_err(|_| "source_changed")?;
         workspace = Some(authority.workspace(id).map_err(output)?);
         let w = workspace.as_mut().expect("created workspace");
-        let tree = InputTree::scan(
-            &job.options
-                .inputs
-                .iter()
-                .map(PathBuf::from)
-                .collect::<Vec<_>>(),
-            vec![w.input_exclusion()],
-            &stopped,
-        )
-        .map_err(|e| e.code())?;
-        if tree.contains_identity(authority.version().identity) {
-            return Err("protected_source");
-        }
-        let mut names = BTreeMap::new();
-        let mut namespace_bytes = 0usize;
-        let mut keep = vec![true; job.rows.len()];
+        let tree = if job.moving.is_none() {
+            let tree = InputTree::scan(
+                &job.options
+                    .inputs
+                    .iter()
+                    .map(PathBuf::from)
+                    .collect::<Vec<_>>(),
+                vec![w.input_exclusion()],
+                &stopped,
+            )
+            .map_err(|e| e.code())?;
+            if tree.contains_identity(authority.version().identity) {
+                return Err("protected_source");
+            }
+            Some(tree)
+        } else {
+            None
+        };
+        let mut planner = Planner {
+            rows: &job.rows,
+            names: BTreeMap::new(),
+            namespace_bytes: 0,
+            keep: vec![true; job.rows.len()],
+            renames: vec![None; job.rows.len()],
+            policy: job.options.conflict,
+            prompt: 0,
+            control,
+            snapshot: &mut s,
+            start,
+            publish,
+        };
         for (index, row) in job.rows.iter().enumerate() {
             let name = std::str::from_utf8(&row.raw_name)
                 .map_err(|_| "unsafe_name")?
                 .trim_end_matches('/');
             PortablePath::parse(name).ok_or("unsafe_name")?;
             insert_name(
-                &mut names,
-                &mut namespace_bytes,
+                &mut planner.names,
+                &mut planner.namespace_bytes,
                 name,
                 row.directory,
                 Some(index),
             )?;
         }
         let mut additions = Additions {
-            tree: &tree,
+            tree: tree.as_ref(),
             entries: vec![],
             indices: vec![],
         };
-        let mut policy = job.options.conflict;
-        let mut prompt = 0;
-        for (index, entry) in tree.entries().iter().enumerate() {
-            control.cancel.check().map_err(|_| "cancelled")?;
-            let mut name = format!("{}{}", job.prefix, entry.name);
-            // Normalize directory spellings against already admitted ancestors.
-            let parts: Vec<_> = name.split('/').map(str::to_string).collect();
-            let mut actual = String::new();
-            for part in &parts[..parts.len() - 1] {
-                if !actual.is_empty() {
-                    actual.push('/');
-                }
-                actual.push_str(part);
-                if let Some((spelling, dir, _)) = names.get(&key(&actual)) {
-                    if !dir {
-                        return Err("name_collision");
-                    }
-                    actual = spelling.clone();
-                }
-            }
-            name = if actual.is_empty() {
-                parts.last().unwrap().clone()
-            } else {
-                format!("{actual}/{}", parts.last().unwrap())
-            };
-            if let Some((old, directory, original)) = names.get(&key(&name)).cloned() {
-                if directory != entry.directory {
-                    return Err("name_collision");
-                }
-                if directory {
+        if job.moving.is_some() {
+            moving::plan(&job, &mut planner, &mut additions)?;
+        } else if let Some(tree) = &tree {
+            for (index, entry) in tree.entries().iter().enumerate() {
+                control.cancel.check().map_err(|_| "cancelled")?;
+                let Some(resolved) = planner.resolve(
+                    format!("{}{}", job.prefix, entry.name),
+                    entry.directory,
+                    entry.size,
+                )?
+                else {
+                    continue;
+                };
+                if entry.directory && resolved.directory_exists {
                     continue;
                 }
-                let mut decision = policy;
-                if decision == ConflictPolicy::Ask {
-                    prompt += 1;
-                    control.arm(prompt);
-                    s.status = Status::Waiting;
-                    s.prompt = Some(Prompt {
-                        id: prompt,
-                        name: name.clone(),
-                        existing_bytes: original.map_or(0, |i| job.rows[i].size),
-                        incoming_bytes: entry.size,
-                        existing_modified: None,
-                        incoming_modified_dos: 0,
-                        overwrite_allowed: original.is_some(),
-                    });
-                    emit(&mut s, start, publish);
-                    let (answer, all) = control.wait()?;
-                    decision = answer;
-                    if all {
-                        policy = answer;
-                    }
-                    s.prompt = None;
-                }
-                match decision {
-                    ConflictPolicy::Skip => {
-                        s.skipped_files += 1;
-                        continue;
-                    }
-                    ConflictPolicy::Overwrite => {
-                        let i = original.ok_or("name_collision")?;
-                        keep[i] = false;
-                        name = old;
-                    }
-                    ConflictPolicy::Rename => {
-                        let stem = name.clone();
-                        let mut fresh = None;
-                        for number in 2..=10_000 {
-                            let (parent, leaf) = stem
-                                .rsplit_once('/')
-                                .map_or((String::new(), stem.as_str()), |(p, n)| {
-                                    (format!("{p}/"), n)
-                                });
-                            let (base, ext) = leaf
-                                .rsplit_once('.')
-                                .filter(|(a, _)| !a.ends_with('/') && !a.is_empty())
-                                .map_or((leaf, String::new()), |(a, b)| (a, format!(".{b}")));
-                            let candidate = format!("{parent}{base} ({number}){ext}");
-                            if !names.contains_key(&key(&candidate)) {
-                                fresh = Some(candidate);
-                                break;
-                            }
-                        }
-                        name = fresh.ok_or("resource_limit")?;
-                    }
-                    ConflictPolicy::Ask => return Err("invalid_decision"),
-                }
+                additions.entries.push(EncodeEntry {
+                    name: resolved.name,
+                    directory: entry.directory,
+                    size: entry.size,
+                    modified_unix: entry
+                        .modified
+                        .duration_since(UNIX_EPOCH)
+                        .map_or(0, |d| d.as_secs() as i64),
+                });
+                additions.indices.push(index);
             }
-            PortablePath::parse(&name).ok_or("unsafe_name")?;
-            if !names.contains_key(&key(&name)) {
-                insert_name(
-                    &mut names,
-                    &mut namespace_bytes,
-                    &name,
-                    entry.directory,
-                    None,
-                )?;
-            }
-            additions.entries.push(EncodeEntry {
-                name,
-                directory: entry.directory,
-                size: entry.size,
-                modified_unix: entry
-                    .modified
-                    .duration_since(UNIX_EPOCH)
-                    .map_or(0, |d| d.as_secs() as i64),
-            });
-            additions.indices.push(index);
         }
+        let Planner { keep, renames, .. } = planner;
         let mut expected: Vec<(Vec<u8>, bool, u64)> = job
             .rows
             .iter()
             .zip(&keep)
             .filter(|(_, k)| **k)
-            .map(|(r, _)| (r.raw_name.clone(), r.directory, r.size))
+            .map(|(r, _)| {
+                (
+                    renames[r.id.get() as usize - 1]
+                        .as_ref()
+                        .map_or_else(|| r.raw_name.clone(), |n| n.as_bytes().to_vec()),
+                    r.directory,
+                    r.size,
+                )
+            })
             .collect();
         expected.extend(additions.entries.iter().map(|e| {
             (
@@ -387,6 +474,20 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             || expected.iter().map(|e| e.0.len()).sum::<usize>() > 16 * 1024 * 1024
         {
             return Err("resource_limit");
+        }
+        let mut final_names = BTreeMap::new();
+        let mut final_budget = 0usize;
+        for (index, (name, directory, _)) in expected.iter().enumerate() {
+            let name = std::str::from_utf8(name)
+                .map_err(|_| "unsafe_name")?
+                .trim_end_matches('/');
+            insert_name(
+                &mut final_names,
+                &mut final_budget,
+                name,
+                *directory,
+                Some(index),
+            )?;
         }
         let mut total = 0u64;
         for (_, _, size) in &expected {
@@ -417,6 +518,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 &mut job.source,
                 RewriteInput {
                     keep: &keep,
+                    renames: &renames,
                     additions: &additions,
                     settings: EncodeSettings {
                         method: "deflate",
@@ -487,7 +589,9 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         }
         drop(decoder);
         drop(reader);
-        tree.validate(&stopped).map_err(|e| e.code())?;
+        if let Some(tree) = &tree {
+            tree.validate(&stopped).map_err(|e| e.code())?;
+        }
         job.source.validate().map_err(|_| "source_changed")?;
         control.begin_commit()?;
         s.status = Status::Committing;
