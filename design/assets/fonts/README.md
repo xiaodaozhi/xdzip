@@ -10,7 +10,7 @@ Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 297 KiB。`export-qt.py
 | --- | --- |
 | `fonts.css` | `@font-face` 声明；界面样式另行设置家族名 |
 | `xdzip-design-sans-sc.woff2` | 实际用于 HTML 的离线字体 |
-| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `2cc30875231bb4f611863ecb87fc33fa73e5537badb3e58790651dbb15f3d173` |
+| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `e35679c35dea165557a68a41981e932d82720fb43500f2d4e904446a9083026f` |
 | `export-qt.py` | 导出 TTF；`--check` 检查是否与当前 WOFF2 完全对应 |
 | `OFL.txt` | 上游原文版权及 SIL Open Font License 1.1 |
 | `manifest.json` | 固定来源、原始及子集 SHA-256、覆盖字符、字重和工具版本 |
