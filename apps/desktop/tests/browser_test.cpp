@@ -6255,12 +6255,15 @@ QtObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         QVERIFY(window);
         window->requestActivate();
+        window->setHeight(window->minimumHeight());
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         QQmlComponent theme(&engine);
         theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
                       "factor: 1; property bool dark: false; onFactorChanged: "
-                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark; "
+                      "function revealTree(view, index) { "
+                      "view.positionViewAtIndex(index, TableView.Contain); view.forceLayout(); } }",
                       QUrl());
         std::unique_ptr<QObject> appearance(theme.create());
         QVERIFY(appearance);
@@ -6318,14 +6321,49 @@ QtObject {
                                                           : QString("entry-%1-0").arg(anchor))));
                     const auto targetId = controller->m_directoryPaths.value("parent/" + target);
                     QVERIFY(!targetId.isEmpty());
-                    QTRY_VERIFY((to = findVisual(window->contentItem(), "directory-" + targetId)));
+                    // Scroll the actual model index into view before measuring its delegate.
+                    // Loaded delegates can extend outside the clipped viewport at large fonts.
+                    QVERIFY(QMetaObject::invokeMethod(
+                        appearance.get(), "revealTree",
+                        Q_ARG(QVariant, QVariant::fromValue(static_cast<QObject *>(tree))),
+                        Q_ARG(QVariant,
+                              QVariant::fromValue(
+                                  controller->m_directoryItems.value(targetId)->index()))));
+                    const auto targetVisible = [&] {
+                        to = findVisual(window->contentItem(), "directory-" + targetId);
+                        if (!to || !to->isVisible())
+                            return false;
+                        const auto center =
+                            to->mapToItem(tree, QPointF(to->width() / 2, to->height() / 2));
+                        return center.x() >= 0 && center.x() < tree->width() && center.y() >= 0 &&
+                               center.y() < tree->height();
+                    };
+                    QTRY_VERIFY(targetVisible());
                     const auto start = point(from), finish = point(to);
+                    QVERIFY(QRect(QPoint(), window->size()).contains(start));
+                    QVERIFY(QRect(QPoint(), window->size()).contains(finish));
                     QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
                     QTest::mouseMove(window, start + QPoint(24, 0), 20);
                     QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
                     QCOMPARE(controller->selectedCount(), selection + 1);
                     QTest::mouseMove(window, finish, 20);
-                    QTRY_COMPARE(proxy->property("message").toString(), qtTrId("move.selected"));
+                    QTRY_VERIFY2(
+                        proxy->property("message").toString() == qtTrId("move.selected"),
+                        qPrintable(QString("view=%1 selection=%2 target=%3, from=%4/%5 to=%6/%7, "
+                                           "window=%8/%9 tree=%10/%11 scroll=%12 message=%13")
+                                       .arg(view)
+                                       .arg(selection)
+                                       .arg(target)
+                                       .arg(start.x())
+                                       .arg(start.y())
+                                       .arg(finish.x())
+                                       .arg(finish.y())
+                                       .arg(window->width())
+                                       .arg(window->height())
+                                       .arg(tree->mapToScene(QPointF()).y())
+                                       .arg(tree->height())
+                                       .arg(tree->property("contentY").toDouble())
+                                       .arg(proxy->property("message").toString())));
                     QCOMPARE(proxy->property("targetId").toString(), targetId);
                     QVERIFY(!proxy->property("permitted").toBool());
                     QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, finish);
