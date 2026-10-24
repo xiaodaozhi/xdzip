@@ -88,7 +88,7 @@ impl Archive {
                     .and_then(|n| self.rows.get(n))
                     .filter(|r| r.id.get() == n)
                     .ok_or("invalid_selection")?;
-                (row.raw_name.as_slice(), row.directory)
+                (row.name_bytes(), row.directory)
             };
             let name = std::str::from_utf8(name)
                 .map_err(|_| "unsafe_name")?
@@ -155,7 +155,7 @@ pub(super) fn plan(
     let mut merged = Vec::new();
     for (index, row) in job.rows.iter().enumerate() {
         planner.control.cancel.check().map_err(|_| "cancelled")?;
-        let name = std::str::from_utf8(&row.raw_name)
+        let name = std::str::from_utf8(row.name_bytes())
             .map_err(|_| "unsafe_name")?
             .trim_end_matches('/');
         let root = if moves.roots.contains_key(name) {
@@ -187,7 +187,7 @@ pub(super) fn plan(
     let mut retained_parents = BTreeSet::new();
     for (index, row) in job.rows.iter().enumerate() {
         if planner.keep[index] && planner.renames[index].is_none() {
-            let name = std::str::from_utf8(&row.raw_name).map_err(|_| "unsafe_name")?;
+            let name = std::str::from_utf8(row.name_bytes()).map_err(|_| "unsafe_name")?;
             for (at, _) in name.match_indices('/') {
                 retained_parents.insert(&name[..at]);
             }
@@ -202,7 +202,7 @@ pub(super) fn plan(
         if row.directory
             && planner.renames[index].is_some()
             && retained_parents.contains(
-                std::str::from_utf8(&row.raw_name)
+                std::str::from_utf8(row.name_bytes())
                     .map_err(|_| "unsafe_name")?
                     .trim_end_matches('/'),
             )
@@ -215,7 +215,7 @@ pub(super) fn plan(
             planner.keep[index]
                 && planner.renames[index]
                     .as_ref()
-                    .map_or(row.raw_name.as_slice(), |name| name.as_bytes())
+                    .map_or(row.name_bytes(), |name| name.as_bytes())
                     .starts_with(moves.source_prefix.as_bytes())
         })
     {

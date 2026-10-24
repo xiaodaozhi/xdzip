@@ -1,6 +1,7 @@
 //! Bounded central-directory scanning. No payload decoding, CRC claim or extraction.
 mod admission;
 mod aes;
+mod names;
 mod payload;
 mod rewrite;
 pub mod split;
@@ -90,7 +91,8 @@ fn scan(
     let mut iterator = archive.entries(&mut buffer);
     let mut rows = Vec::new();
     let mut name_bytes = 0_usize;
-    let mut display_bytes = 0_usize;
+    let mut legacy = Vec::new();
+    let mut decoded_bytes = 0usize;
     while let Some(record) = iterator.next_entry().map_err(|_| ScanError::Invalid)? {
         control.check()?;
         admission::entry_disk(&archive, &record)?;
@@ -102,42 +104,29 @@ fn scan(
         {
             return Err(ScanError::Limit);
         }
-        let utf8 = std::str::from_utf8(name).ok();
-        // Escape legacy bytes rather than silently guessing an encoding or losing raw identity.
-        let display = match utf8 {
-            Some(text) if record.flags().is_utf8() || name.is_ascii() => escape_display(text),
-            _ => name
-                .iter()
-                .map(|b| {
-                    if b.is_ascii_graphic() || *b == b' ' {
-                        char::from(*b).to_string()
-                    } else {
-                        format!("\\x{b:02X}")
-                    }
-                })
-                .collect(),
+        let unicode = names::unicode_path(name, record.flags().is_utf8(), record.extra_fields());
+        let (decoded_name, name_encoding) = match unicode {
+            Ok(Some(name)) => (
+                Some(name),
+                xdzip_codec_api::names::NameEncoding::UnicodePath,
+            ),
+            Ok(None) => (None, xdzip_codec_api::names::NameEncoding::Utf8),
+            Err(()) => (None, xdzip_codec_api::names::NameEncoding::Unresolved),
         };
-        display_bytes = display_bytes
-            .checked_add(display.len())
+        let decoded_len = decoded_name.as_ref().map_or(0, String::len);
+        decoded_bytes = decoded_bytes
+            .checked_add(decoded_len)
             .ok_or(ScanError::Limit)?;
-        if display_bytes > limits.display_name_bytes {
+        if decoded_len > limits.name_bytes || decoded_bytes > limits.display_name_bytes {
             return Err(ScanError::Limit);
         }
         // Inspect declared Unix type directly: synthesized modes may combine the
         // default regular type with a trailing-slash directory hint.
         let unix_type = matches!(record.version_made_by().creator_system().as_u8(), 3 | 19)
             .then_some((record.external_attributes() >> 16) & 0o170000);
-        let warning = name.starts_with(b"/")
-            || name.starts_with(b"\\")
-            || name.contains(&b':')
-            || name
-                .split(|b| *b == b'/' || *b == b'\\')
-                .any(|part| part == b"..")
-            || name.iter().any(|b| b.is_ascii_control())
-            || utf8.is_none()
-            || (!record.flags().is_utf8() && !name.is_ascii())
-            || unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000))
-            || utf8.is_some_and(|text| text.chars().any(is_display_control));
+        let warning =
+            unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000));
+        legacy.push(!record.flags().is_utf8());
         let id = u64::try_from(rows.len())
             .ok()
             .and_then(|n| n.checked_add(1))
@@ -147,7 +136,9 @@ fn scan(
             format: xdzip_codec_api::Format::Zip,
             id,
             raw_name: name.to_vec(),
-            display_name: display,
+            decoded_name,
+            name_encoding,
+            display_name: String::new(),
             directory: record.is_dir(),
             link: unix_type == Some(0o120000),
             unix_mode: unix_type.map_or(0, |_| record.external_attributes() >> 16),
@@ -165,26 +156,8 @@ fn scan(
     if rows.len() as u64 != archive.entries_hint() {
         return Err(ScanError::Invalid);
     }
+    xdzip_codec_api::names::resolve(&mut rows, &legacy, true, control, limits)?;
     Ok(rows)
-}
-
-fn is_display_control(c: char) -> bool {
-    c.is_control()
-        || matches!(c, '\u{061c}' | '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}')
-}
-
-fn escape_display(text: &str) -> String {
-    use std::fmt::Write;
-    let mut output = String::with_capacity(text.len());
-    for c in text.chars() {
-        if is_display_control(c) {
-            // Writing to a String is infallible apart from allocation failure.
-            write!(output, "\\u{{{:X}}}", u32::from(c)).expect("String formatting");
-        } else {
-            output.push(c);
-        }
-    }
-    output
 }
 
 // rawzip's component accessors clamp invalid values. Preserve only valid raw
@@ -285,13 +258,17 @@ mod tests {
         assert!(!rows[0].warning);
     }
     #[test]
-    fn filename_encoding_preserves_utf8_and_does_not_guess_legacy_code_pages() {
+    fn filename_encoding_preserves_raw_identity_and_resolves_unlabelled_names() {
         let name = "中文.txt";
         let bytes = zip64_fixture::archive_names(&[name.into()]);
         let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
         assert_eq!(rows[0].display_name, name);
         assert!(!rows[0].warning);
-        for raw in [name.as_bytes(), b"\xD6\xD0\xCE\xC4.txt", b"caf\x82.txt"] {
+        for (raw, expected) in [
+            (name.as_bytes(), name),
+            (b"\xD6\xD0\xCE\xC4.txt".as_slice(), name),
+            (b"caf\x82.txt".as_slice(), "café.txt"),
+        ] {
             let mut bytes = zip64_fixture::archive_names(&["a".repeat(raw.len())]);
             let central = bytes.windows(4).position(|b| b == b"PK\x01\x02").unwrap();
             bytes[6..8].copy_from_slice(&0u16.to_le_bytes());
@@ -300,8 +277,9 @@ mod tests {
             bytes[central + 46..central + 46 + raw.len()].copy_from_slice(raw);
             let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
             assert_eq!(rows[0].raw_name, raw);
-            assert!(rows[0].warning);
-            assert!(rows[0].display_name.contains("\\x"));
+            assert!(!rows[0].warning);
+            assert_eq!(rows[0].display_name, expected);
+            assert_eq!(rows[0].name_bytes(), expected.as_bytes());
         }
     }
     #[test]
@@ -392,7 +370,7 @@ mod tests {
             Err(ScanError::Unsupported)
         ));
         let mut legacy = NORMAL.to_vec();
-        legacy[central + 8..central + 10].copy_from_slice(&1_u16.to_le_bytes());
+        legacy[central + 8..central + 10].copy_from_slice(&0x0801_u16.to_le_bytes());
         legacy[central + 46] = 255;
         let rows = scan_bytes(&legacy, ScanLimits::default()).unwrap();
         assert!(rows[0].encrypted && rows[0].warning);
@@ -427,3 +405,9 @@ mod tests {
         ));
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/support/legacy_names.rs"]
+mod legacy_fixture;
+#[cfg(test)]
+mod names_tests;

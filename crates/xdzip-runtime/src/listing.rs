@@ -215,6 +215,8 @@ mod tests {
             format: xdzip_codec_api::Format::Zip,
             id: (i as u64 + 1).try_into().unwrap(),
             raw_name: name.as_bytes().to_vec(),
+            decoded_name: None,
+            name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
             display_name: (*name).into(),
             directory: name.ends_with('/'),
             link: false,

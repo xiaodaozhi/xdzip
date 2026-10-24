@@ -19,8 +19,10 @@ Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--
 $env:XDZIP_MOVE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/move-interop'
 $env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-interop'
 $env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metadata-interop'
+$env:XDZIP_LEGACY_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/legacy-name-interop'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
+Invoke-Checked $updatePython @('scripts/check-filename-encoding.py', '--input', 'build/legacy-name-interop', '--output', 'build/review/legacy-name-rewrite.json')
 Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')
 Invoke-Checked $updatePython @('scripts/check-macos-metadata-interop.py', '--input', 'build/macos-metadata-interop')
 Invoke-Checked $updatePython @('scripts/check-move-interop.py', '--input', 'build/move-interop')

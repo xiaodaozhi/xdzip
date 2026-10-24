@@ -35,7 +35,7 @@ impl Report {
 }
 
 /// Check a bounded immutable metadata snapshot and an explicit nonempty selection.
-/// Names are never repaired. Directories expand over all descendants, independent of UI filters.
+/// Frozen decoded spellings are never repaired here. Directories expand over all descendants, independent of UI filters.
 pub fn inspect(
     rows: &[Entry],
     selected: &[EntryId],
@@ -52,7 +52,7 @@ pub fn inspect(
     let directories: Vec<_> = rows
         .iter()
         .filter(|row| ids.contains(&row.id) && row.directory)
-        .map(|row| row.raw_name.as_slice())
+        .map(|row| row.name_bytes())
         .collect();
     let mut report = Report {
         declared_bytes: Some(0),
@@ -67,13 +67,21 @@ pub fn inspect(
         if !ids.contains(&row.id)
             && !directories
                 .iter()
-                .any(|prefix| prefix.ends_with(b"/") && row.raw_name.starts_with(prefix))
+                .any(|prefix| prefix.ends_with(b"/") && row.name_bytes().starts_with(prefix))
         {
+            // A damaged declaration may belong under a decoded selected directory.
+            // Surface this uncertainty even when its original bytes do not match
+            // the resolved prefix. Do not present a clean advisory for an omitted row.
+            if !directories.is_empty()
+                && row.name_encoding == xdzip_codec_api::names::NameEncoding::Unresolved
+            {
+                report.add(row.id, "metadata");
+            }
             continue;
         }
         report.entries += 1;
         name_budget = name_budget
-            .checked_add(row.raw_name.len())
+            .checked_add(row.name_bytes().len())
             .ok_or(ScanError::Limit)?;
         if name_budget > 4 * 1024 * 1024 {
             return Err(ScanError::Limit);
@@ -105,7 +113,7 @@ pub fn inspect(
         if row.warning {
             report.add(row.id, "metadata");
         }
-        let Some(parts) = components(&row.raw_name, row.directory) else {
+        let Some(parts) = components(row.name_bytes(), row.directory) else {
             report.add(row.id, "path");
             continue;
         };
@@ -166,6 +174,8 @@ mod tests {
             format: xdzip_codec_api::Format::Zip,
             id: EntryId::try_from(id).unwrap(),
             raw_name: name.as_bytes().to_vec(),
+            decoded_name: None,
+            name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
             display_name: name.into(),
             directory: name.ends_with('/'),
             link: false,

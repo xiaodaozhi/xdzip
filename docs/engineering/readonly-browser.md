@@ -12,19 +12,17 @@ xdzip-codec-api 定义借用只读输入、取消信号、限额、条目和错�
 
 打开 ZIP 后显示根目录的直属文件与目录，不自动解压；搜索可覆盖后代物理记录。重复名称保留独立 EntryId；会话 ID 不复用，UI 以字符串传输 ID 和字节数，避免 JavaScript 数值精度损失。单次桥接批次 128 条，Rust 页面上限 256 条；产品传输另限单批名称 64 KiB；Qt 自动收集完整查询后原子更新最多 100,000 行，不显示分页，视图委托按可见区域复用。支持名称子串搜索、显式和隐式目录树，以及全查询结果排序；内嵌内容预览尚未实现，普通文件双击通过[临时解压及系统关联](archive-opening.md)打开。
 
-识别 ZIP／ZIP64，校验 ZIP64 locator、尾记录及中央目录起始磁盘。[分卷主机](archive-opening.md)统一逻辑输入，编解码器仍拒绝未经转换的多磁盘元数据。ZIP64 的大小与偏移保持 64 位，不根据声明大小分配内容缓冲。中央目录数量必须与 EOCD 一致，错误、取消或超限不发布半成品列表。UTF-8 标志或 ASCII 名称按原文显示；其他原始字节转义，不猜测 CP437。控制字符和双向文本控制符转义；绝对路径、上级路径、特殊文件等标为“需检查”。原始名称始终保留，绝不转成输出路径。
+识别 ZIP／ZIP64，校验 ZIP64 locator、尾记录及中央目录起始磁盘。[分卷主机](archive-opening.md)统一逻辑输入，编解码器仍拒绝未经转换的多磁盘元数据。ZIP64 的大小与偏移保持 64 位，不根据声明大小分配内容缓冲。中央目录数量必须与 EOCD 一致，错误、取消或超限不发布半成品列表。名称按[编码契约](filename-encoding.md)统一解析，优先 Unicode 声明，再检测未声明的旧编码；未解析字节转义。控制字符和双向文本控制符转义；绝对路径、上级路径、特殊文件等标为“需检查”。原始名称字节始终保留，输出仅使用经过独立路径验证及授权的有效名称。
 
 大小、压缩方法、加密位均是归档声明的元数据。未读内容，未验 CRC，未校验本地头；“元数据”状态不表示安全或完整。本契约描述只读浏览，显式解压见 [M3](m3-extraction.md)，实际创建及写后校验见 [WP-10](m4-creation.md)；独立完整性测试通过显式只读后台任务执行，见[检查契约](archive-checking.md)。打开归档仍不写出文件内容。
 
 ## 跨平台文件名编码边界
 
-当前没有按来源操作系统或语言自动探测传统字符集，也没有手动切换文件名编码的产品入口。ZIP 新建及新增名称写入 UTF-8，并设置对应标志；TAR／TAR.GZ 对非 ASCII 或长路径写入 UTF-8 PAX `path`。这些输出不依赖宿主系统代码页，不代表任意外部读取器或历史压缩包均兼容。
+格式层保留原始名称字节和物理身份，优先 ZIP UTF-8 标志及经 CRC 校验的 Unicode Path，再对整组未声明名称进行 UTF-8 检查及有界归档级统计检测。GBK/GB18030、Big5、Shift-JIS 等旧名称可直接用于浏览、导航、解压、临时打开、拖出及普通包修改。所有路径消费者共享冻结的解码结果，重新执行路径、Unicode/大小写及重名检查。
 
-ZIP 浏览要求非 ASCII 名称同时具有有效 UTF-8 字节和 UTF-8 标志；未置标志的 UTF-8、CP437、GBK、Big5、Shift-JIS 等名称当前按原字节 `\xNN` 转义，标记“需检查”，并拒绝安全解压／临时打开／外部拖出及修改。尚未利用 Info-ZIP Unicode Path 扩展 `0x7075` 恢复名称。TAR 解析 PAX 路径与 GNU 长名称，但仍要求最终名称是有效 UTF-8；非 UTF-8 名称浏览时使用替代字符并保留原字节，标记“需检查”且拒绝解压。不能把这种保守拒绝表述为已自动修复乱码。
+检测不依赖系统代码页或界面语言，也不能保证任意短名称、多个未声明编码或已经保存成 Unicode 的乱码均可恢复。当前无手动编码选择器。声明损坏、严格解码失败或异常路径继续标记需检查并拒绝输出。完整优先级、TAR/PAX、预算、载荷绑定和保存规则见[文件名编码自适应契约](filename-encoding.md)。新建和新增名称保持 UTF-8，修改时对已解析的旧名称补充明确 UTF-8 声明。
 
-[ZIP APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 定义 UTF-8 标志及 Unicode Path 扩展，[POSIX pax](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html) 定义 PAX 路径编码。若后续增加自动或手动解码，必须区分原始身份与有效输出名称，在浏览、导航、重名、解压、拖出及修改全链路使用一致的解析结果，并重新进行路径安全及 Unicode／大小写碰撞检查；不能只更改显示文本。
-
-English: New ZIP names use UTF-8 with the encoding flag, and non-ASCII TAR/TAR.GZ paths use UTF-8 PAX headers. Reading does not auto-detect legacy code pages and offers no manual encoding selector. Non-ASCII ZIP names without the UTF-8 flag are escaped and marked for inspection; Info-ZIP Unicode Path extras are not yet resolved. TAR retains original name bytes but displays replacement characters for invalid UTF-8. Such entries cannot be extracted, opened, exported or edited under the current safety policy. This is a declared limitation, not automatic charset repair.
+English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP UTF-8 and CRC-verified Unicode Path take precedence, followed by group-wide unmarked UTF-8 validation or bounded archive-level legacy detection. The same resolved spelling is used for browsing, navigation, extraction, opening, export and ordinary updates, with all path and collision checks repeated. Detection is host-independent and heuristic; short, mixed or already-mojibaked names are not guaranteed. There is no manual selector. Damaged declarations and unsafe/unresolved names remain refused. See the filename encoding contract for TAR/PAX and resource limits.
 
 ## 资源与生命周期
 
@@ -72,7 +70,7 @@ English: New ZIP names use UTF-8 with the encoding flag, and non-ASCII TAR/TAR.G
 
 - Rust 从完整不可变快照建立显式/隐式目录，Qt 不从当前页推断树。每个虚拟节点有当前会话内唯一的 `dN` ID、父节点 ID、显示名称、归档内完整前缀及后代物理记录数。没有显式记录的直属目录以导航行显示，物理 id 为 0，桥接额外携带 navigation_id、physical=false，Qt 使用 dN 展示键；它不能作为物理解压选择，也不会增加物理记录数。显式重复记录不去重；导航行只补没有显式记录的目录。导航行可选中、复制路径和进入目录，但大小、方法、日期显示 —；预检只允许实际物理记录，含导航行的选择集合禁用预检。
 - 目录先于子节点发布，按归档中首次出现的顺序排列。同名物理条目保持独立；节点计数包含该前缀下全部后代（包括待检查条目），不包含与目录前缀完全相同的记录。计数不随名称搜索改变。
-- 带警告、非可信 UTF-8、反斜杠、空组件、`.` 或 `..` 的记录不用于生成节点；它们仍留在物理快照和递归搜索中供检查。索引是导航能力，不是路径安全或解压授权。
+- 带警告、未解析名称、反斜杠、空组件、`.` 或 `..` 的记录不用于生成节点；它们仍留在物理快照和递归搜索中供检查。索引是导航能力，不是路径安全或解压授权。
 - 超出任何目录预算时丢弃整个目录索引，界面明确提示，继续提供根目录、搜索及符合条件的显式目录浏览；未获得索引的隐式目录不能推测生成，根目录可能为空，搜索仍覆盖完整物理快照。绝不展示看似完整的截断树。目录空间另受名称预算限制，不改变原有 100,000 条扫描上限。
 - 点击“名称、原始大小、压缩大小、类型、修改日期”列头切换升/降序；Enter/Space 可激活。列表右上角排序菜单可恢复归档物理顺序。先过滤和排序整个结果，再分页，因此跨页顺序一致。名称使用 Unicode 标量字典序、区分大小写，不宣称自然排序或区域规则；数值按 Rust 原始整数比较。所有相等值以行类型（物理先于导航）及对应身份升序决定先后，不因降序翻转同名记录。类型排序先依据记录的 directory 标记分组，显式与隐式目录都先于文件；类型升序／降序只改变文件类别顺序。文件类别由规范化扩展名确定，JPG 与 JPEG 属同组，无后缀文件保留独立的文件组，不用本地化显示文案作为目录身份。
 - 浏览命令排序码：0 为物理顺序（补充的隐式目录随后按索引顺序），1/2 名称升/降序，3/4 原始大小，5/6 压缩大小，7/8 ZIP 方法编号，9/10 类型，11/12 修改时间；其余拒绝。切换列、目录或搜索回到第一页，成功替换页面时清空当前查询选择和详情。未获准入的操作恢复上一次已显示的查询参数。

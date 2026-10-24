@@ -59,7 +59,11 @@ impl Job {
     pub fn retained_bytes(&self) -> usize {
         self.options.bytes()
             + self.source.retained_bytes()
-            + self.rows.len() * 256
+            + self
+                .rows
+                .iter()
+                .map(|row| std::mem::size_of::<Entry>() + row.name_capacity())
+                .sum::<usize>()
             + self.moving.as_ref().map_or(0, moving::Moves::bytes)
     }
 }
@@ -402,7 +406,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             publish,
         };
         for (index, row) in job.rows.iter().enumerate() {
-            let name = std::str::from_utf8(&row.raw_name)
+            let name = std::str::from_utf8(row.name_bytes())
                 .map_err(|_| "unsafe_name")?
                 .trim_end_matches('/');
             PortablePath::parse(name).ok_or("unsafe_name")?;
@@ -448,6 +452,14 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             }
         }
         let Planner { keep, renames, .. } = planner;
+        // Re-emit decoded legacy/Unicode-extra names as explicit UTF-8 only after
+        // logical move planning. Its None markers still mean a retained source.
+        let rewrite_names: Vec<_> = job
+            .rows
+            .iter()
+            .zip(&renames)
+            .map(|(row, rename)| rename.clone().or_else(|| row.decoded_name.clone()))
+            .collect();
         let mut expected: Vec<(Vec<u8>, bool, u64)> = job
             .rows
             .iter()
@@ -457,7 +469,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 (
                     renames[r.id.get() as usize - 1]
                         .as_ref()
-                        .map_or_else(|| r.raw_name.clone(), |n| n.as_bytes().to_vec()),
+                        .map_or_else(|| r.name_bytes().to_vec(), |n| n.as_bytes().to_vec()),
                     r.directory,
                     r.size,
                 )
@@ -518,7 +530,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 &mut job.source,
                 RewriteInput {
                     keep: &keep,
-                    renames: &renames,
+                    renames: &rewrite_names,
                     additions: &additions,
                     settings: EncodeSettings {
                         method: "deflate",
@@ -569,7 +581,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
             .map_err(|_| "integrity_error")?;
         for (row, (name, directory, size)) in rows.iter().zip(&expected) {
             control.cancel.check().map_err(|_| "cancelled")?;
-            if &row.raw_name != name || row.directory != *directory || row.size != *size {
+            if row.name_bytes() != name || row.directory != *directory || row.size != *size {
                 return Err("integrity_error");
             }
             if !directory {

@@ -51,7 +51,7 @@
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
 
-创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包尚不自动识别 GBK、Big5、Shift-JIS 等编码，相关条目标记为需检查且不允许解压，详见[文件名编码边界](docs/engineering/readonly-browser.md#跨平台文件名编码边界)。
+创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包会优先采用 Unicode 声明，再自适应 GBK/GB18030、Big5、Shift-JIS 等旧编码，并贯通浏览、解压与普通包修改。短名称或混合旧编码无法保证唯一识别，损坏声明及异常路径继续拒绝输出，详见[文件名编码契约](docs/engineering/filename-encoding.md)。
 
 解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)与 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。
 

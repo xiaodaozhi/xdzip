@@ -1,5 +1,6 @@
 //! Internal format contracts. Payload adapters receive input and a host-owned sink, never paths.
 pub mod encode;
+pub mod names;
 pub mod payload;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -39,7 +40,7 @@ pub struct ScanLimits {
     pub name_bytes: usize,
     /// Aggregate raw filename allocation budget.
     pub total_name_bytes: usize,
-    /// Aggregate escaped display-name allocation budget.
+    /// Aggregate decoded and escaped display-name allocation budget.
     pub display_name_bytes: usize,
     /// Total input bytes read, including repeated reads and the end-record search.
     pub read_bytes: u64,
@@ -86,6 +87,11 @@ pub struct Entry {
     pub id: EntryId,
     /// Container-resolved filename bytes before output validation. TAR strips leading ./ only.
     pub raw_name: Vec<u8>,
+    /// Decoded UTF-8 spelling when it differs from, or declares an encoding for, raw bytes.
+    /// Output still requires portable-path validation and destination authorization.
+    pub decoded_name: Option<String>,
+    /// How the immutable effective name was resolved; not a confidence guarantee.
+    pub name_encoding: names::NameEncoding,
     /// Safe text only; never a filesystem output path.
     pub display_name: String,
     /// Directory marker from metadata; no filesystem object is created.
@@ -106,8 +112,23 @@ pub struct Entry {
     pub encrypted: bool,
     /// Supported password profile from container metadata, not payload authentication.
     pub password_supported: bool,
-    /// Suspicious name, non-UTF8 bytes or unsupported special record; never safe-to-extract approval.
+    /// Suspicious/unresolved name or unsupported special record; never safe-to-extract approval.
     pub warning: bool,
+}
+
+impl Entry {
+    /// Effective archive-relative name. Never use escaped display text as a path.
+    pub fn name_bytes(&self) -> &[u8] {
+        self.decoded_name
+            .as_ref()
+            .map_or(self.raw_name.as_slice(), |name| name.as_bytes())
+    }
+    /// Charge every owned name allocation, including retained original bytes.
+    pub fn name_capacity(&self) -> usize {
+        self.raw_name.capacity()
+            + self.display_name.capacity()
+            + self.decoded_name.as_ref().map_or(0, String::capacity)
+    }
 }
 
 /// Stable failures without source paths or archive-supplied messages.

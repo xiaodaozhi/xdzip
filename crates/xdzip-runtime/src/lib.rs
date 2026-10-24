@@ -222,8 +222,8 @@ impl Archive {
         let mut rows = Vec::new();
         for entry in self.rows.iter() {
             control.check()?;
-            if entry.raw_name.starts_with(prefix)
-                && (prefix.is_empty() || entry.raw_name != prefix)
+            if entry.name_bytes().starts_with(prefix)
+                && (prefix.is_empty() || entry.name_bytes() != prefix)
                 && (needle.is_empty() || entry.display_name.to_lowercase().contains(&needle))
             {
                 rows.push(entry);
@@ -258,9 +258,11 @@ impl Archive {
                         .ok_or(ScanError::Invalid)?,
                 )
                 .filter(|entry| entry.id.get() == id)
-                .filter(|entry| entry.directory && !entry.warning && entry.raw_name.ends_with(b"/"))
+                .filter(|entry| {
+                    entry.directory && !entry.warning && entry.name_bytes().ends_with(b"/")
+                })
                 .ok_or(ScanError::Invalid)?;
-            entry.raw_name.as_slice()
+            entry.name_bytes()
         };
         Ok(prefix)
     }
@@ -489,3 +491,6 @@ mod tests {
         assert_eq!(before, std::fs::read(&path).unwrap());
     }
 }
+
+#[cfg(test)]
+mod legacy_names_tests;

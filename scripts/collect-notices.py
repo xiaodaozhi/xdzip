@@ -40,7 +40,7 @@ for package in metadata['packages']:
     source = Path(package['manifest_path']).parent
     target = out / f'{package["name"]}-{package["version"]}'
     target.mkdir(exist_ok=True)
-    notices = [p for p in source.iterdir() if p.is_file() and p.name.upper().startswith(('LICENSE', 'LICENCE', 'COPYING', 'NOTICE'))]
+    notices = [p for p in source.iterdir() if p.is_file() and p.name.upper().startswith(('LICENSE', 'LICENCE', 'COPYING', 'COPYRIGHT', 'NOTICE'))]
     # This published crate places the full MIT grant and copyright in AUTHORS.
     # Pin that exception; an arbitrary author list is not a license notice.
     if not notices and (package['name'], package['version']) == ('r-efi', '6.0.0'):

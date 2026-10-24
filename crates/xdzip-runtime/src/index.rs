@@ -48,14 +48,14 @@ impl DirectoryIndex {
         let mut explicit = HashSet::new();
         for (at, entry) in rows.iter().enumerate() {
             control.check()?;
-            if let Some(prefix) = parent(&entry.raw_name) {
+            if let Some(prefix) = parent(entry.name_bytes()) {
                 children
                     .entry(prefix.to_vec())
                     .or_default()
                     .push(RowRef::Physical(at));
             }
             if entry.directory && !entry.warning {
-                explicit.insert(entry.raw_name.as_slice());
+                explicit.insert(entry.name_bytes());
             }
         }
         for (at, node) in directories.into_iter().flatten().enumerate() {

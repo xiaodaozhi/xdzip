@@ -32,10 +32,10 @@ pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, S
     let mut bytes = 0;
     for entry in rows {
         control.check()?;
-        if entry.warning || entry.raw_name.contains(&b'\\') {
+        if entry.warning || entry.name_bytes().contains(&b'\\') {
             continue;
         }
-        let Ok(path) = std::str::from_utf8(&entry.raw_name) else {
+        let Ok(path) = std::str::from_utf8(entry.name_bytes()) else {
             continue;
         };
         if path
@@ -83,14 +83,14 @@ pub fn build(rows: &[Entry], control: &Cancellation) -> Result<Vec<Directory>, S
     for entry in rows {
         control.check()?;
         for (end, _) in entry
-            .raw_name
+            .name_bytes()
             .iter()
             .enumerate()
             .filter(|(_, byte)| **byte == b'/')
             .take(MAX_DIRECTORY_DEPTH)
         {
-            if end + 1 < entry.raw_name.len()
-                && let Some(&index) = ids.get(&entry.raw_name[..=end])
+            if end + 1 < entry.name_bytes().len()
+                && let Some(&index) = ids.get(&entry.name_bytes()[..=end])
             {
                 nodes[index].count += 1;
             }
@@ -107,6 +107,8 @@ mod tests {
             format: xdzip_codec_api::Format::Zip,
             id: id.try_into().unwrap(),
             raw_name: name.as_bytes().to_vec(),
+            decoded_name: None,
+            name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
             display_name: name.into(),
             directory: name.ends_with('/'),
             link: false,

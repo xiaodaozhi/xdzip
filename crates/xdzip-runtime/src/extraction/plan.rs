@@ -63,10 +63,22 @@ pub(crate) fn prepare(
                     .ok_or("invalid_selection")?;
                 selected.insert(entry.id);
                 if entry.directory {
-                    prefixes.push(entry.raw_name.as_slice());
+                    prefixes.push(entry.name_bytes());
                 }
             }
         }
+    }
+    // An unresolved declaration can hide a descendant whose raw prefix differs
+    // from a decoded directory. Refuse uncertain directory expansion, rather
+    // than report success after silently omitting that record. Explicit files
+    // remain selectable independently; no output grant has been acquired here.
+    if !prefixes.is_empty()
+        && archive
+            .rows
+            .iter()
+            .any(|entry| entry.name_encoding == xdzip_codec_api::names::NameEncoding::Unresolved)
+    {
+        return Err("unsupported_entry");
     }
     // Prefix membership never scans 100,000 selectors for every physical row.
     let mut prefix_keys = BTreeSet::new();
@@ -81,11 +93,11 @@ pub(crate) fn prepare(
     for (index, entry) in archive.rows.iter().enumerate() {
         cancel.check().map_err(|_| "cancelled")?;
         let descendant = entry
-            .raw_name
+            .name_bytes()
             .iter()
             .enumerate()
             .filter(|(_, b)| **b == b'/')
-            .any(|(at, _)| prefix_keys.contains(&entry.raw_name[..=at]));
+            .any(|(at, _)| prefix_keys.contains(&entry.name_bytes()[..=at]));
         if !options.all && !selected.contains(&entry.id) && !descendant {
             continue;
         }
@@ -103,7 +115,7 @@ pub(crate) fn prepare(
             return Err("unsupported_entry");
         }
         let relative = entry
-            .raw_name
+            .name_bytes()
             .strip_prefix(base)
             .ok_or("invalid_selection")?;
         if relative.is_empty() && entry.directory {
@@ -194,9 +206,7 @@ impl Job {
         // Charge the full immutable snapshot conservatively even when Arc shares it.
         self.rows
             .iter()
-            .map(|e| {
-                std::mem::size_of::<Entry>() + e.raw_name.capacity() + e.display_name.capacity()
-            })
+            .map(|e| std::mem::size_of::<Entry>() + e.name_capacity())
             .sum::<usize>()
             + self
                 .planned

@@ -90,3 +90,13 @@ Windows 构建引入 Inno Setup 6.7.3，仅用于编译自有运行目录的当�
 仅启用标准文件复制、当前用户注册表、自有快捷方式和互斥量保护，关闭自动关闭／重启应用，无安装时网络下载、自定义原生插件或新 Rust 构建脚本。Linux .deb 使用 Ubuntu 的 dpkg-deb 与系统维护工具，不引入额外应用编解码器。Qt 下载工具工作目录固定在 build/，避免 aqtinstall.log 污染源码身份。
 
 2026-10-16 查询官方仓库公开 security-advisories API 返回空列表，原文保存在 build/review/installer-tool-advisories.json。这不代表无漏洞或 NVD 全库检索通过；[官方版本记录](https://jrsoftware.org/files/is6-whatsnew.htm)用于后续安全维护复核，固定 6.7.3 不代表最新版本或长期支持承诺。哈希校验不代替签名身份与完整引擎许可／安全准入。真实编译、安装、系统打开、更新／回退／卸载和未通过项按[安装契约](installers-associations.md)及实际 CI 记录登记。
+
+## 文件名旧编码检测与解码
+
+精确固定 [chardetng 1.0.0](https://docs.rs/chardetng/1.0.0/chardetng/) 和 [encoding_rs 0.8.42](https://docs.rs/encoding_rs/0.8.42/encoding_rs/)，来源均为 crates.io 和 hsivonen 上游。前者采用 MIT 或 Apache-2.0，后者的代码采用 MIT 或 Apache-2.0，WHATWG 映射数据额外采用 BSD-3-Clause，保留 LICENSE-WHATWG 与 COPYRIGHT。通知收集器包含 COPYRIGHT，不只收集许可全文。
+
+关闭两者默认特性，encoding_rs 只直接启用 alloc，禁用检测器的 multithreading/rayon。锁定的新传递包为 core_detect 1.0.0、multiversion_no_op 1.0.0、scopeguard 1.2.0、simdutf8 0.1.5，均为 MIT 或 Apache-2.0；cfg-if 1.0.5、memchr 2.8.3 和构建宏 rustversion 1.0.23 复用锁定版本。core_detect 提供本地 CPU 能力检测，simdutf8 为上游 SIMD UTF-8 验证，multiversion_no_op 是编译期空操作宏；没有新 C/C++ 原生库、网络构建脚本或运行下载。encoding_rs 构建脚本只按编译器版本选择本地配置。CPU 特定 unsafe 实现留在受维护上游，宿主不新增 unsafe/FFI。
+
+选择同一 Rust 检测器避免 Qt、系统 iconv 和 Windows 代码页分裂规则；自行维护 CJK 统计模型或调用外部解压工具都会扩大实现与部署边界。chardetng 上游标记为被动维护，版本与模型变化需重跑独立文件名样本。ZIP CP437 是固定单字节映射，依据[Unicode CP437 表](https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/PC/CP437.TXT)，不引入平台 API；测试原始字节另由 Python 标准库生成。检测是启发式结果，不作为路径授权或内容校验证据。
+
+2026-10-24 对六个新增锁定包执行 OSV 精确版本查询，响应未返回公告，原始响应只保存在本地工件。这是定向核对，不是无漏洞保证。准入同时检查实际 Cargo features、来源及许可全文，回归范围与资源和失败规则见[文件名编码契约](filename-encoding.md)；三平台构建、内容互操作和实际结果在对应 issue/CI 登记。

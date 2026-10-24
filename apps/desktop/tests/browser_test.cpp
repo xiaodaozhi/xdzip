@@ -6079,6 +6079,152 @@ QtObject {
         QVERIFY(found);
         QTRY_VERIFY(controller.requestClose());
     }
+    void legacyFilenameResolutionThroughNativeModelAndTasks_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("nested");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (bool nested : {false, true})
+                QTest::newRow(qPrintable(language + QString::number(nested))) << language << nested;
+    }
+    void legacyFilenameResolutionThroughNativeModelAndTasks() {
+        QFETCH(QString, language);
+        QFETCH(bool, nested);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        QFile original(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        auto bytes = original.readAll();
+        const auto central = bytes.indexOf(QByteArray("PK\x01\x02", 4));
+        QVERIFY(central > 40);
+        QCOMPARE(bytes[26], char(10));
+        QCOMPARE(bytes[27], char(0));
+        const auto raw =
+            QByteArray::fromHex(nested ? "c4bfc2bc2f612e747874" : "d6d0cec461622e747874");
+        QCOMPARE(raw.size(), 10);
+        bytes.replace(30, 10, raw);
+        bytes.replace(central + 46, 10, raw);
+        bytes[7] = char(quint8(bytes[7]) & ~8u);
+        bytes[central + 9] = char(quint8(bytes[central + 9]) & ~8u);
+        const auto extra = quint8(bytes[28]) | (quint16(quint8(bytes[29])) << 8);
+        const auto expected = bytes.mid(40 + extra, 1900);
+        if (nested) {
+            // GBK's "目录" is also valid UTF-8. A second unlabelled name supplies
+            // real archive context; both paths must resolve under the same encoding.
+            const auto end = bytes.lastIndexOf(QByteArray("PK\x05\x06", 4));
+            QCOMPARE(end + 22, bytes.size());
+            const auto originalCentral = bytes.mid(central, end - central);
+            const auto contextName = QByteArray::fromHex("d6d0cec42e747874");
+            auto contextLocal = bytes.left(30);
+            contextLocal.replace(14, 12, QByteArray(12, char(0)));
+            const auto set16 = [](QByteArray &data, qsizetype at, quint16 value) {
+                for (int i = 0; i < 2; ++i)
+                    data[at + i] = char((value >> (8 * i)) & 255);
+            };
+            const auto set32 = [](QByteArray &data, qsizetype at, quint32 value) {
+                for (int i = 0; i < 4; ++i)
+                    data[at + i] = char((value >> (8 * i)) & 255);
+            };
+            set16(contextLocal, 26, quint16(contextName.size()));
+            set16(contextLocal, 28, 0);
+            contextLocal += contextName;
+            auto contextCentral = originalCentral.left(46);
+            contextCentral.replace(16, 12, QByteArray(12, char(0)));
+            set16(contextCentral, 28, quint16(contextName.size()));
+            set16(contextCentral, 30, 0);
+            set16(contextCentral, 32, 0);
+            set32(contextCentral, 42, quint32(central));
+            contextCentral += contextName;
+            auto footer = bytes.mid(end);
+            set16(footer, 8, 2);
+            set16(footer, 10, 2);
+            set32(footer, 12, quint32(originalCentral.size() + contextCentral.size()));
+            set32(footer, 16, quint32(central + contextLocal.size()));
+            bytes = bytes.left(central) + contextLocal + originalCentral + contextCentral + footer;
+        }
+        const auto source = fixture.filePath("owned-legacy.zip");
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        QCOMPARE(file.write(bytes), qint64(bytes.size()));
+        file.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(controller->m_model.rowCount(), nested ? 2 : 1);
+        const auto rootName = nested ? QStringLiteral("目录") : QStringLiteral("中文ab.txt");
+        int rootRow = -1;
+        for (int i = 0; i < controller->m_model.rowCount(); ++i)
+            if (controller->m_model.rowAt(i)->cells[0] == rootName)
+                rootRow = i;
+        QVERIFY(rootRow >= 0);
+        QVERIFY(controller->canUpdateArchive());
+        if (nested) {
+            controller->enterDirectory(rootRow);
+            QTRY_VERIFY(!controller->busy() && !controller->directoryId().isEmpty());
+        }
+        controller->search(nested ? QStringLiteral("a.txt") : QStringLiteral("中文"));
+        QTRY_VERIFY(!controller->busy());
+        const auto leaf = nested ? QStringLiteral("a.txt") : QStringLiteral("中文ab.txt");
+        const auto searchName = nested ? QStringLiteral("目录/a.txt") : leaf;
+        int row = -1;
+        for (int i = 0; i < controller->m_model.rowCount(); ++i)
+            if (controller->m_model.rowAt(i)->cells[0] == searchName)
+                row = i;
+        QVERIFY(row >= 0);
+        const auto entry = controller->m_model.rowAt(row)->id;
+        controller->m_temporaryCacheOverride = fixture.filePath("open-cache");
+        QVERIFY(QDir().mkpath(controller->m_temporaryCacheOverride));
+        bool opened = false;
+        controller->m_fileOpener = [&](const QUrl &url) {
+            QFile actual(url.toLocalFile());
+            opened = url.isLocalFile() && QFileInfo(actual).fileName() == leaf &&
+                     actual.open(QIODevice::ReadOnly) && actual.readAll() == expected;
+            return opened;
+        };
+        controller->openContextEntry(controller->sessionId(), entry);
+        QTRY_VERIFY(opened && controller->activeTaskCount() == 0 && !controller->busy());
+        controller->search(QString());
+        QTRY_VERIFY(!controller->busy());
+        row = -1;
+        for (int i = 0; i < controller->m_model.rowCount(); ++i)
+            if (controller->m_model.rowAt(i)->cells[0] == leaf)
+                row = i;
+        QVERIFY(row >= 0);
+        controller->beginExport(row, window);
+        QTRY_VERIFY(!controller->busy() && controller->m_export);
+        controller->m_exportCache = fixture.filePath("export-cache");
+        QVERIFY(QDir().mkpath(controller->m_exportCache));
+        const auto state = controller->m_export;
+        QCOMPARE(state->entries.last().name, leaf);
+        state->request();
+        QTRY_VERIFY(state->done);
+        QVERIFY(state->error.isEmpty());
+        QFile exported(QDir(state->directory).filePath(leaf));
+        QVERIFY(exported.open(QIODevice::ReadOnly));
+        QCOMPARE(exported.readAll(), expected);
+        QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy());
+        const auto destination = fixture.filePath("output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(true);
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extractedTask(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, true, false, 0, false, false);
+        QTRY_COMPARE(extractedTask.count(), 1);
+        QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy());
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
+        QFile extracted(QDir(destination).filePath(nested ? QStringLiteral("目录/a.txt") : leaf));
+        QVERIFY(extracted.open(QIODevice::ReadOnly));
+        QCOMPARE(extracted.readAll(), expected);
+        QTRY_VERIFY(controller->requestClose());
+    }
     void rightClickOpenAndDropAddition_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<double>("factor");

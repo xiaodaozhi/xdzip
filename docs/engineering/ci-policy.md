@@ -84,3 +84,5 @@ Mac 包体积规则在 Documentation 的跨平台夹具测试 `scripts/test-maco
 独立源码验证使用[Qt 源码专用工作流](../../.github/workflows/qt-source.yml)，由可信 main 显式分派，单独运行三平台所需模块的源码编译与真实产品测试。Mac 仍只上传有界日志和 JSON，不缓存或上传 SDK／应用；Windows/Linux 依赖缓存以 runner 镜像、源码配置和脚本指纹区分，源码恢复后重新校验。普通 Qt CI 同时校验原生指标协议、实际资源与链接证据；不在共享 runner 用单次性能数字批准发行预算。
 
 源码库内容边界由 `scripts/repository_contents.py` 对 Git 索引核验，禁止强制暂存生成目录、文档阅读版、已退役阶段报告、QA 执行输出及超过审查阈值的大 blob。具体执行状态使用 issue，不把 CI 或验收报告重新提交到 docs。
+
+旧文件名编码回归使用自有原始字节和 Python 独立编码，Foundation 三平台验证 Rust 添加/移动后的 26 个归档及 UTF-8 声明，Qt 三平台运行实际服务探针解压 26 个 ZIP/TAR/TAR.GZ 输入，并执行双语 Qt 模型、导航、搜索、打开、导出与解压。Unicode 扩展、PAX/GNU、AES、分卷、碰撞、预算与声明损坏由格式/核心回归覆盖。入口为 scripts/check-filename-encoding.py，报告只进入 build/ 与 CI 工件；统计检测不承诺所有短名称或混合编码均能唯一恢复。

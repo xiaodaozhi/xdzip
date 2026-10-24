@@ -155,6 +155,7 @@ Invoke-Checked python @('scripts/check-result-ui.py', '--input', 'build/desktop/
 if (!$IsMacOS) { Copy-Item -Recurse 'build/desktop/result-ui' 'build/review/result-ui' }
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
+Invoke-Checked python @('scripts/check-filename-encoding.py', '--probe', $m3Probe, '--output', 'build/review/filename-encoding-service.json')
 Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--output', 'build/review/m3-core-performance.json')
 $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m4-operations'
 Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip', 'tarCreationBrowseAndSafeExtraction')

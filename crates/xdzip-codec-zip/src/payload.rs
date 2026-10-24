@@ -36,6 +36,7 @@ impl Seek for Input<'_> {
     }
 }
 struct Record {
+    effective_name: Vec<u8>,
     finder: ZipArchiveEntryWayfinder,
     flags: u16,
     crc: u32,
@@ -74,11 +75,13 @@ impl PayloadCodec for ZipCodec {
         }
         let mut entries = archive.entries(&mut buffer);
         let mut records = Vec::with_capacity(snapshot.len());
+        let mut names = 0usize;
         while let Some(header) = entries.next_entry().map_err(|_| error(control))? {
             check(control)?;
             let expected = snapshot.get(records.len()).ok_or(DecodeError::Integrity)?;
             if expected.id.get() != records.len() as u64 + 1
                 || header.file_path().as_bytes() != expected.raw_name
+                || !crate::names::matches(expected, header.flags().is_utf8(), header.extra_fields())
                 || header.is_dir() != expected.directory
                 || header.uncompressed_size_hint() != expected.size
                 || header.compressed_size_hint() != expected.packed_size
@@ -97,7 +100,14 @@ impl PayloadCodec for ZipCodec {
                 .get_ref()
                 .read_exact_at(&mut fixed, header.central_directory_offset())
                 .map_err(read_error)?;
+            names = names
+                .checked_add(expected.name_bytes().len())
+                .ok_or(DecodeError::Limit)?;
+            if expected.name_bytes().len() > 4096 || names > 16 * 1024 * 1024 {
+                return Err(DecodeError::Limit);
+            }
             records.push(Record {
+                effective_name: expected.name_bytes().to_vec(),
                 finder: header.wayfinder(),
                 flags: header.flags().bits(),
                 crc: header.crc32(),
@@ -142,6 +152,9 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
         }
         let index = usize::try_from(expected.id.get() - 1).map_err(|_| DecodeError::Integrity)?;
         let record = self.records.get(index).ok_or(DecodeError::Integrity)?;
+        if expected.name_bytes() != record.effective_name {
+            return Err(DecodeError::Integrity);
+        }
         let aes = if expected.encrypted && expected.method == 99 {
             Some(record.aes?.ok_or(DecodeError::Integrity)?)
         } else if expected.encrypted || expected.method == 99 {
@@ -166,6 +179,16 @@ impl<R: ReaderAt> PayloadReader for ZipPayload<R> {
             || header.compression_method().as_u16() != expected.method
             || (aes.is_some()
                 && aes::profile(header.extra_fields()).map_err(|_| DecodeError::Integrity)? != aes)
+        {
+            return Err(DecodeError::Integrity);
+        }
+        if let Some(local_name) = crate::names::unicode_path(
+            &expected.raw_name,
+            header.flags().is_utf8(),
+            header.extra_fields(),
+        )
+        .map_err(|_| DecodeError::Integrity)?
+            && local_name.as_bytes() != expected.name_bytes()
         {
             return Err(DecodeError::Integrity);
         }

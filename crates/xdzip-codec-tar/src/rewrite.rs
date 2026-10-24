@@ -5,7 +5,7 @@ use flate2::{Compression, read::MultiGzDecoder, write::GzEncoder};
 use std::io::{Read, SeekFrom, Write};
 use xdzip_codec_api::{Cancellation, ReadSource, encode::*};
 
-// Rewrite only path metadata; preserve every other admitted PAX record byte.
+// Rewrite path and its charset declaration; preserve other admitted PAX record bytes.
 // GNU long paths become an explicit UTF-8 PAX path. Unsupported metadata fails
 // before the host can publish the staged archive.
 fn renamed_header(
@@ -18,6 +18,7 @@ fn renamed_header(
     let mut body = Vec::new();
     let mut at = 0usize;
     let mut template = None;
+    let mut binary_charset = false;
     while at < pending.len() {
         let h = tar::Header::from_byte_slice(&pending[at..at + 512]);
         let size = usize::try_from(h.entry_size().map_err(|_| EncodeError::Invalid)?)
@@ -51,8 +52,12 @@ fn renamed_header(
                         .iter()
                         .position(|b| *b == b'=')
                         .ok_or(EncodeError::Invalid)?;
-                    if &record[..equals] != b"path" {
-                        body.extend_from_slice(&data[pos..end]);
+                    match &record[..equals] {
+                        b"path" => {}
+                        b"hdrcharset" => {
+                            binary_charset |= &record[equals + 1..record.len() - 1] == b"BINARY";
+                        }
+                        _ => body.extend_from_slice(&data[pos..end]),
                     }
                     pos = end;
                 }
@@ -60,6 +65,16 @@ fn renamed_header(
             _ => return Err(EncodeError::Unsupported),
         }
         at += 512 + size.div_ceil(512) * 512;
+    }
+    // The replacement path is explicit PAX UTF-8. Do not retain a BINARY
+    // declaration for it, or silently reinterpret other non-UTF8 PAX values.
+    if binary_charset
+        && tar::PaxExtensions::new(&body).any(|item| {
+            item.is_err()
+                || item.is_ok_and(|field| std::str::from_utf8(field.value_bytes()).is_err())
+        })
+    {
+        return Err(EncodeError::Unsupported);
     }
     let value = format!(" path={name}\n");
     let mut size = value.len() + 1;

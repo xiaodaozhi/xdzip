@@ -403,3 +403,24 @@ fn output_limit_and_cooperative_cancel_still_stop_encrypted_streams() {
         );
     }
 }
+
+#[test]
+fn encrypted_legacy_names_use_the_same_resolution_without_changing_authentication() {
+    let raw = b"\xd6\xd0\xce\xc4old.txt";
+    for streaming in [false, true] {
+        for method in [CompressionMethod::Stored, CompressionMethod::Deflated] {
+            let mut bytes = archive(b"owned encrypted legacy content", method, streaming);
+            let cd = central(&bytes);
+            bytes[30..30 + raw.len()].copy_from_slice(raw);
+            bytes[cd + 46..cd + 46 + raw.len()].copy_from_slice(raw);
+            let scanned = rows(&bytes);
+            assert_eq!(scanned[0].display_name, "中文old.txt");
+            assert_eq!(scanned[0].raw_name, raw);
+            assert!(scanned[0].password_supported && !scanned[0].warning);
+            assert_eq!(
+                decode(&bytes, Some(PASSWORD)).unwrap(),
+                b"owned encrypted legacy content"
+            );
+        }
+    }
+}

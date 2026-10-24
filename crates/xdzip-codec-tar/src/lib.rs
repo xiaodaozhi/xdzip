@@ -158,20 +158,6 @@ fn display_time(seconds: u64) -> u32 {
         | (((seconds % 3600 / 60) as u32) << 5)
         | ((seconds % 60 / 2) as u32)
 }
-fn display(name: &[u8]) -> String {
-    String::from_utf8_lossy(name)
-        .chars()
-        .flat_map(|ch| {
-            if ch.is_control() || matches!(ch, '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}') {
-                format!("\\u{{{:X}}}", ch as u32)
-                    .chars()
-                    .collect::<Vec<_>>()
-            } else {
-                vec![ch]
-            }
-        })
-        .collect()
-}
 fn validate_global_comments(mut data: &[u8]) -> Result<(), ScanError> {
     while !data.is_empty() {
         let space = data
@@ -209,7 +195,9 @@ fn scan(
     let mut rows = Vec::new();
     let mut offsets = Vec::new();
     let mut names = 0usize;
-    let mut displays = 0usize;
+    let mut legacy = Vec::new();
+    let mut next_utf8 = false;
+    let mut next_binary = None;
     let mut next_name: Option<Vec<u8>> = None;
     let mut next_size = None;
     let mut next_time = None;
@@ -237,6 +225,13 @@ fn scan(
             loop {
                 let n = stream.read(&mut tail).map_err(|_| ScanError::Invalid)?;
                 if n == 0 {
+                    xdzip_codec_api::names::resolve(
+                        &mut rows,
+                        &legacy,
+                        false,
+                        stream.control,
+                        limits,
+                    )?;
                     return Ok((rows, offsets));
                 }
                 if tail[..n].iter().any(|b| *b != 0) {
@@ -304,6 +299,17 @@ fn scan(
                                 return Err(ScanError::Invalid);
                             }
                             next_name = Some(item.value_bytes().to_vec());
+                            next_utf8 = true;
+                        }
+                        b"hdrcharset" => {
+                            if next_binary.is_some() {
+                                return Err(ScanError::Invalid);
+                            }
+                            next_binary = Some(match item.value_bytes() {
+                                b"BINARY" => true,
+                                b"ISO-IR 10646 2000 UTF-8" => false,
+                                _ => return Err(ScanError::Unsupported),
+                            });
                         }
                         b"mtime" => {
                             next_time = item
@@ -332,6 +338,7 @@ fn scan(
             }
             continue;
         }
+        let unlabelled = !next_utf8 || next_binary.unwrap_or(false);
         let mut name = next_name
             .take()
             .unwrap_or_else(|| header.path_bytes().into_owned());
@@ -355,6 +362,8 @@ fn scan(
             extensions = 0;
             local_extensions = 0;
             next_special = false;
+            next_utf8 = false;
+            next_binary = None;
             continue;
         }
         if directory && !name.ends_with(b"/") {
@@ -367,30 +376,15 @@ fn scan(
         {
             return Err(ScanError::Limit);
         }
-        let text = display(&name);
-        displays = displays.checked_add(text.len()).ok_or(ScanError::Limit)?;
-        if displays > limits.display_name_bytes {
-            return Err(ScanError::Limit);
-        }
-        let warning = next_special
-            || !(kind.is_file() || directory)
-            || (directory && size != 0)
-            || std::str::from_utf8(&name).is_err()
-            || name.starts_with(b"/")
-            || name.contains(&b'\\')
-            || name.contains(&b':')
-            || name.split(|b| *b == b'/').any(|p| p == b"..")
-            || name.iter().any(|b| b.is_ascii_control())
-            || std::str::from_utf8(&name).is_ok_and(|s| {
-                s.chars().any(|c| {
-                    c.is_control() || matches!(c, '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}')
-                })
-            });
+        let warning = next_special || !(kind.is_file() || directory) || (directory && size != 0);
+        legacy.push(unlabelled);
         offsets.push(stream.position);
         rows.push(Entry {
             id: EntryId::try_from(rows.len() as u64 + 1).map_err(|_| ScanError::Limit)?,
             raw_name: name,
-            display_name: text,
+            decoded_name: None,
+            name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
+            display_name: String::new(),
             directory,
             link: kind.is_symlink() || kind.is_hard_link(),
             unix_mode: 0,
@@ -407,6 +401,8 @@ fn scan(
         extensions = 0;
         local_extensions = 0;
         next_special = false;
+        next_utf8 = false;
+        next_binary = None;
     }
 }
 impl MetadataCodec for TarCodec {
@@ -595,7 +591,7 @@ mod tests {
         }
     }
     #[test]
-    fn raw_filename_encoding_keeps_utf8_and_marks_legacy_bytes() {
+    fn raw_filename_encoding_keeps_utf8_and_resolves_legacy_bytes() {
         for name in ["中文.txt".as_bytes(), b"\xD6\xD0\xCE\xC4.txt"] {
             let mut header = tar::Header::new_ustar();
             header.set_entry_type(tar::EntryType::Regular);
@@ -608,8 +604,9 @@ mod tests {
             let bytes = builder.into_inner().unwrap();
             let rows = scan_bytes(bytes, false).unwrap();
             assert_eq!(rows[0].raw_name, name);
-            assert_eq!(rows[0].warning, std::str::from_utf8(name).is_err());
-            assert_eq!(rows[0].display_name, String::from_utf8_lossy(name));
+            assert!(!rows[0].warning);
+            assert_eq!(rows[0].display_name, "中文.txt");
+            assert_eq!(rows[0].name_bytes(), "中文.txt".as_bytes());
         }
     }
     #[test]
@@ -923,3 +920,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod names_tests;
