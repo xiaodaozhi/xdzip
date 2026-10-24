@@ -6228,6 +6228,126 @@ QtObject {
         QVERIFY(findRow(QStringLiteral("旅行清单.txt")) >= 0);
         QTRY_VERIFY(controller->requestClose());
     }
+    void treeMoveRejectsEverySelectedFolderAndDescendant_data() {
+        rightClickOpenAndDropAddition_data();
+    }
+    void treeMoveRejectsEverySelectedFolderAndDescendant() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("tree-move.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/empty.zip"), source));
+        const auto input = fixture.filePath("parent");
+        QVERIFY(QDir().mkpath(input + "/selected/sub/deep"));
+        QVERIFY(QDir().mkpath(input + "/selected2/child"));
+        QVERIFY(QDir().mkpath(input + "/selected-copy"));
+        QFile loose(input + "/loose.txt");
+        QVERIFY(loose.open(QIODevice::WriteOnly));
+        QCOMPARE(loose.write("original bytes"), 14);
+        loose.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        window->requestActivate();
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
+                      "factor: 1; property bool dark: false; onFactorChanged: "
+                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+                      QUrl());
+        std::unique_ptr<QObject> appearance(theme.create());
+        QVERIFY(appearance);
+        appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", dark);
+        controller->openPath(source);
+        QTRY_VERIFY(controller->canUpdateArchive());
+        controller->startUpdate({input}, controller->sessionId(), controller->directoryId(), 0);
+        QTRY_VERIFY(controller->canUpdateArchive() && controller->activeTaskCount() == 0);
+        controller->navigateDirectory(controller->m_directoryPaths.value("parent/"));
+        QTRY_COMPARE(controller->location(), QStringLiteral("parent/"));
+        QTRY_VERIFY(!controller->busy());
+        const auto findRow = [&](const QString &name) {
+            for (int i = 0; i < controller->m_model.rowCount(); ++i)
+                if (controller->m_model.rowAt(i)->cells[0] == name)
+                    return i;
+            return -1;
+        };
+        const int first = findRow("selected"), second = findRow("selected2"),
+                  file = findRow("loose.txt");
+        QVERIFY(first >= 0 && second >= 0 && file >= 0);
+        auto *tree = findVisual(window->contentItem(), "directoryTree");
+        QVERIFY(tree);
+        QVERIFY(
+            QMetaObject::invokeMethod(tree, "expandRecursively", Q_ARG(int, 0), Q_ARG(int, -1)));
+        auto *proxy = findVisual(window->contentItem(), "archiveMoveDrag");
+        QVERIFY(proxy);
+        QFile archive(source);
+        QVERIFY(archive.open(QIODevice::ReadOnly));
+        const auto original = archive.readAll();
+        archive.close();
+        const auto session = controller->sessionId();
+        const int tasks = controller->tasks().size();
+        QSignalSpy accepted(controller, &BrowserController::updateStarted);
+        const auto point = [](QQuickItem *item) {
+            return item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
+        };
+        for (const auto &view : {QStringLiteral("list"), QStringLiteral("grid")}) {
+            QVERIFY(window->setProperty("viewMode", view));
+            for (int selection = 0; selection < 3; ++selection) {
+                controller->selectOnlyRow(first);
+                if (selection > 0)
+                    controller->selectRow(second);
+                if (selection > 1)
+                    controller->selectRow(file);
+                const int anchor = selection == 0 ? first : selection == 1 ? second : file;
+                QStringList targets{"selected/", "selected/sub/", "selected/sub/deep/"};
+                if (selection > 0)
+                    targets << "selected2/" << "selected2/child/";
+                for (const auto &target : targets) {
+                    QQuickItem *from = nullptr, *to = nullptr;
+                    QTRY_VERIFY(
+                        (from = findVisual(window->contentItem(),
+                                           view == "grid" ? QString("grid-entry-%1").arg(anchor)
+                                                          : QString("entry-%1-0").arg(anchor))));
+                    const auto targetId = controller->m_directoryPaths.value("parent/" + target);
+                    QVERIFY(!targetId.isEmpty());
+                    QTRY_VERIFY((to = findVisual(window->contentItem(), "directory-" + targetId)));
+                    const auto start = point(from), finish = point(to);
+                    QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
+                    QTest::mouseMove(window, start + QPoint(24, 0), 20);
+                    QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
+                    QCOMPARE(controller->selectedCount(), selection + 1);
+                    QTest::mouseMove(window, finish, 20);
+                    QTRY_COMPARE(proxy->property("message").toString(), qtTrId("move.selected"));
+                    QCOMPARE(proxy->property("targetId").toString(), targetId);
+                    QVERIFY(!proxy->property("permitted").toBool());
+                    QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, finish);
+                    QTRY_VERIFY(proxy->property("token").toString().isEmpty());
+                    QCOMPARE(accepted.count(), 0);
+                    QCOMPARE(controller->activeTaskCount(), 0);
+                    QCOMPARE(controller->tasks().size(), tasks);
+                    QCOMPARE(controller->sessionId(), session);
+                    QVERIFY(controller->canUpdateArchive());
+                    QVERIFY(!controller->m_export);
+                    QVERIFY(archive.open(QIODevice::ReadOnly));
+                    QCOMPARE(archive.readAll(), original);
+                    archive.close();
+                }
+                const auto token = controller->beginInternalDrag(anchor);
+                const auto valid = controller->m_directoryPaths.value("parent/selected-copy/");
+                QVERIFY(controller->moveDropState(token, valid).value("permitted").toBool());
+                controller->cancelInternalDrag(token);
+            }
+        }
+        QTRY_VERIFY(controller->requestClose());
+    }
     void protectedArchivesRejectInternalAndExternalDropsWithReasons() {
         QTemporaryDir fixture;
         QVERIFY(fixture.isValid());
