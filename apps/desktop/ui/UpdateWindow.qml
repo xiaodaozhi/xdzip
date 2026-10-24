@@ -9,23 +9,27 @@ OperationWindow {
     id: root
     objectName: "updateWindow"
     required property var controller
-    property var inputs: []
+    readonly property var inputs: inputPanel.inputPaths
     property string sourceSession: ""
     property string targetDirectory: ""
     property string targetLabel: ""
     property string archiveLabel: ""
+    readonly property real density: Theme.operationCreateDensity
     width: Theme.operationCreateWidth
-    requestedHeight: Math.min(Math.ceil(updateContent.implicitHeight + footer.implicitHeight), Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
+    requestedHeight: Math.min(Math.ceil(updateContent.implicitHeight + footer.implicitHeight), Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - Theme.operationAddingScreenMargin)
     title: qsTrId("update.title")
     function configure(paths) {
         sourceSession = controller.sessionId;
         targetDirectory = controller.directoryId;
         targetLabel = controller.location || qsTrId("update.root");
         archiveLabel = controller.title;
-        inputs = paths;
+        inputPanel.setInputPaths(paths);
         conflict.currentIndex = 0;
         controller.clearCreationError();
         present();
+    }
+    function addInputPaths(paths: var, directory: bool) {
+        inputPanel.addInputPaths(paths, directory);
     }
     Connections {
         target: root
@@ -36,56 +40,232 @@ OperationWindow {
         spacing: 0
         ScrollView {
             id: scroll
+            objectName: "updateScroll"
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
             contentWidth: availableWidth
             ColumnLayout {
                 id: updateContent
+                objectName: "updateContent"
                 width: scroll.availableWidth
                 spacing: Theme.operationAddingSectionGap
+                RowLayout {
+                    objectName: "updateHero"
+                    Layout.fillWidth: true
+                    Layout.leftMargin: Theme.operationCreateContentInset
+                    Layout.rightMargin: Theme.operationCreateContentInset
+                    Layout.topMargin: Theme.operationAddingHeaderTopInset
+                    spacing: Theme.operationAddingHeroGap
+                    OperationHero {
+                        source: Theme.dark ? "qrc:/xdzip/assets/dark/archive-add-large.png" : "qrc:/xdzip/assets/archive-add-large.png"
+                        density: root.density
+                        Layout.preferredWidth: canvasWidth
+                        Layout.preferredHeight: canvasHeight
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.operationAddingHeroTextGap
+                        Text {
+                            objectName: "updateHeading"
+                            Layout.fillWidth: true
+                            text: qsTrId("update.title")
+                            font.pixelSize: Theme.operationCreateTitleSize
+                            font.bold: true
+                            color: Theme.text
+                            wrapMode: Text.Wrap
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: qsTrId("update.subtitle")
+                            font.pixelSize: Theme.operationCreateBodySize
+                            color: Theme.textSecondary
+                            wrapMode: Text.Wrap
+                        }
+                    }
+                }
                 ColumnLayout {
                     Layout.fillWidth: true
-                    Layout.margins: Theme.operationCreateContentInset
-                    spacing: Theme.operationAddingSectionGap
-                    Text { Layout.fillWidth: true; text: qsTrId("update.title"); font.pixelSize: Theme.operationCreateTitleSize; font.bold: true; color: Theme.text; wrapMode: Text.Wrap }
-                    Text { Layout.fillWidth: true; text: root.archiveLabel; font.pixelSize: Theme.operationCreateBodySize; color: Theme.textSecondary; wrapMode: Text.Wrap; textFormat: Text.PlainText }
-                    Text { text: qsTrId("update.destination"); font.pixelSize: Theme.operationCreateBodySize; color: Theme.text }
-                    Text { Layout.fillWidth: true; text: root.targetLabel; font.pixelSize: Theme.operationCreateBodySize; color: Theme.textSecondary; wrapMode: Text.Wrap; textFormat: Text.PlainText }
-                    Text { text: qsTrId("update.inputs"); font.pixelSize: Theme.operationCreateBodySize; color: Theme.text }
-                    OperationFrame {
-                        id: inputFrame
-                        control: inputFrame
+                    Layout.leftMargin: Theme.operationCreateContentInset
+                    Layout.rightMargin: Theme.operationCreateContentInset
+                    Layout.bottomMargin: Theme.operationAddingBodyBottomInset
+                    spacing: Theme.operationAddingCardGap
+                    ArchiveInputPanel {
+                        id: inputPanel
+                        objectName: "updateInputPanel"
                         Layout.fillWidth: true
-                        implicitHeight: Math.min(Theme.operationAddingSourceListMaximumHeight, Math.max(Theme.operationAddingSourceListMinimumHeight, root.inputs.length * (Theme.operationControlBodyButtonHeight + Theme.operationAddingSourceRowGap) + Theme.operationAddingSourceListInset * 2))
-                        ListView {
-                            id: inputList
-                            objectName: "updateInputList"
+                        controller: root.controller
+                        dialogOwner: root
+                        namePrefix: "update"
+                        heading: qsTrId("update.inputs")
+                    }
+                    Rectangle {
+                        objectName: "updateDestinationCard"
+                        Layout.fillWidth: true
+                        implicitHeight: destinationContent.implicitHeight + Theme.operationCreateCardInset * 2
+                        color: Theme.operationCard
+                        border.color: Theme.operationCardBorder
+                        radius: Theme.operationAddingCardRadius
+                        ColumnLayout {
+                            id: destinationContent
                             anchors.fill: parent
-                            anchors.margins: Theme.operationAddingSourceListInset
-                            clip: true
-                            spacing: Theme.operationAddingSourceRowGap
-                            model: root.inputs
-                            ScrollBar.vertical: ScrollBar {}
-                            delegate: RowLayout {
-                                id: inputRow
-                                required property string modelData
-                                required property int index
-                                width: inputList.width
-                                Text { Layout.fillWidth: true; text: inputRow.modelData.replace(/\\/g, "/").split("/").pop(); Accessible.name: inputRow.modelData; elide: Text.ElideMiddle; font.pixelSize: Theme.operationCreateBodySize; color: Theme.text; textFormat: Text.PlainText }
-                                OperationButton { text: qsTrId("update.remove"); onClicked: root.inputs = root.inputs.filter((_, i) => i !== inputRow.index) }
+                            anchors.margins: Theme.operationCreateCardInset
+                            spacing: Theme.operationAddingCardContentGap
+                            Text {
+                                Layout.fillWidth: true
+                                text: qsTrId("update.location")
+                                font.pixelSize: Theme.operationCreateBodySize
+                                font.bold: true
+                                color: Theme.text
+                                wrapMode: Text.Wrap
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: destinationFields.implicitHeight + Theme.operationAddingSourceListInset * 2
+                                color: Theme.surface
+                                border.color: Theme.operationCardBorder
+                                radius: Theme.operationAddingCardRadius
+                                GridLayout {
+                                    id: destinationFields
+                                    anchors.fill: parent
+                                    anchors.margins: Theme.operationAddingSourceListInset
+                                    columns: 2
+                                    columnSpacing: Theme.operationAddingRowGap
+                                    rowSpacing: Theme.operationAddingRowGap
+                                    Text {
+                                        text: qsTrId("update.archive")
+                                        color: Theme.text
+                                        font.pixelSize: Theme.operationCreateBodySize
+                                    }
+                                    OperationFrame {
+                                        id: archiveFrame
+                                        objectName: "updateArchiveFrame"
+                                        control: archiveFrame
+                                        Layout.fillWidth: true
+                                        implicitHeight: Math.max(Theme.operationCreateFieldHeight, archiveName.implicitHeight + Theme.operationControlVerticalInset * 2)
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: Theme.operationControlVerticalInset
+                                            spacing: Theme.operationAddingRowGap
+                                            Image {
+                                                source: AssetLibrary.fileIcon(root.archiveLabel, false, false)
+                                                Layout.preferredWidth: Theme.operationControlSelectIndicatorSize
+                                                Layout.preferredHeight: Theme.operationControlSelectIndicatorSize
+                                            }
+                                            Text {
+                                                id: archiveName
+                                                objectName: "updateArchiveName"
+                                                Layout.fillWidth: true
+                                                text: root.archiveLabel
+                                                textFormat: Text.PlainText
+                                                wrapMode: Text.WrapAnywhere
+                                                font.pixelSize: Theme.operationCreateBodySize
+                                                color: Theme.text
+                                                Accessible.name: qsTrId("update.archive") + ": " + text
+                                            }
+                                        }
+                                    }
+                                    Text {
+                                        text: qsTrId("update.destination")
+                                        color: Theme.text
+                                        font.pixelSize: Theme.operationCreateBodySize
+                                    }
+                                    OperationFrame {
+                                        id: directoryFrame
+                                        objectName: "updateDirectoryFrame"
+                                        control: directoryFrame
+                                        Layout.fillWidth: true
+                                        implicitHeight: Math.max(Theme.operationCreateFieldHeight, directoryName.implicitHeight + Theme.operationControlVerticalInset * 2)
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: Theme.operationControlVerticalInset
+                                            spacing: Theme.operationAddingRowGap
+                                            Image {
+                                                source: AssetLibrary.fileIcon("", true, false)
+                                                Layout.preferredWidth: Theme.operationControlSelectIndicatorSize
+                                                Layout.preferredHeight: Theme.operationControlSelectIndicatorSize
+                                            }
+                                            Text {
+                                                id: directoryName
+                                                objectName: "updateDirectoryName"
+                                                Layout.fillWidth: true
+                                                text: root.targetLabel
+                                                textFormat: Text.PlainText
+                                                wrapMode: Text.WrapAnywhere
+                                                font.pixelSize: Theme.operationCreateBodySize
+                                                color: Theme.text
+                                                Accessible.name: qsTrId("update.destination") + ": " + text
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    Text { text: qsTrId("update.conflicts"); font.pixelSize: Theme.operationCreateBodySize; color: Theme.text }
-                    OperationSelect { id: conflict; objectName: "updateConflictPolicy"; Layout.fillWidth: true; density: Theme.operationCreateDensity; model: [qsTrId("update.ask"), qsTrId("update.skip"), qsTrId("update.rename"), qsTrId("update.replace")] }
-                    Text { Layout.fillWidth: true; text: qsTrId("update.hint"); font.pixelSize: Theme.operationCreateNoteSize; color: Theme.textSecondary; wrapMode: Text.Wrap }
-                    Text { Layout.fillWidth: true; visible: text.length > 0; text: root.controller.creationError; font.pixelSize: Theme.operationCreateBodySize; color: Theme.menuDanger; wrapMode: Text.Wrap; textFormat: Text.PlainText }
+                    Rectangle {
+                        objectName: "updateOptionsCard"
+                        Layout.fillWidth: true
+                        implicitHeight: optionsContent.implicitHeight + Theme.operationCreateCardInset * 2
+                        color: Theme.operationCard
+                        border.color: Theme.operationCardBorder
+                        radius: Theme.operationAddingCardRadius
+                        ColumnLayout {
+                            id: optionsContent
+                            anchors.fill: parent
+                            anchors.margins: Theme.operationCreateCardInset
+                            spacing: Theme.operationAddingCardContentGap
+                            Text {
+                                text: qsTrId("update.options")
+                                font.pixelSize: Theme.operationCreateBodySize
+                                font.bold: true
+                                color: Theme.text
+                            }
+                            Rectangle {
+                                Layout.fillWidth: true
+                                implicitHeight: optionsFields.implicitHeight + Theme.operationAddingSourceListInset * 2
+                                color: Theme.surface
+                                border.color: Theme.operationCardBorder
+                                radius: Theme.operationAddingCardRadius
+                                ColumnLayout {
+                                    id: optionsFields
+                                    anchors.fill: parent
+                                    anchors.margins: Theme.operationAddingSourceListInset
+                                    spacing: Theme.operationAddingCardContentGap
+                                    Text { text: qsTrId("update.conflicts"); font.pixelSize: Theme.operationCreateBodySize; color: Theme.text }
+                                    OperationSelect {
+                                        id: conflict
+                                        objectName: "updateConflictPolicy"
+                                        Layout.fillWidth: true
+                                        density: root.density
+                                        model: [qsTrId("update.ask"), qsTrId("update.skip"), qsTrId("update.rename"), qsTrId("update.replace")]
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: qsTrId("update.hint")
+                                        font.pixelSize: Theme.operationCreateNoteSize
+                                        color: Theme.textSecondary
+                                        wrapMode: Text.Wrap
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Text {
+                        objectName: "updateError"
+                        Layout.fillWidth: true
+                        visible: text.length > 0
+                        text: root.controller.creationError
+                        font.pixelSize: Theme.operationCreateBodySize
+                        color: Theme.menuDanger
+                        wrapMode: Text.Wrap
+                        textFormat: Text.PlainText
+                    }
                 }
             }
         }
         OperationFooter {
             id: footer
+            objectName: "updateFooter"
             Layout.fillWidth: true
             contentInset: Theme.operationCreateContentInset
             OperationFooterButton { objectName: "updateCancel"; text: qsTrId("update.cancel"); onClicked: root.close() }

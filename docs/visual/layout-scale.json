@@ -183,11 +183,24 @@
       "screenMargin": 80
     },
     "adding": {
-      "source_list_minimum_height": 100,
-      "source_list_maximum_height": 240,
-      "source_list_inset": 8,
-      "source_row_gap": 6,
-      "section_gap": 12
+      "source_list_minimum_height": 38,
+      "source_list_maximum_height": 148,
+      "source_list_inset": 10,
+      "source_row_gap": 0,
+      "section_gap": 12,
+      "header_top_inset": 20,
+      "hero_gap": 14,
+      "hero_text_gap": 6,
+      "card_gap": 10,
+      "card_content_gap": 8,
+      "card_radius": 6,
+      "source_content_gap": 6,
+      "source_icon_size": 24,
+      "row_gap": 8,
+      "row_vertical_inset": 12,
+      "row_line_factor": 1.4,
+      "body_bottom_inset": 12,
+      "screen_margin": 60
     }
   },
   "controls": {

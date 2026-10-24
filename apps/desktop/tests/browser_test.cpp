@@ -5320,6 +5320,9 @@ QtObject {
             input.close();
             auto *create = window->findChild<QQuickWindow *>("createWindow");
             QVERIFY(create);
+            // Preview belongs to the visible operation; hidden drafts must not request it.
+            create->show();
+            QVERIFY(QTest::qWaitForWindowExposed(create));
             QVERIFY(QMetaObject::invokeMethod(
                 create, "addInputPaths", Q_ARG(QVariant, QVariant(QStringList{input.fileName()})),
                 Q_ARG(bool, false)));
@@ -6156,13 +6159,32 @@ QtObject {
         QCOMPARE(dialog->width(), 491);
         QVERIFY(dialog->height() <= QGuiApplication::primaryScreen()->availableGeometry().height());
         auto *start = findVisual(dialog->contentItem(), "startUpdate");
-        QVERIFY(start && start->isEnabled());
+        QVERIFY(start);
+        QTRY_VERIFY(start->isEnabled());
+        QSignalSpy laidOut(dialog, &QQuickWindow::frameSwapped);
+        dialog->update();
+        QTRY_VERIFY(!laidOut.isEmpty());
+        QTRY_VERIFY(!controller->busy() && controller->creationInputs().size() == 1);
+        QTRY_VERIFY(start->isEnabled());
+        for (const auto &name :
+             {"updateInputPanel", "updateDestinationCard", "updateOptionsCard"}) {
+            auto *card = findVisual(dialog->contentItem(), QString::fromLatin1(name));
+            QVERIFY(card);
+            QCOMPARE(card->mapToScene(QPointF()).x(), qreal(18));
+            QCOMPARE(card->width(), qreal(455));
+        }
+        auto *footer = findVisual(dialog->contentItem(), "updateFooter");
+        QVERIFY(footer);
+        QCOMPARE(footer->mapToScene(QPointF(0, footer->height())).y(), qreal(dialog->height()));
+        QVERIFY(start->mapToScene(QPointF()).y() >= footer->mapToScene(QPointF()).y());
         if (!qEnvironmentVariableIsEmpty("XDZIP_TRANSFER_VISUAL_AUDIT")) {
             QVERIFY(visual_audit::save(dialog, qEnvironmentVariable("XDZIP_TRANSFER_VISUAL_AUDIT"),
                                        language + QString::number(factor) + QString::number(dark)));
         }
         QSignalSpy updated(controller, &BrowserController::updateStarted);
-        QVERIFY(QMetaObject::invokeMethod(start, "clicked"));
+        QTest::mouseClick(
+            dialog, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
         QTRY_COMPARE(updated.count(), 1);
         QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy() &&
                     controller->canUpdateArchive());
@@ -6176,6 +6198,153 @@ QtObject {
                 found = true;
         QVERIFY(found);
         QVERIFY(controller->sessionId() != session);
+        QTRY_VERIFY(controller->requestClose());
+    }
+    void additionDraftSelectionAndMetadata_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("factor");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (double factor : {1., 1.5})
+                QTest::newRow(qPrintable(language + QString::number(factor))) << language << factor;
+    }
+    void additionDraftSelectionAndMetadata() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto archiveName = factor == 1
+                                     ? QStringLiteral("北境旅行.zip")
+                                     : QStringLiteral("团队协作与旅行资料_").repeated(5) + ".zip";
+        const auto source = fixture.filePath(archiveName);
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), source));
+        QFile archive(source);
+        QVERIFY(archive.open(QIODevice::ReadOnly));
+        const auto original = archive.readAll();
+        archive.close();
+        const QStringList names{QStringLiteral("冰川湖.jpg"), QStringLiteral("山间日出.jpg"),
+                                QStringLiteral("行程手册.pdf")};
+        const QList<qint64> sizes{8400000, 6200000, 12800000};
+        QStringList paths;
+        for (int i = 0; i < names.size(); ++i) {
+            paths << fixture.filePath(names[i]);
+            QFile file(paths.last());
+            QVERIFY(file.open(QIODevice::WriteOnly));
+            QVERIFY(file.resize(sizes[i]));
+        }
+        const auto addedPath = fixture.filePath("new.txt");
+        QFile smallFile(addedPath);
+        QVERIFY(smallFile.open(QIODevice::WriteOnly));
+        QCOMPARE(smallFile.write("new bytes"), 9);
+        smallFile.close();
+        const auto folder = fixture.filePath(QStringLiteral("空目录"));
+        QVERIFY(QDir().mkpath(folder));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        auto *dialog = window->findChild<QQuickWindow *>("updateWindow");
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(controller && dialog && create);
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
+                      "factor: 1; onFactorChanged: Ui.Theme.fontScale=factor }",
+                      QUrl());
+        std::unique_ptr<QObject> appearance(theme.create());
+        QVERIFY(appearance);
+        appearance->setProperty("factor", factor);
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QList<QUrl> urls;
+        for (const auto &path : paths)
+            urls.append(QUrl::fromLocalFile(path));
+        controller->addDroppedUrls(urls);
+        QTRY_VERIFY(dialog->isVisible());
+        auto *summary = findVisual(dialog->contentItem(), "updateInputSummary");
+        auto *start = findVisual(dialog->contentItem(), "startUpdate");
+        auto *cancel = findVisual(dialog->contentItem(), "updateCancel");
+        auto *archiveLabel = findVisual(dialog->contentItem(), "updateArchiveName");
+        QVERIFY(summary && start && cancel && archiveLabel);
+        const auto selected = [&](QQuickWindow *view) {
+            return engine.newQObject(view).property("inputs").toVariant().toList();
+        };
+        QTRY_VERIFY(!controller->busy() && controller->creationInputs().size() == 3);
+        const auto expected = language == "zh-CN" ? QStringLiteral("3 个文件，27.4 MB")
+                                                  : QStringLiteral("3 files, 27.4 MB");
+        QTRY_COMPARE(summary->property("text").toString(), expected);
+        const auto frozenSession = dialog->property("sourceSession").toString();
+        const auto frozenDirectory = dialog->property("targetDirectory").toString();
+        QCOMPARE(archiveLabel->property("text").toString(), archiveName);
+        QTRY_VERIFY(archiveLabel->property("contentWidth").toReal() <= archiveLabel->width() + 1);
+        QTRY_VERIFY(archiveLabel->property("contentHeight").toReal() <= archiveLabel->height() + 1);
+        QCOMPARE(dialog->width(), 491);
+        QVERIFY(dialog->height() <= 736);
+        QVERIFY(start->isEnabled());
+        const auto audit = qEnvironmentVariable("XDZIP_ADD_DIALOG_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(dialog, audit,
+                                       "draft-" + QString::fromLatin1(QTest::currentDataTag())));
+        }
+        // A concurrently open creation draft uses the same worker, but each view
+        // owns its source selection. Closing it must not consume the update draft.
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{addedPath})),
+                                          Q_ARG(bool, false)));
+        QTRY_VERIFY(!controller->busy() && controller->creationInputs().size() == 1);
+        QCOMPARE(selected(create).size(), 1);
+        QCOMPARE(selected(dialog).size(), 3);
+        QCOMPARE(summary->property("text").toString(), expected);
+        create->close();
+        QVERIFY(QMetaObject::invokeMethod(dialog, "addInputPaths", Q_ARG(QVariant, QVariant(paths)),
+                                          Q_ARG(bool, false)));
+        QCOMPARE(selected(dialog).size(), 3);
+        // Use the actual native accessible press action, not the clicked signal.
+        while (!selected(dialog).isEmpty()) {
+            QTRY_VERIFY(!controller->busy());
+            auto *remove = findVisual(dialog->contentItem(), "updateRemoveInput-0");
+            QVERIFY(remove && remove->isEnabled());
+            auto *accessible = QAccessible::queryAccessibleInterface(remove);
+            QVERIFY(accessible && accessible->actionInterface());
+            const auto before = selected(dialog).size();
+            accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+            QTRY_COMPARE(selected(dialog).size(), before - 1);
+        }
+        QVERIFY(!start->isEnabled());
+        QCOMPARE(selected(create).size(), 1);
+        QVERIFY(QMetaObject::invokeMethod(cancel, "clicked"));
+        QTRY_VERIFY(!dialog->isVisible());
+        QVERIFY(archive.open(QIODevice::ReadOnly));
+        QCOMPARE(archive.readAll(), original);
+        archive.close();
+        controller->addDroppedUrls({QUrl::fromLocalFile(addedPath), QUrl::fromLocalFile(folder)});
+        QTRY_VERIFY(dialog->isVisible() && !controller->busy() && start->isEnabled());
+        QTRY_COMPARE(controller->creationInputs().size(), 2);
+        QTRY_VERIFY(!controller->busy() && start->isEnabled());
+        QCOMPARE(selected(dialog).size(), 2);
+        QCOMPARE(dialog->property("sourceSession").toString(), frozenSession);
+        QCOMPARE(dialog->property("targetDirectory").toString(), frozenDirectory);
+        auto *list = findVisual(dialog->contentItem(), "updateInputList");
+        QVERIFY(list && list->property("count").toInt() == 2);
+        QSignalSpy accepted(controller, &BrowserController::updateStarted);
+        QVERIFY(QMetaObject::invokeMethod(start, "clicked"));
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 0 && !controller->busy() &&
+                                     controller->canUpdateArchive(),
+                                 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "succeeded");
+        bool addedFile = false, addedDirectory = false;
+        for (int i = 0; i < controller->m_model.rowCount(); ++i) {
+            const auto *row = controller->m_model.rowAt(i);
+            addedFile |= row->cells[0] == "new.txt";
+            addedDirectory |= row->cells[0] == QStringLiteral("空目录");
+        }
+        QVERIFY(addedFile && addedDirectory);
+        QVERIFY(QFileInfo::exists(addedPath) && QFileInfo::exists(folder));
         QTRY_VERIFY(controller->requestClose());
     }
     void internalMoveDrag_data() {

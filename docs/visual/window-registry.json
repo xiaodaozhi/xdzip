@@ -30,7 +30,8 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
-      "design": "design/html/canvas.html?view=create"
+      "design": "design/html/canvas.html?view=create",
+      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享，正文滚动和固定 footer 不变"
     },
     "ExtractWindow": {
       "parent": "OperationWindow",
@@ -99,7 +100,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
-      "reason": "添加到当前压缩包，复用创建窗口密度与共享 footer，正文滚动，高度随正文和共享 footer 自适应，最高沿用创建窗上限",
+      "reason": "以 C01 创建原稿为依据，491 逻辑宽度，图标标题与三块卡片，共享输入选择区和 footer，正文自适应并滚动，最高沿用创建窗上限，目标归档及包内目录只读",
       "design": "design/hifi/sources/archive-add.html"
     }
   },

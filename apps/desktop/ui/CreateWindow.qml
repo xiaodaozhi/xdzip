@@ -7,7 +7,7 @@ OperationWindow {
     id: root
     objectName: "createWindow"
     required property var controller
-    property var inputs: []
+    property alias inputs: inputPanel.inputs
     readonly property real density: Theme.operationCreateDensity
     function unit(value: real): real {
         return value * density;
@@ -32,40 +32,7 @@ OperationWindow {
     readonly property bool passwordValid: formatGroup.currentIndex !== 0 || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
     readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
     onClosing: password.text = ""
-    function baseName(path: string): string {
-        return path.replace(/\\/g, "/").split("/").pop();
-    }
-    function formatInputSize(value: var): string {
-        const bytes = Number(value || 0);
-        return bytes >= 1000000 ? (bytes / 1000000).toFixed(1) + " MB" : bytes >= 1000 ? Math.round(bytes / 1000) + " KB" : bytes + " B";
-    }
-    readonly property string inputSummary: {
-        const files = inputs.filter(item => !item.directory);
-        const directories = inputs.length - files.length;
-        const parts = [];
-        if (files.length)
-            parts.push(qsTrId("ui.2e84a56c5f19", Number(files.length)));
-        if (directories)
-            parts.push(qsTrId("ui.43a28a01147e", Number(directories)));
-        if (files.length && files.every(item => item.known))
-            parts.push(formatInputSize(files.reduce((total, item) => total + Number(item.sizeBytes || 0), 0)));
-        else if (files.length)
-            parts.push(qsTrId("ui.db436a950681"));
-        if (directories)
-            parts.push(qsTrId("ui.2ad1d92b2858"));
-        return parts.length ? parts.join(qsTrId("common.separator")) : qsTrId("ui.02256d747caf");
-    }
-    onInputsChanged: if (controller)
-        controller.inspectCreationInputs(inputs.map(item => item.path))
-    Connections {
-        target: root.controller
-        function onCreationInputsChanged() {
-            const metadata = new Map();
-            for (const item of root.controller.creationInputs)
-                metadata.set(item.path, item);
-            root.inputs = root.inputs.map(item => metadata.has(item.path) ? Object.assign({}, item, metadata.get(item.path)) : item);
-        }
-    }
+    readonly property string inputSummary: inputPanel.inputSummary
     function configure() {
         if (visible) {
             present();
@@ -85,21 +52,7 @@ OperationWindow {
         controller.checkCreationTarget(target.text);
     }
     function addInputPaths(paths: var, directory: bool) {
-        const next = inputs.slice();
-        // Native multi-selection can be large; deduplicate in one pass.
-        const selected = new Set(next.map(item => item.path));
-        for (let i = 0; i < paths.length; ++i) {
-            const path = String(paths[i]);
-            if (!selected.has(path)) {
-                next.push({
-                    path,
-                    name: baseName(path),
-                    directory
-                });
-                selected.add(path);
-            }
-        }
-        inputs = next;
+        inputPanel.addInputPaths(paths, directory);
     }
     Connections {
         target: root
@@ -155,129 +108,12 @@ OperationWindow {
                     Layout.rightMargin: Theme.operationCreateContentInset
                     Layout.bottomMargin: 12
                     spacing: 10
-                    Rectangle {
+                    ArchiveInputPanel {
+                        id: inputPanel
+                        objectName: "createInputPanel"
                         Layout.fillWidth: true
-                        implicitHeight: sourceContent.implicitHeight + Theme.operationCreateCardInset * 2
-                        color: Theme.operationCard
-                        border.color: Theme.operationCardBorder
-                        radius: 6
-                        ColumnLayout {
-                            id: sourceContent
-                            anchors.fill: parent
-                            anchors.margins: Theme.operationCreateCardInset
-                            spacing: 8
-                            Text {
-                                text: qsTrId("ui.ad9daebe00dc")
-                                font.pixelSize: Theme.operationCreateBodySize
-                                font.bold: true
-                                color: Theme.text
-                            }
-                            Rectangle {
-                                Layout.fillWidth: true
-                                implicitHeight: sourceList.implicitHeight + 20
-                                color: Theme.surface
-                                border.color: Theme.operationCardBorder
-                                radius: 6
-                                ColumnLayout {
-                                    id: sourceList
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    spacing: 6
-                                    RowLayout {
-                                        Layout.fillWidth: true
-                                        spacing: 8
-                                        OperationAction {
-                                            objectName: "createAddFiles"
-                                            text: qsTrId("ui.ad9daebe00dc")
-                                            primary: true
-                                            actionIcon: AssetLibrary.fileIcon("", false, false)
-                                            enabled: !root.controller.busy
-                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(false, root), false)
-                                        }
-                                        OperationAction {
-                                            objectName: "createAddDirectories"
-                                            text: qsTrId("ui.45da2d9c85d1")
-                                            actionIcon: AssetLibrary.fileIcon("", true, false)
-                                            enabled: !root.controller.busy
-                                            onClicked: root.addInputPaths(root.controller.chooseCreationInputs(true, root), true)
-                                        }
-                                        Item {
-                                            Layout.fillWidth: true
-                                        }
-                                    }
-                                    ListView {
-                                        id: inputList
-                                        objectName: "createInputList"
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: root.inputs.length ? Math.min(148, root.inputs.length * Math.max(Theme.operationCreateInputRowHeight, Theme.operationCreateBodySize * 1.4 + 12)) : Theme.operationCreateInputRowHeight
-                                        implicitHeight: Layout.preferredHeight
-                                        clip: true
-                                        model: root.inputs
-                                        ScrollBar.vertical: ScrollBar {
-                                            policy: ScrollBar.AsNeeded
-                                        }
-                                        delegate: Rectangle {
-                                            id: inputRow
-                                            required property var modelData
-                                            required property int index
-                                            width: inputList.width
-                                            height: Math.max(Theme.operationCreateInputRowHeight, Theme.operationCreateBodySize * 1.4 + 12)
-                                            color: rowHover.hovered ? Theme.controlHover : Theme.surface
-                                            Rectangle {
-                                                anchors.left: parent.left
-                                                anchors.right: parent.right
-                                                anchors.bottom: parent.bottom
-                                                height: 1
-                                                color: Theme.operationCardBorder
-                                            }
-                                            HoverHandler {
-                                                id: rowHover
-                                            }
-                                            RowLayout {
-                                                anchors.fill: parent
-                                                spacing: 8
-                                                Image {
-                                                    source: AssetLibrary.fileIcon(inputRow.modelData.name, inputRow.modelData.directory, false)
-                                                    Layout.preferredWidth: 24
-                                                    Layout.preferredHeight: 24
-                                                }
-                                                Text {
-                                                    Layout.fillWidth: true
-                                                    text: inputRow.modelData.name
-                                                    textFormat: Text.PlainText
-                                                    elide: Text.ElideMiddle
-                                                    font.pixelSize: Theme.operationCreateBodySize
-                                                    color: Theme.text
-                                                    Accessible.description: inputRow.modelData.path
-                                                }
-                                                Text {
-                                                    objectName: "createInputSize-" + inputRow.index
-                                                    visible: inputRow.modelData.known === true
-                                                    text: root.formatInputSize(inputRow.modelData.sizeBytes)
-                                                    font.pixelSize: Theme.operationCreateNoteSize
-                                                    color: Theme.textSecondary
-                                                    horizontalAlignment: Text.AlignRight
-                                                }
-                                                OperationRemoveButton {
-                                                    objectName: "createRemoveInput-" + inputRow.index
-                                                    entryName: inputRow.modelData.name
-                                                    enabled: !root.controller.busy
-                                                    onClicked: root.inputs = root.inputs.filter((_, i) => i !== inputRow.index)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    Text {
-                                        objectName: "createInputSummary"
-                                        Layout.fillWidth: true
-                                        wrapMode: Text.Wrap
-                                        text: root.inputSummary
-                                        font.pixelSize: Theme.operationCreateNoteSize
-                                        color: Theme.textSecondary
-                                    }
-                                }
-                            }
-                        }
+                        controller: root.controller
+                        dialogOwner: root
                     }
                     Rectangle {
                         Layout.fillWidth: true

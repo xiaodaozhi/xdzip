@@ -600,16 +600,15 @@
     "integrity.continue": "继续检查",
     "entry.open": "打开",
     "update.title": "添加到压缩包",
-    "update.destination": "包内目标目录",
+    "update.destination": "包内目录",
     "update.root": "根目录",
-    "update.inputs": "要添加的文件和文件夹",
+    "update.inputs": "添加文件",
     "update.conflicts": "重名时",
     "update.ask": "询问",
     "update.skip": "跳过",
     "update.rename": "使用新名称",
     "update.replace": "替换文件",
     "update.add": "添加",
-    "update.remove": "移除",
     "update.hint": "校验通过后保存，失败或取消时保留原压缩包。",
     "update.unavailable": "此压缩包暂不支持添加，或当前目录不可用。",
     "update.drop": "添加到当前压缩包",
@@ -630,6 +629,10 @@
     "move.result": "包内移动结果",
     "move.task": "移动任务 #%1",
     "desktop.moveTask": "移动",
-    "update.invalidDrop": "仅支持添加本地普通文件和文件夹。"
+    "update.invalidDrop": "仅支持添加本地普通文件和文件夹。",
+    "update.subtitle": "将文件添加到现有压缩包。",
+    "update.location": "添加位置",
+    "update.options": "添加选项",
+    "update.archive": "目标压缩包"
   }
 }

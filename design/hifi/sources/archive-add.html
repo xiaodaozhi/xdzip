@@ -1,5 +1,66 @@
 <!-- design/hifi/sources/archive-add.html -->
 
-<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>添加到压缩包</title>
-<style>body{font:13px system-ui;background:#edf1f7;color:#243049;margin:32px}article{width:491px;max-width:100%;background:#fff;border:1px solid #dce2ec;border-radius:8px;overflow:hidden}main{padding:24px;max-height:460px;overflow:auto}h1{font-size:20px;margin:0 0 12px}p{line-height:1.5;overflow-wrap:anywhere}.sources{border:1px solid #dce2ec;border-radius:5px;padding:12px;min-height:100px}.row{display:flex;justify-content:space-between;padding:6px 0}button,select{font:inherit;border:1px solid #dce2ec;border-radius:5px;padding:6px 12px;background:#fff;color:inherit}footer{border-top:1px solid #dce2ec;padding:12px 24px;display:flex;justify-content:flex-end;gap:10px}.primary{background:#2468e8;border-color:#2468e8;color:white}.note{color:#667286;font-size:12px}select{width:100%}@media(prefers-color-scheme:dark){body{background:#171c26;color:#edf1fa}article,button,select{background:#242d3d;border-color:#485469}.sources,footer{border-color:#485469}.note{color:#b8c3d7}}</style>
-<article><main><h1>添加到压缩包</h1><p>archive.zip</p><p>包内目标目录<br><strong>资料/</strong></p><p>要添加的文件和文件夹</p><div class="sources"><div class="row"><span>报告.txt</span><button>移除</button></div><div class="row"><span>图片</span><button>移除</button></div></div><p>重名时</p><select><option>询问</option><option>跳过</option><option>使用新名称</option><option>替换文件</option></select><p class="note">校验通过后保存，失败或取消时保留原压缩包。</p></main><footer><button>取消</button><button class="primary">添加</button></footer></article></html>
+<!doctype html>
+<html lang="zh-CN" data-ui-scale="logical">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>添加到压缩包，C01 衍生设计</title>
+<link rel="stylesheet" href="../../html/styles.css">
+<link rel="stylesheet" href="../../html/hifi.css">
+<link rel="stylesheet" href="../../html/controls.css">
+<link rel="stylesheet" href="../../html/controls-tokens.css">
+<style>
+@font-face{font-family:XdzipDesignSans;src:url('../../assets/fonts/xdzip-design-sans-sc.woff2') format('woff2');font-display:block}
+:root{--text-scale:1;--settings-text-scale:1;--ui-source-factor:1}
+body{font-family:XdzipDesignSans,system-ui,sans-serif;margin:0;padding:24px;background:var(--canvas);display:flex;flex-direction:column;align-items:center;gap:16px;min-height:100vh;height:auto;overflow:auto}
+.review-note{max-width:760px;color:var(--secondary);font-size:13px;line-height:1.5}.review-note a{color:var(--accent)}
+body.export{padding:0;align-items:flex-start;background:transparent}body.export .review-note{display:none}
+#add-dialog{position:relative;inset:auto;margin:0;padding:0;width:var(--operation-create-width);max-width:none;height:auto;max-height:min(var(--operation-create-client-height),calc(100vh - var(--operation-adding-screen-margin)));box-sizing:border-box;border:0;box-shadow:0 12px 48px #13233b26;color:var(--text);background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+#add-dialog main{min-height:0;overflow:auto;overscroll-behavior:contain}
+#add-dialog .modal-header{padding:var(--operation-adding-header-top-inset) var(--operation-create-content-inset) var(--operation-adding-section-gap);gap:var(--operation-adding-hero-gap)}
+#add-dialog .modal-header h1{font-size:calc(var(--operation-create-title-size) * var(--text-scale));overflow-wrap:anywhere}
+#add-dialog .modal-header p{font-size:calc(var(--operation-create-body-size) * var(--text-scale))}
+#add-dialog .modal-symbol img{width:53px;height:59px;object-fit:contain}
+#add-dialog .modal-content{padding:0 var(--operation-create-content-inset) var(--operation-adding-body-bottom-inset)}
+#add-dialog .field-group{margin:0 0 var(--operation-adding-card-gap);padding:var(--operation-create-card-inset);border-radius:var(--operation-adding-card-radius)}
+#add-dialog .field-group:last-child{margin-bottom:0}
+#add-dialog .field-label{margin:0 0 var(--operation-adding-card-content-gap);font-size:calc(var(--operation-create-body-size) * var(--text-scale));line-height:1.25}
+#add-dialog .create-input-panel{padding:var(--operation-adding-source-list-inset);border-radius:var(--operation-adding-card-radius)}
+#add-dialog .create-actions{gap:var(--operation-adding-row-gap)}
+#add-dialog .control-icon{width:var(--operation-footer-icon-size);height:var(--operation-footer-icon-size);object-fit:contain}
+#add-dialog .create-list{min-height:var(--operation-adding-source-list-minimum-height);max-height:var(--operation-adding-source-list-maximum-height);overflow:auto}
+#add-dialog .create-row{min-height:max(var(--operation-create-input-row-height),calc(var(--operation-create-body-size) * var(--text-scale) * var(--operation-adding-row-line-factor) + var(--operation-adding-row-vertical-inset)));gap:var(--operation-adding-row-gap);font-size:calc(var(--operation-create-body-size) * var(--text-scale))}
+#add-dialog .file-icon{width:var(--operation-adding-source-icon-size);height:var(--operation-adding-source-icon-size);object-fit:contain;flex-shrink:0}
+#add-dialog .input-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#add-dialog .input-size,#add-dialog .field-note{font-size:calc(var(--operation-create-note-size) * var(--text-scale));line-height:1.5}
+#add-dialog .remove-input img{width:24px;height:24px;display:block}
+#add-dialog .destination-fields{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:center;gap:var(--operation-adding-row-gap);font-size:calc(var(--operation-create-body-size) * var(--text-scale))}
+#add-dialog .readonly-field{min-width:0;min-height:var(--operation-create-field-height);display:flex;align-items:center;gap:var(--operation-adding-row-gap);border:1px solid var(--operation-field-border);border-radius:var(--operation-control-radius);padding:var(--operation-control-vertical-inset) var(--operation-control-field-text-inset);box-sizing:border-box}
+#add-dialog .readonly-field img{width:18px;height:18px;flex-shrink:0;object-fit:contain}
+#add-dialog .readonly-field span{min-width:0;overflow-wrap:anywhere}
+#add-dialog .conflict-label{display:block;margin-bottom:var(--operation-adding-card-content-gap);font-size:calc(var(--operation-create-body-size) * var(--text-scale))}
+#add-dialog .field-select{width:100%;font-size:calc(var(--operation-create-body-size) * var(--text-scale))}
+#add-dialog .modal-footer{flex-shrink:0}
+#design-result{color:var(--secondary);font-size:13px}
+</style>
+<nav class="review-note">C01 添加窗口设计，<a href="?theme=light">浅色</a>，<a href="?theme=dark">深色</a>，<a href="?lang=en-US">English</a>，<a href="?textScale=1.5">150%</a>。示例只在内存中变化，不写入压缩包。<a href="../../../docs/visual/add-reference.json">尺寸依据</a></nav>
+<dialog open id="add-dialog" data-kind="create" aria-labelledby="add-heading">
+<main id="add-body">
+<header class="modal-header"><div class="modal-symbol"><img id="hero-icon" alt=""></div><div><h1 id="add-heading" data-i18n="update.title"></h1><p data-i18n="update.subtitle"></p></div></header>
+<div class="modal-content">
+<section class="field-group" id="add-inputs"><h2 class="field-label" data-i18n="update.inputs"></h2><div class="create-input-panel">
+<div class="create-actions"><button id="add-files" class="button primary"><img class="control-icon" alt=""><span data-i18n="ui.ad9daebe00dc"></span></button><button id="add-folder" class="button"><img class="control-icon" alt=""><span data-i18n="ui.45da2d9c85d1"></span></button></div>
+<div id="input-list" class="create-list" role="list"></div><p id="input-summary" class="field-note"></p>
+</div></section>
+<section class="field-group" id="add-destination"><h2 class="field-label" data-i18n="update.location"></h2><div class="create-input-panel destination-fields">
+<span data-i18n="update.archive"></span><div class="readonly-field"><img id="archive-icon" alt=""><span id="archive-name"></span></div>
+<span data-i18n="update.destination"></span><div class="readonly-field"><img id="directory-icon" alt=""><span id="directory-name"></span></div>
+</div></section>
+<section class="field-group" id="add-options"><h2 class="field-label" data-i18n="update.options"></h2><div class="create-input-panel">
+<label class="conflict-label" for="conflict-policy" data-i18n="update.conflicts"></label><select id="conflict-policy" class="field-select" data-xdzip-select><option data-i18n="update.ask"></option><option data-i18n="update.skip"></option><option data-i18n="update.rename"></option><option data-i18n="update.replace"></option></select><p class="field-note" data-i18n="update.hint"></p>
+</div></section>
+</div></main>
+<footer class="modal-footer action-only-footer"><div class="operation-footer-actions"><button id="cancel-add" class="button" data-i18n="update.cancel"></button><button id="confirm-add" class="button primary" data-i18n="update.add"></button></div></footer>
+</dialog>
+<output id="design-result" class="review-note" aria-live="polite"></output>
+<script src="../../html/assets.js"></script><script src="../../html/controls-tokens.js"></script><script src="../../html/controls.js"></script><script src="../../html/ui-messages.js"></script><script src="archive-add.js"></script>
+</html>

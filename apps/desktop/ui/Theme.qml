@@ -82,11 +82,24 @@ QtObject {
     readonly property int operationCreateWidth: 491
     readonly property int operationResultWidth: 491
     readonly property int operationConflictWidth: 491
-    readonly property real operationAddingSourceListMinimumHeight: 100
-    readonly property real operationAddingSourceListMaximumHeight: 240
-    readonly property real operationAddingSourceListInset: 8
-    readonly property real operationAddingSourceRowGap: 6
+    readonly property real operationAddingSourceListMinimumHeight: 38
+    readonly property real operationAddingSourceListMaximumHeight: 148
+    readonly property real operationAddingSourceListInset: 10
+    readonly property real operationAddingSourceRowGap: 0
     readonly property real operationAddingSectionGap: 12
+    readonly property real operationAddingHeaderTopInset: 20
+    readonly property real operationAddingHeroGap: 14
+    readonly property real operationAddingHeroTextGap: 6
+    readonly property real operationAddingCardGap: 10
+    readonly property real operationAddingCardContentGap: 8
+    readonly property real operationAddingCardRadius: 6
+    readonly property real operationAddingSourceContentGap: 6
+    readonly property real operationAddingSourceIconSize: 24
+    readonly property real operationAddingRowGap: 8
+    readonly property real operationAddingRowVerticalInset: 12
+    readonly property real operationAddingRowLineFactor: 1.4
+    readonly property real operationAddingBodyBottomInset: 12
+    readonly property real operationAddingScreenMargin: 60
     readonly property real passwordLogicalWidth: 491
     readonly property real passwordMaximumHeight: 600
     readonly property real passwordContentInset: 24

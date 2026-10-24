@@ -35,6 +35,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
+添加窗口使用 C01 独立原稿哈希和 `add-reference.json` 对照，三平台 Qt 量测 12 组语言、主题及字号组合，并执行独立草稿、真实元数据、辅助功能移除、取消和文件/空目录更新。HTML 独立验证 36 组语言、主题、字号、DPR 组合和 24 组真实浏览器 100%/125% 缩放，复用私有 Xvfb 输入隔离，不使用 CSS zoom 代替。检查入口为 `scripts/check-add-dialog.py`，结果只保存为 build/ 或 CI 工件。
+
 元数据过滤回归在三平台核心测试中生成真实 ZIP、TAR、TAR.GZ 创建和更新夹具，再由 `scripts/check-macos-metadata-interop.py` 使用独立 Python 读取器核对元数据排除、原记录保留、空目录、内容和 UTF-8 名称。Qt 覆盖中英文空输入失败反馈及原包不变，沿用共享结果窗口与双语多字号布局门槛；离屏结果不等于桌面人工验收。
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。

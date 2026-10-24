@@ -27,6 +27,7 @@
 | 原稿 | 状态 |
 | --- | --- |
 | [新建归档](screens/create.png) | C01 创建计划 |
+| [添加到压缩包](sources/archive-add.html) | 参照 C01 的图标标题、三卡片和共用文件选择区 |
 | [重名冲突](screens/conflict.png) | E02 等待决策 |
 | [任务进度](screens/progress.png) | T01 执行中 |
 | [部分失败](screens/partial-result.png) | R01 部分未完成 |

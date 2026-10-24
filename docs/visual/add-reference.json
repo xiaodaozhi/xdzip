@@ -1,0 +1,28 @@
+{
+  "source": "design/hifi/screens/create.png",
+  "sha256": "d210ca52fa514da4c8fd8d9f4821406e3b84153d08dca2f6a5e5558563bfad72",
+  "design": "design/hifi/sources/archive-add.html",
+  "logical_width": 491,
+  "title_size": 20,
+  "body_size": 13,
+  "note_size": 12,
+  "content_inset": 18,
+  "card_inset": 13,
+  "inner_inset": 10,
+  "input_row_height": 38,
+  "input_list_maximum_height": 148,
+  "field_height": 28,
+  "footer_action_height": 32,
+  "sections": [
+    "inputs",
+    "destination",
+    "options"
+  ],
+  "changes": [
+    "Reuse the C01 hero, three cards, inner panels and shared operation controls.",
+    "Creation and addition share file selection, advisory worker metadata, deduplication and accessible removal.",
+    "Existing archive and archive-relative destination are read-only; four conflict policies retain their existing semantics.",
+    "Height adapts to content, with scrolling body and fixed footer at large type or on short screens."
+  ],
+  "scope": "Editable design and product layout contract; generated captures and native acceptance evidence remain outside Git."
+}

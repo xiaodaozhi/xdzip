@@ -600,16 +600,15 @@
     "integrity.continue": "Continue check",
     "entry.open": "Open",
     "update.title": "Add to archive",
-    "update.destination": "Folder in archive",
+    "update.destination": "Archive folder",
     "update.root": "Root folder",
-    "update.inputs": "Files and folders to add",
+    "update.inputs": "Add files",
     "update.conflicts": "When names conflict",
     "update.ask": "Ask",
     "update.skip": "Skip",
     "update.rename": "Use a new name",
     "update.replace": "Replace files",
     "update.add": "Add",
-    "update.remove": "Remove",
     "update.hint": "Save after verification. Failure or cancellation preserves the original archive.",
     "update.unavailable": "Adding is unavailable for this archive or current location.",
     "update.drop": "Add to the current archive",
@@ -630,6 +629,10 @@
     "move.result": "Archive move result",
     "move.task": "Move task #%1",
     "desktop.moveTask": "Move",
-    "update.invalidDrop": "Only local regular files and folders can be added."
+    "update.invalidDrop": "Only local regular files and folders can be added.",
+    "update.subtitle": "Add files to the existing archive.",
+    "update.location": "Add destination",
+    "update.options": "Add options",
+    "update.archive": "Target archive"
   }
 }

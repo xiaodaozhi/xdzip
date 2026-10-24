@@ -169,7 +169,11 @@ PasswordWindow 按 [password-reference.json](password-reference.json) 和 [P02 �
 
 ## 归档添加确认
 
-UpdateWindow 采用创建窗口的 491 逻辑宽度、正文及标题字号、共享 footer。高度按正文加 footer 自适应，并受创建窗口高度上限及屏幕约束。来源列表采用虚拟化视图，视口为 100 至 240，内距 8、行间距 6、段间距 12，权威参数位于 layout-scale.json 的 operation.adding。独立原稿见 [archive-add.html](../../design/hifi/sources/archive-add.html)。浅深色与中英文 100%/125%/150% 字号独立验证，主窗口和菜单密度不变。
+UpdateWindow 以 C01 [创建原稿](../../design/hifi/screens/create.png)为独立依据，采用 491 逻辑宽度、20 标题、13 正文、12 说明与共享 footer。图标标题区下分“添加文件”“添加位置”“添加选项”三块浅底卡片，各有白色内部面板；内容左右 18、卡片内距 13、内部面板内距 10，卡片间距 10。目标压缩包与包内目录采用只读字段，重名策略沿用共享下拉。高度按正文加 footer 自适应，上限 736，同时受屏幕可用高度约束；正文独立滚动，footer 固定可达。
+
+创建和添加共用 ArchiveInputPanel，使用原 C01 文件图标、名称、右对齐大小与圆形减号，保留既有创建控件身份。来源列表采用虚拟化视图，空态和行高基准为 38，视口最高 148；大字号按真实字体增高行，不修改 28 命中和 24 图形的共享移除角色。可继续添加文件或文件夹、去重和移除，普通文件大小由有界后台摘要提供，目录总量保持未知。隐藏窗口不更新或抢占另一个窗口的摘要，元数据更新不改变选择路径。
+
+权威参数位于 layout-scale.json 的 operation.adding，并复用现有 create 和共享控件参数，独立映射见 [add-reference.json](add-reference.json)。[可编辑设计稿](../../design/hifi/sources/archive-add.html)支持中英文、浅深色、100%/125%/150% 字号、长名称与空选择。HTML、Qt 分别核对卡片、控件、滚动和 footer，主窗口与菜单比例继续单独测量，不能用离屏通过代替原生桌面验收。
 
 ## 包内移动状态
 

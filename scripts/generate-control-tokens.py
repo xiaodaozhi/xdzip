@@ -61,9 +61,14 @@ def main():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-control-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in layout['operation']['components'].items():
-        if name.startswith('destinationIndicator') or name == 'footerHeight':
+        if name.startswith('destinationIndicator') or name == 'footerHeight' or name.startswith('create'):
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
             declarations.append(f'  --operation-{key}: calc({value}px * var(--ui-source-factor));')
+    declarations.append(f'  --operation-create-width: calc({layout["operation"]["logical_widths"]["create"]}px * var(--ui-source-factor));')
+    for name, value in layout['operation']['adding'].items():
+        key = name.replace('_', '-')
+        css_value = str(value) if name == 'row_line_factor' else f'calc({value}px * var(--ui-source-factor))'
+        declarations.append(f'  --operation-adding-{key}: {css_value};')
     for name, value in tokens['size'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --ui-{key}: calc({value}px * var(--ui-source-factor));')

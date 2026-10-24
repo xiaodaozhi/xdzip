@@ -5,8 +5,10 @@ on:
     paths:
       - 'scripts/check-extract-fidelity.py'
       - 'scripts/check-integrity-progress.py'
+      - 'scripts/check-add-dialog.py'
       - 'scripts/check-tab-strip.py'
       - 'docs/visual/create-reference.json'
+      - 'docs/visual/add-reference.json'
       - 'docs/visual/result-reference.json'
       - 'build/review/create-controls/**'
       - 'docs/visual/extract-reference.json'
@@ -44,10 +46,12 @@ on:
       - '.gitattributes'
   pull_request:
     paths:
+      - 'scripts/check-add-dialog.py'
       - 'scripts/check-tab-strip.py'
       - 'scripts/check-extract-fidelity.py'
       - 'scripts/check-integrity-progress.py'
       - 'docs/visual/create-reference.json'
+      - 'docs/visual/add-reference.json'
       - 'docs/visual/result-reference.json'
       - 'build/review/create-controls/**'
       - 'docs/visual/extract-reference.json'
@@ -118,6 +122,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-about.py
           .venv-design/bin/python scripts/check-html-settings.py
           .venv-design/bin/python scripts/check-html-confirmations.py
+          .venv-design/bin/python scripts/check-add-dialog.py --html --native-zoom --output build/review/add-dialog-html
           .venv-design/bin/python scripts/check-html-password.py --native-zoom
           .venv-design/bin/python scripts/check-html-desktop-integration.py
           .venv-design/bin/python scripts/check-html-preflight.py
@@ -149,6 +154,7 @@ jobs:
           name: xdzip-html-design-evidence
           path: |
             build/review/html-settings/
+            build/review/add-dialog-html/
             build/review/desktop-integration/html/
             build/review/html-welcome/
             build/review/tab-strip/

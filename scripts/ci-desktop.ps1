@@ -165,6 +165,15 @@ Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
 Invoke-Checked python @('scripts/check-create-controls.py', '--input', 'build/desktop/create-controls', '--output', 'build/review/create-controls.json')
 Copy-Item -Recurse 'build/desktop/create-controls' 'build/review/create-controls'
 Remove-Item Env:XDZIP_CREATE_CONTROLS_AUDIT
+$env:XDZIP_TRANSFER_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/add-dialog'
+$env:XDZIP_ADD_DIALOG_AUDIT = $env:XDZIP_TRANSFER_VISUAL_AUDIT
+New-Item -ItemType Directory -Force $env:XDZIP_TRANSFER_VISUAL_AUDIT | Out-Null
+Invoke-Checked $browserTests @('rightClickOpenAndDropAddition', 'additionDraftSelectionAndMetadata')
+Invoke-Checked python @('scripts/check-add-dialog.py', '--qt-input', 'build/desktop/add-dialog', '--output', 'build/review/add-dialog')
+if (!$IsMacOS) { Copy-Item -Recurse 'build/desktop/add-dialog' 'build/review/add-dialog/qt' }
+else { Get-ChildItem -LiteralPath 'build/desktop/add-dialog' -Filter '*.json' | Copy-Item -Destination 'build/review/add-dialog' }
+Remove-Item Env:XDZIP_TRANSFER_VISUAL_AUDIT, Env:XDZIP_ADD_DIALOG_AUDIT
+
 $env:XDZIP_OPENING_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/temporary-opening'
 Invoke-Checked $browserTests @('temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance', 'terminalTemporaryOpenBeforeAcceptanceDoesNotReopenProgress')
 Copy-Item -Recurse 'build/desktop/temporary-opening' 'build/review/temporary-opening'
@@ -217,6 +226,14 @@ foreach ($density in @('1.25', '2')) {
     Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
     Invoke-Checked python @('scripts/check-create-controls.py', '--input', $stylePath, '--output', "build/review/create-controls-dpr$density.json")
     Remove-Item Env:XDZIP_CREATE_CONTROLS_AUDIT
+    $addPath = "build/desktop/add-dialog-dpr$density"
+    $env:XDZIP_TRANSFER_VISUAL_AUDIT = Join-Path (Get-Location) $addPath
+    New-Item -ItemType Directory -Force $env:XDZIP_TRANSFER_VISUAL_AUDIT | Out-Null
+    Invoke-Checked $browserTests @('rightClickOpenAndDropAddition')
+    Invoke-Checked python @('scripts/check-add-dialog.py', '--qt-input', $addPath, '--output', "build/review/add-dialog-dpr$density")
+    if (!$IsMacOS) { Copy-Item -Recurse $addPath "build/review/add-dialog-dpr$density/qt" }
+    else { Get-ChildItem -LiteralPath $addPath -Filter '*.json' | Copy-Item -Destination "build/review/add-dialog-dpr$density" }
+    Remove-Item Env:XDZIP_TRANSFER_VISUAL_AUDIT
 }
 Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
