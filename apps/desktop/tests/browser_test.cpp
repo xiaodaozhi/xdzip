@@ -22,8 +22,13 @@
 #include <QClipboard>
 #include <QCryptographicHash>
 #include <QCursor>
+#ifdef Q_OS_WIN
+#include <shlobj.h>
+#endif
 #include <QDesktopServices>
 #include <QDialog>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QElapsedTimer>
 #include <QEventLoop>
 #include <QFile>
@@ -34,6 +39,7 @@
 #include <QJsonDocument>
 #include <QLockFile>
 #include <QMenu>
+#include <QMimeData>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QPersistentModelIndex>
@@ -5851,6 +5857,226 @@ QtObject {
         QTRY_VERIFY(controller.requestClose());
 #endif
     }
+    void externalExportPreparesRealSelectedFiles() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        QQuickWindow owner;
+        owner.show();
+        controller.beginExport(0, &owner);
+        QTRY_VERIFY(!controller.busy());
+        QVERIFY(controller.m_export);
+        QVERIFY(!controller.m_export->entries.isEmpty());
+        const auto state = controller.m_export;
+        controller.m_exportCache = fixture.filePath("export-cache");
+        QVERIFY(QDir().mkpath(controller.m_exportCache));
+        state->request();
+        QElapsedTimer transferWait;
+        transferWait.start();
+        while (!state->done && transferWait.elapsed() < 10000)
+            QTest::qWait(20);
+        QVERIFY2(
+            state->done,
+            qPrintable(
+                QString("export task %1, seen %2, status %3")
+                    .arg(controller.m_exportTask)
+                    .arg(controller.tasks().size())
+                    .arg(controller.tasks().isEmpty()
+                             ? QString("none")
+                             : controller.tasks().first().toMap().value("status").toString())));
+        QVERIFY2(state->error.isEmpty(), qPrintable(state->error));
+        const auto file = QDir(state->directory).filePath(state->entries.last().name);
+        QVERIFY(QFileInfo(file).isFile());
+#ifdef Q_OS_WIN
+        auto *data = nativeExportData(state);
+        QVERIFY(data);
+        IDataObjectAsyncCapability *async = nullptr;
+        QCOMPARE(data->QueryInterface(IID_PPV_ARGS(&async)), HRESULT(S_OK));
+        BOOL enabled = FALSE;
+        QCOMPARE(async->GetAsyncMode(&enabled), HRESULT(S_OK));
+        QVERIFY(enabled);
+        FORMATETC descriptors{CLIPFORMAT(RegisterClipboardFormatW(CFSTR_FILEDESCRIPTORW)), nullptr,
+                              DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+        STGMEDIUM medium{};
+        QCOMPARE(data->GetData(&descriptors, &medium), HRESULT(S_OK));
+        auto *group = static_cast<FILEGROUPDESCRIPTORW *>(GlobalLock(medium.hGlobal));
+        QVERIFY(group);
+        QCOMPARE(group->cItems, UINT(state->entries.size()));
+        GlobalUnlock(medium.hGlobal);
+        ReleaseStgMedium(&medium);
+        QCOMPARE(async->StartOperation(nullptr), HRESULT(S_OK));
+        std::atomic<bool> finished{false};
+        QByteArray copied;
+        HRESULT result = E_FAIL;
+        std::unique_ptr<QThread> worker(QThread::create([&] {
+            CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+            FORMATETC content{CLIPFORMAT(RegisterClipboardFormatW(CFSTR_FILECONTENTS)), nullptr,
+                              DVASPECT_CONTENT, 0, TYMED_ISTREAM};
+            STGMEDIUM payload{};
+            result = data->GetData(&content, &payload);
+            if (SUCCEEDED(result)) {
+                char bytes[4096];
+                ULONG got = 0;
+                while (SUCCEEDED(result = payload.pstm->Read(bytes, sizeof(bytes), &got)) && got) {
+                    copied.append(bytes, int(got));
+                    if (result == S_FALSE)
+                        break;
+                }
+                ReleaseStgMedium(&payload);
+            }
+            async->EndOperation(result, nullptr, DROPEFFECT_COPY);
+            CoUninitialize();
+            finished = true;
+        }));
+        worker->start();
+        QTRY_VERIFY(finished.load());
+        worker->wait();
+        QVERIFY(SUCCEEDED(result));
+        QFile original(file);
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        QCOMPARE(copied, original.readAll());
+        async->Release();
+        data->Release();
+        QVERIFY(!state->inOperation.load());
+#endif
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void additionPreservesCurrentDirectoryAndSort() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), source));
+        QFile input(fixture.filePath("added.txt"));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        input.write("added");
+        input.close();
+        BrowserController controller;
+        controller.openPath(source);
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        const auto path = controller.m_directoryPaths.constBegin().key();
+        controller.navigateDirectory(controller.m_directoryPaths.value(path));
+        QTRY_VERIFY(!controller.busy());
+        controller.sortByColumn(0);
+        QTRY_VERIFY(!controller.busy());
+        const auto order = controller.sortOrder();
+        QSignalSpy accepted(&controller, &BrowserController::updateStarted);
+        controller.startUpdate({input.fileName()}, controller.sessionId(), controller.directoryId(),
+                               0);
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY(controller.ready() && !controller.busy() && controller.activeTaskCount() == 0);
+        QCOMPARE(controller.location(), path);
+        QCOMPARE(controller.sortOrder(), order);
+        bool found = false;
+        for (int i = 0; i < controller.m_model.rowCount(); ++i)
+            if (controller.m_model.rowAt(i)->cells[0] == "added.txt")
+                found = true;
+        QVERIFY(found);
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void rightClickOpenAndDropAddition_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("factor");
+        QTest::addColumn<bool>("dark");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (double factor : {1., 1.25, 1.5})
+                for (bool dark : {false, true})
+                    QTest::newRow(
+                        qPrintable(language + QString::number(factor) + QString::number(dark)))
+                        << language << factor << dark;
+    }
+    void rightClickOpenAndDropAddition() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), source));
+        QFile input(fixture.filePath("added.txt"));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        QCOMPARE(input.write("added bytes"), 11);
+        input.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
+                      "factor: 1; property bool dark: false; onFactorChanged: "
+                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+                      QUrl());
+        std::unique_ptr<QObject> appearance(theme.create());
+        QVERIFY(appearance);
+        appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", dark);
+        controller->m_temporaryCacheOverride = fixture.filePath("open-cache");
+        QList<QUrl> opened;
+        controller->m_fileOpener = [&](const QUrl &url) {
+            opened.append(url);
+            return true;
+        };
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        const auto session = controller->sessionId();
+        const auto *row = controller->m_model.rowAt(0);
+        QVERIFY(row);
+        const auto id = row->id;
+        controller->openContextEntry("expired", id);
+        QCOMPARE(opened.size(), 0);
+        controller->openContextEntry(session, id);
+        QTRY_COMPARE(opened.size(), 1);
+        QTRY_COMPARE(controller->activeTaskCount(), 0);
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(controller->canUpdateArchive());
+        QSignalSpy added(controller, &BrowserController::additionRequested);
+        QVERIFY(!controller->canAddDroppedUrls({QUrl("https://example.invalid/file")}));
+        auto *dropZone = findVisual(window->contentItem(), "archiveAddDropArea");
+        QVERIFY(dropZone);
+        const auto dropPoint =
+            dropZone->mapToScene(QPointF(dropZone->width() / 2, dropZone->height() / 2)).toPoint();
+        QMimeData mime;
+        mime.setUrls({QUrl::fromLocalFile(input.fileName())});
+        QDragEnterEvent enter(dropPoint, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QCoreApplication::sendEvent(window, &enter);
+        QVERIFY(enter.isAccepted());
+        QDropEvent drop(dropPoint, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QCoreApplication::sendEvent(window, &drop);
+        QVERIFY(drop.isAccepted());
+        QCOMPARE(added.count(), 1);
+        auto *dialog = window->findChild<QQuickWindow *>("updateWindow");
+        QVERIFY(dialog);
+        QTRY_VERIFY(dialog->isVisible());
+        QCOMPARE(dialog->width(), 491);
+        QVERIFY(dialog->height() <= QGuiApplication::primaryScreen()->availableGeometry().height());
+        auto *start = findVisual(dialog->contentItem(), "startUpdate");
+        QVERIFY(start && start->isEnabled());
+        if (!qEnvironmentVariableIsEmpty("XDZIP_TRANSFER_VISUAL_AUDIT")) {
+            QVERIFY(visual_audit::save(dialog, qEnvironmentVariable("XDZIP_TRANSFER_VISUAL_AUDIT"),
+                                       language + QString::number(factor) + QString::number(dark)));
+        }
+        QSignalSpy updated(controller, &BrowserController::updateStarted);
+        QVERIFY(QMetaObject::invokeMethod(start, "clicked"));
+        QTRY_COMPARE(updated.count(), 1);
+        QTRY_VERIFY(controller->activeTaskCount() == 0 && !controller->busy() &&
+                    controller->ready());
+        QCOMPARE(controller->tasks().first().toMap().value("kind").toString(),
+                 QStringLiteral("update"));
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        bool found = false;
+        for (int i = 0; i < controller->m_model.rowCount(); ++i)
+            if (controller->m_model.rowAt(i)->cells[0] == "added.txt")
+                found = true;
+        QVERIFY(found);
+        QVERIFY(controller->sessionId() != session);
+        QTRY_VERIFY(controller->requestClose());
+    }
     void temporaryFileOpeningUsesAssociationAndHidesOnlyAfterAcceptance_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<double>("factor");
@@ -7295,7 +7521,11 @@ QtObject {
         QVERIFY(properties);
         QVERIFY(!enterDirectory->isVisible());
         QTRY_COMPARE(enterDirectory->height(), 0);
-        QTRY_COMPARE(properties->y(), 0);
+        auto *open = window->findChild<QQuickItem *>("contextOpenEntry");
+        QVERIFY(open && open->isVisible() && open->isEnabled());
+        QTRY_COMPARE(open->y(), 0);
+        QTRY_COMPARE(open->height(), 32);
+        QTRY_COMPARE(properties->y(), open->height());
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(!menu->property("visible").toBool());
         cell->forceActiveFocus();

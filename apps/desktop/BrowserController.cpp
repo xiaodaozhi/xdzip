@@ -211,10 +211,18 @@ BrowserController::BrowserController(QObject *parent)
         QPointer<BrowserController> alive(this);
         emit changed();
         if (alive && m_closing)
-            emit readyToClose();
+            finishCloseWhenTransfersDrain();
     });
 }
-BrowserController::~BrowserController() = default;
+BrowserController::~BrowserController() {
+    if (m_export) {
+        m_export->cancelled = true;
+        m_export->changed.notify_all();
+        m_export->finish({}, "runtime_closed");
+    }
+    if (m_exportCopy)
+        m_exportCopy->finish("runtime_closed");
+}
 
 QString BrowserController::explain(const QString &code) {
     if (code.isEmpty())
@@ -344,6 +352,7 @@ void BrowserController::openPath(const QString &path) {
     // This comparison only deduplicates UI intents; it grants no output authority.
     const auto key = openKey(path);
     m_createdArchivesToOpen.removeIf([&](const QString &queued) { return openKey(queued) == key; });
+    m_restoreAfterUpdate = false;
     m_committedQuery = {};
     m_directory.clear();
     m_location.clear();
@@ -493,6 +502,18 @@ void BrowserController::copySelection(bool includeArchivePath) {
     if (!names.empty())
         QGuiApplication::clipboard()->setText(names.join('\n'));
 }
+void BrowserController::openContextEntry(const QString &session, const QString &entry) {
+    if (session != m_session || m_busy || !m_ready)
+        return;
+    for (int row = 0; row < m_model.rowCount(); ++row) {
+        const auto *item = m_model.rowAt(row);
+        const auto identity = item->navigationId.isEmpty() ? item->id : item->navigationId;
+        if (identity == entry) {
+            enterDirectory(row);
+            return;
+        }
+    }
+}
 void BrowserController::enterDirectory(int row) {
     if (m_busy || !m_ready)
         return;
@@ -635,10 +656,11 @@ int BrowserController::activeTaskCount() const {
     const bool preparing =
         m_busy && (m_result.extraction || m_result.creating || m_result.checking) &&
         (m_result.taskId.isEmpty() || !m_tasks.contains(m_result.taskId.toULongLong()));
-    return static_cast<int>(
-               std::count_if(m_tasks.cbegin(), m_tasks.cend(),
-                             [](const auto &v) { return !v.value("terminal").toBool(); })) +
-           (preparing ? 1 : 0);
+    const auto count = static_cast<int>(std::count_if(
+                           m_tasks.cbegin(), m_tasks.cend(),
+                           [](const auto &v) { return !v.value("terminal").toBool(); })) +
+                       (preparing ? 1 : 0);
+    return count == 0 && m_export && m_export->inOperation.load() ? 1 : count;
 }
 QVariantMap BrowserController::passwordPrompt() const {
     if (!runtimeAvailable())
@@ -958,6 +980,12 @@ bool BrowserController::requestClose() {
     if (m_closing)
         return false;
     m_closing = true;
+    if (m_export) {
+        m_export->cancelled = true;
+        m_export->changed.notify_all();
+    }
+    if (m_exportCopy)
+        m_exportCopy->finish("runtime_closed");
     m_deferredQuery.reset();
     m_admissionRetry.stop();
     m_waiting.reset();
@@ -1014,7 +1042,12 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.preflight = preflight;
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
-    m_result.creating = command.kind == xdzip::reader::CommandKind::Create;
+    m_result.updating = command.kind == xdzip::reader::CommandKind::Update;
+    m_result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
+                         command.kind == xdzip::reader::CommandKind::PublishExport;
+    m_result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
+    m_result.extraction |= m_result.exporting;
+    m_result.creating = command.kind == xdzip::reader::CommandKind::Create || m_result.updating;
     m_result.checking = command.kind == xdzip::reader::CommandKind::Check;
     m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
@@ -1038,7 +1071,10 @@ void BrowserController::attemptSubmission() {
     // One process-wide heavy operation, including preparation and cleanup. A
     // queued controller retains its bounded command and remains cancellable.
     static QPointer<BrowserController> heavyOwner;
-    const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::Create ||
+    const bool heavy = m_waiting->kind == xdzip::reader::CommandKind::PublishExport ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Update ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Export ||
+                       m_waiting->kind == xdzip::reader::CommandKind::Create ||
                        m_waiting->kind == xdzip::reader::CommandKind::OpenEntry ||
                        m_waiting->kind == xdzip::reader::CommandKind::Extract ||
                        m_waiting->kind == xdzip::reader::CommandKind::Check;
@@ -1070,6 +1106,12 @@ void BrowserController::attemptSubmission() {
         m_message = explain(code);
         if (m_result.creating)
             m_creationError = m_message;
+        if (m_result.exporting && m_export)
+            m_export->finish({}, "runtime_unavailable");
+        if (m_exportCopy) {
+            m_exportCopy->finish("runtime_unavailable");
+            m_exportCopy.reset();
+        }
         emit changed();
         return;
     }
@@ -1101,8 +1143,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         emit changed();
         return;
     }
+    if (handleTransferEvent(event))
+        return;
     if (event.kind == EventKind::TaskUpdate) {
         const auto &t = event.task;
+        handleTransferTask(t);
         const auto status = text(t.status);
         const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
         QVariantList details;
@@ -1184,7 +1229,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_tasks.insert(t.id, value);
         if (firstSuccess && !t.open_path.empty())
             openTemporaryOutput(t.id);
-        if (t.creating && firstSuccess) {
+        if (text(t.kind) == "update" && terminal &&
+            !m_tasks.value(t.id).value("updateRefreshed").toBool()) {
+            m_tasks[t.id].insert("updateRefreshed", true);
+            m_updateActive = false;
+            const auto session = QString::number(t.session), source = text(t.source);
+            QTimer::singleShot(0, this,
+                               [this, session, source] { refreshAfterUpdate(session, source); });
+        }
+        if (text(t.kind) == "create" && firstSuccess) {
             m_createdArchivesToOpen.append(text(t.target));
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
         }
@@ -1215,6 +1268,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return;
     if (event.kind == EventKind::TaskAccepted) {
         m_result.taskId = QString::number(event.task.id);
+        if (m_result.updating) {
+            m_updateActive = true;
+            m_ready = false;
+        }
         m_hasPayload = true;
         if (m_pendingOpenAfter && !m_result.creating) {
             const auto existing = m_tasks.value(event.task.id);
@@ -1282,6 +1339,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.total = static_cast<int>(event.total);
         m_result.archiveTotal = static_cast<int>(event.archive_total);
         m_format = text(event.format);
+        m_updateAllowed = event.update_allowed;
         m_archiveFolder = text(event.folder_name);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
@@ -1417,6 +1475,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         if (m_result.extraction || m_result.creating || m_result.checking || m_result.targetCheck) {
             const bool extraction = m_result.extraction;
             const bool creating = m_result.creating;
+            const bool updating = m_result.updating;
             const bool checking = m_result.checking;
             if (creating)
                 m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
@@ -1437,7 +1496,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             emit tasksChanged();
             if (extraction && !taskId.isEmpty())
                 emit extractionStarted(taskId);
-            if (creating && !taskId.isEmpty())
+            if (updating && !taskId.isEmpty())
+                emit updateStarted(taskId);
+            else if (creating && !taskId.isEmpty())
                 emit creationStarted(taskId);
             if (checking && !taskId.isEmpty())
                 emit archiveTestStarted(taskId);
@@ -1501,6 +1562,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_offset = m_ready ? m_result.offset : 0;
             m_session = m_ready ? m_result.session : QString{};
             m_result = {};
+            if (restoreUpdatedLocation())
+                return;
             emit changed();
         }
         QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);

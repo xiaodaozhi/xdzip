@@ -16,7 +16,7 @@ bool isPayload(const xdzip::reader::Event &event) {
     return event.kind == EventKind::Page || event.kind == EventKind::Preflight ||
            event.kind == EventKind::Snapshot || event.kind == EventKind::TaskUpdate ||
            event.kind == EventKind::TaskAccepted || event.kind == EventKind::TargetChecked ||
-           event.kind == EventKind::Inputs;
+           event.kind == EventKind::Inputs || event.kind == EventKind::ExportManifest;
 }
 std::size_t payloadBytes(const xdzip::reader::Event &event) {
     std::size_t bytes = event.error.size() + event.report.declared_bytes.size();
@@ -148,6 +148,10 @@ xdzip::reader::Submission RuntimeConnection::submit(xdzip::reader::Command comma
 void RuntimeConnection::cancel(quint64 request) {
     if (m_client && !m_stopped)
         (*m_client)->cancel(request);
+}
+void RuntimeConnection::releaseExport(quint64 task) {
+    if (m_client && !m_stopped)
+        (*m_client)->release_export(task);
 }
 bool RuntimeConnection::cancelTask(quint64 task) {
     return m_client && !m_stopped && (*m_client)->cancel_task(task);

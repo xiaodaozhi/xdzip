@@ -42,7 +42,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件",
+      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成",
       "design": "design/html/canvas.html?view=progress"
     },
     "IntegrityWindow": {
@@ -81,7 +81,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.aboutLogicalWidth",
-        "reason": "关于标题 24，遵循独立品牌规格，更新检查与安装状态使用可滚动正文及共享控件",
+      "reason": "关于标题 24，遵循独立品牌规格，更新检查与安装状态使用可滚动正文及共享控件",
       "design": "design/html/canvas.html?view=about"
     },
     "QuitWindow": {
@@ -94,6 +94,13 @@
       "parent": "OperationConfirmationWindow",
       "role": "confirmation",
       "design": "design/hifi/sources/confirmations.html"
+    },
+    "UpdateWindow": {
+      "parent": "OperationWindow",
+      "role": "operation",
+      "width": "Theme.operationCreateWidth",
+      "reason": "添加到当前压缩包，复用创建窗口密度与共享 footer，正文滚动，高度随正文和共享 footer 自适应，最高沿用创建窗上限",
+      "design": "design/hifi/sources/archive-add.html"
     }
   },
   "inline_windows": {

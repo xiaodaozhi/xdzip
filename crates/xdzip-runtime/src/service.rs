@@ -17,6 +17,34 @@ pub const MAX_EVENT_BYTES: usize = 8 * 1024 * 1024;
 
 /// Owned bounded commands. Source paths are user-selected inputs, never output authority.
 pub enum Command {
+    /// Fulfil a native file promise from a verified private export copy.
+    PublishExport {
+        /// Absolute application-owned payload root item.
+        source: String,
+        /// Absolute file promise URL received from the native destination.
+        target: String,
+    },
+    /// Replace a bound ordinary single-file archive after full verification.
+    Update {
+        /// Immutable source session.
+        session: u64,
+        /// Explicit bounded intent, revalidated by the worker.
+        options: crate::updating::Options,
+    },
+    /// Freeze relative file-manager drag descriptors without writing outputs.
+    ExportManifest {
+        /// Immutable source session.
+        session: u64,
+        /// Explicit bounded intent, revalidated by the worker.
+        options: crate::extraction::Options,
+    },
+    /// Prepare verified private copies for an external copy operation.
+    Export {
+        /// Immutable source session.
+        session: u64,
+        /// Explicit bounded intent, revalidated by the worker.
+        options: crate::extraction::Options,
+    },
     /// Extract one regular physical entry into a host-selected private cache.
     OpenEntry {
         /// Immutable archive session identity.
@@ -85,6 +113,9 @@ pub enum Command {
 impl Command {
     fn bytes(&self) -> usize {
         match self {
+            Self::PublishExport { source, target } => source.capacity() + target.capacity(),
+            Self::Update { options, .. } => options.bytes(),
+            Self::Export { options, .. } | Self::ExportManifest { options, .. } => options.bytes(),
             Self::OpenEntry { cache, .. } => cache.capacity(),
             Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
             Self::Browse {
@@ -102,6 +133,13 @@ impl Command {
     }
     fn bounded(&self) -> bool {
         match self {
+            Self::PublishExport { source, target } => [source, target]
+                .iter()
+                .all(|p| !p.contains('\0') && p.len() <= 4096 && Path::new(p).is_absolute()),
+            Self::Update { options, .. } => options.bounded(),
+            Self::Export { options, .. } | Self::ExportManifest { options, .. } => {
+                options.bounded()
+            }
             Self::OpenEntry { cache, entry, .. } => {
                 *entry > 0
                     && !cache.is_empty()
@@ -176,6 +214,8 @@ pub struct InputInfo {
 /// The sole payload event for one accepted request. Finished follows it exactly once.
 #[derive(Debug)]
 pub enum Payload {
+    /// Frozen relative export names without host paths or destination authority.
+    ExportManifest(Vec<crate::extraction::ExportEntry>),
     /// Metadata in the same order as the bounded selected input paths.
     Inputs(Vec<InputInfo>),
     /// Immutable bounded page with session and offset identity.
@@ -190,6 +230,8 @@ pub enum Payload {
         total: u64,
         /// Complete physical record count, independent of the current directory.
         archive_total: u64,
+        /// Whole-source editing admission, independent of the displayed page.
+        update_allowed: bool,
         /// Container determined from source bytes.
         format: xdzip_codec_api::Format,
         /// Host-derived same-folder name, revalidated by the output grant.
@@ -222,6 +264,7 @@ impl Payload {
     /// Count retained string bytes for end-to-end mailbox admission (containers separately bounded).
     pub fn bytes(&self) -> usize {
         match self {
+            Self::ExportManifest(entries) => entries.iter().map(|e| e.name.capacity() + 32).sum(),
             Self::Page {
                 rows,
                 navigation,
@@ -664,6 +707,43 @@ fn execute(
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
+            Command::PublishExport { source, target } => {
+                return shared
+                    .enqueue_task(tasks::Job::ExportCopy(crate::exporting::Job {
+                        source,
+                        target,
+                    }))
+                    .map(Payload::TaskAccepted);
+            }
+            Command::Update { session, options } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                let job = current.update_job(options, control)?;
+                let id = shared.enqueue_task(tasks::Job::Update(job))?;
+                // No new request may use old physical IDs once editing is admitted.
+                *archive = None;
+                return Ok(Payload::TaskAccepted(id));
+            }
+            Command::ExportManifest { session, options } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return current
+                    .export_manifest(&options, control)
+                    .map(Payload::ExportManifest);
+            }
+            Command::Export { session, options } => {
+                let current = archive
+                    .as_ref()
+                    .filter(|a| a.key().session.get() == session)
+                    .ok_or("stale_session")?;
+                return shared
+                    .enqueue_task(tasks::Job::Export(current.export_job(options, control)?))
+                    .map(Payload::TaskAccepted);
+            }
             Command::OpenEntry {
                 session,
                 entry,
@@ -812,6 +892,7 @@ fn execute(
             revision: SnapshotRevision::try_from(revision).map_err(|_| "stale_query")?,
         })
     };
+    let update_allowed = archive.can_update();
     let page = archive
         .query_page(
             crate::query::QueryRequest {
@@ -829,6 +910,7 @@ fn execute(
             crate::query::QueryError::Stale => "stale_query",
         })?;
     Ok(Payload::Page {
+        update_allowed,
         session,
         key: page.key,
         offset,
@@ -1008,6 +1090,7 @@ mod tests {
     fn byte_backpressure_does_not_block_control_or_shutdown() {
         let (client, receiver) = spawn(|_, _| {
             Ok(Payload::Page {
+                update_allowed: false,
                 key: QueryKey {
                     session: 1.try_into().unwrap(),
                     query: 1.try_into().unwrap(),

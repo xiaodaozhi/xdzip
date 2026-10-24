@@ -231,3 +231,18 @@ foreach(target xdzip-ui-preview xdzip-ui-tests xdzip-browser xdzip-browser-tests
         target_link_libraries(${target} PRIVATE xdzip-ui-resourcesplugin)
     endif()
 endforeach()
+
+# External file transfers share the controller and immutable private-copy lifetime.
+foreach(transfer_target xdzip-browser xdzip-browser-tests xdzip-update-tests)
+    if(TARGET ${transfer_target})
+        target_sources(${transfer_target} PRIVATE BrowserTransfers.cpp NativeExport.cpp)
+        if(WIN32)
+            target_sources(${transfer_target} PRIVATE NativeExportWindows.cpp)
+            target_link_libraries(${transfer_target} PRIVATE ole32 shell32 shlwapi)
+        elseif(APPLE)
+            target_sources(${transfer_target} PRIVATE NativeExportMac.mm)
+            set_source_files_properties(NativeExportMac.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
+            target_link_libraries(${transfer_target} PRIVATE "-framework AppKit")
+        endif()
+    endif()
+endforeach()

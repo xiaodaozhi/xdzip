@@ -177,11 +177,17 @@ impl EncodeInput for Sources<'_> {
         }))
     }
 }
-struct Output<'a> {
-    stage: &'a mut Stage,
-    bytes: &'a Cell<u64>,
-    error: &'a Cell<Option<OutputError>>,
-    cancel: &'a Cancellation,
+pub(crate) struct Output<'a> {
+    pub(crate) stage: &'a mut Stage,
+    pub(crate) bytes: &'a Cell<u64>,
+    pub(crate) error: &'a Cell<Option<OutputError>>,
+    pub(crate) cancel: &'a Cancellation,
+}
+impl std::io::Seek for Output<'_> {
+    fn seek(&mut self, position: std::io::SeekFrom) -> io::Result<u64> {
+        self.cancel.check().map_err(io::Error::other)?;
+        std::io::Seek::seek(self.stage, position)
+    }
 }
 impl Write for Output<'_> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {

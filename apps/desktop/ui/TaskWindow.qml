@@ -14,7 +14,7 @@ OperationWindow {
     property string operationKind: creating ? "create" : "extract"
     readonly property bool checking: operationKind === "check"
     property bool sampleData: false
-    title: checking ? sampleData ? qsTrId("ui.09fb2202dff9") : qsTrId("ui.06840dd516fe") : sampleData ? qsTrId("ui.cbd8ddd9b2b3") : terminal ? creating ? qsTrId("ui.ecabd6e05c84") : qsTrId("ui.7525c4c57b28") : creating ? qsTrId("ui.7d33a8f142f9") : qsTrId("ui.60483c3431b0")
+    title: operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? sampleData ? qsTrId("ui.09fb2202dff9") : qsTrId("ui.06840dd516fe") : sampleData ? qsTrId("ui.cbd8ddd9b2b3") : terminal ? creating ? qsTrId("ui.ecabd6e05c84") : qsTrId("ui.7525c4c57b28") : creating ? qsTrId("ui.7d33a8f142f9") : qsTrId("ui.60483c3431b0")
     allowMinimize: true
     required property string archiveName
     required property string destination
@@ -45,7 +45,7 @@ OperationWindow {
     }
     readonly property alias timingHint: timingHint
     readonly property alias closingHint: footer.hint
-    readonly property string heading: checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
+    readonly property string heading: operationKind === "update" ? (terminal ? qsTrId("update.result") : qsTrId("update.progress")) : operationKind === "export" || operationKind === "export-copy" ? (terminal ? qsTrId("export.result") : qsTrId("export.preparing")) : checking ? taskStatus === "succeeded" ? qsTrId("ui.67ec0b18537f") : taskStatus === "failed" ? qsTrId("ui.b327e25dbc82") : taskStatus === "cancelled" ? qsTrId("ui.ce9bc029cc7e") : stopping ? qsTrId("ui.619dd70cb582") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : taskStatus === "queued" ? qsTrId("ui.56bbef5868e7") : qsTrId("ui.2ef948f6a64e") : taskStatus === "succeeded" ? (creating ? qsTrId("ui.b58663721975") : qsTrId("ui.49e8128e1a96"))
         : taskStatus === "failed" ? (creating ? qsTrId("ui.b5926b78a037") : Number(resultTask.committedFiles || 0) > 0 ? qsTrId("ui.cf06124d3ffd") : qsTrId("ui.5bef0b169e84")) : taskStatus === "cancelled" ? qsTrId("ui.6f96c2add214")
         : taskStatus === "waiting" ? qsTrId("ui.00b405cb9dd9") : taskStatus === "waiting_password" ? qsTrId("password.waiting") : stopping ? qsTrId("ui.af48159f380f")
         : taskStatus === "queued" ? qsTrId("ui.402ce5b3351f") : taskStatus === "verifying" ? qsTrId("ui.ceecf5089636") : (creating ? qsTrId("ui.34ee864936c6") : qsTrId("ui.09eb6850c88c"))

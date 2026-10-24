@@ -3,6 +3,9 @@ use super::*;
 use crate::extraction::{self, ConflictPolicy, Control, Snapshot, Status};
 
 pub(super) enum Job {
+    ExportCopy(crate::exporting::Job),
+    Update(crate::updating::Job),
+    Export(extraction::Job),
     Extract(extraction::Job),
     Create(crate::creation::Job),
     Check(crate::checking::Job),
@@ -10,6 +13,9 @@ pub(super) enum Job {
 impl Job {
     fn retained_bytes(&self) -> usize {
         match self {
+            Self::ExportCopy(j) => j.retained_bytes(),
+            Self::Update(j) => j.retained_bytes(),
+            Self::Export(j) => j.retained_bytes(),
             Self::Extract(j) => j.retained_bytes(),
             Self::Create(j) => j.retained_bytes(),
             Self::Check(j) => j.retained_bytes(),
@@ -17,6 +23,13 @@ impl Job {
     }
     fn initial(&self, id: u64) -> Snapshot {
         match self {
+            Self::ExportCopy(j) => crate::exporting::initial(j, id),
+            Self::Update(j) => crate::updating::initial(j, id),
+            Self::Export(j) => {
+                let mut s = extraction::initial(j, id);
+                s.kind = extraction::TaskKind::Export;
+                s
+            }
             Self::Extract(j) => extraction::initial(j, id),
             Self::Create(j) => crate::creation::initial(j, id),
             Self::Check(j) => crate::checking::initial(j, id),
@@ -24,6 +37,12 @@ impl Job {
     }
     fn run(self, id: u64, control: &Control, publish: &mut dyn FnMut(Snapshot)) {
         match self {
+            Self::ExportCopy(j) => crate::exporting::run(j, id, control, publish),
+            Self::Update(j) => crate::updating::run(j, id, control, publish),
+            Self::Export(j) => extraction::run(j, id, control, &mut |mut s| {
+                s.kind = extraction::TaskKind::Export;
+                publish(s);
+            }),
             Self::Extract(j) => extraction::run(j, id, control, publish),
             Self::Create(j) => crate::creation::run(j, id, control, publish),
             Self::Check(j) => crate::checking::run(j, id, control, publish),
@@ -32,6 +51,7 @@ impl Job {
 }
 #[derive(Default)]
 pub(super) struct Queue {
+    export_leases: BTreeMap<u64, Arc<xdzip_io::Grant>>,
     next_id: u64,
     retained: BTreeMap<u64, usize>,
     jobs: VecDeque<(u64, Job, Arc<Control>)>,
@@ -72,7 +92,17 @@ impl Shared {
         {
             return Err("task_busy");
         }
+        if matches!(&job, Job::Export(_))
+            && state.tasks.export_leases.len() >= extraction::MAX_TASKS
+        {
+            return Err("task_busy");
+        }
         let id = state.tasks.next_id.checked_add(1).ok_or("resource_limit")?;
+        if let Job::Export(j) = &job
+            && let Some(grant) = &j.temporary
+        {
+            state.tasks.export_leases.insert(id, Arc::clone(grant));
+        }
         state.tasks.next_id = id;
         state.tasks.retained.insert(id, bytes);
         let control = Arc::new(Control::default());
@@ -172,6 +202,12 @@ pub(super) fn worker(shared: Arc<Shared>) {
     shared.changed.notify_all();
 }
 impl Client {
+    /// Release a completed export's cache lease after all native consumers have
+    /// finished. It never deletes data; the normal grace-period sweep owns cleanup.
+    pub fn release_export(&self, id: u64) -> bool {
+        self.0.lock().tasks.export_leases.remove(&id).is_some()
+    }
+
     /// Independent task cancellation; accepted tasks survive closing their source session.
     pub fn cancel_task(&self, id: u64) -> Result<(), Rejection> {
         let mut state = self.0.lock();

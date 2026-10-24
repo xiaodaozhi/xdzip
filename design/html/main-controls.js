@@ -598,6 +598,8 @@ window.XdzipMain = (() => {
             render();
         }
         const items = [];
+        if (target)
+            items.push({ id: "open-entry", label: "打开", run: () => activateEntry(entryId) });
         if (target?.folder)
             items.push(
                 {

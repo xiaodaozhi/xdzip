@@ -120,6 +120,7 @@
     <file alias="assets/light/remove.png">../../design/assets/png/light/remove@3x.png</file>
     <file alias="assets/dark/remove.png">../../design/assets/png/dark/remove@3x.png</file>
     <file>ui/CreateWindow.qml</file>
+    <file>ui/UpdateWindow.qml</file>
     <file alias="assets/archive-add-large.png">../../design/assets/png/light/archive-add@9x.png</file>
     <file alias="assets/dark/archive-add-large.png">../../design/assets/png/dark/archive-add@9x.png</file>
     <file>ui/AssetLibrary.qml</file>

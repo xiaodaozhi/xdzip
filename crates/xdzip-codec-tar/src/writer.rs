@@ -35,7 +35,7 @@ impl Read for Input<'_> {
         Ok(n)
     }
 }
-fn write_tar(
+pub(crate) fn write_tar(
     output: &mut dyn Write,
     input: &dyn EncodeInput,
     cancel: &Cancellation,

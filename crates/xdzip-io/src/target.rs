@@ -39,6 +39,61 @@ pub struct ExistingFile {
     /// The selected archive itself can be renamed around, but cannot be overwritten.
     pub source_protected: bool,
 }
+
+/// Explicit authority to replace exactly one existing archive version. Ordinary
+/// creation/extraction grants retain their independent source-protection policy.
+pub struct ArchiveUpdate {
+    grant: Arc<Grant>,
+    path: PortablePath,
+    expected: ExistingFile,
+}
+impl ArchiveUpdate {
+    /// Bind an explicit edit intent to an owned, safe, single-link ordinary file.
+    /// Parent and leaf ACL, no-follow and version checks are the normal output checks.
+    pub fn open(path: &Path, source: FileIdentity) -> Result<Self, OutputError> {
+        let parent = path.parent().ok_or(OutputError::UnsafeTarget)?;
+        let name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or(OutputError::UnsafeTarget)?;
+        let relative = PortablePath::parse(name).ok_or(OutputError::UnsafeTarget)?;
+        if relative.parts().len() != 1 {
+            return Err(OutputError::UnsafeTarget);
+        }
+        let grant = Grant::for_creation(parent)?;
+        let expected = grant
+            .existing(&relative)?
+            .ok_or(OutputError::TargetChanged)?;
+        if expected.version.identity != source {
+            return Err(OutputError::TargetChanged);
+        }
+        Ok(Self {
+            grant,
+            path: relative,
+            expected,
+        })
+    }
+    /// Create a same-volume private workspace under this authorized parent.
+    pub fn workspace(&self, task: u64) -> Result<Workspace, OutputError> {
+        self.grant.workspace(task)
+    }
+    /// The one source version that this edit is authorized to replace.
+    pub fn version(&self) -> &FileVersion {
+        &self.expected.version
+    }
+    /// Publish only in the workspace attached to this capability and only over
+    /// the original version. Failures never truncate or delete the old archive.
+    pub fn commit(
+        &self,
+        workspace: &mut Workspace,
+        stage: Stage,
+    ) -> Result<CommitReceipt, OutputError> {
+        if !Arc::ptr_eq(&workspace.grant, &self.grant) {
+            return Err(OutputError::UnsafeTarget);
+        }
+        workspace.commit(stage, &self.path, Some(&self.expected))
+    }
+}
 impl Grant {
     /// Authorize an existing directory chosen by the host. Broadly writable or linked roots fail.
     pub fn open(path: &Path, source: FileIdentity) -> Result<Arc<Self>, OutputError> {
@@ -792,6 +847,17 @@ impl Stage {
         remove_known(&self.dir, &self.name, self.identity)?;
         self.published = true;
         Ok(())
+    }
+}
+impl std::io::Seek for Stage {
+    fn seek(&mut self, position: std::io::SeekFrom) -> io::Result<u64> {
+        if self.sealed.is_some() {
+            return Err(io::Error::other("sealed stage"));
+        }
+        self.file
+            .as_mut()
+            .ok_or_else(|| io::Error::other("closed stage"))?
+            .seek(position)
     }
 }
 impl Write for Stage {

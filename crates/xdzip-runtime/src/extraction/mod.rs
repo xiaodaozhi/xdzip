@@ -205,10 +205,16 @@ pub struct Outcome {
 /// Operation identity shared by task scheduling and display snapshots.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum TaskKind {
+    /// Publish a prepared private item to a native file-promise destination.
+    ExportCopy,
+    /// Verified private copies offered to an external copy operation.
+    Export,
     /// Publish selected archive entries.
     Extract,
     /// Publish a new complete archive.
     Create,
+    /// Atomically replace an explicitly selected archive after full validation.
+    Update,
     /// Read and validate an archive without filesystem output.
     Check,
 }
@@ -216,8 +222,11 @@ impl TaskKind {
     /// Stable bridge label, independent of translated text.
     pub fn code(self) -> &'static str {
         match self {
+            Self::ExportCopy => "export-copy",
+            Self::Export => "export",
             Self::Extract => "extract",
             Self::Create => "create",
+            Self::Update => "update",
             Self::Check => "check",
         }
     }
@@ -320,7 +329,78 @@ impl Snapshot {
         });
     }
 }
+/// Relative descriptor for an external copy, never a host pathname.
+#[derive(Debug)]
+pub struct ExportEntry {
+    /// Validated relative path under the private payload directory.
+    pub name: String,
+    /// Directory, including implicit parent directories.
+    pub directory: bool,
+    /// Declared bytes; the export task verifies content before exposing it.
+    pub size: u64,
+}
 impl Archive {
+    pub(crate) fn export_manifest(
+        &self,
+        options: &Options,
+        cancel: &Cancellation,
+    ) -> Result<Vec<ExportEntry>, &'static str> {
+        self.source.validate().map_err(|_| "source_changed")?;
+        let planned = plan::prepare(self, options, cancel)?;
+        let mut entries = std::collections::BTreeMap::<String, ExportEntry>::new();
+        let mut bytes = 0usize;
+        for item in planned {
+            let row = &self.rows[item.index];
+            if row.link {
+                return Err("unsupported_feature");
+            }
+            for end in 1..=item.path.parts().len() {
+                let name = item.path.parts()[..end].join("/");
+                let directory = end < item.path.parts().len() || row.directory;
+                if let Some(old) = entries.get(&name) {
+                    if old.directory != directory || !directory {
+                        return Err("name_collision");
+                    }
+                } else {
+                    bytes += name.len() + 32;
+                    if bytes > 4 * 1024 * 1024 || entries.len() >= 100_000 {
+                        return Err("resource_limit");
+                    }
+                    entries.insert(
+                        name.clone(),
+                        ExportEntry {
+                            name,
+                            directory,
+                            size: if directory { 0 } else { row.size },
+                        },
+                    );
+                }
+            }
+        }
+        if entries.is_empty() {
+            return Err("invalid_selection");
+        }
+        Ok(entries.into_values().collect())
+    }
+    pub(crate) fn export_job(
+        &self,
+        options: Options,
+        cancel: &Cancellation,
+    ) -> Result<Job, &'static str> {
+        self.export_manifest(&options, cancel)?;
+        let cache = std::path::PathBuf::from(&options.target);
+        let mut job = self.extraction_job(options, cancel)?;
+        let ids = self.source.identities().map_err(|_| "source_changed")?;
+        let grant = xdzip_io::Grant::temporary(&cache, &ids).map_err(|e| match e {
+            xdzip_io::OutputError::Limit => "resource_limit",
+            xdzip_io::OutputError::UnsafeTarget => "unsafe_target",
+            _ => "output_io",
+        })?;
+        job.options.target = grant.display_path().to_string_lossy().into_owned();
+        job.temporary = Some(grant);
+        Ok(job)
+    }
+
     /// Freeze selectors and input identity without creating a destination object.
     pub(crate) fn extraction_job(
         &self,

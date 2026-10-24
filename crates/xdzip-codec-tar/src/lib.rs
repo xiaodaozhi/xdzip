@@ -1,4 +1,5 @@
 //! Bounded TAR scanning and GZIP composition. Codecs never receive filesystem paths.
+mod rewrite;
 mod writer;
 use flate2::read::MultiGzDecoder;
 use std::io::{self, Read, SeekFrom};

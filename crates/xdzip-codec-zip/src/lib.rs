@@ -2,6 +2,7 @@
 mod admission;
 mod aes;
 mod payload;
+mod rewrite;
 pub mod split;
 mod writer;
 use std::io::{Read, Seek, SeekFrom};

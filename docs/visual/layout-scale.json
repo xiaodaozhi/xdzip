@@ -181,6 +181,13 @@
       "titleSize": 20,
       "bodySize": 13,
       "screenMargin": 80
+    },
+    "adding": {
+      "source_list_minimum_height": 100,
+      "source_list_maximum_height": 240,
+      "source_list_inset": 8,
+      "source_row_gap": 6,
+      "section_gap": 12
     }
   },
   "controls": {

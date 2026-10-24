@@ -1,11 +1,13 @@
 //! Built-in capability routing. The host retains all paths and source authority.
 use std::io::SeekFrom;
 use xdzip_codec_api::{
-    Format, MetadataCodec, ReadSource, ScanError, encode::CreationCodec, payload::PayloadCodec,
+    Format, MetadataCodec, ReadSource, ScanError,
+    encode::{CreationCodec, RewriteCodec},
+    payload::PayloadCodec,
 };
 use xdzip_codec_tar::TarCodec;
 use xdzip_codec_zip::ZipCodec;
-pub(crate) trait Codec: MetadataCodec + PayloadCodec + CreationCodec {}
+pub(crate) trait Codec: MetadataCodec + PayloadCodec + CreationCodec + RewriteCodec {}
 impl Codec for ZipCodec {}
 impl Codec for TarCodec {}
 pub(crate) fn codec(format: Format) -> &'static dyn Codec {

@@ -10,7 +10,9 @@ mod target;
 mod tests;
 pub use identity::{FileIdentity, FileVersion};
 pub use input::{InputEntry, InputError, InputReader, InputTree};
-pub use target::{CommitReceipt, ExistingFile, Grant, SetCommitError, Stage, Workspace};
+pub use target::{
+    ArchiveUpdate, CommitReceipt, ExistingFile, Grant, SetCommitError, Stage, Workspace,
+};
 
 /// Open a source without allowing a special file to block the caller.
 /// Unix uses a nonblocking classification open before normal reads.

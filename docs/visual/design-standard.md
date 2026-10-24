@@ -166,3 +166,7 @@ macOS 顶部系统菜单和全平台托盘菜单使用平台原生绘制，字�
 PasswordWindow 按 [password-reference.json](password-reference.json) 和 [P02 独立稿](../../design/hifi/sources/password-extraction.html) 采用 491 宽、最高 600、24 正文内距、20 标题、13 正文和 12 说明。原生标题栏保持平台绘制，不更改主窗口标题栏。正文滚动、共享 footer 固定，输入框复用 OperationField 与 OperationFrame，显示／隐藏动作和 footer 使用共享按钮。普通、hover、pressed、disabled、pending、错误重试与浅深色均使用既有角色；不新增 outline、不覆盖 footer 外观。密码清理、请求身份、取消及空密码规则见[交互契约](../ux/password-extraction.md)。
 
 起始页正文从欢迎区域顶部固定 28 逻辑像素开始，仅水平方向居中，不按正文总高度垂直居中。错误反馈追加在格式提示下方，不能改变标题、说明、主操作和拖放区域的坐标；长消息自然增高并由正文容器滚动。反馈文字使用共享危险色，配 18 逻辑像素的 status-warning 语义图标，图文间距 8、顶部间距 10；可访问角色为 AlertMessage，图标不重复朗读。参数见 welcome-reference.json。
+
+## 归档添加确认
+
+UpdateWindow 采用创建窗口的 491 逻辑宽度、正文及标题字号、共享 footer。高度按正文加 footer 自适应，并受创建窗口高度上限及屏幕约束。来源列表采用虚拟化视图，视口为 100 至 240，内距 8、行间距 6、段间距 12，权威参数位于 layout-scale.json 的 operation.adding。独立原稿见 [archive-add.html](../../design/hifi/sources/archive-add.html)。浅深色与中英文 100%/125%/150% 字号独立验证，主窗口和菜单密度不变。

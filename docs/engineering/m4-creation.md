@@ -1,6 +1,6 @@
 # WP-10 创建 ZIP 实现契约
 
-本工作包实现从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的扩展见 [WP-11](m4-tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，就地编辑仍未实现。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
+本工作包实现从明确选择的文件与目录创建新 ZIP；默认 2-正常压缩，使用 Deflate 6；支持 Store 与 Deflate 1／6／9、WinZip AES-256 内容加密和编号分卷。TAR/GZIP 的扩展见 [WP-11](m4-tar-gzip.md)，AES-256 读取见[密码解压](password-extraction.md)；分卷读取见[分卷契约](archive-opening.md)，普通单文件归档的显式添加使用[文件拖放与修改契约](archive-transfers.md)，不复用新建归档的源保护例外。输入授权、暂存、校验、重名决策和最终保存由宿主负责，格式层只接收条目、可读输入与可写输出。
 
 ## 输入树与预算
 

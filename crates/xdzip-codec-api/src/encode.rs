@@ -1,5 +1,5 @@
 //! Internal creation extension contract. Paths and filesystem commits belong to the host.
-use crate::Cancellation;
+use crate::{Cancellation, ReadSource};
 use std::io::{Read, Write};
 
 /// Frozen format-visible record, independent of host paths or GUI objects.
@@ -64,6 +64,32 @@ pub trait CreationCodec {
         input: &dyn EncodeInput,
         output: &mut dyn EncodeOutput,
         settings: EncodeSettings<'_>,
+        cancel: &Cancellation,
+        progress: &mut dyn FnMut(EncodeProgress<'_>),
+    ) -> Result<(), EncodeError>;
+}
+
+/// Frozen rewrite selection. Physical record order belongs to the original scan.
+pub struct RewriteInput<'a> {
+    /// One decision per original physical record. Metadata extension records are not entries.
+    pub keep: &'a [bool],
+    /// Host-authorized additions with final, collision-resolved names.
+    pub additions: &'a dyn EncodeInput,
+    /// Settings apply only to new content (and the outer GZIP stream).
+    pub settings: EncodeSettings<'a>,
+}
+/// Seekable private staging output. Seeking grants no filesystem authority.
+pub trait RewriteOutput: Write + std::io::Seek {}
+impl<T: Write + std::io::Seek + ?Sized> RewriteOutput for T {}
+/// Whole-container rewrite without host paths or publication authority.
+pub trait RewriteCodec {
+    /// Preserve admitted old records, append additions, and finish a new container.
+    /// The host must verify the full result before publishing it.
+    fn rewrite(
+        &self,
+        original: &mut dyn ReadSource,
+        input: RewriteInput<'_>,
+        output: &mut dyn RewriteOutput,
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError>;

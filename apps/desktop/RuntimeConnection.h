@@ -36,6 +36,7 @@ class RuntimeConnection final : public QObject {
     xdzip::reader::Submission submit(xdzip::reader::Command command);
     void cancel(quint64 request);
     bool cancelTask(quint64 task);
+    void releaseExport(quint64 task);
     bool decideTask(quint64 task, quint64 prompt, quint8 policy, bool all);
     bool submitPassword(quint64 task, quint64 prompt, QByteArray password);
     void shutdown();

@@ -42,6 +42,7 @@ Item {
     }
     function hideSessionWindows() {
         createWindow.close();
+        updateWindow.close();
         extractWindow.close();
         taskWindow.close();
         preflightWindow.close();
@@ -336,6 +337,8 @@ Item {
             preflightWindow.present()
         onExtractionReady: if (!root.sessionClosed)
             extractWindow.configure()
+        onAdditionRequested: paths => { if (!root.sessionClosed) updateWindow.configure(paths); }
+        onUpdateStarted: id => { updateWindow.close(); if (!root.sessionClosed) root.showTask(id); }
         onCreationStarted: id => {
             createWindow.close();
             if (!root.sessionClosed)
@@ -388,6 +391,7 @@ Item {
             }
         }
     }
+    UpdateWindow { id: updateWindow; owner: root.windowHost; controller: reader }
     CreateWindow {
         id: createWindow
         owner: root.windowHost
@@ -687,6 +691,12 @@ Item {
     CommandMenu {
         id: entryMenu
         objectName: "browserEntryMenu"
+        CommandMenuItem {
+            objectName: "contextOpenEntry"
+            text: qsTrId("entry.open")
+            enabled: root.contextAvailable && !reader.taskStarting
+            onTriggered: reader.openContextEntry(root.contextEntry.session, root.contextEntry.id)
+        }
         CommandMenuItem {
             objectName: "contextEnterDirectory"
             text: qsTrId("ui.fb1eccfe14ea")
@@ -1482,6 +1492,32 @@ Item {
                             emptyMenu.popup(point.x, point.y);
                         }
                     }
+                    DropArea {
+                        id: archiveDrop
+                        objectName: "archiveAddDropArea"
+                        anchors.fill: parent
+                        z: 20
+                        property bool permitted: false
+                        onEntered: drag => {
+                            permitted = drag.hasUrls && !drag.formats.includes("application/x-xdzip-export") && reader.canAddDroppedUrls(drag.urls);
+                            drag.accepted = permitted;
+                        }
+                        onDropped: drop => {
+                            if (permitted && drop.hasUrls && reader.canAddDroppedUrls(drop.urls)) {
+                                drop.accept(Qt.CopyAction);
+                                reader.addDroppedUrls(drop.urls);
+                            } else drop.accepted = false;
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            visible: archiveDrop.containsDrag && archiveDrop.permitted
+                            color: Theme.selection
+                            opacity: 0.9
+                            border.width: 2
+                            border.color: Theme.accent
+                            Text { anchors.centerIn: parent; text: reader.addDropMessage; font.pixelSize: Theme.mainBodySize; color: Theme.text; wrapMode: Text.Wrap; width: parent.width - Theme.mainGridInset * 2; horizontalAlignment: Text.AlignHCenter }
+                        }
+                    }
                     TableView {
                         id: table
                         objectName: "archiveTable"
@@ -1580,7 +1616,17 @@ Item {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
+                                property point pressedAt
+                                property bool transferStarted: false
+                                onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
+                                onPositionChanged: mouse => {
+                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
+                                        transferStarted = true;
+                                        reader.beginExport(cell.row, root.windowHost);
+                                    }
+                                }
                                 onClicked: function (mouse) {
+                                    if (transferStarted) return;
                                     if (mouse.button === Qt.RightButton)
                                         root.entryMenuAt(cell, cell.row, cell.entryId, cell.isDirectory, cell.canNavigate, mouse.x, mouse.y);
                                     else {
@@ -1703,7 +1749,17 @@ Item {
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
+                                property point pressedAt
+                                property bool transferStarted: false
+                                onPressed: mouse => { pressedAt = Qt.point(mouse.x, mouse.y); transferStarted = false; }
+                                onPositionChanged: mouse => {
+                                    if (pressed && (pressedButtons & Qt.LeftButton) && !transferStarted && Math.hypot(mouse.x - pressedAt.x, mouse.y - pressedAt.y) >= Qt.styleHints.startDragDistance) {
+                                        transferStarted = true;
+                                        reader.beginExport(gridEntry.index, root.windowHost);
+                                    }
+                                }
                                 onClicked: function (mouse) {
+                                    if (transferStarted) return;
                                     if (mouse.button === Qt.RightButton)
                                         root.entryMenuAt(gridEntry, gridEntry.index, gridEntry.entryId, gridEntry.isDirectory, gridEntry.canNavigate, mouse.x, mouse.y);
                                     else {

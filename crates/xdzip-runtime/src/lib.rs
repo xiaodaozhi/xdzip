@@ -1,6 +1,7 @@
 //! First read-only session service. Called only on a bounded background worker.
 pub mod checking;
 pub mod creation;
+mod exporting;
 pub mod extraction;
 mod formats;
 mod index;
@@ -10,6 +11,7 @@ pub mod query;
 pub mod service;
 mod source;
 mod task_interaction;
+pub mod updating;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -24,6 +26,7 @@ static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 pub struct Archive {
     source: source::Source,
     format: xdzip_codec_api::Format,
+    update_allowed: bool,
     index: index::DirectoryIndex,
     cached_query: Option<query::QuerySnapshot>,
     next_query: u64,
@@ -80,7 +83,12 @@ impl Archive {
         };
         control.check()?;
         let index = index::DirectoryIndex::build(&rows, directories.as_deref(), control)?;
+        let update_allowed = !source.is_split()
+            && !rows.iter().any(|r| {
+                r.encrypted || r.link || r.warning || (!r.directory && ![0, 8].contains(&r.method))
+            });
         Ok(Self {
+            update_allowed,
             directories,
             source,
             format,

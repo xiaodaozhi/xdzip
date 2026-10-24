@@ -31,6 +31,10 @@ mod ffi {
         InspectInputs,
         OpenEntry,
         Check,
+        PublishExport,
+        Update,
+        Export,
+        ExportManifest,
     }
     struct MetadataLimits {
         entries: u64,
@@ -155,6 +159,7 @@ mod ffi {
         TaskUpdate,
         TargetChecked,
         Inputs,
+        ExportManifest,
     }
     struct Event {
         kind: EventKind,
@@ -164,6 +169,7 @@ mod ffi {
         offset: u64,
         total: u64,
         archive_total: u64,
+        update_allowed: bool,
         format: String,
         folder_name: String,
         query: u64,
@@ -190,6 +196,7 @@ mod ffi {
         fn submit(self: &CommandClient, command: Command) -> Submission;
         fn cancel(self: &CommandClient, request_id: u64) -> Submission;
         fn cancel_task(self: &CommandClient, task: u64) -> bool;
+        fn release_export(self: &CommandClient, task: u64) -> bool;
         fn decide_task(self: &CommandClient, task: u64, prompt: u64, policy: u8, all: bool)
         -> bool;
         fn respond_password(self: &CommandClient, task: u64, prompt: u64, password: String)
@@ -226,13 +233,23 @@ pub struct Runtime {
 /// Exclusive GUI command handle. Short admission/control calls only.
 pub struct CommandClient(service::Client);
 /// Exclusive receiver-thread handle. Receive may block and joins the worker at shutdown.
-pub struct EventReceiver(service::Receiver);
+pub struct EventReceiver {
+    receiver: service::Receiver,
+    export_rows: std::collections::VecDeque<xdzip_runtime::extraction::ExportEntry>,
+    export_request: u64,
+    sequence: u64,
+}
 /// Start a runtime; thread creation failure returns a fixed error without source paths.
 pub fn new_runtime() -> Result<Box<Runtime>, &'static str> {
     let (client, receiver) = service::start().map_err(|_| "runtime_unavailable")?;
     Ok(Box::new(Runtime {
         client: Some(CommandClient(client)),
-        receiver: Some(EventReceiver(receiver)),
+        receiver: Some(EventReceiver {
+            receiver,
+            export_rows: Default::default(),
+            export_request: 0,
+            sequence: 0,
+        }),
     }))
 }
 impl Runtime {
@@ -310,6 +327,47 @@ impl CommandClient {
             return admission(Err(Rejection::Invalid));
         }
         let value = match command.kind {
+            ffi::CommandKind::PublishExport => Command::PublishExport {
+                source: command.text,
+                target: command.path,
+            },
+            ffi::CommandKind::Update => {
+                let Some(conflict) =
+                    xdzip_runtime::extraction::ConflictPolicy::from_code(command.conflict)
+                else {
+                    return admission(Err(Rejection::Invalid));
+                };
+                Command::Update {
+                    session: command.session,
+                    options: xdzip_runtime::updating::Options {
+                        inputs: command.inputs,
+                        directory: command.directory,
+                        conflict,
+                    },
+                }
+            }
+            ffi::CommandKind::Export | ffi::CommandKind::ExportManifest => {
+                let options = xdzip_runtime::extraction::Options {
+                    target: command.path,
+                    all: false,
+                    selected: command.selectors,
+                    directory: command.directory,
+                    create_folder: false,
+                    conflict: xdzip_runtime::extraction::ConflictPolicy::Ask,
+                    allow_high_ratio: false,
+                };
+                if command.kind == ffi::CommandKind::Export {
+                    Command::Export {
+                        session: command.session,
+                        options,
+                    }
+                } else {
+                    Command::ExportManifest {
+                        session: command.session,
+                        options,
+                    }
+                }
+            }
             ffi::CommandKind::Check => Command::Check {
                 session: command.session,
             },
@@ -394,7 +452,11 @@ impl CommandClient {
     pub fn cancel(&self, request_id: u64) -> ffi::Submission {
         admission(self.0.cancel(request_id))
     }
-    /// Cancel a task without waiting for the data lane or filesystem operations.
+    /// Release a completed native consumer cache lease without deleting payloads.
+    pub fn release_export(&self, task: u64) -> bool {
+        self.0.release_export(task)
+    }
+    /// Cancel a heavy task without queueing a normal command.
     pub fn cancel_task(&self, task: u64) -> bool {
         self.0.cancel_task(task).is_ok()
     }
@@ -419,6 +481,36 @@ impl CommandClient {
     }
 }
 impl EventReceiver {
+    fn stamp(&mut self, event: &mut ffi::Event) {
+        if let Some(sequence) = self.sequence.checked_add(1) {
+            self.sequence = sequence;
+            event.sequence = sequence;
+        } else {
+            event.kind = ffi::EventKind::RuntimeFault;
+        }
+    }
+    fn export_batch(&mut self) -> Vec<ffi::Row> {
+        // Preserve the same 128-row transport bound used by archive pages. A
+        // large directory never becomes one huge native mailbox allocation.
+        let count = self.export_rows.len().min(128);
+        self.export_rows
+            .drain(..count)
+            .map(|r| ffi::Row {
+                id: String::new(),
+                navigation_id: String::new(),
+                physical: false,
+                name: r.name,
+                size: r.size,
+                packed_size: 0,
+                method: 0,
+                modified_dos: 0,
+                directory: r.directory,
+                encrypted: false,
+                warning: false,
+            })
+            .collect()
+    }
+
     /// Block without polling, return an owned typed event or explicit end-of-stream.
     pub fn next_event(&mut self) -> ffi::Event {
         let mut event = ffi::Event {
@@ -429,6 +521,7 @@ impl EventReceiver {
             offset: 0,
             total: 0,
             archive_total: 0,
+            update_allowed: false,
             format: String::new(),
             folder_name: String::new(),
             query: 0,
@@ -449,17 +542,31 @@ impl EventReceiver {
                 unicode_review: false,
             },
         };
-        let Some(value) = self.0.receive() else {
+        if !self.export_rows.is_empty() {
+            event.request_id = self.export_request;
+            event.kind = ffi::EventKind::ExportManifest;
+            event.rows = self.export_batch();
+            self.stamp(&mut event);
+            return event;
+        }
+        let Some(value) = self.receiver.receive() else {
             return event;
         };
-        event.sequence = value.sequence;
+        self.stamp(&mut event);
         event.request_id = value.request;
         match value.payload {
+            service::Payload::ExportManifest(rows) => {
+                event.kind = ffi::EventKind::ExportManifest;
+                self.export_request = value.request;
+                self.export_rows = rows.into();
+                event.rows = self.export_batch();
+            }
             service::Payload::Page {
                 session,
                 offset,
                 total,
                 archive_total,
+                update_allowed,
                 format,
                 folder_name,
                 key,
@@ -472,6 +579,7 @@ impl EventReceiver {
                 event.offset = offset;
                 event.total = total;
                 event.archive_total = archive_total;
+                event.update_allowed = update_allowed;
                 event.format = format.label().into();
                 event.folder_name = folder_name;
                 event.query = key.query.get();

@@ -16,8 +16,10 @@ function Invoke-Checked {
 Invoke-Checked rustc @('-vV')
 Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
+$env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-interop'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
+Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')
 Invoke-Checked $updatePython @('scripts/test-release-updates.py')
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
 Invoke-Checked cmake @('--build', 'build/foundation')

@@ -1,4 +1,5 @@
 #pragma once
+#include "NativeExport.h"
 #include "RuntimeConnection.h"
 #include <QAbstractListModel>
 #include <QAbstractTableModel>
@@ -89,6 +90,8 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap preflightReport READ preflightReport NOTIFY changed)
     Q_PROPERTY(QVariantMap detail READ detail NOTIFY changed)
     Q_PROPERTY(int selectedCount READ selectedCount NOTIFY changed)
+    Q_PROPERTY(bool canUpdateArchive READ canUpdateArchive NOTIFY changed)
+    Q_PROPERTY(QString addDropMessage READ addDropMessage NOTIFY changed)
     Q_PROPERTY(bool canPreflight READ canPreflight NOTIFY changed)
     Q_PROPERTY(QString selectedBytes READ selectedBytes NOTIFY changed)
     Q_PROPERTY(QString location READ location NOTIFY changed)
@@ -224,6 +227,22 @@ class BrowserController : public QObject {
     }
     int activeTaskCount() const;
     QVariantMap passwordPrompt() const;
+    bool canUpdateArchive() const {
+        return m_ready && m_updateAllowed && !m_updateActive && !browsingBusy() &&
+               !taskStarting() && m_search.isEmpty();
+    }
+    QString addDropMessage() const;
+    Q_INVOKABLE bool canAddDroppedUrls(const QList<QUrl> &urls) const;
+    Q_INVOKABLE void addDroppedUrls(const QList<QUrl> &urls);
+    Q_INVOKABLE void startUpdate(const QStringList &inputs, const QString &session,
+                                 const QString &directory, int conflict);
+    Q_INVOKABLE void beginExport(int row, QWindow *owner);
+    void prepareExternalExport();
+    void startPreparedDrag();
+    void launchExternalExport();
+    void pollExternalExport();
+    void finishCloseWhenTransfersDrain();
+    void refreshAfterUpdate(const QString &session, const QString &source);
     Q_INVOKABLE void prepareExtraction(bool all, const QStringList &selectors = {});
     Q_INVOKABLE QString chooseTarget(const QString &initial, QWindow *owner = nullptr);
     Q_INVOKABLE QStringList chooseCreationInputs(bool directories, QWindow *owner = nullptr);
@@ -261,6 +280,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE void selectAll(bool selected);
     Q_INVOKABLE void copySelection(bool includeArchivePath);
     Q_INVOKABLE void enterDirectory(int row);
+    Q_INVOKABLE void openContextEntry(const QString &session, const QString &entry);
     Q_INVOKABLE void showRoot();
     Q_INVOKABLE void search(const QString &text);
     Q_INVOKABLE void openPath(const QString &path);
@@ -279,6 +299,8 @@ class BrowserController : public QObject {
     void extractionReady();
     void extractionStarted(const QString &task);
     void creationStarted(const QString &task);
+    void updateStarted(const QString &task);
+    void additionRequested(const QStringList &paths);
     void archiveTestStarted(const QString &task);
     void creationInputsChanged();
     void tasksChanged();
@@ -298,6 +320,9 @@ class BrowserController : public QObject {
         bool preflight = false;
         bool extraction = false;
         bool creating = false;
+        bool updating = false;
+        bool exporting = false;
+        bool exportManifest = false;
         bool checking = false;
         bool inputPreview = false;
         QStringList previewPaths;
@@ -362,6 +387,21 @@ class BrowserController : public QObject {
     void attemptSubmission();
     bool m_busy = false;
     bool m_ready = false;
+    std::shared_ptr<NativeExportState> m_export;
+    QPointer<QWindow> m_exportOwner;
+    QStringList m_exportSelectors;
+    QString m_exportSession, m_exportDirectory, m_exportCache, m_exportKey;
+    quint64 m_exportTask = 0, m_exportCopyTask = 0;
+    std::shared_ptr<NativeExportCopy> m_exportCopy;
+    void publishExternalExport(const std::shared_ptr<NativeExportCopy> &request);
+    bool handleTransferEvent(const xdzip::reader::Event &event);
+    void handleTransferTask(const xdzip::reader::TaskSnapshot &task);
+    bool m_updateAllowed = false;
+    bool m_updateActive = false;
+    bool m_restoreAfterUpdate = false;
+    QString m_updateLocation;
+    int m_updateSort = 0;
+    bool restoreUpdatedLocation();
     bool m_closing = false;
     bool m_faulted = false;
     QVariantMap m_extractionIntent, m_targetCheck;

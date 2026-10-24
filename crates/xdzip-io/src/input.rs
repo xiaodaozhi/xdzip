@@ -465,6 +465,23 @@ pub struct InputReader {
     expected: FileVersion,
     read: u64,
 }
+impl InputReader {
+    /// Read mode bits from the held POSIX source handle after version validation.
+    /// Publication must still strip special and writable group/other bits.
+    #[cfg(unix)]
+    pub fn portable_mode(&self) -> Result<u32, InputError> {
+        use std::os::unix::fs::PermissionsExt;
+        if FileVersion::read(&self.file).map_err(|_| InputError::Changed)? != self.expected {
+            return Err(InputError::Changed);
+        }
+        Ok(self
+            .file
+            .metadata()
+            .map_err(|_| InputError::Io)?
+            .permissions()
+            .mode())
+    }
+}
 impl Read for InputReader {
     fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
         let n = self.file.read(output)?;
