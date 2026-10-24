@@ -25,6 +25,8 @@ pub enum InputError {
     Collision,
     /// A source admission budget was exceeded.
     Limit,
+    /// Every selected input was removed by the archive metadata policy.
+    Empty,
     /// Cooperative cancellation was observed.
     Cancelled,
 }
@@ -38,6 +40,7 @@ impl InputError {
             Self::Name => "unsafe_name",
             Self::Collision => "input_collision",
             Self::Limit => "resource_limit",
+            Self::Empty => "empty_input",
             Self::Cancelled => "cancelled",
         }
     }
@@ -84,6 +87,8 @@ pub struct InputTree {
     names: BTreeSet<String>,
     name_bytes: usize,
     total_bytes: u64,
+    visited: usize,
+    filter_macos_metadata: bool,
 }
 fn id(dir: &Dir) -> Result<FileIdentity, InputError> {
     FileIdentity::read(&dir.try_clone().map_err(|_| InputError::Io)?.into_std_file())
@@ -145,6 +150,23 @@ impl InputTree {
         excluded: Vec<(PathBuf, FileIdentity)>,
         stop: &dyn Fn() -> bool,
     ) -> Result<Self, InputError> {
+        Self::scan_with_policy(paths, excluded, stop, false)
+    }
+    /// Freeze creation/addition inputs, excluding macOS metadata at every depth.
+    /// Existing archives and ordinary file publication use the unfiltered scan.
+    pub fn scan_for_archive(
+        paths: &[PathBuf],
+        excluded: Vec<(PathBuf, FileIdentity)>,
+        stop: &dyn Fn() -> bool,
+    ) -> Result<Self, InputError> {
+        Self::scan_with_policy(paths, excluded, stop, true)
+    }
+    fn scan_with_policy(
+        paths: &[PathBuf],
+        excluded: Vec<(PathBuf, FileIdentity)>,
+        stop: &dyn Fn() -> bool,
+        filter_macos_metadata: bool,
+    ) -> Result<Self, InputError> {
         if paths.is_empty() || paths.len() > 100_000 {
             return Err(InputError::Limit);
         }
@@ -198,6 +220,8 @@ impl InputTree {
             names: BTreeSet::new(),
             name_bytes: 0,
             total_bytes: 0,
+            visited: 0,
+            filter_macos_metadata,
         };
         let mut root_ids = BTreeMap::new();
         for (path, directory) in &selected {
@@ -207,6 +231,9 @@ impl InputTree {
                 .skip(1)
                 .any(|ancestor| selected.get(ancestor) == Some(&true))
             {
+                continue;
+            }
+            if tree.ignores_metadata(path.file_name().ok_or(InputError::Name)?, *directory) {
                 continue;
             }
             let parent = path.parent().ok_or(InputError::Unsafe)?;
@@ -237,7 +264,7 @@ impl InputTree {
             tree.visit(root, relative, name, *directory, stop)?;
         }
         if tree.entries.is_empty() {
-            return Err(InputError::Name);
+            return Err(InputError::Empty);
         }
         tree.validate(stop)?;
         Ok(tree)
@@ -273,14 +300,20 @@ impl InputTree {
         }
         Ok(dir)
     }
+    fn ignores_metadata(&self, name: &std::ffi::OsStr, directory: bool) -> bool {
+        self.filter_macos_metadata
+            && ((!directory && name == ".DS_Store")
+                || (directory && (name == "__MACOSX" || name == "_MACOSX")))
+    }
     fn children(
         &self,
         root: usize,
         relative: &Path,
         dir: &Dir,
         stop: &dyn Fn() -> bool,
-    ) -> Result<Vec<Child>, InputError> {
+    ) -> Result<(Vec<Child>, bool), InputError> {
         let mut children = Vec::new();
+        let mut filtered_metadata = false;
         let absolute = self.roots[root]
             .path
             .join(relative)
@@ -314,6 +347,17 @@ impl InputTree {
             if m.file_type().is_symlink() || (!m.is_dir() && !m.is_file()) {
                 return Err(InputError::Unsafe);
             }
+            #[cfg(windows)]
+            {
+                use cap_std::fs::MetadataExt;
+                if m.file_attributes() & 0x400 != 0 {
+                    return Err(InputError::Unsafe);
+                }
+            }
+            if self.ignores_metadata(std::ffi::OsStr::new(&name), m.is_dir()) {
+                filtered_metadata = true;
+                continue;
+            }
             let identity = if m.is_dir() {
                 id(&dir
                     .open_dir_nofollow(&name)
@@ -328,7 +372,7 @@ impl InputTree {
             });
         }
         children.sort_by(|a, b| a.name.cmp(&b.name));
-        Ok(children)
+        Ok((children, filtered_metadata))
     }
     fn visit(
         &mut self,
@@ -337,11 +381,12 @@ impl InputTree {
         name: String,
         directory: bool,
         stop: &dyn Fn() -> bool,
-    ) -> Result<(), InputError> {
+    ) -> Result<bool, InputError> {
         check(stop)?;
-        if self.entries.len() >= 100_000 {
+        if self.visited >= 100_000 {
             return Err(InputError::Limit);
         }
+        self.visited += 1;
         let portable = PortablePath::parse(&name).ok_or(InputError::Name)?;
         if portable.parts().len() > 64 {
             return Err(InputError::Limit);
@@ -353,10 +398,8 @@ impl InputTree {
         if self.name_bytes > 16 * 1024 * 1024 {
             return Err(InputError::Limit);
         }
-        if !self
-            .names
-            .insert(name.nfc().collect::<String>().to_lowercase())
-        {
+        let key = name.nfc().collect::<String>().to_lowercase();
+        if !self.names.insert(key.clone()) {
             return Err(InputError::Collision);
         }
         let parent = self.open_dir(root, relative.parent().ok_or(InputError::Name)?)?;
@@ -378,6 +421,7 @@ impl InputTree {
         if size > 8 * 1024 * 1024 * 1024 || self.total_bytes > 20 * 1024 * 1024 * 1024 {
             return Err(InputError::Limit);
         }
+        let entry_index = self.entries.len();
         self.entries.push(InputEntry {
             name: name.clone(),
             directory,
@@ -390,7 +434,7 @@ impl InputTree {
         if directory {
             let dir = self.open_dir(root, &relative)?;
             let identity = id(&dir)?;
-            let children = self.children(root, &relative, &dir, stop)?;
+            let (children, filtered_metadata) = self.children(root, &relative, &dir, stop)?;
             self.directory_index
                 .insert((root, relative.clone()), self.directories.len());
             self.directories.push(Directory {
@@ -399,8 +443,11 @@ impl InputTree {
                 identity,
                 children: children.clone(),
             });
+            // Keep truly empty directories. A directory made empty only by
+            // metadata filtering is pruned, including its now-empty ancestors.
+            let mut retained = children.is_empty() && !filtered_metadata;
             for child in children {
-                self.visit(
+                retained |= self.visit(
                     root,
                     relative.join(&child.name),
                     format!("{name}/{}", child.name),
@@ -408,8 +455,13 @@ impl InputTree {
                     stop,
                 )?;
             }
+            if !retained {
+                self.entries.truncate(entry_index);
+                self.names.remove(&key);
+                return Ok(false);
+            }
         }
-        Ok(())
+        Ok(true)
     }
     /// Recheck roots, directory membership and all file versions. No recursive rediscovery occurs.
     pub fn validate(&self, stop: &dyn Fn() -> bool) -> Result<(), InputError> {
@@ -425,7 +477,7 @@ impl InputTree {
             check(stop)?;
             let dir = self.open_dir(node.root, &node.relative)?;
             if id(&dir)? != node.identity
-                || self.children(node.root, &node.relative, &dir, stop)? != node.children
+                || self.children(node.root, &node.relative, &dir, stop)?.0 != node.children
             {
                 return Err(InputError::Changed);
             }

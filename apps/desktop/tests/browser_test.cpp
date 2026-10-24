@@ -5111,6 +5111,105 @@ QtObject {
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
     }
+    void metadataOnlyInputHasTranslatedFailure_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("adding");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (bool adding : {false, true})
+                QTest::newRow(qPrintable(language + (adding ? "-add" : "-create")))
+                    << language << adding;
+    }
+    void metadataOnlyInputHasTranslatedFailure() {
+        QFETCH(QString, language);
+        QFETCH(bool, adding);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir fixture, output;
+        QVERIFY(fixture.isValid() && output.isValid());
+        QVERIFY(QDir(fixture.path()).mkpath("only-metadata/nested/__MACOSX"));
+        QFile metadata(fixture.filePath("only-metadata/nested/__MACOSX/._file"));
+        QVERIFY(metadata.open(QIODevice::WriteOnly));
+        QCOMPARE(metadata.write("metadata"), 8);
+        metadata.close();
+        const auto archivePath = output.filePath("archive.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), archivePath));
+        QFile archive(archivePath);
+        QVERIFY(archive.open(QIODevice::ReadOnly));
+        const auto original = archive.readAll();
+        archive.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        auto *taskWindow = window->findChild<QQuickWindow *>("taskWindow");
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        QVERIFY(controller && taskWindow && conflict);
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { "
+                      "Component.onCompleted: { Ui.Theme.fontScale=1.5; Ui.Theme.dark=true } }",
+                      QUrl());
+        std::unique_ptr<QObject> appearance(theme.create());
+        QVERIFY(appearance);
+        const QStringList inputs{fixture.filePath("only-metadata")};
+        QSignalSpy accepted(controller, adding ? &BrowserController::updateStarted
+                                               : &BrowserController::creationStarted);
+        if (adding) {
+            controller->openPath(archivePath);
+            QTRY_VERIFY(controller->ready() && !controller->busy());
+            controller->startUpdate(inputs, controller->sessionId(), controller->directoryId(), 0);
+        } else {
+            controller->startCreation(inputs, output.path(), "archive.zip", 8, 6, false);
+        }
+        QTRY_COMPARE(accepted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->activeTaskCount() == 0 && !controller->busy(), 10000);
+        QVERIFY(!controller->tasks().isEmpty());
+        const auto task = controller->tasks().first().toMap();
+        QCOMPARE(task.value("status").toString(), "failed");
+        QCOMPARE(task.value("errorCode").toString(), "empty_input");
+        const auto expected =
+            language == "zh-CN"
+                ? QString::fromUtf8("排除 macOS 元数据后，没有可压缩的文件或文件夹。")
+                : QStringLiteral(
+                      "No files or folders remain to archive after excluding macOS metadata.");
+        QCOMPARE(task.value("error").toString(), expected);
+        QCOMPARE(task.value("committedFiles").toString(), "0");
+        QVERIFY(!conflict->isVisible());
+        QTRY_VERIFY(taskWindow->isVisible());
+        auto *message = findVisual(taskWindow->contentItem(), "resultError");
+        QTRY_VERIFY(message && message->isVisible() && message->width() > 0);
+        QCOMPARE(message->property("text").toString(), expected);
+        auto *label = qvariant_cast<QQuickItem *>(message->property("labelItem"));
+        QVERIFY(label);
+        QTRY_VERIFY(label->height() >= label->property("contentHeight").toReal());
+        QVERIFY(label->property("contentWidth").toReal() <= label->width() + 1);
+        auto *scroll = findVisual(taskWindow->contentItem(), "taskScroll");
+        QVERIFY(scroll);
+        auto *flickable = qvariant_cast<QQuickItem *>(scroll->property("contentItem"));
+        QVERIFY(flickable);
+        const auto maximum =
+            std::max(qreal(0), flickable->property("contentHeight").toReal() - flickable->height());
+        const auto messageTop = message->mapToItem(flickable, QPointF()).y();
+        QVERIFY(flickable->setProperty("contentY", std::clamp(messageTop, qreal(0), maximum)));
+        QTRY_VERIFY(message->mapToItem(flickable, QPointF()).y() >= -1);
+        QTRY_VERIFY(message->mapToItem(flickable, QPointF(0, message->height())).y() <=
+                    flickable->height() + 1);
+        QVERIFY(archive.open(QIODevice::ReadOnly));
+        QCOMPARE(archive.readAll(), original);
+        archive.close();
+        QCOMPARE(
+            QDir(output.path())
+                .entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System),
+            QStringList{"archive.zip"});
+        QVERIFY(metadata.exists());
+        const auto audit = qEnvironmentVariable("XDZIP_METADATA_VISUAL_AUDIT");
+        if (!audit.isEmpty()) {
+            QVERIFY(QDir().mkpath(audit));
+            QVERIFY(visual_audit::save(taskWindow, audit, QTest::currentDataTag()));
+        }
+        QTRY_VERIFY(controller->requestClose());
+    }
     void explicitOpenConsumesQueuedCreationOutput() {
         DesktopUrlRecorder recorder;
         QDesktopServices::setUrlHandler("file", &recorder, "record");

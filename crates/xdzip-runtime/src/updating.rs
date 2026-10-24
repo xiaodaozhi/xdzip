@@ -371,7 +371,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         workspace = Some(authority.workspace(id).map_err(output)?);
         let w = workspace.as_mut().expect("created workspace");
         let tree = if job.moving.is_none() {
-            let tree = InputTree::scan(
+            let tree = InputTree::scan_for_archive(
                 &job.options
                     .inputs
                     .iter()

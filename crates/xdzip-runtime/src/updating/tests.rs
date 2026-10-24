@@ -5,6 +5,7 @@ use std::{
     fs,
     sync::atomic::{AtomicU64, Ordering},
 };
+use xdzip_codec_api::Format;
 static NEXT: AtomicU64 = AtomicU64::new(0);
 struct Fixture(PathBuf);
 impl Fixture {
@@ -688,5 +689,162 @@ fn skipped_child_preserves_explicit_source_directory_when_destination_is_implici
                 .any(|r| r.raw_name == b"target/source/b.txt")
         );
         assert!(!archive.rows.iter().any(|r| r.raw_name == b"source/b.txt"));
+    }
+}
+
+#[test]
+fn three_formats_filter_added_metadata_and_preserve_existing_metadata() {
+    for (extension, format) in [
+        ("zip", Format::Zip),
+        ("tar", Format::Tar),
+        ("tar.gz", Format::TarGzip),
+    ] {
+        let f = Fixture::new();
+        let path = f.0.join(format!("archive.{extension}"));
+        // Existing records are deliberately encoded without the host's new-input filter.
+        let originals = EmptyFiles(
+            ["原文件.txt", ".DS_Store", "__MACOSX/._original"]
+                .iter()
+                .map(|name| EncodeEntry {
+                    name: (*name).into(),
+                    directory: false,
+                    size: 0,
+                    modified_unix: 0,
+                })
+                .collect(),
+        );
+        let mut bytes = Vec::new();
+        codec(format)
+            .encode(
+                &originals,
+                &mut bytes,
+                EncodeSettings {
+                    method: if extension == "tar" {
+                        "store"
+                    } else {
+                        "deflate"
+                    },
+                    level: 6,
+                    password: None,
+                },
+                &Cancellation::default(),
+                &mut |_| {},
+            )
+            .unwrap();
+        fs::write(&path, bytes).unwrap();
+        for directory in [
+            "add/空目录",
+            "add/__MACOSX",
+            "add/仅元数据/子目录",
+            "_MACOSX",
+        ] {
+            fs::create_dir_all(f.0.join(directory)).unwrap();
+        }
+        for name in [
+            ".DS_Store",
+            "_MACOSX/._root",
+            "add/.DS_Store",
+            "add/__MACOSX/._new",
+            "add/仅元数据/子目录/.DS_Store",
+        ] {
+            fs::write(f.0.join(name), b"new metadata").unwrap();
+        }
+        let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+        let job = archive
+            .update_job(
+                Options {
+                    inputs: ["add", ".DS_Store", "_MACOSX"]
+                        .iter()
+                        .map(|p| f.0.join(p).to_string_lossy().into_owned())
+                        .collect(),
+                    directory: String::new(),
+                    conflict: ConflictPolicy::Ask,
+                },
+                &Cancellation::default(),
+            )
+            .unwrap();
+        drop(archive);
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(
+            result.status,
+            Status::Succeeded,
+            "{extension}: {}",
+            result.error
+        );
+        let updated = Archive::open(&path, &Cancellation::default()).unwrap();
+        let names: Vec<_> = updated
+            .rows
+            .iter()
+            .map(|r| r.display_name.as_str())
+            .collect();
+        assert_eq!(
+            names,
+            vec![
+                "原文件.txt",
+                ".DS_Store",
+                "__MACOSX/._original",
+                "add/",
+                "add/新文件.txt",
+                "add/空目录/"
+            ]
+        );
+        assert_eq!(
+            fs::read(f.0.join("add/__MACOSX/._new")).unwrap(),
+            b"new metadata"
+        );
+        if let Some(output) = std::env::var_os("XDZIP_METADATA_INTEROP_OUTPUT") {
+            fs::create_dir_all(&output).unwrap();
+            fs::copy(
+                &path,
+                PathBuf::from(output).join(format!("updated.{extension}")),
+            )
+            .unwrap();
+        }
+    }
+}
+#[test]
+fn metadata_only_addition_fails_without_rewriting_any_archive() {
+    for extension in ["zip", "tar", "tar.gz"] {
+        let f = Fixture::new();
+        let path = f.archive(extension);
+        let original = fs::read(&path).unwrap();
+        fs::create_dir_all(f.0.join("仅元数据/子目录/_MACOSX")).unwrap();
+        fs::create_dir(f.0.join("__MACOSX")).unwrap();
+        fs::write(f.0.join(".DS_Store"), b"metadata").unwrap();
+        fs::write(f.0.join("__MACOSX/._root"), b"metadata").unwrap();
+        fs::write(f.0.join("仅元数据/子目录/_MACOSX/._file"), b"metadata").unwrap();
+        for inputs in [
+            vec![".DS_Store"],
+            vec!["__MACOSX"],
+            vec!["仅元数据"],
+            vec![".DS_Store", "__MACOSX", "仅元数据"],
+        ] {
+            let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+            let job = archive
+                .update_job(
+                    Options {
+                        inputs: inputs
+                            .iter()
+                            .map(|p| f.0.join(p).to_string_lossy().into_owned())
+                            .collect(),
+                        directory: "1".into(),
+                        conflict: ConflictPolicy::Overwrite,
+                    },
+                    &Cancellation::default(),
+                )
+                .unwrap();
+            drop(archive);
+            let result = execute(job, &Control::default(), |s| {
+                assert!(!matches!(
+                    s.status,
+                    Status::Running | Status::Verifying | Status::Waiting
+                ));
+            });
+            assert_eq!(result.status, Status::Failed);
+            assert_eq!(result.error, "empty_input");
+            assert_eq!(result.written_bytes, 0);
+            assert_eq!(fs::read(&path).unwrap(), original);
+            assert!(!result.cleanup_warning);
+        }
     }
 }

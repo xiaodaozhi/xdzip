@@ -595,6 +595,24 @@ mod tests {
         }
     }
     #[test]
+    fn raw_filename_encoding_keeps_utf8_and_marks_legacy_bytes() {
+        for name in ["中文.txt".as_bytes(), b"\xD6\xD0\xCE\xC4.txt"] {
+            let mut header = tar::Header::new_ustar();
+            header.set_entry_type(tar::EntryType::Regular);
+            header.set_size(0);
+            header.set_mode(0o644);
+            header.as_mut_bytes()[..name.len()].copy_from_slice(name);
+            header.set_cksum();
+            let mut builder = tar::Builder::new(Vec::new());
+            builder.append(&header, io::empty()).unwrap();
+            let bytes = builder.into_inner().unwrap();
+            let rows = scan_bytes(bytes, false).unwrap();
+            assert_eq!(rows[0].raw_name, name);
+            assert_eq!(rows[0].warning, std::str::from_utf8(name).is_err());
+            assert_eq!(rows[0].display_name, String::from_utf8_lossy(name));
+        }
+    }
+    #[test]
     fn git_global_comments_preserve_local_paths_and_payload_offsets() {
         let mut comment = pax_record("comment", "0123456789abcdef0123456789abcdef01234567");
         comment.extend(pax_record("comment", "annotation\nwith a newline"));

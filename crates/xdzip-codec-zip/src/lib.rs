@@ -285,6 +285,26 @@ mod tests {
         assert!(!rows[0].warning);
     }
     #[test]
+    fn filename_encoding_preserves_utf8_and_does_not_guess_legacy_code_pages() {
+        let name = "中文.txt";
+        let bytes = zip64_fixture::archive_names(&[name.into()]);
+        let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+        assert_eq!(rows[0].display_name, name);
+        assert!(!rows[0].warning);
+        for raw in [name.as_bytes(), b"\xD6\xD0\xCE\xC4.txt", b"caf\x82.txt"] {
+            let mut bytes = zip64_fixture::archive_names(&["a".repeat(raw.len())]);
+            let central = bytes.windows(4).position(|b| b == b"PK\x01\x02").unwrap();
+            bytes[6..8].copy_from_slice(&0u16.to_le_bytes());
+            bytes[central + 8..central + 10].copy_from_slice(&0u16.to_le_bytes());
+            bytes[30..30 + raw.len()].copy_from_slice(raw);
+            bytes[central + 46..central + 46 + raw.len()].copy_from_slice(raw);
+            let rows = scan_bytes(&bytes, ScanLimits::default()).unwrap();
+            assert_eq!(rows[0].raw_name, raw);
+            assert!(rows[0].warning);
+            assert!(rows[0].display_name.contains("\\x"));
+        }
+    }
+    #[test]
     fn local_dos_date_preserves_valid_bits_and_rejects_invalid_components() {
         let rows = scan_bytes(NORMAL, ScanLimits::default()).unwrap();
         assert_eq!(rows[0].modified_dos, ((46u32 << 9) | (1 << 5) | 1) << 16);

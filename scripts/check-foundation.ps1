@@ -18,9 +18,11 @@ Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
 $env:XDZIP_MOVE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/move-interop'
 $env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-interop'
+$env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metadata-interop'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
 Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')
+Invoke-Checked $updatePython @('scripts/check-macos-metadata-interop.py', '--input', 'build/macos-metadata-interop')
 Invoke-Checked $updatePython @('scripts/check-move-interop.py', '--input', 'build/move-interop')
 Invoke-Checked $updatePython @('scripts/test-release-updates.py')
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')

@@ -1067,3 +1067,161 @@ fn gzip_ratio_requires_explicit_intent_and_opt_in_still_uses_the_safe_output_job
         32 * 1024 * 1024
     );
 }
+
+#[test]
+fn macos_metadata_is_filtered_from_creation_in_all_formats() {
+    for (extension, format) in [
+        ("zip", Format::Zip),
+        ("tar", Format::Tar),
+        ("tar.gz", Format::TarGzip),
+    ] {
+        let f = Fixture::new();
+        for path in [
+            "输入/__MACOSX",
+            "输入/子目录/_MACOSX",
+            "输入/仅元数据/下级",
+            "__MACOSX",
+        ] {
+            std::fs::create_dir_all(f.0.join(path)).unwrap();
+        }
+        for path in [
+            ".DS_Store",
+            "__MACOSX/._root",
+            "输入/.DS_Store",
+            "输入/__MACOSX/._file",
+            "输入/子目录/.DS_Store",
+            "输入/子目录/_MACOSX/._file",
+            "输入/仅元数据/下级/.DS_Store",
+        ] {
+            std::fs::write(f.0.join(path), b"metadata").unwrap();
+        }
+        let mut job = f.job(if extension == "tar" { 0 } else { 8 });
+        job.options.name = format!("archive.{extension}");
+        job.options.inputs.extend([
+            f.0.join(".DS_Store").to_string_lossy().into_owned(),
+            f.0.join("__MACOSX").to_string_lossy().into_owned(),
+        ]);
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(
+            result.status,
+            Status::Succeeded,
+            "{extension}: {}",
+            result.error
+        );
+        assert_eq!(result.committed_files, 2);
+        assert_eq!(result.created_directories, 2);
+        let path = f.0.join(format!("output/archive.{extension}"));
+        let bytes = std::fs::read(&path).unwrap();
+        let rows = codec(format)
+            .scan(
+                &mut std::io::Cursor::new(&bytes),
+                &Cancellation::default(),
+                crate::formats::limits(format),
+            )
+            .unwrap();
+        assert_eq!(rows.len(), 4);
+        let contents = archive_contents(bytes, format);
+        assert_eq!(
+            contents["输入/文件.txt"],
+            "中文与 ZIP 互操作\n".repeat(1000).as_bytes()
+        );
+        assert!(contents["输入/empty.bin"].is_empty());
+        assert_eq!(
+            std::fs::read(f.0.join("输入/__MACOSX/._file")).unwrap(),
+            b"metadata"
+        );
+        if let Some(output) = std::env::var_os("XDZIP_METADATA_INTEROP_OUTPUT") {
+            std::fs::create_dir_all(&output).unwrap();
+            std::fs::copy(
+                &path,
+                PathBuf::from(output).join(format!("created.{extension}")),
+            )
+            .unwrap();
+        }
+    }
+}
+#[test]
+fn metadata_only_creation_fails_before_encoding_or_conflict_and_preserves_outputs() {
+    for extension in ["zip", "tar", "tar.gz"] {
+        for selected in [".DS_Store", "__MACOSX", "仅元数据"] {
+            for existing in [false, true] {
+                let f = Fixture::new();
+                std::fs::create_dir_all(f.0.join("仅元数据/下级/__MACOSX")).unwrap();
+                std::fs::create_dir(f.0.join("__MACOSX")).unwrap();
+                std::fs::write(f.0.join(".DS_Store"), b"metadata").unwrap();
+                std::fs::write(f.0.join("__MACOSX/._file"), b"metadata").unwrap();
+                std::fs::write(f.0.join("仅元数据/下级/__MACOSX/._file"), b"metadata").unwrap();
+                let name = format!("archive.{extension}");
+                let path = f.0.join("output").join(&name);
+                if existing {
+                    std::fs::write(&path, b"owned original").unwrap();
+                }
+                let mut job = f.job(if extension == "tar" { 0 } else { 8 });
+                job.options.name = name;
+                job.options.inputs = vec![f.0.join(selected).to_string_lossy().into_owned()];
+                job.options.conflict = ConflictPolicy::Overwrite;
+                let result = execute(job, &Control::default(), |s| {
+                    assert!(!matches!(
+                        s.status,
+                        Status::Running | Status::Verifying | Status::Waiting
+                    ));
+                });
+                assert_eq!(result.status, Status::Failed);
+                assert_eq!(result.error, "empty_input");
+                assert_eq!(result.committed_files, 0);
+                assert_eq!(result.written_bytes, 0);
+                if existing {
+                    assert_eq!(std::fs::read(path).unwrap(), b"owned original");
+                } else {
+                    assert!(!path.exists());
+                }
+                assert_eq!(
+                    std::fs::read_dir(f.0.join("output")).unwrap().count(),
+                    usize::from(existing)
+                );
+            }
+        }
+    }
+}
+#[test]
+fn metadata_filter_also_applies_to_encrypted_and_numbered_split_creation() {
+    for (encrypted, split) in [(true, false), (false, true), (true, true)] {
+        let f = Fixture::new();
+        std::fs::write(f.0.join("输入/.DS_Store"), b"metadata").unwrap();
+        std::fs::create_dir(f.0.join("输入/__MACOSX")).unwrap();
+        std::fs::write(f.0.join("输入/__MACOSX/._file"), b"metadata").unwrap();
+        let mut job = f.job(8);
+        if encrypted {
+            job.options.password = Some(Password::new("test password".into()).unwrap());
+        }
+        if split {
+            job.options.volume_bytes = 128;
+        }
+        let result = execute(job, &Control::default(), |_| {});
+        assert_eq!(result.status, Status::Succeeded, "{}", result.error);
+        let mut bytes = Vec::new();
+        if split {
+            assert!(result.output_parts > 1);
+            for part in 1..=result.output_parts {
+                bytes.extend(
+                    std::fs::read(f.0.join(format!("output/archive.zip.{part:03}"))).unwrap(),
+                );
+            }
+        } else {
+            bytes = std::fs::read(f.output()).unwrap();
+        }
+        let rows = ZipCodec
+            .scan(
+                &mut std::io::Cursor::new(bytes),
+                &Cancellation::default(),
+                ScanLimits::default(),
+            )
+            .unwrap();
+        assert_eq!(rows.len(), 4);
+        assert!(
+            rows.iter()
+                .all(|r| !r.raw_name.windows(9).any(|s| s == b".DS_Store")
+                    && !r.raw_name.windows(8).any(|s| s == b"__MACOSX"))
+        );
+    }
+}

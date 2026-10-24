@@ -296,8 +296,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let (excluded, identity) = w.input_exclusion();
         let paths: Vec<_> = job.options.inputs.iter().map(PathBuf::from).collect();
         let stopped = || control.cancel.check().is_err();
-        let tree =
-            InputTree::scan(&paths, vec![(excluded, identity)], &stopped).map_err(|e| e.code())?;
+        let tree = InputTree::scan_for_archive(&paths, vec![(excluded, identity)], &stopped)
+            .map_err(|e| e.code())?;
         stats.files = tree.entries().iter().filter(|e| !e.directory).count() as u64;
         stats.declared_bytes = tree.total_bytes();
         stats.total_known = true;

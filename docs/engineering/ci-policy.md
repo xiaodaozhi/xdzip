@@ -35,6 +35,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
+元数据过滤回归在三平台核心测试中生成真实 ZIP、TAR、TAR.GZ 创建和更新夹具，再由 `scripts/check-macos-metadata-interop.py` 使用独立 Python 读取器核对元数据排除、原记录保留、空目录、内容和 UTF-8 名称。Qt 覆盖中英文空输入失败反馈及原包不变，沿用共享结果窗口与双语多字号布局门槛；离屏结果不等于桌面人工验收。
+
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
 Qt components 通过 [scripts/desktop.py](../../scripts/desktop.py)复用本地的 prepare、build、基础 test，以及 Windows/Linux package／verify。参数和本地顺序统一见[开发构建指南](developer-build.md)。共用阶段不依赖 RUNNER_TEMP 或 RUNNER_ARCH；工作流显式提供 CI 路径，普通本地使用仓库默认目录。系统编译器／SDK 和 Linux 图形开发依赖仍由宿主／工作流准备，SDK 与打包工具下载使用 prepare 的显式开关。

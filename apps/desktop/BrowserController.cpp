@@ -240,6 +240,7 @@ QString BrowserController::explain(const QString &code) {
         {"unsupported_filesystem", qtTrId("ui.74b624993d20")},
         {"unsupported_link", qtTrId("error.unsupportedLink")},
         {"unsupported_entry", qtTrId("ui.491bda01a7fa")},
+        {"empty_input", qtTrId("error.emptyArchiveInput")},
         {"unsafe_input", qtTrId("ui.2c68fedd118c")},
         {"input_collision", qtTrId("ui.96d580ed8b8a")},
         {"unsafe_name", qtTrId("ui.c9aa9ad002f7")},

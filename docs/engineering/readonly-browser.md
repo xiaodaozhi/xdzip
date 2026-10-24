@@ -16,6 +16,16 @@ xdzip-codec-api 定义借用只读输入、取消信号、限额、条目和错�
 
 大小、压缩方法、加密位均是归档声明的元数据。未读内容，未验 CRC，未校验本地头；“元数据”状态不表示安全或完整。本契约描述只读浏览，显式解压见 [M3](m3-extraction.md)，实际创建及写后校验见 [WP-10](m4-creation.md)；独立完整性测试通过显式只读后台任务执行，见[检查契约](archive-checking.md)。打开归档仍不写出文件内容。
 
+## 跨平台文件名编码边界
+
+当前没有按来源操作系统或语言自动探测传统字符集，也没有手动切换文件名编码的产品入口。ZIP 新建及新增名称写入 UTF-8，并设置对应标志；TAR／TAR.GZ 对非 ASCII 或长路径写入 UTF-8 PAX `path`。这些输出不依赖宿主系统代码页，不代表任意外部读取器或历史压缩包均兼容。
+
+ZIP 浏览要求非 ASCII 名称同时具有有效 UTF-8 字节和 UTF-8 标志；未置标志的 UTF-8、CP437、GBK、Big5、Shift-JIS 等名称当前按原字节 `\xNN` 转义，标记“需检查”，并拒绝安全解压／临时打开／外部拖出及修改。尚未利用 Info-ZIP Unicode Path 扩展 `0x7075` 恢复名称。TAR 解析 PAX 路径与 GNU 长名称，但仍要求最终名称是有效 UTF-8；非 UTF-8 名称浏览时使用替代字符并保留原字节，标记“需检查”且拒绝解压。不能把这种保守拒绝表述为已自动修复乱码。
+
+[ZIP APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 定义 UTF-8 标志及 Unicode Path 扩展，[POSIX pax](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html) 定义 PAX 路径编码。若后续增加自动或手动解码，必须区分原始身份与有效输出名称，在浏览、导航、重名、解压、拖出及修改全链路使用一致的解析结果，并重新进行路径安全及 Unicode／大小写碰撞检查；不能只更改显示文本。
+
+English: New ZIP names use UTF-8 with the encoding flag, and non-ASCII TAR/TAR.GZ paths use UTF-8 PAX headers. Reading does not auto-detect legacy code pages and offers no manual encoding selector. Non-ASCII ZIP names without the UTF-8 flag are escaped and marked for inspection; Info-ZIP Unicode Path extras are not yet resolved. TAR retains original name bytes but displays replacement characters for invalid UTF-8. Such entries cannot be extracted, opened, exported or edited under the current safety policy. This is a declared limitation, not automatic charset repair.
+
 ## 资源与生命周期
 
 主窗口校准后显示名称、原始大小、压缩大小、类型、修改日期五列。类型仅由显示名称后缀推断，JPG 统一为 JPEG。修改日期来自 ZIP 中央目录的有效 DOS 本地日期／时间，不推断时区，无效值显示 `—`。五列均支持排序；日期按完整 DOS 时间排序，表格显示日期。压缩方法仍在详情中可用，桥接保留方法排序代码。加密／需检查状态保留于行提示、可访问描述和详情；需注意条目在名称旁显示标记，不能被视觉精简隐藏。

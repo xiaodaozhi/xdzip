@@ -3,6 +3,7 @@
   "locale": "en-US",
   "name": "English (US)",
   "messages": {
+    "error.emptyArchiveInput": "No files or folders remain to archive after excluding macOS metadata.",
     "ui.8f1009f1369b": "Start",
     "ui.1b59353f1874": "Open archive",
     "ui.e5ab37895edd": "Create a blank tab or window using the current setting",
