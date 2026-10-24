@@ -6259,12 +6259,13 @@ QtObject {
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
         QQmlComponent theme(&engine);
-        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
-                      "factor: 1; property bool dark: false; onFactorChanged: "
-                      "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark; "
-                      "function revealTree(view, index) { "
-                      "view.positionViewAtIndex(index, TableView.Contain); view.forceLayout(); } }",
-                      QUrl());
+        theme.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real "
+            "factor: 1; property bool dark: false; onFactorChanged: "
+            "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark; "
+            "function revealTree(view, index) { "
+            "view.positionViewAtIndex(index, TableView.AlignVCenter); view.forceLayout(); } }",
+            QUrl());
         std::unique_ptr<QObject> appearance(theme.create());
         QVERIFY(appearance);
         appearance->setProperty("factor", factor);
@@ -6323,29 +6324,41 @@ QtObject {
                     QVERIFY(!targetId.isEmpty());
                     // Scroll the actual model index into view before measuring its delegate.
                     // Loaded delegates can extend outside the clipped viewport at large fonts.
+                    QSignalSpy positioned(window, &QQuickWindow::frameSwapped);
                     QVERIFY(QMetaObject::invokeMethod(
                         appearance.get(), "revealTree",
                         Q_ARG(QVariant, QVariant::fromValue(static_cast<QObject *>(tree))),
                         Q_ARG(QVariant,
                               QVariant::fromValue(
                                   controller->m_directoryItems.value(targetId)->index()))));
+                    window->requestUpdate();
+                    QTRY_VERIFY(!positioned.isEmpty());
                     const auto targetVisible = [&] {
                         to = findVisual(window->contentItem(), "directory-" + targetId);
                         if (!to || !to->isVisible())
                             return false;
-                        const auto center =
-                            to->mapToItem(tree, QPointF(to->width() / 2, to->height() / 2));
-                        return center.x() >= 0 && center.x() < tree->width() && center.y() >= 0 &&
-                               center.y() < tree->height();
+                        const auto row = to->mapRectToItem(tree, to->boundingRect());
+                        const auto center = tree->mapFromScene(QPointF(point(to)));
+                        return row.top() >= -.01 && row.bottom() <= tree->height() + .01 &&
+                               QRectF(0, 0, tree->width(), tree->height())
+                                   .adjusted(1, 1, -1, -1)
+                                   .contains(center);
                     };
                     QTRY_VERIFY(targetVisible());
-                    const auto start = point(from), finish = point(to);
+                    const auto start = point(from);
                     QVERIFY(QRect(QPoint(), window->size()).contains(start));
-                    QVERIFY(QRect(QPoint(), window->size()).contains(finish));
                     QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
                     QTest::mouseMove(window, start + QPoint(24, 0), 20);
                     QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
                     QCOMPARE(controller->selectedCount(), selection + 1);
+                    // Starting the drag can schedule another layout via focus/selection.
+                    // Measure the final integer event coordinate after that frame.
+                    QSignalSpy draggingFrame(window, &QQuickWindow::frameSwapped);
+                    window->requestUpdate();
+                    QTRY_VERIFY(!draggingFrame.isEmpty());
+                    QTRY_VERIFY(targetVisible());
+                    const auto finish = point(to);
+                    QVERIFY(QRect(QPoint(), window->size()).contains(finish));
                     QTest::mouseMove(window, finish, 20);
                     QTRY_VERIFY2(
                         proxy->property("message").toString() == qtTrId("move.selected"),
