@@ -1487,6 +1487,7 @@ name = "xdzip-codec-optical"
 version = "0.1.0-alpha.6"
 dependencies = [
  "xdzip-codec-api",
+ "xdzip-compression",
  "xdzip-domain",
 ]
 

@@ -7,26 +7,51 @@ use xdzip_codec_api::{Cancellation, Format, MetadataCodec, ReadSource, ScanError
 use xdzip_codec_optical::OpticalCodec;
 
 const MAX_STORED: usize = 8 * 1024 * 1024;
+const MAX_PHYSICAL_SOURCE: u64 = 256 * 1024 * 1024;
+const MAX_VIRTUAL_MANIFEST: usize = 64 * 1024;
+
+fn bounded_bytes(input: impl Read, limit: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let mut bytes = Vec::new();
+    input.take(limit as u64 + 1).read_to_end(&mut bytes)?;
+    if bytes.len() > limit {
+        return Err("fixture_size_limit".into());
+    }
+    Ok(bytes)
+}
+
+fn bounded_file(path: &Path, limit: usize) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let input = std::fs::File::open(path)?;
+    let metadata = input.metadata()?;
+    if !metadata.is_file() || metadata.len() > limit as u64 {
+        return Err("fixture_size_limit".into());
+    }
+    // A file may grow after metadata admission. Read at most one byte beyond
+    // the budget rather than trusting the earlier length during allocation.
+    bounded_bytes(input, limit)
+}
 
 struct Segment {
     offset: u64,
     bytes: Vec<u8>,
 }
 
-struct VirtualSource {
+struct FixtureSource {
     length: u64,
     position: u64,
     segments: Vec<Segment>,
+    file: Option<std::fs::File>,
     bytes_read: u64,
     maximum_read_offset: u64,
 }
 
-impl VirtualSource {
+impl FixtureSource {
     fn from_path(path: &Path, virtual_mode: bool) -> Result<Self, Box<dyn std::error::Error>> {
         let mut segments = Vec::new();
+        let mut file = None;
         let length;
         if virtual_mode {
-            let manifest: Value = serde_json::from_slice(&std::fs::read(path)?)?;
+            let manifest: Value =
+                serde_json::from_slice(&bounded_file(path, MAX_VIRTUAL_MANIFEST)?)?;
             length = manifest["length"]
                 .as_u64()
                 .ok_or("invalid_virtual_length")?;
@@ -43,7 +68,11 @@ impl VirtualSource {
                 if Path::new(name).components().count() != 1 || name.contains(['/', '\\']) {
                     return Err("invalid_virtual_file".into());
                 }
-                let bytes = std::fs::read(path.parent().ok_or("virtual_parent")?.join(name))?;
+                let remaining = MAX_STORED.checked_sub(stored).ok_or("virtual_size_limit")?;
+                let bytes = bounded_file(
+                    &path.parent().ok_or("virtual_parent")?.join(name),
+                    remaining,
+                )?;
                 stored = stored
                     .checked_add(bytes.len())
                     .ok_or("virtual_size_limit")?;
@@ -64,28 +93,38 @@ impl VirtualSource {
                 return Err("overlapping_virtual_segments".into());
             }
         } else {
-            let bytes = std::fs::read(path)?;
-            if bytes.len() > MAX_STORED {
+            let input = std::fs::File::open(path)?;
+            let metadata = input.metadata()?;
+            if !metadata.is_file() || metadata.len() > MAX_PHYSICAL_SOURCE {
                 return Err("fixture_size_limit".into());
             }
-            length = bytes.len() as u64;
-            segments.push(Segment { offset: 0, bytes });
+            length = metadata.len();
+            file = Some(input);
         }
         Ok(Self {
             length,
             position: 0,
             segments,
+            file,
             bytes_read: 0,
             maximum_read_offset: 0,
         })
     }
 }
 
-impl Read for VirtualSource {
+impl Read for FixtureSource {
     fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
         let count = bytes
             .len()
             .min(self.length.saturating_sub(self.position) as usize);
+        if let Some(file) = &mut self.file {
+            file.seek(SeekFrom::Start(self.position))?;
+            let count = file.read(&mut bytes[..count])?;
+            self.position += count as u64;
+            self.bytes_read += count as u64;
+            self.maximum_read_offset = self.maximum_read_offset.max(self.position);
+            return Ok(count);
+        }
         let end = self.position + count as u64;
         bytes[..count].fill(0);
         for segment in &self.segments {
@@ -106,7 +145,7 @@ impl Read for VirtualSource {
     }
 }
 
-impl Seek for VirtualSource {
+impl Seek for FixtureSource {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         let position = match position {
             SeekFrom::Start(value) => i128::from(value),
@@ -117,10 +156,10 @@ impl Seek for VirtualSource {
         Ok(self.position)
     }
 }
-impl ReadSource for VirtualSource {}
+impl ReadSource for FixtureSource {}
 
 struct CancelAfterRead<'a> {
-    input: &'a mut VirtualSource,
+    input: &'a mut FixtureSource,
     control: &'a Cancellation,
 }
 impl Read for CancelAfterRead<'_> {
@@ -191,7 +230,7 @@ fn run() -> Result<Value, Box<dyn std::error::Error>> {
         _ => return Err("invalid_format".into()),
     };
     let codec = OpticalCodec { format };
-    let mut source = VirtualSource::from_path(Path::new(&args[0]), virtual_mode)?;
+    let mut source = FixtureSource::from_path(Path::new(&args[0]), virtual_mode)?;
     let control = Cancellation::default();
     let entries = codec.scan(&mut source, &control, ScanLimits::default())?;
     let mut rows = Vec::new();
@@ -332,6 +371,7 @@ fn run() -> Result<Value, Box<dyn std::error::Error>> {
     }
     Ok(
         json!({"passed":true,"format":format.label(),"source_length":source.length,
+        "source_kind":if virtual_mode { "segmented_virtual" } else { "physical_file" },
         "bytes_read":source.bytes_read,"maximum_read_offset":source.maximum_read_offset,
         "rows":rows,"guards":checks}),
     )
@@ -344,5 +384,49 @@ fn main() {
             eprintln!("{}", json!({"passed":false,"error":error.to_string()}));
             std::process::exit(1);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bounded_input_admits_empty_short_and_exact_limit_without_truncation() {
+        for size in [0, 1, 7] {
+            let bytes = vec![0x5a; size];
+            assert_eq!(bounded_bytes(io::Cursor::new(&bytes), 7).unwrap(), bytes);
+        }
+        let mut input = io::Cursor::new(vec![0; 64]);
+        assert_eq!(
+            bounded_bytes(&mut input, 7).unwrap_err().to_string(),
+            "fixture_size_limit"
+        );
+        assert_eq!(
+            input.position(),
+            8,
+            "stop after the single oversize-detection byte"
+        );
+    }
+
+    #[test]
+    fn growing_input_cannot_outread_admitted_segment_budget() {
+        struct Growing(usize);
+        impl Read for Growing {
+            fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
+                bytes.fill(0x5a);
+                self.0 += bytes.len();
+                Ok(bytes.len())
+            }
+        }
+        let mut source = Growing(0);
+        assert_eq!(
+            bounded_bytes(&mut source, 7).unwrap_err().to_string(),
+            "fixture_size_limit"
+        );
+        assert_eq!(source.0, 8);
+        let mut empty_budget = Growing(0);
+        assert!(bounded_bytes(&mut empty_budget, 0).is_err());
+        assert_eq!(empty_budget.0, 1);
     }
 }

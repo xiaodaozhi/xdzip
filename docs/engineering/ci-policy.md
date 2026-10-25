@@ -47,6 +47,8 @@ CAB/ISO/UDF 增量复用同一 Foundation 门槛，`scripts/check-cab-iso-intero
 
 独立 Rust 光盘后端额外运行 `check-optical-interop.py`：同一已知内容先经直接 codec，再经实际产品 worker 和宿主提取，核对 ISO 多区段、El Torito、UDF 稀疏及 4 GiB 以上随机偏移源；虚拟源检查不冒充实际磁盘大文件提取。预算、取消、快照变化、输出失败、截断及结构损坏分别验证。`optical_backend_tests` 的显式忽略测试在 Foundation 中使用本次构建的 worker 执行，覆盖真实 service 检查、Running 时源变化、已有暂存字节后的取消及发布前来源复验。只有实际执行并核验的路径才记通过。可选保留旧官方 worker 作为独立字节参照，报告必须记录两者摘要且拒绝同一二进制充当参照。结果保留于 build/review/independent-rust-codecs/optical/，分区映射扩展与人工桌面验收仍单列。
 
+IMAPI 和 mkudffs/udfclient 固定光盘输入只含项目自有内容，生成版本、命令及输入/输出摘要保存在 fixture 来源清单。CI 不安装或调用这些生成器，先核验压缩输入，再按有界流展开到 build/，核验逻辑大小与摘要后才交给 codec 和实际宿主服务；不能因 gzip 很小而取消展开上限。sparable 预留空间像具有较大逻辑长度，probe 使用真实文件随机读取，源不变检查采用流式摘要。参考工具拒绝的样本明确单列，不因此减少对 Rust 产品链的已知字节核验。
+
 Qt components 通过 [scripts/desktop.py](../../scripts/desktop.py)复用本地的 prepare、build、基础 test，以及 Windows/Linux package／verify。参数和本地顺序统一见[开发构建指南](developer-build.md)。共用阶段不依赖 RUNNER_TEMP 或 RUNNER_ARCH；工作流显式提供 CI 路径，普通本地使用仓库默认目录。系统编译器／SDK 和 Linux 图形开发依赖仍由宿主／工作流准备，SDK 与打包工具下载使用 prepare 的显式开关。
 
 [ci-desktop.ps1](../../scripts/ci-desktop.ps1)只保留 CI 扩展编排和平台策略，不另实现基础构建链。Qt CI 使用 `test --skip-rust`，同提交的 Rust fmt、Clippy 和 workspace 测试由 Foundation probes 负责；qmllint 与 7 组 CTest 仍由共用 test 执行。测试仅对子进程设置 offscreen／software，之后的原生或部署检查使用各自平台环境。CI 另外重复并发生命周期套件 10 次，保留性能协议、资源与链接证据、双语和多 DPR 视觉、M3／M4 互操作、设置兼容、来源及 SBOM 检查，不因入口复用缩减门槛。

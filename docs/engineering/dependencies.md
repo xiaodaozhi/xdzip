@@ -45,7 +45,7 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 `xdzip-codec-optical` 的格式逻辑只使用标准库及本项目 codec API/domain，不引入 ISO/UDF 或通用归档库。规范、范围与错误边界见[独立实现契约](independent-rust-codecs.md#iso与udf只读规格)。`xdzip-optical-bridge` 复用已锁定的 cxx/cxx-build 版本和生成流程，不新增外部包版本、下载构建脚本或格式算法库。替代的进程内路由会失去既有光盘任务的独立进程治理，因此保留既有 worker 和受控流协议。
 
-生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 的 Iso/Udf 容器源文件从 CMake 清单和注册表移除，7z/Cab 仍需其官方源码及许可材料。历史交付的许可义务不因当前裁剪而消失。独立 pycdlib 夹具、官方参考 worker 和规范向量仅用于测试，工件留在 build/，不进入应用运行依赖。
+生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 的 Iso/Udf 容器源文件从 CMake 清单和注册表移除，7z/Cab 仍需其官方源码及许可材料。历史交付的许可义务不因当前裁剪而消失。独立 pycdlib、Microsoft IMAPI、mkudffs/udfclient 夹具、官方参考 worker 和规范向量仅用于测试，来源和工具许可与产品分别管理，不进入应用运行依赖。项目自有内容的小型固定输入及生成脚本纳入测试目录，展开的像和执行证据只留在 build/。
 
 ## HTML 复核字体与工具
 

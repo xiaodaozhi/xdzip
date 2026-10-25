@@ -8,5 +8,7 @@ publish.workspace = true
 [dependencies]
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-domain = { path = "../xdzip-domain" }
+[dev-dependencies]
+xdzip-compression = { path = "../xdzip-compression" }
 [lints]
 workspace = true

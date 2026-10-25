@@ -398,7 +398,10 @@ fn segment_ends(segments: &[Segment]) -> Result<Vec<u64>> {
 }
 
 struct File {
+    address: Address,
     kind: u8,
+    icb_flags: u16,
+    unique_id: u64,
     links: u16,
     size: u64,
     modified_dos: u32,
@@ -617,9 +620,9 @@ impl Volume {
             }
         }
         volume.integrity(reader, extent_ad(&logical, 432)?)?;
-        volume.root = match volume.file_set(reader, volume.root) {
+        volume.root = match volume.file_set(reader, volume.root, limits) {
             Err(ScanError::Invalid) if volume.swap_metadata_mirrors() => {
-                volume.file_set(reader, volume.root)?
+                volume.file_set(reader, volume.root, limits)?
             }
             result => result?,
         };
@@ -1007,13 +1010,6 @@ impl Volume {
                 if u16_at(&descriptor, implementation + 40)? > 0x0260 {
                     return Err(ScanError::Unsupported);
                 }
-                let following = extent_ad(&descriptor, 32)?;
-                if following.1 != 0 {
-                    next = Some(following);
-                    // ECMA-167 3/8.8.2 terminates processing this extent at
-                    // the descriptor that identifies its successor.
-                    break;
-                }
                 position = add(
                     position,
                     (descriptor.len() as u64).div_ceil(self.sector) * self.sector,
@@ -1021,12 +1017,25 @@ impl Volume {
                 if position > u64::from(length) {
                     return Err(ScanError::Invalid);
                 }
+                let following = extent_ad(&descriptor, 32)?;
+                if following.1 != 0 {
+                    next = Some(following);
+                    // ECMA-167 3/8.8.2 terminates processing this extent at
+                    // the descriptor that identifies its successor, after the
+                    // current descriptor's full range has been admitted.
+                    break;
+                }
             }
         }
         Ok(())
     }
 
-    fn file_set(&self, reader: &mut ImageReader<'_>, start: Allocation) -> Result<Allocation> {
+    fn file_set(
+        &self,
+        reader: &mut ImageReader<'_>,
+        start: Allocation,
+        limits: ScanLimits,
+    ) -> Result<Allocation> {
         let mut next = Some(start);
         let mut seen = BTreeSet::new();
         let mut selected: Option<((u32, u32), Allocation)> = None;
@@ -1069,7 +1078,7 @@ impl Volume {
                 domain(&descriptor, 416)?;
                 let stream = long_ad(&descriptor, 464)?;
                 if stream.length != 0 {
-                    return Err(ScanError::Unsupported);
+                    self.system_streams(reader, stream, limits)?;
                 }
                 let root = long_ad(&descriptor, 400)?;
                 let sequence = (u32_at(&descriptor, 40)?, u32_at(&descriptor, 44)?);
@@ -1100,6 +1109,56 @@ impl Volume {
             }
         }
         selected.map(|(_, root)| root).ok_or(ScanError::Invalid)
+    }
+
+    fn system_streams(
+        &self,
+        reader: &mut ImageReader<'_>,
+        reference: Allocation,
+        limits: ScanLimits,
+    ) -> Result<()> {
+        // UDF 2.60 3.3.7.2: this standard metadata stream records reserved
+        // sparing packets; it has no user data and is not a namespace entry.
+        if !self
+            .maps
+            .iter()
+            .any(|map| matches!(map, Map::Sparable { .. }))
+        {
+            return Err(ScanError::Unsupported);
+        }
+        let directory = self.file(reader, reference)?;
+        if directory.kind != 13 || directory.links != 1 || directory.unique_id != 0 {
+            return Err(ScanError::Invalid);
+        }
+        let mut seen = false;
+        for (name, reference, is_directory, metadata) in
+            self.children(reader, &directory, limits)?
+        {
+            if name != "*UDF Non-Allocatable Space" {
+                return Err(ScanError::Unsupported);
+            }
+            if !metadata || is_directory {
+                return Err(ScanError::Invalid);
+            }
+            if seen {
+                return Err(ScanError::Invalid);
+            }
+            seen = true;
+            let stream = self.file(reader, reference)?;
+            if stream.kind != 5
+                || stream.size != 0
+                || stream.links != 1
+                || stream.unique_id != 0
+                || stream.icb_flags & (1 << 10) == 0
+                || stream.icb_flags & (1 << 13) == 0
+                || stream.icb_flags & 7 == 3
+            {
+                return Err(ScanError::Invalid);
+            }
+            // file() validates its allocation chain. With Information Length
+            // zero, allocations() admits only allocated, unrecorded tail ADs.
+        }
+        Ok(())
     }
 
     fn file(&self, reader: &mut ImageReader<'_>, reference: Allocation) -> Result<File> {
@@ -1221,7 +1280,10 @@ impl Volume {
             )?
         };
         Ok(File {
+            address,
             kind,
+            icb_flags: flags,
+            unique_id: u64_at(&data, if extended { 200 } else { 160 })?,
             links: u16_at(&data, 48)?,
             size,
             modified_dos,
@@ -1400,13 +1462,14 @@ impl Volume {
         reader: &mut ImageReader<'_>,
         file: &File,
         limits: ScanLimits,
-    ) -> Result<Vec<(String, Allocation, bool)>> {
+    ) -> Result<Vec<(String, Allocation, bool, bool)>> {
         let data = self.read_segments(reader, &file.segments, file.size)?;
         let mut position = 0usize;
         let mut segment_index = 0usize;
         let mut segment_start = 0u64;
         let mut result = Vec::new();
         let mut names = 0usize;
+        let mut stream_parent = false;
         while position < data.len() {
             reader.check()?;
             let header = bytes(&data, position, 38)?;
@@ -1444,14 +1507,27 @@ impl Volume {
                 return Err(ScanError::Invalid);
             }
             let characteristics = descriptor[18];
-            if characteristics & 0xf0 != 0 {
+            if characteristics & if file.kind == 13 { 0xe0 } else { 0xf0 } != 0 {
                 return Err(ScanError::Unsupported);
             }
             let allocation = long_ad(descriptor, 20)?;
+            if file.kind == 13 && u32_at(descriptor, 32)? != 0 {
+                return Err(ScanError::Invalid);
+            }
             let directory = characteristics & 2 != 0;
             if characteristics & 8 != 0 {
                 if name_length != 0 || !directory {
                     return Err(ScanError::Invalid);
+                }
+                if file.kind == 13 {
+                    if allocation.address != file.address
+                        || allocation.kind != 0
+                        || allocation.length < self.sector
+                        || stream_parent
+                    {
+                        return Err(ScanError::Invalid);
+                    }
+                    stream_parent = true;
                 }
             } else if characteristics & 4 == 0 {
                 if name_length < 2 {
@@ -1465,9 +1541,12 @@ impl Volume {
                 {
                     return Err(ScanError::Limit);
                 }
-                result.push((name, allocation, directory));
+                result.push((name, allocation, directory, characteristics & 16 != 0));
             }
             position = position.checked_add(length).ok_or(ScanError::Invalid)?;
+        }
+        if file.kind == 13 && !stream_parent {
+            return Err(ScanError::Invalid);
         }
         Ok(result)
     }
@@ -1560,6 +1639,9 @@ fn namespace(reader: &mut ImageReader<'_>, volume: &Volume, limits: ScanLimits) 
     if root.kind != 4 || root.links == 0 {
         return Err(ScanError::Invalid);
     }
+    if root.icb_flags & (1 << 13) != 0 {
+        return Err(ScanError::Unsupported);
+    }
     enum Work {
         Visit {
             name: String,
@@ -1576,7 +1658,7 @@ fn namespace(reader: &mut ImageReader<'_>, volume: &Volume, limits: ScanLimits) 
     let mut work: Vec<Work> = children
         .into_iter()
         .rev()
-        .map(|(name, reference, directory)| {
+        .map(|(name, reference, directory, _)| {
             let unsafe_name = name.contains(['/', '\\']);
             Work::Visit {
                 name,
@@ -1612,6 +1694,12 @@ fn namespace(reader: &mut ImageReader<'_>, volume: &Volume, limits: ScanLimits) 
             return Err(ScanError::Limit);
         }
         let file = volume.file(reader, reference)?;
+        // ECMA-167 4/14.6.8 bit 13 identifies a named stream object. It cannot
+        // acquire ordinary file output authority through a directory alias.
+        // Bit 10 alone is an ordinary System attribute and remains readable.
+        if file.icb_flags & (1 << 13) != 0 {
+            return Err(ScanError::Unsupported);
+        }
         if matches!(file.kind, 4 | 5 | 12) && file.links == 0 {
             return Err(ScanError::Invalid);
         }
@@ -1647,7 +1735,7 @@ fn namespace(reader: &mut ImageReader<'_>, volume: &Volume, limits: ScanLimits) 
                 return Err(ScanError::Limit);
             }
             work.push(Work::Leave(reference.address));
-            for (child, reference, directory) in
+            for (child, reference, directory, _) in
                 volume.children(reader, &file, limits)?.into_iter().rev()
             {
                 let full_length = name
@@ -2192,6 +2280,127 @@ mod tests {
         assert_eq!(scan_bytes(image.clone()).unwrap().records.len(), 1);
         image[80 * BLOCK + 80] ^= 1;
         assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
+    }
+
+    #[test]
+    fn integrity_continuation_cannot_bypass_the_current_extent_boundary() {
+        let mut image = simple_image();
+        let logical = &mut image[34 * BLOCK..35 * BLOCK];
+        put32(logical, 432, BLOCK as u32);
+        put32(logical, 436, 64);
+        seal(logical, 6, 34, 512);
+        let mut following = vec![0; BLOCK];
+        put32(&mut following, 28, 1);
+        put32(&mut following, 72, 1);
+        put32(&mut following, 76, 46);
+        put16(&mut following, 128, 0x0102);
+        seal(&mut following, 9, 96, 134);
+        image[96 * BLOCK..97 * BLOCK].copy_from_slice(&following);
+        let size = 80 + 8 + 5000;
+        let mut oversized = vec![0; size];
+        put32(&mut oversized, 28, 1);
+        put32(&mut oversized, 32, (2 * BLOCK) as u32);
+        put32(&mut oversized, 36, 96);
+        put32(&mut oversized, 72, 1);
+        put32(&mut oversized, 76, 5000);
+        put16(&mut oversized, 128, 0x0102);
+        seal(&mut oversized, 9, 64, size);
+        image[64 * BLOCK..64 * BLOCK + size].copy_from_slice(&oversized);
+        assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
+    }
+
+    #[test]
+    fn nonallocatable_system_stream_is_validated_and_unknown_streams_fail_closed() {
+        let mut volume = physical_volume();
+        volume.maps[0] = Map::Sparable {
+            partition: Partition {
+                start: 0,
+                blocks: 96,
+            },
+            packet: 16,
+            relocated: BTreeMap::new(),
+        };
+        let mut image = vec![0; 100 * BLOCK];
+        let mut identifier = fid("*UDF Non-Allocatable Space", 3, false, 2);
+        identifier[18] = 16;
+        let length = identifier.len();
+        seal(&mut identifier, 257, 2, length);
+        let mut parent = vec![0; 40];
+        put16(&mut parent, 16, 1);
+        parent[18] = 10;
+        set_long(&mut parent, 20, BLOCK as u32, 2, 0);
+        seal(&mut parent, 257, 2, 40);
+        let directory_data = [parent.as_slice(), identifier.as_slice()].concat();
+        let directory = file_entry(
+            13,
+            3,
+            directory_data.len() as u64,
+            &directory_data,
+            false,
+            2,
+        );
+        image[2 * BLOCK..3 * BLOCK].copy_from_slice(&directory);
+        let mut allocation = [0; 8];
+        put32(&mut allocation, 0, 0x4000_0000 | (16 * BLOCK) as u32);
+        put32(&mut allocation, 4, 32);
+        let stream = file_entry(5, 0x2400, 0, &allocation, false, 3);
+        image[3 * BLOCK..4 * BLOCK].copy_from_slice(&stream);
+        let reference = Allocation {
+            address: Address {
+                partition: 0,
+                block: 2,
+            },
+            length: BLOCK as u64,
+            kind: 0,
+        };
+        let verify = |image: Vec<u8>| {
+            let mut source = Cursor::new(image);
+            let cancellation = Cancellation::default();
+            let mut reader = ImageReader::new(&mut source, &cancellation, MAX_METADATA).unwrap();
+            volume.system_streams(&mut reader, reference, ScanLimits::default())
+        };
+        assert_eq!(verify(image.clone()), Ok(()));
+        let mut recorded = image.clone();
+        put32(&mut recorded, 3 * BLOCK + 176, (16 * BLOCK) as u32);
+        seal(&mut recorded[3 * BLOCK..4 * BLOCK], 261, 3, 184);
+        assert_eq!(verify(recorded), Err(ScanError::Invalid));
+        let mut unknown = image.clone();
+        let mut identifier = fid("*UDF Unknown", 3, false, 2);
+        identifier[18] = 16;
+        let length = identifier.len();
+        seal(&mut identifier, 257, 2, length);
+        let directory_data = [parent.as_slice(), identifier.as_slice()].concat();
+        let directory = file_entry(
+            13,
+            3,
+            directory_data.len() as u64,
+            &directory_data,
+            false,
+            2,
+        );
+        unknown[2 * BLOCK..3 * BLOCK].copy_from_slice(&directory);
+        assert_eq!(verify(unknown), Err(ScanError::Unsupported));
+        let mut no_system_flag = image;
+        put16(&mut no_system_flag, 3 * BLOCK + 34, 0x2000);
+        seal(&mut no_system_flag[3 * BLOCK..4 * BLOCK], 261, 3, 184);
+        assert_eq!(verify(no_system_flag), Err(ScanError::Invalid));
+    }
+
+    #[test]
+    fn ordinary_directory_cannot_publish_an_alias_of_a_named_stream() {
+        let mut image = simple_image();
+        let file = &mut image[303 * BLOCK..304 * BLOCK];
+        put16(file, 34, 3 | (1 << 10));
+        seal(file, 266, 3, 221);
+        // A normal System attribute does not hide a regular file.
+        assert_eq!(
+            scan_bytes(image.clone()).unwrap().records[0].extents,
+            vec![Extent::Inline(b"hello".to_vec())]
+        );
+        let file = &mut image[303 * BLOCK..304 * BLOCK];
+        put16(file, 34, 3 | (1 << 10) | (1 << 13));
+        seal(file, 266, 3, 221);
+        assert!(matches!(scan_bytes(image), Err(ScanError::Unsupported)));
     }
 
     #[test]

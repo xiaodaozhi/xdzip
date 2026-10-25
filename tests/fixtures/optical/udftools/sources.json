@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/generate-optical-udftools.py",
+  "license": "Apache-2.0",
+  "content": "Self-authored hello, empty and deterministic binary files; no user files or third-party executable code.",
+  "generation_environment": {
+    "container": "ubuntu:24.04",
+    "block_size": 2048,
+    "media_type": "dvdrw",
+    "blocks": 65536
+  },
+  "tools": [
+    {
+      "name": "mkudffs",
+      "package": "udftools",
+      "version": "2.3",
+      "package_version": "2.3-1build2",
+      "source": "https://github.com/pali/udftools",
+      "license": "GPL-2.0-or-later"
+    },
+    {
+      "name": "udfclient",
+      "version": "0.8.11",
+      "package_version": "0.8.11-2",
+      "source": "https://www.13thmonkey.org/udfclient/",
+      "license": "ClArtistic; BSD-2-Clause portions"
+    }
+  ],
+  "authoring": "mkudffs creates the filesystem; udfclient writes each known file using a nested-directory cd. The generated script performs an independent userland readback and byte comparison. No image mount or device is used.",
+  "payloads": [
+    {
+      "name": "hello.txt",
+      "bytes": 36,
+      "sha256": "699655dc179ddd0a8af3b41d551b0058749e6198ec9829cf45dc1061d9789c29",
+      "utf8": "independent Microsoft IMAPI fixture\n"
+    },
+    {
+      "name": "empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hex": ""
+    },
+    {
+      "name": "nested/data.bin",
+      "bytes": 8192,
+      "sha256": "dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46",
+      "recipe": {
+        "byte_range_inclusive": [
+          0,
+          255
+        ],
+        "repetitions": 32
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "sparable-201.udf.gz",
+      "udf_revision": "201",
+      "partition_maps": [
+        "*UDF Sparable Partition"
+      ],
+      "system_streams": [
+        "*UDF Non-Allocatable Space"
+      ],
+      "compressed_bytes": 133019,
+      "sha256": "8df5113f3cd3768adbd4f9a18265acf333e0f048a8ab269c491b6b166920e771",
+      "decoded_bytes": 134217728,
+      "decoded_sha256": "e95b996d52d95e0fe3119ee52ba2163ccea9e74c265ed3b77b2c623efdcede6f"
+    }
+  ]
+}
