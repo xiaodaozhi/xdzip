@@ -1010,6 +1010,9 @@ impl Volume {
                 let following = extent_ad(&descriptor, 32)?;
                 if following.1 != 0 {
                     next = Some(following);
+                    // ECMA-167 3/8.8.2 terminates processing this extent at
+                    // the descriptor that identifies its successor.
+                    break;
                 }
                 position = add(
                     position,
@@ -1027,6 +1030,7 @@ impl Volume {
         let mut next = Some(start);
         let mut seen = BTreeSet::new();
         let mut selected: Option<((u32, u32), Allocation)> = None;
+        let mut descriptor_numbers = BTreeMap::<u32, Vec<u8>>::new();
         let mut count = 0usize;
         while let Some(extent) = next.take() {
             if extent.kind != 0
@@ -1048,6 +1052,11 @@ impl Volume {
                     ..extent.address
                 };
                 let descriptor = self.read_mapped(reader, address, self.sector)?;
+                // ECMA-167 4/8.3.1 also permits an unrecorded logical block
+                // to terminate a file-set descriptor sequence extent.
+                if descriptor.iter().all(|byte| *byte == 0) {
+                    break;
+                }
                 let id = tag(&descriptor, block, 512, false)?;
                 if id == 8 {
                     break;
@@ -1064,6 +1073,17 @@ impl Volume {
                 }
                 let root = long_ad(&descriptor, 400)?;
                 let sequence = (u32_at(&descriptor, 40)?, u32_at(&descriptor, 44)?);
+                // Descriptor numbers identify identical contents throughout
+                // the sequence. The tag changes when recording another copy
+                // at a different logical address, so compare its body only.
+                let body = bytes(&descriptor, 16, 496)?;
+                if let Some(previous) = descriptor_numbers.get(&sequence.1) {
+                    if previous.as_slice() != body {
+                        return Err(ScanError::Invalid);
+                    }
+                } else {
+                    descriptor_numbers.insert(sequence.1, body.to_vec());
+                }
                 if selected
                     .as_ref()
                     .is_none_or(|previous| previous.0 < sequence)
@@ -1073,6 +1093,9 @@ impl Volume {
                 let following = long_ad(&descriptor, 448)?;
                 if following.length != 0 {
                     next = Some(following);
+                    // A non-null Next Extent terminates this extent. Remaining
+                    // allocated blocks are trailing blocks, not descriptors.
+                    break;
                 }
             }
         }
@@ -2089,6 +2112,85 @@ mod tests {
         seal(integrity, 9, 64, 134);
         assert_eq!(scan_bytes(image.clone()).unwrap().records.len(), 1);
         image[64 * BLOCK + 80] ^= 1;
+        assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
+    }
+
+    #[test]
+    fn repeated_file_set_descriptor_numbers_must_have_identical_bodies() {
+        let mut image = simple_image();
+        let mut duplicate = image[300 * BLOCK..301 * BLOCK].to_vec();
+        seal(&mut duplicate, 256, 1, 512);
+        image[301 * BLOCK..302 * BLOCK].copy_from_slice(&duplicate);
+        // Redundant copies at different tag locations are valid.
+        assert_eq!(scan_bytes(image.clone()).unwrap().records.len(), 1);
+        // An alternative root is independently valid, but the same descriptor
+        // number cannot silently keep the first namespace and hide the second.
+        let alternative = file_entry(4, 3, 0, &[], false, 4);
+        image[304 * BLOCK..305 * BLOCK].copy_from_slice(&alternative);
+        set_long(&mut duplicate, 400, BLOCK as u32, 4, 0);
+        seal(&mut duplicate, 256, 1, 512);
+        image[301 * BLOCK..302 * BLOCK].copy_from_slice(&duplicate);
+        assert!(matches!(scan_bytes(image.clone()), Err(ScanError::Invalid)));
+        // The number is shared by the sequence, including different file sets.
+        set_long(&mut duplicate, 400, BLOCK as u32, 2, 0);
+        put32(&mut duplicate, 40, 1);
+        seal(&mut duplicate, 256, 1, 512);
+        image[301 * BLOCK..302 * BLOCK].copy_from_slice(&duplicate);
+        assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
+    }
+
+    #[test]
+    fn file_set_continuations_terminate_the_current_extent_before_trailing_blocks() {
+        let mut image = simple_image();
+        let mut first = image[300 * BLOCK..301 * BLOCK].to_vec();
+        let mut following = first.clone();
+        set_long(&mut first, 448, (2 * BLOCK) as u32, 20, 0);
+        seal(&mut first, 256, 8, 512);
+        put32(&mut following, 44, 1);
+        seal(&mut following, 256, 20, 512);
+        image[308 * BLOCK..309 * BLOCK].copy_from_slice(&first);
+        // The remaining three blocks in the first extent are unrecorded.
+        image[320 * BLOCK..321 * BLOCK].copy_from_slice(&following);
+        let mut terminator = vec![0; BLOCK];
+        seal(&mut terminator, 8, 21, 512);
+        image[321 * BLOCK..322 * BLOCK].copy_from_slice(&terminator);
+        let logical = &mut image[34 * BLOCK..35 * BLOCK];
+        set_long(logical, 248, (4 * BLOCK) as u32, 8, 0);
+        seal(logical, 6, 34, 512);
+        assert_eq!(scan_bytes(image.clone()).unwrap().records.len(), 1);
+        // Continuations still retain the same cycle rejection.
+        set_long(&mut following, 448, (4 * BLOCK) as u32, 8, 0);
+        seal(&mut following, 256, 20, 512);
+        image[320 * BLOCK..321 * BLOCK].copy_from_slice(&following);
+        assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
+        let mut image = simple_image();
+        image[301 * BLOCK..302 * BLOCK].fill(0);
+        assert_eq!(scan_bytes(image).unwrap().records.len(), 1);
+    }
+
+    #[test]
+    fn integrity_continuation_does_not_parse_trailing_stale_descriptors() {
+        let mut image = simple_image();
+        let logical = &mut image[34 * BLOCK..35 * BLOCK];
+        put32(logical, 432, (4 * BLOCK) as u32);
+        put32(logical, 436, 64);
+        seal(logical, 6, 34, 512);
+        let mut integrity = vec![0; BLOCK];
+        put32(&mut integrity, 28, 1);
+        put32(&mut integrity, 72, 1);
+        put32(&mut integrity, 76, 46);
+        put16(&mut integrity, 80 + 8 + 40, 0x0102);
+        seal(&mut integrity, 9, 80, 134);
+        image[80 * BLOCK..81 * BLOCK].copy_from_slice(&integrity);
+        put32(&mut integrity, 32, (2 * BLOCK) as u32);
+        put32(&mut integrity, 36, 80);
+        seal(&mut integrity, 9, 64, 134);
+        image[64 * BLOCK..65 * BLOCK].copy_from_slice(&integrity);
+        // Nonzero stale data is legal after the continuation descriptor and
+        // cannot replace its selected next extent or cause tag validation.
+        image[65 * BLOCK..66 * BLOCK].fill(0x5a);
+        assert_eq!(scan_bytes(image.clone()).unwrap().records.len(), 1);
+        image[80 * BLOCK + 80] ^= 1;
         assert!(matches!(scan_bytes(image), Err(ScanError::Invalid)));
     }
 
