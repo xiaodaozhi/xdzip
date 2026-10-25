@@ -25,3 +25,15 @@ python3 scripts/generate-optical-udftools.py --output build/optical-udftools
 ```
 
 输出目录必须不存在或为空，容器只绑定该目录，不挂载映像或访问任何设备。128 MiB 容量用于满足作者工具的小卷写入保留空间要求。创建时间、卷标识及作者工具环境可能改变映像哈希，重新生成的结构与内容按相同的独立字节规则验收。旧官方参照后端拒绝此 sparable 映像，不能记录为官方参照成功；其独立来源由 mkudffs 作者工具、udfclient 写入与只读回读支撑。
+
+`makefs/` 保存固定 NetBSD makefs Linux 移植版生成的 UDF 1.50 与 2.01 VAT 映像，每个逻辑长度为 832 KiB，合计压缩约 6 KiB，采用与 `udftools/` 相同的三个自有文件。[makefs 官方手册](https://man.netbsd.org/makefs.8) 的 `disctype=cdr` 选项从目录树创建 VAT 映像，无需设备或挂载。固定工具提交、下载归档哈希、构建步骤、多许可证和映像哈希见 [makefs/sources.json](makefs/sources.json)。工具源码、编译产物和法律头摘录只保留在本地 `build/`，不进入产品依赖。
+
+[generate-optical-makefs.py](../../../scripts/generate-optical-makefs.py) 下载并校验固定来源，在一次性 Ubuntu 24.04 Docker 容器内编译未修改的作者工具，创建两个映像，再用独立 udfclient 只读回读三个文件并逐字节比较：
+
+```sh
+python3 scripts/generate-optical-makefs.py --output build/optical-makefs
+```
+
+输出目录必须不存在或为空，且位于仓库 `build/` 下。源归档按成员数、展开尺寸与路径约束解包，容器仅绑定本次输出目录，结束或超时后只清理该次专用容器。CI 仅使用已校验的固定压缩输入，不下载或安装作者工具。生成时间、卷标识和环境可能改变镜像字节，重新生成不要求哈希与固定输入相同。旧官方参照后端拒绝这两个 VAT 映像，不能计入官方参照成功；独立输入证据来自 makefs 创建与 udfclient 已知字节回读。
+
+`udfinfo` 2.3 对固定 1.50 输入提示 `Logical Volume Extended Information for Virtual Allocation Table is damaged`，2.01 输入没有这条提示，详见来源清单的 `known_tool_observation`。两个输入均可由 udfclient 0.8.11 只读取回全部已知文件并匹配字节。它们验证普通文件可读性，不代表完整媒介符合性或 `udfinfo` 全字段验证通过。

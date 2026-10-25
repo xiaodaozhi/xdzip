@@ -26,7 +26,11 @@ UNICODE = {'hello.txt': HELLO, 'nested/data.txt': NESTED,
 MAX_FIXTURE_BYTES = 8 * 1024**2
 MAX_LARGE_FIXTURE_BYTES = 256 * 1024**2
 MAX_UDFTOOLS_COMPRESSED_BYTES = 512 * 1024
-SPARABLE_REFERENCE_REJECTION_SHA256 = 'e95b996d52d95e0fe3119ee52ba2163ccea9e74c265ed3b77b2c623efdcede6f'
+REFERENCE_REJECTION_SHA256 = {
+    'sparable-201.udf': 'e95b996d52d95e0fe3119ee52ba2163ccea9e74c265ed3b77b2c623efdcede6f',
+    'vat150.udf': '3b79b05a3230b51404f3b66a3e36b8f382e9f4755cf4233a2dd6c317bba49728',
+    'vat201.udf': 'ad3522d7f53ffd98ba74f7caac709600c8d2d8b403ed7a4321e2ecfaeda7d099',
+}
 
 
 def module(path):
@@ -86,6 +90,7 @@ def prepare(output):
         cases.append(case)
     cases.extend(prepare_imapi(output / 'imapi'))
     cases.extend(prepare_udftools(output / 'udftools'))
+    cases.extend(prepare_makefs(output / 'makefs'))
     return cases
 
 
@@ -110,6 +115,25 @@ def expected_payloads(manifest, label):
     return expected
 
 
+def small_image_bytes(base, item, label, suffix):
+    name = item['file']
+    require(Path(name).name == name and '/' not in name and '\\' not in name and name.endswith(suffix),
+            'unexpected ' + label + ' fixture filename')
+    require(0 < item['compressed_bytes'] <= MAX_FIXTURE_BYTES
+            and 0 < item['decoded_bytes'] <= MAX_FIXTURE_BYTES, label + ' fixture size limit')
+    archive = base / name
+    require(archive.stat().st_size <= MAX_FIXTURE_BYTES, label + ' compressed fixture size limit')
+    with archive.open('rb') as source:
+        stored = source.read(MAX_FIXTURE_BYTES + 1)
+    require(len(stored) == item['compressed_bytes'] and len(stored) <= MAX_FIXTURE_BYTES
+            and hashlib.sha256(stored).hexdigest() == item['sha256'], label + ' compressed fixture identity mismatch')
+    with gzip.GzipFile(fileobj=io.BytesIO(stored)) as source:
+        data = source.read(MAX_FIXTURE_BYTES + 1)
+    require(len(data) == item['decoded_bytes'] and len(data) <= MAX_FIXTURE_BYTES
+            and hashlib.sha256(data).hexdigest() == item['decoded_sha256'], label + ' decoded fixture identity mismatch')
+    return name[:-3], data
+
+
 def prepare_imapi(output):
     base = ROOT / 'tests/fixtures/optical/imapi'
     manifest = json.loads((base / 'sources.json').read_text(encoding='utf-8'))
@@ -119,21 +143,33 @@ def prepare_imapi(output):
     require(len(manifest['fixtures']) <= 16, 'IMAPI fixture count limit')
     cases = []
     for item in manifest['fixtures']:
-        name = item['file']
-        require(Path(name).name == name and '/' not in name and '\\' not in name and name.endswith('.iso.gz'),
-                'unexpected IMAPI fixture filename')
-        stored = (base / name).read_bytes()
-        require(len(stored) == item['compressed_bytes'] and len(stored) <= MAX_FIXTURE_BYTES
-                and hashlib.sha256(stored).hexdigest() == item['sha256'], 'IMAPI compressed fixture identity mismatch')
-        with gzip.GzipFile(fileobj=io.BytesIO(stored)) as source:
-            data = source.read(MAX_FIXTURE_BYTES + 1)
-        require(len(data) == item['decoded_bytes'] and len(data) <= MAX_FIXTURE_BYTES
-                and hashlib.sha256(data).hexdigest() == item['decoded_sha256'], 'IMAPI decoded fixture identity mismatch')
-        path = output / name[:-3]
+        name, data = small_image_bytes(base, item, 'IMAPI', '.iso.gz')
+        path = output / name
         path.write_bytes(data)
-        cases.append(dict(name=name[:-3], path=str(path), format='udf', expected=expected,
+        cases.append(dict(name=name, path=str(path), format='udf', expected=expected,
                           directories=['nested'], specials=[], source='Microsoft Windows IMAPI2FS',
                           udf_revision=item['udf_revision'], fixture_partition_maps=item['partition_maps']))
+    return cases
+
+
+def prepare_makefs(output):
+    base = ROOT / 'tests/fixtures/optical/makefs'
+    manifest = json.loads((base / 'sources.json').read_text(encoding='utf-8'))
+    require(manifest['schema_version'] == 1, 'unsupported makefs fixture manifest')
+    expected = expected_payloads(manifest, 'makefs')
+    output.mkdir(parents=True, exist_ok=True)
+    require(0 < len(manifest['fixtures']) <= 16, 'makefs fixture count limit')
+    cases = []
+    for item in manifest['fixtures']:
+        name, data = small_image_bytes(base, item, 'makefs', '.udf.gz')
+        path = output / name
+        path.write_bytes(data)
+        cases.append(dict(name=name, path=str(path), format='udf', expected=expected,
+                          directories=['nested'], specials=[], source='NetBSD makefs and udfclient',
+                          udf_revision=item['udf_revision'], fixture_partition_maps=item['partition_maps'],
+                          fixture_vat_version=item['vat_version'], fixture_tools=manifest['tools'],
+                          fixture_validation_scope=manifest['validation_scope'],
+                          fixture_tool_observation=item['known_tool_observation']))
     return cases
 
 
@@ -229,7 +265,9 @@ def codec_case(binary, case):
                    source_bytes=report['source_length'], actual_input_bytes=report['bytes_read'],
                    maximum_read_offset=report['maximum_read_offset'], source_kind=report['source_kind'],
                    guards=report['guards'])
-    for key in ('source', 'udf_revision', 'fixture_partition_maps', 'fixture_system_streams'):
+    for key in ('source', 'udf_revision', 'fixture_partition_maps', 'fixture_system_streams',
+                'fixture_vat_version', 'fixture_tools', 'fixture_validation_scope',
+                'fixture_tool_observation'):
         if key in case:
             details[key] = case[key]
     return details
@@ -299,11 +337,11 @@ def reference_worker_case(worker, case):
         if case['name'] == 'udf-sparse.iso' and str(error) == 'native_error_3':
             return dict(case=case['name'], status='unsupported_by_reference',
                         error='native_error_3', reference='official_native_worker')
-        if (case['name'] == 'sparable-201.udf' and str(error) == 'native_error_2'
-                and hashlib.sha256(data).hexdigest() == SPARABLE_REFERENCE_REJECTION_SHA256):
+        if (str(error) == 'native_error_2' and case['name'] in REFERENCE_REJECTION_SHA256
+                and hashlib.sha256(data).hexdigest() == REFERENCE_REJECTION_SHA256[case['name']]):
             return dict(case=case['name'], status='reference_rejected', error='native_error_2',
                         reference='official_native_worker',
-                        independent_authoring_readback='udftools mkudffs and udfclient')
+                        independent_authoring_readback=case['source'])
         raise AssertionError(case['name'] + ': reference worker rejected owned fixture') from error
     actual = {}
     specials = set()
@@ -418,9 +456,11 @@ def main():
                   fixture_sources_sha256=hashlib.sha256((ROOT / 'tests/fixtures/cab-iso/sources.json').read_bytes()).hexdigest(),
                   imapi_sources_sha256=hashlib.sha256((ROOT / 'tests/fixtures/optical/imapi/sources.json').read_bytes()).hexdigest(),
                   udftools_sources_sha256=hashlib.sha256((ROOT / 'tests/fixtures/optical/udftools/sources.json').read_bytes()).hexdigest(),
+                  makefs_sources_sha256=hashlib.sha256((ROOT / 'tests/fixtures/optical/makefs/sources.json').read_bytes()).hexdigest(),
                   limits=['Native desktop/Qt acceptance is separate from these codec and host-service checks.',
                           'Virtual large-source evidence does not allocate or extract a physical 4 GiB file.',
-                          'ISO/UDF payload byte matching does not imply embedded checksum authentication.'])
+                          'ISO/UDF payload byte matching does not imply embedded checksum authentication.',
+                          'Known-payload readability and the exercised host behaviors do not prove full optical-media conformance; per-fixture generator observations, including the VAT 1.50 udfinfo warning, remain in the codec case metadata.'])
     env = os.environ.copy()
     if reference_worker:
         report['reference_worker_sha256'] = hashlib.sha256(reference_worker.read_bytes()).hexdigest()
@@ -467,8 +507,11 @@ def main():
             report['limits'].append('Optional official-tool comparison was not run; fixed pycdlib vectors remain independent inputs.')
         if any(record.get('status') == 'unsupported_by_reference' for record in report['reference']):
             report['limits'].append('The existing official worker rejects the UDF sparse test vector as unsupported; it is not counted as a reference pass.')
-        if any(record.get('status') == 'reference_rejected' for record in report['reference']):
-            report['limits'].append('The preserved official worker rejects the fixed udftools sparable image; its independent authoring/readback uses mkudffs/udfclient and it is not counted as an official-worker reference pass.')
+        rejected = [record['case'] for record in report['reference'] if record.get('status') == 'reference_rejected']
+        if rejected:
+            report['limits'].append('The preserved official worker rejects these fixed independent images: '
+                                    + ', '.join(rejected) + '. Their independent authoring/readback uses the recorded tools; '
+                                    + 'these records are not counted as official-worker reference passes.')
         print('Optical interoperability passed: %d codec, %d host-service, %d reference passes, %d damaged-input cases'
               % (len(report['codec']), len(report['host_service']),
                  sum(record.get('passed') is True for record in report['reference']), len(report['negative'])))

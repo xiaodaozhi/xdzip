@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/generate-optical-makefs.py",
+  "license": "Apache-2.0",
+  "content": "Self-authored hello, empty and deterministic binary files; no user files or third-party executable code.",
+  "generation_environment": {
+    "container": "ubuntu:24.04",
+    "block_size": 2048,
+    "media_type": "cdr",
+    "requested_image_size": "8m",
+    "actual_image_bytes": 851968
+  },
+  "official_documentation": "https://man.netbsd.org/makefs.8",
+  "tools": [
+    {
+      "name": "makefs",
+      "version": "NetBSD makefs 10.0 (Linux UDF port)",
+      "upstream_source": "https://github.com/Randrianasulu/makefs_termux",
+      "source": "https://github.com/john-tornblom/makefs_termux",
+      "commit": "dc7e09b66b5900763299add245d6bb327882292e",
+      "source_archive_url": "https://codeload.github.com/john-tornblom/makefs_termux/tar.gz/dc7e09b66b5900763299add245d6bb327882292e",
+      "source_archive_bytes": 130051,
+      "source_archive_sha256": "63d244e91ea6150dd0228f63eea09e7d49d43ea56a09ee9e5baa8a263902b78f",
+      "build": "Ubuntu 24.04: install build-essential, pkg-config and libbsd-dev; run make prog using the unmodified pinned Makefile.",
+      "license": "BSD-2-Clause; BSD-3-Clause portions; BSD-4-Clause Wasabi Systems portions; Micro Design International free-use permission in udf_osta.c",
+      "license_source": "Per-file copyright notices in the pinned source archive; the repository has no standalone LICENSE file.",
+      "license_notice": "This product includes software developed for the NetBSD Project by Wasabi Systems, Inc.",
+      "license_sources": [
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/udf.c",
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/udf_core.c",
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/strstuff.c",
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/makefs.c",
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/walk.c",
+        "https://github.com/john-tornblom/makefs_termux/blob/dc7e09b66b5900763299add245d6bb327882292e/udf_osta.c"
+      ]
+    },
+    {
+      "name": "udfclient",
+      "version": "0.8.11",
+      "package_version": "0.8.11-2",
+      "source": "https://www.13thmonkey.org/udfclient/",
+      "license": "ClArtistic; BSD-2-Clause portions"
+    },
+    {
+      "name": "udfinfo",
+      "package": "udftools",
+      "version": "2.3",
+      "package_version": "2.3-1build2",
+      "source": "https://github.com/pali/udftools",
+      "license": "GPL-2.0-or-later"
+    }
+  ],
+  "authoring": "makefs -t udf -S 2048 -s 8m -o disctype=cdr,minver=0xREV,maxver=0xREV,loglabel=XDZIP_VATREV image.udf input creates each image directly from the known directory tree. REV is 150 or 201. The generator independently reads all three files with udfclient and compares bytes. No image mount or device is used.",
+  "payloads": [
+    {
+      "name": "hello.txt",
+      "bytes": 36,
+      "sha256": "699655dc179ddd0a8af3b41d551b0058749e6198ec9829cf45dc1061d9789c29",
+      "utf8": "independent Microsoft IMAPI fixture\n"
+    },
+    {
+      "name": "empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hex": ""
+    },
+    {
+      "name": "nested/data.bin",
+      "bytes": 8192,
+      "sha256": "dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46",
+      "recipe": {
+        "byte_range_inclusive": [
+          0,
+          255
+        ],
+        "repetitions": 32
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "vat150.udf.gz",
+      "udf_revision": "150",
+      "partition_maps": [
+        "physical",
+        "*UDF Virtual Partition"
+      ],
+      "vat_version": "1.50",
+      "compressed_bytes": 3294,
+      "sha256": "6bad38f0e9a2688bac9f4eb7ee998152542c9c24f631672d3d05eb08ccc5cd05",
+      "decoded_bytes": 851968,
+      "decoded_sha256": "3b79b05a3230b51404f3b66a3e36b8f382e9f4755cf4233a2dd6c317bba49728",
+      "known_tool_observation": {
+        "tool": "udfinfo 2.3",
+        "warning": "Logical Volume Extended Information for Virtual Allocation Table is damaged",
+        "readback_tool": "udfclient 0.8.11",
+        "readback": "All three known file contents match; zero sectors written."
+      }
+    },
+    {
+      "file": "vat201.udf.gz",
+      "udf_revision": "201",
+      "partition_maps": [
+        "physical",
+        "*UDF Virtual Partition"
+      ],
+      "vat_version": "2.00",
+      "compressed_bytes": 2894,
+      "sha256": "caad81e1b0bc8408bedcb74c522063818b8ed19b3a09e36d6fedb03167414961",
+      "decoded_bytes": 851968,
+      "decoded_sha256": "ad3522d7f53ffd98ba74f7caac709600c8d2d8b403ed7a4321e2ecfaeda7d099",
+      "known_tool_observation": {
+        "tool": "udfinfo 2.3",
+        "vat_extended_information_warning": false,
+        "readback_tool": "udfclient 0.8.11",
+        "readback": "All three known file contents match; zero sectors written."
+      }
+    }
+  ],
+  "validation_scope": "The independent readback establishes readability of the three known ordinary files. It does not establish complete media conformance or validate every udfinfo field."
+}
