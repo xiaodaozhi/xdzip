@@ -32,6 +32,7 @@ mod ffi {
         fn emit_data(bytes: &[u8]) -> u8;
         fn emit_precharged_data(bytes: &[u8]) -> u8;
         fn emit_work(bytes: u64) -> u8;
+        fn emit_auxiliary(bytes: u64) -> u8;
         fn complete_entry(index: u64) -> Transfer;
     }
     extern "Rust" {
@@ -135,6 +136,19 @@ fn decode_wire(error: DecodeError) -> u8 {
 }
 struct Output;
 impl DecodedSink for Output {
+    fn charge_auxiliary(&mut self, mut bytes: u64) -> Result<(), DecodeError> {
+        while bytes != 0 {
+            let take = bytes.min(64 * 1024);
+            match ffi::emit_auxiliary(take) {
+                0 => (),
+                4 => return Err(DecodeError::Limit),
+                5 => return Err(DecodeError::Cancelled),
+                _ => return Err(DecodeError::Output),
+            }
+            bytes -= take;
+        }
+        Ok(())
+    }
     fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
         for chunk in bytes.chunks(64 * 1024) {
             match ffi::emit_precharged_data(chunk) {

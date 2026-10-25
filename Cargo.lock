@@ -1510,6 +1510,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-rar"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "aes",
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+ "zeroize",
+]
+
+[[package]]
 name = "xdzip-codec-tar"
 version = "0.1.0-alpha.6"
 dependencies = [
@@ -1544,6 +1556,14 @@ name = "xdzip-compression"
 version = "0.1.0-alpha.6"
 dependencies = [
  "flate2",
+]
+
+[[package]]
+name = "xdzip-crypto"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "sha2",
+ "zeroize",
 ]
 
 [[package]]

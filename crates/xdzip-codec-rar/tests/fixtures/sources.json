@@ -1,0 +1,37 @@
+{
+  "scope": "Project-owned deterministic input, compressed by the independently pinned official RAR author; test fixtures only, no RAR encoder implementation",
+  "license": "Apache-2.0 for project-owned input and fixture data; the proprietary reference author is not redistributed",
+  "tool": {
+    "name": "RAR 7.23 Windows x64",
+    "distribution_url": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+    "member": "Rar.exe",
+    "sha256": "f561764bc3e9ed208744321a89a819b562edeaf06e203c02a06976121fda1991"
+  },
+  "generator": "../generate-filter-fixtures.py",
+  "input_math": "65536 eight-byte records, i=0..65535: opcode E8, or alternating E8/E9 for mixed input; little-endian signed32 displacement=((97*i) mod524288)-8*i-5; suffix90,50,58. These bytes are test data and never executed.",
+  "command_options": ["a", "-cfg-", "-m5", "-md4m", "-mt1", "-mce+", "-mcd-", "-mcl+", "-idq", "-y", "-tsm-"],
+  "fixtures": [
+    {
+      "file": "e8-only.rar",
+      "sha256": "7552c3a04590a88ff7df270df7168a174b1be4575b53f771d018f17f9a2df2ac",
+      "input_name": "e8-only.bin",
+      "input_bytes": 524288,
+      "input_sha256": "9ba0077a9b764a2291b2c6e79394cafc505e54200624ee5e062be156668d1f49",
+      "effective_algorithm": 0,
+      "filter_type": 1,
+      "filter_declarations": 8
+    },
+    {
+      "file": "e8e9-input-e8-filter.rar",
+      "generated_archive_name": "e8e9.rar",
+      "sha256": "cec9935b2fbff7083f2a3dd87c847daae578d4393748e2cda5b71c2d24f7199f",
+      "input_name": "e8e9.bin",
+      "input_bytes": 524288,
+      "input_sha256": "58831d72ef82c4dc3f08e47f17c39affb801004a0feab4c53d2c248145b80f9a",
+      "effective_algorithm": 0,
+      "filter_type": 1,
+      "filter_declarations": 8,
+      "not_type2_evidence": true
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 //! Safe ZIP task contracts. Plans are frozen before granting any output authority.
+pub(crate) mod auxiliary;
 mod control;
 mod execute;
 mod links;

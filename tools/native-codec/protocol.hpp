@@ -21,7 +21,8 @@ enum Kind : uint8_t {
     Bytes = 20,
     Ack = 21,
     Next = 22,
-    PrechargedData = 23
+    PrechargedData = 23,
+    AuxWork = 24
 };
 struct Failure {
     uint8_t code;
@@ -56,6 +57,7 @@ size_t read_source(uint64_t offset, void *data, size_t size);
 size_t read_input(uint32_t index, void *data, size_t size);
 void write_data(const void *data, size_t size, bool selected = true);
 void write_precharged_data(const void *data, size_t size);
+void charge_auxiliary(uint64_t size);
 void write_at(uint64_t offset, const void *data, size_t size);
 void metadata(uint64_t index, const std::wstring &name, uint8_t flags, uint64_t size,
               uint64_t packed, uint32_t dos, uint16_t method = 0);

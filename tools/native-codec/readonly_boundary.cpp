@@ -84,4 +84,19 @@ std::uint8_t emit_work(std::uint64_t bytes) noexcept {
         return 2;
     }
 }
+std::uint8_t emit_auxiliary(std::uint64_t bytes) noexcept {
+    // Only a scalar count crosses this synchronous call, by value. No Rust
+    // pointer is retained; protocol/host rejection and every C++ exception
+    // become stable failures before returning across CXX.
+    try {
+        xdzip::charge_auxiliary(bytes);
+        return 0;
+    } catch (const Failure &failure) {
+        return failure.code;
+    } catch (const std::bad_alloc &) {
+        return 4;
+    } catch (...) {
+        return 2;
+    }
+}
 } // namespace xdzip::readonly_codec

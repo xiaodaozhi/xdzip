@@ -1,0 +1,319 @@
+{
+  "scope": "Project-owned deterministic input, independently authored official RAR archives. Test data only, no RAR encoder implementation.",
+  "tool": {
+    "name": "RAR",
+    "version": "7.23 Windows x64",
+    "distribution_url": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+    "member": "Rar.exe",
+    "sha256": "f561764bc3e9ed208744321a89a819b562edeaf06e203c02a06976121fda1991"
+  },
+  "cases": [
+    {
+      "case": "empty-store-crc",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": false,
+      "headers": false,
+      "blake": false,
+      "solid": false,
+      "method": 0,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "empty-store-crc/owned.rar",
+          "sha256": "194553bb0278742db6d2f5b5e4be0806ec0b43a774f14a8ed96110dce6a7bf0c"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "plain-store-blake",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 65,
+          "sha256": "d1c3eeb9bcf3d1593eaddd2664f0adb6f4a9c0dc048012780e4b098d4c0aaca8",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": false,
+      "headers": false,
+      "blake": true,
+      "solid": false,
+      "method": 0,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "plain-store-blake/owned.rar",
+          "sha256": "2423e0e9c63bd0ac9c324a8cb66e0108bbca8b2beb13be20cc9a6ee4ad82ac57"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "empty-encrypted-store",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": false,
+      "blake": false,
+      "solid": false,
+      "method": 0,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "empty-encrypted-store/owned.rar",
+          "sha256": "72a6f76a8b7d88bff735a5cddc728b60b2676ea18f7d25ba949345f5b334f4e0"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-store-crc",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 17,
+          "sha256": "912c4d2b4683095dbc2dbc2e8e2290d1797a02c6e3caaafc51cc303ac176c853",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": false,
+      "blake": false,
+      "solid": false,
+      "method": 0,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "encrypted-store-crc/owned.rar",
+          "sha256": "88e18a6312358f785113b210bad1e8ce6c4720b85048bae8f57990fd83d62e02"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-store-blake",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 513,
+          "sha256": "b007c7cfac494061c69b69de7dc8fb3e8aa93ffab4535dc54536da9dc4e366b3",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": false,
+      "blake": true,
+      "solid": false,
+      "method": 0,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "encrypted-store-blake/owned.rar",
+          "sha256": "42e0060b8a624a6687ffa0b3c981a3ffd705ceecc358f543642b08f9de3c0609"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-lz-blake-headers",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 65537,
+          "sha256": "a9277eaddeadf69b5fadbe63c952a5cb0d9a1475c208e22f8938ad9f6c8995eb",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": true,
+      "blake": true,
+      "solid": false,
+      "method": 5,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "encrypted-lz-blake-headers/owned.rar",
+          "sha256": "f9793c870ce62db872b2c5b00a833a085f4cb7f83eea82ae931d4a9d58df5be1"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-solid-blake-headers",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 32769,
+          "sha256": "170f997fdf7ef6a177d416e1ff3600a3f112d3e17d6c86ce22929a79bcb29f94",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        },
+        {
+          "name": "owned-1.bin",
+          "bytes": 65537,
+          "sha256": "b69bade21076db4ff652f1c051ae65c803ebbe7af93bfdedeb9743206d5aa6aa",
+          "formula": "byte[i]=(29*i+3*(i>>8)+1*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": true,
+      "blake": true,
+      "solid": true,
+      "method": 5,
+      "volume_argument": null,
+      "archives": [
+        {
+          "file": "encrypted-solid-blake-headers/owned.rar",
+          "sha256": "9a1fd6ce1573a0cfae2444ba963fa84aa5a084793a57b96580884695ed59f9f1"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-split-store-blake",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 20000,
+          "sha256": "7a8a020a74e0232121668e8432865c775326a3f1f863a0aad4f0de5b50bceb89",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256"
+        }
+      ],
+      "encrypted": true,
+      "headers": true,
+      "blake": true,
+      "solid": false,
+      "method": 0,
+      "volume_argument": "4093b",
+      "archives": [
+        {
+          "file": "encrypted-split-store-blake/owned.part1.rar",
+          "sha256": "abd82e630f861c21287cf47a5e814244b292745ed9e87a6cacd90624b7a8691d"
+        },
+        {
+          "file": "encrypted-split-store-blake/owned.part2.rar",
+          "sha256": "a1514c5e25e25c4b31b1e2f35ce9d577eedf644ab3787703ae227a1e02307606"
+        },
+        {
+          "file": "encrypted-split-store-blake/owned.part3.rar",
+          "sha256": "5158bf9d0c45058ab7bfbfb28adfa2f986fe85b4dc07c32ac7d842d5dc8c16e1"
+        },
+        {
+          "file": "encrypted-split-store-blake/owned.part4.rar",
+          "sha256": "c7e6884ea1bc80eb107322f98da7d857acc04256dd2354ac993220963cb21e28"
+        },
+        {
+          "file": "encrypted-split-store-blake/owned.part5.rar",
+          "sha256": "fd2980528227ad8b42c2b95e6e58a562378dc7f3ddc01f3db3f569326c1a1f7c"
+        },
+        {
+          "file": "encrypted-split-store-blake/owned.part6.rar",
+          "sha256": "b8f64a66ed6f0e949b3298ffba82ee3df7fb7cc1a98b9d0172c7a5e3681b4566"
+        }
+      ],
+      "official_test_exit": 0
+    },
+    {
+      "case": "encrypted-split-solid-lz-blake",
+      "inputs": [
+        {
+          "name": "owned-0.bin",
+          "bytes": 32769,
+          "sha256": "f8bb27d6edb03cfd38ad3178d0d11babd99924605e12113607183a633cfe1473",
+          "formula": "byte[i]=(29*i+3*(i>>8)+0*11+7) mod256; for all i advance u32 xorshift(13,17,5), seed=0x9e3779b9 XOR index; when i mod1024<512 replace byte with state low8"
+        },
+        {
+          "name": "owned-1.bin",
+          "bytes": 65537,
+          "sha256": "acb0c0a3743a3d62ae3c1674c9a044496fd48e188290f97e154c750a6d0fddda",
+          "formula": "byte[i]=(29*i+3*(i>>8)+1*11+7) mod256; for all i advance u32 xorshift(13,17,5), seed=0x9e3779b9 XOR index; when i mod1024<512 replace byte with state low8"
+        }
+      ],
+      "encrypted": true,
+      "headers": true,
+      "blake": true,
+      "solid": true,
+      "method": 5,
+      "volume_argument": "4093b",
+      "archives": [
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part01.rar",
+          "sha256": "e5302176dfc7b9982dc9b4c60d7f184155362d8d368a016785d047bb6df7bf4b"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part02.rar",
+          "sha256": "7168dbc2e257781a55083538b5867004f5e660cb4f87e1969db179a4c210d67e"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part03.rar",
+          "sha256": "aa16cbbf885f5de1eee23fa13fac16b2418136e52da1bc1c3964d078a4dc2497"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part04.rar",
+          "sha256": "502c0cbcf458670c62a1ff07167efc88080d8566f887580d3c1d8f67e513bf37"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part05.rar",
+          "sha256": "34f2d148946358f8d9eca4dba07a952f2c3071ac0c729f2bcc92bb2398d2f529"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part06.rar",
+          "sha256": "f1327e9a526428744354cb32f847c17d8c0bf984cc74bb74084212c0081dce67"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part07.rar",
+          "sha256": "3a0bd22e4f77b18c278983e3ca265c9e7e4c4bb9a93e17d87de2c914f948df62"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part08.rar",
+          "sha256": "1260225a1bd312b6f47b49c12a2f5eb62c11d0e50b4cb0726f181c64ef2d2922"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part09.rar",
+          "sha256": "88958d7c6c75527d9027e67244272d935157c6aafa475bbdf30a3bf2f304e628"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part10.rar",
+          "sha256": "5f872f1e0999034ed2bc313146f2815ecb23ccf31657e5494304de70d2a8ef74"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part11.rar",
+          "sha256": "bf0934ca1b8140fd0d41cbbb9393178bd7323506e0e0c0e96f3565e00783284a"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part12.rar",
+          "sha256": "54ede2994d4321714e32669694db095ca6c5fd57115f7e75c4d619043f8e0705"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part13.rar",
+          "sha256": "9d578aa70420c009c1084a7354b64c28ee310efe4302771f49a08c3ce30ce386"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part14.rar",
+          "sha256": "cda7af49c8ca8e83a19028ce89e53e6c2f4909224cb3564b064a65485d405a95"
+        },
+        {
+          "file": "encrypted-split-solid-lz-blake/owned.part15.rar",
+          "sha256": "8d1a40d96c45b294a598cba9b53f69e26a20e0cc6c40a8fa9dcd88084ab2a22d"
+        }
+      ],
+      "official_test_exit": 0
+    }
+  ],
+  "license": "Apache-2.0 for project-owned input and fixture data; the proprietary author is not redistributed.",
+  "generator": "../../generate-crypto-fixtures.py",
+  "test_password": "owned-test (public fixture data, not a user credential)"
+}

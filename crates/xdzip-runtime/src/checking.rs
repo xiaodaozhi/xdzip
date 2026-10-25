@@ -2,6 +2,7 @@
 
 //! Whole-archive verification has source authority only, never a destination or stage.
 use crate::Archive;
+use crate::extraction::auxiliary::AuxiliaryBudget;
 use crate::extraction::{Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Snapshot, Status, TaskKind};
 use crate::source::Source;
 use crate::task_interaction::{Interaction, decoding, emit};
@@ -123,12 +124,17 @@ struct Discard<'a> {
     declared: u64,
     precharged: &'a mut u64,
     output_bytes: &'a mut u64,
+    auxiliary: &'a mut AuxiliaryBudget,
     control: &'a Cancellation,
     start: Instant,
     last: &'a mut Instant,
     publish: &'a mut dyn FnMut(Snapshot),
 }
 impl DecodedSink for Discard<'_> {
+    fn charge_auxiliary(&mut self, bytes: u64) -> Result<(), DecodeError> {
+        self.control.check().map_err(|_| DecodeError::Cancelled)?;
+        self.auxiliary.charge(bytes)
+    }
     fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
         self.control.check().map_err(|_| DecodeError::Cancelled)?;
         let next = self
@@ -245,6 +251,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             let mut last = Instant::now();
             let mut precharged = 0;
             let mut output_bytes = 0;
+            let mut auxiliary = AuxiliaryBudget::default();
             for entry in job.rows.iter() {
                 control.cancel.check().map_err(|_| "cancelled")?;
                 stats.current = entry.display_name.clone();
@@ -263,6 +270,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                             declared: entry.size,
                             precharged: &mut precharged,
                             output_bytes: &mut output_bytes,
+                            auxiliary: &mut auxiliary,
                             control: &control.cancel,
                             start,
                             last: &mut last,
@@ -381,12 +389,74 @@ mod precharged_tests {
     }
 
     #[test]
+    fn auxiliary_check_work_crosses_records_without_changing_verified_or_decoded_bytes() {
+        use crate::extraction::auxiliary::MAX_AUXILIARY_BYTES;
+        let mut stats = snapshot();
+        let read = Cell::new(0);
+        let control = Cancellation::default();
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
+        auxiliary.charge(MAX_AUXILIARY_BYTES - 2).unwrap();
+        let mut last = Instant::now();
+        let mut publish = |_| {};
+        for _ in 0..2 {
+            let mut sink = Discard {
+                stats: &mut stats,
+                read: &read,
+                file_bytes: 0,
+                declared: 87,
+                precharged: &mut credit,
+                output_bytes: &mut output_bytes,
+                auxiliary: &mut auxiliary,
+                control: &control,
+                start: Instant::now(),
+                last: &mut last,
+                publish: &mut publish,
+            };
+            sink.charge_auxiliary(1).unwrap();
+            assert_eq!(
+                sink.write_precharged_chunk(b"x"),
+                Err(DecodeError::Integrity)
+            );
+        }
+        let mut sink = Discard {
+            stats: &mut stats,
+            read: &read,
+            file_bytes: 0,
+            declared: 87,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
+            control: &control,
+            start: Instant::now(),
+            last: &mut last,
+            publish: &mut publish,
+        };
+        assert_eq!(sink.charge_auxiliary(1), Err(DecodeError::Limit));
+        assert_eq!(sink.auxiliary.used(), MAX_AUXILIARY_BYTES);
+        assert_eq!(
+            (
+                sink.stats.decoded_bytes,
+                sink.stats.verified_bytes,
+                sink.stats.written_bytes,
+                *sink.precharged,
+                *sink.output_bytes
+            ),
+            (0, 0, 0, 0, 0)
+        );
+        control.cancel();
+        assert_eq!(sink.charge_auxiliary(1), Err(DecodeError::Cancelled));
+    }
+
+    #[test]
     fn precharged_discard_credit_crosses_records_without_double_work_or_replay() {
         let mut stats = snapshot();
         let read = Cell::new(0);
         let control = Cancellation::default();
         let mut credit = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut last = Instant::now();
         let mut publish = |_| {};
         for bytes in [b"ab", b"cd"] {
@@ -397,6 +467,7 @@ mod precharged_tests {
                 declared: 2,
                 precharged: &mut credit,
                 output_bytes: &mut output_bytes,
+                auxiliary: &mut auxiliary,
                 control: &control,
                 start: Instant::now(),
                 last: &mut last,
@@ -415,6 +486,7 @@ mod precharged_tests {
             declared: 2,
             precharged: &mut credit,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             control: &control,
             start: Instant::now(),
             last: &mut last,
@@ -438,6 +510,7 @@ mod precharged_tests {
         let control = Cancellation::default();
         let mut credit = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut last = Instant::now();
         let mut publish = |_| {};
         let mut sink = Discard {
@@ -447,6 +520,7 @@ mod precharged_tests {
             declared: 1,
             precharged: &mut credit,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             control: &control,
             start: Instant::now(),
             last: &mut last,

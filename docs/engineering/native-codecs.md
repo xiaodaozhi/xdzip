@@ -22,6 +22,10 @@ Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能
 
 任务延续宿主条目、路径、元数据和实际字节预算，默认 native 预算为 1 GiB。Windows 使用 Job Object 提交内存限制，Linux 使用绝对虚拟地址空间限制，macOS 使用启动时虚拟地址空间基线加预算，排除 dyld 预留；Unix 地址空间限制不等同于 RSS 计量。字典及固实工作区在分配前准入，无法在预算内完成的操作明确失败，不静默降级为无界磁盘暂存。重试和固实跳过均累计实际工作量。
 
+算法初始化和控制处理的实际辅助工作使用独立 `AUX_WORK=24`，当前仅允许 RAR 负载使用；宿主与 runtime 分别累计辅助预算，不将其计入文件解码、膨胀比、公开进度或预计费信用。完整协议、重试生命周期与必须保持的验收条件见[算法辅助工作计量](auxiliary-decoding-work.md)。
+
+English: Actual auxiliary algorithm work uses a separate RAR-payload-only channel, `AUX_WORK=24`. Native and runtime independently retain cumulative auxiliary budgets across retries. This work changes neither decoded/output bytes, expansion ratios, public progress nor prepaid delivery credit. The [auxiliary work contract](auxiliary-decoding-work.md) defines its framing, lifecycle and required acceptance checks.
+
 ## 能力边界
 
 7z 的浏览、解压、完整性测试和创建分别声明，创建使用 LZMA2，默认正常级别、非固实、不加密、不分卷。固实、内容加密、文件名加密和编号分卷作为独立能力验证。文件名加密必须设置密码。文件名加密包在元数据打开阶段请求密码，未完成扫描不能发布部分索引。

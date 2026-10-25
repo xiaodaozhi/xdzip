@@ -5,11 +5,16 @@ mod deflate;
 mod gzip;
 mod lzx;
 mod mszip;
+mod ppmd;
+mod ppmd7;
 mod quantum;
 mod raw;
+mod stream_io;
 pub use gzip::{GzipReader, GzipWriter};
 pub use lzx::LzxDecoder;
 pub use mszip::MszipDecoder;
+pub use ppmd::{PpmdCapacity, PpmdModel, PpmdRange, PpmdWork, ppmd_memory_required};
+pub use ppmd7::{Ppmd7Reader, ppmd7_memory_required};
 pub use quantum::QuantumDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
 

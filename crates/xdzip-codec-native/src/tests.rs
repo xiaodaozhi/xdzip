@@ -56,7 +56,7 @@ fn precharged_worker_credit_requires_paid_cab_work_and_consumes_once() {
         Err(DecodeError::Integrity)
     );
     assert_eq!(sink.prepaid, 3);
-    for format in [Format::SevenZip, Format::Rar, Format::Iso, Format::Udf] {
+    for format in [Format::SevenZip, Format::Iso, Format::Udf] {
         credit.0 = 3;
         assert_eq!(
             credit.data(format, &mut sink, b"a", true, &mut written, 9),

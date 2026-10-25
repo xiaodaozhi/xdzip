@@ -168,7 +168,7 @@ static void write_data_impl(const void *data, size_t size, bool selected, bool p
         if (selected) {
             frame.assign(bytes, bytes + count);
             // WorkerCredit::data in the Rust host accepts this kind only for
-            // CAB after successful WORK admission, and debits it once before
+            // CAB/RAR after successful WORK admission, and debits it once before
             // delivery. Runtime sinks independently retain output quotas.
             send(precharged ? PrechargedData : Data, frame);
         } else {
@@ -185,6 +185,17 @@ void write_data(const void *data, size_t size, bool selected) {
 }
 void write_precharged_data(const void *data, size_t size) {
     write_data_impl(data, size, true, true);
+}
+void charge_auxiliary(uint64_t size) {
+    std::lock_guard<std::recursive_mutex> guard(io_mutex);
+    if (request.format != 4 || (request.operation != 1 && request.operation != 3) || size == 0)
+        throw Failure{2};
+    if (size > Chunk)
+        throw Failure{4};
+    std::vector<uint8_t> frame;
+    put64(frame, size);
+    send(AuxWork, frame);
+    ack();
 }
 void write_at(uint64_t offset, const void *data, size_t size) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);

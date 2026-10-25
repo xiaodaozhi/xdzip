@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/junrar/junrar",
+  "commit": "57091f9ccd43661cf8f12c389917cc24950df707",
+  "scope": "Independent pre-existing archive data and separately published known WAV only. No corresponding third-party decompression implementation was read. Source filename audio-text describes an author profile, not independent proof that every audio channel count executes. Exact decoded known bytes and runtime model observations are reported separately.",
+  "source_license": {
+    "file": "LICENSE.junrar.txt",
+    "url": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/LICENSE",
+    "sha256": "9d90c3649d4eb064ce2fff366a7421107fbbc3c65d8eede45df5dec95e4e016c",
+    "notice": "Original upstream notice preserved; no inferred relicensing of archive data or implementation."
+  },
+  "known_plain_source": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/src/test/resources/com/github/junrar/audio/BoatModernEnglish.wav",
+  "fixtures": [
+    {
+      "file": "BoatModernEnglish-audio-text-unpack20.rar",
+      "source_url": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/src/test/resources/com/github/junrar/audio/BoatModernEnglish-audio-text-unpack20.rar",
+      "bytes": 28125,
+      "sha256": "4144b4063f2f7c997b28b0bf42dc16cdb42ec913f271eecc47cd07b71335396e",
+      "unpack_version": 20,
+      "known_file": {
+        "name": "BoatModernEnglish.wav",
+        "bytes": 56464,
+        "sha256": "0aeeb3c12f01d7089ca83eb321d5a54673ba0e6011231f5bc1fa10102ea3d797",
+        "crc32": 2194861449
+      },
+      "observed_final_audio_channels": 2
+    },
+    {
+      "file": "BoatModernEnglish-regular-unpack20.rar",
+      "source_url": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/src/test/resources/com/github/junrar/audio/BoatModernEnglish-regular-unpack20.rar",
+      "bytes": 42774,
+      "sha256": "3baa87e8e4f44628655d64954a03e79b28abf84261eba6b21e7244f27c104b79",
+      "unpack_version": 20,
+      "known_file": {
+        "name": "BoatModernEnglish.wav",
+        "bytes": 56464,
+        "sha256": "0aeeb3c12f01d7089ca83eb321d5a54673ba0e6011231f5bc1fa10102ea3d797",
+        "crc32": 2194861449
+      }
+    }
+  ],
+  "limits": [
+    "Known contents and observed modes do not establish all channel counts, healthy legacy solid tails, explicitly authored version26, split archives, or greater-than-2GiB actual payloads.",
+    "Fixed mathematical slot/mode/reset/budget vectors are separate from these independent archive inputs."
+  ],
+  "content_license": {
+    "file": "LICENSE.content.txt",
+    "origin": "Stored LICENSE.txt in both original archive inputs, reproduced byte for byte.",
+    "attribution": "UofG Language Modules, CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0>, via Wikimedia Commons",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "modifications": "Original archive bytes unchanged; source metadata and tests added by xdzip."
+  },
+  "test_assertions": {
+    "url": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/src/test/java/com/github/junrar/ArchiveTest.java",
+    "sha256": "19e1914617d91f61d5c6493b354b35be5ace675ac3352f11bf68459683f02dc6",
+    "read_scope": "Targeted audio fixture names, expected WAV and license assertions around lines107..181; no decoder implementation.",
+    "known_original": "BoatModernEnglish.wav56464B, separately published in same fixed test-data directory."
+  }
+}

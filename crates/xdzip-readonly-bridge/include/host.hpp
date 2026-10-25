@@ -11,5 +11,6 @@ std::uint8_t emit_row(std::uint64_t index, std::uint8_t flags, std::uint64_t siz
 std::uint8_t emit_data(rust::Slice<const std::uint8_t> bytes) noexcept;
 std::uint8_t emit_precharged_data(rust::Slice<const std::uint8_t> bytes) noexcept;
 std::uint8_t emit_work(std::uint64_t bytes) noexcept;
+std::uint8_t emit_auxiliary(std::uint64_t bytes) noexcept;
 Transfer complete_entry(std::uint64_t index) noexcept;
 } // namespace xdzip::readonly_codec

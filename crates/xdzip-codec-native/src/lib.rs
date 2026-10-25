@@ -1,6 +1,8 @@
 // crates/xdzip-codec-native/src/lib.rs
 
 //! Official native engines behind a bounded worker and host-owned streams.
+#[cfg(test)]
+mod auxiliary_tests;
 mod protocol;
 #[cfg(test)]
 mod tests;
@@ -303,6 +305,40 @@ impl MetadataCodec for NativeCodec {
     }
 }
 const PRECHARGED_LIMIT: u64 = 20 * 1024 * 1024 * 1024;
+const AUXILIARY_LIMIT: u64 = 20 * 1024 * 1024 * 1024;
+
+/// Actual auxiliary work belongs to the payload lifetime, including restarted
+/// workers and password attempts. It is never a source of delivery credit.
+#[derive(Default)]
+struct AuxiliaryWork(u64);
+impl AuxiliaryWork {
+    fn packet(
+        &mut self,
+        format: Format,
+        fields: &mut Fields<'_>,
+        sink: &mut dyn DecodedSink,
+    ) -> Result<(), DecodeError> {
+        if format != Format::Rar {
+            return Err(DecodeError::Integrity);
+        }
+        let count = fields.u64().map_err(decode_error)?;
+        fields.end().map_err(decode_error)?;
+        if count == 0 {
+            return Err(DecodeError::Integrity);
+        }
+        if count > protocol::CHUNK as u64 {
+            return Err(DecodeError::Limit);
+        }
+        self.0 = self
+            .0
+            .checked_add(count)
+            .filter(|n| *n <= AUXILIARY_LIMIT)
+            .ok_or(DecodeError::Limit)?;
+        // The worker has executed this work. A sink failure must not refund it
+        // when the next password attempt starts a fresh worker.
+        sink.charge_auxiliary(count)
+    }
+}
 
 /// Credit belongs to one live worker, rather than to a source or record ID.
 #[derive(Default)]
@@ -319,7 +355,13 @@ impl WorkerCredit {
         sink: &mut dyn DecodedSink,
         count: u64,
     ) -> Result<(), DecodeError> {
-        let next = if format == Format::Cab {
+        if count == 0 {
+            return Err(DecodeError::Integrity);
+        }
+        if count > protocol::CHUNK as u64 {
+            return Err(DecodeError::Limit);
+        }
+        let next = if matches!(format, Format::Cab | Format::Rar) {
             self.0
                 .checked_add(count)
                 .filter(|n| *n <= PRECHARGED_LIMIT)
@@ -351,7 +393,7 @@ impl WorkerCredit {
             return Err(DecodeError::Integrity);
         }
         if precharged {
-            if format != Format::Cab || count == 0 {
+            if !matches!(format, Format::Cab | Format::Rar) || count == 0 {
                 return Err(DecodeError::Integrity);
             }
             self.0 = self.0.checked_sub(count).ok_or(DecodeError::Integrity)?;
@@ -377,6 +419,7 @@ struct NativeReader<'a> {
     worker_password: Zeroizing<String>,
     worker_has_password: bool,
     credit: WorkerCredit,
+    auxiliary: AuxiliaryWork,
 }
 impl PayloadCodec for NativeCodec {
     fn open_payload<'a>(
@@ -413,6 +456,7 @@ impl PayloadCodec for NativeCodec {
             worker_password: Zeroizing::new(String::new()),
             worker_has_password: false,
             credit: WorkerCredit::default(),
+            auxiliary: AuxiliaryWork::default(),
         }))
     }
 }
@@ -508,6 +552,11 @@ impl PayloadReader for NativeReader<'_> {
                     let count = fields.u64().map_err(decode_error)?;
                     fields.end().map_err(decode_error)?;
                     self.credit.work(self.codec.format, sink, count)?;
+                    worker.send(protocol::ACK, &[]).map_err(decode_error)?;
+                }
+                protocol::AUX_WORK => {
+                    self.auxiliary
+                        .packet(self.codec.format, &mut fields, sink)?;
                     worker.send(protocol::ACK, &[]).map_err(decode_error)?;
                 }
                 protocol::ERROR => {

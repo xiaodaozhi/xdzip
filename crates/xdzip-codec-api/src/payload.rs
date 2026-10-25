@@ -54,6 +54,13 @@ pub trait DecodedSink {
     fn charge_skipped(&mut self, _bytes: u64) -> Result<(), DecodeError> {
         Ok(())
     }
+    /// Account algorithm work already performed, independently of decoded or
+    /// delivered file bytes. This never grants prepaid output credit. Task
+    /// hosts may impose a separate cumulative limit across records and retries.
+    /// Callers must admit future work privately before reporting actual work.
+    fn charge_auxiliary(&mut self, _bytes: u64) -> Result<(), DecodeError> {
+        Ok(())
+    }
 }
 
 /// One opened format instance. Its metadata identities match the host snapshot.
@@ -114,6 +121,7 @@ mod tests {
             }
         }
         let mut sink = Limited(3);
+        sink.charge_auxiliary(u64::MAX).unwrap();
         sink.charge_skipped(100).unwrap();
         sink.write_precharged_chunk(b"abc").unwrap();
         assert_eq!(sink.write_precharged_chunk(b"x"), Err(DecodeError::Limit));

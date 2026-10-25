@@ -1,6 +1,10 @@
 {
   "rules": [
     {
+      "package": "xdzip-codec-rar",
+      "forbidden_runtime_dependencies": ["unrar", "unrar_sys", "unrar-sys", "rar", "unar", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "rawzip", "zip", "tar", "cab", "flate2", "miniz_oxide", "zlib-rs", "libz-sys", "ppmd-rust", "ppmd-sys"]
+    },
+    {
       "package": "xdzip-codec-tar",
       "forbidden_runtime_dependencies": ["tar", "filetime", "flate2", "miniz_oxide", "zlib-rs"]
     },

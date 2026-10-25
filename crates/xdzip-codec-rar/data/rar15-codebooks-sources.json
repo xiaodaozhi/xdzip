@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "purpose": "Finite wire prefix-function facts used for decompression, not reference program code, control flow, array declarations or storage layouts. No new license or legal clearance is inferred.",
+  "source_license": "LicenseRef-UnRAR",
+  "source_release": "UnRAR 7.30 beta1",
+  "source_archive_sha256": "634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab",
+  "reference_analyst_read": "unpack15.cpp fixed scalar codebook ranges; implementer reads code-free frozen facts only",
+  "input_facts": {
+    "rar15-prefix-codebooks-v1.csv": "2e50aa5c3c9f97609cf7b7c91676b7266de9ca65ee977f9184c42ec104c9edeb",
+    "rar15-short-codebooks-v1.csv": "31d4186b3dbf06bdbf5aabd5f08cfa800bc810709cfd042fe6f32ef22c9cad1b",
+    "factual-rar15-v1.md": "d4cd5d61ee4b16fa7202cb6840d0e9592d67205c4fdbfd02f3e515320ebf96ef"
+  },
+  "transformation": "Prove canonical symbol order, then compress each symbol-length function into end-exclusive runs. Short codewords remain numeric wire mappings, decoded by an original safe trie.",
+  "files": {
+    "rar15-prefix-length-runs.csv": "42b80b433c83d2bff6816007ec3f83781c5f50ea342abfe5232b333328098933",
+    "rar15-short-codewords.csv": "31d4186b3dbf06bdbf5aabd5f08cfa800bc810709cfd042fe6f32ef22c9cad1b"
+  }
+}

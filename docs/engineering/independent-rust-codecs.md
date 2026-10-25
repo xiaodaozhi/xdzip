@@ -85,6 +85,12 @@ worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以
 
 English: The independent read-only CAB backend is the fixed product route for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official Cab and its CAB-only LZX/Quantum implementations are excluded from compilation, with no fallback. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; independent implementation is not legal clearance, and native manual acceptance and release authorization remain separate.
 
+## RAR只读候选规格
+
+`xdzip-codec-rar` 的古老/旧/现代容器、物理片身份、授权卷、名称、Store、13/15 与 20/26 族、RAR29 LZ/PPM/标准过滤器、现代 LZ/过滤器及历史/现代密码候选契约见[RAR 实现依据](rar-format-sources.md)。该候选尚未替换产品 UnRAR 路由；各历史组合、真实过滤器和兼容条件须按[完整迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)闭合，不能因单族成功缩减范围。未知尺寸的公共表示、现代时间的宿主投影及辅助工作独立计费是替换前的必要条件。
+
+English: The RAR crate provides ancient/legacy/modern containers, Store, 13/15 and 20/26, RAR29 LZ/PPM/standard filters, modern LZ/filters and historical/modern crypto candidates. It does not replace UnRAR or narrow the migration scope. The source record defines its admitted ranges, identities and remaining historical-combination, real-filter, unknown-size, time-projection and independent auxiliary-accounting requirements.
+
 ## ISO与UDF只读规格
 
 `xdzip-codec-optical` 只接收借用的 `ReadSource`，不访问文件系统或挂载镜像。ISO 依据 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)的卷描述符、目录、扩展属性和附录 C Joliet，以及 [Rock Ridge 1.12](https://bitsavers.org/projects/cdrom/Rock_Ridge_Interchange_Protocol.pdf)、SUSP 1.12 与 [El Torito 1.0](https://bitsavers.org/projects/cdrom/El_Torito_CD-ROM_Spec.pdf)编写。UDF 依据 [ECMA-167 第三版](https://ecma-international.org/publications-and-standards/standards/ecma-167/)第 1、3、4 部分及 [OSTA UDF 2.60](https://www.osta.org/specs/pdf/udf260.pdf)的结构限制、分区与字符集规定编写。实现不转换第三方解析器源码，规范原文和第三方测试工具不作为本项目原创材料再许可。

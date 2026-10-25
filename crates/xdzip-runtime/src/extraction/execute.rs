@@ -1,3 +1,4 @@
+use super::auxiliary::AuxiliaryBudget;
 use super::plan::Job;
 use super::{ConflictPolicy, Control, MAX_FILE_BYTES, MAX_TASK_BYTES, Prompt, Snapshot, Status};
 use crate::task_interaction::{Interaction, decoding, emit};
@@ -77,6 +78,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
     let mut pending_file = None;
     let mut precharged = 0u64;
     let mut output_bytes = 0u64;
+    let mut auxiliary = AuxiliaryBudget::default();
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
@@ -108,6 +110,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                             control,
                             precharged: &mut precharged,
                             output_bytes: &mut output_bytes,
+                            auxiliary: &mut auxiliary,
                             file_bytes: 0,
                             file_limit: 4096,
                             count_written: false,
@@ -189,6 +192,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                             control,
                             precharged: &mut precharged,
                             output_bytes: &mut output_bytes,
+                            auxiliary: &mut auxiliary,
                             file_bytes: 0,
                             file_limit: MAX_FILE_BYTES,
                             count_written: true,
@@ -312,6 +316,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                         control,
                         precharged: &mut precharged,
                         output_bytes: &mut output_bytes,
+                        auxiliary: &mut auxiliary,
                         file_bytes: 0,
                         file_limit: MAX_FILE_BYTES,
                         count_written: true,
@@ -424,6 +429,7 @@ struct Meter<'a, W: Write> {
     control: &'a Control,
     precharged: &'a mut u64,
     output_bytes: &'a mut u64,
+    auxiliary: &'a mut AuxiliaryBudget,
     file_bytes: u64,
     file_limit: u64,
     count_written: bool,
@@ -433,6 +439,15 @@ struct Meter<'a, W: Write> {
     publish: &'a mut dyn FnMut(Snapshot),
 }
 impl<W: Write> DecodedSink for Meter<'_, W> {
+    fn charge_auxiliary(&mut self, bytes: u64) -> Result<(), DecodeError> {
+        self.control
+            .cancel
+            .check()
+            .map_err(|_| DecodeError::Cancelled)?;
+        self.auxiliary.charge(bytes).inspect_err(|_| {
+            self.error = Some("resource_limit");
+        })
+    }
     fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
         self.control
             .cancel
@@ -572,6 +587,170 @@ pub(super) fn inject_disk_full(bytes: Option<u64>) {
 mod meter_tests {
     use super::*;
     use crate::extraction::Password;
+    use crate::extraction::auxiliary::MAX_AUXILIARY_BYTES;
+
+    #[test]
+    fn auxiliary_initialization_is_separate_from_small_file_bytes_progress_and_credit() {
+        let mut stats = ArchiveForTest::snapshot();
+        stats.declared_bytes = 87;
+        let control = Control::default();
+        let publications = std::cell::Cell::new(0);
+        let mut publish = |_| publications.set(publications.get() + 1);
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
+        let mut output = Vec::new();
+        let mut meter = Meter {
+            writer: &mut output,
+            stats: &mut stats,
+            control: &control,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
+            file_bytes: 0,
+            file_limit: 87,
+            count_written: true,
+            error: None,
+            start: Instant::now(),
+            last: Instant::now() - Duration::from_secs(1),
+            publish: &mut publish,
+        };
+        let initialization = 64 * 1024 + 4 * 1024 * 1024;
+        meter.charge_auxiliary(initialization).unwrap();
+        assert_eq!(
+            (
+                meter.stats.decoded_bytes,
+                meter.stats.written_bytes,
+                meter.file_bytes,
+                *meter.precharged,
+                *meter.output_bytes
+            ),
+            (0, 0, 0, 0, 0)
+        );
+        assert_eq!(publications.get(), 0, "initialization is not file progress");
+        assert_eq!(
+            meter.write_precharged_chunk(b"x"),
+            Err(DecodeError::Integrity)
+        );
+        meter.write_chunk(&[17; 87]).unwrap();
+        assert_eq!(
+            (
+                meter.stats.decoded_bytes,
+                meter.stats.written_bytes,
+                meter.file_bytes
+            ),
+            (87, 87, 87)
+        );
+        assert_eq!(meter.auxiliary.used(), initialization);
+        control.cancel();
+        assert_eq!(meter.charge_auxiliary(1), Err(DecodeError::Cancelled));
+        assert_eq!(meter.auxiliary.used(), initialization);
+    }
+
+    #[test]
+    fn auxiliary_actual_repeated_packets_reach_independent_runtime_limit() {
+        let mut stats = ArchiveForTest::snapshot();
+        let control = Control::default();
+        let mut publish = |_| {};
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
+        let mut meter = Meter {
+            writer: std::io::sink(),
+            stats: &mut stats,
+            control: &control,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
+            file_bytes: 0,
+            file_limit: 87,
+            count_written: true,
+            error: None,
+            start: Instant::now(),
+            last: Instant::now(),
+            publish: &mut publish,
+        };
+        for _ in 0..MAX_AUXILIARY_BYTES / 65536 {
+            meter.charge_auxiliary(65536).unwrap();
+        }
+        assert_eq!(meter.charge_auxiliary(1), Err(DecodeError::Limit));
+        assert_eq!(meter.error, Some("resource_limit"));
+        assert_eq!(meter.auxiliary.used(), MAX_AUXILIARY_BYTES);
+        assert_eq!(
+            (
+                meter.stats.decoded_bytes,
+                meter.stats.written_bytes,
+                meter.stats.committed_bytes,
+                *meter.precharged,
+                *meter.output_bytes
+            ),
+            (0, 0, 0, 0, 0)
+        );
+    }
+
+    #[test]
+    fn auxiliary_failed_password_attempts_share_task_budget_without_refund_or_publication() {
+        let mut stats = ArchiveForTest::snapshot();
+        let mut entry = super::super::tests::archive("stored.zip").rows[0].clone();
+        entry.encrypted = true;
+        entry.password_supported = true;
+        let control = Control::default();
+        let mut interaction = Interaction::default();
+        let mut attempts = 0;
+        let mut prompts = 0;
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
+        auxiliary.charge(MAX_AUXILIARY_BYTES - 5).unwrap();
+        let mut publish = |snapshot: Snapshot| {
+            if let Some(prompt) = snapshot.password_prompt {
+                prompts += 1;
+                control.respond_password(prompt.id, Password::new("answer".into()).unwrap());
+            }
+        };
+        let result = interaction.decode(
+            &entry,
+            &control,
+            &mut stats,
+            Instant::now(),
+            &mut publish,
+            |_, stats, publish| {
+                attempts += 1;
+                let mut meter = Meter {
+                    writer: std::io::sink(),
+                    stats,
+                    control: &control,
+                    precharged: &mut credit,
+                    output_bytes: &mut output_bytes,
+                    auxiliary: &mut auxiliary,
+                    file_bytes: 0,
+                    file_limit: 87,
+                    count_written: true,
+                    error: None,
+                    start: Instant::now(),
+                    last: Instant::now(),
+                    publish,
+                };
+                meter.charge_auxiliary(3).map_err(decoding)?;
+                Err::<(), _>("wrong_password")
+            },
+        );
+        assert_eq!(result, Err("resource_limit"));
+        assert_eq!(
+            (attempts, prompts, auxiliary.used()),
+            (2, 1, MAX_AUXILIARY_BYTES - 2)
+        );
+        assert_eq!(
+            (
+                stats.decoded_bytes,
+                stats.written_bytes,
+                stats.committed_bytes,
+                credit,
+                output_bytes
+            ),
+            (0, 0, 0, 0, 0)
+        );
+    }
     #[test]
     fn precharged_meter_credit_survives_record_changes_and_is_consumed_once() {
         let mut stats = ArchiveForTest::snapshot();
@@ -579,6 +758,7 @@ mod meter_tests {
         let mut publish = |_| {};
         let mut credit = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut output = Vec::new();
         for bytes in [b"ab", b"cd"] {
             let mut meter = Meter {
@@ -587,6 +767,7 @@ mod meter_tests {
                 control: &control,
                 precharged: &mut credit,
                 output_bytes: &mut output_bytes,
+                auxiliary: &mut auxiliary,
                 file_bytes: 0,
                 file_limit: 2,
                 count_written: true,
@@ -616,6 +797,7 @@ mod meter_tests {
             control: &control,
             precharged: &mut credit,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             file_bytes: 0,
             file_limit: 4,
             count_written: true,
@@ -640,12 +822,14 @@ mod meter_tests {
         let mut publish = |_| {};
         let mut credit = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut meter = Meter {
             writer: std::io::sink(),
             stats: &mut stats,
             control: &control,
             precharged: &mut credit,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             file_bytes: 0,
             file_limit: MAX_FILE_BYTES,
             count_written: true,
@@ -703,12 +887,14 @@ mod meter_tests {
         let mut publish = |_| {};
         let mut credit = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut meter = Meter {
             writer: Partial(false),
             stats: &mut stats,
             control: &control,
             precharged: &mut credit,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             file_bytes: 0,
             file_limit: 4,
             count_written: true,
@@ -765,12 +951,14 @@ mod meter_tests {
         let mut publish = |_| {};
         let mut precharged = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut meter = Meter {
             writer: Full(false),
             stats: &mut stats,
             control: &control,
             precharged: &mut precharged,
             output_bytes: &mut output_bytes,
+            auxiliary: &mut auxiliary,
             file_bytes: MAX_FILE_BYTES,
             file_limit: MAX_FILE_BYTES,
             count_written: true,
@@ -801,6 +989,7 @@ mod meter_tests {
         let mut prompts = 0;
         let mut precharged = 0;
         let mut output_bytes = 0;
+        let mut auxiliary = AuxiliaryBudget::default();
         let mut publish = |snapshot: Snapshot| {
             if let Some(prompt) = snapshot.password_prompt {
                 prompts += 1;
@@ -821,6 +1010,7 @@ mod meter_tests {
                     control: &control,
                     precharged: &mut precharged,
                     output_bytes: &mut output_bytes,
+                    auxiliary: &mut auxiliary,
                     file_bytes: 0,
                     file_limit: MAX_FILE_BYTES,
                     count_written: true,
