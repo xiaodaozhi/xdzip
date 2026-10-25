@@ -27,14 +27,17 @@ $env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-intero
 $env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metadata-interop'
 $env:XDZIP_LEGACY_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/legacy-name-interop'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
-Invoke-Checked cargo @('build', '-p', 'xdzip-m3-probe', '-p', 'xdzip-m4-probe', '--locked')
+Invoke-Checked cargo @('build', '-p', 'xdzip-m3-probe', '-p', 'xdzip-m4-probe', '-p', 'xdzip-optical-probe', '--locked')
 $rustCodecEvidence = 'build/review/independent-rust-codecs'
 New-Item -ItemType Directory -Path $rustCodecEvidence -Force | Out-Null
 $extractProbe = if ($IsWindows) { 'target/debug/xdzip-m3-probe.exe' } else { 'target/debug/xdzip-m3-probe' }
 $createProbe = if ($IsWindows) { 'target/debug/xdzip-m4-probe.exe' } else { 'target/debug/xdzip-m4-probe' }
+$opticalProbe = if ($IsWindows) { 'target/debug/xdzip-optical-probe.exe' } else { 'target/debug/xdzip-optical-probe' }
+Invoke-Checked $codecPython @('scripts/check-optical-interop.py', '--binary', $opticalProbe, '--extract-binary', $extractProbe, '--worker', $env:XDZIP_NATIVE_CODEC, '--output', "$rustCodecEvidence/optical")
 Invoke-Checked $codecPython @('scripts/check-tar-interop.py', '--create-binary', $createProbe, '--extract-binary', $extractProbe, '--output', "$rustCodecEvidence/tar-interop.json")
 Invoke-Checked cargo @('run', '--release', '-p', 'xdzip-compression', '--example', 'gzip-probe', '--locked') > "$rustCodecEvidence/compression-benchmark.json"
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored')
+Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'optical_backend_tests', '--', '--ignored')
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
 $codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
 $zipInteropArguments = @('scripts/check-advanced-creation.py', '--binary', $createProbe, '--extract-binary', $extractProbe, '--reader', $codecReference, '--output', "$rustCodecEvidence/zip-aes-split.json")

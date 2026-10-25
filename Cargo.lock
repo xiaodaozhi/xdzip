@@ -1483,6 +1483,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-optical"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-domain",
+]
+
+[[package]]
 name = "xdzip-codec-tar"
 version = "0.1.0-alpha.6"
 dependencies = [
@@ -1568,6 +1576,25 @@ version = "0.1.0-alpha.6"
 dependencies = [
  "xdzip-runtime",
  "zeroize",
+]
+
+[[package]]
+name = "xdzip-optical-bridge"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "xdzip-codec-api",
+ "xdzip-codec-optical",
+]
+
+[[package]]
+name = "xdzip-optical-probe"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "serde_json",
+ "xdzip-codec-api",
+ "xdzip-codec-optical",
 ]
 
 [[package]]

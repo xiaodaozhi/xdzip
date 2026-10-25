@@ -1,0 +1,15 @@
+[package]
+name = "xdzip-optical-probe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+xdzip-codec-api = { path = "../../crates/xdzip-codec-api" }
+xdzip-codec-optical = { path = "../../crates/xdzip-codec-optical" }
+serde_json = "=1.0.154"
+
+[lints]
+workspace = true

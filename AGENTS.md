@@ -23,7 +23,7 @@
 
 自定义单选控件统一使用 IntentRadioButton，将鼠标、键盘和原生辅助功能 press/toggle 路由到同一选择模型；不得仅翻转 checked。回归必须执行 QAccessibleActionInterface 并核对实际行为和互斥状态。
 
-后续开发在 main 推进；本地相关检查通过后直接推送 main，不另建 PR。共享 main 不强制推送；只有所有者明确授权的历史整理，才可在备份、完整性核验和精确 force-with-lease 保护下例外处理，见 docs/engineering/repository-hygiene.md。遇到远端新提交先同步并复验。
+允许按短周期开发需要创建、合并和删除临时分支；本地相关检查通过后集成到 main，可按需使用 PR。共享 main 不强制推送；只有所有者明确授权的历史整理，才可在备份、完整性核验和精确 force-with-lease 保护下例外处理，见 docs/engineering/repository-hygiene.md。遇到远端新提交先同步并复验，临时分支合并后按需清理。
 
 有明确交付范围的修复、验证和里程碑使用 GitHub issue 跟踪，先查重并建立或复用 issue，记录范围、验收条件、实际进展、剩余项和最终提交。验证发现未收口路径时保留开放状态，不以 CI 通过替代修复结论。安全利用细节、用户文件及完整私人路径保留在本地或私密交接，不上传公开 issue。工作包与发行许可复核分开管理，不把新缺陷累加为已完成工作包的待办。
 

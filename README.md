@@ -58,7 +58,7 @@
 - **7z**：使用官方 7-Zip 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[官方后端契约](docs/engineering/native-codecs.md)。
 - **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 已验证 Store 内容及超预算字典拒绝，LZ 压缩流尚缺少独立实样互操作验证，字典超出资源预算时明确拒绝。具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
 - **CAB**：使用官方 7-Zip 只读后端，支持 Store、MSZip、Quantum、LZX 和同目录分卷；缺卷或不匹配卷拒绝打开。可浏览、搜索、解压、测试、临时打开普通文件及导出，不提供创建或修改，具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
-- **ISO 与 UDF**：使用官方 7-Zip 只读后端，支持 ISO9660、Joliet、Rock Ridge 与 UDF，混合映像优先使用 UDF 命名空间。可浏览、搜索、解压、临时打开普通文件、导出及检查结构与可读性，不挂载或执行光盘映像，不提供创建或修改。链接及特殊记录不可输出，已识别的 UDF 损坏不会静默回退 ISO。打开筛选及关联支持 `.iso`、`.udf`，不注册通用 `.img`，详见[官方后端契约](docs/engineering/native-codecs.md)。
+- **ISO 与 UDF**：使用自研 Rust 只读后端，在隔离工作进程中处理 ISO9660、Joliet、Rock Ridge 与 UDF，混合映像优先使用 UDF 命名空间。可浏览、搜索、解压、临时打开普通文件、导出及检查结构与可读性，不挂载或执行光盘映像，不提供创建或修改。链接及特殊记录不可输出，已识别的 UDF 损坏不会静默回退 ISO。打开筛选及关联支持 `.iso`、`.udf`，不注册通用 `.img`，实现边界与尚需验证的扩展见[自研后端契约](docs/engineering/independent-rust-codecs.md#iso与udf只读规格)及[迁移任务](https://github.com/xiaodaozhi/xdzip/issues/47)。
 
 创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包会优先采用 Unicode 声明，再自适应 GBK/GB18030、Big5、Shift-JIS 等旧编码，并贯通浏览、解压与普通包修改。短名称或混合旧编码无法保证唯一识别，损坏声明及异常路径继续拒绝输出，详见[文件名编码契约](docs/engineering/filename-encoding.md)。
 

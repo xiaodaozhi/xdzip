@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "author": "Microsoft Windows IMAPI2FS",
+  "generator": "scripts/generate-optical-imapi.ps1",
+  "official_sources": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/imapi2fs/nn-imapi2fs-ifilesystemimage",
+    "https://learn.microsoft.com/en-us/windows/win32/api/imapi2fs/nf-imapi2fs-ifilesystemimage-put_udfrevision"
+  ],
+  "generation_environment": {
+    "os": "Microsoft Windows 10.0.26300",
+    "imapi2fs_version": "10.0.26100.8875 (WinBuild.160101.0800)"
+  },
+  "license": "Apache-2.0",
+  "content": "Self-authored test text, an empty file and the byte sequence 0..255 repeated 32 times. No user files or Microsoft executable code.",
+  "payloads": [
+    {
+      "name": "hello.txt",
+      "bytes": 36,
+      "sha256": "699655dc179ddd0a8af3b41d551b0058749e6198ec9829cf45dc1061d9789c29",
+      "utf8": "independent Microsoft IMAPI fixture\n"
+    },
+    {
+      "name": "empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hex": ""
+    },
+    {
+      "name": "nested/中文.bin",
+      "bytes": 8192,
+      "sha256": "dc404a613fedaeb54034514bc6505f56b933caa5250299ba7d094377a51caa46",
+      "recipe": {
+        "byte_range_inclusive": [
+          0,
+          255
+        ],
+        "repetitions": 32
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "file": "imapi-102.iso.gz",
+      "udf_revision": "102",
+      "partition_maps": [
+        "physical"
+      ],
+      "compressed_bytes": 4950,
+      "sha256": "64faa46b71a58f1b5cba43f1ecfbf54850ee7460998e1da363b78867cfb4e820",
+      "decoded_bytes": 1179648,
+      "decoded_sha256": "4485351e7ac70e5aa58ec695815210199705ff05efe7f6266de99c73c0f10e30"
+    },
+    {
+      "file": "imapi-150.iso.gz",
+      "udf_revision": "150",
+      "partition_maps": [
+        "physical"
+      ],
+      "compressed_bytes": 4944,
+      "sha256": "f42c2990d612414a9c062d5768c45a66cf6f16f109e53985a6381defe049cda1",
+      "decoded_bytes": 1179648,
+      "decoded_sha256": "42f4be7507da1b4b5964ab4ae775811268d020b16d65df63d2d78e2daff93847"
+    },
+    {
+      "file": "imapi-200.iso.gz",
+      "udf_revision": "200",
+      "partition_maps": [
+        "physical"
+      ],
+      "compressed_bytes": 4959,
+      "sha256": "805b3e029670bf3dd067361923a074c8fbab2a22dc20cc4f47061aec76721fb0",
+      "decoded_bytes": 1179648,
+      "decoded_sha256": "5790cfba000433de2f478c529f99da2ce79555af528f0589349e0d134d4242d3"
+    },
+    {
+      "file": "imapi-201.iso.gz",
+      "udf_revision": "201",
+      "partition_maps": [
+        "physical"
+      ],
+      "compressed_bytes": 4966,
+      "sha256": "9f6c2c23b7f1c7dab1275e0ac503a09d392c675ee6eafeddcc6a941e24a94cbb",
+      "decoded_bytes": 1179648,
+      "decoded_sha256": "97661d6752c0bf56fbb6f114689438484d389e2377e1ad6795b765a4a9168f4a"
+    },
+    {
+      "file": "imapi-250.iso.gz",
+      "udf_revision": "250",
+      "partition_maps": [
+        "physical",
+        "*UDF Metadata Partition"
+      ],
+      "compressed_bytes": 6254,
+      "sha256": "8f4fd1e62b7515caed9aea214821d49318ed2037cf3f44ece5aa0d92858c0a7d",
+      "decoded_bytes": 1507328,
+      "decoded_sha256": "0fcfc57585f5865448de4542cb541c47ffe37ebb061d3a731eaaec5935b43afb"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+[package]
+name = "xdzip-optical-bridge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+[lib]
+crate-type = ["staticlib"]
+test = false
+doctest = false
+[dependencies]
+cxx.workspace = true
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-optical = { path = "../xdzip-codec-optical" }
+[build-dependencies]
+cxx-build.workspace = true
+[lints]
+workspace = true

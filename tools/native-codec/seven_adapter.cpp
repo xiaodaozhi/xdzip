@@ -198,9 +198,9 @@ uint32_t modified_dos(IInArchive *archive, UInt32 index) {
 void seven_registry_check() {
     UInt32 formats = 0;
     check(GetNumberOfFormats(&formats));
-    if (formats != 4)
+    if (formats != 2)
         throw Failure{3};
-    std::set<std::wstring> expected{L"7z", L"Cab", L"Iso", L"Udf"};
+    std::set<std::wstring> expected{L"7z", L"Cab"};
     for (UInt32 index = 0; index < formats; index++) {
         NWindows::NCOM::CPropVariant name;
         check(GetHandlerProperty2(index, NArchive::NHandlerPropID::kName, &name));

@@ -7,7 +7,7 @@ if(NOT EXISTS "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" OR NOT E
   message(FATAL_ERROR "Prepare the locked official native sources before configuring")
 endif()
 
-# Start with the official Format7z manifest, then admit only three read-only
+# Start with the official Format7z manifest, then admit only the CAB read-only
 # handlers. No full-format bundle or external codec loader is compiled.
 file(READ "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" seven_manifest)
 set(seven_sources)
@@ -42,7 +42,7 @@ endforeach()
 # Keep immutable downloads intact. These exact source transformations expose
 # information hidden by the CLI-oriented API, without granting filesystem I/O.
 set(seven_host "${CMAKE_CURRENT_BINARY_DIR}/seven-host/CPP/7zip/Archive")
-foreach(format IN ITEMS Cab Iso Udf)
+foreach(format IN ITEMS Cab)
   file(MAKE_DIRECTORY "${seven_host}/${format}")
   file(GLOB handler_inputs "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.h" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.cpp")
   foreach(input IN LISTS handler_inputs)
@@ -84,38 +84,8 @@ seven_replace(Cab CabHandler.cpp [=[          if (fullName == startVolName)
             _errorInHeaders = true;
             break;
           }]=])
-seven_replace(Iso IsoIn.h "*p = CHAR_PATH_SEPARATOR;" "*p = '/';")
-seven_replace(Iso IsoIn.h "*p = WCHAR_PATH_SEPARATOR;" "*p = L'/';")
-seven_replace(Iso IsoHandler.cpp "s = MultiByteToUnicodeString(item.GetPath(_archive.IsSusp, _archive.SuspSkipSize), CP_OEMCP);" [=[{
-            const AString raw = item.GetPath(_archive.IsSusp, _archive.SuspSkipSize);
-            for (unsigned i = 0; i < raw.Len(); i++)
-              s += (wchar_t)(Byte)raw[i];
-          }]=])
-seven_replace(Iso IsoHandler.cpp "          NItemName::ReplaceToOsSlashes_Remove_TailSlash(s);" "          // Keep archive slashes and literal backslashes distinct for host policy.")
-seven_replace(Iso IsoHandler.cpp "AString s (\"[BOOT]\" STRING_PATH_SEPARATOR);" "AString s (\"[BOOT]/\");")
-# The archive-level flag is independent of item indices, including boot images.
-seven_replace(Iso IsoHandler.cpp "  if (index >= (UInt32)_archive.Refs.Size())" [=[  if (propID == kpidUserDefined + 0x101)
-  {
-    prop = _archive.IsJoliet();
-    prop.Detach(value);
-    return S_OK;
-  }
-  if (index >= (UInt32)_archive.Refs.Size())]=])
-seven_replace(Udf UdfHandler.cpp "      case kpidIsDir:  prop = item.IsDir(); break;" [=[      case kpidUserDefined + 0x100: prop = (UInt32)item.IcbTag.FileType; break;
-      case kpidIsDir:  prop = item.IsDir(); break;]=])
-seven_replace(Udf UdfIn.cpp "      item.IcbTag.FileType != ICB_FILE_TYPE_REAL_TIME_FILE)" [=[      item.IcbTag.FileType != ICB_FILE_TYPE_REAL_TIME_FILE &&
-      item.IcbTag.FileType != 6 && item.IcbTag.FileType != 7 &&
-      item.IcbTag.FileType != 9 && item.IcbTag.FileType != 10 &&
-      item.IcbTag.FileType != 12)]=])
-seven_replace(Udf UdfIn.cpp "res.Insert(0, addString + WCHAR_PATH_SEPARATOR);" "res.Insert(0, addString + L'/');")
 foreach(stem IN ITEMS CabBlockInStream CabHandler CabHeader CabIn CabRegister)
   list(APPEND seven_sources "${seven_host}/Cab/${stem}.cpp")
-endforeach()
-foreach(stem IN ITEMS IsoHandler IsoHeader IsoIn IsoRegister)
-  list(APPEND seven_sources "${seven_host}/Iso/${stem}.cpp")
-endforeach()
-foreach(stem IN ITEMS UdfHandler UdfIn)
-  list(APPEND seven_sources "${seven_host}/Udf/${stem}.cpp")
 endforeach()
 if(NOT WIN32)
   # The Windows Format7z manifest uses OS-provided COM/time and UTF conversion
@@ -128,7 +98,7 @@ foreach(source IN LISTS seven_sources)
   if(source MATCHES "/CPP/7zip/Compress/Rar")
     message(FATAL_ERROR "7-Zip RAR codecs are not admitted: ${source}")
   endif()
-  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Cab/|Iso/|Udf/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
+  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Cab/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
     message(FATAL_ERROR "Unapproved container entered the native source allowlist: ${source}")
   endif()
 endforeach()
@@ -171,9 +141,9 @@ target_include_directories(xdzip_rar_engine PRIVATE "${unrar_copy}" "${CMAKE_CUR
 target_compile_definitions(xdzip_rar_engine PRIVATE RARDLL UNRAR SILENT _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE)
 target_compile_features(xdzip_rar_engine PRIVATE cxx_std_17)
 
-add_executable(xdzip-native-codec main.cpp seven_adapter.cpp seven_backend.cpp readonly_backend.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
+add_executable(xdzip-native-codec main.cpp seven_adapter.cpp seven_backend.cpp readonly_backend.cpp optical_boundary.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
 target_include_directories(xdzip-native-codec PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP" "${XDZIP_7ZIP_SOURCE}/C")
-foreach(format IN ITEMS Cab Iso Udf)
+foreach(format IN ITEMS Cab)
   target_include_directories(xdzip_7z_engine PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
   target_include_directories(xdzip-native-codec PRIVATE "${seven_host}/${format}" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
 endforeach()
@@ -186,3 +156,8 @@ if(MSVC)
   target_compile_definitions(xdzip_7z_engine PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions(xdzip_rar_engine PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/RustStaticLibrary.cmake")
+xdzip_rust_library(xdzip-optical-rust xdzip-optical-bridge xdzip_optical_bridge "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+target_include_directories(xdzip-native-codec PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../crates/xdzip-optical-bridge/include")
+target_link_libraries(xdzip-native-codec PRIVATE xdzip-optical-rust)

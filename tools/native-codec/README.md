@@ -1,10 +1,12 @@
 <!-- tools/native-codec/README.md -->
 
-# 官方格式工作进程
+# 隔离格式工作进程
 
-此程序链接官方 7-Zip 的 7z、Cab、Iso、Udf 明确白名单，以及官方 UnRAR。
-CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好为这四个容器。
-Cab、Iso、Udf 只读，只有 7z 保留写入。已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
+此程序链接官方 7-Zip 的 7z、Cab 明确白名单，以及官方 UnRAR。
+CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好为这两个容器。
+ISO/UDF 通过 `xdzip-optical-bridge` 调用自研 Rust `xdzip-codec-optical`，
+构建中不含官方 Iso/Udf 处理器。Cab、ISO、UDF 只读，只有 7z 保留写入。
+已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
 
 先运行 `python scripts/prepare-native-codecs.py` 准备锁定的官方来源，再通过项目
 统一构建入口构建 `xdzip-native-codec` 目标。独立构建可设置
@@ -21,10 +23,13 @@ ROW 保留 37 字节头，flags 的 0x10 表示原始名字字节，0x20 表示 
 0x04 链接与 0x08 特殊对象语义不变。CAB 与非 Joliet ISO 的原始名字由宿主解码，
 仅 CAB 将反斜杠解释为目录分隔符。Joliet、UDF 传 Unicode 路径，树层级固定为 `/`。
 
-构建副本中的精确变换保留 CAB 原始名字和卷名字，暴露 UDF 的真实 ICB 文件类型，
-并允许元数据识别已知链接、设备、FIFO、socket；特殊类型不会进入输出流。
-ISO 使用 Rock Ridge 符号链接与 POSIX 类型属性分类。扫描检查归档错误标记，
-损坏结构或缺卷不能形成部分成功索引。ISO/UDF 内容读取不宣称格式未提供的文件校验和。
+构建副本中的精确变换保留 CAB 原始名字和卷名字，扫描检查官方后端错误标记，
+损坏结构或缺卷不能形成部分成功索引。Rust ISO 使用 Rock Ridge 符号链接与
+POSIX 类型属性分类，UDF 使用真实 ICB 类型及链接数；链接及特殊类型不会进入输出流。
+ISO/UDF 的 CXX 回调同步借用切片，不保留指针；C++ 异常和 Rust unwind 均在边界内
+转换为稳定错误，OOM/abort 导致隔离进程退出，宿主拒绝不完整暂存结果。
+内容读取不宣称格式未提供的文件校验和。规格及扩展边界见
+[自研契约](../../docs/engineering/independent-rust-codecs.md#iso与udf只读规格)。
 
 UnRAR 使用此目录的 `host_file.cpp` 替换上游 File 实现，只能打开宿主提供的
 synthetic 卷，不能创建、删除或重命名输出。构建仅在生成目录改变上游

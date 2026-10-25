@@ -1,18 +1,18 @@
-# 官方原生格式后端契约
+# 隔离格式工作进程契约
 
-7z、CAB、ISO 和 UDF 使用官方 7-Zip 源码，RAR 使用 RARLAB 官方 UnRAR 源码。固定来源、版本和 SHA-256 位于 [源码清单](../../scripts/native-codec-sources.json)。它们不替换现有 ZIP、TAR、TAR.GZ Rust 后端，不从用户 PATH 查找替代工具，也不运行外部命令行解包。
+7z、CAB 使用官方 7-Zip 源码，RAR 使用 RARLAB 官方 UnRAR 源码。固定来源、版本和 SHA-256 位于 [源码清单](../../scripts/native-codec-sources.json)。ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md#iso与udf只读规格)，通过薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、TAR.GZ 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
 
 ## 构建与来源
 
 统一准备入口运行 `scripts/prepare-native-codecs.py`，只将已核验源码解包到 build 或 .cache 的专用目录。下载及解包大小、成员数量和成员路径均有上限，拒绝链接、设备、绝对路径、父目录逃逸及大小写重复成员。离线构建使用已固定归档。
 
-7-Zip 构建清单只包含 7z、Cab、Iso、Udf 四个容器处理器、其压缩算法和通用设施，不编译 ZIP、TAR、GZIP、RAR 等容器处理器，不启用外部格式或编解码器自动加载。源文件去重，处理器注册集合须与白名单完全一致。RAR 的格式识别和解码只由 UnRAR 执行。Deflate、AES、CRC 等算法设施可能与现有 Rust 依赖存在实现重叠，不因此增加同一容器的第二条产品路由。
+7-Zip 构建清单只包含 7z、Cab 两个容器处理器、其压缩算法和通用设施，不编译 ISO、UDF、ZIP、TAR、GZIP、RAR 等容器处理器，不启用外部格式或编解码器自动加载。源文件去重，处理器注册集合须与白名单完全一致。RAR 的格式识别和解码只由 UnRAR 执行。Deflate、AES、CRC 等算法设施可能与现有 Rust 依赖存在实现重叠，不因此增加同一容器的第二条产品路由。
 
 源码修改以可审阅的桥接文件和精确匹配的构建变换维护，不把修改后的源码冒充上游原始归档。构建必须核验所需声明，声明不匹配时停止。来源对应材料随实际部署版本交付，不能只交付下载链接。
 
 ## 权力与生命周期
 
-Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能力。官方后端在独立工作进程运行，通过有界协议读取授权流及输出当前批准条目的数据，不获得用户目标路径或任意文件访问接口。UnRAR 原生文件访问必须经宿主适配，不能用临时解包再复制替代既有安全提交流程。
+Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能力。官方后端和 Rust 光盘后端在独立工作进程运行，通过有界协议读取授权流及输出当前批准条目的数据，不获得用户目标路径或任意文件访问接口。UnRAR 原生文件访问必须经宿主适配，不能用临时解包再复制替代既有安全提交流程。
 
 工作进程不接收命令行密码，不输出归档提供的任意诊断文本，也不继承应用凭据和代理环境。错误映射为稳定错误码，打开加密目录的密码只保留在当前会话及其关联任务的归零容器中，不跨启动持久化；关闭会话和任务终态分别释放各自容器。取消停止读取与输出，超时后终止工作进程并等待回收；进程失败不得产生成功终态。进程隔离不等同于操作系统沙箱，不宣称能阻止已被攻陷的进程访问所有同用户资源。
 
@@ -30,9 +30,9 @@ RAR 只读，区分旧格式、RAR5 以及 RAR 7 新算法，密码、头部加�
 
 CAB 支持 Store、MSZip、Quantum 和 LZX，单卷与同目录分卷均只读。分卷先由 Rust 根据头部关系验证和冻结授权集合，再向工作进程传递原始卷名及各卷边界。缺卷和不匹配卷不能发布部分索引，详见[分卷契约](archive-opening.md)。CAB 原始名字和 UTF-8 声明保留，旧编码采用[统一文件名解析](filename-encoding.md)，不调用宿主代码页猜测输出路径。
 
-ISO 支持 ISO9660、Joliet、Rock Ridge，UDF 使用独立只读处理器。混合镜像优先 UDF 命名空间，已识别的 UDF 损坏不静默回退 ISO。按内容识别，不依赖扩展名授权。ISO/UDF 仅浏览、解压、临时打开、导出和测试，不挂载磁盘、不执行启动镜像、不提供创建或更新。启动镜像记录仅作为可读取文件，链接及特殊对象保持不可输出。镜像测试检查结构、范围及实际内容可读取性，不声称普通文件具有内容校验和保证。
+ISO9660、Joliet、Rock Ridge 和 UDF 的解析由 `xdzip-codec-optical` 执行，不链接官方 Iso/Udf 处理器。混合镜像优先 UDF 命名空间，已识别的 UDF 损坏不静默回退 ISO。按内容识别，不依赖扩展名授权。ISO/UDF 仅浏览、解压、临时打开、导出和测试，不挂载磁盘、不执行启动镜像、不提供创建或更新。启动镜像记录仅作为可读取文件，链接及特殊对象保持不可输出。镜像测试检查结构、范围及实际内容可读取性，不声称普通文件具有内容校验和保证。分区映射和不支持扩展的明确边界见[自研规格](independent-rust-codecs.md#iso与udf只读规格)。
 
-English: The pinned official 7-Zip build registers exactly 7z, Cab, Iso and Udf, while Rust retains ZIP/TAR/GZIP and UnRAR retains RAR. CAB supports Store, MSZip, Quantum and LZX and preserves raw names; only Rust-authorized same-directory volumes are readable. ISO9660, Joliet, Rock Ridge and UDF are read-only. Hybrid images select UDF; recognized UDF corruption does not trigger an ISO fallback. CAB and disc images cannot be created or modified. Image checks establish structure and readability, not per-file checksum authenticity. No image mounting or boot execution is provided.
+English: The pinned official 7-Zip build registers exactly 7z and Cab. UnRAR handles RAR. ISO9660, Joliet, Rock Ridge and UDF use the independent Rust optical backend through a thin CXX boundary inside the existing isolated worker; official Iso/Udf handlers are excluded from the build. ZIP/TAR/GZIP remain in-process Rust implementations. CAB supports Store, MSZip, Quantum and LZX and preserves raw names; only Rust-authorized same-directory volumes are readable. Hybrid images select UDF; recognized UDF corruption does not trigger an ISO fallback. CAB and disc images cannot be created or modified. Image checks establish structure and readability, not per-file checksum authenticity. No image mounting or boot execution is provided. Optical extension boundaries are specified in the independent-codec contract.
 
 ## 验证与交付
 

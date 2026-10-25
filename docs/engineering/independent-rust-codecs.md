@@ -59,6 +59,21 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 
 `rawzip`、`zip`、`flate2` 仅作测试参照，已迁移 ZIP 的普通及构建依赖闭包禁止这些格式和算法库回流。测试参照的许可继续保留，容器可读取不等于所有声明方法都可解码。
 
+## ISO与UDF只读规格
+
+`xdzip-codec-optical` 只接收借用的 `ReadSource`，不访问文件系统或挂载镜像。ISO 依据 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)的卷描述符、目录、扩展属性和附录 C Joliet，以及 [Rock Ridge 1.12](https://bitsavers.org/projects/cdrom/Rock_Ridge_Interchange_Protocol.pdf)、SUSP 1.12 与 [El Torito 1.0](https://bitsavers.org/projects/cdrom/El_Torito_CD-ROM_Spec.pdf)编写。UDF 依据 [ECMA-167 第三版](https://ecma-international.org/publications-and-standards/standards/ecma-167/)第 1、3、4 部分及 [OSTA UDF 2.60](https://www.osta.org/specs/pdf/udf260.pdf)的结构限制、分区与字符集规定编写。实现不转换第三方解析器源码，规范原文和第三方测试工具不作为本项目原创材料再许可。
+
+- ISO 核对双端整数、卷范围、目录记录及文件区段，支持多区段普通文件、Joliet UCS-2、Rock Ridge 名称续接、SUSP CE、CL/PL/RE 目录重定位与链接/特殊类型识别。非 Joliet 原始名称交给共享有界编码解析，不调用系统 OEM 转码。启动目录及镜像仅表示为可读取记录。跨卷 ISO、交错文件、面向记录的扩展属性、Rock Ridge SF 稀疏及 ZF 压缩扩展明确拒绝；不能把未知必须特性当普通文件解码。
+- UDF 区分逻辑块号与物理偏移，验证 descriptor tag 的位置、校验和、CRC 和尺寸，处理主/备锚点、VDS 续链、FSD、FE/EFE、FID 与 ICB。物理、sparable、VAT 1.50/2.x、metadata/mirror 分区映射分别准入。短、长、扩展 AD 及续接按实际 recorded/information 长度解释，支持内联、未记录零区段和非连续内容，不将数据范围相加后假设连续。目录图、分配续链及映射循环均有界，CS0 严格转 Unicode。
+- UDF 命名 streams、系统 stream 目录、transformed 数据、未知映射/ICB 策略和不能解释的 extended AD 长度组合明确拒绝。实时文件及其他特殊类型标为不可输出，符号链接和多链接普通文件同样拒绝输出。已识别 UDF 的失败不会改用 ISO；VDS/metadata 的规范内冗余恢复不改变所选命名空间。
+- 物理记录顺序决定 EntryId，重名记录不去重。解析结果保存数据、零区段和内联内容的独立 extent 列表；负载打开时重扫并核对冻结元数据，解码时核对条目身份、范围与精确输出长度。没有逐文件 CRC 的格式不补造内容校验保证，同尺寸内容变化可能仍然可读；宿主来源身份检查继续独立执行。
+- 元数据读取最多 64 MiB，普通条目最多 100,000，单名称最多 4,096 字节，总名称和展示文本使用共享扫描预算；总输出 extent 最多 1,000,000，内联总量最多 64 MiB。ISO 目录深度最多 256，单记录 CE 最多 128 个区域、1 MiB；宿主可输出路径仍受更严格的共享限制。UDF 分区映射最多 256、单分配表最多 262,144 个 extent、续链最多 4,096。所有加法、乘法和源范围均检查溢出。
+- 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-optical-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
+
+独立样本必须具有可核验的生成工具或来源及已知内容；自编码规范向量只验证实现的内部状态组合。metadata、VAT、sparable 等扩展的独立实样与三平台验收单独登记于[迁移任务 #47](https://github.com/xiaodaozhi/xdzip/issues/47)，不能由代码存在或物理分区样本通过推定其他映射已验收。测试工具、参考 worker 与产品 worker 分别记录身份，不把参考工具不支持的样本记为验证通过。
+
+English: ISO/UDF parsing is independently implemented in Rust from ECMA-119, SUSP/Rock Ridge, El Torito, ECMA-167 and OSTA UDF specifications. The existing isolated worker calls it through a thin CXX boundary; official Iso/Udf handlers are excluded, with no runtime fallback. Physical records and raw names are preserved, metadata is rechecked before bounded extent streaming, and the host retains source validation, cancellation, resource limits, staging and publication. Images are read-only and checks establish structure and readability, not universal per-file content authenticity. Unknown mandatory features, transformed data and named/system streams are rejected; links and special objects cannot be output. Independent fixture coverage for each partition map and platform is tracked separately in issue #47.
+
 ## 能力与验证基线
 
 | 后端 | 必须保持的能力 | 独立实现要素 |

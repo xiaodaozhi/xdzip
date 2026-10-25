@@ -9,7 +9,9 @@
 | crates/xdzip-codec-api | 能力、借用输入、编码输出和取消契约；依赖 domain |
 | crates/xdzip-compression | 无第三方生产依赖的共享压缩算法与 GZIP 封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |
 | crates/xdzip-codec-zip、xdzip-codec-tar | ZIP、TAR/GZIP 格式实现；不获取任意输出路径 |
-| crates/xdzip-codec-native、tools/native-codec | 官方 7-Zip／UnRAR 的 Rust 适配及原生工作进程，固定来源、裁剪和 I/O 边界见[契约](native-codecs.md) |
+| crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |
+| crates/xdzip-optical-bridge | 隔离工作进程到 Rust 光盘后端的薄 CXX 边界，复用授权流协议 |
+| crates/xdzip-codec-native、tools/native-codec | 官方 7-Zip／UnRAR 及 Rust 光盘后端的隔离工作进程，固定来源、裁剪和 I/O 边界见[契约](native-codecs.md) |
 | crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
 | crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |
 | crates/xdzip-runtime | 会话、内存索引、查询、选择、创建／解压任务和调度 |

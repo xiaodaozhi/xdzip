@@ -1,5 +1,9 @@
 # Native-only cxx static libraries, built from the same locked workspace as the UI.
 function(xdzip_rust_library target package stem)
+    set(rust_workspace "${PROJECT_SOURCE_DIR}")
+    if(ARGC GREATER 3)
+        get_filename_component(rust_workspace "${ARGV3}" ABSOLUTE)
+    endif()
     find_program(CARGO_EXECUTABLE cargo REQUIRED)
     find_program(RUSTC_EXECUTABLE rustc REQUIRED)
     find_package(Threads REQUIRED)
@@ -8,7 +12,7 @@ function(xdzip_rust_library target package stem)
         message(FATAL_ERROR "Use a native single-configuration build for the current Rust bridge")
     endif()
     execute_process(COMMAND "${RUSTC_EXECUTABLE}" -vV OUTPUT_VARIABLE rust_version
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" COMMAND_ERROR_IS_FATAL ANY)
+        WORKING_DIRECTORY "${rust_workspace}" COMMAND_ERROR_IS_FATAL ANY)
     string(REGEX MATCH "host: ([^\n\r]+)" host_match "${rust_version}")
     set(rust_host "${CMAKE_MATCH_1}")
     if(NOT rust_host)
@@ -30,8 +34,8 @@ function(xdzip_rust_library target package stem)
         list(APPEND cargo_environment "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     endif()
     file(GLOB_RECURSE rust_sources CONFIGURE_DEPENDS
-        "${PROJECT_SOURCE_DIR}/crates/*.rs" "${PROJECT_SOURCE_DIR}/crates/Cargo.toml"
-        "${PROJECT_SOURCE_DIR}/crates/*/Cargo.toml")
+        "${rust_workspace}/crates/*.rs" "${rust_workspace}/crates/*.h" "${rust_workspace}/crates/*.hpp" "${rust_workspace}/crates/Cargo.toml"
+        "${rust_workspace}/crates/*/Cargo.toml")
     file(MAKE_DIRECTORY "${output}/cxxbridge")
     set(bridge_headers "${output}/cxxbridge/${package}/src/lib.rs.h" "${output}/cxxbridge/rust/cxx.h")
     if(package STREQUAL "xdzip-qt-bridge")
@@ -40,13 +44,13 @@ function(xdzip_rust_library target package stem)
     add_custom_command(OUTPUT "${archive}"
         BYPRODUCTS ${bridge_headers}
         COMMAND "${CMAKE_COMMAND}" -E env ${cargo_environment} "${Python3_EXECUTABLE}"
-            "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py" --cargo "${CARGO_EXECUTABLE}"
-            --root "${PROJECT_SOURCE_DIR}" --package "${package}"
+            "${rust_workspace}/scripts/build-rust-bridge.py" --cargo "${CARGO_EXECUTABLE}"
+            --root "${rust_workspace}" --package "${package}"
             --target-dir "${output}" --target "${rust_host}" --profile "${cargo_profile}"
-        DEPENDS ${rust_sources} "${PROJECT_SOURCE_DIR}/Cargo.lock" "${PROJECT_SOURCE_DIR}/Cargo.toml"
-            "${PROJECT_SOURCE_DIR}/rust-toolchain.toml"
-            "${PROJECT_SOURCE_DIR}/scripts/build-rust-bridge.py"
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" VERBATIM)
+        DEPENDS ${rust_sources} "${rust_workspace}/Cargo.lock" "${rust_workspace}/Cargo.toml"
+            "${rust_workspace}/rust-toolchain.toml"
+            "${rust_workspace}/scripts/build-rust-bridge.py"
+        WORKING_DIRECTORY "${rust_workspace}" VERBATIM)
     add_custom_target(${target}-build DEPENDS "${archive}")
     add_library(${target} STATIC IMPORTED GLOBAL)
     set_target_properties(${target} PROPERTIES IMPORTED_LOCATION "${archive}"
