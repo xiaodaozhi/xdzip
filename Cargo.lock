@@ -1488,6 +1488,7 @@ dependencies = [
  "flate2",
  "tar",
  "xdzip-codec-api",
+ "xdzip-compression",
  "xdzip-domain",
 ]
 
@@ -1500,6 +1501,13 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-domain",
  "zip",
+]
+
+[[package]]
+name = "xdzip-compression"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "flate2",
 ]
 
 [[package]]

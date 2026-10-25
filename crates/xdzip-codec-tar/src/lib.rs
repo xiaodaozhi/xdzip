@@ -1,12 +1,13 @@
 //! Bounded TAR scanning and GZIP composition. Codecs never receive filesystem paths.
+mod record;
 mod rewrite;
 mod writer;
-use flate2::read::MultiGzDecoder;
 use std::io::{self, Read, SeekFrom};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec, PayloadReader};
 use xdzip_codec_api::{
     Cancellation, Entry, Format, MetadataCodec, ReadSource, ScanError, ScanLimits,
 };
+use xdzip_compression::GzipReader;
 use xdzip_domain::identity::EntryId;
 
 /// TAR container, optionally behind exactly one GZIP filter.
@@ -93,7 +94,7 @@ impl TarCodec {
             remaining: limit,
         };
         let reader: Box<dyn Read + 'a> = if self.gzip {
-            Box::new(MultiGzDecoder::new(guarded))
+            Box::new(GzipReader::new(guarded))
         } else {
             Box::new(guarded)
         };
@@ -239,34 +240,17 @@ fn scan(
                 }
             }
         }
-        let header = tar::Header::from_byte_slice(&block);
-        let sum: u32 = block
-            .iter()
-            .enumerate()
-            .map(|(i, b)| {
-                if (148..156).contains(&i) {
-                    32
-                } else {
-                    u32::from(*b)
-                }
-            })
-            .sum();
-        if header.cksum().map_err(|_| ScanError::Invalid)? != sum {
-            return Err(ScanError::Invalid);
-        }
-        let kind = header.entry_type();
-        let size = header.entry_size().map_err(|_| ScanError::Invalid)?;
-        if kind.is_gnu_longname()
-            || kind.is_pax_local_extensions()
-            || kind.is_pax_global_extensions()
-            || kind.is_gnu_longlink()
-        {
+        let header = record::Record(&block);
+        header.validate()?;
+        let kind = header.kind();
+        let size = header.size()?;
+        if matches!(kind, b'L' | b'x' | b'g' | b'K') {
             extensions += 1;
             if extensions > 4 || size > EXTENSION_LIMIT {
                 return Err(ScanError::Limit);
             }
             // Long link targets change payload interpretation and remain unsupported.
-            if kind.is_gnu_longlink() {
+            if kind == b'K' {
                 return Err(ScanError::Unsupported);
             }
             let mut data = vec![0; size as usize];
@@ -274,7 +258,7 @@ fn scan(
                 .read_exact(&mut data)
                 .map_err(|_| ScanError::Invalid)?;
             skip(stream, padded(size)? - size)?;
-            if kind.is_pax_global_extensions() {
+            if kind == b'g' {
                 // Git archives carry their commit in a global comment. Only this
                 // inert annotation is admitted; never ignore global path, size,
                 // link, sparse or unknown semantics. No global state is retained.
@@ -282,7 +266,7 @@ fn scan(
                 continue;
             }
             local_extensions += 1;
-            if kind.is_gnu_longname() {
+            if kind == b'L' {
                 if next_name.is_some() {
                     return Err(ScanError::Invalid);
                 }
@@ -291,29 +275,28 @@ fn scan(
                 }
                 next_name = Some(data);
             } else {
-                for item in tar::PaxExtensions::new(&data) {
+                for item in record::Pax(&data) {
                     let item = item.map_err(|_| ScanError::Invalid)?;
-                    match item.key_bytes() {
+                    match item.0 {
                         b"path" => {
                             if next_name.is_some() {
                                 return Err(ScanError::Invalid);
                             }
-                            next_name = Some(item.value_bytes().to_vec());
+                            next_name = Some(item.1.to_vec());
                             next_utf8 = true;
                         }
                         b"hdrcharset" => {
                             if next_binary.is_some() {
                                 return Err(ScanError::Invalid);
                             }
-                            next_binary = Some(match item.value_bytes() {
+                            next_binary = Some(match item.1 {
                                 b"BINARY" => true,
                                 b"ISO-IR 10646 2000 UTF-8" => false,
                                 _ => return Err(ScanError::Unsupported),
                             });
                         }
                         b"mtime" => {
-                            next_time = item
-                                .value()
+                            next_time = std::str::from_utf8(item.1)
                                 .ok()
                                 .and_then(|v| v.split('.').next())
                                 .and_then(|v| v.parse::<u64>().ok());
@@ -323,7 +306,7 @@ fn scan(
                                 return Err(ScanError::Invalid);
                             }
                             next_size = Some(
-                                item.value()
+                                std::str::from_utf8(item.1)
                                     .map_err(|_| ScanError::Invalid)?
                                     .parse::<u64>()
                                     .map_err(|_| ScanError::Invalid)?,
@@ -339,19 +322,17 @@ fn scan(
             continue;
         }
         let unlabelled = !next_utf8 || next_binary.unwrap_or(false);
-        let mut name = next_name
-            .take()
-            .unwrap_or_else(|| header.path_bytes().into_owned());
+        let mut name = next_name.take().unwrap_or_else(|| header.name());
         if name.len() > limits.name_bytes {
             return Err(ScanError::Limit);
         }
         let size = next_size.take().unwrap_or(size);
         let modified = next_time
             .take()
-            .or_else(|| header.mtime().ok())
+            .or_else(|| header.timestamp().ok())
             .map(display_time)
             .unwrap_or(0);
-        let directory = kind.is_dir();
+        let directory = kind == b'5';
         // Common system-tar roots are structural markers, not output directories.
         let mut prefix = 0;
         while name[prefix..].starts_with(b"./") {
@@ -376,7 +357,8 @@ fn scan(
         {
             return Err(ScanError::Limit);
         }
-        let warning = next_special || !(kind.is_file() || directory) || (directory && size != 0);
+        let warning =
+            next_special || !(matches!(kind, 0 | b'0') || directory) || (directory && size != 0);
         legacy.push(unlabelled);
         offsets.push(stream.position);
         rows.push(Entry {
@@ -386,7 +368,7 @@ fn scan(
             name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
             display_name: String::new(),
             directory,
-            link: kind.is_symlink() || kind.is_hard_link(),
+            link: matches!(kind, b'1' | b'2'),
             unix_mode: 0,
             size,
             packed_size: if gzip { 0 } else { size },

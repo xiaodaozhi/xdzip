@@ -6,6 +6,8 @@
 
 支持 TAR、TAR.GZ 浏览、创建和安全解压。TAR 为容器，GZIP 为一层压缩过滤器，按内容探测，不按后缀选择读取后端。ZIP 行为保持兼容。当前不启用独立 GZIP 单文件创建、嵌套自动展开、加密或分卷 TAR。
 
+TAR 头、数字、PAX、流式编码与重写由独立 Rust 记录层实现；GZIP 封装、CRC-32、Deflate 的 LZ77 与 Huffman 由共享 `xdzip-compression` 实现。`tar` 和 `flate2` 仅用于开发测试参照，不进入这两个 crate 的生产依赖闭包。规格、来源及限制见[自研格式契约](independent-rust-codecs.md)。
+
 TAR 接受普通文件与目录，解析 PAX 路径及 GNU 长名称。符号链接、硬链接、设备、FIFO、稀疏和未知类型不能解压。所有输出名称继续经过 PortablePath 与宿主冲突预检，格式库不获得文件路径或 unpack 权限。目录权限、所有者与特殊 mode 不恢复。日期作为展示元数据，不承诺恢复。
 
 ## 有界流式处理

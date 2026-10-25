@@ -1,121 +1,125 @@
-use crate::TarCodec;
-use flate2::{Compression, write::GzEncoder};
-use std::cell::Cell;
-use std::io::{self, Read, Write};
+use crate::{TarCodec, record};
+use std::io::{Read, Write};
 use xdzip_codec_api::{
     Cancellation,
     encode::{
         CreationCodec, EncodeError, EncodeInput, EncodeOutput, EncodeProgress, EncodeSettings,
     },
 };
+use xdzip_compression::GzipWriter;
 
-struct Input<'a> {
-    reader: Box<dyn Read + 'a>,
-    failed: &'a Cell<bool>,
-    cancel: &'a Cancellation,
-    name: &'a str,
-    bytes: &'a mut u64,
-    progress: &'a mut dyn FnMut(EncodeProgress<'_>),
+fn write_record(
+    output: &mut dyn Write,
+    header: &[u8; 512],
+    data: &[u8],
+) -> Result<(), EncodeError> {
+    output
+        .write_all(header)
+        .and_then(|_| output.write_all(data))
+        .and_then(|_| output.write_all(&[0; 512][..(512 - data.len() % 512) % 512]))
+        .map_err(|_| EncodeError::Output)
 }
-impl Read for Input<'_> {
-    fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
-        self.cancel.check().map_err(io::Error::other)?;
-        let n = self
-            .reader
-            .read(output)
-            .inspect_err(|_| self.failed.set(true))?;
-        *self.bytes = self
-            .bytes
-            .checked_add(n as u64)
-            .ok_or_else(|| io::Error::other("input_limit"))?;
-        (self.progress)(EncodeProgress {
-            name: self.name,
-            input_bytes: *self.bytes,
-        });
-        Ok(n)
-    }
-}
+
 pub(crate) fn write_tar(
     output: &mut dyn Write,
     input: &dyn EncodeInput,
     cancel: &Cancellation,
     progress: &mut dyn FnMut(EncodeProgress<'_>),
 ) -> Result<(), EncodeError> {
-    let mut builder = tar::Builder::new(output);
-    let mut bytes = 0;
+    let mut bytes = 0u64;
+    let mut buffer = [0u8; 64 * 1024];
     for (index, entry) in input.entries().iter().enumerate() {
         cancel.check().map_err(|_| EncodeError::Cancelled)?;
-        let mut header = tar::Header::new_ustar();
-        header.set_entry_type(if entry.directory {
-            tar::EntryType::Directory
-        } else {
-            tar::EntryType::Regular
-        });
-        header.set_size(entry.size);
-        header.set_mtime(entry.modified_unix.max(0) as u64);
-        header.set_mode(if entry.directory { 0o755 } else { 0o644 });
-        header.set_uid(0);
-        header.set_gid(0);
-        header.set_cksum();
+        if entry.directory && entry.size != 0 {
+            return Err(EncodeError::Invalid);
+        }
         let name = if entry.directory {
             format!("{}/", entry.name)
         } else {
             entry.name.clone()
         };
-        // PAX defines path as UTF-8. GNU raw-name bytes otherwise depend on the
-        // reference reader's locale (notably Windows' system bsdtar).
-        let size = entry.size.to_string();
-        let mut extensions = Vec::new();
+        if name.contains('\0') {
+            return Err(EncodeError::Invalid);
+        }
         let extended_name = !name.is_ascii() || name.len() > 100;
+        let mut body = Vec::new();
         if extended_name {
-            extensions.push(("path", name.as_bytes()));
+            record::pax_field(&mut body, "path", name.as_bytes());
         }
-        if entry.size >= (1 << 33) {
-            extensions.push(("size", size.as_bytes()));
+        let extended_size = entry.size >= 1 << 33;
+        if extended_size {
+            record::pax_field(&mut body, "size", entry.size.to_string().as_bytes());
         }
-        if !extensions.is_empty() {
-            builder
-                .append_pax_extensions(extensions)
-                .map_err(|_| EncodeError::Output)?;
+        let time = entry.modified_unix.max(0) as u64;
+        let extended_time = time >= 1 << 33;
+        if extended_time {
+            record::pax_field(&mut body, "mtime", time.to_string().as_bytes());
+        }
+        if body.len() > crate::EXTENSION_LIMIT as usize {
+            return Err(EncodeError::Limit);
+        }
+        if !body.is_empty() {
+            let header = record::header(b"PaxHeaders/xdzip", b'x', body.len() as u64, 0, 0o644)
+                .map_err(|_| EncodeError::Invalid)?;
+            write_record(output, &header, &body)?;
         }
         let stored_name = if extended_name {
             format!("entry-{index}{}", if entry.directory { "/" } else { "" })
         } else {
             name.clone()
         };
-        let reader: Box<dyn Read> = if entry.directory {
-            Box::new(io::empty())
-        } else {
-            input.open(index)?
-        };
-        let failed = Cell::new(false);
-        let mut reader = Input {
-            reader,
-            failed: &failed,
-            cancel,
-            name: &name,
-            bytes: &mut bytes,
-            progress,
-        };
-        let before = *reader.bytes;
-        builder
-            .append_data(&mut header, &stored_name, &mut reader)
-            .map_err(|_| {
-                if cancel.check().is_err() {
-                    EncodeError::Cancelled
-                } else if failed.get() {
-                    EncodeError::Source
-                } else {
-                    EncodeError::Output
+        let header = record::header(
+            stored_name.as_bytes(),
+            if entry.directory { b'5' } else { b'0' },
+            if extended_size { 0 } else { entry.size },
+            if extended_time { 0 } else { time },
+            if entry.directory { 0o755 } else { 0o644 },
+        )
+        .map_err(|_| EncodeError::Invalid)?;
+        output.write_all(&header).map_err(|_| EncodeError::Output)?;
+        if !entry.directory {
+            let mut reader = input.open(index)?;
+            let mut left = entry.size;
+            while left != 0 {
+                cancel.check().map_err(|_| EncodeError::Cancelled)?;
+                let take = left.min(buffer.len() as u64) as usize;
+                let n = reader
+                    .read(&mut buffer[..take])
+                    .map_err(|_| EncodeError::Source)?;
+                if n == 0 {
+                    return Err(EncodeError::Source);
                 }
-            })?;
-        // append_data reads to EOF; compare actual source bytes with the frozen size.
-        if *reader.bytes - before != entry.size {
-            return Err(EncodeError::Source);
+                output
+                    .write_all(&buffer[..n])
+                    .map_err(|_| EncodeError::Output)?;
+                bytes = bytes.checked_add(n as u64).ok_or(EncodeError::Limit)?;
+                left -= n as u64;
+                progress(EncodeProgress {
+                    name: &name,
+                    input_bytes: bytes,
+                });
+            }
+            cancel.check().map_err(|_| EncodeError::Cancelled)?;
+            // Probe one byte only: a growing source must fail without unbounded reads.
+            if reader
+                .read(&mut buffer[..1])
+                .map_err(|_| EncodeError::Source)?
+                != 0
+            {
+                return Err(EncodeError::Source);
+            }
         }
+        let padding = ((512 - entry.size % 512) % 512) as usize;
+        output
+            .write_all(&[0u8; 512][..padding])
+            .map_err(|_| EncodeError::Output)?;
     }
-    builder.finish().map_err(|_| EncodeError::Output)
+    cancel.check().map_err(|_| EncodeError::Cancelled)?;
+    output
+        .write_all(&[0; 1024])
+        .map_err(|_| EncodeError::Output)
 }
+
 impl CreationCodec for TarCodec {
     fn encode(
         &self,
@@ -132,7 +136,8 @@ impl CreationCodec for TarCodec {
             return Err(EncodeError::Unsupported);
         }
         if self.gzip {
-            let mut encoder = GzEncoder::new(output, Compression::new(u32::from(settings.level)));
+            let mut encoder =
+                GzipWriter::new(output, settings.level).map_err(|_| EncodeError::Invalid)?;
             write_tar(&mut encoder, input, cancel, progress)?;
             cancel.check().map_err(|_| EncodeError::Cancelled)?;
             encoder.finish().map_err(|_| EncodeError::Output)?;

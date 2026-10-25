@@ -59,11 +59,11 @@ rawzip 暂无对应 AES 编码能力；自行实现 AES/PBKDF2 或把真实密�
 
 ## WP-11 TAR/GZIP
 
-精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性。仅使用 Header、PaxExtensions 和对宿主 Write 的 Builder::append_data，不调用 Archive::unpack、Entry::unpack、文件路径读取或所有者／权限恢复。读取采用显式有界头与扩展头处理，避免不受宿主约束的扩展分配；编码通过显式 PAX UTF-8 path 及大尺寸字段保证跨平台名称互操作，不依赖 Windows 系统 tar 对 GNU 原始名称的本地编码猜测。
+精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性，仅用作开发测试的独立读写参照。产品 TAR 头、PAX、创建与重写使用[独立 Rust 记录层](independent-rust-codecs.md)，不调用第三方 TAR 解析或 Builder，不调用通用 unpack 或所有者／权限恢复。生产依赖闭包禁止 tar 和 filetime 回流，测试及历史交付的许可证仍保留。编码显式写 PAX UTF-8 path 及超范围数字，保证跨平台名称互操作。
 
-GZIP 复用已锁定的 flate2 1.1.10、Rust backend、miniz_oxide，无新增原生压缩库。MultiGzDecoder 只作为一层过滤器组合到 TAR，压缩输入和解码输出均受取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。独立非 TAR 的 GZIP 仍明确拒绝。
+GZIP 使用无第三方生产依赖的 `xdzip-compression` 独立实现，包括 RFC 1951 Deflate、RFC 1952 封装和 CRC-32。压缩输入和解码输出均受宿主取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。flate2 1.1.10 仅用于此后端的开发测试参照，ZIP 尚未替换的实现仍按其原有准入使用 flate2/miniz_oxide。独立非 TAR 的 GZIP 仍明确拒绝。
 
-新增传递依赖 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 的系统时间恢复接口不由产品调用。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
+tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 不进入该 codec 的产品依赖闭包。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集，锁文件存在测试包不表示产品链接这些包。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
 
 2026-10-15 对 tar 0.4.46、filetime 0.2.29、flate2 1.1.10 执行 OSV 精确版本查询，未返回公告；查询原文只保存在 build/review/wp11。此结果不等于无漏洞保证。双向互操作、坏输入、配额、取消和三平台验证必须实际运行，证据入口见 [WP-11 契约](m4-tar-gzip.md)。
 

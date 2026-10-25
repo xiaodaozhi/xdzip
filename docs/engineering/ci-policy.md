@@ -41,6 +41,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
+自研后端在 Foundation 通过 `scripts/check-rust-codec-policy.py` 检查普通和构建依赖的传递闭包，开发测试参照不计作生产依赖。TAR/GZIP 包含独立读写器双向测试、Huffman 与距离边界、CRC/ISIZE、多成员、截断、资源与取消；`scripts/check-tar-interop.py` 另外使用 Python zlib 的固定、动态、RLE、Huffman-only 与 filtered 策略输入，并通过实际工作进程核对旧编码名称。`gzip-probe` 生成合成零字节、文本及随机数据的四档编码大小、耗时和独立内容核对，JSON 保留在 build/review/independent-rust-codecs/ 并作为 CI 工件上传。有限固定种子变异回归不冒充长期 fuzz，性能数字来自实际工件，不用共享 runner 偶然耗时批准性能。
+
 CAB/ISO/UDF 增量复用同一 Foundation 门槛，`scripts/check-cab-iso-interop.py` 通过实际原生工作进程验证固定来源夹具、已知明文字节、四种 CAB 算法、跨卷文件、ISO9660/Joliet/Rock Ridge/UDF 及只读拒绝。镜像由独立 pycdlib 测试工具预生成并以小型 gzip 输入保存，CI 只校验和展开，不安装该生成器。Rust 与 Qt 覆盖任意 CAB 卷入口、冻结来源、混合命名空间选择、普通文件的解压/临时打开/导出及不支持特殊记录的整包测试失败。结果保留在 build/review/native-codec-interop/，不会进入 docs 或源代码历史。
 
 Qt components 通过 [scripts/desktop.py](../../scripts/desktop.py)复用本地的 prepare、build、基础 test，以及 Windows/Linux package／verify。参数和本地顺序统一见[开发构建指南](developer-build.md)。共用阶段不依赖 RUNNER_TEMP 或 RUNNER_ARCH；工作流显式提供 CI 路径，普通本地使用仓库默认目录。系统编译器／SDK 和 Linux 图形开发依赖仍由宿主／工作流准备，SDK 与打包工具下载使用 prepare 的显式开关。

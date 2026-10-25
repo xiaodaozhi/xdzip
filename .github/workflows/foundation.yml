@@ -25,7 +25,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: native-codec-checks-${{ matrix.os }}
-          path: build/review/native-codec-interop/**/*.json
+          path: |
+            build/review/native-codec-interop/**/*.json
+            build/review/independent-rust-codecs/**/*.json
+            build/review/legacy-name-rewrite.json
           if-no-files-found: ignore
           retention-days: 14
 

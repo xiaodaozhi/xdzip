@@ -15,6 +15,7 @@ import tarfile
 import tempfile
 import threading
 import time
+import zlib
 from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -214,7 +215,11 @@ def main():
                     stream.addfile(info, io.BytesIO(data))
             plain = payload.getvalue()
             mid = len(plain)//2
-            for mode, encoded in [('tar', plain), ('gzip', gzip.compress(plain)), ('multi-member', gzip.compress(plain[:mid])+gzip.compress(plain[mid:]))]:
+            variants = [('tar', plain), ('gzip', gzip.compress(plain)), ('multi-member', gzip.compress(plain[:mid])+gzip.compress(plain[mid:]))]
+            for label, strategy in [('fixed', zlib.Z_FIXED), ('huffman-only', zlib.Z_HUFFMAN_ONLY), ('rle', zlib.Z_RLE), ('filtered', zlib.Z_FILTERED)]:
+                encoder = zlib.compressobj(6, zlib.DEFLATED, 31, strategy=strategy)
+                variants.append(('gzip-' + label, encoder.compress(plain) + encoder.flush()))
+            for mode, encoded in variants:
                 archive = root/f'python-{len(checks)}.data'
                 archive.write_bytes(encoded)
                 active_archive=archive;phase=f'Python format {fmt} -> xdzip {mode}'

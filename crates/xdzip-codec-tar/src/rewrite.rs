@@ -1,9 +1,13 @@
 // crates/xdzip-codec-tar/src/rewrite.rs
 
-use crate::{STREAM_LIMIT, TarCodec};
-use flate2::{Compression, read::MultiGzDecoder, write::GzEncoder};
-use std::io::{Read, SeekFrom, Write};
+use crate::{STREAM_LIMIT, TarCodec, record};
+#[cfg(test)]
+use flate2::read::MultiGzDecoder;
+#[cfg(test)]
+use flate2::{Compression, write::GzEncoder};
+use std::io::{Read, Write};
 use xdzip_codec_api::{Cancellation, ReadSource, encode::*};
+use xdzip_compression::GzipWriter;
 
 // Rewrite path and its charset declaration; preserve other admitted PAX record bytes.
 // GNU long paths become an explicit UTF-8 PAX path. Unsupported metadata fails
@@ -17,19 +21,22 @@ fn renamed_header(
 ) -> Result<(), EncodeError> {
     let mut body = Vec::new();
     let mut at = 0usize;
-    let mut template = None;
     let mut binary_charset = false;
     while at < pending.len() {
-        let h = tar::Header::from_byte_slice(&pending[at..at + 512]);
-        let size = usize::try_from(h.entry_size().map_err(|_| EncodeError::Invalid)?)
+        let block: &[u8; 512] = pending
+            .get(at..at + 512)
+            .and_then(|b| b.try_into().ok())
+            .ok_or(EncodeError::Invalid)?;
+        let h = record::Record(block);
+        h.validate().map_err(|_| EncodeError::Invalid)?;
+        let size = usize::try_from(h.size().map_err(|_| EncodeError::Invalid)?)
             .map_err(|_| EncodeError::Invalid)?;
         let data = pending
             .get(at + 512..at + 512 + size)
             .ok_or(EncodeError::Invalid)?;
-        match h.entry_type().as_byte() {
+        match h.kind() {
             b'L' => {}
             b'x' => {
-                template = Some(h.clone());
                 let mut pos = 0;
                 while pos < data.len() {
                     let space = data[pos..]
@@ -69,9 +76,8 @@ fn renamed_header(
     // The replacement path is explicit PAX UTF-8. Do not retain a BINARY
     // declaration for it, or silently reinterpret other non-UTF8 PAX values.
     if binary_charset
-        && tar::PaxExtensions::new(&body).any(|item| {
-            item.is_err()
-                || item.is_ok_and(|field| std::str::from_utf8(field.value_bytes()).is_err())
+        && record::Pax(&body).any(|item| {
+            item.is_err() || item.is_ok_and(|field| std::str::from_utf8(field.1).is_err())
         })
     {
         return Err(EncodeError::Unsupported);
@@ -89,32 +95,28 @@ fn renamed_header(
     if body.len() > 256 * 1024 {
         return Err(EncodeError::Unsupported);
     }
-    let mut extension = template.unwrap_or_else(tar::Header::new_ustar);
-    extension.set_entry_type(tar::EntryType::XHeader);
-    extension
-        .set_path("PaxHeaders/xdzip")
+    let extension = record::header(b"PaxHeaders/xdzip", b'x', body.len() as u64, 0, 0o644)
         .map_err(|_| EncodeError::Unsupported)?;
-    extension.set_size(body.len() as u64);
-    extension.set_cksum();
     output
-        .write_all(extension.as_bytes())
+        .write_all(&extension)
         .and_then(|_| output.write_all(&body))
         .map_err(|_| EncodeError::Output)?;
     let padding = (512 - body.len() % 512) % 512;
     output
         .write_all(&[0u8; 512][..padding])
         .map_err(|_| EncodeError::Output)?;
-    let mut actual = tar::Header::from_byte_slice(header).clone();
-    actual
-        .set_path(format!(
+    let mut actual = *header;
+    record::set_name(
+        &mut actual,
+        format!(
             "entry-{index}{}",
             if name.ends_with('/') { "/" } else { "" }
-        ))
-        .map_err(|_| EncodeError::Unsupported)?;
-    actual.set_cksum();
-    output
-        .write_all(actual.as_bytes())
-        .map_err(|_| EncodeError::Output)
+        )
+        .as_bytes(),
+    )
+    .map_err(|_| EncodeError::Unsupported)?;
+    record::seal(&mut actual);
+    output.write_all(&actual).map_err(|_| EncodeError::Output)
 }
 
 fn copy_records(
@@ -131,6 +133,7 @@ fn copy_records(
     let mut pending = Vec::new();
     let mut consumed = 0u64;
     let mut buffer = [0u8; 64 * 1024];
+    let mut next_size = None;
     loop {
         cancel.check().map_err(|_| EncodeError::Cancelled)?;
         let mut header = [0u8; 512];
@@ -139,16 +142,30 @@ fn copy_records(
             .map_err(|_| EncodeError::Source)?;
         consumed += 512;
         if header.iter().all(|b| *b == 0) {
+            reader
+                .read_exact(&mut header)
+                .map_err(|_| EncodeError::Source)?;
+            consumed += 512;
+            if header.iter().any(|b| *b != 0) {
+                return Err(EncodeError::Invalid);
+            }
             break;
         }
-        let h = tar::Header::from_byte_slice(&header);
-        let size = h.entry_size().map_err(|_| EncodeError::Invalid)?;
+        let h = record::Record(&header);
+        h.validate().map_err(|_| EncodeError::Invalid)?;
+        let kind = h.kind();
+        let size = if matches!(kind, b'x' | b'L' | b'K') {
+            h.size().map_err(|_| EncodeError::Invalid)?
+        } else {
+            next_size
+                .take()
+                .unwrap_or(h.size().map_err(|_| EncodeError::Invalid)?)
+        };
         let padded = size.checked_add(511).ok_or(EncodeError::Invalid)? / 512 * 512;
         consumed = consumed.checked_add(padded).ok_or(EncodeError::Invalid)?;
         if consumed > STREAM_LIMIT {
             return Err(EncodeError::Invalid);
         }
-        let kind = h.entry_type().as_byte();
         if matches!(kind, b'x' | b'L' | b'K') {
             if padded > 64 * 1024 || pending.len() as u64 + padded + 512 > 256 * 1024 {
                 return Err(EncodeError::Unsupported);
@@ -159,6 +176,22 @@ fn copy_records(
             reader
                 .read_exact(&mut pending[start..])
                 .map_err(|_| EncodeError::Source)?;
+            if kind == b'x' {
+                for field in record::Pax(&pending[start..start + size as usize]) {
+                    let (key, value) = field.map_err(|_| EncodeError::Invalid)?;
+                    if key == b"size" {
+                        if next_size.is_some() {
+                            return Err(EncodeError::Invalid);
+                        }
+                        next_size = Some(
+                            std::str::from_utf8(value)
+                                .map_err(|_| EncodeError::Invalid)?
+                                .parse::<u64>()
+                                .map_err(|_| EncodeError::Invalid)?,
+                        );
+                    }
+                }
+            }
             continue;
         }
         // Global PAX state would also change newly appended entries. Do not silently
@@ -220,22 +253,33 @@ impl RewriteCodec for TarCodec {
         cancel: &Cancellation,
         progress: &mut dyn FnMut(EncodeProgress<'_>),
     ) -> Result<(), EncodeError> {
-        original
-            .seek(SeekFrom::Start(0))
+        let mut reader = self
+            .stream(original, cancel, STREAM_LIMIT)
             .map_err(|_| EncodeError::Source)?;
-        let mut reader: Box<dyn Read + '_> = if self.gzip {
-            Box::new(MultiGzDecoder::new(original))
-        } else {
-            Box::new(original)
-        };
         if self.gzip {
             let mut encoder =
-                GzEncoder::new(output, Compression::new(u32::from(input.settings.level)));
-            copy_records(&mut reader, &mut encoder, input.keep, input.renames, cancel)?;
+                GzipWriter::new(output, input.settings.level).map_err(|_| EncodeError::Invalid)?;
+            copy_records(&mut reader, &mut encoder, input.keep, input.renames, cancel).map_err(
+                |error| {
+                    if cancel.check().is_err() {
+                        EncodeError::Cancelled
+                    } else {
+                        error
+                    }
+                },
+            )?;
             crate::writer::write_tar(&mut encoder, input.additions, cancel, progress)?;
             encoder.finish().map_err(|_| EncodeError::Output)?;
         } else {
-            copy_records(&mut reader, output, input.keep, input.renames, cancel)?;
+            copy_records(&mut reader, output, input.keep, input.renames, cancel).map_err(
+                |error| {
+                    if cancel.check().is_err() {
+                        EncodeError::Cancelled
+                    } else {
+                        error
+                    }
+                },
+            )?;
             crate::writer::write_tar(output, input.additions, cancel, progress)?;
         }
         Ok(())
@@ -254,6 +298,51 @@ mod tests {
         fn open(&self, _: usize) -> Result<Box<dyn Read + '_>, EncodeError> {
             Err(EncodeError::Invalid)
         }
+    }
+    #[test]
+    fn pax_size_controls_rewrite_payload_and_two_end_blocks_are_required() {
+        let mut pax = Vec::new();
+        record::pax_field(&mut pax, "size", b"7");
+        let mut source = Vec::new();
+        source.extend_from_slice(
+            &record::header(b"PaxHeaders/size", b'x', pax.len() as u64, 0, 0o644).unwrap(),
+        );
+        source.extend_from_slice(&pax);
+        source.resize(source.len().div_ceil(512) * 512, 0);
+        // The PAX size overrides the zero-sized ordinary header.
+        source.extend_from_slice(&record::header(b"file", b'0', 0, 0, 0o644).unwrap());
+        source.extend_from_slice(b"payload");
+        source.resize(source.len().div_ceil(512) * 512, 0);
+        source.extend_from_slice(&[0; 1024]);
+        let mut output = Vec::new();
+        copy_records(
+            &mut source.as_slice(),
+            &mut output,
+            &[true],
+            &[Some("renamed".into())],
+            &Cancellation::default(),
+        )
+        .unwrap();
+        output.extend_from_slice(&[0; 1024]);
+        let mut oracle = tar::Archive::new(output.as_slice());
+        let mut entries = oracle.entries().unwrap();
+        let mut entry = entries.next().unwrap().unwrap();
+        assert_eq!(entry.path_bytes().as_ref(), b"renamed");
+        let mut data = Vec::new();
+        entry.read_to_end(&mut data).unwrap();
+        assert_eq!(data, b"payload");
+        assert!(entries.next().is_none());
+        source.truncate(source.len() - 512);
+        assert!(
+            copy_records(
+                &mut source.as_slice(),
+                &mut Vec::new(),
+                &[true],
+                &[],
+                &Cancellation::default()
+            )
+            .is_err()
+        );
     }
     #[test]
     fn renamed_pax_paths_preserve_unknown_attributes_mode_time_and_contents() {

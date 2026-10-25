@@ -1047,10 +1047,13 @@ fn gzip_ratio_requires_explicit_intent_and_opt_in_still_uses_the_safe_output_job
         conflict: ConflictPolicy::Ask,
         allow_high_ratio: false,
     };
-    assert!(matches!(
-        archive.extraction_job(options.clone(), &Cancellation::default()),
-        Err("high_ratio")
-    ));
+    let admission = archive.extraction_job(options.clone(), &Cancellation::default());
+    assert!(
+        matches!(admission, Err("high_ratio")),
+        "expected high-ratio admission, got {:?}, archive bytes {}",
+        admission.err(),
+        std::fs::metadata(&path).unwrap().len()
+    );
     assert_eq!(std::fs::read_dir(&target).unwrap().count(), 0);
     options.allow_high_ratio = true;
     let mut terminal = None;

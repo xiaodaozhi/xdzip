@@ -1,0 +1,12 @@
+{
+  "rules": [
+    {
+      "package": "xdzip-codec-tar",
+      "forbidden_runtime_dependencies": ["tar", "filetime", "flate2", "miniz_oxide", "zlib-rs"]
+    },
+    {
+      "package": "xdzip-compression",
+      "forbidden_runtime_dependencies": ["flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    }
+  ]
+}
