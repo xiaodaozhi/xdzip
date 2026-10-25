@@ -4644,7 +4644,8 @@ QtObject {
             for (const bool dark : {false, true})
                 for (const double factor : {1., 1.25, 1.5})
                     QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
-                                            QString::number(factor))) << language << dark << factor;
+                                             QString::number(factor)))
+                        << language << dark << factor;
     }
     void sevenZipCreationLayout() {
         QFETCH(QString, language);
@@ -4656,10 +4657,11 @@ QtObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         QQmlComponent theme(&engine);
-        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
-                      "QtObject { property real factor: 1; property bool dark: false; "
-                      "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
-                      QUrl());
+        theme.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+            "QtObject { property real factor: 1; property bool dark: false; "
+            "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+            QUrl());
         QScopedPointer<QObject> themeState(theme.create());
         QVERIFY2(themeState, qPrintable(theme.errorString()));
         themeState->setProperty("factor", factor);
@@ -4674,19 +4676,24 @@ QtObject {
         QCOMPARE(create->width(), 491);
         QTRY_VERIFY(formats->width() > 0);
         for (int index = 0; index < 4; ++index) {
-            auto *segment = findVisual(create->contentItem(), "createFormat-" + QString::number(index));
+            auto *segment =
+                findVisual(create->contentItem(), "createFormat-" + QString::number(index));
             QVERIFY(segment);
-            auto *label = qobject_cast<QQuickItem *>(segment->property("contentItem").value<QObject *>());
+            auto *label =
+                qobject_cast<QQuickItem *>(segment->property("contentItem").value<QObject *>());
             QVERIFY(label);
             QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
                          qPrintable(QString("format %1 text %2 exceeds %3")
-                                        .arg(index).arg(label->implicitWidth()).arg(label->width())));
+                                        .arg(index)
+                                        .arg(label->implicitWidth())
+                                        .arg(label->width())));
         }
         auto *cancel = findVisual(create->contentItem(), "createCancel");
         auto *start = findVisual(create->contentItem(), "startCreate");
         QVERIFY(cancel && start);
         QTRY_VERIFY(cancel->mapToScene(QPointF(0, cancel->height())).y() <= create->height() + 1);
-        QTRY_VERIFY(start->mapToScene(QPointF(start->width(), start->height())).x() <= create->width() + 1);
+        QTRY_VERIFY(start->mapToScene(QPointF(start->width(), start->height())).x() <=
+                    create->width() + 1);
         const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
         if (!captures.isEmpty()) {
             QVERIFY(QDir().mkpath(captures));
@@ -4768,8 +4775,8 @@ QtObject {
     void creationControlsMatchReviewedSource() {
         const bool accessibilityWasActive = QAccessible::isActive();
         QAccessible::setActive(true);
-        const auto restoreAccessibility = qScopeGuard(
-            [&] { QAccessible::setActive(accessibilityWasActive); });
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
         const QStringList names{QStringLiteral("冰川湖.jpg"), QStringLiteral("山间日出.jpg"),

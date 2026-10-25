@@ -30,6 +30,14 @@ foreach(stem IN ITEMS Aes AesOpt 7zCrc 7zCrcOpt Sha256 Sha256Opt LzFindOpt Sort)
   list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/C/${stem}.c")
 endforeach()
 list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/Common/Sha256Prepare.cpp")
+if(NOT WIN32)
+  # The Windows Format7z manifest uses OS-provided COM/time and UTF conversion
+  # functions. Official GCC bundles add these compatibility implementations;
+  # they provide platform primitives only, not additional archive handlers.
+  list(APPEND seven_sources
+    "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyWindows.cpp"
+    "${XDZIP_7ZIP_SOURCE}/CPP/Common/UTFConvert.cpp")
+endif()
 foreach(source IN LISTS seven_sources)
   if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
     message(FATAL_ERROR "Non-7z container entered the native source allowlist: ${source}")

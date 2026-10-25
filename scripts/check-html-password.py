@@ -4,6 +4,7 @@ import argparse
 import hashlib
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from itertools import product
 import json
 import os
 from pathlib import Path
@@ -15,11 +16,67 @@ from native_browser_zoom import NativeZoom, isolated_display
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'build/review/password/html'
+MESSAGES = {language: json.loads((ROOT / 'resources/i18n' / (language + '.json')).read_text(encoding='utf-8'))['messages']
+            for language in ['zh-CN', 'en-US']}
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_args):
         pass
+
+
+def assert_operation_copy(page, language, kind, pending=False, standalone=False):
+    """Opening an encrypted directory must never promise extraction or cancel a task."""
+    messages = MESSAGES[language]
+    opening = kind == 'open'
+    selectors = {
+        '.native-caption' if standalone else '.os-title': 'password.openTitle' if opening else 'password.title',
+        'h1' if standalone else '.password-content h1': 'password.openHeading' if opening else 'password.heading',
+        '.description' if standalone else '.password-content>p:first-of-type': 'password.openDescription' if opening else 'password.description',
+        '.note' if standalone else '.password-note': 'password.openPrivacy' if opening else 'password.privacy',
+        '#cancel' if standalone else '#password-cancel': 'common.cancel' if opening else 'ui.537d17f1c531',
+        '#submit' if standalone else '#password-submit': 'password.submitting' if pending else 'password.openContinue' if opening else 'password.continue',
+    }
+    for selector, message in selectors.items():
+        expect(page.locator(selector)).to_have_text(messages[message])
+    if standalone:
+        expect(page.locator('article')).to_have_attribute('aria-label', messages['password.openTitle' if opening else 'password.title'])
+        expect(page.locator('#password')).to_have_attribute('aria-label', messages['password.label'])
+
+
+def standalone_cases(browser, source, errors):
+    """Measure the authored source that supplies the independent reference hash."""
+    records = []
+    page = browser.new_page(viewport={'width': 1300, 'height': 1100})
+    page.on('pageerror', lambda error: errors.append(str(error)))
+    for language, kind, dark, scale, state in product(
+            ['zh-CN', 'en-US'], ['extract', 'open'], [False, True], [1, 1.25, 1.5], ['request', 'retry', 'pending']):
+        query = f'?lang={language}&kind={kind}&scale={scale}&theme={"dark" if dark else "light"}&retry={int(state == "retry")}&pending={int(state == "pending")}'
+        page.goto(source.as_uri() + query)
+        page.evaluate('document.fonts.ready')
+        assert_operation_copy(page, language, kind, state == 'pending', standalone=True)
+        article = page.locator('article')
+        geometry = article.evaluate('''el=>{
+            const box=el.getBoundingClientRect(),footer=el.querySelector('footer').getBoundingClientRect();
+            return {width:box.width,height:box.height,footerGap:box.bottom-footer.bottom,
+                title:parseFloat(getComputedStyle(el.querySelector('h1')).fontSize),
+                body:parseFloat(getComputedStyle(el.querySelector('.description')).fontSize),
+                note:parseFloat(getComputedStyle(el.querySelector('.note')).fontSize)};
+        }''')
+        assert abs(geometry['width'] - 491) <= 1 and geometry['height'] <= 600, geometry
+        assert abs(geometry['footerGap']) <= 1, geometry
+        assert abs(geometry['title'] - 20 * scale) <= .1, geometry
+        assert abs(geometry['body'] - 13 * scale) <= .1 and abs(geometry['note'] - 12 * scale) <= .1, geometry
+        expect(page.locator('#password')).to_have_value('')
+        expect(page.locator('#password')).to_have_attribute('type', 'password')
+        assert page.locator('#submit').is_disabled() == (state == 'pending')
+        expect(page.locator('#cancel')).to_be_enabled()
+        assert page.locator('.error').is_visible() == (state == 'retry')
+        if state == 'request':
+            article.screenshot(path=str(OUT / f'source-{language}-{kind}-{dark}-{scale}.png'))
+        records.append({'language': language, 'kind': kind, 'dark': dark, 'scale': scale, 'state': state, **geometry})
+    page.close()
+    return records
 
 
 def native_zoom_cases():
@@ -40,19 +97,20 @@ def native_zoom_cases():
                                   f'--force-device-scale-factor={dpr}'])
                         page = context.pages[0]
                         for zoom in [1, 1.25]:
-                            for language in ['zh-CN', 'en-US']:
+                            for language, kind in product(['zh-CN', 'en-US'], ['extract', 'open']):
                                 page.goto(f'http://127.0.0.1:{server.server_port}/design/html/index.html?view=password&zoom=1')
                                 keyboard.set_zoom(page, dpr, zoom)
                                 child = next(frame for frame in page.frames if frame.parent_frame)
                                 child.evaluate('document.fonts.ready')
-                                child.evaluate('''language=>{
-                                    history.replaceState(null,'','?view=password&lang='+language);
+                                child.evaluate('''([language,kind])=>{
+                                    history.replaceState(null,'','?view=password&lang='+language+'&kind='+kind);
                                     document.documentElement.style.setProperty('--settings-text-scale',1.5);
-                                }''', language)
+                                }''', [language, kind])
                                 for dark in [False, True]:
                                     child.evaluate('''dark=>{XdzipDesign.theme(dark?'dark':'light');showPasswordPrompt(true);}''', dark)
                                     modal = page.frame_locator('#design-frame').locator('#modal')
                                     expect(modal).to_be_visible()
+                                    assert_operation_copy(child, language, kind)
                                     child.evaluate('''()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))''')
                                     # Measure one layout snapshot, inside the frame. CDP's separate
                                     # boxes can straddle a layout update or page-zoom pixel rounding.
@@ -64,12 +122,12 @@ def native_zoom_cases():
                                         return {width:box.width*scale,footerGap:(box.bottom-border-footer.bottom)*scale,
                                             sourceBottom:box.bottom,footerBottom:footer.bottom,border,frameScale:scale,fonts:document.fonts.status};
                                     }''')
-                                    case = {'dpr': dpr, 'browserZoom': zoom, 'language': language,
+                                    case = {'dpr': dpr, 'browserZoom': zoom, 'language': language, 'kind': kind,
                                             'dark': dark, 'textScale': 1.5, **geometry,
                                             'effectiveDpr': page.evaluate('devicePixelRatio'),
                                             'reviewZoom': page.locator('#zoom').input_value()}
                                     if abs(geometry['width'] - 491) > 1 or abs(geometry['footerGap']) > 1:
-                                        tag = f'zoom-failure-{dpr}-{zoom}-{language}-{dark}'
+                                        tag = f'zoom-failure-{dpr}-{zoom}-{language}-{kind}-{dark}'
                                         (OUT / (tag + '.json')).write_text(json.dumps(case, indent=2) + '\n')
                                         modal.screenshot(path=str(OUT / (tag + '.png')))
                                     assert abs(geometry['width'] - 491) <= 1, case
@@ -95,11 +153,12 @@ def main():
     records, errors = [], []
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM', '/usr/bin/chromium'))
+        source_records = standalone_cases(browser, source, errors)
         for dpr in [1, 1.25, 2]:
-            for language in ['zh-CN', 'en-US']:
+            for language, kind in product(['zh-CN', 'en-US'], ['extract', 'open']):
                 page = browser.new_page(viewport={'width': 1300, 'height': 1100}, device_scale_factor=dpr)
                 page.on('pageerror', lambda error: errors.append(str(error)))
-                page.goto((ROOT / 'design/html/canvas.html').as_uri() + '?view=password&standalone=1&lang=' + language)
+                page.goto((ROOT / 'design/html/canvas.html').as_uri() + '?view=password&standalone=1&lang=' + language + '&kind=' + kind)
                 page.evaluate('document.fonts.ready')
                 for dark in [False, True]:
                     for scale in [1, 1.25, 1.5]:
@@ -111,6 +170,7 @@ def main():
                             }''', [dark, scale, state])
                             modal = page.locator('#modal')
                             expect(modal).to_be_visible()
+                            assert_operation_copy(page, language, kind, state == 'pending')
                             m = modal.evaluate('''el=>{
                                 const f=Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
                                 const box=el.getBoundingClientRect(),footer=el.querySelector('.modal-footer');
@@ -133,8 +193,8 @@ def main():
                             assert page.locator('#password-cancel').is_enabled()
                             assert page.locator('#password-error').is_visible() == (state == 'retry')
                             if dpr == 1:
-                                modal.screenshot(path=str(OUT / f'{language}-{dark}-{scale}-{state}.png'))
-                            records.append({'dpr': dpr, 'language': language, 'dark': dark, 'scale': scale, 'state': state, 'width': m['width'], 'height': m['height']})
+                                modal.screenshot(path=str(OUT / f'{language}-{kind}-{dark}-{scale}-{state}.png'))
+                            records.append({'dpr': dpr, 'language': language, 'kind': kind, 'dark': dark, 'scale': scale, 'state': state, 'width': m['width'], 'height': m['height']})
                 # Synthetic inputs verify semantics; screenshots never include input values.
                 page.evaluate('showPasswordPrompt()')
                 field = page.locator('#extraction-password')
@@ -162,9 +222,9 @@ def main():
         browser.close()
     assert not errors, errors
     native = native_zoom_cases() if args.native_zoom else []
-    (OUT / 'report.json').write_text(json.dumps({'passed': True, 'cases': records, 'nativeZoomCases': native,
+    (OUT / 'report.json').write_text(json.dumps({'passed': True, 'sourceCases': source_records, 'cases': records, 'nativeZoomCases': native,
         'limits': 'Design demo only, baseline browser zoom 100%, DPR 1/1.25/2. Real 100/125% browser zoom is reported only when --native-zoom runs. Empty password fields in all captures. Native titlebar and real decryption are outside this report.'}, indent=2) + '\n')
-    print(f'Password HTML: {len(records)} layouts, pending/retry, empty submission, byte limit and cancellation passed')
+    print(f'Password HTML: {len(source_records)} authored-source layouts, {len(records)} demo layouts, extract/open copy, pending/retry, empty submission, byte limit and cancellation passed')
     if native:
         print(f'Password HTML: {len(native)} actual browser zoom layouts passed')
 

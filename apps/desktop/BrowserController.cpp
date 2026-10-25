@@ -801,8 +801,8 @@ void BrowserController::checkCreationTarget(const QString &path) {
 }
 void BrowserController::startCreation(const QStringList &inputs, const QString &target,
                                       const QString &name, int method, int level, bool openAfter,
-                                      qulonglong volumeBytes, const QString &password,
-                                      bool solid, bool encryptHeaders) {
+                                      qulonglong volumeBytes, const QString &password, bool solid,
+                                      bool encryptHeaders) {
     if (m_busy || !runtimeAvailable() || m_closing)
         return;
     const auto validText = [](const QString &value) {
@@ -820,8 +820,8 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
         return;
     }
     if (volumeBytes > 24ULL * 1024 * 1024 * 1024 || !validText(password) ||
-        password.toUtf8().size() > 128 ||
-        (!sevenZip && (solid || encryptHeaders)) || (encryptHeaders && password.isEmpty()) ||
+        password.toUtf8().size() > 128 || (!sevenZip && (solid || encryptHeaders)) ||
+        (encryptHeaders && password.isEmpty()) ||
         std::any_of(password.cbegin(), password.cend(),
                     [](QChar c) { return c.category() == QChar::Other_Control; })) {
         m_creationError = explain("invalid_creation_options");
@@ -1048,7 +1048,8 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
                                   : xdzip::reader::CommandKind::Open;
     if (withPassword) {
         auto secret = password.toUtf8();
-        command.password = rust::String(secret.constData(), static_cast<std::size_t>(secret.size()));
+        command.password =
+            rust::String(secret.constData(), static_cast<std::size_t>(secret.size()));
         secret.fill('\0');
     }
     command.session = m_session.toULongLong();
@@ -1413,9 +1414,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                 : m_format.compare(QStringLiteral("RAR"), Qt::CaseInsensitive) == 0
                                     ? QStringLiteral("RAR")
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
-                                : row.method == 0                 ? QStringLiteral("Store")
-                                : row.method == 8                 ? QStringLiteral("Deflate")
-                                                                  : QString::number(row.method);
+                                : row.method == 0                   ? QStringLiteral("Store")
+                                : row.method == 8                   ? QStringLiteral("Deflate")
+                                                                    : QString::number(row.method);
             QStringList status;
             if (row.directory)
                 status << qtTrId("ui.52daa71ebc31");
@@ -1506,14 +1507,15 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
-        if (m_result.opening && (m_result.error == "password_required" ||
-                                m_result.error == "wrong_password")) {
+        if (m_result.opening &&
+            (m_result.error == "password_required" || m_result.error == "wrong_password")) {
             if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
                 m_result.error = "resource_limit";
             } else {
                 m_openPasswordPrompt = {{"taskId", QStringLiteral("open")},
                                         {"promptId", QString::number(++m_openPasswordGeneration)},
-                                        {"name", m_title}, {"kind", QStringLiteral("open")},
+                                        {"name", m_title},
+                                        {"kind", QStringLiteral("open")},
                                         {"retry", m_result.error == "wrong_password"}};
                 m_result = {};
                 m_message.clear();
