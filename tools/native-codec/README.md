@@ -2,15 +2,15 @@
 
 # 隔离格式工作进程
 
-此程序链接官方 7-Zip 的 7z、Cab 明确白名单，以及官方 UnRAR。
-CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好为这两个容器。
+此程序链接官方 7-Zip 的 7z 明确白名单，以及官方 UnRAR。
+CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好只有 7z。
 ISO/UDF 通过 `xdzip-readonly-bridge` 调用自研 Rust `xdzip-codec-optical`，
-构建中不含官方 Iso/Udf 处理器。Cab、ISO、UDF 只读，只有 7z 保留写入。
+构建中不含官方 Cab/Iso/Udf 处理器及 CAB 专用 LZX/Quantum。CAB、ISO、UDF 只读，只有 7z 保留写入。
 已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
 
-专用验证构建可显式设置 `XDZIP_RUST_CAB_TEST_ROUTE=ON`，通过同一只读桥接
-执行 `xdzip-codec-cab` 与共享 Rust MSZIP、LZX、Quantum 算法。该选项默认关闭，
-启用后 CAB 不回退官方处理器；正式产品路由变更须满足自研契约中的替代门槛。
+CAB 固定通过同一只读桥接执行 `xdzip-codec-cab` 与共享 Rust MSZIP、LZX、
+Quantum 算法，没有测试开关或官方处理器回退。内部 CMake 标记
+`XDZIP_CAB_BACKEND=rust` 记录固定路由身份，编译清单核验官方 CAB 来源退出。
 
 先运行 `python scripts/prepare-native-codecs.py` 准备锁定的官方来源，再通过项目
 统一构建入口构建 `xdzip-native-codec` 目标。独立构建可设置
@@ -22,15 +22,15 @@ Rust `xdzip-codec-native` 通过 stdin/stdout 的长度前缀二进制帧通信�
 用户文件路径，不解析控制台文本，不调用归档通用目录解包。
 
 CAB 的 Start 帧在原有卷长度表之后附加同序的原始卷名表，宿主在扫描前冻结全部
-授权卷。每个原生输入流限制在单卷范围，换卷回调只能匹配这份名字表，缺卷立即失败。
+授权卷。Rust 容器在每卷本地范围内解释偏移并核对名字表与继续关系，缺卷立即失败。
 ROW 保留 37 字节头，flags 的 0x10 表示原始名字字节，0x20 表示 CAB 显式 UTF-8；
 0x04 链接与 0x08 特殊对象语义不变。CAB 与非 Joliet ISO 的原始名字由宿主解码，
 仅 CAB 将反斜杠解释为目录分隔符。Joliet、UDF 传 Unicode 路径，树层级固定为 `/`。
 
-构建副本中的精确变换保留 CAB 原始名字和卷名字，扫描检查官方后端错误标记，
+Rust CAB 容器保留原始名字和卷名字，独立核对结构、片段校验及继续关系，
 损坏结构或缺卷不能形成部分成功索引。Rust ISO 使用 Rock Ridge 符号链接与
 POSIX 类型属性分类，UDF 使用真实 ICB 类型及链接数；链接及特殊类型不会进入输出流。
-ISO/UDF 的 CXX 回调同步借用切片，不保留指针；C++ 异常和 Rust unwind 均在边界内
+CAB/ISO/UDF 的 CXX 回调同步借用切片，不保留指针；C++ 异常和 Rust unwind 均在边界内
 转换为稳定错误，OOM/abort 导致隔离进程退出，宿主拒绝不完整暂存结果。
 内容读取不宣称格式未提供的文件校验和。规格及扩展边界见
 [自研契约](../../docs/engineering/independent-rust-codecs.md#iso与udf只读规格)。

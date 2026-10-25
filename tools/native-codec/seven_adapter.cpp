@@ -58,12 +58,6 @@ Z7_COM7F_IMF(HostSource::Seek(Int64 offset, UInt32 origin, UInt64 *result)) {
             *result = position;
     });
 }
-static std::wstring byte_name(const std::string &name) {
-    std::wstring result;
-    for (auto value : name)
-        result.push_back(wchar_t(static_cast<unsigned char>(value)));
-    return result;
-}
 Z7_COM7F_IMF(OpenCallback::SetTotal(const UInt64 *, const UInt64 *)) {
     return S_OK;
 }
@@ -72,31 +66,6 @@ Z7_COM7F_IMF(OpenCallback::SetCompleted(const UInt64 *, const UInt64 *)) {
 }
 Z7_COM7F_IMF(OpenCallback::CryptoGetTextPassword(BSTR *value)) {
     return password(value);
-}
-Z7_COM7F_IMF(OpenCallback::GetProperty(PROPID id, PROPVARIANT *value)) {
-    return guarded([&] {
-        NWindows::NCOM::CPropVariant result;
-        if (request.format == 8 && id == kpidName && !request.volume_names.empty())
-            result = byte_name(request.volume_names[0]).c_str();
-        result.Detach(value);
-    });
-}
-Z7_COM7F_IMF(OpenCallback::GetStream(const wchar_t *name, IInStream **stream)) {
-    *stream = nullptr;
-    return guarded([&] {
-        if (request.format != 8 || !name)
-            throw Failure{3};
-        uint64_t base = 0;
-        for (size_t index = 0; index < request.volume_names.size(); index++) {
-            if (byte_name(request.volume_names[index]) == name) {
-                CMyComPtr<IInStream> source = new HostSource(base, request.volumes[index]);
-                *stream = source.Detach();
-                return;
-            }
-            base += request.volumes[index];
-        }
-        throw Failure{9};
-    });
 }
 Z7_CLASS_IMP_COM_1(HostOutput, ISequentialOutStream)
 public:
@@ -198,9 +167,9 @@ uint32_t modified_dos(IInArchive *archive, UInt32 index) {
 void seven_registry_check() {
     UInt32 formats = 0;
     check(GetNumberOfFormats(&formats));
-    if (formats != 2)
+    if (formats != 1)
         throw Failure{3};
-    std::set<std::wstring> expected{L"7z", L"Cab"};
+    std::set<std::wstring> expected{L"7z"};
     for (UInt32 index = 0; index < formats; index++) {
         NWindows::NCOM::CPropVariant name;
         check(GetHandlerProperty2(index, NArchive::NHandlerPropID::kName, &name));
@@ -213,8 +182,7 @@ void seven_registry_check() {
 void read_archive(IInArchive *archive, const std::function<ArchiveRow(UInt32)> &row) {
     if (request.operation != 0 && request.operation != 1 && request.operation != 3)
         throw Failure{3};
-    CMyComPtr<IInStream> source =
-        request.format == 8 ? new HostSource(0, request.volumes.at(0)) : new HostSource;
+    CMyComPtr<IInStream> source = new HostSource;
     CMyComPtr<IArchiveOpenCallback> callback = new OpenCallback;
     const UInt64 search = 0;
     HRESULT result = archive->Open(source, &search, callback);
@@ -229,12 +197,6 @@ void read_archive(IInArchive *archive, const std::function<ArchiveRow(UInt32)> &
     check(archive->GetArchiveProperty(kpidError, &message));
     if (message.vt != VT_EMPTY && (message.vt != VT_BSTR || SysStringLen(message.bstrVal) != 0))
         throw Failure{2};
-    if (request.format == 8) {
-        NWindows::NCOM::CPropVariant volumes;
-        check(archive->GetArchiveProperty(kpidNumVolumes, &volumes));
-        if (volumes.vt != VT_UI4 || volumes.ulVal != request.volumes.size())
-            throw Failure{2};
-    }
     UInt32 count = 0;
     check(archive->GetNumberOfItems(&count));
     if (count > request.entries)
@@ -254,9 +216,8 @@ void read_archive(IInArchive *archive, const std::function<ArchiveRow(UInt32)> &
     if (row(UInt32(request.selected)).flags & 12)
         throw Failure{3};
     std::vector<UInt32> indices;
-    // CAB folders and 7z solid blocks need explicit preceding output accounting.
-    const bool solid = request.format == 7 || request.format == 8;
-    const UInt32 first = solid ? 0 : UInt32(request.selected);
+    // 7z solid blocks need explicit preceding output accounting.
+    const UInt32 first = 0;
     const UInt32 end = request.operation == 3 ? count : UInt32(request.selected) + 1;
     for (UInt32 index = first; index < end; index++)
         indices.push_back(index);

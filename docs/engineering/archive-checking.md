@@ -8,7 +8,7 @@ ZIP／ZIP64、Store／Deflate、受支持的编号分卷和 PKZIP 分卷逐条�
 
 7z 和 RAR 使用官方后端逐物理条目解码到同一个有界丢弃接收器，验证解码终止、声明大小和容器实际提供的校验。固实块内为到达当前选择而解码的其他数据只累计工作量，不增加当前文件的已验证计数。目录、空文件和加密条目均不能跳过后报告整包成功。RAR 旧版、RAR5 和 RAR 7 新算法分别使用独立已知内容样本验收，不能仅以相同魔数代表版本兼容。
 
-CAB 使用相同原生只读检查，验证卷集合、实际解码大小和数据块提供的校验。ISO/UDF 检查描述符、目录、数据范围和声明大小，并实际读取所有受支持普通文件；它们没有普遍的逐文件内容校验和，不能发现任意保持结构的内容篡改。镜像链接、设备及其他不支持记录不能跳过后宣称整包通过。混合镜像检查冻结的 UDF 命名空间，不在失败后改查 ISO 命名空间。
+CAB 使用隔离工作进程内的自研 Rust 容器与共享算法，验证卷集合、实际解码大小和完整数据帧提供的校验。ISO/UDF 检查描述符、目录、数据范围和声明大小，并实际读取所有受支持普通文件；它们没有普遍的逐文件内容校验和，不能发现任意保持结构的内容篡改。镜像链接、设备及其他不支持记录不能跳过后宣称整包通过。混合镜像检查冻结的 UDF 命名空间，不在失败后改查 ISO 命名空间。
 
 TAR 与 TAR.GZ 在检查任务内重新顺序扫描完整流，对照冻结的物理记录元数据，检查头校验、长度、两个结束块及尾部。TAR.GZ 继续消费到 EOF，核对 GZIP CRC／ISIZE，不在完整扫描之后再次解压全部内容。TAR 没有文件内容校验和，只能确认格式结构与可读性，无法发现任意保持结构的内容篡改。TAR 链接、特殊对象和稀疏文件仍不支持。本功能不证明归档来源可信，也不检查恶意软件。
 
@@ -26,7 +26,7 @@ AES 密码复用[密码协议](password-extraction.md)：独立控制槽、一�
 
 ## 验证边界
 
-English: CAB checks the authorized volume chain, decoded sizes and checksums available in its data blocks. ISO/UDF checks descriptors, directories, extent bounds and actual readability of supported files. Disc images do not generally provide per-file content checksums, so a successful check cannot detect every content change. Unsupported special records fail the whole-archive check. Hybrid checks retain the selected UDF namespace instead of falling back to ISO after an error. The existing file, task, read and native-memory budgets remain in force.
+English: The independent Rust CAB container and shared algorithms run inside the isolated worker, checking the authorized volume chain, decoded sizes and checksums available in complete data frames. ISO/UDF checks descriptors, directories, extent bounds and actual readability of supported files. Disc images do not generally provide per-file content checksums, so a successful check cannot detect every content change. Unsupported special records fail the whole-archive check. Hybrid checks retain the selected UDF namespace instead of falling back to ISO after an error. The existing file, task, read and native-memory budgets remain in force.
 
 核心回归覆盖支持格式、空文件、目录、重复名称、ZIP 链接负载、密码重试／取消、损坏负载、来源变化、实际计数和无输出。桥接与 Qt 验证真实工具栏到后台任务和结果闭环，密码路由、历史任务、跨会话准入及退出独立检查。双语多字号、浅深色与原生桌面视觉验收分别登记在 issue，生成证据仅保存于 build/ 或 CI 工件。
 
