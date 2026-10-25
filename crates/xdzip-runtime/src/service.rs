@@ -266,7 +266,8 @@ pub enum Payload {
     TaskAccepted(u64),
     /// Target staging check succeeded; number of untouched possible recovery workspaces.
     TargetChecked(u64),
-    /// Latest coalesced actual task state, independent of query request IDs.
+    /// Latest coalesced task state; Event.request retains its originating request.
+    /// This is not another ordinary payload or request terminal.
     Task(Box<crate::extraction::Snapshot>),
     /// Worker panicked; the service is abandoned and pending requests fail.
     RuntimeFault,
@@ -414,8 +415,8 @@ pub struct Receiver {
 /// Start one product worker and return independently owned command and receive handles.
 pub fn start() -> std::io::Result<(Client, Receiver)> {
     let mut archive = None;
-    spawn_with_shared(move |command, control, shared| {
-        let result = execute(&mut archive, command, control, shared);
+    spawn_with_shared(move |request, command, control, shared| {
+        let result = execute(&mut archive, request, command, control, shared);
         if matches!(result, Err("source_changed")) {
             archive = None;
         }
@@ -427,11 +428,11 @@ fn spawn<F>(mut handler: F) -> std::io::Result<(Client, Receiver)>
 where
     F: FnMut(Command, &Cancellation) -> Result<Payload, &'static str> + Send + 'static,
 {
-    spawn_with_shared(move |command, control, _| handler(command, control))
+    spawn_with_shared(move |_, command, control, _| handler(command, control))
 }
 fn spawn_with_shared<F>(mut handler: F) -> std::io::Result<(Client, Receiver)>
 where
-    F: FnMut(Command, &Cancellation, &Arc<Shared>) -> Result<Payload, &'static str>
+    F: FnMut(u64, Command, &Cancellation, &Arc<Shared>) -> Result<Payload, &'static str>
         + Send
         + 'static,
 {
@@ -470,7 +471,12 @@ where
                     Err("cancelled")
                 } else {
                     match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                        handler(pending.command, &pending.control, &worker_shared)
+                        handler(
+                            pending.id,
+                            pending.command,
+                            &pending.control,
+                            &worker_shared,
+                        )
                     })) {
                         Ok(result) => result,
                         Err(_) => {
@@ -628,7 +634,7 @@ impl Receiver {
         loop {
             let item = if state.task_turn && !state.tasks.pending.is_empty() {
                 state.task_turn = false;
-                state.tasks.take_event().map(|p| (0, p))
+                state.tasks.take_event()
             } else if state.fault_pending {
                 state.fault_pending = false;
                 Some((0, Payload::RuntimeFault))
@@ -639,7 +645,7 @@ impl Receiver {
                 state.control_turn = true;
                 state.events.pop_front()
             };
-            let item = item.or_else(|| state.tasks.take_event().map(|p| (0, p)));
+            let item = item.or_else(|| state.tasks.take_event());
             if let Some((request, payload)) = item {
                 state.task_turn = !matches!(payload, Payload::Task(_));
                 state.bytes -= payload.bytes();
@@ -703,6 +709,7 @@ impl Drop for Receiver {
 }
 fn execute(
     archive: &mut Option<Archive>,
+    request: u64,
     command: Command,
     control: &Cancellation,
     shared: &Arc<Shared>,
@@ -720,10 +727,10 @@ fn execute(
         match command {
             Command::PublishExport { source, target } => {
                 return shared
-                    .enqueue_task(tasks::Job::ExportCopy(crate::exporting::Job {
-                        source,
-                        target,
-                    }))
+                    .enqueue_task(
+                        request,
+                        tasks::Job::ExportCopy(crate::exporting::Job { source, target }),
+                    )
                     .map(Payload::TaskAccepted);
             }
             Command::Move { session, options } => {
@@ -732,7 +739,7 @@ fn execute(
                     .filter(|a| a.key().session.get() == session)
                     .ok_or("stale_session")?;
                 let job = current.move_job(options, control)?;
-                let id = shared.enqueue_task(tasks::Job::Update(job))?;
+                let id = shared.enqueue_task(request, tasks::Job::Update(job))?;
                 // No new request may use old physical IDs once editing is admitted.
                 *archive = None;
                 return Ok(Payload::TaskAccepted(id));
@@ -743,7 +750,7 @@ fn execute(
                     .filter(|a| a.key().session.get() == session)
                     .ok_or("stale_session")?;
                 let job = current.update_job(options, control)?;
-                let id = shared.enqueue_task(tasks::Job::Update(job))?;
+                let id = shared.enqueue_task(request, tasks::Job::Update(job))?;
                 // No new request may use old physical IDs once editing is admitted.
                 *archive = None;
                 return Ok(Payload::TaskAccepted(id));
@@ -763,7 +770,10 @@ fn execute(
                     .filter(|a| a.key().session.get() == session)
                     .ok_or("stale_session")?;
                 return shared
-                    .enqueue_task(tasks::Job::Export(current.export_job(options, control)?))
+                    .enqueue_task(
+                        request,
+                        tasks::Job::Export(current.export_job(options, control)?),
+                    )
                     .map(Payload::TaskAccepted);
             }
             Command::OpenEntry {
@@ -777,7 +787,7 @@ fn execute(
                     .ok_or("stale_session")?;
                 let job = archive.open_entry_job(entry, Path::new(&cache), control)?;
                 return shared
-                    .enqueue_task(tasks::Job::Extract(job))
+                    .enqueue_task(request, tasks::Job::Extract(job))
                     .map(Payload::TaskAccepted);
             }
             Command::InspectInputs(paths) => {
@@ -823,12 +833,15 @@ fn execute(
                     .ok_or("stale_session")?;
                 let job = archive.extraction_job(options, control)?;
                 return shared
-                    .enqueue_task(tasks::Job::Extract(job))
+                    .enqueue_task(request, tasks::Job::Extract(job))
                     .map(Payload::TaskAccepted);
             }
             Command::Create(options) => {
                 return shared
-                    .enqueue_task(tasks::Job::Create(crate::creation::Job { options }))
+                    .enqueue_task(
+                        request,
+                        tasks::Job::Create(crate::creation::Job { options }),
+                    )
                     .map(Payload::TaskAccepted);
             }
             Command::Check { session } => {
@@ -838,7 +851,7 @@ fn execute(
                     .ok_or("stale_session")?;
                 let job = archive.check_job(control)?;
                 return shared
-                    .enqueue_task(tasks::Job::Check(job))
+                    .enqueue_task(request, tasks::Job::Check(job))
                     .map(Payload::TaskAccepted);
             }
             Command::Snapshot => {

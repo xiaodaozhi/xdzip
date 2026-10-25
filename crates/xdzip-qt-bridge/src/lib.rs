@@ -891,6 +891,10 @@ mod tests {
         let (mut accepted, mut finished, mut terminal) = (false, false, false);
         while !accepted || !finished || !terminal {
             let event = receiver.next_event();
+            if event.kind == ffi::EventKind::TaskUpdate {
+                assert_eq!(event.request_id, request.request_id);
+                assert_eq!(event.task.session, session);
+            }
             if event.kind == ffi::EventKind::TaskAccepted {
                 accepted = true;
             }

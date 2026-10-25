@@ -54,6 +54,7 @@ pub(super) struct Queue {
     export_leases: BTreeMap<u64, Arc<xdzip_io::Grant>>,
     next_id: u64,
     retained: BTreeMap<u64, usize>,
+    requests: BTreeMap<u64, u64>,
     jobs: VecDeque<(u64, Job, Arc<Control>)>,
     controls: BTreeMap<u64, Arc<Control>>,
     latest: BTreeMap<u64, Snapshot>,
@@ -66,18 +67,20 @@ impl Queue {
             c.cancel();
         }
     }
-    pub fn take_event(&mut self) -> Option<Payload> {
+    pub fn take_event(&mut self) -> Option<(u64, Payload)> {
         let (id, snapshot) = self.pending.pop_first()?;
+        let request = self.requests[&id];
         if snapshot.status.terminal() {
             self.controls.remove(&id);
             self.retained.remove(&id);
             self.latest.remove(&id);
+            self.requests.remove(&id);
         }
-        Some(Payload::Task(Box::new(snapshot)))
+        Some((request, Payload::Task(Box::new(snapshot))))
     }
 }
 impl Shared {
-    pub(super) fn enqueue_task(&self, job: Job) -> Result<u64, &'static str> {
+    pub(super) fn enqueue_task(&self, request: u64, job: Job) -> Result<u64, &'static str> {
         // Reserve a bounded control slot/cache even though secrets bypass the ordinary queue.
         let bytes = job.retained_bytes() + 2 * extraction::MAX_PASSWORD_BYTES;
         let mut state = self.lock();
@@ -105,6 +108,7 @@ impl Shared {
         }
         state.tasks.next_id = id;
         state.tasks.retained.insert(id, bytes);
+        state.tasks.requests.insert(id, request);
         let control = Arc::new(Control::default());
         let snapshot = job.initial(id);
         state.tasks.controls.insert(id, Arc::clone(&control));
@@ -393,22 +397,49 @@ mod tests {
             conflict: ConflictPolicy::Ask,
             allow_high_ratio: false,
         };
-        for _ in 0..extraction::MAX_TASKS {
+        for index in 0..extraction::MAX_TASKS {
             shared
-                .enqueue_task(Job::Extract(
-                    a.extraction_job(options.clone(), &Cancellation::default())
-                        .unwrap(),
-                ))
+                .enqueue_task(
+                    101 + index as u64,
+                    Job::Extract(
+                        a.extraction_job(options.clone(), &Cancellation::default())
+                            .unwrap(),
+                    ),
+                )
                 .unwrap();
         }
         assert_eq!(
-            shared.enqueue_task(Job::Extract(
-                a.extraction_job(options, &Cancellation::default()).unwrap()
-            )),
+            shared.enqueue_task(
+                1,
+                Job::Extract(a.extraction_job(options, &Cancellation::default()).unwrap())
+            ),
             Err("task_busy")
         );
-        let state = shared.lock();
+        let mut state = shared.lock();
         assert_eq!(state.tasks.pending.len(), extraction::MAX_TASKS);
+        assert_eq!(state.tasks.requests.len(), extraction::MAX_TASKS);
         assert!(state.tasks.retained.values().sum::<usize>() <= 64 * 1024 * 1024);
+        // Initial updates are already receivable before an acceptance payload is
+        // published, and ordinary request completion must not erase this relation.
+        for id in 1..=extraction::MAX_TASKS as u64 {
+            let (request, payload) = state.tasks.take_event().unwrap();
+            assert_eq!(request, 100 + id);
+            let Payload::Task(snapshot) = payload else {
+                panic!("expected task snapshot")
+            };
+            assert_eq!(snapshot.id, id);
+            assert_eq!(snapshot.session, a.key().session.get());
+        }
+        assert_eq!(state.tasks.requests.len(), extraction::MAX_TASKS);
+        let mut terminal = state.tasks.latest[&1].clone();
+        terminal.status = Status::Cancelled;
+        drop(state);
+        shared.publish_task(terminal);
+        let mut state = shared.lock();
+        let (request, payload) = state.tasks.take_event().unwrap();
+        assert_eq!(request, 101);
+        assert!(matches!(payload, Payload::Task(s) if s.id == 1 && s.status.terminal()));
+        assert_eq!(state.tasks.requests.len(), extraction::MAX_TASKS - 1);
+        assert!(!state.tasks.requests.contains_key(&1));
     }
 }

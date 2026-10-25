@@ -339,6 +339,8 @@ class BrowserController : public QObject {
         QVariantList inputInfo;
         bool targetCheck = false;
         QString taskId;
+        quint64 observedTask = 0;
+        quint64 taskSession = 0;
         quint64 leftovers = 0;
         bool closeSession = false;
         QVariantMap report;

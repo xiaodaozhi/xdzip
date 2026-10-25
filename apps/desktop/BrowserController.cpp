@@ -666,9 +666,11 @@ QVariantList BrowserController::tasks() const {
     return result;
 }
 int BrowserController::activeTaskCount() const {
-    const bool preparing =
-        m_busy && (m_result.extraction || m_result.creating || m_result.checking) &&
-        (m_result.taskId.isEmpty() || !m_tasks.contains(m_result.taskId.toULongLong()));
+    const auto pendingTask =
+        m_result.taskId.isEmpty() ? m_result.observedTask : m_result.taskId.toULongLong();
+    const bool preparing = m_busy &&
+                           (m_result.extraction || m_result.creating || m_result.checking) &&
+                           (!pendingTask || !m_tasks.contains(pendingTask));
     const auto count = static_cast<int>(std::count_if(
                            m_tasks.cbegin(), m_tasks.cend(),
                            [](const auto &v) { return !v.value("terminal").toBool(); })) +
@@ -1065,6 +1067,7 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_result.extraction |= m_result.exporting;
     m_result.creating = command.kind == xdzip::reader::CommandKind::Create || m_result.updating;
     m_result.checking = command.kind == xdzip::reader::CommandKind::Check;
+    m_result.taskSession = command.session;
     m_result.inputPreview = command.kind == xdzip::reader::CommandKind::InspectInputs;
     m_result.targetCheck = command.kind == xdzip::reader::CommandKind::CheckTarget;
     m_result.closeSession = command.kind == xdzip::reader::CommandKind::CloseSession;
@@ -1164,6 +1167,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return;
     if (event.kind == EventKind::TaskUpdate) {
         const auto &t = event.task;
+        // The independent task lane can publish before TaskAccepted. Bind only
+        // this pending request/session; the real acknowledgement still gates UI intent.
+        if (taskStarting() && m_pending && event.request_id == m_pending && t.id &&
+            t.session == m_result.taskSession && !m_result.observedTask)
+            m_result.observedTask = t.id;
         handleTransferTask(t);
         const auto status = text(t.status);
         const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";

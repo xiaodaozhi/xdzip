@@ -53,6 +53,8 @@ Windows/Linux 继续上传实验运行包、安装器、同提交源码、许可
 
 Qt 组件的原始逐项 `qml-tests.log` 在成功与失败路径都保存到诊断工件，不以可能被后续重复测试覆盖的 `LastTest.log` 摘要替代。构建检查成功时，该原始日志必须存在且非空，缺失或为空使证据收集明确失败；构建本身失败时仍保留可获得的原始诊断。macOS 继续只上传日志和 JSON。
 
+浏览器首轮与十次整套重复各自保留独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。每个数据行的耗时用于定位慢项，不改变 240 秒整套时限、断言或重复次数。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。
+
 所有层级的 dist/ 及其全部内容都在 .gitignore 中排除，build/、target/ 也不进入 Git 源码树。Documentation 的 scripts/check-docs.py 检查 Git 索引，即使强制暂存 dist/ 文件也会失败。HTML 离线审阅工具仍可在本地生成 dist/，但生成结果只能作为本地文件或 Actions 工件，不能提交到仓库。
 
 三平台 Qt 构建会生成十万条平面／分层 ZIP64 样本，执行实际 Qt 查询与源变化回归，并上传核心乱序元数据探针和 Qt 测量。Windows/Linux 开发工件按平台与架构区分，实际名称和上传范围以 [Qt 工作流](../../.github/workflows/qt-components.yml)为准。源码树不再保留历史截图、量测记录或开发包回执；历史整理必须遵循[内容与历史管理](repository-hygiene.md)，经所有者明确授权并备份后才可执行。

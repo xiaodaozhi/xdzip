@@ -440,6 +440,109 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void taskAdmissionCountsOriginatingRequestOnce_data() {
+        QTest::addColumn<int>("kind");
+        QTest::addColumn<int>("ordering");
+        for (int kind = 0; kind < 3; ++kind)
+            for (int ordering = 0; ordering < 4; ++ordering)
+                QTest::newRow(qPrintable(QString("kind-%1-order-%2").arg(kind).arg(ordering)))
+                    << kind << ordering;
+    }
+    void taskAdmissionCountsOriginatingRequestOnce() {
+        QFETCH(int, kind);
+        QFETCH(int, ordering);
+        BrowserController controller;
+        controller.m_pending = 10001;
+        controller.m_busy = true;
+        controller.m_result = {};
+        controller.m_result.extraction = kind == 0;
+        controller.m_result.creating = kind == 1;
+        controller.m_result.checking = kind == 2;
+        controller.m_result.taskSession = kind == 1 ? 0 : 23;
+        const auto session = controller.m_result.taskSession;
+        QCOMPARE(controller.activeTaskCount(), 1);
+        QSignalSpy started(&controller, kind == 0   ? &BrowserController::extractionStarted
+                                        : kind == 1 ? &BrowserController::creationStarted
+                                                    : &BrowserController::archiveTestStarted);
+        xdzip::reader::Event event{};
+        event.kind = xdzip::reader::EventKind::TaskUpdate;
+        event.request_id = 10000;
+        event.task.id = 7;
+        event.task.session = session;
+        event.task.status = rust::String("running");
+        controller.receive(event);
+        QCOMPARE(controller.activeTaskCount(), 2);
+        QVERIFY(controller.m_result.taskId.isEmpty());
+        event.request_id = 10001;
+        event.task.id = 8;
+        event.task.session = session + 1;
+        controller.receive(event);
+        QCOMPARE(controller.activeTaskCount(), 3);
+        QVERIFY(controller.m_result.taskId.isEmpty());
+        // An uncorrelated snapshot cannot consume a pending request's placeholder.
+        event.request_id = 0;
+        event.task.id = 10;
+        event.task.session = session;
+        controller.receive(event);
+        QCOMPARE(controller.activeTaskCount(), 4);
+        QVERIFY(controller.m_result.taskId.isEmpty());
+        const auto accept = [&] {
+            xdzip::reader::Event accepted{};
+            accepted.kind = xdzip::reader::EventKind::TaskAccepted;
+            accepted.request_id = 10001;
+            accepted.task.id = 9;
+            controller.receive(accepted);
+        };
+        if (ordering == 0)
+            accept();
+        event.request_id = 10001;
+        event.task.id = 9;
+        event.task.status = rust::String("waiting_password");
+        event.task.password_prompt_id = 4;
+        controller.receive(event);
+        QCOMPARE(controller.activeTaskCount(), 4);
+        QCOMPARE(controller.tasks().size(), 4);
+        QCOMPARE(controller.m_result.observedTask, quint64(9));
+        QCOMPARE(controller.m_result.taskId, ordering == 0 ? QStringLiteral("9") : QString{});
+        QCOMPARE(controller.passwordPrompt().value("taskId").toString(), QStringLiteral("9"));
+        QVERIFY(controller.taskStarting());
+        QVERIFY(started.isEmpty());
+        QCOMPARE(controller.m_hasPayload, ordering == 0);
+        for (const auto *status : {"running", "waiting", "cancelling", "cleaning"}) {
+            event.task.status = rust::String(status);
+            event.task.password_prompt_id = 0;
+            controller.receive(event);
+            QCOMPARE(controller.activeTaskCount(), 4);
+        }
+        if (ordering == 2) {
+            event.task.status = rust::String("cancelled");
+            controller.receive(event);
+            QCOMPARE(controller.activeTaskCount(), 3);
+        }
+        if (ordering == 1 || ordering == 2)
+            accept();
+        QCOMPARE(controller.activeTaskCount(), ordering == 2 ? 3 : 4);
+        event.kind = xdzip::reader::EventKind::Finished;
+        if (ordering == 3)
+            event.error = rust::String("cancelled");
+        controller.receive(event);
+        QVERIFY(!controller.taskStarting());
+        QCOMPARE(started.count(), ordering == 3 ? 0 : 1);
+        if (ordering != 3)
+            QCOMPARE(started.first().first().toString(), QStringLiteral("9"));
+        QCOMPARE(controller.activeTaskCount(), ordering == 2 ? 3 : 4);
+        event.kind = xdzip::reader::EventKind::TaskUpdate;
+        event.task.status = rust::String("cancelled");
+        controller.receive(event);
+        QCOMPARE(controller.activeTaskCount(), 3);
+        for (const quint64 id : {7, 8, 10}) {
+            event.task.id = id;
+            controller.receive(event);
+        }
+        QCOMPARE(controller.activeTaskCount(), 0);
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
+    }
     void globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession_data() {
         QTest::addColumn<int>("quitTiming");
         QTest::newRow("ready-password") << 0;
@@ -623,12 +726,13 @@ QtObject {
             return {};
         };
         QCOMPARE(snapshot().value("status").toString(), QStringLiteral("waiting_password"));
-        // A snapshot may arrive before TaskAccepted/Finished releases the
-        // admission placeholder. Synchronous early Quit already ran in its notify hook.
+        QCOMPARE(sessions.activeTaskCount(), 1);
+        // Request completion is still required independently of task-count deduplication.
         QTRY_VERIFY(!working->taskStarting());
         QCOMPARE(sessions.activeTaskCount(), 1);
         if (quitTiming) {
             QTRY_VERIFY_WITH_TIMEOUT(earlyHookObserved, 10000);
+            QCOMPARE(hookState.value("active_tasks").toInt(), 1);
             QVERIFY2(fenceScheduled, "The independent callLater fence was not scheduled");
             QTRY_VERIFY(laterFence->property("drained").toBool());
             afterLaterState = windowState(QStringLiteral("after_call_later_fence"));
@@ -9492,6 +9596,36 @@ int main(int argc, char **argv) {
         return application.exec();
     }
     BrowserTest test;
-    return QTest::qExec(&test, argc, argv);
+    const auto timingDirectory = qEnvironmentVariable("XDZIP_BROWSER_TIMING_DIR");
+    if (timingDirectory.isEmpty())
+        return QTest::qExec(&test, argc, argv);
+    if (!QDir().mkpath(timingDirectory))
+        return 2;
+    const auto stem = "browser-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const QDir output(timingDirectory);
+    QJsonObject timing{{"schema_version", 1},
+                       {"revision", BuildInfo::revision()},
+                       {"dirty", BuildInfo::dirty()},
+                       {"started_at", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},
+                       {"log", stem + ".log"},
+                       {"status", "running"}};
+    const auto saveTiming = [&] {
+        QFile file(output.filePath(stem + ".json"));
+        return file.open(QIODevice::WriteOnly | QIODevice::Truncate) &&
+               file.write(QJsonDocument(timing).toJson()) > 0;
+    };
+    if (!saveTiming())
+        return 2;
+    auto arguments = application.arguments();
+    arguments << "-o" << output.filePath(stem + ".log") + ",xml";
+    QElapsedTimer elapsed;
+    elapsed.start();
+    const int result = QTest::qExec(&test, arguments);
+    timing.insert("elapsed_ms", elapsed.elapsed());
+    timing.insert("exit_code", result);
+    timing.insert("status", result == 0 ? "passed" : "failed");
+    if (!saveTiming())
+        return 2;
+    return result;
 }
 #include "browser_test.moc"

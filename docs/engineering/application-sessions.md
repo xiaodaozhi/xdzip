@@ -18,6 +18,10 @@
 
 创建、解压和完整性检查在应用级串行准入，包括准备、密码或冲突等待、提交与清理阶段。等待准入的控制器仅保留一个有界命令，可取消，不占用 GUI 线程。单个 Rust 连接的任务顺序和安全语义继续有效。明确退出时，先对所有会话作统一确认，选择等待则全部任务结束后退出，选择取消则等待全部连接完成取消、清理与 join；只检查关闭完成状态，不在状态检查中再次触发关闭。
 
+重任务快照携带创建任务的原始请求 ID，即使先于 `TaskAccepted` 或晚于该请求的 `Finished` 到达也保持不变。控制器仅在请求、原始会话与任务身份匹配时，将准备占位绑定到实际任务；其他请求或会话的快照不能抵消占位。实际任务与占位只计一次，已终结任务不再计为活动任务。绑定不代替真实接纳回执，不提前触发任务窗口，不绕过串行准入、取消和全部连接 join 屏障。
+
+Heavy-task snapshots retain their originating request ID before `TaskAccepted` and after the request's `Finished`. A controller binds its preparation placeholder only to a matching request, source session and task, counting it once. Unrelated snapshots cannot consume the placeholder. A terminal task is no longer active. Correlation does not acknowledge the request, present a task window early, or bypass admission, cancellation or the join barrier.
+
 等待全部任务退出只由应用级任务总数与 join 屏障收敛。某一页面先完成任务时，不执行旧单页自动关闭，也不因该页结束而隐藏最后窗口或再次显示退出确认。
 
 退出确认显示前即设置应用级 `quitDecisionPending`。所有会话与窗口的排队密码提示及显式重新显示在此期间暂停，不能覆盖退出确认；返回或选择等待解除暂停后，只重新显示仍有效的同一任务与提示令牌。进入取消、清理与 join 后保持暂停，不重新打开密码窗口。该状态不隐藏或取消已有请求，也不改变关闭会话后的显式任务入口。

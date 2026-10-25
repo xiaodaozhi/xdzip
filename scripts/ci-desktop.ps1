@@ -105,9 +105,14 @@ if ($IsLinux) {
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
 Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
-Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
-# Repeat only the concurrent lifecycle suite to expose nondeterministic races.
-Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
+# Keep per-case timings and each invocation's raw log, including a partial log
+# when CTest kills a timed-out suite. Repeats must not overwrite prior evidence.
+$env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
+try {
+    Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
+    # Repeat the complete browser suite without changing assertions or deadlines.
+    Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
+} finally { Remove-Item Env:XDZIP_BROWSER_TIMING_DIR }
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Invoke-Checked python @('scripts/check-build-version.py', '--app', $productExe, '--output', 'build/review/build-version.json')
 $metricsExe = if ($IsWindows) { 'build/desktop/tools/process-metrics/xdzip-process-metrics.exe' } else { 'build/desktop/tools/process-metrics/xdzip-process-metrics' }

@@ -74,6 +74,8 @@ jobs:
             build/review/native-sessions*.log
             build/review/tab-strip-native/*.json
             build/review/add-dialog*/*.json
+            build/review/browser-timings/*.log
+            build/review/browser-timings/*.json
             build/review/diagnostics/*.log
             build/review/diagnostics/*.json
           if-no-files-found: warn

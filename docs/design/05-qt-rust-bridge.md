@@ -26,6 +26,8 @@
 
 被接受的普通请求最终产生一次 `RequestFinished {request_id, outcome}`。异步任务启动的 outcome 是 TaskId，任务终态另由 `TaskUpdated` 给出。取消/关闭控制具有独立准入通道，但仍带 RequestId。运行时崩溃时无法保证最终响应，Qt 连接断开会完成所有 pending 请求为 `runtime_unavailable`。
 
+当前产品的独立 `TaskUpdate` 包络保留创建任务的原始 RequestId，TaskSnapshot 保留 TaskId 和源 SessionId。任务快照与接纳回执不保证先后，GUI 以完整关联消除准备占位重复，不能按到达时刻或任务数量猜测。原始请求 Finished 后的任务快照仍携带同一关联 ID，不构成第二次普通请求完成。
+
 FetchPage 的内容只由 PageReady 携带一次，RequestFinished 引用页身份并结束 pending 请求；丢弃过期页面仍须结束对应请求。状态事件和请求完成不能重复创建任务或重复应用数据。
 
 事件带 `event_sequence`；任务事件另有单调 `task_sequence`。页结果带完整查询身份。传输顺序不作为跨任务排序依据。一个 TaskId 收到终态后，不接纳更旧的 running/progress 事件。
