@@ -29,12 +29,15 @@ pub const AUX_WORK: u8 = 24;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Fault {
     Io,
+    // Host-only frozen-source failure; never an additional wire identifier.
+    SourceChanged,
     Invalid,
     Unsupported,
     Limit,
     Cancelled,
     PasswordRequired,
     WrongPassword,
+    PasswordOrIntegrity,
     Output,
     MissingVolume,
 }
@@ -49,6 +52,7 @@ impl Fault {
             7 => Self::WrongPassword,
             8 => Self::Output,
             9 => Self::MissingVolume,
+            10 => Self::PasswordOrIntegrity,
             _ => Self::Invalid,
         }
     }

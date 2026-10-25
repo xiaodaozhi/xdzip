@@ -7,12 +7,14 @@
 | apps/desktop | Qt/QML、薄 C++ 控制器、模型、设置与系统交互；通过 bridge 访问核心 |
 | crates/xdzip-domain | 纯类型与不变量；不得依赖 Qt 或具体 codec |
 | crates/xdzip-codec-api | 能力、借用输入、编码输出和取消契约；依赖 domain |
-| crates/xdzip-compression | 无第三方生产依赖的共享 Deflate/GZIP、MSZIP、LZX、Quantum 算法与封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |
+| crates/xdzip-compression | 无第三方生产依赖的共享 Deflate/Deflate64/GZIP、LZMA/LZMA2、BZip2、PPMd7、MSZIP、LZX、Quantum 算法与封装，不拥有路径或发布能力；独立实现规则见[契约](independent-rust-codecs.md) |
+| crates/xdzip-crypto | 格式无关、固定内存的可清除敏感状态 SHA/HMAC 与 BLAKE 哈希，复用已准入基础原语；不解释归档密码或决定发布 |
 | crates/xdzip-codec-zip、xdzip-codec-tar | ZIP、TAR/GZIP 格式实现；不获取任意输出路径 |
+| crates/xdzip-codec-7z | 自研 7z 容器、方法图、过滤器、AES 组合、流式创建及有界重写，不拥有文件路径 |
 | crates/xdzip-codec-cab | 自研 CAB 只读容器，使用宿主授权卷和共享算法；保留原始名称、UTF-8 声明及普通重名记录，不自行发现卷或发布输出；见[自研契约](independent-rust-codecs.md#cab只读规格)与[来源](cab-format-sources.md) |
 | crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |
-| crates/xdzip-readonly-bridge | 隔离工作进程到 Rust 光盘和 CAB 后端的共享薄 CXX 边界，复用授权流、取消及有界输出协议，不提供文件路径 |
-| crates/xdzip-codec-native、tools/native-codec | 官方 7-Zip／UnRAR、Rust 光盘及 CAB 后端的隔离工作进程；Native 接收端独立核验预计费输出额度；固定来源、裁剪和 I/O 边界见[契约](native-codecs.md) |
+| crates/xdzip-codec-bridge | 隔离工作进程到 Rust 7z、CAB 和光盘后端的共享薄 CXX 边界，复用授权流、取消、有界输入、输出与暂存协议，不提供文件路径 |
+| crates/xdzip-codec-native、tools/native-codec | UnRAR、Rust 7z／光盘／CAB 后端的隔离工作进程；Native 接收端独立核验预计费输出额度；固定来源、裁剪和 I/O 边界见[契约](native-codecs.md) |
 | crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
 | crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |
 | crates/xdzip-runtime | 会话、内存索引、查询、选择、创建／解压任务和调度 |

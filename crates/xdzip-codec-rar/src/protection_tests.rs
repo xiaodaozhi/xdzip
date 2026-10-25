@@ -220,8 +220,7 @@ fn invalid_verifier_checksum_does_not_reject_correct_key_or_prove_wrong_password
             result.unwrap();
             assert_eq!(sink.0, b"This is from b.txt");
         } else {
-            assert!(result.is_err());
-            assert_ne!(result, Err(DecodeError::WrongPassword));
+            assert_eq!(result, Err(DecodeError::PasswordOrIntegrity));
         }
     }
 }
@@ -264,9 +263,73 @@ fn encrypted_physical_header_is_rechecked_before_selected_output() {
     let mut sink = Sink::default();
     assert_eq!(
         payload.decode_with_password(&rows[0], &mut sink, &cancel, Some("password")),
-        Err(DecodeError::Integrity)
+        Err(DecodeError::SourceIo)
     );
     assert!(sink.0.is_empty());
+}
+
+#[test]
+fn unverified_legacy_header_failure_is_ambiguous_and_payload_source_classes_survive() {
+    use std::cell::Cell;
+    use std::io::{self, Read, Seek, SeekFrom};
+    use std::rc::Rc;
+    struct Injected<'a> {
+        bytes: Cursor<&'a [u8]>,
+        error: Rc<Cell<Option<ScanError>>>,
+    }
+    impl Read for Injected<'_> {
+        fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
+            if let Some(error) = self.error.get() {
+                return Err(io::Error::new(io::ErrorKind::Interrupted, error));
+            }
+            self.bytes.read(out)
+        }
+    }
+    impl Seek for Injected<'_> {
+        fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
+            self.bytes.seek(position)
+        }
+    }
+    impl ReadSource for Injected<'_> {}
+    let control = Cancellation::default();
+    assert_eq!(
+        RarCodec.scan_with_password(
+            &mut Cursor::new(LEGACY[1]),
+            &control,
+            ScanLimits::default(),
+            Some("incorrect")
+        ),
+        Err(ScanError::PasswordOrIntegrity)
+    );
+    for (source_error, expected) in [
+        (ScanError::SourceChanged, DecodeError::SourceIo),
+        (ScanError::Cancelled, DecodeError::Cancelled),
+        (ScanError::Limit, DecodeError::Limit),
+        (ScanError::Io, DecodeError::SourceIo),
+    ] {
+        let error = Rc::new(Cell::new(None));
+        let mut source = Injected {
+            bytes: Cursor::new(LEGACY[0]),
+            error: Rc::clone(&error),
+        };
+        let rows = RarCodec
+            .scan(&mut source, &control, ScanLimits::default())
+            .unwrap();
+        let row = rows.iter().find(|row| row.encrypted).unwrap();
+        let mut payload = RarCodec.open_payload(&mut source, &rows, &control).unwrap();
+        error.set(Some(source_error));
+        let mut sink = Sink::default();
+        assert_eq!(
+            payload.decode_with_password(row, &mut sink, &control, Some("password")),
+            Err(expected)
+        );
+        assert!(sink.0.is_empty());
+        error.set(None);
+        assert_eq!(
+            payload.decode_with_password(row, &mut sink, &control, Some("password")),
+            Err(DecodeError::Integrity)
+        );
+    }
 }
 
 fn owned_input(length: usize, index: usize, noise: bool) -> Vec<u8> {

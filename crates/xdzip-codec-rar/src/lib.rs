@@ -9,6 +9,8 @@ mod algorithm;
 mod ancient_tests;
 pub(crate) mod crypto;
 mod filter29;
+#[cfg(test)]
+mod filter29_owned_tests;
 mod filter29_transform;
 mod index;
 mod legacy;
@@ -101,6 +103,7 @@ fn decode_error(error: ScanError) -> DecodeError {
         ScanError::Unsupported => DecodeError::Unsupported,
         ScanError::PasswordRequired => DecodeError::PasswordRequired,
         ScanError::WrongPassword => DecodeError::WrongPassword,
+        ScanError::PasswordOrIntegrity => DecodeError::PasswordOrIntegrity,
         _ => DecodeError::Integrity,
     }
 }

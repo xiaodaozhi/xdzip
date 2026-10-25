@@ -844,7 +844,7 @@ fn header_encryption_requests_secret_without_partial_rows() {
             ScanLimits::default(),
             Some("x")
         ),
-        Err(ScanError::Invalid)
+        Err(ScanError::PasswordOrIntegrity)
     );
 }
 #[test]

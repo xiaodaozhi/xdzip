@@ -23,6 +23,13 @@ pub(crate) fn preserve_io_error(error: io::Error) -> io::Error {
     io::Error::other(payload)
 }
 
+pub(crate) fn filled<T: Clone>(count: usize, value: T) -> io::Result<Vec<T>> {
+    let mut result = Vec::new();
+    result.try_reserve_exact(count).map_err(|_| resource())?;
+    result.resize(count, value);
+    Ok(result)
+}
+
 /// Input buffering never crosses the admitted packed span. `consumed` measures
 /// logical bytes, rather than physical read-ahead inside that span.
 pub(crate) struct Input<R> {
@@ -66,5 +73,11 @@ impl<R: Read> Input<R> {
         self.start += 1;
         self.consumed += 1;
         Ok(byte)
+    }
+    pub(crate) fn word(&mut self) -> io::Result<u16> {
+        Ok(u16::from_be_bytes([
+            self.byte(self.packed)?,
+            self.byte(self.packed)?,
+        ]))
     }
 }

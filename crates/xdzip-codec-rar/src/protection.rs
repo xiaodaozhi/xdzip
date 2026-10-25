@@ -114,7 +114,31 @@ pub(crate) fn scan_error(error: DecodeError) -> ScanError {
         DecodeError::Unsupported => ScanError::Unsupported,
         DecodeError::PasswordRequired => ScanError::PasswordRequired,
         DecodeError::WrongPassword => ScanError::WrongPassword,
+        DecodeError::PasswordOrIntegrity => ScanError::PasswordOrIntegrity,
         DecodeError::SourceIo | DecodeError::Output => ScanError::Io,
         DecodeError::Integrity => ScanError::Invalid,
+    }
+}
+
+pub(crate) fn trusted_check(crypt: &Crypt, key: &KeyMaterial, service: bool) -> bool {
+    crypt
+        .check
+        .as_ref()
+        .is_some_and(|check| key.verify_check(check, service) == CheckResult::TrustedMatch)
+}
+
+pub(crate) fn encrypted_scan_error(error: ScanError, unverified: bool) -> ScanError {
+    if unverified && error == ScanError::Invalid {
+        ScanError::PasswordOrIntegrity
+    } else {
+        error
+    }
+}
+
+pub(crate) fn encrypted_decode_error(error: DecodeError, unverified: bool) -> DecodeError {
+    if unverified && error == DecodeError::Integrity {
+        DecodeError::PasswordOrIntegrity
+    } else {
+        error
     }
 }

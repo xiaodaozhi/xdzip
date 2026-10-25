@@ -1,6 +1,6 @@
 // crates/xdzip-runtime/src/native_backend_tests.rs
 
-//! Real official-engine tasks. Opt in after building the locked native worker.
+//! Real isolated-worker tasks. Opt in after building the locked worker.
 use crate::{Archive, checking, creation, extraction, updating};
 use extraction::{ConflictPolicy, Control, Snapshot, Status};
 use std::{
@@ -174,7 +174,7 @@ fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn seven_zip_create_open_check_extract_header_password_and_split() {
     for (method, solid, encrypted, headers, volume) in [
         (0, false, false, false, 0),
@@ -203,7 +203,7 @@ fn seven_zip_create_open_check_extract_header_password_and_split() {
                     &Default::default(),
                     Some(extraction::Password::new("wrong".into()).unwrap())
                 ),
-                Err(ScanError::WrongPassword)
+                Err(ScanError::PasswordOrIntegrity)
             ));
             Archive::open_with_password(
                 &path,
@@ -230,7 +230,7 @@ fn seven_zip_create_open_check_extract_header_password_and_split() {
     }
 }
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn seven_zip_solid_add_replace_move_and_cancel_preserve_transactions() {
     let f = Fixture::new();
     f.create("archive.7z", 32, true, false, false, 0);
@@ -319,7 +319,7 @@ fn seven_zip_solid_add_replace_move_and_cancel_preserve_transactions() {
     check(&archive, false);
 }
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn rar4_rar5_encrypted_headers_and_mixed_content_are_read_only() {
     for (name, headers, mixed) in [
         ("test_read_format_rar4_encrypted.rar", false, true),
@@ -369,7 +369,7 @@ fn rar4_rar5_encrypted_headers_and_mixed_content_are_read_only() {
     }
 }
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn rar5_solid_volumes_open_from_every_part_and_check_without_output() {
     for index in 1..=4 {
         let path = fixture(&format!(
@@ -386,7 +386,7 @@ fn rar5_solid_volumes_open_from_every_part_and_check_without_output() {
 }
 
 #[test]
-#[ignore = "requires built official native codec worker and 514 MiB temporary output"]
+#[ignore = "requires built isolated codec worker and 514 MiB temporary output"]
 fn seven_zip_streaming_creation_exceeds_former_output_cache() {
     let f = Fixture::new();
     let size = 513 * 1024 * 1024u64;
@@ -405,7 +405,7 @@ fn seven_zip_streaming_creation_exceeds_former_output_cache() {
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn rar7_store_roundtrip_and_dictionary_admission_publish_no_failed_output() {
     let archive = Archive::open(&fixture("rar7-store-small.rar"), &Default::default()).unwrap();
     assert_eq!(archive.rows[0].method, 70);
@@ -527,7 +527,7 @@ fn readonly_transfer(archive: &Archive, f: &Fixture, label: &str, name: &str, by
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only() {
     let f = Fixture::new();
     for (name, count) in [
@@ -563,7 +563,7 @@ fn cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only() 
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn cabinet_checksum_failure_publishes_no_selected_output() {
     let f = Fixture::new();
     let mut bytes = std::fs::read(readonly_fixture("named.cab")).unwrap();
@@ -598,7 +598,7 @@ fn cabinet_checksum_failure_publishes_no_selected_output() {
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn cabinet_arbitrary_volume_names_open_from_every_part_and_detect_later_changes() {
     let f = Fixture::new();
     let root = f.0.join("volumes");
@@ -654,7 +654,7 @@ fn cabinet_arbitrary_volume_names_open_from_every_part_and_detect_later_changes(
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn optical_images_preserve_names_readable_content_and_reject_link_output_and_udf_fallback() {
     use std::io::Read;
     let f = Fixture::new();
@@ -761,7 +761,7 @@ fn optical_images_preserve_names_readable_content_and_reject_link_output_and_udf
 }
 
 #[test]
-#[ignore = "requires built official native codec worker"]
+#[ignore = "requires built isolated codec worker"]
 fn iso_extent_above_four_gib_reads_host_sparse_source_without_large_allocations() {
     use std::io::{self, Read, Seek, SeekFrom};
     struct Sparse {

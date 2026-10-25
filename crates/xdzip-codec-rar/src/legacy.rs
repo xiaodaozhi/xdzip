@@ -270,6 +270,19 @@ impl State {
         password: Option<&str>,
         protection: &mut Protection,
     ) -> Result<Parsed, ScanError> {
+        let encrypted = self.encrypted;
+        self.block_inner(reader, volume, at, limits, password, protection)
+            .map_err(|error| crate::protection::encrypted_scan_error(error, encrypted))
+    }
+    fn block_inner(
+        &mut self,
+        reader: &mut Reader<'_>,
+        volume: usize,
+        at: u64,
+        limits: ScanLimits,
+        password: Option<&str>,
+        protection: &mut Protection,
+    ) -> Result<Parsed, ScanError> {
         let (plain, physical) = if self.encrypted {
             let prefix = reader.bytes(volume, at, 24)?;
             let salt = prefix[..8].try_into().map_err(|_| ScanError::Invalid)?;

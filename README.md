@@ -55,14 +55,14 @@
 - **TAR 与 TAR.GZ**：处理普通文件与目录，TAR.GZ 也支持 `.tgz` 扩展名；TAR 容器及 GZIP/Deflate 使用自研 Rust 后端，TAR 仅打包，TAR.GZ 提供四档级别。迁移边界见[自研后端契约](docs/engineering/independent-rust-codecs.md)。
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
-- **7z**：使用官方 7-Zip 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[官方后端契约](docs/engineering/native-codecs.md)。
-- **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 已验证 Store 内容及超预算字典拒绝，LZ 压缩流尚缺少独立实样互操作验证，字典超出资源预算时明确拒绝。具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
+- **7z**：使用自研 Rust 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[隔离后端契约](docs/engineering/native-codecs.md)。
+- **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 已验证 Store 内容及超预算字典拒绝，LZ 压缩流尚缺少独立实样互操作验证，字典超出资源预算时明确拒绝。具体边界见[隔离后端契约](docs/engineering/native-codecs.md)。
 - **CAB**：使用自研 Rust 只读后端，支持 Store、MSZip、Quantum、LZX 和同目录分卷；缺卷或不匹配卷拒绝打开。可浏览、搜索、解压、测试、临时打开普通文件及导出，不提供创建或修改，具体边界见[自研后端契约](docs/engineering/independent-rust-codecs.md#cab只读规格)。
 - **ISO 与 UDF**：使用自研 Rust 只读后端，在隔离工作进程中处理 ISO9660、Joliet、Rock Ridge 与 UDF，混合映像优先使用 UDF 命名空间。可浏览、搜索、解压、临时打开普通文件、导出及检查结构与可读性，不挂载或执行光盘映像，不提供创建或修改。链接及特殊记录不可输出，已识别的 UDF 损坏不会静默回退 ISO。打开筛选及关联支持 `.iso`、`.udf`，不注册通用 `.img`，实现边界与尚需验证的扩展见[自研后端契约](docs/engineering/independent-rust-codecs.md#iso与udf只读规格)及[迁移任务](https://github.com/xiaodaozhi/xdzip/issues/47)。
 
 创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包会优先采用 Unicode 声明，再自适应 GBK/GB18030、Big5、Shift-JIS 等旧编码，并贯通浏览、解压与普通包修改。短名称或混合旧编码无法保证唯一识别，损坏声明及异常路径继续拒绝输出，详见[文件名编码契约](docs/engineering/filename-encoding.md)。
 
-解压包含路径检查、目标授权、重名决策、暂存与受支持的内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR、7z、RAR、CAB、ISO、UDF 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)、[TAR/GZIP](docs/engineering/m4-tar-gzip.md)与[官方原生格式后端](docs/engineering/native-codecs.md)契约。
+解压包含路径检查、目标授权、重名决策、暂存与受支持的内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR、7z、RAR、CAB、ISO、UDF 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)、[TAR/GZIP](docs/engineering/m4-tar-gzip.md)与[隔离格式后端](docs/engineering/native-codecs.md)契约。
 
 ## 获取与安装
 
@@ -97,7 +97,7 @@ python3 scripts/desktop.py test
 
 Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；macOS 使用 Apple Silicon 原生终端与有效 Xcode Command Line Tools。已有 Qt 时用 `--qt-prefix` 指定 SDK 前缀，无需重新下载。
 
-同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。单独执行 Rust workspace 测试时，也须先构建官方原生后端并通过 `XDZIP_NATIVE_CODEC` 指定工作进程，再运行 `cargo test --workspace --locked`；统一 `test` 入口会自动提供该路径。
+同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。单独执行 Rust workspace 测试时，也须先构建隔离格式工作进程并通过 `XDZIP_NATIVE_CODEC` 指定工作进程，再运行 `cargo test --workspace --locked`；统一 `test` 入口会自动提供该路径。
 
 默认运行入口为 `build/desktop/apps/desktop/xdzip`，Windows 加 `.exe`，macOS 为该目录下 `xdzip.app/Contents/MacOS/xdzip`。普通 Mac 开发／测试副本不进入系统“打开方式”候选；主应用与本地开发 DMG 的构建方式见[Mac 部署指南](docs/engineering/macos-deployment.md)。
 

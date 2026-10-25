@@ -36,6 +36,7 @@ def assert_operation_copy(page, language, kind, pending=False, standalone=False)
         '.note' if standalone else '.password-note': 'password.openPrivacy' if opening else 'password.privacy',
         '#cancel' if standalone else '#password-cancel': 'common.cancel' if opening else 'ui.537d17f1c531',
         '#submit' if standalone else '#password-submit': 'password.submitting' if pending else 'password.openContinue' if opening else 'password.continue',
+        '.error' if standalone else '#password-error': 'password.retry',
     }
     for selector, message in selectors.items():
         expect(page.locator(selector)).to_have_text(messages[message])

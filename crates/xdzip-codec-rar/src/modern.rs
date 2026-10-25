@@ -420,9 +420,23 @@ fn plain_header(reader: &mut Reader<'_>, volume: usize, at: u64) -> Result<Vec<u
 pub(crate) struct State {
     crypt: Option<Crypt>,
     main: bool,
+    trusted: bool,
 }
 impl State {
     pub fn block(
+        &mut self,
+        reader: &mut Reader<'_>,
+        volume: usize,
+        at: u64,
+        limits: ScanLimits,
+        password: Option<&str>,
+        protection: &mut Protection,
+    ) -> Result<Parsed, ScanError> {
+        let unverified = self.crypt.is_some() && !self.trusted;
+        self.block_inner(reader, volume, at, limits, password, protection)
+            .map_err(|error| crate::protection::encrypted_scan_error(error, unverified))
+    }
+    fn block_inner(
         &mut self,
         reader: &mut Reader<'_>,
         volume: usize,
@@ -482,9 +496,10 @@ impl State {
                 if self.main || self.crypt.is_some() {
                     return Err(ScanError::Invalid);
                 }
-                protection
+                let key = protection
                     .key(crypt, password, false, reader.control())
                     .map_err(scan_error)?;
+                self.trusted = crate::protection::trusted_check(crypt, key, false);
                 self.crypt = Some(crypt.clone());
             }
             Block::Main { encrypted, .. } => {

@@ -9,6 +9,8 @@ mod opening_tests;
 pub(crate) mod password_tests;
 mod plan;
 #[cfg(test)]
+mod sevenzip_password_tests;
+#[cfg(test)]
 mod tests;
 use crate::Archive;
 pub use control::Control;

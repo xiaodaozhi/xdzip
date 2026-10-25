@@ -155,4 +155,4 @@ if __name__ == '__main__':
     parser.add_argument('--archives', type=Path, help='Read pinned archives from a corresponding-source delivery')
     args = parser.parse_args()
     result = prepare(args.output, args.downloads, args.offline, args.archives)
-    print('Prepared pinned official 7-Zip and UnRAR sources')
+    print('Prepared pinned official native codec sources')

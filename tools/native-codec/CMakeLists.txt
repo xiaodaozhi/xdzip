@@ -1,61 +1,12 @@
 # tools/native-codec/CMakeLists.txt
-
 cmake_minimum_required(VERSION 3.24)
 project(xdzip_native_codec LANGUAGES C CXX)
+set(XDZIP_7Z_BACKEND rust CACHE INTERNAL "7z has one independent Rust product route" FORCE)
 set(XDZIP_CAB_BACKEND rust CACHE INTERNAL "CAB has one independent Rust product route" FORCE)
 find_package(Threads REQUIRED)
-if(NOT EXISTS "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" OR NOT EXISTS "${XDZIP_UNRAR_SOURCE}/rar.hpp")
-  message(FATAL_ERROR "Prepare the locked official native sources before configuring")
+if(NOT EXISTS "${XDZIP_UNRAR_SOURCE}/rar.hpp")
+  message(FATAL_ERROR "Prepare the locked official UnRAR sources before configuring")
 endif()
-
-# Use only the official Format7z manifest. CAB and optical containers use Rust;
-# no full-format bundle or external codec loader is compiled.
-file(READ "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" seven_manifest)
-set(seven_sources)
-foreach(pair IN ITEMS "COMMON_OBJS|CPP/Common" "WIN_OBJS|CPP/Windows" "7ZIP_COMMON_OBJS|CPP/7zip/Common" "AR_OBJS|CPP/7zip/Archive" "AR_COMMON_OBJS|CPP/7zip/Archive/Common" "7Z_OBJS|CPP/7zip/Archive/7z" "COMPRESS_OBJS|CPP/7zip/Compress" "CRYPTO_OBJS|CPP/7zip/Crypto" "C_OBJS|C")
-  string(REPLACE "|" ";" fields "${pair}")
-  list(GET fields 0 group)
-  list(GET fields 1 directory)
-  string(REGEX MATCH "(^|\n)${group} = [^\n]*(\n[ \t]+[^\n]+)*" block "${seven_manifest}")
-  string(REGEX MATCHALL "[A-Za-z0-9_]+\\.obj" names "${block}")
-  foreach(name IN LISTS names)
-    string(REPLACE ".obj" "" stem "${name}")
-    if(directory STREQUAL "C")
-      list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/${directory}/${stem}.c")
-    else()
-      list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/${directory}/${stem}.cpp")
-    endif()
-  endforeach()
-endforeach()
-foreach(stem IN ITEMS Aes AesOpt 7zCrc 7zCrcOpt Sha256 Sha256Opt LzFindOpt Sort)
-  list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/C/${stem}.c")
-endforeach()
-list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/Common/Sha256Prepare.cpp")
-list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/Common/UTFConvert.cpp")
-list(APPEND seven_sources
-  "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyMap.cpp"
-  "${XDZIP_7ZIP_SOURCE}/CPP/Windows/PropVariantUtils.cpp"
-  "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/Common/FindSignature.cpp")
-if(NOT WIN32)
-  # The Windows Format7z manifest uses OS-provided COM/time and UTF conversion
-  # functions. Official GCC bundles add these compatibility implementations;
-  # they provide platform primitives only, not additional archive handlers.
-  list(APPEND seven_sources
-    "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyWindows.cpp")
-endif()
-foreach(source IN LISTS seven_sources)
-  if(source MATCHES "/CPP/7zip/Compress/Rar")
-    message(FATAL_ERROR "7-Zip RAR codecs are not admitted: ${source}")
-  endif()
-  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
-    message(FATAL_ERROR "Unapproved container entered the native source allowlist: ${source}")
-  endif()
-endforeach()
-list(REMOVE_DUPLICATES seven_sources)
-add_library(xdzip_7z_engine OBJECT ${seven_sources})
-file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/seven-zip-source-list.txt" CONTENT "$<JOIN:$<TARGET_PROPERTY:xdzip_7z_engine,SOURCES>,\n>\n")
-target_compile_definitions(xdzip_7z_engine PRIVATE Z7_DEFLATE_EXTRACT_ONLY Z7_BZIP2_EXTRACT_ONLY Z7_NO_ASM USE_NO_ASM)
-target_compile_features(xdzip_7z_engine PRIVATE cxx_std_17)
 
 # Replace UnRAR's file boundary, rather than permitting its ordinary filesystem
 # implementation. The isolated copy preserves source delivery and avoids modifying
@@ -90,19 +41,26 @@ target_include_directories(xdzip_rar_engine PRIVATE "${unrar_copy}" "${CMAKE_CUR
 target_compile_definitions(xdzip_rar_engine PRIVATE RARDLL UNRAR SILENT _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE)
 target_compile_features(xdzip_rar_engine PRIVATE cxx_std_17)
 
-add_executable(xdzip-native-codec main.cpp seven_adapter.cpp seven_backend.cpp readonly_backend.cpp readonly_boundary.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
-target_include_directories(xdzip-native-codec PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP" "${XDZIP_7ZIP_SOURCE}/C")
+set(native_glue_sources main.cpp seven_backend.cpp readonly_backend.cpp codec_boundary.cpp)
+add_executable(xdzip-native-codec ${native_glue_sources} $<TARGET_OBJECTS:xdzip_rar_engine>)
+# This complete generated source list records both the bridge and remaining
+# official engine. Tests reject any 7-Zip source/handler re-entering the build.
+set(native_compiled_sources)
+foreach(source IN LISTS native_glue_sources unrar_sources)
+  get_filename_component(absolute "${source}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  list(APPEND native_compiled_sources "${absolute}")
+endforeach()
+file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/native-codec-source-list.txt" CONTENT "$<JOIN:${native_compiled_sources},\n>\n")
 target_compile_features(xdzip-native-codec PRIVATE cxx_std_17)
 target_link_libraries(xdzip-native-codec PRIVATE Threads::Threads)
 if(WIN32)
   target_link_libraries(xdzip-native-codec PRIVATE oleaut32 ole32 uuid advapi32 user32 shell32)
 endif()
 if(MSVC)
-  target_compile_definitions(xdzip_7z_engine PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions(xdzip_rar_engine PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/RustStaticLibrary.cmake")
-xdzip_rust_library(xdzip-readonly-rust xdzip-readonly-bridge xdzip_readonly_bridge "${CMAKE_CURRENT_SOURCE_DIR}/../..")
-target_include_directories(xdzip-native-codec PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../crates/xdzip-readonly-bridge/include")
-target_link_libraries(xdzip-native-codec PRIVATE xdzip-readonly-rust)
+xdzip_rust_library(xdzip-codec-rust xdzip-codec-bridge xdzip_codec_bridge "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+target_include_directories(xdzip-native-codec PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../crates/xdzip-codec-bridge/include")
+target_link_libraries(xdzip-native-codec PRIVATE xdzip-codec-rust)

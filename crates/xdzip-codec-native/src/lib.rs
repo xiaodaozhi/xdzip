@@ -1,13 +1,16 @@
 // crates/xdzip-codec-native/src/lib.rs
 
-//! Official native engines behind a bounded worker and host-owned streams.
+//! Isolated format codecs behind a bounded worker and host-owned streams.
 #[cfg(test)]
 mod auxiliary_tests;
+mod encode_input;
 mod protocol;
 #[cfg(test)]
 mod tests;
 use protocol::{Fault, Fields, Worker};
-use std::io::{Cursor, Read, SeekFrom};
+#[cfg(test)]
+use std::io::Cursor;
+use std::io::{self, Read, SeekFrom};
 use xdzip_codec_api::encode::{
     CreationCodec, EncodeEntry, EncodeError, EncodeInput, EncodeOutput, EncodeProgress,
     EncodeSettings, RewriteCodec, RewriteInput, RewriteOutput,
@@ -22,7 +25,7 @@ use zeroize::Zeroizing;
 /// Native worker budget, enforced as committed memory on Windows and address
 /// space on Unix. macOS excludes its pre-existing dyld virtual reservation.
 pub const NATIVE_MEMORY_LIMIT: u64 = 1024 * 1024 * 1024;
-/// Isolated adapter for official 7z/UnRAR and independent read-only codecs.
+/// Isolated adapter for independent Rust codecs and the remaining UnRAR engine.
 pub struct NativeCodec {
     /// Selects an exact engine; other formats fail closed.
     pub format: Format,
@@ -34,23 +37,26 @@ struct RewriteProperties<'a> {
 fn scan_error(error: Fault) -> ScanError {
     match error {
         Fault::Io | Fault::Output => ScanError::Io,
+        Fault::SourceChanged => ScanError::SourceChanged,
         Fault::Unsupported => ScanError::Unsupported,
         Fault::Limit => ScanError::Limit,
         Fault::Cancelled => ScanError::Cancelled,
         Fault::PasswordRequired => ScanError::PasswordRequired,
         Fault::WrongPassword => ScanError::WrongPassword,
+        Fault::PasswordOrIntegrity => ScanError::PasswordOrIntegrity,
         Fault::Invalid => ScanError::Invalid,
         Fault::MissingVolume => ScanError::MissingVolume,
     }
 }
 fn decode_error(error: Fault) -> DecodeError {
     match error {
-        Fault::Io => DecodeError::SourceIo,
+        Fault::Io | Fault::SourceChanged => DecodeError::SourceIo,
         Fault::Unsupported => DecodeError::Unsupported,
         Fault::Limit => DecodeError::Limit,
         Fault::Cancelled => DecodeError::Cancelled,
         Fault::PasswordRequired => DecodeError::PasswordRequired,
         Fault::WrongPassword => DecodeError::WrongPassword,
+        Fault::PasswordOrIntegrity => DecodeError::PasswordOrIntegrity,
         Fault::Output => DecodeError::Output,
         Fault::Invalid => DecodeError::Integrity,
         Fault::MissingVolume => DecodeError::SourceIo,
@@ -58,12 +64,47 @@ fn decode_error(error: Fault) -> DecodeError {
 }
 fn encode_error(error: Fault) -> EncodeError {
     match error {
-        Fault::Io | Fault::MissingVolume => EncodeError::Source,
+        Fault::Io | Fault::SourceChanged | Fault::MissingVolume => EncodeError::Source,
         Fault::Output => EncodeError::Output,
-        Fault::Unsupported => EncodeError::Unsupported,
+        Fault::Unsupported
+        | Fault::PasswordRequired
+        | Fault::WrongPassword
+        | Fault::PasswordOrIntegrity => EncodeError::Unsupported,
         Fault::Limit => EncodeError::Limit,
         Fault::Cancelled => EncodeError::Cancelled,
         _ => EncodeError::Invalid,
+    }
+}
+fn source_fault(error: io::Error) -> Fault {
+    match error
+        .get_ref()
+        .and_then(|error| error.downcast_ref::<ScanError>())
+    {
+        Some(ScanError::Io) => Fault::Io,
+        Some(ScanError::SourceChanged) => Fault::SourceChanged,
+        Some(ScanError::Invalid) => Fault::Invalid,
+        Some(ScanError::Unsupported) => Fault::Unsupported,
+        Some(ScanError::Limit) => Fault::Limit,
+        Some(ScanError::Cancelled) => Fault::Cancelled,
+        Some(ScanError::MissingVolume) => Fault::MissingVolume,
+        Some(ScanError::PasswordRequired) => Fault::PasswordRequired,
+        Some(ScanError::WrongPassword) => Fault::WrongPassword,
+        Some(ScanError::PasswordOrIntegrity) => Fault::PasswordOrIntegrity,
+        None if error.kind() == io::ErrorKind::OutOfMemory => Fault::Limit,
+        None => Fault::Io,
+    }
+}
+fn source_call<T>(
+    control: &Cancellation,
+    mut operation: impl FnMut() -> io::Result<T>,
+) -> Result<T, Fault> {
+    loop {
+        control.check().map_err(|_| Fault::Cancelled)?;
+        match operation() {
+            Err(error)
+                if error.kind() == io::ErrorKind::Interrupted && error.get_ref().is_none() => {}
+            result => return result.map_err(source_fault),
+        }
     }
 }
 impl NativeCodec {
@@ -152,7 +193,7 @@ impl NativeCodec {
         password: Option<&str>,
     ) -> Result<Vec<Entry>, Fault> {
         control.check().map_err(|_| Fault::Cancelled)?;
-        let length = source.seek(SeekFrom::End(0)).map_err(|_| Fault::Io)?;
+        let length = source_call(control, || source.seek(SeekFrom::End(0)))?;
         let request = Zeroizing::new(self.request(
             0,
             length,
@@ -171,7 +212,9 @@ impl NativeCodec {
             let frame = worker.next(control)?;
             let mut fields = Fields(&frame);
             match fields.byte()? {
-                protocol::READ => answer_read(&mut worker, source, &mut fields, &mut remaining)?,
+                protocol::READ => {
+                    answer_read(&mut worker, source, &mut fields, &mut remaining, control)?
+                }
                 protocol::ROW => {
                     let index = fields.u64()?;
                     let flags = fields.byte()?;
@@ -267,21 +310,35 @@ fn answer_read(
     source: &mut dyn ReadSource,
     fields: &mut Fields<'_>,
     remaining: &mut u64,
+    control: &Cancellation,
 ) -> Result<(), Fault> {
     let offset = fields.u64()?;
     let count = fields.u32()? as usize;
     fields.end()?;
+    let bytes = source_bytes(source, offset, count, remaining, control)?;
+    worker.send(protocol::BYTES, &bytes)
+}
+fn source_bytes(
+    source: &mut dyn ReadSource,
+    offset: u64,
+    count: usize,
+    remaining: &mut u64,
+    control: &Cancellation,
+) -> Result<Vec<u8>, Fault> {
+    control.check().map_err(|_| Fault::Cancelled)?;
     if count > protocol::CHUNK || count as u64 > *remaining {
         return Err(Fault::Limit);
     }
-    source
-        .seek(SeekFrom::Start(offset))
-        .map_err(|_| Fault::Io)?;
+    source_call(control, || source.seek(SeekFrom::Start(offset)))?;
     let mut bytes = vec![0; count];
-    let count = source.read(&mut bytes).map_err(|_| Fault::Io)?;
+    let count = source_call(control, || source.read(&mut bytes))?;
+    if count > bytes.len() {
+        return Err(Fault::Io);
+    }
     bytes.truncate(count);
     *remaining -= count as u64;
-    worker.send(protocol::BYTES, &bytes)
+    control.check().map_err(|_| Fault::Cancelled)?;
+    Ok(bytes)
 }
 impl MetadataCodec for NativeCodec {
     fn scan(
@@ -361,7 +418,7 @@ impl WorkerCredit {
         if count > protocol::CHUNK as u64 {
             return Err(DecodeError::Limit);
         }
-        let next = if matches!(format, Format::Cab | Format::Rar) {
+        let next = if matches!(format, Format::Cab | Format::SevenZip | Format::Rar) {
             self.0
                 .checked_add(count)
                 .filter(|n| *n <= PRECHARGED_LIMIT)
@@ -393,7 +450,7 @@ impl WorkerCredit {
             return Err(DecodeError::Integrity);
         }
         if precharged {
-            if !matches!(format, Format::Cab | Format::Rar) || count == 0 {
+            if !matches!(format, Format::Cab | Format::SevenZip | Format::Rar) || count == 0 {
                 return Err(DecodeError::Integrity);
             }
             self.0 = self.0.checked_sub(count).ok_or(DecodeError::Integrity)?;
@@ -505,10 +562,8 @@ impl PayloadReader for NativeReader<'_> {
         } else {
             self.worker = None;
             self.credit.reset();
-            let length = self
-                .source
-                .seek(SeekFrom::End(0))
-                .map_err(|_| DecodeError::SourceIo)?;
+            let length = source_call(control, || self.source.seek(SeekFrom::End(0)))
+                .map_err(decode_error)?;
             let request = Zeroizing::new(
                 self.codec
                     .request(
@@ -535,6 +590,7 @@ impl PayloadReader for NativeReader<'_> {
                     self.source,
                     &mut fields,
                     &mut self.read_remaining,
+                    control,
                 )
                 .map_err(decode_error)?,
                 kind @ (protocol::DATA | protocol::PRECHARGED_DATA) => {
@@ -604,6 +660,7 @@ impl NativeCodec {
         if self.format != Format::SevenZip
             || !matches!(settings.method, "copy" | "lzma2")
             || settings.level > 9
+            || settings.method == "lzma2" && !matches!(settings.level, 1 | 6 | 9)
             || (settings.encrypt_headers && settings.password.is_none())
         {
             return Err(EncodeError::Unsupported);
@@ -615,12 +672,22 @@ impl NativeCodec {
         if !old_indices.is_empty() && old_indices.len() != entries.len() {
             return Err(EncodeError::Invalid);
         }
+        let declared_total = entries.iter().try_fold(0u64, |total, entry| {
+            if entry.size > 8 << 30 || entry.directory && entry.size != 0 {
+                return Err(EncodeError::Limit);
+            }
+            total
+                .checked_add(entry.size)
+                .filter(|total| *total <= 20 << 30)
+                .ok_or(EncodeError::Limit)
+        })?;
+        let progress_names: std::collections::BTreeSet<&str> =
+            entries.iter().map(|entry| entry.name.as_str()).collect();
+        let mut progressed = 0u64;
         let length = original
             .as_mut()
             .map(|source| {
-                source
-                    .seek(SeekFrom::End(0))
-                    .map_err(|_| EncodeError::Source)
+                source_call(cancel, || source.seek(SeekFrom::End(0))).map_err(encode_error)
             })
             .transpose()?
             .unwrap_or(0);
@@ -638,11 +705,12 @@ impl NativeCodec {
             )
             .map_err(encode_error)?,
         );
-        if original.is_some() {
-            request[2..10].copy_from_slice(&(NATIVE_MEMORY_LIMIT / 2).to_le_bytes());
-        }
         request.extend_from_slice(&[
-            settings.level,
+            if settings.method == "copy" {
+                0
+            } else {
+                settings.level
+            },
             u8::from(settings.solid),
             u8::from(settings.encrypt_headers),
             u8::from(settings.method == "copy"),
@@ -667,9 +735,7 @@ impl NativeCodec {
             protocol::put_string(&mut record, &entry.name);
             worker.send(protocol::ROW, &record).map_err(encode_error)?;
         }
-        let mut streams: std::collections::BTreeMap<usize, Box<dyn Read + '_>> =
-            std::collections::BTreeMap::new();
-        let mut consumed = vec![0u64; entries.len()];
+        let mut streams = encode_input::Inputs::new(input);
         let mut total = 0u64;
         let mut read_remaining = 20 * 1024 * 1024 * 1024;
         loop {
@@ -678,8 +744,14 @@ impl NativeCodec {
             match fields.byte().map_err(encode_error)? {
                 protocol::READ => {
                     let source = original.as_mut().ok_or(EncodeError::Invalid)?;
-                    answer_read(&mut worker, *source, &mut fields, &mut read_remaining)
-                        .map_err(encode_error)?;
+                    answer_read(
+                        &mut worker,
+                        *source,
+                        &mut fields,
+                        &mut read_remaining,
+                        cancel,
+                    )
+                    .map_err(encode_error)?;
                 }
                 protocol::INPUT => {
                     let index = fields.u32().map_err(encode_error)? as usize;
@@ -689,36 +761,12 @@ impl NativeCodec {
                     if count > protocol::CHUNK || entry.directory {
                         return Err(EncodeError::Invalid);
                     }
-                    let remaining = entry
-                        .size
-                        .checked_sub(consumed[index])
-                        .ok_or(EncodeError::Invalid)?;
-                    if remaining == 0 {
-                        worker.send(protocol::BYTES, &[]).map_err(encode_error)?;
-                        continue;
-                    }
-                    if let std::collections::btree_map::Entry::Vacant(slot) = streams.entry(index) {
-                        slot.insert(input.open(index)?);
-                    }
-                    let stream = streams.get_mut(&index).ok_or(EncodeError::Source)?;
-                    let mut bytes =
-                        vec![0; count.min(usize::try_from(remaining).unwrap_or(usize::MAX))];
-                    let count = stream.read(&mut bytes).map_err(|_| EncodeError::Source)?;
-                    bytes.truncate(count);
-                    if count == 0 && remaining != 0 {
-                        return Err(EncodeError::Source);
-                    }
-                    consumed[index] += count as u64;
-                    if consumed[index] == entry.size {
-                        streams.remove(&index);
-                    }
+                    let bytes = streams.read(index, count, cancel)?;
+                    let count = bytes.len();
                     total = total
                         .checked_add(count as u64)
+                        .filter(|total| *total <= 20 << 30)
                         .ok_or(EncodeError::Invalid)?;
-                    progress(EncodeProgress {
-                        name: &entry.name,
-                        input_bytes: total,
-                    });
                     worker.send(protocol::BYTES, &bytes).map_err(encode_error)?;
                 }
                 protocol::DATA => {
@@ -738,7 +786,24 @@ impl NativeCodec {
                     output.write_at(offset, fields.0)?;
                     worker.send(protocol::ACK, &[]).map_err(encode_error)?;
                 }
-                protocol::PROGRESS => (),
+                protocol::PROGRESS => {
+                    let total = fields.u64().map_err(encode_error)?;
+                    let bytes = fields.bytes(4096).map_err(encode_error)?;
+                    fields.end().map_err(encode_error)?;
+                    let name = std::str::from_utf8(&bytes).map_err(|_| EncodeError::Invalid)?;
+                    if total < progressed
+                        || total > declared_total
+                        || !progress_names.contains(name)
+                    {
+                        return Err(EncodeError::Invalid);
+                    }
+                    progressed = total;
+                    progress(EncodeProgress {
+                        name,
+                        input_bytes: total,
+                    });
+                    worker.send(protocol::ACK, &[]).map_err(encode_error)?;
+                }
                 protocol::ERROR => {
                     return Err(encode_error(Fault::from_wire(
                         fields.byte().map_err(encode_error)?,
@@ -747,13 +812,7 @@ impl NativeCodec {
                 protocol::DONE => {
                     fields.end().map_err(encode_error)?;
                     worker.finish(cancel).map_err(encode_error)?;
-                    if entries
-                        .iter()
-                        .zip(consumed)
-                        .any(|(entry, read)| read != entry.size)
-                    {
-                        return Err(EncodeError::Source);
-                    }
+                    streams.finish(old_indices, cancel)?;
                     return Ok(());
                 }
                 _ => return Err(EncodeError::Invalid),
@@ -773,10 +832,12 @@ impl CreationCodec for NativeCodec {
         self.encode_internal(input, output, settings, cancel, progress, None)
     }
 }
+#[cfg(test)]
 struct BufferedInput {
     entries: Vec<EncodeEntry>,
     bytes: Vec<Vec<u8>>,
 }
+#[cfg(test)]
 impl EncodeInput for BufferedInput {
     fn entries(&self) -> &[EncodeEntry] {
         &self.entries
@@ -790,30 +851,24 @@ impl EncodeInput for BufferedInput {
         )))
     }
 }
-struct BufferSink<'a> {
-    bytes: &'a mut Vec<u8>,
-    remaining: &'a mut u64,
-    work_remaining: &'a mut u64,
+
+struct RewriteDelivery<'a> {
+    entries: Vec<EncodeEntry>,
+    additions: &'a dyn EncodeInput,
+    added_indices: Vec<Option<usize>>,
 }
-impl DecodedSink for BufferSink<'_> {
-    fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
-        self.charge_skipped(bytes.len() as u64)?;
-        *self.remaining = self
-            .remaining
-            .checked_sub(bytes.len() as u64)
-            .ok_or(DecodeError::Limit)?;
-        self.bytes
-            .try_reserve(bytes.len())
-            .map_err(|_| DecodeError::Limit)?;
-        self.bytes.extend_from_slice(bytes);
-        Ok(())
+impl EncodeInput for RewriteDelivery<'_> {
+    fn entries(&self) -> &[EncodeEntry] {
+        &self.entries
     }
-    fn charge_skipped(&mut self, count: u64) -> Result<(), DecodeError> {
-        *self.work_remaining = self
-            .work_remaining
-            .checked_sub(count)
-            .ok_or(DecodeError::Limit)?;
-        Ok(())
+    fn open(&self, index: usize) -> Result<Box<dyn Read + '_>, EncodeError> {
+        let addition = self
+            .added_indices
+            .get(index)
+            .copied()
+            .flatten()
+            .ok_or(EncodeError::Invalid)?;
+        self.additions.open(addition)
     }
 }
 impl RewriteCodec for NativeCodec {
@@ -842,107 +897,45 @@ impl RewriteCodec for NativeCodec {
         {
             return Err(EncodeError::Unsupported);
         }
-        // Reserve half the process budget for the native encoder. No temporary pathname or
-        // filesystem publication capability is introduced into the codec.
+        // The isolated Rust worker owns the bounded reconstruction buffer.
+        // The host sends metadata and authorized addition streams only.
         let mut remaining = NATIVE_MEMORY_LIMIT / 2;
-        let mut work_remaining = 20 * 1024 * 1024 * 1024;
-        let mut buffered = BufferedInput {
+        let mut delivery = RewriteDelivery {
             entries: Vec::new(),
-            bytes: Vec::new(),
+            additions: input.additions,
+            added_indices: Vec::new(),
         };
         let mut old_indices = Vec::new();
-        let mut reader = self
-            .open_payload(original, &rows, cancel)
-            .map_err(|_| EncodeError::Invalid)?;
         for (index, row) in rows
             .iter()
             .enumerate()
             .filter(|(index, _)| input.keep[*index])
         {
-            if row.size > remaining {
-                return Err(EncodeError::Limit);
-            }
-            let mut bytes = Vec::new();
-            if !row.directory {
-                bytes
-                    .try_reserve_exact(usize::try_from(row.size).map_err(|_| EncodeError::Limit)?)
-                    .map_err(|_| EncodeError::Limit)?;
-                reader
-                    .decode(
-                        row,
-                        &mut BufferSink {
-                            bytes: &mut bytes,
-                            remaining: &mut remaining,
-                            work_remaining: &mut work_remaining,
-                        },
-                        cancel,
-                    )
-                    .map_err(|error| match error {
-                        DecodeError::Cancelled => EncodeError::Cancelled,
-                        DecodeError::Limit => EncodeError::Limit,
-                        DecodeError::Unsupported => EncodeError::Unsupported,
-                        _ => EncodeError::Invalid,
-                    })?;
-            }
-            let name = if input.renames.is_empty() {
-                None
-            } else {
-                input.renames[index].as_ref()
-            };
-            buffered.entries.push(EncodeEntry {
-                name: name
-                    .map_or_else(
-                        || String::from_utf8_lossy(row.name_bytes()).into_owned(),
-                        Clone::clone,
-                    )
-                    .trim_end_matches('/')
-                    .to_owned(),
+            remaining = remaining.checked_sub(row.size).ok_or(EncodeError::Limit)?;
+            let renamed = input.renames.get(index).and_then(Option::as_deref);
+            let name = renamed.map_or_else(
+                || std::str::from_utf8(row.name_bytes()).map_err(|_| EncodeError::Invalid),
+                Ok,
+            )?;
+            delivery.entries.push(EncodeEntry {
+                name: name.trim_end_matches('/').to_owned(),
                 directory: row.directory,
                 size: row.size,
                 modified_unix: 0,
             });
-            buffered.bytes.push(bytes);
+            delivery.added_indices.push(None);
             old_indices.push(Some(index));
         }
-        drop(reader);
         for (index, entry) in input.additions.entries().iter().enumerate() {
-            if entry.size > remaining {
-                return Err(EncodeError::Limit);
-            }
-            let mut bytes = Vec::new();
-            if !entry.directory {
-                bytes
-                    .try_reserve_exact(usize::try_from(entry.size).map_err(|_| EncodeError::Limit)?)
-                    .map_err(|_| EncodeError::Limit)?;
-                let mut stream = input.additions.open(index)?;
-                let mut block = [0; protocol::CHUNK];
-                loop {
-                    cancel.check().map_err(|_| EncodeError::Cancelled)?;
-                    let count = stream.read(&mut block).map_err(|_| EncodeError::Source)?;
-                    if count == 0 {
-                        break;
-                    }
-                    if bytes.len() as u64 + count as u64 > entry.size {
-                        return Err(EncodeError::Source);
-                    }
-                    BufferSink {
-                        bytes: &mut bytes,
-                        remaining: &mut remaining,
-                        work_remaining: &mut work_remaining,
-                    }
-                    .write_chunk(&block[..count])
-                    .map_err(|_| EncodeError::Limit)?;
-                }
-                if bytes.len() as u64 != entry.size {
-                    return Err(EncodeError::Source);
-                }
-            }
-            buffered.entries.push(entry.clone());
-            buffered.bytes.push(bytes);
+            remaining = remaining
+                .checked_sub(entry.size)
+                .ok_or(EncodeError::Limit)?;
+            delivery.entries.push(entry.clone());
+            delivery.added_indices.push(Some(index));
             old_indices.push(None);
         }
         self.encode_internal(
-            &buffered,
+            &delivery,
             &mut { output },
             input.settings,
             cancel,

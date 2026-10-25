@@ -58,7 +58,7 @@ class Process:
 class CreditWireTests(unittest.TestCase):
     def run_payload(self, frames, size=3, format_id=8, selected=0, creation=None):
         processes = []
-        if format_id == 8 and selected is not None and creation is None:
+        if format_id in (7, 8) and selected is not None and creation is None:
             processes.append(Process([row(size), frame(15)]))
         payload = Process(frames)
         processes.append(payload)
@@ -77,6 +77,16 @@ class CreditWireTests(unittest.TestCase):
         self.assertEqual(process.acks(), 3)
         self.assertFalse(process.killed)
 
+    def test_sevenzip_paid_output_requires_metadata_credit_and_single_use(self):
+        (_, data), process = self.run_payload([work(3), frame(23, b'abc'), frame(15)], format_id=7)
+        self.assertEqual(data, b'abc')
+        self.assertEqual(process.acks(), 2)
+        self.rejected('precharged_credit', [frame(23, b'abc')], format_id=7)
+        self.rejected('precharged_credit', [work(3), frame(23, b'abc'), frame(23, b'x')], format_id=7)
+        self.rejected('entry_output_bounds', [work(4), frame(23, b'abcd')], format_id=7)
+        self.rejected('entry_output_bounds', [work(3), frame(23, b'ab'), frame(15)], format_id=7)
+        self.rejected('work_limit', [work(NATIVE.CHUNK)] * 1025, format_id=7)
+
     def test_work_credit_accumulates_only_within_the_same_session(self):
         (_, data), _ = self.run_payload([work(1), work(2), frame(23, b'abc'), frame(15)])
         self.assertEqual(data, b'abc')
@@ -89,8 +99,8 @@ class CreditWireTests(unittest.TestCase):
         self.rejected('precharged_credit', [frame(23, b'x')])
         self.rejected('precharged_credit', [work(2), frame(23, b'abc')])
 
-    def test_non_cab_scan_and_creation_cannot_emit_prepaid_output(self):
-        for options in ({'format_id': 7}, {'format_id': 4}, {'format_id': 9}, {'format_id': 10},
+    def test_unadmitted_formats_scan_and_creation_cannot_emit_prepaid_output(self):
+        for options in ({'format_id': 4}, {'format_id': 9}, {'format_id': 10},
                         {'selected': None}, {'selected': None, 'creation': {}}):
             with self.subTest(options=options):
                 self.rejected('unexpected_precharged_data', [work(3), frame(23, b'abc')], **options)

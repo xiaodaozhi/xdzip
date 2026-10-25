@@ -2,19 +2,16 @@
 
 # 隔离格式工作进程
 
-此程序链接官方 7-Zip 的 7z 明确白名单，以及官方 UnRAR。
-CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好只有 7z。
-ISO/UDF 通过 `xdzip-readonly-bridge` 调用自研 Rust `xdzip-codec-optical`，
-构建中不含官方 Cab/Iso/Udf 处理器及 CAB 专用 LZX/Quantum。CAB、ISO、UDF 只读，只有 7z 保留写入。
-已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
+7z、CAB、ISO/UDF 通过 `xdzip-codec-bridge` 在同一隔离工作进程执行自研 Rust。
+RAR 暂时保留官方 UnRAR，只读且不提供创建或修改。官方 7-Zip 源码及适配不参与产品
+编译或部署，独立官方工具仅用于测试。ZIP、TAR、TAR.GZ 使用进程内 Rust。
 
-CAB 固定通过同一只读桥接执行 `xdzip-codec-cab` 与共享 Rust MSZIP、LZX、
-Quantum 算法，没有测试开关或官方处理器回退。内部 CMake 标记
-`XDZIP_CAB_BACKEND=rust` 记录固定路由身份，编译清单核验官方 CAB 来源退出。
+内部 CMake 标记 `XDZIP_7Z_BACKEND=rust`、`XDZIP_CAB_BACKEND=rust` 记录固定身份，
+没有产品后端选择开关或失败回退。生成的 `native-codec-source-list.txt` 记录完整
+胶水及剩余 UnRAR 来源，验收拒绝官方 7-Zip 来源重新进入。
 
-先运行 `python scripts/prepare-native-codecs.py` 准备锁定的官方来源，再通过项目
-统一构建入口构建 `xdzip-native-codec` 目标。独立构建可设置
-`XDZIP_7ZIP_SOURCE` 和 `XDZIP_UNRAR_SOURCE` 指向已验证的来源目录。
+先运行 `python scripts/prepare-native-codecs.py` 准备锁定 UnRAR，再经项目统一入口
+构建 `xdzip-native-codec`。独立构建可用 `XDZIP_UNRAR_SOURCE` 指向已验证来源目录。
 
 Rust `xdzip-codec-native` 通过 stdin/stdout 的长度前缀二进制帧通信，帧最大
 1 MiB，实际数据块最大 64 KiB。源读取使用宿主流的偏移和长度，编码输入使用
@@ -30,7 +27,7 @@ ROW 保留 37 字节头，flags 的 0x10 表示原始名字字节，0x20 表示 
 Rust CAB 容器保留原始名字和卷名字，独立核对结构、片段校验及继续关系，
 损坏结构或缺卷不能形成部分成功索引。Rust ISO 使用 Rock Ridge 符号链接与
 POSIX 类型属性分类，UDF 使用真实 ICB 类型及链接数；链接及特殊类型不会进入输出流。
-CAB/ISO/UDF 的 CXX 回调同步借用切片，不保留指针；C++ 异常和 Rust unwind 均在边界内
+7z/CAB/ISO/UDF 的 CXX 回调同步借用切片，不保留指针；C++ 异常和 Rust unwind 均在边界内
 转换为稳定错误，OOM/abort 导致隔离进程退出，宿主拒绝不完整暂存结果。
 内容读取不宣称格式未提供的文件校验和。规格及扩展边界见
 [自研契约](../../docs/engineering/independent-rust-codecs.md#iso与udf只读规格)。
@@ -44,15 +41,18 @@ synthetic 卷，不能创建、删除或重命名输出。构建仅在生成目�
 倒序或密码变化会重开进程，输入读取预算不会重置。原始读取无目标权限，
 编码修改后保留旧物理条目的时间与属性，宿主负责最终重新扫描、完整校验和提交。
 
-Rust CAB 以 WORK 计入实际解码帧，再通过 `PrechargedData=23` 输出已计费的缓存字节。
+Rust CAB 以 WORK 计入完整解码帧，7z 计入实际 terminal 输出，再通过
+`PrechargedData=23` 交付已经计费的字节。
 宿主仅在 WORK 成功准入后授予该工作进程一次性额度，消费前扣减，重启即清零；
-文件大小及累计输出限额独立检查。其他格式不能发送此帧，失败或部分写入不退额度。
+文件大小及累计输出限额独立检查。只有 CAB/7z 负载可发送此帧，扫描与创建不可；
+失败或部分写入不退额度。
 不识别预付输出的通用 sink 仍走普通计费路径。
 
 默认 native 预算为 1 GiB。Windows 用 Job Object 限制提交内存，Linux 用
 RLIMIT_AS，macOS 用启动时虚拟地址基线加预算设置 RLIMIT_AS，排除 dyld 预留。
-Unix 限制不是 RSS 计量。7z 创建按偏移流式写入，修改暂以最多 512 MiB 原内容
-缓存重建，同时将 native 子进程预算降为 512 MiB。超限明确失败，不发布新包。
+Unix 限制不是 RSS 计量。7z 创建按偏移流式写入，修改由工作进程持有最多 512 MiB
+保留及新增内容，连同字典、模型和元数据在 1 GiB 内预检。宿主不再累积一份相同
+内容，仍拥有来源复验、整包验证和最终提交。超限明确失败，不发布新包。
 
 执行真实后端回归前，设置 `XDZIP_NATIVE_CODEC_WORKER` 为当前构建的程序，运行
 `cargo test -p xdzip-codec-native --locked`。缺少 worker 会失败，不静默跳过。

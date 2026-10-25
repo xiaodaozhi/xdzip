@@ -1474,12 +1474,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-7z"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "aes",
+ "getrandom 0.4.2",
+ "sha2",
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-crypto",
+ "xdzip-domain",
+ "zeroize",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.1.0-alpha.6"
 dependencies = [
  "chardetng",
  "encoding_rs",
  "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-bridge"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "xdzip-codec-7z",
+ "xdzip-codec-api",
+ "xdzip-codec-cab",
+ "xdzip-codec-optical",
 ]
 
 [[package]]
@@ -1636,17 +1662,6 @@ dependencies = [
  "xdzip-domain",
  "xdzip-runtime",
  "xdzip-update",
-]
-
-[[package]]
-name = "xdzip-readonly-bridge"
-version = "0.1.0-alpha.6"
-dependencies = [
- "cxx",
- "cxx-build",
- "xdzip-codec-api",
- "xdzip-codec-cab",
- "xdzip-codec-optical",
 ]
 
 [[package]]

@@ -1,5 +1,6 @@
-//! Thin worker boundary. All image format logic lives in xdzip-codec-optical.
+//! Shared borrowed worker I/O. Format logic remains in independent codec crates.
 mod cab;
+mod seven;
 use std::io::{self, Read, Seek, SeekFrom};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec};
 use xdzip_codec_api::{
@@ -11,8 +12,21 @@ use xdzip_codec_optical::OpticalCodec;
 // catch every exception and return stable errors. They retain no Rust pointers,
 // and only use the worker's already authorized pipe protocol, never pathnames.
 #[allow(unsafe_code)]
-#[cxx::bridge(namespace = "xdzip::readonly_codec")]
+#[cxx::bridge(namespace = "xdzip::codec_bridge")]
 mod ffi {
+    struct CreationRow {
+        name: String,
+        size: u64,
+        old_index: u64,
+        modified_unix: i64,
+        directory: bool,
+    }
+    struct CreationOptions {
+        level: u8,
+        copy: bool,
+        solid: bool,
+        encrypt_headers: bool,
+    }
     struct Transfer {
         value: u64,
         error: u8,
@@ -20,6 +34,9 @@ mod ffi {
     unsafe extern "C++" {
         include!("host.hpp");
         fn read_bytes(offset: u64, buffer: &mut [u8]) -> Transfer;
+        fn read_input_bytes(index: u32, buffer: &mut [u8]) -> Transfer;
+        fn write_archive_at(offset: u64, bytes: &[u8]) -> u8;
+        fn emit_creation_progress(bytes: u64, name: &[u8]) -> u8;
         fn emit_row(
             index: u64,
             flags: u8,
@@ -36,6 +53,19 @@ mod ffi {
         fn complete_entry(index: u64) -> Transfer;
     }
     extern "Rust" {
+        #[allow(clippy::too_many_arguments)]
+        fn run_seven(
+            operation: u8,
+            length: u64,
+            selected: u64,
+            entries: u32,
+            name_bytes: u32,
+            volumes: &[u64],
+            password: &str,
+            has_password: bool,
+            records: &[CreationRow],
+            options: &CreationOptions,
+        ) -> u8;
         fn run_optical(
             operation: u8,
             format: u8,
@@ -111,6 +141,7 @@ fn wire_scan(code: u8) -> ScanError {
         4 => ScanError::Limit,
         5 => ScanError::Cancelled,
         9 => ScanError::MissingVolume,
+        10 => ScanError::PasswordOrIntegrity,
         _ => ScanError::Invalid,
     }
 }
@@ -121,6 +152,9 @@ fn scan_wire(error: ScanError) -> u8 {
         ScanError::Limit => 4,
         ScanError::Cancelled => 5,
         ScanError::MissingVolume => 9,
+        ScanError::PasswordRequired => 6,
+        ScanError::WrongPassword => 7,
+        ScanError::PasswordOrIntegrity => 10,
         _ => 2,
     }
 }
@@ -131,6 +165,9 @@ fn decode_wire(error: DecodeError) -> u8 {
         DecodeError::Limit => 4,
         DecodeError::Cancelled => 5,
         DecodeError::Output => 8,
+        DecodeError::PasswordRequired => 6,
+        DecodeError::WrongPassword => 7,
+        DecodeError::PasswordOrIntegrity => 10,
         _ => 2,
     }
 }
@@ -258,8 +295,19 @@ fn decode_rows(
     rows: &[Entry],
     control: &Cancellation,
 ) -> Result<(), u8> {
+    decode_rows_with_password(operation, selected, codec, source, rows, control, None)
+}
+fn decode_rows_with_password(
+    operation: u8,
+    selected: u64,
+    codec: &dyn PayloadCodec,
+    source: &mut Source,
+    rows: &[Entry],
+    control: &Cancellation,
+    password: Option<&str>,
+) -> Result<(), u8> {
     let mut reader = codec
-        .open_payload(source, rows, control)
+        .open_payload_with_password(source, rows, control, password)
         .map_err(decode_wire)?;
     let mut selected = selected;
     loop {
@@ -320,6 +368,39 @@ fn run_cab(
             name_bytes,
             volumes,
             volume_names,
+        )
+    }) {
+        Ok(Ok(())) => 0,
+        Ok(Err(code)) => code,
+        Err(_) => 2,
+    }
+}
+#[allow(clippy::too_many_arguments)]
+fn run_seven(
+    operation: u8,
+    length: u64,
+    selected: u64,
+    entries: u32,
+    name_bytes: u32,
+    volumes: &[u64],
+    password: &str,
+    has_password: bool,
+    records: &[ffi::CreationRow],
+    options: &ffi::CreationOptions,
+) -> u8 {
+    // Every CXX slice/string remains borrowed only for this synchronous call.
+    // Panics become worker failure, and the host discards incomplete staging.
+    match std::panic::catch_unwind(|| {
+        seven::run(
+            operation,
+            length,
+            selected,
+            entries,
+            name_bytes,
+            volumes,
+            has_password.then_some(password),
+            records,
+            options,
         )
     }) {
         Ok(Ok(())) => 0,

@@ -11,6 +11,14 @@ pub(crate) enum Kind {
     Rgb,
     Audio,
 }
+#[cfg(test)]
+thread_local! {
+    static EXECUTED: std::cell::Cell<[u64; 6]> = const { std::cell::Cell::new([0; 6]) };
+}
+#[cfg(test)]
+pub(crate) fn take_executed() -> [u64; 6] {
+    EXECUTED.with(|counts| counts.replace([0; 6]))
+}
 impl Kind {
     /// Fixed functional signatures from RAR29-FILTERS-2026-10-26-v1, not an
     /// arbitrary VM interpreter or an authentication promise for program CRC.
@@ -283,7 +291,22 @@ pub(crate) fn run(
     sink: &mut dyn WorkOutput,
     control: &Cancellation,
 ) -> Result<Vec<u8>, DecodeError> {
-    run_observed(filter, bytes, sink, control, |_| ())
+    let result = run_observed(filter, bytes, sink, control, |_| ())?;
+    #[cfg(test)]
+    EXECUTED.with(|counts| {
+        let index = match filter.kind {
+            Kind::E8 => 0,
+            Kind::E8E9 => 1,
+            Kind::Itanium => 2,
+            Kind::Delta => 3,
+            Kind::Rgb => 4,
+            Kind::Audio => 5,
+        };
+        let mut values = counts.get();
+        values[index] += 1;
+        counts.set(values);
+    });
+    Ok(result)
 }
 
 #[cfg(test)]

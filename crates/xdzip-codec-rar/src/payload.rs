@@ -101,7 +101,7 @@ impl PackedInput<'_, '_, '_> {
                     .bytes(part.volume, part.header_at, part.header.len())?
                     != part.header
                 {
-                    return Err(ScanError::Invalid);
+                    return Err(ScanError::SourceChanged);
                 }
                 self.active = true;
                 self.crc = Crc32::new();
@@ -387,159 +387,170 @@ impl<'a> Payload<'a> {
         } else {
             (None, None)
         };
-        let padding = if first.encrypted && !first.ancient && !matches!(first.method, 13 | 15) {
-            15
-        } else {
-            0
-        };
-        if entry.directory {
-            if entry.size != 0 || file.parts.iter().any(|p| self.index.parts[*p].packed != 0) {
-                return Err(DecodeError::Integrity);
-            }
-            for p in &file.parts {
-                let part = &self.index.parts[*p];
-                if self
-                    .reader
-                    .bytes(part.volume, part.header_at, part.header.len())
-                    .map_err(decode_error)?
-                    != part.header
-                {
-                    return Err(DecodeError::Integrity);
-                }
-                verify_hash(
-                    &part.description,
-                    0,
-                    part.description.hash.map(|_| Blake2sp::new()),
-                    key,
-                    Some(0),
-                )?;
-            }
-            return control.check().map_err(decode_error);
-        }
-        let mut coding = first.clone();
-        // Encryption and final integrity belong to the bounded container
-        // adapter; the compression engine receives admitted plaintext only.
-        coding.encrypted = false;
-        coding.crypt = None;
-        coding.hash = None;
-        coding.old_checksum = None;
-        let memory = self
-            .algorithm
-            .memory_required(&coding)?
-            .checked_add(crate::protection::Protection::MEMORY_BYTES)
-            .ok_or(DecodeError::Limit)?;
-        if memory > MEMORY_LIMIT {
-            return Err(DecodeError::Limit);
-        }
-        if entry.size > FILE_LIMIT {
-            return Err(DecodeError::Limit);
-        }
-        let total = file
-            .parts
-            .iter()
-            .try_fold(0u64, |sum, p| sum.checked_add(self.index.parts[*p].packed))
-            .ok_or(DecodeError::Integrity)?;
-        if first.compression == 0
-            && ((!first.encrypted && total != entry.size)
-                || (first.encrypted
-                    && (total < entry.size || total - entry.size > u64::from(padding))))
-        {
-            return Err(DecodeError::Integrity);
-        }
-        let mut input = PackedInput {
-            reader: &mut self.reader,
-            parts: &self.index.parts,
-            selected: &file.parts,
-            part: 0,
-            offset: 0,
-            active: false,
-            crc: Crc32::new(),
-            blake: None,
-            key,
-            failed: false,
-        };
-        let mut verified = VerifiedSink {
-            sink,
-            expected: entry.size,
-            written: 0,
-            crc: Crc32::new(),
-            blake: first.hash.map(|_| Blake2sp::new()),
-            old: first.old_checksum.map(|_| 0),
-            work: &mut self.work,
-            reserved: 0,
-            auxiliary: 0,
-            credit: 0,
-        };
-        if first.encrypted {
-            let mut plain = if let Some(key) = key {
-                let iv = first
+        let unverified = first.encrypted
+            && !key.is_some_and(|key| {
+                first
                     .crypt
                     .as_ref()
-                    .ok_or(DecodeError::Integrity)?
-                    .iv
-                    .as_slice()
-                    .try_into()
-                    .map_err(|_| DecodeError::Integrity)?;
-                Decrypted::Modern(
-                    CbcReader::new(&mut input, total, key, iv, control)
-                        .map_err(crate::algorithm::input_error)?,
-                )
+                    .is_some_and(|crypt| crate::protection::trusted_check(crypt, key, false))
+            });
+        let result = (|| {
+            let padding = if first.encrypted && !first.ancient && !matches!(first.method, 13 | 15) {
+                15
             } else {
-                Decrypted::Legacy(
-                    LegacyReader::new(
-                        &mut input,
-                        total,
-                        legacy.ok_or(DecodeError::Integrity)?,
-                        control,
-                    )
-                    .map_err(crate::algorithm::input_error)?,
-                )
+                0
             };
-            if coding.compression == 0 {
-                let mut content = plain.by_ref().take(entry.size);
-                self.algorithm
-                    .decode(&coding, &mut content, &mut verified, control)?;
-                if content.limit() != 0 {
+            if entry.directory {
+                if entry.size != 0 || file.parts.iter().any(|p| self.index.parts[*p].packed != 0) {
                     return Err(DecodeError::Integrity);
                 }
-                plain
-                    .finish_padding(padding)
-                    .map_err(crate::algorithm::input_error)?;
-            } else {
-                self.algorithm.decode_padded(
-                    &coding,
-                    &mut plain,
-                    &mut verified,
-                    control,
-                    padding,
-                )?;
-                plain.finish().map_err(crate::algorithm::input_error)?;
+                for p in &file.parts {
+                    let part = &self.index.parts[*p];
+                    if self
+                        .reader
+                        .bytes(part.volume, part.header_at, part.header.len())
+                        .map_err(decode_error)?
+                        != part.header
+                    {
+                        return Err(DecodeError::SourceIo);
+                    }
+                    verify_hash(
+                        &part.description,
+                        0,
+                        part.description.hash.map(|_| Blake2sp::new()),
+                        key,
+                        Some(0),
+                    )?;
+                }
+                return control.check().map_err(decode_error);
             }
-            if plain.counters() != (total, total) {
+            let mut coding = first.clone();
+            // Encryption and final integrity belong to the bounded container
+            // adapter; the compression engine receives admitted plaintext only.
+            coding.encrypted = false;
+            coding.crypt = None;
+            coding.hash = None;
+            coding.old_checksum = None;
+            let memory = self
+                .algorithm
+                .memory_required(&coding)?
+                .checked_add(crate::protection::Protection::MEMORY_BYTES)
+                .ok_or(DecodeError::Limit)?;
+            if memory > MEMORY_LIMIT {
+                return Err(DecodeError::Limit);
+            }
+            if entry.size > FILE_LIMIT {
+                return Err(DecodeError::Limit);
+            }
+            let total = file
+                .parts
+                .iter()
+                .try_fold(0u64, |sum, p| sum.checked_add(self.index.parts[*p].packed))
+                .ok_or(DecodeError::Integrity)?;
+            if first.compression == 0
+                && ((!first.encrypted && total != entry.size)
+                    || (first.encrypted
+                        && (total < entry.size || total - entry.size > u64::from(padding))))
+            {
                 return Err(DecodeError::Integrity);
             }
-        } else {
-            self.algorithm
-                .decode_padded(&coding, &mut input, &mut verified, control, 0)?;
-        }
-        input.finish()?;
-        control.check().map_err(decode_error)?;
-        let last = &self.index.parts[*file.parts.last().ok_or(DecodeError::Integrity)?].description;
-        if verified.written != entry.size
-            || verified.reserved != 0
-            || verified.auxiliary != 0
-            || verified.credit != 0
-        {
-            return Err(DecodeError::Integrity);
-        }
-        verify_hash(
-            last,
-            verified.crc.checksum(),
-            verified.blake.take(),
-            key,
-            verified.old,
-        )?;
-        Ok(())
+            let mut input = PackedInput {
+                reader: &mut self.reader,
+                parts: &self.index.parts,
+                selected: &file.parts,
+                part: 0,
+                offset: 0,
+                active: false,
+                crc: Crc32::new(),
+                blake: None,
+                key,
+                failed: false,
+            };
+            let mut verified = VerifiedSink {
+                sink,
+                expected: entry.size,
+                written: 0,
+                crc: Crc32::new(),
+                blake: first.hash.map(|_| Blake2sp::new()),
+                old: first.old_checksum.map(|_| 0),
+                work: &mut self.work,
+                reserved: 0,
+                auxiliary: 0,
+                credit: 0,
+            };
+            if first.encrypted {
+                let mut plain = if let Some(key) = key {
+                    let iv = first
+                        .crypt
+                        .as_ref()
+                        .ok_or(DecodeError::Integrity)?
+                        .iv
+                        .as_slice()
+                        .try_into()
+                        .map_err(|_| DecodeError::Integrity)?;
+                    Decrypted::Modern(
+                        CbcReader::new(&mut input, total, key, iv, control)
+                            .map_err(crate::algorithm::input_error)?,
+                    )
+                } else {
+                    Decrypted::Legacy(
+                        LegacyReader::new(
+                            &mut input,
+                            total,
+                            legacy.ok_or(DecodeError::Integrity)?,
+                            control,
+                        )
+                        .map_err(crate::algorithm::input_error)?,
+                    )
+                };
+                if coding.compression == 0 {
+                    let mut content = plain.by_ref().take(entry.size);
+                    self.algorithm
+                        .decode(&coding, &mut content, &mut verified, control)?;
+                    if content.limit() != 0 {
+                        return Err(DecodeError::Integrity);
+                    }
+                    plain
+                        .finish_padding(padding)
+                        .map_err(crate::algorithm::input_error)?;
+                } else {
+                    self.algorithm.decode_padded(
+                        &coding,
+                        &mut plain,
+                        &mut verified,
+                        control,
+                        padding,
+                    )?;
+                    plain.finish().map_err(crate::algorithm::input_error)?;
+                }
+                if plain.counters() != (total, total) {
+                    return Err(DecodeError::Integrity);
+                }
+            } else {
+                self.algorithm
+                    .decode_padded(&coding, &mut input, &mut verified, control, 0)?;
+            }
+            input.finish()?;
+            control.check().map_err(decode_error)?;
+            let last =
+                &self.index.parts[*file.parts.last().ok_or(DecodeError::Integrity)?].description;
+            if verified.written != entry.size
+                || verified.reserved != 0
+                || verified.auxiliary != 0
+                || verified.credit != 0
+            {
+                return Err(DecodeError::Integrity);
+            }
+            verify_hash(
+                last,
+                verified.crc.checksum(),
+                verified.blake.take(),
+                key,
+                verified.old,
+            )?;
+            Ok(())
+        })();
+        result.map_err(|error| crate::protection::encrypted_decode_error(error, unverified))
     }
     fn run(
         &mut self,

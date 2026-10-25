@@ -104,7 +104,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let (client, mut receiver) = service::start()?;
     let total_start = Instant::now();
-    let open = submit(&client, || service::Command::Open(args[0].clone()))?;
+    let mut open = submit(&client, || service::Command::Open(args[0].clone()))?;
+    let mut open_password_retries = 0;
     let mut session = 0;
     loop {
         let event = receiver.receive().ok_or("early disconnect")?;
@@ -115,6 +116,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             && let service::Payload::Finished(error) = event.payload
         {
             if !error.is_empty() {
+                if error == "password_required"
+                    && open_password_retries == 0
+                    && let Some(password) = &fixture_password
+                {
+                    open = submit(&client, || service::Command::OpenWithPassword {
+                        path: args[0].clone(),
+                        password: password.clone(),
+                    })?;
+                    open_password_retries += 1;
+                    continue;
+                }
                 return Err(error.into());
             }
             break;
@@ -183,7 +195,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if generic {
         // Independent caller owns the fixture manifest and verifies every output byte.
         println!(
-            "{{\"files\":{},\"bytes\":{},\"directories\":{},\"password_prompts\":{password_prompts}}}",
+            "{{\"files\":{},\"bytes\":{},\"directories\":{},\"password_prompts\":{password_prompts},\"open_password_retries\":{open_password_retries}}}",
             result.committed_files, result.committed_bytes, result.created_directories
         );
         return Ok(());

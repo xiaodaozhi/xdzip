@@ -1,8 +1,14 @@
 //! Independently implemented compression primitives. No production dependencies.
 //! Wire definitions: RFC 1951 sections 3.1–3.2 and RFC 1952 section 2.3.
 //! Constants below describe wire code ranges, not a reference implementation.
+mod bzip2;
 mod deflate;
 mod gzip;
+mod lzma;
+mod lzma2;
+mod lzma_encode;
+#[cfg(test)]
+mod lzma_tests;
 mod lzx;
 mod mszip;
 mod ppmd;
@@ -10,7 +16,11 @@ mod ppmd7;
 mod quantum;
 mod raw;
 mod stream_io;
+pub use bzip2::{Bzip2Reader, bzip2_memory_required};
 pub use gzip::{GzipReader, GzipWriter};
+pub use lzma::{LzmaReader, lzma_memory_required};
+pub use lzma_encode::{Lzma2Writer, lzma2_writer_memory_required};
+pub use lzma2::{Lzma2Reader, lzma2_memory_required};
 pub use lzx::LzxDecoder;
 pub use mszip::MszipDecoder;
 pub use ppmd::{PpmdCapacity, PpmdModel, PpmdRange, PpmdWork, ppmd_memory_required};

@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/xdzip-io", "crates/xdzip-extract-plan", "crates/xdzip-runtime", "crates/xdzip-qt-bridge", "crates/xdzip-domain", "crates/xdzip-codec-api", "crates/xdzip-codec-zip", "crates/xdzip-codec-tar", "crates/xdzip-codec-cab", "crates/xdzip-codec-rar", "crates/xdzip-codec-optical", "crates/xdzip-readonly-bridge", "crates/xdzip-compression", "crates/xdzip-crypto", "crates/xdzip-update", "crates/xdzip-update-helper", "tools/bridge-probe", "tools/m2-probe", "tools/m3-probe", "tools/m4-probe", "tools/optical-probe", "tools/cab-probe"]
+members = ["crates/xdzip-io", "crates/xdzip-extract-plan", "crates/xdzip-runtime", "crates/xdzip-qt-bridge", "crates/xdzip-domain", "crates/xdzip-codec-api", "crates/xdzip-codec-zip", "crates/xdzip-codec-tar", "crates/xdzip-codec-cab", "crates/xdzip-codec-rar", "crates/xdzip-codec-optical", "crates/xdzip-codec-7z", "crates/xdzip-codec-bridge", "crates/xdzip-compression", "crates/xdzip-crypto", "crates/xdzip-update", "crates/xdzip-update-helper", "tools/bridge-probe", "tools/m2-probe", "tools/m3-probe", "tools/m4-probe", "tools/optical-probe", "tools/cab-probe"]
 resolver = "3"
 
 [workspace.package]
