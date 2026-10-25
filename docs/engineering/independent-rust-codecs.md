@@ -63,11 +63,11 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 
 `rawzip`、`zip`、`flate2` 仅作测试参照，已迁移 ZIP 的普通及构建依赖闭包禁止这些格式和算法库回流。测试参照的许可继续保留，容器可读取不等于所有声明方法都可解码。
 
-## CAB只读候选规格
+## CAB只读规格
 
-`xdzip-codec-cab` 是自研只读候选后端，范围为 Store、MSZIP、LZX、Quantum 和宿主已经授权的同目录卷链。默认产品仍使用官方 CAB；CMake 的 `XDZIP_RUST_CAB_TEST_ROUTE` 默认关闭，设为 `ON` 仅供专用测试构建。开关改变测试构建的固定路由，失败不会静默回退；候选代码存在不表示已完成产品切换或官方 CAB 已退出依赖闭包。迁移门槛仍适用本契约，验收记录另由[任务 #48](https://github.com/xiaodaozhi/xdzip/issues/48)维护。
+`xdzip-codec-cab` 是自研只读后端，范围为 Store、MSZIP、LZX、Quantum 和宿主已经授权的同目录卷链。产品固定使用 Rust，没有官方处理器或运行失败回退；官方 Cab 容器与其专用 LZX/Quantum 算法不进入编译清单。CMake 的内部 `XDZIP_CAB_BACKEND=rust` 仅记录固定构建身份，不是可选择的产品后端。开发、平台和桌面人工验收分别由[任务 #48](https://github.com/xiaodaozhi/xdzip/issues/48)及关联验收条目维护，不自动批准正式发行。
 
-容器依据 MS-CAB，MSZIP 依据 MS-MCI 并复用共享 Deflate；LZX、Quantum 调用 `xdzip-compression` 的独立解码器。官方归档文档的状态、1997 年 LZX 原件镜像的真实性限度、MS-PATCH 与 CAB 的差异，以及参考分析者和未读源码实现者的分工，见[CAB 格式来源与实现依据](cab-format-sources.md)。这些来源及角色限制不能因候选 Rust 后端而省略。
+容器依据 MS-CAB，MSZIP 依据 MS-MCI 并复用共享 Deflate；LZX、Quantum 调用 `xdzip-compression` 的独立解码器。官方归档文档的状态、1997 年 LZX 原件镜像的真实性限度、MS-PATCH 与 CAB 的差异，以及参考分析者和未读源码实现者的分工，见[CAB 格式来源与实现依据](cab-format-sources.md)。这些来源及角色限制不能因 Rust 后端而省略。
 
 - `ReadSource::volume_lengths()`、`volume_names()` 提供冻结的物理卷边界和原始卷名。宿主负责发现、来源身份和同目录授权，最多 1,024 卷；格式层在每卷本地范围内解释偏移，再检查卷基址相加，不能读过本卷末尾而借用下一卷字节。卷名和 disk label 不赋予文件访问权限。缺卷、set/index/名称或续接矛盾必须使整次扫描失败，不发布部分索引。
 - 扫描核对容器版本、保留字段、区域范围与不重叠关系、文件区间和 CFDATA 片段。跨卷未完成帧先核对各片段校验，再拼成一个逻辑压缩帧。folder 是压缩/字典单元，不是文件系统目录；只有新逻辑 folder 重置历史，文件及物理卷切点不重置。最后一帧可短，前面的完整逻辑帧输出均为 32,768 字节。未知压缩方法或参数明确返回不支持，不能跳过后发布不完整内容。
@@ -77,13 +77,13 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 - 默认元数据读取最多 64 MiB，物理 CFFILE 记录最多 100,000，含继续副本；逻辑 folder 最多 100,000，物理 CFDATA 片段最多 1,000,000。共享扫描预算默认单名称 4,096 字节，原始名称总量和解码/展示文本各 16 MiB，调用方更低限额仍有效。负载实例重扫后继续累计实际输入，输入和解码工作各最多 20 GiB；单文件宿主上限 8 GiB，不扩大 CFFILE 字段本身的范围。所有长度乘加、分配和源范围均先检查。
 - 完整逻辑帧输出最多 32,768 字节，Store、MSZIP、LZX 的压缩帧分别限制为 32,768、32,780、38,912 字节。Quantum 完整压缩帧设 1 MiB 资源准入限额，该值不宣称为官方格式规定的最大膨胀。跨卷切分不会扩大单个逻辑帧限额。解码状态和一个输出帧有界保留；按顺序选择同 folder 文件可复用状态及该帧，不为每个文件从头重放整个前缀。
 
-候选 CAB 与 ISO/UDF 共享 `xdzip-readonly-bridge`，在既有隔离工作进程中以同步借用的 CXX 回调读授权流、发元数据及有界输出。卷数组和字节切片只在调用期间借用，异常与 unwind 不跨边界。直接 codec API 用于 worker 和独立探针，不替代产品的进程隔离；宿主持有取消、强制终止、来源复验、暂存和最终提交能力。
+CAB 与 ISO/UDF 共享 `xdzip-readonly-bridge`，在既有隔离工作进程中以同步借用的 CXX 回调读授权流、发元数据及有界输出。卷数组和字节切片只在调用期间借用，异常与 unwind 不跨边界。直接 codec API 用于 worker 和独立探针，不替代产品的进程隔离；宿主持有取消、强制终止、来源复验、暂存和最终提交能力。
 
 完整帧计量使用 `DecodedSink::charge_skipped` 与 `write_precharged_chunk`。新帧全部解码并验证后，先把整帧输出字节数计入实际工作，包括选中区间之前及之后的字节，再交付选中内容。容器为该缓存帧保存等量未消费额度；输出只能在剩余额度内预计费交付，耗尽后的重复或重叠交付走普通 `write_chunk` 再计工作。换帧丢弃旧帧未用额度，不按名称、条目或偏移自动豁免重复输出。未实现预计费支持的 sink 默认转入普通写入，可能保守重复计费，但保持输出与上限检查。
 
 worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以 `PRECHARGED_DATA`（23）传递已有额度的内容，每个输出块最多 64 KiB，并等待宿主 ACK。Native 接收端仅允许 CAB 在同一个持续 worker 的已准入额度内使用非空预计费输出；其他格式或不足额度均拒绝，条目完成时仍核对精确声明尺寸。重启、结束或失败后不得沿用旧 worker 额度。运行时提取 sink 与检查 sink 再以任务私有额度独立核验，正常文件切换可保留尚未消费的额度，但额度消费一次后不能再次使用。预计费只免除已计工作重复增加，文件声明尺寸、单文件 8 GiB、累计实际输出 20 GiB、取消和写入失败检查仍生效。额度在交付前扣减，部分输出失败不会把它退回重用；宿主拒绝 `WORK` 不产生任何新额度。
 
-English: The independent CAB backend is a read-only candidate for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official CAB remains the default; `XDZIP_RUST_CAB_TEST_ROUTE=ON` is confined to dedicated test builds. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; neither this contract nor candidate code establishes completed migration or legal clearance.
+English: The independent read-only CAB backend is the fixed product route for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official Cab and its CAB-only LZX/Quantum implementations are excluded from compilation, with no fallback. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; independent implementation is not legal clearance, and native manual acceptance and release authorization remain separate.
 
 ## ISO与UDF只读规格
 

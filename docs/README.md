@@ -23,9 +23,9 @@
 
 - 使用与构建：先读根目录 [README](../README.md)和[开发构建指南](engineering/developer-build.md)，使用同一入口分阶段准备、构建、测试、打包与验证；平台部署文档只补充差异，Qt 应用文档说明模块与低层调试。
 - 修改核心：按[实际模块目录](engineering/repository-layout.md)定位，再读对应浏览、预检、创建或解压契约；设计中的外部 SDK、磁盘索引和内容预览仍属于后续能力。
-- 隔离格式工作进程：7z、RAR、CAB 的官方来源、裁剪，以及 Rust ISO/UDF 的受控流、工作进程和许可边界见[原生格式后端契约](engineering/native-codecs.md)，不将格式名称等同于全部特性已验收。
+- 隔离格式工作进程：7z、RAR 的官方来源、裁剪，以及 Rust CAB/ISO/UDF 的受控流、工作进程和许可边界见[原生格式后端契约](engineering/native-codecs.md)，不将格式名称等同于全部特性已验收。
 - 自研 Rust 后端：独立实现来源、逐格式替代与生产依赖退出门槛见[自研格式与算法契约](engineering/independent-rust-codecs.md)。
-- CAB 候选后端：只读容器、共享算法和完整帧工作计量见[候选规格](engineering/independent-rust-codecs.md#cab只读候选规格)，规范版本与参考分析边界见[来源记录](engineering/cab-format-sources.md)。默认产品仍使用官方 CAB，`XDZIP_RUST_CAB_TEST_ROUTE=ON` 只供专用测试构建，不表示产品已切换。
+- CAB 后端：只读容器、共享算法和完整帧工作计量见[自研规格](engineering/independent-rust-codecs.md#cab只读规格)，规范版本与参考分析边界见[来源记录](engineering/cab-format-sources.md)。产品固定使用 Rust，官方 Cab 处理器及 CAB 专用 LZX/Quantum 不进入构建，没有失败回退。
 - 修改界面：先读视觉规范与流程，原稿位于 design/hifi，行为参照 ux 文档；HTML 示例与 Qt 实际能力分别核对。
 - 准备交付：按源码、部署、安装契约及发行手册复验，区分开发验收与发行许可复核。支持范围以[已批准政策](engineering/support-policy.md)为准，不以 CI runner 名称推断。
 

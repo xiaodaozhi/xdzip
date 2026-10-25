@@ -57,8 +57,8 @@ class SourceAdmissionTests(unittest.TestCase):
     def test_official_source_identity_and_format_boundaries(self):
         items = {item['id']: item for item in SOURCES.sources()}
         self.assertEqual(set(items), {'7zip', 'unrar'})
-        self.assertEqual(items['7zip']['formats'], ['7z', 'cab', 'iso', 'udf'])
-        self.assertEqual(items['7zip']['excluded_formats'], ['zip', 'tar', 'gzip', 'rar'])
+        self.assertEqual(items['7zip']['formats'], ['7z'])
+        self.assertEqual(items['7zip']['excluded_formats'], ['zip', 'tar', 'gzip', 'rar', 'cab', 'iso', 'udf'])
         self.assertEqual(items['unrar']['formats'], ['rar'])
         self.assertFalse(items['unrar']['creation'])
         for item in items.values():

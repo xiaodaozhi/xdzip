@@ -4,7 +4,7 @@
 
 ## 获取与修改
 
-使用 Git 克隆仓库，先检查工作区和远端 main，保留已有改动。维护者按 AGENTS.md 在 main 推进，相关检查通过后直接推送；外部贡献按[贡献指南](../../CONTRIBUTING.md)提交 PR。新任务先查重并建立或复用 issue，阶段结果不另写入 docs。Markdown 是规范源文件；颜色和尺寸由 docs/visual/tokens.json 集中维护。新增/修改契约先更新相应设计与验收编号。
+使用 Git 克隆仓库，先检查工作区和远端 main，保留已有改动。维护者可按短周期开发需要创建临时分支，相关检查通过后集成到 main，按需使用 PR 并清理已合并分支；外部贡献按[贡献指南](../../CONTRIBUTING.md)提交 PR。新任务先查重并建立或复用 issue，阶段结果不另写入 docs。Markdown 是规范源文件；颜色和尺寸由 docs/visual/tokens.json 集中维护。新增/修改契约先更新相应设计与验收编号。
 
 ## 文档构建
 

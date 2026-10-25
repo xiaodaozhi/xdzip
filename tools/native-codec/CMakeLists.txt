@@ -2,14 +2,14 @@
 
 cmake_minimum_required(VERSION 3.24)
 project(xdzip_native_codec LANGUAGES C CXX)
-option(XDZIP_RUST_CAB_TEST_ROUTE "Use the experimental Rust CAB route in a dedicated test build" OFF)
+set(XDZIP_CAB_BACKEND rust CACHE INTERNAL "CAB has one independent Rust product route" FORCE)
 find_package(Threads REQUIRED)
 if(NOT EXISTS "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" OR NOT EXISTS "${XDZIP_UNRAR_SOURCE}/rar.hpp")
   message(FATAL_ERROR "Prepare the locked official native sources before configuring")
 endif()
 
-# Start with the official Format7z manifest, then admit only the CAB read-only
-# handlers. No full-format bundle or external codec loader is compiled.
+# Use only the official Format7z manifest. CAB and optical containers use Rust;
+# no full-format bundle or external codec loader is compiled.
 file(READ "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" seven_manifest)
 set(seven_sources)
 foreach(pair IN ITEMS "COMMON_OBJS|CPP/Common" "WIN_OBJS|CPP/Windows" "7ZIP_COMMON_OBJS|CPP/7zip/Common" "AR_OBJS|CPP/7zip/Archive" "AR_COMMON_OBJS|CPP/7zip/Archive/Common" "7Z_OBJS|CPP/7zip/Archive/7z" "COMPRESS_OBJS|CPP/7zip/Compress" "CRYPTO_OBJS|CPP/7zip/Crypto" "C_OBJS|C")
@@ -36,58 +36,6 @@ list(APPEND seven_sources
   "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyMap.cpp"
   "${XDZIP_7ZIP_SOURCE}/CPP/Windows/PropVariantUtils.cpp"
   "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/Common/FindSignature.cpp")
-foreach(stem IN ITEMS LzxDecoder QuantumDecoder)
-  list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Compress/${stem}.cpp")
-endforeach()
-
-# Keep immutable downloads intact. These exact source transformations expose
-# information hidden by the CLI-oriented API, without granting filesystem I/O.
-set(seven_host "${CMAKE_CURRENT_BINARY_DIR}/seven-host/CPP/7zip/Archive")
-foreach(format IN ITEMS Cab)
-  file(MAKE_DIRECTORY "${seven_host}/${format}")
-  file(GLOB handler_inputs "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.h" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.cpp")
-  foreach(input IN LISTS handler_inputs)
-    get_filename_component(name "${input}" NAME)
-    configure_file("${input}" "${seven_host}/${format}/${name}" COPYONLY)
-  endforeach()
-endforeach()
-function(seven_replace format name old replacement)
-  set(path "${seven_host}/${format}/${name}")
-  file(READ "${path}" content)
-  string(REPLACE "${old}" "" stripped "${content}")
-  string(LENGTH "${content}" before)
-  string(LENGTH "${stripped}" after)
-  string(LENGTH "${old}" expected)
-  math(EXPR removed "${before}-${after}")
-  if(NOT removed EQUAL expected)
-    message(FATAL_ERROR "7-Zip host boundary changed: ${format}/${name}")
-  endif()
-  string(REPLACE "${old}" "${replacement}" content "${content}")
-  file(WRITE "${path}" "${content}")
-endfunction()
-seven_replace(Cab CabHandler.h "  UInt64 _offset;" [=[  UInt64 _offset;
-public:
-  const CItem &XdzipRawItem(UInt32 index) const
-  {
-    const CMvItem &ref = m_Database.Items[index];
-    return m_Database.Volumes[ref.VolumeIndex].Items[ref.ItemIndex];
-  }]=])
-seven_replace(Cab CabHandler.cpp "const UString fullName = MultiByteToUnicodeString(otherArc->FileName, CP_ACP);" [=[UString fullName;
-        for (unsigned i = 0; i < otherArc->FileName.Len(); i++)
-          fullName += (wchar_t)(Byte)otherArc->FileName[i];]=])
-seven_replace(Cab CabHandler.cpp [=[        if (res != S_FALSE)
-          return res;]=] [=[        if (res != S_FALSE)
-          return res;
-        _errorInHeaders = true;]=])
-seven_replace(Cab CabHandler.cpp [=[          if (fullName == startVolName)
-            break;]=] [=[          if (fullName == startVolName)
-          {
-            _errorInHeaders = true;
-            break;
-          }]=])
-foreach(stem IN ITEMS CabBlockInStream CabHandler CabHeader CabIn CabRegister)
-  list(APPEND seven_sources "${seven_host}/Cab/${stem}.cpp")
-endforeach()
 if(NOT WIN32)
   # The Windows Format7z manifest uses OS-provided COM/time and UTF conversion
   # functions. Official GCC bundles add these compatibility implementations;
@@ -99,7 +47,7 @@ foreach(source IN LISTS seven_sources)
   if(source MATCHES "/CPP/7zip/Compress/Rar")
     message(FATAL_ERROR "7-Zip RAR codecs are not admitted: ${source}")
   endif()
-  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Cab/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
+  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
     message(FATAL_ERROR "Unapproved container entered the native source allowlist: ${source}")
   endif()
 endforeach()
@@ -143,14 +91,7 @@ target_compile_definitions(xdzip_rar_engine PRIVATE RARDLL UNRAR SILENT _FILE_OF
 target_compile_features(xdzip_rar_engine PRIVATE cxx_std_17)
 
 add_executable(xdzip-native-codec main.cpp seven_adapter.cpp seven_backend.cpp readonly_backend.cpp readonly_boundary.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
-if(XDZIP_RUST_CAB_TEST_ROUTE)
-  target_compile_definitions(xdzip-native-codec PRIVATE XDZIP_RUST_CAB_TEST_ROUTE)
-endif()
 target_include_directories(xdzip-native-codec PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP" "${XDZIP_7ZIP_SOURCE}/C")
-foreach(format IN ITEMS Cab)
-  target_include_directories(xdzip_7z_engine PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
-  target_include_directories(xdzip-native-codec PRIVATE "${seven_host}/${format}" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
-endforeach()
 target_compile_features(xdzip-native-codec PRIVATE cxx_std_17)
 target_link_libraries(xdzip-native-codec PRIVATE Threads::Threads)
 if(WIN32)

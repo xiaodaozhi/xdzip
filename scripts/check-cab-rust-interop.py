@@ -2,7 +2,7 @@
 
 Only owned build/ inputs/reports and private temporary extraction roots are used.
 The optional preserved official worker is a separate reference. A Rust host run
-requires the dedicated build's explicit XDZIP_RUST_CAB_TEST_ROUTE=ON evidence.
+requires the product build's fixed Rust CAB marker and compiled source allowlist.
 """
 import argparse
 import hashlib
@@ -266,14 +266,33 @@ def negative_cases(binary, extract_binary, cases, output, owned, env):
 
 def worker_identity(worker, kind, cache):
     info = dict(sha256=identity(worker, MAX_BINARY)[1], filename=worker.name, backend=kind)
-    if kind == 'rust-cab-test-route':
+    if kind == 'rust-cab':
         require(cache is not None and cache.is_file(), 'Rust worker requires its --worker-build-cache')
         text = cache.read_text(encoding='utf-8')
-        require('XDZIP_RUST_CAB_TEST_ROUTE:BOOL=ON' in text.splitlines(), 'worker test-route flag is not ON')
+        require('XDZIP_CAB_BACKEND:INTERNAL=rust' in text.splitlines(), 'worker CAB backend is not fixed to Rust')
         # Require the cache and executable to belong to the same build tree.
         require(worker.is_relative_to(cache.parent), 'worker/cache build-tree mismatch')
-        info['test_route'] = 'XDZIP_RUST_CAB_TEST_ROUTE:BOOL=ON'
+        info['product_route'] = 'XDZIP_CAB_BACKEND:INTERNAL=rust'
         info['build_cache_sha256'] = hashlib.sha256(cache.read_bytes()).hexdigest()
+        candidates = [cache.parent / 'tools/native-codec/seven-zip-source-list.txt',
+                      cache.parent / 'seven-zip-source-list.txt']
+        lists = [path for path in candidates if path.is_file()]
+        require(len(lists) == 1, 'missing or ambiguous compiled source list')
+        source_list = lists[0].read_text(encoding='utf-8').replace('\\', '/')
+        containers = set()
+        for line in source_list.splitlines():
+            if '/CPP/7zip/Archive/' in line:
+                relative = line.split('/CPP/7zip/Archive/', 1)[1]
+                first = relative.split('/', 1)[0]
+                require(first in ('7z', 'Common', 'ArchiveExports.cpp', 'DllExports2.cpp'),
+                        'unapproved official container in compiled source list')
+                if first == '7z':
+                    containers.add('7z')
+            require(not line.endswith(('/LzxDecoder.cpp', '/QuantumDecoder.cpp')),
+                    'official CAB-only algorithm remains compiled')
+        require(containers == {'7z'}, 'official 7z source set is missing')
+        info['compiled_official_containers'] = sorted(containers)
+        info['source_list_sha256'] = hashlib.sha256(lists[0].read_bytes()).hexdigest()
     return info
 
 
@@ -282,7 +301,7 @@ def main():
     parser.add_argument('--binary', type=Path, help='xdzip-cab-probe, direct Rust only')
     parser.add_argument('--extract-binary', type=Path, help='actual xdzip-m3-probe service')
     parser.add_argument('--worker', type=Path, help='explicit tested host worker, never inferred from PATH')
-    parser.add_argument('--worker-kind', choices=['rust-cab-test-route', 'official-cab-baseline'])
+    parser.add_argument('--worker-kind', choices=['rust-cab', 'official-cab-baseline'])
     parser.add_argument('--worker-build-cache', type=Path)
     parser.add_argument('--reference-worker', type=Path, help='optional preserved official CAB worker')
     parser.add_argument('--output', type=Path, default=ROOT / 'build/review/cab-rust-interop')
@@ -345,7 +364,7 @@ def main():
                         report['host_service'].append(service_case(extract, case, owned, env, opening))
             report['negative'] = negative_cases(binary, extract, cases, output, owned, env)
         report['passed'] = True
-        report['rust_host_service_checked'] = bool(extract and args.worker_kind == 'rust-cab-test-route')
+        report['rust_host_service_checked'] = bool(extract and args.worker_kind == 'rust-cab')
         print('CAB interoperability passed: %d Rust codec, %d host worker, %d real service, %d official reference, %d negative cases'
               % tuple(len(report[key]) for key in ('codec', 'host_worker', 'host_service', 'reference', 'negative')))
     except Exception as error:

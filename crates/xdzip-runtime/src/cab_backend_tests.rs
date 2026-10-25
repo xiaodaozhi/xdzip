@@ -40,9 +40,9 @@ fn private_directory(path: &Path) {
 impl Fixture {
     fn new(large: bool, damaged_tail: bool) -> Self {
         assert_eq!(
-            std::env::var("XDZIP_RUST_CAB_TEST_ROUTE").as_deref(),
-            Ok("ON"),
-            "opt in only with the separately built Rust-CAB-route worker"
+            std::env::var("XDZIP_CAB_BACKEND").as_deref(),
+            Ok("rust"),
+            "opt in only with the newly built fixed Rust CAB worker"
         );
         let worker = std::env::var_os("XDZIP_NATIVE_CODEC")
             .expect("set XDZIP_NATIVE_CODEC to the newly built Rust CAB worker");
@@ -467,7 +467,7 @@ fn stage_has_payload(target: &Path, expected: u8) -> bool {
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON"]
+#[ignore = "requires the newly built fixed Rust CAB worker"]
 fn cab_service_open_check_validates_all_records_and_frame_tail_without_output() {
     for damaged in [false, true] {
         let fixture = Fixture::new(false, damaged);
@@ -501,7 +501,7 @@ fn cab_service_open_check_validates_all_records_and_frame_tail_without_output() 
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON"]
+#[ignore = "requires the newly built fixed Rust CAB worker"]
 fn cab_same_folder_selection_charges_history_and_whole_selected_frame_tail() {
     for names in [&["selected.bin"][..], &["prefix.bin", "selected.bin"][..]] {
         let fixture = Fixture::new(false, false);
@@ -588,7 +588,7 @@ fn cab_same_folder_selection_charges_history_and_whole_selected_frame_tail() {
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON and precharged protocol"]
+#[ignore = "requires the newly built fixed Rust CAB worker and precharged protocol"]
 fn cab_one_frame_with_128_files_charges_work_once_in_check_and_extraction() {
     let fixture = Fixture::new(false, false);
     let names: Vec<_> = (0..128)
@@ -642,7 +642,7 @@ fn cab_one_frame_with_128_files_charges_work_once_in_check_and_extraction() {
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON"]
+#[ignore = "requires the newly built fixed Rust CAB worker"]
 fn cab_frozen_and_running_source_changes_fail_without_publishing_staged_bytes() {
     for running in [false, true] {
         let fixture = Fixture::new(running, false);
@@ -691,7 +691,7 @@ fn cab_frozen_and_running_source_changes_fail_without_publishing_staged_bytes() 
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON"]
+#[ignore = "requires the newly built fixed Rust CAB worker"]
 fn cab_committing_source_change_keeps_old_destination_after_complete_decode() {
     let fixture = Fixture::new(false, false);
     let archive = fixture.open();
@@ -728,7 +728,7 @@ fn cab_committing_source_change_keeps_old_destination_after_complete_decode() {
 }
 
 #[test]
-#[ignore = "requires built worker with XDZIP_RUST_CAB_TEST_ROUTE=ON"]
+#[ignore = "requires the newly built fixed Rust CAB worker"]
 fn cab_running_stage_cancellation_preserves_old_file_and_joins_cleanup() {
     let fixture = Fixture::new(true, false);
     let archive = fixture.open();

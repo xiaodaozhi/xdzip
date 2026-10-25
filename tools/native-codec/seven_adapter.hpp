@@ -36,10 +36,9 @@ explicit HostSource(uint64_t start = 0, uint64_t size = UINT64_MAX)
     : base(start), length(size == UINT64_MAX ? request.length : size) {}
 };
 class OpenCallback final : public IArchiveOpenCallback,
-                           public IArchiveOpenVolumeCallback,
                            public ICryptoGetTextPassword,
                            public CMyUnknownImp {
-    Z7_IFACES_IMP_UNK_3(IArchiveOpenCallback, IArchiveOpenVolumeCallback, ICryptoGetTextPassword)
+    Z7_IFACES_IMP_UNK_2(IArchiveOpenCallback, ICryptoGetTextPassword)
 };
 uint64_t unsigned_property(IInArchive *archive, UInt32 index, PROPID id);
 bool bool_property(IInArchive *archive, UInt32 index, PROPID id);
