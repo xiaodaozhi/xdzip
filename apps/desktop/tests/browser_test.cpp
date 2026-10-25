@@ -6850,7 +6850,7 @@ QtObject {
                               QVariant::fromValue(
                                   controller->m_directoryItems.value(targetId)->index()))));
                     window->requestUpdate();
-                    QTRY_VERIFY(!positioned.isEmpty());
+                    QVERIFY(!positioned.isEmpty() || positioned.wait(5000));
                     const auto targetVisible = [&] {
                         to = findVisual(window->contentItem(), "directory-" + targetId);
                         if (!to || !to->isVisible())
@@ -6873,7 +6873,7 @@ QtObject {
                     // Measure the final integer event coordinate after that frame.
                     QSignalSpy draggingFrame(window, &QQuickWindow::frameSwapped);
                     window->requestUpdate();
-                    QTRY_VERIFY(!draggingFrame.isEmpty());
+                    QVERIFY(!draggingFrame.isEmpty() || draggingFrame.wait(5000));
                     QTRY_VERIFY(targetVisible());
                     const auto finish = point(to);
                     QVERIFY(QRect(QPoint(), window->size()).contains(finish));
