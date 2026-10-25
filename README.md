@@ -51,7 +51,7 @@
 
 ✓ 已支持，— 尚不支持。
 
-- **ZIP**：支持 ZIP64，解压与创建支持 Store／Deflate，创建提供四档级别，默认正常压缩。
+- **ZIP**：容器、AES 封装和修改使用自研 Rust 后端，Deflate 与 TAR.GZ 共享一套实现；支持 ZIP64，解压与创建支持 Store／Deflate，创建提供四档级别，默认正常压缩。实现来源与迁移边界见[自研后端契约](docs/engineering/independent-rust-codecs.md)。
 - **TAR 与 TAR.GZ**：处理普通文件与目录，TAR.GZ 也支持 `.tgz` 扩展名；TAR 容器及 GZIP/Deflate 使用自研 Rust 后端，TAR 仅打包，TAR.GZ 提供四档级别。迁移边界见[自研后端契约](docs/engineering/independent-rust-codecs.md)。
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。

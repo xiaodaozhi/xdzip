@@ -17,6 +17,7 @@ dependencies = [
  "cipher",
  "cpubits",
  "cpufeatures 0.3.1",
+ "zeroize",
 ]
 
 [[package]]
@@ -1496,10 +1497,18 @@ dependencies = [
 name = "xdzip-codec-zip"
 version = "0.1.0-alpha.6"
 dependencies = [
+ "aes",
+ "constant_time_eq",
  "flate2",
+ "getrandom 0.4.2",
+ "hmac",
+ "pbkdf2",
  "rawzip",
+ "sha1",
  "xdzip-codec-api",
+ "xdzip-compression",
  "xdzip-domain",
+ "zeroize",
  "zip",
 ]
 
@@ -1558,6 +1567,7 @@ name = "xdzip-m4-probe"
 version = "0.1.0-alpha.6"
 dependencies = [
  "xdzip-runtime",
+ "zeroize",
 ]
 
 [[package]]
@@ -1618,9 +1628,9 @@ dependencies = [
 
 [[package]]
 name = "zeroize"
-version = "1.8.2"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b97154e67e32c85465826e8bcc1c59429aaaf107c1e4a9e53c8d8ccd5eff88d0"
+checksum = "e13084392c5e4bc371903e2935a5eaeed24905a7511356b883835e18a78f6879"
 
 [[package]]
 name = "zip"

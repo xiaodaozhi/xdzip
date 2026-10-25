@@ -1,11 +1,9 @@
 use crate::{
-    crc,
-    deflate::{BitOutput, Bits, Inflate},
+    DeflateWriter, crc,
+    deflate::{Bits, Inflate},
     invalid,
 };
 use std::io::{self, Read, Write};
-
-const ENCODE_BLOCK: usize = 2 * 1024 * 1024;
 
 /// Streaming RFC 1952 reader. Every member's CRC and ISIZE are verified at EOF.
 /// Callers must drain to EOF and enforce their input, output and cancellation budgets.
@@ -136,90 +134,40 @@ impl<R: Read> Read for GzipReader<R> {
 /// Level 0 stores bytes; levels 1/6/9 bound match search to 4/32/128 candidates.
 /// Drop never writes or finalizes; only a successful finish produces a trailer.
 pub struct GzipWriter<W> {
-    bits: BitOutput<W>,
-    buffer: Vec<u8>,
+    inner: DeflateWriter<W>,
     checksum: u32,
     size: u32,
-    level: u8,
-    started: bool,
-    failed: bool,
 }
 impl<W: Write> GzipWriter<W> {
     /// Create a writer with an explicit supported level. Invalid levels are rejected.
     pub fn new(sink: W, level: u8) -> io::Result<Self> {
-        if ![0, 1, 6, 9].contains(&level) {
-            return Err(invalid());
-        }
         Ok(Self {
-            bits: BitOutput::new(sink),
-            buffer: Vec::with_capacity(if level == 0 { 65535 } else { ENCODE_BLOCK }),
+            inner: DeflateWriter::with_prefix(
+                sink,
+                level,
+                &[0x1f, 0x8b, 8, 0, 0, 0, 0, 0, 0, 255],
+            )?,
             checksum: !0,
             size: 0,
-            level,
-            started: false,
-            failed: false,
         })
     }
-    fn start(&mut self) -> io::Result<()> {
-        if !self.started {
-            self.bits
-                .sink
-                .write_all(&[0x1f, 0x8b, 8, 0, 0, 0, 0, 0, 0, 255])?;
-            self.started = true;
-        }
-        Ok(())
-    }
-    fn block(&mut self, last: bool) -> io::Result<()> {
-        self.start()?;
-        self.bits.block(&self.buffer, last, self.level)?;
-        self.buffer.clear();
-        Ok(())
-    }
     /// Finalize the last block and CRC/ISIZE trailer, returning the owned sink.
-    pub fn finish(mut self) -> io::Result<W> {
-        if self.failed {
-            return Err(invalid());
-        }
-        self.block(true)?;
-        self.bits.align()?;
-        self.bits.sink.write_all(&(!self.checksum).to_le_bytes())?;
-        self.bits.sink.write_all(&self.size.to_le_bytes())?;
-        Ok(self.bits.sink)
+    pub fn finish(self) -> io::Result<W> {
+        let mut sink = self.inner.finish()?;
+        sink.write_all(&(!self.checksum).to_le_bytes())?;
+        sink.write_all(&self.size.to_le_bytes())?;
+        Ok(sink)
     }
 }
 impl<W: Write> Write for GzipWriter<W> {
     fn write(&mut self, input: &[u8]) -> io::Result<usize> {
-        if input.is_empty() {
-            return Ok(0);
-        }
-        if self.failed {
-            return Err(invalid());
-        }
-        let capacity = if self.level == 0 { 65535 } else { ENCODE_BLOCK };
-        if self.buffer.len() == capacity
-            && let Err(error) = self.block(false)
-        {
-            self.failed = true;
-            return Err(error);
-        }
-        let take = input.len().min(capacity - self.buffer.len());
-        self.buffer.extend_from_slice(&input[..take]);
+        let take = self.inner.write(input)?;
         self.checksum = crc(self.checksum, &input[..take]);
         self.size = self.size.wrapping_add(take as u32);
         Ok(take)
     }
     fn flush(&mut self) -> io::Result<()> {
-        if self.failed {
-            return Err(invalid());
-        }
-        let result = self
-            .block(false)
-            .and_then(|_| self.bits.flush_bytes())
-            .and_then(|_| self.bits.sink.flush());
-        if result.is_err() {
-            self.failed = true;
-        }
-        result
+        self.inner.flush()
     }
 }
 

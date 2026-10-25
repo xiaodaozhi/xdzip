@@ -68,6 +68,7 @@ fn wire_codes(lengths: &[u8]) -> Vec<(u32, u8)> {
 
 pub(crate) struct Bits<R> {
     pub(crate) source: BufReader<R>,
+    pub(crate) consumed: u64,
     value: u32,
     count: u8,
 }
@@ -75,6 +76,7 @@ impl<R: Read> Bits<R> {
     pub(crate) fn new(source: R) -> Self {
         Self {
             source: BufReader::new(source),
+            consumed: 0,
             value: 0,
             count: 0,
         }
@@ -83,6 +85,7 @@ impl<R: Read> Bits<R> {
         while self.count < n {
             let mut byte = [0];
             self.source.read_exact(&mut byte)?;
+            self.consumed = self.consumed.checked_add(1).ok_or_else(invalid)?;
             self.value |= u32::from(byte[0]) << self.count;
             self.count += 8;
         }
@@ -303,11 +306,19 @@ impl Inflate {
                         self.block = if self.last { Block::End } else { Block::Header };
                     } else {
                         let take = (*left).min(output.len() - at);
-                        let n = bits.source.read(&mut output[at..at + take])?;
+                        let n = loop {
+                            match bits.source.read(&mut output[at..at + take]) {
+                                Err(error) if error.kind() == io::ErrorKind::Interrupted => {
+                                    continue;
+                                }
+                                result => break result?,
+                            }
+                        };
                         if n == 0 {
                             return Err(io::ErrorKind::UnexpectedEof.into());
                         }
                         *left -= n;
+                        bits.consumed = bits.consumed.checked_add(n as u64).ok_or_else(invalid)?;
                         self.remember(&output[at..at + n]);
                         at += n;
                     }

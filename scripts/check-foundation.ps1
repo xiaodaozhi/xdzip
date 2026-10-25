@@ -37,6 +37,9 @@ Invoke-Checked cargo @('run', '--release', '-p', 'xdzip-compression', '--example
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored')
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
 $codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
+$zipInteropArguments = @('scripts/check-advanced-creation.py', '--binary', $createProbe, '--extract-binary', $extractProbe, '--reader', $codecReference, '--output', "$rustCodecEvidence/zip-aes-split.json")
+if ($IsWindows) { $zipInteropArguments += '--skip-infozip' }
+Invoke-Checked $codecPython $zipInteropArguments
 Invoke-Checked $codecPython @('scripts/check-native-codecs.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--sevenzip', $codecReference, '--output', 'build/review/native-codec-interop')
 Invoke-Checked $codecPython @('scripts/check-cab-iso-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--output', 'build/review/native-codec-interop/cab-iso')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }

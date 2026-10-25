@@ -25,7 +25,7 @@
 | sha2 | 0.10.9 | [RustCrypto/hashes](https://github.com/RustCrypto/hashes)，MIT 或 Apache-2.0，安装包摘要 |
 | semver | 1.0.28 | [dtolnay/semver](https://github.com/dtolnay/semver)，MIT 或 Apache-2.0，有界产品版本解析 |
 | subtle | 2.6.1 | [dalek-cryptography/subtle](https://github.com/dalek-cryptography/subtle)，BSD-3-Clause，上游常量时间运算支持 |
-| zeroize | 1.8.2 | [RustCrypto/utils](https://github.com/RustCrypto/utils)，Apache-2.0 或 MIT，发布进程私钥临时容器归零 |
+| zeroize | 1.9.1 | [RustCrypto/utils](https://github.com/RustCrypto/utils)，Apache-2.0 或 MIT，发布进程私钥临时容器归零 |
 
 serde 1.0.229 和 serde_json 1.0.154 复用锁定版本。其余传递依赖以 Cargo.lock 和实际特性树为准，包括 digest、block-buffer、crypto-common、generic-array、typenum、cpufeatures 与 derive 宏。curve25519-dalek 的构建脚本仅检测本地编译器能力，运行时可选择上游的 CPU 特定实现；不下载外部源码、不新增 C/C++ 密码学库或 OpenSSL 运行依赖。已有通知和 vendor 收集入口根据 Cargo metadata 纳入这些包，实际包的归属与许可仍由发行材料核验。
 
@@ -47,21 +47,21 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 设计检查工具为 Playwright（Apache-2.0）、Pillow（HPND）、FontTools（MIT）和 Brotli（MIT），版本固定于 [工具要求](../../scripts/html-design-requirements.txt)，通过独立 venv 安装；Playwright 下载 Chromium 仅作为 CI／本地检查浏览器，不进入应用或离线设计交付。FontTools 和 Brotli 只负责子集生成与检查，不进入运行代码。
 
-## ZIP AES 创建
+## 自研 ZIP 与通用密码学基础库
 
-精确固定 `zip = 9.0.3`（crates.io、https://github.com/zip-rs/zip2，MIT），仅启用 aes-crypto 和 deflate-flate2；flate2 延续现有 Rust backend，关闭 bzip2、zstd、lzma、ppmd、time、原生 zlib 等默认能力。AES 创建、写后认证及受限单条 AES 解密使用 zip-rs，普通 ZIP 元数据、解压和明文创建继续使用已准入的 rawzip；没有通用 unpack 或文件路径授权。上游提供纯流包装器，保持现有扩展边界。
+ZIP 容器、流式创建、普通重写与 AES 封装采用[独立 Rust 实现](independent-rust-codecs.md)，Deflate/CRC-32 复用 `xdzip-compression`。`rawzip = 0.5.2`、`zip = 9.0.3`、`flate2 = 1.1.10` 仅为开发测试参照，不进入 ZIP 生产或构建依赖闭包，不调用通用 unpack 或授权任意文件路径。历史上使用它们的交付继续保留原有许可义务。
 
-密码解压复用上述已锁定依赖，不增加密码学包或默认特性。原始 local／central／descriptor 先由本项目校验，单条密文的受限私有视图只复用 zip-rs 的密钥派生、AES 与 HMAC；宿主保留严格 StreamEnd、大小、AE-1 CRC、AE-2 零 CRC 及认证 EOF 的责任，见[密码解压契约](password-extraction.md)。不因库能返回数据便提前发布文件。
+密码学基础原语复用原有传递依赖的精确版本，提升为直接依赖：RustCrypto `aes = 0.9.3`、`hmac = 0.13.0`、`sha1 = 0.11.0`、`pbkdf2 = 0.13.0`，以及 `getrandom = 0.4.2`、`constant_time_eq = 0.6.1`。PBKDF2 只启用 hmac，SHA1 关闭默认 alloc/oid，只启用 zeroize；AES/HMAC 同时启用 zeroize。没有新增格式、原生压缩库或运行下载。CTR、随机盐封装、派生结果分割、密码验证值和认证 EOF 由项目实现，不能借通用基础库重新引回 ZIP 解析器。
 
-AES、cipher、hmac、pbkdf2、sha1、zeroize 等 RustCrypto 依赖、随机源和常量时间比较锁定在 Cargo.lock；这些包采用 MIT 或 Apache-2.0 双许可。SHA-1/PBKDF2 参数来自 WinZip AES 格式，并非另选的用户密码存储方案。禁用原生压缩库与网络下载构建行为，构建脚本只做平台配置；不增加应用进程、运行下载或 subprocess 后端。直接依赖 zeroize 1.8.2 为宿主密码容器归零，Debug 固定脱敏。
+这些包及 cipher/digest 等传递依赖锁定在 Cargo.lock，来源为 crates.io 与各自上游。AES/HMAC/SHA1/PBKDF2/zeroize/getrandom 采用 MIT 或 Apache-2.0，constant_time_eq 采用 CC0-1.0 或 MIT-0 或 Apache-2.0，以实际锁定包原文为准。SHA-1/PBKDF2 参数来自 WinZip AES 格式，不用于另选的用户密码存储方案。构建脚本只做平台配置，没有网络下载或 C 解码器编译。
 
-rawzip 暂无对应 AES 编码能力；自行实现 AES/PBKDF2 或把真实密码传到外部 CLI 都会扩大安全边界，因此选用受维护的库。准入包含精确特性树、锁文件、许可证、来源、故障测试和独立 7-Zip 互操作。2026-10-14 对 zip、aes、cipher、hmac、pbkdf2、sha1、zeroize、constant_time_eq 和 getrandom 的锁定版本执行 OSV 精确版本查询，未返回公告；原始响应仅保留为本地工件。这不是无漏洞保证；新增版本须重新检查可达特性和平台构建。
+`zeroize` 统一精确升级为 1.9.1，以满足 AES 0.9.3 的密钥清理特性所需版本；所有宿主、原生适配、更新和探针密码容器保持同一版本，避免两套同主版本依赖。秘密 Debug 继续脱敏，派生缓冲与 expanded key 采用基础库支持的归零生命周期，不声称所有历史内存副本均可擦除。准入须包含锁文件、许可、实际特性树、故障测试及独立 7-Zip 互操作；漏洞查询原文只保留为构建工件，成功查询未返回公告不等于无漏洞保证。
 
 ## WP-11 TAR/GZIP
 
 精确固定 [tar 0.4.46](https://docs.rs/tar/0.4.46/tar/)（crates.io、[上游源码](https://github.com/alexcrichton/tar-rs)，MIT 或 Apache-2.0），关闭默认 xattr 特性，仅用作开发测试的独立读写参照。产品 TAR 头、PAX、创建与重写使用[独立 Rust 记录层](independent-rust-codecs.md)，不调用第三方 TAR 解析或 Builder，不调用通用 unpack 或所有者／权限恢复。生产依赖闭包禁止 tar 和 filetime 回流，测试及历史交付的许可证仍保留。编码显式写 PAX UTF-8 path 及超范围数字，保证跨平台名称互操作。
 
-GZIP 使用无第三方生产依赖的 `xdzip-compression` 独立实现，包括 RFC 1951 Deflate、RFC 1952 封装和 CRC-32。压缩输入和解码输出均受宿主取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。flate2 1.1.10 仅用于此后端的开发测试参照，ZIP 尚未替换的实现仍按其原有准入使用 flate2/miniz_oxide。独立非 TAR 的 GZIP 仍明确拒绝。
+GZIP 使用无第三方生产依赖的 `xdzip-compression` 独立实现，包括 RFC 1951 Deflate、RFC 1952 封装和 CRC-32。压缩输入和解码输出均受宿主取消及字节预算约束，结束时验证所有 member 的 CRC／ISIZE。flate2 1.1.10 仅用于开发测试参照，ZIP 与 GZIP 使用相同的自研 Deflate 算法。独立非 TAR 的 GZIP 仍明确拒绝。
 
 tar 的测试传递依赖含 filetime 0.2.29（MIT 或 Apache-2.0），复用既有 cfg-if、libc；filetime 不进入该 codec 的产品依赖闭包。没有新增下载构建脚本、运行网络请求或外部进程格式后端。许可证由既有 collect-notices.py 根据锁文件收集，锁文件存在测试包不表示产品链接这些包。系统 tar 与 Python tarfile 仅用于测试，不进入应用运行依赖。
 

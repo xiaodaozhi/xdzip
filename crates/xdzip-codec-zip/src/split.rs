@@ -43,14 +43,15 @@ fn end(s: &mut dyn ReadSource) -> Result<(u64, Vec<u8>), ScanError> {
     let len = s.seek(SeekFrom::End(0)).map_err(|_| ScanError::Io)?;
     let size = len.min(65557) as usize;
     let b = read(s, len - size as u64, size)?;
-    let at = (0..=size.saturating_sub(22))
-        .rev()
-        .find(|&i| {
-            b.get(i..i + 4) == Some(b"PK\x05\x06")
-                && i + 22 <= size
-                && i + 22 + usize::from(n16(&b, i + 20)) == size
-        })
-        .ok_or(ScanError::Invalid)?;
+    let mut candidates = (0..=size.saturating_sub(22)).rev().filter(|&i| {
+        b.get(i..i + 4) == Some(b"PK\x05\x06")
+            && i + 22 <= size
+            && i + 22 + usize::from(n16(&b, i + 20)) == size
+    });
+    let at = candidates.next().ok_or(ScanError::Invalid)?;
+    if candidates.next().is_some() {
+        return Err(ScanError::Invalid);
+    }
     Ok((len - size as u64 + at as u64, b[at..].to_vec()))
 }
 /// Only the host supplies validated, ordered volumes. No codec opens paths.
@@ -248,6 +249,56 @@ pub fn normalize(
 mod tests {
     use super::*;
     use std::io::{self, Cursor, Read, Seek};
+    fn commented_split(comment: &[u8]) -> (Vec<u8>, [u64; 2]) {
+        let mut bytes = crate::legacy_fixture::zip(&[(b"owned.txt", 2048, &[])]);
+        let end = bytes.len() - 22;
+        let central = n32(&bytes, end + 16);
+        set16(&mut bytes, end + 4, 1);
+        set16(&mut bytes, end + 6, 1);
+        set32(&mut bytes, end + 16, central - 10);
+        set16(&mut bytes, end + 20, comment.len() as u16);
+        bytes.extend(comment);
+        let lengths = [10, bytes.len() as u64 - 10];
+        (bytes, lengths)
+    }
+    #[test]
+    fn ordinary_comments_survive_normalization_and_the_independent_directory_parser() {
+        let comment = b"owned comment with a PK\x05\x06 marker";
+        let (bytes, lengths) = commented_split(comment);
+        assert_eq!(end_disk(&mut Cursor::new(&bytes)), Ok(1));
+        let normalized =
+            normalize(&mut Cursor::new(&bytes), &lengths, &Default::default()).unwrap();
+        assert!(normalized.bytes.ends_with(comment));
+        let mut view = bytes[..normalized.start as usize].to_vec();
+        view.extend(normalized.bytes);
+        let directory = crate::record::read_directory(
+            &mut Cursor::new(view),
+            &Default::default(),
+            Default::default(),
+        )
+        .unwrap();
+        assert_eq!(directory.base_offset, 0);
+        assert_eq!(directory.comment, comment);
+        assert_eq!(directory.records.len(), 1);
+        assert_eq!(directory.records[0].name, b"owned.txt");
+        assert_eq!(directory.records[0].local_offset, 0);
+    }
+    #[test]
+    fn ambiguous_comment_cannot_be_normalized_into_an_empty_archive() {
+        let (mut bytes, lengths) = commented_split(&[0; 22]);
+        let shadow_at = bytes.len() - 22;
+        let mut shadow = [0; 22];
+        shadow[..4].copy_from_slice(b"PK\x05\x06");
+        set16(&mut shadow, 4, 1);
+        set16(&mut shadow, 6, 1);
+        set32(&mut shadow, 16, (shadow_at - lengths[0] as usize) as u32);
+        bytes[shadow_at..].copy_from_slice(&shadow);
+        assert_eq!(end_disk(&mut Cursor::new(&bytes)), Err(ScanError::Invalid));
+        assert!(matches!(
+            normalize(&mut Cursor::new(bytes), &lengths, &Default::default()),
+            Err(ScanError::Invalid)
+        ));
+    }
     struct Sparse {
         position: u64,
         base: u64,

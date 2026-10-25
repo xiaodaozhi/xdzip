@@ -14,7 +14,7 @@ xdzip-codec-zip = { path = "../xdzip-codec-zip" }
 xdzip-codec-native = { path = "../xdzip-codec-native" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"
-zeroize = "=1.8.2"
+zeroize = "=1.9.1"
 [target.'cfg(windows)'.dependencies]
 winapi-util = { version = "=0.1.11", default-features = false }
 [target.'cfg(unix)'.dependencies]

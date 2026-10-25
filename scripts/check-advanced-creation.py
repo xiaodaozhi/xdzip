@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
+# scripts/check-advanced-creation.py
+
 """Bidirectional AES ZIP and numbered split interoperability on owned fixtures.
 
 Only synthetic fixtures and a fixed fixture secret are used. The non-shipping
-probes use their explicit test channels. 7-Zip gets passwords through a terminal
-prompt, never command arguments. Neither product creation nor extraction invokes
-these subprocesses or exposes a password CLI/environment input channel.
+probes use their explicit test channels. 7-Zip gets passwords through its prompt,
+using a terminal or redirected stdin, never command arguments. Neither product
+creation nor extraction invokes these subprocesses or exposes a password
+CLI/environment input channel.
 """
 import argparse
 import hashlib
@@ -15,25 +17,96 @@ import re
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def independent_outcome(code, transcript, password, responses, succeeds):
+    """Only stable diagnostic labels may escape the private prompt transcript."""
+    known_errors = (b'Wrong password', b'No files', b'Is not archive', b'Unknown switch',
+                    b'Data Error', b'System ERROR', b'Break signaled',
+                    b'passwords are not identical', b'Invalid argument', b'E_INVALIDARG',
+                    b'E_FAIL', b'Not implemented', b'Can not open', b'Can not create')
+    markers = [value.decode('ascii') for value in known_errors if value.lower() in transcript.lower()]
+    if password is not None and responses == 0:
+        raise RuntimeError(f'Independent fixture did not exercise password input, exit {code}, markers {markers!r}')
+    if (code == 0) != succeeds:
+        raise RuntimeError(f'Independent fixture outcome mismatch, exit {code}, prompts {responses}, markers {markers!r}')
+    return code
+
+
+def seven_zip_windows(command, password, cwd, succeeds):
+    """Exercise the official Windows 7-Zip prompt with ASCII fixture passwords.
+
+    Keep only a bounded private tail; prompts are answered as they arrive, not
+    placed in argv or environment. The reader drains output while the child waits.
+    """
+    if password is not None and not password.isascii():
+        raise RuntimeError('Windows reference prompt coverage requires an ASCII fixture password')
+    command = [*command, '-sccUTF-8']
+    child = subprocess.Popen(command, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, creationflags=subprocess.CREATE_NO_WINDOW)
+    state = dict(tail=b'', pending=b'', responses=0, failure=None)
+
+    def read_output():
+        try:
+            while chunk := child.stdout.read1(8192):
+                state['tail'] = (state['tail'] + chunk)[-65536:]
+                state['pending'] = (state['pending'] + chunk)[-65536:]
+                while match := re.search(rb'(?:Enter|Verify) password[^:\r\n]*:', state['pending'], re.I):
+                    if password is None or state['responses'] >= 2:
+                        state['failure'] = 'Unexpected independent fixture password prompt'
+                        child.kill()
+                        return
+                    child.stdin.write(password.encode('utf-8') + b'\n')
+                    child.stdin.flush()
+                    state['responses'] += 1
+                    state['pending'] = state['pending'][match.end():]
+        except (OSError, ValueError):
+            state['failure'] = 'Independent fixture password pipe failed'
+            if child.poll() is None:
+                child.kill()
+
+    reader = threading.Thread(target=read_output, daemon=True)
+    reader.start()
+    try:
+        try:
+            code = child.wait(timeout=90)
+        except subprocess.TimeoutExpired:
+            raise RuntimeError('Independent fixture tool exceeded its time limit') from None
+        reader.join(timeout=5)
+        if reader.is_alive():
+            raise RuntimeError('Independent fixture output did not terminate')
+        if state['failure']:
+            raise RuntimeError(state['failure'])
+        return independent_outcome(code, state['tail'], password, state['responses'], succeeds)
+    finally:
+        if child.poll() is None:
+            child.kill()
+        child.wait(timeout=5)
+        reader.join(timeout=5)
+        child.stdin.close()
+        child.stdout.close()
+
+
 def seven_zip(command, password=None, cwd=None, succeeds=True):
-    """Drive the native non-echoing password prompt on macOS/Linux only.
+    """Drive the platform-specific native password prompt.
 
     The transcript deliberately stays local to this function and is never printed,
     included in exceptions, or written into a report, even on tool failure.
     """
+    if any(value.startswith('-p') and value != '-p' for value in command):
+        raise RuntimeError('Passwords must use the fixture prompt channel')
+    if os.name == 'nt':
+        return seven_zip_windows(command, password, cwd, succeeds)
     import errno
     import pty
     import select
     import signal
     import termios
-    if any(value.startswith('-p') and value != '-p' for value in command):
-        raise RuntimeError('Passwords must use the fixture terminal channel')
     pid, terminal = pty.fork()
     if pid == 0:
         try:
@@ -82,16 +155,7 @@ def seven_zip(command, password=None, cwd=None, succeeds=True):
                 break
             pending = (pending + chunk)[-65536:]
         code = os.waitstatus_to_exitcode(status)
-        known_errors = (b'Wrong password', b'No files', b'Is not archive', b'Unknown switch',
-                        b'Data Error', b'System ERROR', b'Break signaled',
-                        b'passwords are not identical', b'Invalid argument', b'E_INVALIDARG',
-                        b'E_FAIL', b'Not implemented', b'Can not open', b'Can not create')
-        markers = [value.decode('ascii') for value in known_errors if value.lower() in pending.lower()]
-        if password is not None and responses == 0:
-            raise RuntimeError(f'Independent fixture did not exercise password input, exit {code}, markers {markers!r}')
-        if (code == 0) != succeeds:
-            raise RuntimeError(f'Independent fixture outcome mismatch, exit {code}, prompts {responses}, markers {markers!r}')
-        return code
+        return independent_outcome(code, pending, password, responses, succeeds)
     finally:
         if status is None:
             try:
@@ -147,14 +211,20 @@ def main():
     parser.add_argument('--binary', type=Path, required=True)
     parser.add_argument('--extract-binary', type=Path, required=True)
     parser.add_argument('--reader', default=shutil.which('7zz') or shutil.which('7z'))
+    parser.add_argument('--skip-infozip', action='store_true',
+                        help='Explicitly omit the two Info-ZIP PKZIP reference cases on Windows')
     parser.add_argument('--output', type=Path, default=ROOT/'build/review/advanced-creation.json')
     args = parser.parse_args()
     if not args.reader:
         raise SystemExit('Independent 7-Zip is required; install outside the repository')
+    if args.skip_infozip and os.name != 'nt':
+        parser.error('--skip-infozip is limited to Windows; Unix runs require Info-ZIP')
+    args.reader = str(Path(args.reader).resolve())
     binary = str(args.binary.resolve())
     extract = str(args.extract_binary.resolve())
     native_temp = subprocess.check_output([binary, '--native-temp-base'], text=True).strip()
     cases = []
+    skipped = []
     with tempfile.TemporaryDirectory(prefix='xdzip-aes-split-', dir=native_temp) as owned:
         root = Path(owned)
         source = root/'input'
@@ -163,7 +233,11 @@ def main():
         (source/'空目录').mkdir()
         (source/'中文.txt').write_bytes(('AES and split ZIP，UTF-8\n'*5000).encode())
         (source/'random.bin').write_bytes(hashlib.shake_256(b'public synthetic fixture').digest(200_000))
-        password = 'public fixture 密码'
+        # Redirected Windows 7za prompts did not accept tested UTF-8/GBK input.
+        # Keep this reference limitation explicit; Unix terminal checks retain
+        # Unicode passwords. Rust independent ciphertext tests cover Unicode
+        # separately and are not counted as executions of this script.
+        password = 'public fixture ascii' if os.name == 'nt' else 'public fixture 密码'
         expected = manifest(source)
         expected_directories = directories(source)
         def extract_with_xdzip(archive, target, secret=password, profile=source):
@@ -183,9 +257,11 @@ def main():
                 for encrypt in [False, True]:
                     out = root/f'out-{method}-{split}-{encrypt}'
                     out.mkdir()
-                    env = {k:v for k,v in os.environ.items() if k != 'XDZIP_TEST_PASSWORD'}
-                    if encrypt: env['XDZIP_TEST_PASSWORD'] = password
-                    result = subprocess.run([binary,str(source),str(out),'fixture.zip',str(method),'6',str(65536 if split else 0)],env=env,capture_output=True,text=True)
+                    command = [binary,str(source),str(out),'fixture.zip',str(method),'6',str(65536 if split else 0)]
+                    if encrypt:
+                        command.append('--fixture-password-stdin')
+                    result = subprocess.run(command, input=password.encode('utf-8') if encrypt else None,
+                                            capture_output=True, timeout=90)
                     if result.returncode:
                         raise RuntimeError('Owned creation fixture failed')
                     archive = out/('fixture.zip.001' if split else 'fixture.zip')
@@ -210,10 +286,12 @@ def main():
                     extract_with_xdzip(archive, root/f'xdzip-decoded-{method}-{split}-{encrypt}', password if encrypt else None)
                     cases.append(dict(method=method, split=split, encrypted=encrypt, parts=len(parts),
                                       direction='xdzip_to_7zip', all_bytes=True,
+                                      password_encoding=('ascii' if os.name == 'nt' else 'utf8') if encrypt else None,
                                       xdzip_roundtrip=True, passed=True))
             external = root/f'external-{method}.zip'
             # 7-Zip's ZIP writer rejects non-ASCII passwords on some hosts. The
-            # existing xdzip -> 7-Zip direction still covers a UTF-8 password.
+            # Unix xdzip -> 7-Zip cases retain a UTF-8 password; Windows prompt
+            # coverage is deliberately ASCII as recorded in the JSON evidence.
             external_password = hashlib.sha256(b'owned external AES fixture').hexdigest()[:32]
             seven_zip([args.reader, 'a', '-tzip', '-mem=AES256', '-mm='+('Copy' if method == 0 else 'Deflate'),
                        '-p', str(external), 'input'], external_password, cwd=root)
@@ -225,6 +303,10 @@ def main():
                        '-v64k', '-p', str(split_external), 'input'], external_password, cwd=root)
             extract_with_xdzip(Path(str(split_external)+'.002'), root/f'external-split-decoded-{method}', external_password)
             cases.append(dict(method=method, direction='7zip_to_xdzip', split=True, encrypted=True, all_bytes=True, passed=True))
+            if args.skip_infozip:
+                skipped.append(dict(method=method, direction='infozip_to_xdzip', split=True, layout='pkzip',
+                                    executed=False, reason='Explicit --skip-infozip: Windows reference tool is not installed'))
+                continue
             zip_tool = shutil.which('zip')
             if not zip_tool:
                 raise RuntimeError('Info-ZIP is required for independent PKZIP volume coverage')
@@ -247,9 +329,18 @@ def main():
             extract_with_xdzip(pkzip.with_suffix('.z01'), root/f'pkzip-decoded-{method}', None, pk_input)
             cases.append(dict(method=method, direction='infozip_to_xdzip', split=True, layout='pkzip', all_bytes=True, passed=True))
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps(dict(cases=cases, independent_reader=Path(args.reader).name,
-                                         password_transport='terminal_and_fixture_stdin'), indent=2)+'\n',encoding='utf-8')
-    print(f'Independent ZIP interoperability: {len(cases)} cases passed')
+    args.output.write_text(json.dumps(dict(status='passed', cases=cases, skipped_cases=skipped,
+                                         independent_reader=Path(args.reader).name,
+                                         unicode_password_prompt=dict(
+                                             executed=os.name != 'nt',
+                                             reason=('Official Windows 7za redirected prompt did not accept tested UTF-8/GBK '
+                                                     'input; this script exercises ASCII passwords. Unicode independent '
+                                                     'ciphertext and read/write tests are separate Rust evidence.'
+                                                     if os.name == 'nt' else
+                                                     'UTF-8 passwords exercised in encrypted xdzip_to_7zip cases')),
+                                         password_transport=('redirected_stdin_and_fixture_stdin' if os.name == 'nt'
+                                                             else 'terminal_and_fixture_stdin')), indent=2)+'\n',encoding='utf-8')
+    print(f'Independent ZIP interoperability: {len(cases)} cases passed, {len(skipped)} explicitly not executed')
 
 
 if __name__ == '__main__': main()

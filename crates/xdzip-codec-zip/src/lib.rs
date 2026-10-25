@@ -1,57 +1,21 @@
+// crates/xdzip-codec-zip/src/lib.rs
+
 //! Bounded central-directory scanning. No payload decoding, CRC claim or extraction.
 mod admission;
 mod aes;
 mod names;
 mod payload;
+pub(crate) mod record;
 mod rewrite;
 pub mod split;
 mod writer;
+#[cfg(test)]
 use std::io::{Read, Seek, SeekFrom};
 use xdzip_codec_api::{Cancellation, Entry, MetadataCodec, ReadSource, ScanError, ScanLimits};
 use xdzip_domain::identity::EntryId;
 
 /// Built-in ZIP metadata adapter; preserves duplicate physical entries.
 pub struct ZipCodec;
-
-struct Budget<'a> {
-    source: &'a mut dyn ReadSource,
-    control: &'a Cancellation,
-    remaining: u64,
-    failure: Option<ScanError>,
-}
-impl Read for Budget<'_> {
-    fn read(&mut self, output: &mut [u8]) -> std::io::Result<usize> {
-        let fault =
-            self.control.check().err().or_else(|| {
-                (self.remaining == 0 && !output.is_empty()).then_some(ScanError::Limit)
-            });
-        if let Some(error) = fault {
-            self.failure = Some(error);
-            return Err(std::io::Error::other(error));
-        }
-        let count = output
-            .len()
-            .min(usize::try_from(self.remaining).unwrap_or(usize::MAX));
-        match self.source.read(&mut output[..count]) {
-            Ok(read) => {
-                self.remaining -= read as u64;
-                Ok(read)
-            }
-            Err(error) => {
-                self.failure = Some(ScanError::Io);
-                Err(error)
-            }
-        }
-    }
-}
-impl Seek for Budget<'_> {
-    fn seek(&mut self, pos: SeekFrom) -> std::io::Result<u64> {
-        self.source
-            .seek(pos)
-            .inspect_err(|_| self.failure = Some(ScanError::Io))
-    }
-}
-
 impl MetadataCodec for ZipCodec {
     fn scan(
         &self,
@@ -59,121 +23,81 @@ impl MetadataCodec for ZipCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<Vec<Entry>, ScanError> {
-        control.check()?;
-        let mut reader = Budget {
-            source,
-            control,
-            remaining: limits.read_bytes,
-            failure: None,
-        };
-        let result = scan(&mut reader, control, limits);
-        // Preserve host budget/cancellation errors even if the parser wraps its I/O error.
-        match reader.failure {
-            Some(error) => Err(error),
-            None => result,
+        let directory = record::read_directory(source, control, limits)?;
+        let mut rows = Vec::with_capacity(directory.records.len());
+        let mut legacy = Vec::with_capacity(directory.records.len());
+        let mut decoded_bytes = 0usize;
+        for record in directory.records {
+            control.check()?;
+            let utf8 = record.utf8();
+            let encrypted = record.encrypted();
+            let directory = record.is_dir();
+            let unicode = names::unicode_path(&record.name, utf8, &record.extra);
+            let (decoded_name, name_encoding) = match unicode {
+                Ok(Some(name)) => (
+                    Some(name),
+                    xdzip_codec_api::names::NameEncoding::UnicodePath,
+                ),
+                Ok(None) => (None, xdzip_codec_api::names::NameEncoding::Utf8),
+                Err(()) => (None, xdzip_codec_api::names::NameEncoding::Unresolved),
+            };
+            let decoded_len = decoded_name.as_ref().map_or(0, String::len);
+            decoded_bytes = decoded_bytes
+                .checked_add(decoded_len)
+                .ok_or(ScanError::Limit)?;
+            if decoded_len > limits.name_bytes || decoded_bytes > limits.display_name_bytes {
+                return Err(ScanError::Limit);
+            }
+            let unix_type = matches!(record.version_made_by >> 8, 3 | 19)
+                .then_some((record.external_attributes >> 16) & 0o170000);
+            let warning =
+                unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000));
+            legacy.push(!utf8);
+            let id = u64::try_from(rows.len())
+                .ok()
+                .and_then(|n| n.checked_add(1))
+                .and_then(|n| EntryId::try_from(n).ok())
+                .ok_or(ScanError::Limit)?;
+            rows.push(Entry {
+                format: xdzip_codec_api::Format::Zip,
+                id,
+                raw_name: record.name,
+                decoded_name,
+                name_encoding,
+                display_name: String::new(),
+                directory,
+                link: unix_type == Some(0o120000),
+                unix_mode: unix_type.map_or(0, |_| record.external_attributes >> 16),
+                size: record.size,
+                packed_size: record.packed_size,
+                method: record.method,
+                modified_dos: validated_dos(record.modified_dos),
+                encrypted,
+                password_supported: encrypted
+                    && record.method == 99
+                    && aes::supported(record::ExtraFields::new(&record.extra), record.crc),
+                warning,
+            });
         }
+        xdzip_codec_api::names::resolve(&mut rows, &legacy, true, control, limits)?;
+        Ok(rows)
     }
 }
 
-fn scan(
-    reader: &mut Budget<'_>,
-    control: &Cancellation,
-    limits: ScanLimits,
-) -> Result<Vec<Entry>, ScanError> {
-    let mut buffer = vec![0; 256 * 1024]; // fits the largest standard central header
-    let archive =
-        rawzip::ZipArchive::from_seekable(reader, &mut buffer).map_err(|_| ScanError::Invalid)?;
-    if archive.entries_hint() > limits.entries as u64 {
-        return Err(ScanError::Limit);
-    }
-    // The parser owns ZIP/ZIP64 decoding; this gate admits one physical volume.
-    admission::single_volume(&archive)?;
-    let mut iterator = archive.entries(&mut buffer);
-    let mut rows = Vec::new();
-    let mut name_bytes = 0_usize;
-    let mut legacy = Vec::new();
-    let mut decoded_bytes = 0usize;
-    while let Some(record) = iterator.next_entry().map_err(|_| ScanError::Invalid)? {
-        control.check()?;
-        admission::entry_disk(&archive, &record)?;
-        let name = record.file_path().as_bytes();
-        name_bytes = name_bytes.checked_add(name.len()).ok_or(ScanError::Limit)?;
-        if rows.len() >= limits.entries
-            || name.len() > limits.name_bytes
-            || name_bytes > limits.total_name_bytes
-        {
-            return Err(ScanError::Limit);
-        }
-        let unicode = names::unicode_path(name, record.flags().is_utf8(), record.extra_fields());
-        let (decoded_name, name_encoding) = match unicode {
-            Ok(Some(name)) => (
-                Some(name),
-                xdzip_codec_api::names::NameEncoding::UnicodePath,
-            ),
-            Ok(None) => (None, xdzip_codec_api::names::NameEncoding::Utf8),
-            Err(()) => (None, xdzip_codec_api::names::NameEncoding::Unresolved),
-        };
-        let decoded_len = decoded_name.as_ref().map_or(0, String::len);
-        decoded_bytes = decoded_bytes
-            .checked_add(decoded_len)
-            .ok_or(ScanError::Limit)?;
-        if decoded_len > limits.name_bytes || decoded_bytes > limits.display_name_bytes {
-            return Err(ScanError::Limit);
-        }
-        // Inspect declared Unix type directly: synthesized modes may combine the
-        // default regular type with a trailing-slash directory hint.
-        let unix_type = matches!(record.version_made_by().creator_system().as_u8(), 3 | 19)
-            .then_some((record.external_attributes() >> 16) & 0o170000);
-        let warning =
-            unix_type.is_some_and(|kind| !matches!(kind, 0 | 0o040000 | 0o100000 | 0o120000));
-        legacy.push(!record.flags().is_utf8());
-        let id = u64::try_from(rows.len())
-            .ok()
-            .and_then(|n| n.checked_add(1))
-            .and_then(|n| EntryId::try_from(n).ok())
-            .ok_or(ScanError::Limit)?;
-        rows.push(Entry {
-            format: xdzip_codec_api::Format::Zip,
-            id,
-            raw_name: name.to_vec(),
-            decoded_name,
-            name_encoding,
-            display_name: String::new(),
-            directory: record.is_dir(),
-            link: unix_type == Some(0o120000),
-            unix_mode: unix_type.map_or(0, |_| record.external_attributes() >> 16),
-            size: record.uncompressed_size_hint(),
-            packed_size: record.compressed_size_hint(),
-            method: record.compression_method().as_u16(),
-            modified_dos: validated_dos(record.last_modified_dos()),
-            encrypted: record.flags().is_encrypted(),
-            password_supported: record.flags().is_encrypted()
-                && record.compression_method().as_u16() == 99
-                && aes::supported(record.extra_fields(), record.crc32()),
-            warning,
-        });
-    }
-    if rows.len() as u64 != archive.entries_hint() {
-        return Err(ScanError::Invalid);
-    }
-    xdzip_codec_api::names::resolve(&mut rows, &legacy, true, control, limits)?;
-    Ok(rows)
-}
-
-// rawzip's component accessors clamp invalid values. Preserve only valid raw
-// local timestamps; never turn an absent/invalid ZIP date into an invented date.
-fn validated_dos(value: rawzip::time::DosDateTime) -> u32 {
-    let date = value.packed_date();
-    let time = value.packed_time();
-    if ((date >> 5) & 15) != u16::from(value.month())
-        || (date & 31) != u16::from(value.day())
-        || (time >> 11) != u16::from(value.hour())
-        || ((time >> 5) & 63) != u16::from(value.minute())
-        || (time & 31) * 2 != u16::from(value.second())
+// Preserve valid local timestamp bits; invalid components remain unknown.
+fn validated_dos(value: u32) -> u32 {
+    let date = value >> 16;
+    let time = value & 0xffff;
+    if !(1..=12).contains(&((date >> 5) & 15))
+        || !(1..=31).contains(&(date & 31))
+        || time >> 11 > 23
+        || (time >> 5) & 63 > 59
+        || (time & 31) > 29
     {
-        return 0;
+        0
+    } else {
+        value
     }
-    u32::from(date) << 16 | u32::from(time)
 }
 
 #[cfg(test)]

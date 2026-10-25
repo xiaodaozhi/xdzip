@@ -7,6 +7,14 @@
     {
       "package": "xdzip-compression",
       "forbidden_runtime_dependencies": ["flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-codec-zip",
+      "forbidden_runtime_dependencies": ["rawzip", "zip", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-runtime",
+      "forbidden_runtime_dependencies": ["rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     }
   ]
 }

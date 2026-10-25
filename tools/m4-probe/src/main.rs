@@ -1,10 +1,43 @@
 //! Actual whole-archive creation into an explicitly owned verification directory.
+use std::io::{self, Read};
 use std::path::Path;
 use std::time::Instant;
 use xdzip_runtime::{creation::Options, extraction::ConflictPolicy, service};
+use zeroize::Zeroizing;
+
+fn read_fixture_password(
+    mut input: impl Read,
+) -> Result<xdzip_runtime::creation::Password, &'static str> {
+    // Test-only stdin is bounded before allocation and cleared on every return,
+    // including partial I/O failure and invalid UTF-8. No secret enters argv or reports.
+    let mut bytes = Zeroizing::new([0u8; 129]);
+    let mut length = 0;
+    loop {
+        match input.read(&mut bytes[length..]) {
+            Ok(0) => break,
+            Ok(count) => {
+                length += count;
+                if length > 128 {
+                    return Err("invalid_password");
+                }
+            }
+            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+            Err(_) => return Err("invalid_fixture_password_input"),
+        }
+    }
+    let value =
+        std::str::from_utf8(&bytes[..length]).map_err(|_| "invalid_fixture_password_input")?;
+    xdzip_runtime::creation::Password::new(value.to_owned())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
+    let mut args: Vec<_> = std::env::args().skip(1).collect();
+    let fixture_password = args
+        .last()
+        .is_some_and(|arg| arg == "--fixture-password-stdin");
+    if fixture_password {
+        args.pop();
+    }
     if args == ["--native-temp-base"] {
         println!(
             "{}",
@@ -27,10 +60,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         volume_bytes: args.get(5).map_or(Ok(0), |v| v.parse())?,
         solid: false,
         encrypt_headers: false,
-        // Owned synthetic-test secret, never printed in the measurement report.
-        password: std::env::var("XDZIP_TEST_PASSWORD")
-            .ok()
-            .map(xdzip_runtime::creation::Password::new)
+        password: fixture_password
+            .then(|| read_fixture_password(io::stdin().lock()))
             .transpose()?,
     };
     let (client, mut receiver) = service::start()?;

@@ -1,24 +1,21 @@
 // crates/xdzip-codec-zip/src/names.rs
 
 //! ZIP Unicode metadata has priority over heuristics, never over an explicit UTF-8 flag.
-use rawzip::extra_fields::ExtraFields;
+use crate::record::ExtraFields;
 use xdzip_codec_api::{
     Entry,
     names::{NameEncoding, decode_legacy},
 };
 
-pub(super) fn unicode_path(
-    raw: &[u8],
-    utf8: bool,
-    mut fields: ExtraFields<'_>,
-) -> Result<Option<String>, ()> {
+pub(super) fn unicode_path(raw: &[u8], utf8: bool, fields: &[u8]) -> Result<Option<String>, ()> {
     if utf8 {
         return Ok(None);
     }
     let mut name = None;
-    let checksum = rawzip::crc32(raw);
-    for (id, bytes) in fields.by_ref() {
-        if id.as_u16() != 0x7075 {
+    let checksum = xdzip_compression::crc32(raw);
+    for field in ExtraFields::new(fields) {
+        let (id, bytes) = field.map_err(|_| ())?;
+        if id != 0x7075 {
             continue;
         }
         let version = bytes.first().ok_or(())?;
@@ -35,15 +32,12 @@ pub(super) fn unicode_path(
         }
         name = Some(std::str::from_utf8(&bytes[5..]).map_err(|_| ())?.to_owned());
     }
-    if !fields.remaining_bytes().is_empty() {
-        return Err(());
-    }
     Ok(name)
 }
 
 /// Recheck the frozen resolution using the original bytes, flag and Unicode extra. A
 /// detector is not run a second time during payload reads, so selection cannot drift.
-pub(super) fn matches(entry: &Entry, utf8: bool, fields: ExtraFields<'_>) -> bool {
+pub(super) fn matches(entry: &Entry, utf8: bool, fields: &[u8]) -> bool {
     let Ok(unicode) = unicode_path(&entry.raw_name, utf8, fields) else {
         return entry.name_encoding == NameEncoding::Unresolved;
     };
