@@ -11,6 +11,7 @@ xdzip-domain = { path = "../xdzip-domain" }
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-tar = { path = "../xdzip-codec-tar" }
 xdzip-codec-zip = { path = "../xdzip-codec-zip" }
+xdzip-codec-native = { path = "../xdzip-codec-native" }
 xdzip-io = { path = "../xdzip-io" }
 unicode-normalization = "=0.1.25"
 zeroize = "=1.8.2"

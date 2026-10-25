@@ -21,6 +21,7 @@ mod ffi {
     }
     enum CommandKind {
         Open,
+        OpenWithPassword,
         Browse,
         Preflight,
         CloseSession,
@@ -60,6 +61,8 @@ mod ffi {
         method: u16,
         level: u8,
         volume_bytes: u64,
+        solid: bool,
+        encrypt_headers: bool,
         encrypt: bool,
         password: String,
         all: bool,
@@ -292,8 +295,23 @@ impl CommandClient {
     pub fn submit(&self, command: ffi::Command) -> ffi::Submission {
         // Move the ABI-owned secret into zeroizing storage before any rejection.
         // It never becomes a progress field, debug string or retained event.
-        let empty_password = command.password.is_empty();
-        let candidate = xdzip_runtime::creation::Password::new(command.password);
+        let header_open = command.kind == ffi::CommandKind::OpenWithPassword;
+        let empty_password = command.password.is_empty() || header_open;
+        let (candidate, opening_password) = if header_open {
+            let secret = match xdzip_runtime::extraction::Password::new(command.password) {
+                Ok(value) => value,
+                Err(_) => return admission(Err(service::Rejection::Invalid)),
+            };
+            (
+                xdzip_runtime::creation::Password::new(String::new()),
+                Some(secret),
+            )
+        } else {
+            (
+                xdzip_runtime::creation::Password::new(command.password),
+                None,
+            )
+        };
         let password = if command.encrypt {
             match candidate {
                 Ok(value) => Some(value),
@@ -404,10 +422,16 @@ impl CommandClient {
                     level: command.level,
                     conflict,
                     volume_bytes: command.volume_bytes,
+                    solid: command.solid,
+                    encrypt_headers: command.encrypt_headers,
                     password,
                 })
             }
             ffi::CommandKind::Open => Command::Open(command.path),
+            ffi::CommandKind::OpenWithPassword => Command::OpenWithPassword {
+                path: command.path,
+                password: opening_password.expect("header secret admitted"),
+            },
             ffi::CommandKind::Browse => Command::Browse {
                 session: command.session,
                 directory: command.directory,
@@ -853,6 +877,8 @@ mod tests {
                 method: 0,
                 level: 0,
                 volume_bytes: 0,
+                solid: false,
+                encrypt_headers: false,
                 encrypt: false,
                 password: String::new(),
                 all: false,
@@ -960,6 +986,8 @@ mod tests {
             method: 8,
             level: 6,
             volume_bytes: 0,
+            solid: false,
+            encrypt_headers: false,
             encrypt: false,
             password: String::new(),
             all: false,

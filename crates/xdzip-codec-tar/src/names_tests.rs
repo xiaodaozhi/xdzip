@@ -119,6 +119,8 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
                 renames: &[Some("中文.txt".into())],
                 additions: &Empty,
                 settings: EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: "store",
                     level: 0,
                     password: None,
@@ -166,6 +168,8 @@ fn rewritten_binary_pax_path_declares_utf8_and_preserves_payload() {
                 renames: &[Some("中文.txt".into())],
                 additions: &Empty,
                 settings: EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: "store",
                     level: 0,
                     password: None

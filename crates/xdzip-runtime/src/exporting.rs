@@ -37,6 +37,8 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
                 level: 6,
                 conflict: crate::extraction::ConflictPolicy::Ask,
                 volume_bytes: 0,
+                solid: false,
+                encrypt_headers: false,
                 password: None,
             },
         },

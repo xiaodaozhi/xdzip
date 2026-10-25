@@ -369,7 +369,7 @@
     "ui.0e801031324c": "Browse contents and choose what to extract",
     "ui.b0d96542deee": "Add files or folders to create an archive",
     "ui.4a11171118b0": "Or drop an archive here",
-    "ui.68e2f0d4ff9a": "Open and create",
+    "ui.68e2f0d4ff9a": "Supported archives",
     "ui.cc72ffea1705": "The task stopped unexpectedly. Commit totals may be incomplete. Check the destination and restart the app.",
     "ui.6adbf73c75b1": "Content verification failed. Uncommitted files were discarded.",
     "ui.7735b66ae246": "Unable to write to the destination. Check permissions and the file system.",
@@ -408,8 +408,8 @@
     "ui.14df9062a079": "Unable to read the file. Check its type and permissions.",
     "ui.bcd73815bcd5": "This source path cannot be represented without loss in this version.",
     "ui.cd2a579ed2df": "Unable to read the archive. It may be damaged, exceed resource limits, or use an unsupported format.",
-    "ui.8f69a61727d2": "Archives (*.zip *.zip.??? *.zip.???? *.z?? *.z??? *.z???? *.tar *.tar.gz *.tgz);;All files (*)",
-    "ui.e827041f3805": "Drop a single local ZIP, TAR, or TAR.GZ archive.",
+    "ui.8f69a61727d2": "Archives (*.zip *.zip.??? *.zip.???? *.z?? *.z??? *.z???? *.tar *.tar.gz *.tgz *.7z *.7z.??? *.7z.???? *.rar *.r?? *.r??? *.r????);;All files (*)",
+    "ui.e827041f3805": "Drop local ZIP, TAR, TAR.GZ, 7z, or RAR archives.",
     "ui.3fb3d26f0ffd": "Choose destination folder",
     "ui.0ae60dd37b14": "Quitting…",
     "ui.013b4f811abe": "Reading selected file sizes…",
@@ -633,6 +633,16 @@
     "update.subtitle": "Add files to the existing archive.",
     "update.location": "Add destination",
     "update.options": "Add options",
-    "update.archive": "Target archive"
+    "update.archive": "Target archive",
+    "create.sevenZipVolumes": "Writes .7z.001 and subsequent volumes. Existing volumes can only be renamed as a group.",
+    "create.sevenZipMethod": "Level 0 stores files; other levels use LZMA2.",
+    "create.sevenZipEncryption": "AES-256 encrypts file contents. File names can also be encrypted.",
+    "create.encryptHeader": "Encrypt file names",
+    "create.solid": "Solid compression",
+    "password.openTitle": "Archive password",
+    "password.openDescription": "File names in this archive are encrypted. Enter its password to browse.",
+    "password.openContinue": "Continue opening",
+    "password.openHeading": "Enter a password to browse",
+    "password.openPrivacy": "Your password is used only for this opening request and is not saved. Closing this window cancels opening."
   }
 }

@@ -386,6 +386,7 @@ mod tests {
             Err(ScanError::Cancelled)
         ));
         struct CancelOnRead<'a>(Cursor<&'a [u8]>, &'a Cancellation);
+        impl ReadSource for CancelOnRead<'_> {}
         impl Read for CancelOnRead<'_> {
             fn read(&mut self, b: &mut [u8]) -> std::io::Result<usize> {
                 self.1.cancel();

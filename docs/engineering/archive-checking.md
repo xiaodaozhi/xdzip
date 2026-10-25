@@ -6,6 +6,8 @@
 
 ZIP／ZIP64、Store／Deflate、受支持的编号分卷和 PKZIP 分卷逐条解码到有界丢弃接收器。检查包括中央目录与本地头、描述符、大小、压缩流准确终止、CRC，以及受支持 AES-256 的认证。安全名称的 ZIP 符号链接只检查负载，不解析目标或创建链接，因此不受写出链接的平台限制。未知方法、加密方式、危险名称与其他未准入记录仍失败，不跳过后宣称整包通过。
 
+7z 和 RAR 使用官方后端逐物理条目解码到同一个有界丢弃接收器，验证解码终止、声明大小和容器实际提供的校验。固实块内为到达当前选择而解码的其他数据只累计工作量，不增加当前文件的已验证计数。目录、空文件和加密条目均不能跳过后报告整包成功。RAR 旧版、RAR5 和 RAR 7 新算法分别使用独立已知内容样本验收，不能仅以相同魔数代表版本兼容。
+
 TAR 与 TAR.GZ 在检查任务内重新顺序扫描完整流，对照冻结的物理记录元数据，检查头校验、长度、两个结束块及尾部。TAR.GZ 继续消费到 EOF，核对 GZIP CRC／ISIZE，不在完整扫描之后再次解压全部内容。TAR 没有文件内容校验和，只能确认格式结构与可读性，无法发现任意保持结构的内容篡改。TAR 链接、特殊对象和稀疏文件仍不支持。本功能不证明归档来源可信，也不检查恶意软件。
 
 首个结构、负载、来源、资源或不支持条目错误结束任务。结果区分成功、失败与取消，显示已验证及未检查文件数，保留失败条目和稳定错误码。所有物理记录均参与校验，`files`／`verified_files` 仍只统计非目录文件，空文件参与文件数。目录和纯目录包也必须完成结构校验后才能成功。检查中或此前已完成的读取不等于整包通过。
@@ -14,7 +16,7 @@ TAR 与 TAR.GZ 在检查任务内重新顺序扫描完整流，对照冻结的�
 
 `Check { session }` 冻结来源 `Source::fork()`、格式、元数据和原始会话身份，进入与创建、解压相同的有界重任务队列及应用级串行准入。开始、读取后及成功终态前复核来源句柄、全部卷路径的身份、大小和时间信息。来源变化返回 `source_changed`，只失效对应的原会话。此检测是尽力检查，不是输入内容的原子快照，不承诺检测保留身份和时间信息的并发原地修改。
 
-实际解码受单文件 8 GiB、任务累计 20 GiB 限制，错误密码重试不重置累计工作量。ZIP 保留独立 64 MiB 定位元数据预算和共享 20 GiB 实际输入读取预算；TAR／GZIP 保留既有 24 GiB 整流读取上限。任务与事件数量、快照明细和保留内存沿用既有队列上限。成功终态不设置写入、提交、保存目录或输出路径计数。
+实际解码受单文件 8 GiB、任务累计 20 GiB 限制，错误密码重试不重置累计工作量。ZIP 保留独立 64 MiB 定位元数据预算和共享 20 GiB 实际输入读取预算；TAR／GZIP 保留既有 24 GiB 整流读取上限。7z／RAR 额外使用原生进程 1 GiB 内存上限，输入读取与固实跳过同样有界，超限为资源限制而非完整性通过。任务与事件数量、快照明细和保留内存沿用既有队列上限。成功终态不设置写入、提交、保存目录或输出路径计数。
 
 任务种类由 `kind=check` 明确传至 Qt。`read_bytes` 表示实际来源读取量，包含头部与重试；`decoded_bytes` 表示实际解码工作，`verified_bytes`／`verified_files` 只在要求的校验完成后增加。TAR／GZIP 完整扫描期间不编造文件级百分比，实际读取量与速度仍可见，成功后才将整流文件计为已验证。
 
@@ -24,4 +26,8 @@ AES 密码复用[密码协议](password-extraction.md)：独立控制槽、一�
 
 核心回归覆盖支持格式、空文件、目录、重复名称、ZIP 链接负载、密码重试／取消、损坏负载、来源变化、实际计数和无输出。桥接与 Qt 验证真实工具栏到后台任务和结果闭环，密码路由、历史任务、跨会话准入及退出独立检查。双语多字号、浅深色与原生桌面视觉验收分别登记在 issue，生成证据仅保存于 build/ 或 CI 工件。
 
-English: Test checks every physical record of the current archive in a background read-only task, independently of the current view or selection. ZIP payloads are fully decoded into a bounded discard sink, including AES authentication and ZIP symlink payloads without creating links. TAR and TAR.GZ are scanned completely again, including TAR end blocks and the GZIP trailer. TAR has no content checksums. The task stops at the first error, preserves actual read and verified-file counts, writes no output, reuses password/cancellation controls, and retains the existing resource and best-effort source-identity boundaries. Passing a check does not establish source trust or malware safety.
+English: 7z and RAR use their official engines and a bounded discard sink, including encrypted, empty and solid records. Work decoded only to reach a solid record does not inflate verified-file counts. Test checks every physical record of the current archive in a background read-only task, independently of the current view or selection. ZIP payloads are fully decoded into a bounded discard sink, including AES authentication and ZIP symlink payloads without creating links. TAR and TAR.GZ are scanned completely again, including TAR end blocks and the GZIP trailer. TAR has no content checksums. The task stops at the first error, preserves actual read and verified-file counts, writes no output, reuses password/cancellation controls, and retains the existing resource and best-effort source-identity boundaries. Passing a check does not establish source trust or malware safety.
+
+旧式 RAR 加密条目缺少可可靠区分错误密码与损坏内容的验证值，因此每个加密条目解码前分别请求密码，不能把前一条密码直接套用到可能使用不同秘密的下一条。RAR5 和受支持的其他格式继续任务内复用。旧 RAR 的 CRC 或头部损坏仍作为完整性失败，不冒充已确认的错误密码。
+
+English: Older RAR encrypted records request a password separately for each entry because their checks cannot reliably distinguish a wrong cached secret from corruption. RAR5 retains task-local reuse. Legacy CRC or header damage remains an integrity failure, never a claimed password-verifier mismatch.

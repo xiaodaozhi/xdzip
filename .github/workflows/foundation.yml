@@ -20,6 +20,14 @@ jobs:
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
+      - name: Retain official-codec verification records
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-codec-checks-${{ matrix.os }}
+          path: build/review/native-codec-interop/*.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   cpp-format:
     runs-on: ubuntu-24.04
@@ -30,4 +38,4 @@ jobs:
         run: |
           python3 -m venv /tmp/xdzip-format
           /tmp/xdzip-format/bin/pip install clang-format==18.1.8
-          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
+          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c

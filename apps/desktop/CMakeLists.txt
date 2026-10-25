@@ -1,5 +1,6 @@
 set(XDZIP_MACOS_HANDLER_RANK "None" CACHE STRING "macOS document handling rank: None for development/test copies, Alternate for the primary application")
 set_property(CACHE XDZIP_MACOS_HANDLER_RANK PROPERTY STRINGS None Alternate)
+cmake_language(DEFER CALL include "${PROJECT_SOURCE_DIR}/cmake/NativeCodecDeployment.cmake")
 if(NOT XDZIP_MACOS_HANDLER_RANK MATCHES "^(None|Alternate)$")
     message(FATAL_ERROR "XDZIP_MACOS_HANDLER_RANK must be None or Alternate")
 endif()

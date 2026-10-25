@@ -369,7 +369,7 @@
     "ui.0e801031324c": "浏览内容，选择需要解压的文件",
     "ui.b0d96542deee": "添加文件或文件夹，创建压缩包",
     "ui.4a11171118b0": "也可以将压缩包拖到这里",
-    "ui.68e2f0d4ff9a": "支持打开与创建",
+    "ui.68e2f0d4ff9a": "支持打开",
     "ui.cc72ffea1705": "任务异常中断，提交计数可能不完整，请检查目标目录并重新启动应用。",
     "ui.6adbf73c75b1": "文件内容校验失败，未提交的文件已丢弃。",
     "ui.7735b66ae246": "无法写入目标目录，请检查权限和文件系统。",
@@ -408,8 +408,8 @@
     "ui.14df9062a079": "无法读取所选文件，请检查文件类型和权限。",
     "ui.bcd73815bcd5": "当前版本无法无损表示这个源文件路径。",
     "ui.cd2a579ed2df": "无法读取压缩包目录，文件可能损坏、超过资源上限或格式尚不支持。",
-    "ui.8f69a61727d2": "压缩包 (*.zip *.zip.??? *.zip.???? *.z?? *.z??? *.z???? *.tar *.tar.gz *.tgz);;所有文件 (*)",
-    "ui.e827041f3805": "请拖入单个本地 ZIP、TAR 或 TAR.GZ 压缩包。",
+    "ui.8f69a61727d2": "压缩包 (*.zip *.zip.??? *.zip.???? *.z?? *.z??? *.z???? *.tar *.tar.gz *.tgz *.7z *.7z.??? *.7z.???? *.rar *.r?? *.r??? *.r????);;所有文件 (*)",
+    "ui.e827041f3805": "请拖入本地 ZIP、TAR、TAR.GZ、7z 或 RAR 压缩包。",
     "ui.3fb3d26f0ffd": "选择目标目录",
     "ui.0ae60dd37b14": "正在退出…",
     "ui.013b4f811abe": "正在读取选中文件大小…",
@@ -633,6 +633,16 @@
     "update.subtitle": "将文件添加到现有压缩包。",
     "update.location": "添加位置",
     "update.options": "添加选项",
-    "update.archive": "目标压缩包"
+    "update.archive": "目标压缩包",
+    "create.sevenZipVolumes": "输出 .7z.001 等分卷，现有分卷只能整组改名。",
+    "create.sevenZipMethod": "级别 0 不压缩，其余级别使用 LZMA2。",
+    "create.sevenZipEncryption": "AES-256 加密文件内容，可同时加密文件名。",
+    "create.encryptHeader": "加密文件名",
+    "create.solid": "固实压缩",
+    "password.openTitle": "打开密码",
+    "password.openDescription": "此压缩包的文件名已加密，需要密码才能浏览。",
+    "password.openContinue": "继续打开",
+    "password.openHeading": "输入密码以浏览内容",
+    "password.openPrivacy": "密码仅用于当前打开请求，不会保存。关闭此窗口将取消打开。"
   }
 }

@@ -4029,9 +4029,9 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(create));
         auto *formats = findVisual(create->contentItem(), "createFormat");
         QVERIFY(formats);
-        const QStringList extensions{".zip", ".tar", ".tar.gz"};
+        const QStringList extensions{".zip", ".tar", ".tar.gz", ".7z"};
         for (const auto &action : actions) {
-            for (const int index : {1, 2, 0, 0}) {
+            for (const int index : {1, 2, 3, 0, 0}) {
                 auto *item =
                     findVisual(create->contentItem(), "createFormat-" + QString::number(index));
                 QVERIFY(item);
@@ -4636,7 +4636,140 @@ QtObject {
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
         QVERIFY(!welcome->isVisible() && !overlay->isVisible());
     }
+    void sevenZipCreationLayout_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("factor");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const bool dark : {false, true})
+                for (const double factor : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
+                                            QString::number(factor))) << language << dark << factor;
+    }
+    void sevenZipCreationLayout() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, factor);
+        QVERIFY(initializeUiText(language));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        QQmlComponent theme(&engine);
+        theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                      "QtObject { property real factor: 1; property bool dark: false; "
+                      "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+                      QUrl());
+        QScopedPointer<QObject> themeState(theme.create());
+        QVERIFY2(themeState, qPrintable(theme.errorString()));
+        themeState->setProperty("factor", factor);
+        themeState->setProperty("dark", dark);
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        QVERIFY(create && QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible());
+        auto *formats = findVisual(create->contentItem(), "createFormat");
+        QVERIFY(formats);
+        formats->setProperty("currentIndex", 3);
+        QCOMPARE(create->width(), 491);
+        QTRY_VERIFY(formats->width() > 0);
+        for (int index = 0; index < 4; ++index) {
+            auto *segment = findVisual(create->contentItem(), "createFormat-" + QString::number(index));
+            QVERIFY(segment);
+            auto *label = qobject_cast<QQuickItem *>(segment->property("contentItem").value<QObject *>());
+            QVERIFY(label);
+            QTRY_VERIFY2(label->implicitWidth() <= label->width() + 1,
+                         qPrintable(QString("format %1 text %2 exceeds %3")
+                                        .arg(index).arg(label->implicitWidth()).arg(label->width())));
+        }
+        auto *cancel = findVisual(create->contentItem(), "createCancel");
+        auto *start = findVisual(create->contentItem(), "startCreate");
+        QVERIFY(cancel && start);
+        QTRY_VERIFY(cancel->mapToScene(QPointF(0, cancel->height())).y() <= create->height() + 1);
+        QTRY_VERIFY(start->mapToScene(QPointF(start->width(), start->height())).x() <= create->width() + 1);
+        const auto captures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(create, captures,
+                                       QStringLiteral("create-7z-") + QTest::currentDataTag()));
+        }
+    }
+    void sevenZipCreationRequestsHeaderPasswordBeforeBrowsing() {
+        QTemporaryDir inputs, output;
+        QVERIFY(inputs.isValid() && output.isValid());
+        const auto source = inputs.filePath(QStringLiteral("document.txt"));
+        QFile file(source);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        const QByteArray contents("public native format UI fixture\n");
+        QCOMPARE(file.write(contents), contents.size());
+        file.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        auto *passwordWindow = window->findChild<QQuickWindow *>("passwordWindow");
+        QVERIFY(controller && create && passwordWindow);
+        QVERIFY(QMetaObject::invokeMethod(create, "configure"));
+        QTRY_VERIFY(create->isVisible() && !controller->busy());
+        QVERIFY(QMetaObject::invokeMethod(create, "addInputPaths",
+                                          Q_ARG(QVariant, QVariant(QStringList{source})),
+                                          Q_ARG(bool, false)));
+        auto *formats = findVisual(create->contentItem(), "createFormat");
+        auto *name = findVisual(create->contentItem(), "createName");
+        auto *target = findVisual(create->contentItem(), "createTarget");
+        auto *usePassword = findVisual(create->contentItem(), "createUsePassword");
+        auto *password = findVisual(create->contentItem(), "createPassword");
+        auto *header = findVisual(create->contentItem(), "createEncryptHeader");
+        auto *solid = findVisual(create->contentItem(), "createSolid");
+        auto *start = findVisual(create->contentItem(), "startCreate");
+        QVERIFY(formats && name && target && usePassword && password && header && solid && start);
+        formats->setProperty("currentIndex", 3);
+        name->setProperty("text", QStringLiteral("encrypted.7z"));
+        target->setProperty("text", output.path());
+        QTRY_VERIFY(!controller->busy());
+        controller->checkCreationTarget(output.path());
+        QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
+        usePassword->setProperty("checked", true);
+        password->setProperty("text", QStringLiteral("public fixture"));
+        header->setProperty("checked", true);
+        solid->setProperty("checked", true);
+        QTRY_VERIFY(start->isEnabled());
+        QVERIFY(QMetaObject::invokeMethod(start, "click"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 30000);
+        const auto first = controller->passwordPrompt();
+        QCOMPARE(first.value("kind").toString(), QStringLiteral("open"));
+        QCOMPARE(first.value("taskId").toString(), QStringLiteral("open"));
+        QVERIFY(!controller->ready());
+        QCOMPARE(controller->entries()->rowCount(), 0);
+        QCOMPARE(controller->activeTaskCount(), 0);
+        QTRY_VERIFY(passwordWindow->isVisible());
+        QCOMPARE(passwordWindow->title(), qtTrId("password.openTitle"));
+        QVERIFY(controller->submitPassword(QStringLiteral("open"),
+                                           first.value("promptId").toString(),
+                                           QStringLiteral("wrong public fixture")));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->passwordPrompt().isEmpty(), 30000);
+        const auto retry = controller->passwordPrompt();
+        QVERIFY(retry.value("retry").toBool());
+        QVERIFY(retry.value("promptId") != first.value("promptId"));
+        QVERIFY(!controller->submitPassword(QStringLiteral("open"),
+                                            first.value("promptId").toString(),
+                                            QStringLiteral("public fixture")));
+        QVERIFY(controller->submitPassword(QStringLiteral("open"),
+                                           retry.value("promptId").toString(),
+                                           QStringLiteral("public fixture")));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 30000);
+        QCOMPARE(controller->formatLabel(), QStringLiteral("7z"));
+        QCOMPARE(controller->entries()->rowCount(), 1);
+        QVERIFY(controller->passwordPrompt().isEmpty());
+        QTRY_VERIFY(!passwordWindow->isVisible());
+    }
     void creationControlsMatchReviewedSource() {
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility = qScopeGuard(
+            [&] { QAccessible::setActive(accessibilityWasActive); });
         QTemporaryDir input, output;
         QVERIFY(input.isValid() && output.isValid());
         const QStringList names{QStringLiteral("冰川湖.jpg"), QStringLiteral("山间日出.jpg"),
@@ -4713,7 +4846,44 @@ QtObject {
         group->setProperty("currentIndex", 2);
         QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".tar.gz")));
         QVERIFY(method->isEnabled() && !volume->isEnabled());
+        group->setProperty("currentIndex", 3);
+        QTRY_VERIFY(name->property("text").toString().endsWith(QStringLiteral(".7z")));
+        QVERIFY(method->isEnabled() && volume->isEnabled() && usePassword->isEnabled());
+        auto *solid = findVisual(create->contentItem(), "createSolid");
+        auto *encryptHeader = findVisual(create->contentItem(), "createEncryptHeader");
+        QVERIFY(solid && encryptHeader);
+        QVERIFY(!solid->property("checked").toBool());
+        QVERIFY(!encryptHeader->isEnabled());
+        for (const auto &action : {QAccessibleActionInterface::pressAction(),
+                                   QAccessibleActionInterface::toggleAction()}) {
+            auto *solidInterface = QAccessible::queryAccessibleInterface(solid);
+            QVERIFY(solidInterface && solidInterface->actionInterface());
+            QVERIFY(!solidInterface->text(QAccessible::Name).isEmpty());
+            const bool before = solid->property("checked").toBool();
+            solidInterface->actionInterface()->doAction(action);
+            QTRY_COMPARE(solid->property("checked").toBool(), !before);
+            QTRY_COMPARE(solidInterface->state().checked, !before);
+            auto *passwordInterface = QAccessible::queryAccessibleInterface(usePassword);
+            QVERIFY(passwordInterface && passwordInterface->actionInterface());
+            passwordInterface->actionInterface()->doAction(action);
+            QTRY_VERIFY(encryptHeader->isEnabled());
+            auto *headerInterface = QAccessible::queryAccessibleInterface(encryptHeader);
+            QVERIFY(headerInterface && headerInterface->actionInterface());
+            QVERIFY(!headerInterface->text(QAccessible::Name).isEmpty());
+            headerInterface->actionInterface()->doAction(action);
+            QTRY_VERIFY(encryptHeader->property("checked").toBool());
+            QTRY_VERIFY(headerInterface->state().checked);
+            passwordInterface->actionInterface()->doAction(action);
+            QTRY_VERIFY(!encryptHeader->isEnabled());
+            QTRY_VERIFY(!encryptHeader->property("checked").toBool());
+        }
+        const auto sevenZipCaptures = qEnvironmentVariable("XDZIP_CREATE_CONTROLS_AUDIT");
+        if (!sevenZipCaptures.isEmpty()) {
+            QVERIFY(QDir().mkpath(sevenZipCaptures));
+            QVERIFY(visual_audit::save(create, sevenZipCaptures, "create-7z"));
+        }
         group->setProperty("currentIndex", 0);
+        QVERIFY(!solid->property("checked").toBool());
         QTRY_VERIFY(method->isEnabled() && volume->isEnabled());
         name->forceActiveFocus(Qt::TabFocusReason);
         QTest::keyClick(create, Qt::Key_Tab);

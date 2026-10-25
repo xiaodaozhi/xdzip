@@ -240,6 +240,8 @@ fn tar_and_gzip_check_one_complete_stream_without_writing() {
                 &input,
                 &mut bytes,
                 EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: if gzip { "deflate" } else { "store" },
                     level: 6,
                     password: None,

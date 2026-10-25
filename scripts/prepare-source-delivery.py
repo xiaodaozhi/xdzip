@@ -66,6 +66,8 @@ def main():
         shutil.copy2(source, output/source.name)
         materials.append(dict(item))
     materials += collect_sparkle_sources(output, args.cache)
+    from native_codec_materials import corresponding_sources
+    materials += corresponding_sources(output)
     # Preserve original Mesa/LLVM inputs, not only URLs, for the retained Windows
     # software renderer. These are source references, not invented build records.
     native_sources = configuration()
@@ -108,7 +110,11 @@ def main():
 2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
    qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
-3. 从源码工作目录运行 cargo test --workspace --locked --offline。
+3. 从源码工作目录离线准备官方格式源码：
+   python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
+   构建下述 CMake 目标后，将 XDZIP_NATIVE_CODEC 指向生成的 xdzip-native-codec
+   （Windows 加 .exe），再运行 cargo test --workspace --locked --offline，
+   以及 cargo test -p xdzip-runtime --locked --offline native_backend_tests -- --ignored。
 4. 将 QT_PREFIX 指向重建的兼容 Qt SDK，运行：
    cmake -S . -B build/relink -G Ninja -DCMAKE_BUILD_TYPE=Release \\
      -DCMAKE_PREFIX_PATH="$QT_PREFIX" -DXDZIP_BUILD_DESKTOP_PREVIEW=ON

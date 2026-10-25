@@ -16,10 +16,12 @@ OperationWindow {
     requestedHeight: Math.min(Theme.operationCreateClientHeight, Screen.desktopAvailableHeight - 60)
     title: qsTrId("ui.fe189b616c1d")
     readonly property bool targetReady: Boolean(controller.targetCheck.valid) && controller.targetMatches(target.text)
-    readonly property string formatExtension: [".zip", ".tar", ".tar.gz"][formatGroup.currentIndex]
+    readonly property bool sevenZip: formatGroup.currentIndex === 3
+    readonly property bool supportsPasswordAndVolumes: formatGroup.currentIndex === 0 || sevenZip
+    readonly property string formatExtension: [".zip", ".tar", ".tar.gz", ".7z"][formatGroup.currentIndex]
     readonly property bool validName: fileName.text.trim().toLowerCase().endsWith(formatExtension) && fileName.text.trim().length > formatExtension.length && !/[\\/:*?"<>|\x00-\x1f]/.test(fileName.text)
     readonly property real volumeBytes: {
-        if (formatGroup.currentIndex !== 0) return 0;
+        if (!supportsPasswordAndVolumes) return 0;
         if (volume.currentIndex !== 13)
             return [0, 3000000, 4000000, 5000000, 10000000, 20000000, 25000000, 100000000, 300000000, 650000000, 700000000, 4000000000, 4700000000][volume.currentIndex];
         if (!/^[0-9]+$/.test(volume.editText)) return -1;
@@ -29,8 +31,15 @@ OperationWindow {
     function passwordBytes(text: string): int {
         try { return unescape(encodeURIComponent(text)).length; } catch (_) { return -1; }
     }
-    readonly property bool passwordValid: formatGroup.currentIndex !== 0 || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
+    readonly property bool passwordValid: !supportsPasswordAndVolumes || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
     readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
+    readonly property real minimumFormatWidth: Math.ceil(formatTextMetrics.advanceWidth) * formatGroup.options.length + formatGroup.padding * 2
+    readonly property real optionLabelMaximumWidth: Math.max(0, optionsGrid.width - minimumFormatWidth - optionsGrid.columnSpacing)
+    TextMetrics {
+        id: formatTextMetrics
+        text: "TAR.GZ"
+        font.pixelSize: Theme.operationFooterFontSize
+    }
     onClosing: password.text = ""
     readonly property string inputSummary: inputPanel.inputSummary
     function configure() {
@@ -47,6 +56,8 @@ OperationWindow {
         volume.currentIndex = 0;
         volumeUnit.currentIndex = 2;
         usePassword.checked = false;
+        solid.checked = false;
+        encryptHeader.checked = false;
         password.text = "";
         present();
         controller.checkCreationTarget(target.text);
@@ -236,12 +247,15 @@ OperationWindow {
                                     anchors.margins: 8
                                     spacing: 8
                                     GridLayout {
+                                        id: optionsGrid
                                         Layout.fillWidth: true
                                         columns: 2
                                         columnSpacing: 12
                                         rowSpacing: 8
                                         Text {
+                                            Layout.maximumWidth: root.optionLabelMaximumWidth
                                             text: qsTrId("ui.5e30948d6a8b")
+                                            wrapMode: Text.Wrap
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -249,13 +263,16 @@ OperationWindow {
                                             id: formatGroup
                                             objectName: "createFormat"
                                             Layout.fillWidth: true
+                                            Layout.minimumWidth: root.minimumFormatWidth
                                             accessibleLabel: qsTrId("ui.5e30948d6a8b")
                                             onCurrentIndexChanged: {
                                                 if (!fileName) return;
-                                                const stem = fileName.text.replace(/\.(tar\.gz|zip|tar)$/i, "");
-                                                fileName.text = stem + [".zip", ".tar", ".tar.gz"][currentIndex];
+                                                const stem = fileName.text.replace(/\.(tar\.gz|zip|tar|7z)$/i, "");
+                                                fileName.text = stem + [".zip", ".tar", ".tar.gz", ".7z"][currentIndex];
                                                 volume.currentIndex = 0;
                                                 usePassword.checked = false;
+                                                solid.checked = false;
+                                                encryptHeader.checked = false;
                                                 password.text = "";
                                             }
                                             options: [
@@ -270,11 +287,17 @@ OperationWindow {
                                                 {
                                                     text: "TAR.GZ",
                                                     enabled: true
+                                                },
+                                                {
+                                                    text: "7z",
+                                                    enabled: true
                                                 }
                                             ]
                                         }
                                         Text {
+                                            Layout.maximumWidth: root.optionLabelMaximumWidth
                                             text: qsTrId("ui.e7e4273dd4c8")
+                                            wrapMode: Text.Wrap
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -289,7 +312,9 @@ OperationWindow {
                                             model: [qsTrId("ui.114918a8e262"), qsTrId("ui.0ab258fe71f4"), qsTrId("ui.64209bb8c4df"), qsTrId("ui.bd60ad0e564e")]
                                         }
                                         Text {
+                                            Layout.maximumWidth: root.optionLabelMaximumWidth
                                             text: qsTrId("ui.5473b9b24a75")
+                                            wrapMode: Text.Wrap
                                             font.pixelSize: Theme.operationCreateBodySize
                                             color: Theme.text
                                         }
@@ -298,7 +323,7 @@ OperationWindow {
                                             spacing: 8
                                             OperationSelect {
                                                 id: volume
-                                                enabled: formatGroup.currentIndex === 0
+                                                enabled: root.supportsPasswordAndVolumes
                                                 objectName: "createVolume"
                                                 Layout.fillWidth: true
                                                 density: root.density
@@ -322,7 +347,7 @@ OperationWindow {
                                     }
                                     Text {
                                         Layout.fillWidth: true
-                                        text: formatGroup.currentIndex === 1 ? qsTrId("ui.a823dd053540") : formatGroup.currentIndex === 2 ? qsTrId("ui.8de83aec57d2") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? qsTrId("ui.17f715707e84") : qsTrId("ui.13e4af7e4901")
+                                        text: formatGroup.currentIndex === 1 ? qsTrId("ui.a823dd053540") : formatGroup.currentIndex === 2 ? qsTrId("ui.8de83aec57d2") : volume.currentIndex === 13 && root.volumeBytes < 0 ? qsTrId("ui.58e4aeca8ddc") : volume.currentIndex > 0 ? (root.sevenZip ? qsTrId("create.sevenZipVolumes") : qsTrId("ui.17f715707e84")) : root.sevenZip ? qsTrId("create.sevenZipMethod") : qsTrId("ui.13e4af7e4901")
                                         font.pixelSize: Theme.operationCreateNoteSize
                                         color: Theme.textSecondary
                                     }
@@ -330,11 +355,11 @@ OperationWindow {
                             }
                             OperationCheck {
                                 id: usePassword
-                                enabled: formatGroup.currentIndex === 0
+                                enabled: root.supportsPasswordAndVolumes
                                 objectName: "createUsePassword"
                                 text: qsTrId("ui.7673702e6ff6")
                                 density: root.density
-                                onCheckedChanged: if (!checked) password.text = ""
+                                onCheckedChanged: if (!checked) { password.text = ""; encryptHeader.checked = false; }
                             }
                             OperationField {
                                 id: password
@@ -349,10 +374,25 @@ OperationWindow {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: formatGroup.currentIndex !== 0 ? qsTrId("ui.f0af11af0bbb") : root.passwordValid ? qsTrId("ui.511f8696a4f3") : qsTrId("ui.cbf703a10c7b")
+                                text: !root.supportsPasswordAndVolumes ? qsTrId("ui.f0af11af0bbb") : !root.passwordValid ? qsTrId("ui.cbf703a10c7b") : root.sevenZip ? qsTrId("create.sevenZipEncryption") : qsTrId("ui.511f8696a4f3")
                                 wrapMode: Text.Wrap
                                 font.pixelSize: Theme.operationCreateNoteSize
                                 color: root.passwordValid ? Theme.textSecondary : Theme.menuDanger
+                            }
+                            OperationCheck {
+                                id: encryptHeader
+                                objectName: "createEncryptHeader"
+                                visible: root.sevenZip
+                                enabled: root.sevenZip && usePassword.checked
+                                text: qsTrId("create.encryptHeader")
+                                density: root.density
+                            }
+                            OperationCheck {
+                                id: solid
+                                objectName: "createSolid"
+                                visible: root.sevenZip
+                                text: qsTrId("create.solid")
+                                density: root.density
                             }
                         }
                     }
@@ -386,7 +426,8 @@ OperationWindow {
                 primary: true
                 enabled: root.inputs.length > 0 && root.validName && root.targetReady && root.optionsValid && !root.controller.busy
                 onClicked: {
-                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), formatGroup.currentIndex === 1 || (formatGroup.currentIndex === 0 && level.currentIndex === 0) ? 0 : 8, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, formatGroup.currentIndex === 0 && usePassword.checked ? password.text : "");
+                    const method = formatGroup.currentIndex === 1 || (root.supportsPasswordAndVolumes && level.currentIndex === 0) ? 0 : root.sevenZip ? 32 : 8;
+                    root.controller.startCreation(root.inputs.map(item => item.path), target.text, fileName.text.trim(), method, formatGroup.currentIndex === 2 && level.currentIndex === 0 ? 0 : [6, 1, 6, 9][level.currentIndex], false, root.volumeBytes, root.supportsPasswordAndVolumes && usePassword.checked ? password.text : "", root.sevenZip && solid.checked, root.sevenZip && usePassword.checked && encryptHeader.checked);
                     password.text = "";
                 }
             }

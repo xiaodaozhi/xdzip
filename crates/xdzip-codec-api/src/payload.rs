@@ -41,6 +41,10 @@ impl std::error::Error for DecodeError {}
 pub trait DecodedSink {
     /// Accept actual decoded bytes, or stop decoding. No destination is exposed.
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError>;
+    /// Meter bytes decoded only to reach a selected solid record, without publishing output.
+    fn charge_skipped(&mut self, _bytes: u64) -> Result<(), DecodeError> {
+        Ok(())
+    }
 }
 /// One opened format instance. Its metadata identities match the host snapshot.
 pub trait PayloadReader {
@@ -74,4 +78,14 @@ pub trait PayloadCodec {
         snapshot: &[Entry],
         control: &'a Cancellation,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError>;
+    /// Open a header-encrypted archive using the secret retained by its immutable session.
+    fn open_payload_with_password<'a>(
+        &self,
+        source: &'a mut dyn ReadSource,
+        snapshot: &[Entry],
+        control: &'a Cancellation,
+        _password: Option<&str>,
+    ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
+        self.open_payload(source, snapshot, control)
+    }
 }

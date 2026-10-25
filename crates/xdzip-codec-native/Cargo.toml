@@ -1,0 +1,17 @@
+# crates/xdzip-codec-native/Cargo.toml
+
+[package]
+name = "xdzip-codec-native"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-domain = { path = "../xdzip-domain" }
+zeroize = "=1.8.2"
+
+[lints]
+workspace = true

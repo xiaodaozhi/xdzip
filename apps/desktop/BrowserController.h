@@ -270,7 +270,8 @@ class BrowserController : public QObject {
     }
     Q_INVOKABLE void startCreation(const QStringList &inputs, const QString &target,
                                    const QString &name, int method, int level, bool openAfter,
-                                   qulonglong volumeBytes = 0, const QString &password = QString());
+                                   qulonglong volumeBytes = 0, const QString &password = QString(),
+                                   bool solid = false, bool encryptHeaders = false);
     Q_INVOKABLE void checkTarget(const QString &path);
     Q_INVOKABLE void checkCreationTarget(const QString &path);
     Q_INVOKABLE bool targetMatches(const QString &path) const;
@@ -327,6 +328,7 @@ class BrowserController : public QObject {
         int sort = 0;
     };
     struct Result {
+        bool opening = false;
         bool preflight = false;
         bool extraction = false;
         bool creating = false;
@@ -373,7 +375,8 @@ class BrowserController : public QObject {
     mutable quint64 m_summaryRevision = std::numeric_limits<quint64>::max();
     mutable QString m_summaryBytes;
     mutable bool m_summaryPhysical = true;
-    void start(const QString &path, int offset);
+    void start(const QString &path, int offset, const QString &password = {},
+               bool withPassword = false);
     static QString explain(const QString &code);
     void replaceDirectories(const QList<DirectoryRow> &rows);
     ArchiveTableModel m_model;
@@ -427,6 +430,8 @@ class BrowserController : public QObject {
     QStringList m_extractionSelectors;
     QString m_extractionDirectory, m_sourcePath, m_checkedTarget;
     QMap<quint64, QVariantMap> m_tasks;
+    QVariantMap m_openPasswordPrompt;
+    quint64 m_openPasswordGeneration = 0;
     QSet<quint64> m_openAfterTasks;
     bool m_pendingOpenAfter = false;
     QString m_creationError;

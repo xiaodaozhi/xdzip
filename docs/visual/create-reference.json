@@ -12,7 +12,8 @@
   "footer_action_height": 32,
   "reference_notes": [
     "C01 source shapes and three cards retained; normal density policy is the explicit 0.8 correction",
-    "WP-11 enables TAR/TAR.GZ; TAR disables levels, both disable password/volumes; pending directory bytes are not fabricated",
+    "7z adds a fourth format segment, LZMA2, solid and header-encryption options using existing controls; ZIP and 7z enable password/volumes, TAR disables levels, TAR/TAR.GZ disable password/volumes",
+    "The format group reserves four times the measured TAR.GZ label width plus its existing track insets; option labels wrap only when enlarged translated text would otherwise overflow a segment",
     "Selected-input count and empty-state layout are functional additions",
     "Native OS titlebar is outside client bounds; body may scroll on short screens"
   ],

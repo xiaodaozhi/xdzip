@@ -5,7 +5,7 @@
 读取层支持编号连续字节流 `name.zip.001`、`.002` 等，以及 PKZIP 的
 `name.z01`、`.z02`、最终 `name.zip`。任意一卷均可作为打开入口。
 卷必须在同一目录，名称连续，最多 1024 卷；拒绝缺卷、链接及特殊文件。
-只有 ZIP 支持此能力，不由文件后缀推断 RAR 或 7z 解码能力。
+文件后缀只用于发现相邻卷组，真实容器仍由来源字节探测并由对应后端完整扫描。
 
 Rust 主机持有各卷的身份、长度和修改时间。逻辑输入按需跨卷读取，不合并
 整个归档。PKZIP 的磁盘相对偏移转换为有界的单卷中央目录视图；原有编解码器
@@ -14,6 +14,14 @@ Rust 主机持有各卷的身份、长度和修改时间。逻辑输入按需跨
 
 验收覆盖编号卷、PKZIP、ZIP64、跨卷头与负载、缺卷、非连续卷、源替换、
 非法磁盘编号、中文名称，以及普通单卷回归。
+
+## 7z 与 RAR 分卷
+
+7z 编号卷使用 name.7z.001、.002 等连续字节流。RAR 使用 name.partN.rar 或 name.rar、name.r00 等旧式卷名，保留 RAR 每个物理卷的边界，不将其当成单一 RAR 字节流交给 UnRAR。两者均可从任意现存卷开始定位同目录卷组；上限 1024 卷，目录发现上限十万项，缺卷、名称编号冲突、链接和重解析点均明确拒绝。
+
+Rust 保存每卷句柄身份、长度和时间，并通过 ReadSource::volume_lengths() 向原生适配器声明授权边界。原生进程只能请求宿主读取已授权范围；换卷不接纳任意归档提供的主机路径。所有卷参与来源复核和输出覆盖保护，单卷或后续卷发生变化均停止任务。
+
+7z 和 RAR 文件名加密可能在打开阶段要求密码。普通 Open 返回 password_required 时不发布索引，Qt 复用密码窗口，以 OpenWithPassword 重新提交原选中文件与受限秘密；错误验证值返回 wrong_password。成功后密码只由会话及其已准入任务持有，关闭会话释放会话副本，不写设置和恢复记录。
 
 ## 双击普通文件
 
@@ -33,3 +41,5 @@ Rust 主机持有各卷的身份、长度和修改时间。逻辑输入按需跨
 临时文件的清理限定于应用创建的私有缓存，不扫描或删除用户解压目录。
 验收覆盖成功自动隐藏、失败保留、取消、密码重试、重复文件名、Unicode 和
 特殊字符、关闭页面后任务路由、临时目录安全和退出清理策略。
+
+English: 7z numbered parts form one authorized byte stream. RAR partN and legacy volume names preserve physical boundaries supplied through ReadSource::volume_lengths; UnRAR cannot select arbitrary host paths. Every part is version checked and protected from output overwrite. Encrypted directory opens publish no partial metadata and retain secrets only in their session and admitted tasks.

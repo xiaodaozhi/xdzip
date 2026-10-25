@@ -26,6 +26,7 @@ pub const MAX_TASKS: usize = 32;
 pub const MAX_PASSWORD_BYTES: usize = 1024;
 
 /// One task-local extraction secret. It is never cloned into events or commands.
+#[derive(Clone)]
 pub struct Password(zeroize::Zeroizing<String>);
 impl Password {
     /// Preserve all UTF-8 bytes, including empty values, whitespace and controls.
@@ -418,6 +419,7 @@ impl Archive {
             .any(|p| self.rows[p.index].link && self.rows[p.index].encrypted);
         Ok(Job {
             source,
+            password: self.password.clone(),
             format: self.format,
             rows: Arc::clone(&self.rows),
             planned,

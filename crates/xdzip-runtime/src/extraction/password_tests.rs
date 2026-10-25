@@ -43,6 +43,8 @@ pub(crate) fn archive_bytes(records: &[(&str, &[u8], Option<&str>, bool)], metho
                 &input,
                 &mut part,
                 EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: if method == 0 { "store" } else { "deflate" },
                     level: 6,
                     password: *password,

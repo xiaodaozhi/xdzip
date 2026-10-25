@@ -25,11 +25,11 @@
 	<string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
     <key>CFBundleDocumentTypes</key>
     <array><dict>
-        <key>CFBundleTypeName</key><string>ZIP, TAR, TAR.GZ</string>
+        <key>CFBundleTypeName</key><string>ZIP, TAR, TAR.GZ, 7z, RAR</string>
         <key>CFBundleTypeRole</key><string>Viewer</string>
         <key>LSHandlerRank</key><string>${XDZIP_MACOS_HANDLER_RANK}</string>
-        <key>LSItemContentTypes</key><array><string>public.zip-archive</string><string>public.tar-archive</string><string>org.gnu.gnu-zip-tar-archive</string><string>org.gnu.gnu-zip-archive</string></array>
-        <key>CFBundleTypeExtensions</key><array><string>zip</string><string>tar</string><string>tgz</string><string>gz</string></array>
+        <key>LSItemContentTypes</key><array><string>public.zip-archive</string><string>public.tar-archive</string><string>org.gnu.gnu-zip-tar-archive</string><string>org.gnu.gnu-zip-archive</string><string>org.7-zip.7-zip-archive</string><string>com.rarlab.rar-archive</string></array>
+        <key>CFBundleTypeExtensions</key><array><string>zip</string><string>tar</string><string>tgz</string><string>gz</string><string>7z</string><string>rar</string></array>
         <key>CFBundleTypeIconFile</key><string>xdzip-zip.icns</string>
     </dict></array>
 	<key>CFBundleInfoDictionaryVersion</key>

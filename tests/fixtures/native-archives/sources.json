@@ -1,0 +1,102 @@
+{
+  "upstream_version": "v3.8.2",
+  "license": "BSD-2-Clause",
+  "fixtures": [
+    {
+      "file": "test_read_format_rar.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar.rar.uu",
+      "source_sha256": "d1e75b4120995bce82fc4e72ebf8b80d18ea69fa34ac62de383b8393f92afa09",
+      "sha256": "d421b86f6290aefad61b2a36737253b2b30fe27c156bd95abfc230f24fe0307e"
+    },
+    {
+      "file": "test_read_format_rar4_encrypted.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar4_encrypted.rar.uu",
+      "source_sha256": "42dbdbebe72842c255ef9d600a37ca38cde2133e07abfcf49512dcb81280c746",
+      "sha256": "c30dc6d10e59aaab1c863afa469d188c644a22d67d6e50ac7ca887e520f5fc8b"
+    },
+    {
+      "file": "test_read_format_rar4_encrypted_filenames.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar4_encrypted_filenames.rar.uu",
+      "source_sha256": "aa4d2a0235c7627bc6011c081d16b3b36b1986f315de0be5891315622213c383",
+      "sha256": "0201a8cd86c15c117c7541d841c36c0dbabb4824396f19889db5f7d5364e7ef9"
+    },
+    {
+      "file": "test_read_format_rar5_compressed.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_compressed.rar.uu",
+      "source_sha256": "7a87af5035430d2307f9a183b2da8a71c95b3c0a5b8e8d1f172ef3343d4b8620",
+      "sha256": "68f9d7e2662cd5bc5607ba9c6bf1edbf121cf3b08011a7d8643091791750a7c8"
+    },
+    {
+      "file": "test_read_format_rar5_encrypted.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_encrypted.rar.uu",
+      "source_sha256": "5cc262d34226c3c9298df7bda065eee1523f8ff6ebaced486f48117095661a0b",
+      "sha256": "72b69a1d5f5757511e683a9207166c60e91ce0846ae446b8b332b085f9e0ba48"
+    },
+    {
+      "file": "test_read_format_rar5_encrypted_filenames.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_encrypted_filenames.rar.uu",
+      "source_sha256": "f113860fd2f06aa13b2f933150a1f80988038cdeef393fbb6a1a0d302c86148e",
+      "sha256": "b2b98004c9cbf4f2a4000380ad47a16dea99f2d50835b1602c40d724eb82c300"
+    },
+    {
+      "file": "test_read_format_rar5_multiarchive_solid.part01.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_multiarchive_solid.part01.rar.uu",
+      "source_sha256": "198ab406491ef87855e5b48c62c5e86746c73627e5bcecc7a9b4850088aa670c",
+      "sha256": "6607f575dad0b28aaeb02298b4c04a0e5a606e77f952127d2d9e346f60616a26"
+    },
+    {
+      "file": "test_read_format_rar5_multiarchive_solid.part02.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_multiarchive_solid.part02.rar.uu",
+      "source_sha256": "a01fb59115f210d7f19c3d54e3c1904fa9be9f438822f2fefcdffc5f0bb82848",
+      "sha256": "eb119ed53511905ca6f1844c164b6246d8fcdca0d1f38a8e3fb13da9c0932fbd"
+    },
+    {
+      "file": "test_read_format_rar5_multiarchive_solid.part03.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_multiarchive_solid.part03.rar.uu",
+      "source_sha256": "072c7f69286153cc465745cff8747ae640ea97e7433de5ce74beca17fc8317e8",
+      "sha256": "e814c3dbdaf3f613fd25c840065d25543f31e6b6c95505e7e25f47867a4812bd"
+    },
+    {
+      "file": "test_read_format_rar5_multiarchive_solid.part04.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_multiarchive_solid.part04.rar.uu",
+      "source_sha256": "d5e569b55002327f5f8f0b07f070a3e6952aab58ba079bb987e976acc21f0713",
+      "sha256": "9ff5a4e633b0e82a2ce6e022f3d389654dbb77a0906a34f107676d6673989c9f"
+    },
+    {
+      "file": "test_read_format_rar5_multiple_files_solid.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_multiple_files_solid.rar.uu",
+      "source_sha256": "0184822d0b061ae1a705a46cf1ca4adb4981b9e37bdb6500a48530a19c56fd88",
+      "sha256": "0aa2c652c06304dedd93019663c1d52d5e85055d5fdb8045bfcc4345b90b4a0f"
+    },
+    {
+      "file": "test_read_format_rar5_solid_encrypted.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_solid_encrypted.rar.uu",
+      "source_sha256": "9abb75e0de966b3db2bd7f3e8f6ec2db11a953b8855e0fb97d259472119a6f3f",
+      "sha256": "307de6b76f6b7cc3a221975e14b8a6d7a6b87a30fd1ee7a0e08e4333724e5657"
+    },
+    {
+      "file": "test_read_format_rar5_solid_encrypted_filenames.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar5_solid_encrypted_filenames.rar.uu",
+      "source_sha256": "f05919eebdf3b41a82046dc5b9d6c0e2426e8ec7c25f47e7e0501f5900d33913",
+      "sha256": "61bcc1272cc827fe607f0388d19f8d48c54af9b2cdb7bc0e32ebd2e369c0847e"
+    },
+    {
+      "file": "test_read_format_rar_compress_normal.rar",
+      "upstream": "https://github.com/libarchive/libarchive/blob/v3.8.2/libarchive/test/test_read_format_rar_compress_normal.rar.uu",
+      "source_sha256": "1c36a76e84bf08d1fdf7597b43737fa174a0813bf2715bf181fd3afb6f6f1f11",
+      "sha256": "7d32e2ef511d0ade372345440838165df828197eff4d7816880dafde690cce03"
+    },
+    {
+      "file": "rar7-store-small.rar",
+      "generator": "scripts/generate-rar7-fixtures.py",
+      "license": "Apache-2.0",
+      "sha256": "cd4d8289826dd7999ae12ad63c435aa72334de8f829932620455f08fa92a6111"
+    },
+    {
+      "file": "rar7-dictionary-limit.rar",
+      "generator": "scripts/generate-rar7-fixtures.py",
+      "license": "Apache-2.0",
+      "sha256": "69892ba9775dde92e4f0d486d766c7d44b973ddfa4530eeca5b5396defb15c0f"
+    }
+  ]
+}

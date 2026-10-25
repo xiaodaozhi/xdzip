@@ -206,6 +206,7 @@ class Workflow:
                       QT_VERSION, self.platform_spec[2], '-O', qt_root], cwd=downloads)
         self.doctor('build')
         self.run(['cargo', 'fetch', '--locked'])
+        self.script('prepare-native-codecs.py')
         if self.args.packaging:
             # Fetch/cache small license and schema inputs before costly deployment.
             self.script('prepare-runtime-notices.py', '--qt-prefix', self.qt,
@@ -235,6 +236,7 @@ class Workflow:
         before = self.source()
         self.check_cached_sdk()
         self.script('sync-version.py', '--check')
+        self.script('prepare-native-codecs.py', '--offline')
         command = ['cmake', '-S', ROOT, '-B', self.build, '-G', 'Ninja',
                    '-DCMAKE_BUILD_TYPE='+self.args.configuration, '-DXDZIP_BUILD_DESKTOP_PREVIEW=ON',
                    '-DBUILD_TESTING=ON',
@@ -257,8 +259,10 @@ class Workflow:
         self.doctor('test')
         receipt = self.build_receipt()
         env = dict(self.env, QT_QPA_PLATFORM='offscreen', QT_QUICK_BACKEND='software')
+        env['XDZIP_NATIVE_CODEC'] = str(self.app.parent / ('xdzip-native-codec.exe' if self.system == 'windows' else 'xdzip-native-codec'))
         if not self.args.skip_rust:
             self.run(['cargo', 'test', '--workspace', '--locked'], env=env)
+            self.run(['cargo', 'test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored'], env=env)
         self.script('check-ui-i18n.py', env=env)
         self.script('check-window-contracts.py', '--self-test', env=env)
         self.script('check-operation-components.py', env=env)
@@ -315,6 +319,7 @@ class Workflow:
             self.runtime.mkdir(parents=True)
             shutil.copy2(self.app, self.runtime/'xdzip.exe')
             shutil.copy2(self.app.parent/'xdzip-update-helper.exe', self.runtime/'xdzip-update-helper.exe')
+            shutil.copy2(self.app.parent/'xdzip-native-codec.exe', self.runtime/'xdzip-native-codec.exe')
             shutil.copy2(ROOT/'design/assets/brand/xdzip-zip.ico', self.runtime)
             self.script('deploy_windows.py', '--root', self.runtime, '--qt-prefix', self.qt,
                         '--qml-dir', ROOT/'apps/desktop/ui', '--qml-import', self.build/'qml',

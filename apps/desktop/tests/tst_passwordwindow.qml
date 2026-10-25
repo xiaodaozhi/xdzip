@@ -72,6 +72,15 @@ Item {
             compare(passwordWindow.title,qsTrId("integrity.passwordTitle"));
             compare(findChild(passwordWindow,"passwordSubmit").text,qsTrId("integrity.continue"));
         }
+        function test_open_password_uses_open_operation_and_identity() {
+            testController.passwordPrompt = {taskId:"open",promptId:"open-1",name:"secret.7z",retry:false,kind:"open"};
+            tryCompare(passwordWindow,"visible",true);
+            compare(passwordWindow.title,qsTrId("password.openTitle"));
+            compare(findChild(passwordWindow,"passwordSubmit").text,qsTrId("password.openContinue"));
+            compare(findChild(passwordWindow,"passwordCancel").text,qsTrId("common.cancel"));
+            passwordWindow.close();
+            compare(testController.cancelledTask,"open");
+        }
         function test_control_characters_are_not_trimmed() {
             request("controls",false);
             testController.expectedInput = " \t\u0000\r\n ";

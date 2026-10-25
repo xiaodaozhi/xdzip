@@ -49,7 +49,7 @@ for scene in ['create-light','create-dark','create-remove-hover','create-field-f
     group,track = nodes['createFormat'],nodes['createFormatTrack']
     check(scene+'/segmented group height',group['height'],contract['format_group_height'],1)
     check(scene+'/segmented track radius',track['radius'],contract['format_group_radius'],.01)
-    slots = [nodes['createFormat-'+str(i)] for i in range(3)]
+    slots = [nodes['createFormat-'+str(i)] for i in range(4)]
     check(scene+'/segmented widths',max(n['width'] for n in slots)-min(n['width'] for n in slots),0,1)
     for a,b in zip(slots,slots[1:]):
         check(scene+'/segment seam',a['x']+a['width'],b['x'],.01)

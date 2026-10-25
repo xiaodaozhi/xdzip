@@ -26,8 +26,8 @@
 
 - **清晰地浏览内容**：目录树、列表与网格、搜索、全结果排序和文件属性，支持最多十万条物理记录。
 - **按需要解压**：选择文件或文件夹，确认目标与重名策略，查看真实进度，随时请求取消；已完成的文件有明确结果记录。
-- **文件拖放**：文件列表右键打开与双击一致，支持拖出所选文件和目录，拖入本地文件后确认添加到当前目录，以及将所选项目拖到列表文件夹或目录树进行包内移动。普通单文件 ZIP、TAR、TAR.GZ 使用完整校验后的安全替换，加密与分卷包暂不支持添加和移动，并显示拒绝原因。平台传输与验收边界见[文件拖放契约](docs/engineering/archive-transfers.md)。
-- **创建压缩包**：支持 ZIP、TAR 与 TAR.GZ，提供压缩级别、ZIP AES-256 内容加密和编号分卷，自动排除各层级 `.DS_Store` 文件和 `__MACOSX`／`_MACOSX` 目录，写后校验通过后保存。
+- **文件拖放**：文件列表右键打开与双击一致，支持拖出所选文件和目录，拖入本地文件后确认添加到当前目录，以及将所选项目拖到列表文件夹或目录树进行包内移动。普通单文件 ZIP、TAR、TAR.GZ、7z 使用完整校验后的安全替换，加密与分卷包暂不支持添加和移动，RAR 只读，并显示拒绝原因。平台传输与验收边界见[文件拖放契约](docs/engineering/archive-transfers.md)。
+- **创建压缩包**：支持 ZIP、TAR、TAR.GZ 与 7z，提供压缩级别、ZIP／7z AES-256 内容加密和编号分卷，7z 还可选择固实压缩与文件名加密。自动排除各层级 `.DS_Store` 文件和 `__MACOSX`／`_MACOSX` 目录，写后校验通过后保存。
 - **测试压缩包**：后台检查整包结构和受支持的内容校验，支持密码与取消，显示真实结果，全程不写出文件；TAR 只检查结构与可读性。
 - **按习惯打开**：默认新标签页，也可设置为新窗口；每个登录会话共用一个进程和托盘，关闭页面后任务继续运行。
 - **适应你的桌面**：浅色、深色与跟随系统主题，100%／125%／150% 字号、列表密度、中文 (简体) 与 English (US)，配合 macOS 系统菜单和全平台托盘。
@@ -43,6 +43,8 @@
 | TAR.GZ | ✓ | ✓ | ✓ |
 | AES-256 ZIP | ✓ | ✓ | ✓ |
 | 分卷 ZIP | ✓ | ✓ | ✓ |
+| 7z | ✓ | ✓ | ✓ |
+| RAR | ✓ | ✓ | — |
 
 ✓ 已支持，— 尚不支持。
 
@@ -50,10 +52,12 @@
 - **TAR 与 TAR.GZ**：处理普通文件与目录，TAR.GZ 也支持 `.tgz` 扩展名；TAR 仅打包，TAR.GZ 提供四档级别。
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
+- **7z**：使用官方 7-Zip 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[官方后端契约](docs/engineering/native-codecs.md)。
+- **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 的全部 LZ 参数组合兼容性尚未完成实样验证，字典超出资源预算时明确拒绝。具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
 
 创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包会优先采用 Unicode 声明，再自适应 GBK/GB18030、Big5、Shift-JIS 等旧编码，并贯通浏览、解压与普通包修改。短名称或混合旧编码无法保证唯一识别，损坏声明及异常路径继续拒绝输出，详见[文件名编码契约](docs/engineering/filename-encoding.md)。
 
-解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)与 [TAR/GZIP](docs/engineering/m4-tar-gzip.md)契约。
+解压包含路径检查、目标授权、重名决策、暂存与内容校验。POSIX 平台的 ZIP 在限定条件下可还原相对符号链接和可执行权限，不恢复特权位；TAR、7z、RAR 链接、Windows ZIP 链接及特殊对象不支持。具体边界见[安全解压](docs/engineering/m3-extraction.md)、[ZIP 创建](docs/engineering/m4-creation.md)、[TAR/GZIP](docs/engineering/m4-tar-gzip.md)与[官方 7z／RAR 后端](docs/engineering/native-codecs.md)契约。
 
 ## 获取与安装
 
@@ -88,14 +92,14 @@ python3 scripts/desktop.py test
 
 Windows 在 MSVC x64 开发环境运行，可将 `python3` 换为 `python`；macOS 使用 Apple Silicon 原生终端与有效 Xcode Command Line Tools。已有 Qt 时用 `--qt-prefix` 指定 SDK 前缀，无需重新下载。
 
-同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。仅验证 Rust 核心可运行 `cargo test --workspace --locked`。
+同一入口提供 `doctor`、`prepare`、`build`、`test`、`package` 和 `verify`，各阶段独立执行。日常构建允许未提交改动，打包要求干净源码与对应构建身份。环境检查、参数、平台包及完整操作顺序统一见[开发构建指南](docs/engineering/developer-build.md)。单独执行 Rust workspace 测试时，也须先构建官方原生后端并通过 `XDZIP_NATIVE_CODEC` 指定工作进程，再运行 `cargo test --workspace --locked`；统一 `test` 入口会自动提供该路径。
 
 默认运行入口为 `build/desktop/apps/desktop/xdzip`，Windows 加 `.exe`，macOS 为该目录下 `xdzip.app/Contents/MacOS/xdzip`。普通 Mac 开发／测试副本不进入系统“打开方式”候选；主应用与本地开发 DMG 的构建方式见[Mac 部署指南](docs/engineering/macos-deployment.md)。
 
 ## 当前限制
 
 - 支持独立标签页或多窗口会话，文件内容预览尚未实现。完整性检查的支持与限制见[检查契约](docs/engineering/archive-checking.md)。
-- 尚不支持 7z／RAR、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。
+- 尚不支持 RAR 创建与修改、加密或分卷 7z 修改、独立非 TAR 的 GZIP、稀疏 TAR、第三方扩展及百万条磁盘索引。7z 修改重建受上述 512 MiB 工作集限制。
 - 当前不提供 Intel Mac、Windows／Linux ARM64 包，不承诺其他 Linux 发行版或 Wayland。
 
 版本、渠道和构建身份可在“关于 xdzip”或 `xdzip --version` 查看。项目采取尽力维护，优先处理最新版本反馈，不承诺固定响应时限。

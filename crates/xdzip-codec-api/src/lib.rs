@@ -7,8 +7,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use xdzip_domain::identity::EntryId;
 
 /// Seekable input supplied by the host; codecs do not open arbitrary paths.
-pub trait ReadSource: Read + Seek {}
-impl<T: Read + Seek> ReadSource for T {}
+pub trait ReadSource: Read + Seek {
+    /// Authorized physical volume lengths. RAR volumes retain their own boundaries.
+    fn volume_lengths(&self) -> Option<&[u64]> {
+        None
+    }
+}
+impl ReadSource for std::fs::File {}
+impl<T: AsRef<[u8]>> ReadSource for std::io::Cursor<T> {}
 
 /// Cooperative control shared between the GUI and its single read worker.
 #[derive(Default)]
@@ -66,6 +72,10 @@ pub enum Format {
     Tar,
     /// One GZIP filter around TAR.
     TarGzip,
+    /// Official 7-Zip container backend.
+    SevenZip,
+    /// Official UnRAR read-only container backend.
+    Rar,
 }
 impl Format {
     /// Stable user-visible capability label.
@@ -74,6 +84,8 @@ impl Format {
             Self::Zip => "ZIP",
             Self::Tar => "TAR",
             Self::TarGzip => "TAR.GZ",
+            Self::SevenZip => "7z",
+            Self::Rar => "RAR",
         }
     }
 }
@@ -104,11 +116,12 @@ pub struct Entry {
     pub size: u64,
     /// Raw declared compressed bytes.
     pub packed_size: u64,
-    /// ZIP method number; listing a method does not imply decoding support.
+    /// ZIP method or RAR unpack version; 7z uses zero when no exact method is exposed.
+    /// Use payload_supported for decoding admission, never generic ZIP number checks.
     pub method: u16,
     /// DOS-shaped date/time bits. ZIP uses local time, TAR uses UTC; zero is unavailable.
     pub modified_dos: u32,
-    /// Metadata encryption flag. Browsing alone never requests a password.
+    /// Content encryption flag. Encrypted headers require a secret before browsing.
     pub encrypted: bool,
     /// Supported password profile from container metadata, not payload authentication.
     pub password_supported: bool,
@@ -122,6 +135,22 @@ impl Entry {
         self.decoded_name
             .as_ref()
             .map_or(self.raw_name.as_slice(), |name| name.as_bytes())
+    }
+    /// Container-specific payload admission; ZIP method numbers never describe other containers.
+    pub fn payload_supported(&self) -> bool {
+        match self.format {
+            Format::Zip => {
+                if self.encrypted {
+                    self.password_supported
+                } else {
+                    matches!(self.method, 0 | 8)
+                }
+            }
+            Format::Tar | Format::TarGzip => !self.warning && !self.link,
+            Format::SevenZip | Format::Rar => {
+                !self.warning && !self.link && (!self.encrypted || self.password_supported)
+            }
+        }
     }
     /// Charge every owned name allocation, including retained original bytes.
     pub fn name_capacity(&self) -> usize {
@@ -146,6 +175,10 @@ pub enum ScanError {
     Cancelled,
     /// File size or modification time changed during the scan.
     SourceChanged,
+    /// Header encryption requires a secret before metadata can be published.
+    PasswordRequired,
+    /// A header password verifier rejected the provided secret.
+    WrongPassword,
     /// One or more required adjacent archive volumes are absent.
     MissingVolume,
 }
@@ -159,6 +192,8 @@ impl std::fmt::Display for ScanError {
             Self::Cancelled => "cancelled",
             Self::SourceChanged => "source_changed",
             Self::MissingVolume => "missing_volume",
+            Self::PasswordRequired => "password_required",
+            Self::WrongPassword => "wrong_password",
         })
     }
 }
@@ -173,4 +208,14 @@ pub trait MetadataCodec {
         control: &Cancellation,
         limits: ScanLimits,
     ) -> Result<Vec<Entry>, ScanError>;
+    /// Scan encrypted headers with a borrowed, host-owned secret.
+    fn scan_with_password(
+        &self,
+        source: &mut dyn ReadSource,
+        control: &Cancellation,
+        limits: ScanLimits,
+        _password: Option<&str>,
+    ) -> Result<Vec<Entry>, ScanError> {
+        self.scan(source, control, limits)
+    }
 }

@@ -160,6 +160,8 @@ mod tests {
                         renames: &renames,
                         additions: &Empty,
                         settings: EncodeSettings {
+                            solid: false,
+                            encrypt_headers: false,
                             method: "deflate",
                             level: 6,
                             password: None,

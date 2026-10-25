@@ -119,6 +119,8 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
                 level: 6,
                 conflict: ConflictPolicy::Ask,
                 volume_bytes: 0,
+                solid: false,
+                encrypt_headers: false,
                 password: None,
             },
         },
@@ -152,12 +154,24 @@ impl EncodeInput for Additions<'_> {
         ))
     }
 }
-struct Verify {
+struct Verify<'a> {
+    work: &'a std::cell::Cell<u64>,
     bytes: u64,
     limit: u64,
 }
-impl DecodedSink for Verify {
+impl DecodedSink for Verify<'_> {
+    fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
+        self.work.set(
+            self.work
+                .get()
+                .checked_add(bytes)
+                .filter(|n| *n <= crate::extraction::MAX_TASK_BYTES)
+                .ok_or(DecodeError::Limit)?,
+        );
+        Ok(())
+    }
     fn write_chunk(&mut self, data: &[u8]) -> Result<(), DecodeError> {
+        self.charge_skipped(data.len() as u64)?;
         self.bytes = self
             .bytes
             .checked_add(data.len() as u64)
@@ -518,10 +532,12 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         emit(&mut s, start, publish);
         let mut stage = w.stage().map_err(output)?;
         let written = std::cell::Cell::new(0);
+        let extent = std::cell::Cell::new(0);
         let output_error = std::cell::Cell::new(None);
         let mut out = creation::Output {
             stage: &mut stage,
             bytes: &written,
+            extent: &extent,
             error: &output_error,
             cancel: &control.cancel,
         };
@@ -533,7 +549,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                     renames: &rewrite_names,
                     additions: &additions,
                     settings: EncodeSettings {
-                        method: "deflate",
+                        solid: false,
+                        encrypt_headers: false,
+                        method: if job.format == xdzip_codec_api::Format::SevenZip {
+                            "lzma2"
+                        } else {
+                            "deflate"
+                        },
                         level: 6,
                         password: None,
                     },
@@ -558,6 +580,7 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                             output_error.get().map(output).unwrap_or("output_io")
                         }
                         EncodeError::Unsupported => "unsupported_feature",
+                        EncodeError::Limit => "resource_limit",
                         _ => "integrity_error",
                     }
                 }
@@ -576,16 +599,34 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
         if rows.len() != expected.len() {
             return Err("integrity_error");
         }
+        let verify_work = std::cell::Cell::new(0u64);
         let mut decoder = codec(job.format)
             .open_payload(&mut reader, &rows, &control.cancel)
             .map_err(|_| "integrity_error")?;
-        for (row, (name, directory, size)) in rows.iter().zip(&expected) {
+        let mut native_expected: BTreeMap<Vec<u8>, _> =
+            if job.format == xdzip_codec_api::Format::SevenZip {
+                expected
+                    .iter()
+                    .map(|record| (record.0.clone(), record))
+                    .collect()
+            } else {
+                Default::default()
+            };
+        for (row, ordered_record) in rows.iter().zip(&expected) {
+            let (name, directory, size) = if job.format == xdzip_codec_api::Format::SevenZip {
+                native_expected
+                    .remove(row.name_bytes())
+                    .ok_or("integrity_error")?
+            } else {
+                ordered_record
+            };
             control.cancel.check().map_err(|_| "cancelled")?;
             if row.name_bytes() != name || row.directory != *directory || row.size != *size {
                 return Err("integrity_error");
             }
             if !directory {
                 let mut sink = Verify {
+                    work: &verify_work,
                     bytes: 0,
                     limit: *size,
                 };
@@ -598,6 +639,9 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                 s.verified_files += 1;
                 s.verified_bytes += sink.bytes;
             }
+        }
+        if !native_expected.is_empty() {
+            return Err("integrity_error");
         }
         drop(decoder);
         drop(reader);

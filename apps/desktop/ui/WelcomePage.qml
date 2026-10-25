@@ -198,7 +198,7 @@ Rectangle {
                         color: Theme.textSecondary
                     }
                     Repeater {
-                        model: ["ZIP", "TAR", "TAR.GZ"]
+                        model: ["ZIP", "TAR", "TAR.GZ", "7z", "RAR"]
                         Rectangle {
                             required property string modelData
                             implicitWidth: formatLabel.implicitWidth + 14

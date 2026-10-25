@@ -16,11 +16,20 @@ function Invoke-Checked {
 Invoke-Checked rustc @('-vV')
 Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
+$codecPython = if ($IsWindows) { 'python' } else { 'python3' }
+Invoke-Checked $codecPython @('scripts/prepare-native-codecs.py')
+Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
+Invoke-Checked cmake @('--build', 'build/foundation', '--target', 'xdzip-native-codec', '--parallel', '2')
+$env:XDZIP_NATIVE_CODEC = Join-Path (Get-Location) $(if ($IsWindows) { 'build/foundation/tools/native-codec/xdzip-native-codec.exe' } else { 'build/foundation/tools/native-codec/xdzip-native-codec' })
 $env:XDZIP_MOVE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/move-interop'
 $env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-interop'
 $env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metadata-interop'
 $env:XDZIP_LEGACY_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/legacy-name-interop'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
+Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored')
+Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
+$codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
+Invoke-Checked $codecPython @('scripts/check-native-codecs.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--sevenzip', $codecReference, '--output', 'build/review/native-codec-interop')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
 Invoke-Checked $updatePython @('scripts/check-filename-encoding.py', '--input', 'build/legacy-name-interop', '--output', 'build/review/legacy-name-rewrite.json')
 Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')

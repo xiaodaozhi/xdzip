@@ -335,6 +335,7 @@ fn encrypted_ciphertext_source_failures_preserve_input_budget_and_io_errors() {
             self.cursor.read(output)
         }
     }
+    impl xdzip_codec_api::ReadSource for Failing {}
     impl Seek for Failing {
         fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
             self.cursor.seek(position)

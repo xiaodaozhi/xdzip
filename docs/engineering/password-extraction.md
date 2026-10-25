@@ -1,4 +1,4 @@
-# ZIP 密码解压
+# 压缩包密码与加密目录打开
 
 本契约补充[安全解压](m3-extraction.md)，定义密码、认证和任务交互。格式与文件安全逻辑仍独立于 Qt，密码窗口只提交用户意图。实际开发进度与平台验证见 [issue #11](https://github.com/xiaodaozhi/xdzip/issues/11)，本页不保存执行报告。
 
@@ -12,6 +12,14 @@ AES 字段遵循 [WinZip 格式规范](https://www.winzip.com/en/support/aes-enc
 
 zip-rs 的解压流不负责本项目的严格 StreamEnd 策略，因此适配器将已经验证的单条密文范围借用为固定、受限的私有 ZIP 视图，只复用其解密认证。此视图不包含来自文件名或额外字段的任意数据，不接收输出路径。真实压缩方法、精确压缩字节消费、解码大小及 AE-1 CRC 仍由外层校验，最后读取解密流到 EOF，只有认证也成功才返回成功。密文、解码数据均使用有界缓冲，不将整文件累积在内存。
 
+## 7z、RAR 与加密目录
+
+7z 使用官方 7-Zip 加密实现，RAR 使用官方 UnRAR 的历史版本和当前版本密码处理。两者沿用相同的宿主解码接收器、安全输出、实际配额及错误分类。无法确认为密码验证值错误的校验损坏按完整性失败处理，不能无限重试。新旧格式、头部加密、固实和分卷的组合单独验收，具体后端和资源边界见[官方后端契约](native-codecs.md)。
+
+文件名或目录加密在元数据扫描前要求秘密，OpenWithPassword 是唯一携带该秘密的打开命令，密码容器在入队前有界并归零释放，事件不包含秘密。完整扫描成功前没有部分可浏览索引。成功后会话保留零化容器，已准入任务可克隆一个私有副本以便关闭页面后继续；副本不进入快照、日志或设置。任务解码器重开时使用同一密码，随后条目密码仍通过独立提示控制槽响应。
+
+7z 创建可同时设置内容密码和文件名加密；文件名加密要求非空创建密码，仅 7z 可设置。ZIP 保持仅内容加密，TAR／TAR.GZ 拒绝加密参数。加密 7z 和所有 RAR 不接纳修改。
+
 ## 秘密与控制协议
 
 `extraction::Password` 与创建密码类型分开。解压接受原样 UTF-8，最多 1,024 字节，允许空值、空格及控制字符，不修剪或套用创建的 1–128 字节规则；非 UTF-8 原始密码不由当前文本界面表达。输入分配容量同样有界。Rust 所有权容器在 Debug 中固定脱敏，在拒绝、替换、取消或离开作用域时归零。
@@ -20,7 +28,7 @@ zip-rs 的解压流不负责本项目的严格 StreamEnd 策略，因此适配�
 
 第一次需要密码时暂停当前任务，等待显式响应；任务内成功使用的密码可用于后续加密条目。验证值不匹配时清除旧缓存、给出新提示，最多每物理条目十次失败，达到上限停止任务。认证码不匹配按内容完整性失败停止，不自动变成无限密码重试。该区分不能保证所有错误密码均被两字节验证值排除，最终认证仍为必需条件。
 
-取消和退出不依赖普通队列剩余容量，唤醒密码等待并清空未消费的秘密。秘密只在任务生命周期使用，不写入设置、事件、日志、命令行、恢复记录或测试截图。Qt 输入和受控传输缓冲在提交、关闭、取消、换提示及退出时清空；Qt、系统输入法及依赖内部的历史副本不保证全进程擦除，Rust 容器归零不作此保证。
+取消和退出不依赖普通队列剩余容量，唤醒密码等待并清空未消费的秘密。内容密码只在任务生命周期使用，加密目录密码限定于打开会话及其已准入任务；均不写入设置、事件、日志、命令行、恢复记录或测试截图。Qt 输入和受控传输缓冲在提交、关闭、取消、换提示及退出时清空；Qt、系统输入法及依赖内部的历史副本不保证全进程擦除，Rust 容器归零不作此保证。
 
 ## 输出、重试与链接
 
@@ -37,3 +45,9 @@ ZIP 任务建立解码器时有 64 MiB 的实际元数据读取预算，随后�
 密码窗口及 HTML、高保真依据见[密码交互](../ux/password-extraction.md)。任务等待时自动显示应用模态窗口，也可从任务窗口重新显示。错误响应使用新 token，清空旧输入；接受响应后防止重复提交。系统关闭或取消按钮取消当前任务，Escape 继续遵循共享的先退出控件焦点、再关闭窗口规则。
 
 验收要求覆盖原始 AES 字段／CRC／描述符／ZIP64、同名物理记录、正确和错误密码、认证破坏、混合文件、不同密码、空密码／控制字符、重试资源累计、满队列、取消／退出唤醒、来源变化、旧目标保护、链接和执行权限，以及独立 7-Zip 双向字节核对。界面检查分别覆盖实际控制器闭环、可访问动作、双语多字号、浅深色、DPR 与原生窗口。自动化不等于系统读屏人工验收。
+
+English: Official 7-Zip and UnRAR handle 7z/RAR passwords. Encrypted directories require a bounded OpenWithPassword request before any metadata is published. The private session and its admitted tasks retain zeroizing secret containers; events, settings and logs never contain passwords. Existing task prompts and cancellation remain in use. Only 7z creation supports encrypted filenames, requiring a creation password. Encrypted 7z and all RAR archives reject edits.
+
+旧式 RAR 加密条目缺少可可靠区分错误密码与损坏内容的验证值，因此每个加密条目解码前分别请求密码，不能把前一条密码直接套用到可能使用不同秘密的下一条。RAR5 和受支持的其他格式继续任务内复用。旧 RAR 的 CRC 或头部损坏仍作为完整性失败，不冒充已确认的错误密码。
+
+English: Older RAR encrypted records request a password separately for each entry because their checks cannot reliably distinguish a wrong cached secret from corruption. RAR5 retains task-local reuse. Legacy CRC or header damage remains an integrity failure, never a claimed password-verifier mismatch.

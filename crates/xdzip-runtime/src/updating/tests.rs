@@ -34,6 +34,8 @@ impl Fixture {
             level: 6,
             conflict: ConflictPolicy::Ask,
             volume_bytes: 0,
+            solid: false,
+            encrypt_headers: false,
             password: None,
         };
         let mut result = None;
@@ -505,6 +507,8 @@ fn move_at_namespace_limit_counts_final_names_without_stale_sources() {
             &EmptyFiles(entries),
             &mut bytes,
             EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
                 method: "store",
                 level: 6,
                 password: None,
@@ -554,6 +558,8 @@ fn moving_last_child_keeps_an_implicit_source_directory_empty() {
             &entries,
             &mut bytes,
             EncodeSettings {
+                solid: false,
+                encrypt_headers: false,
                 method: "store",
                 level: 6,
                 password: None,
@@ -630,6 +636,8 @@ fn skipped_child_preserves_explicit_source_directory_when_destination_is_implici
                 &entries,
                 &mut bytes,
                 EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: if format == Format::Tar {
                         "store"
                     } else {
@@ -719,6 +727,8 @@ fn three_formats_filter_added_metadata_and_preserve_existing_metadata() {
                 &originals,
                 &mut bytes,
                 EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: if extension == "tar" {
                         "store"
                     } else {

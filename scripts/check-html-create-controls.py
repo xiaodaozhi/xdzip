@@ -61,9 +61,21 @@ def main():
                         expect(frame.locator('#create-name')).to_have_value('旅行资料.tar.gz')
                         expect(frame.locator('#create-level-trigger')).to_be_enabled()
                         expect(frame.locator('#create-use-password')).to_be_disabled()
+                        page.keyboard.press('ArrowRight')
+                        expect(radios.nth(3)).to_have_attribute('aria-checked','true')
+                        expect(frame.locator('#create-name')).to_have_value('旅行资料.7z')
+                        expect(frame.locator('#create-volume-trigger')).to_be_enabled()
+                        expect(frame.locator('#create-use-password')).to_be_enabled()
+                        expect(frame.locator('#create-solid')).not_to_be_checked()
+                        expect(frame.locator('#create-encrypt-header')).to_be_disabled()
+                        frame.locator('#create-use-password').check()
+                        expect(frame.locator('#create-encrypt-header')).to_be_enabled()
+                        frame.locator('#create-encrypt-header').check()
+                        frame.locator('#create-use-password').uncheck()
+                        expect(frame.locator('#create-encrypt-header')).not_to_be_checked()
                         radios.nth(0).click()
                         ratio = child.evaluate('XDZIP_DISPLAY_SPEC.views.create.sourceToLogical')
-                        for i, expected in enumerate([(4, 0, 0, 4), (0, 0, 0, 0), (0, 4, 4, 0)]):
+                        for i, expected in enumerate([(4, 0, 0, 4), (0, 0, 0, 0), (0, 0, 0, 0), (0, 4, 4, 0)]):
                             corners = radios.nth(i).evaluate('n=>{const s=getComputedStyle(n);return [s.borderTopLeftRadius,s.borderTopRightRadius,s.borderBottomRightRadius,s.borderBottomLeftRadius].map(parseFloat)}')
                             for corner, (actual, wanted) in enumerate(zip(corners, expected)):
                                 check(tag+f'/segment{i}/corner{corner}', actual * ratio, wanted, .15)

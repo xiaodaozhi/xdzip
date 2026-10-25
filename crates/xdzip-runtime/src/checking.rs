@@ -14,6 +14,7 @@ use xdzip_codec_api::{Cancellation, Entry, Format};
 
 pub(crate) struct Job {
     source: Source,
+    password: Option<crate::extraction::Password>,
     rows: Arc<Vec<Entry>>,
     format: Format,
     session: u64,
@@ -21,6 +22,7 @@ pub(crate) struct Job {
 impl Job {
     pub fn retained_bytes(&self) -> usize {
         self.source.retained_bytes()
+            + self.password.as_ref().map_or(0, |p| p.expose().len())
             + self
                 .rows
                 .iter()
@@ -34,6 +36,7 @@ impl Archive {
         cancel.check().map_err(|_| "cancelled")?;
         Ok(Job {
             source: self.source.fork().map_err(|_| "source_changed")?,
+            password: self.password.clone(),
             rows: Arc::clone(&self.rows),
             format: self.format,
             session: self.key.session.get(),
@@ -47,7 +50,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         format: job.format.label(),
         creating: false,
         // TAR/GZIP scanning checks the entire stream before reporting verified records.
-        total_known: job.format == Format::Zip,
+        total_known: !matches!(job.format, Format::Tar | Format::TarGzip),
         id,
         session: job.session,
         status: Status::Queued,
@@ -100,6 +103,11 @@ impl Read for Counted<'_> {
         Ok(n)
     }
 }
+impl xdzip_codec_api::ReadSource for Counted<'_> {
+    fn volume_lengths(&self) -> Option<&[u64]> {
+        xdzip_codec_api::ReadSource::volume_lengths(self.source)
+    }
+}
 impl Seek for Counted<'_> {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
         self.source.seek(position)
@@ -116,6 +124,16 @@ struct Discard<'a> {
     publish: &'a mut dyn FnMut(Snapshot),
 }
 impl DecodedSink for Discard<'_> {
+    fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
+        self.control.check().map_err(|_| DecodeError::Cancelled)?;
+        self.stats.decoded_bytes = self
+            .stats
+            .decoded_bytes
+            .checked_add(bytes)
+            .filter(|n| *n <= MAX_TASK_BYTES)
+            .ok_or(DecodeError::Limit)?;
+        Ok(())
+    }
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
         self.control.check().map_err(|_| DecodeError::Cancelled)?;
         self.file_bytes = self
@@ -168,7 +186,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
         stats.status = Status::Running;
         emit(&mut stats, start, publish);
-        let checked = if job.format == Format::Zip {
+        let checked = if !matches!(job.format, Format::Tar | Format::TarGzip) {
             let mut ignore_progress = |_: u64| {};
             let mut input = Counted {
                 source: &mut source,
@@ -176,9 +194,16 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 progress: &mut ignore_progress,
             };
             let mut decoder = crate::formats::codec(job.format)
-                .open_payload(&mut input, &job.rows, &control.cancel)
+                .open_payload_with_password(
+                    &mut input,
+                    &job.rows,
+                    &control.cancel,
+                    job.password
+                        .as_ref()
+                        .map(crate::extraction::Password::expose),
+                )
                 .map_err(decoding)?;
-            let mut interaction = Interaction::default();
+            let mut interaction = Interaction::with_password(job.password.clone());
             let mut last = Instant::now();
             for entry in job.rows.iter() {
                 control.cancel.check().map_err(|_| "cancelled")?;

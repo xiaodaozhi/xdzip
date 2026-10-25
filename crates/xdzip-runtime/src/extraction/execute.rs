@@ -24,7 +24,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
         kind: super::TaskKind::Extract,
         source: String::new(),
-        format: "",
+        format: job.format.label(),
         creating: false,
         total_known: true,
         id,
@@ -78,12 +78,13 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
-        let mut interaction = Interaction::default();
+        let mut interaction = Interaction::with_password(job.password.clone());
         let mut source = job.source.fork().map_err(|_| "source_changed")?;
-        let opened = crate::formats::codec(job.format).open_payload(
+        let opened = crate::formats::codec(job.format).open_payload_with_password(
             source.file(),
             &job.rows,
             &control.cancel,
+            job.password.as_ref().map(super::Password::expose),
         );
         job.source.validate().map_err(|_| "source_changed")?;
         let mut decoder = opened.map_err(decoding)?;
@@ -422,6 +423,27 @@ struct Meter<'a, W: Write> {
     publish: &'a mut dyn FnMut(Snapshot),
 }
 impl<W: Write> DecodedSink for Meter<'_, W> {
+    fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
+        self.control
+            .cancel
+            .check()
+            .map_err(|_| DecodeError::Cancelled)?;
+        let next = self
+            .stats
+            .decoded_bytes
+            .checked_add(bytes)
+            .filter(|n| *n <= MAX_TASK_BYTES)
+            .ok_or_else(|| {
+                self.error = Some("task_quota");
+                DecodeError::Output
+            })?;
+        self.stats.decoded_bytes = next;
+        if self.last.elapsed() >= Duration::from_millis(100) {
+            emit(self.stats, self.start, self.publish);
+            self.last = Instant::now();
+        }
+        Ok(())
+    }
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
         if self.control.cancel.check().is_err() {
             return Err(DecodeError::Cancelled);

@@ -25,6 +25,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         level: args[4].parse()?,
         conflict: ConflictPolicy::Ask,
         volume_bytes: args.get(5).map_or(Ok(0), |v| v.parse())?,
+        solid: false,
+        encrypt_headers: false,
         // Owned synthetic-test secret, never printed in the measurement report.
         password: std::env::var("XDZIP_TEST_PASSWORD")
             .ok()

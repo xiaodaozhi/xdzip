@@ -127,6 +127,10 @@ def deploy(app,sdk,output,notices):
     if any(location is None or runtime_origin(location,sdk,output)!='system' for _,location in helper_imports):
         raise ValueError('Update helper must not depend on the replaced Qt runtime')
     copy(helper,output/'bin/xdzip-update-helper')
+    codec = app.with_name('xdzip-native-codec')
+    if not codec.is_file() or codec.is_symlink() or not native(codec, 'linux'):
+        raise ValueError('Expected official native codec worker beside application')
+    copy(codec,output/'bin/xdzip-native-codec')
     for name in roots:
         source=sdk/'qml'/name
         for item in source.rglob('*'):

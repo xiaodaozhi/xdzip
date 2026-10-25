@@ -32,13 +32,13 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。命令为带引号的可执行路径、-- 和带引号的 %1，不经过命令解释器。文档图标使用 xdzip-zip.ico。
 
-ZIP、TAR、TGZ 和 GZ 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。默认应用由用户在系统设置选择，安装器不绕过确认。
+ZIP、TAR、TGZ、GZ、7Z 和 RAR 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。不注册通用 `.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
 
 ## Ubuntu 24.04
 
 build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录按输出路径区分，允许相同包名在不同候选目录重新打包，不覆盖既有暂存。包名 xdzip，版本绑定产品渠道和提交，架构 amd64。系统依赖来自实际部署清单，补充桌面数据库和锁工具，glibc 至少 2.39。Qt／QML／插件及通知位于 /opt/xdzip/versions/；/usr/bin/xdzip 是固定目标的引号化转发入口。dpkg 负责替换和清除旧包文件，回退需保留原 .deb。
 
-桌面文件按 [MimeType 与 Exec 规范](https://specifications.freedesktop.org/desktop-entry/latest-single/)注册 ZIP、TAR、压缩 TAR，使用 %f 逐文件启动和 -- 参数边界。不执行 xdg-mime default，不修改 mimeapps.list 或全局 MIME 图标。卸载删除自有启动项、图标、运行文件并刷新缓存，保留用户设置及额外文件。
+桌面文件按 [MimeType 与 Exec 规范](https://specifications.freedesktop.org/desktop-entry/latest-single/)注册 ZIP、TAR、压缩 TAR、7z 和 RAR，使用 %f 逐文件启动和 -- 参数边界。不执行 xdg-mime default，不修改 mimeapps.list 或全局 MIME 图标。卸载删除自有启动项、图标、运行文件并刷新缓存，保留用户设置及额外文件。
 
 安装的产品持有 /run/xdzip/usage.lock 的共享 flock，维护脚本先取非阻塞独占锁，活动进程存在就失败。脚本在根用户独占的 /run/xdzip 下设置 installing 门，产品取得锁后再次检查，避免在 dpkg 钩子间启动。符号链接或错误所有者／权限被拒绝；关闭 QFile 释放锁。tmpfiles.d 在系统启动时准备运行锁。此约束不影响 SDK 开发应用。
 

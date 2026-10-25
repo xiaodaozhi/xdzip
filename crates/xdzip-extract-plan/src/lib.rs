@@ -107,7 +107,7 @@ pub fn inspect(
                 },
             );
         }
-        if !matches!(row.method, 0 | 8) && !row.password_supported {
+        if !row.payload_supported() {
             report.add(row.id, "method");
         }
         if row.warning {
@@ -297,6 +297,21 @@ mod tests {
         assert_eq!(report.findings.len(), 64);
         assert!(report.finding_count > report.findings.len());
         assert!(report.findings.iter().any(|f| f.reason == "encrypted"));
+    }
+    #[test]
+    fn native_container_admission_never_interprets_zip_method_numbers() {
+        for format in [
+            xdzip_codec_api::Format::SevenZip,
+            xdzip_codec_api::Format::Rar,
+        ] {
+            let mut row = entry(1, "native.txt");
+            row.format = format;
+            row.method = u16::MAX;
+            let report = run(&[row.clone()]);
+            assert!(!report.findings.iter().any(|f| f.reason == "method"));
+            row.warning = true;
+            assert!(run(&[row]).findings.iter().any(|f| f.reason == "method"));
+        }
     }
     #[test]
     fn supported_password_is_advisory_not_an_unsupported_method() {

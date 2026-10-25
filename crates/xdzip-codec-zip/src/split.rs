@@ -268,6 +268,7 @@ mod tests {
             Ok(n)
         }
     }
+    impl ReadSource for Sparse {}
     impl Seek for Sparse {
         fn seek(&mut self, p: SeekFrom) -> io::Result<u64> {
             self.position = match p {

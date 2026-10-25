@@ -552,6 +552,8 @@ mod tests {
                 &input(),
                 &mut bytes,
                 EncodeSettings {
+                    solid: false,
+                    encrypt_headers: false,
                     method: if gzip { "deflate" } else { "store" },
                     level: 6,
                     password: None,
@@ -679,6 +681,7 @@ mod tests {
     #[test]
     fn host_read_failures_keep_their_stable_io_class() {
         struct Broken;
+        impl ReadSource for Broken {}
         impl Read for Broken {
             fn read(&mut self, _: &mut [u8]) -> io::Result<usize> {
                 Err(io::Error::other("owned fault"))
@@ -894,6 +897,8 @@ mod tests {
                     &inputs,
                     &mut Vec::new(),
                     EncodeSettings {
+                        solid: false,
+                        encrypt_headers: false,
                         method: "store",
                         level: 6,
                         password: None
@@ -909,6 +914,8 @@ mod tests {
                     &input(),
                     &mut Vec::new(),
                     EncodeSettings {
+                        solid: false,
+                        encrypt_headers: false,
                         method: "deflate",
                         level: 6,
                         password: Some("secret")

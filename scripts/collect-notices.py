@@ -23,6 +23,10 @@ native_materials = prepare(out, {'win32': 'windows', 'darwin': 'macos'}.get(sys.
 notice_files = []
 notice_files.extend(out/item['file'] for item in native_materials['files'])
 native_dependencies = []
+from native_codec_materials import notices as codec_notices
+codec_files, codec_dependencies = codec_notices(out)
+notice_files += codec_files
+native_dependencies += codec_dependencies
 if sys.platform == 'darwin':
     from sparkle_bundle import configuration, write_notice
     sparkle_sdk = arguments.sparkle_sdk or root/'build/desktop/_deps/sparkle-2.10.0'

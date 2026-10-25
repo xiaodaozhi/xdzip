@@ -23,7 +23,7 @@ OperationWindow {
     readonly property alias bodyItem: scroll
     readonly property alias footerItem: footer
     readonly property alias fieldItem: password
-    title: root.prompt.kind === "check" ? qsTrId("integrity.passwordTitle") : qsTrId("password.title")
+    title: root.prompt.kind === "open" ? qsTrId("password.openTitle") : root.prompt.kind === "check" ? qsTrId("integrity.passwordTitle") : qsTrId("password.title")
     modality: Qt.ApplicationModal
     width: Theme.passwordLogicalWidth
     requestedHeight: Math.min(Math.ceil(content.implicitHeight + footer.implicitHeight),
@@ -133,7 +133,7 @@ OperationWindow {
                         id: heading
                         objectName: "passwordHeading"
                         Layout.fillWidth: true
-                        text: qsTrId("password.heading")
+                        text: root.prompt.kind === "open" ? qsTrId("password.openHeading") : qsTrId("password.heading")
                         textFormat: Text.PlainText
                         font.pixelSize: Math.round(Theme.passwordTitleSize)
                         font.bold: true
@@ -146,7 +146,7 @@ OperationWindow {
                     Text {
                         objectName: "passwordDescription"
                         Layout.fillWidth: true
-                        text: qsTrId("password.description")
+                        text: root.prompt.kind === "open" ? qsTrId("password.openDescription") : qsTrId("password.description")
                         textFormat: Text.PlainText
                         font.pixelSize: Math.round(Theme.passwordBodySize)
                         lineHeight: Math.round(font.pixelSize * Theme.passwordBodyLineFactor)
@@ -226,7 +226,7 @@ OperationWindow {
                     Text {
                         objectName: "passwordPrivacy"
                         Layout.fillWidth: true
-                        text: qsTrId("password.privacy")
+                        text: root.prompt.kind === "open" ? qsTrId("password.openPrivacy") : qsTrId("password.privacy")
                         textFormat: Text.PlainText
                         font.pixelSize: Math.round(Theme.passwordNoteSize)
                         lineHeight: Math.round(font.pixelSize * Theme.passwordBodyLineFactor)
@@ -244,12 +244,12 @@ OperationWindow {
             Layout.fillWidth: true
             OperationFooterButton {
                 objectName: "passwordCancel"
-                text: qsTrId("ui.537d17f1c531")
+                text: root.prompt.kind === "open" ? qsTrId("common.cancel") : qsTrId("ui.537d17f1c531")
                 onClicked: root.close()
             }
             OperationFooterButton {
                 objectName: "passwordSubmit"
-                text: root.pending ? qsTrId("password.submitting") : root.prompt.kind === "check" ? qsTrId("integrity.continue") : qsTrId("password.continue")
+                text: root.pending ? qsTrId("password.submitting") : root.prompt.kind === "open" ? qsTrId("password.openContinue") : root.prompt.kind === "check" ? qsTrId("integrity.continue") : qsTrId("password.continue")
                 primary: true
                 enabled: !root.pending && !root.tooLong && root.shownPromptId.length > 0
                 onClicked: root.submit()

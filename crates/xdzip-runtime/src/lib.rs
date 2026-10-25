@@ -25,6 +25,7 @@ static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 /// Immutable metadata snapshot backed by an owned read-only source handle.
 pub struct Archive {
     source: source::Source,
+    password: Option<extraction::Password>,
     format: xdzip_codec_api::Format,
     update_allowed: bool,
     edit_restriction: u8,
@@ -39,10 +40,23 @@ impl Archive {
     /// Open a user-selected regular file; complete the scan before publishing any rows.
     /// Length/mtime checks are best-effort mutation detection, not an atomic source snapshot.
     pub fn open(path: &Path, control: &Cancellation) -> Result<Self, ScanError> {
+        Self::open_with_password(path, control, None)
+    }
+    /// Open encrypted headers without exposing a partial metadata snapshot.
+    pub fn open_with_password(
+        path: &Path,
+        control: &Cancellation,
+        password: Option<extraction::Password>,
+    ) -> Result<Self, ScanError> {
         control.check()?;
         let mut source = source::Source::open(path, control)?;
         let mut format = formats::detect(&mut source)?;
-        let scanned = formats::codec(format).scan(&mut source, control, formats::limits(format));
+        let scanned = formats::codec(format).scan_with_password(
+            &mut source,
+            control,
+            formats::limits(format),
+            password.as_ref().map(extraction::Password::expose),
+        );
         // Preserve validated self-extracting ZIP sources without using the suffix.
         // Budget/cancel/unsupported failures are authoritative and never retried.
         let scanned = if format == xdzip_codec_api::Format::Tar
@@ -65,7 +79,14 @@ impl Archive {
         control.check()?;
         source.validate()?;
         let rows = scanned?;
-        if source.is_split() && format != xdzip_codec_api::Format::Zip {
+        if source.is_split()
+            && !matches!(
+                format,
+                xdzip_codec_api::Format::Zip
+                    | xdzip_codec_api::Format::SevenZip
+                    | xdzip_codec_api::Format::Rar
+            )
+        {
             return Err(ScanError::Unsupported);
         }
         let next = NEXT_SESSION
@@ -84,18 +105,21 @@ impl Archive {
         };
         control.check()?;
         let index = index::DirectoryIndex::build(&rows, directories.as_deref(), control)?;
-        let edit_restriction = u8::from(rows.iter().any(|r| r.encrypted))
+        let edit_restriction = u8::from(password.is_some() || rows.iter().any(|r| r.encrypted))
             | (u8::from(source.is_split()) << 1)
             | (u8::from(
                 rows.iter()
-                    .any(|r| r.link || r.warning || (!r.directory && ![0, 8].contains(&r.method))),
+                    .any(|r| r.link || r.warning || (!r.directory && !r.payload_supported())),
             ) << 2);
+        let edit_restriction =
+            edit_restriction | (u8::from(format == xdzip_codec_api::Format::Rar) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,
             edit_restriction,
             directories,
             source,
+            password,
             format,
             index,
             cached_query: None,
@@ -494,3 +518,6 @@ mod tests {
 
 #[cfg(test)]
 mod legacy_names_tests;
+
+#[cfg(test)]
+mod native_backend_tests;

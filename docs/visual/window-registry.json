@@ -31,7 +31,7 @@
       "role": "operation",
       "width": "Theme.operationCreateWidth",
       "design": "design/html/canvas.html?view=create",
-      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享，正文滚动和固定 footer 不变"
+      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享。7z 在既有格式组中增加一项，按真实文字宽度保障四项可读，空间不足时左侧选项标签换行。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变"
     },
     "ExtractWindow": {
       "parent": "OperationWindow",
@@ -62,7 +62,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.passwordLogicalWidth",
-      "reason": "解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。关闭会话保留请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
+      "reason": "打开加密目录、解压与只读检查共用应用模态密码请求，491 宽，内容自适应，最高 600，固定共享 footer。打开请求使用独立身份且取消只取消打开，不创建任务。关闭会话保留任务请求，主动进入全局任务后显示。退出确认及取消清理期间暂停所有会话的密码显示，返回或选择等待后仅恢复仍有效的请求，尺寸与高保真依据不变",
       "design": "design/hifi/sources/password-extraction.html"
     },
     "PreflightWindow": {

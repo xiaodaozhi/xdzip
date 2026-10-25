@@ -13,6 +13,7 @@ pub(crate) struct Planned {
 }
 pub(crate) struct Job {
     pub source: Source,
+    pub password: Option<super::Password>,
     pub format: xdzip_codec_api::Format,
     pub rows: Arc<Vec<Entry>>,
     pub planned: Vec<Planned>,
@@ -110,7 +111,7 @@ pub(crate) fn prepare(
         }
         if entry.warning
             || (entry.encrypted && !entry.password_supported)
-            || (!entry.encrypted && !entry.directory && !matches!(entry.method, 0 | 8))
+            || (!entry.directory && !entry.payload_supported())
         {
             return Err("unsupported_entry");
         }
@@ -181,8 +182,12 @@ pub(crate) fn prepare(
     }
     // GZIP has no per-entry compressed sizes. Use the immutable whole-source
     // size for a conservative selected-output ratio gate; work quotas still apply.
-    if archive.format == xdzip_codec_api::Format::TarGzip
-        && !options.allow_high_ratio
+    if matches!(
+        archive.format,
+        xdzip_codec_api::Format::TarGzip
+            | xdzip_codec_api::Format::SevenZip
+            | xdzip_codec_api::Format::Rar
+    ) && !options.allow_high_ratio
         && declared > 1024 * 1024
         && declared > archive.source.length().saturating_mul(1000)
     {
@@ -224,5 +229,6 @@ impl Job {
             + self.options.bytes()
             + self.open_path.capacity()
             + self.source.retained_bytes()
+            + self.password.as_ref().map_or(0, |p| p.expose().len())
     }
 }

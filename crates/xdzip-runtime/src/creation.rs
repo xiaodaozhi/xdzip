@@ -46,7 +46,7 @@ pub struct Options {
     pub inputs: Vec<String>,
     /// Existing, explicitly selected output directory.
     pub target: String,
-    /// Portable basename ending in .zip, .tar or .tar.gz, never a subpath.
+    /// Portable basename ending in .zip, .tar, .tar.gz or .7z, never a subpath.
     pub name: String,
     /// ZIP method: 0 Store or 8 Deflate.
     pub method: u16,
@@ -56,7 +56,11 @@ pub struct Options {
     pub conflict: ConflictPolicy,
     /// Zero means single ZIP; otherwise the byte ceiling for each numbered part.
     pub volume_bytes: u64,
-    /// AES-256 content encryption; filenames remain visible in ZIP metadata.
+    /// Enable 7z solid blocks; other formats require false.
+    pub solid: bool,
+    /// Encrypt 7z filenames, requiring a password.
+    pub encrypt_headers: bool,
+    /// Content encryption; ZIP filenames remain visible.
     pub password: Option<Password>,
 }
 impl Options {
@@ -73,12 +77,21 @@ impl Options {
             && !self.target.contains('\0')
             && self.name.len() <= 255
             && creation_format(&self.name).is_some()
-            && (creation_format(&self.name) == Some(Format::Zip)
-                || (self.password.is_none() && self.volume_bytes == 0))
+            && (matches!(
+                creation_format(&self.name),
+                Some(Format::Zip | Format::SevenZip)
+            ) || (self.password.is_none() && self.volume_bytes == 0))
+            && (creation_format(&self.name) == Some(Format::SevenZip)
+                || (!self.solid && !self.encrypt_headers))
+            && (!self.encrypt_headers || self.password.is_some())
             && (creation_format(&self.name) != Some(Format::Tar) || self.method == 0)
             && (creation_format(&self.name) != Some(Format::TarGzip) || self.method == 8)
             && PortablePath::parse(&self.name).is_some_and(|p| p.parts().len() == 1)
-            && [0, 8].contains(&self.method)
+            && (if creation_format(&self.name) == Some(Format::SevenZip) {
+                [0, 32].contains(&self.method)
+            } else {
+                [0, 8].contains(&self.method)
+            })
             && ([1, 6, 9].contains(&self.level)
                 || (creation_format(&self.name) == Some(Format::TarGzip) && self.level == 0))
             && self.volume_bytes <= 24 * 1024 * 1024 * 1024
@@ -106,7 +119,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
     Snapshot {
         kind: crate::extraction::TaskKind::Create,
         source: String::new(),
-        format: "",
+        format: creation_format(&job.options.name).map_or("", Format::label),
         creating: true,
         total_known: false,
         id,
@@ -180,8 +193,26 @@ impl EncodeInput for Sources<'_> {
 pub(crate) struct Output<'a> {
     pub(crate) stage: &'a mut Stage,
     pub(crate) bytes: &'a Cell<u64>,
+    pub(crate) extent: &'a Cell<u64>,
     pub(crate) error: &'a Cell<Option<OutputError>>,
     pub(crate) cancel: &'a Cancellation,
+}
+impl EncodeOutput for Output<'_> {
+    fn write_at(&mut self, offset: u64, bytes: &[u8]) -> Result<(), EncodeError> {
+        self.cancel.check().map_err(|_| EncodeError::Cancelled)?;
+        if offset
+            .checked_add(bytes.len() as u64)
+            .is_none_or(|end| end > 24 * 1024 * 1024 * 1024)
+        {
+            self.error.set(Some(OutputError::Limit));
+            return Err(EncodeError::Limit);
+        }
+        std::io::Seek::seek(self.stage, std::io::SeekFrom::Start(offset)).map_err(|_| {
+            self.error.set(Some(OutputError::Io));
+            EncodeError::Output
+        })?;
+        self.write_all(bytes).map_err(|_| EncodeError::Output)
+    }
 }
 impl std::io::Seek for Output<'_> {
     fn seek(&mut self, position: std::io::SeekFrom) -> io::Result<u64> {
@@ -198,9 +229,11 @@ impl Write for Output<'_> {
             self.error.set(Some(OutputError::Limit));
             return Err(io::Error::other("output_limit"));
         }
+        let position = std::io::Seek::stream_position(self.stage)?;
         match self.stage.write(buf) {
             Ok(n) => {
                 self.bytes.set(self.bytes.get() + n as u64);
+                self.extent.set(self.extent.get().max(position + n as u64));
                 Ok(n)
             }
             Err(e) => {
@@ -226,13 +259,25 @@ impl Write for Output<'_> {
     }
 }
 struct VerifySink<'a> {
+    work: &'a Cell<u64>,
     bytes: u64,
     limit: u64,
     cancel: &'a Cancellation,
 }
 impl DecodedSink for VerifySink<'_> {
-    fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+    fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
         self.cancel.check().map_err(|_| DecodeError::Cancelled)?;
+        self.work.set(
+            self.work
+                .get()
+                .checked_add(bytes)
+                .filter(|n| *n <= crate::extraction::MAX_TASK_BYTES)
+                .ok_or(DecodeError::Limit)?,
+        );
+        Ok(())
+    }
+    fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.charge_skipped(bytes.len() as u64)?;
         self.bytes = self
             .bytes
             .checked_add(bytes.len() as u64)
@@ -256,6 +301,8 @@ fn fresh_name(
         Format::Zip => ".zip",
         Format::Tar => ".tar",
         Format::TarGzip => ".tar.gz",
+        Format::SevenZip => ".7z",
+        Format::Rar => return Err("unsupported_feature"),
     };
     let stem = name
         .get(..name.len() - extension.len())
@@ -330,6 +377,7 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         };
         let mut stage = w.stage().map_err(output_code)?;
         let written = Cell::new(0);
+        let extent = Cell::new(0);
         let output_error = Cell::new(None);
         let mut last = Instant::now();
         stats.status = Status::Running;
@@ -341,12 +389,19 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 &mut Output {
                     stage: &mut stage,
                     bytes: &written,
+                    extent: &extent,
                     error: &output_error,
                     cancel: &control.cancel,
                 } as &mut dyn EncodeOutput,
                 EncodeSettings {
-                    method: if job.options.method == 0 {
+                    solid: job.options.solid,
+                    encrypt_headers: job.options.encrypt_headers,
+                    method: if job.options.method == 0 && format == Format::SevenZip {
+                        "copy"
+                    } else if job.options.method == 0 {
                         "store"
+                    } else if format == Format::SevenZip {
+                        "lzma2"
                     } else {
                         "deflate"
                     },
@@ -373,14 +428,18 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                     .unwrap_or(if stopped() { "cancelled" } else { "output_io" }),
                 EncodeError::Invalid => "integrity_error",
                 EncodeError::Unsupported => "unsupported_feature",
+                EncodeError::Limit => "resource_limit",
             })?;
         stats.written_bytes = written.get();
         stats.decoded_bytes = stats.declared_bytes;
         tree.validate(&stopped).map_err(|e| e.code())?;
         stats.status = Status::Verifying;
         emit(&mut stats, start, publish);
+        let verify_work = Cell::new(0u64);
         let mut reader = stage.verification_reader().map_err(output_code)?;
-        if let Some(password) = &job.options.password {
+        if let Some(password) = &job.options.password
+            && format == Format::Zip
+        {
             ZipCodec
                 .verify_encrypted(
                     &mut reader,
@@ -397,7 +456,12 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 })?;
         } else {
             let rows = codec(format)
-                .scan(&mut reader, &control.cancel, crate::formats::limits(format))
+                .scan_with_password(
+                    &mut reader,
+                    &control.cancel,
+                    crate::formats::limits(format),
+                    job.options.password.as_ref().map(Password::expose),
+                )
                 .map_err(|e| {
                     if control.cancel.check().is_err() {
                         "cancelled"
@@ -411,9 +475,37 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
             }
             {
                 let mut decoder = codec(format)
-                    .open_payload(&mut reader, &rows, &control.cancel)
+                    .open_payload_with_password(
+                        &mut reader,
+                        &rows,
+                        &control.cancel,
+                        job.options.password.as_ref().map(Password::expose),
+                    )
                     .map_err(|_| "integrity_error")?;
-                for (row, input) in rows.iter().zip(tree.entries()) {
+                let mut native_expected: std::collections::BTreeMap<Vec<u8>, _> =
+                    if format == Format::SevenZip {
+                        tree.entries()
+                            .iter()
+                            .map(|input| {
+                                let name = if input.directory {
+                                    format!("{}/", input.name)
+                                } else {
+                                    input.name.clone()
+                                };
+                                (name.into_bytes(), input)
+                            })
+                            .collect()
+                    } else {
+                        Default::default()
+                    };
+                for (row, ordered_input) in rows.iter().zip(tree.entries()) {
+                    let input = if format == Format::SevenZip {
+                        native_expected
+                            .remove(row.name_bytes())
+                            .ok_or("integrity_error")?
+                    } else {
+                        ordered_input
+                    };
                     control.cancel.check().map_err(|_| "cancelled")?;
                     let expected = if input.directory {
                         format!("{}/", input.name)
@@ -432,14 +524,16 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                         last = Instant::now();
                     }
                     decoder
-                        .decode(
+                        .decode_with_password(
                             row,
                             &mut VerifySink {
+                                work: &verify_work,
                                 bytes: 0,
                                 limit: input.size,
                                 cancel: &control.cancel,
                             },
                             &control.cancel,
+                            job.options.password.as_ref().map(Password::expose),
                         )
                         .map_err(|_| {
                             if stopped() {
@@ -448,14 +542,34 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                                 "integrity_error"
                             }
                         })?;
+                    if !input.directory {
+                        stats.verified_files += 1;
+                        stats.verified_bytes += input.size;
+                    }
+                }
+                if !native_expected.is_empty() {
+                    return Err("integrity_error");
                 }
             }
+        }
+        if format == Format::Zip && job.options.password.is_some() {
+            stats.verified_files = stats.files;
+            stats.verified_bytes = stats.declared_bytes;
         }
         drop(reader);
         tree.validate(&stopped).map_err(|e| e.code())?;
         if job.options.volume_bytes != 0 {
             publish_volumes(
-                &job, &tree, &root, w, &mut stage, &mut stats, start, control, publish,
+                &job,
+                &tree,
+                &root,
+                w,
+                &mut stage,
+                &mut stats,
+                extent.get(),
+                start,
+                control,
+                publish,
             )?;
             return Ok(());
         }
@@ -558,12 +672,13 @@ fn publish_volumes(
     workspace: &mut xdzip_io::Workspace,
     stage: &mut Stage,
     stats: &mut Snapshot,
+    archive_bytes: u64,
     start: Instant,
     control: &Control,
     publish: &mut dyn FnMut(Snapshot),
 ) -> Result<(), &'static str> {
     let limit = job.options.volume_bytes;
-    let count = stats.written_bytes.div_ceil(limit);
+    let count = archive_bytes.div_ceil(limit);
     if count == 0 || count > 1024 {
         return Err("resource_limit");
     }
@@ -629,7 +744,7 @@ fn publish_volumes(
     emit(stats, start, publish);
     let mut reader = stage.verification_reader().map_err(output_code)?;
     let mut parts = Vec::with_capacity(count as usize);
-    let mut remaining = stats.written_bytes;
+    let mut remaining = archive_bytes;
     let mut buffer = [0u8; 64 * 1024];
     for _ in &paths {
         control.cancel.check().map_err(|_| "cancelled")?;
@@ -681,7 +796,7 @@ fn publish_volumes(
     for (index, path) in paths.iter().enumerate() {
         stats.record(
             &path.display(),
-            (stats.written_bytes - index as u64 * limit).min(limit),
+            (archive_bytes - index as u64 * limit).min(limit),
             "completed",
             "",
         );

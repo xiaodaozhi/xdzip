@@ -294,6 +294,8 @@ mod tests {
                         renames: &[Some(new_name.clone())],
                         additions: &Empty,
                         settings: EncodeSettings {
+                            solid: false,
+                            encrypt_headers: false,
                             method: "deflate",
                             level: 6,
                             password: None,

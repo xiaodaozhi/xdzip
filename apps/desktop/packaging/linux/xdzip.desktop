@@ -1,11 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=xdzip
-Comment=Browse and extract ZIP, TAR and TAR.GZ archives
-Comment[zh_CN]=浏览和解压 ZIP、TAR 和 TAR.GZ 压缩文件
+Comment=Browse and extract ZIP, TAR, TAR.GZ, 7z and RAR archives
+Comment[zh_CN]=浏览和解压 ZIP、TAR、TAR.GZ、7z 和 RAR 压缩包
 Exec=xdzip -- %f
 Icon=xdzip
 Terminal=false
 Categories=Utility;Archiving;
 StartupWMClass=xdzip
-MimeType=application/zip;application/x-tar;application/x-compressed-tar;
+MimeType=application/zip;application/x-tar;application/x-compressed-tar;application/x-7z-compressed;application/vnd.rar;application/x-rar;

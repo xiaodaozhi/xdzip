@@ -310,10 +310,11 @@ bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
         const QFileInfo file(url.toLocalFile());
         const auto name = file.fileName().toLower();
         static const QRegularExpression splitSuffix(
-            QStringLiteral("(?:\\.zip\\.[0-9]{3,4}|\\.z[0-9]{2,4})$"));
+            QStringLiteral("(?:\\.(?:zip|7z)\\.[0-9]{3,4}|\\.z[0-9]{2,4}|\\.r[0-9]{2,4})$"));
         if (!file.isFile() ||
             !(name.endsWith(".zip") || name.endsWith(".tar") || name.endsWith(".tar.gz") ||
-              name.endsWith(".tgz") || splitSuffix.match(name).hasMatch()))
+              name.endsWith(".tgz") || name.endsWith(".7z") || name.endsWith(".rar") ||
+              splitSuffix.match(name).hasMatch()))
             return false;
     }
     return true;
@@ -366,6 +367,8 @@ void BrowserController::openPath(const QString &path) {
     m_title = QFileInfo(path).fileName();
     m_sourcePath = path;
     m_ready = false;
+    m_openPasswordPrompt.clear();
+    emit tasksChanged();
     m_total = 0;
     m_offset = 0;
     m_session.clear();
@@ -680,6 +683,8 @@ int BrowserController::activeTaskCount() const {
 QVariantMap BrowserController::passwordPrompt() const {
     if (!runtimeAvailable())
         return {};
+    if (!m_openPasswordPrompt.isEmpty())
+        return m_openPasswordPrompt;
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
         const auto &task = it.value();
         if (task.value("status") == "waiting_password" &&
@@ -796,13 +801,15 @@ void BrowserController::checkCreationTarget(const QString &path) {
 }
 void BrowserController::startCreation(const QStringList &inputs, const QString &target,
                                       const QString &name, int method, int level, bool openAfter,
-                                      qulonglong volumeBytes, const QString &password) {
+                                      qulonglong volumeBytes, const QString &password,
+                                      bool solid, bool encryptHeaders) {
     if (m_busy || !runtimeAvailable() || m_closing)
         return;
     const auto validText = [](const QString &value) {
         return !value.contains(QChar::Null) && QString::fromUtf8(value.toUtf8()) == value;
     };
-    if ((method != 0 && method != 8) ||
+    const bool sevenZip = name.endsWith(QStringLiteral(".7z"), Qt::CaseInsensitive);
+    if ((method != 0 && method != (sevenZip ? 32 : 8)) ||
         (level != 1 && level != 6 && level != 9 &&
          !(name.endsWith(QStringLiteral(".tar.gz"), Qt::CaseInsensitive) && level == 0)) ||
         !validText(target) || !validText(name) ||
@@ -814,6 +821,7 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     }
     if (volumeBytes > 24ULL * 1024 * 1024 * 1024 || !validText(password) ||
         password.toUtf8().size() > 128 ||
+        (!sevenZip && (solid || encryptHeaders)) || (encryptHeaders && password.isEmpty()) ||
         std::any_of(password.cbegin(), password.cend(),
                     [](QChar c) { return c.category() == QChar::Other_Control; })) {
         m_creationError = explain("invalid_creation_options");
@@ -830,6 +838,8 @@ void BrowserController::startCreation(const QStringList &inputs, const QString &
     command.level = static_cast<std::uint8_t>(level);
     command.volume_bytes = volumeBytes;
     command.encrypt = !password.isEmpty();
+    command.solid = solid;
+    command.encrypt_headers = encryptHeaders;
     command.password = rust::String(password.toUtf8().toStdString());
     command.conflict = 0;
     m_creationError.clear();
@@ -893,6 +903,11 @@ void BrowserController::startArchiveTest() {
     submit(std::move(command));
 }
 void BrowserController::cancelTask(const QString &id) {
+    if (id == QStringLiteral("open")) {
+        m_openPasswordPrompt.clear();
+        emit tasksChanged();
+        return;
+    }
     m_connection->cancelTask(id.toULongLong());
 }
 bool BrowserController::decideTask(const QString &id, const QString &prompt, int policy, bool all) {
@@ -904,6 +919,18 @@ bool BrowserController::submitPassword(const QString &id, const QString &prompt,
                                        const QString &password) {
     if (!runtimeAvailable() || password.size() > 1024)
         return false;
+    if (id == QStringLiteral("open")) {
+        if (m_busy || prompt.isEmpty() || m_openPasswordPrompt.value("promptId") != prompt)
+            return false;
+        auto bytes = password.toUtf8();
+        const auto clear = qScopeGuard([&] { bytes.fill('\0'); });
+        if (bytes.size() > 1024 || QString::fromUtf8(bytes) != password)
+            return false;
+        m_openPasswordPrompt.clear();
+        emit tasksChanged();
+        start(m_sourcePath, 0, password, true);
+        return true;
+    }
     const auto task = m_tasks.constFind(id.toULongLong());
     if (task == m_tasks.cend() || task->value("status") != "waiting_password" || prompt.isEmpty() ||
         task->value("passwordPromptId").toString() != prompt)
@@ -1011,12 +1038,19 @@ bool BrowserController::requestClose() {
     emit changed();
     return false;
 }
-void BrowserController::start(const QString &path, int offset) {
+void BrowserController::start(const QString &path, int offset, const QString &password,
+                              bool withPassword) {
     if (m_updateActive || (m_busy && m_result.updating))
         return;
     xdzip::reader::Command command{};
-    command.kind =
-        path.isEmpty() ? xdzip::reader::CommandKind::Browse : xdzip::reader::CommandKind::Open;
+    command.kind = path.isEmpty() ? xdzip::reader::CommandKind::Browse
+                   : withPassword ? xdzip::reader::CommandKind::OpenWithPassword
+                                  : xdzip::reader::CommandKind::Open;
+    if (withPassword) {
+        auto secret = password.toUtf8();
+        command.password = rust::String(secret.constData(), static_cast<std::size_t>(secret.size()));
+        secret.fill('\0');
+    }
     command.session = m_session.toULongLong();
     const auto bytes = path.toUtf8();
     command.path = rust::String(bytes.constData(), static_cast<std::size_t>(bytes.size()));
@@ -1056,6 +1090,8 @@ void BrowserController::start(const QString &path, int offset) {
 void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
     m_preflightReport.clear();
     m_result = {};
+    m_result.opening = command.kind == xdzip::reader::CommandKind::Open ||
+                       command.kind == xdzip::reader::CommandKind::OpenWithPassword;
     m_result.preflight = preflight;
     m_result.extraction = command.kind == xdzip::reader::CommandKind::Extract ||
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
@@ -1158,6 +1194,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         replaceDirectories({});
         m_detail.clear();
         m_preflightReport.clear();
+        m_openPasswordPrompt.clear();
         m_message = explain("runtime_unavailable");
         emit tasksChanged(); // Invalidate the password binding at the fault boundary.
         emit changed();
@@ -1371,7 +1408,11 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
         for (const auto &row : event.rows) {
-            const auto method = m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
+            const auto method = m_format.compare(QStringLiteral("7z"), Qt::CaseInsensitive) == 0
+                                    ? QStringLiteral("7z")
+                                : m_format.compare(QStringLiteral("RAR"), Qt::CaseInsensitive) == 0
+                                    ? QStringLiteral("RAR")
+                                : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                 ? QStringLiteral("Store")
                                 : row.method == 8                 ? QStringLiteral("Deflate")
                                                                   : QString::number(row.method);
@@ -1465,6 +1506,22 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_deferredQuery.reset();
         if (!event.error.empty())
             m_result.error = text(event.error);
+        if (m_result.opening && (m_result.error == "password_required" ||
+                                m_result.error == "wrong_password")) {
+            if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
+                m_result.error = "resource_limit";
+            } else {
+                m_openPasswordPrompt = {{"taskId", QStringLiteral("open")},
+                                        {"promptId", QString::number(++m_openPasswordGeneration)},
+                                        {"name", m_title}, {"kind", QStringLiteral("open")},
+                                        {"retry", m_result.error == "wrong_password"}};
+                m_result = {};
+                m_message.clear();
+                emit changed();
+                emit tasksChanged();
+                return;
+            }
+        }
         if (!m_hasPayload && m_result.error.isEmpty())
             m_result.error = "runtime_unavailable";
         if (m_result.inputPreview) {

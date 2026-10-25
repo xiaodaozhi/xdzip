@@ -63,6 +63,13 @@ pub enum Command {
     },
     /// Replace the single development-stage session and return its first page.
     Open(String),
+    /// Reopen encrypted metadata with a zeroizing, session-scoped secret.
+    OpenWithPassword {
+        /// Original user-selected source, with the same admission as Open.
+        path: String,
+        /// Header secret retained only by the private session and its admitted tasks.
+        password: crate::extraction::Password,
+    },
     /// Query an immutable session; session mismatch fails before reading metadata.
     Browse {
         /// Session identity checked before acting.
@@ -126,6 +133,7 @@ impl Command {
             Self::Export { options, .. } | Self::ExportManifest { options, .. } => options.bytes(),
             Self::OpenEntry { cache, .. } => cache.capacity(),
             Self::Open(path) | Self::CheckTarget { path, .. } => path.len(),
+            Self::OpenWithPassword { path, password } => path.len() + password.expose().len(),
             Self::Browse {
                 directory, text, ..
             } => directory.len() + text.len(),
@@ -156,7 +164,9 @@ impl Command {
                     && !cache.contains('\0')
                     && Path::new(cache).is_absolute()
             }
-            Self::Open(path) => !path.is_empty() && path.len() <= 4096 && !path.contains('\0'),
+            Self::Open(path) | Self::OpenWithPassword { path, .. } => {
+                !path.is_empty() && path.len() <= 4096 && !path.contains('\0')
+            }
             Self::CheckTarget { path, .. } => {
                 !path.is_empty()
                     && path.len() <= 4096
@@ -722,6 +732,8 @@ fn execute(
         xdzip_codec_api::ScanError::Cancelled => "cancelled",
         xdzip_codec_api::ScanError::SourceChanged => "source_changed",
         xdzip_codec_api::ScanError::MissingVolume => "missing_volume",
+        xdzip_codec_api::ScanError::PasswordRequired => "password_required",
+        xdzip_codec_api::ScanError::WrongPassword => "wrong_password",
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {
@@ -858,6 +870,14 @@ fn execute(
                 return Ok(Payload::Snapshot(
                     archive.as_ref().map_or(0, |a| a.key().session.get()),
                 ));
+            }
+            Command::OpenWithPassword { path, password } => {
+                *archive = None;
+                let opened = Archive::open_with_password(Path::new(&path), control, Some(password))
+                    .map_err(fail)?;
+                let session = opened.key().session.get();
+                *archive = Some(opened);
+                (session, String::new(), String::new(), 0, 0, 0, 1, 0, true)
             }
             Command::Open(path) => {
                 *archive = None;

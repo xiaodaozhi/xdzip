@@ -42,6 +42,7 @@ impl SourceVersion {
 }
 pub(crate) struct Source {
     parts: Vec<Part>,
+    lengths: Vec<u64>,
     cached: Option<(usize, File)>,
     split: bool,
     name: PathBuf,
@@ -57,6 +58,7 @@ struct Part {
 impl Source {
     pub fn new(file: File, path: PathBuf, version: SourceVersion) -> Self {
         Self {
+            lengths: vec![version.length],
             cached: Some((0, file)),
             split: false,
             name: path.clone(),
@@ -80,10 +82,14 @@ impl Source {
             .and_then(|s| s.to_str())
             .ok_or(ScanError::Io)?;
         let lower = filename.to_ascii_lowercase();
+        if let Some(paths) = rar_volumes(path, control)? {
+            return Self::from_rar_volumes(paths, control);
+        }
         let (base, width, pkzip) = if let Some((base, ext)) = filename.rsplit_once('.') {
             if ext.len() >= 3
                 && ext.bytes().all(|b| b.is_ascii_digit())
-                && base.to_ascii_lowercase().ends_with(".zip")
+                && (base.to_ascii_lowercase().ends_with(".zip")
+                    || base.to_ascii_lowercase().ends_with(".7z"))
             {
                 (base.to_owned(), 3, false)
             } else if (ext.len() >= 3
@@ -187,6 +193,7 @@ impl Source {
         }
         let name = parent.join(if pkzip { format!("{base}.zip") } else { base });
         let mut source = Self {
+            lengths: parts.iter().map(|p| p.version.length).collect(),
             parts,
             cached: None,
             split: true,
@@ -208,6 +215,51 @@ impl Source {
         }
         source.validate()?;
         source.position = 0;
+        Ok(source)
+    }
+    fn from_rar_volumes(
+        paths: Vec<PathBuf>,
+        control: &xdzip_codec_api::Cancellation,
+    ) -> Result<Self, ScanError> {
+        let name = paths.first().ok_or(ScanError::MissingVolume)?.clone();
+        let mut parts = Vec::new();
+        let mut start = 0u64;
+        for path in paths {
+            control.check()?;
+            let m = std::fs::symlink_metadata(&path).map_err(|_| ScanError::MissingVolume)?;
+            if !m.is_file() || m.file_type().is_symlink() {
+                return Err(ScanError::Io);
+            }
+            #[cfg(windows)]
+            {
+                use std::os::windows::fs::MetadataExt;
+                if m.file_attributes() & 0x400 != 0 {
+                    return Err(ScanError::Io);
+                }
+            }
+            let file = xdzip_io::open_regular_readonly(&path).map_err(|_| ScanError::Io)?;
+            let version = SourceVersion::read(&file)?;
+            if version.length == 0 {
+                return Err(ScanError::Invalid);
+            }
+            let next = start.checked_add(version.length).ok_or(ScanError::Limit)?;
+            parts.push(Part {
+                path,
+                version,
+                start,
+            });
+            start = next;
+        }
+        let source = Self {
+            lengths: parts.iter().map(|p| p.version.length).collect(),
+            parts,
+            cached: None,
+            split: true,
+            name,
+            position: 0,
+            tail: None,
+        };
+        source.validate()?;
         Ok(source)
     }
     pub fn validate(&self) -> Result<(), ScanError> {
@@ -247,6 +299,7 @@ impl Source {
         self.validate()?;
         let source = Self {
             parts: self.parts.clone(),
+            lengths: self.lengths.clone(),
             cached: None,
             split: self.split,
             name: self.name.clone(),
@@ -288,6 +341,98 @@ impl Source {
     pub fn is_split(&self) -> bool {
         self.split
     }
+}
+impl xdzip_codec_api::ReadSource for Source {
+    fn volume_lengths(&self) -> Option<&[u64]> {
+        self.split.then_some(self.lengths.as_slice())
+    }
+}
+/// Resolve only conventional adjacent RAR volume names; every opened part remains host-owned.
+fn rar_volumes(
+    path: &std::path::Path,
+    control: &xdzip_codec_api::Cancellation,
+) -> Result<Option<Vec<PathBuf>>, ScanError> {
+    let Some(filename) = path.file_name().and_then(|n| n.to_str()) else {
+        return Ok(None);
+    };
+    let lower = filename.to_ascii_lowercase();
+    let parent = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+    let part = lower
+        .strip_suffix(".rar")
+        .and_then(|s| s.rsplit_once(".part"))
+        .filter(|(_, number)| !number.is_empty() && number.bytes().all(|b| b.is_ascii_digit()));
+    let legacy = lower.rsplit_once('.').filter(|(_, e)| {
+        e.len() == 3
+            && matches!(e.as_bytes()[0], b'r'..=b'z')
+            && e[1..].bytes().all(|b| b.is_ascii_digit())
+    });
+    if part.is_none() && legacy.is_none() && !lower.ends_with(".rar") {
+        return Ok(None);
+    }
+    let base = part
+        .map(|(b, _)| b)
+        .or_else(|| legacy.map(|(b, _)| b))
+        .unwrap_or_else(|| lower.strip_suffix(".rar").unwrap());
+    // PKZIP uses .zNN too. Only a real RAR marker can claim that overlapping spelling.
+    if legacy.is_some_and(|(_, ext)| ext.starts_with('z')) {
+        let mut probe = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
+        let mut marker = [0; 4];
+        if probe.read_exact(&mut marker).is_err() || !matches!(&marker, b"Rar!" | b"RE~^") {
+            return Ok(None);
+        }
+    }
+    let width = part.map_or(0, |(_, n)| n.len());
+    let mut found = std::collections::BTreeMap::new();
+    for (count, item) in std::fs::read_dir(parent)
+        .map_err(|_| ScanError::Io)?
+        .enumerate()
+    {
+        control.check()?;
+        if count >= 100_000 {
+            return Err(ScanError::Limit);
+        }
+        let item = item.map_err(|_| ScanError::Io)?;
+        let Some(name) = item.file_name().to_str().map(|n| n.to_ascii_lowercase()) else {
+            continue;
+        };
+        let index = if width != 0 {
+            name.strip_prefix(&format!("{base}.part"))
+                .and_then(|s| s.strip_suffix(".rar"))
+                .filter(|s| s.len() >= width && s.bytes().all(|b| b.is_ascii_digit()))
+                .and_then(|s| s.parse::<usize>().ok())
+                .and_then(|n| n.checked_sub(1))
+        } else if name == format!("{base}.rar") {
+            Some(0)
+        } else {
+            name.strip_prefix(&format!("{base}."))
+                .filter(|s| {
+                    s.len() == 3
+                        && matches!(s.as_bytes()[0], b'r'..=b'z')
+                        && s[1..].bytes().all(|b| b.is_ascii_digit())
+                })
+                .and_then(|s| {
+                    s[1..]
+                        .parse::<usize>()
+                        .ok()
+                        .map(|n| (s.as_bytes()[0] - b'r') as usize * 100 + n + 1)
+                })
+        };
+        if let Some(index) = index {
+            if index >= 1024 {
+                return Err(ScanError::Limit);
+            }
+            if found.insert(index, item.path()).is_some() {
+                return Err(ScanError::Invalid);
+            }
+        }
+    }
+    if width == 0 && legacy.is_none() && found.len() == 1 {
+        return Ok(None);
+    }
+    if found.is_empty() || found.last_key_value().unwrap().0 + 1 != found.len() {
+        return Err(ScanError::MissingVolume);
+    }
+    Ok(Some(found.into_values().collect()))
 }
 impl Read for Source {
     fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
@@ -366,6 +511,16 @@ fn source_name(path: &std::path::Path) -> &str {
     } else {
         stem
     };
+    let stem = if path
+        .extension()
+        .is_some_and(|s| s.eq_ignore_ascii_case("rar"))
+    {
+        stem.rsplit_once(".part")
+            .filter(|(_, number)| !number.is_empty() && number.bytes().all(|b| b.is_ascii_digit()))
+            .map_or(stem, |(base, _)| base)
+    } else {
+        stem
+    };
     if stem.is_empty() { "archive" } else { stem }
 }
 #[cfg(test)]
@@ -379,12 +534,71 @@ mod tests {
             ("archive.tgz", "archive"),
             ("archive.tar", "archive"),
             ("archive.zip", "archive"),
+            ("archive.7z", "archive"),
+            ("archive.part01.rar", "archive"),
             (".tar.gz", "archive"),
         ] {
             assert_eq!(source_name(std::path::Path::new(input)), expected);
         }
     }
 
+    #[test]
+    fn native_volume_resolution_preserves_boundaries_and_protects_every_part() {
+        use xdzip_codec_api::ReadSource;
+        let root = std::env::temp_dir().join(format!(
+            "xdzip-native-volumes-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        for names in [
+            ["data.7z.001", "data.7z.002"],
+            ["new.part01.rar", "new.part02.rar"],
+            ["old.rar", "old.r00"],
+        ] {
+            std::fs::write(root.join(names[0]), b"first").unwrap();
+            std::fs::write(root.join(names[1]), b"second").unwrap();
+            let mut source = Source::open(&root.join(names[1]), &Default::default()).unwrap();
+            assert!(source.is_split());
+            assert_eq!(source.volume_lengths(), Some(&[5, 6][..]));
+            assert_eq!(source.identities().unwrap().len(), 2);
+            let mut bytes = Vec::new();
+            source.read_to_end(&mut bytes).unwrap();
+            assert_eq!(bytes, b"firstsecond");
+            std::fs::write(root.join(names[0]), b"changed first volume").unwrap();
+            assert_eq!(source.validate(), Err(ScanError::SourceChanged));
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn native_volume_gaps_fail_before_format_decoding() {
+        let root = std::env::temp_dir().join(format!(
+            "xdzip-native-volume-gaps-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        for names in [
+            ["data.7z.001", "data.7z.003"],
+            ["new.part1.rar", "new.part3.rar"],
+            ["old.rar", "old.r01"],
+        ] {
+            for name in names {
+                std::fs::write(root.join(name), b"volume").unwrap();
+            }
+            assert!(matches!(
+                Source::open(&root.join(names[1]), &Default::default()),
+                Err(ScanError::MissingVolume)
+            ));
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[cfg(unix)]
     #[test]
     #[allow(unsafe_code)]

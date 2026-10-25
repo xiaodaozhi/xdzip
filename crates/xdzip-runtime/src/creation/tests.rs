@@ -33,6 +33,8 @@ impl Fixture {
                 level: 6,
                 conflict: ConflictPolicy::Ask,
                 volume_bytes: 0,
+                solid: false,
+                encrypt_headers: false,
                 password: None,
             },
         }
@@ -105,6 +107,7 @@ fn store_and_deflate_write_real_archives_and_decode_every_record() {
                 .decode(
                     r,
                     &mut VerifySink {
+                        work: &Cell::new(0),
                         bytes: 0,
                         limit: r.size,
                         cancel: &cancel,
@@ -1224,4 +1227,28 @@ fn metadata_filter_also_applies_to_encrypted_and_numbered_split_creation() {
                     && !r.raw_name.windows(8).any(|s| s == b"__MACOSX"))
         );
     }
+}
+
+#[test]
+fn native_creation_capabilities_are_format_specific() {
+    let fixture = Fixture::new();
+    let mut options = fixture.job(32).options;
+    options.name = "archive.7z".into();
+    assert!(options.bounded());
+    options.solid = true;
+    assert!(options.bounded());
+    options.encrypt_headers = true;
+    assert!(!options.bounded());
+    options.password = Some(Password::new("test secret".into()).unwrap());
+    assert!(options.bounded());
+    options.volume_bytes = 4096;
+    assert!(options.bounded());
+    options.name = "archive.rar".into();
+    assert!(!options.bounded());
+    options.name = "archive.zip".into();
+    options.method = 8;
+    assert!(!options.bounded());
+    options.solid = false;
+    options.encrypt_headers = false;
+    assert!(options.bounded());
 }

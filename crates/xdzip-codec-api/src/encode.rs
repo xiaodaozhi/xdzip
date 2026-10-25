@@ -25,6 +25,8 @@ pub enum EncodeError {
     Invalid,
     /// Requested method or level is not supported.
     Unsupported,
+    /// A configured resource budget was exceeded before publication.
+    Limit,
     /// Cooperative cancellation observed before publication.
     Cancelled,
 }
@@ -36,8 +38,50 @@ pub trait EncodeInput {
     fn open(&self, index: usize) -> Result<Box<dyn Read + '_>, EncodeError>;
 }
 /// Writable staging stream. It grants no path, directory or publication authority.
-pub trait EncodeOutput: Write {}
-impl<T: Write + ?Sized> EncodeOutput for T {}
+pub trait EncodeOutput: Write {
+    /// Patch a host-owned seekable staging stream. No path or publication authority is granted.
+    /// Streaming-only outputs reject random writes explicitly.
+    fn write_at(&mut self, _offset: u64, _bytes: &[u8]) -> Result<(), EncodeError> {
+        Err(EncodeError::Unsupported)
+    }
+}
+impl EncodeOutput for Vec<u8> {
+    fn write_at(&mut self, offset: u64, bytes: &[u8]) -> Result<(), EncodeError> {
+        let offset = usize::try_from(offset).map_err(|_| EncodeError::Limit)?;
+        let end = offset.checked_add(bytes.len()).ok_or(EncodeError::Limit)?;
+        if end > self.len() {
+            self.try_reserve(end - self.len())
+                .map_err(|_| EncodeError::Limit)?;
+            self.resize(end, 0);
+        }
+        self[offset..end].copy_from_slice(bytes);
+        Ok(())
+    }
+}
+impl EncodeOutput for std::fs::File {
+    fn write_at(&mut self, offset: u64, bytes: &[u8]) -> Result<(), EncodeError> {
+        std::io::Seek::seek(self, std::io::SeekFrom::Start(offset))
+            .map_err(|_| EncodeError::Output)?;
+        self.write_all(bytes).map_err(|_| EncodeError::Output)
+    }
+}
+impl<T: AsRef<[u8]>> EncodeOutput for std::io::Cursor<T>
+where
+    std::io::Cursor<T>: Write,
+{
+    fn write_at(&mut self, offset: u64, bytes: &[u8]) -> Result<(), EncodeError> {
+        std::io::Seek::seek(self, std::io::SeekFrom::Start(offset))
+            .map_err(|_| EncodeError::Output)?;
+        self.write_all(bytes).map_err(|_| EncodeError::Output)
+    }
+}
+impl EncodeOutput for &mut dyn RewriteOutput {
+    fn write_at(&mut self, offset: u64, bytes: &[u8]) -> Result<(), EncodeError> {
+        std::io::Seek::seek(self, std::io::SeekFrom::Start(offset))
+            .map_err(|_| EncodeError::Output)?;
+        self.write_all(bytes).map_err(|_| EncodeError::Output)
+    }
+}
 /// One actual-work progress observation; the host controls event throttling.
 pub struct EncodeProgress<'a> {
     /// Current portable name from the frozen record.
@@ -52,6 +96,10 @@ pub struct EncodeSettings<'a> {
     pub method: &'a str,
     /// Admitted backend level; its meaning belongs to that codec's capability.
     pub level: u8,
+    /// Group regular files into solid blocks when supported by the selected container.
+    pub solid: bool,
+    /// Encrypt the directory only when the selected container and password support it.
+    pub encrypt_headers: bool,
     /// Optional borrowed password. Never include it in progress, metadata or errors.
     pub password: Option<&'a str>,
 }
