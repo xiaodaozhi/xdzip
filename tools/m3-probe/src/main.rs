@@ -58,9 +58,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{}", base.to_str().ok_or("non-UTF-8 temporary base")?);
         return Ok(());
     }
+    let flags = args.get(3..).unwrap_or_default();
+    let generic = args.get(2).is_some_and(|arg| arg == "--generic")
+        && flags.len() <= 2
+        && flags.iter().all(|flag| {
+            matches!(
+                flag.as_str(),
+                "--fixture-password-stdin" | "--fixture-allow-high-ratio"
+            )
+        })
+        && flags
+            .iter()
+            .filter(|flag| flag.as_str() == "--fixture-password-stdin")
+            .count()
+            <= 1
+        && flags
+            .iter()
+            .filter(|flag| flag.as_str() == "--fixture-allow-high-ratio")
+            .count()
+            <= 1;
     let fixture_password_mode =
-        args.len() == 4 && args[2] == "--generic" && args[3] == "--fixture-password-stdin";
-    let generic = (args.len() == 3 && args[2] == "--generic") || fixture_password_mode;
+        generic && flags.iter().any(|flag| flag == "--fixture-password-stdin");
+    // Explicit consent for bounded, self-authored verification inputs only.
+    // The default probe and all product admission remain unchanged.
+    let fixture_allow_high_ratio = generic
+        && flags
+            .iter()
+            .any(|flag| flag == "--fixture-allow-high-ratio");
     if args.len() != 2 && !generic {
         return Err("provide owned archive and empty output directory".into());
     }
@@ -107,7 +131,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             directory: String::new(),
             create_folder: false,
             conflict: ConflictPolicy::Ask,
-            allow_high_ratio: false,
+            allow_high_ratio: fixture_allow_high_ratio,
         },
     })?;
     let mut events = 0;

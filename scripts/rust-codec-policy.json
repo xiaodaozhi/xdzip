@@ -13,11 +13,15 @@
       "forbidden_runtime_dependencies": ["rawzip", "zip", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
+      "package": "xdzip-codec-cab",
+      "forbidden_runtime_dependencies": ["cab", "lzxd", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
       "package": "xdzip-codec-optical",
       "forbidden_runtime_dependencies": ["iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
-      "package": "xdzip-optical-bridge",
+      "package": "xdzip-readonly-bridge",
       "forbidden_runtime_dependencies": ["iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {

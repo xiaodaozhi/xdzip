@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "source_kind": "self_authored_mathematical_quantum_encoder",
+  "generator": "tests/fixtures/cab/generate-quantum.py",
+  "license": "Apache-2.0",
+  "behavior_basis": "Separately prepared mathematical behavior specification; implementer did not read third-party Quantum implementation source.",
+  "independent_reference": {
+    "tool": "7-Zip 26.05, preserved official worker",
+    "sha256": "34078812a461e19af61834de4bcafceb5c33a9dd0b404df18b13c676c36980b9",
+    "verification": "All generated cabinets independently decoded and compared with complete known bytes."
+  },
+  "validation_scope": "Known payload readability and exact bytes for self-authored encoded streams. These are not samples produced by an independent third-party Quantum compressor.",
+  "limits": [
+    "Current Windows makecab rejects CompressionType=Quantum.",
+    "The mathematical test encoder is not a product dependency.",
+    "Full CAB service, source identity, cancellation, checksum and publishing validation belong to the integration harness."
+  ],
+  "cases": [
+    {
+      "name": "literal-rescale",
+      "window_bits": 18,
+      "level": 2,
+      "frames": 6,
+      "bytes": 196608,
+      "cab_sha256": "8a42e6d0e36c5ba0c7d54e4d6e2d6e9c7475b8ef741b02a5697f156e7546d48e",
+      "plain_sha256": "aa5fb87b4e4b3006708086f660d2374acd92dec0d7b901557cf3540c05d1c203"
+    },
+    {
+      "name": "window-10",
+      "window_bits": 10,
+      "level": 1,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "c8e3782026dcc7c1f4df4e5dd69d6c1b5a72aae58ae68c0aca42bb22ac08fae7",
+      "plain_sha256": "21b854b0f49f57cf25bf08f3a09801377c3f6398634f33e26f94cdcd6e6d872d"
+    },
+    {
+      "name": "window-11",
+      "window_bits": 11,
+      "level": 2,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "436a339542e0e02813152878d8556d3c87303cb68faace386af9333a3c4aa5a4",
+      "plain_sha256": "01726c47aba985fa4af7a929efccbfd31d9d4035f49ca18451ed064a969c936a"
+    },
+    {
+      "name": "window-12",
+      "window_bits": 12,
+      "level": 3,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "b18c49a0916965cb4c434abf732bb827c5c0b8611669652e96da46110a891e88",
+      "plain_sha256": "1c37915cd2211d517cf88c1f104abcd0458886600f421e1b5cbaa78fc9859060"
+    },
+    {
+      "name": "window-13",
+      "window_bits": 13,
+      "level": 4,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "148c6e6426c577e8c98a7f495337e07b2e4f5289443e04749929524d92feb736",
+      "plain_sha256": "0903d993e9bb8c87a6c808574f283033c81d0b976aa0bfc5b48379eb44e261f0"
+    },
+    {
+      "name": "window-14",
+      "window_bits": 14,
+      "level": 5,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "6a9d379361ac5f814bc6aa3b6ccab25f170bcf26479fd72dbc99d8bd69fa67f0",
+      "plain_sha256": "c2216a2605ca261759eaaede39df5bd19c575bb679208ef678aca9d86df24d32"
+    },
+    {
+      "name": "window-15",
+      "window_bits": 15,
+      "level": 6,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "a69abae09e34fa3b0ba8215b526f336cbecff7f8b284af41e842ff169f52256f",
+      "plain_sha256": "b8c4412f12cc18ecd1a118857e40ab8829a83115bc96217482cd2d13f13e3f48"
+    },
+    {
+      "name": "window-16",
+      "window_bits": 16,
+      "level": 7,
+      "frames": 3,
+      "bytes": 66560,
+      "cab_sha256": "7eaee22e06974a543c85e80f603746e633bbbcbd6479e2d7b5d4eae3d9f1472a",
+      "plain_sha256": "9b9e37cff558eb9724e06b9f0355c41a780e0f5e4c107af40565f86eaae29c0a"
+    },
+    {
+      "name": "window-17",
+      "window_bits": 17,
+      "level": 1,
+      "frames": 5,
+      "bytes": 132096,
+      "cab_sha256": "23f5ba78685f6c7a210d423281ec20c2e825f98938e3025b8ece0d7d8aad0bce",
+      "plain_sha256": "52174d7e8f6cd8ae53f42a7364e709981e94cd2f6b3b75270c4340d3b4cce781"
+    },
+    {
+      "name": "window-18",
+      "window_bits": 18,
+      "level": 2,
+      "frames": 9,
+      "bytes": 263168,
+      "cab_sha256": "8ab8646836defea6f48286f0578d4e8abec60c6c20dc63266f839ca66ed72334",
+      "plain_sha256": "5986a0d2cc941d9f614806e9d05f777716f970b6c5aff8530c14b7b01143f851"
+    },
+    {
+      "name": "window-19",
+      "window_bits": 19,
+      "level": 3,
+      "frames": 17,
+      "bytes": 525312,
+      "cab_sha256": "2f90460de8ecf90e0e2e1df51900fbba714b945b71d31f946d4031f36afedcee",
+      "plain_sha256": "36c9e2f7c1fed86a0d65757ccdf455200edaacc6c72686bb160536133b829764"
+    },
+    {
+      "name": "window-20",
+      "window_bits": 20,
+      "level": 4,
+      "frames": 33,
+      "bytes": 1049600,
+      "cab_sha256": "d6b5a20e69ef72fa25103abb4501e143bad18e48a485bdb21121e26b375f2d97",
+      "plain_sha256": "d4bc3140d3e2320a2060924ab57a125616f3f967e4e8af30c55aa9de5612fbce"
+    },
+    {
+      "name": "window-21",
+      "window_bits": 21,
+      "level": 5,
+      "frames": 65,
+      "bytes": 2098176,
+      "cab_sha256": "b17a934b931df68b7e2562e450113d159f1a4c8e27df78224f78e00e68ff338c",
+      "plain_sha256": "e21203fa6a8f6cc892017eba7844ea86d35f77afb8e0b8ac0c65860177e835b2"
+    },
+    {
+      "name": "small-history",
+      "window_bits": 10,
+      "level": 2,
+      "frames": 2,
+      "bytes": 65536,
+      "cab_sha256": "950f330b24f3c35f80cfefe28921d93037a67ff0c17c8fb049b37edb8b41f0c4",
+      "plain_sha256": "8972076cb336eb71044adb1be09e761ec0070ceb9e833595dedce38fd1478c2f"
+    },
+    {
+      "name": "token-boundaries",
+      "window_bits": 21,
+      "level": 2,
+      "frames": 66,
+      "bytes": 2131802,
+      "cab_sha256": "b36c5de28042604290de642c163f80cb5705119a3de0e04aaad95d279df04fce",
+      "plain_sha256": "049e9257820718d0c30059bc5f695e4d05408fdf7886ddf690d9f91953d3d37b"
+    }
+  ],
+  "recipes": {
+    "literal-rescale": "Six complete 32768-byte frames; byte i in frame f is (i*73+f*19)%256.",
+    "window-10..window-21": "Initial ABCD, then longest legal matches up to259 bytes, distance=min(window,actual history) except short-match distance<=4; target=max(65536,window+1024); remaining short literal is Q.",
+    "small-history": "65536 bytes Q in two complete frames; first uses distance1, second uses distance1024.",
+    "token-boundaries": "2097152 bytes Q history followed by all lengths3..259 at distance1 and both endpoints of every legal distance slot for each match selector, padding nonfinal frames with Q."
+  },
+  "generator_sha256": "dcad147e3b89f68a6996d1a5178a8094d9af20b682809fde92c3f8e82139b685"
+}

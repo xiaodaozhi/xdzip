@@ -2,6 +2,8 @@
 
 7z、CAB 使用官方 7-Zip 源码，RAR 使用 RARLAB 官方 UnRAR 源码。固定来源、版本和 SHA-256 位于 [源码清单](../../scripts/native-codec-sources.json)。ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md#iso与udf只读规格)，通过薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、TAR.GZ 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
 
+独立 Rust CAB 候选通过专用构建选项 `XDZIP_RUST_CAB_TEST_ROUTE=ON` 验证。该选项默认关闭，启用后 CAB 只执行 Rust 路由，不回退官方处理器。它不自动改变产品默认后端或扩大支持声明，来源与替代门槛见[自研契约](independent-rust-codecs.md)及[CAB 格式来源](cab-format-sources.md)。
+
 ## 构建与来源
 
 统一准备入口运行 `scripts/prepare-native-codecs.py`，只将已核验源码解包到 build 或 .cache 的专用目录。下载及解包大小、成员数量和成员路径均有上限，拒绝链接、设备、绝对路径、父目录逃逸及大小写重复成员。离线构建使用已固定归档。

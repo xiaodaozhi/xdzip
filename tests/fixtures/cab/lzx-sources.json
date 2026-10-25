@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "generator": "tests/fixtures/cab/generate-makecab.py",
+  "source_kind": "independent_Microsoft_makecab",
+  "content_license": "Apache-2.0",
+  "content": "Project-owned deterministic files only; no user files or Microsoft executable code.",
+  "tool": {
+    "name": "Microsoft Windows makecab.exe",
+    "file_version": "5.00 (WinBuild.160101.0800)",
+    "sha256": "070a98b4f7c03f99048a10f490d5916a9a98417e0d0de2c414c76b3dd00cb35e",
+    "os": "Windows-11-10.0.26300-SP0",
+    "official_documentation": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/makecab"
+  },
+  "recipes": {
+    "pattern-multifile": "bytes0..255 repeated768 times, then ASCII CAB LZX cross frame and file boundary. plus LF; split at65551 into first.bin and second.bin, then empty.bin.",
+    "mszip-history-multifile": "Same deterministic bytes and65551 split as pattern-multifile; independent zlib verifies that later frames cannot decode without preceding32KiB history.",
+    "aligned-multifile": "seed=SHA256(LE32(i)) concatenated for i=0..511 (16KiB); for i=0..32767 select seed chunk of64B using SHA256(LE32(i))[0]; split concatenation at65551, then empty.bin."
+  },
+  "validation_scope": "Known ordinary-file bytes and exercised LZX frame/window/block behavior; complete CAB host-service validation is performed separately.",
+  "fixtures": [
+    {
+      "file": "lzx-window15.cab.gz",
+      "case": "lzx-window15",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 590,
+      "sha256": "d0240f48e00d4541e299b5e48779272fed9d19a383e90cec8daa617e1f4d9af8",
+      "decoded_bytes": 815,
+      "decoded_sha256": "c00ce8baa1568eb5ffc12924404778d43e042b16b4743b0d1321dbc23b170aa2",
+      "window_bits": 15,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window16.cab.gz",
+      "case": "lzx-window16",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 592,
+      "sha256": "5ee69fc6ef0f741bf4cae6f48ff5638cbb02bbd0e1fff1dc5ec8a3d80f5d6003",
+      "decoded_bytes": 815,
+      "decoded_sha256": "ef16b699fa8d7bf573aed51288e2b67378ccb304e2e0320a4388435660e45267",
+      "window_bits": 16,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window17.cab.gz",
+      "case": "lzx-window17",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 587,
+      "sha256": "fe1a56af1320f9994b548cba4d56cb2eada584dce0372e32e37645cad37b453c",
+      "decoded_bytes": 815,
+      "decoded_sha256": "a3f8ca03e62e9bdd658e836e8296ba70b8b5426fe7b2bf2e5d83fc425fd34f50",
+      "window_bits": 17,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window18.cab.gz",
+      "case": "lzx-window18",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 587,
+      "sha256": "34f78247f5838e0764b5a023b7d97af55d956fec9e1731343be22b615975b8f6",
+      "decoded_bytes": 815,
+      "decoded_sha256": "5ff06927067141e47e3b41c5c3c9b54f820a7489de830d7d5b10e9a0f0974f1b",
+      "window_bits": 18,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window19.cab.gz",
+      "case": "lzx-window19",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 585,
+      "sha256": "e63958bd25c6faeb298c6d42dac610acfb736cd0a62827c9898846b868bd83f3",
+      "decoded_bytes": 817,
+      "decoded_sha256": "bed0a682b4a2a21dd1ee0ee06c3d1afa1302c194abdf1863ee1c332d3f57bd8e",
+      "window_bits": 19,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window20.cab.gz",
+      "case": "lzx-window20",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 591,
+      "sha256": "acba7254b0817d49cd644943fbf4430fcbf1819f4d563599ca88262a68715c51",
+      "decoded_bytes": 817,
+      "decoded_sha256": "02a709b27ef5bfa47ee65dc2e23f34362f9caa2e81b0750512a49fc80077647c",
+      "window_bits": 20,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-window21.cab.gz",
+      "case": "lzx-window21",
+      "recipe": "pattern-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 587,
+      "sha256": "78ea7246af47eb0fb73a440e74b92e085a5aa18f9efdb262a6298c224dba9ba9",
+      "decoded_bytes": 817,
+      "decoded_sha256": "a0de48603fbde7b410b8f6927e2063c466047399b0e50de9a0d4229b6e37a201",
+      "window_bits": 21,
+      "frames": 7,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "b8900ec3853cca97ec36fa1122e8dfd1878bfcaa3dec947ee111f35e78f53b88"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 131096,
+          "sha256": "2e49e80e0eb59334ce87794b122399ca0d045e1cdbf774fbe69ffc582f2e5d80"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "file": "lzx-aligned21.cab.gz",
+      "case": "lzx-aligned21",
+      "recipe": "aligned-multifile",
+      "compression": "LZX",
+      "compressed_bytes": 74716,
+      "sha256": "e5d706c98b2fbddc6a18e172374f5ba8dba5d91c60934cde8df13ba5e34c4236",
+      "decoded_bytes": 81569,
+      "decoded_sha256": "a6f6df0aed77f41527947ebff3d4820fe576d152e3cb6c2747f64de4fe89d9ec",
+      "window_bits": 21,
+      "frames": 64,
+      "payloads": [
+        {
+          "name": "first.bin",
+          "bytes": 65551,
+          "sha256": "8bacbae87c004357bc8052b13ffc5b5280b93f498afcc919cd3cfbb6c277321c"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 2031601,
+          "sha256": "e3f6bca5af0aee22fae2dea05c02d8da2ade9df4e4fd263adacf317ed4132eda"
+        },
+        {
+          "name": "empty.bin",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "compression": "LZX"
+}

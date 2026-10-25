@@ -157,15 +157,20 @@ size_t read_input(uint32_t index, void *data, size_t size) {
     memcpy(data, bytes.data(), bytes.size());
     return bytes.size();
 }
-void write_data(const void *data, size_t size, bool selected) {
+static void write_data_impl(const void *data, size_t size, bool selected, bool precharged) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);
+    if (precharged && !selected)
+        throw Failure{2};
     auto bytes = static_cast<const uint8_t *>(data);
     while (size) {
         size_t count = std::min(size, Chunk);
         std::vector<uint8_t> frame;
         if (selected) {
             frame.assign(bytes, bytes + count);
-            send(Data, frame);
+            // WorkerCredit::data in the Rust host accepts this kind only for
+            // CAB after successful WORK admission, and debits it once before
+            // delivery. Runtime sinks independently retain output quotas.
+            send(precharged ? PrechargedData : Data, frame);
         } else {
             put64(frame, count);
             send(Work, frame);
@@ -174,6 +179,12 @@ void write_data(const void *data, size_t size, bool selected) {
         size -= count;
         bytes += count;
     }
+}
+void write_data(const void *data, size_t size, bool selected) {
+    write_data_impl(data, size, selected, false);
+}
+void write_precharged_data(const void *data, size_t size) {
+    write_data_impl(data, size, true, true);
 }
 void write_at(uint64_t offset, const void *data, size_t size) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);

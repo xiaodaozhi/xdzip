@@ -1465,11 +1465,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-cab-probe"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "serde_json",
+ "xdzip-codec-api",
+ "xdzip-codec-cab",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.1.0-alpha.6"
 dependencies = [
  "chardetng",
  "encoding_rs",
+ "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-cab"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "xdzip-codec-api",
+ "xdzip-compression",
  "xdzip-domain",
 ]
 
@@ -1580,16 +1598,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "xdzip-optical-bridge"
-version = "0.1.0-alpha.6"
-dependencies = [
- "cxx",
- "cxx-build",
- "xdzip-codec-api",
- "xdzip-codec-optical",
-]
-
-[[package]]
 name = "xdzip-optical-probe"
 version = "0.1.0-alpha.6"
 dependencies = [
@@ -1608,6 +1616,17 @@ dependencies = [
  "xdzip-domain",
  "xdzip-runtime",
  "xdzip-update",
+]
+
+[[package]]
+name = "xdzip-readonly-bridge"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "xdzip-codec-api",
+ "xdzip-codec-cab",
+ "xdzip-codec-optical",
 ]
 
 [[package]]

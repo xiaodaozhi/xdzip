@@ -1,5 +1,5 @@
 [package]
-name = "xdzip-optical-bridge"
+name = "xdzip-readonly-bridge"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,6 +12,7 @@ doctest = false
 [dependencies]
 cxx.workspace = true
 xdzip-codec-api = { path = "../xdzip-codec-api" }
+xdzip-codec-cab = { path = "../xdzip-codec-cab" }
 xdzip-codec-optical = { path = "../xdzip-codec-optical" }
 [build-dependencies]
 cxx-build.workspace = true

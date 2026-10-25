@@ -41,11 +41,21 @@ impl std::error::Error for DecodeError {}
 pub trait DecodedSink {
     /// Accept actual decoded bytes, or stop decoding. No destination is exposed.
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError>;
-    /// Meter bytes decoded only to reach a selected solid record, without publishing output.
+    /// Emit bytes whose decoding work was already admitted by `charge_skipped`.
+    /// A sink that exempts this write must retain and consume private prepaid
+    /// credit, and still enforce file and cumulative output limits. The default
+    /// conservatively charges the bytes again through the ordinary write path.
+    fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.write_chunk(bytes)
+    }
+    /// Admit actual decoding work without emitting output, including solid skips
+    /// and a newly decoded cached frame. Successful admission may fund later
+    /// precharged writes; callers may not assume that the default retains credit.
     fn charge_skipped(&mut self, _bytes: u64) -> Result<(), DecodeError> {
         Ok(())
     }
 }
+
 /// One opened format instance. Its metadata identities match the host snapshot.
 pub trait PayloadReader {
     /// Decode to EOF and validate before returning success, including empty records.
@@ -87,5 +97,25 @@ pub trait PayloadCodec {
         _password: Option<&str>,
     ) -> Result<Box<dyn PayloadReader + 'a>, DecodeError> {
         self.open_payload(source, snapshot, control)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_precharged_write_keeps_ordinary_admission_and_errors() {
+        struct Limited(usize);
+        impl DecodedSink for Limited {
+            fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+                self.0 = self.0.checked_sub(bytes.len()).ok_or(DecodeError::Limit)?;
+                Ok(())
+            }
+        }
+        let mut sink = Limited(3);
+        sink.charge_skipped(100).unwrap();
+        sink.write_precharged_chunk(b"abc").unwrap();
+        assert_eq!(sink.write_precharged_chunk(b"x"), Err(DecodeError::Limit));
     }
 }

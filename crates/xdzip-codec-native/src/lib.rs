@@ -20,7 +20,7 @@ use zeroize::Zeroizing;
 /// Native worker budget, enforced as committed memory on Windows and address
 /// space on Unix. macOS excludes its pre-existing dyld virtual reservation.
 pub const NATIVE_MEMORY_LIMIT: u64 = 1024 * 1024 * 1024;
-/// Official 7-Zip (7z only) or UnRAR (RAR only) adapter.
+/// Isolated adapter for official 7z/UnRAR and independent read-only codecs.
 pub struct NativeCodec {
     /// Selects an exact engine; other formats fail closed.
     pub format: Format,
@@ -302,6 +302,70 @@ impl MetadataCodec for NativeCodec {
             .map_err(scan_error)
     }
 }
+const PRECHARGED_LIMIT: u64 = 20 * 1024 * 1024 * 1024;
+
+/// Credit belongs to one live worker, rather than to a source or record ID.
+#[derive(Default)]
+struct WorkerCredit(u64);
+
+impl WorkerCredit {
+    fn reset(&mut self) {
+        self.0 = 0;
+    }
+
+    fn work(
+        &mut self,
+        format: Format,
+        sink: &mut dyn DecodedSink,
+        count: u64,
+    ) -> Result<(), DecodeError> {
+        let next = if format == Format::Cab {
+            self.0
+                .checked_add(count)
+                .filter(|n| *n <= PRECHARGED_LIMIT)
+                .ok_or(DecodeError::Limit)?
+        } else {
+            self.0
+        };
+        // Rejected host admission never creates prepaid authority.
+        sink.charge_skipped(count)?;
+        self.0 = next;
+        Ok(())
+    }
+
+    fn data(
+        &mut self,
+        format: Format,
+        sink: &mut dyn DecodedSink,
+        bytes: &[u8],
+        precharged: bool,
+        written: &mut u64,
+        declared: u64,
+    ) -> Result<(), DecodeError> {
+        if bytes.len() > protocol::CHUNK {
+            return Err(DecodeError::Limit);
+        }
+        let count = bytes.len() as u64;
+        let next = written.checked_add(count).ok_or(DecodeError::Limit)?;
+        if next > declared {
+            return Err(DecodeError::Integrity);
+        }
+        if precharged {
+            if format != Format::Cab || count == 0 {
+                return Err(DecodeError::Integrity);
+            }
+            self.0 = self.0.checked_sub(count).ok_or(DecodeError::Integrity)?;
+            // Debit before calling the host: a partial/failed output must not
+            // leave the same bytes available for another exempt write.
+            sink.write_precharged_chunk(bytes)?;
+        } else {
+            sink.write_chunk(bytes)?;
+        }
+        *written = next;
+        Ok(())
+    }
+}
+
 struct NativeReader<'a> {
     codec: NativeCodec,
     source: &'a mut dyn ReadSource,
@@ -312,6 +376,7 @@ struct NativeReader<'a> {
     last_index: Option<u64>,
     worker_password: Zeroizing<String>,
     worker_has_password: bool,
+    credit: WorkerCredit,
 }
 impl PayloadCodec for NativeCodec {
     fn open_payload<'a>(
@@ -347,6 +412,7 @@ impl PayloadCodec for NativeCodec {
             last_index: None,
             worker_password: Zeroizing::new(String::new()),
             worker_has_password: false,
+            credit: WorkerCredit::default(),
         }))
     }
 }
@@ -379,10 +445,11 @@ impl PayloadReader for NativeReader<'_> {
         }
         let password_option = password.or(self.password.as_ref().map(|secret| secret.as_str()));
         let password = password_option.unwrap_or("");
-        let mut worker = if self.last_index.is_some_and(|last| last < index)
+        let continued = self.last_index.is_some_and(|last| last < index)
             && self.worker_password.as_str() == password
-            && self.worker_has_password == password_option.is_some()
-        {
+            && self.worker_has_password == password_option.is_some();
+        self.last_index = None;
+        let mut worker = if continued {
             if let Some(mut worker) = self.worker.take() {
                 worker
                     .send(protocol::NEXT, &index.to_le_bytes())
@@ -393,6 +460,7 @@ impl PayloadReader for NativeReader<'_> {
             }
         } else {
             self.worker = None;
+            self.credit.reset();
             let length = self
                 .source
                 .seek(SeekFrom::End(0))
@@ -413,7 +481,6 @@ impl PayloadReader for NativeReader<'_> {
             self.worker_has_password = password_option.is_some();
             Worker::start(&request).map_err(decode_error)?
         };
-        self.last_index = None;
         let mut written = 0u64;
         loop {
             let frame = worker.next(control).map_err(decode_error)?;
@@ -426,24 +493,21 @@ impl PayloadReader for NativeReader<'_> {
                     &mut self.read_remaining,
                 )
                 .map_err(decode_error)?,
-                protocol::DATA => {
-                    let bytes = fields.0;
-                    if bytes.len() > protocol::CHUNK {
-                        return Err(DecodeError::Limit);
-                    }
-                    written = written
-                        .checked_add(bytes.len() as u64)
-                        .ok_or(DecodeError::Limit)?;
-                    if written > entry.size {
-                        return Err(DecodeError::Integrity);
-                    }
-                    sink.write_chunk(bytes)?;
+                kind @ (protocol::DATA | protocol::PRECHARGED_DATA) => {
+                    self.credit.data(
+                        self.codec.format,
+                        sink,
+                        fields.0,
+                        kind == protocol::PRECHARGED_DATA,
+                        &mut written,
+                        entry.size,
+                    )?;
                     worker.send(protocol::ACK, &[]).map_err(decode_error)?;
                 }
                 protocol::WORK => {
                     let count = fields.u64().map_err(decode_error)?;
                     fields.end().map_err(decode_error)?;
-                    sink.charge_skipped(count)?;
+                    self.credit.work(self.codec.format, sink, count)?;
                     worker.send(protocol::ACK, &[]).map_err(decode_error)?;
                 }
                 protocol::ERROR => {
@@ -463,6 +527,7 @@ impl PayloadReader for NativeReader<'_> {
                 protocol::DONE => {
                     fields.end().map_err(decode_error)?;
                     worker.finish(control).map_err(decode_error)?;
+                    self.credit.reset();
                     return if written == entry.size {
                         Ok(())
                     } else {

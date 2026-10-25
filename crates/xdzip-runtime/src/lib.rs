@@ -528,6 +528,8 @@ mod tests {
 mod legacy_names_tests;
 
 #[cfg(test)]
+mod cab_backend_tests;
+#[cfg(test)]
 mod native_backend_tests;
 #[cfg(test)]
 mod optical_backend_tests;

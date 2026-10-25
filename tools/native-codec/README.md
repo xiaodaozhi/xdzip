@@ -4,9 +4,13 @@
 
 此程序链接官方 7-Zip 的 7z、Cab 明确白名单，以及官方 UnRAR。
 CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好为这两个容器。
-ISO/UDF 通过 `xdzip-optical-bridge` 调用自研 Rust `xdzip-codec-optical`，
+ISO/UDF 通过 `xdzip-readonly-bridge` 调用自研 Rust `xdzip-codec-optical`，
 构建中不含官方 Iso/Udf 处理器。Cab、ISO、UDF 只读，只有 7z 保留写入。
 已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
+
+专用验证构建可显式设置 `XDZIP_RUST_CAB_TEST_ROUTE=ON`，通过同一只读桥接
+执行 `xdzip-codec-cab` 与共享 Rust MSZIP、LZX、Quantum 算法。该选项默认关闭，
+启用后 CAB 不回退官方处理器；正式产品路由变更须满足自研契约中的替代门槛。
 
 先运行 `python scripts/prepare-native-codecs.py` 准备锁定的官方来源，再通过项目
 统一构建入口构建 `xdzip-native-codec` 目标。独立构建可设置
@@ -39,6 +43,11 @@ synthetic 卷，不能创建、删除或重命名输出。构建仅在生成目�
 读取器为升序条目保留同一解码进程和固实状态，跳过的实际输出单独计量。
 倒序或密码变化会重开进程，输入读取预算不会重置。原始读取无目标权限，
 编码修改后保留旧物理条目的时间与属性，宿主负责最终重新扫描、完整校验和提交。
+
+Rust CAB 以 WORK 计入实际解码帧，再通过 `PrechargedData=23` 输出已计费的缓存字节。
+宿主仅在 WORK 成功准入后授予该工作进程一次性额度，消费前扣减，重启即清零；
+文件大小及累计输出限额独立检查。其他格式不能发送此帧，失败或部分写入不退额度。
+不识别预付输出的通用 sink 仍走普通计费路径。
 
 默认 native 预算为 1 GiB。Windows 用 Job Object 限制提交内存，Linux 用
 RLIMIT_AS，macOS 用启动时虚拟地址基线加预算设置 RLIMIT_AS，排除 dyld 预留。

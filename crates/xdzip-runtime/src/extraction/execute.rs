@@ -75,6 +75,8 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
     let mut workspace = None;
     let mut grant = None;
     let mut pending_file = None;
+    let mut precharged = 0u64;
+    let mut output_bytes = 0u64;
     let result = (|| -> Result<(), &'static str> {
         control.cancel.check().map_err(|_| "cancelled")?;
         job.source.validate().map_err(|_| "source_changed")?;
@@ -104,6 +106,8 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                             writer: &mut bytes,
                             stats,
                             control,
+                            precharged: &mut precharged,
+                            output_bytes: &mut output_bytes,
                             file_bytes: 0,
                             file_limit: 4096,
                             count_written: false,
@@ -183,6 +187,8 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                             writer: std::io::sink(),
                             stats,
                             control,
+                            precharged: &mut precharged,
+                            output_bytes: &mut output_bytes,
                             file_bytes: 0,
                             file_limit: MAX_FILE_BYTES,
                             count_written: true,
@@ -304,6 +310,8 @@ pub(crate) fn run(mut job: Job, id: u64, control: &Control, publish: &mut dyn Fn
                         writer: &mut stage,
                         stats,
                         control,
+                        precharged: &mut precharged,
+                        output_bytes: &mut output_bytes,
                         file_bytes: 0,
                         file_limit: MAX_FILE_BYTES,
                         count_written: true,
@@ -414,6 +422,8 @@ struct Meter<'a, W: Write> {
     writer: W,
     stats: &'a mut Snapshot,
     control: &'a Control,
+    precharged: &'a mut u64,
+    output_bytes: &'a mut u64,
     file_bytes: u64,
     file_limit: u64,
     count_written: bool,
@@ -437,7 +447,16 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
                 self.error = Some("task_quota");
                 DecodeError::Output
             })?;
+        let credit = self
+            .precharged
+            .checked_add(bytes)
+            .filter(|n| *n <= MAX_TASK_BYTES)
+            .ok_or_else(|| {
+                self.error = Some("task_quota");
+                DecodeError::Output
+            })?;
         self.stats.decoded_bytes = next;
+        *self.precharged = credit;
         if self.last.elapsed() >= Duration::from_millis(100) {
             emit(self.stats, self.start, self.publish);
             self.last = Instant::now();
@@ -445,10 +464,21 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
         Ok(())
     }
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.write(bytes, false)
+    }
+    fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.write(bytes, true)
+    }
+}
+impl<W: Write> Meter<'_, W> {
+    fn write(&mut self, bytes: &[u8], precharged: bool) -> Result<(), DecodeError> {
         if self.control.cancel.check().is_err() {
             return Err(DecodeError::Cancelled);
         }
         let n = bytes.len() as u64;
+        if precharged && *self.precharged < n {
+            return Err(DecodeError::Integrity);
+        }
         if self
             .file_bytes
             .checked_add(n)
@@ -457,17 +487,31 @@ impl<W: Write> DecodedSink for Meter<'_, W> {
             self.error = Some("file_quota");
             return Err(DecodeError::Output);
         }
-        if self
-            .stats
-            .decoded_bytes
-            .checked_add(n)
-            .is_none_or(|n| n > MAX_TASK_BYTES)
+        if !precharged
+            && self
+                .stats
+                .decoded_bytes
+                .checked_add(n)
+                .is_none_or(|n| n > MAX_TASK_BYTES)
         {
             self.error = Some("task_quota");
             return Err(DecodeError::Output);
         }
+        let output = self
+            .output_bytes
+            .checked_add(n)
+            .filter(|n| *n <= MAX_TASK_BYTES)
+            .ok_or_else(|| {
+                self.error = Some("task_quota");
+                DecodeError::Output
+            })?;
         self.file_bytes += n;
-        self.stats.decoded_bytes += n;
+        *self.output_bytes = output;
+        if precharged {
+            *self.precharged -= n;
+        } else {
+            self.stats.decoded_bytes += n;
+        }
         let mut rest = bytes;
         while !rest.is_empty() {
             if self.control.cancel.check().is_err() {
@@ -529,6 +573,177 @@ mod meter_tests {
     use super::*;
     use crate::extraction::Password;
     #[test]
+    fn precharged_meter_credit_survives_record_changes_and_is_consumed_once() {
+        let mut stats = ArchiveForTest::snapshot();
+        let control = Control::default();
+        let mut publish = |_| {};
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut output = Vec::new();
+        for bytes in [b"ab", b"cd"] {
+            let mut meter = Meter {
+                writer: &mut output,
+                stats: &mut stats,
+                control: &control,
+                precharged: &mut credit,
+                output_bytes: &mut output_bytes,
+                file_bytes: 0,
+                file_limit: 2,
+                count_written: true,
+                error: None,
+                start: Instant::now(),
+                last: Instant::now(),
+                publish: &mut publish,
+            };
+            if meter.stats.decoded_bytes == 0 {
+                meter.charge_skipped(4).unwrap();
+            }
+            meter.write_precharged_chunk(bytes).unwrap();
+        }
+        assert_eq!(output, b"abcd");
+        assert_eq!(
+            (
+                stats.decoded_bytes,
+                stats.written_bytes,
+                credit,
+                output_bytes
+            ),
+            (4, 4, 0, 4)
+        );
+        let mut meter = Meter {
+            writer: &mut output,
+            stats: &mut stats,
+            control: &control,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            file_bytes: 0,
+            file_limit: 4,
+            count_written: true,
+            error: None,
+            start: Instant::now(),
+            last: Instant::now(),
+            publish: &mut publish,
+        };
+        assert_eq!(
+            meter.write_precharged_chunk(b"x"),
+            Err(DecodeError::Integrity)
+        );
+        assert_eq!(meter.file_bytes, 0);
+        assert_eq!(meter.stats.written_bytes, 4);
+    }
+
+    #[test]
+    fn precharged_meter_retains_work_file_and_cumulative_output_limits() {
+        let mut stats = ArchiveForTest::snapshot();
+        stats.decoded_bytes = MAX_TASK_BYTES - 1;
+        let control = Control::default();
+        let mut publish = |_| {};
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut meter = Meter {
+            writer: std::io::sink(),
+            stats: &mut stats,
+            control: &control,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            file_bytes: 0,
+            file_limit: MAX_FILE_BYTES,
+            count_written: true,
+            error: None,
+            start: Instant::now(),
+            last: Instant::now(),
+            publish: &mut publish,
+        };
+        assert_eq!(meter.charge_skipped(2), Err(DecodeError::Output));
+        assert_eq!(*meter.precharged, 0);
+        assert_eq!(
+            meter.write_precharged_chunk(b"x"),
+            Err(DecodeError::Integrity)
+        );
+        meter.charge_skipped(1).unwrap();
+        assert_eq!(
+            meter.write_precharged_chunk(b"xx"),
+            Err(DecodeError::Integrity)
+        );
+        meter.file_bytes = MAX_FILE_BYTES;
+        assert_eq!(meter.write_precharged_chunk(b"x"), Err(DecodeError::Output));
+        assert_eq!(meter.error, Some("file_quota"));
+        assert_eq!(*meter.precharged, 1);
+        meter.file_bytes = 0;
+        *meter.output_bytes = MAX_TASK_BYTES;
+        assert_eq!(meter.write_precharged_chunk(b"x"), Err(DecodeError::Output));
+        assert_eq!(meter.error, Some("task_quota"));
+        assert_eq!(*meter.precharged, 1);
+        *meter.output_bytes = 0;
+        meter.write_precharged_chunk(b"x").unwrap();
+        assert_eq!(meter.stats.decoded_bytes, MAX_TASK_BYTES);
+        assert_eq!(meter.stats.written_bytes, 1);
+        assert_eq!(meter.write_chunk(b"x"), Err(DecodeError::Output));
+        assert_eq!(meter.stats.written_bytes, 1);
+    }
+
+    #[test]
+    fn precharged_meter_partial_disk_failure_spends_full_credit_and_counts_actual_write() {
+        struct Partial(bool);
+        impl Write for Partial {
+            fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+                if self.0 {
+                    Err(std::io::ErrorKind::StorageFull.into())
+                } else {
+                    self.0 = true;
+                    Ok(bytes.len().min(2))
+                }
+            }
+            fn flush(&mut self) -> std::io::Result<()> {
+                Ok(())
+            }
+        }
+        let mut stats = ArchiveForTest::snapshot();
+        let control = Control::default();
+        let mut publish = |_| {};
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut meter = Meter {
+            writer: Partial(false),
+            stats: &mut stats,
+            control: &control,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            file_bytes: 0,
+            file_limit: 4,
+            count_written: true,
+            error: None,
+            start: Instant::now(),
+            last: Instant::now(),
+            publish: &mut publish,
+        };
+        meter.charge_skipped(4).unwrap();
+        assert_eq!(
+            meter.write_precharged_chunk(b"data"),
+            Err(DecodeError::Output)
+        );
+        assert_eq!(meter.error, Some("disk_full"));
+        assert_eq!(
+            (
+                meter.stats.decoded_bytes,
+                meter.stats.written_bytes,
+                *meter.precharged,
+                *meter.output_bytes
+            ),
+            (4, 2, 0, 4)
+        );
+        assert_eq!(
+            meter.write_precharged_chunk(b"data"),
+            Err(DecodeError::Integrity)
+        );
+        assert_eq!(meter.stats.written_bytes, 2);
+        control.cancel();
+        assert_eq!(
+            meter.write_precharged_chunk(b"x"),
+            Err(DecodeError::Cancelled)
+        );
+    }
+    #[test]
     fn quota_is_checked_before_write_and_partial_disk_full_is_counted() {
         struct Full(bool);
         impl Write for Full {
@@ -548,10 +763,14 @@ mod meter_tests {
         let mut stats = archive;
         let control = Control::default();
         let mut publish = |_| {};
+        let mut precharged = 0;
+        let mut output_bytes = 0;
         let mut meter = Meter {
             writer: Full(false),
             stats: &mut stats,
             control: &control,
+            precharged: &mut precharged,
+            output_bytes: &mut output_bytes,
             file_bytes: MAX_FILE_BYTES,
             file_limit: MAX_FILE_BYTES,
             count_written: true,
@@ -580,6 +799,8 @@ mod meter_tests {
         let mut interaction = Interaction::default();
         let mut attempts = 0;
         let mut prompts = 0;
+        let mut precharged = 0;
+        let mut output_bytes = 0;
         let mut publish = |snapshot: Snapshot| {
             if let Some(prompt) = snapshot.password_prompt {
                 prompts += 1;
@@ -598,6 +819,8 @@ mod meter_tests {
                     writer: std::io::sink(),
                     stats,
                     control: &control,
+                    precharged: &mut precharged,
+                    output_bytes: &mut output_bytes,
                     file_bytes: 0,
                     file_limit: MAX_FILE_BYTES,
                     count_written: true,

@@ -34,8 +34,21 @@ def exact(stream, size):
 
 def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False,
                volume_names=None):
+    operation = 2 if creation is not None else 0 if selected is None else 1
+    declared = None
+    if format_id == 8 and operation == 1:
+        # A one-entry payload request emits no ROW messages. Admit its size from
+        # a separate bounded scan before accepting ordinary or prepaid output.
+        metadata, _ = run_worker(worker, parts, password=password, format_id=format_id,
+                                 volume_names=volume_names)
+        chosen = [row for row in metadata if row['index'] == selected]
+        if len(chosen) != 1:
+            raise WorkerError('selected_metadata')
+        declared = chosen[0]['size']
+        if declared > 32 * 1024**2:
+            raise WorkerError('output_limit')
     source = b''.join(parts)
-    request = bytes([2 if creation is not None else 0 if selected is None else 1, format_id])
+    request = bytes([operation, format_id])
     request += struct.pack('<QIIQ', 1024**3, 100000, 4096, len(source))
     request += bytes([password is not None]) + string(password or '') + struct.pack('<QI', selected or 0, len(parts))
     request += b''.join(struct.pack('<Q', len(part)) for part in parts)
@@ -53,6 +66,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
     timer = threading.Timer(45, child.kill)
     timer.start()
     rows, payload, reads = [], bytearray(), 0
+    work, credit = 0, 0
     inputs = list((creation or {}).items())
     positions = [0] * len(inputs)
 
@@ -90,6 +104,22 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
             elif kind == 12:
                 if len(value) > CHUNK or len(payload) + len(value) > 32 * 1024**2:
                     raise WorkerError('output_limit')
+                if declared is not None and len(payload) + len(value) > declared:
+                    raise WorkerError('entry_output_bounds')
+                payload.extend(value)
+                send(21)
+            elif kind == 23:
+                if format_id != 8 or operation != 1:
+                    raise WorkerError('unexpected_precharged_data')
+                if not value:
+                    raise WorkerError('precharged_empty')
+                if len(value) > CHUNK or len(payload) + len(value) > 32 * 1024**2:
+                    raise WorkerError('output_limit')
+                if len(value) > credit:
+                    raise WorkerError('precharged_credit')
+                if declared is None or len(payload) + len(value) > declared:
+                    raise WorkerError('entry_output_bounds')
+                credit -= len(value)
                 payload.extend(value)
                 send(21)
             elif kind == 11:
@@ -110,7 +140,17 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                     payload.extend(b'\0' * (end - len(payload)))
                 payload[offset:end] = block
                 send(21)
-            elif kind in (16, 17):
+            elif kind == 17:
+                if format_id == 8 and operation == 1:
+                    if len(value) != 8:
+                        raise WorkerError('work_length')
+                    count = struct.unpack('<Q', value)[0]
+                    if count > CHUNK or work + count > 64 * 1024**2:
+                        raise WorkerError('work_limit')
+                    work += count
+                    credit += count
+                send(21)
+            elif kind == 16:
                 send(21)
             elif kind == 14:
                 raise WorkerError('native_error_' + str(value[0]))
@@ -121,6 +161,8 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
         child.stdin.close()
         if child.wait(timeout=5) != 0:
             raise WorkerError('worker_exit')
+        if declared is not None and len(payload) != declared:
+            raise WorkerError('entry_output_bounds')
         return rows, bytes(payload)
     finally:
         timer.cancel()

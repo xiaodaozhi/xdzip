@@ -121,6 +121,8 @@ struct Discard<'a> {
     read: &'a Cell<u64>,
     file_bytes: u64,
     declared: u64,
+    precharged: &'a mut u64,
+    output_bytes: &'a mut u64,
     control: &'a Cancellation,
     start: Instant,
     last: &'a mut Instant,
@@ -129,32 +131,65 @@ struct Discard<'a> {
 impl DecodedSink for Discard<'_> {
     fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
         self.control.check().map_err(|_| DecodeError::Cancelled)?;
-        self.stats.decoded_bytes = self
+        let next = self
             .stats
             .decoded_bytes
             .checked_add(bytes)
             .filter(|n| *n <= MAX_TASK_BYTES)
             .ok_or(DecodeError::Limit)?;
+        let credit = self
+            .precharged
+            .checked_add(bytes)
+            .filter(|n| *n <= MAX_TASK_BYTES)
+            .ok_or(DecodeError::Limit)?;
+        self.stats.decoded_bytes = next;
+        *self.precharged = credit;
         Ok(())
     }
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.write(bytes, false)
+    }
+    fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.write(bytes, true)
+    }
+}
+impl Discard<'_> {
+    fn write(&mut self, bytes: &[u8], precharged: bool) -> Result<(), DecodeError> {
         self.control.check().map_err(|_| DecodeError::Cancelled)?;
-        self.file_bytes = self
-            .file_bytes
-            .checked_add(bytes.len() as u64)
-            .ok_or(DecodeError::Limit)?;
-        if self.file_bytes > MAX_FILE_BYTES {
-            return Err(DecodeError::Limit);
-        }
-        if self.file_bytes > self.declared {
+        let count = bytes.len() as u64;
+        if precharged && *self.precharged < count {
             return Err(DecodeError::Integrity);
         }
-        self.stats.decoded_bytes = self
-            .stats
-            .decoded_bytes
-            .checked_add(bytes.len() as u64)
+        let file_bytes = self
+            .file_bytes
+            .checked_add(count)
+            .ok_or(DecodeError::Limit)?;
+        if file_bytes > MAX_FILE_BYTES {
+            return Err(DecodeError::Limit);
+        }
+        if file_bytes > self.declared {
+            return Err(DecodeError::Integrity);
+        }
+        let output = self
+            .output_bytes
+            .checked_add(count)
             .filter(|n| *n <= MAX_TASK_BYTES)
             .ok_or(DecodeError::Limit)?;
+        let decoded = if precharged {
+            self.stats.decoded_bytes
+        } else {
+            self.stats
+                .decoded_bytes
+                .checked_add(count)
+                .filter(|n| *n <= MAX_TASK_BYTES)
+                .ok_or(DecodeError::Limit)?
+        };
+        self.file_bytes = file_bytes;
+        *self.output_bytes = output;
+        self.stats.decoded_bytes = decoded;
+        if precharged {
+            *self.precharged -= count;
+        }
         self.stats.read_bytes = self.read.get();
         if self.last.elapsed() >= Duration::from_millis(100) {
             emit(self.stats, self.start, self.publish);
@@ -208,6 +243,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                 .map_err(decoding)?;
             let mut interaction = Interaction::with_password(job.password.clone());
             let mut last = Instant::now();
+            let mut precharged = 0;
+            let mut output_bytes = 0;
             for entry in job.rows.iter() {
                 control.cancel.check().map_err(|_| "cancelled")?;
                 stats.current = entry.display_name.clone();
@@ -224,6 +261,8 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
                             read: &read,
                             file_bytes: 0,
                             declared: entry.size,
+                            precharged: &mut precharged,
+                            output_bytes: &mut output_bytes,
                             control: &control.cancel,
                             start,
                             last: &mut last,
@@ -329,3 +368,113 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod precharged_tests {
+    use super::*;
+
+    fn snapshot() -> Snapshot {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/fixtures/extract/stored.zip");
+        let archive = Archive::open(&path, &Cancellation::default()).unwrap();
+        initial(&archive.check_job(&Cancellation::default()).unwrap(), 1)
+    }
+
+    #[test]
+    fn precharged_discard_credit_crosses_records_without_double_work_or_replay() {
+        let mut stats = snapshot();
+        let read = Cell::new(0);
+        let control = Cancellation::default();
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut last = Instant::now();
+        let mut publish = |_| {};
+        for bytes in [b"ab", b"cd"] {
+            let mut sink = Discard {
+                stats: &mut stats,
+                read: &read,
+                file_bytes: 0,
+                declared: 2,
+                precharged: &mut credit,
+                output_bytes: &mut output_bytes,
+                control: &control,
+                start: Instant::now(),
+                last: &mut last,
+                publish: &mut publish,
+            };
+            if sink.stats.decoded_bytes == 0 {
+                sink.charge_skipped(4).unwrap();
+            }
+            sink.write_precharged_chunk(bytes).unwrap();
+        }
+        assert_eq!((stats.decoded_bytes, credit, output_bytes), (4, 0, 4));
+        let mut sink = Discard {
+            stats: &mut stats,
+            read: &read,
+            file_bytes: 0,
+            declared: 2,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            control: &control,
+            start: Instant::now(),
+            last: &mut last,
+            publish: &mut publish,
+        };
+        assert_eq!(
+            sink.write_precharged_chunk(b"x"),
+            Err(DecodeError::Integrity)
+        );
+        assert_eq!(sink.file_bytes, 0);
+        assert_eq!(
+            (sink.stats.written_bytes, sink.stats.committed_bytes),
+            (0, 0)
+        );
+    }
+
+    #[test]
+    fn precharged_discard_preserves_work_declared_file_output_and_cancel_limits() {
+        let mut stats = snapshot();
+        let read = Cell::new(0);
+        let control = Cancellation::default();
+        let mut credit = 0;
+        let mut output_bytes = 0;
+        let mut last = Instant::now();
+        let mut publish = |_| {};
+        let mut sink = Discard {
+            stats: &mut stats,
+            read: &read,
+            file_bytes: 0,
+            declared: 1,
+            precharged: &mut credit,
+            output_bytes: &mut output_bytes,
+            control: &control,
+            start: Instant::now(),
+            last: &mut last,
+            publish: &mut publish,
+        };
+        sink.charge_skipped(MAX_TASK_BYTES).unwrap();
+        assert_eq!(sink.charge_skipped(1), Err(DecodeError::Limit));
+        assert_eq!(*sink.precharged, MAX_TASK_BYTES);
+        assert_eq!(
+            sink.write_precharged_chunk(b"ab"),
+            Err(DecodeError::Integrity)
+        );
+        sink.declared = u64::MAX;
+        sink.file_bytes = MAX_FILE_BYTES;
+        assert_eq!(sink.write_precharged_chunk(b"x"), Err(DecodeError::Limit));
+        sink.file_bytes = 0;
+        *sink.output_bytes = MAX_TASK_BYTES;
+        assert_eq!(sink.write_precharged_chunk(b"x"), Err(DecodeError::Limit));
+        assert_eq!(*sink.precharged, MAX_TASK_BYTES);
+        *sink.output_bytes = 0;
+        sink.write_precharged_chunk(b"x").unwrap();
+        assert_eq!(sink.stats.decoded_bytes, MAX_TASK_BYTES);
+        assert_eq!(sink.write_chunk(b"x"), Err(DecodeError::Limit));
+        control.cancel();
+        assert_eq!(
+            sink.write_precharged_chunk(b"x"),
+            Err(DecodeError::Cancelled)
+        );
+        assert_eq!(*sink.precharged, MAX_TASK_BYTES - 1);
+    }
+}

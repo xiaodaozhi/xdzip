@@ -22,6 +22,7 @@ jobs:
           python3 scripts/test-desktop-environment.py
           python3 scripts/test-desktop-workflow.py
           python3 scripts/test-native-codec-sources.py
+          python3 scripts/test-native-cab-credit.py
           python3 scripts/test-deployment-audit.py
           python3 scripts/test-linux-deployment.py
           python3 scripts/test-runtime-attribution.py

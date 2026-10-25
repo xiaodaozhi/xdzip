@@ -63,6 +63,28 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 
 `rawzip`、`zip`、`flate2` 仅作测试参照，已迁移 ZIP 的普通及构建依赖闭包禁止这些格式和算法库回流。测试参照的许可继续保留，容器可读取不等于所有声明方法都可解码。
 
+## CAB只读候选规格
+
+`xdzip-codec-cab` 是自研只读候选后端，范围为 Store、MSZIP、LZX、Quantum 和宿主已经授权的同目录卷链。默认产品仍使用官方 CAB；CMake 的 `XDZIP_RUST_CAB_TEST_ROUTE` 默认关闭，设为 `ON` 仅供专用测试构建。开关改变测试构建的固定路由，失败不会静默回退；候选代码存在不表示已完成产品切换或官方 CAB 已退出依赖闭包。迁移门槛仍适用本契约，验收记录另由[任务 #48](https://github.com/xiaodaozhi/xdzip/issues/48)维护。
+
+容器依据 MS-CAB，MSZIP 依据 MS-MCI 并复用共享 Deflate；LZX、Quantum 调用 `xdzip-compression` 的独立解码器。官方归档文档的状态、1997 年 LZX 原件镜像的真实性限度、MS-PATCH 与 CAB 的差异，以及参考分析者和未读源码实现者的分工，见[CAB 格式来源与实现依据](cab-format-sources.md)。这些来源及角色限制不能因候选 Rust 后端而省略。
+
+- `ReadSource::volume_lengths()`、`volume_names()` 提供冻结的物理卷边界和原始卷名。宿主负责发现、来源身份和同目录授权，最多 1,024 卷；格式层在每卷本地范围内解释偏移，再检查卷基址相加，不能读过本卷末尾而借用下一卷字节。卷名和 disk label 不赋予文件访问权限。缺卷、set/index/名称或续接矛盾必须使整次扫描失败，不发布部分索引。
+- 扫描核对容器版本、保留字段、区域范围与不重叠关系、文件区间和 CFDATA 片段。跨卷未完成帧先核对各片段校验，再拼成一个逻辑压缩帧。folder 是压缩/字典单元，不是文件系统目录；只有新逻辑 folder 重置历史，文件及物理卷切点不重置。最后一帧可短，前面的完整逻辑帧输出均为 32,768 字节。未知压缩方法或参数明确返回不支持，不能跳过后发布不完整内容。
+- 只有规范明确的 continued 记录合并为同一逻辑文件，名称、偏移、尺寸、时间和属性须一致；普通同名、重复或重叠输出区间分别保留。`EntryId` 从 1 连续分配，依据首次 CFFILE 的物理出现顺序，不按名字排序，也不把源偏移作为身份。公开 `Entry.method` 保持既有值 0，实际压缩方法只保存在私有 folder 元数据中；DOS 时间按原值保留，不补造时区。
+- 名称通过全档 `names::resolve_cab` 解析。原始字节及 CFFILE 的 UTF-8 声明分别保留，`scan_with_encoding_flags` 同步返回原声明；不能从 ASCII 名称解析后的 `NameEncoding` 倒推原声明。旧编码先严格解码，再把 CAB 分隔符转换为共享路径形式，防止 Shift-JIS 尾字节 `0x5c` 变成分隔符。损坏声明保留可见警告并拒绝输出，不以宿主代码页替代。名称和路径规则继续遵守[文件名编码契约](filename-encoding.md)。
+- 只读能力包括元数据和普通文件内容，不提供创建、重写、执行或链接/特殊对象输出。空文件同样验证所需帧与历史；负载打开时重扫并与冻结条目快照逐项比对。实际触达的 CFDATA 必须完整验证校验和、压缩流终止及精确输出长度，不能在选中文件的末字节处截断帧校验。CFDATA 的零 checksum 表示未提供该校验，不补造内容认证保证。保留取消、配额和源 I/O 失败类别，不能吞成成功或无条件重试；解码失败后的负载实例不能继续使用半更新状态。
+- 默认元数据读取最多 64 MiB，物理 CFFILE 记录最多 100,000，含继续副本；逻辑 folder 最多 100,000，物理 CFDATA 片段最多 1,000,000。共享扫描预算默认单名称 4,096 字节，原始名称总量和解码/展示文本各 16 MiB，调用方更低限额仍有效。负载实例重扫后继续累计实际输入，输入和解码工作各最多 20 GiB；单文件宿主上限 8 GiB，不扩大 CFFILE 字段本身的范围。所有长度乘加、分配和源范围均先检查。
+- 完整逻辑帧输出最多 32,768 字节，Store、MSZIP、LZX 的压缩帧分别限制为 32,768、32,780、38,912 字节。Quantum 完整压缩帧设 1 MiB 资源准入限额，该值不宣称为官方格式规定的最大膨胀。跨卷切分不会扩大单个逻辑帧限额。解码状态和一个输出帧有界保留；按顺序选择同 folder 文件可复用状态及该帧，不为每个文件从头重放整个前缀。
+
+候选 CAB 与 ISO/UDF 共享 `xdzip-readonly-bridge`，在既有隔离工作进程中以同步借用的 CXX 回调读授权流、发元数据及有界输出。卷数组和字节切片只在调用期间借用，异常与 unwind 不跨边界。直接 codec API 用于 worker 和独立探针，不替代产品的进程隔离；宿主持有取消、强制终止、来源复验、暂存和最终提交能力。
+
+完整帧计量使用 `DecodedSink::charge_skipped` 与 `write_precharged_chunk`。新帧全部解码并验证后，先把整帧输出字节数计入实际工作，包括选中区间之前及之后的字节，再交付选中内容。容器为该缓存帧保存等量未消费额度；输出只能在剩余额度内预计费交付，耗尽后的重复或重叠交付走普通 `write_chunk` 再计工作。换帧丢弃旧帧未用额度，不按名称、条目或偏移自动豁免重复输出。未实现预计费支持的 sink 默认转入普通写入，可能保守重复计费，但保持输出与上限检查。
+
+worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以 `PRECHARGED_DATA`（23）传递已有额度的内容，每个输出块最多 64 KiB，并等待宿主 ACK。Native 接收端仅允许 CAB 在同一个持续 worker 的已准入额度内使用非空预计费输出；其他格式或不足额度均拒绝，条目完成时仍核对精确声明尺寸。重启、结束或失败后不得沿用旧 worker 额度。运行时提取 sink 与检查 sink 再以任务私有额度独立核验，正常文件切换可保留尚未消费的额度，但额度消费一次后不能再次使用。预计费只免除已计工作重复增加，文件声明尺寸、单文件 8 GiB、累计实际输出 20 GiB、取消和写入失败检查仍生效。额度在交付前扣减，部分输出失败不会把它退回重用；宿主拒绝 `WORK` 不产生任何新额度。
+
+English: The independent CAB backend is a read-only candidate for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official CAB remains the default; `XDZIP_RUST_CAB_TEST_ROUTE=ON` is confined to dedicated test builds. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; neither this contract nor candidate code establishes completed migration or legal clearance.
+
 ## ISO与UDF只读规格
 
 `xdzip-codec-optical` 只接收借用的 `ReadSource`，不访问文件系统或挂载镜像。ISO 依据 [ECMA-119 第五版](https://ecma-international.org/wp-content/uploads/ECMA-119_5th_edition_december_2024.pdf)的卷描述符、目录、扩展属性和附录 C Joliet，以及 [Rock Ridge 1.12](https://bitsavers.org/projects/cdrom/Rock_Ridge_Interchange_Protocol.pdf)、SUSP 1.12 与 [El Torito 1.0](https://bitsavers.org/projects/cdrom/El_Torito_CD-ROM_Spec.pdf)编写。UDF 依据 [ECMA-167 第三版](https://ecma-international.org/publications-and-standards/standards/ecma-167/)第 1、3、4 部分及 [OSTA UDF 2.60](https://www.osta.org/specs/pdf/udf260.pdf)的结构限制、分区与字符集规定编写。实现不转换第三方解析器源码，规范原文和第三方测试工具不作为本项目原创材料再许可。
@@ -72,7 +94,7 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 - UDF 普通文件的命名 streams、未知系统 streams、transformed 数据、未知映射/ICB 策略和不能解释的 extended AD 长度组合明确拒绝。实时文件及其他特殊类型标为不可输出，符号链接和多链接普通文件同样拒绝输出。已识别 UDF 的失败不会改用 ISO；VDS/metadata 的规范内冗余恢复不改变所选命名空间。
 - EntryId 按选定命名空间的原始目录记录遍历顺序分配，不按解码名称排序或合并重名记录，不将文件数据的扇区偏移充作条目身份。解析结果保存数据、零区段和内联内容的独立 extent 列表；负载打开时重扫并核对冻结元数据，解码时核对条目身份、范围与精确输出长度。没有逐文件 CRC 的格式不补造内容校验保证，同尺寸内容变化可能仍然可读；宿主来源身份检查继续独立执行。
 - 元数据读取最多 64 MiB，普通条目最多 100,000，单名称最多 4,096 字节，总名称和展示文本使用共享扫描预算；总输出 extent 最多 1,000,000，内联总量最多 64 MiB。ISO 目录深度最多 256，单记录 CE 最多 128 个区域、1 MiB；宿主可输出路径仍受更严格的共享限制。UDF 分区映射最多 256、单分配表最多 262,144 个 extent、续链最多 4,096。所有加法、乘法和源范围均检查溢出。
-- 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-optical-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
+- 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-readonly-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
 
 独立样本必须具有可核验的生成工具或来源及已知内容；自编码规范向量只验证实现的内部状态组合。metadata、VAT、sparable 等扩展的独立实样与三平台验收单独登记于[迁移任务 #47](https://github.com/xiaodaozhi/xdzip/issues/47)，不能由代码存在或物理分区样本通过推定其他映射已验收。测试工具、参考 worker 与产品 worker 分别记录身份，不把参考工具不支持的样本记为验证通过。
 

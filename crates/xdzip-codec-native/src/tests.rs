@@ -3,6 +3,138 @@
 use super::*;
 use std::io::{self, Write};
 
+#[derive(Default)]
+struct CreditSink {
+    work: u64,
+    ordinary: usize,
+    prepaid: usize,
+    reject_work: bool,
+    reject_output: bool,
+}
+impl DecodedSink for CreditSink {
+    fn charge_skipped(&mut self, count: u64) -> Result<(), DecodeError> {
+        if self.reject_work {
+            return Err(DecodeError::Limit);
+        }
+        self.work += count;
+        Ok(())
+    }
+    fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.ordinary += bytes.len();
+        Ok(())
+    }
+    fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+        self.prepaid += bytes.len();
+        if self.reject_output {
+            Err(DecodeError::Output)
+        } else {
+            Ok(())
+        }
+    }
+}
+
+#[test]
+fn precharged_worker_credit_requires_paid_cab_work_and_consumes_once() {
+    let mut credit = WorkerCredit::default();
+    let mut sink = CreditSink::default();
+    let mut written = 0;
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"x", true, &mut written, 9),
+        Err(DecodeError::Integrity)
+    );
+    credit.work(Format::Cab, &mut sink, 3).unwrap();
+    credit
+        .data(Format::Cab, &mut sink, b"x", false, &mut written, 9)
+        .unwrap();
+    assert_eq!((sink.ordinary, credit.0), (1, 3));
+    credit
+        .data(Format::Cab, &mut sink, b"abc", true, &mut written, 9)
+        .unwrap();
+    assert_eq!((sink.work, sink.prepaid, written, credit.0), (3, 3, 4, 0));
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"a", true, &mut written, 9),
+        Err(DecodeError::Integrity)
+    );
+    assert_eq!(sink.prepaid, 3);
+    for format in [Format::SevenZip, Format::Rar, Format::Iso, Format::Udf] {
+        credit.0 = 3;
+        assert_eq!(
+            credit.data(format, &mut sink, b"a", true, &mut written, 9),
+            Err(DecodeError::Integrity)
+        );
+        assert_eq!(credit.0, 3);
+    }
+}
+
+#[test]
+fn precharged_worker_credit_rejects_restart_replay_failed_admission_and_excess() {
+    let mut credit = WorkerCredit::default();
+    let mut sink = CreditSink::default();
+    let mut written = 0;
+    credit.work(Format::Cab, &mut sink, 4).unwrap();
+    credit.reset();
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"old", true, &mut written, 9),
+        Err(DecodeError::Integrity)
+    );
+    sink.reject_work = true;
+    assert_eq!(
+        credit.work(Format::Cab, &mut sink, 4),
+        Err(DecodeError::Limit)
+    );
+    assert_eq!(credit.0, 0);
+    sink.reject_work = false;
+    credit.work(Format::Cab, &mut sink, 2).unwrap();
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"abc", true, &mut written, 9),
+        Err(DecodeError::Integrity)
+    );
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"ab", true, &mut written, 1),
+        Err(DecodeError::Integrity)
+    );
+    assert_eq!(credit.0, 2);
+    assert_eq!(
+        credit.work(Format::Cab, &mut sink, PRECHARGED_LIMIT),
+        Err(DecodeError::Limit)
+    );
+    assert_eq!(credit.0, 2);
+    assert_eq!(
+        credit.data(
+            Format::Cab,
+            &mut sink,
+            &vec![0; protocol::CHUNK + 1],
+            true,
+            &mut written,
+            u64::MAX
+        ),
+        Err(DecodeError::Limit)
+    );
+    assert_eq!(credit.0, 2);
+}
+
+#[test]
+fn precharged_worker_credit_is_spent_before_host_output_failure() {
+    let mut credit = WorkerCredit::default();
+    let mut sink = CreditSink {
+        reject_output: true,
+        ..Default::default()
+    };
+    let mut written = 0;
+    credit.work(Format::Cab, &mut sink, 4).unwrap();
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"data", true, &mut written, 4),
+        Err(DecodeError::Output)
+    );
+    assert_eq!(credit.0, 0);
+    sink.reject_output = false;
+    assert_eq!(
+        credit.data(Format::Cab, &mut sink, b"data", true, &mut written, 4),
+        Err(DecodeError::Integrity)
+    );
+    assert_eq!(sink.prepaid, 4);
+}
+
 fn fixture() -> BufferedInput {
     BufferedInput {
         entries: vec![

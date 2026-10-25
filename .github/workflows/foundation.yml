@@ -46,4 +46,4 @@ jobs:
         run: |
           python3 -m venv /tmp/xdzip-format
           /tmp/xdzip-format/bin/pip install clang-format==18.1.8
-          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp crates/xdzip-optical-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
+          /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp crates/xdzip-readonly-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c

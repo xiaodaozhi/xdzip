@@ -23,6 +23,7 @@ pub const WRITE_AT: u8 = 19;
 pub const BYTES: u8 = 20;
 pub const ACK: u8 = 21;
 pub const NEXT: u8 = 22;
+pub const PRECHARGED_DATA: u8 = 23;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Fault {

@@ -81,7 +81,7 @@ pub enum Format {
     SevenZip,
     /// Official UnRAR read-only container backend.
     Rar,
-    /// Microsoft Cabinet, read only through the official 7-Zip engine.
+    /// Microsoft Cabinet, read only through the isolated format worker.
     Cab,
     /// ISO9660, Joliet and Rock Ridge optical images, read only.
     Iso,
