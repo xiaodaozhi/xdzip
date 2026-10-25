@@ -117,7 +117,7 @@ impl HeaderSource for Reader<'_> {
                 Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
                 value => value.map_err(io_error)?,
             };
-            if n == 0 {
+            if n == 0 || n > size {
                 return Err(ScanError::Invalid);
             }
             self.remaining -= n as u64;

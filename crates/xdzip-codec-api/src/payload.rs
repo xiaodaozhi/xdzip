@@ -14,6 +14,8 @@ pub enum DecodeError {
     PasswordRequired,
     /// The encryption header's password verifier did not match.
     WrongPassword,
+    /// Encrypted data failed without a verifier distinguishing its password from corruption.
+    PasswordOrIntegrity,
     /// Host resource budget was reached.
     Limit,
     /// Cooperative cancellation was observed.
@@ -29,6 +31,7 @@ impl std::fmt::Display for DecodeError {
             Self::Unsupported => "unsupported_feature",
             Self::PasswordRequired => "password_required",
             Self::WrongPassword => "wrong_password",
+            Self::PasswordOrIntegrity => "password_or_integrity",
             Self::Limit => "resource_limit",
             Self::Cancelled => "cancelled",
             Self::Output => "output_io",
@@ -117,5 +120,22 @@ mod tests {
         sink.charge_skipped(100).unwrap();
         sink.write_precharged_chunk(b"abc").unwrap();
         assert_eq!(sink.write_precharged_chunk(b"x"), Err(DecodeError::Limit));
+    }
+
+    #[test]
+    fn ambiguous_password_errors_have_distinct_stable_identifiers() {
+        assert_eq!(
+            DecodeError::PasswordOrIntegrity.to_string(),
+            "password_or_integrity"
+        );
+        assert_eq!(
+            crate::ScanError::PasswordOrIntegrity.to_string(),
+            "password_or_integrity"
+        );
+        assert_ne!(DecodeError::PasswordOrIntegrity, DecodeError::WrongPassword);
+        assert_ne!(
+            crate::ScanError::PasswordOrIntegrity,
+            crate::ScanError::WrongPassword
+        );
     }
 }

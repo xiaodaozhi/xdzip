@@ -1,6 +1,11 @@
+use crate::stream_io::{preserve_io_error, retryable_io};
 use crate::{DISTANCE_BITS, DISTANCES, LENGTH_BITS, LENGTHS, invalid};
 use std::io::{self, BufReader, Read, Write};
 use std::{cmp::Reverse, collections::BinaryHeap};
+
+#[cfg(test)]
+#[path = "deflate64_tests.rs"]
+mod deflate64_tests;
 
 // Construct an optimal frequency tree with deterministic ties. Rare alphabets
 // exceeding the wire depth limit use the fixed tree, never truncate lengths.
@@ -84,7 +89,14 @@ impl<R: Read> Bits<R> {
     pub(crate) fn get(&mut self, n: u8) -> io::Result<u32> {
         while self.count < n {
             let mut byte = [0];
-            self.source.read_exact(&mut byte)?;
+            loop {
+                match self.source.read(&mut byte) {
+                    Ok(1) => break,
+                    Ok(_) => return Err(io::ErrorKind::UnexpectedEof.into()),
+                    Err(error) if retryable_io(&error) => continue,
+                    Err(error) => return Err(preserve_io_error(error)),
+                }
+            }
             self.consumed = self.consumed.checked_add(1).ok_or_else(invalid)?;
             self.value |= u32::from(byte[0]) << self.count;
             self.count += 8;
@@ -227,7 +239,8 @@ enum Block {
 pub(crate) struct Inflate {
     block: Block,
     last: bool,
-    history: Box<[u8; 32768]>,
+    history: Box<[u8]>,
+    deflate64: bool,
     position: usize,
     available: usize,
     distance: usize,
@@ -235,10 +248,19 @@ pub(crate) struct Inflate {
 }
 impl Inflate {
     pub(crate) fn new() -> Self {
+        Self::with_mode(false)
+    }
+    pub(crate) fn with_mode(deflate64: bool) -> Self {
+        let history: Box<[u8]> = if deflate64 {
+            Box::new([0; 65536])
+        } else {
+            Box::new([0; 32768])
+        };
         Self {
             block: Block::Header,
             last: false,
-            history: Box::new([0; 32768]),
+            history,
+            deflate64,
             position: 0,
             available: 0,
             distance: 0,
@@ -249,20 +271,21 @@ impl Inflate {
         output[*at] = byte;
         *at += 1;
         self.history[self.position] = byte;
-        self.position = (self.position + 1) & 32767;
-        self.available = (self.available + 1).min(32768);
+        self.position = (self.position + 1) & (self.history.len() - 1);
+        self.available = (self.available + 1).min(self.history.len());
     }
     pub(crate) fn remember(&mut self, bytes: &[u8]) {
-        if bytes.len() >= 32768 {
-            self.history.copy_from_slice(&bytes[bytes.len() - 32768..]);
+        let window = self.history.len();
+        if bytes.len() >= window {
+            self.history.copy_from_slice(&bytes[bytes.len() - window..]);
             self.position = 0;
-            self.available = 32768;
+            self.available = window;
         } else {
-            let first = bytes.len().min(32768 - self.position);
+            let first = bytes.len().min(window - self.position);
             self.history[self.position..self.position + first].copy_from_slice(&bytes[..first]);
             self.history[..bytes.len() - first].copy_from_slice(&bytes[first..]);
-            self.position = (self.position + bytes.len()) & 32767;
-            self.available = (self.available + bytes.len()).min(32768);
+            self.position = (self.position + bytes.len()) & (window - 1);
+            self.available = (self.available + bytes.len()).min(window);
         }
     }
     pub(crate) fn read<R: Read>(
@@ -273,7 +296,8 @@ impl Inflate {
         let mut at = 0;
         while at < output.len() {
             if self.copying != 0 {
-                let byte = self.history[(self.position + 32768 - self.distance) & 32767];
+                let window = self.history.len();
+                let byte = self.history[(self.position + window - self.distance) & (window - 1)];
                 self.emit(byte, output, &mut at);
                 self.copying -= 1;
                 continue;
@@ -308,10 +332,10 @@ impl Inflate {
                         let take = (*left).min(output.len() - at);
                         let n = loop {
                             match bits.source.read(&mut output[at..at + take]) {
-                                Err(error) if error.kind() == io::ErrorKind::Interrupted => {
+                                Err(error) if retryable_io(&error) => {
                                     continue;
                                 }
-                                result => break result?,
+                                result => break result.map_err(preserve_io_error)?,
                             }
                         };
                         if n == 0 {
@@ -330,13 +354,20 @@ impl Inflate {
                     }
                     symbol @ 257..=285 => {
                         let index = usize::from(symbol - 257);
-                        let length = LENGTHS[index] + bits.get(LENGTH_BITS[index])? as usize;
+                        let length = if self.deflate64 && symbol == 285 {
+                            3 + bits.get(16)? as usize
+                        } else {
+                            LENGTHS[index] + bits.get(LENGTH_BITS[index])? as usize
+                        };
                         let distance = usize::from(codes.1.symbol(bits)?);
-                        if distance >= 30 {
+                        if distance >= if self.deflate64 { 32 } else { 30 } {
                             return Err(invalid());
                         }
-                        let distance =
-                            DISTANCES[distance] + bits.get(DISTANCE_BITS[distance])? as usize;
+                        let distance = if distance < 30 {
+                            DISTANCES[distance] + bits.get(DISTANCE_BITS[distance])? as usize
+                        } else {
+                            32769 + (distance - 30) * 16384 + bits.get(14)? as usize
+                        };
                         if distance > self.available {
                             return Err(invalid());
                         }

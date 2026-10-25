@@ -1,0 +1,390 @@
+{
+  "schema": 1,
+  "ownership": "Project-owned generated plaintext; official tool is an independent author only. No user archives or upstream test data.",
+  "author": {
+    "release": "7-Zip 26.05",
+    "url": "https://github.com/ip7z/7zip/releases/tag/26.05",
+    "windows_x64_7za_sha256": "7ddf0a3bc451e166679296be630d6f0573eb386159c04184761c43020c484291"
+  },
+  "known_payloads": {
+    "payload.bin": {
+      "bytes": 9987,
+      "sha256": "85b8e769ad1d97a77cd555775c916b49c17df9aba30d5b9658f29330ff373a1b"
+    },
+    "hello.txt": {
+      "bytes": 27,
+      "sha256": "688eabc3477808e4ae377f11b671c7c9a398d59e9a54f233c32deead7983f720"
+    },
+    "empty.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "author_command": [
+    "a",
+    "-t7z",
+    "-y",
+    "-ms=off",
+    "-mhc=off",
+    "CASE_OPTIONS",
+    "OUTPUT",
+    "payload.bin",
+    "hello.txt",
+    "empty.txt"
+  ],
+  "fixtures": [
+    {
+      "file": "copy.7z",
+      "bytes": 10224,
+      "sha256": "4f013ef58fb91e4be634128ca1a7a54e3793428a073c1366bff4e070709fb79e",
+      "author_options": [
+        "-m0=Copy"
+      ],
+      "methods": [
+        "",
+        "Copy"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "lzma.7z",
+      "bytes": 552,
+      "sha256": "bff213d5d869104db76dd6ce4af63380f8c2dce1e5784ffe648a069d30a66cdb",
+      "author_options": [
+        "-m0=LZMA:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "lzma2.7z",
+      "bytes": 543,
+      "sha256": "70ed3779cabd19c84a3b4cec8e2ea37829f7586234df3bdf8bab132150f3e22f",
+      "author_options": [
+        "-m0=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "ppmd.7z",
+      "bytes": 626,
+      "sha256": "3f1f5066740cd328bef5433743637de48b5e3419380e3d342febf7d70ba33d26",
+      "author_options": [
+        "-m0=PPMd:mem=8m:o=6"
+      ],
+      "methods": [
+        "",
+        "PPMD",
+        "PPMD:o6:mem18"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "bzip2.7z",
+      "bytes": 1007,
+      "sha256": "e3a0000ec2a8e5eb3c28671cf941c5087f8802493ddd2fb539d3cb8be1df893e",
+      "author_options": [
+        "-m0=BZip2"
+      ],
+      "methods": [
+        "",
+        "BZip2"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "deflate.7z",
+      "bytes": 607,
+      "sha256": "b7833ee1ac336d9553fe0c9b3a4100b806396032dca0d733ad5ed291cdcdb433",
+      "author_options": [
+        "-m0=Deflate"
+      ],
+      "methods": [
+        "",
+        "Deflate"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "deflate64.7z",
+      "bytes": 626,
+      "sha256": "d47a0a8141555ff6e5d7e258640ef0e4c2a9556d97771a788f60457d3afae686",
+      "author_options": [
+        "-m0=Deflate64"
+      ],
+      "methods": [
+        "",
+        "Deflate64"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "bcj.7z",
+      "bytes": 886,
+      "sha256": "64f7ae34c2983c1f0a1972a75db8249b5d51bad84921f9c5642d1e17e60216fc",
+      "author_options": [
+        "-m0=BCJ",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "BCJ LZMA2:12k",
+        "LZMA2:12k BCJ"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "arm.7z",
+      "bytes": 730,
+      "sha256": "0b7ed2ca577ecaa21b877a501346abbc400351cd528f47ac3be6d78dc3e0dc31",
+      "author_options": [
+        "-m0=ARM",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "ARM LZMA2:12k",
+        "LZMA2:12k ARM"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "armt.7z",
+      "bytes": 605,
+      "sha256": "3ab7cd626fc851fa0ab0d029afdab3145142eeff4b72dc5e910549e9654ea8ff",
+      "author_options": [
+        "-m0=ARMT",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "ARMT LZMA2:12k",
+        "LZMA2:12k ARMT"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "ppc.7z",
+      "bytes": 559,
+      "sha256": "1c74369664a9450812091cee25ba6291b44d941887034ea346d8f50c767e107a",
+      "author_options": [
+        "-m0=PPC",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k PPC",
+        "PPC LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "sparc.7z",
+      "bytes": 559,
+      "sha256": "390072b645ed9da9b06f4fdacae249dcf9541adb2a7da7ee547a09bac01dd579",
+      "author_options": [
+        "-m0=SPARC",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k SPARC",
+        "SPARC LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "ia64.7z",
+      "bytes": 559,
+      "sha256": "f0d56915cb4592570d0dfa5d2cf27eddfc3c3978c8f4d17fe16a74b630759bb8",
+      "author_options": [
+        "-m0=IA64",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "IA64 LZMA2:12k",
+        "LZMA2:12k IA64"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "arm64.7z",
+      "bytes": 588,
+      "sha256": "98ea442d3c5370489a211fab71ec6fa0ec8b081516799d639db93a2d9d382d05",
+      "author_options": [
+        "-m0=ARM64",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "ARM64 LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "riscv.7z",
+      "bytes": 543,
+      "sha256": "4b52b73ee659abb5e217cce26b9a1706770aa3932e91f59ecf9deb6f5278fb0b",
+      "author_options": [
+        "-m0=RISCV",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "RISCV LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "delta.7z",
+      "bytes": 332,
+      "sha256": "c71d8238be342c3af2ab15c3e4c4784ca01242edf43f2fd0301265ec6f323fd0",
+      "author_options": [
+        "-m0=Delta",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "Delta LZMA2:12k",
+        "Delta:1 LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "swap2.7z",
+      "bytes": 561,
+      "sha256": "c444837009ff079b10a73ac5b1a94ce93ecb7228c1e784825371a30dd4cba20e",
+      "author_options": [
+        "-m0=Swap2",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k Swap2",
+        "Swap2 LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "swap4.7z",
+      "bytes": 566,
+      "sha256": "52e12af9178c545b192372e533cdb02274f32d6257deec7f402ba9538687a97e",
+      "author_options": [
+        "-m0=Swap4",
+        "-m1=LZMA2:d=1m"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k Swap4",
+        "Swap4 LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "bcj2.7z",
+      "bytes": 967,
+      "sha256": "7170d8f668336fead28d201b27406c2abaf3434455378567e6e5eb93b9c7b200",
+      "author_options": [
+        "-m0=BCJ2",
+        "-m1=LZMA2:d=1m",
+        "-m2=LZMA2:d=1m",
+        "-m3=LZMA2:d=1m",
+        "-mb0:1",
+        "-mb0s1:2",
+        "-mb0s2:3"
+      ],
+      "methods": [
+        "",
+        "BCJ2 LZMA2:12k LZMA2:12k LZMA2:12k",
+        "LZMA2:12k BCJ2"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "solid.7z",
+      "bytes": 535,
+      "sha256": "c4795dfacd52a7f40dd30159c1b1b2168c576c63c97448cff116f92ed4a19e95",
+      "author_options": [
+        "-m0=LZMA2:d=1m",
+        "-ms=on"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "content-encrypted.7z",
+      "bytes": 594,
+      "sha256": "f8b058408edbb06acb827ce846cab41caee0d712ceaaf3b33ea3706bf69bdf27",
+      "author_options": [
+        "-m0=LZMA2:d=1m",
+        "-pfixture-only"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k 7zAES",
+        "LZMA2:12k 7zAES:19"
+      ],
+      "synthetic_password": "fixture-only"
+    },
+    {
+      "file": "header-encrypted-solid.7z",
+      "bytes": 625,
+      "sha256": "e207b59f63fdd9f679492ee77ac50b1f259f4d73f79a7b5feec7f56a5f5fe7a4",
+      "author_options": [
+        "-m0=LZMA2:d=1m",
+        "-pfixture-only",
+        "-mhe=on",
+        "-ms=on"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k 7zAES",
+        "LZMA2:12k 7zAES:19"
+      ],
+      "synthetic_password": "fixture-only"
+    },
+    {
+      "file": "compressed-header.7z",
+      "bytes": 528,
+      "sha256": "5eae29c379918497eb88715f3cc3571be7723caf3096b636661a60f965f65db4",
+      "author_options": [
+        "-m0=LZMA2:d=1m",
+        "-mhc=on"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k"
+      ],
+      "synthetic_password": null
+    },
+    {
+      "file": "header-encrypted-compressed-solid.7z",
+      "bytes": 591,
+      "sha256": "c2b69cf40159a92c28c54325ce2b74d9534d3419c9220b00638ea2e36fc7e65c",
+      "author_options": [
+        "-m0=LZMA2:d=1m",
+        "-pfixture-only",
+        "-mhe=on",
+        "-mhc=on",
+        "-ms=on"
+      ],
+      "methods": [
+        "",
+        "LZMA2:12k 7zAES",
+        "LZMA2:12k 7zAES:19"
+      ],
+      "synthetic_password": "fixture-only"
+    }
+  ]
+}

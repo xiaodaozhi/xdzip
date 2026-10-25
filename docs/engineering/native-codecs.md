@@ -1,6 +1,6 @@
 # 隔离格式工作进程契约
 
-7z 使用官方 7-Zip 源码，RAR 使用 RARLAB 官方 UnRAR 源码。固定来源、版本和 SHA-256 位于 [源码清单](../../scripts/native-codec-sources.json)。CAB 与 ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md#iso与udf只读规格)，通过薄 CXX 边界复用同一隔离工作进程。ZIP、TAR、TAR.GZ 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
+7z、CAB 与 ISO/UDF 使用[独立 Rust 后端](independent-rust-codecs.md)，通过共享的薄 CXX 边界复用同一隔离工作进程；RAR 暂时使用 RARLAB 官方 UnRAR 源码，固定来源、版本和 SHA-256 位于[产品源码清单](../../scripts/native-codec-sources.json)。ZIP、TAR、TAR.GZ 使用进程内 Rust 后端。产品不从用户 PATH 查找替代工具，也不运行外部命令行解包。
 
 CAB 产品固定执行独立 Rust 路由，没有测试开关、官方处理器或失败回退。完整帧、共享算法和资源边界见[自研契约](independent-rust-codecs.md#cab只读规格)，来源及参考分析角色见[CAB 格式来源](cab-format-sources.md)。
 
@@ -8,13 +8,15 @@ CAB 产品固定执行独立 Rust 路由，没有测试开关、官方处理器�
 
 统一准备入口运行 `scripts/prepare-native-codecs.py`，只将已核验源码解包到 build 或 .cache 的专用目录。下载及解包大小、成员数量和成员路径均有上限，拒绝链接、设备、绝对路径、父目录逃逸及大小写重复成员。离线构建使用已固定归档。
 
-7-Zip 构建清单只包含 7z 一个容器处理器、其压缩算法和通用设施，不编译 CAB、ISO、UDF、ZIP、TAR、GZIP、RAR 等容器处理器及 CAB 专用 LZX/Quantum 算法，不启用外部格式或编解码器自动加载。源文件去重，处理器注册集合须与白名单完全一致。RAR 的格式识别和解码只由 UnRAR 执行。Deflate、AES、CRC 等算法设施可能与现有 Rust 依赖存在实现重叠，不因此增加同一容器的第二条产品路由。
+产品不编译或链接官方 7-Zip 容器、算法、通用设施和格式注册表，7z、CAB、ISO、UDF 均固定使用 Rust，没有运行失败回退。CMake 内部的 `XDZIP_7Z_BACKEND=rust` 与 `XDZIP_CAB_BACKEND=rust` 记录固定身份，完整生成的 `native-codec-source-list.txt` 同时记录胶水与剩余 UnRAR 引擎，检查拒绝官方 7-Zip 来源重新进入。UnRAR 只负责 RAR，不提供其他容器路由。共享 Deflate/Deflate64、LZMA、BZip2、PPMd、LZX、Quantum 按实际格式复用，不重复引入格式库。
 
 源码修改以可审阅的桥接文件和精确匹配的构建变换维护，不把修改后的源码冒充上游原始归档。构建必须核验所需声明，声明不匹配时停止。来源对应材料随实际部署版本交付，不能只交付下载链接。
 
 ## 权力与生命周期
 
-Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能力。官方后端和 Rust CAB/光盘后端在独立工作进程运行，通过有界协议读取授权流及输出当前批准条目的数据，不获得用户目标路径或任意文件访问接口。UnRAR 原生文件访问必须经宿主适配，不能用临时解包再复制替代既有安全提交流程。
+Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能力。UnRAR 和 Rust 7z/CAB/光盘后端在独立工作进程运行，通过有界协议读取授权流及输出当前批准条目的数据，不获得用户目标路径或任意文件访问接口。UnRAR 原生文件访问必须经宿主适配，不能用临时解包再复制替代既有安全提交流程。
+
+宿主对初始来源 seek、工作进程随机读取、创建输入及 EOF 探测统一保留 typed 限额、取消、不支持和来源变更错误；即使外层 I/O kind 是 Interrupted，也不抹掉其 typed 原因。只有没有 typed 原因的 Interrupted 可在检查取消后重试，预先计入的来源工作不退款。Scan 保留 SourceChanged，内容读取按现有来源错误语义返回，创建按来源错误拒绝提交。
 
 工作进程不接收命令行密码，不输出归档提供的任意诊断文本，也不继承应用凭据和代理环境。错误映射为稳定错误码，打开加密目录的密码只保留在当前会话及其关联任务的归零容器中，不跨启动持久化；关闭会话和任务终态分别释放各自容器。取消停止读取与输出，超时后终止工作进程并等待回收；进程失败不得产生成功终态。进程隔离不等同于操作系统沙箱，不宣称能阻止已被攻陷的进程访问所有同用户资源。
 
@@ -34,7 +36,7 @@ CAB 支持 Store、MSZip、Quantum 和 LZX，单卷与同目录分卷均只读�
 
 ISO9660、Joliet、Rock Ridge 和 UDF 的解析由 `xdzip-codec-optical` 执行，不链接官方 Iso/Udf 处理器。混合镜像优先 UDF 命名空间，已识别的 UDF 损坏不静默回退 ISO。按内容识别，不依赖扩展名授权。ISO/UDF 仅浏览、解压、临时打开、导出和测试，不挂载磁盘、不执行启动镜像、不提供创建或更新。启动镜像记录仅作为可读取文件，链接及特殊对象保持不可输出。镜像测试检查结构、范围及实际内容可读取性，不声称普通文件具有内容校验和保证。分区映射和不支持扩展的明确边界见[自研规格](independent-rust-codecs.md#iso与udf只读规格)。
 
-English: The pinned official 7-Zip build registers exactly 7z. UnRAR handles RAR. CAB uses the independent Rust container and shared Rust MSZIP/LZX/Quantum inside the same worker; official Cab and its CAB-only algorithms are excluded, with no fallback. ISO9660, Joliet, Rock Ridge and UDF use the independent Rust optical backend through a thin CXX boundary inside the existing isolated worker; official Iso/Udf handlers are excluded from the build. ZIP/TAR/GZIP remain in-process Rust implementations. CAB supports Store, MSZip, Quantum and LZX and preserves raw names; only Rust-authorized same-directory volumes are readable. Hybrid images select UDF; recognized UDF corruption does not trigger an ISO fallback. CAB and disc images cannot be created or modified. Image checks establish structure and readability, not per-file checksum authenticity. No image mounting or boot execution is provided. Optical extension boundaries are specified in the independent-codec contract.
+English: Independent Rust implements 7z, CAB and optical images through one borrowed CXX boundary inside the existing isolated worker. Official 7-Zip sources, handlers, algorithms and registry are absent from the product; pinned official tools remain separate test references. Only UnRAR remains a native official format engine, handling RAR. ZIP/TAR/GZIP remain in-process Rust implementations. Rust codecs receive authorized streams and bounded output, while the host owns source identity, cancellation, quotas, staging and publication. 7z supports existing read/write, solid, password, encrypted-header, numbered-volume and restricted rewrite operations. CAB and disc images remain read-only. Hybrid images select UDF, and recognized UDF corruption does not trigger an ISO fallback. Image checks establish structure and readability without inventing file checksums. Implementation, cross-platform, manual desktop and release gates remain separate.
 
 ## 验证与交付
 

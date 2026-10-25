@@ -2,11 +2,20 @@
 $ErrorActionPreference = 'Stop'
 if ($IsMacOS) { $env:MACOSX_DEPLOYMENT_TARGET = '14.0' }
 if ($IsWindows) {
+    $foundationProfile = $env:USERPROFILE
+    $foundationPath = $env:PATH
+    $foundationCargoHome = $env:CARGO_HOME
+    $foundationRustupHome = $env:RUSTUP_HOME
     $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
     $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
     if (!$installation) { throw 'MSVC installation not found' }
     Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+    # Nested developer shells can reset the caller's pinned toolchain paths.
+    $env:USERPROFILE = $foundationProfile
+    $env:CARGO_HOME = $foundationCargoHome
+    $env:RUSTUP_HOME = $foundationRustupHome
+    $env:PATH = $env:PATH + ';' + $foundationPath
 }
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
@@ -46,6 +55,7 @@ Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'optical_backe
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'cab_backend_tests', '--', '--ignored')
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
 $codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
+Invoke-Checked $codecPython @('scripts/check-sevenzip-rust-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--worker-build-cache', 'build/foundation/CMakeCache.txt', '--extract-binary', $extractProbe, '--output', "$rustCodecEvidence/sevenzip-interop.json")
 $zipInteropArguments = @('scripts/check-advanced-creation.py', '--binary', $createProbe, '--extract-binary', $extractProbe, '--reader', $codecReference, '--output', "$rustCodecEvidence/zip-aes-split.json")
 if ($IsWindows) { $zipInteropArguments += '--skip-infozip' }
 Invoke-Checked $codecPython $zipInteropArguments

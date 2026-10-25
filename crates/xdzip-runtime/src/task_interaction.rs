@@ -14,6 +14,7 @@ pub(crate) fn decoding(error: DecodeError) -> &'static str {
         DecodeError::Output => "output_io",
         DecodeError::PasswordRequired => "password_required",
         DecodeError::WrongPassword => "wrong_password",
+        DecodeError::PasswordOrIntegrity => "password_or_integrity",
     }
 }
 pub(crate) fn emit(stats: &mut Snapshot, start: Instant, publish: &mut dyn FnMut(Snapshot)) {
@@ -87,15 +88,15 @@ impl Interaction {
             control.cancel.check().map_err(|_| "cancelled")?;
             let result = attempt(self.password.as_ref().map(Password::expose), stats, publish);
             match result {
-                Err(error @ ("password_required" | "wrong_password")) => {
+                Err(error @ ("password_required" | "wrong_password" | "password_or_integrity")) => {
                     if !entry.password_supported {
                         return Err("unsupported_feature");
                     }
-                    let retry = error == "wrong_password";
+                    let retry = error != "password_required";
                     if retry {
                         failures += 1;
                         if failures >= 10 {
-                            return Err("wrong_password");
+                            return Err(error);
                         }
                     }
                     self.request_password(entry, control, stats, start, publish, retry)?;
@@ -109,6 +110,61 @@ impl Interaction {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn ambiguous_password_failures_retry_ten_times_and_keep_their_terminal_category() {
+        let archive = crate::Archive::open(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../tests/fixtures/extract/stored.zip"),
+            &Default::default(),
+        )
+        .unwrap();
+        let mut stats =
+            crate::checking::initial(&archive.check_job(&Default::default()).unwrap(), 1);
+        let control = Control::default();
+        let mut interaction = Interaction::default();
+        let mut entry = archive.rows[0].clone();
+        entry.format = xdzip_codec_api::Format::SevenZip;
+        entry.encrypted = true;
+        entry.password_supported = true;
+        let (mut prompts, mut attempts) = (0, 0);
+        let mut previous = 0;
+        let result =
+            interaction.decode(
+                &entry,
+                &control,
+                &mut stats,
+                Instant::now(),
+                &mut |snapshot| {
+                    if let Some(prompt) = snapshot.password_prompt {
+                        assert!(prompt.id > previous);
+                        previous = prompt.id;
+                        assert_eq!(prompt.retry, prompts != 0);
+                        prompts += 1;
+                        assert!(control.respond_password(
+                            prompt.id,
+                            Password::new("incorrect".into()).unwrap()
+                        ));
+                        assert!(!control.respond_password(
+                            prompt.id,
+                            Password::new("duplicate".into()).unwrap()
+                        ));
+                    }
+                },
+                |password, _, _| {
+                    if password.is_none() {
+                        return Err::<(), _>("password_required");
+                    }
+                    attempts += 1;
+                    Err("password_or_integrity")
+                },
+            );
+        assert_eq!(result, Err("password_or_integrity"));
+        assert_eq!((prompts, attempts), (10, 10));
+        assert_eq!(
+            decoding(DecodeError::PasswordOrIntegrity),
+            "password_or_integrity"
+        );
+    }
     #[test]
     fn legacy_rar_requests_each_secret_before_decoding_and_preserves_integrity_errors() {
         let archive = crate::Archive::open(

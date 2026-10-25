@@ -543,6 +543,32 @@ class BrowserTest : public QObject {
         controller.requestClose();
         QTRY_VERIFY(controller.requestClose());
     }
+    void encryptedOpenAmbiguityReusesThePasswordPromptWithoutClaimingVerifierFailure() {
+        BrowserController controller;
+        quint64 previous = 0;
+        for (const auto *code : {"password_required", "wrong_password", "password_or_integrity"}) {
+            controller.m_pending = 10001;
+            controller.m_busy = true;
+            controller.m_title = QStringLiteral("owned-encrypted-header.7z");
+            controller.m_result = {};
+            controller.m_result.opening = true;
+            xdzip::reader::Event event{};
+            event.kind = xdzip::reader::EventKind::Finished;
+            event.request_id = 10001;
+            event.error = rust::String(code);
+            controller.receive(event);
+            const auto prompt = controller.passwordPrompt();
+            QCOMPARE(prompt.value("kind").toString(), QStringLiteral("open"));
+            QCOMPARE(prompt.value("retry").toBool(),
+                     QString::fromLatin1(code) != "password_required");
+            const auto token = prompt.value("promptId").toString().toULongLong();
+            QVERIFY(token > previous);
+            previous = token;
+            QVERIFY(!controller.submitPassword("open", QString::number(token + 1), "ignored"));
+            controller.m_openPasswordPrompt.clear();
+        }
+        QCOMPARE(BrowserController::explain("password_or_integrity"), qtTrId("password.ambiguous"));
+    }
     void globalQuitReturnsToPasswordTaskThenCancelsAndJoinsEverySession_data() {
         QTest::addColumn<int>("quitTiming");
         QTest::newRow("ready-password") << 0;

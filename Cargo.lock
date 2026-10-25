@@ -1482,6 +1482,7 @@ dependencies = [
  "sha2",
  "xdzip-codec-api",
  "xdzip-compression",
+ "xdzip-crypto",
  "xdzip-domain",
  "zeroize",
 ]
@@ -1493,6 +1494,18 @@ dependencies = [
  "chardetng",
  "encoding_rs",
  "xdzip-domain",
+]
+
+[[package]]
+name = "xdzip-codec-bridge"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "xdzip-codec-7z",
+ "xdzip-codec-api",
+ "xdzip-codec-cab",
+ "xdzip-codec-optical",
 ]
 
 [[package]]
@@ -1557,6 +1570,14 @@ name = "xdzip-compression"
 version = "0.1.0-alpha.6"
 dependencies = [
  "flate2",
+]
+
+[[package]]
+name = "xdzip-crypto"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "sha2",
+ "zeroize",
 ]
 
 [[package]]
@@ -1629,17 +1650,6 @@ dependencies = [
  "xdzip-domain",
  "xdzip-runtime",
  "xdzip-update",
-]
-
-[[package]]
-name = "xdzip-readonly-bridge"
-version = "0.1.0-alpha.6"
-dependencies = [
- "cxx",
- "cxx-build",
- "xdzip-codec-api",
- "xdzip-codec-cab",
- "xdzip-codec-optical",
 ]
 
 [[package]]

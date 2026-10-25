@@ -100,43 +100,48 @@ pub(crate) fn decode(
     purpose: HeaderPurpose,
     password: Option<&str>,
 ) -> Result<Vec<Vec<u8>>, ScanError> {
-    let mut outputs = budget.vec(streams.folders.len())?;
-    for folder in &streams.folders {
-        reader.control.check()?;
-        let count = usize::try_from(folder.unpacked_size()).map_err(|_| ScanError::Limit)?;
-        outputs.push(budget.vec(count)?);
-    }
-    let control = reader.control;
-    let mut collector = Collector {
-        streams,
-        outputs,
-        control,
-    };
-    decoder.decode_metadata(purpose, reader, streams, &mut collector, control, password)?;
-    control.check()?;
-    for (folder, output) in streams.folders.iter().zip(&collector.outputs) {
-        control.check()?;
-        if output.len() as u64 != folder.unpacked_size()
-            || (folder.crc.is_some() && folder.crc != Some(crate::checked_crc(output, control)?))
-        {
-            return Err(ScanError::Invalid);
+    let encrypted = password.is_some() && streams.folders.iter().any(|folder| folder.encrypted());
+    let result = (|| {
+        let mut outputs = budget.vec(streams.folders.len())?;
+        for folder in &streams.folders {
+            reader.control.check()?;
+            let count = usize::try_from(folder.unpacked_size()).map_err(|_| ScanError::Limit)?;
+            outputs.push(budget.vec(count)?);
         }
-        for stream in &folder.substreams {
-            let start = usize::try_from(stream.offset).map_err(|_| ScanError::Invalid)?;
-            let end = usize::try_from(
-                stream
-                    .offset
-                    .checked_add(stream.length)
-                    .ok_or(ScanError::Invalid)?,
-            )
-            .map_err(|_| ScanError::Invalid)?;
-            let data = output.get(start..end).ok_or(ScanError::Invalid)?;
-            if stream.crc.is_some() && stream.crc != Some(crate::checked_crc(data, control)?) {
+        let control = reader.control;
+        let mut collector = Collector {
+            streams,
+            outputs,
+            control,
+        };
+        decoder.decode_metadata(purpose, reader, streams, &mut collector, control, password)?;
+        control.check()?;
+        for (folder, output) in streams.folders.iter().zip(&collector.outputs) {
+            control.check()?;
+            if output.len() as u64 != folder.unpacked_size()
+                || (folder.crc.is_some()
+                    && folder.crc != Some(crate::checked_crc(output, control)?))
+            {
                 return Err(ScanError::Invalid);
             }
+            for stream in &folder.substreams {
+                let start = usize::try_from(stream.offset).map_err(|_| ScanError::Invalid)?;
+                let end = usize::try_from(
+                    stream
+                        .offset
+                        .checked_add(stream.length)
+                        .ok_or(ScanError::Invalid)?,
+                )
+                .map_err(|_| ScanError::Invalid)?;
+                let data = output.get(start..end).ok_or(ScanError::Invalid)?;
+                if stream.crc.is_some() && stream.crc != Some(crate::checked_crc(data, control)?) {
+                    return Err(ScanError::Invalid);
+                }
+            }
         }
-    }
-    // AdditionalStreams DataIndex addresses whole folder outputs. It does not
-    // enumerate the substreams used for ordinary file mapping.
-    Ok(collector.outputs)
+        // AdditionalStreams DataIndex addresses whole folder outputs. It does not
+        // enumerate the substreams used for ordinary file mapping.
+        Ok(collector.outputs)
+    })();
+    result.map_err(|error| crate::encrypted_scan_error(error, encrypted))
 }

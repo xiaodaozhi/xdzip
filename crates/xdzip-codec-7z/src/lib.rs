@@ -1,16 +1,18 @@
 //! Independent 7z metadata/container candidate, with injected metadata decoding.
-//! No paths, Qt, process launching, creation or production routing are exposed.
+//! No paths, Qt, process launching or production routing are exposed.
 //! Grammar: official DOC/7zFormat.txt and DOC/Methods.txt. The concise grammar
 //! is supplemented by documented code-free reference facts and independent
 //! official-writer/reader vectors; no container implementation was translated.
 pub mod bcj2;
 pub mod crypto;
 mod decode;
+pub(crate) mod encode;
 mod files;
 pub mod filters;
 mod graph;
 mod metadata;
 mod payload;
+pub(crate) mod rewrite;
 mod source;
 mod streams;
 mod types;
@@ -34,8 +36,24 @@ fn checked_crc(bytes: &[u8], control: &Cancellation) -> Result<u32, ScanError> {
     Ok(crc.checksum())
 }
 
-/// Container/payload candidate with bounded complete-folder verification.
-/// Product routing remains with the existing native backend until parity.
+fn encrypted_scan_error(error: ScanError, encrypted: bool) -> ScanError {
+    if encrypted && error == ScanError::Invalid {
+        ScanError::PasswordOrIntegrity
+    } else {
+        error
+    }
+}
+
+pub(crate) fn encrypted_decode_error(error: DecodeError, encrypted: bool) -> DecodeError {
+    if encrypted && error == DecodeError::Integrity {
+        DecodeError::PasswordOrIntegrity
+    } else {
+        error
+    }
+}
+
+/// Independent read/write codec with bounded stateful solid-folder streams.
+/// The isolated worker supplies borrowed streams; the host owns publication.
 pub struct SevenZipCodec;
 impl MetadataCodec for SevenZipCodec {
     fn scan(
@@ -137,6 +155,7 @@ pub fn read_index_with_decoder(
         if encoded.folders.len() != 1 {
             return Err(ScanError::Invalid);
         }
+        let encrypted = password.is_some() && encoded.folders.iter().any(Folder::encrypted);
         let decoded = metadata::decode(
             &mut reader,
             &encoded,
@@ -145,11 +164,14 @@ pub fn read_index_with_decoder(
             HeaderPurpose::EncodedHeader,
             password,
         )?;
-        let header = decoded.first().ok_or(ScanError::Invalid)?;
+        let header = decoded
+            .first()
+            .ok_or_else(|| encrypted_scan_error(ScanError::Invalid, encrypted))?;
         if header.first() != Some(&1) {
-            return Err(ScanError::Invalid);
+            return Err(encrypted_scan_error(ScanError::Invalid, encrypted));
         }
         parse_header(header, &mut reader, &mut budget, limits, password, decoder)
+            .map_err(|error| encrypted_scan_error(error, encrypted))
     } else {
         parse_header(&header, &mut reader, &mut budget, limits, password, decoder)
     }
@@ -159,6 +181,7 @@ fn empty() -> Index {
         rows: Vec::new(),
         files: Vec::new(),
         streams: Streams::default(),
+        has_archive_properties: false,
     }
 }
 fn parse_header(
@@ -171,6 +194,7 @@ fn parse_header(
 ) -> Result<Index, ScanError> {
     let mut c = Cursor::new(data);
     c.id(1)?;
+    let mut has_archive_properties = false;
     if c.peek() == Some(2) {
         c.byte()?;
         loop {
@@ -178,13 +202,17 @@ fn parse_header(
             if c.byte()? == 0 {
                 break;
             }
+            has_archive_properties = true;
             let size = usize::try_from(c.number()?).map_err(|_| ScanError::Limit)?;
             c.take(size)?;
         }
     }
+    let mut encrypted_properties = false;
     let external = if c.peek() == Some(3) {
         c.byte()?;
         let additional = streams::parse(&mut c, reader, budget, &[])?;
+        encrypted_properties =
+            password.is_some() && additional.folders.iter().any(Folder::encrypted);
         metadata::decode(
             reader,
             &additional,
@@ -196,33 +224,38 @@ fn parse_header(
     } else {
         Vec::new()
     };
-    let streams = if c.peek() == Some(4) {
-        c.byte()?;
-        streams::parse(&mut c, reader, budget, &external)?
-    } else {
-        Streams::default()
-    };
-    let index = if c.peek() == Some(5) {
-        c.byte()?;
-        files::parse(&mut c, streams, &external, budget, limits, reader.control)?
-    } else {
-        if streams
-            .folders
-            .iter()
-            .any(|folder| !folder.substreams.is_empty())
-        {
-            return Err(ScanError::Invalid);
-        }
-        Index {
-            rows: Vec::new(),
-            files: Vec::new(),
-            streams,
-        }
-    };
-    c.id(0)?;
-    c.end()?;
-    reader.check()?;
-    Ok(index)
+    let result = (|| {
+        let streams = if c.peek() == Some(4) {
+            c.byte()?;
+            streams::parse(&mut c, reader, budget, &external)?
+        } else {
+            Streams::default()
+        };
+        let mut index = if c.peek() == Some(5) {
+            c.byte()?;
+            files::parse(&mut c, streams, &external, budget, limits, reader.control)?
+        } else {
+            if streams
+                .folders
+                .iter()
+                .any(|folder| !folder.substreams.is_empty())
+            {
+                return Err(ScanError::Invalid);
+            }
+            Index {
+                rows: Vec::new(),
+                files: Vec::new(),
+                streams,
+                has_archive_properties: false,
+            }
+        };
+        c.id(0)?;
+        c.end()?;
+        reader.check()?;
+        index.has_archive_properties = has_archive_properties;
+        Ok(index)
+    })();
+    result.map_err(|error| encrypted_scan_error(error, encrypted_properties))
 }
 
 #[cfg(test)]

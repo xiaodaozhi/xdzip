@@ -1,6 +1,6 @@
 # 7z 格式来源与独立实现依据
 
-本文件记录可复用的来源和实现边界。迁移验收与剩余能力在[任务 #50](https://github.com/xiaodaozhi/xdzip/issues/50)维护，候选代码不表示产品已经切换。通用替代规则见[自研契约](independent-rust-codecs.md)。
+本文件记录可复用的来源和实现边界。迁移验收与剩余能力在[任务 #50](https://github.com/xiaodaozhi/xdzip/issues/50)维护，固定 Rust 路由及官方产品依赖退出不自动构成跨平台、人工或发行验收。通用替代规则见[自研契约](independent-rust-codecs.md)。
 
 ## 规范与参考身份
 
@@ -8,7 +8,7 @@
 
 LZMA 位流另参考 Igor Pavlov 2015-06-14 的[官方规格包](https://www.7-zip.org/a/lzma-specification.7z)，归档 SHA-256 为 `4529aca392d6b9598f72086e7d136b1e05d2863bf7a757836d3fd4f49e623b58`，其中规格文本 SHA-256 为 `6a4d441c2fa1d8d37b0189c7147a4b5424d5cdb122a7fc1fbebd022864ed54fb`。仅阅读格式文字、规范数学与伪码，不将包内参考解码器作为 Rust 移植输入；文档及样本不因下载而获得新的再分发许可。
 
-通用 Deflate 依据 RFC 1951，与 ZIP、GZIP 和 MSZIP 共用一套实现。AES-CBC 的数学和独立向量依据 [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)，7z 的属性、UTF-16LE 密码派生和零填充是额外格式规则，不能从 ZIP AES 或 PKCS#7 推导。BZip2 手册没有完整规定所有位流和历史兼容行为，不能将该实现描述成只读手册即可完成。
+通用 Deflate 依据 RFC 1951，与 ZIP、GZIP 和 MSZIP 共用一套实现。Deflate64 在该实现中显式选择 64 KiB 历史、距离码 30/31 和长度码 285 的扩展规则，普通 Deflate/MSZIP 不改变。[PKWARE APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) 的增强 Deflate 段只提供概述，具体位流差异通过固定参考的事实分析和独立读取验证补足，不能将概述冒充完整规格。AES-CBC 的数学和独立向量依据 [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)，7z 的属性、UTF-16LE 密码派生和零填充是额外格式规则，不能从 ZIP AES 或 PKCS#7 推导。BZip2 手册及 PPMd 的格式名称没有完整规定历史位流、模型重启和结束行为，不能将这些实现描述成只读手册即可完成。
 
 ## 参考分析与原创编码
 
@@ -20,6 +20,8 @@ LZMA 位流另参考 Igor Pavlov 2015-06-14 的[官方规格包](https://www.7-z
 | 容器细节 | `CPP/7zip/Archive/7z/7zIn.cpp` 的外部属性、子流校验继承与文件属性相关部分 | 归档默认 LGPL-2.1-or-later |
 | 7z AES | `CPP/7zip/Crypto/7zAes.cpp/.h`，MyAes、FilterCoder 及 7z 编解码包装中的块长、密码、填充和完成相关部分 | 归档默认 LGPL-2.1-or-later，不读取或移植底层 AES 实现 |
 | BZip2 | BZip2Decoder、Const、Crc，区分普通 7z 和独立 bz2 包装的错误处理 | 归档默认 LGPL-2.1-or-later，不据格式名称套用其他实现的许可 |
+| PPMd7 | `C/Ppmd7.c/.h`、`Ppmd7Dec.c`、`Ppmd7Enc.c` 的数学状态、虚拟容量和重启事实，以及 C++ Ppmd 包装的属性与结束约束 | 这些 C 文件声明 Public domain；C++ 包装适用归档默认条款，不复制上下文布局、分配器实现或控制流程 |
+| Deflate64 | `CPP/7zip/Compress/DeflateConst.h`、DeflateDecoder 的 64 位模式相关范围、Deflate64Register 及 7z 属性准入 | 归档默认 LGPL-2.1-or-later，仅交接与普通 Deflate 的格式差异 |
 | ISA、Delta、Swap | `C/Bra.c`、`Bra86.c`、`Bra.h`、`Delta.c`、`SwapBytes.c` 的标量语义及 C++ 方法注册/属性/尾部包装 | 这些 C 文件声明 Public domain；C++ 包装单独适用归档默认条款，SIMD 策略不作为格式 |
 | BCJ2 | `C/Bcj2.c/.h` 的四流和数学状态，C++ Bcj2Coder 的解码完成与尺寸包装 | C 文件声明 Public domain；C++ 包装适用归档默认条款，不分析或搬用编码器主体 |
 
@@ -33,4 +35,6 @@ LZMA 位流另参考 Igor Pavlov 2015-06-14 的[官方规格包](https://www.7-z
 
 历史兼容宽容必须逐项确认。例如 BZip2 的 7z 节点可接受最终字节的非零未使用位，以及块末四个重复字节恰无额外计数字节，但仍需正确 CRC、声明大小及完整流结束。额外尾字节和拼接流不能据此放行。末字节位与额外字节不能混为一种填充。
 
-English: The candidate uses the pinned official 7z grammar and LZMA specification, supplemented by code-free factual handoffs from a designated reference analyst. Independent Rust implementers do not read or translate the corresponding reference implementations. C files declaring public domain and LGPL C++ wrappers retain distinct provenance; no strict clean-room or legal-clearance claim is made. Generic cryptographic primitives remain admitted dependencies, while container and compression logic is original. Independent known-byte interoperability, exact termination, corruption, resource, host and platform checks remain separate migration gates.
+PPMd7 区分外层已知长度与未知长度的结束 profile。7z 已知长度节点在精确输出后核对 range 终态和 packed 范围，不额外消费 END 符号；未知长度的共享 reader 要求 END。格式规定的模型容量重启与宿主内存准入是两回事，内存不足不能触发伪造的格式重启。独立对照输入包含固定官方 C 编码器产生的容量重启流，生成器和原始参考源码仅作为本地测试工具，不进入生产依赖。
+
+English: The implementation uses the pinned official 7z grammar and LZMA specification, supplemented by code-free factual handoffs from a designated reference analyst. Independent Rust implementers do not read or translate the corresponding reference implementations. C files declaring public domain and LGPL C++ wrappers retain distinct provenance; no strict clean-room or legal-clearance claim is made. Generic cryptographic primitives remain admitted dependencies, while container and compression logic is original. Independent known-byte interoperability, exact termination, corruption, resource, host and platform checks remain separate migration gates.

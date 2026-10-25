@@ -63,19 +63,25 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 
 `rawzip`、`zip`、`flate2` 仅作测试参照，已迁移 ZIP 的普通及构建依赖闭包禁止这些格式和算法库回流。测试参照的许可继续保留，容器可读取不等于所有声明方法都可解码。
 
-## 7z候选规格
+## 7z读写规格
 
-`xdzip-codec-7z` 是与产品路由分离的自研候选 crate。当前产品仍使用官方 7-Zip，不因工作区中存在候选代码而切换或回退。候选容器处理方法图、压缩头、外部属性、子流、UTF-16LE 原始名称与物理 EntryId，图执行器调用共享算法及独立 AES 封装，不取得路径或发布权限。规范、参考分析角色和许可区分见[7z 来源](sevenzip-format-sources.md)。
+`xdzip-codec-7z` 是自研读写后端，在既有隔离工作进程中固定执行，没有官方处理器或失败回退。容器处理方法图、压缩头、外部属性、子流、UTF-16LE 原始名称与物理 EntryId，图执行器调用共享算法及独立 AES 封装，不取得路径或发布权限。官方 7-Zip 源码与容器适配退出产品构建，固定官方参考工具只用于测试。规范、参考分析角色和许可区分见[7z 来源](sevenzip-format-sources.md)。
 
-当前图执行采用有界物化策略，终端 folder 与累计缓存各最多 256 MiB；元数据、全部中间输出、packed 缓冲、字典、模型、缓存及工作区合计在分配前按 1 GiB 准入。每节点尺寸、完整 EOF、pack/folder/substream CRC 分别核对，整 folder 验证后才交付文件。缓存只是候选验证策略，不能以此缩小既有大文件/固实能力并宣称完成迁移；流式大固实、剩余方法、创建、修改、密码与分卷的产品全链路仍须通过完整替代门槛。
+方法图按实际端口关系流式执行，保留字典、模型和有界节点缓冲，不物化或缓存整个 payload folder。元数据终端输出仍受 64 MiB 限制，元数据、字典、模型、节点缓冲及工作区合计在分配前按默认 1 GiB 准入。单文件最多 8 GiB，任务实际输入与终端解码工作各最多 20 GiB，逆序访问及重启重复计费。顺序读取同一 solid folder 保留图状态；文件具有独立子流 CRC 时，精确尺寸与该 CRC 通过即可完成该文件，后续文件继续同一图。没有独立子流 CRC 时，先完成 folder 终态和已有 folder CRC 再完成文件。完整结束时核对所有已连接 packed 范围、节点尺寸、EOF 及提供的 CRC，不把未引用的额外 payload 当作普通文件检查范围。
 
-Header、Additional 与 payload 共享任务解码预算。终端输出才计入宿主实际解码工作，包含未选区间；中间节点另有累计工作上限，不能把 AES、解压及过滤器每层输出重复计作同一文件的宿主工作。AES KDF 另以累计轮数和 hash 输入字节准入，失败或重试不返还额度，不以输出配额换取无界哈希。密码、密钥、owned hash 状态及候选内容缓冲使用归零生命周期，不宣称能擦除 Qt 或系统的所有历史副本。
+Header、Additional 与 payload 共用图执行器。元数据读取和输出分别受扫描预算约束；进入 payload 时仅一次初始化其输入和终端工作计数，重启不重置。中间节点工作与 AES KDF 跨两个阶段累计。终端输出才计入宿主实际解码工作，包含未选区间；中间节点另有累计工作上限，不能把 AES、解压及过滤器每层输出重复计作同一文件的宿主工作。递归读取在调用上游前预留当前节点预算，失败释放未执行预留，实际工作不退款。
 
-LZMA1/2、BZip2 与既有共享 Deflate 位于 `xdzip-compression`，其生产依赖仍为空；不再引入相应压缩算法库。LZMA2 writer 支持有界搜索级别 1/6/9，在单 chunk 无收益时用格式允许的 raw 回退，不将只有 raw 分块的封装标记为已完成压缩器。共享 Reader 显式限制 packed 范围，只有已验证完整终态才返回成功 EOF，错误后不能继续。`Read` 的输出分片上限不代表单个 block 或模型操作具有相同 CPU 上界。
+AES KDF 以实际累计轮数和 hash 输入字节准入，失败或重试不返还额度，不以输出配额换取无界哈希。任务局部最多缓存 16 个已派生密钥，以密码、迭代参数和盐匹配，IV 不属于派生身份；密码变化清除旧缓存，不在不同会话间复用。缓存命中不伪造额外 KDF 工作，固定缓存及密码副本按 16 KiB 计入预检，节点验证密钥与自身 KDF 参数匹配后才使用。密码、密钥、owned hash 状态及候选内容缓冲使用归零生命周期，不宣称能擦除 Qt 或系统的所有历史副本。
+
+LZMA1/2、BZip2、PPMd7 与共享 Deflate/Deflate64 位于 `xdzip-compression`，其生产依赖仍为空，不引入相应压缩算法库。Deflate64 只切换同一 Deflate 实现中的格式差异，ZIP、GZIP 和 MSZIP 保持普通模式。PPMd7 显式区分已知长度和 END profile，格式模型重启不能替代宿主内存准入。LZMA2 writer 支持有界搜索级别 1/6/9，在单 chunk 无收益时用格式允许的 raw 回退，不将只有 raw 分块的封装标记为已完成压缩器。共享 Reader 显式限制 packed 范围，只有已验证完整终态才返回成功 EOF，错误后不能继续。`Read` 的输出分片上限不代表单个 block 或模型操作具有相同 CPU 上界。
 
 AES 使用已准入的通用 AES、SHA-256、随机数及 zeroize 原语。独立实现格式属性、UTF-16LE 密码 KDF、CBC 组合及块裁剪，不引入 7z 格式库。CBC 本身没有认证能力，容器仍须完成实际提供的 CRC 及尺寸校验；不能把任意完整性失败冒充确定的错误密码。创建 profile、秘密清理和最终发布仍需宿主全链路验收。
 
-English: The independent 7z crate is a candidate with no production route. Its current complete-folder materialization is limited to 256 MiB and is not the final large-solid capability. All node termination, sizes and available CRCs are checked before delivery. Terminal work, intermediate work and cumulative AES KDF admission are separate. Shared compression has no third-party production dependencies; admitted generic cryptographic primitives do not implement the container. Full existing read/write, solid, password, split, rewrite, host and platform acceptance is required before replacement.
+创建按 Copy 或 LZMA2 级别 1/6/9 流式写入宿主随机暂存，solid 只改变文件分组。每个加密 folder 与加密头使用新随机 IV，任务内复用匹配的 KDF 身份，头部名称在加密区内。输入读取精确声明长度后还须检查真实 EOF 和冻结来源身份，包含空文件；不能合成 EOF。宿主和工作进程均限制读写块、偏移、累计工作及实际输出，进度消息不增加读写权限。
+
+重写只支持未加密、非分卷且所有记录为可安全保留的普通文件或目录，未知必要元数据、anti、链接和特殊对象明确拒绝。工作进程持有最多 512 MiB 的保留及新增内容，字典、模型、元数据和工作集合计在默认 1 GiB 内预检。保留记录的原始 attrs、ctime、atime、mtime 按已理解字段重建，物理顺序和同名记录身份不合并。重写以选中的 FilesInfo 实体为准，重新组织压缩图；无文件引用的 folder 和未引用属性 blob 不属于结构保真承诺。来源复验、整包验证及同卷原子发布仍属于宿主。
+
+English: 7z uses the independent Rust codec through the shared isolated worker, with no official fallback. Payload graphs stream through bounded dictionaries, models and node buffers, retaining solid state across ordered files. Independent substream CRCs can complete individual files; files without one require remaining folder termination and supplied CRC. Metadata, payload input, terminal work, intermediate work and actual AES KDF admission have explicit limits. Creation supports Copy and genuine LZMA2 levels 1/6/9, solid content, fresh-IV AES and encrypted headers. Rewrites rebuild selected ordinary records and understood original properties within a 512 MiB content working set and a 1 GiB aggregate worker budget; unreferenced encoded blobs are not preserved structurally. The host owns source identity, quotas, verification, staging and final publication. Generic cryptographic primitives do not implement the archive format, and shared compression has no third-party production dependencies. Cross-platform, native manual and release acceptance are recorded separately.
 
 ## CAB只读规格
 
@@ -91,7 +97,7 @@ English: The independent 7z crate is a candidate with no production route. Its c
 - 默认元数据读取最多 64 MiB，物理 CFFILE 记录最多 100,000，含继续副本；逻辑 folder 最多 100,000，物理 CFDATA 片段最多 1,000,000。共享扫描预算默认单名称 4,096 字节，原始名称总量和解码/展示文本各 16 MiB，调用方更低限额仍有效。负载实例重扫后继续累计实际输入，输入和解码工作各最多 20 GiB；单文件宿主上限 8 GiB，不扩大 CFFILE 字段本身的范围。所有长度乘加、分配和源范围均先检查。
 - 完整逻辑帧输出最多 32,768 字节，Store、MSZIP、LZX 的压缩帧分别限制为 32,768、32,780、38,912 字节。Quantum 完整压缩帧设 1 MiB 资源准入限额，该值不宣称为官方格式规定的最大膨胀。跨卷切分不会扩大单个逻辑帧限额。解码状态和一个输出帧有界保留；按顺序选择同 folder 文件可复用状态及该帧，不为每个文件从头重放整个前缀。
 
-CAB 与 ISO/UDF 共享 `xdzip-readonly-bridge`，在既有隔离工作进程中以同步借用的 CXX 回调读授权流、发元数据及有界输出。卷数组和字节切片只在调用期间借用，异常与 unwind 不跨边界。直接 codec API 用于 worker 和独立探针，不替代产品的进程隔离；宿主持有取消、强制终止、来源复验、暂存和最终提交能力。
+CAB 与 ISO/UDF 共享 `xdzip-codec-bridge`，在既有隔离工作进程中以同步借用的 CXX 回调读授权流、发元数据及有界输出。卷数组和字节切片只在调用期间借用，异常与 unwind 不跨边界。直接 codec API 用于 worker 和独立探针，不替代产品的进程隔离；宿主持有取消、强制终止、来源复验、暂存和最终提交能力。
 
 完整帧计量使用 `DecodedSink::charge_skipped` 与 `write_precharged_chunk`。新帧全部解码并验证后，先把整帧输出字节数计入实际工作，包括选中区间之前及之后的字节，再交付选中内容。容器为该缓存帧保存等量未消费额度；输出只能在剩余额度内预计费交付，耗尽后的重复或重叠交付走普通 `write_chunk` 再计工作。换帧丢弃旧帧未用额度，不按名称、条目或偏移自动豁免重复输出。未实现预计费支持的 sink 默认转入普通写入，可能保守重复计费，但保持输出与上限检查。
 
@@ -108,7 +114,7 @@ English: The independent read-only CAB backend is the fixed product route for St
 - UDF 普通文件的命名 streams、未知系统 streams、transformed 数据、未知映射/ICB 策略和不能解释的 extended AD 长度组合明确拒绝。实时文件及其他特殊类型标为不可输出，符号链接和多链接普通文件同样拒绝输出。已识别 UDF 的失败不会改用 ISO；VDS/metadata 的规范内冗余恢复不改变所选命名空间。
 - EntryId 按选定命名空间的原始目录记录遍历顺序分配，不按解码名称排序或合并重名记录，不将文件数据的扇区偏移充作条目身份。解析结果保存数据、零区段和内联内容的独立 extent 列表；负载打开时重扫并核对冻结元数据，解码时核对条目身份、范围与精确输出长度。没有逐文件 CRC 的格式不补造内容校验保证，同尺寸内容变化可能仍然可读；宿主来源身份检查继续独立执行。
 - 元数据读取最多 64 MiB，普通条目最多 100,000，单名称最多 4,096 字节，总名称和展示文本使用共享扫描预算；总输出 extent 最多 1,000,000，内联总量最多 64 MiB。ISO 目录深度最多 256，单记录 CE 最多 128 个区域、1 MiB；宿主可输出路径仍受更严格的共享限制。UDF 分区映射最多 256、单分配表最多 262,144 个 extent、续链最多 4,096。所有加法、乘法和源范围均检查溢出。
-- 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-readonly-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
+- 实际解码保留单文件 8 GiB、累计工作及输入各 20 GiB 限制，以有界缓冲读取和输出。`xdzip-codec-bridge` 在既有工作进程内通过同步借用的 CXX 回调传递授权流；异常与 unwind 不跨边界，进程终止使未完成输出失败。宿主保留内存治理、取消、强制终止、来源复验、私有暂存及最终提交。官方 7-Zip Iso/Udf 处理器从构建和注册表移除，不保留运行时回退。
 
 独立样本必须具有可核验的生成工具或来源及已知内容；自编码规范向量只验证实现的内部状态组合。metadata、VAT、sparable 等扩展的独立实样与三平台验收单独登记于[迁移任务 #47](https://github.com/xiaodaozhi/xdzip/issues/47)，不能由代码存在或物理分区样本通过推定其他映射已验收。测试工具、参考 worker 与产品 worker 分别记录身份，不把参考工具不支持的样本记为验证通过。
 

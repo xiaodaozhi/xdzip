@@ -3,6 +3,10 @@ use crate::crypto::{AesProperties, AesWriter, KdfBudget};
 use std::io::Write;
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec};
 use xdzip_compression::{DeflateWriter, Lzma2Writer};
+#[path = "fixture_tests.rs"]
+mod fixture_tests;
+#[path = "stream_tests.rs"]
+mod stream_tests;
 
 #[derive(Clone, Copy)]
 struct Checks {
@@ -126,7 +130,10 @@ fn lzma2(plain: &[u8]) -> (u8, Vec<u8>) {
     (property, writer.finish().unwrap())
 }
 fn encrypted(plain: &[u8], password: &str) -> Vec<u8> {
-    let props = AesProperties::parse(&[63]).unwrap();
+    encrypted_with(plain, password, &[63])
+}
+fn encrypted_with(plain: &[u8], password: &str, properties: &[u8]) -> Vec<u8> {
+    let props = AesProperties::parse(properties).unwrap();
     let cancel = Cancellation::default();
     let mut budget = KdfBudget::new(100, 1024 * 1024);
     let mut writer =
@@ -136,7 +143,7 @@ fn encrypted(plain: &[u8], password: &str) -> Vec<u8> {
 }
 
 #[test]
-fn complete_solid_folder_is_verified_once_and_cache_delivery_consumes_private_credit() {
+fn forward_solid_stream_continues_and_backward_replay_charges_actual_work() {
     let bytes = archive(b"abcdef", &[(&[0], &[], 6)], b"abcdef", &[3, 0, 3], CHECKS);
     struct Observed {
         source: IoCursor<Vec<u8>>,
@@ -167,24 +174,29 @@ fn complete_solid_folder_is_verified_once_and_cache_delivery_consumes_private_cr
         .unwrap();
     let before = reads.get();
     let mut meter = Meter::default();
+    reader.decode(&rows[0], &mut meter, &control).unwrap();
+    assert_eq!(meter.output, b"abc");
+    assert_eq!(reads.get() - before, 3);
+    assert_eq!(meter.work, 3);
+    meter.output.clear();
+    reader.decode(&rows[1], &mut meter, &control).unwrap();
+    assert!(meter.output.is_empty());
+    assert_eq!(reads.get() - before, 3);
     reader.decode(&rows[2], &mut meter, &control).unwrap();
     assert_eq!(meter.output, b"def");
     assert_eq!(reads.get() - before, 6);
     assert_eq!(meter.work, 6);
     meter.output.clear();
     reader.decode(&rows[0], &mut meter, &control).unwrap();
-    reader.decode(&rows[1], &mut meter, &control).unwrap();
     assert_eq!(meter.output, b"abc");
-    assert_eq!(reads.get() - before, 6);
-    assert_eq!(meter.precharged, 6);
-    meter.output.clear();
-    reader.decode(&rows[0], &mut meter, &control).unwrap();
-    assert_eq!(meter.ordinary, 3);
-    assert_eq!(meter.work, 6);
-    assert_eq!(meter.output, b"abc");
+    assert_eq!(reads.get() - before, 9);
+    assert_eq!(meter.work, 9);
+    assert_eq!(meter.precharged, 9);
+    assert_eq!(meter.ordinary, 0);
 }
+
 #[test]
-fn corrupted_late_substream_or_missing_terminator_never_publishes_the_first_file() {
+fn independent_crc_can_complete_before_later_corruption_but_missing_crc_drains() {
     let control = Cancellation::default();
     let late = archive(
         b"abcdeg",
@@ -196,10 +208,35 @@ fn corrupted_late_substream_or_missing_terminator_never_publishes_the_first_file
             ..CHECKS
         },
     );
+    let rows = scan(&late).unwrap().rows;
+    let mut source = IoCursor::new(late);
+    let mut reader = SevenZipCodec
+        .open_payload(&mut source, &rows, &control)
+        .unwrap();
+    let mut meter = Meter::default();
+    reader.decode(&rows[0], &mut meter, &control).unwrap();
+    assert_eq!(meter.output, b"abc");
+    assert_eq!(
+        reader.decode(&rows[1], &mut meter, &control),
+        Err(DecodeError::Integrity)
+    );
+    assert_eq!(
+        reader.decode(&rows[0], &mut meter, &control),
+        Err(DecodeError::Integrity)
+    );
+    let late = archive(
+        b"abcdeg",
+        &[(&[0], &[], 6)],
+        b"abcdef",
+        &[3, 3],
+        Checks {
+            streams: false,
+            ..CHECKS
+        },
+    );
     let good = deflate(b"abcdef");
-    let truncated = &good[..good.len() - 1];
     let bad_end = archive(
-        truncated,
+        &good[..good.len() - 1],
         &[(&[4, 1, 8], &[], 6)],
         b"abcdef",
         &[3, 3],
@@ -220,13 +257,13 @@ fn corrupted_late_substream_or_missing_terminator_never_publishes_the_first_file
             reader.decode(&rows[0], &mut meter, &control),
             Err(DecodeError::Integrity)
         );
-        assert!(meter.output.is_empty());
         assert_eq!(
             reader.decode(&rows[1], &mut meter, &control),
             Err(DecodeError::Integrity)
         );
     }
 }
+
 #[test]
 fn every_node_is_sized_and_finished_but_host_work_counts_only_terminal_output() {
     let plain = b"bounded graph payload\0".repeat(300);
@@ -260,10 +297,10 @@ fn every_node_is_sized_and_finished_but_host_work_counts_only_terminal_output() 
         .decode_with_password(&rows[0], &mut meter, &control, Some("owned-test-password"))
         .unwrap();
     assert_eq!(meter.output, &plain[..7]);
-    assert_eq!(meter.work, plain.len() as u64);
+    assert_eq!(meter.work, plain.len() as u64 + 7);
     assert_eq!(
         reader.decode_with_password(&rows[0], &mut meter, &control, Some("different")),
-        Err(DecodeError::Integrity)
+        Err(DecodeError::PasswordOrIntegrity)
     );
 }
 #[test]
@@ -314,7 +351,7 @@ impl HeaderSource for Input {
     }
 }
 #[test]
-fn aggregate_memory_input_and_candidate_folder_caps_precede_all_source_reads() {
+fn aggregate_memory_precedes_input_and_actual_reads_consume_task_limits() {
     let bytes = archive(
         b"abcdef",
         &[(&[0], &[], 6), (&[0], &[], 6)],
@@ -327,10 +364,6 @@ fn aggregate_memory_input_and_candidate_folder_caps_precede_all_source_reads() {
     for limits in [
         DecodeLimits {
             memory_bytes: 64 * 1024 * 1024 + 11,
-            ..DecodeLimits::default()
-        },
-        DecodeLimits {
-            folder_bytes: 5,
             ..DecodeLimits::default()
         },
         DecodeLimits {
@@ -357,7 +390,7 @@ fn aggregate_memory_input_and_candidate_folder_caps_precede_all_source_reads() {
                 .unwrap_err(),
             DecodeError::Limit
         );
-        assert_eq!(source.reads, 0);
+        assert_eq!(source.reads, if limits.input_bytes == 5 { 5 } else { 0 });
     }
     let mut source = Input { bytes, reads: 0 };
     let mut decoder = MethodGraphDecoder::default();
@@ -436,10 +469,10 @@ fn snapshot_identity_output_rejection_cancellation_and_errors_poison_the_session
 fn kdf_admission_is_shared_between_nodes_and_never_refunded_after_failure() {
     let plain = [4; 16];
     let first = encrypted(&plain, "test");
-    let packed = encrypted(&first, "test");
+    let packed = encrypted_with(&first, "test", &[0]);
     let bytes = archive(
         &packed,
-        &[(&[6, 0xf1, 7, 1], &[63], 16), (&[6, 0xf1, 7, 1], &[63], 16)],
+        &[(&[6, 0xf1, 7, 1], &[0], 16), (&[6, 0xf1, 7, 1], &[63], 16)],
         &plain,
         &[16],
         CHECKS,
@@ -522,6 +555,8 @@ fn unsupported_methods_special_entries_and_oversized_models_fail_before_work() {
             DecodeError::Limit,
         ),
         (&[0x21][..], &[40][..], DecodeError::Limit),
+        (&[3, 4, 1][..], &[1, 0, 8, 0, 0][..], DecodeError::Integrity),
+        (&[3, 4, 1][..], &[6, 0, 0, 0, 128][..], DecodeError::Limit),
     ] {
         let bytes = archive(
             b"abcdef",
@@ -553,7 +588,11 @@ fn unsupported_methods_special_entries_and_oversized_models_fail_before_work() {
             let mut sink = Meter::default();
             assert_eq!(
                 payload.decode(row, &mut sink, &control),
-                Err(DecodeError::Unsupported)
+                if row.directory {
+                    Ok(())
+                } else {
+                    Err(DecodeError::Unsupported)
+                }
             );
             assert_eq!(sink.work, 0);
             assert!(sink.output.is_empty());
@@ -562,6 +601,41 @@ fn unsupported_methods_special_entries_and_oversized_models_fail_before_work() {
 }
 fn encoded_metadata(packed: &[u8], decoded: &[u8], method: &[u8], properties: &[u8]) -> Vec<u8> {
     encoded_metadata_after(&[], packed, decoded, method, properties)
+}
+#[test]
+fn ppmd_known_size_nodes_validate_zero_output_range_tail_and_exact_packed_span() {
+    let control = Cancellation::default();
+    for (packed, plain, valid) in [
+        (&[0; 6][..], &[0][..], true),
+        (&[0; 5][..], &[][..], true),
+        (&[0, 0xff, 0, 0xff, 0, 0][..], &[][..], false),
+        (&[0; 7][..], &[0][..], false),
+    ] {
+        let bytes = archive(
+            packed,
+            &[(&[3, 4, 1], &[2, 0, 8, 0, 0, 99], plain.len())],
+            plain,
+            &[plain.len()],
+            CHECKS,
+        );
+        let mut source = IoCursor::new(bytes);
+        let index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+        let mut payload = SevenZipCodec
+            .open_payload(&mut source, &index.rows, &control)
+            .unwrap();
+        let mut sink = Meter::default();
+        let result = payload.decode(&index.rows[0], &mut sink, &control);
+        if valid {
+            result.unwrap();
+            assert_eq!(sink.output, plain);
+        } else {
+            assert_eq!(result, Err(DecodeError::Integrity));
+            assert_eq!(
+                payload.decode(&index.rows[0], &mut sink, &control),
+                Err(DecodeError::Integrity)
+            );
+        }
+    }
 }
 fn encoded_metadata_after(
     prefix: &[u8],
@@ -589,7 +663,7 @@ fn encoded_metadata_after(
     image(&[prefix, packed].concat(), &header)
 }
 #[test]
-fn metadata_and_payload_nodes_share_one_nonrefundable_kdf_budget() {
+fn metadata_and_payload_nodes_share_nonrefundable_kdf_and_cached_keys() {
     let plain = b"known encrypted payload";
     let packed = encrypted(plain, "same-task");
     let inner = archive(
@@ -633,10 +707,105 @@ fn metadata_and_payload_nodes_share_one_nonrefundable_kdf_budget() {
                 Some("same-task"),
                 &mut |_| Ok(())
             )
+            .unwrap()
+            .as_slice(),
+        plain
+    );
+    assert_eq!(decoder.remaining_kdf().0, 0);
+    assert_eq!(
+        decoder
+            .folder(
+                &mut source,
+                &index.streams,
+                0,
+                0,
+                &control,
+                Some("changed-password"),
+                &mut |_| Ok(())
+            )
             .unwrap_err(),
         DecodeError::Limit
     );
     assert_eq!(decoder.remaining_kdf().0, 0);
+}
+#[test]
+fn many_aes_folders_with_distinct_ivs_share_one_kdf_but_password_changes_do_not() {
+    let control = Cancellation::default();
+    let plain = b"sixteen-byte-msg";
+    let properties = (0..128)
+        .map(|n| {
+            let mut properties = vec![0x40, 15];
+            properties.extend_from_slice(&[n; 16]);
+            properties
+        })
+        .collect::<Vec<_>>();
+    let packed = properties
+        .iter()
+        .map(|properties| encrypted_with(plain, "same-task", properties))
+        .collect::<Vec<_>>();
+    let mut h = vec![1, 4, 6, 0];
+    h.extend(number(packed.len() as u64));
+    h.push(9);
+    for bytes in &packed {
+        h.extend(number(bytes.len() as u64));
+    }
+    h.extend(digest(
+        &packed.iter().map(Vec::as_slice).collect::<Vec<_>>(),
+    ));
+    h.extend([0, 7, 11]);
+    h.extend(number(packed.len() as u64));
+    h.push(0);
+    for properties in &properties {
+        h.extend([1, 0x24, 6, 0xf1, 7, 1]);
+        h.extend(number(properties.len() as u64));
+        h.extend(properties);
+    }
+    h.push(12);
+    for _ in &packed {
+        h.extend(number(plain.len() as u64));
+    }
+    h.extend(digest(&vec![plain.as_slice(); packed.len()]));
+    h.extend([0, 0, 5]);
+    h.extend(number(packed.len() as u64));
+    let paths = (0..packed.len())
+        .map(|n| format!("file-{n}"))
+        .collect::<Vec<_>>();
+    h.extend(names(&paths.iter().map(String::as_str).collect::<Vec<_>>()));
+    h.extend([0, 0]);
+    let mut source = IoCursor::new(image(&packed.concat(), &h));
+    let index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+    assert_eq!(index.streams.folders.len(), 128);
+    let mut payload = crate::payload::Payload::open_with_limits(
+        &mut source,
+        &index.rows,
+        &control,
+        Some("same-task"),
+        DecodeLimits {
+            kdf_rounds: 1,
+            ..DecodeLimits::default()
+        },
+    )
+    .unwrap();
+    let mut sink = Meter::default();
+    for row in &index.rows {
+        sink.output.clear();
+        payload.decode(row, &mut sink, &control).unwrap();
+        assert_eq!(sink.output, plain);
+    }
+    assert_eq!(sink.work, 128 * plain.len() as u64);
+    assert_eq!(
+        payload.decode_with_password(
+            &index.rows[0],
+            &mut sink,
+            &control,
+            Some("changed-password")
+        ),
+        Err(DecodeError::Limit)
+    );
+    assert_eq!(
+        payload.decode(&index.rows[0], &mut sink, &control),
+        Err(DecodeError::Integrity)
+    );
 }
 #[test]
 fn compressed_and_encrypted_headers_decode_before_any_index_is_published() {
@@ -677,6 +846,183 @@ fn compressed_and_encrypted_headers_decode_before_any_index_is_published() {
             .is_err()
         );
     }
+}
+#[test]
+fn encrypted_metadata_distinguishes_ambiguous_password_failure_from_source_and_policy_errors() {
+    let mut header = vec![1, 5, 1];
+    header.extend(property(14, &[0x80]));
+    header.extend(property(15, &[0x80]));
+    header.extend(names(&["empty"]));
+    header.extend([0, 0]);
+    let packed = encrypted(&header, "correct");
+    let bytes = encoded_metadata(&packed, &header, &[6, 0xf1, 7, 1], &[63]);
+    let control = Cancellation::default();
+    assert_eq!(
+        read_index(
+            &mut IoCursor::new(bytes.clone()),
+            &control,
+            ScanLimits::default(),
+            None
+        ),
+        Err(ScanError::PasswordRequired)
+    );
+    assert_eq!(
+        read_index(
+            &mut IoCursor::new(bytes.clone()),
+            &control,
+            ScanLimits::default(),
+            Some("incorrect")
+        ),
+        Err(ScanError::PasswordOrIntegrity)
+    );
+    // Keep the plain descriptor CRC valid so this exercises a damaged CBC
+    // stream with the correct password, rather than an outer-header failure.
+    let mut damaged = packed.clone();
+    damaged[0] ^= 1;
+    let damaged = encoded_metadata(&damaged, &header, &[6, 0xf1, 7, 1], &[63]);
+    assert_eq!(
+        read_index(
+            &mut IoCursor::new(damaged),
+            &control,
+            ScanLimits::default(),
+            Some("correct")
+        ),
+        Err(ScanError::PasswordOrIntegrity)
+    );
+    struct Failure(ScanError);
+    impl HeaderDecoder for Failure {
+        fn decode_metadata(
+            &mut self,
+            _: HeaderPurpose,
+            _: &mut dyn HeaderSource,
+            _: &Streams,
+            _: &mut dyn MetadataSink,
+            _: &Cancellation,
+            _: Option<&str>,
+        ) -> Result<(), ScanError> {
+            Err(self.0)
+        }
+    }
+    for error in [
+        ScanError::Invalid,
+        ScanError::Io,
+        ScanError::SourceChanged,
+        ScanError::Limit,
+        ScanError::Cancelled,
+        ScanError::Unsupported,
+        ScanError::PasswordRequired,
+        ScanError::WrongPassword,
+    ] {
+        assert_eq!(
+            read_index_with_decoder(
+                &mut IoCursor::new(bytes.clone()),
+                &control,
+                ScanLimits::default(),
+                Some("correct"),
+                &mut Failure(error)
+            ),
+            Err(if error == ScanError::Invalid {
+                ScanError::PasswordOrIntegrity
+            } else {
+                error
+            })
+        );
+    }
+    let mut bad_outer_crc = bytes;
+    bad_outer_crc[8] ^= 1;
+    assert_eq!(
+        read_index(
+            &mut IoCursor::new(bad_outer_crc),
+            &control,
+            ScanLimits::default(),
+            Some("correct")
+        ),
+        Err(ScanError::Invalid)
+    );
+}
+
+#[test]
+fn encrypted_payload_failure_is_ambiguous_but_snapshot_source_and_output_errors_are_not() {
+    let plain = b"verified encrypted bytes";
+    let packed = encrypted(plain, "correct");
+    let bytes = archive(
+        &packed,
+        &[(&[6, 0xf1, 7, 1], &[63], plain.len())],
+        plain,
+        &[plain.len()],
+        CHECKS,
+    );
+    let rows = scan(&bytes).unwrap().rows;
+    let control = Cancellation::default();
+    for (password, failure) in [
+        (None, DecodeError::PasswordRequired),
+        (Some("incorrect"), DecodeError::PasswordOrIntegrity),
+    ] {
+        let mut source = IoCursor::new(bytes.clone());
+        let mut payload = SevenZipCodec
+            .open_payload(&mut source, &rows, &control)
+            .unwrap();
+        assert_eq!(
+            payload.decode_with_password(&rows[0], &mut Meter::default(), &control, password),
+            Err(failure)
+        );
+        assert_eq!(
+            payload.decode_with_password(
+                &rows[0],
+                &mut Meter::default(),
+                &control,
+                Some("correct")
+            ),
+            Err(DecodeError::Integrity)
+        );
+    }
+    let mut damaged = packed.clone();
+    damaged[0] ^= 1;
+    let damaged = archive(
+        &damaged,
+        &[(&[6, 0xf1, 7, 1], &[63], plain.len())],
+        plain,
+        &[plain.len()],
+        CHECKS,
+    );
+    let mut source = IoCursor::new(damaged);
+    let damaged_rows = read_index(&mut source, &control, ScanLimits::default(), None)
+        .unwrap()
+        .rows;
+    let mut payload = SevenZipCodec
+        .open_payload(&mut source, &damaged_rows, &control)
+        .unwrap();
+    assert_eq!(
+        payload.decode_with_password(
+            &damaged_rows[0],
+            &mut Meter::default(),
+            &control,
+            Some("correct")
+        ),
+        Err(DecodeError::PasswordOrIntegrity)
+    );
+    let mut source = IoCursor::new(bytes.clone());
+    let mut payload = SevenZipCodec
+        .open_payload(&mut source, &rows, &control)
+        .unwrap();
+    let mut changed = rows[0].clone();
+    changed.size += 1;
+    assert_eq!(
+        payload.decode_with_password(&changed, &mut Meter::default(), &control, Some("correct")),
+        Err(DecodeError::Integrity)
+    );
+    let mut source = IoCursor::new(bytes);
+    let mut payload = SevenZipCodec
+        .open_payload(&mut source, &rows, &control)
+        .unwrap();
+    let mut sink = Meter {
+        fail: true,
+        ..Meter::default()
+    };
+    assert_eq!(
+        payload.decode_with_password(&rows[0], &mut sink, &control, Some("correct")),
+        Err(DecodeError::Output)
+    );
 }
 #[test]
 fn typed_source_failures_survive_every_node_and_standard_io_retry_boundary() {
@@ -831,8 +1177,9 @@ fn bcj2_four_sources_follow_global_ports_and_serialized_pack_order() {
         let result = payload.decode(&index.rows[0], &mut sink, &control);
         if bad {
             assert_eq!(result, Err(DecodeError::Integrity));
-            assert!(sink.output.is_empty());
-            assert_eq!(sink.work, 0);
+            // Bytes remain staged: the upstream's malformed termination still
+            // prevents this whole-folder stream from returning success.
+            assert!(sink.work <= 5);
         } else {
             result.unwrap();
             assert_eq!(sink.output, [0xe8, 0, 0, 0, 0]);
@@ -888,14 +1235,6 @@ fn independent_baseline_payload_graphs_match_reference_and_known_hashes() {
         let mut payload = SevenZipCodec
             .open_payload(&mut source, &index.rows, &control)
             .unwrap();
-        if matches!(name.as_ref(), "deflate64" | "ppmd") {
-            let row = index.rows.iter().find(|r| r.size != 0).unwrap();
-            assert_eq!(
-                payload.decode(row, &mut Meter::default(), &control),
-                Err(DecodeError::Unsupported)
-            );
-            continue;
-        }
         let mut sink = Meter::default();
         for row in &index.rows {
             sink.output.clear();
@@ -917,7 +1256,83 @@ fn independent_baseline_payload_graphs_match_reference_and_known_hashes() {
         }
         cases += 1;
     }
-    assert_eq!(cases, 19);
+    assert_eq!(cases, 21);
+}
+
+#[test]
+#[ignore = "explicit PPMd author raw/properties/known payloads with separately verified profiles"]
+fn independent_ppmd_known_size_profiles_complete_and_end_profiles_fail_in_sevenzip_graphs() {
+    let directory = std::path::PathBuf::from(
+        std::env::var_os("XDZIP_7Z_PPMD_OUTPUT").expect("owned PPMd profiles"),
+    );
+    let control = Cancellation::default();
+    let (mut known, mut end) = (0, 0);
+    for entry in std::fs::read_dir(&directory).unwrap() {
+        let path = entry.unwrap().path();
+        if path.extension().is_none_or(|extension| extension != "raw") {
+            continue;
+        }
+        let plain_path = path.with_extension("plain");
+        let props_path = path.with_extension("props");
+        for path in [&path, &plain_path, &props_path] {
+            assert!(std::fs::metadata(path).unwrap().len() <= 8 * 1024 * 1024);
+        }
+        let packed = std::fs::read(&path).unwrap();
+        let plain = std::fs::read(plain_path).unwrap();
+        let props = std::fs::read(props_path).unwrap();
+        let is_end = std::fs::read_to_string(path.with_extension("profile"))
+            .is_ok_and(|profile| profile.trim() == "end");
+        let bytes = archive(
+            &packed,
+            &[(&[3, 4, 1], &props, plain.len())],
+            &plain,
+            &[plain.len()],
+            CHECKS,
+        );
+        let mut source = IoCursor::new(bytes);
+        let index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+        let mut payload = SevenZipCodec
+            .open_payload(&mut source, &index.rows, &control)
+            .unwrap();
+        let mut sink = Meter::default();
+        let result = payload.decode(&index.rows[0], &mut sink, &control);
+        if is_end {
+            assert_eq!(result, Err(DecodeError::Integrity), "{}", path.display());
+            end += 1;
+        } else {
+            result.unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+            assert_eq!(sink.output, plain, "{}", path.display());
+            assert_eq!(sink.work, plain.len() as u64);
+            known += 1;
+        }
+    }
+    assert_eq!((known, end), (36, 3));
+}
+
+#[test]
+#[ignore = "explicit owned Deflate64 math images independently read by the official tool"]
+fn independently_verified_deflate64_vectors_run_through_the_payload_graph() {
+    let directory = std::path::PathBuf::from(
+        std::env::var_os("XDZIP_7Z_DEFLATE64_OUTPUT").expect("owned Deflate64 vectors"),
+    );
+    let control = Cancellation::default();
+    for case in 0..7 {
+        let path = directory.join(format!("{case}.7z"));
+        let known = path.with_extension("known");
+        assert!(std::fs::metadata(&path).unwrap().len() <= 1024 * 1024);
+        assert!(std::fs::metadata(&known).unwrap().len() <= 1024 * 1024);
+        let expected = std::fs::read(known).unwrap();
+        let mut source = IoCursor::new(std::fs::read(path).unwrap());
+        let index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+        assert_eq!(index.rows.len(), 1);
+        let mut payload = SevenZipCodec
+            .open_payload(&mut source, &index.rows, &control)
+            .unwrap();
+        let mut sink = Meter::default();
+        payload.decode(&index.rows[0], &mut sink, &control).unwrap();
+        assert_eq!(sink.output, expected);
+        assert_eq!(sink.work, expected.len() as u64);
+    }
 }
 
 #[test]

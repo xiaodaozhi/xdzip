@@ -10,10 +10,13 @@ publish.workspace = true
 xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-compression = { path = "../xdzip-compression" }
 xdzip-domain = { path = "../xdzip-domain" }
+xdzip-crypto = { path = "../xdzip-crypto" }
 aes = { version = "=0.9.3", features = ["zeroize"] }
-sha2 = { version = "=0.10.9", features = ["compress"] }
 getrandom = { version = "=0.4.2", default-features = false }
 zeroize = "=1.9.1"
+
+[dev-dependencies]
+sha2 = "=0.10.9"
 
 [lints]
 workspace = true

@@ -168,7 +168,7 @@ static void write_data_impl(const void *data, size_t size, bool selected, bool p
         if (selected) {
             frame.assign(bytes, bytes + count);
             // WorkerCredit::data in the Rust host accepts this kind only for
-            // CAB after successful WORK admission, and debits it once before
+            // CAB/7z after successful WORK admission, and debits it once before
             // delivery. Runtime sinks independently retain output quotas.
             send(precharged ? PrechargedData : Data, frame);
         } else {

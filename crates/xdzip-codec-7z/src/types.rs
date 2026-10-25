@@ -144,6 +144,8 @@ pub struct Index {
     pub files: Vec<FileRecord>,
     /// Main compressed-data geometry.
     pub streams: Streams,
+    /// Readable archive-level properties that a rewrite cannot preserve.
+    pub(crate) has_archive_properties: bool,
 }
 /// Why a graph must be decoded during metadata discovery.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

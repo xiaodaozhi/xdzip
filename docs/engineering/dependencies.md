@@ -41,13 +41,15 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 版本来源、特性、原生编译行为已检查；Windows GNU 目标类型检查已通过，原生 Windows 回归必须覆盖保留修改时间的同名／同大小替换。上游为小型 Win32 安全封装项目，升级由锁文件和原生回归约束。2026-10-13 的 OSV 精确版本查询未返回这三个包的已知公告，历史响应保留在原执行工件，新查询按[验证方法](../qa/README.md)另记实际响应；这不是无漏洞证明。开发包继续收集所有上游许可证。
 
-## Rust 只读后端与工作进程桥接
+## Rust 格式后端与共享工作进程桥接
 
-`xdzip-codec-optical` 的格式逻辑只使用标准库及本项目 codec API/domain，不引入 ISO/UDF 或通用归档库。规范、范围与错误边界见[独立实现契约](independent-rust-codecs.md#iso与udf只读规格)。`xdzip-readonly-bridge` 复用已锁定的 cxx/cxx-build 版本和生成流程，不新增外部包版本、下载构建脚本或格式算法库。替代的进程内路由会失去既有光盘任务的独立进程治理，因此保留既有 worker 和受控流协议。
+`xdzip-codec-7z` 使用项目 API/domain、无第三方生产依赖的共享压缩算法及通用密码学原语。AES 0.9.3 启用 zeroize，getrandom 0.4.2 与 zeroize 1.9.1 复用 ZIP 版本。可清除敏感状态的 SHA-256 提取到格式无关的 `xdzip-crypto`，在已准入 sha2 0.10.9 的 compress 原语上管理自有增量状态，不在各格式复制包装。共享 crate 还依据公开数学规范实现 HMAC-SHA256、BLAKE2s/BLAKE2sp，来源及边界见其 [README](../../crates/xdzip-crypto/README.md)，不提供归档或发布权限，不升级第三方密码学依赖版本。格式属性、CBC 组合、KDF、创建及重写均为独立实现，不由这些基础库提供归档处理。来源、分析角色及许可区分见[7z 依据](sevenzip-format-sources.md)。
 
-`xdzip-codec-cab` 只依赖本项目 API、domain 与无第三方生产依赖的 `xdzip-compression`。MSZIP 复用 ZIP/GZIP 的 Deflate，LZX 和 Quantum 为独立算法模块，不引入额外 Deflate 或通用归档库。CAB 与光盘后端共享只读 CXX 边界和宿主授权流。产品固定使用 Rust，官方 Cab 与其专用 LZX/Quantum 不进入构建；资源及格式边界见[自研契约](independent-rust-codecs.md#cab只读规格)，参考逻辑的分析范围与许可见[CAB 来源](cab-format-sources.md)。
+`xdzip-codec-optical` 的格式逻辑只使用标准库及本项目 codec API/domain，不引入 ISO/UDF 或通用归档库。规范、范围与错误边界见[独立实现契约](independent-rust-codecs.md#iso与udf只读规格)。`xdzip-codec-bridge` 复用已锁定的 cxx/cxx-build 版本和生成流程，不新增外部包版本、下载构建脚本或格式算法库。替代的进程内路由会失去既有光盘任务的独立进程治理，因此保留既有 worker 和受控流协议。
 
-生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 的 Cab/Iso/Udf 容器及 CAB 专用算法源文件从 CMake 清单和注册表移除，7z 仍需其官方源码及许可材料。历史交付的许可义务不因当前裁剪而消失。独立 pycdlib、Microsoft IMAPI、mkudffs/udfclient 夹具、官方参考 worker 和规范向量仅用于测试，来源和工具许可与产品分别管理，不进入应用运行依赖。项目自有内容的小型固定输入及生成脚本纳入测试目录，展开的像和执行证据只留在 build/。
+`xdzip-codec-cab` 只依赖本项目 API、domain 与无第三方生产依赖的 `xdzip-compression`。MSZIP 复用 ZIP/GZIP 的 Deflate，LZX 和 Quantum 为独立算法模块，不引入额外 Deflate 或通用归档库。7z、CAB 与光盘后端共享 `xdzip-codec-bridge` 及宿主授权流，创建仅增加受控输入与随机暂存回调，不复制通用边界。产品固定使用 Rust，官方 Cab 与其专用 LZX/Quantum 不进入构建；资源及格式边界见[自研契约](independent-rust-codecs.md#cab只读规格)，参考逻辑的分析范围与许可见[CAB 来源](cab-format-sources.md)。
+
+生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 的容器、算法和通用设施全部退出产品 CMake 清单，源码准备和当前部署通知只保留 UnRAR。历史交付的许可义务不因当前裁剪而消失。独立 pycdlib、Microsoft IMAPI、mkudffs/udfclient 夹具、官方参考 worker 和规范向量仅用于测试，来源和工具许可与产品分别管理，不进入应用运行依赖。项目自有内容的小型固定输入及生成脚本纳入测试目录，展开的像和执行证据只留在 build/。
 
 ## HTML 复核字体与工具
 

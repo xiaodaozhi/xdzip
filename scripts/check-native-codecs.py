@@ -36,7 +36,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                volume_names=None):
     operation = 2 if creation is not None else 0 if selected is None else 1
     declared = None
-    if format_id == 8 and operation == 1:
+    if format_id in (7, 8) and operation == 1:
         # A one-entry payload request emits no ROW messages. Admit its size from
         # a separate bounded scan before accepting ordinary or prepaid output.
         metadata, _ = run_worker(worker, parts, password=password, format_id=format_id,
@@ -109,7 +109,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 payload.extend(value)
                 send(21)
             elif kind == 23:
-                if format_id != 8 or operation != 1:
+                if format_id not in (7, 8) or operation != 1:
                     raise WorkerError('unexpected_precharged_data')
                 if not value:
                     raise WorkerError('precharged_empty')
@@ -141,7 +141,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 payload[offset:end] = block
                 send(21)
             elif kind == 17:
-                if format_id == 8 and operation == 1:
+                if format_id in (7, 8) and operation == 1:
                     if len(value) != 8:
                         raise WorkerError('work_length')
                     count = struct.unpack('<Q', value)[0]

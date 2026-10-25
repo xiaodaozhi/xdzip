@@ -107,6 +107,7 @@ pub(crate) fn parse<'a>(
         rows: budget.vec(count)?,
         files: budget.vec(count)?,
         streams,
+        has_archive_properties: false,
     };
     let mut names_value = match names_value {
         Some(values) => values,

@@ -11,6 +11,7 @@ mod lzma_encode;
 mod lzma_tests;
 mod lzx;
 mod mszip;
+mod ppmd7;
 mod quantum;
 mod raw;
 mod stream_io;
@@ -21,6 +22,7 @@ pub use lzma_encode::{Lzma2Writer, lzma2_writer_memory_required};
 pub use lzma2::{Lzma2Reader, lzma2_memory_required};
 pub use lzx::LzxDecoder;
 pub use mszip::MszipDecoder;
+pub use ppmd7::{Ppmd7Reader, ppmd7_memory_required};
 pub use quantum::QuantumDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
 

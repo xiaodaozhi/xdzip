@@ -77,7 +77,7 @@ pub enum Format {
     Tar,
     /// One GZIP filter around TAR.
     TarGzip,
-    /// Official 7-Zip container backend.
+    /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
     /// Official UnRAR read-only container backend.
     Rar,
@@ -193,6 +193,8 @@ pub enum ScanError {
     PasswordRequired,
     /// A header password verifier rejected the provided secret.
     WrongPassword,
+    /// An encrypted header failed without a verifier distinguishing its password from corruption.
+    PasswordOrIntegrity,
     /// One or more required adjacent archive volumes are absent.
     MissingVolume,
 }
@@ -208,6 +210,7 @@ impl std::fmt::Display for ScanError {
             Self::MissingVolume => "missing_volume",
             Self::PasswordRequired => "password_required",
             Self::WrongPassword => "wrong_password",
+            Self::PasswordOrIntegrity => "password_or_integrity",
         })
     }
 }

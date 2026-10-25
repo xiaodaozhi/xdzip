@@ -28,6 +28,18 @@ impl<R: Read> DeflateReader<R> {
             failed: false,
         }
     }
+    /// Decode the enhanced 64 KiB Deflate profile with the shared state machine.
+    /// Only window/distance admission and length code 285 differ from RFC 1951.
+    /// This does not enable Deflate64 in ZIP or grant container capabilities.
+    pub fn new_deflate64(source: R, packed: u64) -> Self {
+        Self {
+            bits: Bits::new(source.take(packed)),
+            inflater: Inflate::with_mode(true),
+            packed,
+            ended: false,
+            failed: false,
+        }
+    }
     /// Start an independent raw stream with an admitted chronological dictionary.
     /// Dictionary bytes are history, never emitted output. The container must
     /// authorize this reset and retain at most the preceding 32 KiB itself.

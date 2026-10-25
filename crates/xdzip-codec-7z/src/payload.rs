@@ -1,26 +1,43 @@
-//! Complete-folder candidate cache, separate from the method graph executor.
-//! No entry succeeds until its entire folder has passed EOF and all CRCs.
-use crate::decode::{MethodGraphDecoder, decode_error};
+//! Stateful solid-folder streams over host-authorized input and output sinks.
+use crate::decode::{DecodeLimits, FolderStream, MethodGraphDecoder, SharedSource, decode_error};
 use crate::source::Reader;
-use crate::{HeaderSource, Index, read_index_with_decoder};
+use crate::{Folder, Index, read_index_with_decoder};
+use std::cell::RefCell;
+use std::rc::Rc;
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadReader};
 use xdzip_codec_api::{Cancellation, Entry, ReadSource, ScanLimits};
+use xdzip_compression::Crc32;
 use zeroize::Zeroizing;
-
-struct Cache {
-    bytes: Zeroizing<Vec<u8>>,
-    credit: usize,
+const FILE_LIMIT: u64 = 8 << 30;
+const CHUNK: usize = 8192;
+struct Active<'a> {
+    folder: usize,
+    graph: FolderStream<'a>,
+    next: usize,
     password: Option<Zeroizing<String>>,
 }
 pub(crate) struct Payload<'a> {
-    source: Reader<'a>,
+    source: SharedSource<'a>,
+    control: &'a Cancellation,
     index: Index,
     decoder: MethodGraphDecoder,
-    // Verified folders are never evicted or replayed within this session.
-    cache: Vec<Option<Cache>>,
-    retained: u64,
-    cache_overhead: u64,
+    active: Option<Active<'a>>,
+    password: Option<Zeroizing<String>>,
     failed: bool,
+}
+fn secret(value: Option<&str>) -> Result<Option<Zeroizing<String>>, DecodeError> {
+    value
+        .map(|value| {
+            if value.len() > 4096 {
+                return Err(DecodeError::Limit);
+            }
+            let mut copy = Zeroizing::new(String::new());
+            copy.try_reserve_exact(value.len())
+                .map_err(|_| DecodeError::Limit)?;
+            copy.push_str(value);
+            Ok(copy)
+        })
+        .transpose()
 }
 impl<'a> Payload<'a> {
     pub(crate) fn open(
@@ -29,7 +46,16 @@ impl<'a> Payload<'a> {
         control: &'a Cancellation,
         password: Option<&str>,
     ) -> Result<Self, DecodeError> {
-        let mut decoder = MethodGraphDecoder::default();
+        Self::open_with_limits(source, snapshot, control, password, DecodeLimits::default())
+    }
+    pub(crate) fn open_with_limits(
+        source: &'a mut dyn ReadSource,
+        snapshot: &[Entry],
+        control: &'a Cancellation,
+        password: Option<&str>,
+        limits: DecodeLimits,
+    ) -> Result<Self, DecodeError> {
+        let mut decoder = MethodGraphDecoder::new(limits);
         let index = read_index_with_decoder(
             source,
             control,
@@ -41,31 +67,28 @@ impl<'a> Payload<'a> {
         if index.rows != snapshot {
             return Err(DecodeError::Integrity);
         }
-        let cache_overhead = index
-            .streams
-            .folders
-            .len()
-            .checked_mul(std::mem::size_of::<Option<Cache>>())
-            .ok_or(DecodeError::Limit)? as u64;
-        if cache_overhead > decoder.limits.memory_bytes {
-            return Err(DecodeError::Limit);
-        }
-        let mut cache = Vec::new();
-        cache
-            .try_reserve_exact(index.streams.folders.len())
-            .map_err(|_| DecodeError::Limit)?;
-        cache.resize_with(index.streams.folders.len(), || None);
+        decoder.begin_payload()?;
         let mut source = Reader::new(source, control, 0).map_err(decode_error)?;
         source.set_limit(decoder.limits.input_bytes);
+        let source: SharedSource<'a> = Rc::new(RefCell::new(Box::new(source)));
         Ok(Self {
             source,
+            control,
             index,
             decoder,
-            cache,
-            retained: 0,
-            cache_overhead,
+            active: None,
+            password: secret(password)?,
             failed: false,
         })
+    }
+    fn check(&self, control: &Cancellation) -> Result<(), DecodeError> {
+        control.check().map_err(decode_error)?;
+        self.control.check().map_err(decode_error)?;
+        self.source
+            .try_borrow()
+            .map_err(|_| DecodeError::Integrity)?
+            .check()
+            .map_err(decode_error)
     }
     fn record(
         &mut self,
@@ -74,8 +97,7 @@ impl<'a> Payload<'a> {
         control: &Cancellation,
         password: Option<&str>,
     ) -> Result<(), DecodeError> {
-        control.check().map_err(decode_error)?;
-        self.source.check().map_err(decode_error)?;
+        self.check(control)?;
         let record = entry
             .id
             .get()
@@ -85,18 +107,25 @@ impl<'a> Payload<'a> {
         if self.index.rows.get(record) != Some(entry) {
             return Err(DecodeError::Integrity);
         }
-        if entry.directory || entry.link || !entry.payload_supported() {
+        if entry.link || !entry.payload_supported() {
             return Err(DecodeError::Unsupported);
+        }
+        if entry.size > FILE_LIMIT {
+            return Err(DecodeError::Limit);
         }
         let file = self.index.files.get(record).ok_or(DecodeError::Integrity)?;
         let Some(location) = &file.data else {
             return if entry.size == 0 {
-                control.check().map_err(decode_error)
+                self.check(control)
             } else {
                 Err(DecodeError::Integrity)
             };
         };
+        if entry.directory {
+            return Err(DecodeError::Unsupported);
+        }
         let folder_index = location.folder;
+        let stream_index = location.stream;
         let folder = self
             .index
             .streams
@@ -105,82 +134,103 @@ impl<'a> Payload<'a> {
             .ok_or(DecodeError::Integrity)?;
         let stream = folder
             .substreams
-            .get(location.stream)
+            .get(stream_index)
             .ok_or(DecodeError::Integrity)?;
-        let start = usize::try_from(stream.offset).map_err(|_| DecodeError::Limit)?;
-        let length = usize::try_from(stream.length).map_err(|_| DecodeError::Limit)?;
-        let end = start.checked_add(length).ok_or(DecodeError::Integrity)?;
         if stream.length != entry.size {
             return Err(DecodeError::Integrity);
         }
-        if self.cache[folder_index].is_none() {
-            let secret_bytes = if folder.encrypted() {
-                password.map_or(0, str::len) as u64
-            } else {
-                0
-            };
-            let next = self
-                .retained
-                .checked_add(folder.unpacked_size())
-                .filter(|n| *n <= self.decoder.limits.cache_bytes)
-                .ok_or(DecodeError::Limit)?;
-            let bytes = self.decoder.folder(
-                &mut self.source,
-                &self.index.streams,
-                folder_index,
-                self.retained
-                    .checked_add(self.cache_overhead)
-                    .and_then(|n| n.checked_add(secret_bytes))
-                    .ok_or(DecodeError::Limit)?,
-                control,
-                password,
-                &mut |count| sink.charge_skipped(count),
-            )?;
-            let secret = if folder.encrypted() {
-                let password = password.ok_or(DecodeError::PasswordRequired)?;
-                let mut copy = Zeroizing::new(String::new());
-                copy.try_reserve_exact(password.len())
-                    .map_err(|_| DecodeError::Limit)?;
-                copy.push_str(password);
-                Some(copy)
-            } else {
-                None
-            };
-            self.cache_overhead = self
-                .cache_overhead
-                .checked_add(secret.as_ref().map_or(0, |value| value.capacity()) as u64)
-                .ok_or(DecodeError::Limit)?;
-            self.retained = next;
-            self.cache[folder_index] = Some(Cache {
-                credit: bytes.len(),
-                bytes,
-                password: secret,
+        let encrypted = folder.encrypted();
+        let result = (|| {
+            let password = password.or(self.password.as_ref().map(|value| value.as_str()));
+            let restart = self.active.as_ref().is_none_or(|active| {
+                active.folder != folder_index
+                    || active.next > stream_index
+                    || folder.encrypted()
+                        && active.password.as_ref().map(|p| p.as_str()) != password
             });
-        }
-        let cache = self.cache[folder_index]
-            .as_mut()
+            if restart {
+                // Drop dictionary/model state before admitting another graph.
+                self.active = None;
+                let graph = self.decoder.stream(
+                    self.source.clone(),
+                    &self.index.streams,
+                    folder_index,
+                    self.control,
+                    password,
+                )?;
+                self.active = Some(Active {
+                    folder: folder_index,
+                    graph,
+                    next: 0,
+                    password: if folder.encrypted() {
+                        secret(password)?
+                    } else {
+                        None
+                    },
+                });
+            }
+            let active = self.active.as_mut().ok_or(DecodeError::Integrity)?;
+            while active.next < stream_index {
+                active.consume(folder, false, sink, control)?;
+            }
+            active.consume(folder, true, sink, control)?;
+            if stream.crc.is_none() {
+                while active.next < folder.substreams.len() {
+                    active.consume(folder, false, sink, control)?;
+                }
+                active.graph.finish()?;
+            } else if active.graph.position() == folder.unpacked_size() {
+                active.graph.finish()?;
+            }
+            Ok(())
+        })();
+        result.map_err(|error| crate::encrypted_decode_error(error, encrypted))?;
+        self.check(control)
+    }
+}
+impl Active<'_> {
+    fn consume(
+        &mut self,
+        folder: &Folder,
+        selected: bool,
+        sink: &mut dyn DecodedSink,
+        control: &Cancellation,
+    ) -> Result<(), DecodeError> {
+        let stream = folder
+            .substreams
+            .get(self.next)
             .ok_or(DecodeError::Integrity)?;
-        if let Some(secret) = &cache.password {
-            let password = password.ok_or(DecodeError::PasswordRequired)?;
-            if password != secret.as_str() {
+        if self.graph.position() != stream.offset {
+            return Err(DecodeError::Integrity);
+        }
+        let end = stream
+            .offset
+            .checked_add(stream.length)
+            .ok_or(DecodeError::Integrity)?;
+        let mut crc = Crc32::new();
+        let mut block = Zeroizing::new([0; CHUNK]);
+        while self.graph.position() < end {
+            control.check().map_err(decode_error)?;
+            let width = (end - self.graph.position()).min(CHUNK as u64) as usize;
+            let n = self.graph.read(&mut block[..width])?;
+            if n == 0 {
                 return Err(DecodeError::Integrity);
             }
-        }
-        let bytes = cache.bytes.get(start..end).ok_or(DecodeError::Integrity)?;
-        for block in bytes.chunks(8192) {
-            control.check().map_err(decode_error)?;
-            self.source.check().map_err(decode_error)?;
-            let count = block.len().min(cache.credit);
-            if count != 0 {
-                sink.write_precharged_chunk(&block[..count])?;
-                cache.credit -= count;
-            }
-            if count < block.len() {
+            // Only this actual terminal chunk funds its own output delivery.
+            sink.charge_skipped(n as u64)?;
+            crc.update(&block[..n]);
+            if selected {
                 control.check().map_err(decode_error)?;
-                sink.write_chunk(&block[count..])?;
+                sink.write_precharged_chunk(&block[..n])?;
             }
         }
-        self.source.check().map_err(decode_error)?;
+        if stream
+            .crc
+            .is_some_and(|expected| expected != crc.checksum())
+        {
+            return Err(DecodeError::Integrity);
+        }
+        self.next += 1;
         control.check().map_err(decode_error)
     }
 }
@@ -206,6 +256,7 @@ impl PayloadReader for Payload<'_> {
         let result = self.record(entry, sink, control, password);
         if result.is_err() {
             self.failed = true;
+            self.active = None;
         }
         result
     }

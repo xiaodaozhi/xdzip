@@ -1,64 +1,66 @@
-//! Bounded method-graph execution. Container descriptions do not grant codecs.
-use crate::crypto::{AesProperties, AesReader, KdfBudget};
+//! Bounded 7z method plans shared by metadata collection and payload streams.
+mod stream;
+use crate::crypto::{AesKeyCache, AesProperties, KdfBudget};
 use crate::{Coder, Folder, HeaderDecoder, HeaderPurpose, HeaderSource, MetadataSink, Streams};
-use std::io::{self, Read};
+use std::cell::RefCell;
+use std::io;
+use std::rc::Rc;
+pub(crate) use stream::{FolderStream, SharedSource};
 use xdzip_codec_api::payload::DecodeError;
 use xdzip_codec_api::{Cancellation, ScanError};
 use xdzip_compression::{
-    Bzip2Reader, Crc32, DeflateReader, Lzma2Reader, LzmaReader, bzip2_memory_required,
-    lzma_memory_required, lzma2_memory_required,
+    Crc32, bzip2_memory_required, lzma_memory_required, lzma2_memory_required,
+    ppmd7_memory_required,
 };
 use zeroize::Zeroizing;
-
 const CHUNK: usize = 8192;
 const METADATA_RESERVE: u64 = 64 * 1024 * 1024;
 const GRAPH_OVERHEAD: u64 = 1024 * 1024;
-
-/// Explicit candidate resource policy, independent of archive-declared sizes.
+/// Explicit task resource policy, independent of archive-declared lengths.
 #[derive(Clone, Copy, Debug)]
 pub struct DecodeLimits {
-    /// Aggregate dictionaries, models, node output buffers and retained caches.
+    /// Sum of dictionaries, models, node buffers and retained metadata.
     pub memory_bytes: u64,
-    /// Maximum complete terminal folder retained for verification.
-    pub folder_bytes: u64,
-    /// Aggregate verified terminal output retained by one payload session.
-    pub cache_bytes: u64,
-    /// Cumulative physical packed input, including metadata graph inputs.
+    /// Cumulative physical packed input, including graph restarts.
     pub input_bytes: u64,
-    /// Cumulative terminal output, matching host WORK accounting.
+    /// Cumulative terminal output, matching host WORK.
     pub work_bytes: u64,
-    /// Independent cumulative output from all nodes, bounding intermediate work.
+    /// Independent cumulative output from all intermediate and terminal nodes.
     pub node_work_bytes: u64,
-    /// Cumulative admitted AES password-derivation rounds.
+    /// Cumulative AES derivation rounds.
     pub kdf_rounds: u64,
-    /// Cumulative admitted AES password-derivation hash-input bytes.
+    /// Cumulative AES derivation hash-input bytes.
     pub kdf_bytes: u64,
 }
 impl Default for DecodeLimits {
     fn default() -> Self {
         Self {
-            memory_bytes: 1024 * 1024 * 1024,
-            folder_bytes: 256 * 1024 * 1024,
-            cache_bytes: 256 * 1024 * 1024,
-            input_bytes: 20 * 1024 * 1024 * 1024,
-            work_bytes: 20 * 1024 * 1024 * 1024,
-            node_work_bytes: 64 * 20 * 1024 * 1024 * 1024,
+            memory_bytes: 1 << 30,
+            input_bytes: 20 << 30,
+            work_bytes: 20 << 30,
+            node_work_bytes: 64 * ((20 << 30) + METADATA_RESERVE),
             kdf_rounds: 1 << 26,
-            kdf_bytes: 1024 * 1024 * 1024,
+            kdf_bytes: 1 << 30,
         }
     }
 }
-
-/// Decoder shared by all header, external-property and payload graphs in a task.
-/// It never opens paths, delegates to a process, or resets cumulative KDF work.
-pub struct MethodGraphDecoder {
-    pub(crate) limits: DecodeLimits,
+struct State {
+    limits: DecodeLimits,
     kdf: KdfBudget,
+    keys: AesKeyCache,
     input: u64,
     work: u64,
     node_work: u64,
-    failed: bool,
+    work_reserved: u64,
+    node_reserved: u64,
     source_error: Option<ScanError>,
+    payload: bool,
+}
+/// One task's method admission and cumulative work, shared across graph restarts.
+pub struct MethodGraphDecoder {
+    pub(crate) limits: DecodeLimits,
+    state: Rc<RefCell<State>>,
+    failed: bool,
 }
 impl Default for MethodGraphDecoder {
     fn default() -> Self {
@@ -66,36 +68,88 @@ impl Default for MethodGraphDecoder {
     }
 }
 impl MethodGraphDecoder {
-    /// Construct a task-scoped decoder with explicit bounded resource admission.
+    pub(crate) fn begin_payload(&mut self) -> Result<(), DecodeError> {
+        let mut state = self
+            .state
+            .try_borrow_mut()
+            .map_err(|_| DecodeError::Integrity)?;
+        if state.payload || state.work_reserved != 0 || state.node_reserved != 0 {
+            return Err(DecodeError::Integrity);
+        }
+        // Metadata has a separate 64MiB admission. This phase transition starts
+        // payload I/O/terminal counters once; graph restarts refund no budget.
+        // Node work and KDF admission remain cumulative across both phases.
+        state.input = 0;
+        state.work = 0;
+        state.payload = true;
+        Ok(())
+    }
+    /// Start a bounded task; graph restarts retain the same input/work/KDF state.
     pub fn new(limits: DecodeLimits) -> Self {
         Self {
-            kdf: KdfBudget::new(limits.kdf_rounds, limits.kdf_bytes),
             limits,
-            input: 0,
-            work: 0,
-            node_work: 0,
+            state: Rc::new(RefCell::new(State {
+                limits,
+                kdf: KdfBudget::new(limits.kdf_rounds, limits.kdf_bytes),
+                keys: AesKeyCache::default(),
+                input: 0,
+                work: 0,
+                node_work: 0,
+                work_reserved: 0,
+                node_reserved: 0,
+                source_error: None,
+                payload: false,
+            })),
             failed: false,
-            source_error: None,
         }
     }
-    /// Admitted packed reads and actual terminal output.
+    /// Admitted physical packed input and actual terminal output.
     pub fn counters(&self) -> (u64, u64) {
-        (self.input, self.work)
+        self.state
+            .try_borrow()
+            .map_or((u64::MAX, u64::MAX), |s| (s.input, s.work))
     }
-    /// Actual output from all nodes, separate from host terminal WORK.
+    /// Actual output from all nodes, separately admitted from host WORK.
     pub fn node_work(&self) -> u64 {
-        self.node_work
+        self.state.try_borrow().map_or(u64::MAX, |s| s.node_work)
     }
-    /// Remaining task-wide AES derivation admission.
+    /// Remaining task-wide password derivation allowance.
     pub fn remaining_kdf(&self) -> (u64, u64) {
-        self.kdf.remaining()
+        self.state
+            .try_borrow()
+            .map_or((0, 0), |s| s.kdf.remaining())
+    }
+    pub(crate) fn stream<'a>(
+        &mut self,
+        source: SharedSource<'a>,
+        streams: &Streams,
+        index: usize,
+        control: &'a Cancellation,
+        password: Option<&str>,
+    ) -> Result<FolderStream<'a>, DecodeError> {
+        if self.failed {
+            return Err(DecodeError::Integrity);
+        }
+        let result = FolderStream::new(
+            source,
+            streams,
+            index,
+            control,
+            password,
+            self.state.clone(),
+            false,
+        );
+        if result.is_err() {
+            self.failed = true;
+        }
+        result
     }
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn folder(
         &mut self,
         source: &mut dyn HeaderSource,
         streams: &Streams,
-        folder_index: usize,
+        index: usize,
         retained: u64,
         control: &Cancellation,
         password: Option<&str>,
@@ -104,150 +158,54 @@ impl MethodGraphDecoder {
         if self.failed {
             return Err(DecodeError::Integrity);
         }
-        let result = self.execute(
-            source,
-            streams,
-            folder_index,
-            retained,
-            control,
-            password,
-            charge,
-        );
+        let result = (|| {
+            let folder = streams.folders.get(index).ok_or(DecodeError::Integrity)?;
+            plan(folder, streams, self.limits, retained, true)?;
+            let source: SharedSource<'_> = Rc::new(RefCell::new(Box::new(Borrowed(source))));
+            let mut graph = FolderStream::new(
+                source,
+                streams,
+                index,
+                control,
+                password,
+                self.state.clone(),
+                true,
+            )?;
+            let mut output = Zeroizing::new(Vec::new());
+            let size = usize::try_from(folder.unpacked_size()).map_err(|_| DecodeError::Limit)?;
+            output
+                .try_reserve_exact(size)
+                .map_err(|_| DecodeError::Limit)?;
+            let mut bytes = Zeroizing::new([0; CHUNK]);
+            loop {
+                check(control)?;
+                let n = graph.read(&mut bytes[..])?;
+                if n == 0 {
+                    break;
+                }
+                charge(n as u64)?;
+                output.extend_from_slice(&bytes[..n]);
+            }
+            graph.finish()?;
+            verify(folder, &output, control)?;
+            Ok(output)
+        })();
         if result.is_err() {
             self.failed = true;
         }
         result
     }
-    #[allow(clippy::too_many_arguments)]
-    fn execute(
-        &mut self,
-        source: &mut dyn HeaderSource,
-        streams: &Streams,
-        folder_index: usize,
-        retained: u64,
-        control: &Cancellation,
-        password: Option<&str>,
-        charge: &mut dyn FnMut(u64) -> Result<(), DecodeError>,
-    ) -> Result<Zeroizing<Vec<u8>>, DecodeError> {
-        check(control)?;
-        source.check().map_err(|error| {
-            self.source_error = Some(error);
-            decode_error(error)
-        })?;
-        let folder = streams
-            .folders
-            .get(folder_index)
-            .ok_or(DecodeError::Integrity)?;
-        let methods = plan(folder, streams, self.limits, retained)?;
-        if folder.encrypted() && password.is_none() {
-            return Err(DecodeError::PasswordRequired);
-        }
-        let mut packed_size = 0u64;
-        for input in &folder.packed_inputs {
-            let range = &streams.packs[input.pack].range;
-            if range
-                .offset
-                .checked_add(range.length)
-                .is_none_or(|n| n > source.length())
-            {
-                return Err(DecodeError::Integrity);
-            }
-            packed_size = packed_size
-                .checked_add(range.length)
-                .ok_or(DecodeError::Limit)?;
-        }
-        if self
-            .input
-            .checked_add(packed_size)
-            .is_none_or(|n| n > self.limits.input_bytes)
-        {
-            return Err(DecodeError::Limit);
-        }
-        let mut packed = Vec::new();
-        packed
-            .try_reserve_exact(folder.packed_inputs.len())
-            .map_err(|_| DecodeError::Limit)?;
-        for slot in &folder.packed_inputs {
-            check(control)?;
-            let pack = &streams.packs[slot.pack];
-            let mut bytes = Zeroizing::new(Vec::new());
-            let count = usize::try_from(pack.range.length).map_err(|_| DecodeError::Limit)?;
-            bytes
-                .try_reserve_exact(count)
-                .map_err(|_| DecodeError::Limit)?;
-            bytes.resize(count, 0);
-            let mut reader = PackedReader {
-                source,
-                offset: pack.range.offset,
-                length: pack.range.length,
-                position: 0,
-                crc: Crc32::new(),
-                total: &mut self.input,
-                limit: self.limits.input_bytes,
-                control,
-                error: &mut self.source_error,
-            };
-            for block in bytes.chunks_mut(CHUNK) {
-                reader.read_exact(block).map_err(algorithm_error)?;
-            }
-            if reader.position != pack.range.length
-                || pack.crc.is_some_and(|crc| crc != reader.crc.checksum())
-            {
-                return Err(DecodeError::Integrity);
-            }
-            packed.push(Some(bytes));
-        }
-        let mut outputs: Vec<Option<Zeroizing<Vec<u8>>>> = Vec::new();
-        outputs
-            .try_reserve_exact(folder.output_sizes.len())
-            .map_err(|_| DecodeError::Limit)?;
-        outputs.resize_with(folder.output_sizes.len(), || None);
-        for &node in &folder.topological_order {
-            check(control)?;
-            let planned = &methods[node];
-            let mut inputs = Vec::new();
-            inputs
-                .try_reserve_exact(planned.inputs.len())
-                .map_err(|_| DecodeError::Limit)?;
-            for slot in &planned.inputs {
-                let bytes = match *slot {
-                    Slot::Bound(output) => outputs.get_mut(output).and_then(Option::take),
-                    Slot::Packed(input) => packed.get_mut(input).and_then(Option::take),
-                }
-                .ok_or(DecodeError::Integrity)?;
-                inputs.push(bytes);
-            }
-            let mut meter = Meter {
-                limits: self.limits,
-                work: &mut self.work,
-                node_work: &mut self.node_work,
-                terminal: planned.output == folder.terminal_output,
-                charge,
-            };
-            let output = run_node(
-                planned,
-                &inputs,
-                folder.output_sizes[planned.output],
-                self.limits,
-                &mut self.kdf,
-                &mut meter,
-                control,
-                password,
-            )?;
-            outputs[planned.output] = Some(output);
-        }
-        if packed.iter().any(Option::is_some) {
-            return Err(DecodeError::Integrity);
-        }
-        let output = outputs
-            .get_mut(folder.terminal_output)
-            .and_then(Option::take)
-            .ok_or(DecodeError::Integrity)?;
-        if outputs.iter().any(Option::is_some) {
-            return Err(DecodeError::Integrity);
-        }
-        verify(folder, &output, control)?;
-        Ok(output)
+}
+struct Borrowed<'a>(&'a mut dyn HeaderSource);
+impl HeaderSource for Borrowed<'_> {
+    fn length(&self) -> u64 {
+        self.0.length()
+    }
+    fn check(&self) -> Result<(), ScanError> {
+        self.0.check()
+    }
+    fn read_exact_at(&mut self, at: u64, out: &mut [u8]) -> Result<(), ScanError> {
+        self.0.read_exact_at(at, out)
     }
 }
 impl HeaderDecoder for MethodGraphDecoder {
@@ -270,8 +228,10 @@ impl HeaderDecoder for MethodGraphDecoder {
                         Ok(())
                     })
                     .map_err(|error| {
-                        self.source_error
-                            .take()
+                        self.state
+                            .try_borrow_mut()
+                            .ok()
+                            .and_then(|mut s| s.source_error.take())
                             .unwrap_or_else(|| scan_error(error))
                     })?;
                 for block in output.chunks(CHUNK) {
@@ -287,13 +247,14 @@ impl HeaderDecoder for MethodGraphDecoder {
         result
     }
 }
-
 enum Method {
     Copy,
     Lzma,
     Lzma2(u8),
     Deflate,
+    Deflate64,
     Bzip2,
+    Ppmd,
     Aes(AesProperties),
     Filter,
     Bcj2,
@@ -330,19 +291,26 @@ fn method(coder: &Coder) -> Result<(Method, u64), DecodeError> {
             )
         }
         [4, 1, 8] if coder.properties.is_empty() => (Method::Deflate, 128 * 1024),
+        [4, 1, 9] if coder.properties.is_empty() => (Method::Deflate64, 128 * 1024),
         [4, 2, 2] if coder.properties.is_empty() => (
             Method::Bzip2,
             bzip2_memory_required(9).map_err(algorithm_error)?,
+        ),
+        [3, 4, 1] => (
+            Method::Ppmd,
+            ppmd7_memory_required(&coder.properties).map_err(algorithm_error)?,
         ),
         [6, 0xf1, 7, 1] => (
             Method::Aes(AesProperties::parse(&coder.properties)?),
             64 * 1024,
         ),
         [3, 3, 1, 0x1b] if coder.properties.is_empty() => (Method::Bcj2, 64 * 1024),
-        [0] | [4, 1, 8] | [4, 2, 2] | [3, 3, 1, 0x1b] => return Err(DecodeError::Integrity),
+        [0] | [4, 1, 8] | [4, 1, 9] | [4, 2, 2] | [3, 3, 1, 0x1b] => {
+            return Err(DecodeError::Integrity);
+        }
         id => {
             crate::filters::ByteFilter::new(id, &coder.properties)?;
-            (Method::Filter, 1024)
+            (Method::Filter, 32 * 1024)
         }
     };
     if coder.inputs
@@ -361,6 +329,7 @@ fn plan<'a>(
     streams: &Streams,
     limits: DecodeLimits,
     retained: u64,
+    materialized: bool,
 ) -> Result<Vec<Planned<'a>>, DecodeError> {
     let count = folder.coders.len();
     if count == 0 || count > 64 || folder.topological_order.len() != count {
@@ -369,6 +338,7 @@ fn plan<'a>(
     let mut memory = METADATA_RESERVE
         .checked_add(retained)
         .and_then(|n| n.checked_add(GRAPH_OVERHEAD))
+        .and_then(|n| n.checked_add(AesKeyCache::MEMORY_BYTES))
         .ok_or(DecodeError::Limit)?;
     let mut methods = Vec::new();
     methods
@@ -434,14 +404,10 @@ fn plan<'a>(
             return Err(DecodeError::Integrity);
         }
         used_input[packed.input] = true;
-        let length = streams
+        streams
             .packs
             .get(packed.pack)
-            .ok_or(DecodeError::Integrity)?
-            .range
-            .length;
-        usize::try_from(length).map_err(|_| DecodeError::Limit)?;
-        memory = memory.checked_add(length).ok_or(DecodeError::Limit)?;
+            .ok_or(DecodeError::Integrity)?;
     }
     if used_input[..input_total].iter().any(|used| !*used) {
         return Err(DecodeError::Integrity);
@@ -459,11 +425,15 @@ fn plan<'a>(
         }
         visited[node] = true;
     }
-    for &output in &folder.output_sizes {
-        usize::try_from(output).map_err(|_| DecodeError::Limit)?;
-        memory = memory.checked_add(output).ok_or(DecodeError::Limit)?;
+    if materialized {
+        if folder.unpacked_size() > crate::source::METADATA_LIMIT {
+            return Err(DecodeError::Limit);
+        }
+        memory = memory
+            .checked_add(folder.unpacked_size())
+            .ok_or(DecodeError::Limit)?;
     }
-    if memory > limits.memory_bytes || folder.unpacked_size() > limits.folder_bytes {
+    if memory > limits.memory_bytes {
         return Err(DecodeError::Limit);
     }
     for (input, &owner) in input_owner.iter().enumerate() {
@@ -515,178 +485,6 @@ fn plan<'a>(
     Ok(methods)
 }
 
-#[allow(clippy::too_many_arguments)]
-fn run_node(
-    planned: &Planned<'_>,
-    inputs: &[Zeroizing<Vec<u8>>],
-    expected: u64,
-    limits: DecodeLimits,
-    kdf: &mut KdfBudget,
-    meter: &mut Meter<'_>,
-    control: &Cancellation,
-    password: Option<&str>,
-) -> Result<Zeroizing<Vec<u8>>, DecodeError> {
-    let mut output = Zeroizing::new(Vec::new());
-    output
-        .try_reserve_exact(usize::try_from(expected).map_err(|_| DecodeError::Limit)?)
-        .map_err(|_| DecodeError::Limit)?;
-    if matches!(planned.method, Method::Bcj2) {
-        let sources: [Stable<SliceInput<'_>>; 4] = std::array::from_fn(|i| {
-            Stable(SliceInput {
-                bytes: &inputs[i],
-                position: 0,
-                control,
-            })
-        });
-        let lengths = std::array::from_fn(|i| inputs[i].len() as u64);
-        let mut reader = crate::bcj2::Bcj2Reader::new(sources, lengths, expected, control)
-            .map_err(algorithm_error)?;
-        collect(&mut reader, &mut output, expected, meter, control)?;
-        reader.finish().map_err(algorithm_error)?;
-        if reader.consumed_bytes() != lengths || reader.decoded_bytes() != expected {
-            return Err(DecodeError::Integrity);
-        }
-        return Ok(output);
-    }
-    let mut input = SliceInput {
-        bytes: &inputs[0],
-        position: 0,
-        control,
-    };
-    let packed = inputs[0].len() as u64;
-    let mut stable = Stable(&mut input);
-    match &planned.method {
-        Method::Copy => collect(&mut stable, &mut output, expected, meter, control)?,
-        Method::Filter => {
-            collect(&mut stable, &mut output, expected, meter, control)?;
-            let mut filter = crate::filters::ByteFilter::new(planned.id, planned.properties)?;
-            if filter.transform(&mut output, true, control)? != output.len() {
-                return Err(DecodeError::Integrity);
-            }
-        }
-        Method::Bcj2 => return Err(DecodeError::Integrity),
-        Method::Lzma => {
-            let mut reader = LzmaReader::new(
-                &mut stable,
-                packed,
-                Some(expected),
-                planned.properties,
-                limits.memory_bytes,
-            )
-            .map_err(algorithm_error)?;
-            collect(&mut reader, &mut output, expected, meter, control)?;
-            reader.finish().map_err(algorithm_error)?;
-            if reader.consumed_bytes() != packed || reader.decoded_bytes() != expected {
-                return Err(DecodeError::Integrity);
-            }
-        }
-        Method::Lzma2(property) => {
-            let mut reader = Lzma2Reader::new(
-                &mut stable,
-                packed,
-                expected,
-                *property,
-                limits.memory_bytes,
-            )
-            .map_err(algorithm_error)?;
-            collect(&mut reader, &mut output, expected, meter, control)?;
-            reader.finish().map_err(algorithm_error)?;
-            if reader.consumed_bytes() != packed || reader.decoded_bytes() != expected {
-                return Err(DecodeError::Integrity);
-            }
-        }
-        Method::Deflate => {
-            let mut reader = DeflateReader::new(&mut stable, packed);
-            collect(&mut reader, &mut output, expected, meter, control)?;
-            if reader.consumed_bytes() != packed {
-                return Err(DecodeError::Integrity);
-            }
-        }
-        Method::Bzip2 => {
-            let mut reader = Bzip2Reader::new(&mut stable, packed, expected, limits.memory_bytes)
-                .map_err(algorithm_error)?;
-            collect(&mut reader, &mut output, expected, meter, control)?;
-            reader.finish().map_err(algorithm_error)?;
-            if reader.consumed_bytes() != packed || reader.decoded_bytes() != expected {
-                return Err(DecodeError::Integrity);
-            }
-        }
-        Method::Aes(properties) => {
-            let mut reader = AesReader::new(
-                &mut stable,
-                packed,
-                expected,
-                properties,
-                password,
-                control,
-                kdf,
-            )?;
-            collect(&mut reader, &mut output, expected, meter, control)?;
-            reader.finish().map_err(algorithm_error)?;
-            if reader.consumed_bytes() != packed || reader.decoded_bytes() != expected {
-                return Err(DecodeError::Integrity);
-            }
-        }
-    }
-    Ok(output)
-}
-struct Meter<'a> {
-    limits: DecodeLimits,
-    work: &'a mut u64,
-    node_work: &'a mut u64,
-    terminal: bool,
-    charge: &'a mut dyn FnMut(u64) -> Result<(), DecodeError>,
-}
-impl Meter<'_> {
-    fn admit(&mut self, count: u64) -> Result<(), DecodeError> {
-        *self.node_work = self
-            .node_work
-            .checked_add(count)
-            .filter(|n| *n <= self.limits.node_work_bytes)
-            .ok_or(DecodeError::Limit)?;
-        if self.terminal {
-            *self.work = self
-                .work
-                .checked_add(count)
-                .filter(|n| *n <= self.limits.work_bytes)
-                .ok_or(DecodeError::Limit)?;
-            (self.charge)(count)?;
-        }
-        Ok(())
-    }
-}
-fn collect(
-    reader: &mut dyn Read,
-    output: &mut Vec<u8>,
-    expected: u64,
-    meter: &mut Meter<'_>,
-    control: &Cancellation,
-) -> Result<(), DecodeError> {
-    let mut block = Zeroizing::new([0u8; CHUNK]);
-    loop {
-        check(control)?;
-        let count = reader.read(&mut block[..]).map_err(algorithm_error)?;
-        if count > CHUNK {
-            return Err(DecodeError::Integrity);
-        }
-        if count == 0 {
-            break;
-        }
-        meter.admit(count as u64)?;
-        if (output.len() as u64)
-            .checked_add(count as u64)
-            .is_none_or(|n| n > expected)
-        {
-            return Err(DecodeError::Integrity);
-        }
-        output.extend_from_slice(&block[..count]);
-    }
-    check(control)?;
-    if output.len() as u64 != expected {
-        return Err(DecodeError::Integrity);
-    }
-    Ok(())
-}
 fn verify(folder: &Folder, output: &[u8], control: &Cancellation) -> Result<(), DecodeError> {
     if output.len() as u64 != folder.unpacked_size() {
         return Err(DecodeError::Integrity);
@@ -733,6 +531,7 @@ pub(crate) fn decode_error(error: ScanError) -> DecodeError {
         ScanError::Unsupported => DecodeError::Unsupported,
         ScanError::PasswordRequired => DecodeError::PasswordRequired,
         ScanError::WrongPassword => DecodeError::WrongPassword,
+        ScanError::PasswordOrIntegrity => DecodeError::PasswordOrIntegrity,
         _ => DecodeError::Integrity,
     }
 }
@@ -744,6 +543,7 @@ pub(crate) fn scan_error(error: DecodeError) -> ScanError {
         DecodeError::Unsupported => ScanError::Unsupported,
         DecodeError::PasswordRequired => ScanError::PasswordRequired,
         DecodeError::WrongPassword => ScanError::WrongPassword,
+        DecodeError::PasswordOrIntegrity => ScanError::PasswordOrIntegrity,
         _ => ScanError::Invalid,
     }
 }
@@ -764,74 +564,4 @@ pub(crate) fn algorithm_error(error: io::Error) -> DecodeError {
         } else {
             DecodeError::Integrity
         })
-}
-struct Stable<R>(R);
-impl<R: Read> Read for Stable<R> {
-    fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
-        self.0.read(out).map_err(|error| {
-            if error
-                .get_ref()
-                .is_some_and(|e| e.is::<DecodeError>() || e.is::<ScanError>())
-            {
-                io::Error::other(error.into_inner().expect("typed payload checked"))
-            } else {
-                error
-            }
-        })
-    }
-}
-struct SliceInput<'a> {
-    bytes: &'a [u8],
-    position: usize,
-    control: &'a Cancellation,
-}
-impl Read for SliceInput<'_> {
-    fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
-        check(self.control).map_err(io::Error::other)?;
-        let count = out.len().min(self.bytes.len() - self.position).min(CHUNK);
-        out[..count].copy_from_slice(&self.bytes[self.position..self.position + count]);
-        self.position += count;
-        Ok(count)
-    }
-}
-struct PackedReader<'a> {
-    source: &'a mut dyn HeaderSource,
-    offset: u64,
-    length: u64,
-    position: u64,
-    crc: Crc32,
-    total: &'a mut u64,
-    limit: u64,
-    control: &'a Cancellation,
-    error: &'a mut Option<ScanError>,
-}
-impl Read for PackedReader<'_> {
-    fn read(&mut self, out: &mut [u8]) -> io::Result<usize> {
-        check(self.control).map_err(io::Error::other)?;
-        let count = out
-            .len()
-            .min(CHUNK)
-            .min((self.length - self.position).min(CHUNK as u64) as usize);
-        if count == 0 {
-            return Ok(0);
-        }
-        *self.total = self
-            .total
-            .checked_add(count as u64)
-            .filter(|n| *n <= self.limit)
-            .ok_or_else(|| io::Error::other(DecodeError::Limit))?;
-        let at = self
-            .offset
-            .checked_add(self.position)
-            .ok_or_else(|| io::Error::other(DecodeError::Integrity))?;
-        self.source
-            .read_exact_at(at, &mut out[..count])
-            .map_err(|error| {
-                *self.error = Some(error);
-                io::Error::other(error)
-            })?;
-        self.crc.update(&out[..count]);
-        self.position += count as u64;
-        Ok(count)
-    }
 }

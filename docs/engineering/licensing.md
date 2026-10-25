@@ -6,7 +6,7 @@
 
 Qt 动态链接仍需逐模块确认 LGPL/GPL/商业条款；后端、图标、字体、工具和静态 Rust 依赖分别审查。许可证兼容不代表代码没有安全缺陷。所需通知、源码/重链接材料和安装信息随发行产物交付。
 
-7z 使用官方 7-Zip 源码，RAR 使用 UnRAR 源码，固定来源、裁剪和受控 I/O 要求见[原生后端契约](native-codecs.md)。CAB 与 ISO/UDF 使用[独立 Rust 实现](independent-rust-codecs.md)，官方 Cab/Iso/Udf 处理器及 CAB 专用 LZX/Quantum 不进入当前构建；包含它们的历史交付仍需履行原有义务。7-Zip 按实际编译文件保留 LGPL/BSD 等上游条款，UnRAR 保留专有用途限制及修改声明。它们不适用项目原创代码的 Apache-2.0，源码移植或 Rust 包装均不改变这一点。对应源码归档、构建桥接、许可原文与 SBOM 必须随相应交付材料保留，实验构建不替代正式许可复核。
+7z、CAB 与 ISO/UDF 使用[独立 Rust 实现](independent-rust-codecs.md)，官方 7-Zip 源码不进入当前产品构建或部署。RAR 继续使用附用途限制的 UnRAR，固定来源和受控 I/O 见[隔离后端契约](native-codecs.md)。分析来源、开发参考工具、历史官方后端交付分别保留原许可，独立实现不构成严格洁净室或法律风险清零声明。包含官方 7-Zip 的历史交付继续履行其 LGPL/BSD 等原始义务，不能因当前退出依赖而改标 Apache-2.0。UnRAR 的原条款和修改声明继续随实际源码、构建桥接、许可与 SBOM 交付，实验构建不替代正式许可复核。
 
 平台运行库专属通知、供应方输入和许可资格的核对遵循[原生运行库来源与通知](native-runtime-materials.md)，不以通用许可正文替代供应方版权声明。
 

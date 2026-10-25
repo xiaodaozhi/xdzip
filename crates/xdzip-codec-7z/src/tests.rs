@@ -3,6 +3,21 @@ use std::io::{self, Cursor as IoCursor, Read, Seek, SeekFrom};
 #[path = "decode_tests.rs"]
 mod decode_tests;
 
+#[test]
+fn readable_archive_properties_remain_marked_as_unpreservable_for_rewrite() {
+    for (properties, present) in [
+        (vec![2, 0], false),
+        (vec![2, 0x7f, 3, b'a', b'b', b'c', 0], true),
+        (vec![2, 0x7f, 0, 0], true),
+    ] {
+        let bytes = image(&[], &[vec![1], properties, vec![0]].concat());
+        let index = scan(&bytes).unwrap();
+        assert!(index.rows.is_empty());
+        assert_eq!(index.has_archive_properties, present);
+    }
+    assert!(!scan(&image(&[], &[1, 0])).unwrap().has_archive_properties);
+}
+
 fn number(mut n: u64) -> Vec<u8> {
     for extra in 0..8 {
         if n < (1u64 << (7 * (extra + 1))) {

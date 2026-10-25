@@ -734,6 +734,7 @@ fn execute(
         xdzip_codec_api::ScanError::MissingVolume => "missing_volume",
         xdzip_codec_api::ScanError::PasswordRequired => "password_required",
         xdzip_codec_api::ScanError::WrongPassword => "wrong_password",
+        xdzip_codec_api::ScanError::PasswordOrIntegrity => "password_or_integrity",
     };
     let (session, directory, text, offset, sort, query, generation, revision, replace_navigation) =
         match command {

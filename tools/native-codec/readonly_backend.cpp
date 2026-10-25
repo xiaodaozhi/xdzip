@@ -1,7 +1,7 @@
 // tools/native-codec/readonly_backend.cpp
 
 #include "protocol.hpp"
-#include "xdzip-readonly-bridge/src/lib.rs.h"
+#include "xdzip-codec-bridge/src/lib.rs.h"
 
 namespace xdzip {
 void readonly_run() {
@@ -18,7 +18,7 @@ void readonly_run() {
             put32(names, static_cast<std::uint32_t>(name.size()));
             names.insert(names.end(), name.begin(), name.end());
         }
-        const auto error = readonly_codec::run_cab(
+        const auto error = codec_bridge::run_cab(
             request.operation, request.length, request.selected, request.entries,
             request.name_bytes,
             rust::Slice<const std::uint64_t>(request.volumes.data(), request.volumes.size()),
@@ -29,8 +29,8 @@ void readonly_run() {
     }
     if (request.format == 9 || request.format == 10) {
         const auto error =
-            readonly_codec::run_optical(request.operation, request.format, request.length,
-                                        request.selected, request.entries, request.name_bytes);
+            codec_bridge::run_optical(request.operation, request.format, request.length,
+                                      request.selected, request.entries, request.name_bytes);
         if (error)
             throw Failure{error};
         return;

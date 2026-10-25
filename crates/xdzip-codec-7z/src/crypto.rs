@@ -6,6 +6,7 @@ use aes::cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use std::io::{self, Read, Write};
 use xdzip_codec_api::Cancellation;
 use xdzip_codec_api::payload::DecodeError;
+use xdzip_crypto::SecretSha256 as ErasedHash;
 use zeroize::{Zeroize, Zeroizing};
 
 const PASSWORD_BYTES: usize = 4096;
@@ -41,6 +42,109 @@ impl KdfBudget {
         Ok(())
     }
 }
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+struct KdfIdentity {
+    cycles: u8,
+    salt: [u8; 16],
+    salt_len: u8,
+}
+impl KdfIdentity {
+    fn of(properties: &AesProperties) -> Self {
+        let mut salt = [0; 16];
+        salt[..properties.salt.len()].copy_from_slice(&properties.salt);
+        Self {
+            cycles: properties.cycles,
+            salt,
+            salt_len: properties.salt.len() as u8,
+        }
+    }
+}
+
+/// A derived, erased-on-drop key bound to its exact KDF parameters. IV is not a
+/// KDF input. Its bytes are deliberately unavailable through the public API.
+pub struct AesKey {
+    identity: KdfIdentity,
+    bytes: Zeroizing<[u8; 32]>,
+}
+impl AesKey {
+    fn derive(
+        properties: &AesProperties,
+        password: Option<&str>,
+        control: &Cancellation,
+        budget: &mut KdfBudget,
+    ) -> Result<Self, DecodeError> {
+        Ok(Self {
+            identity: KdfIdentity::of(properties),
+            bytes: properties.derive_key(password, control, budget)?,
+        })
+    }
+}
+
+/// Bounded task-local KDF reuse. It never grants work credit or crosses a task.
+/// A changed password drops all old keys; replacing a slot erases its old key.
+pub struct AesKeyCache {
+    password: Option<Zeroizing<String>>,
+    keys: [Option<AesKey>; 16],
+    next: usize,
+}
+impl Default for AesKeyCache {
+    fn default() -> Self {
+        Self {
+            password: None,
+            keys: [const { None }; 16],
+            next: 0,
+        }
+    }
+}
+impl AesKeyCache {
+    /// Conservative admission for the owned password, fixed slots and metadata.
+    pub const MEMORY_BYTES: u64 = 16 * 1024;
+    /// A cache miss alone executes and admits the actual KDF work.
+    pub fn key(
+        &mut self,
+        properties: &AesProperties,
+        password: Option<&str>,
+        control: &Cancellation,
+        budget: &mut KdfBudget,
+    ) -> Result<&AesKey, DecodeError> {
+        check(control)?;
+        let password = password.ok_or(DecodeError::PasswordRequired)?;
+        if password.len() > PASSWORD_BYTES {
+            return Err(DecodeError::Limit);
+        }
+        if self
+            .password
+            .as_ref()
+            .is_none_or(|old| old.as_str() != password)
+        {
+            let mut owned = Zeroizing::new(String::new());
+            owned
+                .try_reserve_exact(password.len())
+                .map_err(|_| DecodeError::Limit)?;
+            owned.push_str(password);
+            self.keys = [const { None }; 16];
+            self.next = 0;
+            self.password = Some(owned);
+        }
+        let identity = KdfIdentity::of(properties);
+        let index = if let Some(index) = self
+            .keys
+            .iter()
+            .position(|key| key.as_ref().is_some_and(|key| key.identity == identity))
+        {
+            index
+        } else {
+            let key = AesKey::derive(properties, Some(password), control, budget)?;
+            let index = self.next;
+            self.keys[index] = Some(key);
+            self.next = (self.next + 1) % self.keys.len();
+            index
+        };
+        self.keys[index].as_ref().ok_or(DecodeError::Integrity)
+    }
+}
+
 impl AesProperties {
     /// Parse exact short or long properties, applying exponent admission uniformly.
     pub fn parse(bytes: &[u8]) -> Result<Self, DecodeError> {
@@ -134,68 +238,6 @@ impl AesProperties {
     }
 }
 
-// The admitted SHA-256 compression primitive supplies the cryptographic core.
-// This small streaming wrapper owns erasable state; it does not retain a
-// third-party opaque incremental buffer containing task password bytes.
-struct ErasedHash {
-    state: [u32; 8],
-    buffer: [u8; 64],
-    filled: usize,
-    bytes: u64,
-}
-impl ErasedHash {
-    fn new() -> Self {
-        Self {
-            state: [
-                0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
-                0x5be0cd19,
-            ],
-            buffer: [0; 64],
-            filled: 0,
-            bytes: 0,
-        }
-    }
-    fn update(&mut self, mut bytes: &[u8]) {
-        // The profile bounds this private input by 2^24 * (8192 + 16 + 8).
-        self.bytes += bytes.len() as u64;
-        while !bytes.is_empty() {
-            let count = bytes.len().min(64 - self.filled);
-            self.buffer[self.filled..self.filled + count].copy_from_slice(&bytes[..count]);
-            self.filled += count;
-            bytes = &bytes[count..];
-            if self.filled == 64 {
-                self.compress();
-                self.buffer.zeroize();
-                self.filled = 0;
-            }
-        }
-    }
-    #[allow(deprecated)] // Existing admitted SHA-2 0.10 uses generic-array 0.14.
-    fn compress(&mut self) {
-        let block = sha2::digest::generic_array::GenericArray::from_slice(&self.buffer);
-        sha2::compress256(&mut self.state, std::slice::from_ref(block));
-    }
-    fn finish(mut self) -> Zeroizing<[u8; 32]> {
-        let bits = self.bytes * 8;
-        self.update(&[0x80]);
-        let zeros = (120 - self.filled) % 64;
-        self.update(&[0; 64][..zeros]);
-        self.update(&bits.to_be_bytes());
-        let mut result = Zeroizing::new([0; 32]);
-        for (part, value) in result.as_chunks_mut::<4>().0.iter_mut().zip(self.state) {
-            part.copy_from_slice(&value.to_be_bytes());
-        }
-        result
-    }
-}
-impl Drop for ErasedHash {
-    fn drop(&mut self) {
-        self.state.zeroize();
-        self.buffer.zeroize();
-        self.filled.zeroize();
-        self.bytes.zeroize();
-    }
-}
 fn check(control: &Cancellation) -> Result<(), DecodeError> {
     control.check().map_err(|_| DecodeError::Cancelled)
 }
@@ -250,8 +292,29 @@ impl<'a, R: Read> AesReader<'a, R> {
         if !cipher_bytes.is_multiple_of(16) || cipher_bytes < minimum {
             return Err(DecodeError::Integrity);
         }
-        let key = properties.derive_key(password, control, budget)?;
-        let cipher = Aes256::new_from_slice(key.as_ref()).map_err(|_| DecodeError::Integrity)?;
+        let key = AesKey::derive(properties, password, control, budget)?;
+        Self::with_key(source, cipher_bytes, plain_bytes, properties, &key, control)
+    }
+    /// Reuse a task-local derived key only with the matching salt/exponent.
+    /// Complete cipher-span and plaintext-size admission remains mandatory.
+    pub fn with_key(
+        source: R,
+        cipher_bytes: u64,
+        plain_bytes: u64,
+        properties: &AesProperties,
+        key: &AesKey,
+        control: &'a Cancellation,
+    ) -> Result<Self, DecodeError> {
+        check(control)?;
+        let minimum = plain_bytes.checked_add(15).ok_or(DecodeError::Limit)? / 16 * 16;
+        if key.identity != KdfIdentity::of(properties)
+            || !cipher_bytes.is_multiple_of(16)
+            || cipher_bytes < minimum
+        {
+            return Err(DecodeError::Integrity);
+        }
+        let cipher =
+            Aes256::new_from_slice(key.bytes.as_ref()).map_err(|_| DecodeError::Integrity)?;
         Ok(Self {
             source,
             cipher,
@@ -404,8 +467,22 @@ impl<'a, W: Write> AesWriter<'a, W> {
         control: &'a Cancellation,
         budget: &mut KdfBudget,
     ) -> Result<Self, DecodeError> {
-        let key = properties.derive_key(password, control, budget)?;
-        let cipher = Aes256::new_from_slice(key.as_ref()).map_err(|_| DecodeError::Integrity)?;
+        let key = AesKey::derive(properties, password, control, budget)?;
+        Self::with_key(sink, properties, &key, control)
+    }
+    /// Reuse a task-local key while generating independent CBC chains per IV.
+    pub fn with_key(
+        sink: W,
+        properties: &AesProperties,
+        key: &AesKey,
+        control: &'a Cancellation,
+    ) -> Result<Self, DecodeError> {
+        check(control)?;
+        if key.identity != KdfIdentity::of(properties) {
+            return Err(DecodeError::Integrity);
+        }
+        let cipher =
+            Aes256::new_from_slice(key.bytes.as_ref()).map_err(|_| DecodeError::Integrity)?;
         Ok(Self {
             sink: Some(sink),
             cipher,
@@ -525,6 +602,90 @@ mod tests {
     }
     fn budget() -> KdfBudget {
         KdfBudget::new(1 << 24, 1024 * 1024 * 1024)
+    }
+
+    #[test]
+    fn task_key_cache_reuses_kdf_across_ivs_but_not_passwords_or_salts() {
+        let control = Cancellation::default();
+        let mut cache = AesKeyCache::default();
+        let mut budget = KdfBudget::new(1, 1024);
+        let plain = AesProperties::parse(&[0]).unwrap();
+        let mut bytes = vec![0x40, 15];
+        bytes.extend([7; 16]);
+        let changed_iv = AesProperties::parse(&bytes).unwrap();
+        let key = cache
+            .key(&plain, Some("task secret"), &control, &mut budget)
+            .unwrap();
+        let saved = *key.bytes;
+        assert_eq!(budget.remaining().0, 0);
+        let key = cache
+            .key(&changed_iv, Some("task secret"), &control, &mut budget)
+            .unwrap();
+        assert_eq!(*key.bytes, saved);
+        let mut writer = AesWriter::with_key(Vec::new(), &changed_iv, key, &control).unwrap();
+        writer.write_all(b"owned payload 123").unwrap();
+        let cipher = writer.finish().unwrap();
+        let mut reader = AesReader::with_key(
+            cipher.as_slice(),
+            cipher.len() as u64,
+            17,
+            &changed_iv,
+            key,
+            &control,
+        )
+        .unwrap();
+        let mut actual = Vec::new();
+        reader.read_to_end(&mut actual).unwrap();
+        reader.finish().unwrap();
+        assert_eq!(actual, b"owned payload 123");
+        let changed_salt = AesProperties::parse(&[0x80, 0, 1]).unwrap();
+        assert!(matches!(
+            AesWriter::with_key(Vec::new(), &changed_salt, key, &control),
+            Err(DecodeError::Integrity)
+        ));
+        assert!(matches!(
+            cache.key(&changed_salt, Some("task secret"), &control, &mut budget),
+            Err(DecodeError::Limit)
+        ));
+        assert!(matches!(
+            cache.key(&plain, Some("new secret"), &control, &mut budget),
+            Err(DecodeError::Limit)
+        ));
+        assert!(cache.keys.iter().all(Option::is_none));
+        assert!(matches!(
+            cache.key(&plain, None, &control, &mut budget),
+            Err(DecodeError::PasswordRequired)
+        ));
+    }
+
+    #[test]
+    fn key_cache_has_fixed_capacity_and_cancelled_hits_do_not_succeed() {
+        assert!(
+            std::mem::size_of::<AesKeyCache>() + PASSWORD_BYTES
+                <= AesKeyCache::MEMORY_BYTES as usize
+        );
+        let control = Cancellation::default();
+        let mut cache = AesKeyCache::default();
+        let mut budget = KdfBudget::new(100, 100_000);
+        for salt in 0..17 {
+            let properties = AesProperties::parse(&[0x80, 0, salt]).unwrap();
+            cache
+                .key(&properties, Some("p"), &control, &mut budget)
+                .unwrap();
+        }
+        assert_eq!(cache.keys.iter().flatten().count(), 16);
+        assert_eq!(budget.remaining().0, 83);
+        let properties = AesProperties::parse(&[0x80, 0, 0]).unwrap();
+        cache
+            .key(&properties, Some("p"), &control, &mut budget)
+            .unwrap();
+        assert_eq!(budget.remaining().0, 82);
+        control.cancel();
+        assert!(matches!(
+            cache.key(&properties, Some("p"), &control, &mut budget),
+            Err(DecodeError::Cancelled)
+        ));
+        assert_eq!(budget.remaining().0, 82);
     }
     // NIST SP 800-38A F.2.5/F.2.6, numerical AES-256-CBC example values.
     // https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf

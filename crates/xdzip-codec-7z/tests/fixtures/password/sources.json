@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "ownership": "Project-owned deterministic input. Official tool used only as independent archive author.",
+  "author": {
+    "version": "7-Zip 26.05",
+    "windows_x64_7za_sha256": "7ddf0a3bc451e166679296be630d6f0573eb386159c04184761c43020c484291"
+  },
+  "synthetic_password": "owned-graph-fixture-password",
+  "fixture": {
+    "file": "copy-aes.7z",
+    "bytes": 115018,
+    "sha256": "f49ff9a26d94d6bb5b6c5925691d1f59c980d851b6345185198d588b91cefe98"
+  },
+  "known_input": {
+    "first.bin": {
+      "bytes": 16391,
+      "formula": "byte[i] = (17*i + floor(i/251)) modulo 256",
+      "sha256": "978dac9b4e40ed870bced98c7dbb86ff75e68972b3b695559496c6ad6f81118a"
+    },
+    "nested/second.bin": {
+      "bytes": 98321,
+      "formula": "repeat ASCII solid-metadata-known followed by NUL, truncate to size",
+      "sha256": "b6b69d62f89f9d34d7dd2e32a3ef401d5452b09671bad7540b1cec1fb0ba1d14"
+    },
+    "zero.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "author_command": [
+    "a",
+    "-t7z",
+    "-bd",
+    "-y",
+    "-mmt=off",
+    "-ms=on",
+    "-m0=Copy",
+    "-mhc=off",
+    "-pPUBLIC_SYNTHETIC_PASSWORD",
+    "-mhe=off",
+    "OUTPUT",
+    "first.bin",
+    "nested/second.bin",
+    "zero.bin"
+  ]
+}

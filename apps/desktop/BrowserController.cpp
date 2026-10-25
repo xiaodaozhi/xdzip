@@ -246,6 +246,7 @@ QString BrowserController::explain(const QString &code) {
         {"unsafe_name", qtTrId("ui.c9aa9ad002f7")},
         {"invalid_password", qtTrId("ui.a35179e5025f")},
         {"wrong_password", qtTrId("password.attemptLimit")},
+        {"password_or_integrity", qtTrId("password.ambiguous")},
         {"password_required", qtTrId("password.waiting")},
         {"invalid_creation_options", qtTrId("ui.674e51a0a214")},
         {"split_overwrite_not_supported", qtTrId("ui.930e2ed5950e")},
@@ -1510,7 +1511,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         if (!event.error.empty())
             m_result.error = text(event.error);
         if (m_result.opening &&
-            (m_result.error == "password_required" || m_result.error == "wrong_password")) {
+            (m_result.error == "password_required" || m_result.error == "wrong_password" ||
+             m_result.error == "password_or_integrity")) {
             if (m_openPasswordGeneration == std::numeric_limits<quint64>::max()) {
                 m_result.error = "resource_limit";
             } else {
@@ -1518,7 +1520,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                         {"promptId", QString::number(++m_openPasswordGeneration)},
                                         {"name", m_title},
                                         {"kind", QStringLiteral("open")},
-                                        {"retry", m_result.error == "wrong_password"}};
+                                        {"retry", m_result.error != "password_required"}};
                 m_result = {};
                 m_message.clear();
                 emit changed();
