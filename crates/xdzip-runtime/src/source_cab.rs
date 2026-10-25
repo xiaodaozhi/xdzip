@@ -314,7 +314,12 @@ mod tests {
             source.fork().unwrap().validate().unwrap();
         }
         let source = fixture.open("middle.any").unwrap();
-        fixture.write("last.xyz", 43, 2, Some("middle.any"), None);
+        // Version checks are best-effort metadata checks, not content hashes.
+        // Change length so this assertion cannot depend on timestamp precision.
+        let final_part = fixture.0.join("last.xyz");
+        let mut changed = std::fs::read(&final_part).unwrap();
+        changed.extend_from_slice(b"changed later volume");
+        std::fs::write(final_part, changed).unwrap();
         assert_eq!(source.validate(), Err(ScanError::SourceChanged));
         assert!(matches!(source.fork(), Err(ScanError::SourceChanged)));
     }
