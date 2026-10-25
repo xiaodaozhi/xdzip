@@ -138,6 +138,7 @@ with sync_playwright() as p:
         screenshot(page, '10-create')
         expect(page.locator('#create-format-tar')).to_be_enabled()
         expect(page.locator('#create-format-gzip')).to_be_enabled()
+        expect(page.locator('#create-format-7z')).to_be_enabled()
         expect(page.locator('#create-level')).to_have_value('2')
         page.locator('#create-level-trigger').click()
         page.get_by_role('option', name='0-不压缩', exact=True).click()

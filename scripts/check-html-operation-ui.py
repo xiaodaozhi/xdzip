@@ -71,9 +71,21 @@ def main():
                             group = modal.locator('#create-format')
                             expect(group).to_have_attribute('role', 'radiogroup')
                             radios = group.locator('[role=radio]')
-                            expect(radios).to_have_count(3)
+                            formats = ['ZIP', 'TAR', 'TAR.GZ', '7z']
+                            expect(radios).to_have_count(len(formats))
+                            expect(radios).to_have_text(formats)
                             expect(radios.nth(0)).to_have_attribute('aria-checked', 'true')
-                            assert all(radios.nth(i).is_enabled() for i in [0,1,2])
+                            assert all(radios.nth(i).is_enabled() for i in range(len(formats)))
+                            segment_metrics = radios.evaluate_all('''nodes=>nodes.map(n=>{
+                                const r=n.getBoundingClientRect(),s=getComputedStyle(n);
+                                return {left:r.left,right:r.right,width:r.width,corners:[s.borderTopLeftRadius,s.borderTopRightRadius,s.borderBottomRightRadius,s.borderBottomLeftRadius].map(parseFloat)};
+                            })''')
+                            check(tag+'/equal segment widths', (max(s['width'] for s in segment_metrics)-min(s['width'] for s in segment_metrics))*ratio, 0, 1)
+                            for index, segment in enumerate(segment_metrics):
+                                for corner, expected in enumerate([(4,0,0,4), (0,0,0,0), (0,0,0,0), (0,4,4,0)][index]):
+                                    check(tag+f'/segment {index}/corner {corner}', segment['corners'][corner]*ratio, expected, .15)
+                                if index:
+                                    check(tag+f'/segment {index}/seam', (segment['left']-segment_metrics[index-1]['right'])*ratio, 0, .15)
                             for selector in ['#create-name','#create-destination','#create-volume-trigger','#create-level-trigger']:
                                 field = modal.locator(selector)
                                 shape = field.evaluate('n=>({radius:parseFloat(getComputedStyle(n).borderRadius),height:n.getBoundingClientRect().height})')
@@ -83,6 +95,29 @@ def main():
                                 gap = modal.locator(selector).evaluate('n=>n.getBoundingClientRect().right-n.querySelector("svg").getBoundingClientRect().right')
                                 check(tag+selector+'/right icon inset',gap*ratio,spec['controls']['selectIndicatorRightInset'],.15)
                             check(tag+'/segment height',group.bounding_box()['height']*ratio,28,1)
+                            radios.nth(0).focus()
+                            for index, suffix in [(1,'.tar'), (2,'.tar.gz'), (3,'.7z')]:
+                                page.keyboard.press('ArrowRight')
+                                expect(radios.nth(index)).to_be_focused()
+                                expect(radios.nth(index)).to_have_attribute('aria-checked','true')
+                                expect(modal.locator('#create-name')).to_have_value('旅行资料'+suffix)
+                                assert modal.locator('#create-volume-trigger').is_enabled() == (index == 3)
+                                assert modal.locator('#create-use-password').is_enabled() == (index == 3)
+                            expect(modal.locator('#create-solid')).not_to_be_checked()
+                            expect(modal.locator('#create-encrypt-header')).to_be_disabled()
+                            modal.locator('#create-use-password').check()
+                            expect(modal.locator('#create-encrypt-header')).to_be_enabled()
+                            modal.locator('#create-encrypt-header').check()
+                            modal.locator('#create-solid').check()
+                            modal.locator('#create-use-password').uncheck()
+                            expect(modal.locator('#create-encrypt-header')).not_to_be_checked()
+                            expect(modal.locator('#create-encrypt-header')).to_be_disabled()
+                            radios.nth(0).click()
+                            expect(modal.locator('#create-header-row')).to_be_hidden()
+                            expect(modal.locator('#create-solid-row')).to_be_hidden()
+                            radios.nth(3).click()
+                            expect(modal.locator('#create-solid')).not_to_be_checked()
+                            expect(modal.locator('#create-encrypt-header')).not_to_be_checked()
                         for i, size in enumerate(metrics['notes']):
                             check(tag+f'/footer note {i}', size * ratio, spec['footer']['noteSize'])
                         if kind == 'progress':

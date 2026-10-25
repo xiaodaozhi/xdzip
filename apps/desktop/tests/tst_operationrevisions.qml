@@ -12,7 +12,7 @@ Item {
     Ui.OperationSegmentedGroup {
         id: segments; x: 20; y: 80; width: 300
         objectName: "formats"
-        options: [{text: "ZIP"}, {text: "TAR"}, {text: "TAR.GZ"}]
+        options: [{text: "ZIP"}, {text: "TAR"}, {text: "TAR.GZ"}, {text: "7z"}]
     }
     Ui.InspectorPanel {
         id: inspector; x: 330; width: 260; height: 380
@@ -68,7 +68,7 @@ Item {
         function test_segment_painted_corners_data() {
             const rows = [];
             for (const dark of [false, true])
-                for (const index of [0, 2])
+                for (const index of [0, segments.options.length - 1])
                     for (const state of ["normal", "hover", "pressed"])
                         rows.push({tag: (dark ? "dark" : "light") + "-" + index + "-" + state, index: index, dark: dark, state: state});
             return rows;

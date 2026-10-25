@@ -51,6 +51,8 @@ def main():
                         for selector in ['#create-name','#create-destination','#create-level-trigger','#create-volume-trigger']:
                             check(tag+selector+'/height',frame.locator(selector).bounding_box()['height'],28)
                         radios=frame.locator('#create-format [role=radio]')
+                        expect(radios).to_have_count(4)
+                        expect(radios).to_have_text(['ZIP', 'TAR', 'TAR.GZ', '7z'])
                         radios.nth(0).focus();page.keyboard.press('ArrowRight')
                         expect(radios.nth(1)).to_be_focused();expect(radios.nth(1)).to_have_attribute('aria-checked','true')
                         expect(frame.locator('#create-name')).to_have_value('旅行资料.tar')
@@ -82,6 +84,8 @@ def main():
                         # bounding_box includes the review iframe's source-to-logical transform.
                         # Unlike computed CSS corner radii above, these distances are already logical.
                         group_box = frame.locator('#create-format').bounding_box()
+                        widths = [radios.nth(i).bounding_box()['width'] for i in range(4)]
+                        check(tag+'/four equal segment widths', max(widths)-min(widths), 0, 1)
                         first_box, last_box = radios.first.bounding_box(), radios.last.bounding_box()
                         check(tag+'/segment outer left inset', first_box['x']-group_box['x'], 1, .15)
                         check(tag+'/segment outer right inset', group_box['x']+group_box['width']-last_box['x']-last_box['width'], 1, .15)

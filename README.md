@@ -53,7 +53,7 @@
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
 - **7z**：使用官方 7-Zip 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[官方后端契约](docs/engineering/native-codecs.md)。
-- **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 的全部 LZ 参数组合兼容性尚未完成实样验证，字典超出资源预算时明确拒绝。具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
+- **RAR**：使用官方 UnRAR 后端，读取旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名。只提供浏览、解压和测试，不提供创建或修改；RAR 7 已验证 Store 内容及超预算字典拒绝，LZ 压缩流尚缺少独立实样互操作验证，字典超出资源预算时明确拒绝。具体边界见[官方后端契约](docs/engineering/native-codecs.md)。
 
 创建和加入文件会排除上述 macOS 元数据，过滤后没有有效内容则失败，原文件和已有压缩包保持不变。新写入的多语言名称使用 UTF-8；读取历史包会优先采用 Unicode 声明，再自适应 GBK/GB18030、Big5、Shift-JIS 等旧编码，并贯通浏览、解压与普通包修改。短名称或混合旧编码无法保证唯一识别，损坏声明及异常路径继续拒绝输出，详见[文件名编码契约](docs/engineering/filename-encoding.md)。
 
