@@ -6,11 +6,15 @@
     },
     {
       "package": "xdzip-compression",
-      "forbidden_runtime_dependencies": ["flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+      "forbidden_runtime_dependencies": ["flate2", "miniz_oxide", "zlib-rs", "libz-sys", "bzip2", "bzip2-sys", "lzma-rs", "lzma-sys", "liblzma", "xz2", "ppmd-rust", "ppmd-sys"]
     },
     {
       "package": "xdzip-codec-zip",
       "forbidden_runtime_dependencies": ["rawzip", "zip", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-codec-7z",
+      "forbidden_runtime_dependencies": ["sevenz-rust", "sevenz-rust2", "sevenz-rust-sys", "libarchive", "libarchive3-sys", "bzip2", "bzip2-sys", "lzma-rs", "lzma-sys", "liblzma", "xz2", "ppmd-rust", "ppmd-sys", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
       "package": "xdzip-codec-cab",

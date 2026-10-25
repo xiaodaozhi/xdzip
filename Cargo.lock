@@ -1474,6 +1474,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "xdzip-codec-7z"
+version = "0.1.0-alpha.6"
+dependencies = [
+ "aes",
+ "getrandom 0.4.2",
+ "sha2",
+ "xdzip-codec-api",
+ "xdzip-compression",
+ "xdzip-domain",
+ "zeroize",
+]
+
+[[package]]
 name = "xdzip-codec-api"
 version = "0.1.0-alpha.6"
 dependencies = [

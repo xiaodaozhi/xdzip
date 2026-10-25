@@ -63,6 +63,20 @@ ZIP 的 EOCD、ZIP64、中央/本地头、额外字段及描述符依据 [PKWARE
 
 `rawzip`、`zip`、`flate2` 仅作测试参照，已迁移 ZIP 的普通及构建依赖闭包禁止这些格式和算法库回流。测试参照的许可继续保留，容器可读取不等于所有声明方法都可解码。
 
+## 7z候选规格
+
+`xdzip-codec-7z` 是与产品路由分离的自研候选 crate。当前产品仍使用官方 7-Zip，不因工作区中存在候选代码而切换或回退。候选容器处理方法图、压缩头、外部属性、子流、UTF-16LE 原始名称与物理 EntryId，图执行器调用共享算法及独立 AES 封装，不取得路径或发布权限。规范、参考分析角色和许可区分见[7z 来源](sevenzip-format-sources.md)。
+
+当前图执行采用有界物化策略，终端 folder 与累计缓存各最多 256 MiB；元数据、全部中间输出、packed 缓冲、字典、模型、缓存及工作区合计在分配前按 1 GiB 准入。每节点尺寸、完整 EOF、pack/folder/substream CRC 分别核对，整 folder 验证后才交付文件。缓存只是候选验证策略，不能以此缩小既有大文件/固实能力并宣称完成迁移；流式大固实、剩余方法、创建、修改、密码与分卷的产品全链路仍须通过完整替代门槛。
+
+Header、Additional 与 payload 共享任务解码预算。终端输出才计入宿主实际解码工作，包含未选区间；中间节点另有累计工作上限，不能把 AES、解压及过滤器每层输出重复计作同一文件的宿主工作。AES KDF 另以累计轮数和 hash 输入字节准入，失败或重试不返还额度，不以输出配额换取无界哈希。密码、密钥、owned hash 状态及候选内容缓冲使用归零生命周期，不宣称能擦除 Qt 或系统的所有历史副本。
+
+LZMA1/2、BZip2 与既有共享 Deflate 位于 `xdzip-compression`，其生产依赖仍为空；不再引入相应压缩算法库。LZMA2 writer 支持有界搜索级别 1/6/9，在单 chunk 无收益时用格式允许的 raw 回退，不将只有 raw 分块的封装标记为已完成压缩器。共享 Reader 显式限制 packed 范围，只有已验证完整终态才返回成功 EOF，错误后不能继续。`Read` 的输出分片上限不代表单个 block 或模型操作具有相同 CPU 上界。
+
+AES 使用已准入的通用 AES、SHA-256、随机数及 zeroize 原语。独立实现格式属性、UTF-16LE 密码 KDF、CBC 组合及块裁剪，不引入 7z 格式库。CBC 本身没有认证能力，容器仍须完成实际提供的 CRC 及尺寸校验；不能把任意完整性失败冒充确定的错误密码。创建 profile、秘密清理和最终发布仍需宿主全链路验收。
+
+English: The independent 7z crate is a candidate with no production route. Its current complete-folder materialization is limited to 256 MiB and is not the final large-solid capability. All node termination, sizes and available CRCs are checked before delivery. Terminal work, intermediate work and cumulative AES KDF admission are separate. Shared compression has no third-party production dependencies; admitted generic cryptographic primitives do not implement the container. Full existing read/write, solid, password, split, rewrite, host and platform acceptance is required before replacement.
+
 ## CAB只读候选规格
 
 `xdzip-codec-cab` 是自研只读候选后端，范围为 Store、MSZIP、LZX、Quantum 和宿主已经授权的同目录卷链。默认产品仍使用官方 CAB；CMake 的 `XDZIP_RUST_CAB_TEST_ROUTE` 默认关闭，设为 `ON` 仅供专用测试构建。开关改变测试构建的固定路由，失败不会静默回退；候选代码存在不表示已完成产品切换或官方 CAB 已退出依赖闭包。迁移门槛仍适用本契约，验收记录另由[任务 #48](https://github.com/xiaodaozhi/xdzip/issues/48)维护。
