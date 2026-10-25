@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import struct
 import subprocess
 import tempfile
 import threading
@@ -206,6 +207,44 @@ def check_aes_profile(archive, method):
         assert method in nonempty_methods
 
 
+def write_zip64_disk_sentinel_fixture(archive, source, method):
+    """Preserve independently written records; replace only their ZIP footer."""
+    with zipfile.ZipFile(archive, 'w', compression=method) as stream:
+        stream.write(source, 'input/')
+        for path in sorted(source.rglob('*')):
+            stream.write(path, 'input/'+path.relative_to(source).as_posix())
+    with zipfile.ZipFile(archive) as stream:
+        records = stream.infolist()
+        expected_names = {'input/'} | {
+            'input/'+path.relative_to(source).as_posix()+('/' if path.is_dir() else '')
+            for path in source.rglob('*')
+        }
+        assert len(records) == len(expected_names)
+        assert {entry.filename for entry in records} == expected_names
+        assert stream.testzip() is None
+        for entry in records:
+            if not entry.is_dir():
+                assert stream.read(entry) == (source.parent/entry.filename).read_bytes()
+                assert entry.compress_type == method
+    original = archive.read_bytes()
+    end = bytearray(original[-22:])
+    assert end[:4] == b'PK\x05\x06'
+    disk, central_disk, on_disk, count, size, offset, comment = struct.unpack_from('<HHHHIIH', end, 4)
+    assert disk == central_disk == comment == 0
+    assert on_disk == count == len(records) < 0xffff
+    assert offset + size == len(original) - 22
+    zip64_at = len(original) - 22
+    zip64 = struct.pack('<4sQHHIIQQQQ', b'PK\x06\x06', 44, 45, 45, 0, 0,
+                        count, count, size, offset)
+    locator = struct.pack('<4sIQI', b'PK\x06\x07', 0, zip64_at, 1)
+    struct.pack_into('<HHHHII', end, 4, 0xffff, 0xffff, 0xffff, 0xffff, 0xffffffff, 0xffffffff)
+    archive.write_bytes(original[:-22] + zip64 + locator + end)
+    with zipfile.ZipFile(archive) as stream:
+        assert len(stream.infolist()) == count
+        assert set(stream.namelist()) == expected_names
+        assert stream.testzip() is None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--binary', type=Path, required=True)
@@ -303,6 +342,12 @@ def main():
                        '-v64k', '-p', str(split_external), 'input'], external_password, cwd=root)
             extract_with_xdzip(Path(str(split_external)+'.002'), root/f'external-split-decoded-{method}', external_password)
             cases.append(dict(method=method, direction='7zip_to_xdzip', split=True, encrypted=True, all_bytes=True, passed=True))
+            python_zip64 = root/f'python-zip64-{method}.zip'
+            write_zip64_disk_sentinel_fixture(python_zip64, source, method)
+            extract_with_xdzip(python_zip64, root/f'python-zip64-decoded-{method}', None)
+            cases.append(dict(method=method, direction='python_zip64_to_xdzip',
+                              classic_disk_sentinels=True, all_bytes=True,
+                              python_crc_verified=True, passed=True))
             if args.skip_infozip:
                 skipped.append(dict(method=method, direction='infozip_to_xdzip', split=True, layout='pkzip',
                                     executed=False, reason='Explicit --skip-infozip: Windows reference tool is not installed'))

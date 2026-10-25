@@ -79,7 +79,8 @@ impl RewriteCodec for ZipCodec {
             .map(|record| record.local_offset)
             .collect();
         offsets.sort_unstable();
-        if offsets.first().is_some_and(|offset| *offset != 0)
+        // With no local records, the absolute directory start still exposes any prefix.
+        if offsets.first().copied().unwrap_or(directory.central_offset) != 0
             || offsets.windows(2).any(|pair| pair[0] == pair[1])
         {
             return Err(EncodeError::Unsupported);
@@ -301,6 +302,117 @@ mod tests {
     }
     fn put64(bytes: &mut [u8], at: usize, value: u64) {
         bytes[at..at + 8].copy_from_slice(&value.to_le_bytes());
+    }
+    fn empty_fixture(prefix: &[u8], absolute: bool, comment: &[u8]) -> Vec<u8> {
+        let mut end = [0; 22];
+        end[..4].copy_from_slice(b"PK\x05\x06");
+        put32(&mut end, 16, if absolute { prefix.len() as u32 } else { 0 });
+        put16(&mut end, 20, comment.len() as u16);
+        let mut bytes = prefix.to_vec();
+        bytes.extend_from_slice(&end);
+        bytes.extend_from_slice(comment);
+        bytes
+    }
+    struct Addition {
+        entries: Vec<EncodeEntry>,
+    }
+    impl Addition {
+        fn new() -> Self {
+            Self {
+                entries: vec![EncodeEntry {
+                    name: "added.txt".into(),
+                    directory: false,
+                    size: 3,
+                    modified_unix: 0,
+                }],
+            }
+        }
+    }
+    impl EncodeInput for Addition {
+        fn entries(&self) -> &[EncodeEntry] {
+            &self.entries
+        }
+        fn open(&self, index: usize) -> Result<Box<dyn Read + '_>, EncodeError> {
+            if index != 0 {
+                return Err(EncodeError::Invalid);
+            }
+            Ok(Box::new(Cursor::new(b"abc")))
+        }
+    }
+    #[test]
+    fn empty_archives_preserve_comments_and_accept_additions() {
+        let addition = Addition::new();
+        for comment in [b"".as_slice(), b"archive comment"] {
+            for additions in [&Empty as &dyn EncodeInput, &addition] {
+                let mut output = Cursor::new(Vec::new());
+                ZipCodec
+                    .rewrite(
+                        &mut Cursor::new(empty_fixture(b"", false, comment)),
+                        RewriteInput {
+                            keep: &[],
+                            renames: &[],
+                            additions,
+                            settings: settings(),
+                        },
+                        &mut output,
+                        &Cancellation::default(),
+                        &mut |_| {},
+                    )
+                    .unwrap();
+                let mut archive = zip::ZipArchive::new(Cursor::new(output.into_inner())).unwrap();
+                assert_eq!(archive.comment(), comment);
+                assert_eq!(archive.len(), additions.entries().len());
+                if !additions.entries().is_empty() {
+                    let mut file = archive.by_index(0).unwrap();
+                    assert_eq!(file.name().unwrap(), "added.txt");
+                    let mut bytes = Vec::new();
+                    file.read_to_end(&mut bytes).unwrap();
+                    assert_eq!(bytes, b"abc");
+                }
+            }
+        }
+    }
+    #[test]
+    fn empty_archives_with_relative_or_absolute_prefix_offsets_are_refused() {
+        let addition = Addition::new();
+        for prefix in [b"MZstub".as_slice(), b"opaque prefix"] {
+            for absolute in [false, true] {
+                for comment in [b"".as_slice(), b"archive comment"] {
+                    let original = empty_fixture(prefix, absolute, comment);
+                    let directory = read_directory(
+                        &mut Cursor::new(&original),
+                        &Cancellation::default(),
+                        ScanLimits::default(),
+                    )
+                    .unwrap();
+                    assert!(directory.records.is_empty());
+                    assert_eq!(directory.central_offset, prefix.len() as u64);
+                    assert_eq!(
+                        directory.base_offset,
+                        if absolute { 0 } else { prefix.len() as u64 }
+                    );
+                    for additions in [&Empty as &dyn EncodeInput, &addition] {
+                        let mut output = Cursor::new(Vec::new());
+                        assert_eq!(
+                            ZipCodec.rewrite(
+                                &mut Cursor::new(&original),
+                                RewriteInput {
+                                    keep: &[],
+                                    renames: &[],
+                                    additions,
+                                    settings: settings(),
+                                },
+                                &mut output,
+                                &Cancellation::default(),
+                                &mut |_| {},
+                            ),
+                            Err(EncodeError::Unsupported)
+                        );
+                        assert!(output.into_inner().is_empty());
+                    }
+                }
+            }
+        }
     }
     // Owned APPNOTE byte fixture: different local/central extras, Unicode Path, optional signed ZIP64 descriptor.
     fn fixture(wide: bool, signed: bool, comment: &[u8]) -> Vec<u8> {

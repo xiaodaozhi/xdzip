@@ -244,18 +244,20 @@ fn footer(
     end_at: u64,
     control: &Cancellation,
 ) -> Result<Footer, ScanError> {
-    super::admission::single_volume(
-        u32::from(n16(end, 4)),
-        u32::from(n16(end, 6)),
-        u64::from(n16(end, 8)),
-        u64::from(n16(end, 10)),
-    )?;
     let mut locator = [0; 20];
     let locator_at = end_at.checked_sub(20);
     if let Some(at) = locator_at {
         read_exact_at(source, at, &mut locator)?;
     }
     if &locator[..4] != b"PK\x06\x07" {
+        // Without ZIP64, disk placeholders cannot be resolved. A count of exactly
+        // 65,535 remains a valid classic single-volume archive, not an implicit sentinel.
+        super::admission::single_volume(
+            u32::from(n16(end, 4)),
+            u32::from(n16(end, 6)),
+            u64::from(n16(end, 8)),
+            u64::from(n16(end, 10)),
+        )?;
         if n32(end, 12) == u32::MAX || n32(end, 16) == u32::MAX {
             return Err(ScanError::Invalid);
         }
@@ -282,7 +284,16 @@ fn footer(
     let count = n64(&zip64, 32);
     let size = n64(&zip64, 40);
     let offset = n64(&zip64, 48);
-    if (n16(end, 10) != u16::MAX && u64::from(n16(end, 10)) != count)
+    // APPNOTE 4.4.19-4.4.22 permits each classic disk/count field independently
+    // to defer to ZIP64. Every non-sentinel declaration must match its true value.
+    if [
+        (4, u64::from(n32(&zip64, 16))),
+        (6, u64::from(n32(&zip64, 20))),
+        (8, n64(&zip64, 24)),
+        (10, count),
+    ]
+    .into_iter()
+    .any(|(field, actual)| n16(end, field) != u16::MAX && u64::from(n16(end, field)) != actual)
         || (n32(end, 12) != u32::MAX && u64::from(n32(end, 12)) != size)
         || (n32(end, 16) != u32::MAX && u64::from(n32(end, 16)) != offset)
     {
@@ -555,6 +566,76 @@ mod tests {
         let locator = corrupt.len() - 42;
         corrupt[locator + 8..locator + 16].copy_from_slice(&(zip64 as u64 + 1).to_le_bytes());
         assert!(matches!(directory(&corrupt), Err(ScanError::Invalid)));
+    }
+    #[test]
+    fn zip64_classic_disk_and_count_sentinels_are_independent() {
+        for count in [0, 1] {
+            let original = crate::zip64_fixture::archive(count);
+            for mask in 0..16 {
+                let mut bytes = original.clone();
+                let end = bytes.len() - 22;
+                for (bit, field, actual) in [(1, 4, 0), (2, 6, 0), (4, 8, count), (8, 10, count)] {
+                    let value = if mask & bit == 0 {
+                        actual as u16
+                    } else {
+                        u16::MAX
+                    };
+                    bytes[end + field..end + field + 2].copy_from_slice(&value.to_le_bytes());
+                }
+                for prefix in [b"".as_slice(), b"MZ owned SFX prefix".as_slice()] {
+                    let source = [prefix, bytes.as_slice()].concat();
+                    let parsed = directory(&source)
+                        .unwrap_or_else(|error| panic!("count={count} mask={mask}: {error:?}"));
+                    assert_eq!(parsed.records.len(), count);
+                    assert_eq!(parsed.base_offset, prefix.len() as u64);
+                }
+            }
+        }
+    }
+    #[test]
+    fn zip64_non_sentinel_classic_disk_and_count_conflicts_are_invalid() {
+        for field in [4, 6, 8, 10] {
+            let mut bytes = crate::zip64_fixture::archive(1);
+            let end = bytes.len() - 22;
+            let value: u16 = if field < 8 { 1 } else { 0 };
+            bytes[end + field..end + field + 2].copy_from_slice(&value.to_le_bytes());
+            assert!(
+                matches!(directory(&bytes), Err(ScanError::Invalid)),
+                "field={field}"
+            );
+        }
+    }
+    #[test]
+    fn zip64_real_multivolume_values_remain_unsupported() {
+        for field in [16, 20, 24, 32] {
+            let mut bytes = crate::zip64_fixture::archive(1);
+            let end = bytes.len() - 22;
+            for classic in [4, 6, 8, 10] {
+                bytes[end + classic..end + classic + 2].copy_from_slice(&u16::MAX.to_le_bytes());
+            }
+            let wide = bytes.len() - 98;
+            if field < 24 {
+                bytes[wide + field..wide + field + 4].copy_from_slice(&1u32.to_le_bytes());
+            } else {
+                bytes[wide + field..wide + field + 8].copy_from_slice(&2u64.to_le_bytes());
+            }
+            assert!(
+                matches!(directory(&bytes), Err(ScanError::Unsupported)),
+                "field={field}"
+            );
+        }
+    }
+    #[test]
+    fn classic_disk_placeholders_without_zip64_are_unsupported() {
+        for field in [4, 6] {
+            let mut bytes = classic();
+            let end = bytes.len() - 22;
+            bytes[end + field..end + field + 2].copy_from_slice(&u16::MAX.to_le_bytes());
+            assert!(
+                matches!(directory(&bytes), Err(ScanError::Unsupported)),
+                "field={field}"
+            );
+        }
     }
     #[test]
     fn zip64_optional_fields_follow_sentinels_in_specification_order() {

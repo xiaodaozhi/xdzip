@@ -34,10 +34,28 @@ fn read(s: &mut dyn ReadSource, at: u64, size: usize) -> Result<Vec<u8>, ScanErr
     s.read_exact(&mut bytes).map_err(|_| ScanError::Invalid)?;
     Ok(bytes)
 }
-/// Inspect the final record without searching earlier embedded archive records.
+/// Discover the last disk from the final record and its optional ZIP64 locator.
+/// This bounded probe does not validate the directory or the ZIP64 end record;
+/// callers must still normalize and scan the authorized source streams.
 pub fn end_disk(s: &mut dyn ReadSource) -> Result<u32, ScanError> {
-    let (_, b) = end(s)?;
-    Ok(u32::from(n16(&b, 4)))
+    let (at, b) = end(s)?;
+    let disk = n16(&b, 4);
+    if disk != u16::MAX {
+        return Ok(u32::from(disk));
+    }
+    let locator_at = at.checked_sub(20).ok_or(ScanError::Invalid)?;
+    let locator = read(s, locator_at, 20)?;
+    if &locator[..4] != b"PK\x06\x07" {
+        return Err(ScanError::Invalid);
+    }
+    let disks = n32(&locator, 16);
+    if disks == 0 {
+        return Err(ScanError::Invalid);
+    }
+    if disks > 1024 {
+        return Err(ScanError::Limit);
+    }
+    Ok(disks - 1)
 }
 fn end(s: &mut dyn ReadSource) -> Result<(u64, Vec<u8>), ScanError> {
     let len = s.seek(SeekFrom::End(0)).map_err(|_| ScanError::Io)?;
@@ -261,6 +279,64 @@ mod tests {
         let lengths = [10, bytes.len() as u64 - 10];
         (bytes, lengths)
     }
+    fn discovery_zip64(disks: u32) -> Vec<u8> {
+        let mut bytes = crate::zip64_fixture::archive(1);
+        let end = bytes.len() - 22;
+        let locator = end - 20;
+        set16(&mut bytes, end + 4, u16::MAX);
+        set32(&mut bytes, locator + 16, disks);
+        bytes
+    }
+    #[test]
+    fn zip64_disk_placeholder_uses_bounded_locator_count_for_discovery() {
+        for disks in [1, 2, 9, 1024] {
+            assert_eq!(
+                end_disk(&mut Cursor::new(discovery_zip64(disks))),
+                Ok(disks - 1)
+            );
+        }
+        // Discovery reads the adjacent locator only, without following its offset
+        // into a ZIP64 record or trying to infer an SFX correction.
+        let bytes = discovery_zip64(1);
+        assert_eq!(
+            end_disk(&mut Cursor::new(&bytes[bytes.len() - 42..])),
+            Ok(0)
+        );
+    }
+    #[test]
+    fn zip64_disk_placeholder_requires_a_present_valid_admitted_locator() {
+        assert_eq!(
+            end_disk(&mut Cursor::new(discovery_zip64(0))),
+            Err(ScanError::Invalid)
+        );
+        for disks in [1025, u32::MAX] {
+            assert_eq!(
+                end_disk(&mut Cursor::new(discovery_zip64(disks))),
+                Err(ScanError::Limit)
+            );
+        }
+        let mut bad = discovery_zip64(1);
+        let locator = bad.len() - 42;
+        bad[locator] ^= 1;
+        assert_eq!(end_disk(&mut Cursor::new(bad)), Err(ScanError::Invalid));
+        let mut missing = crate::zip64_fixture::classic(1);
+        let end = missing.len() - 22;
+        set16(&mut missing, end + 4, u16::MAX);
+        assert_eq!(end_disk(&mut Cursor::new(missing)), Err(ScanError::Invalid));
+        let mut short = vec![0; 22];
+        short[..4].copy_from_slice(b"PK\x05\x06");
+        set16(&mut short, 4, u16::MAX);
+        assert_eq!(end_disk(&mut Cursor::new(short)), Err(ScanError::Invalid));
+    }
+    #[test]
+    fn classic_disk_discovery_keeps_non_sentinel_values_without_parsing_zip64() {
+        for disk in [0, 1, 1023, u16::MAX - 1] {
+            let mut bytes = discovery_zip64(0);
+            let end = bytes.len() - 22;
+            set16(&mut bytes, end + 4, disk);
+            assert_eq!(end_disk(&mut Cursor::new(bytes)), Ok(u32::from(disk)));
+        }
+    }
     #[test]
     fn ordinary_comments_survive_normalization_and_the_independent_directory_parser() {
         let comment = b"owned comment with a PK\x05\x06 marker";
@@ -294,6 +370,14 @@ mod tests {
         set32(&mut shadow, 16, (shadow_at - lengths[0] as usize) as u32);
         bytes[shadow_at..].copy_from_slice(&shadow);
         assert_eq!(end_disk(&mut Cursor::new(&bytes)), Err(ScanError::Invalid));
+        let mut sentinel = bytes.clone();
+        let original_end = sentinel.len() - 44;
+        set16(&mut sentinel, original_end + 4, u16::MAX);
+        set16(&mut sentinel, shadow_at + 4, u16::MAX);
+        assert_eq!(
+            end_disk(&mut Cursor::new(sentinel)),
+            Err(ScanError::Invalid)
+        );
         assert!(matches!(
             normalize(&mut Cursor::new(bytes), &lengths, &Default::default()),
             Err(ScanError::Invalid)
