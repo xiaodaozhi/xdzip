@@ -7,6 +7,8 @@
 
 namespace xdzip {
 void readonly_run() {
+    if (request.operation != 0 && request.operation != 1 && request.operation != 3)
+        throw Failure{3};
 #if defined(XDZIP_RUST_CAB_TEST_ROUTE)
     // This opt-in is confined to dedicated test builds. Normal product builds
     // retain the official route until the independent CAB acceptance is met.
@@ -40,8 +42,6 @@ void readonly_run() {
         return;
     }
     seven_registry_check();
-    if (request.operation == 2)
-        throw Failure{3};
     if (request.format == 8) {
         auto handler = new NArchive::NCab::CHandler;
         CMyComPtr<IInArchive> archive = handler;
