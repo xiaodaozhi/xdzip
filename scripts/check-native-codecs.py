@@ -123,7 +123,7 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
 
 def rar_fixtures(worker):
     base = ROOT / 'tests/fixtures/native-archives'
-    manifest = json.loads((base / 'sources.json').read_text())
+    manifest = json.loads((base / 'sources.json').read_text(encoding='utf-8'))
     for item in manifest['fixtures']:
         if hashlib.sha256((base / item['file']).read_bytes()).hexdigest() != item['sha256']:
             raise WorkerError('fixture_identity')
@@ -170,6 +170,17 @@ def rar_fixtures(worker):
     else:
         raise WorkerError('rar7_dictionary_limit_not_enforced')
     results.append(dict(case='rar7_dictionary_admission', status='passed'))
+    modern = next(item for item in manifest['fixtures'] if item['file'] == 'rar-7.23-rar5-compatible.rar')
+    expected = (modern['input']['text'] * modern['input']['repeat']).encode('utf-8')
+    assert len(expected) == modern['input']['bytes'], 'modern_rar_input_size'
+    assert hashlib.sha256(expected).hexdigest() == modern['input']['sha256'], 'modern_rar_input_identity'
+    parts = [(base / modern['file']).read_bytes()]
+    rows, _ = run_worker(worker, parts, format_id=4)
+    assert len(rows) == 1 and rows[0]['method'] == 50 and rows[0]['name'] == modern['input']['name'], 'modern_rar_compatible_algorithm'
+    assert rows[0]['packed'] == modern['archive_entry']['packed_bytes'], 'modern_rar_compressed_bytes'
+    _, decoded = run_worker(worker, parts, selected=0, format_id=4)
+    assert decoded == expected and hashlib.sha256(decoded).hexdigest() == modern['input']['sha256'], 'modern_rar_decoded_identity'
+    results.append(dict(case='rar_7_23_rar5_compatible_compressed', unpack_version=50, decoded_bytes=len(decoded), status='passed'))
     return results
 
 

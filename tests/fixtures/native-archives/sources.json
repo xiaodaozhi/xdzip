@@ -97,6 +97,36 @@
       "generator": "scripts/generate-rar7-fixtures.py",
       "license": "Apache-2.0",
       "sha256": "69892ba9775dde92e4f0d486d766c7d44b973ddfa4530eeca5b5396defb15c0f"
+    },
+    {
+      "file": "rar-7.23-rar5-compatible.rar",
+      "origin": "Official RAR 7.23 compressed project-owned deterministic UTF-8 input; RAR5-compatible algorithm 0, unpack version 50.",
+      "license": "Apache-2.0",
+      "sha256": "33f2cf73be018cec8d489e76b4e055e2d50a95fe9b6c9646903a77ff8aca29bd",
+      "tool": {
+        "name": "RAR",
+        "version": "7.23 Windows x64",
+        "distribution_url": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+        "member": "Rar.exe",
+        "sha256": "f561764bc3e9ed208744321a89a819b562edeaf06e203c02a06976121fda1991"
+      },
+      "command": ["Rar.exe", "a", "-cfg-", "-m5", "-md4m", "-mcl+", "-mt1", "-idq", "-y", "-tsm-", "rar-7.23-rar5-compatible.rar", "sample.txt"],
+      "input": {
+        "name": "sample.txt",
+        "encoding": "UTF-8 without BOM",
+        "text": "xdzip RAR newest compressed algorithm verification. 0123456789 中文。\n",
+        "repeat": 16000,
+        "bytes": 1168000,
+        "sha256": "245346f1b27f5a7ec5ba82856e7ec94628c0ed2b12add17a8489e4a8fbc7e9db"
+      },
+      "archive_entry": {
+        "unpack_version": 50,
+        "compression_algorithm": 0,
+        "compression_method": 5,
+        "dictionary_bytes": 2097152,
+        "packed_bytes": 164
+      },
+      "verification": "Official UnRAR 7.23 t passed; project native worker output matches the generated input byte for byte. Independent repeat creation with timestamps disabled produced the same archive hash."
     }
   ]
 }
