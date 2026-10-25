@@ -36,6 +36,10 @@ RAR 官方技术说明不完整，解码算法缺口须记录并进行专项许�
 
 共享公开接口为 `DeflateReader`、`DeflateWriter`、`GzipReader`、`GzipWriter` 与增量 `Crc32`。ZIP 与 GZIP 使用同一套 Deflate 编解码器。裸流 Reader 只读取已准入的压缩范围，区分实际消费与缓冲预读；只有 BFINAL 结束且实际消费恰等于压缩大小时返回成功 EOF。不能用输出大小或 CRC 相同代替压缩流终止，也不接受范围内的第二条流或尾随垃圾。
 
+`DeflateReader::with_dictionary` 接收至多 32 KiB、按时间排列的已准入历史，只初始化匹配窗口，不将历史作为新流输出。ZIP/GZIP 的普通构造仍从空窗口开始。CAB 的 `MszipDecoder` 依据 [MS-MCI](https://learn.microsoft.com/en-us/openspecs/exchange_server_protocols/ms-mci/27f0a9bf-9567-4e40-ad66-6ae9ab9d2786)复用此接口，每个 CK 帧重置 Deflate 位流、保留逻辑 folder 的末 32 KiB；压缩帧最多 32,780 字节、输出最多 32,768 字节，要求精确尺寸与完整裸流 EOF。只有完整帧通过后更新历史，失败后不能继续使用该 folder，`finish` 后不能追加帧。共享算法不验证 CAB 物理片段校验及卷链，由独立容器负责；CAB 的产品切换与其他方法验收见 [#48](https://github.com/xiaodaozhi/xdzip/issues/48)。
+
+English: MSZIP reuses the independent raw Deflate decoder with an explicitly admitted history of at most 32 KiB. Each CK-prefixed frame resets the compressed stream while retaining folder history, verifies exact input termination and output size, and updates history only after success. Failed or finished folder states cannot accept more frames. CAB fragment checksums, volume authorization and the production migration gate remain separate.
+
 - 解码处理 Store、固定和动态 Huffman，跨块保留 32 KiB 环形历史，允许重叠匹配。拒绝保留块类型、LEN/NLEN 不匹配、过度订阅码表、不允许的不完整码表、缺失结束符、越界重复长度、保留符号和历史之前的距离。
 - 编码使用有界哈希链 LZ77、频率构造的规范 Huffman 码和码长游程编码。树深度超出 15 时使用固定树，不截断码长。级别 0 以至多 65,535 字节存储块输出，1/6/9 以至多 2 MiB 块和 4/32/128 个候选搜索上限编码；收益不足时拆为存储块，避免无压缩收益的数据膨胀。编码历史每块重建，压缩率及输出字节不承诺与参考库一致。
 - 解码中间状态为窗口及有界码表，编码中间状态随单块上限有界，不收集整个归档。宿主继续累计输入、解码工作及输出配额。编码块有界完成后返回控制权，不在共享算法中新增线程或文件权限。

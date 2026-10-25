@@ -252,7 +252,7 @@ impl Inflate {
         self.position = (self.position + 1) & 32767;
         self.available = (self.available + 1).min(32768);
     }
-    fn remember(&mut self, bytes: &[u8]) {
+    pub(crate) fn remember(&mut self, bytes: &[u8]) {
         if bytes.len() >= 32768 {
             self.history.copy_from_slice(&bytes[bytes.len() - 32768..]);
             self.position = 0;

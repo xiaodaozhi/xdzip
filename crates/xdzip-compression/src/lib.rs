@@ -3,8 +3,10 @@
 //! Constants below describe wire code ranges, not a reference implementation.
 mod deflate;
 mod gzip;
+mod mszip;
 mod raw;
 pub use gzip::{GzipReader, GzipWriter};
+pub use mszip::MszipDecoder;
 pub use raw::{DeflateReader, DeflateWriter};
 
 /// Incremental IEEE CRC-32 used by ZIP and GZIP containers.

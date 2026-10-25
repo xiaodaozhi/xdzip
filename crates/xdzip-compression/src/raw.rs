@@ -28,6 +28,17 @@ impl<R: Read> DeflateReader<R> {
             failed: false,
         }
     }
+    /// Start an independent raw stream with an admitted chronological dictionary.
+    /// Dictionary bytes are history, never emitted output. The container must
+    /// authorize this reset and retain at most the preceding 32 KiB itself.
+    pub fn with_dictionary(source: R, packed: u64, history: &[u8]) -> io::Result<Self> {
+        if history.len() > 32768 {
+            return Err(invalid());
+        }
+        let mut reader = Self::new(source, packed);
+        reader.inflater.remember(history);
+        Ok(reader)
+    }
     /// Logical compressed bytes consumed, excluding buffered read-ahead.
     pub fn consumed_bytes(&self) -> u64 {
         self.bits.consumed
@@ -147,6 +158,26 @@ impl<W: Write> Write for DeflateWriter<W> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn preset_history_is_not_output_and_admits_the_full_rfc_distance() {
+        // RFC 1951 fixed tree: length 3, distance 32768, then EOB. This wire
+        // vector was separately decoded by Python zlib with the same dictionary.
+        let packed = [3, 222, 255, 15, 0];
+        let mut history = vec![0; 32768];
+        history[..3].copy_from_slice(b"abc");
+        let mut output = Vec::new();
+        let mut reader = DeflateReader::with_dictionary(&packed[..], 5, &history).unwrap();
+        reader.read_to_end(&mut output).unwrap();
+        assert_eq!(output, b"abc");
+        assert_eq!(reader.consumed_bytes(), 5);
+        for short in [0, 32767] {
+            let mut reader =
+                DeflateReader::with_dictionary(&packed[..], 5, &history[..short]).unwrap();
+            assert!(reader.read_to_end(&mut Vec::new()).is_err());
+        }
+        history.push(0);
+        assert!(DeflateReader::with_dictionary(&packed[..], 5, &history).is_err());
+    }
     #[test]
     fn interrupted_stored_read_retries_without_losing_output_or_poisoning() {
         struct InterruptedOnce {
