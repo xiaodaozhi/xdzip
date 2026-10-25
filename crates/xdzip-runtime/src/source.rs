@@ -17,6 +17,9 @@ pub(crate) struct SourceVersion {
     identity: (u64, u64),
 }
 impl SourceVersion {
+    pub(crate) fn same_identity(&self, other: &Self) -> bool {
+        self.protected_identity == other.protected_identity
+    }
     pub fn read(file: &File) -> Result<Self, ScanError> {
         let metadata = file.metadata().map_err(|_| ScanError::Io)?;
         if !metadata.is_file() {
@@ -43,6 +46,7 @@ impl SourceVersion {
 pub(crate) struct Source {
     parts: Vec<Part>,
     lengths: Vec<u64>,
+    cab_names: Option<Vec<Vec<u8>>>,
     cached: Option<(usize, File)>,
     split: bool,
     name: PathBuf,
@@ -59,6 +63,7 @@ impl Source {
     pub fn new(file: File, path: PathBuf, version: SourceVersion) -> Self {
         Self {
             lengths: vec![version.length],
+            cab_names: None,
             cached: Some((0, file)),
             split: false,
             name: path.clone(),
@@ -77,6 +82,39 @@ impl Source {
     ) -> Result<Self, ScanError> {
         let mut file = xdzip_io::open_regular_readonly(path).map_err(|_| ScanError::Io)?;
         let version = SourceVersion::read(&file)?;
+        let mut magic = [0; 4];
+        let cabinet = file.read_exact(&mut magic).is_ok() && &magic == b"MSCF";
+        file.seek(SeekFrom::Start(0)).map_err(|_| ScanError::Io)?;
+        if cabinet {
+            let cabinets = crate::source_cab::discover(path, control)?;
+            let mut parts = Vec::new();
+            let mut names = Vec::new();
+            let mut start = 0u64;
+            for cabinet in cabinets {
+                let next = start
+                    .checked_add(cabinet.version.length)
+                    .ok_or(ScanError::Limit)?;
+                names.push(cabinet.name);
+                parts.push(Part {
+                    path: cabinet.path,
+                    version: cabinet.version,
+                    start,
+                });
+                start = next;
+            }
+            let source = Self {
+                lengths: parts.iter().map(|part| part.version.length).collect(),
+                name: parts.first().ok_or(ScanError::Invalid)?.path.clone(),
+                split: parts.len() > 1,
+                parts,
+                cab_names: Some(names),
+                cached: None,
+                position: 0,
+                tail: None,
+            };
+            source.validate()?;
+            return Ok(source);
+        }
         let filename = path
             .file_name()
             .and_then(|s| s.to_str())
@@ -194,6 +232,7 @@ impl Source {
         let name = parent.join(if pkzip { format!("{base}.zip") } else { base });
         let mut source = Self {
             lengths: parts.iter().map(|p| p.version.length).collect(),
+            cab_names: None,
             parts,
             cached: None,
             split: true,
@@ -252,6 +291,7 @@ impl Source {
         }
         let source = Self {
             lengths: parts.iter().map(|p| p.version.length).collect(),
+            cab_names: None,
             parts,
             cached: None,
             split: true,
@@ -272,7 +312,7 @@ impl Source {
             return Err(ScanError::SourceChanged);
         }
         for part in &self.parts {
-            if self.split {
+            if self.split || self.cab_names.is_some() {
                 let m =
                     std::fs::symlink_metadata(&part.path).map_err(|_| ScanError::SourceChanged)?;
                 if m.file_type().is_symlink() {
@@ -300,6 +340,7 @@ impl Source {
         let source = Self {
             parts: self.parts.clone(),
             lengths: self.lengths.clone(),
+            cab_names: self.cab_names.clone(),
             cached: None,
             split: self.split,
             name: self.name.clone(),
@@ -325,6 +366,10 @@ impl Source {
             .map(|p| std::mem::size_of::<Part>() + p.path.as_os_str().len() * 2)
             .sum::<usize>()
             + self.tail.as_ref().map_or(0, |t| t.bytes.capacity())
+            + self.cab_names.as_ref().map_or(0, |names| {
+                names.iter().map(Vec::capacity).sum::<usize>()
+                    + names.capacity() * std::mem::size_of::<Vec<u8>>()
+            })
     }
     pub fn length(&self) -> u64 {
         self.tail.as_ref().map_or_else(
@@ -344,7 +389,10 @@ impl Source {
 }
 impl xdzip_codec_api::ReadSource for Source {
     fn volume_lengths(&self) -> Option<&[u64]> {
-        self.split.then_some(self.lengths.as_slice())
+        (self.split || self.cab_names.is_some()).then_some(self.lengths.as_slice())
+    }
+    fn volume_names(&self) -> Option<&[Vec<u8>]> {
+        self.cab_names.as_deref()
     }
 }
 /// Resolve only conventional adjacent RAR volume names; every opened part remains host-owned.

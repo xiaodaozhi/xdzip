@@ -25,6 +25,7 @@
     "Operation semantics change; shared progress geometry and density remain fixed",
     "Native window decorations excluded from Qt content capture",
     "Component preview and HTML demonstration stay marked as samples; the product toolbar executes a real read-only check",
+    "TAR, ISO and UDF use the shared wrapping footer to state structure and readability checks without per-file content checksum guarantees; window geometry and shared control styles are unchanged",
     "Reference crops stay in the canonical asset library; captures and measurements stay outside Git",
     "2026-10-15: shared task width is now 491 logical pixels; content-driven height with 600px upper bound. Original bitmap is historical."
   ]

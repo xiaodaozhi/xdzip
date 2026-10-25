@@ -141,6 +141,7 @@ if(UNIX AND NOT APPLE)
     include(GNUInstallDirs)
     install(TARGETS xdzip-browser RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
     install(FILES packaging/linux/xdzip.desktop DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
+    install(FILES packaging/linux/xdzip-mime.xml DESTINATION "${CMAKE_INSTALL_DATADIR}/mime/packages")
     install(FILES "${XDZIP_BRAND_ASSETS}/xdzip.png"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/512x512/apps")
 endif()
@@ -162,6 +163,18 @@ if(BUILD_TESTING)
         COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" --output "${XDZIP_M2_HIERARCHICAL}" --hierarchical
         DEPENDS "${PROJECT_SOURCE_DIR}/scripts/generate-m2-fixture.py" VERBATIM)
     add_custom_target(xdzip-m2-fixtures DEPENDS "${XDZIP_M2_FIXTURE}" "${XDZIP_M2_HIERARCHICAL}")
+    set(XDZIP_READONLY_FIXTURES "${CMAKE_CURRENT_BINARY_DIR}/readonly-fixtures")
+    file(GLOB XDZIP_CAB_ISO_INPUTS CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/tests/fixtures/cab-iso/*")
+    set(XDZIP_READONLY_OUTPUTS)
+    foreach(fixture named.cab iso9660.iso joliet.iso rock-ridge.iso udf.iso udf-regular.iso hybrid.iso)
+        list(APPEND XDZIP_READONLY_OUTPUTS "${XDZIP_READONLY_FIXTURES}/${fixture}")
+    endforeach()
+    add_custom_command(OUTPUT ${XDZIP_READONLY_OUTPUTS}
+        COMMAND Python3::Interpreter "${PROJECT_SOURCE_DIR}/scripts/prepare-cab-iso-fixtures.py" --output "${XDZIP_READONLY_FIXTURES}"
+        DEPENDS "${PROJECT_SOURCE_DIR}/scripts/prepare-cab-iso-fixtures.py" ${XDZIP_CAB_ISO_INPUTS} VERBATIM)
+    add_custom_target(xdzip-readonly-fixtures DEPENDS ${XDZIP_READONLY_OUTPUTS})
+    add_dependencies(xdzip-browser-tests xdzip-readonly-fixtures)
+    target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_READONLY_FIXTURES="${XDZIP_READONLY_FIXTURES}")
     add_dependencies(xdzip-browser-tests xdzip-m2-fixtures)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust

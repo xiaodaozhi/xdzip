@@ -7,8 +7,8 @@ if(NOT EXISTS "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" OR NOT E
   message(FATAL_ERROR "Prepare the locked official native sources before configuring")
 endif()
 
-# The official Format7z manifest is the allowlist. No full-format bundle or external
-# codec loader is compiled. Object libraries retain the selected static registrars.
+# Start with the official Format7z manifest, then admit only three read-only
+# handlers. No full-format bundle or external codec loader is compiled.
 file(READ "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Bundles/Format7z/makefile" seven_manifest)
 set(seven_sources)
 foreach(pair IN ITEMS "COMMON_OBJS|CPP/Common" "WIN_OBJS|CPP/Windows" "7ZIP_COMMON_OBJS|CPP/7zip/Common" "AR_OBJS|CPP/7zip/Archive" "AR_COMMON_OBJS|CPP/7zip/Archive/Common" "7Z_OBJS|CPP/7zip/Archive/7z" "COMPRESS_OBJS|CPP/7zip/Compress" "CRYPTO_OBJS|CPP/7zip/Crypto" "C_OBJS|C")
@@ -30,19 +30,109 @@ foreach(stem IN ITEMS Aes AesOpt 7zCrc 7zCrcOpt Sha256 Sha256Opt LzFindOpt Sort)
   list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/C/${stem}.c")
 endforeach()
 list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/Common/Sha256Prepare.cpp")
+list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/Common/UTFConvert.cpp")
+list(APPEND seven_sources
+  "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyMap.cpp"
+  "${XDZIP_7ZIP_SOURCE}/CPP/Windows/PropVariantUtils.cpp"
+  "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/Common/FindSignature.cpp")
+foreach(stem IN ITEMS LzxDecoder QuantumDecoder)
+  list(APPEND seven_sources "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Compress/${stem}.cpp")
+endforeach()
+
+# Keep immutable downloads intact. These exact source transformations expose
+# information hidden by the CLI-oriented API, without granting filesystem I/O.
+set(seven_host "${CMAKE_CURRENT_BINARY_DIR}/seven-host/CPP/7zip/Archive")
+foreach(format IN ITEMS Cab Iso Udf)
+  file(MAKE_DIRECTORY "${seven_host}/${format}")
+  file(GLOB handler_inputs "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.h" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}/*.cpp")
+  foreach(input IN LISTS handler_inputs)
+    get_filename_component(name "${input}" NAME)
+    configure_file("${input}" "${seven_host}/${format}/${name}" COPYONLY)
+  endforeach()
+endforeach()
+function(seven_replace format name old replacement)
+  set(path "${seven_host}/${format}/${name}")
+  file(READ "${path}" content)
+  string(REPLACE "${old}" "" stripped "${content}")
+  string(LENGTH "${content}" before)
+  string(LENGTH "${stripped}" after)
+  string(LENGTH "${old}" expected)
+  math(EXPR removed "${before}-${after}")
+  if(NOT removed EQUAL expected)
+    message(FATAL_ERROR "7-Zip host boundary changed: ${format}/${name}")
+  endif()
+  string(REPLACE "${old}" "${replacement}" content "${content}")
+  file(WRITE "${path}" "${content}")
+endfunction()
+seven_replace(Cab CabHandler.h "  UInt64 _offset;" [=[  UInt64 _offset;
+public:
+  const CItem &XdzipRawItem(UInt32 index) const
+  {
+    const CMvItem &ref = m_Database.Items[index];
+    return m_Database.Volumes[ref.VolumeIndex].Items[ref.ItemIndex];
+  }]=])
+seven_replace(Cab CabHandler.cpp "const UString fullName = MultiByteToUnicodeString(otherArc->FileName, CP_ACP);" [=[UString fullName;
+        for (unsigned i = 0; i < otherArc->FileName.Len(); i++)
+          fullName += (wchar_t)(Byte)otherArc->FileName[i];]=])
+seven_replace(Cab CabHandler.cpp [=[        if (res != S_FALSE)
+          return res;]=] [=[        if (res != S_FALSE)
+          return res;
+        _errorInHeaders = true;]=])
+seven_replace(Cab CabHandler.cpp [=[          if (fullName == startVolName)
+            break;]=] [=[          if (fullName == startVolName)
+          {
+            _errorInHeaders = true;
+            break;
+          }]=])
+seven_replace(Iso IsoIn.h "*p = CHAR_PATH_SEPARATOR;" "*p = '/';")
+seven_replace(Iso IsoIn.h "*p = WCHAR_PATH_SEPARATOR;" "*p = L'/';")
+seven_replace(Iso IsoHandler.cpp "s = MultiByteToUnicodeString(item.GetPath(_archive.IsSusp, _archive.SuspSkipSize), CP_OEMCP);" [=[{
+            const AString raw = item.GetPath(_archive.IsSusp, _archive.SuspSkipSize);
+            for (unsigned i = 0; i < raw.Len(); i++)
+              s += (wchar_t)(Byte)raw[i];
+          }]=])
+seven_replace(Iso IsoHandler.cpp "          NItemName::ReplaceToOsSlashes_Remove_TailSlash(s);" "          // Keep archive slashes and literal backslashes distinct for host policy.")
+seven_replace(Iso IsoHandler.cpp "AString s (\"[BOOT]\" STRING_PATH_SEPARATOR);" "AString s (\"[BOOT]/\");")
+# The archive-level flag is independent of item indices, including boot images.
+seven_replace(Iso IsoHandler.cpp "  if (index >= (UInt32)_archive.Refs.Size())" [=[  if (propID == kpidUserDefined + 0x101)
+  {
+    prop = _archive.IsJoliet();
+    prop.Detach(value);
+    return S_OK;
+  }
+  if (index >= (UInt32)_archive.Refs.Size())]=])
+seven_replace(Udf UdfHandler.cpp "      case kpidIsDir:  prop = item.IsDir(); break;" [=[      case kpidUserDefined + 0x100: prop = (UInt32)item.IcbTag.FileType; break;
+      case kpidIsDir:  prop = item.IsDir(); break;]=])
+seven_replace(Udf UdfIn.cpp "      item.IcbTag.FileType != ICB_FILE_TYPE_REAL_TIME_FILE)" [=[      item.IcbTag.FileType != ICB_FILE_TYPE_REAL_TIME_FILE &&
+      item.IcbTag.FileType != 6 && item.IcbTag.FileType != 7 &&
+      item.IcbTag.FileType != 9 && item.IcbTag.FileType != 10 &&
+      item.IcbTag.FileType != 12)]=])
+seven_replace(Udf UdfIn.cpp "res.Insert(0, addString + WCHAR_PATH_SEPARATOR);" "res.Insert(0, addString + L'/');")
+foreach(stem IN ITEMS CabBlockInStream CabHandler CabHeader CabIn CabRegister)
+  list(APPEND seven_sources "${seven_host}/Cab/${stem}.cpp")
+endforeach()
+foreach(stem IN ITEMS IsoHandler IsoHeader IsoIn IsoRegister)
+  list(APPEND seven_sources "${seven_host}/Iso/${stem}.cpp")
+endforeach()
+foreach(stem IN ITEMS UdfHandler UdfIn)
+  list(APPEND seven_sources "${seven_host}/Udf/${stem}.cpp")
+endforeach()
 if(NOT WIN32)
   # The Windows Format7z manifest uses OS-provided COM/time and UTF conversion
   # functions. Official GCC bundles add these compatibility implementations;
   # they provide platform primitives only, not additional archive handlers.
   list(APPEND seven_sources
-    "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyWindows.cpp"
-    "${XDZIP_7ZIP_SOURCE}/CPP/Common/UTFConvert.cpp")
+    "${XDZIP_7ZIP_SOURCE}/CPP/Common/MyWindows.cpp")
 endif()
 foreach(source IN LISTS seven_sources)
-  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
-    message(FATAL_ERROR "Non-7z container entered the native source allowlist: ${source}")
+  if(source MATCHES "/CPP/7zip/Compress/Rar")
+    message(FATAL_ERROR "7-Zip RAR codecs are not admitted: ${source}")
+  endif()
+  if(source MATCHES "/CPP/7zip/Archive/" AND NOT source MATCHES "/CPP/7zip/Archive/(7z/|Cab/|Iso/|Udf/|Common/|ArchiveExports\\.cpp$|DllExports2\\.cpp$)")
+    message(FATAL_ERROR "Unapproved container entered the native source allowlist: ${source}")
   endif()
 endforeach()
+list(REMOVE_DUPLICATES seven_sources)
 add_library(xdzip_7z_engine OBJECT ${seven_sources})
 file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/seven-zip-source-list.txt" CONTENT "$<JOIN:$<TARGET_PROPERTY:xdzip_7z_engine,SOURCES>,\n>\n")
 target_compile_definitions(xdzip_7z_engine PRIVATE Z7_DEFLATE_EXTRACT_ONLY Z7_BZIP2_EXTRACT_ONLY Z7_NO_ASM USE_NO_ASM)
@@ -81,8 +171,12 @@ target_include_directories(xdzip_rar_engine PRIVATE "${unrar_copy}" "${CMAKE_CUR
 target_compile_definitions(xdzip_rar_engine PRIVATE RARDLL UNRAR SILENT _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE)
 target_compile_features(xdzip_rar_engine PRIVATE cxx_std_17)
 
-add_executable(xdzip-native-codec main.cpp seven_backend.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
+add_executable(xdzip-native-codec main.cpp seven_adapter.cpp seven_backend.cpp readonly_backend.cpp $<TARGET_OBJECTS:xdzip_7z_engine> $<TARGET_OBJECTS:xdzip_rar_engine>)
 target_include_directories(xdzip-native-codec PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP" "${XDZIP_7ZIP_SOURCE}/C")
+foreach(format IN ITEMS Cab Iso Udf)
+  target_include_directories(xdzip_7z_engine PRIVATE "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
+  target_include_directories(xdzip-native-codec PRIVATE "${seven_host}/${format}" "${XDZIP_7ZIP_SOURCE}/CPP/7zip/Archive/${format}")
+endforeach()
 target_compile_features(xdzip-native-codec PRIVATE cxx_std_17)
 target_link_libraries(xdzip-native-codec PRIVATE Threads::Threads)
 if(WIN32)

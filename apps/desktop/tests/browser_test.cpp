@@ -2074,20 +2074,15 @@ QtObject {
                           QUrl());
         std::unique_ptr<QObject> probe(component.create());
         QVERIFY2(probe, qPrintable(component.errorString()));
-        const QList<QPair<QString, QString>> samples{{"Report.DOCX", "file-document"},
-                                                     {"budget.xlsx", "file-spreadsheet"},
-                                                     {"slides.pptx", "file-presentation"},
-                                                     {"song.flac", "file-audio"},
-                                                     {"movie.mkv", "file-video"},
-                                                     {"backup.7z", "file-archive"},
-                                                     {"setup.msi", "file-installer"},
-                                                     {"font.woff2", "file-font"},
-                                                     {"image.iso", "file-disk"},
-                                                     {"photo.tiff", "image-file"},
-                                                     {"module.vue", "file-code"},
-                                                     {"document.pdf", "file-pdf"},
-                                                     {"README", "file-text"},
-                                                     {"unknown.xyz", "file-text"}};
+        const QList<QPair<QString, QString>> samples{
+            {"Report.DOCX", "file-document"},     {"budget.xlsx", "file-spreadsheet"},
+            {"slides.pptx", "file-presentation"}, {"song.flac", "file-audio"},
+            {"movie.mkv", "file-video"},          {"backup.7z", "file-archive"},
+            {"setup.msi", "file-installer"},      {"font.woff2", "file-font"},
+            {"image.iso", "file-disk"},           {"disc.udf", "file-disk"},
+            {"photo.tiff", "image-file"},         {"module.vue", "file-code"},
+            {"document.pdf", "file-pdf"},         {"README", "file-text"},
+            {"unknown.xyz", "file-text"}};
         for (const auto &[filename, kind] : samples) {
             probe->setProperty("filename", filename);
             for (const auto *property : {"source", "large"}) {
@@ -4949,6 +4944,208 @@ QtObject {
         QVERIFY(capture("create-removed"));
         create->close();
         controller->requestClose();
+        QTRY_VERIFY(controller->requestClose());
+    }
+    void readonlyFormatLabelsAndIntegrityNoteLayout_data() {
+        sevenZipCreationLayout_data();
+    }
+    void readonlyFormatLabelsAndIntegrityNoteLayout() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, factor);
+        QVERIFY(initializeUiText(language));
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        QQmlComponent theme(&engine);
+        theme.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+            "QtObject { property real factor: 1; property bool dark: false; "
+            "onFactorChanged: Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
+            QUrl());
+        QScopedPointer<QObject> appearance(theme.create());
+        QVERIFY2(appearance, qPrintable(theme.errorString()));
+        appearance->setProperty("factor", factor);
+        appearance->setProperty("dark", dark);
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        window->resize(832, 544);
+        auto *formats = findVisual(window->contentItem(), "welcomeFormats");
+        QVERIFY(formats);
+        QTRY_VERIFY(formats->width() > 0);
+        QTRY_VERIFY(formats->width() <= 608);
+        for (const auto &format : {"ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"}) {
+            auto *badge =
+                findVisual(window->contentItem(), "welcomeFormat-" + QString::fromLatin1(format));
+            QVERIFY(badge && badge->isVisible());
+            QTRY_VERIFY(badge->mapToScene(QPointF()).x() >= 0);
+            QTRY_VERIFY(badge->mapToScene(QPointF(badge->width(), 0)).x() <= window->width());
+        }
+        auto *task = window->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(task);
+        task->setProperty("operationKind", "check");
+        task->setProperty("taskStatus", "running");
+        task->setProperty("archiveName", "readonly-image.iso");
+        for (const auto &format :
+             {QStringLiteral("TAR"), QStringLiteral("ISO"), QStringLiteral("UDF")}) {
+            task->setProperty("resultTask", QVariantMap{{"kind", "check"}, {"format", format}});
+            QVERIFY(QMetaObject::invokeMethod(task, "present"));
+            QTRY_VERIFY(task->isVisible());
+            auto *footer = findVisual(task->contentItem(), "taskFooter");
+            QVERIFY(footer);
+            QCOMPARE(footer->property("note").toString(),
+                     format == "TAR" ? qtTrId("integrity.tarNote")
+                                     : qtTrId("integrity.discImageNote").arg(format));
+            auto *hint = qobject_cast<QQuickItem *>(footer->property("hint").value<QObject *>());
+            auto *label =
+                hint ? qobject_cast<QQuickItem *>(hint->property("labelItem").value<QObject *>())
+                     : nullptr;
+            auto *cancel = findVisual(task->contentItem(), "cancelButton");
+            QVERIFY(hint && label && cancel);
+            QTRY_VERIFY(label->height() + 1 >= label->property("contentHeight").toReal());
+            QTRY_VERIFY(cancel->mapToScene(QPointF(cancel->width(), cancel->height())).y() <=
+                        task->height() + 1);
+            QCOMPARE(task->width(), 491);
+            QVERIFY(task->height() <= 600);
+            const auto captures = qEnvironmentVariable("XDZIP_READONLY_UI_AUDIT");
+            if (!captures.isEmpty()) {
+                QVERIFY(QDir().mkpath(captures));
+                QVERIFY(visual_audit::save(task, captures, format + "-" + QTest::currentDataTag()));
+            }
+        }
+    }
+    void readonlyFormatsUseSharedBrowserAndTasks_data() {
+        QTest::addColumn<QString>("fixture");
+        QTest::addColumn<QString>("format");
+        QTest::addColumn<QString>("language");
+        const QList<QPair<QString, QString>> formats{
+            {"named.cab", "CAB"},      {"iso9660.iso", "ISO"}, {"joliet.iso", "ISO"},
+            {"rock-ridge.iso", "ISO"}, {"udf.iso", "UDF"},     {"hybrid.iso", "UDF"},
+            {"udf-regular.iso", "UDF"}};
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const auto &[fixture, format] : formats)
+                QTest::newRow(qPrintable(fixture + "-" + language))
+                    << fixture << format << language;
+    }
+    void readonlyFormatsUseSharedBrowserAndTasks() {
+        QFETCH(QString, fixture);
+        QFETCH(QString, format);
+        QFETCH(QString, language);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir owned;
+        QVERIFY(owned.isValid());
+        const auto source = owned.filePath(fixture == "udf.iso" ? "owned.udf" : fixture);
+        QVERIFY(
+            QFile::copy(QDir(QStringLiteral(XDZIP_READONLY_FIXTURES)).filePath(fixture), source));
+        QFile sourceFile(source);
+        QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+        const auto sourceHash =
+            QCryptographicHash::hash(sourceFile.readAll(), QCryptographicHash::Sha256);
+        sourceFile.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QVERIFY(controller->canOpenDroppedUrls({QUrl::fromLocalFile(source)}));
+        const auto genericImage = owned.filePath("generic.img");
+        QVERIFY(QFile::copy(source, genericImage));
+        QVERIFY(!controller->canOpenDroppedUrls({QUrl::fromLocalFile(genericImage)}));
+        controller->openPath(source);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->formatLabel(), format);
+        QVERIFY(controller->archiveTotal() >= 3);
+        QVERIFY(!controller->canUpdateArchive());
+        const auto reason = qtTrId("edit.readOnlyFormat").arg(format);
+        QCOMPARE(controller->addDropMessage(), reason);
+        const auto findHello = [&] {
+            for (int row = 0; row < controller->m_model.rowCount(); ++row)
+                if (controller->m_model.rowAt(row)->cells[0].compare("hello.txt",
+                                                                     Qt::CaseInsensitive) == 0)
+                    return row;
+            return -1;
+        };
+        int row = findHello();
+        QVERIFY(row >= 0);
+        QCOMPARE(controller->m_model.rowAt(row)->method, format);
+        const auto leaf = controller->m_model.rowAt(row)->cells[0];
+        const auto token = controller->beginInternalDrag(row);
+        QVERIFY(!token.isEmpty());
+        const auto rejected = controller->moveDropState(token, QString());
+        QVERIFY(!rejected.value("permitted").toBool());
+        QCOMPARE(rejected.value("message").toString(), reason);
+        controller->moveInternalDrag(token, QString());
+        QCOMPARE(controller->message(), reason);
+        controller->cancelInternalDrag(token);
+        controller->startUpdate({source}, controller->sessionId(), controller->directoryId(), 0);
+        QCOMPARE(controller->message(), reason);
+        QCOMPARE(controller->activeTaskCount(), 0);
+        controller->search("hello.txt");
+        QTRY_VERIFY(!controller->busy());
+        row = findHello();
+        QVERIFY(row >= 0);
+        const auto entry = controller->m_model.rowAt(row)->id;
+        const QByteArray expected("xdzip read-only archive fixture\n");
+        controller->m_temporaryCacheOverride = owned.filePath("open-cache");
+        QVERIFY(QDir().mkpath(controller->m_temporaryCacheOverride));
+        bool opened = false;
+        controller->m_fileOpener = [&](const QUrl &url) {
+            QFile actual(url.toLocalFile());
+            opened = url.isLocalFile() && QFileInfo(actual).fileName() == leaf &&
+                     actual.open(QIODevice::ReadOnly) && actual.readAll() == expected;
+            return opened;
+        };
+        controller->openContextEntry(controller->sessionId(), entry);
+        QTRY_VERIFY_WITH_TIMEOUT(
+            opened && controller->activeTaskCount() == 0 && !controller->busy(), 10000);
+        controller->search(QString());
+        QTRY_VERIFY(!controller->busy());
+        row = findHello();
+        QVERIFY(row >= 0);
+        controller->selectOnlyRow(row);
+        controller->beginExport(row, window);
+        QTRY_VERIFY(!controller->busy() && controller->m_export);
+        controller->m_exportCache = owned.filePath("export-cache");
+        QVERIFY(QDir().mkpath(controller->m_exportCache));
+        const auto exportedState = controller->m_export;
+        exportedState->request();
+        QTRY_VERIFY_WITH_TIMEOUT(exportedState->done, 10000);
+        QVERIFY2(exportedState->error.isEmpty(), qPrintable(exportedState->error));
+        QFile exported(QDir(exportedState->directory).filePath(leaf));
+        QVERIFY(exported.open(QIODevice::ReadOnly));
+        QCOMPARE(exported.readAll(), expected);
+        QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 0);
+        QSignalSpy checked(controller, &BrowserController::archiveTestStarted);
+        controller->startArchiveTest();
+        QTRY_COMPARE(checked.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        const auto check = controller->tasks().first().toMap();
+        QCOMPARE(check.value("kind").toString(), QStringLiteral("check"));
+        QCOMPARE(check.value("format").toString(), format);
+        const bool links =
+            fixture == "rock-ridge.iso" || fixture == "udf.iso" || fixture == "hybrid.iso";
+        QCOMPARE(check.value("status").toString(),
+                 links ? QStringLiteral("failed") : QStringLiteral("succeeded"));
+        const auto destination = owned.filePath("selected-output");
+        QVERIFY(QDir().mkpath(destination));
+        controller->prepareExtraction(false, {entry});
+        QTRY_VERIFY(!controller->busy());
+        controller->checkTarget(destination);
+        QTRY_VERIFY(!controller->busy() && controller->targetMatches(destination));
+        QSignalSpy extracted(controller, &BrowserController::extractionStarted);
+        controller->startExtraction(destination, false, false, 0, false, false);
+        QTRY_COMPARE(extracted.count(), 1);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->activeTaskCount() == 0, 10000);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("succeeded"));
+        QFile output(QDir(destination).filePath(leaf));
+        QVERIFY(output.open(QIODevice::ReadOnly));
+        QCOMPARE(output.readAll(), expected);
+        QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+        QCOMPARE(QCryptographicHash::hash(sourceFile.readAll(), QCryptographicHash::Sha256),
+                 sourceHash);
         QTRY_VERIFY(controller->requestClose());
     }
     void tarCreationBrowseAndSafeExtraction() {

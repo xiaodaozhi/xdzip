@@ -30,6 +30,7 @@ Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'native_backen
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
 $codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
 Invoke-Checked $codecPython @('scripts/check-native-codecs.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--sevenzip', $codecReference, '--output', 'build/review/native-codec-interop')
+Invoke-Checked $codecPython @('scripts/check-cab-iso-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--output', 'build/review/native-codec-interop/cab-iso')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
 Invoke-Checked $updatePython @('scripts/check-filename-encoding.py', '--input', 'build/legacy-name-interop', '--output', 'build/review/legacy-name-rewrite.json')
 Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')

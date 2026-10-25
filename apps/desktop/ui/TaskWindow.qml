@@ -158,7 +158,7 @@ OperationWindow {
             contentInset: root.unit(Theme.operationProgressContentInset)
             verticalInset: root.unit(12); minimumFooterHeight: root.unit(Theme.operationFooterHeight)
             Layout.fillWidth: true
-            note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.resultTask.format === "TAR" ? qsTrId("integrity.tarNote") : qsTrId("integrity.readOnlyNote") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
+            note: root.checking ? root.sampleData ? qsTrId("ui.13c5ccd127db") : root.resultTask.format === "TAR" ? qsTrId("integrity.tarNote") : ["ISO", "UDF"].includes(root.resultTask.format) ? qsTrId("integrity.discImageNote").arg(root.resultTask.format) : qsTrId("integrity.readOnlyNote") : root.creating && root.terminal ? (root.taskStatus === "succeeded" ? qsTrId("ui.dcb94c06dbcd") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : root.cleanupWarning ? qsTrId("ui.3ac0720d9fdb") : qsTrId("ui.f49c93812dd8")) : root.terminal ? qsTrId("ui.3e97ae919078") : qsTrId("ui.188180d3d3d3")
             OperationFooterButton { text: root.terminal ? qsTrId("ui.3fd47edce45b") : qsTrId("ui.26867436321f"); onClicked: root.close() }
             OperationFooterButton { visible: root.taskStatus === "waiting"; text: qsTrId("ui.26bd480adc53"); primary: true; onClicked: root.conflictRequested() }
             OperationFooterButton { visible: root.taskStatus === "waiting_password"; text: qsTrId("password.open"); primary: true; onClicked: root.passwordRequested() }

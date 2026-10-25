@@ -15,6 +15,6 @@
     "file-archive": ["zip", "7z", "rar", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "lz", "cab", "001"],
     "file-installer": ["exe", "msi", "msix", "appx", "deb", "rpm", "pkg", "apk", "appimage"],
     "file-font": ["ttf", "otf", "woff", "woff2", "ttc"],
-    "file-disk": ["iso", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"]
+    "file-disk": ["iso", "udf", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"]
   }
 }

@@ -95,6 +95,23 @@ Item {
             tryVerify(() => open.height > 124 && create.height === open.height);
             verify(open.contentItem.height >= open.contentItem.implicitHeight);
         }
+        function test_readonly_format_badges_data() {
+            return [1, 1.25, 1.5].map(scale => ({tag: String(scale), scale: scale}));
+        }
+        function test_readonly_format_badges(data) {
+            Ui.Theme.fontScale = data.scale;
+            surface.width = 832;
+            const formats = findChild(page, "welcomeFormats");
+            verify(waitForPolish(formats));
+            for (const format of ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"]) {
+                const badge = findChild(page, "welcomeFormat-" + format);
+                verify(badge && badge.visible);
+                const point = badge.mapToItem(page, 0, 0);
+                verify(point.x >= 0 && point.x + badge.width <= page.width);
+                verify(badge.width >= badge.children[0].implicitWidth);
+            }
+            surface.width = 1024;
+        }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];
             for (const scale of [1,1.25,1.5])

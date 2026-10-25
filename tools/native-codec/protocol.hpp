@@ -38,6 +38,7 @@ struct Request {
     uint32_t entries = 0, name_bytes = 0;
     std::string password;
     std::vector<uint64_t> volumes;
+    std::vector<std::string> volume_names;
     std::vector<Record> records;
 };
 extern Request request;
@@ -56,7 +57,10 @@ void write_data(const void *data, size_t size, bool selected = true);
 void write_at(uint64_t offset, const void *data, size_t size);
 void metadata(uint64_t index, const std::wstring &name, uint8_t flags, uint64_t size,
               uint64_t packed, uint32_t dos, uint16_t method = 0);
+void metadata_bytes(uint64_t index, const std::string &name, uint8_t flags, uint64_t size,
+                    uint64_t packed, uint32_t dos, uint16_t method = 0);
 void entry_done(uint64_t index);
 void seven_run();
+void readonly_run();
 void rar_run();
 } // namespace xdzip

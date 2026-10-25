@@ -50,11 +50,15 @@ case "$hook:$1" in
     install -m 0644 /dev/null /run/xdzip/installing
     ;;
   postinst:configure)
+    update-mime-database /usr/share/mime
     update-desktop-database -q /usr/share/applications
     rm -f /run/xdzip/installing
     ;;
   postinst:abort-*|postrm:remove|postrm:purge|postrm:abort-*)
     rm -f /run/xdzip/installing
+    if command -v update-mime-database >/dev/null 2>&1; then
+      update-mime-database /usr/share/mime
+    fi
     if command -v update-desktop-database >/dev/null 2>&1; then
       update-desktop-database -q /usr/share/applications
     fi

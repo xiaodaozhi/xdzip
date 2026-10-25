@@ -11,7 +11,7 @@ from deployment_audit import digest, within
 from installer_payload import verify_payload
 
 ROOT=Path(__file__).resolve().parents[1]
-EXTENSIONS=['zip','tar','tgz','gz','7z','rar']
+EXTENSIONS=['zip','tar','tgz','gz','7z','rar','cab','iso','udf']
 
 
 MANIFEST_NAME='install-manifest.txt'

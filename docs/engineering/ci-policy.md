@@ -41,6 +41,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
+CAB/ISO/UDF 增量复用同一 Foundation 门槛，`scripts/check-cab-iso-interop.py` 通过实际原生工作进程验证固定来源夹具、已知明文字节、四种 CAB 算法、跨卷文件、ISO9660/Joliet/Rock Ridge/UDF 及只读拒绝。镜像由独立 pycdlib 测试工具预生成并以小型 gzip 输入保存，CI 只校验和展开，不安装该生成器。Rust 与 Qt 覆盖任意 CAB 卷入口、冻结来源、混合命名空间选择、普通文件的解压/临时打开/导出及不支持特殊记录的整包测试失败。结果保留在 build/review/native-codec-interop/，不会进入 docs 或源代码历史。
+
 Qt components 通过 [scripts/desktop.py](../../scripts/desktop.py)复用本地的 prepare、build、基础 test，以及 Windows/Linux package／verify。参数和本地顺序统一见[开发构建指南](developer-build.md)。共用阶段不依赖 RUNNER_TEMP 或 RUNNER_ARCH；工作流显式提供 CI 路径，普通本地使用仓库默认目录。系统编译器／SDK 和 Linux 图形开发依赖仍由宿主／工作流准备，SDK 与打包工具下载使用 prepare 的显式开关。
 
 [ci-desktop.ps1](../../scripts/ci-desktop.ps1)只保留 CI 扩展编排和平台策略，不另实现基础构建链。Qt CI 使用 `test --skip-rust`，同提交的 Rust fmt、Clippy 和 workspace 测试由 Foundation probes 负责；qmllint 与 7 组 CTest 仍由共用 test 执行。测试仅对子进程设置 offscreen／software，之后的原生或部署检查使用各自平台环境。CI 另外重复并发生命周期套件 10 次，保留性能协议、资源与链接证据、双语和多 DPR 视觉、M3／M4 互操作、设置兼容、来源及 SBOM 检查，不因入口复用缩减门槛。

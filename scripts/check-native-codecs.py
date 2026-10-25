@@ -32,7 +32,8 @@ def exact(stream, size):
     return bytes(value)
 
 
-def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False):
+def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False,
+               volume_names=None):
     source = b''.join(parts)
     request = bytes([2 if creation is not None else 0 if selected is None else 1, format_id])
     request += struct.pack('<QIIQ', 1024**3, 100000, 4096, len(source))
@@ -40,6 +41,14 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
     request += b''.join(struct.pack('<Q', len(part)) for part in parts)
     if creation is not None:
         request += bytes([6, solid, encrypt_headers, 0]) + struct.pack('<I', len(creation))
+    elif format_id == 8:
+        names = [b'volume.cab'] if volume_names is None else volume_names
+        if len(names) != len(parts):
+            raise WorkerError('volume_name_count')
+        request += struct.pack('<I', len(names))
+        for name in names:
+            name = name.encode('utf-8') if isinstance(name, str) else bytes(name)
+            request += struct.pack('<I', len(name)) + name
     child = subprocess.Popen([str(worker)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     timer = threading.Timer(45, child.kill)
     timer.start()
@@ -73,8 +82,10 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 index, flags, unpacked, packed, modified, method, length = struct.unpack('<QBQQIII', value[:37])
                 if len(value) != 37 + length:
                     raise WorkerError('metadata_length')
+                raw_name = value[37:]
                 rows.append(dict(index=index, flags=flags, size=unpacked, packed=packed,
-                                 method=method, name=value[37:].decode('utf-8')))
+                                 method=method, name=raw_name.decode('utf-8', errors='replace' if flags & 0x10 else 'strict'),
+                                 raw_name=raw_name))
                 send(21)
             elif kind == 12:
                 if len(value) > CHUNK or len(payload) + len(value) > 32 * 1024**2:

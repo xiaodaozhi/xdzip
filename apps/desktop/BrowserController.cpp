@@ -314,6 +314,7 @@ bool BrowserController::canOpenDroppedUrls(const QList<QUrl> &urls) const {
         if (!file.isFile() ||
             !(name.endsWith(".zip") || name.endsWith(".tar") || name.endsWith(".tar.gz") ||
               name.endsWith(".tgz") || name.endsWith(".7z") || name.endsWith(".rar") ||
+              name.endsWith(".cab") || name.endsWith(".iso") || name.endsWith(".udf") ||
               splitSuffix.match(name).hasMatch()))
             return false;
     }
@@ -1408,11 +1409,12 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_archiveFolder = text(event.folder_name);
         m_result.offset = 0;
         m_result.session = QString::number(event.session);
+        const bool nativeFormat =
+            QStringList{QStringLiteral("7z"), QStringLiteral("RAR"), QStringLiteral("CAB"),
+                        QStringLiteral("ISO"), QStringLiteral("UDF")}
+                .contains(m_format, Qt::CaseInsensitive);
         for (const auto &row : event.rows) {
-            const auto method = m_format.compare(QStringLiteral("7z"), Qt::CaseInsensitive) == 0
-                                    ? QStringLiteral("7z")
-                                : m_format.compare(QStringLiteral("RAR"), Qt::CaseInsensitive) == 0
-                                    ? QStringLiteral("RAR")
+            const auto method = nativeFormat                        ? m_format
                                 : m_format == QStringLiteral("TAR") ? qtTrId("ui.695e3ecda20b")
                                 : row.method == 0                   ? QStringLiteral("Store")
                                 : row.method == 8                   ? QStringLiteral("Deflate")

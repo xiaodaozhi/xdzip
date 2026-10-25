@@ -94,6 +94,12 @@ Item {
             compare(task.closingHint.text, qsTrId("integrity.readOnlyNote"));
             task.resultTask = ({kind: "check", format: "TAR"});
             compare(task.closingHint.text, qsTrId("integrity.tarNote"));
+            for (const format of ["ISO", "UDF"]) {
+                task.resultTask = ({kind: "check", format: format});
+                compare(task.closingHint.text, qsTrId("integrity.discImageNote").arg(format));
+                verify(!findChild(task, "taskResultPanel").visible);
+                verify(!findChild(task, "openOutputButton").visible);
+            }
         }
     }
 }

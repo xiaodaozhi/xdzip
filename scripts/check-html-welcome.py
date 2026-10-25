@@ -34,6 +34,7 @@ with sync_playwright() as p:
                     page.goto(base + f'design/html/index.html?view={view}&theme={theme}&zoom=1')
                     frame = page.frame_locator('#design-frame')
                     expect(frame.locator('#welcome')).to_be_visible()
+                    expect(frame.locator('.welcome-formats b')).to_have_text(['ZIP','TAR','TAR.GZ','7z','RAR','CAB','ISO','UDF'])
                     frame.locator('body').evaluate('() => document.fonts.ready')
                     expect(frame.locator('.toolbar')).to_be_hidden()
                     expect(frame.locator('.workspace')).to_be_hidden()
@@ -127,7 +128,10 @@ with sync_playwright() as p:
         expect(frame.locator('#welcome-open')).to_be_focused()
         checks.append('Open/create, cancel, focus restore, keyboard and last-tab welcome round trip')
 
-        for names, accepted in [(['sample.tar.gz'], True), (['sample.txt'], False), (['a.zip', 'b.zip'], False)]:
+        for names, accepted in [(['sample.tar.gz'], True), (['sample.CAB'], True),
+                                (['sample.iso'], True), (['sample.udf'], True),
+                                (['sample.img'], False), (['sample.txt'], False),
+                                (['a.zip', 'b.zip'], False)]:
             transfer = frame.locator('body').evaluate_handle('(el,names)=>{const dt=new DataTransfer();for(const name of names)dt.items.add(new File([],name));return dt}', names)
             frame.locator('#welcome').dispatch_event('dragenter', {'dataTransfer': transfer})
             expect(frame.locator('#welcome-drop')).to_have_class('welcome-drop drag-over' if accepted else 'welcome-drop')

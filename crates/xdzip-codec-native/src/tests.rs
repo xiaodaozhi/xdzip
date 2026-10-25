@@ -290,35 +290,183 @@ fn malformed_7z_and_wrong_container_never_produce_index() {
     }
 }
 #[test]
-fn rar_creation_and_modification_are_explicitly_unsupported() {
+fn read_only_native_formats_reject_creation_and_modification_without_starting_worker() {
+    for format in [Format::Rar, Format::Cab, Format::Iso, Format::Udf] {
+        let codec = NativeCodec { format };
+        assert_eq!(
+            codec.encode(
+                &fixture(),
+                &mut Vec::new(),
+                settings(None, false, false),
+                &Cancellation::default(),
+                &mut |_| {}
+            ),
+            Err(EncodeError::Unsupported)
+        );
+        assert_eq!(
+            codec.rewrite(
+                &mut Cursor::new(vec![]),
+                RewriteInput {
+                    keep: &[],
+                    renames: &[],
+                    additions: &fixture(),
+                    settings: settings(None, false, false)
+                },
+                &mut Cursor::new(vec![]),
+                &Cancellation::default(),
+                &mut |_| {}
+            ),
+            Err(EncodeError::Unsupported)
+        );
+    }
+}
+
+#[test]
+fn cabinet_start_binds_bounded_raw_names_to_authorized_volume_order() {
     let codec = NativeCodec {
-        format: Format::Rar,
+        format: Format::Cab,
     };
+    let names = [b"start.cab".to_vec(), b"last.bin".to_vec()];
+    let request = codec
+        .request(
+            0,
+            30,
+            None,
+            0,
+            Default::default(),
+            (Some(&[10, 20]), Some(&names)),
+        )
+        .unwrap();
+    assert_eq!(&request[..2], &[0, 8]);
+    let mut fields = Fields(&request[2..]);
+    fields.u64().unwrap();
+    fields.u32().unwrap();
+    fields.u32().unwrap();
+    fields.u64().unwrap();
+    assert_eq!(fields.byte(), Ok(0));
+    assert_eq!(fields.string(4096), Ok(String::new()));
+    fields.u64().unwrap();
+    assert_eq!(fields.u32(), Ok(2));
+    assert_eq!(fields.u64(), Ok(10));
+    assert_eq!(fields.u64(), Ok(20));
+    assert_eq!(fields.u32(), Ok(2));
+    assert_eq!(fields.bytes(4096), Ok(names[0].clone()));
+    assert_eq!(fields.bytes(4096), Ok(names[1].clone()));
+    fields.end().unwrap();
     assert_eq!(
-        codec.encode(
-            &fixture(),
-            &mut Vec::new(),
-            settings(None, false, false),
-            &Cancellation::default(),
-            &mut |_| {}
-        ),
-        Err(EncodeError::Unsupported)
+        codec.request(0, 30, None, 0, Default::default(), (Some(&[10, 20]), None)),
+        Err(Fault::Invalid)
     );
     assert_eq!(
-        codec.rewrite(
-            &mut Cursor::new(vec![]),
-            RewriteInput {
-                keep: &[],
-                renames: &[],
-                additions: &fixture(),
-                settings: settings(None, false, false)
-            },
-            &mut Cursor::new(vec![]),
-            &Cancellation::default(),
-            &mut |_| {}
+        codec.request(
+            0,
+            30,
+            None,
+            0,
+            Default::default(),
+            (Some(&[30]), Some(&names))
         ),
-        Err(EncodeError::Unsupported)
+        Err(Fault::Invalid)
     );
+    let names = vec![vec![b'x'; 4096]; 1024];
+    let lengths = vec![1; 1024];
+    assert_eq!(
+        codec.request(
+            0,
+            1024,
+            None,
+            0,
+            Default::default(),
+            (Some(&lengths), Some(&names))
+        ),
+        Err(Fault::Limit)
+    );
+}
+
+#[test]
+fn single_cabinet_file_and_cursor_authorize_only_their_own_stream() {
+    let root =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/cab-iso");
+    let control = Cancellation::default();
+    let codec = NativeCodec {
+        format: Format::Cab,
+    };
+    let bytes = std::fs::read(root.join("named.cab")).unwrap();
+    let mut cursor = Cursor::new(bytes);
+    let rows = codec
+        .scan(&mut cursor, &control, Default::default())
+        .unwrap();
+    assert_eq!(rows.len(), 3);
+    let hello = rows
+        .iter()
+        .find(|row| row.name_bytes() == b"hello.txt")
+        .unwrap();
+    let mut sink = Sink::default();
+    codec
+        .open_payload(&mut cursor, &rows, &control)
+        .unwrap()
+        .decode(hello, &mut sink, &control)
+        .unwrap();
+    assert_eq!(sink.bytes, b"xdzip read-only archive fixture\n");
+    let mut file = std::fs::File::open(root.join("named.cab")).unwrap();
+    assert_eq!(
+        codec.scan(&mut file, &control, Default::default()).unwrap(),
+        rows
+    );
+    let mut first_part = std::fs::File::open(root.join("cabd_multi_basic_pt1.cab")).unwrap();
+    assert_eq!(
+        codec.scan(&mut first_part, &control, Default::default()),
+        Err(ScanError::MissingVolume)
+    );
+}
+
+#[test]
+fn cabinet_volume_names_have_their_own_limit_independent_of_entry_names() {
+    struct Named {
+        cursor: Cursor<Vec<u8>>,
+        length: [u64; 1],
+        names: [Vec<u8>; 1],
+    }
+    impl Read for Named {
+        fn read(&mut self, bytes: &mut [u8]) -> io::Result<usize> {
+            self.cursor.read(bytes)
+        }
+    }
+    impl std::io::Seek for Named {
+        fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {
+            self.cursor.seek(position)
+        }
+    }
+    impl ReadSource for Named {
+        fn volume_lengths(&self) -> Option<&[u64]> {
+            Some(&self.length)
+        }
+        fn volume_names(&self) -> Option<&[Vec<u8>]> {
+            Some(&self.names)
+        }
+    }
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/cab-iso/named.cab");
+    let bytes = std::fs::read(path).unwrap();
+    let mut source = Named {
+        length: [bytes.len() as u64],
+        cursor: Cursor::new(bytes),
+        names: [b"x".repeat(100)],
+    };
+    let rows = NativeCodec {
+        format: Format::Cab,
+    }
+    .scan(
+        &mut source,
+        &Default::default(),
+        ScanLimits {
+            name_bytes: 32,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert_eq!(rows.len(), 3);
+    assert!(rows.iter().all(|row| row.raw_name.len() <= 32));
 }
 
 fn rar_fixture(name: &str) -> Vec<u8> {

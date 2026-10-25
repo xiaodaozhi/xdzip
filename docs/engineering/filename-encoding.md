@@ -15,6 +15,10 @@ TAR 普通头、GNU 长名称及显式 hdrcharset=BINARY 的 PAX path 使用相�
 
 规则依据为 [ZIP APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)、[POSIX pax](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/pax.html)及 [WHATWG 编码标准](https://encoding.spec.whatwg.org/)。Unicode Path 的本地头可缺省，但若提供有效值，必须与冻结的有效名称一致；载荷仍校验原始名称、本地/中央头、CRC、大小、密码认证和流结束。
 
+CAB 保留原始名称字节和 UTF-8 属性。显式 UTF-8 严格验证，其余名称复用整包有界检测，不使用系统代码页。CAB 的反斜杠是格式目录分隔符，但仅在完整解码后规范化为正斜杠，不能误拆 Shift-JIS 多字节尾字节 0x5C。原始字节不变，有效路径仍经过相同安全与碰撞检查。ISO 非 Joliet 名称保留原始字节并使用相同有界解析，避免 Rock Ridge 名称经过宿主 OEM 转码。Joliet/UDF 使用处理器提供的 Unicode 名称并严格验证，不将有损替换字符视为原始名称。
+
+English: CAB retains raw name bytes and its explicit UTF-8 flag, otherwise using bounded archive-level legacy detection. CAB separators are normalized only after decoding, preserving Shift-JIS trail bytes. Non-Joliet ISO names retain raw bytes, avoiding host OEM conversion of Rock Ridge names. Joliet/UDF Unicode names are strictly validated. Every effective path remains subject to the shared output-safety and collision checks.
+
 ## 检测边界与资源
 
 检测器最多读取 1 MiB 完整的未声明、非 UTF-8 名称，以换行隔开记录，避免截断多字节序列跨名称拼接。不将明确 Unicode 声明或无效扩展作为检测样本。只要样本含非 UTF-8 名称，就对未声明名称统一采用归档级结果，避免 GBK 中恰好合法的 UTF-8 片段把同一个目录拆成两个名字。单条严格解码失败时才尝试合法 UTF-8 或该名称的局部结果。禁用 ISO-2022-JP 猜测，不解释名称中的转义状态。严格解码不插入替代字符、不删除 BOM，也不转换斜杠、规范化 Unicode 或修补路径。
@@ -25,7 +29,7 @@ TAR 普通头、GNU 长名称及显式 hdrcharset=BINARY 的 PAX path 使用相�
 
 ## 全链路与保存
 
-目录树、直属索引、递归搜索、目录选择扩展、预检、解压、临时打开、外部拖出及包内修改使用同一个有效名称。完成解码后仍执行 PortablePath、Unicode NFD/大小写别名、重名与输出授权检查。Shift-JIS 中作为多字节字符尾字节的 0x5C 不当作目录分隔符，解码后真正的反斜杠仍拒绝。
+目录树、直属索引、递归搜索、目录选择扩展、预检、解压、临时打开、外部拖出及包内修改使用同一个有效名称。完成解码后仍执行 PortablePath、Unicode NFD/大小写别名、重名与输出授权检查。Shift-JIS 中作为多字节字符尾字节的 0x5C 不当作目录分隔符，除 CAB 的格式分隔符外，解码后真正的反斜杠仍拒绝。
 
 普通 ZIP、TAR、TAR.GZ 添加和移动在规划结束后将旧编码/Unicode 扩展/未标记 UTF-8 名称重新声明为 UTF-8，保留逻辑移动规划中的原位置与跳过含义。ZIP 保持压缩载荷，TAR 使用明确的 UTF-8 PAX path；写后重新扫描、逐项验证名称与内容，最后执行原有同卷替换。TAR 改写 BINARY PAX path 时移除该路径的 BINARY 声明；如果这会改变其他非 UTF-8 PAX 文本的解释，则明确失败并保留原包。加密和分卷的读取、解压沿用相同名称，添加/移动限制不变。
 

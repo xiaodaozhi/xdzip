@@ -1,0 +1,110 @@
+{
+  "fixtures": [
+    {
+      "file": "cabd_multi_basic_pt1.cab",
+      "sha256": "3658aaf68b0d538a5b321919f1de3eb1bcc258cba44e97b07a1938230995c632",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/multi_basic_pt1.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "cabd_multi_basic_pt2.cab",
+      "sha256": "ce5fac4470fb850ae593de70ab03d3493069b77f8f81376216768bbf74e52321",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/multi_basic_pt2.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "cabd_multi_basic_pt3.cab",
+      "sha256": "e58b57f63ac0858effa75ceb6f242b447fbce6a910d3840c37228fdbc9e7bc95",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/multi_basic_pt3.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "cabd_multi_basic_pt4.cab",
+      "sha256": "fbcd45e503c3cffd5f5946ccc45bbc46b9884fe47abef7d09247154c7f8148fb",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/multi_basic_pt4.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "cabd_multi_basic_pt5.cab",
+      "sha256": "16ebbb274c8dc09f98415795212683b9ea8b2d6450080a79ab63cd5cdbac7cc4",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/multi_basic_pt5.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "mszip_lzx_qtm.cab",
+      "sha256": "0ce0b55fe705b744d41bb361170c0467db30da0c7f9bdd386d5dade71a78e171",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/mszip_lzx_qtm.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "normal_2files_1folder.cab",
+      "sha256": "590791307b407a6ec6d885542952b7eb6575defde68e06d25bac4f41a9b634fd",
+      "upstream": "https://github.com/kyz/libmspack/blob/55d501976171397ccd5d5a7a1ca7da065b1d9a06/libmspack/test/test_files/cabd/normal_2files_1folder.cab",
+      "license": "LGPL-2.1-or-later"
+    },
+    {
+      "file": "named.cab",
+      "sha256": "1f70244d67a04c589c34406b152962709a84c07602039e66e2bce13293b62b3d",
+      "decoded_sha256": "1f70244d67a04c589c34406b152962709a84c07602039e66e2bce13293b62b3d",
+      "decoded_bytes": 194,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "Python struct"
+    },
+    {
+      "file": "iso9660.iso.gz",
+      "sha256": "96a04926fc1e97fd2363a48670e44ab863b2ce41c9fe503c167f3c52e98d09de",
+      "decoded_sha256": "fd8dcaea2a698d782e22f6a52b7e3a4cdaa017c2821c5bbf0d1d81f81be16ca6",
+      "decoded_bytes": 57344,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "joliet.iso.gz",
+      "sha256": "4473fb4884a838121ff1f1c079bad0dc54f1e61287e5c0c3c9eccfda31c4f7c0",
+      "decoded_sha256": "b7c1862837f394e7f1f173c8cb5b91cdad71405dea5ebe361293fa6a4c8f9a7e",
+      "decoded_bytes": 75776,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "rock-ridge.iso.gz",
+      "sha256": "db0b60305359466236db421bf589d95bb9cc2a8c115b0c00804638137a0adde6",
+      "decoded_sha256": "49df6d6c45a845991d99e7228b1ccb368edb989d99ef4e3196935c920a8e5535",
+      "decoded_bytes": 61440,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "udf.iso.gz",
+      "sha256": "47f396aa3c4767b960546ec7f9bd2cae1533ef269eaf1966b30722f6dd2420f4",
+      "decoded_sha256": "12cc26287d649fdb5a661bb1c5b24edb4f465443040814c9b8f8e18cadc25591",
+      "decoded_bytes": 595968,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "udf-regular.iso.gz",
+      "sha256": "ee6a365a2b61f301b06ab27031ce47af87832279d73cbac7ebad172fa4ce574b",
+      "decoded_sha256": "ad6d3ae2797a1fbebca85ed4938925f776ade2273c73ded315ce41d210d02128",
+      "decoded_bytes": 591872,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "hybrid.iso.gz",
+      "sha256": "0ba83f5a8192e71f3b49333b2ff76dc0ae45bb510c2e800bfd4bd4d359583b10",
+      "decoded_sha256": "2e8cbe0515160e5837ee5cbb4d63a5d05ff166c9968d20f6655a85f2f9040f2a",
+      "decoded_bytes": 595968,
+      "license": "Apache-2.0",
+      "generator": "scripts/generate-cab-iso-fixtures.py",
+      "tool": "pycdlib 1.14.0"
+    }
+  ],
+  "upstream_commit": "55d501976171397ccd5d5a7a1ca7da065b1d9a06"
+}

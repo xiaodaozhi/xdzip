@@ -20,6 +20,10 @@ QString BrowserController::addDropMessage() const {
                                 : editUnavailableMessage();
 }
 QString BrowserController::editUnavailableMessage() const {
+    if (QStringList{QStringLiteral("RAR"), QStringLiteral("CAB"), QStringLiteral("ISO"),
+                    QStringLiteral("UDF")}
+            .contains(m_format, Qt::CaseInsensitive))
+        return qtTrId("edit.readOnlyFormat").arg(m_format);
     switch (m_editRestriction & 3) {
     case 1:
         return qtTrId("edit.encrypted");

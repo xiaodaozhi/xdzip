@@ -11,7 +11,7 @@
       "source_subdirectory": ".",
       "license": "LGPL-2.1-or-later AND BSD-3-Clause AND BSD-2-Clause",
       "license_files": ["DOC/License.txt", "DOC/copying.txt"],
-      "formats": ["7z"],
+      "formats": ["7z", "cab", "iso", "udf"],
       "excluded_formats": ["zip", "tar", "gzip", "rar"]
     },
     {

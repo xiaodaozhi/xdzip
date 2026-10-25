@@ -1,158 +1,15 @@
 // tools/native-codec/seven_backend.cpp
 
 #include "7zip/Archive/7z/7zHandler.h"
-#include "7zip/IPassword.h"
-#include "Common/MyCom.h"
-#include "Windows/PropVariant.h"
-#include "Windows/TimeUtils.h"
-#include "protocol.hpp"
+#include "seven_adapter.hpp"
 #include <algorithm>
-#include <atomic>
-#include <cstring>
 
 namespace xdzip {
-STDAPI GetNumberOfFormats(UInt32 *count);
-STDAPI GetHandlerProperty2(UInt32 index, PROPID property, PROPVARIANT *value);
-static std::atomic<uint8_t> callback_fault{0};
-template <class F> static HRESULT guarded(F action) noexcept {
-    try {
-        action();
-        return S_OK;
-    } catch (const Failure &error) {
-        callback_fault = error.code;
-        return E_ABORT;
-    } catch (const std::bad_alloc &) {
-        callback_fault = 4;
-        return E_OUTOFMEMORY;
-    } catch (...) {
-        callback_fault = 2;
-        return E_FAIL;
-    }
-}
-static void check(HRESULT result) {
-    if (callback_fault)
-        throw Failure{callback_fault};
-    if (result == E_OUTOFMEMORY)
-        throw Failure{4};
-    if (result != S_OK)
-        throw Failure{2};
-}
-static HRESULT password(BSTR *value) noexcept {
-    return guarded([&] {
-        if (!request.has_password)
-            throw Failure{6};
-        auto text = wide(request.password);
-        *value = SysAllocString(text.c_str());
-        if (!*value)
-            throw std::bad_alloc();
-    });
-}
-Z7_CLASS_IMP_IInStream(HostSource) uint64_t position = 0;
-};
-Z7_COM7F_IMF(HostSource::Read(void *data, UInt32 size, UInt32 *processed)) {
-    if (processed)
-        *processed = 0;
-    return guarded([&] {
-        auto count = read_source(position, data, size);
-        position += count;
-        if (processed)
-            *processed = UInt32(count);
-    });
-}
-static uint64_t seek_position(uint64_t current, uint64_t length, Int64 offset, UInt32 origin) {
-    uint64_t base = origin == STREAM_SEEK_SET   ? 0
-                    : origin == STREAM_SEEK_CUR ? current
-                    : origin == STREAM_SEEK_END ? length
-                                                : UINT64_MAX;
-    if (base == UINT64_MAX || (offset < 0 && uint64_t(-(offset + 1)) + 1 > base) ||
-        (offset >= 0 && uint64_t(offset) > UINT64_MAX - base))
-        throw Failure{2};
-    return offset < 0 ? base - (uint64_t(-(offset + 1)) + 1) : base + uint64_t(offset);
-}
-Z7_COM7F_IMF(HostSource::Seek(Int64 offset, UInt32 origin, UInt64 *result)) {
-    return guarded([&] {
-        position = seek_position(position, request.length, offset, origin);
-        if (result)
-            *result = position;
-    });
-}
-class OpenCallback final : public IArchiveOpenCallback,
-                           public ICryptoGetTextPassword,
-                           public CMyUnknownImp {
-    Z7_IFACES_IMP_UNK_2(IArchiveOpenCallback, ICryptoGetTextPassword)
-};
-Z7_COM7F_IMF(OpenCallback::SetTotal(const UInt64 *, const UInt64 *)) {
-    return S_OK;
-}
-Z7_COM7F_IMF(OpenCallback::SetCompleted(const UInt64 *, const UInt64 *)) {
-    return S_OK;
-}
-Z7_COM7F_IMF(OpenCallback::CryptoGetTextPassword(BSTR *value)) {
-    return password(value);
-}
-Z7_CLASS_IMP_COM_1(HostOutput, ISequentialOutStream)
-public:
-bool selected = true;
-}
-;
-Z7_COM7F_IMF(HostOutput::Write(const void *data, UInt32 size, UInt32 *processed)) {
-    if (processed)
-        *processed = 0;
-    return guarded([&] {
-        write_data(data, size, selected);
-        if (processed)
-            *processed = size;
-    });
-}
-class ExtractCallback final : public IArchiveExtractCallback,
-                              public ICryptoGetTextPassword,
-                              public CMyUnknownImp {
-    Z7_IFACES_IMP_UNK_2(IArchiveExtractCallback, ICryptoGetTextPassword)
-    Z7_IFACE_COM7_IMP(IProgress)
-    UInt32 current = 0;
-};
-Z7_COM7F_IMF(ExtractCallback::SetTotal(UInt64)) {
-    return S_OK;
-}
-Z7_COM7F_IMF(ExtractCallback::SetCompleted(const UInt64 *)) {
-    return S_OK;
-}
-Z7_COM7F_IMF(ExtractCallback::GetStream(UInt32 index, ISequentialOutStream **stream, Int32 mode)) {
-    current = index;
-    *stream = nullptr;
-    return guarded([&] {
-        if (mode == NArchive::NExtract::NAskMode::kExtract) {
-            auto output = new HostOutput;
-            output->selected = index == request.selected;
-            CMyComPtr<ISequentialOutStream> owner = output;
-            *stream = owner.Detach();
-        }
-    });
-}
-Z7_COM7F_IMF(ExtractCallback::PrepareOperation(Int32)) {
-    return S_OK;
-}
-Z7_COM7F_IMF(ExtractCallback::SetOperationResult(Int32 result)) {
-    if (result == NArchive::NExtract::NOperationResult::kOK)
-        return guarded([&] {
-            if (current == request.selected)
-                entry_done(current);
-        });
-    callback_fault = result == NArchive::NExtract::NOperationResult::kUnsupportedMethod ? 3
-                     : result == NArchive::NExtract::NOperationResult::kWrongPassword   ? 7
-                                                                                        : 2;
-    return E_ABORT;
-}
-Z7_COM7F_IMF(ExtractCallback::CryptoGetTextPassword(BSTR *value)) {
-    return password(value);
-}
-
 Z7_CLASS_IMP_COM_1(HostInput, ISequentialInStream)
 public:
 uint32_t index = 0;
 uint64_t position = 0;
-}
-;
+};
 Z7_COM7F_IMF(HostInput::Read(void *data, UInt32 size, UInt32 *processed)) {
     if (processed)
         *processed = 0;
@@ -280,26 +137,6 @@ Z7_COM7F_IMF(ArchiveOutput::Seek(Int64 offset, UInt32 origin, UInt64 *result)) {
 Z7_COM7F_IMF(ArchiveOutput::SetSize(UInt64 size)) {
     return size == length ? S_OK : E_NOTIMPL;
 }
-static uint64_t unsigned_property(IInArchive *archive, UInt32 index, PROPID id) {
-    NWindows::NCOM::CPropVariant value;
-    check(archive->GetProperty(index, id, &value));
-    if (value.vt == VT_UI8)
-        return value.uhVal.QuadPart;
-    if (value.vt == VT_UI4)
-        return value.ulVal;
-    if (value.vt == VT_EMPTY)
-        return 0;
-    throw Failure{2};
-}
-static bool bool_property(IInArchive *archive, UInt32 index, PROPID id) {
-    NWindows::NCOM::CPropVariant value;
-    check(archive->GetProperty(index, id, &value));
-    if (value.vt == VT_BOOL)
-        return value.boolVal != VARIANT_FALSE;
-    if (value.vt == VT_EMPTY)
-        return false;
-    throw Failure{2};
-}
 static std::wstring raw_path(NArchive::N7z::CHandler *handler, UInt32 index) {
     const void *bytes = nullptr;
     UInt32 size = 0, type = 0;
@@ -341,15 +178,7 @@ static std::wstring raw_path(NArchive::N7z::CHandler *handler, UInt32 index) {
     return name;
 }
 void seven_run() {
-    // Verify the linked static registry, not just the UI routing or source list.
-    UInt32 formats = 0;
-    check(GetNumberOfFormats(&formats));
-    NWindows::NCOM::CPropVariant format_name;
-    if (formats != 1)
-        throw Failure{3};
-    check(GetHandlerProperty2(0, NArchive::NHandlerPropID::kName, &format_name));
-    if (format_name.vt != VT_BSTR || wcscmp(format_name.bstrVal, L"7z") != 0)
-        throw Failure{3};
+    seven_registry_check();
     auto handler = new NArchive::N7z::CHandler;
     CMyComPtr<IInArchive> archive = handler;
     if (request.operation == 2) {
@@ -380,48 +209,17 @@ void seven_run() {
             output, UInt32(request.records.size()), callback));
         return;
     }
-    if (request.operation != 0 && request.operation != 1 && request.operation != 3)
-        throw Failure{3};
-    CMyComPtr<IInStream> source = new HostSource;
-    CMyComPtr<IArchiveOpenCallback> open_callback = new OpenCallback;
-    HRESULT result = archive->Open(source, nullptr, open_callback);
-    if (result != S_OK && request.has_password && !callback_fault)
-        throw Failure{7};
-    check(result);
-    UInt32 count = 0;
-    check(archive->GetNumberOfItems(&count));
-    if (count > request.entries)
-        throw Failure{4};
-    if (request.operation == 0) {
-        for (UInt32 index = 0; index < count; index++) {
-            bool directory = bool_property(archive, index, kpidIsDir),
-                 encrypted = bool_property(archive, index, kpidEncrypted);
-            auto attributes = unsigned_property(archive, index, kpidAttrib);
-            auto mode = (attributes >> 16) & 0170000;
-            bool link = mode == 0120000,
-                 special = (mode != 0 && mode != 0100000 && mode != 0040000 && !link) ||
-                           bool_property(archive, index, kpidIsAnti);
-            NWindows::NCOM::CPropVariant modified;
-            check(archive->GetProperty(index, kpidMTime, &modified));
-            UInt32 dos = 0;
-            if (modified.vt == VT_FILETIME)
-                NWindows::NTime::FileTime_To_DosTime(modified.filetime, dos);
-            metadata(index, raw_path(handler, index),
-                     uint8_t(unsigned(directory) | (unsigned(encrypted) << 1) |
-                             (unsigned(link) << 2) | (unsigned(special) << 3)),
-                     unsigned_property(archive, index, kpidSize),
-                     unsigned_property(archive, index, kpidPackSize), dos);
-        }
-        return;
-    }
-    if (request.selected >= count)
-        throw Failure{2};
-    // Explicitly decode preceding physical records to count solid replay bytes at
-    // the host boundary; the host never writes those bytes to the selected sink.
-    std::vector<UInt32> indices;
-    for (UInt32 index = 0; index < (request.operation == 3 ? count : request.selected + 1); index++)
-        indices.push_back(index);
-    CMyComPtr<IArchiveExtractCallback> callback = new ExtractCallback;
-    check(archive->Extract(indices.data(), UInt32(indices.size()), 0, callback));
+    read_archive(archive, [&](UInt32 index) {
+        bool directory = bool_property(archive, index, kpidIsDir),
+             encrypted = bool_property(archive, index, kpidEncrypted);
+        auto mode = (unsigned_property(archive, index, kpidAttrib) >> 16) & 0170000;
+        bool link = mode == 0120000,
+             special = (mode != 0 && mode != 0100000 && mode != 0040000 && !link) ||
+                       bool_property(archive, index, kpidIsAnti);
+        return ArchiveRow{utf8(raw_path(handler, index)),
+                          uint8_t(unsigned(directory) | (unsigned(encrypted) << 1) |
+                                  (unsigned(link) << 2) | (unsigned(special) << 3)),
+                          0};
+    });
 }
-}
+} // namespace xdzip

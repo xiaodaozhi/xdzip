@@ -303,6 +303,9 @@ mod tests {
         for format in [
             xdzip_codec_api::Format::SevenZip,
             xdzip_codec_api::Format::Rar,
+            xdzip_codec_api::Format::Cab,
+            xdzip_codec_api::Format::Iso,
+            xdzip_codec_api::Format::Udf,
         ] {
             let mut row = entry(1, "native.txt");
             row.format = format;

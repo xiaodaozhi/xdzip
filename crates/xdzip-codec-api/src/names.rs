@@ -115,6 +115,36 @@ pub fn resolve(
     control: &Cancellation,
     limits: ScanLimits,
 ) -> Result<(), ScanError> {
+    resolve_internal(rows, legacy, zip, false, control, limits)
+}
+
+/// CAB paths use backslashes as separators. Convert only decoded characters, so a
+/// Shift-JIS trailing 0x5c remains part of its character rather than a separator.
+pub fn resolve_cab(
+    rows: &mut [Entry],
+    legacy: &[bool],
+    control: &Cancellation,
+    limits: ScanLimits,
+) -> Result<(), ScanError> {
+    resolve_internal(rows, legacy, false, true, control, limits)
+}
+
+/// Resolve an unlabelled CAB volume reference without consulting the host locale.
+pub fn decode_volume_name(raw: &[u8]) -> Option<String> {
+    std::str::from_utf8(raw)
+        .map(str::to_owned)
+        .ok()
+        .or_else(|| decode_legacy(raw, local_guess(raw, false)))
+}
+
+fn resolve_internal(
+    rows: &mut [Entry],
+    legacy: &[bool],
+    zip: bool,
+    cab_separators: bool,
+    control: &Cancellation,
+    limits: ScanLimits,
+) -> Result<(), ScanError> {
     if rows.len() != legacy.len() {
         return Err(ScanError::Invalid);
     }
@@ -172,6 +202,12 @@ pub fn resolve(
                 _ => row.name_encoding = NameEncoding::Unresolved,
             }
         }
+        if cab_separators && row.name_encoding != NameEncoding::Unresolved {
+            let name = std::str::from_utf8(row.name_bytes()).map_err(|_| ScanError::Invalid)?;
+            if name.contains('\\') {
+                row.decoded_name = Some(name.replace('\\', "/"));
+            }
+        }
         let name = std::str::from_utf8(row.name_bytes()).ok();
         let warning = row.name_encoding == NameEncoding::Unresolved
             || name.is_none_or(|s| suspicious(s, row.directory));
@@ -192,4 +228,70 @@ pub fn resolve(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn row(raw_name: Vec<u8>) -> Entry {
+        Entry {
+            format: crate::Format::Cab,
+            id: xdzip_domain::identity::EntryId::try_from(1).unwrap(),
+            raw_name,
+            decoded_name: None,
+            name_encoding: NameEncoding::Utf8,
+            display_name: String::new(),
+            directory: false,
+            link: false,
+            unix_mode: 0,
+            size: 0,
+            packed_size: 0,
+            method: 0,
+            modified_dos: 0,
+            encrypted: false,
+            password_supported: false,
+            warning: false,
+        }
+    }
+    #[test]
+    fn native_names_decode_before_converting_cabinet_separators() {
+        let text = "folder\\ソフトウェアの設定ファイルと日本語.txt";
+        let (encoded, _, failed) = encoding_rs::SHIFT_JIS.encode(text);
+        assert!(!failed);
+        assert!(encoded.windows(2).any(|bytes| bytes == [0x83, 0x5c]));
+        let raw = encoded.into_owned();
+        let mut rows = vec![row(raw.clone())];
+        resolve_cab(
+            &mut rows,
+            &[true],
+            &Default::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+        assert_eq!(rows[0].raw_name, raw);
+        assert_eq!(rows[0].name_bytes(), text.replace('\\', "/").as_bytes());
+        assert!(!rows[0].warning);
+        assert_eq!(rows[0].name_encoding, NameEncoding::Legacy("Shift_JIS"));
+    }
+    #[test]
+    fn declared_native_utf8_damage_and_normalized_traversal_remain_unusable() {
+        let mut rows = vec![
+            row(vec![0xff]),
+            row(b"..\\escape".to_vec()),
+            row("nested\\中文.txt".as_bytes().to_vec()),
+        ];
+        resolve_cab(
+            &mut rows,
+            &[false; 3],
+            &Default::default(),
+            ScanLimits::default(),
+        )
+        .unwrap();
+        assert_eq!(rows[0].name_encoding, NameEncoding::Unresolved);
+        assert!(rows[0].warning);
+        assert_eq!(rows[1].name_bytes(), b"../escape");
+        assert!(rows[1].warning);
+        assert_eq!(rows[2].name_bytes(), "nested/中文.txt".as_bytes());
+        assert!(!rows[2].warning);
+    }
 }

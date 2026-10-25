@@ -23,6 +23,14 @@ Rust 保存每卷句柄身份、长度和时间，并通过 ReadSource::volume_l
 
 7z 和 RAR 文件名加密可能在打开阶段要求密码。普通 Open 返回 password_required 时不发布索引，Qt 复用密码窗口，以 OpenWithPassword 重新提交原选中文件与受限秘密；错误验证值返回 wrong_password。成功后密码只由会话及其已准入任务持有，关闭会话释放会话副本，不写设置和恢复记录。
 
+## CAB 分卷
+
+CAB 的前后卷名来自包头，允许任意合法文件名，不能套用编号卷的字节拼接规则。Rust 从用户选择的任意卷向前后发现同目录卷组，核对集合标识、相邻卷序及双向关系，再冻结每卷身份、长度和原始卷名。最多 1024 卷，同目录发现最多十万项。拒绝缺卷、错卷、循环、重复身份、绝对路径、目录分隔符、父目录逃逸、链接及重解析点，不将已打开子集作为完整归档发布。
+
+工作进程的换卷回调只能选择该授权集合中的名称，每卷提供独立有界流。所有卷参与任务前和文件提交前来源复核及输出覆盖保护，原生处理器的警告或缺卷结果不能转为成功索引。CAB 单卷与分卷均只读。
+
+English: CAB uses header-specified names rather than concatenated numbered parts. Rust discovers and verifies the complete same-directory chain from any selected volume, freezes each part's identity and bounds, and authorizes exact names for bounded native streams. Missing, inconsistent, cyclic or unsafe volume chains fail without a partial index. All parts participate in source revalidation and output-overwrite protection.
+
 ## 双击普通文件
 
 目录双击仍进入目录。普通文件双击提交仅包含该物理条目的后台解压任务，

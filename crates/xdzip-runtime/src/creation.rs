@@ -302,7 +302,7 @@ fn fresh_name(
         Format::Tar => ".tar",
         Format::TarGzip => ".tar.gz",
         Format::SevenZip => ".7z",
-        Format::Rar => return Err("unsupported_feature"),
+        Format::Rar | Format::Cab | Format::Iso | Format::Udf => return Err("unsupported_feature"),
     };
     let stem = name
         .get(..name.len() - extension.len())

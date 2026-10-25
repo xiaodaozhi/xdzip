@@ -449,3 +449,429 @@ fn rar7_store_roundtrip_and_dictionary_admission_publish_no_failed_output() {
     }
     assert_eq!(std::fs::read_dir(target).unwrap().count(), 0);
 }
+
+fn readonly_fixture(name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/cab-iso")
+        .join(name)
+}
+fn readonly_options(archive: &Archive, target: &Path) -> extraction::Options {
+    extraction::Options {
+        target: target.to_string_lossy().into(),
+        all: false,
+        selected: archive
+            .rows
+            .iter()
+            .filter(|entry| !entry.link && !entry.warning)
+            .map(|entry| entry.id.get().to_string())
+            .collect(),
+        directory: String::new(),
+        create_folder: false,
+        conflict: ConflictPolicy::Ask,
+        allow_high_ratio: true,
+    }
+}
+fn assert_readonly(archive: &Archive, f: &Fixture) {
+    assert!(!archive.can_update());
+    assert_ne!(archive.edit_restriction & 4, 0);
+    assert!(matches!(
+        archive.update_job(
+            updating::Options {
+                inputs: vec![f.0.join("input/first.txt").to_string_lossy().into()],
+                directory: String::new(),
+                conflict: ConflictPolicy::Ask
+            },
+            &Default::default()
+        ),
+        Err("unsupported_feature")
+    ));
+}
+fn readonly_transfer(archive: &Archive, f: &Fixture, label: &str, name: &str, bytes: &[u8]) {
+    let target = f.0.join(format!("extract-{label}"));
+    std::fs::create_dir(&target).unwrap();
+    let options = readonly_options(archive, &target);
+    let job = archive
+        .extraction_job(options, &Default::default())
+        .unwrap();
+    task(false, |control, publish| {
+        extraction::run(job, 2, control, publish)
+    });
+    assert_eq!(std::fs::read(target.join(name)).unwrap(), bytes);
+    let cache = f.0.join(format!("cache-{label}"));
+    std::fs::create_dir(&cache).unwrap();
+    let entry = archive
+        .rows
+        .iter()
+        .find(|entry| entry.name_bytes() == name.as_bytes())
+        .unwrap();
+    let job = archive
+        .open_entry_job(entry.id.get(), &cache, &Default::default())
+        .unwrap();
+    let result = task(false, |control, publish| {
+        extraction::run(job, 3, control, publish)
+    });
+    assert_eq!(std::fs::read(&result.open_path).unwrap(), bytes);
+    let options = readonly_options(archive, &cache);
+    let manifest = archive
+        .export_manifest(&options, &Default::default())
+        .unwrap();
+    assert!(manifest.iter().any(|entry| entry.name == name));
+    let job = archive.export_job(options, &Default::default()).unwrap();
+    let result = task(false, |control, publish| {
+        extraction::run(job, 4, control, publish)
+    });
+    assert_eq!(
+        std::fs::read(Path::new(&result.target).join(name)).unwrap(),
+        bytes
+    );
+}
+
+#[test]
+#[ignore = "requires built official native codec worker"]
+fn cabinet_store_mszip_lzx_quantum_tasks_and_trailing_signature_are_read_only() {
+    let f = Fixture::new();
+    for (name, count) in [
+        ("named.cab", 3),
+        ("normal_2files_1folder.cab", 2),
+        ("mszip_lzx_qtm.cab", 3),
+    ] {
+        let archive = Archive::open(&readonly_fixture(name), &Default::default()).unwrap();
+        assert_eq!(archive.format(), Format::Cab);
+        assert_eq!(archive.len(), count);
+        assert_readonly(&archive, &f);
+        let contents = known_contents(&archive);
+        assert_eq!(check(&archive, false).verified_files, count as u64);
+        if name == "named.cab" {
+            assert_eq!(contents["hello.txt"], b"xdzip read-only archive fixture\n");
+            assert_eq!(
+                contents["nested/中文.txt"],
+                "Unicode payload: 中文\n".as_bytes()
+            );
+            assert_eq!(contents["empty.txt"], b"");
+            readonly_transfer(&archive, &f, "cab", "hello.txt", &contents["hello.txt"]);
+            let mut signed = std::fs::read(readonly_fixture(name)).unwrap();
+            signed.extend_from_slice(b"post-cabinet signature data");
+            let path = f.0.join("signed.data");
+            std::fs::write(&path, signed).unwrap();
+            let signed = Archive::open(&path, &Default::default()).unwrap();
+            assert_eq!(known_contents(&signed), contents);
+        }
+    }
+    for name in ["new.cab", "new.iso", "new.udf"] {
+        assert_eq!(crate::formats::creation_format(name), None);
+    }
+}
+
+#[test]
+#[ignore = "requires built official native codec worker"]
+fn cabinet_checksum_failure_publishes_no_selected_output() {
+    let f = Fixture::new();
+    let mut bytes = std::fs::read(readonly_fixture("named.cab")).unwrap();
+    let block = u32::from_le_bytes(bytes[36..40].try_into().unwrap()) as usize;
+    bytes[block..block + 4].copy_from_slice(&0xdead_beefu32.to_le_bytes());
+    let path = f.0.join("bad-checksum.cab");
+    std::fs::write(&path, bytes).unwrap();
+    let archive = Archive::open(&path, &Default::default()).unwrap();
+    let hello = archive
+        .rows
+        .iter()
+        .find(|entry| entry.name_bytes() == b"hello.txt")
+        .unwrap();
+    let target = f.0.join("bad-output");
+    std::fs::create_dir(&target).unwrap();
+    let mut options = readonly_options(&archive, &target);
+    options.selected = vec![hello.id.get().to_string()];
+    let job = archive
+        .extraction_job(options, &Default::default())
+        .unwrap();
+    let mut terminal = None;
+    extraction::run(job, 9, &Default::default(), &mut |snapshot| {
+        if snapshot.status.terminal() {
+            terminal = Some(snapshot);
+        }
+    });
+    let terminal = terminal.unwrap();
+    assert_eq!(terminal.status, Status::Failed);
+    assert_eq!(terminal.error, "integrity_error");
+    assert_eq!((terminal.committed_files, terminal.committed_bytes), (0, 0));
+    assert_eq!(std::fs::read_dir(target).unwrap().count(), 0);
+}
+
+#[test]
+#[ignore = "requires built official native codec worker"]
+fn cabinet_arbitrary_volume_names_open_from_every_part_and_detect_later_changes() {
+    let f = Fixture::new();
+    let root = f.0.join("volumes");
+    std::fs::create_dir(&root).unwrap();
+    for part in 1..=5 {
+        let original = format!("cabd_multi_basic_pt{part}.cab");
+        let mut bytes = std::fs::read(readonly_fixture(&original)).unwrap();
+        for index in 1..=5 {
+            let before = format!("cabd_multi_basic_pt{index}.cab");
+            let after = format!("piece_{index:014}.bin");
+            assert_eq!(before.len(), after.len());
+            for at in 0..=bytes.len() - before.len() {
+                if bytes[at..at + before.len()] == *before.as_bytes() {
+                    bytes[at..at + before.len()].copy_from_slice(after.as_bytes());
+                }
+            }
+        }
+        std::fs::write(root.join(format!("piece_{part:014}.bin")), bytes).unwrap();
+    }
+    let data = (1..=5)
+        .map(|index| format!("This is the data from cabinet part {index}.\n"))
+        .collect::<String>()
+        .into_bytes();
+    let expected = BTreeMap::from([
+        ("test1.txt".into(), data[..76].to_vec()),
+        ("test2.txt".into(), data[76..114].to_vec()),
+        ("test3.txt".into(), data[114..].to_vec()),
+    ]);
+    for part in 1..=5 {
+        let archive = Archive::open(
+            &root.join(format!("piece_{part:014}.bin")),
+            &Default::default(),
+        )
+        .unwrap();
+        assert_eq!(archive.format(), Format::Cab);
+        assert!(archive.source.is_split());
+        assert_eq!(known_contents(&archive), expected);
+        assert_readonly(&archive, &f);
+        if part == 3 {
+            check(&archive, false);
+            readonly_transfer(&archive, &f, "cab-split", "test3.txt", &data[114..]);
+        }
+    }
+    let archive =
+        Archive::open(&root.join("piece_00000000000003.bin"), &Default::default()).unwrap();
+    let final_part = root.join("piece_00000000000005.bin");
+    std::fs::remove_file(&final_part).unwrap();
+    assert_eq!(archive.source.validate(), Err(ScanError::SourceChanged));
+    assert!(matches!(
+        Archive::open(&root.join("piece_00000000000003.bin"), &Default::default()),
+        Err(ScanError::MissingVolume)
+    ));
+}
+
+#[test]
+#[ignore = "requires built official native codec worker"]
+fn optical_images_preserve_names_readable_content_and_reject_link_output_and_udf_fallback() {
+    use std::io::Read;
+    let f = Fixture::new();
+    for (name, format) in [
+        ("iso9660", Format::Iso),
+        ("joliet", Format::Iso),
+        ("rock-ridge", Format::Iso),
+        ("udf", Format::Udf),
+        ("udf-regular", Format::Udf),
+        ("hybrid", Format::Udf),
+    ] {
+        let mut bytes = Vec::new();
+        flate2::read::GzDecoder::new(
+            std::fs::File::open(readonly_fixture(&format!("{name}.iso.gz"))).unwrap(),
+        )
+        .read_to_end(&mut bytes)
+        .unwrap();
+        let path = f.0.join(format!("{name}.wrong-extension"));
+        std::fs::write(&path, &bytes).unwrap();
+        let archive = Archive::open(&path, &Default::default()).unwrap();
+        assert_eq!(archive.format(), format);
+        assert_readonly(&archive, &f);
+        let hello = if name == "iso9660" {
+            "HELLO.TXT"
+        } else {
+            "hello.txt"
+        };
+        let nested = if name == "iso9660" {
+            "NESTED/DATA.TXT"
+        } else {
+            "nested/data.txt"
+        };
+        assert!(
+            archive
+                .rows
+                .iter()
+                .any(|entry| entry.name_bytes() == nested.as_bytes())
+        );
+        if name != "iso9660" {
+            assert!(
+                archive
+                    .rows
+                    .iter()
+                    .any(|entry| entry.name_bytes() == "中文.txt".as_bytes())
+            );
+        }
+        if format == Format::Udf {
+            assert!(
+                archive
+                    .rows
+                    .iter()
+                    .any(|entry| entry.name_bytes() == b"udf-only.txt")
+            );
+        }
+        let links: Vec<_> = archive.rows.iter().filter(|entry| entry.link).collect();
+        if links.is_empty() {
+            check(&archive, false);
+        } else {
+            let mut result = None;
+            checking::run(
+                archive.check_job(&Default::default()).unwrap(),
+                7,
+                &Default::default(),
+                &mut |snapshot| {
+                    if snapshot.status.terminal() {
+                        result = Some(snapshot);
+                    }
+                },
+            );
+            let result = result.unwrap();
+            assert_eq!(result.status, Status::Failed);
+            assert_eq!(result.error, "unsupported_feature");
+            for link in links {
+                assert!(matches!(
+                    archive.open_entry_job(link.id.get(), &f.0, &Default::default()),
+                    Err("unsupported_feature")
+                ));
+            }
+        }
+        readonly_transfer(
+            &archive,
+            &f,
+            name,
+            hello,
+            b"xdzip read-only archive fixture\n",
+        );
+        assert_eq!(
+            std::fs::read(f.0.join(format!("extract-{name}")).join(nested)).unwrap(),
+            "Unicode payload: 中文\n".as_bytes()
+        );
+        if name == "hybrid" {
+            // Destroy UDF anchors/descriptors while preserving the complete ISO tree.
+            for sector in bytes.chunks_mut(2048).skip(256) {
+                sector.fill(0);
+            }
+            std::fs::write(&path, bytes).unwrap();
+            assert_eq!(
+                crate::formats::detect(&mut std::io::Cursor::new(std::fs::read(&path).unwrap())),
+                Ok(Format::Udf)
+            );
+            assert!(Archive::open(&path, &Default::default()).is_err());
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires built official native codec worker"]
+fn iso_extent_above_four_gib_reads_host_sparse_source_without_large_allocations() {
+    use std::io::{self, Read, Seek, SeekFrom};
+    struct Sparse {
+        image: Vec<u8>,
+        payload: Vec<u8>,
+        extent: u64,
+        length: u64,
+        position: u64,
+        read_bytes: u64,
+        high_read: u64,
+    }
+    impl Read for Sparse {
+        fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
+            let count = output
+                .len()
+                .min(self.length.saturating_sub(self.position) as usize);
+            let output = &mut output[..count];
+            output.fill(0);
+            let end = self.position + count as u64;
+            for (base, bytes) in [
+                (0, self.image.as_slice()),
+                (self.extent, self.payload.as_slice()),
+            ] {
+                let start = self.position.max(base);
+                let stop = end.min(base + bytes.len() as u64);
+                if stop > start {
+                    output[(start - self.position) as usize..(stop - self.position) as usize]
+                        .copy_from_slice(&bytes[(start - base) as usize..(stop - base) as usize]);
+                }
+            }
+            self.read_bytes += count as u64;
+            self.high_read = self.high_read.max(end);
+            self.position = end;
+            Ok(count)
+        }
+    }
+    impl Seek for Sparse {
+        fn seek(&mut self, from: SeekFrom) -> io::Result<u64> {
+            let position = match from {
+                SeekFrom::Start(at) => i128::from(at),
+                SeekFrom::Current(at) => i128::from(self.position) + i128::from(at),
+                SeekFrom::End(at) => i128::from(self.length) + i128::from(at),
+            };
+            self.position = u64::try_from(position).map_err(|_| io::ErrorKind::InvalidInput)?;
+            Ok(self.position)
+        }
+    }
+    impl xdzip_codec_api::ReadSource for Sparse {}
+    struct Sink(Vec<u8>);
+    impl DecodedSink for Sink {
+        fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+            self.0.extend_from_slice(bytes);
+            Ok(())
+        }
+    }
+    fn both32(image: &mut [u8], at: usize, value: u32) {
+        image[at..at + 4].copy_from_slice(&value.to_le_bytes());
+        image[at + 4..at + 8].copy_from_slice(&value.to_be_bytes());
+    }
+    let mut image = Vec::new();
+    flate2::read::GzDecoder::new(std::fs::File::open(readonly_fixture("iso9660.iso.gz")).unwrap())
+        .read_to_end(&mut image)
+        .unwrap();
+    let descriptor = 16 * 2048;
+    let root = u32::from_le_bytes(
+        image[descriptor + 158..descriptor + 162]
+            .try_into()
+            .unwrap(),
+    ) as usize
+        * 2048;
+    let lba = 0x20_0008u32;
+    both32(&mut image, descriptor + 80, lba + 1);
+    let mut at = root;
+    let mut changed = false;
+    while image[at] != 0 {
+        let size = image[at] as usize;
+        let name_len = image[at + 32] as usize;
+        if &image[at + 33..at + 33 + name_len] == b"HELLO.TXT;1" {
+            both32(&mut image, at + 2, lba);
+            changed = true;
+        }
+        at += size;
+    }
+    assert!(changed);
+    let expected = b"xdzip read-only archive fixture\n";
+    let mut source = Sparse {
+        image,
+        payload: expected.to_vec(),
+        extent: u64::from(lba) * 2048,
+        length: u64::from(lba + 1) * 2048,
+        position: 0,
+        read_bytes: 0,
+        high_read: 0,
+    };
+    let control = Cancellation::default();
+    let codec = crate::formats::codec(Format::Iso);
+    let rows = codec
+        .scan(&mut source, &control, Default::default())
+        .unwrap();
+    let hello = rows
+        .iter()
+        .find(|entry| entry.name_bytes() == b"HELLO.TXT")
+        .unwrap();
+    let mut sink = Sink(Vec::new());
+    codec
+        .open_payload(&mut source, &rows, &control)
+        .unwrap()
+        .decode(hello, &mut sink, &control)
+        .unwrap();
+    assert_eq!(sink.0, expected);
+    assert!(source.high_read > 4 * 1024 * 1024 * 1024);
+    assert!(source.read_bytes < 2 * 1024 * 1024);
+}

@@ -2,9 +2,9 @@
 
 # 官方格式工作进程
 
-此程序仅链接官方 7-Zip 的 Format7z 容器及算法清单，以及官方 UnRAR。CMake
-拒绝其他 7-Zip 容器路径，7z 每次任务还检查实际静态注册表只有一个名为 `7z`
-的容器。已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
+此程序链接官方 7-Zip 的 7z、Cab、Iso、Udf 明确白名单，以及官方 UnRAR。
+CMake 拒绝其他容器路径，每次 7-Zip 任务检查实际静态注册表恰好为这四个容器。
+Cab、Iso、Udf 只读，只有 7z 保留写入。已有 ZIP、TAR、TAR.GZ 后端不经过此程序。
 
 先运行 `python scripts/prepare-native-codecs.py` 准备锁定的官方来源，再通过项目
 统一构建入口构建 `xdzip-native-codec` 目标。独立构建可设置
@@ -14,6 +14,17 @@ Rust `xdzip-codec-native` 通过 stdin/stdout 的长度前缀二进制帧通信�
 1 MiB，实际数据块最大 64 KiB。源读取使用宿主流的偏移和长度，编码输入使用
 冻结的物理索引，输出使用宿主 sink 或受控 `write_at`。命令行不携带密码或
 用户文件路径，不解析控制台文本，不调用归档通用目录解包。
+
+CAB 的 Start 帧在原有卷长度表之后附加同序的原始卷名表，宿主在扫描前冻结全部
+授权卷。每个原生输入流限制在单卷范围，换卷回调只能匹配这份名字表，缺卷立即失败。
+ROW 保留 37 字节头，flags 的 0x10 表示原始名字字节，0x20 表示 CAB 显式 UTF-8；
+0x04 链接与 0x08 特殊对象语义不变。CAB 与非 Joliet ISO 的原始名字由宿主解码，
+仅 CAB 将反斜杠解释为目录分隔符。Joliet、UDF 传 Unicode 路径，树层级固定为 `/`。
+
+构建副本中的精确变换保留 CAB 原始名字和卷名字，暴露 UDF 的真实 ICB 文件类型，
+并允许元数据识别已知链接、设备、FIFO、socket；特殊类型不会进入输出流。
+ISO 使用 Rock Ridge 符号链接与 POSIX 类型属性分类。扫描检查归档错误标记，
+损坏结构或缺卷不能形成部分成功索引。ISO/UDF 内容读取不宣称格式未提供的文件校验和。
 
 UnRAR 使用此目录的 `host_file.cpp` 替换上游 File 实现，只能打开宿主提供的
 synthetic 卷，不能创建、删除或重命名输出。构建仅在生成目录改变上游

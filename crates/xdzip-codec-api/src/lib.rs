@@ -12,6 +12,11 @@ pub trait ReadSource: Read + Seek {
     fn volume_lengths(&self) -> Option<&[u64]> {
         None
     }
+    /// Frozen CAB header names in the same order as authorized physical volumes.
+    /// Names identify already admitted streams and never grant pathname access.
+    fn volume_names(&self) -> Option<&[Vec<u8>]> {
+        None
+    }
 }
 impl ReadSource for std::fs::File {}
 impl<T: AsRef<[u8]>> ReadSource for std::io::Cursor<T> {}
@@ -76,6 +81,12 @@ pub enum Format {
     SevenZip,
     /// Official UnRAR read-only container backend.
     Rar,
+    /// Microsoft Cabinet, read only through the official 7-Zip engine.
+    Cab,
+    /// ISO9660, Joliet and Rock Ridge optical images, read only.
+    Iso,
+    /// UDF optical images, read only; preferred for hybrid images.
+    Udf,
 }
 impl Format {
     /// Stable user-visible capability label.
@@ -86,6 +97,9 @@ impl Format {
             Self::TarGzip => "TAR.GZ",
             Self::SevenZip => "7z",
             Self::Rar => "RAR",
+            Self::Cab => "CAB",
+            Self::Iso => "ISO",
+            Self::Udf => "UDF",
         }
     }
 }
@@ -147,7 +161,7 @@ impl Entry {
                 }
             }
             Format::Tar | Format::TarGzip => !self.warning && !self.link,
-            Format::SevenZip | Format::Rar => {
+            Format::SevenZip | Format::Rar | Format::Cab | Format::Iso | Format::Udf => {
                 !self.warning && !self.link && (!self.encrypted || self.password_supported)
             }
         }

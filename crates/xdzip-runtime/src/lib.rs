@@ -10,6 +10,7 @@ pub mod navigation;
 pub mod query;
 pub mod service;
 mod source;
+mod source_cab;
 mod task_interaction;
 pub mod updating;
 use std::path::Path;
@@ -85,6 +86,7 @@ impl Archive {
                 xdzip_codec_api::Format::Zip
                     | xdzip_codec_api::Format::SevenZip
                     | xdzip_codec_api::Format::Rar
+                    | xdzip_codec_api::Format::Cab
             )
         {
             return Err(ScanError::Unsupported);
@@ -111,8 +113,14 @@ impl Archive {
                 rows.iter()
                     .any(|r| r.link || r.warning || (!r.directory && !r.payload_supported())),
             ) << 2);
-        let edit_restriction =
-            edit_restriction | (u8::from(format == xdzip_codec_api::Format::Rar) << 2);
+        let edit_restriction = edit_restriction
+            | (u8::from(matches!(
+                format,
+                xdzip_codec_api::Format::Rar
+                    | xdzip_codec_api::Format::Cab
+                    | xdzip_codec_api::Format::Iso
+                    | xdzip_codec_api::Format::Udf
+            )) << 2);
         let update_allowed = edit_restriction == 0;
         Ok(Self {
             update_allowed,

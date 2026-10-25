@@ -172,8 +172,15 @@ class InstallerTests(unittest.TestCase):
             source_entry=configparser.ConfigParser(interpolation=None)
             source_entry.read(ROOT/'apps/desktop/packaging/linux/xdzip.desktop',encoding='utf-8')
             self.assertEqual(shlex.split(source_entry['Desktop Entry']['Exec']),['xdzip','--','%f'])
-            self.assertTrue({'application/x-7z-compressed','application/vnd.rar'} <=
+            self.assertTrue({'application/x-7z-compressed','application/vnd.rar',
+                             'application/vnd.ms-cab-compressed','application/x-iso9660-image',
+                             'application/x-udf'} <=
                             set(source_entry['Desktop Entry']['MimeType'].split(';')))
+            self.assertNotIn('application/octet-stream', source_entry['Desktop Entry']['MimeType'])
+            mime=(stage/'usr/share/mime/packages/xdzip-mime.xml').read_text(encoding='utf-8')
+            self.assertIn('type="application/x-udf"',mime)
+            self.assertIn('pattern="*.udf"',mime)
+            self.assertNotIn('*.img',mime)
             installed_entry=configparser.ConfigParser(interpolation=None)
             installed_entry.read(stage/'usr/share/applications/xdzip.desktop',encoding='utf-8')
             self.assertEqual(shlex.split(installed_entry['Desktop Entry']['Exec']),['/usr/bin/xdzip','--','%f'])
@@ -227,10 +234,11 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('chinesesimplified.LicenseLabel3=',text)
             self.assertIn(' -- ""%1""',text)
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
-            for extension in ('7z','rar'):
+            for extension in ('7z','rar','cab','iso','udf'):
                 self.assertIn('Software\\Classes\\.'+extension+'\\OpenWithProgids',text)
                 self.assertIn('ValueName: ".'+extension+'"; ValueData: "xdzip.Archive"',text)
             self.assertNotIn('Software\\Classes\\.001\\',text)
+            self.assertNotIn('Software\\Classes\\.img\\',text)
             for line in text.splitlines():
                 if '\\OpenWithProgids' in line:
                     self.assertIn('uninsdeletevalue',line);self.assertIn('ValueType: string',line)
@@ -343,7 +351,12 @@ class InstallerTests(unittest.TestCase):
                     self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
                     self.assertTrue({'public.zip-archive','org.gnu.gnu-zip-tar-archive'}<=set(document['LSItemContentTypes']))
                     self.assertTrue({'org.7-zip.7-zip-archive','com.rarlab.rar-archive'}<=set(document['LSItemContentTypes']))
-                    self.assertTrue({'7z','rar'}<=set(document['CFBundleTypeExtensions']))
+                    self.assertTrue({'7z','rar','cab','iso','udf'}<=set(document['CFBundleTypeExtensions']))
+                    self.assertNotIn('img',document['CFBundleTypeExtensions'])
+                    self.assertTrue({'com.microsoft.cab-archive','public.iso-image',
+                                     'org.xdzip.udf-image'}<=set(document['LSItemContentTypes']))
+                    imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
+                    self.assertEqual(imported['org.xdzip.udf-image']['UTTypeTagSpecification']['public.filename-extension'],['udf'])
                     self.assertEqual(info['CFBundleAllowMixedLocalizations'],True)
                     self.assertTrue({'zh-Hans','en'}<=set(info['CFBundleLocalizations']))
 

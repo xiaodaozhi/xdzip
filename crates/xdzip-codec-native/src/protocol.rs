@@ -214,12 +214,16 @@ impl<'a> Fields<'a> {
             self.take(8)?.try_into().map_err(|_| Fault::Invalid)?,
         ))
     }
+    #[cfg(test)]
     pub fn string(&mut self, limit: usize) -> Result<String, Fault> {
+        String::from_utf8(self.bytes(limit)?).map_err(|_| Fault::Invalid)
+    }
+    pub fn bytes(&mut self, limit: usize) -> Result<Vec<u8>, Fault> {
         let length = self.u32()? as usize;
         if length > limit {
             return Err(Fault::Limit);
         }
-        String::from_utf8(self.take(length)?.to_vec()).map_err(|_| Fault::Invalid)
+        Ok(self.take(length)?.to_vec())
     }
     pub fn end(&self) -> Result<(), Fault> {
         if self.0.is_empty() {

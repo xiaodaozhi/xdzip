@@ -17,7 +17,7 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html",
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
       "design": "design/hifi/sources/main.html"
     },
     "Preview": {
@@ -43,7 +43,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
-      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识",
+      "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。TAR、ISO 和 UDF 的无文件内容校验和说明复用既有可换行 footer，不改变窗口尺寸",
       "design": "design/html/canvas.html?view=progress"
     },
     "IntegrityWindow": {

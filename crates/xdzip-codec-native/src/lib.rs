@@ -72,11 +72,14 @@ impl NativeCodec {
         password: Option<&str>,
         selected: u64,
         limits: ScanLimits,
-        volumes: Option<&[u64]>,
+        volume_info: (Option<&[u64]>, Option<&[Vec<u8>]>),
     ) -> Result<Vec<u8>, Fault> {
         let format = match self.format {
             Format::SevenZip => 7,
             Format::Rar => 4,
+            Format::Cab => 8,
+            Format::Iso => 9,
+            Format::Udf => 10,
             _ => return Err(Fault::Unsupported),
         };
         let has_password = password.is_some();
@@ -94,7 +97,16 @@ impl NativeCodec {
         request.push(u8::from(has_password));
         protocol::put_string(&mut request, password);
         request.extend_from_slice(&selected.to_le_bytes());
-        let volumes = volumes.unwrap_or(&[]);
+        // A plain File/Cursor authorizes only its one stream. Synthetic naming
+        // lets single CABs use the codec API; a requested neighbour still fails
+        // because no other name or stream has been authorized by the host.
+        let single_length = [length];
+        let single_name = [b"archive.cab".to_vec()];
+        let volumes = volume_info.0.unwrap_or(if self.format == Format::Cab {
+            &single_length
+        } else {
+            &[]
+        });
         if volumes.len() > 1024
             || (!volumes.is_empty()
                 && volumes
@@ -107,6 +119,26 @@ impl NativeCodec {
         request.extend_from_slice(&(volumes.len() as u32).to_le_bytes());
         for length in volumes {
             request.extend_from_slice(&length.to_le_bytes());
+        }
+        if self.format == Format::Cab {
+            let names = volume_info
+                .1
+                .or_else(|| volume_info.0.is_none().then_some(single_name.as_slice()))
+                .ok_or(Fault::Invalid)?;
+            if names.is_empty() || names.len() != volumes.len() {
+                return Err(Fault::Invalid);
+            }
+            request.extend_from_slice(&(names.len() as u32).to_le_bytes());
+            for name in names {
+                if name.is_empty()
+                    || name.len() > 4096
+                    || request.len() + 4 + name.len() >= protocol::MAX_FRAME
+                {
+                    return Err(Fault::Limit);
+                }
+                request.extend_from_slice(&(name.len() as u32).to_le_bytes());
+                request.extend_from_slice(name);
+            }
         }
         Ok(request)
     }
@@ -125,13 +157,14 @@ impl NativeCodec {
             password,
             0,
             limits,
-            source.volume_lengths(),
+            (source.volume_lengths(), source.volume_names()),
         )?);
         let mut worker = Worker::start(&request)?;
         let mut remaining = limits.read_bytes;
         let mut rows = Vec::new();
         let mut total_names = 0usize;
         let mut total_display = 0usize;
+        let mut legacy = Vec::new();
         loop {
             let frame = worker.next(control)?;
             let mut fields = Fields(&frame);
@@ -144,14 +177,36 @@ impl NativeCodec {
                     let packed_size = fields.u64()?;
                     let modified_dos = fields.u32()?;
                     let method = u16::try_from(fields.u32()?).map_err(|_| Fault::Invalid)?;
-                    let name = fields.string(limits.name_bytes)?;
+                    let raw_name = fields.bytes(limits.name_bytes)?;
                     fields.end()?;
+                    let cab = self.format == Format::Cab;
+                    let raw = flags & 0x10 != 0;
+                    if (cab && !raw)
+                        || (raw && !matches!(self.format, Format::Cab | Format::Iso))
+                        || (!cab && flags & 0x20 != 0)
+                    {
+                        return Err(Fault::Invalid);
+                    }
                     if index != rows.len() as u64 || rows.len() >= limits.entries {
                         return Err(Fault::Limit);
                     }
-                    total_names = total_names.checked_add(name.len()).ok_or(Fault::Limit)?;
-                    let display_name = xdzip_codec_api::names::display(&name);
-                    let raw_name = name.into_bytes();
+                    total_names = total_names
+                        .checked_add(raw_name.len())
+                        .ok_or(Fault::Limit)?;
+                    let utf8 = std::str::from_utf8(&raw_name);
+                    let declared_utf8 = !raw || flags & 0x20 != 0;
+                    let name_encoding = if declared_utf8 && utf8.is_err() {
+                        xdzip_codec_api::names::NameEncoding::Unresolved
+                    } else {
+                        xdzip_codec_api::names::NameEncoding::Utf8
+                    };
+                    if !raw && utf8.is_err() {
+                        return Err(Fault::Invalid);
+                    }
+                    let display_name = utf8
+                        .map(xdzip_codec_api::names::display)
+                        .unwrap_or_else(|_| xdzip_codec_api::names::escaped_bytes(&raw_name));
+                    legacy.push(raw && !declared_utf8);
                     total_display = total_display
                         .checked_add(display_name.len())
                         .ok_or(Fault::Limit)?;
@@ -165,7 +220,7 @@ impl NativeCodec {
                         id: EntryId::try_from(index + 1).map_err(|_| Fault::Limit)?,
                         raw_name,
                         decoded_name: None,
-                        name_encoding: xdzip_codec_api::names::NameEncoding::Utf8,
+                        name_encoding,
                         display_name,
                         directory: flags & 1 != 0,
                         link: flags & 4 != 0,
@@ -184,6 +239,20 @@ impl NativeCodec {
                 protocol::DONE => {
                     fields.end()?;
                     worker.finish(control)?;
+                    if matches!(self.format, Format::Cab | Format::Iso | Format::Udf) {
+                        let resolved = if self.format == Format::Cab {
+                            xdzip_codec_api::names::resolve_cab(&mut rows, &legacy, control, limits)
+                        } else {
+                            xdzip_codec_api::names::resolve(
+                                &mut rows, &legacy, false, control, limits,
+                            )
+                        };
+                        resolved.map_err(|error| match error {
+                            ScanError::Cancelled => Fault::Cancelled,
+                            ScanError::Limit => Fault::Limit,
+                            _ => Fault::Invalid,
+                        })?;
+                    }
                     return Ok(rows);
                 }
                 _ => return Err(Fault::Invalid),
@@ -336,7 +405,7 @@ impl PayloadReader for NativeReader<'_> {
                         password_option,
                         index,
                         ScanLimits::default(),
-                        self.source.volume_lengths(),
+                        (self.source.volume_lengths(), self.source.volume_names()),
                     )
                     .map_err(decode_error)?,
             );
@@ -451,7 +520,7 @@ impl NativeCodec {
                 settings.password,
                 0,
                 ScanLimits::default(),
-                volumes.as_deref(),
+                (volumes.as_deref(), None),
             )
             .map_err(encode_error)?,
         );

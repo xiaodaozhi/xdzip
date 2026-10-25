@@ -189,6 +189,7 @@ Rectangle {
                     }
                 }
                 RowLayout {
+                    objectName: "welcomeFormats"
                     Layout.topMargin: root.width < 900 ? 18 : 22
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 8
@@ -198,9 +199,10 @@ Rectangle {
                         color: Theme.textSecondary
                     }
                     Repeater {
-                        model: ["ZIP", "TAR", "TAR.GZ", "7z", "RAR"]
+                        model: ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"]
                         Rectangle {
                             required property string modelData
+                            objectName: "welcomeFormat-" + modelData
                             implicitWidth: formatLabel.implicitWidth + 14
                             implicitHeight: formatLabel.implicitHeight + 6
                             color: Theme.canvas

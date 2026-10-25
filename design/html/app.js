@@ -344,7 +344,7 @@ function fileIcon(e) {
             : ["zip", "7z", "rar", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "lz", "cab", "001"].includes(suffix) ? "file-archive"
             : ["exe", "msi", "msix", "appx", "deb", "rpm", "pkg", "apk", "appimage"].includes(suffix) ? "file-installer"
             : ["ttf", "otf", "woff", "woff2", "ttc"].includes(suffix) ? "file-font"
-            : ["iso", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"].includes(suffix) ? "file-disk"
+            : ["iso", "udf", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"].includes(suffix) ? "file-disk"
             : "file-text";
 }
 function choosePath(path) {
@@ -865,14 +865,14 @@ function showWelcome() {
     state.selected.clear();
     setWelcomeMode(true);
     const shortcut = document.body.dataset.platform === "macos" ? "⌘ " : "Ctrl+";
-    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打开压缩包，从容整理。</h1><p class="welcome-subtitle">先查看内容，再选择解压。也可以把文件打包，轻松分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><div class="welcome-formats"><span>支持打开</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b><b>7z</b><b>RAR</b></div><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
+    $("#welcome").innerHTML = `<div class="welcome-content"><div class="welcome-identity">${icon("app-mark")}<span>xdzip</span></div><h1>打开压缩包，从容整理。</h1><p class="welcome-subtitle">先查看内容，再选择解压。也可以把文件打包，轻松分享。</p><div class="welcome-actions"><button class="welcome-action primary" id="welcome-open">${icon("folderOpen")}<span><strong>打开压缩包</strong><small>浏览内容，选择需要解压的文件</small><span class="welcome-shortcut">${shortcut}O</span></span></button><button class="welcome-action" id="welcome-create">${icon("new")}<span><strong>创建压缩包</strong><small>添加文件或文件夹，创建压缩包</small><span class="welcome-shortcut">${shortcut}N</span></span></button></div><div class="welcome-drop" id="welcome-drop">${icon("archive-grey")}<span>也可以将压缩包拖到这里</span></div><div class="welcome-formats"><span>支持打开</span><b>ZIP</b><b>TAR</b><b>TAR.GZ</b><b>7z</b><b>RAR</b><b>CAB</b><b>ISO</b><b>UDF</b></div><div class="welcome-feedback" role="alert" hidden><span class="welcome-feedback-icon" aria-hidden="true">${icon("status-warning")}</span><span class="welcome-feedback-text"></span></div></div>`;
     $("#welcome-open").onclick = openPicker;
     $("#welcome-create").onclick = showCreate;
     const resetDrop = () => {
         $("#welcome-drop").classList.remove("drag-over");
         $("#welcome-drop span").textContent = "也可以将压缩包拖到这里";
     };
-    const validName = name => /\.(zip|tar|tar\.gz|tgz|7z|rar)$/i.test(name);
+    const validName = name => /\.(zip|tar|tar\.gz|tgz|7z|rar|cab|iso|udf)$/i.test(name);
     const dragKind = transfer => {
         const items = [...(transfer?.items || [])];
         if (items.length !== 1 || items[0].kind !== "file" || items[0].webkitGetAsEntry?.()?.isDirectory) return "invalid";
@@ -884,7 +884,7 @@ function showWelcome() {
         event.preventDefault();
         const kind = dragKind(event.dataTransfer);
         $("#welcome-drop").classList.toggle("drag-over", kind === "valid");
-        $("#welcome-drop span").textContent = kind === "valid" ? "松开以选择对应示例，不读取拖入文件" : kind === "unknown" ? "松开以检查格式，原型不读取文件内容" : "请拖入单个 ZIP、TAR、TAR.GZ、7z 或 RAR 压缩包";
+        $("#welcome-drop span").textContent = kind === "valid" ? "松开以选择对应示例，不读取拖入文件" : kind === "unknown" ? "松开以检查格式，原型不读取文件内容" : "请拖入单个 ZIP、TAR、TAR.GZ、7z、RAR、CAB、ISO 或 UDF 文件";
     };
     zone.ondragover = event => {
         event.preventDefault();
@@ -899,7 +899,7 @@ function showWelcome() {
         const dropped = [...(event.dataTransfer?.files || [])];
         const directory = [...(event.dataTransfer?.items || [])].some(item => item.webkitGetAsEntry?.()?.isDirectory);
         if (directory || dropped.length !== 1 || !validName(dropped[0].name)) {
-            setWelcomeFeedback("请拖入单个 ZIP、TAR、TAR.GZ、7z 或 RAR 压缩包。此原型不读取文件内容。");
+            setWelcomeFeedback("请拖入单个 ZIP、TAR、TAR.GZ、7z、RAR、CAB、ISO 或 UDF 文件。此原型不读取文件内容。");
             return;
         }
         // Validate the name only; never read user bytes.

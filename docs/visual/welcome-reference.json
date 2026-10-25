@@ -16,6 +16,8 @@
   "titlebar_height": 48,
   "statusbar_height": 32,
   "content_width": 608,
+  "supported_formats": ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"],
+  "format_badge_policy": "Read-only formats use the existing supported-open badges; creation stays ZIP/TAR/TAR.GZ/7z. Preserve badge font, inset and gap and verify all eight at the minimum window and enlarged text.",
   "content_top_inset": 28,
   "feedback_icon_size": 18,
   "feedback_gap": 8,

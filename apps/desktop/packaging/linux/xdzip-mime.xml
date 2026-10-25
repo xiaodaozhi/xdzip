@@ -1,0 +1,10 @@
+<!-- apps/desktop/packaging/linux/xdzip-mime.xml -->
+
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-udf">
+    <comment>UDF disc image</comment>
+    <comment xml:lang="zh_CN">UDF 光盘映像</comment>
+    <sub-class-of type="application/octet-stream"/>
+    <glob pattern="*.udf"/>
+  </mime-type>
+</mime-info>

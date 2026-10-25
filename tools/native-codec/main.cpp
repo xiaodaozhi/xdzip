@@ -192,8 +192,12 @@ void write_at(uint64_t offset, const void *data, size_t size) {
 }
 void metadata(uint64_t index, const std::wstring &name, uint8_t flags, uint64_t size,
               uint64_t packed, uint32_t dos, uint16_t method) {
+    metadata_bytes(index, utf8(name), flags, size, packed, dos, method);
+}
+void metadata_bytes(uint64_t index, const std::string &name, uint8_t flags, uint64_t size,
+                    uint64_t packed, uint32_t dos, uint16_t method) {
     std::lock_guard<std::recursive_mutex> guard(io_mutex);
-    auto path = utf8(name);
+    auto path = name;
     if (path.size() > request.name_bytes)
         throw Failure{4};
     if ((flags & 1) != 0 && (path.empty() || path.back() != '/'))
@@ -309,6 +313,19 @@ static void parse_request() {
             item.end();
             request.records.push_back(row);
         }
+    } else if (request.format == 8) {
+        count = fields.u32();
+        if (count == 0 || count != request.volumes.size())
+            throw Failure{2};
+        for (uint32_t i = 0; i < count; i++) {
+            auto name = fields.string(4096);
+            if (name.empty() || name.find('\0') != std::string::npos ||
+                std::find(request.volume_names.begin(), request.volume_names.end(), name) !=
+                    request.volume_names.end())
+                throw Failure{2};
+            request.volume_names.push_back(std::move(name));
+        }
+        fields.end();
     } else
         fields.end();
 }
@@ -323,6 +340,8 @@ int main() {
         xdzip::parse_request();
         if (xdzip::request.format == 7)
             xdzip::seven_run();
+        else if (xdzip::request.format >= 8 && xdzip::request.format <= 10)
+            xdzip::readonly_run();
         else if (xdzip::request.format == 4)
             xdzip::rar_run();
         else

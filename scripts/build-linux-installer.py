@@ -78,6 +78,8 @@ def package_tree(payload,audit,stage,qa=None,failure=None,legacy=False,historica
         shutil.copy2(ROOT/'apps/desktop/packaging/linux/org.xdzip.update.policy',policy/'org.xdzip.update.policy')
     desktop=installed_desktop_entry((ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8'))
     (share/'applications/xdzip.desktop').write_text(desktop,encoding='utf-8')
+    mime=share/'mime/packages';mime.mkdir(parents=True)
+    shutil.copy2(ROOT/'apps/desktop/packaging/linux/xdzip-mime.xml',mime/'xdzip-mime.xml')
     icons=share/'icons/hicolor/512x512/apps';icons.mkdir(parents=True)
     shutil.copy2(ROOT/'design/assets/brand/xdzip.png',icons/'xdzip.png')
     tmpfiles=stage/'usr/lib/tmpfiles.d';tmpfiles.mkdir(parents=True)

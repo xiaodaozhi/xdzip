@@ -107,6 +107,9 @@ impl xdzip_codec_api::ReadSource for Counted<'_> {
     fn volume_lengths(&self) -> Option<&[u64]> {
         xdzip_codec_api::ReadSource::volume_lengths(self.source)
     }
+    fn volume_names(&self) -> Option<&[Vec<u8>]> {
+        xdzip_codec_api::ReadSource::volume_names(self.source)
+    }
 }
 impl Seek for Counted<'_> {
     fn seek(&mut self, position: SeekFrom) -> io::Result<u64> {

@@ -20,7 +20,7 @@ QtObject {
             : ["zip", "7z", "rar", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst", "lz", "cab", "001"].includes(suffix) ? "file-archive"
             : ["exe", "msi", "msix", "appx", "deb", "rpm", "pkg", "apk", "appimage"].includes(suffix) ? "file-installer"
             : ["ttf", "otf", "woff", "woff2", "ttc"].includes(suffix) ? "file-font"
-            : ["iso", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"].includes(suffix) ? "file-disk"
+            : ["iso", "udf", "img", "dmg", "vhd", "vhdx", "vmdk", "qcow2"].includes(suffix) ? "file-disk"
             : "file-text";
     }
     function fileIcon(name: string, directory: bool, large: bool): string {
