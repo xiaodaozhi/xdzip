@@ -12,7 +12,7 @@ Item {
     TestCase {
         name: "WelcomePage"; when: windowShown
         function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; page.message=""; page.canOpen = true; page.busy = false; page.externalOpening = false; openSpy.clear(); createSpy.clear(); }
-        function cleanup() { Ui.Theme.fontScale = 1; }
+        function cleanup() { Ui.Theme.fontScale = 1; surface.width = 1024; }
         function test_actions_and_states_data() { return [{tag:"light", dark:false}, {tag:"dark", dark:true}]; }
         function test_actions_and_states(data) {
             Ui.Theme.dark = data.dark;
@@ -102,15 +102,27 @@ Item {
             Ui.Theme.fontScale = data.scale;
             surface.width = 832;
             const formats = findChild(page, "welcomeFormats");
+            const names = ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"];
+            const badges = names.map(format => findChild(page, "welcomeFormat-" + format));
+            verify(badges.every(badge => badge && badge.visible));
+            tryVerify(() => badges.every(badge => badge.children[0].font.pixelSize === Math.round(11 * data.scale)));
+            // A child Text can update its font metrics before the parent layout
+            // schedules a second polish. Measure the frame with the new metrics.
+            verify(waitForRendering(page));
             verify(waitForPolish(formats));
-            for (const format of ["ZIP", "TAR", "TAR.GZ", "7z", "RAR", "CAB", "ISO", "UDF"]) {
-                const badge = findChild(page, "welcomeFormat-" + format);
-                verify(badge && badge.visible);
+            const naturalWidth = () => formats.children[0].implicitWidth
+                + badges.reduce((total, badge) => total + badge.implicitWidth, 0)
+                + formats.spacing * badges.length;
+            tryVerify(() => formats.width >= naturalWidth()
+                && badges.every(badge => badge.width >= badge.children[0].implicitWidth + 14));
+            verify(formats.width <= formats.parent.width);
+            console.log("Welcome format geometry", JSON.stringify({scale: data.scale,
+                available: formats.parent.width, width: formats.width, natural: naturalWidth()}));
+            for (const badge of badges) {
                 const point = badge.mapToItem(page, 0, 0);
                 verify(point.x >= 0 && point.x + badge.width <= page.width);
-                verify(badge.width >= badge.children[0].implicitWidth);
+                verify(badge.width >= badge.children[0].implicitWidth + 14);
             }
-            surface.width = 1024;
         }
         function test_feedback_preserves_top_anchors_data() {
             const cases=[];
