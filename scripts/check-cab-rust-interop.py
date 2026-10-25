@@ -19,6 +19,8 @@ import unicodedata
 ROOT = Path(__file__).resolve().parents[1]
 MAX_INPUT = 8 * 1024 * 1024
 MAX_OUTPUT = 16 * 1024 * 1024
+# Debug symbols are part of tool identity, not CAB fixture input allowance.
+MAX_BINARY = 128 * 1024 * 1024
 
 
 def module(path):
@@ -263,7 +265,7 @@ def negative_cases(binary, extract_binary, cases, output, owned, env):
 
 
 def worker_identity(worker, kind, cache):
-    info = dict(sha256=identity(worker)[1], filename=worker.name, backend=kind)
+    info = dict(sha256=identity(worker, MAX_BINARY)[1], filename=worker.name, backend=kind)
     if kind == 'rust-cab-test-route':
         require(cache is not None and cache.is_file(), 'Rust worker requires its --worker-build-cache')
         text = cache.read_text(encoding='utf-8')
@@ -299,7 +301,7 @@ def main():
     extract = args.extract_binary.resolve() if args.extract_binary else None
     reference = args.reference_worker.resolve() if args.reference_worker else None
     report = dict(passed=False, codec=[], host_worker=[], host_service=[], reference=[], negative=[],
-                  probe_sha256=identity(binary)[1],
+                  probe_sha256=identity(binary, MAX_BINARY)[1],
                   native_transport_sha256=identity(ROOT / 'scripts/check-native-codecs.py')[1],
                   fixture_manifests={},
                   limits=['Desktop/Qt acceptance is separate.',
@@ -318,11 +320,11 @@ def main():
         env.pop('XDZIP_NATIVE_CODEC_WORKER', None)
         env['XDZIP_NATIVE_CODEC'] = str(worker)
     if reference:
-        report['reference_worker_sha256'] = identity(reference)[1]
+        report['reference_worker_sha256'] = identity(reference, MAX_BINARY)[1]
         require(not worker or report['host_worker_identity']['sha256'] != report['reference_worker_sha256'], 'reference and host worker must differ')
     if extract:
         require(worker is not None, 'service extraction requires explicit --worker')
-        report['m3_probe_sha256'] = identity(extract, 64 * 1024 * 1024)[1]
+        report['m3_probe_sha256'] = identity(extract, MAX_BINARY)[1]
         base = invoke([extract, '--native-temp-base'], env)
         require(base.returncode == 0, 'host temporary base query failed')
         native_base = Path(base.stdout.decode().strip())
