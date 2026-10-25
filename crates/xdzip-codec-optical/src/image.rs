@@ -152,6 +152,9 @@ impl<'a> ImageReader<'a> {
         while filled < bytes.len() {
             self.check()?;
             let count = match self.source.read(&mut bytes[filled..]) {
+                Err(error) if error.get_ref().is_some_and(|error| error.is::<ScanError>()) => {
+                    return Err(source_error(error));
+                }
                 Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
                 result => result.map_err(source_error)?,
             };
@@ -274,5 +277,161 @@ impl IndexBuilder {
         Index {
             records: self.records,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::OpticalCodec;
+    use std::io::{Cursor, Read, Seek};
+    use xdzip_codec_api::MetadataCodec;
+
+    struct FaultOnce<'a> {
+        source: Cursor<&'a [u8]>,
+        before_error: usize,
+        failure: Option<io::Error>,
+        cancel_on_error: Option<&'a Cancellation>,
+        calls: usize,
+        read: usize,
+    }
+    impl Read for FaultOnce<'_> {
+        fn read(&mut self, output: &mut [u8]) -> io::Result<usize> {
+            self.calls += 1;
+            if self.before_error == 0
+                && let Some(error) = self.failure.take()
+            {
+                if let Some(control) = self.cancel_on_error {
+                    control.cancel();
+                }
+                return Err(error);
+            }
+            let mut count = output.len().min(3);
+            if self.failure.is_some() {
+                count = count.min(self.before_error);
+            }
+            let read = self.source.read(&mut output[..count])?;
+            self.before_error = self.before_error.saturating_sub(read);
+            self.read += read;
+            Ok(read)
+        }
+    }
+    impl Seek for FaultOnce<'_> {
+        fn seek(&mut self, offset: SeekFrom) -> io::Result<u64> {
+            self.source.seek(offset)
+        }
+    }
+    impl ReadSource for FaultOnce<'_> {}
+
+    fn iso_fixture() -> Vec<u8> {
+        let mut image = Vec::new();
+        xdzip_compression::GzipReader::new(Cursor::new(include_bytes!(
+            "../../../tests/fixtures/cab-iso/iso9660.iso.gz"
+        )))
+        .take(57_345)
+        .read_to_end(&mut image)
+        .unwrap();
+        assert_eq!(image.len(), 57_344);
+        image
+    }
+
+    #[test]
+    fn typed_source_errors_survive_interrupted_io_before_index_publication() {
+        let image = iso_fixture();
+        let codec = OpticalCodec {
+            format: Format::Iso,
+        };
+        let control = Cancellation::default();
+        for error in [
+            ScanError::Cancelled,
+            ScanError::Limit,
+            ScanError::SourceChanged,
+            ScanError::Io,
+        ] {
+            for kind in [io::ErrorKind::Other, io::ErrorKind::Interrupted] {
+                for prefix in [0, 3] {
+                    let mut source = FaultOnce {
+                        source: Cursor::new(image.as_slice()),
+                        before_error: prefix,
+                        failure: Some(io::Error::new(kind, error)),
+                        cancel_on_error: None,
+                        calls: 0,
+                        read: 0,
+                    };
+                    assert_eq!(
+                        codec.scan(&mut source, &control, ScanLimits::default()),
+                        Err(error)
+                    );
+                    assert_eq!(source.read, prefix);
+                    assert_eq!(source.calls, if prefix == 0 { 1 } else { 2 });
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn bare_interruption_preserves_complete_iso_index_and_partial_read_budget() {
+        let image = iso_fixture();
+        let codec = OpticalCodec {
+            format: Format::Iso,
+        };
+        let control = Cancellation::default();
+        let expected = codec
+            .scan(&mut Cursor::new(&image), &control, ScanLimits::default())
+            .unwrap();
+        assert!(!expected.is_empty());
+        for prefix in [0, 3] {
+            let mut source = FaultOnce {
+                source: Cursor::new(image.as_slice()),
+                before_error: prefix,
+                failure: Some(io::ErrorKind::Interrupted.into()),
+                cancel_on_error: None,
+                calls: 0,
+                read: 0,
+            };
+            assert_eq!(
+                codec
+                    .scan(&mut source, &control, ScanLimits::default())
+                    .unwrap(),
+                expected
+            );
+        }
+        let mut source = FaultOnce {
+            source: Cursor::new(image.as_slice()),
+            before_error: 3,
+            failure: Some(io::ErrorKind::Interrupted.into()),
+            cancel_on_error: None,
+            calls: 0,
+            read: 0,
+        };
+        {
+            let mut reader = ImageReader::new(&mut source, &control, 6).unwrap();
+            assert_eq!(reader.read_at(0, 6).unwrap(), image[..6]);
+            assert_eq!(reader.read_at(6, 1), Err(ScanError::Limit));
+        }
+        assert_eq!((source.calls, source.read), (3, 6));
+    }
+
+    #[test]
+    fn cancellation_during_bare_interruption_stops_before_another_source_read() {
+        let control = Cancellation::default();
+        let mut source = FaultOnce {
+            source: Cursor::new(b"partial-read-data".as_slice()),
+            before_error: 3,
+            failure: Some(io::ErrorKind::Interrupted.into()),
+            cancel_on_error: Some(&control),
+            calls: 0,
+            read: 0,
+        };
+        let mut output = [0; 6];
+        {
+            let mut reader = ImageReader::new(&mut source, &control, 6).unwrap();
+            assert_eq!(
+                reader.read_exact_at(0, &mut output),
+                Err(ScanError::Cancelled)
+            );
+        }
+        assert_eq!(&output[..3], b"par");
+        assert_eq!((source.calls, source.read), (2, 3));
     }
 }
