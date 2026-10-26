@@ -271,6 +271,7 @@ def worker_identity(worker, kind, cache):
         text = cache.read_text(encoding='utf-8')
         require('XDZIP_CAB_BACKEND:INTERNAL=rust' in text.splitlines(), 'worker CAB backend is not fixed to Rust')
         require('XDZIP_7Z_BACKEND:INTERNAL=rust' in text.splitlines(), 'worker 7z backend is not fixed to Rust')
+        require('XDZIP_RAR_BACKEND:INTERNAL=rust' in text.splitlines(), 'worker RAR backend is not fixed to Rust')
         # Require the cache and executable to belong to the same build tree.
         require(worker.is_relative_to(cache.parent), 'worker/cache build-tree mismatch')
         info['product_route'] = 'XDZIP_CAB_BACKEND:INTERNAL=rust'
@@ -285,12 +286,20 @@ def worker_identity(worker, kind, cache):
                     'official 7-Zip source remains compiled')
             require(not line.endswith(('/LzxDecoder.cpp', '/QuantumDecoder.cpp')),
                     'official CAB-only algorithm remains compiled')
-        require('/unrar-host/' in source_list and 'codec_boundary.cpp' in source_list,
-                'remaining native engine or shared codec boundary is missing')
-        info['compiled_official_containers'] = ['rar']
+        expected = {'main.cpp', 'seven_backend.cpp', 'rar_backend.cpp', 'readonly_backend.cpp',
+                    'codec_boundary.cpp', 'platform_time.cpp', 'platform_encoding.cpp'}
+        lines = [line for line in source_list.splitlines() if line]
+        require(len(lines) == len(expected)
+                and {Path(line).name for line in lines} == expected
+                and all(line.endswith('/tools/native-codec/' + Path(line).name) for line in lines),
+                'native worker compiled sources exceed the project glue allowlist')
+        require('/unrar-host/' not in source_list and 'host_file.cpp' not in source_list,
+                'retired UnRAR source or filesystem adapter remains compiled')
+        info['compiled_official_containers'] = []
         info['compiled_7zip_containers'] = []
-        info['compiled_native_engine'] = 'unrar'
+        info['compiled_native_engine'] = 'none'
         info['rust_7z_product_route'] = 'XDZIP_7Z_BACKEND:INTERNAL=rust'
+        info['rust_rar_product_route'] = 'XDZIP_RAR_BACKEND:INTERNAL=rust'
         info['source_list_sha256'] = hashlib.sha256(lists[0].read_bytes()).hexdigest()
     return info
 

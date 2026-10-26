@@ -1,6 +1,10 @@
 # scripts/native_codec_materials.py
 
-"""Pinned official codec attribution and corresponding-source delivery."""
+"""Attribution/source delivery for declared product codecs, currently empty.
+
+Pinned independent test references and historical deliveries retain their own
+notices; they do not enter this current product-source manifest.
+"""
 import hashlib
 import json
 from pathlib import Path

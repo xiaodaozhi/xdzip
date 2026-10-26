@@ -359,7 +359,7 @@ impl<'a> Payload<'a> {
         let file = &self.index.files[n];
         let mut first = self.index.parts[file.parts[0]].description.clone();
         first.size = Some(entry.size);
-        if entry.warning || entry.link || first.special || first.redirection {
+        if !entry.size_known || entry.warning || entry.link || first.special || first.redirection {
             return Err(DecodeError::Unsupported);
         }
         let (key, legacy): (Option<&KeyMaterial>, Option<LegacyCipher>) = if first.encrypted {
@@ -369,11 +369,12 @@ impl<'a> Payload<'a> {
             if first.legacy {
                 (
                     None,
-                    Some(
-                        self.index
-                            .protection
-                            .legacy_content(&first, password, control)?,
-                    ),
+                    Some(self.index.protection.legacy_content(
+                        &first,
+                        password,
+                        control,
+                        &self.reader,
+                    )?),
                 )
             } else if matches!(first.method, 50 | 70) {
                 let crypt = first.crypt.as_ref().ok_or(DecodeError::Unsupported)?;
@@ -563,7 +564,7 @@ impl<'a> Payload<'a> {
         if self.index.rows.get(n) != Some(entry) {
             return Err(DecodeError::Integrity);
         }
-        if entry.warning || entry.link {
+        if !entry.size_known || entry.warning || entry.link {
             return Err(DecodeError::Unsupported);
         }
         if entry.directory

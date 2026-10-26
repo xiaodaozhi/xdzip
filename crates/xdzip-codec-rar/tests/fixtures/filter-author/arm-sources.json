@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "scope": "Fixed public RAR archive, independently published exact original input. This manifest distributes no GPL executable or GPL-containing archive bytes. The optional preparer downloads test data only to build and never executes it. No corresponding third-party decoder or encoder implementation was read.",
+  "archive": {
+    "repository": "https://github.com/libarchive/libarchive",
+    "commit": "4eed0032061e2370a2e8a87567b3e5a34927e2dd",
+    "url": "https://raw.githubusercontent.com/libarchive/libarchive/4eed0032061e2370a2e8a87567b3e5a34927e2dd/libarchive/test/test_read_format_rar5_arm.rar.uu",
+    "uu_sha256": "a8c52f15818198d0e6fc5b74ec3be0ec2ae94bde228d3b1ffdce50ebcc8a0896",
+    "sha256": "c5b149097c4f3e17239d80d6c9897c1a5aa98608d4f2e74e711bea5ef8ca85dd",
+    "bytes": 41082,
+    "member": "elf-Linux-ARMv7-ls",
+    "encoded_bytes": 56648
+  },
+  "independent_original": {
+    "repository": "https://github.com/kaitai-io/kaitai_struct_samples",
+    "commit": "11ccc86d7697d1b4dcc58ee4b0c5bf8994307e76",
+    "url": "https://raw.githubusercontent.com/kaitai-io/kaitai_struct_samples/11ccc86d7697d1b4dcc58ee4b0c5bf8994307e76/executable/elf/elf-Linux-ARMv7-ls",
+    "bytes": 90808,
+    "sha256": "e68c62b49184ed764f324fb4722481d60e1bf321b722238d95247f391960605c",
+    "spdx_license": "GPL-3.0-or-later",
+    "copyright": "1985-2021 Free Software Foundation, Inc.",
+    "license_url": "https://raw.githubusercontent.com/kaitai-io/kaitai_struct_samples/11ccc86d7697d1b4dcc58ee4b0c5bf8994307e76/executable/elf/elf-Linux-ARMv7-ls.license",
+    "license_sha256": "b56b148157d367dcfaa80fd427d74f57ef5a8cf1277b63afdd24ff3939cac8b2",
+    "license_bytes": 108
+  },
+  "upstream_test_assertion": {
+    "file": "libarchive/test/test_read_format_rar5.c",
+    "sha256": "777dfa8332972845dddbf3bdfe42d95d7fa8fe2a27dcc54901487ef40f3c3841",
+    "read_scope": "Only targeted ARM test lines404..425 and malformed ARM boundary test1375..1387; no decoder source.",
+    "expected_bytes": 90808,
+    "expected_crc32": "886f91eb"
+  },
+  "verification_scope": "Candidate complete Payload original-byte equality, original SHA pinned independently; direct LZ complete original-byte equality and required ARM descriptor3>0. Counts are descriptors plus full successful transform/output, not host service/GUI validation.",
+  "commands": [
+    "python tests/prepare-public-filter-fixtures.py --output build/public-filter-arm",
+    "Set XDZIP_RAR_FILTER_AUTHOR_FIXTURES to that output and run cargo test -p xdzip-codec-rar modern_independent_author -- --ignored --nocapture --test-threads=1"
+  ],
+  "limits": [
+    "Single plain archive, no encryption/solid/split or all ARM instruction variants established.",
+    "No binary source redistribution or license clearance claim; upstream original notices retained with downloaded data.",
+    "Malformed ARM window-boundary upstream fixture is explicitly invalid and is not a successful known-input example."
+  ]
+}

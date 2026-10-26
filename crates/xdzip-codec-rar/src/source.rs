@@ -73,6 +73,37 @@ impl<'a> Reader<'a> {
     pub fn control(&self) -> &Cancellation {
         self.control
     }
+    pub fn local_calendar(
+        &self,
+        timestamp: xdzip_codec_api::time::Timestamp,
+    ) -> Result<Option<xdzip_codec_api::time::Calendar>, ScanError> {
+        self.check()?;
+        self.input.local_calendar(timestamp)
+    }
+    pub fn oem_to_ansi_wide(
+        &self,
+        input: &[u16],
+        output: &mut [u16],
+    ) -> Result<Option<usize>, ScanError> {
+        self.check()?;
+        self.input.oem_to_ansi_wide(input, output)
+    }
+    pub fn wide_to_ansi(
+        &self,
+        input: &[u16],
+        output: &mut [u8],
+    ) -> Result<Option<usize>, ScanError> {
+        self.check()?;
+        self.input.wide_to_ansi(input, output)
+    }
+    pub fn wide_to_local_prefix(
+        &self,
+        input: &[u32],
+        output: &mut [u8],
+    ) -> Result<Option<usize>, ScanError> {
+        self.check()?;
+        self.input.wide_to_local_prefix(input, output)
+    }
     pub fn range(&self, volume: usize, at: u64, count: u64) -> Result<u64, ScanError> {
         self.check()?;
         let volume = self.volumes.get(volume).ok_or(ScanError::Invalid)?;

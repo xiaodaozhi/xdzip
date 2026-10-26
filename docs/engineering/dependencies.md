@@ -49,7 +49,9 @@ M2 在 Windows 运行时直接使用精确版本 `winapi-util = 0.1.11` 的 `fil
 
 `xdzip-codec-cab` 只依赖本项目 API、domain 与无第三方生产依赖的 `xdzip-compression`。MSZIP 复用 ZIP/GZIP 的 Deflate，LZX 和 Quantum 为独立算法模块，不引入额外 Deflate 或通用归档库。7z、CAB 与光盘后端共享 `xdzip-codec-bridge` 及宿主授权流，创建仅增加受控输入与随机暂存回调，不复制通用边界。产品固定使用 Rust，官方 Cab 与其专用 LZX/Quantum 不进入构建；资源及格式边界见[自研契约](independent-rust-codecs.md#cab只读规格)，参考逻辑的分析范围与许可见[CAB 来源](cab-format-sources.md)。
 
-生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 的容器、算法和通用设施全部退出产品 CMake 清单，源码准备和当前部署通知只保留 UnRAR。历史交付的许可义务不因当前裁剪而消失。独立 pycdlib、Microsoft IMAPI、mkudffs/udfclient 夹具、官方参考 worker 和规范向量仅用于测试，来源和工具许可与产品分别管理，不进入应用运行依赖。项目自有内容的小型固定输入及生成脚本纳入测试目录，展开的像和执行证据只留在 build/。
+`xdzip-codec-rar` 复用同一 codec API、共享压缩算法与密码原语，不引入 RAR 或其他归档格式库。PPMd H 统计模型由 7z 与 RAR 共用，格式各自定义 range、重置与终止；旧密码的特殊兼容组合保留在 RAR 模块。系统日历及 OEM/ANSI/本地编码由薄工作进程回调提供，格式字段、密码截断与校验仍由 Rust 处理，Qt 不进入格式逻辑。
+
+生产依赖政策同时检查格式 crate 与桥接 crate 的普通/构建依赖闭包。官方 7-Zip 与 UnRAR 的容器、算法和通用设施全部退出产品 CMake 清单，产品源码准备清单为空，没有失败回退。历史交付的许可义务不因当前退出而消失。独立 pycdlib、Microsoft IMAPI、mkudffs/udfclient 夹具、官方参考 worker 和规范向量仅用于测试，来源和工具许可与产品分别管理，不进入应用运行依赖。项目自有内容的小型固定输入及生成脚本纳入测试目录，展开的像和执行证据只留在 build/。
 
 ## HTML 复核字体与工具
 

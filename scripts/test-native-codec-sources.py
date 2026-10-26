@@ -17,6 +17,10 @@ INTEROP_SPEC = importlib.util.spec_from_file_location(
     'codec_interop', Path(__file__).with_name('prepare-native-interop.py'))
 INTEROP = importlib.util.module_from_spec(INTEROP_SPEC)
 INTEROP_SPEC.loader.exec_module(INTEROP)
+MATERIALS_SPEC = importlib.util.spec_from_file_location(
+    'codec_materials', Path(__file__).with_name('native_codec_materials.py'))
+MATERIALS = importlib.util.module_from_spec(MATERIALS_SPEC)
+MATERIALS_SPEC.loader.exec_module(MATERIALS)
 
 
 class SourceAdmissionTests(unittest.TestCase):
@@ -54,14 +58,41 @@ class SourceAdmissionTests(unittest.TestCase):
             finally:
                 SOURCES.MAX_EXPANDED = previous
 
-    def test_official_source_identity_and_format_boundaries(self):
-        items = {item['id']: item for item in SOURCES.sources()}
-        self.assertEqual(set(items), {'unrar'})
-        self.assertEqual(items['unrar']['formats'], ['rar'])
-        self.assertFalse(items['unrar']['creation'])
-        for item in items.values():
-            self.assertEqual(len(item['sha256']), 64)
-            self.assertTrue(item['url'].startswith('https://'))
+    def test_product_has_no_official_codec_source_or_adapter(self):
+        self.assertEqual(SOURCES.sources(), [])
+        cmake = (SOURCES.ROOT / 'tools/native-codec/CMakeLists.txt').read_text(encoding='utf-8')
+        for name in ['7Z', 'RAR', 'CAB']:
+            self.assertIn('set(XDZIP_' + name + '_BACKEND rust CACHE INTERNAL', cmake)
+        for retired in ['XDZIP_UNRAR_SOURCE', 'unrar_copy', 'RARDLL', 'host_file.cpp']:
+            self.assertNotIn(retired, cmake)
+        self.assertIn('platform_time.cpp', cmake)
+        self.assertIn('platform_encoding.cpp', cmake)
+        self.assertFalse((SOURCES.ROOT / 'tools/native-codec/host_file.cpp').exists())
+        adapter = (SOURCES.ROOT / 'tools/native-codec/rar_backend.cpp').read_text(encoding='utf-8')
+        self.assertIn('codec_bridge::run_rar', adapter)
+        self.assertNotIn('rar.hpp', adapter)
+        self.assertNotIn('RAROpenArchive', adapter)
+        bridge_build = (SOURCES.ROOT / 'crates/xdzip-codec-bridge/build.rs').read_text(encoding='utf-8')
+        self.assertIn('cxx_build::bridge("src/lib.rs")', bridge_build)
+        self.assertNotIn('.file(', bridge_build)
+
+    def test_empty_product_source_preparation_never_downloads(self):
+        build = SOURCES.ROOT / 'build'
+        build.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='empty-native-source-', dir=build) as temporary:
+            root = Path(temporary)
+            with mock.patch.object(SOURCES.urllib.request, 'urlopen') as network:
+                self.assertEqual(SOURCES.prepare(root / 'sources', root / 'downloads', offline=True), {})
+            network.assert_not_called()
+
+    def test_current_product_materials_do_not_copy_historical_official_sources(self):
+        with tempfile.TemporaryDirectory(prefix='empty-native-materials-', dir=SOURCES.ROOT / 'build') as temporary:
+            root = Path(temporary)
+            self.assertEqual(MATERIALS.configuration(), [])
+            self.assertEqual(MATERIALS.notices(root / 'notices'), ([], []))
+            self.assertEqual(MATERIALS.corresponding_sources(root / 'sources'), [])
+            files = list((root / 'sources/native-codecs').iterdir())
+            self.assertEqual([path.name for path in files], ['sources.json'])
 
     def test_marker_does_not_hide_prepared_source_modifications(self):
         with tempfile.TemporaryDirectory() as temporary:

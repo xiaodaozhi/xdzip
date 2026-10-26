@@ -543,6 +543,49 @@ class BrowserTest : public QObject {
         controller.requestClose();
         QTRY_VERIFY(controller.requestClose());
     }
+    void unknownSizesRemainDistinctFromEmptyFilesAndNavigationSelection() {
+        BrowserController controller;
+        controller.m_pending = 10001;
+        xdzip::reader::Event page{};
+        page.kind = xdzip::reader::EventKind::Page;
+        page.request_id = 10001;
+        page.query = page.revision = page.session = 1;
+        page.total = page.archive_total = 4;
+        page.format = rust::String("RAR");
+        for (int i = 0; i < 4; ++i) {
+            xdzip::reader::Row row{};
+            row.id = rust::String(i == 3 ? "d1" : std::to_string(i + 1));
+            row.name = rust::String(i == 3 ? "folder/" : "file" + std::to_string(i + 1));
+            row.size = i == 2 ? 7 : 0;
+            row.size_known = i == 1 || i == 2;
+            row.physical = i != 3;
+            row.directory = i == 3;
+            page.rows.push_back(std::move(row));
+        }
+        controller.receive(page);
+        QVERIFY(controller.m_result.error.isEmpty());
+        QCOMPARE(controller.m_result.rows.size(), 4);
+        controller.m_model.replace(std::move(controller.m_result.rows));
+        controller.m_pending = 0;
+        QVERIFY(controller.m_model.rowAt(0)->cells[1].isEmpty());
+        QVERIFY(controller.m_model.rowAt(0)->status.contains(qtTrId("archive.unknownSize")));
+        QVERIFY(!controller.m_model.rowAt(3)->status.contains(qtTrId("archive.unknownSize")));
+        QCOMPARE(controller.m_model.rowAt(1)->cells[1], QStringLiteral("0"));
+        controller.m_model.select(1);
+        QCOMPARE(controller.selectedBytes(), QStringLiteral("0"));
+        QVERIFY(controller.canPreflight());
+        controller.m_model.select(0);
+        QCOMPARE(controller.selectedBytes(), QStringLiteral("—"));
+        QVERIFY(controller.canPreflight());
+        // A later navigation row must still disable physical preflight after an unknown file.
+        controller.m_model.select(3);
+        QVERIFY(!controller.canPreflight());
+        controller.m_model.select(0);
+        controller.m_model.select(3);
+        controller.m_model.select(2);
+        QCOMPARE(controller.selectedBytes(), QStringLiteral("7"));
+        QVERIFY(controller.canPreflight());
+    }
     void encryptedOpenAmbiguityReusesThePasswordPromptWithoutClaimingVerifierFailure() {
         BrowserController controller;
         quint64 previous = 0;

@@ -19,9 +19,13 @@ def work(count):
     return frame(17, struct.pack('<Q', count))
 
 
-def row(size, index=0):
+def row(size, index=0, flags=0):
     name = b'known.bin'
-    return frame(13, struct.pack('<QBQQIII', index, 0, size, 0, 0, 0, len(name)) + name)
+    return frame(13, struct.pack('<QBQQIII', index, flags, size, 0, 0, 0, len(name)) + name)
+
+
+def auxiliary(count):
+    return frame(24, struct.pack('<Q', count))
 
 
 class Pipe(io.BytesIO):
@@ -56,15 +60,15 @@ class Process:
 
 
 class CreditWireTests(unittest.TestCase):
-    def run_payload(self, frames, size=3, format_id=8, selected=0, creation=None):
+    def run_payload(self, frames, size=3, format_id=8, selected=0, creation=None, digest_only=False):
         processes = []
-        if format_id in (7, 8) and selected is not None and creation is None:
+        if format_id in (4, 7, 8) and selected is not None and creation is None:
             processes.append(Process([row(size), frame(15)]))
         payload = Process(frames)
         processes.append(payload)
         with patch.object(NATIVE.subprocess, 'Popen', side_effect=processes), patch.object(NATIVE.threading, 'Timer'):
             result = NATIVE.run_worker('self-owned-wire-test', [b'input'], format_id=format_id,
-                                       selected=selected, creation=creation)
+                                       selected=selected, creation=creation, digest_only=digest_only)
         return result, payload
 
     def rejected(self, expected, frames, **options):
@@ -100,7 +104,7 @@ class CreditWireTests(unittest.TestCase):
         self.rejected('precharged_credit', [work(2), frame(23, b'abc')])
 
     def test_unadmitted_formats_scan_and_creation_cannot_emit_prepaid_output(self):
-        for options in ({'format_id': 4}, {'format_id': 9}, {'format_id': 10},
+        for options in ({'format_id': 9}, {'format_id': 10},
                         {'selected': None}, {'selected': None, 'creation': {}}):
             with self.subTest(options=options):
                 self.rejected('unexpected_precharged_data', [work(3), frame(23, b'abc')], **options)
@@ -143,6 +147,53 @@ class CreditWireTests(unittest.TestCase):
     def test_ordinary_non_cab_data_remains_compatible_without_credit(self):
         (_, data), _ = self.run_payload([frame(12, b'abc'), frame(15)], format_id=7)
         self.assertEqual(data, b'abc')
+
+    def test_rar_auxiliary_is_separate_from_paid_delivery_and_file_work(self):
+        (_, result), process = self.run_payload(
+            [auxiliary(NATIVE.CHUNK), work(3), frame(23, b'abc'), frame(15)],
+            format_id=4, digest_only=True)
+        self.assertEqual((result['bytes'], result['decoded_work'], result['auxiliary_work']),
+                         (3, 3, NATIVE.CHUNK))
+        self.assertEqual(process.acks(), 3)
+        self.rejected('precharged_credit', [auxiliary(3), frame(23, b'abc')], format_id=4)
+
+    def test_digest_admits_large_file_work_while_ordinary_limit_remains_bounded(self):
+        frames = [work(NATIVE.CHUNK)] * 1025 + [frame(12, b'abc'), frame(15)]
+        self.rejected('work_limit', frames, format_id=4)
+        (_, result), _ = self.run_payload(frames, format_id=4, digest_only=True)
+        self.assertEqual((result['bytes'], result['decoded_work'], result['auxiliary_work']),
+                         (3, NATIVE.CHUNK * 1025, 0))
+
+    def test_auxiliary_scope_length_and_per_packet_count_are_independent(self):
+        for options in ({'format_id': 7}, {'format_id': 8}, {'format_id': 9},
+                        {'format_id': 4, 'selected': None},
+                        {'format_id': 4, 'selected': None, 'creation': {}}):
+            with self.subTest(options=options):
+                self.rejected('auxiliary_scope_or_length', [auxiliary(1)], **options)
+        for value in (b'', b'1234567', b'123456789'):
+            self.rejected('auxiliary_scope_or_length', [frame(24, value)], format_id=4)
+        for count in (0, NATIVE.CHUNK + 1):
+            self.rejected('auxiliary_limit', [auxiliary(count)], format_id=4)
+
+    def test_auxiliary_repeated_packets_stop_at_the_separate_twenty_gib_limit(self):
+        count = 20 * 1024**3 // NATIVE.CHUNK
+        self.rejected('auxiliary_limit', [auxiliary(NATIVE.CHUNK)] * (count + 1), format_id=4)
+
+    def test_unknown_metadata_is_rejected_before_a_payload_worker_is_started(self):
+        scan = Process([row(0, flags=0x40), frame(15)])
+        with patch.object(NATIVE.subprocess, 'Popen', return_value=scan) as start, patch.object(NATIVE.threading, 'Timer'):
+            with self.assertRaisesRegex(NATIVE.WorkerError, '^unsupported_unknown_size$'):
+                NATIVE.run_worker('self-owned-wire-test', [b'input'], selected=0, format_id=4)
+        self.assertEqual(start.call_count, 1)
+        (_, result), _ = self.run_payload([frame(15)], size=0, format_id=4)
+        self.assertEqual(result, b'')
+
+    def test_unknown_size_bit_is_rar_only_zero_valued_and_reserved_bits_stay_invalid(self):
+        for flags, size, format_id in ((0x40, 3, 4), (0x40, 0, 7), (0x80, 0, 4)):
+            scan = Process([row(size, flags=flags), frame(15)])
+            with patch.object(NATIVE.subprocess, 'Popen', return_value=scan), patch.object(NATIVE.threading, 'Timer'):
+                with self.assertRaisesRegex(NATIVE.WorkerError, '^metadata_size_flags$'):
+                    NATIVE.run_worker('self-owned-wire-test', [b'input'], format_id=format_id)
 
 
 if __name__ == '__main__':

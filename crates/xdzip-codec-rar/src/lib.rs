@@ -1,9 +1,10 @@
-//! Independent, bounded RAR container candidate. No production route selects it yet.
+//! Independent, bounded, read-only RAR backend used by the isolated worker.
 //!
 //! Wire facts come from RARLAB's technical note and the frozen factual handoff
-//! RAR-CONTAINER-2026-10-26-v1, including its Unicode boundary note. Modern LZ,
-//! crypto and integrity remain candidate paths; older generations and the
-//! complete product migration are still unfinished.
+//! RAR-CONTAINER-2026-10-26-v1 and subsequent numeric supplements. Legacy and
+//! modern algorithms share host-owned source, memory and output budgets.
+//! Actual compatibility coverage and source-exposure boundaries are recorded
+//! in docs/engineering/rar-format-sources.md; unverified extensions remain explicit.
 mod algorithm;
 #[cfg(test)]
 mod ancient_tests;
@@ -12,12 +13,15 @@ mod filter29;
 #[cfg(test)]
 mod filter29_owned_tests;
 mod filter29_transform;
+#[cfg(test)]
+mod filter_author_tests;
 mod index;
 mod legacy;
 mod legacy_audio20;
 mod legacy_crypto;
 mod legacy_lz15;
 mod legacy_lz20;
+mod legacy_password;
 mod legacy_stream;
 mod lz;
 mod lz29;
@@ -34,6 +38,7 @@ mod protection_tests;
 mod source;
 #[cfg(test)]
 mod tests;
+mod time;
 mod wire;
 
 use xdzip_codec_api::payload::{DecodeError, PayloadCodec, PayloadReader};

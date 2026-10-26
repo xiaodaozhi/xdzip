@@ -109,7 +109,8 @@ pub(crate) fn prepare(
         {
             return Err("unsupported_link");
         }
-        if entry.warning
+        if !entry.size_known
+            || entry.warning
             || (entry.encrypted && !entry.password_supported)
             || (!entry.directory && !entry.payload_supported())
         {

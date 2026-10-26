@@ -25,7 +25,7 @@ use zeroize::Zeroizing;
 /// Native worker budget, enforced as committed memory on Windows and address
 /// space on Unix. macOS excludes its pre-existing dyld virtual reservation.
 pub const NATIVE_MEMORY_LIMIT: u64 = 1024 * 1024 * 1024;
-/// Isolated adapter for independent Rust codecs and the remaining UnRAR engine.
+/// Isolated stream adapter for independent Rust codecs.
 pub struct NativeCodec {
     /// Selects an exact engine; other formats fail closed.
     pub format: Format,
@@ -226,9 +226,12 @@ impl NativeCodec {
                     fields.end()?;
                     let cab = self.format == Format::Cab;
                     let raw = flags & 0x10 != 0;
+                    let size_known = flags & 0x40 == 0;
                     if (cab && !raw)
                         || (raw && !matches!(self.format, Format::Cab | Format::Iso))
                         || (!cab && flags & 0x20 != 0)
+                        || flags & 0x80 != 0
+                        || (!size_known && (self.format != Format::Rar || size != 0))
                     {
                         return Err(Fault::Invalid);
                     }
@@ -271,6 +274,7 @@ impl NativeCodec {
                         link: flags & 4 != 0,
                         unix_mode: 0,
                         size,
+                        size_known,
                         packed_size,
                         method,
                         modified_dos,
@@ -541,7 +545,7 @@ impl PayloadReader for NativeReader<'_> {
         if self.snapshot.get(index as usize) != Some(entry) {
             return Err(DecodeError::Integrity);
         }
-        if entry.link || entry.warning {
+        if !entry.size_known || entry.link || entry.warning {
             return Err(DecodeError::Unsupported);
         }
         let password_option = password.or(self.password.as_ref().map(|secret| secret.as_str()));

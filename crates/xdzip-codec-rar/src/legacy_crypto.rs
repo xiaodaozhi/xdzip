@@ -138,7 +138,6 @@ impl LegacyAesCache {
     /// explicit host projection, for example Windows' conditional OEM step.
     /// A zero low16 unit is valid here (Unix nonBMP can project to zero); the
     /// host must resolve its original native NUL prefix before losing high bits.
-    #[cfg(test)]
     pub fn key_projected_units(
         &mut self,
         units: &[u16],

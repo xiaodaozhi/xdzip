@@ -2,6 +2,12 @@ use super::*;
 use std::io::{self, Cursor, Read, Seek, SeekFrom};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink};
 use xdzip_compression::crc32;
+#[path = "legacy20_owned_tests.rs"]
+mod legacy20_owned;
+#[path = "legacy26_owned_tests.rs"]
+mod legacy26_owned;
+#[path = "legacy_container_tests.rs"]
+mod legacy_container;
 
 fn vint(mut n: u64) -> Vec<u8> {
     let mut out = Vec::new();
@@ -173,6 +179,39 @@ fn public_unpack_version_is_not_compression_level() {
     ]))
     .unwrap();
     assert_eq!(rows.iter().map(|r| r.method).collect::<Vec<_>>(), [70, 50]);
+}
+
+#[test]
+fn modern_nanosecond_metadata_keeps_raw_high_bits_and_ignores_out_of_range_fraction() {
+    let control = Cancellation::default();
+    for fraction in [0, 999_999_999, 1_000_000_000, 0xc000_0001, u32::MAX] {
+        let mut body = vint(3);
+        body.extend(vint(19));
+        body.extend(1_704_067_201u32.to_le_bytes());
+        body.extend(fraction.to_le_bytes());
+        let mut extra = vint(body.len() as u64);
+        extra.extend(body);
+        let archive = new_archive(&[new_file(b"entry", b"", 0, 0, 0, false, 0, &extra)]);
+        let index = read_index(
+            &mut Cursor::new(archive),
+            &control,
+            ScanLimits::default(),
+            None,
+        )
+        .unwrap();
+        assert_eq!(
+            index.0.parts[0].description.times[0],
+            Some(index::RawTime::Unix(1_704_067_201, Some(fraction)))
+        );
+        assert_eq!(index.entries()[0].modified_dos, 0x5821_0000);
+        let duplicate = [extra.as_slice(), extra.as_slice()].concat();
+        assert_eq!(
+            scan(new_archive(&[new_file(
+                b"entry", b"", 0, 0, 0, false, 0, &duplicate
+            )])),
+            Err(ScanError::Invalid)
+        );
+    }
 }
 #[test]
 fn packed_crc_and_complete_crc_are_distinct() {
@@ -484,19 +523,22 @@ fn split_part_crc_failure_never_becomes_complete_success() {
 }
 #[test]
 fn known_unknown_policy_and_conflicting_sizes() {
+    let unknown = new_archive(&[new_file(b"a", b"abc", 123, 0, 0, true, crc32(b"abc"), &[])]);
+    let mut source = Cursor::new(unknown);
+    let control = Cancellation::default();
+    let rows = RarCodec
+        .scan(&mut source, &control, ScanLimits::default())
+        .unwrap();
+    assert_eq!((rows[0].size, rows[0].size_known), (0, false));
+    assert!(!rows[0].payload_supported());
+    let mut payload = RarCodec.open_payload(&mut source, &rows, &control).unwrap();
+    let mut sink = Sink::default();
     assert_eq!(
-        scan(new_archive(&[new_file(
-            b"a",
-            b"abc",
-            123,
-            0,
-            0,
-            true,
-            crc32(b"abc"),
-            &[]
-        )])),
-        Err(ScanError::Unsupported)
+        payload.decode(&rows[0], &mut sink, &control),
+        Err(DecodeError::Unsupported)
     );
+    assert!(sink.0.is_empty());
+    drop(payload);
     let mut parts = split_parts();
     parts[1] = {
         let mut out = b"Rar!\x1a\x07\x01\x00".to_vec();
@@ -548,9 +590,24 @@ fn unicode_commands_surrogates_and_ambiguous_legacy_run() {
         names::compressed(b"x\0\0\x80\x00\xd8"),
         Err(ScanError::Invalid)
     );
+    if cfg!(windows) {
+        assert_eq!(
+            names::compressed(b"\x80\x81\0\0\xc0\0"),
+            Ok(Some("\u{ff80}\u{ff81}".into()))
+        );
+        assert_eq!(
+            names::compressed(b"\xff\xfe\0\0\xc0\0"),
+            Ok(Some("\u{ffff}\u{fffe}".into()))
+        );
+    } else {
+        assert_eq!(
+            names::compressed(b"\x80x\0\0\xc0\0"),
+            Err(ScanError::Unsupported)
+        );
+    }
     assert_eq!(
-        names::compressed(b"\x80x\0\0\xc0\0"),
-        Err(ScanError::Unsupported)
+        names::compressed(b"\x80\x81\0\0\xc0\x80\0"),
+        Ok(Some("\u{80}\u{81}".into()))
     );
     let raw = b"abc\0\0\xc0\x01";
     let rows = scan(old_archive(&[old_file(raw, b"a", 0x200, 29)])).unwrap();
@@ -1116,6 +1173,17 @@ fn export_authored_vectors() {
     ]);
     std::fs::write(directory.join("authored-old-store.rar"), old).unwrap();
     std::fs::write(directory.join("authored-modern-store.rar"), new).unwrap();
+    let unknown = new_archive(&[new_file(
+        b"all-unknown",
+        b"abc",
+        0,
+        0,
+        0,
+        true,
+        crc32(b"abc"),
+        &[],
+    )]);
+    std::fs::write(directory.join("authored-all-unknown.rar"), unknown).unwrap();
     let unicode = old_archive(&[old_file(b"abc\0\0\xc0\x01", b"unicode-content", 0x200, 29)]);
     std::fs::write(directory.join("authored-unicode.rar"), unicode).unwrap();
     std::fs::write(

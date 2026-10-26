@@ -1,6 +1,6 @@
 # scripts/prepare-native-codecs.py
 
-"""Verify and prepare the pinned official codec sources, never user archives."""
+"""Verify declared external codec sources; the current Rust product declares none."""
 import argparse
 import hashlib
 import json
@@ -155,4 +155,4 @@ if __name__ == '__main__':
     parser.add_argument('--archives', type=Path, help='Read pinned archives from a corresponding-source delivery')
     args = parser.parse_args()
     result = prepare(args.output, args.downloads, args.offline, args.archives)
-    print('Prepared pinned official native codec sources')
+    print('Native codec source preparation complete; external product sources: ' + str(len(result)))

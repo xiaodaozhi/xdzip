@@ -105,11 +105,11 @@ worker 协议以 `WORK`（17，小端 `u64` 字节数）请求宿主准入，以
 
 English: The independent read-only CAB backend is the fixed product route for Store, MSZIP, LZX, Quantum and host-authorized volume chains. Official Cab and its CAB-only LZX/Quantum implementations are excluded from compilation, with no fallback. Physical identities, raw names and original UTF-8 declarations are preserved, complete frames are verified, and shared algorithms retain folder history across files and volumes. The shared readonly CXX bridge stays inside the existing isolated worker. A complete decoded frame funds bounded prepaid delivery; the container, Native receiver and runtime independently enforce their respective allowances. Repeated delivery beyond that frame's allowance is ordinarily metered. Worker changes cannot reuse old worker credit, and prepaid delivery retains file, cumulative output, cancellation and publication checks. Source limitations and the analyst/implementer separation are documented in the CAB source record; independent implementation is not legal clearance, and native manual acceptance and release authorization remain separate.
 
-## RAR只读候选规格
+## RAR只读规格
 
-`xdzip-codec-rar` 的古老/旧/现代容器、物理片身份、授权卷、名称、Store、13/15 与 20/26 族、RAR29 LZ/PPM/标准过滤器、现代 LZ/过滤器及历史/现代密码候选契约见[RAR 实现依据](rar-format-sources.md)。该候选尚未替换产品 UnRAR 路由；各历史组合、真实过滤器和兼容条件须按[完整迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)闭合，不能因单族成功缩减范围。未知尺寸的公共表示、现代时间的宿主投影及辅助工作独立计费是替换前的必要条件。
+`xdzip-codec-rar` 的古老/旧/现代容器、物理片身份、授权卷、名称、Store、13/15 与 20/26 族、RAR29 LZ/PPM/标准过滤器、现代 LZ/过滤器及历史/现代密码契约见[RAR 实现依据](rar-format-sources.md)。产品固定使用该 Rust 路由，不编译或部署 UnRAR，没有失败回退。未知尺寸显式表示并禁止输出，现代时间通过格式无关宿主服务投影，辅助解码工作独立计费。各历史组合、真实过滤器与跨平台兼容证据仍按[完整迁移任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)分别验收，不能因单族成功缩减范围；RAR7 算法 1 的独立健康实样由 #43 跟踪。
 
-English: The RAR crate provides ancient/legacy/modern containers, Store, 13/15 and 20/26, RAR29 LZ/PPM/standard filters, modern LZ/filters and historical/modern crypto candidates. It does not replace UnRAR or narrow the migration scope. The source record defines its admitted ranges, identities and remaining historical-combination, real-filter, unknown-size, time-projection and independent auxiliary-accounting requirements.
+English: The product uses the independent Rust RAR backend for ancient/legacy/modern containers, Store, 13/15 and 20/26, RAR29 LZ/PPM/standard filters, modern LZ/filters and historical/modern crypto. UnRAR is neither compiled nor deployed and there is no runtime fallback. Unknown sizes are explicit and cannot be output; local time uses a format-independent host service and auxiliary decoding work has its own accounting. Historical combinations, real filters and platform compatibility retain their individual acceptance requirements in issue #51; an independent healthy RAR7 algorithm 1 sample remains tracked by issue #43.
 
 ## ISO与UDF只读规格
 

@@ -30,11 +30,15 @@
     },
     {
       "package": "xdzip-codec-bridge",
-      "forbidden_runtime_dependencies": ["iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+      "forbidden_runtime_dependencies": ["iso9660", "udf", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2", "unrar", "unrar_sys", "unrar-sys", "cab", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+    },
+    {
+      "package": "xdzip-codec-native",
+      "forbidden_runtime_dependencies": ["unrar", "unrar_sys", "unrar-sys", "libarchive", "libarchive3-sys", "sevenz-rust", "sevenz-rust2"]
     },
     {
       "package": "xdzip-runtime",
-      "forbidden_runtime_dependencies": ["rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
+      "forbidden_runtime_dependencies": ["unrar", "unrar_sys", "unrar-sys", "libarchive", "libarchive3-sys", "rawzip", "zip", "tar", "flate2", "miniz_oxide", "zlib-rs", "libz-sys"]
     },
     {
       "package": "xdzip-crypto",

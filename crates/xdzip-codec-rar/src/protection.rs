@@ -1,8 +1,6 @@
 use crate::crypto::{CheckResult, KdfBudget, KdfParameters, KeyCache, KeyMaterial};
 use crate::index::Crypt;
-use crate::legacy_crypto::{
-    LegacyAesCache, LegacyCipher, LegacyKdfBudget, NarrowPassword, Old20Cache,
-};
+use crate::legacy_crypto::{LegacyAesCache, LegacyCipher, LegacyKdfBudget, Old20Cache};
 use xdzip_codec_api::{Cancellation, ScanError, payload::DecodeError};
 
 /// One scan/opened payload owns its cache and cumulative KDF cost. IVs belong
@@ -19,7 +17,8 @@ impl Protection {
     pub const MEMORY_BYTES: u64 = KeyCache::MEMORY_BYTES
         + LegacyAesCache::MEMORY_BYTES
         + Old20Cache::MEMORY_BYTES
-        + LegacyCipher::MEMORY_BYTES;
+        + LegacyCipher::MEMORY_BYTES
+        + crate::legacy_password::MEMORY_BYTES;
     pub fn legacy_header(
         &mut self,
         password: Option<&str>,
@@ -27,6 +26,7 @@ impl Protection {
         control: &Cancellation,
     ) -> Result<LegacyCipher, DecodeError> {
         let password = password.ok_or(DecodeError::PasswordRequired)?;
+        crate::legacy_password::admit(password)?;
         let key = self
             .legacy_keys
             .key(password, Some(salt), control, &mut self.legacy_budget)?;
@@ -37,22 +37,19 @@ impl Protection {
         d: &crate::index::Descriptor,
         password: Option<&str>,
         control: &Cancellation,
+        reader: &crate::source::Reader<'_>,
     ) -> Result<LegacyCipher, DecodeError> {
         let password = password.ok_or(DecodeError::PasswordRequired)?;
-        if password.len() > 4096 {
-            return Err(DecodeError::Limit);
-        }
-        let prefix = password
-            .split_once('\0')
-            .map_or(password, |(prefix, _)| prefix);
-        if cfg!(windows) && d.host == 0 && !prefix.is_ascii() {
-            return Err(DecodeError::Unsupported);
-        }
+        crate::legacy_password::admit(password)?;
         match if d.ancient { 13 } else { d.method } {
-            13 => Ok(LegacyCipher::old13(&NarrowPassword::ascii(prefix)?)),
-            15 => Ok(LegacyCipher::old15(&NarrowPassword::ascii(prefix)?)),
+            13 => Ok(LegacyCipher::old13(&crate::legacy_password::narrow(
+                password, d, reader,
+            )?)),
+            15 => Ok(LegacyCipher::old15(&crate::legacy_password::narrow(
+                password, d, reader,
+            )?)),
             20 | 26 => self.old20.cipher(
-                &NarrowPassword::ascii(prefix)?,
+                &crate::legacy_password::narrow(password, d, reader)?,
                 control,
                 &mut self.legacy_budget,
             ),
@@ -67,9 +64,13 @@ impl Protection {
                             .map_err(|_| DecodeError::Integrity)
                     })
                     .transpose()?;
-                let key = self
-                    .legacy_keys
-                    .key(password, salt, control, &mut self.legacy_budget)?;
+                let projected = crate::legacy_password::wide(password, d, reader)?;
+                let key = self.legacy_keys.key_projected_units(
+                    projected.as_slice(),
+                    salt,
+                    control,
+                    &mut self.legacy_budget,
+                )?;
                 Ok(LegacyCipher::aes128(key))
             }
         }

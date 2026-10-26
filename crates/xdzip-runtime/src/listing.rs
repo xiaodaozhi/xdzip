@@ -106,6 +106,15 @@ impl Archive {
             });
         } else if sort != 0 {
             rows.sort_unstable_by(|a, b| {
+                if matches!(sort, 3 | 4) {
+                    let known = |row: &ListingRow<'_>| match row {
+                        ListingRow::Physical(entry) => entry.size_known,
+                        ListingRow::Directory(_) => true,
+                    };
+                    if known(a) != known(b) {
+                        return known(b).cmp(&known(a));
+                    }
+                }
                 let order = if sort <= 2 {
                     a.path().cmp(b.path())
                 } else {
@@ -222,6 +231,7 @@ mod tests {
             link: false,
             unix_mode: 0,
             size: 1,
+            size_known: true,
             packed_size: 1,
             method: 0,
             modified_dos: 0,

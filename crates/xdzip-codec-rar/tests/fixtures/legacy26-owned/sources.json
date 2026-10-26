@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "scope": "Original project-owned mathematical sparse input archived with official RAR2.90. Unchanged author output; no encoder, installer, executable or large plaintext vendored.",
+  "official_installer": {
+    "url": "https://www.rarlab.com/rar/wrar290.exe",
+    "sha256": "7c2e3ec5c5eccc01d38374f6ef317ae1e22ac84eac159a7ce37a4f9e1d9579f6",
+    "bytes": 711939,
+    "signature": "NotSigned"
+  },
+  "official_writer": {
+    "sha256": "3f938b2f4cc13b9b85d61417b36af45a970dbee0e09e9d9e13f4e00350485112",
+    "bytes": 236032,
+    "pe_machine": "i386",
+    "imports": [
+      "ADVAPI32.DLL",
+      "KERNEL32.DLL",
+      "USER32.DLL"
+    ]
+  },
+  "archive": {
+    "file": "large26.rar",
+    "bytes": 1061809,
+    "sha256": "e2b067cfcc7aff4f8ad9e8b9cef3755dec65d9109bbcccf328c679a8546d2148",
+    "command": [
+      "a",
+      "-cfg-",
+      "-inul",
+      "-y",
+      "-m1",
+      "-md64",
+      "-s-",
+      "large26.rar",
+      "large-owned.bin"
+    ],
+    "header": {
+      "unpack_version": 26,
+      "compression": 1,
+      "flags": "0x8100",
+      "packed": 1061734,
+      "unpacked": 2147483649
+    }
+  },
+  "known_original": {
+    "bytes": 2147483649,
+    "sha256": "d1ea9e8a1dd77c140253106db1be9331430622ee141e57a1ccdf31bab1d5a13a",
+    "recipe": "4096B prefix byte[i]=(31*i+7*(i>>5)+13)mod256; zero middle;4096B tail byte[i]=(i*i+5*i+(i>>3))mod256."
+  },
+  "scope_limits": [
+    "This is a genuine author UnpVer26/method1 single-file single-volume case, not a version-field mutation.",
+    "The sink uses bounded chunks and incremental hashing; successful decode requires full size and CRC, without materializing2GiB plaintext.",
+    "This component fixture is distinct from actual Native worker, runtime, high-ratio policy and desktop acceptance.",
+    "Self-owned mathematical content and unchanged archive are repository test data under repository license. Official executables retain separate licenses and are not vendored."
+  ]
+}

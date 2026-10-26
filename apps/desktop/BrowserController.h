@@ -28,6 +28,7 @@ struct BrowserRow {
     QString path;
     QString navigationId;
     bool physical = true;
+    bool sizeKnown = true;
 };
 class ArchiveTableModel final : public QAbstractTableModel {
     Q_OBJECT

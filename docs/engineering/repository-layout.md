@@ -14,7 +14,7 @@
 | crates/xdzip-codec-cab | 自研 CAB 只读容器，使用宿主授权卷和共享算法；保留原始名称、UTF-8 声明及普通重名记录，不自行发现卷或发布输出；见[自研契约](independent-rust-codecs.md#cab只读规格)与[来源](cab-format-sources.md) |
 | crates/xdzip-codec-optical | 自研 ISO9660/Joliet/Rock Ridge/UDF 只读解析与内容流，不拥有文件路径 |
 | crates/xdzip-codec-bridge | 隔离工作进程到 Rust 7z、CAB 和光盘后端的共享薄 CXX 边界，复用授权流、取消、有界输入、输出与暂存协议，不提供文件路径 |
-| crates/xdzip-codec-native、tools/native-codec | UnRAR、Rust 7z／光盘／CAB 后端的隔离工作进程；Native 接收端独立核验预计费输出额度；固定来源、裁剪和 I/O 边界见[契约](native-codecs.md) |
+| crates/xdzip-codec-native、tools/native-codec | Rust 7z／RAR／光盘／CAB 后端的隔离工作进程，薄 C++ 仅提供协议及系统日历、编码服务；Native 独立核验预计费输出与辅助工作；I/O 边界见[契约](native-codecs.md) |
 | crates/xdzip-extract-plan | 元数据预检与有界报告；不拥有目标授权或写入能力 |
 | crates/xdzip-io | 输入树、原生授权与身份、安全暂存和文件提交 |
 | crates/xdzip-runtime | 会话、内存索引、查询、选择、创建／解压任务和调度 |

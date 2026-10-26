@@ -9,7 +9,7 @@ use zeroize::Zeroizing;
 
 fn extended(w: &mut Wire<'_>, d: &mut Descriptor) -> Result<(), ScanError> {
     let flags = w.u16()?;
-    for i in 0..4 {
+    for i in 0..3 {
         let nibble = (flags >> (12 - i * 4)) & 15;
         if nibble & 8 == 0 {
             continue;
@@ -36,12 +36,31 @@ fn extended(w: &mut Wire<'_>, d: &mut Descriptor) -> Result<(), ScanError> {
     }
     Ok(())
 }
+fn comment(header: &[u8]) -> Result<(), ScanError> {
+    let fixed = header.get(..13).ok_or(ScanError::Invalid)?;
+    let mut w = Wire::new(fixed);
+    let expected = w.u16()?;
+    if w.byte()? != 0x75 {
+        return Err(ScanError::Invalid);
+    }
+    w.u16()?;
+    if usize::from(w.u16()?) != header.len() || (crc32(&fixed[2..]) & 65535) as u16 != expected {
+        return Err(ScanError::Invalid);
+    }
+    // Ignored comment content has no output authority. Its own header is
+    // verified independently; its content CRC is not a file-integrity promise.
+    w.u16()?;
+    w.byte()?;
+    w.byte()?;
+    w.u16()?;
+    w.end()
+}
 fn file(
     header: &[u8],
     flags: u16,
     limits: ScanLimits,
     service: bool,
-) -> Result<(Descriptor, u64), ScanError> {
+) -> Result<(Descriptor, u64, usize), ScanError> {
     let mut w = Wire::new(&header[7..]);
     let packed = w.u32()?;
     let unpacked = w.u32()?;
@@ -71,10 +90,7 @@ fn file(
         return Err(ScanError::Limit);
     }
     let name = w.take(n)?.to_vec();
-    if flags & 8 != 0 {
-        return Err(ScanError::Unsupported);
-    }
-    if service && flags & (0x100 | 0x1000) != 0 {
+    if service && flags & 8 != 0 {
         return Err(ScanError::Unsupported);
     }
     let directory = (!service && (flags & 0xe0) == 0xe0) || (method < 20 && attributes & 0x10 != 0);
@@ -108,12 +124,11 @@ fn file(
         d.unicode = names::compressed(&d.name)?;
     }
     if service {
-        // The legacy service's optional subdata is bounded by this exact header.
-        let salt = if flags & 0x400 != 0 { 8 } else { 0 };
-        if w.remaining() < salt {
-            return Err(ScanError::Invalid);
-        }
-        w.take(w.remaining() - salt)?;
+        // Service content has no output authority. Preserve its complete raw
+        // header and skip the bounded opaque tail, without guessing salt/time
+        // partitions or letting service timestamps change ordinary files.
+        w.take(w.remaining())?;
+        return Ok((d, packed, header.len()));
     }
     if flags & 0x400 != 0 {
         let salt = w.take(8)?.to_vec();
@@ -129,15 +144,20 @@ fn file(
     if flags & 0x1000 != 0 {
         extended(&mut w, &mut d)?;
     }
-    w.end()?;
-    Ok((d, packed))
+    let processed = 7 + w.at;
+    if flags & 8 != 0 {
+        comment(w.rest())?;
+    } else {
+        w.end()?;
+    }
+    Ok((d, packed, processed))
 }
 fn parse_header(
     reader: &Reader<'_>,
     volume: usize,
     at: u64,
     header: &[u8],
-    span: usize,
+    physical: &[u8],
     limits: ScanLimits,
 ) -> Result<Parsed, ScanError> {
     let common = header.get(..7).ok_or(ScanError::Invalid)?;
@@ -149,15 +169,23 @@ fn parse_header(
     if n < 7 || n != header.len() {
         return Err(ScanError::Invalid);
     }
-    let exceptional = matches!(kind, 0x76 | 0x79)
-        || (kind == 0x73 && flags & 2 != 0)
-        || (matches!(kind, 0x74 | 0x7a) && flags & 8 != 0)
-        || (kind == 0x7b && flags & 4 != 0)
-        || (kind == 0x77 && header.get(11..13) == Some(&101u16.to_le_bytes()));
-    if exceptional {
-        return Err(ScanError::Unsupported);
-    }
-    if (crc32(&header[2..]) & 65535) as u16 != expected {
+    let rev_zero_tail = kind == 0x7b
+        && flags & 4 != 0
+        && physical.len() >= 7
+        && physical[physical.len() - 7..].iter().all(|byte| *byte == 0);
+    let unchecked = matches!(kind, 0x76 | 0x79)
+        || (kind == 0x77 && header.get(11..13) == Some(&0x0101u16.to_le_bytes()));
+    let deferred_file = matches!(kind, 0x74 | 0x7a) && flags & 8 != 0;
+    let checked_end = if kind == 0x75 || (kind == 0x73 && flags & 2 != 0) {
+        13
+    } else {
+        n
+    };
+    if !unchecked
+        && !deferred_file
+        && (crc32(header.get(2..checked_end).ok_or(ScanError::Invalid)?) & 65535) as u16 != expected
+        && !rev_zero_tail
+    {
         return Err(ScanError::Invalid);
     }
     let mut packed = 0;
@@ -167,9 +195,8 @@ fn parse_header(
                 return Err(ScanError::Invalid);
             }
             if flags & 2 != 0 {
-                return Err(ScanError::Unsupported);
-            }
-            if n != 13 {
+                comment(&header[13..])?;
+            } else if n != 13 {
                 return Err(ScanError::Unsupported);
             }
             Block::Main {
@@ -180,13 +207,18 @@ fn parse_header(
             }
         }
         0x74 | 0x7a => {
-            let (description, size) = file(header, flags, limits, kind == 0x7a)?;
+            let (description, size, processed) = file(header, flags, limits, kind == 0x7a)?;
+            if deferred_file && (crc32(&header[2..processed]) & 65535) as u16 != expected {
+                return Err(ScanError::Invalid);
+            }
             packed = size;
             Block::Record(Box::new(Part {
                 volume,
                 header_at: at,
                 header: Vec::new(),
-                data_at: at.checked_add(span as u64).ok_or(ScanError::Invalid)?,
+                data_at: at
+                    .checked_add(physical.len() as u64)
+                    .ok_or(ScanError::Invalid)?,
                 packed,
                 before: flags & 1 != 0,
                 after: flags & 2 != 0,
@@ -204,9 +236,7 @@ fn parse_header(
             } else {
                 None
             };
-            if flags & 4 != 0 {
-                return Err(ScanError::Unsupported);
-            }
+            w.take(w.remaining())?;
             w.end()?;
             Block::End {
                 next: flags & 1 != 0,
@@ -214,21 +244,22 @@ fn parse_header(
             }
         }
         0x75 => {
-            if n < 13 {
-                return Err(ScanError::Invalid);
+            comment(header)?;
+            Block::Skip
+        }
+        0x76 | 0x79 => {
+            if flags & 0x8000 != 0 {
+                packed = u64::from(Wire::new(&header[7..]).u32()?);
             }
             Block::Skip
         }
-        0x76 | 0x79 => return Err(ScanError::Unsupported),
         0x77 => {
             if n < 14 {
                 return Err(ScanError::Invalid);
             }
             let mut w = Wire::new(&header[7..]);
             packed = u64::from(w.u32()?);
-            if w.u16()? == 101 {
-                return Err(ScanError::Unsupported);
-            }
+            w.u16()?;
             w.byte()?;
             Block::Skip
         }
@@ -241,7 +272,9 @@ fn parse_header(
         }
         _ => return Err(ScanError::Unsupported),
     };
-    let data_at = at.checked_add(span as u64).ok_or(ScanError::Invalid)?;
+    let data_at = at
+        .checked_add(physical.len() as u64)
+        .ok_or(ScanError::Invalid)?;
     reader.range(volume, data_at, packed)?;
     let next = data_at.checked_add(packed).ok_or(ScanError::Invalid)?;
     if matches!(
@@ -345,7 +378,7 @@ impl State {
             let physical = reader.bytes(volume, at, length)?;
             (Zeroizing::new(physical.clone()), physical)
         };
-        let mut parsed = parse_header(reader, volume, at, &plain, physical.len(), limits)?;
+        let mut parsed = parse_header(reader, volume, at, &plain, &physical, limits)?;
         match &mut parsed.block {
             Block::Main { encrypted, .. } => {
                 if self.main {
@@ -367,17 +400,18 @@ pub(crate) fn ancient(
     reader: &mut Reader<'_>,
     volume: usize,
     at: u64,
+    main: bool,
     limits: ScanLimits,
 ) -> Result<Parsed, ScanError> {
-    if at == 0 {
-        let header = reader.bytes(volume, 0, 7)?;
+    if main {
+        let header = reader.bytes(volume, at, 7)?;
         let mut w = Wire::new(&header[4..]);
         let n = u64::from(w.u16()?);
         let flags = w.byte()?;
         if n < 7 {
             return Err(ScanError::Invalid);
         }
-        reader.range(volume, 0, n)?;
+        reader.range(volume, at, n)?;
         return Ok(Parsed {
             block: Block::Main {
                 volume: flags & 1 != 0,
@@ -385,7 +419,7 @@ pub(crate) fn ancient(
                 solid: flags & 8 != 0,
                 encrypted: false,
             },
-            next: n,
+            next: at.checked_add(n).ok_or(ScanError::Invalid)?,
         });
     }
     let fixed = reader.bytes(volume, at, 21)?;

@@ -51,7 +51,8 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         format: job.format.label(),
         creating: false,
         // TAR/GZIP scanning checks the entire stream before reporting verified records.
-        total_known: !matches!(job.format, Format::Tar | Format::TarGzip),
+        total_known: !matches!(job.format, Format::Tar | Format::TarGzip)
+            && job.rows.iter().all(|row| row.directory || row.size_known),
         id,
         session: job.session,
         status: Status::Queued,
@@ -62,7 +63,7 @@ pub(crate) fn initial(job: &Job, id: u64) -> Snapshot {
         declared_bytes: job
             .rows
             .iter()
-            .filter(|row| !row.directory)
+            .filter(|row| !row.directory && row.size_known)
             .fold(0u64, |n, row| n.saturating_add(row.size)),
         decoded_bytes: 0,
         read_bytes: 0,
@@ -215,6 +216,9 @@ pub(crate) fn run(job: Job, id: u64, control: &Control, publish: &mut dyn FnMut(
         let mut declared = 0u64;
         for entry in job.rows.iter() {
             control.cancel.check().map_err(|_| "cancelled")?;
+            if !entry.size_known {
+                return Err("unsupported_feature");
+            }
             if entry.size > MAX_FILE_BYTES {
                 return Err("file_quota");
             }

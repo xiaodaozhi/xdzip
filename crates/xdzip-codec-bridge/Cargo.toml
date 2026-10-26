@@ -15,6 +15,7 @@ xdzip-codec-api = { path = "../xdzip-codec-api" }
 xdzip-codec-cab = { path = "../xdzip-codec-cab" }
 xdzip-codec-optical = { path = "../xdzip-codec-optical" }
 xdzip-codec-7z = { path = "../xdzip-codec-7z" }
+xdzip-codec-rar = { path = "../xdzip-codec-rar" }
 [build-dependencies]
 cxx-build.workspace = true
 [lints]

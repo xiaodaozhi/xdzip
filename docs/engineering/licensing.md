@@ -6,7 +6,11 @@
 
 Qt 动态链接仍需逐模块确认 LGPL/GPL/商业条款；后端、图标、字体、工具和静态 Rust 依赖分别审查。许可证兼容不代表代码没有安全缺陷。所需通知、源码/重链接材料和安装信息随发行产物交付。
 
-7z、CAB 与 ISO/UDF 使用[独立 Rust 实现](independent-rust-codecs.md)，官方 7-Zip 源码不进入当前产品构建或部署。RAR 继续使用附用途限制的 UnRAR，固定来源和受控 I/O 见[隔离后端契约](native-codecs.md)。分析来源、开发参考工具、历史官方后端交付分别保留原许可，独立实现不构成严格洁净室或法律风险清零声明。包含官方 7-Zip 的历史交付继续履行其 LGPL/BSD 等原始义务，不能因当前退出依赖而改标 Apache-2.0。UnRAR 的原条款和修改声明继续随实际源码、构建桥接、许可与 SBOM 交付，实验构建不替代正式许可复核。
+7z、RAR、CAB 与 ISO/UDF 使用[独立 Rust 实现](independent-rust-codecs.md)，官方 UnRAR、7-Zip 源码不进入当前产品构建或部署。固定路由与受控 I/O 见[隔离后端契约](native-codecs.md)。分析来源、开发参考工具、历史官方后端交付分别保留原许可，独立实现不构成严格洁净室或法律风险清零声明。包含官方 7-Zip 或 UnRAR 的历史交付继续履行各自原始条款、通知和修改材料义务，不能因当前退出依赖而改标 Apache-2.0。当前产品源码清单为空不免除历史交付或独立参考工具的义务，实验构建不替代正式许可复核。
+
+RAR 的有限线格式映射及公开测试夹具保留各自的来源、原始通知和许可记录，见[RAR 实现依据](rar-format-sources.md)。生产引擎退出不将这些材料重新许可为项目原创代码。
+
+English: Current worker formats use independent Rust; official UnRAR and 7-Zip source code is absent from product builds and deployment. Historical deliveries, finite RAR wire mappings, public fixtures and separate reference tools retain their respective provenance and licensing obligations. Independent implementation and an empty current product source manifest do not constitute clean-room certification, legal clearance or release approval.
 
 平台运行库专属通知、供应方输入和许可资格的核对遵循[原生运行库来源与通知](native-runtime-materials.md)，不以通用许可正文替代供应方版权声明。
 

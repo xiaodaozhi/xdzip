@@ -3,6 +3,7 @@
   "locale": "en-US",
   "name": "English (US)",
   "messages": {
+    "archive.unknownSize": "Unknown size",
     "error.emptyArchiveInput": "No files or folders remain to archive after excluding macOS metadata.",
     "ui.8f1009f1369b": "Start",
     "ui.1b59353f1874": "Open archive",

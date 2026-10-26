@@ -407,6 +407,7 @@ void BrowserController::updateSelectionSummary() const {
         return;
     m_summaryRevision = m_model.selectionRevision();
     m_summaryPhysical = true;
+    bool summaryKnown = true;
     std::vector<std::uint64_t> sizes;
     sizes.reserve(static_cast<std::size_t>(m_model.selectedCount()));
     for (int row = 0; row < m_model.rowCount(); ++row) {
@@ -418,7 +419,15 @@ void BrowserController::updateSelectionSummary() const {
             m_summaryBytes = QStringLiteral("—");
             return;
         }
+        if (!item->sizeKnown) {
+            summaryKnown = false;
+            continue;
+        }
         sizes.push_back(item->cells[1].toULongLong());
+    }
+    if (!summaryKnown) {
+        m_summaryBytes = QStringLiteral("—");
+        return;
     }
     const auto sum = xdzip::reader::sum_declared_sizes(
         rust::Slice<const std::uint64_t>(sizes.data(), sizes.size()));
@@ -1427,6 +1436,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                 status << qtTrId("ui.320c254572c4");
             if (row.warning)
                 status << qtTrId("ui.ffcf372a457f");
+            if (row.physical && !row.size_known)
+                status << qtTrId("archive.unknownSize");
             const auto path = text(row.name);
             auto name = path;
             if (m_result.criteria.search.isEmpty()) {
@@ -1447,21 +1458,23 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             const auto modified = date.isValid() && time.isValid()
                                       ? QLocale().toString(date, qtTrId("format.date"))
                                       : QStringLiteral("—");
-            m_result.rows.append({text(row.id),
-                                  {name, row.physical ? QString::number(row.size) : QString{},
-                                   row.physical && m_format != QStringLiteral("TAR.GZ")
-                                       ? QString::number(row.packed_size)
-                                       : QString{},
-                                   type, modified},
-                                  row.directory,
-                                  row.directory && !row.warning,
-                                  row.physical ? method : QStringLiteral("—"),
-                                  status.isEmpty() ? qtTrId("ui.aeae1c799c94")
-                                                   : status.join(qtTrId("common.separator")),
-                                  row.warning || row.encrypted,
-                                  path,
-                                  text(row.navigation_id),
-                                  row.physical});
+            m_result.rows.append(
+                {text(row.id),
+                 {name, row.physical && row.size_known ? QString::number(row.size) : QString{},
+                  row.physical && m_format != QStringLiteral("TAR.GZ")
+                      ? QString::number(row.packed_size)
+                      : QString{},
+                  type, modified},
+                 row.directory,
+                 row.directory && !row.warning,
+                 row.physical ? method : QStringLiteral("—"),
+                 status.isEmpty() ? qtTrId("ui.aeae1c799c94")
+                                  : status.join(qtTrId("common.separator")),
+                 row.warning || row.encrypted,
+                 path,
+                 text(row.navigation_id),
+                 row.physical,
+                 row.size_known});
         }
         m_hasPayload = true;
     } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {
@@ -1475,6 +1488,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"encrypted", qtTrId("ui.bd832c169421")},
             {"password_required", qtTrId("password.preflight")},
             {"method", qtTrId("ui.b3ac882336b4")},
+            {"unknown_size", qtTrId("archive.unknownSize")},
             {"file_limit", qtTrId("ui.db4ca98ebb0e")},
             {"total_limit", qtTrId("ui.eca46ec574de")},
             {"high_ratio", qtTrId("ui.998c9646d2cd")}};

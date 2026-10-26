@@ -63,6 +63,9 @@ English: Reading resolves filename encodings in the Rust snapshot: explicit ZIP 
 - 这是单工作线程、有界的版本化查询。页面携带完整 QueryKey，Qt 合并最新意图并取消旧工作；过期请求或不匹配的会话、查询、代际、修订和偏移均不能替换当前视图。偏移越界返回错误，空结果属于 Ready。目录跳转与搜索从第一页开始。
 - 单击行或复选框切换当前查询多选，以物理 ID 区分同名记录，隐式目录使用独立的 dN 行键。查询成功或新会话替换模型后清空选择及详情；内部传输批次不影响已合成列表，界面不分页。详情显示最近激活条目的元数据，和复选框集合分别表达焦点与选择。全选以当前完整列表最后一行作为详情焦点，与逐项选中到最后一行的行为一致；取消全部选择清空详情。没有选择时隐藏原始大小、压缩大小、修改日期、压缩方法与解压焦点条目的动作，不展示误导的空属性。
 - 列表大小以 B/KiB/MiB/GiB 显示，数值转换仅用于近似显示；模型和 Rust 保留原始整数。文件图标表示类型，详情卡片不是内容预览。
+- 未知原始大小携带独立 `size_known=false`，原始大小和含它的选中汇总显示 `—`，状态说明尺寸未知；已知空文件仍显示 0。大小升降序均将未知项置于已知项之后，同组保持身份顺序。物理未知项可请求元数据预检以查看拒绝原因，含虚拟目录的选择仍不能预检。未知尺寸不会变成输出授权或解码预算。
+
+English: An unknown uncompressed size has an explicit flag, displays a dash in the size and selection total, and sorts after known sizes in both directions. A known empty file remains zero. Physical unknown-size records may be inspected for the preflight refusal reason; virtual-directory selections retain their existing preflight restriction. Unknown sizes never grant output or decoding credit.
 
 所选条目现可发起 [解压元数据预检](extraction-preflight.md)，使用独立原生结果窗口；该功能不写出文件，不改变只读阶段边界。
 

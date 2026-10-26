@@ -35,11 +35,13 @@ TAR 是容器，GZIP 是压缩流；`tar.gz` 组合为有限层数的 Source →
 | GZIP/TAR.GZ | 读/写及组合 | 多 member 等逐项验证 | 独立 Rust GZIP framing 与共享 Deflate，组合复用 TAR |
 | BZIP2/XZ/Zstd 层 | 未支持 | v0.2 后逐层接入 | 限制窗口/字典、原生依赖、内存预估 |
 | 7z | 自研 Rust 后端的浏览、读、创建；密码、固实、编号分卷及受限重写分别受能力约束 | 按独立互操作矩阵扩展 | 共享算法及薄 CXX 边界，宿主控制来源、预算、输出与提交，见[隔离后端契约](../engineering/native-codecs.md) |
-| RAR | 官方 UnRAR 只读后端，旧格式、RAR5 和 RAR7 按实际验证矩阵声明 | 继续补齐兼容样本，不承诺创建或修改 | 保留 UnRAR 原始许可及用途限制，分卷、密码和资源准入分别验证 |
+| RAR | 自研 Rust 只读后端，旧格式、RAR5 和 RAR7 按实际验证矩阵声明 | 继续补齐兼容样本，不承诺创建或修改 | 容器、算法、密码与物理卷身份在 Rust，宿主控制资源和提交；参考来源及历史交付分别保留原许可 |
 | CAB | 自研 Rust 只读后端，Store、MSZip、Quantum、LZX 与分卷 | 不承诺创建、修改或修复 | 宿主验证同目录完整卷链，保留原始名字及声明，缺卷不发布部分索引 |
 | ISO/UDF | 自研 Rust 只读后端，在隔离工作进程内处理 ISO9660、Joliet、Rock Ridge 与 UDF | 不承诺挂载、写入或任意磁盘映像 | 混合镜像优先 UDF，识别后损坏不回退；测试检查结构与可读性，不声称逐文件内容校验和；扩展边界见[独立实现契约](../engineering/independent-rust-codecs.md#iso与udf只读规格) |
 
-7z、CAB 与光盘容器在共享薄 CXX 边界中执行独立 Rust，官方 7-Zip 容器、算法及通用设施均退出产品构建，通用格式逻辑不复制到 C++/QML。UnRAR 暂时独立提供 RAR，ZIP/TAR/GZIP 使用进程内 Rust。CAB 分卷保留授权卷边界与名称，不按连续字节流拼接；7z 编号卷由宿主冻结成有界连续来源。所有格式复用宿主预算、安全暂存及最终提交。
+7z、RAR、CAB 与光盘容器在共享薄 CXX 边界中执行独立 Rust，官方 7-Zip 与 UnRAR 源码均退出产品构建，没有运行失败回退，通用格式逻辑不复制到 C++/QML。ZIP/TAR/GZIP 使用进程内 Rust。CAB 分卷保留授权卷边界与名称，不按连续字节流拼接；RAR 同样保留物理片身份与完整授权卷组；7z 编号卷由宿主冻结成有界连续来源。所有格式复用宿主预算、安全暂存及最终提交。宿主仅提供可选 OS 日历、字符集原语，格式时间和密码字节决策仍在 Rust；未知尺寸独立表达并禁止输出。
+
+English: 7z, RAR, CAB and optical containers use independent Rust through a shared thin CXX boundary. Official 7-Zip and UnRAR sources are excluded from production with no fallback. Host calendar and character-set services expose only OS primitives; Rust owns format decisions, volume/record identities and explicit unknown-size handling. All formats retain host-owned budgets, staging and publication.
 
 表中既有能力以各格式实现契约为准，新增扩展不因列在表中就获得执行权限。源码、版本、feature、构建配置、互操作结果和许可证通过清单后才能锁入 Cargo.lock/SBOM。
 

@@ -1,5 +1,6 @@
 //! Shared borrowed worker I/O. Format logic remains in independent codec crates.
 mod cab;
+mod rar;
 mod seven;
 use std::io::{self, Read, Seek, SeekFrom};
 use xdzip_codec_api::payload::{DecodeError, DecodedSink, PayloadCodec};
@@ -14,6 +15,15 @@ use xdzip_codec_optical::OpticalCodec;
 #[allow(unsafe_code)]
 #[cxx::bridge(namespace = "xdzip::codec_bridge")]
 mod ffi {
+    struct LocalCalendar {
+        year: i32,
+        month: u8,
+        day: u8,
+        hour: u8,
+        minute: u8,
+        second: u8,
+        valid: bool,
+    }
     struct CreationRow {
         name: String,
         size: u64,
@@ -33,6 +43,10 @@ mod ffi {
     }
     unsafe extern "C++" {
         include!("host.hpp");
+        fn project_local_calendar(kind: u8, value: u64) -> LocalCalendar;
+        fn oem_to_ansi_wide(input: &[u16], output: &mut [u16]) -> Transfer;
+        fn wide_to_ansi(input: &[u16], output: &mut [u8]) -> Transfer;
+        fn wide_to_local_prefix(input: &[u32], output: &mut [u8]) -> Transfer;
         fn read_bytes(offset: u64, buffer: &mut [u8]) -> Transfer;
         fn read_input_bytes(index: u32, buffer: &mut [u8]) -> Transfer;
         fn write_archive_at(offset: u64, bytes: &[u8]) -> u8;
@@ -53,6 +67,17 @@ mod ffi {
         fn complete_entry(index: u64) -> Transfer;
     }
     extern "Rust" {
+        #[allow(clippy::too_many_arguments)]
+        fn run_rar(
+            operation: u8,
+            length: u64,
+            selected: u64,
+            entries: u32,
+            name_bytes: u32,
+            volumes: &[u64],
+            password: &str,
+            has_password: bool,
+        ) -> u8;
         #[allow(clippy::too_many_arguments)]
         fn run_seven(
             operation: u8,
@@ -83,6 +108,38 @@ mod ffi {
             volumes: &[u64],
             volume_names: &[u8],
         ) -> u8;
+    }
+}
+
+// Arguments are borrowed only for this synchronous call. No unwind crosses
+// CXX. An abort terminates this worker and the host rejects incomplete output;
+// there is no alternate decoder or failure fallback.
+#[allow(clippy::too_many_arguments)]
+fn run_rar(
+    operation: u8,
+    length: u64,
+    selected: u64,
+    entries: u32,
+    name_bytes: u32,
+    volumes: &[u64],
+    password: &str,
+    has_password: bool,
+) -> u8 {
+    match std::panic::catch_unwind(|| {
+        rar::run(
+            operation,
+            length,
+            selected,
+            entries,
+            name_bytes,
+            volumes,
+            password,
+            has_password,
+        )
+    }) {
+        Ok(Ok(())) => 0,
+        Ok(Err(code)) => code,
+        Err(_) => 2,
     }
 }
 
@@ -127,12 +184,67 @@ impl Seek for Source {
     }
 }
 impl ReadSource for Source {
+    fn oem_to_ansi_wide(
+        &self,
+        input: &[u16],
+        output: &mut [u16],
+    ) -> Result<Option<usize>, ScanError> {
+        let result = ffi::oem_to_ansi_wide(input, output);
+        projection_count(result, output.len())
+    }
+    fn wide_to_ansi(&self, input: &[u16], output: &mut [u8]) -> Result<Option<usize>, ScanError> {
+        let result = ffi::wide_to_ansi(input, output);
+        projection_count(result, output.len())
+    }
+    fn wide_to_local_prefix(
+        &self,
+        input: &[u32],
+        output: &mut [u8],
+    ) -> Result<Option<usize>, ScanError> {
+        let result = ffi::wide_to_local_prefix(input, output);
+        projection_count(result, output.len())
+    }
+    fn local_calendar(
+        &self,
+        timestamp: xdzip_codec_api::time::Timestamp,
+    ) -> Result<Option<xdzip_codec_api::time::Calendar>, ScanError> {
+        use xdzip_codec_api::time::{Calendar, Timestamp};
+        let (kind, value) = match timestamp {
+            Timestamp::Filetime(value) => (0, value),
+            Timestamp::UnixSeconds(value) => (1, value),
+        };
+        let value = ffi::project_local_calendar(kind, value);
+        if !value.valid {
+            return Ok(None);
+        }
+        let calendar = Calendar {
+            year: value.year,
+            month: value.month,
+            day: value.day,
+            hour: value.hour,
+            minute: value.minute,
+            second: value.second,
+        };
+        // CXX borrows no data here. Validate the returned scalar fields rather
+        // than trusting an invalid OS result as a packed display timestamp.
+        Ok(calendar.is_valid().then_some(calendar))
+    }
     fn volume_lengths(&self) -> Option<&[u64]> {
         (!self.volumes.is_empty()).then_some(self.volumes.as_slice())
     }
     fn volume_names(&self) -> Option<&[Vec<u8>]> {
-        (!self.volumes.is_empty()).then_some(self.volume_names.as_slice())
+        (!self.volume_names.is_empty()).then_some(self.volume_names.as_slice())
     }
+}
+fn projection_count(result: ffi::Transfer, capacity: usize) -> Result<Option<usize>, ScanError> {
+    if result.error != 0 {
+        return Err(wire_scan(result.error));
+    }
+    let count = usize::try_from(result.value).map_err(|_| ScanError::Limit)?;
+    if count >= capacity {
+        return Err(ScanError::Invalid);
+    }
+    Ok(Some(count))
 }
 fn wire_scan(code: u8) -> ScanError {
     match code {
@@ -314,7 +426,7 @@ fn decode_rows_with_password(
         let index = usize::try_from(selected).map_err(|_| 2)?;
         let row = rows.get(index).ok_or(2)?;
         reader
-            .decode(row, &mut Output, control)
+            .decode_with_password(row, &mut Output, control, password)
             .map_err(decode_wire)?;
         if operation != 3 {
             return Ok(());

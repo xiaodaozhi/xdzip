@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "scope": "Original finite input recipes, compressed and fully read back by fixed independent official authors. No third-party corresponding algorithm source read, no RAR encoder implemented, no generated ISA/PE/ELF bytes executed.",
+  "authors": [
+    {
+      "release": "5.91 x64",
+      "distribution_url": "https://www.rarlab.com/rar/winrar-x64-591.exe",
+      "distribution_bytes": 3239648,
+      "distribution_sha256": "892f7fdfdaf9fcec6c035c8c65b280e18b7797620f4375699a2d4d41f60f794c",
+      "authenticode": "Valid, win.rar GmbH, installer and Rar.exe",
+      "executable_sha256": "0eace28b4c19dfd96ae9ca9b57567de7cde46a1506b7f731cfd700754baed15a",
+      "purpose": "RAR29 Itanium and automatic E8E9 author. Official5.91 docs support-mci. Official6.00 change notes remove Itanium creation while retaining reading."
+    },
+    {
+      "release": "7.23 x64",
+      "distribution_url": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+      "executable_sha256": "f561764bc3e9ed208744321a89a819b562edeaf06e203c02a06976121fda1991",
+      "purpose": "Modern Delta author; pre-existing fixed independent tool, not a product dependency.",
+      "authenticode": "Valid, win.rar GmbH (fixed existing Rar.exe checked during fixture validation)"
+    }
+  ],
+  "generator": "../../generate-independent-filter-fixtures.py",
+  "source_metadata": {
+    "mtime_unix": 1700000000,
+    "fixed_archive_author_timezone": "Windows China Standard Time +08:00",
+    "archive_byte_reproduction_limit": "RAR4 records local DOS source mtime. Other author timezone or OS file attributes may change archive metadata/hash; regenerated input bytes, required transform and decoded original equality remain mandatory. Fixed fixture SHA is always enforced."
+  },
+  "original_recipes": {
+    "itanium": "32768 little-endian128bit ISA-like bundles; template22. For slot0..2 start=5+41*slot, major5 at start+37 and20bit ((0x4000-i+slot*4)&0xfffff) at start+13. These are only original data, never an executable or RAR encoder.",
+    "modern-delta4": "524288 bytes, at indexi byte=((i//4)*(i%4+1)+i//1024)%256.",
+    "e8e9-auto": "256 eight-byte records: opcode E8 when i%8==0 else E9, signed little-endian32 displacement 0x10000-(8*i)-5, three90 bytes. Fixed2048B original data only, never executed; independently compressed by official5.91 automatic x86 selection."
+  },
+  "fixtures": [
+    {
+      "label": "e8e9-auto",
+      "release": "591",
+      "method": 29,
+      "original": "e8e9-auto.bin",
+      "original_bytes": 2048,
+      "original_sha256": "6de2e3e6e612b27a70138e34c512a2799c16f709a663583d5d50c36fe3f884f3",
+      "archive": "e8e9-auto.rar",
+      "archive_bytes": 171,
+      "archive_sha256": "df693c44b99e9eeebd261f1cb55760047efe5add584c22f050bfb58258ef842a",
+      "command": [
+        "a",
+        "-cfg-",
+        "-m5",
+        "-md4m",
+        "-mt1",
+        "-idq",
+        "-y",
+        "-tsm-",
+        "-ma4",
+        "-mca-",
+        "-mcd-",
+        "-mcc-",
+        "-mci-",
+        "-mct-",
+        "e8e9-auto.rar",
+        "e8e9-auto.bin"
+      ],
+      "author_sha256": "0eace28b4c19dfd96ae9ca9b57567de7cde46a1506b7f731cfd700754baed15a",
+      "distribution_url": "https://www.rarlab.com/rar/winrar-x64-591.exe",
+      "official_t_and_full_original_readback": true,
+      "required_filter": 1,
+      "coverage": "must additionally execute candidate tests; author switch alone is not evidence",
+      "file": "rar29-e8e9-auto.rar",
+      "observed_counts": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "counter_semantics": "Successful completed transform runs per Kind(E8,E8E9,Itanium,Delta,RGB,Audio)"
+    },
+    {
+      "label": "itanium",
+      "release": "591",
+      "method": 29,
+      "original": "ia64-raw.bin",
+      "original_bytes": 524288,
+      "original_sha256": "d6d8cd0cc8833fda7b5f4cc89ff77bd32b358a3b9e6e53f00e0e095d647cf4cb",
+      "archive": "itanium.rar",
+      "archive_bytes": 638,
+      "archive_sha256": "2c573d132e16f1e10ace7306f1b3adde21f51bcfa8587991eea6f64de187d298",
+      "command": [
+        "a",
+        "-cfg-",
+        "-m5",
+        "-md4m",
+        "-mt1",
+        "-idq",
+        "-y",
+        "-tsm-",
+        "-ma4",
+        "-mci+",
+        "-mce-",
+        "-mcd-",
+        "-mca-",
+        "-mcc-",
+        "-mct-",
+        "itanium.rar",
+        "ia64-raw.bin"
+      ],
+      "author_sha256": "0eace28b4c19dfd96ae9ca9b57567de7cde46a1506b7f731cfd700754baed15a",
+      "distribution_url": "https://www.rarlab.com/rar/winrar-x64-591.exe",
+      "official_t_and_full_original_readback": true,
+      "required_filter": 2,
+      "coverage": "must additionally execute candidate tests; author switch alone is not evidence",
+      "file": "rar29-itanium.rar",
+      "observed_counts": [
+        0,
+        0,
+        8,
+        0,
+        0,
+        0
+      ],
+      "counter_semantics": "Successful completed transform runs per Kind(E8,E8E9,Itanium,Delta,RGB,Audio)"
+    },
+    {
+      "label": "modern-delta4",
+      "release": "723",
+      "method": 50,
+      "original": "modern-delta4.bin",
+      "original_bytes": 524288,
+      "original_sha256": "b8ecd227124f8d48f2b8309969c4ba16a2e9d5eb54b629beed907a8433528f0c",
+      "archive": "modern-delta4.rar",
+      "archive_bytes": 895,
+      "archive_sha256": "080642174193f72c0d4d983d909f144bb79e871bfaae61452bfdddc901796753",
+      "command": [
+        "a",
+        "-cfg-",
+        "-m5",
+        "-md4m",
+        "-mt1",
+        "-idq",
+        "-y",
+        "-tsm-",
+        "-ma5",
+        "-mc4d+",
+        "-mce-",
+        "modern-delta4.rar",
+        "modern-delta4.bin"
+      ],
+      "author_sha256": "f561764bc3e9ed208744321a89a819b562edeaf06e203c02a06976121fda1991",
+      "distribution_url": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+      "official_t_and_full_original_readback": true,
+      "required_filter": 0,
+      "coverage": "must additionally execute candidate tests; author switch alone is not evidence",
+      "file": "modern-delta4.rar",
+      "observed_counts": [
+        8,
+        0,
+        0,
+        0
+      ],
+      "counter_semantics": "Parsed descriptors per kind(Delta,E8,E8E9,ARM), plus complete successful transform/output and original-byte equality"
+    }
+  ],
+  "limits": [
+    "No product worker/service/GUI validation by these component/codec tests.",
+    "Author switches and official readback alone do not establish filter coverage. All negative experiments remain build artifacts only.",
+    "Public modern ARM now has an independent90808B original and complete successful output/ARM observations, recorded separately in arm-sources.json. Its GPL binary inputs remain build-only.",
+    "RAR29 automatic E8E9 success covers this finite original recipe; it does not establish broad x86 instruction, solid, encrypted or split coverage.",
+    "Modern E8/E8E9 execution is not established by these fixed cases; the modern known-input positives are Delta and ARM."
+  ]
+}

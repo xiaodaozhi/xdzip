@@ -144,9 +144,6 @@ fn extras(bytes: &[u8], d: &mut Descriptor, limits: ScanLimits) -> Result<(), Sc
                     for (i, bit) in [2, 4, 8].into_iter().enumerate() {
                         if flags & bit != 0 {
                             let nanos = w.u32()?;
-                            if nanos >= 1_000_000_000 {
-                                return Err(ScanError::Invalid);
-                            }
                             if let Some(RawTime::Unix(_, ref mut n)) = d.times[i] {
                                 *n = Some(nanos);
                             }

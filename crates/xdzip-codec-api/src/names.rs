@@ -245,6 +245,7 @@ mod tests {
             link: false,
             unix_mode: 0,
             size: 0,
+            size_known: true,
             packed_size: 0,
             method: 0,
             modified_dos: 0,

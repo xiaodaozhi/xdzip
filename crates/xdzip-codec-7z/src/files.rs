@@ -184,6 +184,7 @@ pub(crate) fn parse<'a>(
             link,
             unix_mode: 0,
             size,
+            size_known: true,
             packed_size,
             method: 0,
             modified_dos: modified.map_or(0, filetime_dos),
@@ -275,55 +276,5 @@ fn read_names<'a>(
     Ok(names)
 }
 fn filetime_dos(ticks: u64) -> u32 {
-    let Some(seconds) = (ticks / 10_000_000).checked_sub(11_644_473_600) else {
-        return 0;
-    };
-    let mut days = seconds / 86400;
-    if days < 3652 {
-        return 0;
-    }
-    days -= 3652;
-    let mut year = 1980u32;
-    let leap = |year: u32| {
-        year.is_multiple_of(4) && (!year.is_multiple_of(100) || year.is_multiple_of(400))
-    };
-    while year <= 2107 {
-        let count = if leap(year) { 366 } else { 365 };
-        if days < count {
-            break;
-        }
-        days -= count;
-        year += 1;
-    }
-    if year > 2107 {
-        return 0;
-    }
-    let mut month = 1u32;
-    for count in [
-        31,
-        if leap(year) { 29 } else { 28 },
-        31,
-        30,
-        31,
-        30,
-        31,
-        31,
-        30,
-        31,
-        30,
-        31,
-    ] {
-        if days < count {
-            break;
-        }
-        days -= count;
-        month += 1;
-    }
-    let time = seconds % 86400;
-    ((year - 1980) << 25)
-        | (month << 21)
-        | ((days as u32 + 1) << 16)
-        | (((time / 3600) as u32) << 11)
-        | ((((time / 60) % 60) as u32) << 5)
-        | ((time % 60) as u32 / 2)
+    xdzip_codec_api::time::filetime_dos_utc(ticks)
 }

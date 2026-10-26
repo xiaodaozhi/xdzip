@@ -386,6 +386,186 @@ fn rar5_solid_volumes_open_from_every_part_and_check_without_output() {
 }
 
 #[test]
+#[ignore = "requires built Rust worker and public PPM/legacy fixture environment"]
+fn rust_rar_auxiliary_initialization_does_not_trigger_ratio_or_public_byte_counters() {
+    let ppm = PathBuf::from(std::env::var_os("XDZIP_RAR_PPM_FIXTURE").expect("public PPM fixture"));
+    let legacy =
+        PathBuf::from(std::env::var_os("XDZIP_RAR_LEGACY_FIXTURE").expect("public legacy fixture"));
+    for (path, size) in [
+        (fixture("test_read_format_rar_compress_normal.rar"), 20),
+        (ppm, 20),
+        (legacy, 87),
+    ] {
+        let f = Fixture::new();
+        let archive = if size == 87 {
+            let secret =
+                std::env::var("XDZIP_RAR_FIXTURE_PASSWORD").expect("public fixture password");
+            Archive::open_with_password(
+                &path,
+                &Default::default(),
+                Some(extraction::Password::new(secret).unwrap()),
+            )
+            .unwrap()
+        } else {
+            Archive::open(&path, &Default::default()).unwrap()
+        };
+        assert_eq!(archive.format(), Format::Rar);
+        if archive.rows.iter().filter(|row| !row.directory).count() == 1 {
+            let checked = check(&archive, false);
+            assert_eq!(
+                (
+                    checked.verified_files,
+                    checked.verified_bytes,
+                    checked.decoded_bytes
+                ),
+                (1, size, size)
+            );
+        }
+        let row = archive
+            .rows
+            .iter()
+            .find(|row| {
+                !row.directory
+                    && !row.link
+                    && (size == 87 || row.name_bytes() == b"testdir/test.txt")
+            })
+            .unwrap();
+        let target = f.0.join("small-rar");
+        std::fs::create_dir(&target).unwrap();
+        let job = archive
+            .extraction_job(
+                extraction::Options {
+                    target: target.to_string_lossy().into(),
+                    all: false,
+                    selected: vec![row.id.get().to_string()],
+                    directory: String::new(),
+                    create_folder: false,
+                    conflict: ConflictPolicy::Ask,
+                    allow_high_ratio: false,
+                },
+                &Default::default(),
+            )
+            .unwrap();
+        let result = task(false, |control, publish| {
+            extraction::run(job, 2, control, publish)
+        });
+        assert_eq!(
+            (
+                result.decoded_bytes,
+                result.written_bytes,
+                result.committed_bytes
+            ),
+            (size, size, size)
+        );
+        assert_eq!(result.committed_files, 1);
+        let output =
+            std::fs::read(target.join(std::str::from_utf8(row.name_bytes()).unwrap())).unwrap();
+        if size == 20 {
+            assert_eq!(output, b"test text document\r\n");
+        } else {
+            assert_eq!(Some(&output), known_contents(&archive).values().next());
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires built Rust worker and XDZIP_RAR_LARGE_PPM_FIXTURE"]
+fn rust_rar_large_ppm_check_keeps_decoded_work_separate_from_initialization() {
+    let path = PathBuf::from(
+        std::env::var_os("XDZIP_RAR_LARGE_PPM_FIXTURE").expect("public PPM conversion fixture"),
+    );
+    let archive = Archive::open(&path, &Default::default()).unwrap();
+    assert_eq!(archive.format(), Format::Rar);
+    let checked = check(&archive, false);
+    assert_eq!(
+        (
+            checked.verified_files,
+            checked.verified_bytes,
+            checked.decoded_bytes
+        ),
+        (1, 241_647_978, 241_647_978)
+    );
+    assert_eq!((checked.written_bytes, checked.committed_bytes), (0, 0));
+}
+
+#[test]
+#[ignore = "requires Rust worker and XDZIP_RAR_UNKNOWN_FIXTURE"]
+fn rust_rar_unknown_size_check_refuses_before_password_and_output() {
+    let path = PathBuf::from(
+        std::env::var_os("XDZIP_RAR_UNKNOWN_FIXTURE").expect("fixed unknown-size RAR fixture"),
+    );
+    let archive = Archive::open(&path, &Default::default()).unwrap();
+    assert!(!archive.rows[0].size_known);
+    let job = archive.check_job(&Default::default()).unwrap();
+    let mut terminal = None;
+    checking::run(job, 3, &Default::default(), &mut |snapshot| {
+        assert!(!snapshot.total_known);
+        assert!(snapshot.password_prompt.is_none());
+        if snapshot.status.terminal() {
+            terminal = Some(snapshot);
+        }
+    });
+    let result = terminal.unwrap();
+    assert_eq!(result.status, Status::Failed);
+    assert_eq!(result.error, "unsupported_feature");
+    assert_eq!(
+        (
+            result.decoded_bytes,
+            result.written_bytes,
+            result.verified_bytes,
+            result.committed_bytes
+        ),
+        (0, 0, 0, 0)
+    );
+    let f = Fixture::new();
+    let target = f.0.join("unknown-output");
+    std::fs::create_dir(&target).unwrap();
+    assert!(matches!(
+        archive.extraction_job(
+            extraction::Options {
+                target: target.to_string_lossy().into(),
+                all: true,
+                selected: Vec::new(),
+                directory: String::new(),
+                create_folder: false,
+                conflict: ConflictPolicy::Ask,
+                allow_high_ratio: false,
+            },
+            &Default::default()
+        ),
+        Err("unsupported_entry")
+    ));
+    assert_eq!(std::fs::read_dir(target).unwrap().count(), 0);
+}
+
+#[test]
+#[ignore = "requires Rust worker and XDZIP_RAR26_FIXTURE, checks 2 GiB without output"]
+fn rust_rar26_large_check_keeps_u64_counters_without_staging_content() {
+    let path = PathBuf::from(
+        std::env::var_os("XDZIP_RAR26_FIXTURE").expect("official2.90 large26 fixture"),
+    );
+    let archive = Archive::open(&path, &Default::default()).unwrap();
+    assert_eq!(archive.rows[0].size, 2_147_483_649);
+    let checked = check(&archive, false);
+    assert_eq!(
+        (
+            checked.verified_files,
+            checked.verified_bytes,
+            checked.decoded_bytes
+        ),
+        (1, 2_147_483_649, 2_147_483_649)
+    );
+    assert_eq!(
+        (
+            checked.written_bytes,
+            checked.committed_bytes,
+            checked.committed_files
+        ),
+        (0, 0, 0)
+    );
+}
+
+#[test]
 #[ignore = "requires built isolated codec worker and 514 MiB temporary output"]
 fn seven_zip_streaming_creation_exceeds_former_output_cache() {
     let f = Fixture::new();

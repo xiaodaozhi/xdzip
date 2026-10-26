@@ -69,6 +69,7 @@ impl MetadataCodec for ZipCodec {
                 link: unix_type == Some(0o120000),
                 unix_mode: unix_type.map_or(0, |_| record.external_attributes >> 16),
                 size: record.size,
+                size_known: true,
                 packed_size: record.packed_size,
                 method: record.method,
                 modified_dos: validated_dos(record.modified_dos),

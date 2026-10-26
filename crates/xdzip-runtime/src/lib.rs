@@ -215,6 +215,9 @@ impl Archive {
                 });
             } else {
                 rows.sort_unstable_by(|a, b| {
+                    if matches!(sort, 3 | 4) && a.size_known != b.size_known {
+                        return b.size_known.cmp(&a.size_known);
+                    }
                     let order = match sort {
                         1 | 2 => a.display_name.cmp(&b.display_name),
                         3 | 4 => a.size.cmp(&b.size),
@@ -463,6 +466,51 @@ mod tests {
                 .method,
             8
         );
+    }
+    #[test]
+    fn unknown_sizes_sort_after_known_empty_files_in_both_directions() {
+        let path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/zip/normal.zip");
+        let control = Cancellation::default();
+        let mut archive = Archive::open(&path, &control).unwrap();
+        let rows = Arc::make_mut(&mut archive.rows);
+        rows[2].size_known = false;
+        rows[2].size = 0;
+        rows[3].size = 0;
+        for sort in [3, 4] {
+            let (_, physical) = archive
+                .browse_sorted("", "notes", 0, 128, sort, &control)
+                .unwrap();
+            assert_eq!(
+                physical.iter().map(|row| row.id.get()).collect::<Vec<_>>(),
+                [4, 3]
+            );
+            // The complete query has the same order across bounded UI transport pages.
+            for (offset, expected) in [(0, 4), (1, 3)] {
+                let (total, page) = archive
+                    .listing_sorted("", "notes", offset, 1, sort, &control)
+                    .unwrap();
+                assert_eq!(total, 2);
+                match page[0] {
+                    crate::listing::ListingRow::Physical(entry) => {
+                        assert_eq!(entry.id.get(), expected)
+                    }
+                    crate::listing::ListingRow::Directory(_) => {
+                        panic!("search must retain physical records")
+                    }
+                }
+            }
+        }
+        Arc::make_mut(&mut archive.rows)[3].size_known = false;
+        for sort in [3, 4] {
+            let (_, rows) = archive
+                .browse_sorted("", "notes", 0, 128, sort, &control)
+                .unwrap();
+            assert_eq!(
+                rows.iter().map(|row| row.id.get()).collect::<Vec<_>>(),
+                [3, 4]
+            );
+        }
     }
     #[test]
     fn directory_queries_keep_physical_identity_and_enforce_limits() {

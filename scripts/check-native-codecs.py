@@ -33,10 +33,14 @@ def exact(stream, size):
 
 
 def run_worker(worker, parts, *, password=None, selected=None, format_id=7, creation=None, solid=False, encrypt_headers=False,
-               volume_names=None):
+               volume_names=None, digest_only=False):
     operation = 2 if creation is not None else 0 if selected is None else 1
+    if digest_only and operation != 1:
+        raise WorkerError('digest_payload_only')
+    maximum_output = 8 * 1024**3 if digest_only else 32 * 1024**2
+    maximum_work = 20 * 1024**3 if digest_only else 64 * 1024**2
     declared = None
-    if format_id in (7, 8) and operation == 1:
+    if format_id in (4, 7, 8) and operation == 1:
         # A one-entry payload request emits no ROW messages. Admit its size from
         # a separate bounded scan before accepting ordinary or prepaid output.
         metadata, _ = run_worker(worker, parts, password=password, format_id=format_id,
@@ -44,8 +48,10 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
         chosen = [row for row in metadata if row['index'] == selected]
         if len(chosen) != 1:
             raise WorkerError('selected_metadata')
+        if not chosen[0]['size_known']:
+            raise WorkerError('unsupported_unknown_size')
         declared = chosen[0]['size']
-        if declared > 32 * 1024**2:
+        if declared > maximum_output:
             raise WorkerError('output_limit')
     source = b''.join(parts)
     request = bytes([operation, format_id])
@@ -63,10 +69,11 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
             name = name.encode('utf-8') if isinstance(name, str) else bytes(name)
             request += struct.pack('<I', len(name)) + name
     child = subprocess.Popen([str(worker)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    timer = threading.Timer(45, child.kill)
+    timer = threading.Timer(180 if digest_only else 45, child.kill)
     timer.start()
     rows, payload, reads = [], bytearray(), 0
-    work, credit = 0, 0
+    decoded, digest = 0, hashlib.sha256()
+    work, credit, auxiliary = 0, 0, 0
     inputs = list((creation or {}).items())
     positions = [0] * len(inputs)
 
@@ -97,30 +104,41 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 if len(value) != 37 + length:
                     raise WorkerError('metadata_length')
                 raw_name = value[37:]
-                rows.append(dict(index=index, flags=flags, size=unpacked, packed=packed,
+                size_known = not flags & 0x40
+                if flags & 0x80 or (not size_known and (format_id != 4 or unpacked != 0)):
+                    raise WorkerError('metadata_size_flags')
+                if flags & 0x20 and format_id != 8:
+                    raise WorkerError('metadata_encoding_flags')
+                rows.append(dict(index=index, flags=flags, size=unpacked, size_known=size_known, packed=packed,
                                  method=method, name=raw_name.decode('utf-8', errors='replace' if flags & 0x10 else 'strict'),
                                  raw_name=raw_name))
                 send(21)
             elif kind == 12:
-                if len(value) > CHUNK or len(payload) + len(value) > 32 * 1024**2:
+                if len(value) > CHUNK or decoded + len(value) > maximum_output:
                     raise WorkerError('output_limit')
-                if declared is not None and len(payload) + len(value) > declared:
+                if declared is not None and decoded + len(value) > declared:
                     raise WorkerError('entry_output_bounds')
-                payload.extend(value)
+                decoded += len(value)
+                digest.update(value)
+                if not digest_only:
+                    payload.extend(value)
                 send(21)
             elif kind == 23:
-                if format_id not in (7, 8) or operation != 1:
+                if format_id not in (4, 7, 8) or operation != 1:
                     raise WorkerError('unexpected_precharged_data')
                 if not value:
                     raise WorkerError('precharged_empty')
-                if len(value) > CHUNK or len(payload) + len(value) > 32 * 1024**2:
+                if len(value) > CHUNK or decoded + len(value) > maximum_output:
                     raise WorkerError('output_limit')
                 if len(value) > credit:
                     raise WorkerError('precharged_credit')
-                if declared is None or len(payload) + len(value) > declared:
+                if declared is None or decoded + len(value) > declared:
                     raise WorkerError('entry_output_bounds')
                 credit -= len(value)
-                payload.extend(value)
+                decoded += len(value)
+                digest.update(value)
+                if not digest_only:
+                    payload.extend(value)
                 send(21)
             elif kind == 11:
                 index, count = struct.unpack('<II', value)
@@ -141,14 +159,24 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
                 payload[offset:end] = block
                 send(21)
             elif kind == 17:
-                if format_id in (7, 8) and operation == 1:
+                if format_id in (4, 7, 8) and operation == 1:
                     if len(value) != 8:
                         raise WorkerError('work_length')
                     count = struct.unpack('<Q', value)[0]
-                    if count > CHUNK or work + count > 64 * 1024**2:
+                    if not 1 <= count <= CHUNK or work + count > maximum_work:
                         raise WorkerError('work_limit')
                     work += count
                     credit += count
+                send(21)
+            elif kind == 24:
+                if format_id != 4 or operation != 1 or len(value) != 8:
+                    raise WorkerError('auxiliary_scope_or_length')
+                count = struct.unpack('<Q', value)[0]
+                if not 1 <= count <= CHUNK or auxiliary + count > 20 * 1024**3:
+                    raise WorkerError('auxiliary_limit')
+                # Actual work is retained independently of decoded output and
+                # never mints the prepaid delivery credit above.
+                auxiliary += count
                 send(21)
             elif kind == 16:
                 send(21)
@@ -161,9 +189,11 @@ def run_worker(worker, parts, *, password=None, selected=None, format_id=7, crea
         child.stdin.close()
         if child.wait(timeout=5) != 0:
             raise WorkerError('worker_exit')
-        if declared is not None and len(payload) != declared:
+        if declared is not None and decoded != declared:
             raise WorkerError('entry_output_bounds')
-        return rows, bytes(payload)
+        result = (dict(bytes=decoded, sha256=digest.hexdigest(), decoded_work=work, auxiliary_work=auxiliary)
+                  if digest_only else bytes(payload))
+        return rows, result
     finally:
         timer.cancel()
         if child.poll() is None:

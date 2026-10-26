@@ -207,6 +207,8 @@ pub struct Row {
     pub name: String,
     /// Declared original bytes.
     pub size: u64,
+    /// False when an archive record has no known original size.
+    pub size_known: bool,
     /// Declared compressed bytes.
     pub packed_size: u64,
     /// ZIP method, not an assertion of decode support.
@@ -987,6 +989,7 @@ fn execute(
                     navigation_id: 0,
                     name: entry.display_name.clone(),
                     size: entry.size,
+                    size_known: entry.size_known,
                     packed_size: entry.packed_size,
                     method: entry.method,
                     modified_dos: entry.modified_dos,
@@ -999,6 +1002,7 @@ fn execute(
                     navigation_id: node.id,
                     name: node.path.clone(),
                     size: 0,
+                    size_known: false,
                     packed_size: 0,
                     method: 0,
                     modified_dos: 0,
@@ -1169,6 +1173,7 @@ mod tests {
                     navigation_id: 0,
                     name: "x".repeat(MAX_EVENT_BYTES / 2 - "archive".len()),
                     size: 0,
+                    size_known: true,
                     packed_size: 0,
                     method: 0,
                     modified_dos: 0,

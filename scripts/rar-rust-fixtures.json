@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "scope": "Pinned public test data only. Original upstream notices remain applicable; no decoder source, writer executable or large plaintext is downloaded.",
+  "public": [
+    {
+      "file": "test_read_format_rar_compress_best.rar",
+      "url": "https://raw.githubusercontent.com/libarchive/libarchive/v3.8.2/libarchive/test/test_read_format_rar_compress_best.rar.uu",
+      "encoded_sha256": "0f50ec35cac7e60e857b13e4ffb4c679ea3bfc602bb7065d69e47aa9db5c3170",
+      "sha256": "7005b3c6e169ae559f0183c5f0640fdd201b329cf61838c1ca45725949fe0e06",
+      "bytes": 12186,
+      "encoding": "uu",
+      "notice": "Original libarchive test fixture notices, no inferred relicensing."
+    },
+    {
+      "file": "test_read_format_rar_ppmd_lzss_conversion.rar",
+      "url": "https://raw.githubusercontent.com/libarchive/libarchive/v3.8.2/libarchive/test/test_read_format_rar_ppmd_lzss_conversion.rar.uu",
+      "encoded_sha256": "3dbf97ef0c2023962bb902701bf90de65f602501c8e5b572555be6b51d913881",
+      "sha256": "1c75b4b35d0f381b46918b4ff26b6579cbfc18b8e3c78d39ce3b5a97af606183",
+      "bytes": 176700,
+      "encoding": "uu",
+      "notice": "Original libarchive test fixture notices, no inferred relicensing."
+    },
+    {
+      "file": "rar20-password-compressed.rar",
+      "cache_subdirectory": "junrar",
+      "url": "https://raw.githubusercontent.com/junrar/junrar/57091f9ccd43661cf8f12c389917cc24950df707/src/test/resources/com/github/junrar/rar20-password-compressed.rar",
+      "sha256": "9f2791bc468da169f824e29add32220468df33c11cd33995b26014ad3d9425ab",
+      "bytes": 158,
+      "encoding": "raw",
+      "notice": "Original Junrar project and fixture notices, no inferred relicensing."
+    }
+  ]
+}

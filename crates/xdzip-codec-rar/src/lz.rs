@@ -1,5 +1,8 @@
 use crate::MEMORY_LIMIT;
 use crate::algorithm::WorkOutput;
+#[cfg(test)]
+#[path = "filter_author_modern_tests.rs"]
+mod filter_author_modern_tests;
 use crate::decode_error;
 use crate::index::Descriptor;
 use crate::lz_bits::{Bits, Input, Tables};

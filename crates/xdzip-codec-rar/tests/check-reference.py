@@ -40,14 +40,18 @@ def main():
         rust = []
         for line in run.stdout.decode().splitlines():
             fields = line.split('\t')
-            rust.append(dict(id=int(fields[0]), method=int(fields[1]), size=int(fields[2]), packed=int(fields[3]), encrypted=fields[4] == '1', directory=fields[5] == '1', link=fields[6] == '1', raw=fields[7], name=bytes.fromhex(fields[8]).decode('utf-8')))
+            rust.append(dict(id=int(fields[0]), method=int(fields[1]), size=int(fields[2]), packed=int(fields[3]), encrypted=fields[4] == '1', directory=fields[5] == '1', link=fields[6] == '1', raw=fields[7], name=bytes.fromhex(fields[8]).decode('utf-8'), size_known=fields[9] == '1'))
         assert len(rust) == len(official), (label, 'count')
         for a, b in zip(rust, official):
             assert a['id'] == b['index'] + 1, (label, 'id')
             if label == 'authored-three-part':
-                assert a['size'] == 6 and b['size'] == 9223372034707292159, (label, 'unknown_size_projection')
+                assert a['size_known'] and a['size'] == 6 and b['size'] == 0x7fffffff7fffffff, (label, 'resolved_size_projection')
+                assert (a['method'], a['packed']) == (b['method'], b['packed']), (label, 'numeric')
+            elif label == 'authored-all-unknown':
+                assert not a['size_known'] and a['size'] == 0 and b['size'] == 0x7fffffff7fffffff, (label, 'unknown_size_projection')
                 assert (a['method'], a['packed']) == (b['method'], b['packed']), (label, 'numeric')
             else:
+                assert a['size_known'], (label, 'known_size')
                 assert (a['method'], a['size'], a['packed']) == (b['method'], b['size'], b['packed']), (label, 'numeric')
             assert a['name'].rstrip('/') == b['name'].replace('\\', '/').rstrip('/'), (label, 'name')
             assert a['encrypted'] == bool(b['flags'] & 2), (label, 'encrypted')
@@ -55,17 +59,29 @@ def main():
             assert a['link'] == bool(b['flags'] & 4), (label, 'link')
             if content is not None:
                 i = b['index']
-                _, decoded = native.run_worker(args.worker, parts, format_id=4, selected=i)
                 own = subprocess.run([str(args.probe), 'decode', str(i), *map(str, paths)], capture_output=True, check=True, timeout=45).stdout
-                assert own == decoded == content[i], (label, 'known_bytes', i)
+                assert own == content[i], (label, 'candidate_known_bytes', i)
+                # The preserved native publishes an unknown sentinel for this
+                # first fragment. The current host correctly refuses that DTO
+                # before payload; keep its guard and compare candidate bytes
+                # with the independent mathematical input instead.
+                if label != 'authored-three-part':
+                    _, decoded = native.run_worker(args.worker, parts, format_id=4, selected=i)
+                    assert decoded == content[i], (label, 'reference_known_bytes', i)
         results.append(dict(case=label, files=len(rust), known_bytes=content is not None,
                             decoded_bytes=sum(map(len, content)) if content is not None else 0,
-                            size_projection='candidate resolved final known size; native exposes first-header unknown sentinel' if label == 'authored-three-part' else 'equal',
+                            independent_worker_payload=(content is not None and label != 'authored-three-part'),
+                            size_projection=(
+                                'candidate resolved final known size; native exposes first-header unknown sentinel'
+                                if label == 'authored-three-part' else
+                                'candidate explicitly retains unknown with zero numeric placeholder; native exposes internal sentinel'
+                                if label == 'authored-all-unknown' else 'equal'),
                             sha256=[hashlib.sha256(part).hexdigest() for part in parts], status='passed'))
 
     for label, expected in [('authored-old-store', [b'abc', b'defg', b'']), ('authored-modern-store', [b'abc', b'defg', b'']), ('authored-unicode', [b'unicode-content'])]:
         check(label, [args.authored / (label + '.rar')], expected)
     check('authored-three-part', [args.authored / f'authored-split.part{i:02}.rar' for i in range(1, 4)], [b'abcdef'])
+    check('authored-all-unknown', [args.authored / 'authored-all-unknown.rar'])
     check('fixed-rar7-store', [fixed / 'rar7-store-small.rar'], [b'RAR newest algorithm verification sample'])
     for name in ['test_read_format_rar.rar', 'test_read_format_rar_compress_normal.rar', 'test_read_format_rar5_compressed.rar', 'test_read_format_rar5_multiple_files_solid.rar', 'rar-7.23-rar5-compatible.rar']:
         check(name, [fixed / name])

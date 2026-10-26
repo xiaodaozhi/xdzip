@@ -28,6 +28,7 @@ Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--
 $codecPython = if ($IsWindows) { 'python' } else { 'python3' }
 Invoke-Checked $codecPython @('scripts/check-rust-codec-policy.py')
 Invoke-Checked $codecPython @('scripts/test-native-cab-credit.py')
+Invoke-Checked $codecPython @('scripts/test-rar-rust-fixtures.py')
 Invoke-Checked $codecPython @('scripts/prepare-native-codecs.py')
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
 Invoke-Checked cmake @('--build', 'build/foundation', '--target', 'xdzip-native-codec', '--parallel', '2')
@@ -42,6 +43,8 @@ Invoke-Checked cargo @('test', '--workspace', '--locked')
 Invoke-Checked cargo @('build', '-p', 'xdzip-m3-probe', '-p', 'xdzip-m4-probe', '-p', 'xdzip-optical-probe', '-p', 'xdzip-cab-probe', '--locked')
 $rustCodecEvidence = 'build/review/independent-rust-codecs'
 New-Item -ItemType Directory -Path $rustCodecEvidence -Force | Out-Null
+Invoke-Checked $codecPython @('scripts/check-rar-filter-fixtures.py', '--output', "$rustCodecEvidence/rar-filters")
+Invoke-Checked $codecPython @('scripts/check-rar-large-fixtures.py', '--output', "$rustCodecEvidence/rar-large")
 $extractProbe = if ($IsWindows) { 'target/debug/xdzip-m3-probe.exe' } else { 'target/debug/xdzip-m3-probe' }
 $createProbe = if ($IsWindows) { 'target/debug/xdzip-m4-probe.exe' } else { 'target/debug/xdzip-m4-probe' }
 $opticalProbe = if ($IsWindows) { 'target/debug/xdzip-optical-probe.exe' } else { 'target/debug/xdzip-optical-probe' }
@@ -50,7 +53,7 @@ Invoke-Checked $codecPython @('scripts/check-cab-rust-interop.py', '--binary', $
 Invoke-Checked $codecPython @('scripts/check-optical-interop.py', '--binary', $opticalProbe, '--extract-binary', $extractProbe, '--worker', $env:XDZIP_NATIVE_CODEC, '--output', "$rustCodecEvidence/optical")
 Invoke-Checked $codecPython @('scripts/check-tar-interop.py', '--create-binary', $createProbe, '--extract-binary', $extractProbe, '--output', "$rustCodecEvidence/tar-interop.json")
 Invoke-Checked cargo @('run', '--release', '-p', 'xdzip-compression', '--example', 'gzip-probe', '--locked') > "$rustCodecEvidence/compression-benchmark.json"
-Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'native_backend_tests', '--', '--ignored')
+Invoke-Checked $codecPython @('scripts/check-rar-rust-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--output', "$rustCodecEvidence/rar-native")
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'optical_backend_tests', '--', '--ignored')
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'cab_backend_tests', '--', '--ignored')
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')

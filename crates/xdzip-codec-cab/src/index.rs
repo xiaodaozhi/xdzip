@@ -391,6 +391,7 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
                     link: false,
                     unix_mode: 0,
                     size: raw.size,
+                    size_known: true,
                     packed_size: 0,
                     method: 0,
                     modified_dos: raw.modified,

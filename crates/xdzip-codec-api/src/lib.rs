@@ -1,13 +1,49 @@
 //! Internal format contracts. Payload adapters receive input and a host-owned sink, never paths.
 pub mod encode;
+#[cfg(test)]
+mod host_services_tests;
 pub mod names;
 pub mod payload;
+pub mod time;
 use std::io::{Read, Seek};
 use std::sync::atomic::{AtomicBool, Ordering};
 use xdzip_domain::identity::EntryId;
 
 /// Seekable input supplied by the host; codecs do not open arbitrary paths.
 pub trait ReadSource: Read + Seek {
+    /// Optional host OEM-to-ANSI round trip for a complete NUL-terminated
+    /// UTF16 buffer. The returned count excludes NUL. Neither slice is retained.
+    fn oem_to_ansi_wide(
+        &self,
+        _input: &[u16],
+        _output: &mut [u16],
+    ) -> Result<Option<usize>, ScanError> {
+        Ok(None)
+    }
+    /// Optional host ANSI encoding for NUL-terminated UTF16. Output capacity
+    /// and subsequent password truncation remain the caller's responsibility.
+    fn wide_to_ansi(&self, _input: &[u16], _output: &mut [u8]) -> Result<Option<usize>, ScanError> {
+        Ok(None)
+    }
+    /// Optional local C encoding for NUL-terminated scalar-width wide units.
+    /// An encoding failure preserves the converted prefix, matching the legacy
+    /// host policy. The returned byte count excludes the terminating NUL.
+    fn wide_to_local_prefix(
+        &self,
+        _input: &[u32],
+        _output: &mut [u8],
+    ) -> Result<Option<usize>, ScanError> {
+        Ok(None)
+    }
+    /// Project an absolute timestamp using this host's calendar policy.
+    /// The portable default is UTC. Product workers override it with the OS's
+    /// date-specific local rules; failed projections return None, never garbage.
+    fn local_calendar(
+        &self,
+        timestamp: time::Timestamp,
+    ) -> Result<Option<time::Calendar>, ScanError> {
+        Ok(time::utc_calendar(timestamp))
+    }
     /// Authorized physical volume lengths. RAR volumes retain their own boundaries.
     fn volume_lengths(&self) -> Option<&[u64]> {
         None
@@ -79,7 +115,7 @@ pub enum Format {
     TarGzip,
     /// Independent Rust 7z behind the isolated codec worker.
     SevenZip,
-    /// Official UnRAR read-only container backend.
+    /// Independent Rust RAR read-only backend in the isolated codec worker.
     Rar,
     /// Microsoft Cabinet, read only through the isolated format worker.
     Cab,
@@ -126,8 +162,11 @@ pub struct Entry {
     pub link: bool,
     /// Raw Unix mode for ZIP Unix creators; zero for other creators/formats. Never applied directly.
     pub unix_mode: u32,
-    /// Raw declared uncompressed bytes.
+    /// Declared uncompressed bytes, meaningful only when size_known is true.
+    /// Unknown sizes use zero with an explicit false flag, never a sentinel.
     pub size: u64,
+    /// The container supplied a reliable uncompressed size for this record.
+    pub size_known: bool,
     /// Raw declared compressed bytes.
     pub packed_size: u64,
     /// ZIP method or RAR unpack version; 7z uses zero when no exact method is exposed.
@@ -152,6 +191,9 @@ impl Entry {
     }
     /// Container-specific payload admission; ZIP method numbers never describe other containers.
     pub fn payload_supported(&self) -> bool {
+        if !self.size_known {
+            return false;
+        }
         match self.format {
             Format::Zip => {
                 if self.encrypted {

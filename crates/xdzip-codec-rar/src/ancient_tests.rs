@@ -176,3 +176,35 @@ fn ancient_bounds_and_final_sum_are_checked_without_header_crc() {
         Err(DecodeError::Integrity)
     );
 }
+
+#[test]
+fn ancient_sfx_uses_absolute_rsfx_marker_and_full_authorized_search() {
+    let mut archive = main(0x80, &[]);
+    archive.extend(file(b"entry", &[1, 2, 3], 3, 22, 0, 2, 0, 0x20, &[]));
+    let control = Cancellation::default();
+    for (offset, marker, success) in [
+        (0, false, true),
+        (1, false, true),
+        (2, false, false),
+        (64, false, false),
+        (64, true, true),
+        (65534, true, true),
+    ] {
+        let mut bytes = vec![0x5a; offset];
+        if marker {
+            bytes[28..32].copy_from_slice(b"RSFX");
+        }
+        bytes.extend(&archive);
+        let mut source = Cursor::new(bytes);
+        let rows = RarCodec.scan(&mut source, &control, ScanLimits::default());
+        if success {
+            let rows = rows.unwrap();
+            let mut payload = RarCodec.open_payload(&mut source, &rows, &control).unwrap();
+            let mut sink = Sink::default();
+            payload.decode(&rows[0], &mut sink, &control).unwrap();
+            assert_eq!(sink.0, [1, 2, 3]);
+        } else {
+            assert_eq!(rows, Err(ScanError::Unsupported));
+        }
+    }
+}

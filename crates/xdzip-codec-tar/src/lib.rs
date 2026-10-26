@@ -371,6 +371,7 @@ fn scan(
             link: matches!(kind, b'1' | b'2'),
             unix_mode: 0,
             size,
+            size_known: true,
             packed_size: if gzip { 0 } else { size },
             method: if gzip { 8 } else { 0 },
             modified_dos: modified,

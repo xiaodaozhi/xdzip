@@ -16,7 +16,7 @@ pub struct Finding {
 pub struct Report {
     /// Physical records after directory expansion and ID deduplication.
     pub entries: usize,
-    /// Declared total bytes; None means arithmetic overflow, not zero bytes.
+    /// Declared total bytes; None means an unknown size or arithmetic overflow.
     pub declared_bytes: Option<u64>,
     /// Total findings, including those omitted from the bounded detail list.
     pub finding_count: usize,
@@ -58,6 +58,7 @@ pub fn inspect(
         declared_bytes: Some(0),
         ..Report::default()
     };
+    let mut known_total = Some(0u64);
     // (directory, explicitly present): implicit parents can later receive a directory record.
     let mut outputs: BTreeMap<String, (bool, bool, String)> = BTreeMap::new();
     let mut name_budget = 0_usize;
@@ -87,7 +88,15 @@ pub fn inspect(
             return Err(ScanError::Limit);
         }
         if !row.directory {
-            report.declared_bytes = report.declared_bytes.and_then(|n| n.checked_add(row.size));
+            if !row.size_known {
+                report.declared_bytes = None;
+                report.add(row.id, "unknown_size");
+            } else {
+                known_total = known_total.and_then(|total| total.checked_add(row.size));
+                if report.declared_bytes.is_some() {
+                    report.declared_bytes = known_total;
+                }
+            }
             if row.size > 8 * 1024 * 1024 * 1024 {
                 report.add(row.id, "file_limit");
             }
@@ -107,7 +116,7 @@ pub fn inspect(
                 },
             );
         }
-        if !row.payload_supported() {
+        if row.size_known && !row.payload_supported() {
             report.add(row.id, "method");
         }
         if row.warning {
@@ -153,10 +162,7 @@ pub fn inspect(
             }
         }
     }
-    if report
-        .declared_bytes
-        .is_none_or(|n| n > 20 * 1024 * 1024 * 1024)
-    {
+    if known_total.is_none_or(|n| n > 20 * 1024 * 1024 * 1024) {
         report.add(*ids.first().ok_or(ScanError::Invalid)?, "total_limit");
     }
     Ok(report)
@@ -181,6 +187,7 @@ mod tests {
             link: false,
             unix_mode: 0,
             size: 1,
+            size_known: true,
             packed_size: 1,
             method: 0,
             modified_dos: 0,
@@ -329,5 +336,36 @@ mod tests {
         let report = run(&[encrypted]);
         assert!(report.findings.iter().any(|f| f.reason == "encrypted"));
         assert!(report.findings.iter().any(|f| f.reason == "method"));
+    }
+    #[test]
+    fn unknown_size_is_neither_a_measured_zero_nor_an_overflowing_sentinel() {
+        let mut unknown = entry(1, "unknown.bin");
+        unknown.format = xdzip_codec_api::Format::Rar;
+        unknown.size = 0;
+        unknown.size_known = false;
+        let report = run(&[unknown]);
+        assert_eq!(report.declared_bytes, None);
+        assert_eq!(report.findings.len(), 1);
+        assert_eq!(report.findings[0].reason, "unknown_size");
+        let mut empty = entry(1, "empty.bin");
+        empty.size = 0;
+        let report = run(&[empty]);
+        assert_eq!(report.declared_bytes, Some(0));
+        assert_eq!(report.finding_count, 0);
+    }
+    #[test]
+    fn unknown_sizes_do_not_hide_a_known_lower_bound_over_the_limit() {
+        let mut unknown = entry(1, "unknown.bin");
+        unknown.size_known = false;
+        unknown.size = 0;
+        let mut large = entry(2, "large.bin");
+        for bytes in [21 * 1024 * 1024 * 1024, u64::MAX] {
+            large.size = bytes;
+            let extra = entry(3, "extra.bin");
+            let report = run(&[unknown.clone(), large.clone(), extra]);
+            assert_eq!(report.declared_bytes, None);
+            assert!(report.findings.iter().any(|f| f.reason == "unknown_size"));
+            assert!(report.findings.iter().any(|f| f.reason == "total_limit"));
+        }
     }
 }

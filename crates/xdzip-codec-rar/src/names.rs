@@ -35,13 +35,17 @@ pub(crate) fn compressed(raw: &[u8]) -> Result<Option<String>, ScanError> {
                         .filter(|end| *end <= narrow.len())
                         .ok_or(ScanError::Invalid)?;
                     for byte in &narrow[output.len()..end] {
-                        if !corrected && *byte >= 128 {
+                        if !corrected && *byte >= 128 && !cfg!(windows) {
                             return Err(ScanError::Unsupported);
                         }
                         output.push(if corrected {
                             high | u16::from(byte.wrapping_add(correction))
-                        } else {
+                        } else if *byte < 128 {
                             u16::from(*byte)
+                        } else {
+                            // The frozen Windows native profile extends
+                            // a signed plain-char into its 16-bit unit.
+                            u16::from_le_bytes([*byte, 0xff])
                         });
                     }
                 }

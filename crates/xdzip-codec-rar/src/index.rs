@@ -138,10 +138,17 @@ fn signature(reader: &mut Reader<'_>, volume: usize) -> Result<(Generation, u64)
                 return Ok((Generation::Legacy, at + i as u64 + 7));
             }
             if rest.starts_with(b"RE~^") {
-                if at + i as u64 != 0 {
+                let position = at + i as u64;
+                if position > SEARCH - 19 {
                     return Err(ScanError::Unsupported);
                 }
-                return Ok((Generation::Ancient, 0));
+                if position >= 2
+                    && length.saturating_sub(1).min(SEARCH - 16) > 31
+                    && reader.bytes(volume, 28, 4)? != b"RSFX"
+                {
+                    return Err(ScanError::Unsupported);
+                }
+                return Ok((Generation::Ancient, position));
             }
             if rest.starts_with(b"Rar!\x1a\x07") && rest.len() >= 8 && rest[6] > 1 {
                 return Err(ScanError::Unsupported);
@@ -309,7 +316,7 @@ pub(crate) fn parse(
                     password,
                     &mut index.protection,
                 )?,
-                Generation::Ancient => legacy::ancient(reader, volume, at, limits)?,
+                Generation::Ancient => legacy::ancient(reader, volume, at, !main, limits)?,
             };
             if position <= at {
                 return Err(ScanError::Invalid);
@@ -407,7 +414,7 @@ pub(crate) fn parse(
     for (n, file) in index.files.iter().enumerate() {
         let part = &index.parts[file.parts[0]];
         let d = &part.description;
-        let size = file.size.ok_or(ScanError::Unsupported)?;
+        let size = file.size.unwrap_or(0);
         let warning = d.special
             || d.redirection
             || (d.compression != 0
@@ -436,12 +443,10 @@ pub(crate) fn parse(
             link: d.special || d.redirection,
             unix_mode: 0,
             size,
+            size_known: file.size.is_some(),
             packed_size: part.packed,
             method: d.method,
-            modified_dos: match d.times[0] {
-                Some(RawTime::Dos(time) | RawTime::DosExtended(time, _, _)) => time,
-                _ => 0,
-            },
+            modified_dos: crate::time::modified(d.times[0].as_ref(), reader)?,
             encrypted: d.encrypted,
             password_supported: d.encrypted
                 && (d.legacy || (matches!(d.method, 50 | 70) && d.crypt.is_some())),

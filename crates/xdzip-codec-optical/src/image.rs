@@ -259,6 +259,7 @@ impl IndexBuilder {
             link: node.link,
             unix_mode: 0,
             size: node.size,
+            size_known: true,
             packed_size: node.size,
             method: 0,
             modified_dos: node.modified_dos,

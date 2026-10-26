@@ -27,6 +27,10 @@ Unicode 小写比较不是完整大小写折叠或 NFC/NFD 文件系统等价规
 
 空选择、外来 ID、索引限额或取消返回错误，不返回部分成功报告。总量溢出显示“无法计算”，不截断成零。基础问题只报告，不自动覆盖、改名、忽略或跳过。
 
+未知原始大小报告稳定原因 `unknown_size`，`declared_bytes=None` 表示总量不可知，和已知空文件的 `Some(0)` 分开。未知本身不产生伪造的超总量或未知压缩方法问题；实际整数溢出仍产生总量限额问题。输出任务另行拒绝未知尺寸记录，不进入解码、暂存或密码交互。
+
+English: Unknown uncompressed sizes produce `unknown_size` and an unknown declared total, distinct from a known empty file. Unknown values do not fabricate a size-overflow or compression-method finding. Actual arithmetic overflow remains a total-limit finding. Output tasks reject unknown-size records before decoding, staging or password interaction.
+
 ## 桌面入口
 
 选中条目后点击“解压预检”。结果使用 `OperationWindow` 独立非模态顶层窗口，绑定主窗口为 transient owner，保留原生标题栏；不绘制 macOS 红绿灯。关闭结果只关闭该窗口；主窗口关闭时复用协作取消，不在 GUI 线程等待工作线程。

@@ -4,6 +4,14 @@
 
 namespace xdzip::codec_bridge {
 struct Transfer;
+struct LocalCalendar;
+LocalCalendar project_local_calendar(std::uint8_t kind, std::uint64_t value) noexcept;
+Transfer oem_to_ansi_wide(rust::Slice<const std::uint16_t> input,
+                          rust::Slice<std::uint16_t> output) noexcept;
+Transfer wide_to_ansi(rust::Slice<const std::uint16_t> input,
+                      rust::Slice<std::uint8_t> output) noexcept;
+Transfer wide_to_local_prefix(rust::Slice<const std::uint32_t> input,
+                              rust::Slice<std::uint8_t> output) noexcept;
 Transfer read_bytes(std::uint64_t offset, rust::Slice<std::uint8_t> buffer) noexcept;
 Transfer read_input_bytes(std::uint32_t index, rust::Slice<std::uint8_t> buffer) noexcept;
 std::uint8_t write_archive_at(std::uint64_t offset, rust::Slice<const std::uint8_t> bytes) noexcept;

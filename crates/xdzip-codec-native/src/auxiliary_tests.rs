@@ -265,3 +265,44 @@ fn auxiliary_protocol_worker_repeated_packets_hit_host_limit() {
         (AUXILIARY_LIMIT, 0, 0)
     );
 }
+
+#[test]
+#[ignore = "real authored metadata worker checks the RAR-only unknown-size flag and early refusal"]
+fn unknown_size_protocol_never_becomes_an_empty_decodable_file() {
+    assert_eq!(
+        std::env::var("XDZIP_AUXILIARY_PROTOCOL_FIXTURE").as_deref(),
+        Ok("1")
+    );
+    let control = Cancellation::default();
+    let codec = NativeCodec {
+        format: Format::Rar,
+    };
+    let mut source = protocol_source(b'u');
+    let rows = codec
+        .scan(&mut source, &control, ScanLimits::default())
+        .unwrap();
+    assert_eq!((rows[0].size_known, rows[0].size), (false, 0));
+    let mut reader = codec.open_payload(&mut source, &rows, &control).unwrap();
+    let mut sink = Sink::default();
+    assert_eq!(
+        reader.decode(&rows[0], &mut sink, &control),
+        Err(DecodeError::Unsupported)
+    );
+    assert_eq!((sink.auxiliary, sink.decoded, sink.output), (0, 0, 0));
+    for mode in *b"nw" {
+        assert_eq!(
+            codec.scan(&mut protocol_source(mode), &control, ScanLimits::default()),
+            Err(ScanError::Invalid)
+        );
+    }
+    for format in [Format::SevenZip, Format::Iso, Format::Udf] {
+        assert_eq!(
+            NativeCodec { format }.scan(
+                &mut protocol_source(b'u'),
+                &control,
+                ScanLimits::default()
+            ),
+            Err(ScanError::Invalid)
+        );
+    }
+}

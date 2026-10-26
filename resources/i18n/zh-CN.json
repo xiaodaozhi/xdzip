@@ -3,6 +3,7 @@
   "locale": "zh-CN",
   "name": "中文 (简体)",
   "messages": {
+    "archive.unknownSize": "尺寸未知",
     "error.emptyArchiveInput": "排除 macOS 元数据后，没有可压缩的文件或文件夹。",
     "ui.8f1009f1369b": "起始页",
     "ui.1b59353f1874": "打开压缩包",

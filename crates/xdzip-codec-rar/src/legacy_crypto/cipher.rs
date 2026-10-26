@@ -31,6 +31,7 @@ impl NarrowPassword {
         Ok(result)
     }
     /// Cross-platform ASCII is unambiguous; nonASCII needs explicit projection.
+    #[cfg(test)]
     pub fn ascii(password: &str) -> Result<Self, DecodeError> {
         if password.len() > 4096 {
             return Err(DecodeError::Limit);
@@ -49,6 +50,10 @@ impl NarrowPassword {
     }
     fn as_slice(&self) -> &[u8] {
         &self.bytes[..self.len]
+    }
+    #[cfg(test)]
+    pub(crate) fn projected_bytes(&self) -> &[u8] {
+        self.as_slice()
     }
 }
 

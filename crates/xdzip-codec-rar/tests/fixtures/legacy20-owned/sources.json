@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "scope": "Project-owned mathematical plaintext, archived by the official RAR2.90 writer without modification. No archive codec implementation or writer binary vendored. SHA values pin archive data, not reproducible archive timestamps.",
+  "official_installer": {
+    "url": "https://www.rarlab.com/rar/wrar290.exe",
+    "bytes": 711939,
+    "sha256": "7c2e3ec5c5eccc01d38374f6ef317ae1e22ac84eac159a7ce37a4f9e1d9579f6",
+    "signature": "NotSigned",
+    "operation": "Extract Rar.exe only with fixed official UnRAR; never install."
+  },
+  "official_writer": {
+    "sha256": "3f938b2f4cc13b9b85d61417b36af45a970dbee0e09e9d9e13f4e00350485112",
+    "bytes": 236032,
+    "pe_machine": "i386",
+    "imports": [
+      "ADVAPI32.DLL",
+      "KERNEL32.DLL",
+      "USER32.DLL"
+    ]
+  },
+  "input_recipe": [
+    "first.bin[i]=(31*i+7*(i>>5)+13)mod256 for i=0..65536",
+    "second.bin=first.bin[173:]+first.bin[:173]+first.bin[:32780]",
+    "third.bin[i]=(i*i+5*i+(i>>3))mod256 for i=0..33332"
+  ],
+  "fixtures": [
+    {
+      "file": "solid.rar",
+      "bytes": 3128,
+      "sha256": "5f37763957b2e6c26b4743bb9d2770043cd06f0faf0245ce60fae652dac1a292",
+      "command": [
+        "a",
+        "-cfg-",
+        "-inul",
+        "-y",
+        "-m5",
+        "-md1024",
+        "-s",
+        "solid.rar",
+        "first.bin",
+        "second.bin",
+        "third.bin"
+      ],
+      "headers": [
+        {
+          "name": "first.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8080",
+          "solid": false,
+          "packed": 699,
+          "unpacked": 65537
+        },
+        {
+          "name": "second.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8090",
+          "solid": true,
+          "packed": 92,
+          "unpacked": 98317
+        },
+        {
+          "name": "third.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8090",
+          "solid": true,
+          "packed": 2193,
+          "unpacked": 33333
+        }
+      ],
+      "known_members": [
+        {
+          "name": "first.bin",
+          "bytes": 65537,
+          "sha256": "9eb099e182dfbc4535d3255df04d995e8af75dc17a177f89b3b635ebe5f36621"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 98317,
+          "sha256": "89bd00a7bb5b3612af085dda2390286e36fcf5a7d941d5c8a095151bd4175dab"
+        },
+        {
+          "name": "third.bin",
+          "bytes": 33333,
+          "sha256": "3a3a8b80212a9b00774adb26706c7fd3e389bf2dd96ee68b1526eadce0182de3"
+        }
+      ]
+    },
+    {
+      "file": "plain.rar",
+      "bytes": 3782,
+      "sha256": "88f0d8be35da2a295ef64df74b17faaabfbffcf1d549673a03d38f003794b4f7",
+      "command": [
+        "a",
+        "-cfg-",
+        "-inul",
+        "-y",
+        "-m5",
+        "-md1024",
+        "-s-",
+        "plain.rar",
+        "first.bin",
+        "second.bin",
+        "third.bin"
+      ],
+      "headers": [
+        {
+          "name": "first.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8080",
+          "solid": false,
+          "packed": 699,
+          "unpacked": 65537
+        },
+        {
+          "name": "second.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8080",
+          "solid": false,
+          "packed": 745,
+          "unpacked": 98317
+        },
+        {
+          "name": "third.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8080",
+          "solid": false,
+          "packed": 2194,
+          "unpacked": 33333
+        }
+      ],
+      "known_members": [
+        {
+          "name": "first.bin",
+          "bytes": 65537,
+          "sha256": "9eb099e182dfbc4535d3255df04d995e8af75dc17a177f89b3b635ebe5f36621"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 98317,
+          "sha256": "89bd00a7bb5b3612af085dda2390286e36fcf5a7d941d5c8a095151bd4175dab"
+        },
+        {
+          "name": "third.bin",
+          "bytes": 33333,
+          "sha256": "3a3a8b80212a9b00774adb26706c7fd3e389bf2dd96ee68b1526eadce0182de3"
+        }
+      ]
+    },
+    {
+      "file": "audio-solid.rar",
+      "bytes": 29493,
+      "sha256": "8e0aa78745399a629da5f23af63b9536f872c1d484ef22e344124c96036d69b8",
+      "command": [
+        "a",
+        "-cfg-",
+        "-inul",
+        "-y",
+        "-m5",
+        "-md1024",
+        "-s",
+        "-mmf",
+        "audio-solid.rar",
+        "first.bin",
+        "second.bin",
+        "third.bin"
+      ],
+      "headers": [
+        {
+          "name": "first.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8080",
+          "solid": false,
+          "packed": 9227,
+          "unpacked": 65537
+        },
+        {
+          "name": "second.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8090",
+          "solid": true,
+          "packed": 13963,
+          "unpacked": 98317
+        },
+        {
+          "name": "third.bin",
+          "unpack_version": 20,
+          "compression": 5,
+          "flags": "0x8090",
+          "solid": true,
+          "packed": 6159,
+          "unpacked": 33333
+        }
+      ],
+      "known_members": [
+        {
+          "name": "first.bin",
+          "bytes": 65537,
+          "sha256": "9eb099e182dfbc4535d3255df04d995e8af75dc17a177f89b3b635ebe5f36621"
+        },
+        {
+          "name": "second.bin",
+          "bytes": 98317,
+          "sha256": "89bd00a7bb5b3612af085dda2390286e36fcf5a7d941d5c8a095151bd4175dab"
+        },
+        {
+          "name": "third.bin",
+          "bytes": 33333,
+          "sha256": "3a3a8b80212a9b00774adb26706c7fd3e389bf2dd96ee68b1526eadce0182de3"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "All real unpack versions are20. These fixtures do not establish independently authored version26 or payloads beyond2GiB.",
+    "Force-audio switch and full-byte success do not alone establish all channel counts or every tail-table transition.",
+    "Original mathematical bytes and archive payloads are project test data under the repository license. Official author/reference executables retain their separate license and are not committed."
+  ]
+}

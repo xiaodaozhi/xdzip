@@ -120,7 +120,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         for row in rows {
             println!(
-                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+                "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
                 row.id.get(),
                 row.method,
                 row.size,
@@ -129,7 +129,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 u8::from(row.directory),
                 u8::from(row.link),
                 hex(&row.raw_name),
-                hex(row.name_bytes())
+                hex(row.name_bytes()),
+                u8::from(row.size_known)
             );
         }
     }

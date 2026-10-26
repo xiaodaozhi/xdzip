@@ -1506,6 +1506,7 @@ dependencies = [
  "xdzip-codec-api",
  "xdzip-codec-cab",
  "xdzip-codec-optical",
+ "xdzip-codec-rar",
 ]
 
 [[package]]

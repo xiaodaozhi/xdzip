@@ -390,6 +390,7 @@ struct Sink {
     bytes: Vec<u8>,
     skipped: u64,
     delivered_prepaid: u64,
+    auxiliary: u64,
 }
 impl Sink {
     fn unselected_work(&self) -> u64 {
@@ -397,6 +398,11 @@ impl Sink {
     }
 }
 impl DecodedSink for Sink {
+    fn charge_auxiliary(&mut self, count: u64) -> Result<(), DecodeError> {
+        assert!((1..=protocol::CHUNK as u64).contains(&count));
+        self.auxiliary += count;
+        Ok(())
+    }
     fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
         self.bytes.extend_from_slice(bytes);
         Ok(())
@@ -834,7 +840,181 @@ fn rar_fixture(name: &str) -> Vec<u8> {
     .unwrap()
 }
 #[test]
-fn official_unrar_reads_legacy_rar5_header_encryption_and_solid() {
+#[ignore = "requires built Rust worker and XDZIP_RAR_PPM_FIXTURE"]
+fn rust_rar_ppm_auxiliary_is_separate_from_output_and_paid_delivery() {
+    let ppm = std::env::var_os("XDZIP_RAR_PPM_FIXTURE").expect("public PPM fixture path");
+    for (bytes, ppm) in [
+        (
+            rar_fixture("test_read_format_rar_compress_normal.rar"),
+            false,
+        ),
+        (std::fs::read(ppm).unwrap(), true),
+    ] {
+        let mut source = Cursor::new(bytes);
+        let codec = NativeCodec {
+            format: Format::Rar,
+        };
+        let control = Cancellation::default();
+        let rows = codec
+            .scan(&mut source, &control, Default::default())
+            .unwrap();
+        let row = rows
+            .iter()
+            .find(|row| row.name_bytes() == b"testdir/test.txt")
+            .unwrap();
+        let mut sink = Sink::default();
+        codec
+            .open_payload(&mut source, &rows, &control)
+            .unwrap()
+            .decode(row, &mut sink, &control)
+            .unwrap();
+        assert_eq!(sink.bytes, b"test text document\r\n");
+        assert_eq!(sink.delivered_prepaid, 20);
+        assert_eq!(sink.unselected_work(), 0);
+        if ppm {
+            assert!(sink.auxiliary > 1024 * 1024);
+        }
+    }
+}
+#[test]
+#[ignore = "requires XDZIP_NATIVE_CODEPAGE_PROBE built from the real OS glue"]
+fn native_os_codepage_services_use_borrowed_public_vectors_and_reject_bad_shapes() {
+    let binary = std::env::var_os("XDZIP_NATIVE_CODEPAGE_PROBE").expect("built OS service probe");
+    let output = std::process::Command::new(binary).output().unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        std::str::from_utf8(&output.stdout).unwrap().trim_end(),
+        "OS codepage borrowed-buffer vectors passed"
+    );
+    assert!(output.stderr.is_empty());
+}
+#[test]
+#[ignore = "requires Rust worker and XDZIP_RAR_UNKNOWN_FIXTURE/KNOWN_EMPTY_FIXTURE"]
+fn rust_rar_unknown_metadata_is_distinct_from_a_known_empty_file() {
+    let codec = NativeCodec {
+        format: Format::Rar,
+    };
+    let control = Cancellation::default();
+    let path = std::env::var_os("XDZIP_RAR_UNKNOWN_FIXTURE").expect("fixed unknown-size fixture");
+    let mut source = Cursor::new(std::fs::read(path).unwrap());
+    let rows = codec
+        .scan(&mut source, &control, Default::default())
+        .unwrap();
+    assert_eq!((rows[0].size_known, rows[0].size), (false, 0));
+    let mut sink = Sink::default();
+    assert_eq!(
+        codec
+            .open_payload(&mut source, &rows, &control)
+            .unwrap()
+            .decode(&rows[0], &mut sink, &control),
+        Err(DecodeError::Unsupported)
+    );
+    assert_eq!((sink.bytes.len(), sink.auxiliary, sink.skipped), (0, 0, 0));
+    let path = std::env::var_os("XDZIP_RAR_KNOWN_EMPTY_FIXTURE")
+        .expect("authored Store fixture with a known empty file");
+    let mut source = Cursor::new(std::fs::read(path).unwrap());
+    let rows = codec
+        .scan(&mut source, &control, Default::default())
+        .unwrap();
+    let empty = rows
+        .iter()
+        .find(|row| row.size == 0 && !row.directory)
+        .unwrap();
+    assert!(empty.size_known);
+    codec
+        .open_payload(&mut source, &rows, &control)
+        .unwrap()
+        .decode(empty, &mut sink, &control)
+        .unwrap();
+    assert!(sink.bytes.is_empty());
+}
+#[test]
+#[ignore = "requires Rust worker and XDZIP_RAR290_FIXTURE_ROOT with owned plaintext"]
+fn rust_rar20_solid_audio_and_plain_keep_mixed_reader_order_and_known_bytes() {
+    let root = std::path::PathBuf::from(
+        std::env::var_os("XDZIP_RAR290_FIXTURE_ROOT").expect("official authored RAR2.90 fixtures"),
+    );
+    let codec = NativeCodec {
+        format: Format::Rar,
+    };
+    let control = Cancellation::default();
+    for name in ["solid.rar", "plain.rar", "audio-solid.rar"] {
+        let mut source = Cursor::new(std::fs::read(root.join(name)).unwrap());
+        let rows = codec
+            .scan(&mut source, &control, Default::default())
+            .unwrap();
+        assert_eq!(rows.len(), 3);
+        let mut reader = codec.open_payload(&mut source, &rows, &control).unwrap();
+        for index in [0, 1, 2, 0, 2, 1] {
+            let row = &rows[index];
+            let mut sink = Sink::default();
+            reader.decode(row, &mut sink, &control).unwrap();
+            let expected =
+                std::fs::read(root.join(std::str::from_utf8(row.name_bytes()).unwrap())).unwrap();
+            assert_eq!(sink.bytes, expected, "{name} member {index}");
+            assert_eq!(sink.delivered_prepaid, row.size);
+            assert!(sink.skipped >= sink.delivered_prepaid);
+        }
+    }
+}
+#[test]
+#[ignore = "requires Rust worker and XDZIP_RAR26_FIXTURE, streams 2 GiB twice without buffering"]
+fn rust_rar26_large_file_preserves_u64_size_and_bounded_persistent_delivery() {
+    const SIZE: u64 = 2_147_483_649;
+    struct Sample {
+        count: u64,
+        ends: [u8; 8192],
+    }
+    impl DecodedSink for Sample {
+        fn write_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+            let end = self
+                .count
+                .checked_add(bytes.len() as u64)
+                .filter(|n| *n <= SIZE)
+                .ok_or(DecodeError::Limit)?;
+            if self.count < 4096 {
+                let take = bytes.len().min((4096 - self.count) as usize);
+                self.ends[self.count as usize..self.count as usize + take]
+                    .copy_from_slice(&bytes[..take]);
+            }
+            let start = self.count.max(SIZE - 4096);
+            if end > start {
+                let from = (start - self.count) as usize;
+                let to = 4096 + (start - (SIZE - 4096)) as usize;
+                self.ends[to..to + bytes.len() - from].copy_from_slice(&bytes[from..]);
+            }
+            self.count = end;
+            Ok(())
+        }
+    }
+    let path = std::env::var_os("XDZIP_RAR26_FIXTURE").expect("official2.90 large26 fixture");
+    let mut source = std::fs::File::open(path).unwrap();
+    let codec = NativeCodec {
+        format: Format::Rar,
+    };
+    let control = Cancellation::default();
+    let rows = codec
+        .scan(&mut source, &control, Default::default())
+        .unwrap();
+    assert_eq!(rows.len(), 1);
+    assert!(rows[0].size_known);
+    assert_eq!((rows[0].method, rows[0].size), (26, SIZE));
+    let mut reader = codec.open_payload(&mut source, &rows, &control).unwrap();
+    for _ in 0..2 {
+        let mut sink = Sample {
+            count: 0,
+            ends: [0; 8192],
+        };
+        reader.decode(&rows[0], &mut sink, &control).unwrap();
+        assert_eq!(sink.count, SIZE);
+        for i in 0..4096usize {
+            assert_eq!(sink.ends[i], (31 * i + 7 * (i >> 5) + 13) as u8);
+            assert_eq!(sink.ends[4096 + i], (i * i + 5 * i + (i >> 3)) as u8);
+        }
+    }
+}
+#[test]
+fn rust_rar_reads_legacy_rar5_header_encryption_and_solid() {
     let codec = NativeCodec {
         format: Format::Rar,
     };
@@ -859,7 +1039,7 @@ fn official_unrar_reads_legacy_rar5_header_encryption_and_solid() {
             );
             assert!(matches!(
                 wrong,
-                Err(ScanError::WrongPassword | ScanError::Invalid)
+                Err(ScanError::WrongPassword | ScanError::PasswordOrIntegrity | ScanError::Invalid)
             ));
         }
         let rows = codec
@@ -887,7 +1067,7 @@ fn official_unrar_reads_legacy_rar5_header_encryption_and_solid() {
     }
 }
 #[test]
-fn unrar_nonsolid_mixed_passwords_do_not_replay_another_files_secret() {
+fn rust_rar_nonsolid_mixed_passwords_do_not_replay_another_files_secret() {
     let codec = NativeCodec {
         format: Format::Rar,
     };
@@ -951,7 +1131,7 @@ fn rar_volumes(count: usize) -> Volumes {
     }
 }
 #[test]
-fn unrar_preserves_solid_state_across_authorized_volumes_and_rejects_missing_tail() {
+fn rust_rar_preserves_solid_state_across_authorized_volumes_and_rejects_missing_tail() {
     let codec = NativeCodec {
         format: Format::Rar,
     };
