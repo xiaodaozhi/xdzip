@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "name": "RAR finite wire mappings",
+  "kind": "limited-reference-provenance",
+  "source_release": "UnRAR 7.30 beta1",
+  "source_license": "LicenseRef-UnRAR",
+  "source_archive": {
+    "file": "unrarsrc-7.3.1.tar.gz",
+    "url": "https://www.rarlab.com/rar/unrarsrc-7.3.1.tar.gz",
+    "sha256": "634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab"
+  },
+  "original_notice": {
+    "file": "UnRAR-7.3.1-license.txt",
+    "archive_member": "unrar/license.txt",
+    "bytes": 1976,
+    "sha256": "6ecc1687808b7d66b24f874755abfed7464d9751ed0001cd4e8e5d9bf397ff8a"
+  },
+  "scope": [
+    "RAR13/15 finite prefix and Short wire mappings, recorded in crates/xdzip-codec-rar/data/rar15-codebooks-sources.json",
+    "Historical RAR20 finite cipher permutation, recorded in crates/xdzip-codec-rar/src/legacy_crypto/README.md"
+  ],
+  "official_engine_in_product": false,
+  "licensing_status": "Original reference notice preserved; applicability and redistribution require candidate-specific review. No Apache-2.0 relicensing or legal clearance is inferred."
+}

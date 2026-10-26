@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Source cache integrity and portable bundle boundary tests, using owned fixtures."""
 import importlib.util
+import hashlib
 import io
 import json
 from contextlib import nullcontext, redirect_stdout
 from pathlib import Path
 import plistlib
+import runpy
 import subprocess
 import sys
 import tarfile
@@ -15,6 +17,7 @@ from unittest.mock import patch
 from deployment_audit import digest
 from desktop_product import built_product
 import macos_launch_services as ls
+import rar_mapping_materials
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,6 +36,76 @@ replace_qt = module('verify-qt-replacement')
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_rar_mapping_notice_bytes_match_in_notices_and_separate_delivery(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = []
+            for output in [root/'notices', root/'delivery']:
+                paths, record = source.collect_rar_mapping_materials(output)
+                self.assertEqual(len(paths), 3)
+                self.assertEqual(record['source_release'], 'UnRAR 7.30 beta1')
+                self.assertEqual(record['source_archive']['file'], 'unrarsrc-7.3.1.tar.gz')
+                self.assertFalse(record['official_engine_in_product'])
+                self.assertEqual(record['kind'], 'limited-reference-provenance')
+                original = output/record['file']
+                self.assertEqual(original.stat().st_size, 1976)
+                self.assertEqual(digest(original), '6ecc1687808b7d66b24f874755abfed7464d9751ed0001cd4e8e5d9bf397ff8a')
+                results.append({path.name: path.read_bytes() for path in paths})
+            self.assertEqual(results[0], results[1])
+
+    def test_rar_mapping_changed_original_notice_fails_before_output(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inputs = root/'third_party/rar-wire-mappings'
+            inputs.mkdir(parents=True)
+            for original in (ROOT/'third_party/rar-wire-mappings').iterdir():
+                (inputs/original.name).write_bytes(original.read_bytes())
+            (inputs/'UnRAR-7.3.1-license.txt').write_bytes(b'altered reference notice')
+            with patch.object(rar_mapping_materials, 'ROOT', root):
+                with self.assertRaisesRegex(ValueError, 'checksum or scope'):
+                    rar_mapping_materials.collect(root/'output')
+            self.assertFalse((root/'output').exists())
+
+    def test_rar_mapping_existing_candidate_notice_is_never_rewritten(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            paths, _ = rar_mapping_materials.collect(output)
+            notice = next(path for path in paths if path.name.endswith('.txt'))
+            notice.write_bytes(b'earlier candidate notice')
+            with self.assertRaisesRegex(ValueError, 'Existing RAR mapping notice differs'):
+                rar_mapping_materials.collect(output)
+            self.assertEqual(notice.read_bytes(), b'earlier candidate notice')
+
+    def test_notice_inventory_hashes_bounded_rar_materials_without_declaring_an_engine(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)/'notices'
+            def checked(command, **_):
+                if command[:2] == ['rustc', '-vV']:
+                    return 'host: x86_64-unknown-linux-gnu\n'
+                if command[:2] == ['cargo', 'metadata']:
+                    return json.dumps({'packages': [], 'resolve': {'nodes': []}})
+                if command[:3] == ['git', 'rev-parse', 'HEAD']:
+                    return 'a'*40
+                if command[:2] == ['git', 'status']:
+                    return ''
+                self.fail('Unexpected subprocess in owned notice fixture')
+            with patch('native_runtime_materials.prepare', return_value={'files': []}), \
+                 patch('native_codec_materials.notices', return_value=([], [])), \
+                 patch('runtime_rust.runtime_candidates', return_value={'root': 'owned', 'packages': []}), \
+                 patch.object(subprocess, 'check_output', side_effect=checked), \
+                 patch.object(sys, 'platform', 'linux'), \
+                 patch.object(sys, 'argv', ['collect-notices.py', str(output)]), redirect_stdout(io.StringIO()):
+                runpy.run_path(str(ROOT/'scripts/collect-notices.py'), run_name='__main__')
+            inventory = json.loads((output/'build-inventory.json').read_text())
+            hashes = {item['file']: item['sha256'] for item in inventory['notice_hashes']}
+            for name in ['README.md', 'sources.json', 'UnRAR-7.3.1-license.txt']:
+                path = 'rar-wire-mappings/'+name
+                self.assertEqual(hashes[path], hashlib.sha256((output/path).read_bytes()).hexdigest())
+            self.assertEqual(inventory['native_dependencies'], [])
+            self.assertEqual(len(inventory['limited_reference_materials']), 1)
+            self.assertEqual(inventory['limited_reference_materials'][0]['source_license'], 'LicenseRef-UnRAR')
+            self.assertFalse(inventory['limited_reference_materials'][0]['official_engine_in_product'])
+
     def test_current_product_and_historical_rebuild_names(self):
         for platform, name, legacy in [('linux', 'xdzip', 'xdzip-browser'),
                                        ('win32', 'xdzip.exe', 'xdzip-browser.exe')]:

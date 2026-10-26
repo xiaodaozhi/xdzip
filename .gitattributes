@@ -17,3 +17,5 @@ apps/desktop/tests/preferences-compat/previous/*.cpp -text
 apps/desktop/tests/preferences-compat/previous/*.h -text
 # Preserve the upstream license notice bytes, including original line endings.
 crates/xdzip-codec-rar/tests/fixtures/legacy20/LICENSE.junrar.txt -text whitespace=-blank-at-eol
+# Preserve the pinned original restricted-reference notice byte for byte.
+third_party/rar-wire-mappings/UnRAR-7.3.1-license.txt -text -whitespace

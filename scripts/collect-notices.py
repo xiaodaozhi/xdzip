@@ -11,6 +11,7 @@ import argparse
 from sbom import source_bom
 from runtime_rust import runtime_candidates
 from native_runtime_materials import prepare
+from rar_mapping_materials import collect as collect_rar_mapping_materials
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -22,6 +23,8 @@ out.mkdir(parents=True, exist_ok=True)
 native_materials = prepare(out, {'win32': 'windows', 'darwin': 'macos'}.get(sys.platform, 'linux'))
 notice_files = []
 notice_files.extend(out/item['file'] for item in native_materials['files'])
+rar_mapping_files, rar_mapping_record = collect_rar_mapping_materials(out)
+notice_files += rar_mapping_files
 native_dependencies = []
 from native_codec_materials import notices as codec_notices
 codec_files, codec_dependencies = codec_notices(out)
@@ -88,6 +91,7 @@ source_inventory = {
     'qt_declared_product_modules': ['Core', 'Gui', 'Network', 'Qml', 'Quick', 'QuickControls2', 'Widgets'],
     'qt_version': '6.8.2',
     'native_dependencies': native_dependencies,
+    'limited_reference_materials': [rar_mapping_record],
     'font': json.loads((root / 'design/assets/fonts/manifest.json').read_text()),
     'notice_hashes': [{'file': p.relative_to(out).as_posix(), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
                       for p in sorted(notice_files)],

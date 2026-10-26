@@ -34,7 +34,7 @@ build-dir 与 output-dir 必须使用仓库 build/ 内的独立子目录，以�
 
 各阶段可以单独调用，不隐式补跑前面的准备、构建或测试。缺少前置输入时会报错，先执行相应阶段再重试。每个阶段在开始工作前检查其所需环境，`doctor` 可在不构建或打包的情况下提前查看问题。
 
-`prepare` 下载并核验仍在使用的固定 UnRAR 源码，保存在 `build/native-codec/`；7z、CAB 和光盘容器使用独立 Rust，不准备官方 7-Zip 产品源码。`build` 只使用这些已准备输入，不浮动下载。只测 Rust 时，需要先构建 `xdzip-native-codec`，将 `XDZIP_NATIVE_CODEC` 指向该工作进程，再运行 workspace 测试。原生后端任务闭环另执行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，统一 `test` 与 Foundation CI 均强制执行这部分，忽略状态不能记作格式验证通过。源码、流授权及许可边界见[原生后端契约](native-codecs.md)。
+`prepare` 核验当前产品格式源码清单。ZIP、TAR/GZIP、7z、RAR、CAB 和光盘容器使用独立 Rust，官方产品源码清单为空，不下载或编译官方 UnRAR、7-Zip 引擎。独立测试参照按各自固定来源准备，与产品运行依赖分开；RAR 有限映射的原始来源通知随打包和对应源码交付保留，见[许可证契约](licensing.md)。`build` 只使用已准备输入，不浮动下载。只测 Rust 时，需要先构建 `xdzip-native-codec`，将 `XDZIP_NATIVE_CODEC` 指向该工作进程，再运行 workspace 测试。原生后端任务闭环另执行 `cargo test -p xdzip-runtime --locked native_backend_tests -- --ignored`，统一 `test` 与 Foundation CI 均强制执行这部分，忽略状态不能记作格式验证通过。源码、流授权及许可边界见[原生后端契约](native-codecs.md)。
 
 | 命令 | 作用与前置条件 |
 | --- | --- |

@@ -6,7 +6,9 @@ RAR 自研迁移保留旧版、RAR5、RAR7、密码、头部加密、固实与�
 
 现代容器字段依据 RARLAB 的 [RAR 5.0 格式技术说明](https://www.rarlab.com/technote.htm)，RAR7 算法辨识参考 [UnRAR7 说明](https://www.rarlab.com/unrar7notes.htm)。技术说明并未完整公布压缩、历史密码、VM 或 checksum tweak 算法，不能从方法名称推导缺失状态机。在线技术说明没有独立版本号或签名，不把保存的 HTML 当作上游签名发布。
 
-旧容器及官方技术说明未覆盖的接受行为，经独立分析者按固定 UnRAR 来源形成纯事实交接。固定 source release 为 7.3.1，内部版本为 7.30 beta1，上游归档 SHA-256 为 `634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab`，许可为 LicenseRef-UnRAR。容器、现代 LZ/过滤器、固实与密码分别交接，不据某一稿存在宣称其他算法已经完成分析。
+旧容器及官方技术说明未覆盖的接受行为，经独立分析者按固定 UnRAR 来源形成纯事实交接。固定参考的上游内部版本为 7.30 beta1，下载归档文件名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。归档 SHA-256 为 `634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab`，许可为 LicenseRef-UnRAR，精确原始许可与来源说明见[有限映射材料](../../third_party/rar-wire-mappings/README.md)。容器、现代 LZ/过滤器、固实与密码分别交接，不据某一稿存在宣称其他算法已经完成分析。
+
+English: The pinned reference identifies itself as UnRAR 7.30 beta1. Its download filename is unrarsrc-7.3.1.tar.gz; that filename does not establish a separate upstream release version. The exact original notice and pinned archive provenance are preserved separately for the finite mappings, without inferring legal clearance.
 
 容器初次实现时，实现者未阅读该参考核心，使用官方文档和不含参考代码表达的数学交接 `RAR-CONTAINER-2026-10-26-v1`。冻结容器事实稿 SHA-256 为 `116ed2926619ea3009f00a6b6991f5d939581bca30a2060df2c77c51724f9839`，Unicode 补充边界为 `b456b85b59e97c96c78c1936df6d46c893a9f9b26cc61511cfc411dec20a2750`，来源记录为 `b68b0def40ca7b7f3220fa6caf928f239113366bf9a1969372c52063ce240827`。后续旧服务兼容补充中，原容器作者在代码冻结后受限阅读对应头解析及字节读取范围，转为事实分析者并停止修改对应容器；未暴露的另一实现者依据数值事实独立完成最终服务准入。旧服务补充主文 SHA-256 为 `2554d6752cd5c8e0f59f97c5a90a9291ba2d8908960a65f50e1c5b54301bad08`，冻结清单为 `39cad28299020679ab1a8e98e723c3eb8310008861bcea9c6ba76aa80f8fc853`。生成的事实稿、来源范围与验证报告作为本地或 CI 工件保存，不复制参考代码、结构、注释或逐行语言转换。不宣称严格洁净室，也不将独立实现视为许可结论；参考工具及既有交付仍履行各自许可义务。
 

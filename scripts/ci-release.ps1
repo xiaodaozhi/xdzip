@@ -18,7 +18,29 @@ if ($IsMacOS) {
     $shared = @('--qt-prefix', $qt, '--tools-dir', $tools, '--build-dir', 'build/release-desktop',
         '--output-dir', 'build/release-package', '--macos-handler-rank', 'Alternate', '--release-distribution')
     Checked python (@('scripts/desktop.py', 'build') + $shared)
-    Checked python (@('scripts/desktop.py', 'test') + $shared)
+    # The complete ignored Rust batch needs the same pinned data as Foundation.
+    Checked python @('scripts/prepare-rar-rust-fixtures.py', '--output', 'build/release-rar-fixtures')
+    $fixtures = Get-Content -LiteralPath 'build/release-rar-fixtures/sources.json' -Raw -Encoding utf8 | ConvertFrom-Json
+    $fixtureEnvironment = @{ XDZIP_RAR_FIXTURE_PASSWORD = 'password' }
+    foreach ($item in $fixtures.environment.PSObject.Properties) {
+        $fixtureEnvironment[$item.Name] = Join-Path (Get-Location) $item.Value
+    }
+    $previousEnvironment = @{}
+    try {
+        foreach ($name in $fixtureEnvironment.Keys) {
+            $previousEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+            [Environment]::SetEnvironmentVariable($name, $fixtureEnvironment[$name], 'Process')
+        }
+        Checked python (@('scripts/desktop.py', 'test') + $shared)
+    } finally {
+        foreach ($name in $previousEnvironment.Keys) {
+            if ($null -eq $previousEnvironment[$name]) {
+                Remove-Item "Env:$name" -ErrorAction SilentlyContinue
+            } else {
+                [Environment]::SetEnvironmentVariable($name, $previousEnvironment[$name], 'Process')
+            }
+        }
+    }
     Checked python (@('scripts/desktop.py', 'package') + $shared)
     Checked python (@('scripts/desktop.py', 'verify') + $shared)
     $packages = 'build/release-package'

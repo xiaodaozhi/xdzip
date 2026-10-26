@@ -5,6 +5,7 @@ from contextlib import redirect_stdout
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -166,6 +167,105 @@ class ReleaseNotesTests(unittest.TestCase):
         self.assertEqual(len(edits), 1)
         self.assertEqual(Path(edits[0][edits[0].index('--notes-file')+1]).read_text(encoding='utf-8'), self.body)
         self.assertEqual(sum(c[:3] == ['gh', 'release', 'download'] for c in self.commands), 2)
+
+
+@unittest.skipUnless(shutil.which('pwsh'), 'PowerShell 7 is required for the native Release entry contract')
+class NativeReleaseInputsTests(unittest.TestCase):
+    fixture_names = (
+        'XDZIP_RAR_PPM_FIXTURE', 'XDZIP_RAR_LARGE_PPM_FIXTURE', 'XDZIP_RAR_LEGACY_FIXTURE',
+        'XDZIP_RAR_UNKNOWN_FIXTURE', 'XDZIP_RAR_KNOWN_EMPTY_FIXTURE',
+        'XDZIP_RAR290_FIXTURE_ROOT', 'XDZIP_RAR26_FIXTURE',
+    )
+
+    def run_release(self, case):
+        root = Path(__file__).resolve().parents[1]
+        temporary = tempfile.TemporaryDirectory(dir=root/'build', prefix='release-input-test-')
+        self.addCleanup(temporary.cleanup)
+        directory = Path(temporary.name).resolve()
+        (directory/'scripts').mkdir()
+        shutil.copyfile(root/'scripts/ci-release.ps1', directory/'scripts/ci-release.ps1')
+        (directory/'scripts/ci-desktop.ps1').write_text('$global:LASTEXITCODE = 0\n', encoding='utf-8')
+        capture = directory/'capture.py'
+        capture.write_text('''import json, os
+from pathlib import Path
+import sys
+root = Path.cwd()
+names = json.loads(os.environ['XDZIP_RELEASE_TEST_NAMES'])
+args = sys.argv[1:]
+stage = 'after' if args == ['--after'] else (args[1] if args[0] == 'scripts/desktop.py' else args[0])
+with (root/'calls.jsonl').open('a', encoding='utf-8') as stream:
+    stream.write(json.dumps(dict(stage=stage, args=args,
+        environment={name: os.environ.get(name) for name in names}))+'\\n')
+if stage == 'scripts/prepare-rar-rust-fixtures.py':
+    if os.environ['XDZIP_RELEASE_TEST_CASE'] == 'prepare-failure':
+        raise SystemExit(17)
+    output = root/args[args.index('--output')+1]
+    output.mkdir(parents=True)
+    environment = {}
+    for index, name in enumerate(names[:-1]):
+        path = output/(str(index)+'.rar')
+        path.write_bytes(b'fixed fixture')
+        environment[name] = str(path.relative_to(root))
+    (output/'sources.json').write_text(json.dumps(dict(status='prepared', environment=environment)))
+elif stage == 'test' and os.environ['XDZIP_RELEASE_TEST_CASE'] == 'test-failure':
+    raise SystemExit(23)
+''', encoding='utf-8')
+
+        def literal(value):
+            return "'"+str(value).replace("'", "''")+"'"
+
+        harness = directory/'harness.ps1'
+        harness.write_text('''$ErrorActionPreference = 'Stop'
+# The commands are fixtures; exercise the real Mac orchestration on every host.
+Set-Variable IsMacOS -Value $true -Force -Scope Global
+Set-Variable IsWindows -Value $false -Force -Scope Global
+Set-Variable IsLinux -Value $false -Force -Scope Global
+$nativePython = '''+literal(sys.executable)+'''
+$capture = '''+literal(capture)+'''
+function python { & $nativePython $capture @args }
+$failed = $false
+try { & ./scripts/ci-release.ps1 } catch { $failed = $true }
+& $nativePython $capture --after
+if ($failed) { exit 1 }
+''', encoding='utf-8')
+        environment = dict(os.environ)
+        names = [*self.fixture_names, 'XDZIP_RAR_FIXTURE_PASSWORD']
+        for name in [*names, 'XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX']:
+            environment.pop(name, None)
+        original = {self.fixture_names[0]: 'original fixture value', 'XDZIP_RAR_FIXTURE_PASSWORD': 'original test value'}
+        environment.update(original, XDZIP_RELEASE_TEST_NAMES=json.dumps(names), XDZIP_RELEASE_TEST_CASE=case)
+        result = subprocess.run([shutil.which('pwsh'), '-NoProfile', '-File', str(harness)],
+                                cwd=directory, env=environment, capture_output=True, text=True,
+                                encoding='utf-8', errors='replace', timeout=60)
+        calls = [json.loads(line) for line in (directory/'calls.jsonl').read_text(encoding='utf-8').splitlines()]
+        after = calls[-1]
+        self.assertEqual(after['stage'], 'after')
+        self.assertEqual(after['environment'], {name: original.get(name) for name in names})
+        return result, calls[:-1], directory
+
+    def test_mac_release_tests_receive_all_verified_inputs_and_keep_full_rust_scope(self):
+        result, calls, directory = self.run_release('success')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([call['stage'] for call in calls], [
+            'build', 'scripts/prepare-rar-rust-fixtures.py', 'test', 'package', 'verify', 'scripts/prepare-release.py'])
+        test = calls[2]
+        sources = json.loads((directory/'build/release-rar-fixtures/sources.json').read_text())
+        for name, value in sources['environment'].items():
+            self.assertEqual(Path(test['environment'][name]), directory/value)
+        self.assertEqual(test['environment']['XDZIP_RAR_FIXTURE_PASSWORD'], 'password')
+        self.assertNotIn('--skip-rust', test['args'])
+        self.assertIn('--release-distribution', test['args'])
+        self.assertEqual(calls[3]['environment'], calls[-1]['environment'])
+
+    def test_fixture_preparation_failure_prevents_tests_and_packages(self):
+        result, calls, _ = self.run_release('prepare-failure')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual([call['stage'] for call in calls], ['build', 'scripts/prepare-rar-rust-fixtures.py'])
+
+    def test_rust_test_failure_restores_environment_and_prevents_packages(self):
+        result, calls, _ = self.run_release('test-failure')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual([call['stage'] for call in calls], ['build', 'scripts/prepare-rar-rust-fixtures.py', 'test'])
 
 
 if __name__ == '__main__': unittest.main()

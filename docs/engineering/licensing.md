@@ -10,7 +10,9 @@ Qt 动态链接仍需逐模块确认 LGPL/GPL/商业条款；后端、图标、�
 
 RAR 的有限线格式映射及公开测试夹具保留各自的来源、原始通知和许可记录，见[RAR 实现依据](rar-format-sources.md)。生产引擎退出不将这些材料重新许可为项目原创代码。
 
-English: Current worker formats use independent Rust; official UnRAR and 7-Zip source code is absent from product builds and deployment. Historical deliveries, finite RAR wire mappings, public fixtures and separate reference tools retain their respective provenance and licensing obligations. Independent implementation and an empty current product source manifest do not constitute clean-room certification, legal clearance or release approval.
+有限映射另保留[固定参考原文与来源说明](../../third_party/rar-wire-mappings/README.md)，包括上游内部版本 UnRAR 7.30 beta1 的原始完整许可、下载归档 `unrarsrc-7.3.1.tar.gz` 及原文 SHA-256。通知收集器将这些有界材料纳入实际通知哈希，对应源码交付也保留独立副本；它们不是重新引入官方引擎或声明其为运行依赖，不自动裁定条款适用范围，也不批准本候选发行。
+
+English: Current worker formats use independent Rust; official UnRAR and 7-Zip source code is absent from product builds and deployment. Historical deliveries, finite RAR wire mappings, public fixtures and separate reference tools retain their respective provenance and licensing obligations. The finite-mapping notice set retains the exact original license for upstream internal version UnRAR 7.30 beta1, from the pinned archive unrarsrc-7.3.1.tar.gz, in package notices and corresponding-source delivery. These bounded materials neither reintroduce the official engine nor decide which obligations apply. Independent implementation and an empty current product source manifest do not constitute clean-room certification, legal clearance or release approval.
 
 平台运行库专属通知、供应方输入和许可资格的核对遵循[原生运行库来源与通知](native-runtime-materials.md)，不以通用许可正文替代供应方版权声明。
 

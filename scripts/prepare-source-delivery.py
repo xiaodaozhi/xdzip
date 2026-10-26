@@ -11,6 +11,7 @@ import urllib.request
 from deployment_audit import digest, within
 from native_runtime_materials import configuration, fetch
 from sparkle_bundle import collect_sources as collect_sparkle_sources
+from rar_mapping_materials import collect as collect_rar_mapping_materials
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -68,6 +69,8 @@ def main():
     materials += collect_sparkle_sources(output, args.cache)
     from native_codec_materials import corresponding_sources
     materials += corresponding_sources(output)
+    _, rar_mapping_record = collect_rar_mapping_materials(output)
+    materials.append(rar_mapping_record)
     # Preserve original Mesa/LLVM inputs, not only URLs, for the retained Windows
     # software renderer. These are source references, not invented build records.
     native_sources = configuration()
@@ -115,6 +118,9 @@ def main():
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
    English: The independent Rust codec source list is empty; this step does not
    download or compile official format engines.
+   rar-wire-mappings/ 另保留有限 RAR 映射的参考来源和原始完整许可，不含官方引擎。
+   English: rar-wire-mappings/ separately preserves finite-mapping provenance and
+   the exact original notice, without adding an official engine or legal clearance.
    构建下述 CMake 目标后，将 XDZIP_NATIVE_CODEC 指向生成的 xdzip-native-codec
    （Windows 加 .exe），再运行 cargo test --workspace --locked --offline，
    以及 cargo test -p xdzip-runtime --locked --offline native_backend_tests -- --ignored。
