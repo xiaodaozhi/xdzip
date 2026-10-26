@@ -21,12 +21,13 @@ jobs:
         run: |
           rustup toolchain install 1.99.0 --profile minimal
           cargo build --locked --target-dir build/signing -p xdzip-update --bin xdzip-update-tool
+          install -m 0755 build/signing/debug/xdzip-update-tool build/signing/xdzip-update-tool
       - name: Match the protected production keys to the committed public roots
         env:
           XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
           XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
           XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
-        run: python3 scripts/sign-production-update-fixtures.py --check-only --tool build/signing/debug/xdzip-update-tool --output build/production-update/keys
+        run: python3 scripts/sign-production-update-fixtures.py --check-only --tool build/signing/xdzip-update-tool --output build/production-update/keys
       - name: Preserve public matching evidence only
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
