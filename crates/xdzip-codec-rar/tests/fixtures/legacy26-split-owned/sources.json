@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "scope": "Project-owned mathematical input and unchanged official RAR2.90 volume output. No encoder, executable, installer, plaintext or generated test evidence is vendored.",
+  "author": {
+    "version": "Official RAR2.90",
+    "sha256": "3f938b2f4cc13b9b85d61417b36af45a970dbee0e09e9d9e13f4e00350485112",
+    "bytes": 236032,
+    "source": "https://www.rarlab.com/rar/wrar290.exe",
+    "installer_sha256": "7c2e3ec5c5eccc01d38374f6ef317ae1e22ac84eac159a7ce37a4f9e1d9579f6",
+    "operation": "Only Rar.exe extracted with fixed official UnRAR; no installation. Never vendor author EXE/installer."
+  },
+  "factual_handoff_sha256": "a1a2dc6ee7f7fa8bc675a46729835ad4e69a89d6b0b031282a1746689e16f149",
+  "author_freeze_sha256": "836fc841a0c293adcdc104348583ec77af74754b836feb02f6c57ec8cbf35dd8",
+  "command": [
+    "a",
+    "-cfg-",
+    "-inul",
+    "-y",
+    "-m1",
+    "-md64",
+    "-s-",
+    "-v64k",
+    "split26.rar",
+    "<existing-owned-sparse-input>"
+  ],
+  "known_original": {
+    "bytes": 2147483649,
+    "sha256": "d1ea9e8a1dd77c140253106db1be9331430622ee141e57a1ccdf31bab1d5a13a",
+    "recipe": [
+      "logical size=2147483649 bytes; preexisting project-owned sparse file, no large copy",
+      "bytes0..4095: byte[i]=(31*i+7*(i>>5)+13)mod256 for0<=i<4096",
+      "zero middle from offset4096 through2147479552 inclusive",
+      "last4096bytes beginning offset2147479553: byte[i]=(i*i+5*i+(i>>3))mod256 for0<=i<4096"
+    ]
+  },
+  "volumes": [
+    {
+      "file": "split26.rar",
+      "bytes": 65536,
+      "sha256": "fb52ea700c4f82edf6ada0a2940d6af46c60f3102b3c7bdbe198d146679f1bcb",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8102",
+          "solid": false,
+          "large": true,
+          "split_before": false,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r00",
+      "bytes": 65536,
+      "sha256": "eaaf7678c9ddb3265af58d01b3ef51ff9e6f062e3d72c618ca9a07888c70d199",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r01",
+      "bytes": 65536,
+      "sha256": "bf09e3b9a28d2f6647681019dca3e58ee866d35e601cb09130332db6d25c7948",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r02",
+      "bytes": 65536,
+      "sha256": "aa7de01a03d203d484261067fc03ea6a3c1440fc44bc9614f8554c44ba15e485",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r03",
+      "bytes": 65536,
+      "sha256": "147baec3c33de7448e0b20ddece21b80c1b46a5ec027a29d1ee8d468612c247e",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r04",
+      "bytes": 65536,
+      "sha256": "d81af52a46fde38b515473e31ba888b88c042484c748d3f23a44e1d37539b125",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r05",
+      "bytes": 65536,
+      "sha256": "e5b5d995838cd7042792446c9f48a7644f036d2f3de25d8569deeb5d2eca6542",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r06",
+      "bytes": 65536,
+      "sha256": "772ff1ec28afb80ad64a6a8b782df7a37c492e7a34187020112a9b5dc55d9c9a",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r07",
+      "bytes": 65536,
+      "sha256": "918c0974f63a428a0c96a0ebe1dec324184c3aeef75bc78d2afd6295fe91d451",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r08",
+      "bytes": 65536,
+      "sha256": "a6cff1b1cbe6f89146fc6de0b2afbc72da4a564129523c606a55c7dde0031336",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r09",
+      "bytes": 65536,
+      "sha256": "c07897f0b077b51b10ece65afa7c648c457f97834e21c97a6f4fc5185402260d",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r10",
+      "bytes": 65536,
+      "sha256": "86696a0b55a9acd7dc11b5e76472c72ce8af917c00a0973b0d0c9582b917b52d",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r11",
+      "bytes": 65536,
+      "sha256": "54a974848808ae311657fd415d466e4216394c2c0e505c26bcdf2cf86c19aa2b",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r12",
+      "bytes": 65536,
+      "sha256": "0273b3f4f8303d53babd53f4c42c11834f88309e756d417779c4b48aaf3d3c00",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r13",
+      "bytes": 65536,
+      "sha256": "a768cde22c2ca0b163f2c8b7e94bddf428a3623ee6c5f0d51e5201e7314c3e79",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r14",
+      "bytes": 65536,
+      "sha256": "c1899e897896f16a4f9182fc84220dcdd34379d2182971b1b7b95a4cf5986315",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8103",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": true,
+          "packed": 65412,
+          "unpacked": 2147483649
+        }
+      ]
+    },
+    {
+      "file": "split26.r15",
+      "bytes": 15266,
+      "sha256": "5247270581cf2116fa3f3fd9d0cc074f5a4b8769f5c6e122e9e195ba55260953",
+      "headers": [
+        {
+          "name": "GitHub\\xdzip\\build\\rar-backend\\build\\rar26-owned\\large-owned.bin",
+          "unpack_version": 26,
+          "compression": 1,
+          "flags": "0x8101",
+          "solid": false,
+          "large": true,
+          "split_before": true,
+          "split_after": false,
+          "packed": 15142,
+          "unpacked": 2147483649
+        }
+      ]
+    }
+  ],
+  "ordered_volumes_sha256": "7319c547fdbfaaad63b136e5e305db5f9e73fb19d822990c79cc346508e0bbbd",
+  "total_archive_bytes": 1063842,
+  "archive_identity_semantics": "Each physical volume is independently pinned; ordered_volumes_sha256 hashes their complete bytes in .rar,.r00,.r01 order.",
+  "scope_limits": [
+    "One unencrypted nonsolid UnpVer26/method1/LARGE file,17 physical volumes;2GiB is logical file size, not dictionary memory.",
+    "One unencrypted nonsolid file, not all solid/Store transitions, Audio, encrypted volume, or other writer variants.",
+    "Archive metadata timestamps are pinned bytes, not a claim that rerunning a historical writer reproduces identical bytes.",
+    "Self-owned mathematical data and unchanged archives are repository test data under the repository license; official programs retain separate terms and are not vendored."
+  ]
+}

@@ -17,6 +17,8 @@ mod filter29_transform;
 mod filter_author_tests;
 mod index;
 mod legacy;
+#[cfg(test)]
+mod legacy20_split_owned_tests;
 mod legacy_audio20;
 mod legacy_crypto;
 mod legacy_lz15;

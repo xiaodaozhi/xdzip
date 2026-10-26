@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "scope": "Project-owned mathematical input and unchanged official RAR2.90 volume output. No encoder, executable, installer, plaintext or generated test evidence is vendored.",
+  "author": {
+    "version": "Official RAR2.90",
+    "sha256": "3f938b2f4cc13b9b85d61417b36af45a970dbee0e09e9d9e13f4e00350485112",
+    "bytes": 236032,
+    "source": "https://www.rarlab.com/rar/wrar290.exe",
+    "installer_sha256": "7c2e3ec5c5eccc01d38374f6ef317ae1e22ac84eac159a7ce37a4f9e1d9579f6",
+    "operation": "Only Rar.exe extracted with fixed official UnRAR; no installation. Never vendor author EXE/installer."
+  },
+  "factual_handoff_sha256": "a1a2dc6ee7f7fa8bc675a46729835ad4e69a89d6b0b031282a1746689e16f149",
+  "author_freeze_sha256": "836fc841a0c293adcdc104348583ec77af74754b836feb02f6c57ec8cbf35dd8",
+  "command": [
+    "a",
+    "-cfg-",
+    "-inul",
+    "-y",
+    "-m3",
+    "-md1024",
+    "-s-",
+    "-v32k",
+    "split20.rar",
+    "known.bin"
+  ],
+  "known_original": {
+    "bytes": 589826,
+    "sha256": "b63fd1d316ba1dcf8a351d0ec895bcf066495cc1ebf1eae1aec7a823c4eb5567",
+    "recipe": [
+      "A[i]=(31*i+7*(i>>5)+13)mod256 for0<=i<131071",
+      "B=first196613bytes of concatenated SHA256(ASCII xdzip-rar20-store-middle-v1 || LE32(k)),k starts0",
+      "known.bin=A || B[0:98317] || A || B[98317:196613] || A"
+    ]
+  },
+  "volumes": [
+    {
+      "file": "split20.rar",
+      "bytes": 32768,
+      "sha256": "cd4d16b5a1b22d963e53da0fbc554d7718d3ae412cb9312c815e971f2af1927a",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8082",
+          "solid": false,
+          "large": false,
+          "split_before": false,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r00",
+      "bytes": 32768,
+      "sha256": "8e0715de01e9da5d90b6f8f9340c2261b4864a18969d89902c570811f82cf49d",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8083",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r01",
+      "bytes": 32768,
+      "sha256": "beb186d57c9c9ff3c64ba6002eddc7825a253491838e445ff3256d9cfda05916",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8083",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r02",
+      "bytes": 32768,
+      "sha256": "712a9f2fb8d94fb0b41ba1200816bf93951c830a0ab2ceba76bac2d97097d19f",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8083",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r03",
+      "bytes": 32768,
+      "sha256": "e91fb6e76c8ad47bdd0b8adee01a2647e5628dcf958be1b62b457a1fc645b032",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8083",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r04",
+      "bytes": 32768,
+      "sha256": "5a001b58bd4c4b25ec4ac3d64d60cbec62e664c4705bd67d77bb3a3059668678",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8083",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": true,
+          "packed": 32707,
+          "unpacked": 589826
+        }
+      ]
+    },
+    {
+      "file": "split20.r05",
+      "bytes": 4383,
+      "sha256": "c52bdbf0f410a9d75ca84ce3435149a23f9c41d7ff25085f163b46026c93c1c1",
+      "headers": [
+        {
+          "name": "known.bin",
+          "unpack_version": 20,
+          "compression": 3,
+          "flags": "0x8081",
+          "solid": false,
+          "large": false,
+          "split_before": true,
+          "split_after": false,
+          "packed": 4322,
+          "unpacked": 589826
+        }
+      ]
+    }
+  ],
+  "ordered_volumes_sha256": "58534ff4c0cfc3cd893f37b6c92a5e9ffd5a4c63bea68b6c02ee95d03f99ce31",
+  "total_archive_bytes": 200991,
+  "archive_identity_semantics": "Each physical volume is independently pinned; ordered_volumes_sha256 hashes their complete bytes in .rar,.r00,.r01 order.",
+  "scope_limits": [
+    "One unencrypted nonsolid UnpVer20/method3 file,7 physical volumes, no >2GiB or Audio/solid crypto implications.",
+    "One unencrypted nonsolid file, not all solid/Store transitions, Audio, encrypted volume, or other writer variants.",
+    "Archive metadata timestamps are pinned bytes, not a claim that rerunning a historical writer reproduces identical bytes.",
+    "Self-owned mathematical data and unchanged archives are repository test data under the repository license; official programs retain separate terms and are not vendored."
+  ]
+}

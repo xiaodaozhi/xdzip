@@ -8,6 +8,7 @@
 *.png binary
 *.zip binary
 *.rar binary
+*.r[0-9][0-9] binary
 *.woff2 binary
 # Keep the upstream license byte-for-byte, including its original whitespace.
 design/assets/fonts/OFL.txt -text -whitespace
