@@ -206,7 +206,13 @@ fn append(
     if part.description.size.is_some_and(|size| size > FILE_LIMIT) {
         return Err(ScanError::Limit);
     }
-    if !part.description.directory && part.description.dictionary > MEMORY_LIMIT {
+    if !part.description.directory
+        && part.description.dictionary > MEMORY_LIMIT
+        && (part.service
+            || part.description.special
+            || part.description.size.is_none()
+            || crate::lz::paged_memory_required(&part.description).is_err())
+    {
         return Err(ScanError::Limit);
     }
     let at = index.parts.len();

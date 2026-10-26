@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "scope": "Unchanged official-writer RAR4 archive containing only project-owned mathematical input. Test fixture and recipes follow the repository license; author/reference tools remain separately licensed and are not redistributed.",
+  "archive": {
+    "file": "archive.rar",
+    "original_author_filename": "solid-extension-store.rar",
+    "bytes": 197445,
+    "sha256": "7d055696558ef69fa83372ea0d929e042a11ecdbe7415cb7efb3d1418e6b0d38",
+    "transformation": "Filename rename only; all archive bytes are unchanged."
+  },
+  "author": {
+    "version": "Official RAR6.24 Windows x64",
+    "sha256": "a9cec009503d067f241b5eddaea4e42c38edcb0b57c1b46e946c5281b7f1ea21",
+    "source": "https://www.rarlab.com/rar/winrar-x64-624.exe",
+    "distribution_sha256": "794481dbbc9009a2565726fb5b4a4ab2fe216ff9edbb08951548ee765de9b4a6",
+    "operation": "Only the extracted official Rar.exe authored project-owned input; installer, executable and plaintext are not redistributed."
+  },
+  "command": [
+    "a",
+    "-cfg-",
+    "-idq",
+    "-y",
+    "-ma4",
+    "-m3",
+    "-md1m",
+    "-mt1",
+    "-s",
+    "-ds",
+    "-msrnd",
+    "-ep",
+    "-tsm-",
+    "solid-extension-store.rar",
+    "first.bin",
+    "middle.rnd",
+    "third.bin"
+  ],
+  "known_original": {
+    "total_bytes": 458755,
+    "recipe": [
+      "first.bin[i]=(31*i+7*(i>>5)+13)mod256,0<=i<131071",
+      "middle.rnd=first196613bytes(concat SHA256(ASCII xdzip-rar20-store-middle-v1 || LE32(k))),k starts0",
+      "third.bin=first.bin[173:]+first.bin[:173]"
+    ],
+    "members": [
+      {
+        "name": "first.bin",
+        "original_bytes": 131071,
+        "original_sha256": "f8a288569f0d4fbdedaf991c55bb5185a87e25ff4d4f2e9a82984454b9703f82",
+        "original_crc32": "31aaebb4",
+        "unpack_version": 29,
+        "compression": 3,
+        "solid": false,
+        "packed": 461,
+        "flags": "0x8080"
+      },
+      {
+        "name": "middle.rnd",
+        "original_bytes": 196613,
+        "original_sha256": "1b306bf0818fd2d9821ac3ffee8b45eb0a2e5998a52e4f8a92c40423fd2f4ff1",
+        "original_crc32": "a7ce4143",
+        "unpack_version": 20,
+        "compression": 0,
+        "solid": true,
+        "packed": 196613,
+        "flags": "0x8090"
+      },
+      {
+        "name": "third.bin",
+        "original_bytes": 131071,
+        "original_sha256": "3c67e66908e089a85ad9bb7238c7a63522da2812609463892254646be32b237a",
+        "original_crc32": "9b26f188",
+        "unpack_version": 29,
+        "compression": 3,
+        "solid": true,
+        "packed": 220,
+        "flags": "0x8090"
+      }
+    ]
+  },
+  "independent_reference": {
+    "name": "Official UnRAR",
+    "version": "7.23 Windows x64",
+    "member": "UnRAR.exe",
+    "bytes": 560848,
+    "sha256": "0d3715001790f0fd18d3e850f947b540530b2d2deb9a2e6a9e84f2ed7b234235",
+    "source_distribution": "https://www.rarlab.com/rar/winrar-x64-723.exe",
+    "license": "LicenseRef-UnRAR",
+    "commands": [
+      [
+        "t",
+        "-cfg-",
+        "-idq",
+        "<archive>"
+      ],
+      [
+        "p",
+        "-cfg-",
+        "-idq",
+        "<archive>",
+        "third.bin"
+      ],
+      [
+        "p",
+        "-cfg-",
+        "-idq",
+        "<archive>",
+        "middle.rnd"
+      ],
+      [
+        "p",
+        "-cfg-",
+        "-idq",
+        "<archive>",
+        "first.bin"
+      ]
+    ]
+  },
+  "factual_handoff_sha256": "fe29d481e6862c39519c94e5f0691374df5b1a278f893362a201a1fbc29f780b",
+  "author_freeze_sha256": "23dab43bc6cc0649ca727143045ecc064231241546484a5ca2d506cdbf3ee044",
+  "independent_reference_handoff_sha256": "e419162ed4d637c818127e4815a163855ad1c56601fd1d22eb8f09dd365c996c",
+  "blackbox_validation": {
+    "author_t_and_p_exit": 0,
+    "independent_unrar_t_and_p_exit": 0,
+    "complete_original_bytes_equal": true,
+    "selection_order": [
+      "third.bin",
+      "middle.rnd",
+      "first.bin"
+    ],
+    "candidate_worker_sha256": "412157a89dcefce21a7704da1f7272b394716cf031bbf70b7093ab7bfcb731af",
+    "candidate_complete_bytes_sha_and_crc_equal": true,
+    "scope": "Each selected member used a fresh candidate worker with real solid-prefix replay. This is not a persistent NativeReader or GUI claim; execution logs remain build artifacts."
+  },
+  "limitations": [
+    "One unencrypted RAR29 compressed state across an actual UnpVer20 Store record; not all 13/15/20/26, encrypted or split combinations.",
+    "Archive bytes are pinned. Writer metadata timestamps do not promise bit-identical regeneration.",
+    "No third-party decoder/core source, author program, installer, original plaintext or execution log is vendored."
+  ]
+}

@@ -331,6 +331,10 @@ pub(crate) struct Payload<'a> {
     next_file: usize,
 }
 impl<'a> Payload<'a> {
+    #[cfg(test)]
+    pub(crate) fn paged_history_stats(&self) -> Option<(u64, u64, u64)> {
+        self.algorithm.paged_history_stats()
+    }
     pub fn new(reader: Reader<'a>, index: Index) -> Self {
         Self::with_algorithm(reader, index, Box::<Engine>::default())
     }

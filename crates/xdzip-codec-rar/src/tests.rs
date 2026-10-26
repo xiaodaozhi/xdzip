@@ -687,7 +687,7 @@ fn input_name_record_and_dictionary_budgets() {
             b"a",
             1,
             0,
-            1 | (16 << 10) | (5 << 7),
+            1 | (24 << 10) | (5 << 7),
             false,
             0,
             &[]
@@ -937,6 +937,30 @@ fn fixed_project_rar7_store_has_real_known_bytes() {
 fn fixed_rar7_store_dictionary_limit_preserves_host_admission() {
     let bytes = include_bytes!("../../../tests/fixtures/native-archives/rar7-dictionary-limit.rar");
     assert_eq!(scan(bytes.to_vec()), Err(ScanError::Limit));
+}
+
+#[test]
+fn mathematical_large_dictionary_metadata_requires_bounded_modern_compression() {
+    // Metadata only: this is not an independent compressed success fixture.
+    let fields = 0x83c81;
+    let bytes = new_archive(&[new_file(b"x", &[], 4, 0, fields, false, 0, &[])]);
+    let control = Cancellation::default();
+    let mut source = Cursor::new(bytes);
+    let index = read_index(&mut source, &control, ScanLimits::default(), None).unwrap();
+    assert_eq!(
+        index.0.parts[0].description.dictionary,
+        6 * 1024 * 1024 * 1024
+    );
+    assert_eq!(index.entries()[0].method, 70);
+    for (info, unknown) in [
+        (fields & !(7 << 7), false),
+        (fields | (1 << 20), false),
+        (fields, true),
+        (1 | (1 << 7) | (24 << 10), false),
+    ] {
+        let bytes = new_archive(&[new_file(b"x", &[], 4, 0, info, unknown, 0, &[])]);
+        assert_eq!(scan(bytes), Err(ScanError::Limit));
+    }
 }
 
 #[test]

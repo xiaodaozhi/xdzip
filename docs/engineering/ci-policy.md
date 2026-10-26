@@ -41,6 +41,10 @@ Documentation、Foundation probes、Qt components 和 HTML design review 也支�
 
 Foundation probes 在 Linux x86_64、Windows MSVC x64、macOS arm64 执行 Cargo workspace 测试、Clippy、桥接探针；另检查 Rust/C++ 格式。核心测试不依赖 Qt。
 
+真实 RAR7 algorithm 1 的大逻辑字典检查由 `scripts/check-rar7-genuine-fixture.py` 串行执行组件完整 SHA/CRC、Native 逐字节已知原文对照与 runtime 整包检查，使用固定 commit、长度和双摘要核验的 build-only 小归档及来源 notice，不保存 4.25 GiB 明文。实际 worker 保持 1 GiB 限制，分页容量、WORK、AUX、信用、64 位计数及零目标写入分别记录；只准备夹具或只运行组件均不能标成整链成功。该完整流验证纳入三平台 Foundation，工作流时间预算为 35 分钟，超时仍为失败，不放宽产品内存或文件配额。English: Foundation serially verifies the pinned genuine RAR7 stream at component, Native and runtime layers without materializing plaintext. The 35-minute job allowance changes no product resource limit; preparation or component-only results do not establish full-chain success.
+
+Foundation 的独立 Linux 参考 job 使用固定官方 UnRAR 7.23，仅从固定小安装材料读取 unrar 与原始许可，不执行安装器或作者程序。参考子进程单独受 8 GiB 地址空间、600 秒 CPU/墙钟及完整输出字节上限约束，stdout 以最多 64 KiB 流式核对全零配方、SHA、CRC、精确尺寸和成功退出，不落盘明文。该额度仅属于 CI 外部 oracle，不进入产品请求或 worker 配额；公开作者过去的成功陈述不替代本次实际参考结果。English: A separate Linux oracle checks the complete stream using pinned official UnRAR under its own 8 GiB/600-second guard. This reference-only allowance never changes the product worker budget, and historical creator records do not count as this run's observed output.
+
 自研后端在 Foundation 通过 `scripts/check-rust-codec-policy.py` 检查普通和构建依赖的传递闭包，开发测试参照不计作生产依赖。TAR/GZIP 包含独立读写器双向测试、Huffman 与距离边界、CRC/ISIZE、多成员、截断、资源与取消；`scripts/check-tar-interop.py` 另外使用 Python zlib 的固定、动态、RLE、Huffman-only 与 filtered 策略输入，并通过实际工作进程核对旧编码名称。`gzip-probe` 生成合成零字节、文本及随机数据的四档编码大小、耗时和独立内容核对，JSON 保留在 build/review/independent-rust-codecs/ 并作为 CI 工件上传。有限固定种子变异回归不冒充长期 fuzz，性能数字来自实际工件，不用共享 runner 偶然耗时批准性能。
 
 CAB/ISO/UDF 增量复用同一 Foundation 门槛，`scripts/check-cab-iso-interop.py` 通过实际原生工作进程验证固定来源夹具、已知明文字节、四种 CAB 算法、跨卷文件、ISO9660/Joliet/Rock Ridge/UDF 及只读拒绝。镜像由独立 pycdlib 测试工具预生成并以小型 gzip 输入保存，CI 只校验和展开，不安装该生成器。Rust 与 Qt 覆盖任意 CAB 卷入口、冻结来源、混合命名空间选择、普通文件的解压/临时打开/导出及不支持特殊记录的整包测试失败。结果保留在 build/review/native-codec-interop/，不会进入 docs 或源代码历史。

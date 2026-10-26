@@ -76,6 +76,20 @@ class FixedRarData(unittest.TestCase):
             if 'encoded_sha256' in item:
                 self.assertRegex(item['encoded_sha256'], r'^[0-9a-f]{64}$')
 
+    def test_public_unicode_password_material_is_small_pinned_and_never_serializes_key(self):
+        items = prepare.PUBLIC_COMPATIBILITY
+        self.assertEqual(len(items), 4)
+        self.assertEqual(sum(item['bytes'] for item in items if item['file'].endswith('.rar')), 384)
+        for item in items:
+            self.assertEqual(Path(item['file']).name, item['file'])
+            self.assertLessEqual(item['bytes'], 4096)
+            self.assertRegex(item['sha256'], r'^[0-9a-f]{64}$')
+            self.assertIn('/57091f9ccd43661cf8f12c389917cc24950df707/', item['url'])
+            self.assertEqual(item['encoding'], 'raw')
+            self.assertIn('UnRAR terms', item['notice'])
+            self.assertNotIn('password', item)
+        self.assertTrue(any(item['source'] == 'LICENSE' for item in items))
+
     def test_os_probe_uses_only_fixed_headers_and_a_unique_release_archive(self):
         with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory:
             worker = Path(directory) / 'worker'

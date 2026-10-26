@@ -24,6 +24,8 @@ Rust 核心持有来源授权、分卷身份、目标授权、暂存和提交能
 
 任务延续宿主条目、路径、元数据和实际字节预算，默认 native 预算为 1 GiB。Windows 使用 Job Object 提交内存限制，Linux 使用绝对虚拟地址空间限制，macOS 使用启动时虚拟地址空间基线加预算，排除 dyld 预留；Unix 地址空间限制不等同于 RSS 计量。字典及固实工作区在分配前准入，无法在预算内完成的操作明确失败，不静默降级为无界磁盘暂存。重试和固实跳过均累计实际工作量。
 
+RAR 现代实际算法 1 可用[有界精确分页历史](rar-format-sources.md#大逻辑字典的精确存储)表示大逻辑字典，逻辑声明不等于实际内存许可。目录、保留页与临时峰值有独立上限，原 worker 预算和动态失败行为不变。English: RAR effective algorithm 1 may represent a large logical dictionary with bounded exact pages; logical declarations do not grant allocation credit or change the worker memory limit.
+
 算法初始化和控制处理的实际辅助工作使用独立 `AUX_WORK=24`，当前仅允许 RAR 负载使用；宿主与 runtime 分别累计辅助预算，不将其计入文件解码、膨胀比、公开进度或预计费信用。完整协议、重试生命周期与必须保持的验收条件见[算法辅助工作计量](auxiliary-decoding-work.md)。
 
 English: Actual auxiliary algorithm work uses a separate RAR-payload-only channel, `AUX_WORK=24`. Native and runtime independently retain cumulative auxiliary budgets across retries. This work changes neither decoded/output bytes, expansion ratios, public progress nor prepaid delivery credit. The [auxiliary work contract](auxiliary-decoding-work.md) defines its framing, lifecycle and required acceptance checks.

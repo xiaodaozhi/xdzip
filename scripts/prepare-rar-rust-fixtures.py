@@ -12,6 +12,27 @@ import zlib
 ROOT = Path(__file__).resolve().parents[1]
 MAX_DOWNLOAD = 512 * 1024
 MAX_ARCHIVE = 2 * 1024 * 1024
+PUBLIC_COMPATIBILITY = [
+    dict(file='junrar-unicode.rar', bytes=236,
+         sha256='b35d9c57cab65a2f15827cb072aed971a99902d332f8c0ccf1ebcac69ab951e2',
+         source='src/test/resources/com/github/junrar/unicode.rar'),
+    dict(file='junrar-rar3-nonascii-password.rar', bytes=148,
+         sha256='53d19b0aec508bd49926162b45a4fd7ecaa1b9d8c13060bc4dbe1dbb953896be',
+         source='src/test/resources/com/github/junrar/password/rar3-nonascii-password.rar'),
+    dict(file='junrar-LICENSE.txt', bytes=1861,
+         sha256='9d90c3649d4eb064ce2fff366a7421107fbbc3c65d8eede45df5dec95e4e016c', source='LICENSE'),
+    dict(file='junrar-rar3-nonascii-recipe.txt', bytes=2799,
+         sha256='04b90e26040b9472e927487e6265e09c4170333f1b6d48edf021d253e32f1d57',
+         source='src/test/resources/com/github/junrar/password/generate_nonascii_password_fixture.py'),
+]
+for item in PUBLIC_COMPATIBILITY:
+    item.update(
+        url='https://raw.githubusercontent.com/junrar/junrar/'
+            '57091f9ccd43661cf8f12c389917cc24950df707/' + item['source'],
+        encoding='raw',
+        notice='Pinned Junrar public data and original UnRAR terms. Build/CI-only, no inferred relicensing. '
+               'The recipe is only an official-author reproduction docstring, not decoder source. '
+               'Unicode data does not cover uncorrected high-bit narrow-byte runs.')
 
 
 def digest(data):
@@ -153,7 +174,7 @@ def prepare(output, archives=None, offline=False):
     output.mkdir(parents=True, exist_ok=True)
     catalogue = json.loads((ROOT / 'scripts/rar-rust-fixtures.json').read_text(encoding='utf-8'))
     public, records = {}, []
-    for item in catalogue['public']:
+    for item in catalogue['public'] + PUBLIC_COMPATIBILITY:
         data, downloaded = public_data(item, output / 'public', archives, offline)
         public[item['file']] = data
         records.append(dict(file=item['file'], url=item['url'], sha256=digest(data),
@@ -186,7 +207,10 @@ def prepare(output, archives=None, offline=False):
                        XDZIP_RAR_LARGE_PPM_FIXTURE=str(output / 'public/test_read_format_rar_ppmd_lzss_conversion.rar'),
                        XDZIP_RAR_LEGACY_FIXTURE=str(output / 'public/rar20-password-compressed.rar'),
                        XDZIP_RAR_UNKNOWN_FIXTURE=str(unknown), XDZIP_RAR_KNOWN_EMPTY_FIXTURE=str(empty),
-                       XDZIP_RAR290_FIXTURE_ROOT=str(owned20), XDZIP_RAR26_FIXTURE=str(large))
+                       XDZIP_RAR290_FIXTURE_ROOT=str(owned20), XDZIP_RAR26_FIXTURE=str(large),
+                       XDZIP_RAR_PUBLIC_UNICODE_FIXTURE=str(output / 'public/junrar-unicode.rar'),
+                       XDZIP_RAR_PUBLIC_PASSWORD_FIXTURE=str(output / 'public/junrar-rar3-nonascii-password.rar'),
+                       XDZIP_RAR_PUBLIC_PASSWORD_RECIPE=str(output / 'public/junrar-rar3-nonascii-recipe.txt'))
     report = dict(schema_version=1, status='prepared', public=records,
                   network_per_response_limit=MAX_DOWNLOAD, no_large_plaintext_created=True,
                   ppm_subset_sha256=digest(ppm.read_bytes()),

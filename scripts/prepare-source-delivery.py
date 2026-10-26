@@ -110,8 +110,11 @@ def main():
 2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
    qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
-3. 从源码工作目录离线准备官方格式源码：
+3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
+   当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
+   English: The independent Rust codec source list is empty; this step does not
+   download or compile official format engines.
    构建下述 CMake 目标后，将 XDZIP_NATIVE_CODEC 指向生成的 xdzip-native-codec
    （Windows 加 .exe），再运行 cargo test --workspace --locked --offline，
    以及 cargo test -p xdzip-runtime --locked --offline native_backend_tests -- --ignored。

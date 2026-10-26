@@ -129,7 +129,7 @@ def deploy(app,sdk,output,notices):
     copy(helper,output/'bin/xdzip-update-helper')
     codec = app.with_name('xdzip-native-codec')
     if not codec.is_file() or codec.is_symlink() or not native(codec, 'linux'):
-        raise ValueError('Expected official native codec worker beside application')
+        raise ValueError('Expected isolated native codec worker beside application')
     copy(codec,output/'bin/xdzip-native-codec')
     for name in roots:
         source=sdk/'qml'/name

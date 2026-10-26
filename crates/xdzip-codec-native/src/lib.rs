@@ -6,6 +6,8 @@ mod auxiliary_tests;
 mod encode_input;
 mod protocol;
 #[cfg(test)]
+mod rar_public_unicode_tests;
+#[cfg(test)]
 mod tests;
 use protocol::{Fault, Fields, Worker};
 #[cfg(test)]

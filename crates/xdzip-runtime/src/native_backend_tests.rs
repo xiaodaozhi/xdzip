@@ -117,7 +117,7 @@ fn task(mixed: bool, run: impl FnOnce(&Control, &mut dyn FnMut(Snapshot))) -> Sn
     );
     result
 }
-fn check(archive: &Archive, mixed: bool) -> Snapshot {
+pub(super) fn check(archive: &Archive, mixed: bool) -> Snapshot {
     let job = archive.check_job(&Default::default()).unwrap();
     let result = task(mixed, |control, publish| {
         checking::run(job, 3, control, publish)

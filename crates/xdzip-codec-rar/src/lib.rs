@@ -32,11 +32,16 @@ mod lz_bits;
 mod lz_filters;
 mod modern;
 mod names;
+mod paged_history;
 mod payload;
 mod ppm29;
 mod protection;
 #[cfg(test)]
 mod protection_tests;
+#[cfg(test)]
+mod rar29_store_owned_tests;
+#[cfg(test)]
+mod rar7_genuine_tests;
 mod source;
 #[cfg(test)]
 mod tests;

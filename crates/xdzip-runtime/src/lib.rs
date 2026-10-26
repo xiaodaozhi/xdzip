@@ -581,3 +581,5 @@ mod cab_backend_tests;
 mod native_backend_tests;
 #[cfg(test)]
 mod optical_backend_tests;
+#[cfg(test)]
+mod rar7_genuine_tests;

@@ -129,6 +129,9 @@ def main():
                                  ('unknown-native', 'rust_rar_unknown_metadata'),
                                  ('legacy20-native', 'rust_rar20_solid_audio')]:
             test(label, 'xdzip-codec-native', selection)
+        test('unicode-password-native', 'xdzip-codec-native', 'rar_public_unicode_tests')
+        if report['checks'][-1]['tests_passed'] != 2:
+            raise ValueError('public Unicode/password selection must execute both fixed-data tests')
         # Preserve the original complete native_backend_tests batch, now with all
         # required data. A narrower local run is explicitly recorded above.
         test('runtime-native-batch', 'xdzip-runtime', args.runtime_filter)

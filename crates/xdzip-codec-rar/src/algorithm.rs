@@ -25,6 +25,10 @@ pub(crate) trait WorkOutput: DecodedSink {
 }
 pub(crate) trait Algorithm {
     fn reset(&mut self) {}
+    #[cfg(test)]
+    fn paged_history_stats(&self) -> Option<(u64, u64, u64)> {
+        None
+    }
     fn memory_required(&self, description: &Descriptor) -> Result<u64, DecodeError>;
     fn decode(
         &mut self,
@@ -69,6 +73,10 @@ pub(crate) struct Engine {
     lz20: crate::legacy_lz20::Lz20,
 }
 impl Algorithm for Engine {
+    #[cfg(test)]
+    fn paged_history_stats(&self) -> Option<(u64, u64, u64)> {
+        self.lz.paged_history_stats()
+    }
     fn reset(&mut self) {
         self.lz.reset();
         self.lz29.reset();

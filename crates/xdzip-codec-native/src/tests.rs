@@ -958,6 +958,96 @@ fn rust_rar20_solid_audio_and_plain_keep_mixed_reader_order_and_known_bytes() {
     }
 }
 #[test]
+#[ignore = "requires Rust worker and pinned XDZIP_RAR7_GENUINE_FIXTURE; checks every byte without staging"]
+fn rust_rar7_genuine_large_dictionary_full_stream_stays_bounded() {
+    const SIZE: u64 = 4_563_402_752;
+    #[derive(Default)]
+    struct Zero {
+        bytes: u64,
+        work: u64,
+        auxiliary: u64,
+        credit: u64,
+        maximum_chunk: usize,
+    }
+    impl DecodedSink for Zero {
+        fn write_chunk(&mut self, _: &[u8]) -> Result<(), DecodeError> {
+            Err(DecodeError::Output)
+        }
+        fn write_precharged_chunk(&mut self, bytes: &[u8]) -> Result<(), DecodeError> {
+            if bytes.is_empty()
+                || bytes.len() > protocol::CHUNK
+                || bytes.iter().any(|byte| *byte != 0)
+            {
+                return Err(DecodeError::Integrity);
+            }
+            self.credit = self
+                .credit
+                .checked_sub(bytes.len() as u64)
+                .ok_or(DecodeError::Integrity)?;
+            self.bytes = self
+                .bytes
+                .checked_add(bytes.len() as u64)
+                .filter(|total| *total <= SIZE)
+                .ok_or(DecodeError::Limit)?;
+            self.maximum_chunk = self.maximum_chunk.max(bytes.len());
+            Ok(())
+        }
+        fn charge_skipped(&mut self, bytes: u64) -> Result<(), DecodeError> {
+            if bytes == 0 || bytes > protocol::CHUNK as u64 {
+                return Err(DecodeError::Integrity);
+            }
+            self.work = self
+                .work
+                .checked_add(bytes)
+                .filter(|total| *total <= SIZE)
+                .ok_or(DecodeError::Limit)?;
+            self.credit = self
+                .credit
+                .checked_add(bytes)
+                .filter(|total| *total <= SIZE)
+                .ok_or(DecodeError::Limit)?;
+            Ok(())
+        }
+        fn charge_auxiliary(&mut self, bytes: u64) -> Result<(), DecodeError> {
+            if bytes == 0 || bytes > protocol::CHUNK as u64 {
+                return Err(DecodeError::Integrity);
+            }
+            self.auxiliary = self
+                .auxiliary
+                .checked_add(bytes)
+                .filter(|total| *total <= AUXILIARY_LIMIT)
+                .ok_or(DecodeError::Limit)?;
+            Ok(())
+        }
+    }
+    let mut source = std::fs::File::open(
+        std::env::var_os("XDZIP_RAR7_GENUINE_FIXTURE").expect("pinned genuine algorithm1 data"),
+    )
+    .unwrap();
+    assert_eq!(source.metadata().unwrap().len(), 183_863);
+    let codec = NativeCodec {
+        format: Format::Rar,
+    };
+    let control = Cancellation::default();
+    let rows = codec
+        .scan(&mut source, &control, Default::default())
+        .unwrap();
+    assert_eq!(rows.len(), 1);
+    assert!(rows[0].size_known);
+    assert_eq!((rows[0].method, rows[0].size), (70, SIZE));
+    let mut reader = codec.open_payload(&mut source, &rows, &control).unwrap();
+    let mut sink = Zero::default();
+    reader.decode(&rows[0], &mut sink, &control).unwrap();
+    assert_eq!((sink.bytes, sink.work, sink.credit), (SIZE, SIZE, 0));
+    assert!(sink.auxiliary > 0 && sink.auxiliary <= AUXILIARY_LIMIT);
+    assert!((1..=8192).contains(&sink.maximum_chunk));
+    println!(
+        "RAR7_NATIVE_RESULT\t{}\t{}\t{}\t{}\t{}\t{}\tall_zero\tsize_crc_verified",
+        sink.bytes, sink.work, sink.auxiliary, sink.credit, sink.maximum_chunk, NATIVE_MEMORY_LIMIT
+    );
+}
+
+#[test]
 #[ignore = "requires Rust worker and XDZIP_RAR26_FIXTURE, streams 2 GiB twice without buffering"]
 fn rust_rar26_large_file_preserves_u64_size_and_bounded_persistent_delivery() {
     const SIZE: u64 = 2_147_483_649;

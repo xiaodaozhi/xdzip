@@ -7,6 +7,7 @@ use crate::decode_error;
 use crate::index::Descriptor;
 use crate::lz_bits::{Bits, Input, Tables};
 use crate::lz_filters::{Filter, Output};
+use crate::paged_history::PagedHistory;
 use std::io::Read;
 use xdzip_codec_api::Cancellation;
 use xdzip_codec_api::payload::DecodeError;
@@ -14,6 +15,28 @@ use xdzip_codec_api::payload::DecodeError;
 // Includes retained metadata, filter input/copies, pending descriptors and tables.
 // It is a conservative worker admission allowance, not a format dictionary limit.
 const OTHER_MEMORY: u64 = 288 * 1024 * 1024;
+
+fn dense_fits(window: u64) -> bool {
+    window
+        .checked_add(OTHER_MEMORY)
+        .and_then(|total| total.checked_add(crate::protection::Protection::MEMORY_BYTES))
+        .is_some_and(|total| total <= MEMORY_LIMIT)
+}
+
+// Only the modern algorithm 1 compressed profile can use a large logical
+// dictionary. Admission of its exact representation does not authorize output.
+pub(crate) fn paged_memory_required(d: &Descriptor) -> Result<u64, DecodeError> {
+    if d.legacy
+        || d.ancient
+        || d.method != 70
+        || d.effective != 1
+        || !(1..=5).contains(&d.compression)
+    {
+        return Err(DecodeError::Limit);
+    }
+    PagedHistory::memory_required(d.dictionary.max(256 * 1024))
+}
+
 enum Instruction {
     Literal(u8),
     Copy { distance: u64, length: usize },
@@ -32,7 +55,8 @@ impl Instruction {
 #[derive(Default)]
 pub(crate) struct Lz {
     window: Vec<u8>,
-    position: usize,
+    paged: Option<PagedHistory>,
+    position: u64,
     available: u64,
     recent: [Option<u64>; 4],
     last_length: usize,
@@ -53,12 +77,21 @@ impl Lz {
         {
             return Err(DecodeError::Unsupported);
         }
-        let window = if d.solid && !self.window.is_empty() {
-            self.window.len() as u64
+        let history = if d.solid && self.window_len() != 0 {
+            if let Some(paged) = &self.paged {
+                PagedHistory::memory_required(paged.logical_len())?
+            } else {
+                self.window.len() as u64
+            }
         } else {
-            d.dictionary.max(256 * 1024)
+            let window = d.dictionary.max(256 * 1024);
+            if dense_fits(window) {
+                window
+            } else {
+                paged_memory_required(d)?
+            }
         };
-        window
+        history
             .checked_add(OTHER_MEMORY)
             .filter(|n| *n <= MEMORY_LIMIT)
             .ok_or(DecodeError::Limit)
@@ -71,42 +104,85 @@ impl Lz {
         self.tables = None;
         self.algorithm = None;
     }
-    fn begin(&mut self, d: &Descriptor) -> Result<(), DecodeError> {
+    fn window_len(&self) -> u64 {
+        self.paged
+            .as_ref()
+            .map_or(self.window.len() as u64, PagedHistory::logical_len)
+    }
+    #[cfg(test)]
+    pub(crate) fn paged_history_stats(&self) -> Option<(u64, u64, u64)> {
+        self.paged.as_ref().map(|history| {
+            (
+                history.logical_len(),
+                history.allocated_bytes(),
+                history.raw_allocated_bytes(),
+            )
+        })
+    }
+    fn begin(
+        &mut self,
+        d: &Descriptor,
+        sink: &mut dyn WorkOutput,
+        control: &Cancellation,
+    ) -> Result<(), DecodeError> {
         self.memory_required(d)?;
         if d.solid {
-            if self.algorithm != Some(d.effective) || self.window.is_empty() {
+            if self.algorithm != Some(d.effective) || self.window_len() == 0 {
                 return Err(DecodeError::Unsupported);
             }
-            if d.dictionary.max(256 * 1024) > self.window.len() as u64 {
+            if d.dictionary.max(256 * 1024) > self.window_len() {
                 return Err(DecodeError::Unsupported);
             }
         } else {
             self.reset();
-            let size =
-                usize::try_from(d.dictionary.max(256 * 1024)).map_err(|_| DecodeError::Limit)?;
-            if self.window.len() != size {
-                // A non-solid reset no longer needs the old dictionary. Release
-                // it before admitting a replacement, avoiding a two-window peak.
+            let logical_len = d.dictionary.max(256 * 1024);
+            let use_paged = !dense_fits(logical_len);
+            if use_paged {
+                // Non-solid history cannot reuse old bytes or a partial rewrite.
+                // Drop both representations before admitting the new directory.
                 self.window = Vec::new();
-                let mut window = Vec::new();
-                window
-                    .try_reserve_exact(size)
-                    .map_err(|_| DecodeError::Limit)?;
-                window.resize(size, 0);
-                self.window = window;
+                self.paged = None;
+                self.paged = Some(PagedHistory::new(logical_len, sink, control)?);
+            } else {
+                self.paged = None;
+                let size = usize::try_from(logical_len).map_err(|_| DecodeError::Limit)?;
+                if self.window.len() != size {
+                    // A non-solid reset no longer needs the old dictionary. Release
+                    // it before admitting a replacement, avoiding a two-window peak.
+                    self.window = Vec::new();
+                    let mut window = Vec::new();
+                    window
+                        .try_reserve_exact(size)
+                        .map_err(|_| DecodeError::Limit)?;
+                    window.resize(size, 0);
+                    self.window = window;
+                }
             }
             self.algorithm = Some(d.effective);
         }
         Ok(())
     }
-    fn put(&mut self, byte: u8, output: &mut Output) -> Result<(), DecodeError> {
-        output.put(byte)?;
-        self.window[self.position] = byte;
+    fn put(
+        &mut self,
+        byte: u8,
+        output: &mut Output,
+        sink: &mut dyn WorkOutput,
+        control: &Cancellation,
+    ) -> Result<(), DecodeError> {
+        if let Some(paged) = &mut self.paged {
+            let write = paged.prepare_write_at(self.position, byte, sink, control)?;
+            output.put(byte)?;
+            write.commit();
+        } else {
+            output.put(byte)?;
+            self.window[self.position as usize] = byte;
+        }
         self.position += 1;
-        if self.position == self.window.len() {
+        let window_len = self.window_len();
+        if self.position == window_len {
             self.position = 0;
         }
-        self.available = (self.available + 1).min(self.window.len() as u64);
+        self.available = (self.available + 1).min(window_len);
         Ok(())
     }
     fn copy(
@@ -114,19 +190,25 @@ impl Lz {
         distance: u64,
         length: usize,
         output: &mut Output,
+        sink: &mut dyn WorkOutput,
+        control: &Cancellation,
     ) -> Result<(), DecodeError> {
-        if distance == 0 || distance > self.window.len() as u64 || distance > self.available {
+        let window_len = self.window_len();
+        if distance == 0 || distance > window_len || distance > self.available {
             return Err(DecodeError::Integrity);
         }
-        let distance = usize::try_from(distance).map_err(|_| DecodeError::Integrity)?;
         for _ in 0..length {
             let source = if self.position >= distance {
                 self.position - distance
             } else {
-                self.window.len() - (distance - self.position)
+                window_len - (distance - self.position)
             };
-            let byte = self.window[source];
-            self.put(byte, output)?;
+            let byte = if let Some(paged) = &self.paged {
+                paged.read_at(source)?
+            } else {
+                self.window[source as usize]
+            };
+            self.put(byte, output, sink, control)?;
         }
         Ok(())
     }
@@ -261,9 +343,9 @@ impl Lz {
             for instruction in batch.drain(..) {
                 control.check().map_err(decode_error)?;
                 match instruction {
-                    Instruction::Literal(byte) => self.put(byte, output)?,
+                    Instruction::Literal(byte) => self.put(byte, output, sink, control)?,
                     Instruction::Copy { distance, length } => {
-                        self.copy(distance, length, output)?
+                        self.copy(distance, length, output, sink, control)?
                     }
                     Instruction::Filter(filter) => output.register(filter)?,
                     Instruction::Noop => (),
@@ -286,7 +368,7 @@ impl Lz {
         control: &Cancellation,
         padding: u8,
     ) -> Result<(), DecodeError> {
-        self.begin(d)?;
+        self.begin(d, sink, control)?;
         let mut input = Input::new(input);
         let mut output = Output::new(d.size.ok_or(DecodeError::Unsupported)?);
         loop {
@@ -588,7 +670,7 @@ mod tests {
             ..Lz::default()
         };
         let mut out = Output::new(14);
-        lz.copy(7, 14, &mut out).unwrap();
+        lz.copy(7, 14, &mut out, &mut Sink::default(), &c).unwrap();
         let mut sink = Sink::default();
         out.flush(&mut sink, &c, true).unwrap();
         assert_eq!(sink.0, b"CDEFGHICDEFGHI");
@@ -605,10 +687,10 @@ mod tests {
         })
         .unwrap();
         for b in [1, 2, 3] {
-            lz.put(b, &mut out).unwrap();
+            lz.put(b, &mut out, &mut Sink::default(), &c).unwrap();
         }
         out.flush(&mut Sink::default(), &c, false).unwrap();
-        lz.copy(3, 3, &mut out).unwrap();
+        lz.copy(3, 3, &mut out, &mut Sink::default(), &c).unwrap();
         let mut sink = Sink::default();
         out.flush(&mut sink, &c, true).unwrap();
         assert_eq!(sink.0, [1, 2, 3]);
@@ -906,5 +988,115 @@ mod tests {
             Err(DecodeError::Limit)
         );
         assert!(lz.window.is_empty());
+    }
+
+    #[test]
+    fn paged_admission_preserves_large_solid_window_and_releases_on_new_profile() {
+        let control = Cancellation::default();
+        let mut lz = Lz::default();
+        let mut first = description(1, 4, false);
+        first.dictionary = 6 * 1024 * 1024 * 1024;
+        assert_eq!(
+            lz.memory_required(&first).unwrap(),
+            crate::paged_history::MEMORY_BYTES + OTHER_MEMORY
+        );
+        let mut sink = Sink::default();
+        lz.decode(
+            &first,
+            &mut Cursor::new(literal_vector(1, true)),
+            &mut sink,
+            &control,
+        )
+        .unwrap();
+        assert_eq!(sink.0, b"ABBA");
+        assert!(lz.window.is_empty());
+        let (logical, allocated, raw) = lz.paged_history_stats().unwrap();
+        assert_eq!((logical, raw), (first.dictionary, 64 * 1024));
+        assert!(allocated < 18 * 1024 * 1024);
+        let mut sink = Sink::default();
+        lz.decode(
+            &description(1, 4, true),
+            &mut Cursor::new([0x43, 0x18, 1, 0xa0]),
+            &mut sink,
+            &control,
+        )
+        .unwrap();
+        assert_eq!(sink.0, b"BABA");
+        assert_eq!(lz.window_len(), first.dictionary);
+        assert_eq!(lz.position, 8);
+        assert_eq!(lz.paged_history_stats(), Some((logical, allocated, raw)));
+
+        lz.decode(
+            &description(0, 4, false),
+            &mut Cursor::new(literal_vector(0, true)),
+            &mut Sink::default(),
+            &control,
+        )
+        .unwrap();
+        assert!(lz.paged.is_none());
+        assert_eq!((lz.window_len(), lz.position), (256 * 1024, 4));
+    }
+
+    #[test]
+    fn paged_output_failure_does_not_commit_history_and_stays_poisoned() {
+        let control = Cancellation::default();
+        let mut lz = Lz::default();
+        let mut d = description(1, 0, false);
+        d.dictionary = 6 * 1024 * 1024 * 1024;
+        assert_eq!(
+            lz.decode(
+                &d,
+                &mut Cursor::new(literal_vector(1, true)),
+                &mut Sink::default(),
+                &control,
+            ),
+            Err(DecodeError::Integrity)
+        );
+        assert_eq!((lz.position, lz.available), (0, 0));
+        assert_eq!(lz.paged.as_ref().unwrap().read_at(0).unwrap(), 0);
+        assert_eq!(lz.paged_history_stats().unwrap().2, 64 * 1024);
+        lz.reset();
+        d.size = Some(4);
+        assert_eq!(
+            lz.decode(
+                &d,
+                &mut Cursor::new(literal_vector(1, true)),
+                &mut Sink::default(),
+                &control,
+            ),
+            Err(DecodeError::Integrity)
+        );
+    }
+
+    #[test]
+    fn paged_dictionary_admission_is_not_a_general_large_dictionary_exception() {
+        let mut d = description(1, 4, false);
+        // The container's separately retained crypto allowance is part of the
+        // dense admission threshold even for an unencrypted entry.
+        d.dictionary = MEMORY_LIMIT - OTHER_MEMORY;
+        assert!(!dense_fits(d.dictionary));
+        assert_eq!(
+            Lz::default().memory_required(&d).unwrap(),
+            crate::paged_history::MEMORY_BYTES + OTHER_MEMORY
+        );
+        assert!(dense_fits(
+            d.dictionary - crate::protection::Protection::MEMORY_BYTES
+        ));
+        d.dictionary = crate::paged_history::MAX_LOGICAL_LEN;
+        assert!(paged_memory_required(&d).is_ok());
+        d.dictionary += 1;
+        assert_eq!(paged_memory_required(&d), Err(DecodeError::Limit));
+        d.dictionary = 6 * 1024 * 1024 * 1024;
+        for field in 0..5 {
+            let mut other = d.clone();
+            match field {
+                0 => other.legacy = true,
+                1 => other.ancient = true,
+                2 => other.method = 50,
+                3 => other.effective = 0,
+                _ => other.compression = 0,
+            }
+            assert_eq!(paged_memory_required(&other), Err(DecodeError::Limit));
+        }
     }
 }

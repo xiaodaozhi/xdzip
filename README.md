@@ -56,7 +56,7 @@
 - **AES-256 ZIP**：WinZip AE-1／AE-2，Store／Deflate，支持密码解压、错误重试和取消；仅加密文件内容，文件名仍可见。AES-128／192、传统 ZipCrypto 尚不支持，详见[密码解压契约](docs/engineering/password-extraction.md)。
 - **分卷 ZIP**：读取连续编号 `.zip.001`、`.zip.002` 等，以及 PKZIP `.z01`、`.z02`、最终 `.zip`。将全部卷放在同一目录后可打开任意一卷，最多 1024 卷；支持 Store／Deflate 和 AES-256。创建输出为编号分卷。详见[分卷与临时打开契约](docs/engineering/archive-opening.md)。
 - **7z**：使用自研 Rust 后端，支持密码、文件名加密、固实及 `.7z.001` 编号分卷。创建提供四档级别，默认正常级别 LZMA2、非固实、不加密、不分卷，级别 0 仅存储。未加密、非分卷且条目受支持的包可添加、替换和包内移动；修改时重建，保留与新增文件内容的工作集上限为 512 MiB。新建使用流式输入，不适用此重建工作集限制。详见[隔离后端契约](docs/engineering/native-codecs.md)。
-- **RAR**：使用自研 Rust 只读后端，处理旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名，不提供创建或修改。生产构建不编译 UnRAR 源码；历史版本与过滤器的实际覆盖、未知尺寸等兼容边界见[RAR 实现契约](docs/engineering/rar-format-sources.md)。RAR 7 新算法压缩流仍缺少独立健康实样，Store、数学向量和兼容算法样本不替代该验证；超预算字典明确拒绝。完整迁移验收由[任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)跟踪。
+- **RAR**：使用自研 Rust 只读后端，处理旧版 RAR、RAR5 及 RAR 7 格式扩展，支持密码、文件名加密、固实和新旧分卷命名，不提供创建或修改。生产构建不编译 UnRAR 源码；历史版本与过滤器的实际覆盖、未知尺寸等兼容边界见[RAR 实现契约](docs/engineering/rar-format-sources.md)。RAR 7 算法 1 可用精确分页历史处理大逻辑字典，保持 worker 的 1 GiB 内存上限，实际页工作集超预算仍明确拒绝；独立健康压缩流的完整验收见[任务 #43](https://github.com/xiaodaozhi/xdzip/issues/43)。完整迁移验收由[任务 #51](https://github.com/xiaodaozhi/xdzip/issues/51)跟踪。
 - **CAB**：使用自研 Rust 只读后端，支持 Store、MSZip、Quantum、LZX 和同目录分卷；缺卷或不匹配卷拒绝打开。可浏览、搜索、解压、测试、临时打开普通文件及导出，不提供创建或修改，具体边界见[自研后端契约](docs/engineering/independent-rust-codecs.md#cab只读规格)。
 - **ISO 与 UDF**：使用自研 Rust 只读后端，在隔离工作进程中处理 ISO9660、Joliet、Rock Ridge 与 UDF，混合映像优先使用 UDF 命名空间。可浏览、搜索、解压、临时打开普通文件、导出及检查结构与可读性，不挂载或执行光盘映像，不提供创建或修改。链接及特殊记录不可输出，已识别的 UDF 损坏不会静默回退 ISO。打开筛选及关联支持 `.iso`、`.udf`，不注册通用 `.img`，实现边界与尚需验证的扩展见[自研后端契约](docs/engineering/independent-rust-codecs.md#iso与udf只读规格)及[迁移任务](https://github.com/xiaodaozhi/xdzip/issues/47)。
 
