@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -12,6 +13,91 @@ import tarfile
 import tempfile
 from update_fixture import ROOT, KEYRING, run, dump, digest, manifest, qa_installer_text
 from deployment_audit import native
+
+
+def require_no_signing_authority():
+    if any(name in os.environ for name in
+           ('XDZIP_UPDATE_SIGNING_KEY_HEX','XDZIP_SPARKLE_SIGNING_KEY_HEX')):
+        raise RuntimeError('Product preparation and execution must not receive signing secrets')
+
+
+def production_trust_check(output, prepared):
+    """Verify frozen inputs and real signatures before starting any installer."""
+    require_no_signing_authority()
+    path=output/'production-update-prepared.json'
+    record=json.loads(path.read_text(encoding='utf-8'))
+    expected={'schema_version','platform','source_commit','tool','artifacts','products'}
+    if set(record)!=expected or record['schema_version']!=1:
+        raise RuntimeError('Invalid production update preparation record')
+    if (not prepared.get('production_trust') or record['platform']!=('windows' if sys.platform=='win32' else 'linux') or
+            re.fullmatch('[0-9a-f]{40}',record['source_commit']) is None or
+            os.environ.get('GITHUB_SHA')!=record['source_commit'] or prepared['source_commit']!=record['source_commit']):
+        raise RuntimeError('Production update source or mode does not match this workflow')
+    if record['products']!=prepared['production_products']:
+        raise RuntimeError('Production product identities changed after preparation')
+    suffix='.exe' if sys.platform=='win32' else ''
+    package_suffix='windows-x86_64-setup.exe' if sys.platform=='win32' else 'ubuntu24.04-x86_64.deb'
+    required={'signing/xdzip-update-tool'+suffix,'resources/update-trust.json','resources/sparkle-update-key.json',
+              'new/release.json','failure/release.json'}
+    if set(record['products'])!={'old','new','failure'}:
+        raise RuntimeError('Production update products are incomplete')
+    for label,product in record['products'].items():
+        number=1 if label=='old' else 2
+        version='0.2.0-alpha.'+str(number)
+        package='xdzip-'+version+'-'+package_suffix
+        expected_identity={'version':version,'build':199+number,'revision':product['commit'][:12],'dirty':False}
+        if (re.fullmatch('[0-9a-f]{40}',product['commit']) is None or product['identity']!=expected_identity or
+                prepared[label]['package']!=package):
+            raise RuntimeError('Production fixture identity or package changed')
+        required.add(label+'/'+package)
+    if set(record['artifacts'])!=required:
+        raise RuntimeError('Production update preparation does not freeze every required input')
+    if record['products']['new']['commit']!=record['products']['failure']['commit']:
+        raise RuntimeError('Failure installer no longer contains the same new product')
+    if record['tool']!={'path':'signing/xdzip-update-tool'+suffix,
+                        'sha256':record['artifacts']['signing/xdzip-update-tool'+suffix]['sha256']}:
+        raise RuntimeError('Unexpected production signature verifier')
+    for relative, expected_file in record['artifacts'].items():
+        candidate=output/relative
+        if (Path(relative).is_absolute() or '..' in Path(relative).parts or
+                candidate.is_symlink() or not candidate.is_file() or
+                not candidate.resolve().is_relative_to(output.resolve()) or
+                candidate.stat().st_size!=expected_file['bytes'] or digest(candidate)!=expected_file['sha256']):
+            raise RuntimeError('Production update input changed after preparation')
+    for name in ('update-trust.json','sparkle-update-key.json'):
+        if digest(output/'resources'/name)!=digest(ROOT/'resources'/name):
+            raise RuntimeError('Production public resource does not match checked-out trust')
+    tool=output/record['tool']['path']
+    if digest(tool)!=record['tool']['sha256']:
+        raise RuntimeError('Production signature verifier changed')
+    signatures=[]
+    for label in ('new','failure'):
+        directory=output/label
+        release=json.loads((directory/'release.json').read_text(encoding='utf-8'))
+        identity=record['products'][label]
+        if any(release[key]!=value for key,value in
+               {'product':'xdzip','repository':'xiaodaozhi/xdzip','version':identity['identity']['version'],
+                'build':identity['identity']['build'],'commit':identity['commit']}.items()):
+            raise RuntimeError('Signed candidate differs from the frozen product identity')
+        selected=[asset for asset in release['assets'] if asset['platform']==record['platform'] and
+                  asset['package_type']==('exe' if sys.platform=='win32' else 'deb')]
+        package=directory/prepared[label]['package']
+        if (len(selected)!=1 or selected[0]['filename']!=package.name or
+                selected[0]['bytes']!=package.stat().st_size or selected[0]['sha256']!=digest(package)):
+            raise RuntimeError('Signed candidate does not describe the frozen installer')
+        signature=directory/'release.json.sig'
+        if signature.is_symlink() or not signature.is_file() or signature.stat().st_size>4096:
+            raise RuntimeError('A protected-step production signature is required')
+        run([tool,'verify','--manifest',directory/'release.json','--keyring',ROOT/'resources/update-trust.json',
+             '--signature',signature],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        signatures.append({'manifest':label+'/release.json','signature_sha256':digest(signature)})
+    result={'schema_version':1,'status':'passed','source_commit':record['source_commit'],
+            'platform':record['platform'],'production_trust':True,
+            'public_resources':{name:digest(ROOT/'resources'/name) for name in
+                                ('update-trust.json','sparkle-update-key.json')},
+            'signing_secrets_received':False,'signatures':signatures}
+    dump(output/'production-trust-verification.json',result)
+    return result
 
 
 def load(path, name):
@@ -61,9 +147,15 @@ end;
 '''
 
 
-def prepare(output, sdk, session):
+def prepare(output, sdk, session, *, production_trust=False):
     if os.environ.get('XDZIP_ISOLATED_UPDATE_FIXTURE')!='1':
         raise RuntimeError('Private Qt fixture requires explicit isolated regression build')
+    if production_trust:
+        require_no_signing_authority()
+    source_commit=subprocess.check_output(['git','-c','safe.directory='+str(ROOT),'-C',ROOT,'rev-parse','HEAD'],text=True).strip()
+    if production_trust and subprocess.check_output(
+            ['git','-c','safe.directory='+str(ROOT),'-C',ROOT,'status','--porcelain','--untracked-files=no'],text=True).strip():
+        raise RuntimeError('Production trust preparation requires clean tracked source')
     output=output.resolve();sdk=sdk.resolve()
     output.mkdir(parents=True,exist_ok=False)
     source=Path(tempfile.mkdtemp(prefix='xdzip-qt-update-' if sys.platform=='linux' else 'qtu-',
@@ -85,7 +177,12 @@ def prepare(output, sdk, session):
         (source/relative).touch()
     shutil.copy2(ROOT/'crates/xdzip-update-helper/src/linux.rs',source/'crates/xdzip-update-helper/src/linux.rs')
     (source/'crates/xdzip-update-helper/src/linux.rs').touch()
-    dump(source/'resources/update-trust.json',KEYRING)
+    if production_trust:
+        for name in ('update-trust.json','sparkle-update-key.json'):
+            if digest(source/'resources'/name)!=digest(ROOT/'resources'/name):
+                raise RuntimeError('Archived production trust differs from checked-out source')
+    else:
+        dump(source/'resources/update-trust.json',KEYRING)
     run(['git','-C',source,'init','--quiet'])
     run(['git','-C',source,'config','user.name','xdzip owned update fixture'])
     run(['git','-C',source,'config','user.email','fixture@xdzip.invalid'])
@@ -105,9 +202,9 @@ def prepare(output, sdk, session):
         raise RuntimeError('The native update regression requires the declared Qt SDK 6.8.2')
     results={}
     with (output/'prepare.log').open('w',encoding='utf-8') as log:
-        def checked(argv,**kwargs):
+        def checked(argv,*,child_env=None,**kwargs):
             log.write('Running '+str(argv[0])+'\n');log.flush()
-            return run(argv,env=env,stdout=log,stderr=subprocess.STDOUT,**kwargs)
+            return run(argv,env=env if child_env is None else child_env,stdout=log,stderr=subprocess.STDOUT,**kwargs)
         # The native C-helper test need not fetch the archive/Qt bridge crates.
         # Warm the complete locked workspace while this build phase has network;
         # the later SDK-free runtime remains offline.
@@ -200,16 +297,40 @@ def prepare(output, sdk, session):
                 dump(failed/'identity.json',identity)
                 results['failure']={'package':failed_package.name,'identity':identity,'error':'installation_failed'}
         # Build the shared, Qt-free signer in this private committed source tree.
+        # It runs later without the compiler environment or installed product.
+        # Only this final tool build changes CRT selection; product builds above
+        # keep their deployment-audited app-local runtimes.
+        signer_environment=env.copy()
+        if sys.platform=='win32':
+            signer_environment['RUSTFLAGS']='-C target-feature=+crt-static'
         checked([cargo,'build','--locked','--manifest-path',source/'Cargo.toml','--target-dir',source/'build/signer',
-                 '-p','xdzip-update','--bin','xdzip-update-tool'])
+                 '-p','xdzip-update','--bin','xdzip-update-tool'],child_env=signer_environment)
         signer=source/('build/signer/debug/xdzip-update-tool'+('.exe' if sys.platform=='win32' else ''))
         new=output/'new'/results['new']['package']
-        manifest(new,'windows' if sys.platform=='win32' else 'linux',signer,results['new']['identity'])
+        manifest(new,'windows' if sys.platform=='win32' else 'linux',signer,results['new']['identity'],sign=not production_trust)
         manifest(output/'failure'/results['failure']['package'],
-                 'windows' if sys.platform=='win32' else 'linux',signer,results['failure']['identity'])
+                 'windows' if sys.platform=='win32' else 'linux',signer,results['failure']['identity'],sign=not production_trust)
+    production_products={label:{'identity':{key:result['identity'][key] for key in ('version','build','revision','dirty')},
+                                'commit':result['identity']['commit']} for label,result in results.items()}
+    if production_trust:
+        signing=output/'signing';signing.mkdir()
+        copied=signing/signer.name;shutil.copy2(signer,copied)
+        resources=output/'resources';resources.mkdir()
+        for name in ('update-trust.json','sparkle-update-key.json'):
+            shutil.copy2(source/'resources'/name,resources/name)
+        frozen=[copied,resources/'update-trust.json',resources/'sparkle-update-key.json',
+                output/'new/release.json',output/'failure/release.json',
+                *(output/label/result['package'] for label,result in results.items())]
+        artifacts={path.relative_to(output).as_posix():{'bytes':path.stat().st_size,'sha256':digest(path)} for path in frozen}
+        dump(output/'production-update-prepared.json',{'schema_version':1,'platform':'windows' if sys.platform=='win32' else 'linux',
+             'source_commit':source_commit,'tool':{'path':copied.relative_to(output).as_posix(),'sha256':digest(copied)},
+             'artifacts':artifacts,'products':production_products})
     value={'schema_version':1,'scope':'Private real browser_main/QML builds with public fixture trust; not product packages',
            'production_trust_modified':False,'session_directory':str(session),
            'qt_sdk_version':qt_version,'windows_copy_pause':sys.platform=='win32',**results}
+    if production_trust:
+        value.update(scope='Private real browser_main/QML builds with unchanged production public trust; not released packages',
+                     production_trust=True,source_commit=source_commit,production_products=production_products)
     dump(output/'prepared.json',value)
     password_fixture=ROOT/'tests/fixtures/extract/password-retry.zip'
     assert digest(password_fixture)=='cdb1a34b259be86e1670c58d26fb328e3e2dfe6b71defaa6f333393bb4156d41'

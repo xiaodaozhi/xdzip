@@ -54,6 +54,8 @@ The SDK-free Mac HTTPS regression restarts the same deployed probe for at most t
 
 [专用原生更新回归](../../.github/workflows/update-regression.yml)仅手动调度，不携带生产秘密，不上传应用包。默认验证全部平台，也可选择单个平台定位故障，各选择使用独立队列；最终验收仍要求同提交的全平台结果。Windows 在一次性 GitHub runner、Linux 在专用容器先使用拥有的 C 协议产品和真实 Inno/APT 验证助手取消、失败及恢复。另一条私有 Qt 升级链路编译两个真实 `browser_main`/QML 版本，通过实际关于页鼠标输入，执行清单与包验证、退出 join、Inno/APT、普通用户单实例重启和回执恢复，并核对设置、未知设置键、现有默认关联及安装目录的无关文件保留。Linux 将构建 SDK 和运行容器分开，运行容器没有编译器或 Qt SDK，并使用自定义 XDG 目录；Windows Server CI 仅在私有宏下替换最低系统判断，不替代 Windows 11 原生验收。该链路替换公开 GitHub URL 的网络 transport，生产 HTTPS/TLS 则单独通过无 SDK 运行验证。
 
+[生产签名专项](../../.github/workflows/production-update-acceptance.yml)在所有者授权后使用受保护环境的已有密钥，沿用真实 Qt 产品升级与异常恢复链，保留已提交的生产公钥。准备阶段不签名，独立签名步骤先严格匹配公开信任根，再核验本次固定候选；执行阶段拒绝秘密环境。它不提供任意资产签名或发布接口，签名候选只存于一次性 runner，公开工件仅含有界的诊断与摘要。此专项和原测试密钥回归分别记录，实际执行才算通过，密钥匹配也不等于安装成功。具体约束见[发布协议](release-protocol.md)。English: The separately authorized production-signing workflow retains committed production roots and separates secret-free preparation, fixed-candidate protected signing and secret-free native execution. Signed candidates stay on the disposable runner; only bounded diagnostics are exported. Production key matching, test-key regressions and actual native upgrade outcomes are recorded independently, without publication.
+
 增强场景延迟包下载完成事件，启动真实 AES Check 直到等待密码，再验证更新进入等待任务。密码窗保持原生应用模态，此时夹具通过 controller 调用取消更新等待，并在证据中明确标记该步骤未使用关于页鼠标；取消后同任务及密码令牌保持，再通过输入法提交事件及密码确认按钮完成 Check，最后从关于页再次安装。另一轮在更新与密码等待并存时向真实主程序投递系统 Quit，点击实际退出窗口的返回、取消并退出，核对同任务／令牌、所有 join、零安装交接以及同旧安装正常重开后再升级。实体桌面和真人输入、许可／授权仍需独立验收。
 
 另有双会话组件回归，经 AppQuitGuard、DesktopIntegration 和全会话路由进入同一退出窗口，核对 AES 等待任务的返回／取消及 join。只允许受管理会话自己的密码／冲突模态被退出确认覆盖，原生 QWidget 模态仍阻挡退出。该组件检查与完整主程序在更新等待期间的系统 Quit、原生安装回归分别记录。

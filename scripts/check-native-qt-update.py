@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import time
-from qt_update_fixture import prepare, feed, verify_restart, load
+from qt_update_fixture import prepare, feed, verify_restart, load, require_no_signing_authority, production_trust_check
 from update_fixture import dump, run, await_file
 
 
@@ -572,17 +572,28 @@ def main():
     parser.add_argument('--qt-prefix',type=Path)
     parser.add_argument('--session-directory',type=Path)
     parser.add_argument('--password-task',action='store_true',help='Exercise a real AES Check waiting for a password, cancel only update waiting, then finish the task and upgrade')
+    parser.add_argument('--production-trust',action='store_true',help='Retain embedded production public keys; prepare unsigned inputs or verify protected-step signatures before installation')
     args=parser.parse_args();output=args.output.resolve()
+    if args.production_trust:
+        require_no_signing_authority()
     if args.prepare:
         if not args.qt_prefix or not args.session_directory:parser.error('Preparation requires Qt SDK and fixed private session directory')
-        prepare(output,args.qt_prefix,args.session_directory)
+        prepare(output,args.qt_prefix,args.session_directory,production_trust=args.production_trust)
         return
     prepared=json.loads((output/'prepared.json').read_text())
+    if bool(prepared.get('production_trust'))!=args.production_trust:
+        parser.error('Preparation and execution must use the same production trust mode')
+    if args.production_trust:
+        production_trust_check(output,prepared)
     prepared['password_task']=args.password_task
     try:
         if sys.platform=='win32':windows(output,prepared)
         elif sys.platform=='linux':linux(output,prepared)
         else:parser.error('This private regression supports only native Windows/Linux')
+        if args.production_trust:
+            path=output/'result.json';record=json.loads(path.read_text())
+            record.update(production_trust=True,production_trust_verification='production-trust-verification.json')
+            dump(path,record)
     except Exception as error:
         if (output/'result.json').exists():
             record=json.loads((output/'result.json').read_text())

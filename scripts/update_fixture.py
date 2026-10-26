@@ -73,7 +73,7 @@ def compile_product(output, identity):
     run(argv)
 
 
-def manifest(package, platform, tool, identity=NEW):
+def manifest(package, platform, tool, identity=NEW, *, sign=True):
     version = identity['version']
     base = 'https://github.com/xiaodaozhi/xdzip/releases/download/v' + version + '/'
     linux = {'distribution': 'ubuntu', 'version': '24.04', 'glibc': '2.39', 'display_server': 'X11'}
@@ -94,6 +94,10 @@ def manifest(package, platform, tool, identity=NEW):
                  tag='v' + version, commit=identity.get('commit',identity['revision'] + '0' * 28), repository='xiaodaozhi/xdzip', assets=assets)
     path = package.parent / 'release.json'
     dump(path, value)
+    # Production-trust fixtures stop here. A separate protected workflow step
+    # signs these frozen bytes without exposing authority to their build/test.
+    if not sign:
+        return path
     ring = package.parent / 'test-keyring.json'
     dump(ring, KEYRING)
     env = os.environ.copy()

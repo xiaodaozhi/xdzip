@@ -21,6 +21,8 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 普通 PR 默认最小权限、无签名凭据，外部贡献不运行带秘密的代码。Actions 依赖固定完整提交 SHA；缓存以工具链、依赖锁和架构分键，不从不可信 PR 恢复发布工件。fuzz 与性能长任务独立调度，性能判断使用稳定参考机而非共享 runner 偶然成绩。
 
+[生产更新验收](../../.github/workflows/production-update-acceptance.yml)是明确授权后的独立手动入口，只接受 main，固定源码 SHA，绑定 release-signing 审批且保持 contents:read。构建、生产签名和真实安装分别执行，只有签名步骤接收生产秘密；候选、应用和签名附件不上传。普通 CI 与现有测试密钥更新回归不因此获得生产秘密或 Mac 应用部署权限。English: The separately authorized production-update acceptance workflow runs only from main under the protected signing environment with read-only repository permissions. Only its isolated signing steps receive production secrets. Signed candidates and applications stay on disposable runners; ordinary CI remains unchanged.
+
 Documentation、Foundation probes、Qt components 和 HTML design review 也支持 `workflow_dispatch` 手动核对指定分支或标签。手动执行复用相同权限、检查和平台限制；按实际 `head_sha` 绑定结果，不能用旧提交的成功记录补齐当前提交的缺失检查，也不因此获得发布授权。
 
 [Windows native visual diagnostic](../../.github/workflows/windows-native-visual.yml)是仅支持手动调度的一次性 Windows hosted runner 诊断，使用同提交的 Release 测试程序和原生 windows/D3D11 路线。先执行一次菜单桌面可用性采样，成功后另启完整 15 类、各 3 次的冷进程采样，试跑不计入 45 次；真实前台、自有窗口遮挡、首帧代次和同帧阴影检查保持不变。无法捕获或记录不完整时保留失败和诊断工件，不能记为通过，也不冒充人工点击。

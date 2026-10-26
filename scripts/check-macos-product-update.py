@@ -29,10 +29,12 @@ from desktop_environment import locked_rust_version
 from macos_bundle import optimize_bundle, validate_optimized_bundle
 from sparkle_bundle import embed, signing_metadata
 from update_fixture import ROOT, KEYRING, SEED, PUBLIC, digest, dump
-from release_updates import appcast_bytes
+from release_updates import appcast_bytes, verify_release_updates
 
 PRODUCT = 'org.xdzip.desktop'
 LSREGISTER = '/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister'
+PRIVATE_KEY_NAMES = ('XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX')
+PUBLIC_RESOURCES = ('update-trust.json', 'sparkle-update-key.json')
 
 
 def environment():
@@ -72,7 +74,7 @@ def require_owned(path, parent):
         raise RuntimeError('Owned Mac fixture path escaped its declared parent')
 
 
-def private_source(output):
+def private_source(output, production_trust=False):
     source = output/'source'
     archive = output/'source.tar'
     run(['git', '-C', ROOT, 'archive', '--format=tar', '--output', archive, 'HEAD'])
@@ -80,8 +82,13 @@ def private_source(output):
     with tarfile.open(archive) as stream:
         stream.extractall(source, filter='data')
     archive.unlink()
-    dump(source/'resources/update-trust.json', KEYRING)
-    dump(source/'resources/sparkle-update-key.json', {'schema_version': 1, 'public_key': PUBLIC})
+    if not production_trust:
+        dump(source/'resources/update-trust.json', KEYRING)
+        dump(source/'resources/sparkle-update-key.json', {'schema_version': 1, 'public_key': PUBLIC})
+    else:
+        for name in PUBLIC_RESOURCES:
+            if (source/'resources'/name).read_bytes() != (ROOT/'resources'/name).read_bytes():
+                raise RuntimeError('Production public resource differs from the committed source')
     run(['git', '-C', source, 'init', '--quiet'])
     run(['git', '-C', source, 'config', 'user.name', 'xdzip owned Mac fixture'])
     run(['git', '-C', source, 'config', 'user.email', 'fixture@xdzip.invalid'])
@@ -123,8 +130,8 @@ def deploy(source, build, qt, sdk, destination, log):
     return json.loads(run([binary, '--version-json']))
 
 
-def prepare(output, qt, session, app_name):
-    source = private_source(output)
+def prepare(output, qt, session, app_name, production_trust=False):
+    source = private_source(output, production_trust)
     run(['cargo', 'fetch', '--locked', '--manifest-path', source/'Cargo.toml'], output/'cargo-fetch.log')
     sdk = output/'sdk'
     run([sys.executable, source/'scripts/prepare-sparkle.py', '--output', sdk], output/'sdk.log')
@@ -158,16 +165,11 @@ def prepare(output, qt, session, app_name):
     return products, source/'build/signer/debug/xdzip-update-tool', sdk
 
 
-def signed_candidate(output, new, signing, sdk):
+def unsigned_candidate(output, new):
     directory = output/'owned'; directory.mkdir()
     version = new['identity']['version']
     package = directory/('xdzip-'+version+'-macos-arm64.app.zip')
     run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', new['app'], package])
-    env = environment(); env['XDZIP_SPARKLE_SIGNING_KEY_HEX'] = SEED
-    public = output/'source/resources/sparkle-update-key.json'
-    metadata = directory/'macos-update.json'
-    run([signing, 'sign-archive', '--archive', package, '--public-key', public, '--version', version,
-         '--build', '201', '--output', metadata], env=env)
     base = 'https://github.com/xiaodaozhi/xdzip/releases/download/v'+version+'/'
     targets = [('windows','x86_64','zip','windows-x86_64.zip',{'windows':'11'}),
                ('windows','x86_64','exe','windows-x86_64-setup.exe',{'windows':'11'}),
@@ -185,6 +187,17 @@ def signed_candidate(output, new, signing, sdk):
     manifest=dict(schema_version=1,product='xdzip',version=version,channel='alpha',build=201,tag='v'+version,
                   commit=new['commit'],repository='xiaodaozhi/xdzip',assets=assets,macos_appcast_url=base+'appcast.xml')
     dump(directory/'release.json',manifest)
+    return manifest,package
+
+
+def signed_candidate(output, new, signing, sdk):
+    manifest,package = unsigned_candidate(output, new)
+    directory = output/'owned'
+    env = environment(); env['XDZIP_SPARKLE_SIGNING_KEY_HEX'] = SEED
+    public = output/'source/resources/sparkle-update-key.json'
+    metadata = directory/'macos-update.json'
+    run([signing, 'sign-archive', '--archive', package, '--public-key', public,
+         '--version', new['identity']['version'], '--build', '201', '--output', metadata], env=env)
     env['XDZIP_UPDATE_SIGNING_KEY_HEX']=SEED
     run([signing,'sign','--manifest',directory/'release.json','--keyring',output/'source/resources/update-trust.json',
          '--key-id','owned-fixture','--output',directory/'release.json.sig'],env=env)
@@ -195,6 +208,111 @@ def signed_candidate(output, new, signing, sdk):
     run([sdk/'bin/sign_update','--ed-key-file','-','--disable-signing-warning',appcast],input_data=secret)
     run([signing,'verify-appcast','--appcast',appcast,'--public-key',public])
     return manifest,package
+
+
+def require_no_production_secrets():
+    # Preparation and product execution must never inherit signing authority.
+    # The separate protected signer is the only process allowed to consume it.
+    if any(name.upper() in PRIVATE_KEY_NAMES for name in os.environ):
+        raise RuntimeError('Production preparation and execution require an environment without signing keys')
+
+
+def public_resource_hashes():
+    return {'resources/'+name:digest(ROOT/'resources'/name) for name in PUBLIC_RESOURCES}
+
+
+def production_file(output, relative):
+    if not isinstance(relative, str) or '\\' in relative:
+        raise RuntimeError('Invalid prepared production path')
+    path = output/relative
+    if Path(relative).is_absolute() or path.resolve() != path.absolute() or not path.resolve().is_relative_to(output):
+        raise RuntimeError('Prepared production path escaped its owned output')
+    if not path.is_file() or path.is_symlink():
+        raise RuntimeError('Prepared production input is not a regular file')
+    return path
+
+
+def production_prepared(output, products, signing):
+    """Freeze only public build inputs; final signatures are made in another step."""
+    require_no_production_secrets()
+    manifest,package = unsigned_candidate(output, products['new'])
+    resource_dir = output/'resources';resource_dir.mkdir()
+    for resource in PUBLIC_RESOURCES:
+        shutil.copyfile(ROOT/'resources'/resource, resource_dir/resource)
+    tool_dir=output/'signing';tool_dir.mkdir()
+    tool=tool_dir/'xdzip-update-tool';shutil.copy2(signing,tool)
+    expected_key=base64.b64encode(bytes.fromhex(json.loads((resource_dir/'sparkle-update-key.json').read_bytes())['public_key'])).decode('ascii')
+    recorded_products={}
+    for label,product in products.items():
+        app=product['app'];plist=app/'Contents/Info.plist'
+        info=plistlib.loads(plist.read_bytes())
+        if info.get('SUPublicEDKey') != expected_key:
+            raise RuntimeError('Prepared application does not embed the production Sparkle public key')
+        recorded_products[label]=dict(identity=product['identity'],commit=product['commit'],
+            app=app.relative_to(output).as_posix(),SUPublicEDKey=info['SUPublicEDKey'],
+            binary_sha256=digest(app/'Contents/MacOS/xdzip'),plist_sha256=digest(plist))
+    inputs=[output/'owned/release.json',package,tool]+[resource_dir/name for name in PUBLIC_RESOURCES]
+    record=dict(schema_version=1,platform='macos',source_commit=run(['git','-C',ROOT,'rev-parse','HEAD']).decode().strip(),
+        tool=dict(path='signing/xdzip-update-tool',sha256=digest(tool)),
+        artifacts={path.relative_to(output).as_posix():dict(bytes=path.stat().st_size,sha256=digest(path)) for path in inputs},
+        products=recorded_products)
+    dump(output/'production-update-prepared.json',record)
+    return record
+
+
+def load_production_prepared(output):
+    require_no_production_secrets()
+    record_path=production_file(output,'production-update-prepared.json')
+    if record_path.stat().st_size>64*1024:raise RuntimeError('Prepared production record exceeds its bound')
+    record=json.loads(record_path.read_bytes())
+    source_commit=run(['git','-C',ROOT,'rev-parse','HEAD']).decode().strip()
+    if (set(record)!={'schema_version','platform','source_commit','tool','artifacts','products'} or
+            record.get('schema_version')!=1 or record.get('platform')!='macos' or record.get('source_commit')!=source_commit):
+        raise RuntimeError('Prepared production source or trust identity changed')
+    expected_paths={'owned/release.json','owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip',
+                    'signing/xdzip-update-tool','resources/update-trust.json','resources/sparkle-update-key.json'}
+    if set(record.get('artifacts',{}))!=expected_paths:
+        raise RuntimeError('Unexpected prepared production inputs')
+    for relative,expected in record['artifacts'].items():
+        path=production_file(output,relative)
+        if expected!={'bytes':path.stat().st_size,'sha256':digest(path)}:
+            raise RuntimeError('Prepared production input changed')
+    for name in PUBLIC_RESOURCES:
+        if (output/'resources'/name).read_bytes()!=(ROOT/'resources'/name).read_bytes():
+            raise RuntimeError('Prepared production trust differs from the source')
+    tool=production_file(output,'signing/xdzip-update-tool')
+    if record.get('tool')!={'path':'signing/xdzip-update-tool','sha256':digest(tool)}:
+        raise RuntimeError('Prepared production tool changed')
+    expected_key=base64.b64encode(bytes.fromhex(json.loads((output/'resources/sparkle-update-key.json').read_bytes())['public_key'])).decode('ascii')
+    products={}
+    if set(record.get('products',{}))!={'old','new'}:raise RuntimeError('Prepared products are incomplete')
+    old_path=record['products']['old'].get('app','')
+    app_match=re.fullmatch('old/(xdzip-owned-update-更新-([0-9a-f]{32})\\.app)',old_path)
+    if not app_match:raise RuntimeError('Prepared application name is not owned')
+    app_name,token=app_match.groups()
+    for label,number in (('old',1),('new',2)):
+        product=record['products'][label]
+        expected_app=label+'/'+app_name
+        if product.get('app')!=expected_app:raise RuntimeError('Prepared application path changed')
+        plist=production_file(output,expected_app+'/Contents/Info.plist')
+        binary=production_file(output,expected_app+'/Contents/MacOS/xdzip')
+        info=plistlib.loads(plist.read_bytes())
+        if (digest(plist)!=product.get('plist_sha256') or digest(binary)!=product.get('binary_sha256') or
+                info.get('SUPublicEDKey')!=expected_key or product.get('SUPublicEDKey')!=expected_key or
+                not re.fullmatch('[0-9a-f]{40}',product.get('commit','')) or
+                product.get('identity')!={'product':'xdzip','version':'0.2.0-alpha.'+str(number),'build':199+number,
+                                         'revision':product['commit'][:12],'dirty':False}):
+            raise RuntimeError('Prepared production application identity changed')
+        products[label]=dict(identity=product['identity'],commit=product['commit'],app=output/expected_app)
+    manifest=json.loads((output/'owned/release.json').read_bytes())
+    if (manifest.get('commit')!=products['new']['commit'] or manifest.get('version')!='0.2.0-alpha.2' or manifest.get('build')!=201):
+        raise RuntimeError('Prepared manifest does not match the new product')
+    # These checks execute with no production keys, before any application or
+    # native installer is launched. The installer will independently verify again.
+    verify_release_updates(output/'owned',manifest,tool=tool,keyring=output/'resources/update-trust.json',
+                           public_key=output/'resources/sparkle-update-key.json')
+    record.update(token=token,app_name=app_name)
+    return record,products,manifest,output/'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
 
 
 class Associations:
@@ -435,12 +553,22 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--qt-prefix',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--production-trust',action='store_true',help='Retain committed public trust and use separately signed inputs')
+    parser.add_argument('--prepare',action='store_true',help='Build unsigned production fixtures without installing or signing')
     args=parser.parse_args()
     if (sys.platform!='darwin' or platform.machine()!='arm64' or os.environ.get('CI')!='true' or
         os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'):
         parser.error('Requires an explicitly disposable GitHub-hosted Apple Silicon runner')
     output,qt=args.output.resolve(),args.qt_prefix.resolve()
-    if not output.is_relative_to(ROOT/'build') or output.exists():parser.error('Use fresh output beneath build/')
+    if args.prepare and not args.production_trust:parser.error('--prepare requires --production-trust')
+    if args.production_trust:require_no_production_secrets()
+    executing_prepared=args.production_trust and not args.prepare
+    if (not output.is_relative_to((ROOT/'build').resolve()) or output==(ROOT/'build').resolve() or
+            (not executing_prepared and output.exists()) or (executing_prepared and not output.is_dir())):
+        parser.error('Use fresh output beneath build/ for preparation, then reuse that exact prepared output')
+    prepared_record=products=manifest=archive=None
+    if executing_prepared:
+        prepared_record,products,manifest,archive=load_production_prepared(output)
     home=Path.home(); applications=home/'Applications'
     if applications.is_symlink():parser.error('Refusing a redirected Applications directory')
     roots=[home/'Library/Preferences/xdzip/xdzip',home/'Library/Application Support/xdzip/xdzip',home/'Library/Caches/xdzip/xdzip',
@@ -454,23 +582,35 @@ def main():
             info=app/'Contents/Info.plist'
             if info.is_file() and plistlib.loads(info.read_bytes()).get('CFBundleIdentifier')==PRODUCT:
                 parser.error('Refusing a runner with an existing xdzip installation')
-    output.mkdir(parents=True)
-    token=uuid.uuid4().hex
-    name='xdzip-owned-update-更新-'+token+'.app'
+    if not executing_prepared:output.mkdir(parents=True)
+    token=prepared_record['token'] if executing_prepared else uuid.uuid4().hex
+    name=prepared_record['app_name'] if executing_prepared else 'xdzip-owned-update-更新-'+token+'.app'
     applications.mkdir(exist_ok=True)
     installed=applications/name; require_owned(installed,applications)
-    session=output/'session';session.mkdir()
-    associations=Associations();before_preparation=associations.snapshot()
-    dump(output/'association-before-preparation.json',before_preparation)
-    production={str(path.relative_to(ROOT)):digest(path) for path in (ROOT/'resources/update-trust.json',ROOT/'resources/sparkle-update-key.json')}
-    products,signing,sdk=prepare(output,qt,session,name)
+    session=output/'session'
+    if not executing_prepared:session.mkdir()
+    elif session.is_symlink() or not session.is_dir() or any(session.iterdir()):
+        parser.error('Prepared session must be an unused owned directory')
+    associations=Associations()
+    if executing_prepared:
+        before_preparation=json.loads(production_file(output,'association-before-preparation.json').read_bytes())
+    else:
+        before_preparation=associations.snapshot()
+        dump(output/'association-before-preparation.json',before_preparation)
+    production=public_resource_hashes()
+    if not executing_prepared:
+        products,signing,sdk=prepare(output,qt,session,name,args.production_trust)
+        if args.prepare:
+            production_prepared(output,products,signing)
+            print('Unsigned production-trust Mac fixtures prepared; independent protected signing is required')
+            return
     # Explicitly register the owned, formal Alternate product during preparation.
     # Restore its defined pre-mutation Viewer, not an invented missing handler.
     run([LSREGISTER,'-f',products['old']['app']])
     original=associations.snapshot()
     dump(output/'association-original.json',original)
     if not original['2']:raise RuntimeError('Cannot safely restore a missing pre-mutation ZIP Viewer handler')
-    manifest,archive=signed_candidate(output,products['new'],signing,sdk)
+    if not executing_prepared:manifest,archive=signed_candidate(output,products['new'],signing,sdk)
     server=ThreadingHTTPServer(('127.0.0.1',0),partial(Handler,directory=str(output)))
     server.evidence_lock=threading.Lock();server.evidence=[]
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
@@ -700,7 +840,10 @@ def main():
         record=dict(status='failed' if evidence_failures else 'passed',evidence_failures=evidence_failures,
                     quit_intent_schema_version=1,
                     scope='Real browser_main/About/UpdateController, formal installed identity, native Sparkle, ordinary receipt restoration and default profile',
-                    production_trust_modified=False,old=started,new=new,exit_barrier=barrier,
+                    production_trust_modified=False,production_signatures=args.production_trust,
+                    production_trust=production,prepared_source_commit=prepared_record['source_commit'] if prepared_record else None,
+                    embedded_sparkle_public_keys={label:product['SUPublicEDKey'] for label,product in prepared_record['products'].items()} if prepared_record else None,
+                    old=started,new=new,exit_barrier=barrier,
                     settings_preserved=True,unknown_setting_preserved=True,single_instance_before_and_after=True,
                     zip_association_scope='Owned LaunchServices public.zip-archive Viewer default for ordinary ZIP opening; Editor/Shell checked read-only, all-roles aggregate informational only',
                     before_preparation_zip_handlers=before_preparation,

@@ -1,0 +1,178 @@
+name: Production update acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-update-acceptance-main
+  cancel-in-progress: false
+jobs:
+  keys:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    environment: release-signing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Build the locked signing tool without signing authority
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal
+          cargo build --locked --target-dir build/signing -p xdzip-update --bin xdzip-update-tool
+      - name: Match the protected production keys to the committed public roots
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python3 scripts/sign-production-update-fixtures.py --check-only --tool build/signing/debug/xdzip-update-tool --output build/production-update/keys
+      - name: Preserve public matching evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: production-update-keys
+          path: build/production-update/keys/*.json
+          if-no-files-found: error
+          retention-days: 14
+  windows:
+    needs: keys
+    environment: release-signing
+    runs-on: windows-2022
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Prepare native tools and Qt without signing authority
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal
+          ./scripts/prepare-windows-installer.ps1 -OutputDirectory build/installer-toolchain
+          python scripts/prepare-windows-runtime.py --output build/windows-runtime
+          python -m pip install aqtinstall==3.3.0
+          python -m aqt install-qt windows desktop 6.8.2 win64_msvc2022_64 --outputdir '${{ runner.temp }}/Qt'
+      - name: Build private real old and new products with production public roots
+        shell: pwsh
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -prerelease -property installationPath
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          $env:PATH = "${env:USERPROFILE}/.cargo/bin;${env:PATH}"
+          $session = Join-Path $PWD 'build/production-update/windows-session'
+          python scripts/check-native-qt-update.py --prepare --production-trust --qt-prefix '${{ runner.temp }}/Qt/6.8.2/msvc2022_64' --output build/production-update/windows --session-directory $session
+      - name: Sign only this run's bound private installer candidates
+        shell: pwsh
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python scripts/sign-production-update-fixtures.py --directory build/production-update/windows
+      - name: Complete real native upgrade, failure recovery and restart without secrets
+        shell: pwsh
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python scripts/check-native-qt-update.py --production-trust --output build/production-update/windows --password-task
+      - name: Collect bounded evidence without signed candidates
+        if: always()
+        shell: pwsh
+        run: python scripts/collect-production-update-evidence.py --directory build/production-update/windows --output build/production-update/evidence-windows
+      - name: Preserve evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: production-update-windows
+          path: build/production-update/evidence-windows/*
+          if-no-files-found: error
+          retention-days: 14
+  macos:
+    needs: keys
+    environment: release-signing
+    runs-on: macos-14
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Prepare native Apple Silicon SDK without signing authority
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal
+          python3 -m pip install aqtinstall==3.3.0
+          python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+      - name: Build private real old and new apps with production public roots
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python3 scripts/check-macos-product-update.py --prepare --production-trust --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/production-update/macos
+      - name: Sign only this run's bound archive, feed and manifest
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python3 scripts/sign-production-update-fixtures.py --directory build/production-update/macos
+      - name: Complete native Sparkle replacement, failure recovery and ordinary restart
+        env:
+          XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
+        run: python3 scripts/check-macos-product-update.py --production-trust --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/production-update/macos
+      - name: Collect bounded evidence without signed candidates or applications
+        if: always()
+        run: python3 scripts/collect-production-update-evidence.py --directory build/production-update/macos --output build/production-update/evidence-macos
+      - name: Preserve evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: production-update-macos
+          path: build/production-update/evidence-macos/*
+          if-no-files-found: error
+          retention-days: 14
+  linux:
+    needs: keys
+    environment: release-signing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Build isolated SDK image without signing authority
+        run: |
+          docker build -f tests/fixtures/native/update-linux.Dockerfile -t xdzip-update-regression .
+          docker build -f tests/fixtures/native/update-qt-build.Dockerfile -t xdzip-update-qt-build .
+      - name: Build private real old and new products with production public roots
+        run: |
+          mkdir -p build/production-update
+          docker run --rm --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --env GITHUB_SHA="$GITHUB_SHA" --mount type=bind,source="$PWD",target=/repo,readonly --mount type=bind,source="$PWD/build/production-update",target=/evidence xdzip-update-qt-build python3 scripts/check-native-qt-update.py --prepare --production-trust --qt-prefix /opt/Qt/6.8.2/gcc_64 --output /evidence/linux --session-directory /home/xdzipfixture/qt-session
+          sudo chown -R "$(id -u):$(id -g)" build/production-update/linux
+      - name: Sign only this run's bound private installer candidates
+        env:
+          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+        run: python3 scripts/sign-production-update-fixtures.py --directory build/production-update/linux
+      - name: Complete real Qt and APT upgrade in an independent SDK-free runtime
+        run: |
+          PACKAGES=$(python3 -c 'import json; print(" ".join(json.load(open("build/production-update/linux/new/deployment.json"))["system_packages"]))')
+          docker build --build-arg "XDZIP_RUNTIME_PACKAGES=$PACKAGES" -f apps/desktop/packaging/linux/ci-runtime.Dockerfile -t xdzip-update-qt-runtime apps/desktop/packaging/linux
+          docker run --rm --network none --cap-add SYS_PTRACE --env XDZIP_ISOLATED_UPDATE_FIXTURE=1 --env GITHUB_SHA="$GITHUB_SHA" --mount type=bind,source="$PWD/scripts",target=/repo/scripts,readonly --mount type=bind,source="$PWD/resources",target=/repo/resources,readonly --mount type=bind,source="$PWD/build/production-update",target=/evidence --workdir /repo xdzip-update-qt-runtime python3 scripts/check-native-qt-update.py --production-trust --output /evidence/linux --password-task
+      - name: Collect bounded evidence without signed candidates
+        if: always()
+        run: python3 scripts/collect-production-update-evidence.py --directory build/production-update/linux --output build/production-update/evidence-linux
+      - name: Preserve evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: production-update-linux
+          path: build/production-update/evidence-linux/*
+          if-no-files-found: error
+          retention-days: 14
