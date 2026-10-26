@@ -19,13 +19,13 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build and sample the owned native Windows client
         shell: pwsh
         run: ./scripts/ci-windows-native-visual.ps1 -FocusedFailures:('${{ inputs.focused_failures }}' -eq 'true')
       - name: Preserve diagnostic evidence even when desktop capture is blocked
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ inputs.focused_failures && 'windows-native-failures' || 'windows-native-visual' }}-${{ github.sha }}
           path: |

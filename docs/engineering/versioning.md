@@ -11,6 +11,7 @@
 - `build` 为 1～65535 的整数。准备新的对外交付构建时递增，不按本机每次编译自动递增，也不自动创建标签或发布。数字版本各段同样不超过 65535，以兼容 Windows 资源。
 - CMake 直接读取 JSON。Cargo workspace 与 HTML 的派生版本由 `python3 scripts/sync-version.py` 更新，`--check` 用于 CI；所有内部 Rust 包继承 workspace 版本。同步后更新 Cargo.lock，并检查 `cargo check --workspace --locked`。
 - Windows 四段数值资源为基础版本加构建号，文字版本保留渠道；macOS 的 `CFBundleShortVersionString` 为基础版本，`CFBundleVersion` 为构建号，长版本保留渠道。格式遵循 [Apple bundle 版本说明](https://developer.apple.com/documentation/bundleresources/information-property-list/cfbundleversion)；它们使用各平台允许的数值格式，不把 Git 提交塞入系统数值字段。
+- Windows 的 `FileDescription` 为 `xdzip Archive Manager`，用于任务管理器等系统位置的程序说明；`ProductName` 保持 `xdzip`，可执行文件名与关联身份不随显示名称改变。构建检查从实际 EXE 读取并核对这些资源。
 - 每次桌面构建生成 Git 短提交和工作区 dirty 标志，没有 Git 时显示 unknown。没有机器路径、用户名或不稳定时间戳；头文件仅在内容变化时更新，提交之后再次构建即可得到准确的干净提交身份。
 
 QML 模块、桥接协议和设置 schema 的版本独立于产品版本，不随产品版本自动变更。

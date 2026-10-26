@@ -41,14 +41,18 @@ if args.app.parent.name=='MacOS' and args.app.parent.parent.name=='Contents':
         raise SystemExit('macOS bundle product name differs from xdzip')
     report['macos_bundle']='matched'
 if os.name=='nt':
-    metadata=subprocess.check_output(['powershell','-NoProfile','-Command','[Diagnostics.FileVersionInfo]::GetVersionInfo($env:XDZIP_VERSION_EXE) | Select-Object FileVersion,ProductVersion,FileMajorPart,FileMinorPart,FileBuildPart,FilePrivatePart,IsPreRelease,OriginalFilename | ConvertTo-Json -Compress'],env=dict(os.environ,XDZIP_VERSION_EXE=str(args.app.resolve())),text=True)
+    metadata=subprocess.check_output(['powershell','-NoProfile','-Command','[Diagnostics.FileVersionInfo]::GetVersionInfo($env:XDZIP_VERSION_EXE) | Select-Object FileVersion,ProductVersion,FileMajorPart,FileMinorPart,FileBuildPart,FilePrivatePart,IsPreRelease,OriginalFilename,FileDescription,ProductName | ConvertTo-Json -Compress'],env=dict(os.environ,XDZIP_VERSION_EXE=str(args.app.resolve())),text=True)
     metadata=json.loads(metadata)
     values=[metadata[k] for k in ('FileMajorPart','FileMinorPart','FileBuildPart','FilePrivatePart')]
     if values!=[int(n) for n in info['version'].split('.')]+[info['build']] or any(metadata[k]!=info['display_version'] for k in ('FileVersion','ProductVersion')) or metadata['IsPreRelease']!=(info['channel']!='stable'):
         raise SystemExit('Windows VERSIONINFO differs from VERSION.json')
     if metadata['OriginalFilename']!=product_name:
         raise SystemExit('Windows OriginalFilename differs from '+product_name)
+    if metadata['FileDescription']!='xdzip Archive Manager' or metadata['ProductName']!='xdzip':
+        raise SystemExit('Windows product display name differs from xdzip Archive Manager')
     report['windows_versioninfo']='matched'
+    report['windows_file_description']=metadata['FileDescription']
+    report['windows_product_name']=metadata['ProductName']
 if args.output:
     args.output.parent.mkdir(parents=True,exist_ok=True);args.output.write_text(json.dumps(report,indent=2)+'\n')
 print('Built CLI and native version metadata match:',info['display_version'])
