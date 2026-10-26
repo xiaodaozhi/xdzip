@@ -102,6 +102,7 @@ jobs:
           cmake --build build/release-source-worker --target xdzip-native-codec --parallel 2
           export XDZIP_NATIVE_CODEC="$GITHUB_WORKSPACE/build/release-source-worker/tools/native-codec/xdzip-native-codec"
           export XDZIP_NATIVE_CODEC_WORKER="$XDZIP_NATIVE_CODEC"
+          export XDZIP_CAB_BACKEND=rust
           cargo test --workspace --locked
           cargo test -p xdzip-runtime --locked native_backend_tests::seven_zip_ -- --ignored
           cargo test -p xdzip-runtime --locked native_backend_tests::rar4_rar5_ -- --ignored
