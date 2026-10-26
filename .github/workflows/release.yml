@@ -97,7 +97,17 @@ jobs:
           python3 scripts/test-version.py
           python3 scripts/test-release-protocol.py
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+          python3 scripts/prepare-native-codecs.py
+          cmake -S . -B build/release-source-worker -G Ninja -DCMAKE_BUILD_TYPE=Release -DXDZIP_BUILD_QT_PROBE=OFF
+          cmake --build build/release-source-worker --target xdzip-native-codec --parallel 2
+          export XDZIP_NATIVE_CODEC="$GITHUB_WORKSPACE/build/release-source-worker/tools/native-codec/xdzip-native-codec"
+          export XDZIP_NATIVE_CODEC_WORKER="$XDZIP_NATIVE_CODEC"
           cargo test --workspace --locked
+          cargo test -p xdzip-runtime --locked native_backend_tests::seven_zip_ -- --ignored
+          cargo test -p xdzip-runtime --locked native_backend_tests::rar4_rar5_ -- --ignored
+          cargo test -p xdzip-runtime --locked native_backend_tests::rar5_solid_volumes_ -- --ignored
+          cargo test -p xdzip-runtime --locked cab_backend_tests -- --ignored
+          cargo test -p xdzip-runtime --locked optical_backend_tests -- --ignored
           cargo clippy --workspace --all-targets --locked -- -D warnings
           python3 scripts/test-release-updates.py
           python3 scripts/prepare-source-delivery.py --output build/release-source
