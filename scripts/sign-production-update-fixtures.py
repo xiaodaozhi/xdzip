@@ -19,6 +19,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
+import zlib
 
 from release_protocol import validate
 from release_updates import appcast_bytes
@@ -227,11 +228,73 @@ def prepared_inputs(directory):
     return record, Tool(tool_path, record['tool']['sha256'])
 
 
-def mac_products(directory, record, package):
-    """Bind actual plist values and archive payload to the prepared native apps."""
+def unicode_extra_name(entry, raw):
+    """Check the optional Info-ZIP Unicode path against the complete raw name."""
+    extra = entry.extra
+    seen = False
+    while extra:
+        require(len(extra) >= 4, 'mac_archive_extra_field_invalid')
+        kind = int.from_bytes(extra[:2], 'little')
+        size = int.from_bytes(extra[2:4], 'little')
+        require(len(extra) >= size + 4, 'mac_archive_extra_field_invalid')
+        data, extra = extra[4:4 + size], extra[4 + size:]
+        if kind != 0x7075:
+            continue
+        require(not seen and len(data) >= 5 and data[0] == 1,
+                'mac_archive_unicode_path_invalid')
+        seen = True
+        require(int.from_bytes(data[1:5], 'little') == zlib.crc32(raw),
+                'mac_archive_unicode_path_crc_mismatch')
+        try:
+            path = data[5:].decode('utf-8', errors='strict')
+        except UnicodeError:
+            raise AdmissionError('mac_archive_unicode_path_invalid') from None
+        # A Unicode extra field cannot redirect an unrelated raw archive member
+        # to a trusted app path, even if an extractor honors that extra field.
+        require(path.encode('utf-8') == raw, 'mac_archive_unicode_path_mismatch')
+    return seen
+
+
+def mac_archive_members(archive, expected_names):
+    """Match fixed complete UTF-8 names, including legacy unset UTF-8 flags.
+
+    Some producers store UTF-8 bytes without bit 11. Python then decodes those
+    bytes as CP437. Reversing that documented decoding preserves byte identity;
+    it does not guess an encoding or accept a suffix/alternate app directory.
+    """
+    entries = archive.infolist()
+    require(len(entries) <= 100000, 'mac_archive_inventory_invalid')
+    selected = {name: [] for name in expected_names}
+    raw_names = set()
+    for entry in entries:
+        require('\x00' not in entry.orig_filename and '\x00' not in entry.filename,
+                'mac_archive_filename_invalid')
+        try:
+            raw = entry.orig_filename.encode('utf-8' if entry.flag_bits & 0x800 else 'cp437', errors='strict')
+        except UnicodeError:
+            raise AdmissionError('mac_archive_filename_invalid') from None
+        require(raw not in raw_names, 'mac_archive_inventory_invalid')
+        raw_names.add(raw)
+        has_unicode_extra = unicode_extra_name(entry, raw)
+        # Newer Python versions apply a verified Unicode extra path to filename,
+        # while orig_filename still preserves the central-directory decoding.
+        require(entry.filename == entry.orig_filename or
+                (has_unicode_extra and entry.filename.encode('utf-8') == raw),
+                'mac_archive_filename_invalid')
+        for name in expected_names:
+            if raw == name.encode('utf-8'):
+                method = 'utf8-flag' if entry.flag_bits & 0x800 else 'exact-utf8-bytes-without-flag'
+                selected[name].append((entry, method))
+    for matches in selected.values():
+        require(len(matches) == 1, 'mac_archive_identity_missing_or_ambiguous')
+    return {name: matches[0] for name, matches in selected.items()}
+
+
+def inspect_mac_products(directory, record, package, inspection):
     expected_public = base64.b64encode(bytes.fromhex(public_resources()[1]['public_key'])).decode('ascii')
     name = None
     for label in ('old', 'new'):
+        inspection['stage'] = 'mac_product_plist'
         value = record['products'][label]
         app = value.get('app', '')
         match = re.fullmatch(label + r'/((xdzip-owned-update-更新-)[0-9a-f]{32}\.app)', app)
@@ -251,19 +314,56 @@ def mac_products(directory, record, package):
                 str(info.get('CFBundleVersion')) == str(value['identity']['build']) and
                 info.get('XdzipUpdateInstallable') is True,
                 'mac_bundle_identity_mismatch')
+    expected = {
+        name + '/Contents/Info.plist': (record['products']['new']['plist_sha256'], 256 * 1024),
+        name + '/Contents/MacOS/xdzip': (record['products']['new']['binary_sha256'], 256 * 1024 * 1024),
+    }
+    inspection['expected_names'] = list(expected)
+    inspection['stage'] = 'mac_archive_open'
     with zipfile.ZipFile(package) as archive:
-        require(len(archive.infolist()) <= 100000 and
-                len(set(archive.namelist())) == len(archive.infolist()), 'mac_archive_inventory_invalid')
-        for tail, expected, limit in (
-                ('Contents/Info.plist', record['products']['new']['plist_sha256'], 256 * 1024),
-                ('Contents/MacOS/xdzip', record['products']['new']['binary_sha256'], 256 * 1024 * 1024)):
-            entry = archive.getinfo(name + '/' + tail)
+        inspection['stage'] = 'mac_archive_identity_lookup'
+        inspection['archive_member_count'] = len(archive.infolist())
+        selected = mac_archive_members(archive, expected)
+        for expected_name, (expected_hash, limit) in expected.items():
+            entry, method = selected[expected_name]
+            member = {'expected_name': expected_name, 'zip_flags': entry.flag_bits,
+                      'matching_method': method, 'bytes': entry.file_size}
+            inspection['members'].append(member)
             require(entry.file_size <= limit, 'mac_archive_identity_size_limit')
+            inspection['stage'] = 'mac_archive_identity_read'
             result = hashlib.sha256()
             with archive.open(entry) as stream:
                 for block in iter(lambda: stream.read(1024 * 1024), b''):
                     result.update(block)
-            require(result.hexdigest() == expected, 'mac_archive_product_mismatch')
+            member['sha256'] = result.hexdigest()
+            require(result.hexdigest() == expected_hash, 'mac_archive_product_mismatch')
+    inspection['stage'] = 'mac_archive_inspection_complete'
+
+
+def mac_products(directory, record, package):
+    """Bind actual apps and archive bytes, retaining only public diagnostics."""
+    inspection = {'schema_version': 1, 'source_commit': record['source_commit'],
+                  'stage': 'mac_product_identity', 'status': 'inspecting', 'members': []}
+    failure = None
+    try:
+        inspection['stage'] = 'mac_archive_package_binding'
+        inspection['package_sha256'] = digest(regular(package, 2 * 1024 ** 3))
+        inspect_mac_products(directory, record, package, inspection)
+        inspection['status'] = 'passed'
+    except Exception as error:
+        code = str(error) if isinstance(error, AdmissionError) else inspection['stage'] + '_failed'
+        inspection.update(status='failed', error=code)
+        failure = AdmissionError(code)
+    try:
+        destination = owned(directory / 'production-archive-inspection.json', directory)
+        with destination.open('x', encoding='utf-8') as stream:
+            json.dump(inspection, stream, sort_keys=True)
+            stream.write('\n')
+    except Exception:
+        if failure is None:
+            failure = AdmissionError('mac_archive_inspection_record_failed')
+    if failure is not None:
+        raise failure from None
 
 
 def candidate(directory, record, folder):
@@ -300,14 +400,15 @@ def sign_fixture(directory):
     platform = record['platform']
     folders = ('owned',) if platform == 'macos' else ('new', 'failure')
     candidates = [(folder, *candidate(directory, record, folder)) for folder in folders]
-    if platform == 'macos':
-        mac_products(directory, record, candidates[0][3])
     outputs = [directory / folder / 'release.json.sig' for folder in folders]
     if platform == 'macos':
         outputs += [directory / 'owned' / name for name in
                     ('macos-update.json', 'appcast.xml', 'appcast-unsigned.xml')]
+        outputs += [directory / 'production-archive-inspection.json']
     outputs += [directory / 'production-signing.json']
     require(all(not path.exists() and not path.is_symlink() for path in outputs), 'signing_output_exists')
+    if platform == 'macos':
+        mac_products(directory, record, candidates[0][3])
     matched = match_keys(tool, directory)
     ring = directory / 'resources/update-trust.json'
     sparkle = directory / 'resources/sparkle-update-key.json'

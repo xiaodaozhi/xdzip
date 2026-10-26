@@ -10,6 +10,7 @@ TOP_RECORDS = {
     'prepared.json', 'production-update-prepared.json', 'production-signing.json',
     'production-signing-result.json', 'production-execution-verification.json',
     'production-trust-verification.json',
+    'production-archive-inspection.json',
     'result.json', 'verification.json', 'helper-request.json', 'helper-result.json',
     'normal-quit.json', 'installer-windows.json', 'interrupted-handoff-verification.json',
     'ordinary-recovery-verification.json', 'replacement-terminal.json',

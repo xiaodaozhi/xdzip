@@ -246,7 +246,7 @@ foreach(target xdzip-ui-preview xdzip-ui-tests xdzip-browser xdzip-browser-tests
 endforeach()
 
 # External file transfers share the controller and immutable private-copy lifetime.
-foreach(transfer_target xdzip-browser xdzip-browser-tests xdzip-update-tests)
+foreach(transfer_target xdzip-browser xdzip-browser-tests xdzip-update-tests xdzip-mac-update-probe)
     if(TARGET ${transfer_target})
         target_sources(${transfer_target} PRIVATE BrowserTransfers.cpp NativeExport.cpp)
         if(WIN32)

@@ -11,10 +11,13 @@ from pathlib import Path
 import plistlib
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+import warnings
 import zipfile
+import zlib
 
 from release_protocol import TARGETS
 
@@ -147,6 +150,41 @@ class ProductionSigningTests(unittest.TestCase):
         record['artifacts'][name] = dict(bytes=path.stat().st_size, sha256=SIGN.digest(path))
         self.rewrite_record(directory, record)
 
+    def refresh_mac_archive(self, directory, record):
+        name = 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+        package = directory / name
+        manifest = directory / 'owned/release.json'
+        value = json.loads(manifest.read_bytes())
+        selected = next(a for a in value['assets'] if a['package_type'] == 'app.zip')
+        selected.update(bytes=package.stat().st_size, sha256=SIGN.digest(package))
+        dump(manifest, value)
+        self.refresh_artifact(directory, record, name)
+        self.refresh_artifact(directory, record, 'owned/release.json')
+        return package
+
+    def rewrite_mac_zip(self, directory, record, *, legacy=False, extra=None, prefix='', duplicate=False):
+        class LegacyUTF8Info(zipfile.ZipInfo):
+            def _encodeFilenameFlags(self):
+                # This produces real central/local header bytes, without Python
+                # silently restoring bit 11 when writing a Unicode pathname.
+                return self.orig_filename.encode('utf-8'), self.flag_bits & ~0x800
+        package = directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+        app = directory / record['products']['new']['app']
+        with zipfile.ZipFile(package, 'w') as archive:
+            for path in app.rglob('*'):
+                if not path.is_file():
+                    continue
+                name = prefix + app.name + '/' + path.relative_to(app).as_posix()
+                entry = LegacyUTF8Info(name) if legacy else zipfile.ZipInfo(name)
+                if extra:
+                    entry.extra = extra(name.encode('utf-8'))
+                archive.writestr(entry, path.read_bytes())
+                if duplicate:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter('ignore', UserWarning)
+                        archive.writestr(zipfile.ZipInfo(name), path.read_bytes())
+        return self.refresh_mac_archive(directory, record)
+
     def test_actual_independent_keys_and_two_manifests_sign_and_reverify(self):
         directory, _ = self.prepare()
         report = SIGN.sign_fixture(directory)
@@ -170,6 +208,133 @@ class ProductionSigningTests(unittest.TestCase):
         self.assertIn(b'<!-- sparkle-signatures:', (directory / 'owned/appcast.xml').read_bytes())
         self.assertEqual(report['public_key_match']['general_public_key_matched'], True)
         self.assertEqual(report['public_key_match']['sparkle_public_key_matched'], True)
+        inspection = json.loads((directory / 'production-archive-inspection.json').read_bytes())
+        self.assertEqual(inspection['status'], 'passed')
+        self.assertEqual({v['matching_method'] for v in inspection['members']}, {'utf8-flag'})
+        self.assertTrue(all(v['zip_flags'] & 0x800 for v in inspection['members']))
+
+    def test_legacy_unset_flag_uses_exact_utf8_filename_bytes_and_actual_members(self):
+        directory, record = self.prepare('macos')
+        self.rewrite_mac_zip(directory, record, legacy=True)
+        with zipfile.ZipFile(directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip') as archive:
+            self.assertTrue(all(not entry.flag_bits & 0x800 for entry in archive.infolist()))
+            self.assertTrue(all('更新' not in entry.filename for entry in archive.infolist()))
+        SIGN.sign_fixture(directory)
+        inspection = json.loads((directory / 'production-archive-inspection.json').read_bytes())
+        self.assertEqual(inspection['status'], 'passed')
+        self.assertEqual({v['matching_method'] for v in inspection['members']}, {'exact-utf8-bytes-without-flag'})
+        self.assertEqual({v['sha256'] for v in inspection['members']},
+                         {record['products']['new']['binary_sha256'], record['products']['new']['plist_sha256']})
+
+    def test_suffix_match_and_duplicate_raw_utf8_identity_are_rejected_before_secrets(self):
+        for options, code in (({'prefix': 'unrelated/'}, 'mac_archive_identity_missing_or_ambiguous'),
+                              ({'legacy': True, 'duplicate': True}, 'mac_archive_inventory_invalid')):
+            with self.subTest(options=options):
+                directory, record = self.prepare('macos')
+                self.rewrite_mac_zip(directory, record, **options)
+                with patch.object(SIGN.Tool, 'run') as run, self.assertRaisesRegex(SIGN.AdmissionError, code):
+                    SIGN.sign_fixture(directory)
+                run.assert_not_called()
+                inspection = json.loads((directory / 'production-archive-inspection.json').read_bytes())
+                self.assertEqual(inspection['status'], 'failed')
+                self.assertEqual(inspection['error'], code)
+                shutil.rmtree(directory)
+
+    def test_unicode_extra_path_must_bind_the_complete_raw_name_and_crc(self):
+        def field(raw, *, crc=None, name=None, version=1):
+            content = bytes([version]) + (zlib.crc32(raw) if crc is None else crc).to_bytes(4, 'little') + (raw if name is None else name)
+            return (0x7075).to_bytes(2, 'little') + len(content).to_bytes(2, 'little') + content
+        for extra, code in (
+                (lambda raw: field(raw), None),
+                (lambda raw: field(raw, crc=0), 'mac_archive_unicode_path_crc_mismatch'),
+                (lambda raw: field(raw, name=b'unrelated.app/Contents/Info.plist'), 'mac_archive_unicode_path_mismatch'),
+                (lambda raw: field(raw, version=2), 'mac_archive_unicode_path_invalid'),
+                (lambda raw: field(raw) + field(raw), 'mac_archive_unicode_path_invalid'),
+                (lambda raw: field(raw, name=b'\xff'), '(mac_archive_unicode_path_invalid|mac_archive_open_failed)')):
+            with self.subTest(error=code):
+                directory, record = self.prepare('macos')
+                package = self.rewrite_mac_zip(directory, record, legacy=True, extra=extra)
+                with patch.object(SIGN.Tool, 'run') as run:
+                    if code:
+                        with self.assertRaisesRegex(SIGN.AdmissionError, code):
+                            SIGN.mac_products(directory, record, package)
+                    else:
+                        SIGN.mac_products(directory, record, package)
+                run.assert_not_called()
+                shutil.rmtree(directory)
+
+    def test_unicode_extra_cannot_redirect_an_unrelated_raw_name_to_expected_identity(self):
+        directory, record = self.prepare('macos')
+        def redirect(raw):
+            content = b'\x01' + zlib.crc32(raw).to_bytes(4, 'little') + raw.removeprefix(b'unrelated/')
+            return (0x7075).to_bytes(2, 'little') + len(content).to_bytes(2, 'little') + content
+        package = self.rewrite_mac_zip(directory, record, legacy=True, prefix='unrelated/', extra=redirect)
+        with patch.object(SIGN.Tool, 'run') as run, \
+                self.assertRaisesRegex(SIGN.AdmissionError, 'mac_archive_unicode_path_mismatch'):
+            SIGN.mac_products(directory, record, package)
+        run.assert_not_called()
+
+    def test_native_plist_io_failure_uses_safe_stage_and_retained_report(self):
+        directory, _ = self.prepare('macos')
+        output = io.StringIO()
+        with patch.object(SIGN.plistlib, 'loads', side_effect=OSError('private-raw-value-and-path')), \
+                patch.object(SIGN.Tool, 'run') as run, redirect_stdout(output):
+            self.assertEqual(SIGN.main(['--directory', str(directory)]), 1)
+        run.assert_not_called()
+        self.assertEqual(json.loads(output.getvalue())['error'], 'mac_product_plist_failed')
+        inspection = (directory / 'production-archive-inspection.json').read_text(encoding='utf-8')
+        self.assertEqual(json.loads(inspection)['error'], 'mac_product_plist_failed')
+        self.assertNotIn('private-raw-value', inspection + output.getvalue())
+
+    def test_nul_filename_cannot_alias_a_fixed_identity_member(self):
+        class NulNameInfo(zipfile.ZipInfo):
+            def _encodeFilenameFlags(self):
+                return self.orig_filename.encode('utf-8'), 0x800
+        directory, record = self.prepare('macos')
+        package = directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+        expected = Path(record['products']['new']['app']).name + '/Contents/Info.plist'
+        with zipfile.ZipFile(package, 'w') as archive:
+            archive.writestr(NulNameInfo(expected + '\x00suffix'), b'not an admitted member')
+        with self.assertRaisesRegex(SIGN.AdmissionError, 'mac_archive_filename_invalid'):
+            SIGN.mac_products(directory, record, package)
+
+    def test_bad_archive_and_crc_have_fixed_safe_stage_diagnostics(self):
+        for corrupt_crc, code in ((False, 'mac_archive_open_failed'), (True, 'mac_archive_identity_read_failed')):
+            with self.subTest(crc=corrupt_crc):
+                directory, record = self.prepare('macos')
+                package = directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+                if corrupt_crc:
+                    with zipfile.ZipFile(package) as archive:
+                        entry = next(v for v in archive.infolist() if v.filename.endswith('/Contents/Info.plist'))
+                        offset = entry.header_offset
+                    data = bytearray(package.read_bytes())
+                    start = offset + 30 + int.from_bytes(data[offset + 26:offset + 28], 'little') + int.from_bytes(data[offset + 28:offset + 30], 'little')
+                    data[start] ^= 1
+                    package.write_bytes(data)
+                else:
+                    package.write_bytes(b'private-text-is-not-a-ZIP')
+                with self.assertRaisesRegex(SIGN.AdmissionError, code):
+                    SIGN.mac_products(directory, record, package)
+                inspection = (directory / 'production-archive-inspection.json').read_text(encoding='utf-8')
+                self.assertEqual(json.loads(inspection)['error'], code)
+                self.assertNotIn('private-text', inspection)
+                shutil.rmtree(directory)
+
+    @unittest.skipUnless(sys.platform == 'darwin' and shutil.which('ditto'), 'Darwin ditto is required')
+    def test_actual_darwin_ditto_unicode_app_archive_without_signing_secrets(self):
+        directory, record = self.prepare('macos')
+        package = directory / 'owned/xdzip-0.2.0-alpha.2-macos-arm64.app.zip'
+        package.unlink()
+        app = directory / record['products']['new']['app']
+        with patch.dict(os.environ, {'XDZIP_UPDATE_KEY_ID': SIGN.KEY_ID}, clear=True), \
+                patch.object(SIGN.Tool, 'run') as run:
+            subprocess.run(['/usr/bin/ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', str(app), str(package)],
+                           env=SIGN.clean_environment(), check=True, capture_output=True)
+            SIGN.mac_products(directory, record, package)
+        run.assert_not_called()
+        inspection = json.loads((directory / 'production-archive-inspection.json').read_bytes())
+        self.assertEqual(inspection['status'], 'passed')
+        self.assertEqual(len(inspection['members']), 2)
 
     def test_actual_linux_prepared_packages_sign_and_reverify(self):
         directory, _ = self.prepare('linux')

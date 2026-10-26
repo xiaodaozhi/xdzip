@@ -111,6 +111,8 @@ jobs:
           rustup toolchain install 1.99.0 --profile minimal
           python3 -m pip install aqtinstall==3.3.0
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+      - name: Check native archive admission without production secrets
+        run: python3 scripts/test-production-update-signing.py
       - name: Build private real old and new apps with production public roots
         env:
           XDZIP_ISOLATED_UPDATE_FIXTURE: '1'
