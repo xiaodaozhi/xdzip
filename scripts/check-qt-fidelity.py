@@ -26,6 +26,8 @@ def audit(directory):
     title = layout['main']['titlebar']
     geometry.update(titleHeight=title['height'], tabHeight=title['tab_height'], tabTopInset=title['tab_vertical_inset'])
     title_delta = title['height'] - round(reference['source_geometry']['titleHeight'] * scale)
+    status_height = layout['main']['interaction']['statusbarHeight']
+    status_delta = status_height - reference['source_geometry']['statusHeight'] * scale
     sizes = {key: round(value * scale) for key, value in reference['source_type'].items()}
     checks = []
 
@@ -71,11 +73,16 @@ def audit(directory):
             node = named(name)
             for field, expected in zip(['x', 'y', 'width', 'height'], rectangle):
                 target = expected * scale
-                if name != 'browserStatus':
+                if name == 'browserStatus':
+                    if field == 'y':
+                        target = data['height'] - status_height
+                    elif field == 'height':
+                        target = status_height
+                else:
                     if field == 'y':
                         target += title_delta
                     elif field == 'height' and name in ['archiveSidebar', 'archiveInspector']:
-                        target -= title_delta
+                        target -= title_delta + status_delta
                 record(f'{name}.{field}', node[field], target)
 
         left, right = named('filePaneHeader'), named('inspectorPaneHeader')

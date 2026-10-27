@@ -491,7 +491,7 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
                     session->page->setProperty("sessionClosed", true);
                     session->page->setProperty("closedPage", true);
                     session->page->setProperty("visible", session->page == shell);
-                    QMetaObject::invokeMethod(session->page, "hideSessionWindows");
+                    closeWindowDialogs(session.get());
                     if (session->page != shell)
                         reap(session.get());
                     else if (session->controller->browsingBusy())
@@ -511,7 +511,7 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
         if (session->window == window) {
             session->closed = true;
             session->page->setProperty("sessionClosed", true);
-            QMetaObject::invokeMethod(session->page, "hideSessionWindows");
+            closeWindowDialogs(session.get());
             reap(session.get());
         }
     for (auto *candidate : windows())
@@ -520,6 +520,16 @@ void ApplicationSessions::closeWindow(QQuickWindow *window) {
             break;
         }
     refresh();
+}
+void ApplicationSessions::closeWindowDialogs(Session *session) {
+    if (!session->page)
+        return;
+    QMetaObject::invokeMethod(session->page, "closeWindowDialogs");
+    // Keep task ownership and bindings, but release every native dialog surface.
+    for (auto *popup : session->page->findChildren<QQuickWindow *>()) {
+        popup->hide();
+        popup->destroy();
+    }
 }
 void ApplicationSessions::command(const QString &command) {
     if (!m_active)

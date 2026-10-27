@@ -339,6 +339,7 @@ QtObject {
     readonly property real inspectorCollapseWidth: 928
     readonly property real mainControlRadius: 6.4
     readonly property real mainToolbarRadius: 4.800000000000001
+    readonly property real mainStatusbarHeight: 32
     readonly property real mainIconButtonSize: 28
     readonly property real mainFileActionGap: 6.4
     readonly property real mainFileSelectionGap: 12
@@ -397,7 +398,7 @@ QtObject {
     readonly property real mainPackedColumnInset: 14.55297158
     readonly property real mainTypeColumnInset: 18.52196382
     readonly property real mainDateColumnInset: 14.55297158
-    readonly property real mainStatusHeight: 37.00000000
+    readonly property real mainStatusHeight: 32.00000000
     readonly property real mainContentInset: 13.22997416
     readonly property real mainPaneInset: 14.55297158
     readonly property real mainInspectorLeftInset: 13.22997416

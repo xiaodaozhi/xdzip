@@ -40,6 +40,8 @@ for name, value in zip(['mainMinimumWidth', 'mainMinimumHeight'], layout['main']
     lines.append(f'    readonly property int {name}: {value}')
 for key, value in welcome.items():
     if key != "schema_version" and isinstance(value, (int, float)):
+        if key == 'statusbar_height':
+            value = layout['main']['interaction']['statusbarHeight']
         name = ''.join(part.title() for part in key.split('_'))
         lines.append(f'    readonly property real welcome{name}: {value}')
 for key, value in drag_preview.items():
@@ -149,7 +151,7 @@ for key, value in main['source_geometry'].items():
         # Round shared boundaries, not every band independently: avoid accumulated drift.
         converted = round((main['source_geometry']['titleHeight'] + value) * main_scale) - round(main['source_geometry']['titleHeight'] * main_scale)
     elif key == 'statusHeight':
-        converted = layout['main']['logical_window'][1] - round(main['anchors']['browserStatus'][1] * main_scale)
+        converted = layout['main']['interaction']['statusbarHeight']
     title = layout['main']['titlebar']
     converted = {'titleHeight': title['height'], 'tabHeight': title['tab_height'],
                  'tabTopInset': title['tab_vertical_inset']}.get(key, converted)

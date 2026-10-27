@@ -35,6 +35,7 @@
       "style": "floating capsule"
     },
     "interaction": {
+      "statusbarHeight": 32,
       "iconButtonSize": 28,
       "fileActionGap": 6.4,
       "fileSelectionGap": 12,

@@ -550,7 +550,7 @@ tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; bac
 .file-emblem { height:277px; border-radius:9px; }
 .inspector>.file-emblem { min-height:120px; margin:0 0 18px; }
 .file-emblem svg { width:92px; height:112px; }
-.statusbar { height:54px; padding:0 20px; font-size:18px; line-height:28px; flex-shrink:0; background:var(--surface); position:relative; }
+.statusbar { height:var(--main-statusbar-height); padding:0 20px; font-size:18px; line-height:28px; flex-shrink:0; background:var(--surface); position:relative; }
 .status-spacer { display:none; }
 #selection-status { width:auto; font-size:19px; transform:translateY(-2px); }
 .read-status { position:absolute; left:713px; font-size:18.5px; line-height:28px; gap:9px; transform:none; }

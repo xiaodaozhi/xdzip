@@ -1986,6 +1986,91 @@ QtObject {
                                        "source-tar-browser"));
         }
     }
+    void mainFooterHeightMatchesBetweenPages_data() {
+        QTest::addColumn<double>("scale");
+        QTest::newRow("100") << 1.;
+        QTest::newRow("150") << 1.5;
+    }
+    void mainFooterHeightMatchesBetweenPages() {
+        QFETCH(double, scale);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        preferences->preview("light", scale);
+        const auto restore = qScopeGuard([&] { preferences->cancelPreview(); });
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *footer = findVisual(window->contentItem(), "browserStatus");
+        QVERIFY(footer);
+        QTRY_VERIFY(footer->height() >= 32);
+        const auto welcomeHeight = footer->height();
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QTRY_COMPARE(footer->height(), welcomeHeight);
+    }
+    void closingMainWindowDismissesOwnedDialogs_data() {
+        QTest::addColumn<bool>("anotherWindow");
+        QTest::newRow("tray") << false;
+        QTest::newRow("other-window") << true;
+    }
+    void closingMainWindowDismissesOwnedDialogs() {
+        QFETCH(bool, anotherWindow);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *controller = page->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true,
+                                         anotherWindow ? "windows" : "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, controller, preferences, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        const auto identity =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        controller->m_tasks[1] = {{"id", "1"}, {"status", "succeeded"}, {"terminal", true}};
+        emit controller->tasksChanged();
+        if (anotherWindow)
+            sessions.newSession();
+        auto *settings = page->findChild<QQuickWindow *>("settingsWindow");
+        auto *about = page->findChild<QQuickWindow *>("aboutWindow");
+        QVERIFY(settings && about);
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("draftTheme", "dark");
+        QVERIFY(QMetaObject::invokeMethod(page, "presentAbout"));
+        QVERIFY(about->isVisible());
+        QCOMPARE(about->transientParent(), settings);
+        QList<QPointer<QQuickWindow>> dialogs;
+        for (auto *popup : page->findChildren<QQuickWindow *>()) {
+            dialogs.append(popup);
+            if (QStringList{"createWindow", "updateWindow", "extractWindow", "taskWindow",
+                            "preflightWindow", "inspectorWindow", "conflictWindow"}
+                    .contains(popup->objectName()))
+                popup->show();
+        }
+        window->close();
+        QVERIFY(!window->isVisible());
+        for (const auto &popup : dialogs)
+            QTRY_VERIFY(!popup || (!popup->isVisible() && !popup->handle()));
+        QCOMPARE(preferences->theme(), preferences->savedTheme());
+        desktop.restore();
+        QVERIFY(sessions.activeWindow()->isVisible());
+        for (const auto &popup : dialogs)
+            QVERIFY(!popup || !popup->isVisible());
+        sessions.showTask(identity + "/1");
+        auto *task = page->findChild<QQuickWindow *>("taskWindow");
+        QTRY_VERIFY(task->isVisible());
+        task->close();
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void closingWindowClearsTabsBeforeTrayRestore_data() {
         QTest::addColumn<int>("count");
         QTest::addColumn<bool>("loading");
@@ -7927,6 +8012,72 @@ QtObject {
         QVERIFY(found);
         QVERIFY(controller->sessionId() != session);
         QTRY_VERIFY(controller->requestClose());
+    }
+    void pageCancelEndsHiddenAdditionConflict() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto source = fixture.filePath("editable.zip");
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"), source));
+        QFile original(source);
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        const auto before = original.readAll();
+        original.close();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        controller->openPath(source);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        const auto session = controller->sessionId();
+        QVERIFY(controller->m_model.rowAt(0));
+        QFile input(fixture.filePath(controller->m_model.rowAt(0)->cells[0]));
+        QVERIFY(input.open(QIODevice::WriteOnly));
+        QVERIFY(input.write("replacement bytes") > 0);
+        input.close();
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *zone = findVisual(window->contentItem(), "archiveAddDropArea");
+        QVERIFY(zone);
+        const auto point =
+            zone->mapToScene(QPointF(zone->width() / 2, zone->height() / 2)).toPoint();
+        QMimeData mime;
+        mime.setUrls({QUrl::fromLocalFile(input.fileName())});
+        QDragEnterEvent enter(point, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QCoreApplication::sendEvent(window, &enter);
+        QVERIFY(enter.isAccepted());
+        QDropEvent drop(point, Qt::CopyAction, &mime, Qt::LeftButton, Qt::NoModifier);
+        QCoreApplication::sendEvent(window, &drop);
+        QVERIFY(drop.isAccepted());
+        auto *addition = window->findChild<QQuickWindow *>("updateWindow");
+        QTRY_VERIFY(addition->isVisible());
+        auto *start = findVisual(addition->contentItem(), "startUpdate");
+        QVERIFY(start);
+        QTRY_VERIFY(start->isEnabled() && !controller->busy());
+        QTest::mouseClick(
+            addition, Qt::LeftButton, Qt::NoModifier,
+            start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
+        auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
+        QTRY_VERIFY(conflict->isVisible());
+        QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 1);
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "waiting");
+        QVERIFY(controller->browsingBusy());
+        conflict->close();
+        window->findChild<QQuickWindow *>("taskWindow")->close();
+        auto *cancel = findVisual(window->contentItem(), "welcomeOpeningCancel");
+        QVERIFY(cancel);
+        QTRY_VERIFY(cancel->isVisible() && cancel->isEnabled());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            cancel->mapToScene(QPointF(cancel->width() / 2, cancel->height() / 2)).toPoint());
+        QTRY_VERIFY(controller->activeTaskCount() == 0 && controller->ready() &&
+                    !controller->busy() && !controller->browsingBusy());
+        QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "cancelled");
+        QVERIFY(controller->browserQueryAvailable());
+        QVERIFY(controller->sessionId() != session);
+        controller->selectOnlyRow(0);
+        QCOMPARE(controller->selectedCount(), 1);
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        QCOMPARE(original.readAll(), before);
     }
     void additionDraftSelectionAndMetadata_data() {
         QTest::addColumn<QString>("language");

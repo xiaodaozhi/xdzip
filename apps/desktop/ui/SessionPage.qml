@@ -145,6 +145,18 @@ Item {
         passwordWindow.clearSecret();
         passwordWindow.hide();
     }
+    function closeWindowDialogs() {
+        hideSessionWindows();
+        if (aboutWindow.visible) aboutWindow.close();
+        if (settingsWindow.visible) settingsWindow.close();
+        if (restartWindow.visible) restartWindow.close();
+        if (quitWindow.visible) quitWindow.close();
+        taskMenu.close();
+        entryMenu.close();
+        directoryMenu.close();
+        emptyMenu.close();
+        sortMenu.close();
+    }
     function presentQuit() {
         waitBeforeExit = false;
         quitWindow.present();
@@ -2032,7 +2044,7 @@ Item {
         Rectangle {
             objectName: "browserStatus"
             Layout.fillWidth: true
-            implicitHeight: root.welcomeVisible ? Math.max(Theme.welcomeStatusbarHeight, statusActions.implicitHeight + 4) : Math.round(Math.max(Theme.mainStatusHeight, Theme.mainStatusSize * 1.6 + Theme.mainUnits(16)))
+            implicitHeight: Math.ceil(Math.max(Theme.mainStatusbarHeight, statusActions.implicitHeight + 4))
             color: Theme.surface
             Rectangle {
                 width: parent.width

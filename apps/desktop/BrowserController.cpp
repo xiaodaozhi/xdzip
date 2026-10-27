@@ -1035,6 +1035,23 @@ void BrowserController::invalidateSnapshot() {
 }
 void BrowserController::cancel() {
     m_deferredQuery.reset();
+    if (m_result.updating) {
+        const auto task =
+            m_result.taskId.isEmpty() ? m_result.observedTask : m_result.taskId.toULongLong();
+        if (task) {
+            m_connection->cancelTask(task);
+            return;
+        }
+    }
+    // An accepted edit outlives its registration request, including hidden conflict waits.
+    if (m_updateActive)
+        for (auto task = m_tasks.cbegin(); task != m_tasks.cend(); ++task)
+            if (!task->value("terminal").toBool() &&
+                task->value("session").toString() == m_session &&
+                (task->value("kind") == "update" || task->value("kind") == "move")) {
+                m_connection->cancelTask(task.key());
+                return;
+            }
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();

@@ -105,6 +105,7 @@ class ApplicationSessions final : public QObject {
     void reap(Session *session);
     void closeTabSet(Session *anchor, const std::vector<Session *> &targets);
     void closeAround(const QString &id, bool rightOnly);
+    void closeWindowDialogs(Session *session);
     void checkQuit();
     void setQuitDecisionPending(bool pending) {
         if (m_quitDecisionPending == pending)

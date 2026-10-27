@@ -33,7 +33,7 @@
 .welcome-feedback-icon { flex-shrink:0; width:var(--welcome-feedback-icon-size); height:var(--welcome-feedback-icon-size); }
 .welcome-feedback-icon svg { display:block; width:100%; height:100%; }
 .welcome-feedback[hidden] { display:none; }
-.welcome-mode .statusbar { order:2; height:calc(32px * var(--ui-source-factor)); padding:0 calc(14px * var(--ui-source-factor)); font-size:calc(11px * var(--ui-source-factor)); line-height:normal; }
+.welcome-mode .statusbar { order:2; padding:0 calc(14px * var(--ui-source-factor)); font-size:calc(11px * var(--ui-source-factor)); line-height:normal; }
 .welcome-mode #selection-status::before { content:""; display:inline-block; width:calc(6px * var(--ui-source-factor)); height:calc(6px * var(--ui-source-factor)); border-radius:50%; background:var(--accent-ink); margin-right:calc(9px * var(--ui-source-factor)); }
 .welcome-mode .read-status,.welcome-mode #settings,.welcome-mode .task-chevron { display:none; }
 .welcome-mode #tasks { font-size:calc(12px * var(--ui-source-factor)); gap:calc(6px * var(--ui-source-factor)); padding:0; }

@@ -17,6 +17,8 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
+      "statusbar_policy": "Welcome and archive pages share a 32-unit minimum status bar, growing by the same task-control metrics for larger text.",
+      "owned_dialog_policy": "Closing the main window dismisses all its dialogs and releases their native surfaces; retained tasks reopen views only on explicit task activation.",
       "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，大小列排序箭头位于右对齐标题左侧，其他列位于标题右侧，均保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
       "design": "design/hifi/sources/main.html"
     },
