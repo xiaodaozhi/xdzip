@@ -3,8 +3,8 @@
 #include "NativeExport.h"
 #include <QCoreApplication>
 #include <QDir>
-#include <QThread>
 #include <QMap>
+#include <QThread>
 #define NOMINMAX
 #include <cstring>
 #include <shlobj.h>
@@ -376,8 +376,8 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
             for (auto it = feedbackFormats.cbegin(); it != feedbackFormats.cend(); ++it)
                 formats.push_back({it.key(), nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL});
             if (dragContext)
-                formats.push_back({CLIPFORMAT(dragContextFormat), nullptr, DVASPECT_CONTENT, -1,
-                                   TYMED_ISTREAM});
+                formats.push_back(
+                    {CLIPFORMAT(dragContextFormat), nullptr, DVASPECT_CONTENT, -1, TYMED_ISTREAM});
         }
         return SHCreateStdEnumFmtEtc(UINT(formats.size()), formats.data(), out);
     }
@@ -465,7 +465,8 @@ bool initializeNativeExportImage(IDataObject *data, const QImage &preview, QStri
     const auto created = CoCreateInstance(CLSID_DragDropHelper, nullptr, CLSCTX_INPROC_SERVER,
                                           IID_PPV_ARGS(&helper));
     if (FAILED(created)) {
-        if (failure) *failure = "CoCreateInstance: " + QString::number(quint32(created), 16);
+        if (failure)
+            *failure = "CoCreateInstance: " + QString::number(quint32(created), 16);
         return false;
     }
     // The Shell multiplies RGB by alpha itself, so provide straight BGRA.
@@ -500,8 +501,8 @@ bool startNativeExport(QWindow *owner, const std::shared_ptr<NativeExportState> 
         if (entry.name.size() >= MAX_PATH)
             return false;
     auto *data = nativeExportData(state);
-    initializeNativeExportImage(data, nativeExportPreview(state->entries,
-                                                         owner ? owner->devicePixelRatio() : 1));
+    initializeNativeExportImage(
+        data, nativeExportPreview(state->entries, owner ? owner->devicePixelRatio() : 1));
     auto *source = new ExportSource(state);
     DWORD effect = 0;
     // Qt initializes OLE on the GUI STA. DoDragDrop pumps its native message loop;

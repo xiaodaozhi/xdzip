@@ -598,8 +598,7 @@ void ApplicationSessions::showTask(const QString &identity) {
                 return;
             // Retained controllers own task dialogs; accessing a task never
             // reopens its closed browsing page or changes the selected tab.
-            QMetaObject::invokeMethod(session->page, "showTask",
-                                      Q_ARG(QString, taskId));
+            QMetaObject::invokeMethod(session->page, "showTask", Q_ARG(QString, taskId));
             return;
         }
 }

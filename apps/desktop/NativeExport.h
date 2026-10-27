@@ -1,8 +1,8 @@
 // apps/desktop/NativeExport.h
 
 #pragma once
-#include <QList>
 #include <QImage>
+#include <QList>
 #include <QPointer>
 #include <QString>
 #include <QWindow>
@@ -61,5 +61,6 @@ QImage nativeExportPreview(const QList<ExportItem> &entries, qreal devicePixelRa
 #ifdef Q_OS_WIN
 struct IDataObject;
 IDataObject *nativeExportData(const std::shared_ptr<NativeExportState> &state);
-bool initializeNativeExportImage(IDataObject *data, const QImage &preview, QString *failure = nullptr);
+bool initializeNativeExportImage(IDataObject *data, const QImage &preview,
+                                 QString *failure = nullptr);
 #endif

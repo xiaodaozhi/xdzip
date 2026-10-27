@@ -15,6 +15,16 @@ function Assert-CleanSources {
         throw 'Installer build requires clean source; relative changed paths shown above'
     }
 }
+function Save-ComponentLogs {
+    param([string]$Label)
+    New-Item -ItemType Directory -Force 'build/review/diagnostics' | Out-Null
+    if (Test-Path 'build/desktop/apps/desktop/qml-tests.log') {
+        Copy-Item 'build/desktop/apps/desktop/qml-tests.log' "build/review/diagnostics/qml-$Label.log"
+    }
+    if (Test-Path 'build/desktop/Testing/Temporary/LastTest.log') {
+        Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' "build/review/diagnostics/ctest-$Label.log"
+    }
+}
 # RUNNER_TEMP is an optional CI cache location, never a local prerequisite.
 $cacheRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { Join-Path (Get-Location) '.cache' }
 $qtRoot = if ($QtRoot) { $QtRoot } else { Join-Path $cacheRoot 'Qt' }
@@ -109,10 +119,16 @@ Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserT
 # when CTest kills a timed-out suite. Repeats must not overwrite prior evidence.
 $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
 try {
-    Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
+    try {
+        Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
+    } finally {
+        Save-ComponentLogs 'initial'
+    }
     # Repeat the complete browser suite without changing assertions or deadlines.
     Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
-} finally { Remove-Item Env:XDZIP_BROWSER_TIMING_DIR }
+} finally {
+    Remove-Item Env:XDZIP_BROWSER_TIMING_DIR
+}
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Invoke-Checked python @('scripts/check-build-version.py', '--app', $productExe, '--output', 'build/review/build-version.json')
 $metricsExe = if ($IsWindows) { 'build/desktop/tools/process-metrics/xdzip-process-metrics.exe' } else { 'build/desktop/tools/process-metrics/xdzip-process-metrics' }
@@ -211,7 +227,13 @@ foreach ($density in @('1.25', '2')) {
     Invoke-Checked python @('scripts/check-qt-welcome.py', '--input', $welcomePath, '--output', "build/review/welcome-dpr$density.json")
     Remove-Item Env:XDZIP_WELCOME_VISUAL_AUDIT
     if (!$IsMacOS) { Copy-Item -Recurse $welcomePath "build/review/welcome-dpr$density" }
-    Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_task_components', '--output-on-failure')
+    Remove-Item 'build/desktop/apps/desktop/qml-tests.log' -ErrorAction SilentlyContinue
+    try {
+        Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_task_components', '--output-on-failure')
+    } finally {
+        # Keep each requested scale's raw output even when its component run fails.
+        Save-ComponentLogs "requested-scale-$density"
+    }
     $capturePath = "build/desktop/visual-audit-dpr$density"
     $env:XDZIP_VISUAL_AUDIT = Join-Path (Get-Location) $capturePath
     Invoke-Checked $browserTests @('mainWindowFidelityAndSessionClose', 'rootListingAndReviewedInteractions', 'reviewedMainControlsAndMenus')

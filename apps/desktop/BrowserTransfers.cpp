@@ -80,7 +80,8 @@ QVariantMap BrowserController::internalDragPreview(const QString &token) const {
     for (int row = 0; row < m_model.rowCount(); ++row) {
         const auto *entry = m_model.rowAt(row);
         if (entry && entry->id == m_moveAnchor)
-            return {{"name", entry->cells[0]}, {"directory", entry->directory},
+            return {{"name", entry->cells[0]},
+                    {"directory", entry->directory},
                     {"count", m_moveSelectors.size()}};
     }
     return {};
@@ -249,10 +250,13 @@ void BrowserController::beginExport(int row, QWindow *owner) {
     const std::weak_ptr<NativeExportState> gestureState = m_export;
     m_export->dragFinished = [guard, gestureState] {
         if (guard)
-            QMetaObject::invokeMethod(guard, [guard, gestureState] {
-                if (guard && guard->m_export == gestureState.lock())
-                    guard->setNativeDragActive(false);
-            }, Qt::QueuedConnection);
+            QMetaObject::invokeMethod(
+                guard,
+                [guard, gestureState] {
+                    if (guard && guard->m_export == gestureState.lock())
+                        guard->setNativeDragActive(false);
+                },
+                Qt::QueuedConnection);
     };
     m_export->prepare = [guard] {
         if (guard)

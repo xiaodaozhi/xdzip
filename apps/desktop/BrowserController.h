@@ -230,7 +230,9 @@ class BrowserController : public QObject {
     QVariantList tasks() const;
     bool hasFinishedTasks() const;
     Q_INVOKABLE void clearFinishedTasks();
-    bool nativeDragActive() const { return m_nativeDragActive; }
+    bool nativeDragActive() const {
+        return m_nativeDragActive;
+    }
     QAbstractItemModel *taskModel() {
         return &m_taskModel;
     }

@@ -65,13 +65,19 @@ Item {
             mouseMove(surface,intermediate.x,intermediate.y,20);
             tryCompare(bar,"reordering",true);
             tryCompare(bar,"dropIndex",1);
+            const beforeRelease = {start, intermediate, finish, offset:bar.dragOffset,
+                capsuleWidth:bar.capsuleWidth, stripX:strip.x, contentX:strip.contentX,
+                originX:strip.originX, firstX:first.x, thirdX:third.x};
             // A release carries its own final position without requiring another move.
             mouseRelease(surface,finish.x,data.outside ? bar.height+20 : finish.y,Qt.LeftButton);
             tryCompare(bar,"reordering",false);
             compare(moves.count,data.outside ? 0 : 1);
             if (!data.outside) {
                 compare(moves.signalArguments[0][0],"tab0");
-                compare(moves.signalArguments[0][1],2);
+                compare(moves.signalArguments[0][1],2,JSON.stringify({beforeRelease,
+                    releasedPointer:[bar.dragPointerX,bar.dragPointerY],
+                    capsuleWidth:bar.capsuleWidth,stripX:strip.x,
+                    contentX:strip.contentX,originX:strip.originX}));
             }
             compare(bar.tabs.map(tab=>tab.id).join(","),data.outside ? "tab0,tab1,tab2" : "tab1,tab2,tab0");
             compare(bar.tabs.find(tab=>tab.selected).id,"tab0");

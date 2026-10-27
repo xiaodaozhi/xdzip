@@ -112,7 +112,7 @@ def main():
         "passed": False, "logical_window_width": LOGICAL_WIDTH,
         "source_window": SOURCE_WINDOW, "source_to_logical": NORMAL_SCALE,
         "sources": {}, "checks": [], "failures": [],
-        "page_errors": [], "external_requests": [],
+        "page_errors": [], "page_error_details": [], "external_requests": [],
         "classic_scrollbars": {"playwright_hide_scrollbars": False, "overlay_scrollbar_disabled": True},
         "limits": [
             "CSS logical pixels are independent of devicePixelRatio and physical display pixels.",
@@ -126,6 +126,16 @@ def main():
         report["checks"].append(item)
         if not condition:
             report["failures"].append(item)
+
+    def observe_page(page, scenario):
+        def page_error(error):
+            report["page_errors"].append(str(error))
+            report["page_error_details"].append({
+                "scenario": scenario, "page_path": urlparse(page.url).path,
+                "message": str(error), "stack": error.stack,
+                "last_check": report["checks"][-1]["name"] if report["checks"] else None,
+            })
+        page.on("pageerror", page_error)
 
     for view, path in SOURCES.items():
         source = ROOT / path
@@ -329,7 +339,8 @@ def main():
                                     route.continue_()
 
                             context.route("**/*", route_request)
-                            context.on("page", lambda page: page.on("pageerror", lambda error: report["page_errors"].append(str(error))))
+                            scenario = {"mode": mode, "width": width, "dpr": dpr}
+                            context.on("page", lambda page, scenario=scenario: observe_page(page, scenario))
                             page = context.new_page()
                             if mode == "served":
                                 page.goto(base + "/design/html/index.html")
@@ -420,7 +431,7 @@ def main():
                     context = browser.new_context(viewport={"width": 1858, "height": 1234})
                     context.route("**/*", route_request)
                     page = context.new_page()
-                    page.on("pageerror", lambda error: report["page_errors"].append(str(error)))
+                    observe_page(page, {"mode": mode, "case": "scrollbars"})
                     if mode == "served":
                         page.goto(base + "/design/html/index.html")
                     else:
@@ -434,7 +445,7 @@ def main():
                         context = browser.new_context(viewport={"width": 1200, "height": height})
                         context.route("**/*", route_request)
                         page = context.new_page()
-                        page.on("pageerror", lambda error: report["page_errors"].append(str(error)))
+                        observe_page(page, {"mode": mode, "case": "height-boundary", "height": height})
                         if mode == "served":
                             page.goto(base + "/design/html/index.html")
                         else:
