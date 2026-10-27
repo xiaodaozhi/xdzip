@@ -14,6 +14,10 @@ class WindowsFrame : public QObject, public QAbstractNativeEventFilter {
     Q_PROPERTY(bool dark READ dark WRITE setDark NOTIFY darkChanged)
     QPointer<QWindow> m_window;
     WId m_id = 0;
+#ifdef Q_OS_WIN
+    WId m_frameAttachAttemptId = 0;
+    bool m_applying = false;
+#endif
     bool m_dark = false;
     void apply();
 

@@ -44,6 +44,95 @@ def archive_source(item, cache):
     return target
 
 
+def rebuild_instructions():
+    """Keep offline product rebuild and separately prepared test data distinct."""
+    return '''# 离线重建与 Qt 动态库替换
+
+本目录是可复核的源码输入，不是许可审批或已重建全部依赖的声明。
+
+1. 将 xdzip-source.tar 和 rust-vendor.tar.gz 解到同一个工作目录，将 cargo-config.toml
+   复制为该目录 .cargo/config.toml。保持 Cargo.lock，不执行 cargo update。
+2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
+   包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
+   qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
+3. 从源码工作目录离线核验当前 codec 构建材料：
+   python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
+   当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
+   English: The independent Rust codec source list is empty; this step does not
+   download or compile official format engines.
+   rar-wire-mappings/ 另保留有限 RAR 映射的参考来源和原始完整许可，不含官方引擎。
+   English: rar-wire-mappings/ separately preserves finite-mapping provenance and
+   the exact original notice, without adding an official engine or legal clearance.
+4. 将 QT_PREFIX 指向重建的兼容 Qt SDK，运行：
+   cmake -S . -B build/relink -G Ninja -DCMAKE_BUILD_TYPE=Release \\
+     -DCMAKE_PREFIX_PATH="$QT_PREFIX" -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
+   cmake --build build/relink --parallel 3
+   ctest --test-dir build/relink --output-on-failure
+   macOS 另加 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0。
+   Mac 重建前从交付目录的 Sparkle-2.10.0.tar.xz 离线准备 SDK：
+   python3 scripts/prepare-sparkle.py --archive <交付目录>/Sparkle-2.10.0.tar.xz \\
+     --output build/sparkle-sdk
+   CMake 另传 -DXDZIP_SPARKLE_SDK="$PWD/build/sparkle-sdk"。Sparkle 原始源码归档
+   与固定 SDK 均随本目录交付，不将 SDK 分片核对冒充上游源码重建证明。
+5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
+   Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
+   不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
+6. Mesa 和 LLVM 原始源码归档以及 ICU 完整许可随目录提供，版本和原文哈希见
+   native-runtime-sources.json。软件渲染库的供应方编译配置仍需与实际 DLL 分开核对，
+   不将上游原始归档冒充已复现供应方全部构建输入。
+
+## 显式测试数据前置与完整 runtime 批次
+
+以下是独立测试阶段，先完成上述构建。CAB、ISO/UDF 与基础 RAR 的固定夹具分别在
+tests/fixtures/cab-iso/ 和 tests/fixtures/native-archives/，随项目源码交付；7z 测试通过
+刚构建的 Rust worker 创建自己的输入。此 runtime 批次不要求官方 7-Zip/UnRAR 工具或挂载映像。
+CAB 专项另需子进程环境 XDZIP_CAB_BACKEND=rust，与固定 Rust worker 配套。
+
+RAR PPM、旧密码等公共测试输入须先显式准备。当前交付不包含 preparer 使用的七个公共
+缓存文件，Cargo --offline 只约束依赖获取，不能补齐这些输入或环境变量。保留其原始来源、
+大小、SHA-256 与通知，按 scripts/rar-rust-fixtures.json 和 preparer 中的固定清单核对。
+已有缓存时，显式执行（替换缓存路径，保持清单规定的文件及 junrar 子目录布局）：
+
+```sh
+python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs --archives /path/to/fixed-rar-cache --offline
+```
+
+首次准备需要联网时，可单独显式执行同一命令，去掉 --archives 和 --offline；它只获取固定
+小型公共测试材料，不是离线重建的一部分。prepare/build/test 不会隐式补做此步骤。
+准备器生成 sources.json，但不导出当前 shell 环境。随后在源码根目录执行下面的子进程交接，
+传入刚构建的 worker。Windows 将 python3 改为 python，并为 worker 加 .exe。
+
+```sh
+python3 -c "
+import json, os, pathlib, subprocess, sys
+root = pathlib.Path.cwd()
+worker = pathlib.Path(sys.argv[1]).resolve(strict=True)
+prepared = json.loads((root/'build/native-test-inputs/sources.json').read_text(encoding='utf-8'))
+environment = os.environ.copy()
+environment.update({name: str(root/value) for name, value in prepared['environment'].items()})
+environment.update(XDZIP_NATIVE_CODEC=str(worker), XDZIP_NATIVE_CODEC_WORKER=str(worker), XDZIP_CAB_BACKEND='rust')
+environment['XDZIP_RAR_FIXTURE_PASSWORD'] = 'password'
+for command in [
+    ['cargo', 'test', '--workspace', '--locked', '--offline'],
+    ['cargo', 'test', '-p', 'xdzip-runtime', '--locked', '--offline', 'native_backend_tests', '--', '--ignored'],
+]:
+    subprocess.run(command, env=environment, check=True)
+" build/relink/tools/native-codec/xdzip-native-codec
+```
+
+password 是该公共 fixture 既有的测试值，只传给测试子进程。上例不减少 ignored 批次，也不
+下载输入或构建 worker。缺少缓存时保留失败，不能把主程序离线重建与启动冒烟记为上述批次通过。
+English: Product/Rust source and vendored dependencies support the separately recorded offline app
+rebuild. The full runtime test batch additionally needs explicitly prepared fixed public data and its
+child environment. Those public cache files are not included in this delivery. Use --archives and
+--offline with a verified cache, or explicitly prepare it online first. No test step downloads implicitly,
+no ignored selection is reduced, and app rebuild/smoke evidence does not establish this batch passed.
+
+该流程不宣称任意 ABI 不兼容的 Qt 都可替换。许可分支选择、完整
+平台对应源码与配置核对、修改版 Qt 的行为验证仍在 WP-12 准入中单独登记。
+'''
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -104,47 +193,7 @@ def main():
     with tarfile.open(vendor_archive, 'w:gz') as archive:
         archive.add(vendor, arcname='vendor')
     shutil.rmtree(vendor)
-    instructions = '''# 离线重建与 Qt 动态库替换
-
-本目录是可复核的源码输入，不是许可审批或已重建全部依赖的声明。
-
-1. 将 xdzip-source.tar 和 rust-vendor.tar.gz 解到同一个工作目录，将 cargo-config.toml
-   复制为该目录 .cargo/config.toml。保持 Cargo.lock，不执行 cargo update。
-2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
-   包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
-   qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
-3. 从源码工作目录离线核验当前 codec 构建材料：
-   python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
-   当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
-   English: The independent Rust codec source list is empty; this step does not
-   download or compile official format engines.
-   rar-wire-mappings/ 另保留有限 RAR 映射的参考来源和原始完整许可，不含官方引擎。
-   English: rar-wire-mappings/ separately preserves finite-mapping provenance and
-   the exact original notice, without adding an official engine or legal clearance.
-   构建下述 CMake 目标后，将 XDZIP_NATIVE_CODEC 指向生成的 xdzip-native-codec
-   （Windows 加 .exe），再运行 cargo test --workspace --locked --offline，
-   以及 cargo test -p xdzip-runtime --locked --offline native_backend_tests -- --ignored。
-4. 将 QT_PREFIX 指向重建的兼容 Qt SDK，运行：
-   cmake -S . -B build/relink -G Ninja -DCMAKE_BUILD_TYPE=Release \\
-     -DCMAKE_PREFIX_PATH="$QT_PREFIX" -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
-   cmake --build build/relink --parallel 3
-   ctest --test-dir build/relink --output-on-failure
-   macOS 另加 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0。
-   Mac 重建前从交付目录的 Sparkle-2.10.0.tar.xz 离线准备 SDK：
-   python3 scripts/prepare-sparkle.py --archive <交付目录>/Sparkle-2.10.0.tar.xz \\
-     --output build/sparkle-sdk
-   CMake 另传 -DXDZIP_SPARKLE_SDK="$PWD/build/sparkle-sdk"。Sparkle 原始源码归档
-   与固定 SDK 均随本目录交付，不将 SDK 分片核对冒充上游源码重建证明。
-5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
-   Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
-   不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Mesa 和 LLVM 原始源码归档以及 ICU 完整许可随目录提供，版本和原文哈希见
-   native-runtime-sources.json。软件渲染库的供应方编译配置仍需与实际 DLL 分开核对，
-   不将上游原始归档冒充已复现供应方全部构建输入。
-
-该流程不宣称任意 ABI 不兼容的 Qt 都可替换。许可分支选择、完整
-平台对应源码与配置核对、修改版 Qt 的行为验证仍在 WP-12 准入中单独登记。
-'''
+    instructions = rebuild_instructions()
     (output/'REBUILD.md').write_text(instructions, encoding='utf-8')
     files = [{'file': p.relative_to(output).as_posix(), 'sha256': digest(p), 'bytes': p.stat().st_size}
              for p in sorted(output.rglob('*')) if p.is_file()]

@@ -53,7 +53,6 @@ build-dir 与 output-dir 必须使用仓库 build/ 内的独立子目录，以�
 python3 scripts/desktop.py prepare --install-rust --install-qt --qt-root .cache/Qt
 python3 scripts/desktop.py doctor --for-stage build
 python3 scripts/desktop.py build
-python3 scripts/desktop.py test
 ```
 
 `--install-rust` 使用已安装的 rustup 准备仓库锁定的工具链，不替代 rustup 安装。`--install-qt` 显式下载固定 Qt SDK；已有 SDK 时无需重新下载，直接将其路径交给每个阶段：
@@ -61,8 +60,41 @@ python3 scripts/desktop.py test
 ```sh
 python3 scripts/desktop.py doctor --qt-prefix /path/to/Qt/6.8.2/gcc_64
 python3 scripts/desktop.py build --qt-prefix /path/to/Qt/6.8.2/gcc_64
-python3 scripts/desktop.py test --qt-prefix /path/to/Qt/6.8.2/gcc_64
 ```
+
+完成构建后，显式准备完整 `native_backend_tests` 批次使用的公共测试输入。CAB、ISO/UDF 和基础 RAR 夹具位于 `tests/fixtures/cab-iso/` 与 `tests/fixtures/native-archives/`，随项目源码保留；7z 测试使用刚构建的 Rust worker 创建自己的包。这一 runtime 批次不要求官方 7-Zip／UnRAR 工具或挂载映像，Foundation 的其他互操作参照另按[原生后端契约](native-codecs.md)执行。
+
+首次获取固定公共 RAR PPM、旧密码等输入时，显式执行：
+
+```sh
+python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs
+```
+
+已有经大小和 SHA-256 核对的固定缓存时，显式采用离线模式，替换缓存路径并保留清单规定的 `junrar/` 子目录布局：
+
+```sh
+python3 scripts/prepare-rar-rust-fixtures.py --output build/native-test-inputs --archives /path/to/fixed-rar-cache --offline
+```
+
+准备器的固定来源和通知见 `scripts/rar-rust-fixtures.json` 与其公共兼容清单，输出 `sources.json.environment` 使用源码根目录相对路径。当前对应源码交付不包含这七个公共缓存文件；Cargo 的 `--offline` 不会补齐它们。准备器不会导出 shell 环境，完整 `test` 前按下面的明确交接启动子进程：
+
+```sh
+python3 -c "
+import json, os, pathlib, subprocess, sys
+root = pathlib.Path.cwd()
+worker = pathlib.Path(sys.argv[1]).resolve(strict=True)
+prepared = json.loads((root/'build/native-test-inputs/sources.json').read_text(encoding='utf-8'))
+environment = os.environ.copy()
+environment.update({name: str(root/value) for name, value in prepared['environment'].items()})
+environment.update(XDZIP_NATIVE_CODEC=str(worker), XDZIP_NATIVE_CODEC_WORKER=str(worker), XDZIP_CAB_BACKEND='rust')
+environment['XDZIP_RAR_FIXTURE_PASSWORD'] = 'password'
+subprocess.run([sys.executable, 'scripts/desktop.py', 'test', *sys.argv[2:]], env=environment, check=True)
+" build/desktop/tools/native-codec/xdzip-native-codec
+```
+
+Windows 为 worker 路径加 `.exe`。使用自定义 SDK、build-dir 或 tools-dir 时，将同一组参数附在 worker 路径后，例如 `--qt-prefix /path/to/Qt/6.8.2/gcc_64`，并将 worker 路径调整到实际构建目录。`XDZIP_CAB_BACKEND=rust` 对应固定 Rust CAB 专项；`password` 是公共 fixture 既有的测试值，只交给测试子进程。该交接保留默认 workspace 测试和完整 ignored 批次，不下载输入或隐式构建 worker。
+
+English: Explicitly prepare the fixed public RAR test data, then pass sources.json.environment, the freshly built worker and the existing public test value to the test child. CAB/optical/basic RAR fixtures ship in the project source; 7z creates its own inputs. The seven public cache files are separate prerequisites. A verified cache supports --archives/--offline; initial fixed downloads are a separate explicit step. Test stages do not implicitly prepare or download these fixture inputs, and the complete ignored runtime selection is retained.
 
 test 仅对子进程启用 offscreen／software，不污染后续命令的桌面环境。日常修改只需按需要重新执行 build 和 test。只验证 Rust 核心仍可执行 `cargo test --workspace --locked`，不需要 Qt。`test --skip-rust` 只用于已经由其他检查负责 Rust 的编排，例如 Foundation probes 已执行同提交 Rust 门槛的 Qt CI，不表示跳过 Qt 测试。
 

@@ -20,4 +20,4 @@
 
 系统维护状态、Qt 安全更新渠道及升级复验责任以[支持政策](support-policy.md)为准，来源与许可结论按[发行审查流程](../qa/release-review.md)登记。
 
-Windows 主窗口的客户区扩展使用 Qt 6.8.2 随 SDK 提供的 GuiPrivate Windows native interface，仅由 WindowsFrame 适配层引用。它不是稳定的公共 API；升级 Qt 或替换 SDK 时必须重新编译并验证客户区尺寸、原生边框、DWM、DPI 变化和最大化工作区。Linux／macOS 不链接此私有接口。
+Windows 主窗口的客户区扩展由 WindowsFrame 使用公开 Qt 窗口接口和 Win32 实现，不链接 GuiPrivate。首次绑定普通窗口时按当前 QWindow 客户区逻辑尺寸、DPR 和原生边框度量确定外框，后续主题或 DPI 重应用只刷新边框。在无局部缩放覆盖、Qt PassThrough 舍入的 PMv2 普通窗口中，WM_GETDPISCALEDSIZE 保留待处理 SIZE 的缩放前调整量，缩放客户区后加目标 DPI 的实际边框；无效度量、溢出及其他状态不写入 SIZE，交回 Qt。借用的原生消息及其可写结构仅在同步回调中使用。升级 Qt 或替换 SDK 时须复验初始客户区、真实双屏往返、原生边框、DWM、最大化和全屏恢复；程序化往返不能代替物理拖动和视觉验收。

@@ -17,6 +17,7 @@
 #include "native_monitor_audit.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
+#include <QAbstractNativeEventFilter>
 #include <QAccessible>
 #include <QAction>
 #include <QClipboard>
@@ -68,6 +69,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <QtGui/qscreen_platform.h>
 #include <dwmapi.h>
 #include <qt_windows.h>
 #endif
@@ -1995,6 +1997,165 @@ QtObject {
         QVERIFY(report.open(QIODevice::WriteOnly));
         QVERIFY(report.write(QJsonDocument(result).toJson()) > 0);
     }
+    void windowsNativeDpiClientSizeRoundTrip() {
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() != QStringLiteral("windows"))
+            QSKIP("Real Windows monitors are required for the native DPI round trip");
+        for (const auto *name :
+             {"QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS", "QT_DEVICE_PIXEL_RATIO", "QT_FONT_DPI",
+              "QT_ENABLE_HIGHDPI_SCALING", "QT_SCALE_FACTOR_ROUNDING_POLICY", "QT_USE_PHYSICAL_DPI",
+              "QT_AUTO_SCREEN_SCALE_FACTOR"})
+            if (qEnvironmentVariableIsSet(name))
+                QSKIP("Native DPI regression requires no Qt scale overrides");
+        if (QGuiApplication::highDpiScaleFactorRoundingPolicy() !=
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough)
+            QSKIP("Native DPI regression requires Qt PassThrough scaling");
+        QPointer<QScreen> firstScreen = QGuiApplication::primaryScreen();
+        QPointer<QScreen> secondScreen;
+        for (auto *screen : QGuiApplication::screens())
+            if (firstScreen && screen != firstScreen &&
+                qAbs(screen->devicePixelRatio() - firstScreen->devicePixelRatio()) > .01) {
+                secondScreen = screen;
+                break;
+            }
+        if (!firstScreen || !secondScreen)
+            QSKIP("Two real attached monitors with different native DPI are required");
+        const QSize designClient(1024, 622);
+        for (const auto *screen : {firstScreen.data(), secondScreen.data()})
+            if (screen->availableGeometry().width() < designClient.width() + 32 ||
+                screen->availableGeometry().height() < designClient.height() + 32)
+                QSKIP("Monitor work areas cannot contain the normal client without clamping");
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto previousSettings = qgetenv("XDZIP_SETTINGS_PATH");
+        const bool settingsWereSet = qEnvironmentVariableIsSet("XDZIP_SETTINGS_PATH");
+        qputenv("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini").toUtf8());
+        const auto restoreSettings = qScopeGuard([&] {
+            if (settingsWereSet)
+                qputenv("XDZIP_SETTINGS_PATH", previousSettings);
+            else
+                qunsetenv("XDZIP_SETTINGS_PATH");
+        });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        QPointer<QQuickWindow> window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        const auto joinSessions = [&] {
+            if (joined.isEmpty()) {
+                sessions.confirmQuit(false);
+                QElapsedTimer wait;
+                wait.start();
+                while (joined.isEmpty() && wait.elapsed() < 10000)
+                    QTest::qWait(10);
+            }
+        };
+        const auto cleanup = qScopeGuard([&] { joinSessions(); });
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QCOMPARE(window->size(), designClient);
+        QTRY_COMPARE(window->screen(), firstScreen.data());
+        const auto hwnd = reinterpret_cast<HWND>(window->winId());
+        DWORD owner = 0;
+        QCOMPARE(GetWindowThreadProcessId(hwnd, &owner), GetCurrentThreadId());
+        QCOMPARE(owner, GetCurrentProcessId());
+        QVERIFY(AreDpiAwarenessContextsEqual(GetWindowDpiAwarenessContext(hwnd),
+                                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
+        QVERIFY(AreDpiAwarenessContextsEqual(GetThreadDpiAwarenessContext(),
+                                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
+        class Messages final : public QAbstractNativeEventFilter {
+            HWND m_owned;
+
+            bool nativeEventFilter(const QByteArray &, void *message, qintptr *) override {
+                // Qt lends MSG only for this callback. Observe this owned HWND,
+                // retain values only, and leave all native handling to the product.
+                const auto *msg = static_cast<const MSG *>(message);
+                if (msg->hwnd == m_owned) {
+                    if (msg->message == WM_GETDPISCALEDSIZE)
+                        scaledTargets.append(UINT(msg->wParam));
+                    else if (msg->message == WM_DPICHANGED)
+                        dpiTargets.append(LOWORD(msg->wParam));
+                }
+                return false;
+            }
+
+          public:
+            QList<UINT> scaledTargets, dpiTargets;
+            explicit Messages(HWND owned) : m_owned(owned) {
+                qApp->installNativeEventFilter(this);
+            }
+            ~Messages() override {
+                qApp->removeNativeEventFilter(this);
+            }
+        } messages(hwnd);
+        const auto sizeMatches = [&] {
+            RECT client{};
+            if (!window || !GetClientRect(hwnd, &client))
+                return false;
+            const auto dpi = GetDpiForWindow(hwnd);
+            if (!dpi || qAbs(window->devicePixelRatio() - dpi / 96.) > .01)
+                return false;
+            const auto expectedWidth = qRound(designClient.width() * dpi / 96.);
+            const auto expectedHeight = qRound(designClient.height() * dpi / 96.);
+            // Fractional native scaling can round by one device pixel. It must
+            // not accumulate into a different layout or the previous title-band loss.
+            return qAbs(window->width() - designClient.width()) <= 1 &&
+                   qAbs(window->height() - designClient.height()) <= 1 &&
+                   qAbs(client.right - client.left - expectedWidth) <= 1 &&
+                   qAbs(client.bottom - client.top - expectedHeight) <= 1 &&
+                   qAbs(window->contentItem()->width() - designClient.width()) <= 1 &&
+                   qAbs(window->contentItem()->height() - designClient.height()) <= 1;
+        };
+        QVERIFY(sizeMatches());
+        const UINT firstDpi = GetDpiForWindow(hwnd);
+        QList<UINT> targetDpis;
+        for (QPointer<QScreen> target : {secondScreen, firstScreen}) {
+            QVERIFY(target);
+            auto *native = target->nativeInterface<QNativeInterface::QWindowsScreen>();
+            QVERIFY(native && native->handle());
+            const auto targetMonitor = native->handle();
+            MONITORINFO info{};
+            info.cbSize = sizeof(info);
+            RECT outer{};
+            QVERIFY(GetMonitorInfoW(targetMonitor, &info));
+            QVERIFY(GetWindowRect(hwnd, &outer));
+            const int x = info.rcWork.left +
+                          ((info.rcWork.right - info.rcWork.left) - (outer.right - outer.left)) / 2;
+            const int y = info.rcWork.top +
+                          ((info.rcWork.bottom - info.rcWork.top) - (outer.bottom - outer.top)) / 2;
+            const UINT targetDpi = UINT(qRound(target->devicePixelRatio() * 96));
+            targetDpis.append(targetDpi);
+            // Native moves exercise Windows' GETDPISCALEDSIZE negotiation. The
+            // QWindow setter takes a different Qt path and cannot cover this bug.
+            QVERIFY(SetWindowPos(hwnd, nullptr, x, y, 0, 0,
+                                 SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER));
+            QTRY_VERIFY(target && window && window->screen() == target &&
+                        MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL) == targetMonitor &&
+                        GetDpiForWindow(hwnd) == targetDpi);
+            // Drain queued frame reapplication and require a stable client after it.
+            for (int sample = 0; sample < 20; ++sample) {
+                QTest::qWait(10);
+                QVERIFY2(sizeMatches(), "Logical/native client drifted across real monitor DPI");
+            }
+            RECT client{};
+            QVERIFY(GetClientRect(hwnd, &client));
+            qInfo() << "Native DPI round trip" << targetDpi << window->size()
+                    << QSize(client.right - client.left, client.bottom - client.top);
+        }
+        QCOMPARE(GetDpiForWindow(hwnd), firstDpi);
+        QCOMPARE(messages.scaledTargets, targetDpis);
+        QCOMPARE(messages.dpiTargets, targetDpis);
+        joinSessions();
+        QVERIFY2(!joined.isEmpty(), "Native DPI regression session join did not complete");
+#else
+        QSKIP("Windows-only native monitor DPI regression");
+#endif
+    }
+
     void nativePhysicalMonitorDpiTransitions() {
 #ifdef Q_OS_WIN
         const auto directory = qEnvironmentVariable("XDZIP_NATIVE_MONITOR_AUDIT");
@@ -2042,6 +2203,10 @@ QtObject {
         int firstDpi = 0;
         for (int index = 0; index < 3; ++index) {
             auto *target = index == 1 ? secondary : primary;
+            auto *nativeTarget = target->nativeInterface<QNativeInterface::QWindowsScreen>();
+            QVERIFY(nativeTarget);
+            const auto targetMonitor = nativeTarget->handle();
+            QVERIFY(targetMonitor);
             const int before = changed.count();
             window->setPosition(target->availableGeometry().center() - QPoint(512, 311));
             window->raise();
@@ -2054,9 +2219,12 @@ QtObject {
             QJsonObject sample;
             QTRY_VERIFY(
                 native_monitor_audit::snapshot(window, &sample) &&
-                sample["monitor_device"].toString().compare(target->name(), Qt::CaseInsensitive) ==
-                    0 &&
+                MonitorFromWindow(reinterpret_cast<HWND>(window->winId()), MONITOR_DEFAULTTONULL) ==
+                    targetMonitor &&
                 qAbs(window->devicePixelRatio() - sample["native_dpi"].toInt() / 96.) < .01);
+            // Qt's friendly screen name and Win32's display device name are different namespaces.
+            sample.insert("qt_target_screen_name", target->name());
+            sample.insert("native_monitor_matches_qt_target", true);
             const int dpi = sample["native_dpi"].toInt();
             if (!index)
                 firstDpi = dpi;

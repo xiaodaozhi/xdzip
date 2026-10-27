@@ -27,7 +27,7 @@ qt_add_qml_module(xdzip-ui-resources
     SOURCES UiPreferences.h UiPreferences.cpp WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
 if(WIN32)
-    target_link_libraries(xdzip-ui-resources PRIVATE Qt6::GuiPrivate dwmapi user32)
+    target_link_libraries(xdzip-ui-resources PRIVATE dwmapi user32)
 endif()
 add_executable(xdzip-ui-preview main.cpp)
 target_link_libraries(xdzip-ui-preview PRIVATE Qt6::Quick Qt6::QuickControls2)

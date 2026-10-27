@@ -1,12 +1,19 @@
+#if defined(_WIN32)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
 #include "WindowsFrame.h"
 #include <QCoreApplication>
 #include <QGuiApplication>
 #include <QPlatformSurfaceEvent>
+#include <QScopedValueRollback>
 #include <QTimer>
+#include <cmath>
+#include <limits>
 
 #ifdef Q_OS_WIN
 #include <dwmapi.h>
-#include <qpa/qplatformwindow_p.h>
 #include <qt_windows.h>
 #include <windowsx.h>
 
@@ -19,6 +26,105 @@ constexpr int roundCorners = 2;
 int resizeBorder(HWND hwnd, int metric) {
     const UINT dpi = GetDpiForWindow(hwnd);
     return GetSystemMetricsForDpi(metric, dpi) + GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+}
+bool ordinaryCaptionWindow(HWND hwnd, const QWindow *window) {
+    return window && window->windowState() == Qt::WindowNoState &&
+           window->visibility() != QWindow::FullScreen && !IsZoomed(hwnd) && !IsIconic(hwnd) &&
+           (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_CAPTION) == WS_CAPTION;
+}
+bool nativeOuterSize(HWND hwnd, UINT dpi, qint64 clientWidth, qint64 clientHeight, SIZE *size) {
+    if (!dpi || clientWidth <= 0 || clientHeight <= 0 ||
+        clientWidth > std::numeric_limits<int>::max() ||
+        clientHeight > std::numeric_limits<int>::max() || GetMenu(hwnd))
+        return false;
+    SetLastError(0);
+    const auto style = GetWindowLongPtrW(hwnd, GWL_STYLE);
+    if (!style && GetLastError())
+        return false;
+    SetLastError(0);
+    const auto exStyle = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+    if (!exStyle && GetLastError())
+        return false;
+    RECT frame{};
+    if (!AdjustWindowRectExForDpi(&frame, DWORD(style), FALSE, DWORD(exStyle), dpi))
+        return false;
+    const qint64 left = -qint64(frame.left), right = frame.right, bottom = frame.bottom;
+    if (left < 0 || right < 0 || bottom < 0)
+        return false;
+    const qint64 width = clientWidth + left + right;
+    const qint64 height = clientHeight + 1 + bottom;
+    if (width <= 0 || height <= 0 || width > std::numeric_limits<int>::max() ||
+        height > std::numeric_limits<int>::max())
+        return false;
+    *size = SIZE{LONG(width), LONG(height)};
+    return true;
+}
+bool compatibleNativeScaling(HWND hwnd) {
+    if (!AreDpiAwarenessContextsEqual(GetWindowDpiAwarenessContext(hwnd),
+                                      DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
+        !AreDpiAwarenessContextsEqual(GetThreadDpiAwarenessContext(),
+                                      DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
+        QGuiApplication::highDpiScaleFactorRoundingPolicy() !=
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough)
+        return false;
+    for (const auto *name : {"QT_SCREEN_SCALE_FACTORS", "QT_USE_PHYSICAL_DPI", "QT_FONT_DPI",
+                             "QT_DEVICE_PIXEL_RATIO", "QT_AUTO_SCREEN_SCALE_FACTOR"}) {
+        if (qEnvironmentVariableIsSet(name))
+            return false;
+    }
+    if (qEnvironmentVariableIsSet("QT_ENABLE_HIGHDPI_SCALING")) {
+        bool valid = false;
+        const int enabled = qEnvironmentVariableIntValue("QT_ENABLE_HIGHDPI_SCALING", &valid);
+        if (!valid || enabled <= 0)
+            return false;
+    }
+    return true;
+}
+bool scaledNativeExtent(qint64 extent, UINT currentDpi, UINT targetDpi, qint64 *result) {
+    if (extent <= 0 || extent > std::numeric_limits<int>::max() || !currentDpi || !targetDpi)
+        return false;
+    // INT_MAX times UINT_MAX plus rounding fits quint64. Reject before narrowing.
+    const quint64 scaled = (quint64(extent) * targetDpi + currentDpi / 2) / currentDpi;
+    if (!scaled || scaled > quint64(std::numeric_limits<int>::max()))
+        return false;
+    *result = qint64(scaled);
+    return true;
+}
+bool dpiOuterSize(HWND hwnd, const QWindow *window, WPARAM target, const SIZE &incoming,
+                  SIZE *size) {
+    DWORD owner = 0;
+    if (GetWindowThreadProcessId(hwnd, &owner) != GetCurrentThreadId() ||
+        owner != GetCurrentProcessId() || !ordinaryCaptionWindow(hwnd, window) ||
+        !compatibleNativeScaling(hwnd) || target > std::numeric_limits<UINT>::max() ||
+        incoming.cx <= 0 || incoming.cy <= 0)
+        return false;
+    const UINT currentDpi = GetDpiForWindow(hwnd), targetDpi = UINT(target);
+    RECT client{}, outer{};
+    if (!GetClientRect(hwnd, &client) || !GetWindowRect(hwnd, &outer))
+        return false;
+    const qint64 currentOuterWidth = qint64(outer.right) - outer.left;
+    const qint64 currentOuterHeight = qint64(outer.bottom) - outer.top;
+    const qint64 clientWidth = qint64(client.right) - client.left;
+    const qint64 clientHeight = qint64(client.bottom) - client.top;
+    if (currentOuterWidth <= 0 || currentOuterHeight <= 0 || clientWidth <= 0 || clientHeight <= 0)
+        return false;
+    // The pending outer SIZE may contain resize intent in the old-DPI coordinates.
+    const qint64 pendingWidth = clientWidth + qint64(incoming.cx) - currentOuterWidth;
+    const qint64 pendingHeight = clientHeight + qint64(incoming.cy) - currentOuterHeight;
+    qint64 width = 0, height = 0;
+    return scaledNativeExtent(pendingWidth, currentDpi, targetDpi, &width) &&
+           scaledNativeExtent(pendingHeight, currentDpi, targetDpi, &height) &&
+           nativeOuterSize(hwnd, targetDpi, width, height, size);
+}
+bool initialOuterSize(HWND hwnd, const QSize &logicalSize, qreal dpr, SIZE *size) {
+    if (!std::isfinite(dpr) || dpr <= 0 || logicalSize.width() <= 0 || logicalSize.height() <= 0)
+        return false;
+    const qreal width = logicalSize.width() * dpr;
+    const qreal height = logicalSize.height() * dpr;
+    if (!std::isfinite(width) || !std::isfinite(height) || width < .5 || height < .5 ||
+        width > std::numeric_limits<int>::max() || height > std::numeric_limits<int>::max())
+        return false;
+    return nativeOuterSize(hwnd, GetDpiForWindow(hwnd), qRound64(width), qRound64(height), size);
 }
 } // namespace
 #endif
@@ -38,6 +144,9 @@ void WindowsFrame::setWindow(QWindow *window) {
         m_window->removeEventFilter(this);
     m_window = window;
     m_id = 0;
+#ifdef Q_OS_WIN
+    m_frameAttachAttemptId = 0;
+#endif
     if (m_window) {
         m_window->installEventFilter(this);
         if (m_window->handle())
@@ -55,34 +164,44 @@ void WindowsFrame::setDark(bool dark) {
 }
 void WindowsFrame::apply() {
 #ifdef Q_OS_WIN
-    if (!m_window || QGuiApplication::platformName() != QStringLiteral("windows"))
+    if (m_applying || !m_window || QGuiApplication::platformName() != QStringLiteral("windows"))
         return;
-    // The QWindow owns this HWND. Never destroy or cache it past SurfaceAboutToBeDestroyed.
-    m_id = m_window->winId();
-    const auto hwnd = reinterpret_cast<HWND>(m_id);
-    // Keep Qt's client/frame geometry model consistent with NCCALCSIZE. This
-    // private native interface is isolated to the pinned Qt Windows adapter.
-    RECT frame{0, 0, 0, 0};
-    auto *native = m_window->nativeInterface<QNativeInterface::Private::QWindowsWindow>();
-    if (!native || !AdjustWindowRectExForDpi(&frame, DWORD(GetWindowLongPtrW(hwnd, GWL_STYLE)),
-                                             FALSE, DWORD(GetWindowLongPtrW(hwnd, GWL_EXSTYLE)),
-                                             GetDpiForWindow(hwnd))) {
-        // Keep the standard system frame if the native adapter cannot bind.
+    QScopedValueRollback<bool> applying(m_applying, true);
+    const auto logicalSize = m_window->size();
+    const qreal dpr = m_window->devicePixelRatio();
+    const auto id = m_window->winId();
+    const auto hwnd = reinterpret_cast<HWND>(id);
+    DWORD owner = 0;
+    const auto thread = GetWindowThreadProcessId(hwnd, &owner);
+    if (!IsWindow(hwnd) || owner != GetCurrentProcessId() || thread != GetCurrentThreadId())
+        return;
+    if (m_frameAttachAttemptId == id && !m_id)
+        return;
+    const bool firstAttach = m_frameAttachAttemptId != id;
+    m_frameAttachAttemptId = id;
+    SIZE initial{};
+    const bool preserveInitialSize = firstAttach && ordinaryCaptionWindow(hwnd, m_window);
+    if (preserveInitialSize && !initialOuterSize(hwnd, logicalSize, dpr, &initial)) {
+        // Leave the standard frame on an unsupported first attachment; do not retry
+        // a geometry correction on a later theme/DPI event for this same HWND.
         m_id = 0;
         return;
     }
-    native->setCustomMargins(QMargins(0, int(frame.top) + 1, 0, 0));
+    // The owned HWND must be bound before synchronous NCCALCSIZE callbacks.
+    m_id = id;
     const auto policy = DWMNCRP_ENABLED;
     DwmSetWindowAttribute(hwnd, DWMWA_NCRENDERING_POLICY, &policy, sizeof(policy));
     const BOOL dark = m_dark;
     DwmSetWindowAttribute(hwnd, darkModeAttribute, &dark, sizeof(dark));
     // Unsupported attributes (for example corners on Windows 10) leave the OS default.
     DwmSetWindowAttribute(hwnd, cornerPreferenceAttribute, &roundCorners, sizeof(roundCorners));
-    // DWM margins are native device pixels, never QML component dimensions.
     const MARGINS margins{1, 1, 1, 1};
     DwmExtendFrameIntoClientArea(hwnd, &margins);
-    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
-                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    const UINT flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                       (preserveInitialSize ? 0u : SWP_NOSIZE);
+    if (!SetWindowPos(hwnd, nullptr, 0, 0, preserveInitialSize ? initial.cx : 0,
+                      preserveInitialSize ? initial.cy : 0, flags))
+        m_id = 0;
 #endif
 }
 bool WindowsFrame::eventFilter(QObject *watched, QEvent *event) {
@@ -90,8 +209,12 @@ bool WindowsFrame::eventFilter(QObject *watched, QEvent *event) {
         const auto *surface = static_cast<QPlatformSurfaceEvent *>(event);
         if (surface->surfaceEventType() == QPlatformSurfaceEvent::SurfaceCreated)
             apply();
-        else
+        else {
             m_id = 0;
+#ifdef Q_OS_WIN
+            m_frameAttachAttemptId = 0;
+#endif
+        }
     }
     return false;
 }
@@ -104,6 +227,17 @@ bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qint
     if (!m_id || msg->hwnd != reinterpret_cast<HWND>(m_id))
         return false;
     const auto hwnd = msg->hwnd;
+    if (msg->message == WM_GETDPISCALEDSIZE && msg->lParam && result) {
+        const auto incoming = *reinterpret_cast<const SIZE *>(msg->lParam);
+        SIZE response{};
+        if (dpiOuterSize(hwnd, m_window, msg->wParam, incoming, &response)) {
+            // Qt borrows this writable SIZE only for the synchronous callback.
+            // Commit once after every native metric and overflow check succeeds.
+            *reinterpret_cast<SIZE *>(msg->lParam) = response;
+            *result = TRUE;
+            return true;
+        }
+    }
     if (msg->message == WM_NCCALCSIZE && msg->wParam) {
         auto *params = reinterpret_cast<NCCALCSIZE_PARAMS *>(msg->lParam);
         const auto outer = params->rgrc[0];

@@ -12,14 +12,30 @@ jobs:
       matrix:
         os: [ubuntu-24.04, windows-2022, macos-14]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: ${{ matrix.os == 'ubuntu-24.04' && 80 || 60 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Linux graphics development files
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          for name in ('/etc/apt/sources.list', '/etc/apt/sources.list.d/ubuntu.sources'):
+              path = Path(name)
+              if path.is_file():
+                  original = path.read_bytes()
+                  updated = re.sub(rb'(https?://)azure\.archive\.ubuntu\.com(?=/ubuntu(?:[ \t\r\n/]|$))',
+                                   rb'\1archive.ubuntu.com', original)
+                  updated = re.sub(rb'(?<!\S)mirror\+file:/etc/apt/apt-mirrors\.txt(?=\s|$)',
+                                   b'http://archive.ubuntu.com/ubuntu', updated)
+                  if updated != original:
+                      path.write_bytes(updated)
+          PY
+          apt_options=(-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o Acquire::Retries=2)
+          sudo apt-get "${apt_options[@]}" update
+          sudo apt-get "${apt_options[@]}" install -y \
             libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-0 \
             libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
             libxcb-render0 libxcb-render-util0 libxcb-shape0 libxcb-randr0 \

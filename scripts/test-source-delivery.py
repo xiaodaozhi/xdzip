@@ -4,10 +4,12 @@ import importlib.util
 import hashlib
 import io
 import json
+import os
 from contextlib import nullcontext, redirect_stdout
 from pathlib import Path
 import plistlib
 import runpy
+import re
 import subprocess
 import sys
 import tarfile
@@ -175,6 +177,93 @@ class DeliveryTests(unittest.TestCase):
             with patch.object(mac, 'checked', return_value='arm64'):
                 with self.assertRaisesRegex(ValueError, 'escapes'):
                     mac.validate_bundle(app)
+
+
+class DocumentedRuntimeTestInputs(unittest.TestCase):
+    """Execute the delivered/documented Python handoff with owned test inputs."""
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(dir=ROOT/'build', prefix='documented-test-inputs-')
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.worker = self.root/'build/custom/xdzip-native-codec'
+        self.worker.parent.mkdir(parents=True)
+        self.worker.write_bytes(b'owned worker placeholder; never executed')
+        self.fixture_environment = {}
+        for name in ['XDZIP_RAR_PPM_FIXTURE', 'XDZIP_RAR_LEGACY_FIXTURE',
+                     'XDZIP_RAR_LARGE_PPM_FIXTURE', 'XDZIP_RAR_UNKNOWN_FIXTURE', 'XDZIP_RAR26_FIXTURE']:
+            relative = 'build/native-test-inputs/'+name+'.rar'
+            path = self.root/relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'owned fixture placeholder')
+            self.fixture_environment[name] = relative
+        self.report = self.root/'build/native-test-inputs/sources.json'
+        self.report.write_text(json.dumps({'environment': self.fixture_environment}), encoding='utf-8')
+
+    def code(self, document):
+        matches = re.findall(r'python3 -c "\n(.*?)\n" build/', document, flags=re.DOTALL)
+        self.assertEqual(len(matches), 1)
+        return compile(matches[0], '<documented runtime test handoff>', 'exec')
+
+    def invoke(self, document, arguments=(), failure=None):
+        with patch.object(Path, 'cwd', return_value=self.root), \
+             patch.object(sys, 'argv', ['-c', str(self.worker), *arguments]), \
+             patch.dict(os.environ, {'XDZIP_RAR_FIXTURE_PASSWORD': 'inherited test value', 'XDZIP_CAB_BACKEND': 'inherited backend'}), \
+             patch.object(source.urllib.request, 'urlopen', side_effect=AssertionError('test handoff must not download')), \
+             patch.object(subprocess, 'run', side_effect=failure,
+                          return_value=subprocess.CompletedProcess([], 0)) as run:
+            before = dict(os.environ)
+            if failure:
+                with self.assertRaises(subprocess.CalledProcessError):
+                    exec(self.code(document), {})
+            else:
+                exec(self.code(document), {})
+            self.assertEqual(dict(os.environ), before)
+            calls = run.call_args_list
+        for call in calls:
+            environment = call.kwargs['env']
+            self.assertTrue(call.kwargs['check'])
+            self.assertEqual(environment['XDZIP_NATIVE_CODEC'], str(self.worker))
+            self.assertEqual(environment['XDZIP_NATIVE_CODEC_WORKER'], str(self.worker))
+            self.assertEqual(environment['XDZIP_CAB_BACKEND'], 'rust')
+            self.assertEqual(environment['XDZIP_RAR_FIXTURE_PASSWORD'], 'password')
+            for name, relative in self.fixture_environment.items():
+                self.assertEqual(Path(environment[name]), self.root/relative)
+        return calls
+
+    def test_generated_rebuild_handoff_runs_both_full_offline_rust_commands(self):
+        document = source.rebuild_instructions()
+        calls = self.invoke(document)
+        self.assertEqual([call.args[0] for call in calls], [
+            ['cargo', 'test', '--workspace', '--locked', '--offline'],
+            ['cargo', 'test', '-p', 'xdzip-runtime', '--locked', '--offline', 'native_backend_tests', '--', '--ignored']])
+        self.assertIn('--archives /path/to/fixed-rar-cache --offline', document)
+        self.assertIn('当前交付不包含', document)
+        self.assertIn('tests/fixtures/cab-iso/', document)
+        self.assertIn('tests/fixtures/native-archives/', document)
+
+    def test_generated_rebuild_stops_when_workspace_tests_fail(self):
+        failure = subprocess.CalledProcessError(17, ['cargo', 'test'])
+        calls = self.invoke(source.rebuild_instructions(), failure=failure)
+        self.assertEqual(len(calls), 1)
+
+    def test_developer_handoff_forwards_selected_sdk_and_build_without_skipping_rust(self):
+        document = (ROOT/'docs/engineering/developer-build.md').read_text(encoding='utf-8')
+        arguments = ['--qt-prefix', str(self.root/'owned-sdk'), '--build-dir', 'build/custom']
+        calls = self.invoke(document, arguments)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].args[0], [sys.executable, 'scripts/desktop.py', 'test', *arguments])
+        self.assertNotIn('--skip-rust', calls[0].args[0])
+
+    def test_generated_handoff_requires_explicitly_prepared_inputs_before_any_test(self):
+        self.report.unlink()
+        with patch.object(Path, 'cwd', return_value=self.root), \
+             patch.object(sys, 'argv', ['-c', str(self.worker)]), \
+             patch.object(subprocess, 'run') as run, \
+             patch.object(source.urllib.request, 'urlopen') as download:
+            with self.assertRaises(FileNotFoundError):
+                exec(self.code(source.rebuild_instructions()), {})
+            run.assert_not_called()
+            download.assert_not_called()
 
 
 class DisposableBundleTests(unittest.TestCase):
