@@ -1207,6 +1207,12 @@ QtObject {
         auto *list = qvariant_cast<QQuickItem *>(menu->property("contentItem"));
         auto *clear = window->findChild<QQuickItem *>("clearFinishedTasks");
         QVERIFY(list && clear && clear->isVisible());
+        auto *separator = window->findChild<QQuickItem *>("taskMenuSeparator");
+        QVERIFY(separator);
+        QTRY_VERIFY(qAbs(separator->mapToScene(QPointF()).y() -
+                         list->mapToScene(QPointF(0, list->height())).y() -
+                         (clear->mapToScene(QPointF()).y() -
+                          separator->mapToScene(QPointF(0, separator->height())).y())) < .5);
         QTRY_VERIFY_WITH_TIMEOUT(
             (list->property("contentHeight").toReal() > list->height()) == scrolling, 1000);
         auto *scrollBar = list->findChild<QQuickItem *>("commandMenuScrollBar");
@@ -1224,8 +1230,10 @@ QtObject {
         QVERIFY(badge);
         QTRY_VERIFY(qAbs(badge->mapToItem(entry, QPointF(badge->width(), 0)).x() -
                          (entry->width() - entry->property("rightPadding").toReal())) < .5);
+        QCOMPARE(entry->property("leftPadding").toReal(), entry->property("topPadding").toReal());
         QCOMPARE(entry->property("rightPadding").toReal(),
-                 8. + menu->property("viewportScrollBarWidth").toReal());
+                 entry->property("topPadding").toReal() +
+                     menu->property("viewportScrollBarWidth").toReal());
         QVERIFY(
             entry->property("text").toString().startsWith(qtTrId("tasks.check").arg(historyCount)));
         auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
@@ -1359,7 +1367,8 @@ QtObject {
                                   ->findChild<QQuickItem *>("commandMenuScrollBar");
             QVERIFY(scrollBar && !scrollBar->isVisible());
             QTRY_VERIFY(qAbs(entry->width() -
-                             badge->mapToItem(entry, QPointF(badge->width(), 0)).x() - 8 * factor) <
+                             badge->mapToItem(entry, QPointF(badge->width(), 0)).x() -
+                             entry->property("topPadding").toReal()) <
                         .5);
             auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
             auto *clear = page->findChild<QQuickItem *>("clearFinishedTasks");

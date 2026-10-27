@@ -2079,7 +2079,11 @@ Item {
                                 implicitHeight: clearButton.implicitHeight + Theme.taskMenuFooterInset + 1
                                 enabled: root.sessionManager ? root.sessionManager.hasFinishedTasks : reader.hasFinishedTasks
                                 onActiveFocusChanged: if (activeFocus) clearButton.forceActiveFocus(Qt.TabFocusReason)
-                                Rectangle { width: parent.width; height: 1; color: Theme.menuBorder }
+                                Rectangle {
+                                    objectName: "taskMenuSeparator"
+                                    y: Theme.taskMenuFooterInset / 2
+                                    width: parent.width; height: 1; color: Theme.menuBorder
+                                }
                                 OperationButton {
                                     id: clearButton
                                     objectName: "clearFinishedTasks"
@@ -2118,13 +2122,16 @@ Item {
                             text: qsTrId("ui.da9688984cdc")
                             commandVisible: root.globalTasks.length === 0
                             enabled: false
+                            leftPadding: topPadding
+                            rightPadding: topPadding + taskMenu.viewportScrollBarWidth
                         }
                         Instantiator {
                             model: root.globalTaskModel
                             delegate: CommandMenuItem {
                                 required property var taskData
                                 objectName: "taskMenuItem-" + taskData.id
-                                rightPadding: Theme.menuLabelInset + taskMenu.viewportScrollBarWidth
+                                leftPadding: topPadding
+                                rightPadding: topPadding + taskMenu.viewportScrollBarWidth
                                 KeyNavigation.priority: KeyNavigation.BeforeItem
                                 KeyNavigation.tab: taskMenu.footerItem && taskMenu.footerItem.enabled ? taskMenu.footerItem : null
                                 text: root.taskLabel(taskData) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
