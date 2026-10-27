@@ -8,7 +8,25 @@ OperationWindow {
     objectName: "conflictWindow"
     required property var task
     required property var sizeFormatter
-    signal decision(int policy, bool all)
+    signal decision(string taskId, string promptId, int policy, bool all)
+    property string promptTaskId: ""
+    property string promptIdentity: ""
+    property string dismissedPrompt: ""
+    property bool decisionsAvailable: true
+    readonly property bool canDecide: decisionsAvailable && task.status === "waiting" && Boolean(task.promptId) && !task.cancelRequested && !task.terminal
+    function presentPrompt(explicitRequest: bool) {
+        if (!canDecide) return;
+        const key = task.id + "/" + task.promptId;
+        if (!explicitRequest && dismissedPrompt === key) return;
+        if (promptTaskId !== task.id || promptIdentity !== task.promptId)
+            remaining.checked = false;
+        promptTaskId = task.id;
+        promptIdentity = task.promptId;
+        present();
+    }
+    onTaskChanged: if (visible && (task.id !== promptTaskId || task.promptId !== promptIdentity)) close();
+    onCanDecideChanged: if (visible && !canDecide) close();
+    onClosing: dismissedPrompt = promptTaskId + "/" + promptIdentity
     readonly property bool archiveCreation: task.creating === true && task.kind !== "move" && task.kind !== "update"
     readonly property real density: Theme.operationExtractDensity
     function unit(value: real): real { return value * density; }
@@ -71,9 +89,9 @@ OperationWindow {
             Layout.fillWidth: true
             contentInset: root.unit(30); verticalInset: root.unit(17); minimumFooterHeight: root.unit(74)
             note: qsTrId("ui.df37976cd784"); noteGap: 4; noteIcon: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "shield.png"
-            OperationFooterButton { objectName: "conflictSkip"; text: root.archiveCreation ? qsTrId("ui.f6e498e6a16d") : qsTrId("ui.fc50a99caae0"); onClicked: root.decision(1, remaining.checked) }
-            OperationFooterButton { objectName: "conflictRename"; text: qsTrId("ui.7d590c4f89be"); primary: true; onClicked: root.decision(2, remaining.checked) }
-            OperationFooterButton { objectName: "conflictOverwrite"; text: root.archiveCreation ? qsTrId("ui.992f443cf975") : qsTrId("ui.e4b715a60c85"); dangerous: true; enabled: Boolean(root.task.overwriteAllowed); onClicked: root.decision(3, remaining.checked) }
+            OperationFooterButton { objectName: "conflictSkip"; text: root.archiveCreation ? qsTrId("ui.f6e498e6a16d") : qsTrId("ui.fc50a99caae0"); enabled: root.canDecide; onClicked: root.decision(root.promptTaskId, root.promptIdentity, 1, remaining.checked) }
+            OperationFooterButton { objectName: "conflictRename"; text: qsTrId("ui.7d590c4f89be"); primary: true; enabled: root.canDecide; onClicked: root.decision(root.promptTaskId, root.promptIdentity, 2, remaining.checked) }
+            OperationFooterButton { objectName: "conflictOverwrite"; text: root.archiveCreation ? qsTrId("ui.992f443cf975") : qsTrId("ui.e4b715a60c85"); dangerous: true; enabled: root.canDecide && Boolean(root.task.overwriteAllowed); onClicked: root.decision(root.promptTaskId, root.promptIdentity, 3, remaining.checked) }
         }
     }
 }

@@ -179,7 +179,9 @@ Item {
         Theme.dark = AppSettings.dark;
         Theme.fontScale = AppSettings.textScale;
     }
-    readonly property bool welcomeVisible: closedPage || !reader.ready
+    readonly property bool archiveOperationVisible: reader.archiveOperation.length > 0
+    readonly property string archiveOperationTitle: reader.archiveOperation === "move" ? qsTrId("archive.operation.moving") : qsTrId("archive.operation.adding")
+    readonly property bool welcomeVisible: closedPage || (!reader.ready && !archiveOperationVisible)
     property bool externalFileOpening: false
     property bool welcomeWasBusy: false
     onWelcomeVisibleChanged: if (uiReady && welcomeVisible) {
@@ -318,6 +320,9 @@ Item {
                 cancelled: qsTrId("ui.a37778f17c5f")
             })[status] || qsTrId("ui.b53be09930f4");
     }
+    function taskStatus(task: var): string {
+        return task.cancelRequested && task.status !== "cleaning" ? "cancelling" : task.status || "queued";
+    }
     function taskLabel(task: var): string {
         const label = task.kind === "check" ? qsTrId("tasks.check")
             : task.kind === "move" ? qsTrId("move.task")
@@ -329,11 +334,12 @@ Item {
     function showTask(id: string) {
         const task = reader.tasks.find(t => t.id === id);
         if (!task) return;
+        if (id !== activeTaskId) conflictWindow.close();
         activeTaskId = id;
         taskSnapshot = task;
         taskWindow.present();
-        if (taskSnapshot.status === "waiting" && taskSnapshot.promptId)
-            conflictWindow.present();
+        if (reader.runtimeAvailable && !taskSnapshot.cancelRequested && taskSnapshot.status === "waiting" && taskSnapshot.promptId)
+            conflictWindow.presentPrompt(true);
         if (taskSnapshot.status === "waiting_password" && taskSnapshot.passwordPromptId)
             passwordWindow.revealPrompt();
     }
@@ -483,9 +489,9 @@ Item {
             }
             if (root.taskSnapshot.openAccepted && (!previous.openAccepted || previous.id !== root.taskSnapshot.id))
                 taskWindow.close();
-            if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible)
-                conflictWindow.present();
-            if (root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId)
+            if (!root.sessionClosed && reader.runtimeAvailable && !root.taskSnapshot.cancelRequested && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible)
+                conflictWindow.presentPrompt(false);
+            if (!reader.runtimeAvailable || root.taskSnapshot.cancelRequested || root.taskSnapshot.status !== "waiting" || !root.taskSnapshot.promptId)
                 conflictWindow.close();
             if (!root.sessionManager && root.waitBeforeExit && activeTaskCount === 0) {
                 root.allowExit = true;
@@ -537,8 +543,8 @@ Item {
         creating: root.taskSnapshot.creating || false
         operationKind: root.taskSnapshot.kind || (creating ? "create" : "extract")
         totalKnown: root.taskSnapshot.totalKnown || false
-        stopping: ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
-        taskStatus: root.taskSnapshot.status || "queued"
+        stopping: root.taskSnapshot.cancelRequested === true || ["cancelling", "cleaning"].includes(root.taskSnapshot.status)
+        taskStatus: root.taskStatus(root.taskSnapshot)
         phaseSummary: taskWindow.checking && taskStatus === "running" ? qsTrId("integrity.running") : root.phaseLabel(taskStatus)
         errorSummary: root.taskSnapshot.error || ""
         cleanupWarning: root.taskSnapshot.cleanupWarning || false
@@ -551,16 +557,17 @@ Item {
         remainingSummary: root.remainingTime()
         onCancelRequested: reader.cancelTask(root.activeTaskId)
         onOpenOutputRequested: reader.openOutput(root.activeTaskId)
-        onConflictRequested: conflictWindow.present()
+        onConflictRequested: conflictWindow.presentPrompt(true)
         onPasswordRequested: passwordWindow.revealPrompt()
     }
     ConflictWindow {
         id: conflictWindow
         owner: root.windowHost
         task: root.taskSnapshot
+        decisionsAvailable: reader.runtimeAvailable
         sizeFormatter: root.formatSize
-        onDecision: (policy, all) => {
-            if (reader.decideTask(root.activeTaskId, root.taskSnapshot.promptId || "", policy, all))
+        onDecision: (taskId, promptId, policy, all) => {
+            if (reader.decideTask(taskId, promptId, policy, all))
                 conflictWindow.close();
         }
     }
@@ -903,6 +910,7 @@ Item {
         }
     }
     ColumnLayout {
+        id: pageColumn
         anchors.fill: parent
         spacing: 0
         ArchiveTabs {
@@ -980,8 +988,10 @@ Item {
             }
         }
         RowLayout {
+            id: archiveWorkspace
             objectName: "archiveWorkspace"
             visible: !root.welcomeVisible
+            enabled: !root.archiveOperationVisible
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 0
@@ -1051,7 +1061,7 @@ Item {
                                 }
                             }
                             Text {
-                                text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.archiveTotal)) : qsTrId("ui.7fe646004f2a")
+                                text: reader.ready || root.archiveOperationVisible ? qsTrId("ui.569488175a99", Number(reader.archiveTotal)) : qsTrId("ui.7fe646004f2a")
                                 color: Theme.textSecondary
                                 font.pixelSize: Theme.mainSummarySize
                             }
@@ -1399,7 +1409,7 @@ Item {
                         Text {
                             height: Theme.mainIconButtonSize
                             verticalAlignment: Text.AlignVCenter
-                            text: reader.ready ? qsTrId("ui.569488175a99", Number(reader.total)) : ""
+                            text: reader.ready || root.archiveOperationVisible ? qsTrId("ui.569488175a99", Number(reader.total)) : ""
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainSummarySize
                         }
@@ -1993,13 +2003,13 @@ Item {
                         objectName: "archiveLoadingOverlay"
                         anchors.fill: parent
                         color: Theme.surface
-                        visible: reader.browsingBusy || !reader.ready || reader.total === 0
+                        visible: !root.archiveOperationVisible && (reader.browsingBusy || !reader.ready || reader.total === 0)
                         opacity: 0.95
                     }
                     ColumnLayout {
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, 460)
-                        visible: reader.browsingBusy || !reader.ready || reader.total === 0
+                        visible: !root.archiveOperationVisible && (reader.browsingBusy || !reader.ready || reader.total === 0)
                         spacing: Theme.mainUnits(16)
                         Text {
                             Layout.fillWidth: true
@@ -2161,7 +2171,7 @@ Item {
                                 KeyNavigation.tab: taskMenu.footerItem && taskMenu.footerItem.enabled ? taskMenu.footerItem : null
                                 text: root.taskLabel(taskData) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
                                 asset: "task-list"
-                                statusLabel: root.taskStateLabel(taskData.status)
+                                statusLabel: root.taskStateLabel(root.taskStatus(taskData))
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
                                 onTriggered: {
                                     const identity = taskData.id;
@@ -2203,11 +2213,32 @@ Item {
                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + (reader.browsingBusy ? "activity.png" : "completed.png")
                 }
                 Text {
-                    text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
+                    text: root.archiveOperationVisible ? root.archiveOperationTitle : reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.332e65565b33") : qsTrId("ui.654a6e182ac7")
                     color: Theme.textSecondary
                     font.pixelSize: Theme.mainStatusSize
                 }
             }
         }
+    }
+    BrowserBusyOverlay {
+        id: archiveBusyOverlay
+        namePrefix: "archiveOperation"
+        x: pageColumn.x + archiveWorkspace.x
+        y: pageColumn.y + archiveWorkspace.y
+        width: archiveWorkspace.width
+        height: archiveWorkspace.height
+        busy: root.archiveOperationVisible && !root.closedPage
+        cancellationPending: reader.archiveCancelling
+        backdropColor: "transparent"
+        archiveName: reader.title
+        titleLabel: root.archiveOperationTitle
+        noteLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.moveNote") : qsTrId("archive.operation.addNote")
+        progressLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.moveProgress") : qsTrId("archive.operation.addProgress")
+        cancelLabel: reader.archiveOperation === "move" ? qsTrId("archive.operation.cancelMove") : qsTrId("archive.operation.cancelAdd")
+        onCancelRequested: reader.cancel()
+        onDismissed: Qt.callLater(function () {
+            if (!root.welcomeVisible && reader.ready && !reader.browsingBusy && root.visible)
+                (root.viewMode === "grid" ? grid : table).forceActiveFocus(Qt.OtherFocusReason);
+        })
     }
 }

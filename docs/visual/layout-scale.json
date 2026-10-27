@@ -62,6 +62,11 @@
       "captionIconSize": 18,
       "captionRestoreOffset": 3
     },
+    "operation_overlay": {
+      "backdrop": "transparent",
+      "card_metrics": "welcome-reference.json opening_*",
+      "retain_archive_page": true
+    },
     "windows_frame": {
       "strategy": "Native resizable frame, client-extended titlebar",
       "frame_margin_native_pixels": 1,

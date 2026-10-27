@@ -652,6 +652,14 @@
     "password.openDescription": "此压缩包的文件名已加密，需要密码才能浏览。",
     "password.openContinue": "继续打开",
     "password.openHeading": "输入密码以浏览内容",
-    "password.openPrivacy": "密码仅用于当前打开请求，不会保存。关闭此窗口将取消打开。"
+    "password.openPrivacy": "密码仅用于当前打开请求，不会保存。关闭此窗口将取消打开。",
+    "archive.operation.adding": "正在添加文件…",
+    "archive.operation.moving": "正在移动文件…",
+    "archive.operation.addNote": "正在将文件添加到压缩包，完成后刷新文件列表。",
+    "archive.operation.moveNote": "正在调整压缩包内的文件位置，完成后刷新文件列表。",
+    "archive.operation.addProgress": "添加进度",
+    "archive.operation.moveProgress": "移动进度",
+    "archive.operation.cancelAdd": "取消添加",
+    "archive.operation.cancelMove": "取消移动"
   }
 }

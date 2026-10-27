@@ -34,7 +34,7 @@ Item {
     Ui.ExtractWindow { id: extract; owner: ownerWindow; controller: controller }
     Ui.ConflictWindow {
         id: conflict; owner: ownerWindow
-        task: ({promptName: "a.txt", overwriteAllowed: true, existingBytes: "1", incomingBytes: "1"})
+        task: ({id: "1", status: "waiting", promptId: "1", promptName: "a.txt", overwriteAllowed: true, existingBytes: "1", incomingBytes: "1"})
         sizeFormatter: value => value + " B"
     }
     TestCase {
@@ -134,7 +134,7 @@ Item {
             compare(findChild(extract, "extractSelectedScopeCount").text, "2 项");
         }
         function test_conflict_normal_density() {
-            conflict.present(); waitForRendering(conflict.contentItem);
+            conflict.presentPrompt(true); waitForRendering(conflict.contentItem);
             compare(conflict.width, 491);
             verify(conflict.height <= Math.min(560, Screen.desktopAvailableHeight - 80));
             const rename = findChild(conflict, "conflictRename");

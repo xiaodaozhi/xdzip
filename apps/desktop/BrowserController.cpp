@@ -677,7 +677,10 @@ QVariantList BrowserController::tasks() const {
         --it;
         if (m_hiddenFinishedTasks.contains(it.key()) && it.value().value("terminal").toBool())
             continue;
-        result.append(it.value());
+        auto task = it.value();
+        task.insert("cancelRequested",
+                    !task.value("terminal").toBool() && m_cancellingTasks.contains(it.key()));
+        result.append(task);
     }
     return result;
 }
@@ -718,7 +721,7 @@ QVariantMap BrowserController::passwordPrompt() const {
         return m_openPasswordPrompt;
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
         const auto &task = it.value();
-        if (task.value("status") == "waiting_password" &&
+        if (!m_cancellingTasks.contains(it.key()) && task.value("status") == "waiting_password" &&
             !task.value("passwordPromptId").toString().isEmpty())
             return {{"taskId", QString::number(it.key())},
                     {"promptId", task.value("passwordPromptId")},
@@ -939,10 +942,28 @@ void BrowserController::cancelTask(const QString &id) {
         emit tasksChanged();
         return;
     }
-    m_connection->cancelTask(id.toULongLong());
+    bool valid = false;
+    const auto task = id.toULongLong(&valid);
+    if (!valid || !task || m_cancellingTasks.contains(task) ||
+        m_tasks.value(task).value("terminal").toBool())
+        return;
+    if (m_connection->cancelTask(task)) {
+        m_cancellingTasks.insert(task);
+        const auto state = m_tasks.value(task);
+        if ((state.value("session").toString() == m_session &&
+             (state.value("kind") == "update" || state.value("kind") == "move")) ||
+            (m_result.updating && (m_result.taskId == id || m_result.observedTask == task)))
+            m_archiveCancellationRequested = true;
+        emit tasksChanged();
+        emit changed();
+    }
 }
 bool BrowserController::decideTask(const QString &id, const QString &prompt, int policy, bool all) {
-    return policy >= 1 && policy <= 3 &&
+    const auto task = m_tasks.constFind(id.toULongLong());
+    return runtimeAvailable() && task != m_tasks.cend() &&
+           !m_cancellingTasks.contains(task.key()) && task->value("status") == "waiting" &&
+           !prompt.isEmpty() && task->value("promptId").toString() == prompt && policy >= 1 &&
+           policy <= 3 &&
            m_connection->decideTask(id.toULongLong(), prompt.toULongLong(),
                                     static_cast<quint8>(policy), all);
 }
@@ -963,7 +984,8 @@ bool BrowserController::submitPassword(const QString &id, const QString &prompt,
         return true;
     }
     const auto task = m_tasks.constFind(id.toULongLong());
-    if (task == m_tasks.cend() || task->value("status") != "waiting_password" || prompt.isEmpty() ||
+    if (task == m_tasks.cend() || m_cancellingTasks.contains(task.key()) ||
+        task->value("status") != "waiting_password" || prompt.isEmpty() ||
         task->value("passwordPromptId").toString() != prompt)
         return false;
     auto bytes = password.toUtf8();
@@ -1022,6 +1044,7 @@ void BrowserController::restoreQuery() {
     m_sort = m_committedQuery.sort;
 }
 void BrowserController::invalidateSnapshot() {
+    m_archiveOperation.clear();
     m_ready = false;
     m_committedQuery = {};
     restoreQuery();
@@ -1039,7 +1062,7 @@ void BrowserController::cancel() {
         const auto task =
             m_result.taskId.isEmpty() ? m_result.observedTask : m_result.taskId.toULongLong();
         if (task) {
-            m_connection->cancelTask(task);
+            cancelTask(QString::number(task));
             return;
         }
     }
@@ -1049,13 +1072,14 @@ void BrowserController::cancel() {
             if (!task->value("terminal").toBool() &&
                 task->value("session").toString() == m_session &&
                 (task->value("kind") == "update" || task->value("kind") == "move")) {
-                m_connection->cancelTask(task.key());
+                cancelTask(QString::number(task.key()));
                 return;
             }
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();
         m_busy = false;
+        m_archiveOperation.clear();
         restoreQuery();
         m_message = explain("cancelled");
         emit changed();
@@ -1147,6 +1171,10 @@ void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
                           command.kind == xdzip::reader::CommandKind::OpenEntry;
     m_result.updating = command.kind == xdzip::reader::CommandKind::Update ||
                         command.kind == xdzip::reader::CommandKind::Move;
+    if (m_result.updating) {
+        m_archiveOperation = command.kind == xdzip::reader::CommandKind::Move ? "move" : "add";
+        m_archiveCancellationRequested = false;
+    }
     m_result.exporting = command.kind == xdzip::reader::CommandKind::Export ||
                          command.kind == xdzip::reader::CommandKind::PublishExport;
     m_result.exportManifest = command.kind == xdzip::reader::CommandKind::ExportManifest;
@@ -1213,6 +1241,8 @@ void BrowserController::attemptSubmission() {
         m_message = explain(code);
         if (m_result.creating)
             m_creationError = m_message;
+        if (m_result.updating)
+            m_archiveOperation.clear();
         if (m_result.exporting && m_export)
             m_export->finish({}, "runtime_unavailable");
         if (m_exportCopy) {
@@ -1264,6 +1294,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         handleTransferTask(t);
         const auto status = text(t.status);
         const bool terminal = status == "succeeded" || status == "failed" || status == "cancelled";
+        if (m_tasks.value(t.id).value("terminal").toBool() && !terminal)
+            return;
+        if (terminal)
+            m_cancellingTasks.remove(t.id);
         QVariantList details;
         for (const auto &entry : t.details)
             details.append(QVariantMap{{"name", text(entry.name)},
@@ -1625,6 +1659,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             if (creating)
                 m_creationError = m_result.error.isEmpty() ? QString{} : m_message;
             const QString taskId = m_result.taskId;
+            if (updating && taskId.isEmpty())
+                m_archiveOperation.clear();
             if (m_result.targetCheck)
                 m_targetCheck = {{"path", m_checkedTarget},
                                  {"valid", m_result.error.isEmpty()},
@@ -1709,6 +1745,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_result = {};
             if (restoreUpdatedLocation())
                 return;
+            m_archiveOperation.clear();
             emit changed();
         }
         QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);

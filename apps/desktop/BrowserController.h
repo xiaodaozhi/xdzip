@@ -100,6 +100,8 @@ class BrowserController : public QObject {
     Q_PROPERTY(bool busy READ busy NOTIFY changed)
     Q_PROPERTY(bool taskStarting READ taskStarting NOTIFY changed)
     Q_PROPERTY(bool browsingBusy READ browsingBusy NOTIFY changed)
+    Q_PROPERTY(QString archiveOperation READ archiveOperation NOTIFY changed)
+    Q_PROPERTY(bool archiveCancelling READ archiveCancelling NOTIFY changed)
     Q_PROPERTY(bool browserQueryAvailable READ browserQueryAvailable NOTIFY changed)
     Q_PROPERTY(bool queryAvailable READ queryAvailable NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
@@ -175,6 +177,12 @@ class BrowserController : public QObject {
         return m_updateActive || (m_busy && m_result.updating) ||
                (m_busy && (m_closing || m_faulted ||
                            (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview)));
+    }
+    QString archiveOperation() const {
+        return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};
+    }
+    bool archiveCancelling() const {
+        return !archiveOperation().isEmpty() && m_archiveCancellationRequested;
     }
     bool browserQueryAvailable() const {
         return m_ready && !m_updateActive && runtimeAvailable() &&
@@ -429,6 +437,8 @@ class BrowserController : public QObject {
     quint64 m_moveGeneration = 0, m_moveSelectionRevision = 0;
     bool m_updateAllowed = false;
     bool m_updateActive = false;
+    QString m_archiveOperation;
+    bool m_archiveCancellationRequested = false;
     bool m_restoreAfterUpdate = false;
     QString m_updateLocation;
     int m_updateSort = 0;
@@ -440,6 +450,7 @@ class BrowserController : public QObject {
     QString m_extractionDirectory, m_sourcePath, m_checkedTarget;
     QMap<quint64, QVariantMap> m_tasks;
     QSet<quint64> m_hiddenFinishedTasks;
+    QSet<quint64> m_cancellingTasks;
     bool m_nativeDragActive = false;
     void setNativeDragActive(bool active);
     QVariantMap m_openPasswordPrompt;

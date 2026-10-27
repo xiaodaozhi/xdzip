@@ -16,6 +16,7 @@ body.export header{display:none}body.export iframe{margin:0}
 <header><nav><strong>主窗口与目录树，胶囊标签修订</strong>
 <a href="?theme=light">主窗口，浅色</a><a href="?theme=dark">主窗口，深色</a>
 <a href="?tree=expanded">目录树，多级展开</a>
+<a href="?operation=add">添加等待，透明遮罩</a><a href="?operation=move">移动等待，透明遮罩</a>
 <a href="?platform=windows">Windows 标题栏</a>
 <a href="?tabs=overflow">多标签溢出与拖动排序</a>
 <a href="?menu=directory-root">根目录菜单</a><a href="?menu=extract">解压菜单</a>
@@ -34,7 +35,7 @@ const [width,height]=window.XDZIP_DISPLAY_SPEC.views.main.size;
 frame.width=width;frame.height=height;
 if(query.has('export'))document.body.classList.add('export');
 frame.addEventListener('load',async()=>{
-    frame.contentWindow.postMessage({type:'xdzip-review-configure',view:'main',platform,theme},'*');
+    frame.contentWindow.postMessage({type:'xdzip-review-configure',view:'main',platform,theme,archiveOperation:query.get('operation')},'*');
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     const doc=frame.contentDocument;
     await doc.fonts.ready;

@@ -824,6 +824,7 @@ let welcomeOpening = null;
 function cancelWelcomeOpening(restoreFocus = true) {
     if (!welcomeOpening) return;
     clearTimeout(welcomeOpening.timer);
+    for (const [content, wasInert] of welcomeOpening.blocked || []) content.inert = wasInert;
     welcomeOpening = null;
     $("#welcome-opening")?.remove();
     $("#welcome").classList.remove("external-opening");
@@ -831,17 +832,25 @@ function cancelWelcomeOpening(restoreFocus = true) {
     if (content) content.inert = false;
     if (restoreFocus) $("#welcome-open")?.focus();
 }
-function beginWelcomeOpening(name, complete = null, external = false) {
+function beginWelcomeOpening(name, complete = null, external = false, operation = "") {
     if (welcomeOpening) return;
     const token = {};
     welcomeOpening = token;
     $("#welcome").classList.toggle("external-opening", external);
-    $(".welcome-content").inert = true;
+    const editing = ["add", "move"].includes(operation);
+    const host = editing ? $(".workspace") : $("#welcome");
+    token.blocked = (editing ? [...host.children] : [$(".welcome-content")]).map(content => [content, content.inert]);
+    for (const [content] of token.blocked) content.inert = true;
     const overlay = document.createElement("div");
     overlay.id = "welcome-opening";
-    overlay.className = "welcome-opening";
-    overlay.innerHTML = `<section class="welcome-opening-card" role="dialog" aria-modal="true" aria-labelledby="welcome-opening-title"><div class="welcome-opening-body"><h2 id="welcome-opening-title">${settingText("ui.821ffb8cd6a2")}</h2><p class="welcome-opening-name">${esc(name)}</p><div class="welcome-opening-progress" role="progressbar" aria-label="${settingText("welcome.opening.progress")}"><span></span></div><p role="status">${settingText("welcome.opening.note")}</p></div><div class="welcome-opening-footer"><button id="welcome-opening-cancel" class="button">${settingText("welcome.opening.cancel")}</button></div></section>`;
-    $("#welcome").append(overlay);
+    overlay.className = "welcome-opening" + (editing ? " archive-operation" : "");
+    const title = editing ? operation === "move" ? "archive.operation.moving" : "archive.operation.adding" : "ui.821ffb8cd6a2";
+    const note = editing ? operation === "move" ? "archive.operation.moveNote" : "archive.operation.addNote" : "welcome.opening.note";
+    const progress = editing ? operation === "move" ? "archive.operation.moveProgress" : "archive.operation.addProgress" : "welcome.opening.progress";
+    const cancelLabel = editing ? operation === "move" ? "archive.operation.cancelMove" : "archive.operation.cancelAdd" : "welcome.opening.cancel";
+    const translate = editing ? confirmationText : settingText;
+    overlay.innerHTML = `<section class="welcome-opening-card" role="dialog" aria-modal="true" aria-labelledby="welcome-opening-title"><div class="welcome-opening-body"><h2 id="welcome-opening-title">${translate(title)}</h2><p class="welcome-opening-name">${esc(name)}</p><div class="welcome-opening-progress" role="progressbar" aria-label="${translate(progress)}"><span></span></div><p role="status">${translate(note)}</p></div><div class="welcome-opening-footer"><button id="welcome-opening-cancel" class="button">${translate(cancelLabel)}</button></div></section>`;
+    host.append(overlay);
     const cancel = $("#welcome-opening-cancel");
     cancel.onclick = () => cancelWelcomeOpening();
     overlay.onkeydown = event => {
@@ -1988,6 +1997,8 @@ window.addEventListener("message", (event) => {
     if (config.welcomeError) setWelcomeFeedback(config.welcomeError);
     if (config.welcomeOpening && ["welcome", "welcome-narrow"].includes(config.view))
         beginWelcomeOpening("北境旅行.zip", null, !!config.welcomeExternalOpening);
+    if (config.view === "main" && ["add", "move"].includes(config.archiveOperation))
+        beginWelcomeOpening("北境旅行.zip", null, false, config.archiveOperation);
     if (config.welcomeDrag && ["welcome", "welcome-narrow"].includes(config.view)) {
         $("#welcome-drop").classList.add("drag-over");
         $("#welcome-drop span").textContent = "松开即可打开压缩包";

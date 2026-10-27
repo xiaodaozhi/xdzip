@@ -8018,7 +8018,25 @@ QtObject {
         QVERIFY(controller->sessionId() != session);
         QTRY_VERIFY(controller->requestClose());
     }
+    void pageCancelEndsHiddenAdditionConflict_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("scale");
+        QTest::addColumn<bool>("hidden");
+        QTest::addColumn<QString>("cancelRoute");
+        QTest::newRow("zh-page-hidden") << QString("zh-CN") << 1. << true << QString("page");
+        QTest::newRow("zh-page-visible-large")
+            << QString("zh-CN") << 1.5 << false << QString("page");
+        QTest::newRow("en-task-visible") << QString("en-US") << 1. << false << QString("task");
+        QTest::newRow("en-controller-hidden-large")
+            << QString("en-US") << 1.5 << true << QString("controller");
+    }
     void pageCancelEndsHiddenAdditionConflict() {
+        QFETCH(QString, language);
+        QFETCH(double, scale);
+        QFETCH(bool, hidden);
+        QFETCH(QString, cancelRoute);
+        QVERIFY(initializeUiText(language));
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QTemporaryDir fixture;
         QVERIFY(fixture.isValid());
         const auto source = fixture.filePath("editable.zip");
@@ -8032,6 +8050,10 @@ QtObject {
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        preferences->preview(language == "en-US" ? "dark" : "light", scale);
+        const auto restoreTheme = qScopeGuard([&] { preferences->cancelPreview(); });
         controller->openPath(source);
         QTRY_VERIFY(controller->ready() && !controller->busy());
         const auto session = controller->sessionId();
@@ -8062,27 +8084,136 @@ QtObject {
             addition, Qt::LeftButton, Qt::NoModifier,
             start->mapToScene(QPointF(start->width() / 2, start->height() / 2)).toPoint());
         auto *conflict = window->findChild<QQuickWindow *>("conflictWindow");
-        QTRY_VERIFY(conflict->isVisible());
+        QTRY_VERIFY2(
+            conflict->isVisible(),
+            qPrintable(QString("canDecide=%1, task=%2, owned=%3/%4, dismissed=%5")
+                           .arg(conflict->property("canDecide").toBool())
+                           .arg(QString::fromUtf8(QJsonDocument::fromVariant(controller->tasks())
+                                                      .toJson(QJsonDocument::Compact)))
+                           .arg(conflict->property("promptTaskId").toString(),
+                                conflict->property("promptIdentity").toString(),
+                                conflict->property("dismissedPrompt").toString())));
         QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 1);
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "waiting");
         QVERIFY(controller->browsingBusy());
-        conflict->close();
-        window->findChild<QQuickWindow *>("taskWindow")->close();
-        auto *cancel = findVisual(window->contentItem(), "welcomeOpeningCancel");
+        QCOMPARE(controller->archiveOperation(), QString("add"));
+        auto *workspace = findVisual(window->contentItem(), "archiveWorkspace");
+        auto *overlay = findVisual(window->contentItem(), "archiveOperationOverlay");
+        auto *card = findVisual(window->contentItem(), "archiveOperationCard");
+        QVERIFY(workspace && overlay && card);
+        QVERIFY(workspace->isVisible() && !workspace->isEnabled() && overlay->isVisible());
+        QVERIFY(controller->m_model.rowCount() > 0);
+        QCOMPARE(overlay->property("backdropColor").value<QColor>(), QColor(Qt::transparent));
+        QCOMPARE(
+            findVisual(window->contentItem(), "archiveOperationTitle")->property("text").toString(),
+            qtTrId("archive.operation.adding"));
+        QVERIFY(card->width() <= 360 && card->height() <= overlay->height());
+        auto *cancel = findVisual(window->contentItem(), "archiveOperationCancel");
         QVERIFY(cancel);
+        QCOMPARE(cancel->property("text").toString(), qtTrId("archive.operation.cancelAdd"));
         QTRY_VERIFY(cancel->isVisible() && cancel->isEnabled());
-        QTest::mouseClick(
-            window, Qt::LeftButton, Qt::NoModifier,
-            cancel->mapToScene(QPointF(cancel->width() / 2, cancel->height() / 2)).toPoint());
+        const auto task = controller->tasks().first().toMap();
+        auto *progress = window->findChild<QQuickWindow *>("taskWindow");
+        if (hidden) {
+            conflict->close();
+            progress->close();
+            emit controller->tasksChanged();
+            QVERIFY(!conflict->isVisible());
+        }
+        if (!qEnvironmentVariableIsEmpty("XDZIP_OPERATION_VISUAL_AUDIT"))
+            QVERIFY(visual_audit::save(window, qEnvironmentVariable("XDZIP_OPERATION_VISUAL_AUDIT"),
+                                       language + QString::number(scale)));
+        if (cancelRoute == "controller") {
+            controller->cancelTask(task.value("id").toString());
+        } else {
+            auto *owner = window;
+            if (cancelRoute == "task") {
+                owner = progress;
+                cancel = findVisual(progress->contentItem(), "cancelButton");
+                QVERIFY(cancel && cancel->isEnabled());
+            }
+            QTest::mouseClick(
+                owner, Qt::LeftButton, Qt::NoModifier,
+                cancel->mapToScene(QPointF(cancel->width() / 2, cancel->height() / 2)).toPoint());
+        }
+        QVERIFY(!conflict->isVisible());
+        QVERIFY(progress->property("stopping").toBool() || progress->property("terminal").toBool());
+        QVERIFY(!controller->decideTask(task.value("id").toString(),
+                                        task.value("promptId").toString(), 3, true));
+        QVERIFY(QMetaObject::invokeMethod(conflict, "presentPrompt", Q_ARG(bool, true)));
+        QVERIFY(!conflict->isVisible());
         QTRY_VERIFY(controller->activeTaskCount() == 0 && controller->ready() &&
                     !controller->busy() && !controller->browsingBusy());
         QCOMPARE(controller->tasks().first().toMap().value("status").toString(), "cancelled");
         QVERIFY(controller->browserQueryAvailable());
+        QVERIFY(!overlay->isVisible());
+        QVERIFY(workspace->isVisible() && workspace->isEnabled());
+        QVERIFY(controller->archiveOperation().isEmpty());
         QVERIFY(controller->sessionId() != session);
         controller->selectOnlyRow(0);
         QCOMPARE(controller->selectedCount(), 1);
         QVERIFY(original.open(QIODevice::ReadOnly));
         QCOMPARE(original.readAll(), before);
+    }
+    void conflictDialogOwnsPrompt() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *controller = page->findChild<BrowserController *>();
+        auto *conflict = page->findChild<QQuickWindow *>("conflictWindow");
+        QVERIFY(controller && conflict);
+        controller->m_tasks[1] = {
+            {"id", "1"}, {"kind", "update"}, {"status", "waiting"}, {"promptId", "11"}};
+        controller->m_tasks[2] = {{"id", "2"}, {"status", "succeeded"}, {"terminal", true}};
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask", Q_ARG(QString, "1")));
+        QTRY_VERIFY(conflict->isVisible());
+        QCOMPARE(conflict->property("promptIdentity").toString(), QString("11"));
+        conflict->close();
+        emit controller->tasksChanged();
+        QVERIFY(!conflict->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask", Q_ARG(QString, "1")));
+        QTRY_VERIFY(conflict->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask", Q_ARG(QString, "2")));
+        QVERIFY(!conflict->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask", Q_ARG(QString, "1")));
+        auto *applyAll = findVisual(conflict->contentItem(), "conflictApplyAll");
+        QVERIFY(applyAll);
+        applyAll->setProperty("checked", true);
+        controller->m_tasks[1].insert("promptId", "12");
+        emit controller->tasksChanged();
+        QTRY_VERIFY(conflict->isVisible());
+        QCOMPARE(conflict->property("promptIdentity").toString(), QString("12"));
+        QVERIFY(!applyAll->property("checked").toBool());
+        QVERIFY(!controller->decideTask("1", "11", 3, true));
+        controller->m_cancellingTasks.insert(1);
+        emit controller->tasksChanged();
+        QVERIFY(!conflict->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(page, "showTask", Q_ARG(QString, "1")));
+        QVERIFY(!conflict->isVisible());
+        auto *progress = page->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(progress->property("stopping").toBool());
+        controller->m_tasks[1].insert("status", "cleaning");
+        emit controller->tasksChanged();
+        QCOMPARE(progress->property("taskStatus").toString(), QString("cleaning"));
+        QVERIFY(progress->property("stopping").toBool());
+        controller->m_tasks[1].insert("status", "cancelled");
+        controller->m_tasks[1].insert("terminal", true);
+        emit controller->tasksChanged();
+        QVERIFY(progress->property("terminal").toBool());
+        QVERIFY(!conflict->isVisible());
+        controller->m_cancellingTasks.clear();
+        controller->m_tasks[1].insert("status", "waiting");
+        controller->m_tasks[1].insert("terminal", false);
+        controller->m_tasks[1].insert("promptId", "13");
+        emit controller->tasksChanged();
+        QTRY_VERIFY(conflict->isVisible());
+        controller->m_faulted = true;
+        emit controller->changed();
+        QTRY_VERIFY(!conflict->isVisible());
+        QVERIFY(QMetaObject::invokeMethod(conflict, "presentPrompt", Q_ARG(bool, true)));
+        QVERIFY(!conflict->isVisible());
     }
     void additionDraftSelectionAndMetadata_data() {
         QTest::addColumn<QString>("language");
@@ -8681,6 +8812,13 @@ QtObject {
         auto *all = findVisual(dialog->contentItem(), "conflictApplyAll");
         QVERIFY(all && all->isVisible());
         QVERIFY(controller->browsingBusy());
+        QCOMPARE(controller->archiveOperation(), QString("move"));
+        auto *overlay = findVisual(window->contentItem(), "archiveOperationOverlay");
+        QVERIFY(overlay && overlay->isVisible());
+        QCOMPARE(findVisual(window->contentItem(), "archiveOperationCancel")
+                     ->property("text")
+                     .toString(),
+                 qtTrId("archive.operation.cancelMove"));
         QVERIFY(!controller->browserQueryAvailable());
         const auto location = controller->location();
         const auto session = controller->sessionId();

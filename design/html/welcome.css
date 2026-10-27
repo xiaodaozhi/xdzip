@@ -52,6 +52,8 @@ body.welcome-artboard.welcome-narrow .stage { width:1296px; }
 
 /* W01 opening only covers the welcome body; the shared titlebar is unchanged. */
 .welcome-opening { position:absolute; inset:0; z-index:20; display:grid; place-items:center; padding:calc(16px * var(--ui-source-factor)); background:color-mix(in srgb,var(--canvas) 86%,transparent); }
+.workspace { position:relative; }
+.welcome-opening.archive-operation { background:transparent; }
 #welcome.external-opening .welcome-content { visibility:hidden; }
 .welcome-opening-card { width:var(--welcome-opening-card-width); max-width:100%; max-height:100%; overflow:hidden; padding:var(--welcome-opening-inset); border:calc(1px * var(--ui-source-factor)) solid var(--border); border-radius:var(--welcome-opening-radius); background:var(--surface); display:flex; flex-direction:column; gap:var(--welcome-opening-gap); text-align:left; }
 .welcome-opening-body { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:var(--welcome-opening-gap); }

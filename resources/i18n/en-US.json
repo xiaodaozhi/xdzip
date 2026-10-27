@@ -652,6 +652,14 @@
     "password.openDescription": "File names in this archive are encrypted. Enter its password to browse.",
     "password.openContinue": "Continue opening",
     "password.openHeading": "Enter a password to browse",
-    "password.openPrivacy": "Your password is used only for this opening request and is not saved. Closing this window cancels opening."
+    "password.openPrivacy": "Your password is used only for this opening request and is not saved. Closing this window cancels opening.",
+    "archive.operation.adding": "Adding files…",
+    "archive.operation.moving": "Moving files…",
+    "archive.operation.addNote": "Adding files to the archive. The file list will refresh when finished.",
+    "archive.operation.moveNote": "Moving files within the archive. The file list will refresh when finished.",
+    "archive.operation.addProgress": "Addition progress",
+    "archive.operation.moveProgress": "Move progress",
+    "archive.operation.cancelAdd": "Cancel addition",
+    "archive.operation.cancelMove": "Cancel move"
   }
 }

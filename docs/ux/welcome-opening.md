@@ -4,6 +4,10 @@
 
 欢迎页打开真实压缩包时，在正文上方居中显示浮动卡片及半透明遮罩。卡片正常宽 360、内距 24、间距 12、圆角 8、标题 16，窄窗口按可用宽度约束；文件名中间省略，状态说明可换行，取消按钮始终可达。浅深色均复用共享主题，辅助字号沿用全局设置。
 
+已打开压缩包的添加与包内移动复用 BrowserBusyOverlay 卡片及尺寸，背景完全透明，保留原文件页并阻止底层操作。标题、说明、进度辅助名称及取消按钮使用实际操作名称；操作身份持续到任务清理和目录刷新结束，不借用“打开”或“加载”。首次打开的读取遮罩仍遵循上面的半透明政策。
+
+English: Archive additions and internal moves keep the existing file page visible beneath a transparent blocking overlay. The shared card names the actual operation through task cleanup and browser refresh. Initial archive opening keeps its existing dimmed reading view.
+
 当前元数据读取接口没有总字节和百分比进度，显示持续活动的进度条与“正在读取压缩包目录”状态，不使用计时模拟百分比。取消调用既有请求取消，不创建解压任务，不写出文件。取消确认、失败或成功结束后自动移除遮罩；失败信息仍显示于欢迎页，成功进入文件列表。读取期间阻止正文重复打开、新建与拖入，标题栏保持既有布局与宿主命令规则。
 
 HTML 设计原型用可取消的示例等待展示该状态，不读取拖入文件内容。取消后清除定时回调，不能稍后跳入示例；高保真 `opening=1` 固定展示等待状态，原始 PNG 和哈希保持不变。

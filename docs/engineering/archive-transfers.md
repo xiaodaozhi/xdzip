@@ -30,6 +30,10 @@ UpdateWindow 按创建原稿呈现图标标题与添加文件、添加位置、�
 
 English: Once an add or move task is accepted, page-level Cancel targets that task even if its conflict prompt was dismissed. Browsing resumes only after the task terminates, cleanup completes and the original archive reopens.
 
+修改期间保留已提交文件页用于显示，旧查询和选择身份仍不可操作。页面等待层按真实命令保留添加或移动名称，直到刷新结束。任务取消被运行时接纳后立即标记取消请求，重名和密码提示失去决策资格，进度窗口显示取消中并继续跟随真实终态。重名窗口绑定任务及提示令牌；用户关闭后的同一提示不因其他任务更新自动重开，可由任务入口明确重开。任务切换、提示令牌更换、终态和退出均关闭旧提示，按钮不得把旧决定提交到新任务。
+
+English: Accepted cancellation immediately withdraws conflict and password decisions while progress views follow cancellation and the actual terminal result. Conflict dialogs own a task and prompt token; dismissed prompts require explicit reopening, and stale decisions cannot target another task.
+
 ## 包内拖放移动
 
 文件列表和网格达到系统拖动阈值后，先以包内移动处理，冻结当前会话、查询代次、选择版本、包内源目录与稳定条目 ID。拖动未选项先单选，拖动已选项保留多选。源项保持原位绘制，目标文件夹在列表、网格及目录树使用既有选择色高亮。操作说明复用提示的字号、最大宽度和内距，最多四行，边界受当前客户区约束；这是拖放中的即时状态，不沿用普通悬停提示计时。
