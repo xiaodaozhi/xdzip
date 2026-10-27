@@ -7,6 +7,7 @@ import json
 import re
 from pathlib import Path
 
+import brotli
 from fontTools import __version__ as fonttools_version
 from fontTools import subset
 from fontTools.ttLib import TTFont
@@ -127,7 +128,7 @@ def main() -> None:
             "bytes": OUTPUT.stat().st_size,
             "format": "WOFF2",
             "fonttools_version": fonttools_version,
-            "brotli_version": "1.1.0",
+            "brotli_version": brotli.__version__,
             "weight_axis": {"min": 400, "default": 400, "max": 750},
             "unicode_count": len(font.getBestCmap()),
             "requested_codepoints": [f"U+{value:04X}" for value in sorted(current_characters())],
