@@ -52,9 +52,17 @@ Update 支持普通单文件 ZIP、TAR、TAR.GZ 和 7z，不改写加密、分�
 
 7z 修改保持同一命名空间、冲突、来源复核及原子替换契约，固实内容需要解码重建。重建输入使用显式有界缓冲，总原内容及新增内容不超过原生适配器的 512 MiB 缓存上限，另受后端 1 GiB 进程内存预算约束，超限明确返回资源限制。该上限不扩大为磁盘缓存权限，原包仍不变。修改成功后的输出可能采用正常级别和非固实布局，不承诺保留原始压缩流、算法组合或固实分块。文件名加密、内容加密或任何分卷 7z 均拒绝修改，空的加密目录也不能绕过。
 
-RAR 使用官方 UnRAR，只读，不提供添加、替换或包内移动。整包 edit_restriction 的其他不支持位始终开启，不能通过当前页没有不支持条目绕过。7z／RAR 链接及特殊对象不写出，外部复制、临时打开仍经过既有预检和安全输出任务。
+RAR 使用独立 Rust 只读后端，不提供添加、替换或包内移动。整包 edit_restriction 的其他不支持位始终开启，不能通过当前页没有不支持条目绕过。7z／RAR 链接及特殊对象不写出，外部复制、临时打开仍经过既有预检和安全输出任务。
 
 ## 验收边界
+
+列表与网格的完整名称提示在内部移动、原生复制准备和实际原生拖动期间统一抑制，取消旧静止计时。内外拖动交接不能短暂重新开启源提示；Windows以OLE返回、macOS以原生拖动结束回调、Qt准备后拖动以exec返回解除手势状态，异步复制可继续，不能把复制任务结束当作鼠标手势结束。结束后须先获得新的指针位置，再重新完整静止等待1200ms，避免缓存的源hover使提示复活。
+
+English: List and grid name tooltips are suppressed throughout internal dragging, native handoff and the native gesture, cancelling the old dwell timer. Windows OLE return, AppKit's drag-end callback and QDrag exec return end the gesture independently of asynchronous copying. Re-enabling a source tooltip requires a fresh pointer position and a new full stationary-hover delay, preventing cached source hover from reviving it.
+
+拖动预览只表达冻结的源名称、图标和选中数量，不读取或解压内容，不授予目标写入权限。内部预览从有效拖动令牌取值，跨出窗口后清除内部覆盖层并交给原生复制反馈。Windows IDataObject 为 Shell 图像保留有界、线程安全的私有 HGLOBAL 格式，并单独持有唯一 DragContext 流的 COM 引用而不读取或复制其内容，GetData 返回独立引用；禁止覆盖文件描述符、内容流和首选动作。失败不改变原有安全输出与取消语义。原生图像使用非预乘 BGRA 交给 Shell，位图所有权在初始化调用时移交，COM／GDI 准备失败沿用系统光标。具体样式见 [拖动规范](../visual/drag-preview.json)。
+
+English: Drag previews describe only the frozen name, type and selection count. They neither extract content nor authorize writes. A valid internal token supplies the preview; native copy handoff clears the internal overlay. Windows stores bounded private Shell HGLOBAL feedback formats under a lock and retains one named DragContext COM stream without reading its contents, returning independent references. Descriptors, archive-content streams and the preferred action cannot be replaced. Straight-alpha image bytes and bitmap ownership pass to the Shell helper; image setup failure preserves existing safe transfer and cancellation semantics.
 
 核心覆盖三格式、当前目录、原内容和空目录、重名策略、来源变化、受保护输入及取消；Qt 覆盖真实右键打开与添加确认，中英文、浅深色、多字号和冻结会话。Windows 原生协议测试验证异步数据对象和实际内容流。移动回归覆盖列表/网格、目录树、拒绝目标、混选、目录合并、元数据保留及边界交接，三格式由独立 Python 读取器复核。真实 Explorer、Finder、Ubuntu Files 及桌面投放须分别登记，离屏与协议接收器不能代替桌面人工验收。阶段证据记录于对应 issue 和本地/CI 工件。
 

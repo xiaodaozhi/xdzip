@@ -135,6 +135,7 @@ jobs:
           .venv-design/bin/python scripts/check-html-scale.py
           .venv-design/bin/python scripts/check-html-density.py
           .venv-design/bin/python scripts/check-html-operation-ui.py
+            .venv-design/bin/python scripts/check-html-operation-headers.py
           .venv-design/bin/python scripts/check-integrity-progress.py
           .venv-design/bin/python scripts/check-html-create-controls.py
           .venv-design/bin/python scripts/check-extract-fidelity.py
@@ -174,6 +175,7 @@ jobs:
             design/assets/brand/
             build/review/assets/validation.json
             build/review/about/html/
+            build/review/operation-headers/
             build/review/password/html/
             design/assets/reference/tree-*.png
             design/hifi/screens/directory-tree*.png

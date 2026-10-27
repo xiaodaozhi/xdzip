@@ -59,25 +59,15 @@ OperationWindow {
             ColumnLayout {
                 id: taskContent
                 objectName: "taskBodyContent"
-                width: scroll.availableWidth; spacing: 0
-                RowLayout {
+                width: scroll.availableWidth; spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
                     Layout.fillWidth: true
-                    Layout.leftMargin: root.unit(Theme.operationProgressContentInset); Layout.rightMargin: root.unit(Theme.operationProgressContentInset)
-                    Layout.topMargin: root.terminal ? 20 : root.unit(20); Layout.bottomMargin: root.terminal ? 16 : root.unit(16); spacing: root.terminal ? 20 : root.unit(20)
-                    OperationHero {
-                        density: root.density
-                        artworkWidth: root.terminal ? 72 : 66 * root.density
-                        artworkHeight: root.terminal ? 72 : 74 * root.density
-                        source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning" : root.checking ? (Theme.dark ? "dark/document-check" : "document-check") : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
-                        Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true; spacing: 7
-                        Text { Layout.fillWidth: true; Layout.preferredHeight: root.terminal ? implicitHeight : lineHeight; text: root.heading; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); lineHeight: Math.round(Math.round(root.unit(Theme.operationTitleSize)) * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text; wrapMode: Text.Wrap }
-                        Text { Layout.fillWidth: true; Layout.preferredHeight: root.terminal ? implicitHeight : lineHeight; text: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName; textFormat: Text.PlainText; font.pixelSize: Math.round(root.unit(17 * Theme.fontScale)); lineHeight: Math.round(Math.round(root.unit(17 * Theme.fontScale)) * 1.5); lineHeightMode: Text.FixedHeight; color: Theme.textSecondary; elide: Text.ElideMiddle }
-                    }
+                    source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning" : root.checking ? (Theme.dark ? "dark/document-check" : "document-check") : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
+                    title: root.heading
+                    subtitle: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName
                 }
                 ColumnLayout {
+                    objectName: "operationHeaderBody"
                     visible: !root.terminal || root.checking
                     Layout.fillWidth: true
                     Layout.leftMargin: root.unit(Theme.operationProgressContentInset); Layout.rightMargin: root.unit(Theme.operationProgressContentInset)

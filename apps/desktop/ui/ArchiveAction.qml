@@ -12,6 +12,7 @@ Button {
     property bool selected: false
     // Reserved presentation for the unavailable extraction action; no dropdown is activated.
     property bool splitIndicator: false
+    property bool taskDisclosure: false
     property string explanation: text
     property real glyphSize: toolbarStyle ? Theme.mainToolbarIconSize : Theme.mainViewIconSize
     implicitHeight: Math.max(toolbarStyle ? Theme.mainToolbarControlHeight : Theme.mainViewButtonHeight, label.implicitHeight + (toolbarStyle ? Theme.mainUnits(12) : Theme.mainUnits(8)))
@@ -60,6 +61,28 @@ Button {
                 font.weight: root.toolbarStyle ? Font.Medium : Font.Normal
                 color: !root.enabled ? (root.primary ? Theme.accentDisabledText : Theme.textSecondary) : root.primary ? Theme.accentText : Theme.text
                 verticalAlignment: Text.AlignVCenter
+            }
+            Item {
+                objectName: "taskDisclosureIndicator"
+                visible: root.taskDisclosure
+                width: visible ? Theme.taskIndicatorSize : 0
+                height: Theme.taskIndicatorSize
+                anchors.verticalCenter: parent.verticalCenter
+                Accessible.ignored: true
+                Column {
+                    anchors.centerIn: parent
+                    spacing: -Theme.taskIndicatorOverlap
+                    Repeater {
+                        model: 2
+                        Image {
+                            required property int index
+                            width: Theme.taskIndicatorGlyphSize
+                            height: width
+                            rotation: index === 0 ? 180 : 0
+                            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "chevron-down.png"
+                        }
+                    }
+                }
             }
         }
     }

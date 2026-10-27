@@ -41,6 +41,12 @@ Item {
         name: "OperationRevisions"; when: windowShown
         function init() { Ui.Theme.dark = false; Ui.Theme.fontScale = 1; primary.enabled = true; segments.width = 300; }
         function cleanup() { extract.close(); conflict.close(); Ui.Theme.fontScale = 1; }
+        function test_extract_window_title_is_distinct_from_toolbar_action() {
+            compare(extract.title, qsTrId("extract.windowTitle"));
+            compare(extract.title, "解压文件");
+            const heading=findChild(extract,"extractWindowHeading");
+            verify(heading!==null); compare(heading.text,extract.title);
+        }
         function test_primary_states_data() { return [{tag: "light", dark: false}, {tag: "dark", dark: true}]; }
         function test_primary_states(data) {
             Ui.Theme.dark = data.dark;

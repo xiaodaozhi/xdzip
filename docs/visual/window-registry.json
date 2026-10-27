@@ -17,7 +17,7 @@
       "parent": "ApplicationWindow",
       "role": "main",
       "width": "Theme.mainWindowWidth",
-      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
+      "reason": "主窗口独立密度与最小尺寸，胶囊标签支持按稳定身份关闭、关闭其他和关闭右侧，文件操作按钮采用固定尺寸与间距，列宽在本次运行各窗口共享，排序箭头位于实际显示标题的右侧并保留 6 逻辑像素间距，选框到文件图标槽的留白为 12 逻辑像素，图标、文件名和名称表头同步左移，关闭窗口清除标签并保留后台任务入口，包内移动复用文件行和树行既有密度，拖入高亮及拒绝说明见 design/hifi/sources/archive-move.html。CAB、ISO、UDF 只读接入沿用格式徽标及欢迎页既有字号和间距，不增加创建选项或窗口",
       "design": "design/hifi/sources/main.html"
     },
     "Preview": {
@@ -31,20 +31,30 @@
       "role": "operation",
       "width": "Theme.operationCreateWidth",
       "design": "design/html/canvas.html?view=create",
-      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享。7z 在既有格式组中增加一项，按真实文字宽度保障四项可读，空间不足时左侧选项标签换行。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变"
+      "reason": "保持 C01 既有尺寸与控件身份，文件选择区与添加窗口共享。7z 在既有格式组中增加一项，按真实文字宽度保障四项可读，空间不足时左侧选项标签换行。固实和文件名加密使用共享复选控件，正文滚动和固定 footer 不变",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "ExtractWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationExtractWidth",
-      "design": "design/html/canvas.html?view=extract"
+      "design": "design/html/canvas.html?view=extract",
+      "reason": "原生与正文标题均为解压文件，正文与共享 footer 沿用冻结尺寸",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "TaskWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationProgressWidth",
       "reason": "复用既有解压进度尺寸，承载真实只读完整性检查及其密码等待和结果。临时打开任务在系统接受打开后自动隐藏，失败保留并可重试打开文件，更新归档和外部拖放沿用同一任务尺寸与独立操作类型，不把准备完成宣称为系统复制完成，包内移动沿用归档更新的校验及结果布局，保留独立移动任务标识。TAR、ISO 和 UDF 的无文件内容校验和说明复用既有可换行 footer，不改变窗口尺寸",
-      "design": "design/html/canvas.html?view=progress"
+      "design": "design/html/canvas.html?view=progress",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "IntegrityWindow": {
       "parent": "TaskWindow",
@@ -56,7 +66,10 @@
       "role": "operation",
       "width": "Theme.operationConflictWidth",
       "reason": "重名守卫保持 491 宽、最高 560，长标题与说明在正文内换行，禁止辅助字号撑宽内容，共享 footer 固定可达，包内添加和移动使用文件重名分支及应用到后续冲突，普通创建仍使用整包重名分支",
-      "design": "design/html/canvas.html?view=conflict"
+      "design": "design/html/canvas.html?view=conflict",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "PasswordWindow": {
       "parent": "OperationWindow",
@@ -76,14 +89,20 @@
       "role": "operation",
       "width": "Theme.settingsLogicalWidth",
       "reason": "已批准的设置主题卡片布局，612 宽",
-      "design": "design/html/canvas.html?view=settings"
+      "design": "design/html/canvas.html?view=settings",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "AboutWindow": {
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.aboutLogicalWidth",
-      "reason": "关于标题 24，遵循独立品牌规格，更新检查与安装状态使用可滚动正文及共享控件",
-      "design": "design/html/canvas.html?view=about"
+      "reason": "491宽，标题区与其他图标弹窗共用OperationHeader；版本与更新状态保留可滚动正文及共享footer。旧品牌标题24不再作为当前例外。",
+      "design": "design/html/canvas.html?view=about",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     },
     "QuitWindow": {
       "parent": "OperationConfirmationWindow",
@@ -101,7 +120,10 @@
       "role": "operation",
       "width": "Theme.operationCreateWidth",
       "reason": "以 C01 创建原稿为依据，491 逻辑宽度，图标标题与三块卡片，共享输入选择区和 footer，正文自适应并滚动，最高沿用创建窗上限，目标归档及包内目录只读",
-      "design": "design/hifi/sources/archive-add.html"
+      "design": "design/hifi/sources/archive-add.html",
+      "header_design": "design/hifi/sources/operation-headers.html",
+      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
+      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
     }
   },
   "inline_windows": {

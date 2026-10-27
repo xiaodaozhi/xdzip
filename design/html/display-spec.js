@@ -1,6 +1,20 @@
 "use strict";
 // Generated from docs/visual/layout-scale.json; never infer logical size from DPR.
 window.XDZIP_DISPLAY_SPEC = Object.freeze({
+    "operationHeader": {
+        "normalHeight": 96,
+        "iconSize": 48,
+        "horizontalInset": 24,
+        "verticalInset": 20,
+        "gap": 16,
+        "textGap": 6,
+        "titleSize": 20,
+        "subtitleSize": 13,
+        "titleLineFactor": 1.4,
+        "subtitleLineFactor": 1.5,
+        "bodyGap": 0
+    },
+    "taskMenuMaximumHeight": 360,
     "password": {
         "schema_version": 1,
         "logical_width": 491,
@@ -72,8 +86,8 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
         "content_inset": 24,
         "section_gap": 16,
         "row_gap": 10,
-        "artwork_size": 64,
-        "title_size": 24,
+        "artwork_size": 48,
+        "title_size": 20,
         "body_size": 13,
         "note_size": 12,
         "source": "design/hifi/about.html",
@@ -97,13 +111,15 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
         ],
         "artwork_source": "design/assets/brand/xdzip.svg",
         "macos_artwork_source": "design/assets/brand/macos/xdzip.png",
-        "update_progress_height": 6
+        "update_progress_height": 6,
+        "header_policy": "Shared operation.header in layout-scale.json; legacy centered branding remains historical."
     },
     "version": 2,
     "logicalWindowWidth": 1024,
     "windowsCaption": {
         "iconButtonSize": 28,
         "fileActionGap": 6.4,
+        "fileSelectionGap": 12,
         "sortIndicatorGap": 6,
         "columnResizeHitWidth": 8,
         "columnMinimumWidth": 64,

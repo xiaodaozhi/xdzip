@@ -9,8 +9,25 @@ Menu {
     popupType: Popup.Item
     focus: true
     property Item returnFocusItem: null
+    property Component footerComponent: null
+    readonly property Item footerItem: footerLoader.item as Item
+    property real measuredFooterHeight: 0
+    readonly property real footerHeight: footerComponent ? measuredFooterHeight : 0
+    readonly property real viewportScrollBarWidth: menuList.contentHeight > menuList.height && verticalScrollBar.visible ? verticalScrollBar.width : 0
+    readonly property real naturalContentHeight: {
+        let total = 0;
+        for (let index = 0; index < count; ++index) {
+            const item = itemAt(index);
+            if (item) total += item.implicitHeight;
+        }
+        return total;
+    }
+    function measureFooter() {
+        measuredFooterHeight = footerItem ? Math.ceil(footerItem.implicitHeight) : 0;
+    }
     implicitWidth: Math.max(Theme.menuMinWidth, Theme.menuWidth)
     padding: Theme.menuPadding
+    bottomPadding: padding + footerHeight
     margins: Theme.menuViewportInset
     font.pixelSize: Theme.menuLabelSize
     delegate: CommandMenuItem {}
@@ -62,7 +79,12 @@ Menu {
             border.color: Theme.menuBorder
         }
     }
+    Connections {
+        target: root.footerItem
+        function onImplicitHeightChanged() { root.measureFooter(); }
+    }
     contentItem: ListView {
+        id: menuList
         objectName: "xdzipCommandMenuContent"
         focus: true
         implicitHeight: contentHeight
@@ -71,8 +93,30 @@ Menu {
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         interactive: contentHeight > height
-        ScrollBar.vertical: ScrollBar {}
+        ScrollBar.vertical: ScrollBar {
+            id: verticalScrollBar
+            objectName: "commandMenuScrollBar"
+            policy: root.footerComponent ? (menuList.contentHeight > menuList.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff) : ScrollBar.AsNeeded
+        }
+        Loader {
+            id: footerLoader
+            // Keep the fixed action in the interactive popup layer, outside the clipped list.
+            parent: menuList.parent
+            active: root.footerComponent !== null
+            sourceComponent: root.footerComponent
+            x: root.leftPadding
+            y: parent ? parent.height - root.padding - root.footerHeight : 0
+            width: parent ? parent.width - root.leftPadding - root.rightPadding : 0
+            height: root.footerHeight
+            onLoaded: root.measureFooter()
+        }
         Keys.onPressed: function (event) {
+            if (event.key === Qt.Key_Tab && root.footerItem && root.footerItem.enabled) {
+                if (root.footerItem.activeFocus && !(event.modifiers & Qt.ShiftModifier)) root.close();
+                else root.footerItem.forceActiveFocus(Qt.TabFocusReason);
+                event.accepted = true;
+                return;
+            }
             if (event.key === Qt.Key_Home || event.key === Qt.Key_End || event.key === Qt.Key_Up && root.currentIndex < 0) {
                 root.focusBoundary(event.key !== Qt.Key_Home);
                 event.accepted = true;

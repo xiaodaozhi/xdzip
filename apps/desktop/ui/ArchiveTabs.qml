@@ -345,6 +345,11 @@ Rectangle {
             HoverHandler {
                 id: hover
             }
+            CommandTooltip {
+                objectName: "archiveTabTooltip-" + capsule.index
+                requested: hover.hovered && !pointer.pressed && !tabClose.hovered && !root.reordering && !tabContext.visible && !tabList.visible
+                text: root.labelFor(capsule.modelData)
+            }
             MouseArea {
                 id: pointer
                 anchors.fill: parent
@@ -413,6 +418,7 @@ Rectangle {
                     Layout.preferredWidth: Theme.mainTabCloseSize
                     Layout.preferredHeight: Theme.mainTabCloseSize
                     ArchiveAction {
+                        id: tabClose
                         objectName: "archiveTabClose"
                         anchors.fill: parent
                         visible: (root.sessionControls || root.archiveTitle.length > 0) && (capsule.modelData.selected || hover.hovered || capsule.activeFocus)

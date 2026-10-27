@@ -14,7 +14,7 @@ OperationWindow {
     function unit(value: real): real { return value * density; }
     width: Theme.operationExtractWidth
     requestedHeight: Math.min(Math.round(unit(Theme.operationExtractClientHeight)), Screen.desktopAvailableHeight - 80)
-    title: qsTrId("ui.b32af2a5114f")
+    title: qsTrId("extract.windowTitle")
     escapeClosesWindow: !target.activeFocus
     readonly property string archiveFolder: String(intent.folder || intent.archive || "")
     readonly property string destinationPreview: target.text + (sameFolder.checked && target.text
@@ -63,27 +63,16 @@ OperationWindow {
             Layout.fillWidth: true; Layout.fillHeight: true
             contentWidth: availableWidth; clip: true
             ColumnLayout {
-                width: body.availableWidth; spacing: 0
-                RowLayout {
+                width: body.availableWidth; spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
                     Layout.fillWidth: true
-                    Layout.leftMargin: root.unit(Theme.operationGutter); Layout.rightMargin: root.unit(Theme.operationGutter)
-                    Layout.topMargin: root.unit(21); Layout.bottomMargin: root.unit(16); spacing: root.unit(20)
-                    OperationHero {
-                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive-large.png"
-                        canvasWidth: root.unit(70); canvasHeight: root.unit(81); artworkWidth: root.unit(66); artworkHeight: root.unit(79)
-                        Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true; spacing: root.unit(7)
-                        Text { text: qsTrId("ui.b32af2a5114f"); font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); lineHeight: Math.round(Math.round(root.unit(Theme.operationTitleSize)) * 1.35); lineHeightMode: Text.FixedHeight; font.bold: true; color: Theme.text }
-                        Text {
-                            Layout.fillWidth: true
-                            text: root.intent.archive || ""; textFormat: Text.PlainText
-                            font.pixelSize: Math.round(root.unit(Theme.operationBodySize)); color: Theme.textSecondary; elide: Text.ElideMiddle
-                        }
-                    }
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive-large.png"
+                    title: root.title
+                    subtitle: root.intent.archive || ""
+                    titleObjectName: "extractWindowHeading"
                 }
                 ColumnLayout {
+                    objectName: "operationHeaderBody"
                     Layout.fillWidth: true
                     Layout.leftMargin: root.unit(Theme.operationExtractContentInset); Layout.rightMargin: root.unit(Theme.operationExtractContentInset)
                     Layout.bottomMargin: root.unit(20); spacing: root.unit(Theme.operationCardGap)

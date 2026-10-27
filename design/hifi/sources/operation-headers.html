@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>统一弹窗标题区</title>
+<style>
+body{margin:32px;font:13px system-ui;background:#eef2f8;color:#141827}.examples{display:flex;flex-wrap:wrap;gap:24px}.dialog{width:491px;background:white;border-radius:8px;overflow:hidden}.header{box-sizing:border-box;min-height:96px;padding:20px 24px;display:flex;align-items:center;gap:16px}.header img{width:48px;height:48px;object-fit:contain;flex:none}.copy{min-width:0;flex:1}.copy h2{margin:0;font-size:20px;line-height:1.4}.copy p{margin:6px 0 0;font-size:13px;line-height:1.5;color:#626b86;overflow-wrap:anywhere}.body{margin:0 24px 24px;padding:16px;background:#f4f6fa;border-radius:6px}.dark{background:#202838;color:#e9edf6}.dark p{color:#b1bdd4}.dark .body{background:#182030}h1{font-size:20px}label{display:block;margin:20px 0}select{font:inherit}
+</style>
+<h1>统一弹窗标题区</h1><p>48 图标槽、20 标题、13 副标题、24 水平内距、20 垂直内距、16 图文间距、6 文本间距。正常高度基准96，长文案及辅助字号按内容统一增高。标题区与首个正文分组之间的额外间距统一为 0，正文内部保留卡片和段落间距。单位均为逻辑像素。</p>
+<label>字号 <select id="scale"><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option></select></label>
+<div class="examples">
+<article class="dialog"><header class="header"><img src="../../assets/png/light/archive@9x.png" alt=""><div class="copy"><h2>解压文件</h2><p>旅行资料.zip</p></div></header><div class="body">正文保留原操作窗密度，共享 footer 保持固定可达。</div></article>
+<article class="dialog"><header class="header"><img src="../../assets/png/light/archive-add@9x.png" alt=""><div class="copy"><h2>添加文件</h2><p>将文件添加到现有压缩包。</p></div></header><div class="body">创建、添加、解压、任务、结果、冲突、设置与关于共用标题区。</div></article>
+<article class="dialog dark"><header class="header"><img src="../../assets/png/dark/settings-tile@3x.png" alt=""><div class="copy"><h2>Settings</h2><p>Appearance, language and archive opening preferences.</p></div></header><div class="body">辅助字号不缩小图标槽，不写入DPR或截图物理像素。</div></article>
+</div>
+<script>document.querySelector('#scale').onchange=e=>{const f=Number(e.target.value);document.querySelectorAll('.copy h2').forEach(n=>n.style.fontSize=Math.round(20*f)+'px');document.querySelectorAll('.copy p').forEach(n=>n.style.fontSize=Math.round(13*f)+'px');};</script></html>

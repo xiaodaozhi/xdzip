@@ -5,8 +5,10 @@ import QtQuick.Controls
 ToolTip {
     id: root
     property bool requested: false
+    property bool suppressed: false
+    property bool needsFreshPointer: false
     readonly property Item focusItem: parent && parent.Window.window ? parent.Window.window.activeFocusItem : null
-    readonly property bool eligible: parent && parent.visible && requested && text.length > 0 && press && !press.pressed && !(focusItem as MenuItem) && (!focusItem || focusItem.objectName !== "xdzipCommandMenuContent")
+    readonly property bool eligible: !suppressed && !needsFreshPointer && parent && parent.visible && requested && text.length > 0 && press && !press.pressed && !(focusItem as MenuItem) && (!focusItem || focusItem.objectName !== "xdzipCommandMenuContent")
     property bool dwellReady: false
     property bool initialized: false
     property point pointerPosition: Qt.point(0, 0)
@@ -21,6 +23,14 @@ ToolTip {
     }
     onEligibleChanged: restartDwell()
     onTextChanged: restartDwell()
+    onSuppressedChanged: if (suppressed) {
+        needsFreshPointer = true;
+        if (pointer) {
+            pointerPosition = pointer.point.scenePosition;
+            pointerPositionKnown = true;
+        }
+        restartDwell();
+    }
     Component.onCompleted: { initialized = true; restartDwell(); }
     Component.onDestruction: initialized = false
     Timer {
@@ -34,10 +44,16 @@ ToolTip {
         target: null
         onPointChanged: {
             const position = point.scenePosition;
+            if (root.suppressed) {
+                root.pointerPosition = position;
+                root.pointerPositionKnown = true;
+                return;
+            }
             // Layout/hover refreshes can repeat a point without physical movement.
             if (hovered && (!root.pointerPositionKnown || position.x !== root.pointerPosition.x || position.y !== root.pointerPosition.y)) {
                 root.pointerPosition = position;
                 root.pointerPositionKnown = true;
+                root.needsFreshPointer = false;
                 root.restartDwell();
             }
         }

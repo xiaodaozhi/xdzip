@@ -65,197 +65,179 @@ OperationWindow {
             ColumnLayout {
                 id: body
                 width: scroll.availableWidth
-                spacing: Theme.settingsSectionGap
-                Item { Layout.preferredHeight: 4 }
-                RowLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    spacing: Theme.settingsHeroGap
-                    Image { source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark" : "light") + "/settings-tile.png"; Layout.preferredWidth: Theme.settingsHeroArtworkSize; Layout.preferredHeight: Theme.settingsHeroArtworkSize; fillMode: Image.PreserveAspectFit; Accessible.ignored: true }
-                    ColumnLayout {
-                        spacing: 6
-                        Layout.fillWidth: true
-                        Text { Layout.fillWidth: true; text: qsTrId("settings.title"); font.pixelSize: Theme.settingsTitleSize * Theme.fontScale; font.bold: true; color: Theme.text; wrapMode: Text.Wrap }
-                        Text { Layout.fillWidth: true; text: qsTrId("settings.subtitle"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.textSecondary; wrapMode: Text.Wrap }
-                    }
+                spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
+                    Layout.fillWidth: true
+                    source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark" : "light") + "/settings-tile.png"
+                    title: qsTrId("settings.title")
+                    subtitle: qsTrId("settings.subtitle")
                 }
                 ColumnLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    spacing: Theme.settingsRowGap
-                    Text { text: qsTrId("settings.theme"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; font.bold: true; color: Theme.text }
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: Theme.settingsThemeCardGap
-                        Repeater {
-                            model: ["system", "light", "dark"]
-                            delegate: IntentRadioButton {
-                                id: card
-                                required property string modelData
-                                required property int index
-                                objectName: "settingsTheme-" + index
-                                Layout.fillWidth: true
-                                implicitHeight: Theme.settingsThemeArtworkHeight + choice.implicitHeight + Theme.settingsThemeCardVerticalInset
-                                checked: root.draftTheme === modelData
-                                Accessible.name: [qsTrId("settings.system"), qsTrId("settings.light"), qsTrId("settings.dark")][index]
-                                onSelectionRequested: root.draftTheme = modelData
-                                background: OperationFrame {
-                                    control: card
-                                    hovered: card.hovered
-                                    pressed: card.down
-                                    color: card.down ? Theme.controlPressed : card.checked ? Theme.selection : card.hovered ? Theme.operationButtonSurface : Theme.surface
-                                    border.color: card.checked ? Theme.accent : Theme.operationFieldBorder
-                                }
-                                contentItem: Item {
-                                    Image {
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        y: 8
-                                        width: Theme.settingsThemeArtworkWidth; height: Theme.settingsThemeArtworkHeight
-                                        source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark" : "light") + "/theme-" + card.modelData + ".png"
-                                        fillMode: Image.PreserveAspectFit
-                                        Accessible.ignored: true
+                    objectName: "operationHeaderBody"
+                    Layout.fillWidth: true
+                    spacing: Theme.settingsSectionGap
+                    ColumnLayout {
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        spacing: Theme.settingsRowGap
+                        Text { text: qsTrId("settings.theme"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; font.bold: true; color: Theme.text }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Theme.settingsThemeCardGap
+                            Repeater {
+                                model: ["system", "light", "dark"]
+                                delegate: IntentRadioButton {
+                                    id: card
+                                    required property string modelData
+                                    required property int index
+                                    objectName: "settingsTheme-" + index
+                                    Layout.fillWidth: true
+                                    implicitHeight: Theme.settingsThemeArtworkHeight + choice.implicitHeight + Theme.settingsThemeCardVerticalInset
+                                    checked: root.draftTheme === modelData
+                                    Accessible.name: [qsTrId("settings.system"), qsTrId("settings.light"), qsTrId("settings.dark")][index]
+                                    onSelectionRequested: root.draftTheme = modelData
+                                    background: OperationFrame {
+                                        control: card
+                                        hovered: card.hovered
+                                        pressed: card.down
+                                        color: card.down ? Theme.controlPressed : card.checked ? Theme.selection : card.hovered ? Theme.operationButtonSurface : Theme.surface
+                                        border.color: card.checked ? Theme.accent : Theme.operationFieldBorder
                                     }
-                                    Row {
-                                        id: choice
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        anchors.bottom: parent.bottom
-                                        anchors.bottomMargin: 10
-                                        spacing: 8
-                                        Rectangle {
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: 16; height: 16; radius: 8; color: "transparent"
-                                            border.width: 1; border.color: card.checked ? Theme.accent : Theme.textSecondary
-                                            Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: Theme.accent; visible: card.checked }
+                                    contentItem: Item {
+                                        Image {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            y: 8
+                                            width: Theme.settingsThemeArtworkWidth; height: Theme.settingsThemeArtworkHeight
+                                            source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark" : "light") + "/theme-" + card.modelData + ".png"
+                                            fillMode: Image.PreserveAspectFit
+                                            Accessible.ignored: true
                                         }
-                                        Text { width: Math.min(implicitWidth, card.width - 48); text: [qsTrId("settings.system"), qsTrId("settings.light"), qsTrId("settings.dark")][card.index]; font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                                        Row {
+                                            id: choice
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            anchors.bottom: parent.bottom
+                                            anchors.bottomMargin: 10
+                                            spacing: 8
+                                            Rectangle {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                width: 16; height: 16; radius: 8; color: "transparent"
+                                                border.width: 1; border.color: card.checked ? Theme.accent : Theme.textSecondary
+                                                Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: Theme.accent; visible: card.checked }
+                                            }
+                                            Text { width: Math.min(implicitWidth, card.width - 48); text: [qsTrId("settings.system"), qsTrId("settings.light"), qsTrId("settings.dark")][card.index]; font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                RowLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    Text { Layout.fillWidth: true; text: qsTrId("settings.density"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
-                    OperationSelect {
-                        id: densitySelect
-                        objectName: "settingsDensity"
-                        Accessible.name: qsTrId("settings.density")
-                        density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
-                        implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
-                        model: [qsTrId("settings.standard"), qsTrId("settings.compact")]
-                        currentIndex: root.draftDensity === "compact" ? 1 : 0
-                        onCurrentIndexChanged: if (currentIndex >= 0) root.draftDensity = ["standard", "compact"][currentIndex]
-                    }
-                }
-                RowLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    Text { Layout.fillWidth: true; text: qsTrId("settings.textSize"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
-                    OperationSelect {
-                        id: scaleSelect
-                        objectName: "settingsTextScale"
-                        Accessible.name: qsTrId("settings.textSize")
-                        density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
-                        implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
-                        model: ["100%", "125%", "150%"]
-                        currentIndex: [1, 1.25, 1.5].indexOf(root.draftScale)
-                        onCurrentIndexChanged: if (currentIndex >= 0) root.draftScale = [1, 1.25, 1.5][currentIndex]
-                    }
-                }
-                ColumnLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    spacing: 6
                     RowLayout {
-                        Layout.fillWidth: true
-                        Text { Layout.fillWidth: true; text: qsTrId("settings.language"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        Text { Layout.fillWidth: true; text: qsTrId("settings.density"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
                         OperationSelect {
-                            id: languageSelect
-                            objectName: "settingsLanguage"
-                            Accessible.name: qsTrId("settings.language")
+                            id: densitySelect
+                            objectName: "settingsDensity"
+                            Accessible.name: qsTrId("settings.density")
                             density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
                             implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
-                            model: [qsTrId("language.zhCN"), qsTrId("language.enUS")]
-                            currentIndex: root.draftLanguage === "en-US" ? 1 : 0
-                            onCurrentIndexChanged: if (currentIndex >= 0) root.draftLanguage = ["zh-CN", "en-US"][currentIndex]
+                            model: [qsTrId("settings.standard"), qsTrId("settings.compact")]
+                            currentIndex: root.draftDensity === "compact" ? 1 : 0
+                            onCurrentIndexChanged: if (currentIndex >= 0) root.draftDensity = ["standard", "compact"][currentIndex]
                         }
                     }
-                    Text { Layout.fillWidth: true; text: qsTrId("ui.3a593f5653b1"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.textSecondary; wrapMode: Text.Wrap }
-                }
-                RowLayout {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    Text { Layout.fillWidth: true; text: qsTrId("sessions.openMode"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
-                    OperationSelect {
-                        id: openModeSelect
-                        objectName: "settingsOpenMode"
-                        Accessible.name: qsTrId("sessions.openMode")
+                    RowLayout {
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        Text { Layout.fillWidth: true; text: qsTrId("settings.textSize"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                        OperationSelect {
+                            id: scaleSelect
+                            objectName: "settingsTextScale"
+                            Accessible.name: qsTrId("settings.textSize")
+                            density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                            implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
+                            model: ["100%", "125%", "150%"]
+                            currentIndex: [1, 1.25, 1.5].indexOf(root.draftScale)
+                            onCurrentIndexChanged: if (currentIndex >= 0) root.draftScale = [1, 1.25, 1.5][currentIndex]
+                        }
+                    }
+                    ColumnLayout {
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        spacing: 6
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Text { Layout.fillWidth: true; text: qsTrId("settings.language"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                            OperationSelect {
+                                id: languageSelect
+                                objectName: "settingsLanguage"
+                                Accessible.name: qsTrId("settings.language")
+                                density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                                implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
+                                model: [qsTrId("language.zhCN"), qsTrId("language.enUS")]
+                                currentIndex: root.draftLanguage === "en-US" ? 1 : 0
+                                onCurrentIndexChanged: if (currentIndex >= 0) root.draftLanguage = ["zh-CN", "en-US"][currentIndex]
+                            }
+                        }
+                        Text { Layout.fillWidth: true; text: qsTrId("ui.3a593f5653b1"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.textSecondary; wrapMode: Text.Wrap }
+                    }
+                    RowLayout {
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        Text { Layout.fillWidth: true; text: qsTrId("sessions.openMode"); font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
+                        OperationSelect {
+                            id: openModeSelect
+                            objectName: "settingsOpenMode"
+                            Accessible.name: qsTrId("sessions.openMode")
+                            density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                            model: [qsTrId("sessions.tabs"), qsTrId("sessions.windows")]
+                            currentIndex: root.draftOpenMode === "windows" ? 1 : 0
+                            onActivated: root.draftOpenMode = currentIndex === 1 ? "windows" : "tabs"
+                        }
+                    }
+                    OperationCheck {
+                        id: trayToggle
+                        objectName: "settingsTray"
+                        text: qsTrId("desktop.trayEnabled")
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
                         density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
-                        model: [qsTrId("sessions.tabs"), qsTrId("sessions.windows")]
-                        currentIndex: root.draftOpenMode === "windows" ? 1 : 0
-                        onActivated: root.draftOpenMode = currentIndex === 1 ? "windows" : "tabs"
+                        checked: root.draftTray
+                        onToggled: root.draftTray = checked
                     }
-                }
-                IntentCheckBox {
-                    id: trayToggle
-                    objectName: "settingsTray"
-                    text: qsTrId("desktop.trayEnabled")
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    checked: root.draftTray
-                    onToggled: root.draftTray = checked
-                    indicator: Rectangle {
-                        x: 0; anchors.verticalCenter: parent.verticalCenter
-                        width: 16; height: 16; radius: 2
-                        color: trayToggle.checked ? Theme.accent : Theme.surface
-                        border.color: trayToggle.checked ? Theme.accent : Theme.operationFieldBorder
-                        Text { anchors.centerIn: parent; text: "✓"; color: "white"; font.pixelSize: 14; visible: trayToggle.checked }
+                    OperationCheck {
+                        id: recentToggle
+                        objectName: "settingsRecent"
+                        text: qsTrId("settings.recent")
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                        checked: root.draftRecent
+                        onToggled: root.draftRecent = checked
                     }
-                    contentItem: Text { leftPadding: 24; text: trayToggle.text; font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
-                    background: Item {}
-                }
-                IntentCheckBox {
-                    id: recentToggle
-                    objectName: "settingsRecent"
-                    text: qsTrId("settings.recent")
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    checked: root.draftRecent
-                    onToggled: root.draftRecent = checked
-                    indicator: Rectangle {
-                        x: 0; anchors.verticalCenter: parent.verticalCenter
-                        width: 16; height: 16; radius: 2
-                        color: recentToggle.checked ? Theme.accent : Theme.surface
-                        border.color: recentToggle.checked ? Theme.accent : Theme.operationFieldBorder
-                        Text { anchors.centerIn: parent; text: "✓"; color: "white"; font.pixelSize: 14; visible: recentToggle.checked }
+                    OperationButton {
+                        objectName: "settingsClearRecent"
+                        Layout.leftMargin: Theme.settingsContentInset
+                        text: root.clearRecent ? qsTrId("settings.clearPending") : qsTrId("settings.clearRecent")
+                        enabled: !root.clearRecent
+                        onClicked: root.clearRecent = true
                     }
-                    contentItem: Text { leftPadding: 24; text: recentToggle.text; font.pixelSize: Theme.settingsBodySize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap }
-                    background: Item {}
-                }
-                OperationButton {
-                    objectName: "settingsClearRecent"
-                    Layout.leftMargin: Theme.settingsContentInset
-                    text: root.clearRecent ? qsTrId("settings.clearPending") : qsTrId("settings.clearRecent")
-                    enabled: !root.clearRecent
-                    onClicked: root.clearRecent = true
-                }
-                Rectangle {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    implicitHeight: privacy.implicitHeight + 28
-                    radius: Theme.operationControlRadius; color: Theme.operationCard; border.color: Theme.taskBorder
+                    Rectangle {
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        implicitHeight: privacy.implicitHeight + 28
+                        radius: Theme.operationControlRadius; color: Theme.operationCard; border.color: Theme.taskBorder
+                        Text {
+                            id: privacy
+                            anchors.fill: parent; anchors.margins: 14
+                            text: qsTrId("settings.privacy"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap
+                        }
+                    }
+                    OperationButton {
+                        objectName: "settingsAbout"
+                        Layout.leftMargin: Theme.settingsContentInset
+                        text: qsTrId("about.title")
+                        onClicked: root.aboutRequested()
+                    }
                     Text {
-                        id: privacy
-                        anchors.fill: parent; anchors.margins: 14
-                        text: qsTrId("settings.privacy"); font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; color: Theme.text; wrapMode: Text.Wrap
+                        Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
+                        visible: AppSettings.error.length > 0
+                        text: AppSettings.error
+                        color: Theme.menuDanger; font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; wrapMode: Text.Wrap
                     }
                 }
-                OperationButton {
-                    objectName: "settingsAbout"
-                    Layout.leftMargin: Theme.settingsContentInset
-                    text: qsTrId("about.title")
-                    onClicked: root.aboutRequested()
-                }
-                Text {
-                    Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true
-                    visible: AppSettings.error.length > 0
-                    text: AppSettings.error
-                    color: Theme.menuDanger; font.pixelSize: Theme.settingsNoteSize * Theme.fontScale; wrapMode: Text.Wrap
-                }
-                Item { Layout.preferredHeight: 4 }
             }
         }
         OperationFooter {

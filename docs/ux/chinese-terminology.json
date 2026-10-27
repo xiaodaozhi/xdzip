@@ -6,6 +6,7 @@
     "open": "打开压缩包",
     "create": "创建压缩包",
     "extract": "解压",
+    "extractFiles": "解压文件",
     "all_contents": "全部内容",
     "selected_contents": "所选文件和文件夹",
     "original_size": "原始大小",
@@ -16,7 +17,7 @@
     "ui.1b59353f1874": "open",
     "ui.80c2aec8adfc": "open",
     "ui.fe189b616c1d": "create",
-    "ui.b32af2a5114f": "extract",
+    "extract.windowTitle": "extractFiles",
     "ui.cb7aa46a18d2": "all_contents",
     "ui.3941617567bb": "selected_contents",
     "ui.2582e6a2c9e2": "compressed_size"

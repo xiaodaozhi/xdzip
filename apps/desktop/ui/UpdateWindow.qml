@@ -49,42 +49,17 @@ OperationWindow {
                 id: updateContent
                 objectName: "updateContent"
                 width: scroll.availableWidth
-                spacing: Theme.operationAddingSectionGap
-                RowLayout {
-                    objectName: "updateHero"
+                spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
                     Layout.fillWidth: true
-                    Layout.leftMargin: Theme.operationCreateContentInset
-                    Layout.rightMargin: Theme.operationCreateContentInset
-                    Layout.topMargin: Theme.operationAddingHeaderTopInset
-                    spacing: Theme.operationAddingHeroGap
-                    OperationHero {
-                        source: Theme.dark ? "qrc:/xdzip/assets/dark/archive-add-large.png" : "qrc:/xdzip/assets/archive-add-large.png"
-                        density: root.density
-                        Layout.preferredWidth: canvasWidth
-                        Layout.preferredHeight: canvasHeight
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: Theme.operationAddingHeroTextGap
-                        Text {
-                            objectName: "updateHeading"
-                            Layout.fillWidth: true
-                            text: qsTrId("update.title")
-                            font.pixelSize: Theme.operationCreateTitleSize
-                            font.bold: true
-                            color: Theme.text
-                            wrapMode: Text.Wrap
-                        }
-                        Text {
-                            Layout.fillWidth: true
-                            text: qsTrId("update.subtitle")
-                            font.pixelSize: Theme.operationCreateBodySize
-                            color: Theme.textSecondary
-                            wrapMode: Text.Wrap
-                        }
-                    }
+                    source: Theme.dark ? "qrc:/xdzip/assets/dark/archive-add-large.png" : "qrc:/xdzip/assets/archive-add-large.png"
+                    title: qsTrId("update.title")
+                    subtitle: qsTrId("update.subtitle")
+                    objectName: "updateHero"
+                    titleObjectName: "updateHeading"
                 }
                 ColumnLayout {
+                    objectName: "operationHeaderBody"
                     Layout.fillWidth: true
                     Layout.leftMargin: Theme.operationCreateContentInset
                     Layout.rightMargin: Theme.operationCreateContentInset

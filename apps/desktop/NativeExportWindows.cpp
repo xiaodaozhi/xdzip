@@ -4,6 +4,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QThread>
+#include <QMap>
 #define NOMINMAX
 #include <cstring>
 #include <shlobj.h>
@@ -131,6 +132,10 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
     std::shared_ptr<NativeExportState> state;
     IUnknown *marshaller = nullptr;
     bool asyncMode = true;
+    std::mutex feedbackMutex;
+    QMap<CLIPFORMAT, QByteArray> feedbackFormats;
+    IStream *dragContext = nullptr;
+    UINT dragContextFormat = RegisterClipboardFormatW(L"DragContext");
     UINT descriptors = RegisterClipboardFormatW(CFSTR_FILEDESCRIPTORW);
     UINT contents = RegisterClipboardFormatW(CFSTR_FILECONTENTS);
     UINT preferred = RegisterClipboardFormatW(CFSTR_PREFERREDDROPEFFECT);
@@ -142,6 +147,8 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
         CoCreateFreeThreadedMarshaler(static_cast<IDataObject *>(this), &marshaller);
     }
     ~ExportData() {
+        if (dragContext)
+            dragContext->Release();
         if (marshaller)
             marshaller->Release();
     }
@@ -175,6 +182,38 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
         std::memset(medium, 0, sizeof(*medium));
         if (format->dwAspect != DVASPECT_CONTENT)
             return DV_E_DVASPECT;
+        if (format->cfFormat == dragContextFormat && (format->tymed & TYMED_ISTREAM) &&
+            format->lindex == -1) {
+            std::lock_guard<std::mutex> lock(feedbackMutex);
+            if (!dragContext)
+                return DV_E_FORMATETC;
+            dragContext->AddRef();
+            medium->tymed = TYMED_ISTREAM;
+            medium->pstm = dragContext;
+            return S_OK;
+        }
+        if ((format->tymed & TYMED_HGLOBAL) && format->lindex == -1) {
+            QByteArray bytes;
+            {
+                std::lock_guard<std::mutex> lock(feedbackMutex);
+                bytes = feedbackFormats.value(format->cfFormat);
+            }
+            if (!bytes.isEmpty()) {
+                const auto block = GlobalAlloc(GMEM_MOVEABLE, SIZE_T(bytes.size()));
+                if (!block)
+                    return E_OUTOFMEMORY;
+                auto *destination = GlobalLock(block);
+                if (!destination) {
+                    GlobalFree(block);
+                    return E_OUTOFMEMORY;
+                }
+                std::memcpy(destination, bytes.constData(), size_t(bytes.size()));
+                GlobalUnlock(block);
+                medium->tymed = TYMED_HGLOBAL;
+                medium->hGlobal = block;
+                return S_OK;
+            }
+        }
         if (format->cfFormat == descriptors && (format->tymed & TYMED_HGLOBAL)) {
             const auto count = state->entries.size();
             const auto bytes = sizeof(UINT) + size_t(count) * sizeof(FILEDESCRIPTORW);
@@ -259,6 +298,15 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
             return E_POINTER;
         if (f->dwAspect != DVASPECT_CONTENT)
             return DV_E_DVASPECT;
+        if (f->cfFormat == dragContextFormat && (f->tymed & TYMED_ISTREAM) && f->lindex == -1) {
+            std::lock_guard<std::mutex> lock(feedbackMutex);
+            return dragContext ? S_OK : DV_E_FORMATETC;
+        }
+        if ((f->tymed & TYMED_HGLOBAL) && f->lindex == -1) {
+            std::lock_guard<std::mutex> lock(feedbackMutex);
+            if (feedbackFormats.contains(f->cfFormat))
+                return S_OK;
+        }
         if ((f->cfFormat == descriptors || f->cfFormat == preferred) && (f->tymed & TYMED_HGLOBAL))
             return S_OK;
         if (f->cfFormat == contents && (f->tymed & TYMED_ISTREAM))
@@ -270,7 +318,48 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
             out->ptd = nullptr;
         return E_NOTIMPL;
     }
-    HRESULT STDMETHODCALLTYPE SetData(FORMATETC *, STGMEDIUM *medium, BOOL release) override {
+    HRESULT STDMETHODCALLTYPE SetData(FORMATETC *format, STGMEDIUM *medium, BOOL release) override {
+        if (!format || !medium)
+            return E_POINTER;
+        // Shell's DragContext is a live COM context, not archive data. Retain
+        // only this named stream without reading it; balance both ownership modes.
+        if (format->cfFormat == dragContextFormat && format->dwAspect == DVASPECT_CONTENT &&
+            format->lindex == -1 && (format->tymed & TYMED_ISTREAM) &&
+            medium->tymed == TYMED_ISTREAM && medium->pstm) {
+            medium->pstm->AddRef();
+            IStream *previous = nullptr;
+            {
+                std::lock_guard<std::mutex> lock(feedbackMutex);
+                previous = dragContext;
+                dragContext = medium->pstm;
+            }
+            if (previous)
+                previous->Release();
+            if (release)
+                ReleaseStgMedium(medium);
+            return S_OK;
+        }
+        if (format->dwAspect != DVASPECT_CONTENT || format->lindex != -1 ||
+            !(format->tymed & TYMED_HGLOBAL) || medium->tymed != TYMED_HGLOBAL ||
+            format->cfFormat < 0xc000 || format->cfFormat == descriptors ||
+            format->cfFormat == contents || format->cfFormat == preferred)
+            return DV_E_FORMATETC;
+        // Shell drag images use private HGLOBAL formats. Copy bounded bytes,
+        // never accept file streams here, and take ownership only on success.
+        const auto size = GlobalSize(medium->hGlobal);
+        if (!size || size > 16 * 1024 * 1024)
+            return STG_E_MEDIUMFULL;
+        const auto *source = GlobalLock(medium->hGlobal);
+        if (!source)
+            return E_OUTOFMEMORY;
+        const QByteArray bytes(static_cast<const char *>(source), qsizetype(size));
+        GlobalUnlock(medium->hGlobal);
+        {
+            std::lock_guard<std::mutex> lock(feedbackMutex);
+            if (!feedbackFormats.contains(format->cfFormat) && feedbackFormats.size() >= 16)
+                return STG_E_MEDIUMFULL;
+            feedbackFormats.insert(format->cfFormat, bytes);
+        }
         if (release && medium)
             ReleaseStgMedium(medium);
         return S_OK;
@@ -278,11 +367,19 @@ class ExportData final : public IDataObject, public IDataObjectAsyncCapability {
     HRESULT STDMETHODCALLTYPE EnumFormatEtc(DWORD direction, IEnumFORMATETC **out) override {
         if (direction != DATADIR_GET)
             return E_NOTIMPL;
-        FORMATETC formats[] = {
+        std::vector<FORMATETC> formats = {
             {CLIPFORMAT(descriptors), nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
             {CLIPFORMAT(contents), nullptr, DVASPECT_CONTENT, -1, TYMED_ISTREAM},
             {CLIPFORMAT(preferred), nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}};
-        return SHCreateStdEnumFmtEtc(3, formats, out);
+        {
+            std::lock_guard<std::mutex> lock(feedbackMutex);
+            for (auto it = feedbackFormats.cbegin(); it != feedbackFormats.cend(); ++it)
+                formats.push_back({it.key(), nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL});
+            if (dragContext)
+                formats.push_back({CLIPFORMAT(dragContextFormat), nullptr, DVASPECT_CONTENT, -1,
+                                   TYMED_ISTREAM});
+        }
+        return SHCreateStdEnumFmtEtc(UINT(formats.size()), formats.data(), out);
     }
     HRESULT STDMETHODCALLTYPE DAdvise(FORMATETC *, DWORD, IAdviseSink *, DWORD *) override {
         return OLE_E_ADVISENOTSUPPORTED;
@@ -361,11 +458,50 @@ class ExportSource final : public IDropSource {
 IDataObject *nativeExportData(const std::shared_ptr<NativeExportState> &state) {
     return new ExportData(state);
 }
-bool startNativeExport(QWindow *, const std::shared_ptr<NativeExportState> &state) {
+bool initializeNativeExportImage(IDataObject *data, const QImage &preview, QString *failure) {
+    if (!data || preview.isNull())
+        return false;
+    IDragSourceHelper *helper = nullptr;
+    const auto created = CoCreateInstance(CLSID_DragDropHelper, nullptr, CLSCTX_INPROC_SERVER,
+                                          IID_PPV_ARGS(&helper));
+    if (FAILED(created)) {
+        if (failure) *failure = "CoCreateInstance: " + QString::number(quint32(created), 16);
+        return false;
+    }
+    // The Shell multiplies RGB by alpha itself, so provide straight BGRA.
+    const auto image = preview.convertToFormat(QImage::Format_ARGB32);
+    BITMAPINFO info{};
+    info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    info.bmiHeader.biWidth = image.width();
+    info.bmiHeader.biHeight = -image.height();
+    info.bmiHeader.biPlanes = 1;
+    info.bmiHeader.biBitCount = 32;
+    info.bmiHeader.biCompression = BI_RGB;
+    void *bits = nullptr;
+    const auto bitmap = CreateDIBSection(nullptr, &info, DIB_RGB_COLORS, &bits, nullptr, 0);
+    if (!bitmap || !bits) {
+        if (bitmap)
+            DeleteObject(bitmap);
+        helper->Release();
+        return false;
+    }
+    std::memcpy(bits, image.constBits(), size_t(image.sizeInBytes()));
+    SHDRAGIMAGE dragImage{{image.width(), image.height()}, {0, 0}, bitmap, 0xffffffff};
+    // InitializeFromBitmap takes the bitmap. If image setup fails, the data
+    // transfer continues with the OS cursor and retains existing copy semantics.
+    const auto result = helper->InitializeFromBitmap(&dragImage, data);
+    if (failure && FAILED(result))
+        *failure = "InitializeFromBitmap: " + QString::number(quint32(result), 16);
+    helper->Release();
+    return SUCCEEDED(result);
+}
+bool startNativeExport(QWindow *owner, const std::shared_ptr<NativeExportState> &state) {
     for (const auto &entry : state->entries)
         if (entry.name.size() >= MAX_PATH)
             return false;
     auto *data = nativeExportData(state);
+    initializeNativeExportImage(data, nativeExportPreview(state->entries,
+                                                         owner ? owner->devicePixelRatio() : 1));
     auto *source = new ExportSource(state);
     DWORD effect = 0;
     // Qt initializes OLE on the GUI STA. DoDragDrop pumps its native message loop;

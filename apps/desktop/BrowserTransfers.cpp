@@ -74,6 +74,17 @@ bool BrowserController::internalDragCurrent(const QString &token) const {
            m_moveGeneration == m_generation &&
            m_moveSelectionRevision == m_model.selectionRevision();
 }
+QVariantMap BrowserController::internalDragPreview(const QString &token) const {
+    if (!internalDragCurrent(token))
+        return {};
+    for (int row = 0; row < m_model.rowCount(); ++row) {
+        const auto *entry = m_model.rowAt(row);
+        if (entry && entry->id == m_moveAnchor)
+            return {{"name", entry->cells[0]}, {"directory", entry->directory},
+                    {"count", m_moveSelectors.size()}};
+    }
+    return {};
+}
 QVariantMap BrowserController::moveDropState(const QString &token, const QString &target) const {
     QString reason;
     QString path;
@@ -207,6 +218,7 @@ void BrowserController::beginExport(int row, QWindow *owner) {
     if (m_export && (m_export->inOperation.load() || (m_export->requested && !m_export->done)))
         return;
     if (m_export && m_exportKey == identity && !m_export->cancelled.load()) {
+        setNativeDragActive(true);
         if (m_export->done && m_export->error.isEmpty())
             startPreparedDrag();
         else if (!m_export->requested && !m_export->entries.isEmpty()) {
@@ -218,6 +230,7 @@ void BrowserController::beginExport(int row, QWindow *owner) {
     if (m_export && m_export->inOperation.load())
         return;
     m_exportTask = 0;
+    setNativeDragActive(true);
     m_export = std::make_shared<NativeExportState>();
     m_exportOwner = owner;
     captureNativeExportGesture(owner, m_export);
@@ -229,9 +242,18 @@ void BrowserController::beginExport(int row, QWindow *owner) {
         QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/exported-files";
     if (!QDir().mkpath(m_exportCache)) {
         m_export->finish({}, "output_io");
+        setNativeDragActive(false);
         return;
     }
     const QPointer<BrowserController> guard(this);
+    const std::weak_ptr<NativeExportState> gestureState = m_export;
+    m_export->dragFinished = [guard, gestureState] {
+        if (guard)
+            QMetaObject::invokeMethod(guard, [guard, gestureState] {
+                if (guard && guard->m_export == gestureState.lock())
+                    guard->setNativeDragActive(false);
+            }, Qt::QueuedConnection);
+    };
     m_export->prepare = [guard] {
         if (guard)
             QMetaObject::invokeMethod(
@@ -304,16 +326,22 @@ void BrowserController::publishExternalExport(const std::shared_ptr<NativeExport
     submit(std::move(command));
 }
 void BrowserController::startPreparedDrag() {
-    if (!m_export || !m_exportOwner || !(QGuiApplication::mouseButtons() & Qt::LeftButton))
+    if (!m_export || !m_exportOwner || !(QGuiApplication::mouseButtons() & Qt::LeftButton)) {
+        setNativeDragActive(false);
         return;
-    if (!m_export->done || !m_export->error.isEmpty())
+    }
+    if (!m_export->done || !m_export->error.isEmpty()) {
+        setNativeDragActive(false);
         return;
+    }
     QList<QUrl> urls;
     for (const auto &entry : m_export->entries)
         if (!entry.name.contains('/'))
             urls.append(QUrl::fromLocalFile(QDir(m_export->directory).filePath(entry.name)));
-    if (urls.isEmpty())
+    if (urls.isEmpty()) {
+        setNativeDragActive(false);
         return;
+    }
     auto *mime = new QMimeData;
     mime->setUrls(urls);
     mime->setData("application/x-xdzip-export", "1");
@@ -322,7 +350,13 @@ void BrowserController::startPreparedDrag() {
             grabber->ungrabMouse();
     auto *drag = new QDrag(m_exportOwner);
     drag->setMimeData(mime);
+    const auto preview = nativeExportPreview(m_export->entries, m_exportOwner->devicePixelRatio());
+    if (!preview.isNull()) {
+        drag->setPixmap(QPixmap::fromImage(preview));
+        drag->setHotSpot(QPoint(0, 0));
+    }
     drag->exec(Qt::CopyAction, Qt::CopyAction);
+    setNativeDragActive(false);
     drag->deleteLater();
 }
 bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
@@ -353,6 +387,7 @@ bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
     m_busy = false;
     m_result = {};
     if (!event.error.empty() || !m_hasPayload || !m_export) {
+        setNativeDragActive(false);
         if (m_export)
             m_export->finish({}, "unsupported_feature");
         m_message = qtTrId("export.failed");
@@ -364,18 +399,33 @@ bool BrowserController::handleTransferEvent(const xdzip::reader::Event &event) {
     return true;
 }
 void BrowserController::launchExternalExport() {
-    if (!m_export || !m_exportOwner || !(QGuiApplication::mouseButtons() & Qt::LeftButton))
+    if (!m_export || !m_exportOwner || !(QGuiApplication::mouseButtons() & Qt::LeftButton)) {
+        setNativeDragActive(false);
         return;
+    }
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
     if (auto *window = qobject_cast<QQuickWindow *>(m_exportOwner.data()))
         if (auto *grabber = window->mouseGrabberItem())
             grabber->ungrabMouse();
-    if (!startNativeExport(m_exportOwner, m_export))
+    if (!startNativeExport(m_exportOwner, m_export)) {
+        setNativeDragActive(false);
         m_message = qtTrId("export.failed");
+    }
+#ifdef Q_OS_WIN
+    // OLE returns at the physical gesture end, even if an async copy continues.
+    setNativeDragActive(false);
+#endif
     pollExternalExport();
 #else
     m_export->request();
+    setNativeDragActive(false);
 #endif
+}
+void BrowserController::setNativeDragActive(bool active) {
+    if (m_nativeDragActive == active)
+        return;
+    m_nativeDragActive = active;
+    emit changed();
 }
 void BrowserController::pollExternalExport() {
     if (m_export && m_export->cancelled.load() && m_exportTask)

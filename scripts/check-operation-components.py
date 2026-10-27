@@ -39,8 +39,22 @@ for role in ['extract', 'create', 'progress', 'result', 'conflict']:
     if widths[role] != 491:
         failures.append(f'{role}: normal operation width must be 491 logical pixels')
 conflict = (ROOT/'apps/desktop/ui/ConflictWindow.qml').read_text(encoding="utf-8")
-if 'width: Theme.operationConflictWidth' not in conflict or 'Math.round(root.unit(Theme.operationTitleSize))' not in conflict:
+if 'width: Theme.operationConflictWidth' not in conflict or 'OperationHeader {' not in conflict:
     failures.append('ConflictWindow: width and typography must use normal-density operation policy')
+for name, policy in registry['windows'].items():
+    if policy.get('header_policy'):
+        source = (ROOT/'apps/desktop/ui'/f'{name}.qml').read_text(encoding='utf-8')
+        if source.count('OperationHeader {') != 1 or 'OperationHero {' in source:
+            failures.append(f'{name}: icon/title/subtitle header must use the shared component exactly once')
+        if 'Theme.operationHeaderBodyGap' not in source or 'objectName: "operationHeaderBody"' not in source:
+            failures.append(f'{name}: header-to-body spacing must use the shared contract')
+        if not (ROOT/policy['header_design']).is_file():
+            failures.append(f'{name}: shared header design is missing')
+header = (ROOT/'apps/desktop/ui/OperationHeader.qml').read_text(encoding='utf-8')
+for binding in ['Theme.operationHeaderIconSize','Theme.operationHeaderNormalHeight',
+                'Theme.operationHeaderTitleSize','Theme.operationHeaderSubtitleSize','Text.PlainText']:
+    if binding not in header:
+        failures.append('OperationHeader: missing shared geometry or text contract '+binding)
 segments = (ROOT/'apps/desktop/ui/OperationSegmentedGroup.qml').read_text(encoding="utf-8")
 if 'radius: segment.checked' in segments:
     failures.append('OperationSegmentedGroup: selection must not round inner corners')

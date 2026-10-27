@@ -23,18 +23,17 @@ OperationWindow {
             contentWidth: availableWidth; clip: true
             ColumnLayout {
                 id: conflictContent
-                width: scroll.availableWidth; spacing: root.unit(16)
+                width: scroll.availableWidth; spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
+                    Layout.fillWidth: true
+                    source: "qrc:/xdzip/assets/conflict-document.png"
+                    title: root.archiveCreation ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393")
+                    subtitle: qsTrId("ui.25dad65a6ae3")
+                }
                 ColumnLayout {
-                    Layout.fillWidth: true; Layout.margins: root.unit(30); spacing: root.unit(16)
-                    RowLayout {
-                        Layout.fillWidth: true; spacing: root.unit(20)
-                        OperationHero { source: "qrc:/xdzip/assets/conflict-document.png"; canvasWidth: root.unit(60); canvasHeight: root.unit(68); artworkWidth: root.unit(56); artworkHeight: root.unit(65); Layout.preferredWidth: canvasWidth; Layout.preferredHeight: canvasHeight }
-                        ColumnLayout {
-                            Layout.fillWidth: true; Layout.minimumWidth: 0
-                            Text { Layout.fillWidth: true; Layout.minimumWidth: 0; text: root.archiveCreation ? qsTrId("ui.a3ea7a6ceaff") : qsTrId("ui.5673940d4393"); wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationTitleSize)); font.bold: true; color: Theme.text }
-                            Text { Layout.fillWidth: true; text: qsTrId("ui.25dad65a6ae3"); textFormat: Text.PlainText; wrapMode: Text.Wrap; color: Theme.textSecondary; font.pixelSize: 13 * Theme.fontScale }
-                        }
-                    }
+                    objectName: "operationHeaderBody"
+                    Layout.fillWidth: true; Layout.margins: root.unit(30); Layout.topMargin: 0; spacing: root.unit(16)
+
                     RowLayout {
                         Layout.fillWidth: true; spacing: root.unit(12)
                         Image { Layout.preferredWidth: root.unit(36); Layout.preferredHeight: root.unit(36); source: AssetLibrary.fileIcon(root.task.promptName || "", false, false) }

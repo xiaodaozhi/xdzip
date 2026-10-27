@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文件拖动反馈</title>
+<style>
+body{font:13px system-ui;margin:32px;background:#eef2f8;color:#202b41}h1{font-size:20px}.states{display:flex;gap:32px;flex-wrap:wrap}.stage{position:relative;width:320px;height:180px;padding:16px;background:white;border-radius:12px}.dark{background:#182030;color:#e3ebf9}.pointer{position:absolute;left:18px;top:42px;font-size:24px}.card{position:absolute;left:40px;top:62px;box-sizing:border-box;width:280px;padding:10px;border-radius:8px;color:white;background:#202b41}.dark .card{color:#182030;background:#e3ebf9}.row{display:flex;align-items:center;gap:8px}.row img{width:24px;height:24px}.name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.count{font-weight:600}.status{font-size:12px;margin-top:6px;line-height:1.4}.note{max-width:760px;line-height:1.6}label{display:inline-block;margin:16px 16px 16px 0}select{font:inherit}code{font:inherit}
+</style>
+<h1>文件拖动反馈</h1>
+<p class="note">拖动开始即显示源文件，多选显示数量。有效目标显示移动位置，无效目标显示具体原因；系统光标保留移动或禁止语义。预览不接收输入，取消即隐藏。参数入口：docs/visual/drag-preview.json。</p>
+<label>字号 <select id="scale"><option>100%</option><option>125%</option><option>150%</option></select></label>
+<div class="states">
+<section class="stage"><b>单项，尚未进入目标</b><span class="pointer">↖</span><div class="card"><div class="row"><img src="../../assets/reference/file-text.png" alt=""><span class="name">旅行清单.txt</span></div></div></section>
+<section class="stage"><b>多项，允许移动</b><span class="pointer">↖</span><div class="card"><div class="row"><img src="../../assets/reference/folder.png" alt=""><span class="name">2026 年旅行照片与说明文件</span><span class="count">3</span></div><div class="status">移动到 备份</div></div></section>
+<section class="stage dark"><b>禁止投放</b><span class="pointer">⊘</span><div class="card"><div class="row"><img src="../../assets/reference/folder.png" alt=""><span class="name">旅行资料</span><span class="count">3</span></div><div class="status">不能移动到所选文件夹或其子文件夹。</div></div></section>
+</div>
+<p class="note">原生外部复制使用 64×64 逻辑单位透明图像、48×48 文件图标与数量徽标，Windows Shell／Linux QDrag 保留系统复制及拒绝光标，macOS 沿用 AppKit 文件 promise 图像。此状态稿表达设计，不作为原生桌面验收证据。</p>
+<script>document.querySelector('#scale').onchange=e=>document.querySelectorAll('.card').forEach(c=>{const f=parseInt(e.target.value)/100;c.style.fontSize=13*f+'px';c.querySelectorAll('.status').forEach(s=>s.style.fontSize=12*f+'px');c.style.width=280*f+'px';c.parentElement.style.width=320*f+'px';});</script>
+</html>

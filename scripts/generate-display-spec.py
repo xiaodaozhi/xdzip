@@ -31,7 +31,7 @@ def main():
     sizes['settings'] = (Path(settings['source_image']).name, settings['source_size'])
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
-    spec = dict(password=json.loads((ROOT / 'docs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'docs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
+    spec = dict(operationHeader=layout['operation']['header'], taskMenuMaximumHeight=layout['controls']['task_menu_maximum_height'], password=json.loads((ROOT / 'docs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'docs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
                 windowsCaption=layout['main']['interaction'],
                 sourceWindow=reference['source_window'],
                 sourceToLogical=main_ratio[0] / main_ratio[1],

@@ -40,13 +40,26 @@ QtObject {
     readonly property real welcomeOpeningRadius: 8
     readonly property real welcomeOpeningTitleSize: 16
     readonly property real welcomeOpeningDimOpacity: 0.86
+    readonly property real dragPreviewMaximumWidth: 280
+    readonly property real dragPreviewMinimumWidth: 128
+    readonly property real dragPreviewIconSize: 24
+    readonly property real dragPreviewPadding: 10
+    readonly property real dragPreviewGap: 8
+    readonly property real dragPreviewRadius: 8
+    readonly property real dragPreviewPointerOffset: 16
+    readonly property real dragPreviewStatusGap: 6
+    readonly property real dragPreviewNativeSize: 64
+    readonly property real dragPreviewNativeIconSize: 48
+    readonly property real dragPreviewNativeInset: 8
+    readonly property real dragPreviewNativeBadgeSize: 24
+    readonly property real dragPreviewNativeBadgeFontSize: 11
     readonly property real aboutLogicalWidth: 491
     readonly property real aboutMaximumHeight: 640
     readonly property real aboutContentInset: 24
     readonly property real aboutSectionGap: 16
     readonly property real aboutRowGap: 10
-    readonly property real aboutArtworkSize: 64
-    readonly property real aboutTitleSize: 24
+    readonly property real aboutArtworkSize: 48
+    readonly property real aboutTitleSize: 20
     readonly property real aboutBodySize: 13
     readonly property real aboutNoteSize: 12
     readonly property real aboutUpdateProgressHeight: 6
@@ -126,6 +139,22 @@ QtObject {
     readonly property real operationFooterFontSize: 13 * fontScale
     readonly property real operationFooterNoteSize: 12 * fontScale
     readonly property real operationFooterIconSize: 16 * fontScale
+    readonly property real operationHeaderNormalHeight: 96
+    readonly property real operationHeaderIconSize: 48
+    readonly property real operationHeaderHorizontalInset: 24
+    readonly property real operationHeaderVerticalInset: 20
+    readonly property real operationHeaderGap: 16
+    readonly property real operationHeaderTextGap: 6
+    readonly property real operationHeaderTitleSize: 20 * fontScale
+    readonly property real operationHeaderSubtitleSize: 13 * fontScale
+    readonly property real operationHeaderTitleLineFactor: 1.4
+    readonly property real operationHeaderSubtitleLineFactor: 1.5
+    readonly property real operationHeaderBodyGap: 0
+    readonly property real taskMenuMaximumHeight: 360
+    readonly property real taskMenuFooterInset: 8
+    readonly property real taskIndicatorSize: 16
+    readonly property real taskIndicatorGlyphSize: 12
+    readonly property real taskIndicatorOverlap: 4
     readonly property real operationControlRadius: 5
     readonly property real operationControlBodyButtonHeight: 28
     readonly property real operationControlFooterButtonHeight: 32
@@ -312,6 +341,7 @@ QtObject {
     readonly property real mainToolbarRadius: 4.800000000000001
     readonly property real mainIconButtonSize: 28
     readonly property real mainFileActionGap: 6.4
+    readonly property real mainFileSelectionGap: 12
     readonly property real mainSortIndicatorGap: 6
     readonly property real mainColumnResizeHitWidth: 8
     readonly property real mainColumnMinimumWidth: 64
@@ -356,8 +386,8 @@ QtObject {
     readonly property real mainFileIconSize: 31.75193798
     readonly property real mainPhotoSize: 29.10594315
     readonly property real mainCheckboxSize: 15.87596899
-    readonly property real mainNameIconInset: 54.90439276
-    readonly property real mainNameTextInset: 97.24031008
+    readonly property real mainNameIconInset: 45.73643411
+    readonly property real mainNameTextInset: 88.07235142
     readonly property real mainCheckboxInset: 17.86046512
     readonly property real mainOriginalColumnWidth: 78.05684755
     readonly property real mainPackedColumnWidth: 75.41085271
@@ -396,7 +426,7 @@ QtObject {
     readonly property real mainViewButtonWidth: 31.09043928
     readonly property real mainViewButtonHeight: 26.45994832
     readonly property real mainViewIconSize: 17.19896641
-    readonly property real mainNameHeaderInset: 57.55038760
+    readonly property real mainNameHeaderInset: 48.38242894
     readonly property real mainToolbarActionWidth: 72.76485788
     readonly property real mainToolbarActionInset: 2.64599483
     readonly property real mainToolbarOpenGap: 9.92248062

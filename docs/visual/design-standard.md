@@ -27,6 +27,8 @@
 
 数字列同边右对齐，类型列同边左对齐。面包屑与预览标题区高度、字号、文字基线一致；预览顶边与文件表头顶边一致。图标按槽居中，文字按字体度量对齐。所有图标使用统一素材库，不从带底色截图中临时裁切。
 
+文件列表选框右边缘到文件图标槽的留白为 12 逻辑像素，来自 layout-scale.json 的 fileSelectionGap。此修订将原稿约 21.17 的空白收紧，文件图标、名称文字及“名称”表头同步左移，保留原有图标槽、图文间距和其他列边界；冻结原稿及原始量测不改写。
+
 主窗口正常密度校正与辅助字号放大是两个独立步骤。当前字号选项为 100%／125%／150%，旧 200% 设置按 150% 读取。辅助字号增加时可增高、滚动或打开独立详情窗口，不能用缩小文字抵消选择；测试直接注入 200% 只表示历史压力场景，不表示产品仍提供该选项。任何视觉例外必须记录理由和验证范围。
 
 ## 验收门槛
@@ -42,6 +44,14 @@ HTML 与 Qt 必须在同一逻辑宽度下对比；原稿只裁去外背景并�
 主工具栏图文间距固定为 6；图标独占按钮时在内容框居中。列表／网格／排序按钮采用固定 28×28 圆角方形，标题区间距固定为 6.4，面包屑吸收剩余空间。面包屑按钮正常高度为 28，上下留白；菜单与调用按钮间隔 4，底部菜单向上展开。树行不显示文件数，左边选中边平直、指示线全高，子节点不使用四边描边。树宽按已展开节点的真实文字度量计算。修订后的交互与量测按[验证方法](../qa/README.md)登记。
 
 ## 操作窗口与任务状态素材
+
+### 共享图标标题区
+
+创建、添加、解压、任务及结果、冲突、设置、关于窗口统一使用 OperationHeader，完整性检查随 TaskWindow 继承。图标槽为48×48，标题20、副标题13，左右内距24、上下20、图文间距16、标题与副标题间距6，正常高度基准96。图标保持原素材比例并居中，不使用窗口自己的 canvas／artwork 尺寸覆盖。标题与副标题均为纯文本，浅深色沿用 text／textSecondary，字号只按应用辅助字号变化。长文案或大字号使标题区按同一字体度量公式增高，不缩小字、不覆盖正文或footer。
+
+参数唯一来源为 [operation.header](layout-scale.json)，独立状态稿为 [operation-headers.html](../../design/hifi/sources/operation-headers.html)，窗口对应关系在 [window-registry.json](window-registry.json)。本修订替代旧的各窗图标槽、关于页居中品牌标题24及窗口专用header高度；原始图片、哈希和历史量测不改写。密码、预检、退出／重启确认等文字型标题区不凭空加入装饰图标，也不修改其既有安全交互。主窗口与菜单密度仍分别量测。
+
+English: Create, add, extract, task/result, conflict, settings and about windows share OperationHeader; integrity checks inherit it. The common policy is a 48×48 logical icon slot, 20-unit title, 13-unit subtitle, 24-unit horizontal and 20-unit vertical padding, 16-unit icon gap, 6-unit text gap and 96-unit normal height baseline. Text is plain and grows using common font metrics for larger fonts or long content. Icons preserve aspect ratio. This supersedes per-window header sizing and the centered 24-unit about branding while preserving historical references. Text-only prompts keep their roles, and main-window/menu density remains separate.
 
 普通独立窗口沿用 1280／1548 源坐标换算，宽度约 612；进度原稿映射为 819.2／1548，正常宽度为 491、客户区随内容自适应，最高 600；标题 20、正文 13，footer 仍使用共享 13／12 字号。操作窗口随当前审阅上下文换回源坐标，不能因从解压窗进入进度窗而再次缩小。解压使用 [extract-reference.json](extract-reference.json) 冻结的原稿哈希、量测和映射，宽度 491、标题 20、正文 13、路径框约 35 高、内嵌更改按钮约 69×24。Qt 直接使用真实布局尺寸，不用 Item.scale 或截图缩小。HTML 将正常尺寸换回当前审阅上下文的源坐标，独立和嵌入入口最终尺寸必须相同。
 
@@ -159,7 +169,7 @@ macOS 顶部系统菜单和全平台托盘菜单使用平台原生绘制，字�
 
 退出、停止任务和设置重启确认共用 [operation.confirmation](layout-scale.json)：客户区宽 491、标题 20、正文 13、内容内距 24、段间距 12，最高 600，并受可用屏幕高度约束。高度由真实正文与共享 footer 决定，禁止使用 270/540 等分档固定高度，禁止从旧默认操作窗的 612/25/16 套用。正文滚动，footer 不随正文移动。三按钮在英文 150% 字号下允许文字在按钮内换行并增加共享行高，不减字号、不越界、不改为纵向三个按钮。停止时维持相同几何政策且禁用决策按钮。
 
-[独立状态稿](../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽、AboutWindow 的品牌标题及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。完整窗口清单与例外理由见 [window-registry.json](window-registry.json)。
+[独立状态稿](../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。AboutWindow 的图标标题区执行下方共享规范，不再保留品牌标题字号例外。完整窗口清单与例外理由见 [window-registry.json](window-registry.json)。
 
 ## 密码解压请求
 
@@ -178,3 +188,15 @@ UpdateWindow 以 C01 [创建原稿](../../design/hifi/screens/create.png)为独�
 ## 包内移动状态
 
 包内拖动不改变主窗口、菜单或行高比例。目标使用已有列表 selection 和树 treeSelectionColor，反馈使用 tooltipSurface/tooltipText、tooltipMaxWidth、tooltipPadding 和 mainBodySize，最多四行并在客户区内翻转/约束，不增加固定操作窗口。无效目标显示具体拒绝原因，源行保留既有选择色。复用进度和冲突窗口的尺寸，文件冲突分支提供跳过、改名、替换及应用到后续冲突。状态板见 [archive-move.html](../../design/hifi/sources/archive-move.html)。
+
+文件拖动一旦超过系统阈值，即显示跟随指针的图标与名称卡片，不等待目标目录。单项显示文件类型图标和名称，多项增加选中数量，名称按纯文本并从中间省略；目标说明最多四行。卡片无输入处理，不遮挡投放检测，允许／禁止投放仍由目标光标及具体文字说明。指针右下偏移 16，客户区边界约束，取消或结束立即清除。卡片最大宽 280、图标 24、内距 10、间距 8、圆角 8，使用共享提示色与菜单文字，辅助字号增大文字及最大宽度。权威参数见 [drag-preview.json](drag-preview.json)，独立状态稿见 [archive-drag.html](../../design/hifi/sources/archive-drag.html)。
+
+外部复制交由平台拖放会话：Windows Shell 与 Linux QDrag 使用 64 逻辑单位透明预览、48 图标及多选数量徽标；计数超过 99 显示 99+。仅位图存储按窗口 DPR 取样，不改变逻辑尺寸。Mac 保留 AppKit 原生文件 promise 图像与系统反馈。原生系统光标表达复制或拒绝，不把外部复制画成包内移动；没有收到成功结果前不显示已完成。原生图像准备失败保留安全传输与系统默认光标，不降级内容校验。参考 [Windows Shell 拖动反馈](https://learn.microsoft.com/en-us/windows/win32/shell/dataobject)与 [Qt 6.8 QDrag](https://doc.qt.io/qt-6.8/qdrag.html)。
+
+English: Internal file drags immediately show a pointer-following type icon, plain-text elided name and multi-selection count, plus the existing bounded target explanation. The input-transparent card uses shared tooltip colors and menu fonts, a 280-unit maximum width, 24-unit icon, 10-unit padding, 8-unit gap and radius, and a 16-unit pointer offset. Cancellation and completion clear it. Windows Shell and Linux QDrag use a transparent 64-unit native image with a 48-unit icon and count badge; only bitmap sampling uses DPR. AppKit retains native promise images. Native cursors retain copy/refusal semantics, and image setup failure preserves the existing transfer path.
+
+解压确认窗口的原生与正文标题均为“解压文件”，英文为“Extract files”；工具栏“解压”动作名称保持独立翻译项，不与窗口标题共用。窗口尺寸、正文与 footer 不因标题修订改变。
+
+标题区与其首个正文分组之间统一使用 operation.header.bodyGap，当前为 0 个逻辑像素。标题区自身已包含底部留白，正文不得再叠加旧 hero 的外部间距。卡片内距、正文段落及设置分组间距保留在正文容器内部。Qt 和 HTML 均测量标题区下边界到首个正文分组上边界，覆盖任务运行与三种终态。
+
+English: The first body group follows the shared header with a 0-unit bodyGap. Header padding already supplies the separation; legacy hero gaps must not be added again. Card insets and paragraph or settings-section spacing remain inside the body group. Qt and HTML measure this boundary, including running and terminal task views.

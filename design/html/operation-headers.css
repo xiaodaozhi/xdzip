@@ -1,0 +1,41 @@
+/* One logical header contract, applied after the historical per-view rules. */
+dialog[data-kind] .modal-header.shared-operation-header {
+    box-sizing:border-box; display:flex; align-items:center; flex-shrink:0;
+    min-height:calc(var(--shared-header-normal-height) * 1px * var(--ui-source-factor));
+    padding:calc(var(--shared-header-vertical-inset) * 1px * var(--ui-source-factor)) calc(var(--shared-header-horizontal-inset) * 1px * var(--ui-source-factor));
+    gap:calc(var(--shared-header-gap) * 1px * var(--ui-source-factor));
+    background:var(--surface); border:0;
+}
+dialog[data-kind] .shared-operation-header .modal-symbol,
+dialog[data-kind] .shared-operation-header .modal-symbol > svg {
+    width:calc(var(--shared-header-icon-size) * 1px * var(--ui-source-factor));
+    height:calc(var(--shared-header-icon-size) * 1px * var(--ui-source-factor));
+    min-width:0; min-height:0; flex:none; background:none; object-fit:contain;
+}
+dialog[data-kind] .shared-operation-header > div:not(.modal-symbol) { flex:1; min-width:0; }
+dialog[data-kind] .shared-operation-header h1 {
+    margin:0; font-size:calc(var(--shared-header-title-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1));
+    line-height:var(--shared-header-title-line-factor); font-weight:700; white-space:normal; overflow-wrap:anywhere;
+}
+dialog[data-kind] .shared-operation-header p {
+    margin:calc(var(--shared-header-text-gap) * 1px * var(--ui-source-factor)) 0 0;
+    font-size:calc(var(--shared-header-subtitle-size) * 1px * var(--ui-source-factor) * var(--settings-text-scale,1));
+    line-height:var(--shared-header-subtitle-line-factor); color:var(--secondary); white-space:normal; overflow-wrap:anywhere; text-align:left;
+}
+dialog[data-kind] .shared-operation-header + .modal-content { padding-top:0; margin-top:0; }
+dialog[data-kind="about"] .about-content { padding-top:0; gap:0; }
+dialog[data-kind="about"] .shared-operation-body {
+    display:flex; flex-direction:column; align-items:center; width:100%;
+    gap:calc(var(--about-section-gap,16) * 1px * var(--ui-source-factor));
+}
+dialog[data-kind="about"] .about-content > .shared-operation-header {
+    align-self:stretch; width:calc(100% + var(--about-content-inset,24) * 2px * var(--ui-source-factor));
+    margin-inline:calc(var(--about-content-inset,24) * -1px * var(--ui-source-factor));
+}
+.ui-task-menu { display:flex; flex-direction:column; overflow:hidden; }
+.ui-menu-scroll { min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+.ui-menu-fixed-footer { flex:none; border-top:1px solid var(--ui-menu-border); padding-top:calc(8px * var(--ui-source-factor)); margin-top:calc(8px * var(--ui-source-factor)); }
+.ui-menu-fixed-footer .ui-menu-clear { width:100%; }
+.task-chevron-pair { display:flex; flex-direction:column; align-items:center; width:calc(16px * var(--ui-source-factor)); flex:none; }
+.task-chevron-pair > .icon { width:calc(12px * var(--ui-source-factor)); height:calc(12px * var(--ui-source-factor)); }
+.task-chevron-pair > .icon + .icon { margin-top:calc(-4px * var(--ui-source-factor)); }

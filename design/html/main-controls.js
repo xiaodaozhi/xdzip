@@ -1152,6 +1152,15 @@ window.XdzipMain = (() => {
             trigger: $("#tasks"),
             label: "任务菜单",
             placement: "top-end",
+            footer: {
+                label: settingText("tasks.clearFinished"),
+                disabled: !(state.task?.status === "finished" || state.testJob && state.testJob.status !== "running"),
+                run: () => {
+                    if (state.task?.status === "finished") state.task = null;
+                    if (state.testJob && state.testJob.status !== "running") state.testJob = null;
+                    render();
+                },
+            },
             items: [
                 ...(state.task ? [{ id: "task-details", label: state.task.kind === "create" ? "创建任务" : "解压任务", icon: "task-list", status: state.task.status === "finished" ? state.task.result === "success" ? "已完成" : state.task.result === "cancelled" ? "已取消" : "未完成" : state.task.status === "conflict" ? "等待处理" : "进行中", statusKind: state.task.status === "finished" ? state.task.result === "success" ? "succeeded" : state.task.result === "cancelled" ? "cancelled" : "failed" : state.task.status === "conflict" ? "waiting" : "running", run: () => dispatch("tasks") }] : []),
                 ...(state.testJob ? [{ id: state.task ? "check-details" : "task-details", label: "完整性检查预览", icon: "task-list", status: state.testJob.status === "running" ? "进行中" : "已结束", run: showTestView }] : []),

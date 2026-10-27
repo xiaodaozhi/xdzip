@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "units": "Qt device-independent pixels; native bitmap storage alone is multiplied by screen DPR",
+  "maximum_width": 280,
+  "minimum_width": 128,
+  "icon_size": 24,
+  "padding": 10,
+  "gap": 8,
+  "radius": 8,
+  "pointer_offset": 16,
+  "status_gap": 6,
+  "native_size": 64,
+  "native_icon_size": 48,
+  "native_inset": 8,
+  "native_badge_size": 24,
+  "native_badge_font_size": 11,
+  "native_badge_color": "accent",
+  "native_badge_text": "accentText"
+}

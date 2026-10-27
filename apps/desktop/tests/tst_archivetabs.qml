@@ -29,6 +29,27 @@ Item {
         }
         function init() { Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.integratedTitlebar=false; moves.clear(); windowDrags.clear(); populate(3,0); }
         function cleanup() { bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function test_full_filename_tooltip_uses_stationary_delay() {
+            bar.tabs = [{id:"tab0", title:"<b>很长的原始归档文件名</b>.zip", selected:true},
+                        {id:"tab1", title:"other.zip", selected:false}];
+            const strip = findChild(bar,"archiveTabStrip");
+            tryVerify(()=>strip.itemAtIndex(0)!==null);
+            const first = strip.itemAtIndex(0);
+            const tip = findChild(first,"archiveTabTooltip-0");
+            verify(tip!==null);
+            mouseMove(first,30,first.height/2);
+            wait(700); verify(!tip.visible);
+            mouseMove(first,40,first.height/2);
+            wait(700); verify(!tip.visible,"Moving within a tab restarts the full delay");
+            tryCompare(tip,"visible",true,2500);
+            compare(tip.text,"<b>很长的原始归档文件名</b>.zip");
+            compare(tip.contentItem.textFormat,Text.PlainText);
+            mousePress(first,40,first.height/2,Qt.LeftButton);
+            tryCompare(tip,"visible",false);
+            mouseRelease(first,40,first.height/2,Qt.LeftButton);
+            mouseMove(surface,2,bar.height+40);
+            wait(1300); verify(!tip.visible);
+        }
         function test_release_position_controls_drop_data() {
             return [{tag:"final-tab",outside:false},{tag:"outside-titlebar",outside:true}];
         }

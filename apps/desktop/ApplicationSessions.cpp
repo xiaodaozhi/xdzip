@@ -585,15 +585,36 @@ int ApplicationSessions::activeTaskCount() const {
 }
 void ApplicationSessions::showTask(const QString &identity) {
     const auto slash = identity.indexOf('/');
+    if (slash <= 0 || slash == identity.size() - 1 || m_quitting)
+        return;
+    const auto taskId = identity.mid(slash + 1);
     for (const auto &session : m_sessions)
-        if (session->id == identity.left(slash)) {
-            if (session->closed)
-                session->window->setProperty("retiredWindow", false);
-            activate(session.get());
+        if (session->id == identity.left(slash) && !session->retiring && session->page &&
+            session->controller) {
+            const auto tasks = session->controller->tasks();
+            if (std::none_of(tasks.begin(), tasks.end(), [&taskId](const QVariant &value) {
+                    return value.toMap().value("id").toString() == taskId;
+                }))
+                return;
+            // Retained controllers own task dialogs; accessing a task never
+            // reopens its closed browsing page or changes the selected tab.
             QMetaObject::invokeMethod(session->page, "showTask",
-                                      Q_ARG(QString, identity.mid(slash + 1)));
+                                      Q_ARG(QString, taskId));
             return;
         }
+}
+bool ApplicationSessions::hasFinishedTasks() const {
+    return std::any_of(m_sessions.cbegin(), m_sessions.cend(), [](const auto &session) {
+        return session->controller && session->controller->hasFinishedTasks();
+    });
+}
+void ApplicationSessions::clearFinishedTasks() {
+    for (const auto &session : m_sessions)
+        if (session->controller)
+            session->controller->clearFinishedTasks();
+    for (const auto &session : m_sessions)
+        if (session->closed)
+            reap(session.get());
 }
 std::vector<ApplicationSessions::Session *>
 ApplicationSessions::visibleTabs(QQuickWindow *window) const {

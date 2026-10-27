@@ -19,6 +19,7 @@ settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text()
 preflight = json.loads((ROOT / 'docs/visual/preflight-reference.json').read_text())
 password = json.loads((ROOT / 'docs/visual/password-reference.json').read_text())
 result = json.loads((ROOT / 'docs/visual/result-reference.json').read_text())
+drag_preview = json.loads((ROOT / 'docs/visual/drag-preview.json').read_text())
 main_scale = main['logical_width'] / main['source_window'][2]
 
 
@@ -41,6 +42,10 @@ for key, value in welcome.items():
     if key != "schema_version" and isinstance(value, (int, float)):
         name = ''.join(part.title() for part in key.split('_'))
         lines.append(f'    readonly property real welcome{name}: {value}')
+for key, value in drag_preview.items():
+    if isinstance(value, (int, float)) and key != 'schema_version':
+        name = ''.join(part.title() for part in key.split('_'))
+        lines.append(f'    readonly property real dragPreview{name}: {value}')
 for key, value in about.items():
     if key != 'schema_version' and isinstance(value, (int, float)):
         name = ''.join(part.title() for part in key.split('_'))
@@ -76,6 +81,13 @@ for key, value in layout['operation']['confirmation'].items():
     lines.append(f'    readonly property real confirmation{key[0].upper() + key[1:]}: {value}{scale}')
 for key, value in layout['operation']['footer'].items():
     lines.append(f'    readonly property real operationFooter{key[0].upper() + key[1:]}: {value} * fontScale')
+for key, value in layout['operation']['header'].items():
+    scale = ' * fontScale' if key in ['titleSize', 'subtitleSize'] else ''
+    lines.append(f'    readonly property real operationHeader{key[0].upper() + key[1:]}: {value}{scale}')
+for key in ['task_menu_maximum_height', 'task_menu_footer_inset', 'task_indicator_size',
+            'task_indicator_glyph_size', 'task_indicator_overlap']:
+    name = ''.join(part.title() for part in key.split('_'))
+    lines.append(f'    readonly property real {name[0].lower() + name[1:]}: {layout["controls"][key]}')
 for key, value in layout['operation']['controls'].items():
     lines.append(f'    readonly property real operationControl{key[0].upper() + key[1:]}: {value}')
 for key, value in layout['operation']['components'].items():
@@ -141,6 +153,10 @@ for key, value in main['source_geometry'].items():
     title = layout['main']['titlebar']
     converted = {'titleHeight': title['height'], 'tabHeight': title['tab_height'],
                  'tabTopInset': title['tab_vertical_inset']}.get(key, converted)
+    if key in {'nameIconInset', 'nameTextInset', 'nameHeaderInset'}:
+        geometry = main['source_geometry']
+        source_gap = geometry['nameIconInset'] - geometry['checkboxInset'] - geometry['checkboxSize']
+        converted += layout['main']['interaction']['fileSelectionGap'] - source_gap * main_scale
     lines.append(f'    readonly property real {name}: {converted:.8f}')
 for key, value in main['source_type'].items():
     name = 'main' + key[0].upper() + key[1:] + 'Size'

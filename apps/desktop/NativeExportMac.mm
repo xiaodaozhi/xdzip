@@ -89,6 +89,8 @@ void captureNativeExportGesture(QWindow *, const std::shared_ptr<NativeExportSta
               operation:(NSDragOperation)operation {
     Q_UNUSED(session);
     Q_UNUSED(point);
+    if (state->dragFinished)
+        state->dragFinished();
     if (operation == NSDragOperationNone) {
         state->inOperation = false;
         state->cancelled = true;

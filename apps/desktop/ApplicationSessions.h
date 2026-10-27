@@ -14,6 +14,7 @@ class QMessageBox;
 class ApplicationSessions final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
+    Q_PROPERTY(bool hasFinishedTasks READ hasFinishedTasks NOTIFY tasksChanged)
     Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
     Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(int sessionCount READ sessionCount NOTIFY sessionsChanged)
@@ -36,6 +37,8 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void command(const QString &command);
     Q_INVOKABLE void showAboutFor(QObject *page);
     Q_INVOKABLE void showTask(const QString &identity);
+    Q_INVOKABLE void clearFinishedTasks();
+    bool hasFinishedTasks() const;
     Q_INVOKABLE void requestQuit();
     Q_INVOKABLE void requestRestart();
     // Called only after an update provider has prepared its installation handoff.

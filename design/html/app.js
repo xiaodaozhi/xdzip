@@ -796,7 +796,9 @@ function closeModal({ preserveReview = false } = {}) {
     if (resumeSettings) { settingsResumeDraft = resumeSettings; showSettings(); }
 }
 function header(title, subtitle, ico = "archive") {
-    return `<header class="modal-header"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
+    const spec = window.XDZIP_DISPLAY_SPEC.operationHeader;
+    const style = Object.entries(spec).map(([key,value])=>`--shared-header-${key.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())}:${value}`).join(';');
+    return `<header class="modal-header shared-operation-header" style="${style}"><div class="modal-symbol">${icon(ico)}</div><div><h1>${title}</h1><p>${subtitle}</p></div></header>`;
 }
 function footer(content, ready = "准备就绪", ico = "shield") {
     return `<footer class="modal-footer${ready ? "" : " action-only-footer"}">${ready ? `<span class="ready-label">${icon(ico)}${ready}</span>` : ""}<div class="operation-footer-actions">${content}</div></footer>`;
@@ -955,7 +957,7 @@ function showExtract(scope = "selected", retryFiles = null) {
         sum = chosen.reduce((n, e) => n + e.size, 0);
     dialog(
         header(
-            "解压",
+            "解压文件",
             `${esc(state.archiveTitle)}，${scope === "all" ? "整个压缩包" : scope === "results" ? "当前搜索结果" : scope === "retry" ? "重试范围" : "所选文件"}`,
             "archive",
         ) +
@@ -1491,12 +1493,25 @@ function showAbout() {
     const modal = $("#modal");
     modal.querySelector(".os-title").textContent = t("about.title");
     modal.setAttribute("aria-label", t("about.title"));
+    const aboutContent = modal.querySelector('.about-content');
+    const brand = aboutContent.querySelector('.about-artwork').innerHTML;
+    aboutContent.querySelector('.about-artwork').remove();
+    aboutContent.querySelector('h1').remove();
+    aboutContent.querySelector('.about-description').remove();
+    aboutContent.insertAdjacentHTML('afterbegin', header('xdzip', esc(t('about.description'))));
+    const brandSlot = aboutContent.querySelector('.modal-symbol');
+    brandSlot.classList.add('about-artwork'); brandSlot.innerHTML = brand;
+    const aboutBody = document.createElement('div');
+    aboutBody.className = 'shared-operation-body';
+    const aboutHeader = aboutContent.querySelector('.shared-operation-header');
+    while (aboutHeader.nextSibling) aboutBody.append(aboutHeader.nextSibling);
+    aboutContent.append(aboutBody);
     Object.entries(spec).forEach(([key,value])=>{if(typeof value === "number") modal.style.setProperty("--about-"+key.replaceAll("_","-"),String(value));});
     bindClose();
     $("#about-homepage").onclick = () => window.open("https://github.com/xiaodaozhi/xdzip", "_blank", "noopener");
     const updateSection = document.createElement("section");
     updateSection.className = "about-update-section";
-    modal.querySelector(".about-content").append(updateSection);
+    aboutBody.append(updateSection);
     // State fixtures only: preview actions never download, install or contact a server.
     const updatePreview = (options = {}) => {
         const update = {state:"idle", trusted:true, canInstall:true, downloaded:false, progress:.42, version:"99.20.12-preview.123", ...options};

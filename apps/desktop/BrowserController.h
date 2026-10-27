@@ -113,6 +113,8 @@ class BrowserController : public QObject {
     Q_PROPERTY(QVariantMap extractionIntent READ extractionIntent NOTIFY extractionChanged)
     Q_PROPERTY(QVariantMap targetCheck READ targetCheck NOTIFY extractionChanged)
     Q_PROPERTY(QVariantList tasks READ tasks NOTIFY tasksChanged)
+    Q_PROPERTY(bool hasFinishedTasks READ hasFinishedTasks NOTIFY tasksChanged)
+    Q_PROPERTY(bool nativeDragActive READ nativeDragActive NOTIFY changed)
     Q_PROPERTY(QAbstractItemModel *taskModel READ taskModel CONSTANT)
     Q_PROPERTY(int activeTaskCount READ activeTaskCount NOTIFY tasksChanged)
     Q_PROPERTY(QVariantMap passwordPrompt READ passwordPrompt NOTIFY tasksChanged)
@@ -226,6 +228,9 @@ class BrowserController : public QObject {
         return m_targetCheck;
     }
     QVariantList tasks() const;
+    bool hasFinishedTasks() const;
+    Q_INVOKABLE void clearFinishedTasks();
+    bool nativeDragActive() const { return m_nativeDragActive; }
     QAbstractItemModel *taskModel() {
         return &m_taskModel;
     }
@@ -243,6 +248,7 @@ class BrowserController : public QObject {
     Q_INVOKABLE QString directoryForRow(int row) const;
     Q_INVOKABLE QString beginInternalDrag(int row, QWindow *owner = nullptr);
     Q_INVOKABLE bool internalDragCurrent(const QString &token) const;
+    Q_INVOKABLE QVariantMap internalDragPreview(const QString &token) const;
     Q_INVOKABLE QVariantMap moveDropState(const QString &token, const QString &target) const;
     Q_INVOKABLE void moveInternalDrag(const QString &token, const QString &target);
     Q_INVOKABLE void exportInternalDrag(const QString &token, QWindow *owner);
@@ -431,6 +437,9 @@ class BrowserController : public QObject {
     QStringList m_extractionSelectors;
     QString m_extractionDirectory, m_sourcePath, m_checkedTarget;
     QMap<quint64, QVariantMap> m_tasks;
+    QSet<quint64> m_hiddenFinishedTasks;
+    bool m_nativeDragActive = false;
+    void setNativeDragActive(bool active);
     QVariantMap m_openPasswordPrompt;
     quint64 m_openPasswordGeneration = 0;
     QSet<quint64> m_openAfterTasks;

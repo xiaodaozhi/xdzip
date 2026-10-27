@@ -460,13 +460,13 @@ th:not(:first-child):not(:last-child)::after {
     height:27px;
     background:var(--border);
 }
-.check-col { width:84px; padding-left:27px; }
+.check-col { width:calc(52px + var(--main-file-selection-gap)); padding-left:27px; }
 th button { gap:var(--main-sort-indicator-gap); font-size:18px; font-weight:500; }
 th .column-resize-handle { position:absolute; right:0; top:0; width:var(--main-column-resize-hit-width); height:100%; padding:0; cursor:col-resize; z-index:2; touch-action:none; }
 th .column-resize-handle:hover { background:var(--ui-control-hover); }
-th[aria-sort="ascending"]>button:first-child::before,th[aria-sort="descending"]>button:first-child::before { color:var(--accent-ink); }
-th:not(:nth-child(2))[aria-sort="ascending"]>button:first-child::before { content:"↑"; }
-th:not(:nth-child(2))[aria-sort="descending"]>button:first-child::before { content:"↓"; }
+th[aria-sort="ascending"]>button:first-child::after,th[aria-sort="descending"]>button:first-child::after { color:var(--accent-ink); }
+th:not(:nth-child(2))[aria-sort="ascending"]>button:first-child::after { content:"↑"; }
+th:not(:nth-child(2))[aria-sort="descending"]>button:first-child::after { content:"↓"; }
 th button svg { width:20px; height:20px; }
 #sort-name .descending { transform:rotate(180deg); }
 .workspace input[type="checkbox"] {

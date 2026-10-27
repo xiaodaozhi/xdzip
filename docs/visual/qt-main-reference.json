@@ -132,7 +132,8 @@
     "Single-session fidelity scene keeps its original calibrated width. Real sessions support window-local ordering and bounded overflow using layout-scale.json; plus follows the saved open mode.",
     "Image preview, archive-wide totals and modification time are not supplied by the current metadata bridge; unsupported data stays explicit.",
     "Large font and narrow-window layouts reflow; 1024-wide default is the calibrated baseline.",
-    "Floating capsule titlebar uses layout-scale.json: height48, tab32, equal8 insets. Original source title anchors remain archived; top-anchored content shifts by the explicit title delta."
+    "Floating capsule titlebar uses layout-scale.json: height48, tab32, equal8 insets. Original source title anchors remain archived; top-anchored content shifts by the explicit title delta.",
+    "File selection spacing uses layout-scale.json fileSelectionGap=12 logical pixels. Name icon, name text and name header translate together from the archived source gap; source geometry and artwork remain unchanged."
   ],
   "toolbar_icon_source_x": {
     "archiveOpen": 27,

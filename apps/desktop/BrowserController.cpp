@@ -675,9 +675,29 @@ QVariantList BrowserController::tasks() const {
     QVariantList result;
     for (auto it = m_tasks.cend(); it != m_tasks.cbegin();) {
         --it;
+        if (m_hiddenFinishedTasks.contains(it.key()) && it.value().value("terminal").toBool())
+            continue;
         result.append(it.value());
     }
     return result;
+}
+bool BrowserController::hasFinishedTasks() const {
+    for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it)
+        if (it.value().value("terminal").toBool() && !m_hiddenFinishedTasks.contains(it.key()))
+            return true;
+    return false;
+}
+void BrowserController::clearFinishedTasks() {
+    bool changed = false;
+    for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it)
+        if (it.value().value("terminal").toBool() && !m_hiddenFinishedTasks.contains(it.key())) {
+            m_hiddenFinishedTasks.insert(it.key());
+            changed = true;
+        }
+    // Hide the history projection only. Backend state, pending acknowledgements,
+    // passwords, cancellation and file lifetimes retain their original owner.
+    if (changed)
+        emit tasksChanged();
 }
 int BrowserController::activeTaskCount() const {
     const auto pendingTask =
@@ -1028,6 +1048,7 @@ void BrowserController::cancel() {
         m_connection->cancel(m_pending);
 }
 bool BrowserController::requestClose() {
+    setNativeDragActive(false);
     if (m_connection->stopped())
         return true;
     if (m_closing)
@@ -1164,6 +1185,7 @@ void BrowserController::attemptSubmission() {
     }
     m_waiting.reset();
     if (result.status != xdzip::reader::Admission::Accepted) {
+        setNativeDragActive(false);
         m_busy = false;
         const auto code = result.status == xdzip::reader::Admission::Closed ? "runtime_unavailable"
                           : result.status == xdzip::reader::Admission::Invalid ? "invalid_request"
@@ -1192,6 +1214,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         return QString::fromUtf8(value.data(), static_cast<qsizetype>(value.size()));
     };
     if (event.kind == EventKind::RuntimeFault) {
+        setNativeDragActive(false);
         m_admissionRetry.stop();
         m_waiting.reset();
         m_faulted = true;
@@ -1321,6 +1344,7 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                                        [](const auto &v) { return v.value("terminal").toBool(); });
             if (oldest == m_tasks.end())
                 break;
+            m_hiddenFinishedTasks.remove(oldest.key());
             m_tasks.erase(oldest);
         }
         if (text(t.error) == "source_changed" && QString::number(t.session) == m_session) {

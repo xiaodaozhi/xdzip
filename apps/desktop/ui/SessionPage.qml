@@ -17,6 +17,7 @@ Item {
     property bool closedPage: false
     property bool sessionClosed: false
     readonly property bool archiveInternalDragging: moveDrag.Drag.active
+    readonly property bool archiveTransferActive: moveDrag.Drag.active || moveDrag.promoting || reader.nativeDragActive
     readonly property var contentItem: root
     readonly property int visibility: windowHost.visibility
     readonly property bool windowsTitlebar: windowHost.windowsTitlebar
@@ -37,6 +38,7 @@ Item {
         property var feedbackOwner: null
         property bool permitted: false
         property bool promoting: false
+        property var preview: ({})
         Drag.source: moveDrag
         Drag.keys: ["xdzip-internal-move"]
         Drag.supportedActions: Qt.MoveAction
@@ -49,32 +51,24 @@ Item {
             if (feedbackOwner === owner) { feedbackOwner = null; targetId = ""; message = ""; permitted = false; }
         }
     }
-    Rectangle {
+    ArchiveDragPreview {
         objectName: "archiveMoveFeedback"
         z: 1000
-        visible: moveDrag.Drag.active && moveDrag.message.length > 0
-        width: Math.min(Theme.tooltipMaxWidth, root.width - Theme.mainGridInset * 2)
-        height: moveHint.implicitHeight + Theme.tooltipPadding * 2
-        x: Math.max(Theme.mainGridInset, Math.min(moveDrag.x + Theme.tooltipPadding, root.width - width - Theme.mainGridInset))
-        y: Math.max(Theme.mainGridInset, Math.min(moveDrag.y + Theme.tooltipPadding, root.height - height - Theme.mainGridInset))
-        color: Theme.tooltipSurface
-        radius: Theme.mainControlRadius
-        Accessible.role: Accessible.StaticText
-        Accessible.name: moveDrag.message
-        Text {
-            id: moveHint
-            anchors.fill: parent; anchors.margins: Theme.tooltipPadding
-            text: moveDrag.message; textFormat: Text.PlainText
-            wrapMode: Text.Wrap
-            maximumLineCount: 4; elide: Text.ElideRight
-            font.pixelSize: Theme.mainBodySize
-            color: Theme.tooltipText
-        }
+        visible: moveDrag.Drag.active
+        fileName: moveDrag.preview.name || ""
+        directory: moveDrag.preview.directory || false
+        itemCount: moveDrag.preview.count || 0
+        message: moveDrag.message
+        permitted: moveDrag.permitted
+        availableWidth: root.width - Theme.mainGridInset * 2
+        x: Math.max(Theme.mainGridInset, Math.min(moveDrag.x + Theme.dragPreviewPointerOffset, root.width - width - Theme.mainGridInset))
+        y: Math.max(Theme.mainGridInset, Math.min(moveDrag.y + Theme.dragPreviewPointerOffset, root.height - height - Theme.mainGridInset))
     }
     function beginTransfer(item, row, mouse) {
         const point = item.mapToItem(root, mouse.x, mouse.y);
         moveDrag.token = reader.beginInternalDrag(row, root.windowHost);
         if (!moveDrag.token.length) return;
+        moveDrag.preview = reader.internalDragPreview(moveDrag.token);
         moveDrag.x = point.x; moveDrag.y = point.y;
         moveDrag.Drag.start(Qt.MoveAction);
     }
@@ -100,6 +94,7 @@ Item {
         moveDrag.clearFeedback(moveDrag.feedbackOwner);
         reader.exportInternalDrag(token, root.windowHost);
         moveDrag.token = "";
+        moveDrag.preview = ({});
         moveDrag.promoting = false;
     }
     function deferCancelledTransfer() {
@@ -118,6 +113,7 @@ Item {
         moveDrag.Drag.cancel();
         reader.cancelInternalDrag(moveDrag.token);
         moveDrag.token = "";
+        moveDrag.preview = ({});
         moveDrag.clearFeedback(moveDrag.feedbackOwner);
     }
     function close() {
@@ -159,6 +155,10 @@ Item {
     readonly property var globalTasks: sessionManager ? (visible ? sessionManager.tasks : []) : reader.tasks
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
     readonly property int globalActiveTaskCount: sessionManager ? sessionManager.activeTaskCount : reader.activeTaskCount
+    onVisibleChanged: if (!visible) {
+        if (taskMenu) taskMenu.close();
+        if (moveDrag && moveDrag.Drag.active) root.cancelTransfer();
+    }
     readonly property var controller: reader
     readonly property color accentTextColor: Theme.accentText
     property bool uiReady: false
@@ -306,9 +306,19 @@ Item {
                 cancelled: qsTrId("ui.a37778f17c5f")
             })[status] || qsTrId("ui.b53be09930f4");
     }
+    function taskLabel(task: var): string {
+        const label = task.kind === "check" ? qsTrId("tasks.check")
+            : task.kind === "move" ? qsTrId("move.task")
+            : task.kind === "update" ? qsTrId("tasks.add")
+            : ["export", "export-copy"].includes(task.kind) ? qsTrId("tasks.export")
+            : task.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449");
+        return label.arg(task.backendId || task.id);
+    }
     function showTask(id: string) {
+        const task = reader.tasks.find(t => t.id === id);
+        if (!task) return;
         activeTaskId = id;
-        taskSnapshot = reader.tasks.find(t => t.id === id) || {};
+        taskSnapshot = task;
         taskWindow.present();
         if (taskSnapshot.status === "waiting" && taskSnapshot.promptId)
             conflictWindow.present();
@@ -455,6 +465,10 @@ Item {
         onTasksChanged: {
             const previous = root.taskSnapshot;
             root.taskSnapshot = tasks.find(t => t.id === root.activeTaskId) || {};
+            if (root.activeTaskId.length && !root.taskSnapshot.id) {
+                taskWindow.close();
+                root.activeTaskId = "";
+            }
             if (root.taskSnapshot.openAccepted && (!previous.openAccepted || previous.id !== root.taskSnapshot.id))
                 taskWindow.close();
             if (!root.sessionClosed && root.taskSnapshot.status === "waiting" && root.taskSnapshot.promptId && !conflictWindow.visible)
@@ -1473,8 +1487,8 @@ Item {
                                 width: table.columnSize(index)
                                 height: parent && parent.parent ? parent.parent.height : 0
                                 readonly property bool sorted: reader.sortOrder > 0 && (reader.sortOrder < 9 ? Math.floor((reader.sortOrder - 1) / 2) : Math.floor((reader.sortOrder - 3) / 2)) === index
-                                leftPadding: Math.max(table.columnLeftInset(index, true), sorted ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
-                                rightPadding: table.columnRightInset(index)
+                                leftPadding: table.columnLeftInset(index, true)
+                                rightPadding: Math.max(table.columnRightInset(index), sorted ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
                                 horizontalAlignment: index === 1 || index === 2 ? Text.AlignRight : Text.AlignLeft
                                 verticalAlignment: Text.AlignVCenter
                                 objectName: "sort-column-" + index
@@ -1515,16 +1529,11 @@ Item {
                                     border.width: 0
                                     border.color: Theme.accent
                                 }
-                                TextMetrics {
-                                    id: headerMetrics
-                                    font: columnHeader.font
-                                    text: columnHeader.text
-                                }
                                 Text {
                                     id: sortIndicator
                                     objectName: "sort-indicator-" + columnHeader.index
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: (columnHeader.index === 1 || columnHeader.index === 2 ? Math.max(columnHeader.leftPadding, columnHeader.width - columnHeader.rightPadding - headerMetrics.advanceWidth) : columnHeader.leftPadding) - width - Theme.mainSortIndicatorGap
+                                    x: (columnHeader.index === 1 || columnHeader.index === 2 ? columnHeader.width - columnHeader.rightPadding : columnHeader.leftPadding + columnHeader.contentWidth) + Theme.mainSortIndicatorGap
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
                                     visible: columnHeader.sorted
                                     color: Theme.accentInk
@@ -1726,6 +1735,7 @@ Item {
                                 id: hover
                             }
                             MouseArea {
+                                id: cellPointer
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
@@ -1823,7 +1833,9 @@ Item {
                                 Accessible.name: cell.entryStatus
                             }
                             CommandTooltip {
-                                requested: hover.hovered && cell.column === 0
+                                objectName: "entryTooltip-" + cell.row + "-" + cell.column
+                                requested: hover.hovered && cell.column === 0 && !cellPointer.pressed
+                                suppressed: root.archiveTransferActive
                                 text: cell.display + "\n" + cell.entryStatus
                             }
                         }
@@ -1864,6 +1876,7 @@ Item {
                                 id: gridHover
                             }
                             MouseArea {
+                                id: gridPointer
                                 anchors.fill: parent
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                                 enabled: reader.runtimeAvailable && !reader.browsingBusy
@@ -1944,7 +1957,9 @@ Item {
                                 }
                             }
                             CommandTooltip {
-                                requested: gridHover.hovered
+                                objectName: "gridEntryTooltip-" + gridEntry.index
+                                requested: gridHover.hovered && !gridPointer.pressed
+                                suppressed: root.archiveTransferActive
                                 text: gridEntry.display + "\n" + gridEntry.entryStatus
                             }
                         }
@@ -2033,6 +2048,7 @@ Item {
                 }
                 ArchiveAction {
                     objectName: "browserTasks"
+                    taskDisclosure: true
                     labelSize: root.welcomeVisible ? 12 * Theme.fontScale : Theme.mainHeaderSize
                     glyphSize: root.welcomeVisible ? 16 : Theme.mainUnits(24)
                     asset: "task-list"
@@ -2043,7 +2059,51 @@ Item {
                         id: taskMenu
                         objectName: "browserTaskMenu"
                         x: parent.width - width
-                        y: -implicitHeight - Theme.mainPopupGap
+                        height: 1
+                        readonly property real maximumViewportHeight: Math.min(Theme.taskMenuMaximumHeight,
+                            root.height - Theme.menuViewportInset * 2)
+                        function fitViewport() {
+                            // Popup layout can adjust row geometry during its own size pass.
+                            // Apply the measured result after that pass, without a height binding.
+                            height = Math.min(naturalContentHeight + topPadding + bottomPadding, maximumViewportHeight);
+                        }
+                        onNaturalContentHeightChanged: Qt.callLater(taskMenu.fitViewport)
+                        onFooterHeightChanged: Qt.callLater(taskMenu.fitViewport)
+                        onMaximumViewportHeightChanged: Qt.callLater(taskMenu.fitViewport)
+                        onTopPaddingChanged: Qt.callLater(taskMenu.fitViewport)
+                        onBottomPaddingChanged: Qt.callLater(taskMenu.fitViewport)
+                        onVisibleChanged: if (visible) fitViewport()
+                        y: -height - Theme.mainPopupGap
+                        footerComponent: Component {
+                            FocusScope {
+                                implicitHeight: clearButton.implicitHeight + Theme.taskMenuFooterInset + 1
+                                enabled: root.sessionManager ? root.sessionManager.hasFinishedTasks : reader.hasFinishedTasks
+                                onActiveFocusChanged: if (activeFocus) clearButton.forceActiveFocus(Qt.TabFocusReason)
+                                Rectangle { width: parent.width; height: 1; color: Theme.menuBorder }
+                                OperationButton {
+                                    id: clearButton
+                                    objectName: "clearFinishedTasks"
+                                    x: 0; y: Theme.taskMenuFooterInset + 1
+                                    width: parent.width
+                                    text: qsTrId("tasks.clearFinished")
+                                    enabled: parent.enabled
+                                    Accessible.description: qsTrId("tasks.clearFinishedHint")
+                                    Keys.onPressed: function (event) {
+                                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                            click();
+                                            event.accepted = true;
+                                        }
+                                    }
+                                    Keys.onBacktabPressed: taskMenu.focusBoundary(true)
+                                    Keys.onUpPressed: taskMenu.focusBoundary(true)
+                                    onClicked: {
+                                        taskMenu.close();
+                                        if (root.sessionManager) root.sessionManager.clearFinishedTasks();
+                                        else reader.clearFinishedTasks();
+                                    }
+                                }
+                            }
+                        }
                         function restoreCurrentItem(item) {
                             if (!item)
                                 return;
@@ -2064,11 +2124,19 @@ Item {
                             delegate: CommandMenuItem {
                                 required property var taskData
                                 objectName: "taskMenuItem-" + taskData.id
-                                text: (taskData.kind === "move" ? qsTrId("move.task") : taskData.creating ? qsTrId("ui.9a63e2cb4339") : qsTrId("ui.fb4b66729449")).arg(taskData.backendId || taskData.id) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
+                                rightPadding: Theme.menuLabelInset + taskMenu.viewportScrollBarWidth
+                                KeyNavigation.priority: KeyNavigation.BeforeItem
+                                KeyNavigation.tab: taskMenu.footerItem && taskMenu.footerItem.enabled ? taskMenu.footerItem : null
+                                text: root.taskLabel(taskData) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
                                 asset: "task-list"
                                 statusLabel: root.taskStateLabel(taskData.status)
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
-                                onTriggered: root.sessionManager ? root.sessionManager.showTask(taskData.id) : root.showTask(taskData.id)
+                                onTriggered: {
+                                    const identity = taskData.id;
+                                    taskMenu.close();
+                                    if (root.sessionManager) root.sessionManager.showTask(identity);
+                                    else root.showTask(identity);
+                                }
                             }
                             onObjectAdded: (index, object) => {
                                 const selected = taskMenu.itemAt(taskMenu.currentIndex);

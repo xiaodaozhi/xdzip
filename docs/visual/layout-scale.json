@@ -37,6 +37,7 @@
     "interaction": {
       "iconButtonSize": 28,
       "fileActionGap": 6.4,
+      "fileSelectionGap": 12,
       "sortIndicatorGap": 6,
       "columnResizeHitWidth": 8,
       "columnMinimumWidth": 64,
@@ -72,6 +73,19 @@
     }
   },
   "operation": {
+    "header": {
+      "normalHeight": 96,
+      "iconSize": 48,
+      "horizontalInset": 24,
+      "verticalInset": 20,
+      "gap": 16,
+      "textGap": 6,
+      "titleSize": 20,
+      "subtitleSize": 13,
+      "titleLineFactor": 1.4,
+      "subtitleLineFactor": 1.5,
+      "bodyGap": 0
+    },
     "source_to_logical": [
       1280,
       1548
@@ -208,7 +222,12 @@
     "source": "controls.json",
     "menu_width": 240,
     "menu_row_min_height": 32,
-    "menu_font_size": 13
+    "menu_font_size": 13,
+    "task_menu_maximum_height": 360,
+    "task_menu_footer_inset": 8,
+    "task_indicator_size": 16,
+    "task_indicator_glyph_size": 12,
+    "task_indicator_overlap": 4
   },
   "rounding": {
     "window_and_structural_boundaries": "nearest integer",

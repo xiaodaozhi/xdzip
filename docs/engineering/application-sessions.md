@@ -16,6 +16,14 @@
 
 会话关闭后，延迟到达的开始、预检、密码与冲突事件不自动弹窗或抢焦点。任务与请求令牌继续保留，用户从全局任务入口主动打开时再显示原会话的进度和待处理请求，关闭页面不等于取消请求。
 
+全局任务入口只按复合身份显示原控制器的任务窗口，先关闭调用菜单，不切换当前归档标签，不恢复已关闭的归档页面或主窗口。任务的密码、冲突和取消仍路由到原控制器；无效或已失效的任务身份忽略。关闭浏览页与显式查看任务是独立的用户意图。
+
+清除任务历史是应用层展示意图。控制器保留后端快照与迟到回执，仅在有界历史中标记已终结项目不再展示，同一终态的重复更新不能使其重新出现。活动计数、准备占位、密码、冲突、取消及join不使用隐藏标记；没有完成历史时不发送变化。历史淘汰同时删除隐藏标记，已关闭且无可见任务的控制器按既有异步退出流程回收。跨会话清理按各控制器身份操作，不能用相同数字ID清除另一个会话的活动任务。
+
+English: Clearing history changes only its bounded UI projection. Authoritative snapshots and late acknowledgements remain intact; repeated terminal updates stay hidden. Live counts, preparation placeholders, password/conflict tokens, cancellation and joins ignore visibility markers. Eviction removes the corresponding marker, and closed sessions with no visible tasks retire through the existing asynchronous path. Clearing is scoped per controller, never by a numeric task ID shared across sessions.
+
+English: Global task entries close their invoking menu before showing the original controller's task dialog. They never select an archive tab, restore a closed page or reopen its main window. Password, conflict and cancellation actions remain bound to the task's original controller. Invalid or expired composite identities are ignored.
+
 创建、解压和完整性检查在应用级串行准入，包括准备、密码或冲突等待、提交与清理阶段。等待准入的控制器仅保留一个有界命令，可取消，不占用 GUI 线程。单个 Rust 连接的任务顺序和安全语义继续有效。明确退出时，先对所有会话作统一确认，选择等待则全部任务结束后退出，选择取消则等待全部连接完成取消、清理与 join；只检查关闭完成状态，不在状态检查中再次触发关闭。
 
 重任务快照携带创建任务的原始请求 ID，即使先于 `TaskAccepted` 或晚于该请求的 `Finished` 到达也保持不变。控制器仅在请求、原始会话与任务身份匹配时，将准备占位绑定到实际任务；其他请求或会话的快照不能抵消占位。实际任务与占位只计一次，已终结任务不再计为活动任务。绑定不代替真实接纳回执，不提前触发任务窗口，不绕过串行准入、取消和全部连接 join 屏障。
@@ -52,9 +60,9 @@ English: One normal product process and tray serve each user login session. Each
 
 关闭主窗口与最小化不同。关闭有托盘的最后窗口会清空该窗口所有浏览标签并关闭所属操作窗，再隐藏窗口；从托盘、Dock 或无文件参数的第二次启动唤出后仅显示一个起始页，不恢复旧标签或草稿。非最后窗口继续关闭并清理自己的浏览标签，其他窗口不受影响。存在阻塞模态窗口时先激活它，不接受主窗口关闭。
 
-关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。主动从全局任务入口或文件打开请求进入保留会话，仍可显示相应归档及任务。
+关闭窗口不取消真实后台任务，任务所属会话继续按组合身份保留。正常情况下使用新的空白会话承载起始页。达到 32 个存活会话时暂用已关闭页面的无归档外壳，隐藏旧标题、加载及错误反馈；异步 join 释放槽位后再创建空白会话，不越过上限。该替换不唤出隐藏窗口，不抢走另一窗口焦点。全局任务入口仅显示任务窗口，文件打开请求可以重新显示保留的归档页面。
 
-English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Explicit task/file requests may reopen a retained session. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
+English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Global task requests show only their task dialog; file requests may reopen the retained archive page. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
 
 接受主窗口关闭时递增激活世代并断开模态等待连接，已经排队的旧唤醒回调也必须检查世代，不能在模态弹窗刚关闭后重新显示主窗口或恢复旧标签。此失效处理与正常打开入口共用，不取消后台任务。
 

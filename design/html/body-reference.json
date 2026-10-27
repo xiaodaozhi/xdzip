@@ -319,14 +319,33 @@
         47,
         41
       ],
-      "design_revision": "folder-optical-balance",
+      "design_revision": "file-selection-gap",
       "target_ink_rect": [
-        397,
+        383.140625,
         300.642858,
         44,
         37.714284
       ],
       "authored_display_frame": [
+        381.140625,
+        295.5,
+        48,
+        48
+      ],
+      "previous_design_revision": "folder-optical-balance",
+      "previous_target_ink_rect": [
+        397,
+        300.642858,
+        44,
+        37.714284
+      ],
+      "target_region": [
+        377.140625,
+        295,
+        57,
+        51
+      ],
+      "previous_authored_display_frame": [
         395,
         295.5,
         48,
@@ -453,7 +472,20 @@
         48,
         53
       ],
-      "mode": "red"
+      "mode": "red",
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        387.140625,
+        630,
+        37,
+        43
+      ],
+      "target_region": [
+        381.140625,
+        624,
+        48,
+        53
+      ]
     },
     {
       "name": "文本文件轮廓",
@@ -463,7 +495,20 @@
         47,
         55
       ],
-      "mode": "gray"
+      "mode": "gray",
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        388.140625,
+        697,
+        33,
+        43
+      ],
+      "target_region": [
+        381.140625,
+        691,
+        47,
+        55
+      ]
     },
     {
       "name": "GPX纸张轮廓",
@@ -473,7 +518,20 @@
         53,
         55
       ],
-      "mode": "gray"
+      "mode": "gray",
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        385.140625,
+        764,
+        41,
+        44
+      ],
+      "target_region": [
+        379.140625,
+        758,
+        53,
+        55
+      ]
     },
     {
       "name": "Markdown纸张轮廓",
@@ -483,12 +541,38 @@
         53,
         55
       ],
-      "mode": "gray"
+      "mode": "gray",
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        384.140625,
+        833,
+        42,
+        44
+      ],
+      "target_region": [
+        379.140625,
+        826,
+        53,
+        55
+      ]
     },
     {
       "name": "GPX内部符号",
       "region": [
         403,
+        774,
+        33,
+        29
+      ],
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        392.140625,
+        778,
+        26,
+        17
+      ],
+      "target_region": [
+        389.140625,
         774,
         33,
         29
@@ -498,6 +582,19 @@
       "name": "Markdown内部符号",
       "region": [
         403,
+        843,
+        33,
+        27
+      ],
+      "design_revision": "file-selection-gap",
+      "target_ink_rect": [
+        393.140625,
+        848,
+        26,
+        15
+      ],
+      "target_region": [
+        389.140625,
         843,
         33,
         27
@@ -2467,7 +2564,15 @@
       "scope": "Only directory rows, folder slots and disclosure ink; titlebar, toolbar, list and preview retain existing anchors.",
       "target_basis": "Tree starts at the existing (31,336) inset; rows=40, root-to-hierarchy gap=4, left inset=12, disclosure slot=24, folder slot=20. Canvas conversion is 1548/1280; glyph visible bounds come from independent 3x asset alpha."
     },
-    "qt-interaction-sync": "2026-10-13：按 layout-scale.json 同步 Qt 交互修订：固定 28 方形按钮、居中图标与预览关闭按钮；原稿像素和旧测量保留，当前几何由独立逻辑规范核验。"
+    "qt-interaction-sync": "2026-10-13：按 layout-scale.json 同步 Qt 交互修订：固定 28 方形按钮、居中图标与预览关闭按钮；原稿像素和旧测量保留，当前几何由独立逻辑规范核验。",
+    "file-selection-gap": {
+      "reason": "选框到文件图标槽的留白收紧为 12 逻辑像素，文件图标、文件名和名称表头同步左移。其他列边界、图标尺寸、图文间距及冻结原稿保持不变。",
+      "source": "docs/visual/layout-scale.json",
+      "previous_gap_source_pixels": 32,
+      "gap_logical_pixels": 12,
+      "translation_x_source_pixels": -13.859375,
+      "preserved_revision": "folder-optical-balance"
+    }
   },
   "dom_rect_revisions": {
     ".photo-preview": {
@@ -2496,6 +2601,15 @@
         336,
         270,
         48.375
+      ]
+    },
+    "tr[data-id=\"lake\"] .entry-photo": {
+      "design_revision": "file-selection-gap",
+      "target": [
+        383.140625,
+        495,
+        45,
+        45
       ]
     }
   },

@@ -103,6 +103,8 @@ Item {
         }
         function cleanup() {
             tooltip.requested = false;
+            tooltip.suppressed = false;
+            tooltip.needsFreshPointer = false;
             menu.close();
             layoutMenu.close();
             tryCompare(menu, "visible", false);
@@ -292,6 +294,21 @@ Item {
             mouseClick(trigger);
             tryCompare(menu, "visible", true);
             tryCompare(tooltip, "visible", false);
+        }
+        function test_drag_suppression_cancels_a_stale_source_hover_timer() {
+            tooltip.requested = true;
+            tryCompare(tooltip,"visible",true,2500);
+            tooltip.suppressed = true;
+            tryCompare(tooltip,"visible",false);
+            wait(1300);
+            verify(!tooltip.visible,"A stale source hover cannot show a tooltip during drag");
+            tooltip.suppressed = false;
+            wait(1300);
+            verify(!tooltip.visible,"A cached source hover remains invalid after native drag ends");
+            mouseMove(trigger,25,10);
+            wait(700);
+            verify(!tooltip.visible,"Ending a drag requires a fresh full dwell");
+            tryCompare(tooltip,"visible",true,1800);
         }
     }
 }

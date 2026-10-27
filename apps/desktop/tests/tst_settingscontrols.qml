@@ -21,10 +21,39 @@ Item {
         Ui.OperationFooterButton { id: cancel; text: "取消" }
         Ui.OperationFooterButton { id: done; text: "完成" }
     }
+    Component { id: settingsComponent; Ui.SettingsWindow { owner: null } }
     TestCase {
         name: "SettingsControls"
         when: windowShown
-        function cleanup() { select.popup.close(); Ui.Theme.fontScale = 1; select.model = ["标准", "English (US)"]; }
+        function cleanup() { select.popup.close(); Ui.Theme.fontScale = 1; Ui.Theme.dark = false; select.model = ["标准", "English (US)"]; }
+        function test_shared_checkboxes_data() {
+            const rows = [];
+            for (const dark of [false, true])
+                for (const scale of [1, 1.25, 1.5])
+                    rows.push({tag: dark + "-" + scale, dark, scale});
+            return rows;
+        }
+        function test_shared_checkboxes(data) {
+            const settings = createTemporaryObject(settingsComponent, surface);
+            verify(settings !== null);
+            Ui.Theme.dark = data.dark;
+            Ui.Theme.fontScale = data.scale;
+            for (const name of ["Tray", "Recent"]) {
+                const control = findChild(settings.contentItem, "settings" + name);
+                verify(control !== null);
+                compare(control.indicator.objectName, control.objectName + "Indicator");
+                compare(control.indicatorSize, Ui.Theme.operationControlIndicatorSize * control.density);
+                const label = findChild(control, control.objectName + "Label");
+                verify(label !== null);
+                compare(label.font.pixelSize, Math.round(Ui.Theme.settingsBodySize * data.scale));
+                const draft = "draft" + name;
+                const before = settings[draft];
+                control.requestToggle();
+                compare(settings[draft], !before);
+                control.requestToggle();
+                compare(settings[draft], before);
+            }
+        }
         function test_dropdown_data() { return [{tag:"100",scale:1},{tag:"125",scale:1.25},{tag:"150",scale:1.5},{tag:"legacy200",scale:2}]; }
         function test_dropdown(data) {
             Ui.Theme.fontScale = data.scale;

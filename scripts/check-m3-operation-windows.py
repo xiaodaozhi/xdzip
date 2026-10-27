@@ -25,13 +25,13 @@ def text_node(scene, text):
     return nodes[0]
 
 
-for name, kind, title in [('extract-options', 'extract', '解压'),
+for name, kind, title in [('extract-options', 'extract', '解压文件'),
                           ('task-waiting', 'progress', '等待处理重名文件'),
                           ('conflict', 'conflict', '目标位置已有同名文件')]:
     capture = json.loads((args.input / (name + '.json')).read_text(encoding='utf-8'))
     check(name + '/logical width', capture['width'], layout['logical_widths'].get(kind, layout['logical_widths']['default']))
     density = layout.get(kind + '_density', 1)
-    check(name + '/title size', text_node(capture, title)['fontPixelSize'], round(layout['components']['titleSize'] * density))
+    check(name + '/title size', text_node(capture, title)['fontPixelSize'], layout['header']['titleSize'])
     check(name + '/capture width divided by DPR', capture['imageWidth'] / capture['dpr'], capture['width'])
     check(name + '/capture height divided by DPR', capture['imageHeight'] / capture['dpr'], capture['height'])
     footer_buttons = [node for node in capture['nodes'] if node['visible'] and node['class'].startswith('OperationFooterButton')]

@@ -17,6 +17,16 @@ HTML 的检查按钮运行明确标注的界面演示。关闭或返回浏览保
 
 ## 正常尺寸与任务发现
 
+带图标、标题、副标题的创建、添加、解压、任务与结果、冲突、设置、关于窗口，共用 OperationHeader。48逻辑图标槽、20标题、13副标题、96正常高度基准；长文案与大字号按共享字体度量增高，正文继续滚动，footer不随之移动。文本型密码、预检与退出／重启确认不凭空添加装饰图标。参数、独立状态稿与登记见[视觉规范](../visual/design-standard.md)。
+
+任务按钮右侧保留上下箭头。应用内任务菜单最高360逻辑像素，同时受当前窗口可用高度约束；历史列表内部滚动，底部清除按钮固定可达。清除仅隐藏已完成、失败或已取消的任务历史；运行、排队、等待密码／冲突、取消与清理中的任务保留。没有可清除历史时按钮禁用。动作不取消任务，不删除源归档或用户输出，不改变任务的原始控制器或退出屏障。清除后关闭已被隐藏的结果窗口，不显示空快照。
+
+清除按钮位于菜单的可交互内容层，不放在只用于绘制的背景层；鼠标、键盘与原生辅助功能必须执行同一清除动作。分隔线到按钮保留8逻辑像素，按钮底部仅使用共享菜单内距，不叠加另一份footer留白。状态标记右对齐可用行内容，仅列表实际溢出时预留滚动条宽度。任务名称根据原快照的kind区分检查、解压、创建、添加、移动与导出，不用解压作为所有非创建任务的名称；点击仍按完整任务身份打开原控制器，不将检查任务改路由为解压。
+
+English: The fixed clear action belongs to the interactive popup content, not its decorative background. Pointer, keyboard and native accessibility invoke the same clear intent. Leave 8 logical units between the separator and button; only shared menu padding remains below the button. Right-align status badges within the row, reserving scrollbar space only for actual overflow. Labels reflect the snapshot kind (check, extract, create, add, move or export), while activation retains the original composite task identity and controller.
+
+English: All existing icon/title/subtitle operation headers share a 48-unit icon slot, 20-unit title, 13-unit subtitle and 96-unit normal height baseline. Long text and larger fonts grow using the same content metrics. Text-only prompts retain their roles. The task button has paired chevrons. Task menus are capped at 360 logical units and the available viewport, with a scrolling history and fixed clear button. Clearing hides only completed, failed or cancelled history, preserves live tasks and prompts, closes cleared result views, and never cancels work or removes source archives or user outputs.
+
 2026-10-15 修订：创建、解压与共享任务窗宽度统一为 491 逻辑像素。进度和结果按内容自适应高度，最多 600；明细折叠时不保留展开空间，展开列表最多 168。切换任务 ID 清空明细展开状态，同一任务的进度更新不重置用户选择。文件已存在窗口同宽，最高 560，沿用正常密度和共享 footer。尺寸修订不改变原生独立窗口及取消语义。
 
 状态栏显示当前控制器保留的全部任务数（最多 64），右侧状态标记区分终态与运行状态。活动任务计数继续用于异步退出，不因历史展示而改变任务调度或关闭屏障。

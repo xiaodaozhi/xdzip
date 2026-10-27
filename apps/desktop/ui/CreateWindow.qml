@@ -82,38 +82,15 @@ OperationWindow {
             clip: true
             ColumnLayout {
                 width: createScroll.availableWidth
-                spacing: 12
-                RowLayout {
+                spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
                     Layout.fillWidth: true
-                    Layout.leftMargin: Theme.operationCreateContentInset
-                    Layout.rightMargin: Theme.operationCreateContentInset
-                    Layout.topMargin: 20
-                    spacing: 14
-                    OperationHero {
-                        source: Theme.dark ? "qrc:/xdzip/assets/dark/archive-add-large.png" : "qrc:/xdzip/assets/archive-add-large.png"
-                        density: root.density
-                        Layout.preferredWidth: canvasWidth
-                        Layout.preferredHeight: canvasHeight
-                    }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 6
-                        Text {
-                            text: qsTrId("ui.fe189b616c1d")
-                            font.pixelSize: Theme.operationCreateTitleSize
-                            font.bold: true
-                            color: Theme.text
-                        }
-                        Text {
-                            Layout.fillWidth: true
-                            text: qsTrId("ui.24d107333a04")
-                            wrapMode: Text.Wrap
-                            font.pixelSize: Theme.operationCreateBodySize
-                            color: Theme.textSecondary
-                        }
-                    }
+                    source: Theme.dark ? "qrc:/xdzip/assets/dark/archive-add-large.png" : "qrc:/xdzip/assets/archive-add-large.png"
+                    title: qsTrId("ui.fe189b616c1d")
+                    subtitle: qsTrId("ui.24d107333a04")
                 }
                 ColumnLayout {
+                    objectName: "operationHeaderBody"
                     Layout.fillWidth: true
                     Layout.leftMargin: Theme.operationCreateContentInset
                     Layout.rightMargin: Theme.operationCreateContentInset

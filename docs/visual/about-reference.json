@@ -5,8 +5,8 @@
   "content_inset": 24,
   "section_gap": 16,
   "row_gap": 10,
-  "artwork_size": 64,
-  "title_size": 24,
+  "artwork_size": 48,
+  "title_size": 20,
   "body_size": 13,
   "note_size": 12,
   "source": "design/hifi/about.html",
@@ -30,5 +30,6 @@
   ],
   "artwork_source": "design/assets/brand/xdzip.svg",
   "macos_artwork_source": "design/assets/brand/macos/xdzip.png",
-  "update_progress_height": 6
+  "update_progress_height": 6,
+  "header_policy": "Shared operation.header in layout-scale.json; legacy centered branding remains historical."
 }

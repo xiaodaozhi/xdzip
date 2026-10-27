@@ -1002,6 +1002,7 @@ QtObject {
             preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
         ApplicationSessions sessions(&engine, preferences);
         sessions.adopt(window);
+        auto *sourcePage = window->property("activePage").value<QObject *>();
         auto *controller = window->findChild<BrowserController *>();
         QTRY_VERIFY(!controller->busy());
         const auto identity =
@@ -1019,12 +1020,17 @@ QtObject {
         QVERIFY(prompt);
         sessions.closeSession(identity);
         QCoreApplication::processEvents();
+        const auto closedTabs = window->property("sessionTabs").toList();
+        const auto closedActivePage = window->property("activePage").value<QObject *>();
         QVERIFY(!prompt->isVisible());
         QCOMPARE(controller->passwordPrompt().value("promptId").toString(), "4");
         sessions.showTask(identity + "/71");
         QTRY_VERIFY(prompt->isVisible());
         QCOMPARE(prompt->property("shownPromptId").toString(), "4");
-        sessions.closeSession(identity);
+        QCOMPARE(window->property("sessionTabs").toList(), closedTabs);
+        QCOMPARE(window->property("activePage").value<QObject *>(), closedActivePage);
+        QVERIFY(QMetaObject::invokeMethod(prompt, "close"));
+        QVERIFY(QMetaObject::invokeMethod(sourcePage, "hideSessionWindows"));
         waiting.task.password_prompt_id = 5;
         controller->receive(waiting);
         QCoreApplication::processEvents();
@@ -1039,6 +1045,542 @@ QtObject {
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
+    }
+    void clearingTaskHistoryPreservesLiveStateAndStableRows() {
+        BrowserController controller;
+        auto *model = controller.taskModel();
+        QAbstractItemModelTester tester(model, QAbstractItemModelTester::FailureReportingMode::QtTest);
+        const QStringList statuses{"succeeded","failed","cancelled","running","waiting",
+                                   "waiting_password","cancelling","cleaning","queued","verifying"};
+        for (int index=0; index<statuses.size(); ++index) {
+            xdzip::reader::Event event{};
+            event.kind = xdzip::reader::EventKind::TaskUpdate;
+            event.task.id = quint64(index+1);
+            event.task.status = rust::String(statuses[index].toStdString());
+            event.task.password_prompt_id = index==5 ? 17 : 0;
+            event.task.password_prompt_name = rust::String("owned.txt");
+            controller.receive(event);
+        }
+        QCOMPARE(controller.tasks().size(),10);
+        QCOMPARE(controller.activeTaskCount(),7);
+        const auto password = controller.passwordPrompt();
+        QPersistentModelIndex active(model->index(0,0));
+        const auto role = model->roleNames().key("taskData");
+        const auto identity = model->data(active,role).toMap().value("id");
+        QSignalSpy resets(model,&QAbstractItemModel::modelReset);
+        QVERIFY(controller.hasFinishedTasks());
+        controller.clearFinishedTasks();
+        QCOMPARE(controller.tasks().size(),7);
+        QCOMPARE(controller.activeTaskCount(),7);
+        QCOMPARE(controller.passwordPrompt(),password);
+        QVERIFY(!controller.hasFinishedTasks());
+        QVERIFY(active.isValid());
+        QCOMPARE(model->data(active,role).toMap().value("id"),identity);
+        QCOMPARE(resets.count(),0);
+        xdzip::reader::Event repeated{};
+        repeated.kind = xdzip::reader::EventKind::TaskUpdate;
+        repeated.task.id = 1;
+        repeated.task.status = rust::String("succeeded");
+        controller.receive(repeated);
+        QCOMPARE(controller.tasks().size(),7);
+        QVERIFY(!controller.hasFinishedTasks());
+        repeated.task.id = 11;
+        controller.receive(repeated);
+        QCOMPARE(controller.tasks().size(),8);
+        QVERIFY(controller.hasFinishedTasks());
+        controller.clearFinishedTasks();
+        QCOMPARE(controller.tasks().size(),7);
+        for (quint64 id=12;id<90;++id) { repeated.task.id=id; controller.receive(repeated); }
+        QVERIFY(controller.m_hiddenFinishedTasks.size()<=64);
+    }
+    void clearingGlobalHistoryKeepsOtherSessionsLiveAndReapsClosedResults() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences=engine.singletonInstance<UiPreferences *>("Xdzip.Settings","AppSettings");
+        QVERIFY(preferences->saveDetails("system",1,"zh-CN","standard",true,false,true,"tabs"));
+        ApplicationSessions sessions(&engine,preferences);
+        sessions.adopt(window);
+        sessions.newSession();
+        QPointer<QObject> oldPage=window->property("activePage").value<QObject *>();
+        auto *oldController=oldPage->findChild<BrowserController *>();
+        const auto oldId=window->property("sessionTabs").toList().last().toMap().value("id").toString();
+        xdzip::reader::Event event{};
+        event.kind=xdzip::reader::EventKind::TaskUpdate;
+        event.task.id=71;
+        event.task.status=rust::String("succeeded");
+        oldController->receive(event);
+        sessions.newSession();
+        auto *currentPage=window->property("activePage").value<QObject *>();
+        auto *currentController=currentPage->findChild<BrowserController *>();
+        QVERIFY(currentController!=oldController);
+        event.task.status=rust::String("waiting_password");
+        event.task.password_prompt_id=9;
+        currentController->receive(event);
+        sessions.closeSession(oldId);
+        sessions.showTask(oldId+"/71");
+        auto *result=oldPage->findChild<QQuickWindow *>("taskWindow");
+        QTRY_VERIFY(result->isVisible());
+        const auto tabs=window->property("sessionTabs").toList();
+        const auto password=currentController->passwordPrompt();
+        sessions.clearFinishedTasks();
+        QCOMPARE(currentController->tasks().size(),1);
+        QCOMPARE(currentController->activeTaskCount(),1);
+        QCOMPARE(currentController->passwordPrompt(),password);
+        QCOMPARE(sessions.tasks().size(),1);
+        QVERIFY(!sessions.hasFinishedTasks());
+        QCOMPARE(window->property("activePage").value<QObject *>(),currentPage);
+        QCOMPARE(window->property("sessionTabs").toList(),tabs);
+        QTRY_VERIFY(oldPage.isNull());
+        sessions.showTask(oldId+"/71");
+        QCOMPARE(window->property("activePage").value<QObject *>(),currentPage);
+        event.task.status=rust::String("succeeded");
+        event.task.password_prompt_id=0;
+        currentController->receive(event);
+        QSignalSpy joined(&sessions,&ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void taskMenuScrollsAboveItsFixedClearButton_data() {
+        QTest::addColumn<QString>("input");
+        QTest::addColumn<bool>("managed");
+        QTest::addColumn<int>("historyCount");
+        for (const auto &input : {QString("pointer"), QString("keyboard-space"),
+                                  QString("keyboard-enter"), QString("accessible")})
+            for (const bool managed : {false, true})
+                for (const int count : {3, 64})
+                    QTest::newRow(
+                        qPrintable(input + QString::number(managed) + "-" + QString::number(count)))
+                        << input << managed << count;
+    }
+    void taskMenuScrollsAboveItsFixedClearButton() {
+        QFETCH(QString, input);
+        QFETCH(bool, managed);
+        QFETCH(int, historyCount);
+        const bool wasAccessible = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessible = qScopeGuard([=] { QAccessible::setActive(wasAccessible); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        ApplicationSessions sessions(&engine, preferences);
+        if (managed)
+            sessions.adopt(window);
+        const bool scrolling = historyCount == 64;
+        for (int id = 1; id <= historyCount; ++id) {
+            xdzip::reader::Event event{};
+            event.kind = xdzip::reader::EventKind::TaskUpdate;
+            event.task.id = quint64(id);
+            event.task.kind = rust::String("check");
+            event.task.source = rust::String("owned.zip");
+            const char *status = scrolling && id == historyCount ? "running"
+                                 : id % 3 == 0                   ? "cancelled"
+                                 : id % 3 == 1                   ? "succeeded"
+                                                                 : "failed";
+            event.task.status = rust::String(status);
+            controller->receive(event);
+        }
+        auto *button = findVisual(window->contentItem(), "browserTasks");
+        auto *menu = window->findChild<QObject *>("browserTaskMenu");
+        QVERIFY(button && menu);
+        QVERIFY(findVisual(button, "taskDisclosureIndicator")->isVisible());
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QVERIFY(menu->property("height").toReal() <= 360);
+        auto *list = qvariant_cast<QQuickItem *>(menu->property("contentItem"));
+        auto *clear = window->findChild<QQuickItem *>("clearFinishedTasks");
+        QVERIFY(list && clear && clear->isVisible());
+        QTRY_VERIFY_WITH_TIMEOUT(
+            (list->property("contentHeight").toReal() > list->height()) == scrolling, 1000);
+        auto *scrollBar = list->findChild<QQuickItem *>("commandMenuScrollBar");
+        QVERIFY(scrollBar);
+        QCOMPARE(scrollBar->isVisible(), scrolling);
+        QCOMPARE(menu->property("viewportScrollBarWidth").toReal() > 0, scrolling);
+        const auto identity = (managed ? sessions.tasks() : controller->tasks())
+                                  .first()
+                                  .toMap()
+                                  .value("id")
+                                  .toString();
+        auto *entry = window->findChild<QQuickItem *>("taskMenuItem-" + identity);
+        QVERIFY(entry);
+        auto *badge = findVisual(entry, entry->objectName() + "Status");
+        QVERIFY(badge);
+        QTRY_VERIFY(qAbs(badge->mapToItem(entry, QPointF(badge->width(), 0)).x() -
+                         (entry->width() - entry->property("rightPadding").toReal())) < .5);
+        QCOMPARE(entry->property("rightPadding").toReal(),
+                 8. + menu->property("viewportScrollBarWidth").toReal());
+        QVERIFY(
+            entry->property("text").toString().startsWith(qtTrId("tasks.check").arg(historyCount)));
+        auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
+        QVERIFY(background);
+        QTRY_VERIFY(qAbs(background->height() -
+                         clear->mapToItem(background, QPointF(0, clear->height())).y() -
+                         menu->property("padding").toReal()) < .5);
+        const auto position = clear->mapToScene(QPointF());
+        QTest::keyClick(window, Qt::Key_End);
+        if (scrolling)
+            QTRY_VERIFY(list->property("contentY").toReal() > 0);
+        QCOMPARE(clear->mapToScene(QPointF()), position);
+        QTest::keyClick(window, Qt::Key_Tab);
+        QTRY_VERIFY(clear->hasActiveFocus());
+        QTest::keyClick(window, Qt::Key_Backtab);
+        QTRY_VERIFY(!clear->hasActiveFocus());
+        if (!qEnvironmentVariableIsEmpty("XDZIP_HEADER_VISUAL_AUDIT")) {
+            const auto directory = qEnvironmentVariable("XDZIP_HEADER_VISUAL_AUDIT");
+            QVERIFY(QDir().mkpath(directory));
+            QVERIFY(visual_audit::save(window, directory, "task-menu-viewport"));
+        }
+        if (input == "pointer") {
+            const auto point =
+                clear->mapToScene(QPointF(clear->width() / 2, clear->height() / 2)).toPoint();
+            QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, point);
+            QVERIFY(clear->property("down").toBool());
+            QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, point);
+        } else if (input.startsWith("keyboard-")) {
+            QTest::keyClick(window, Qt::Key_Tab);
+            QTRY_VERIFY(clear->hasActiveFocus());
+            QTest::keyClick(window, input == "keyboard-enter" ? Qt::Key_Return : Qt::Key_Space);
+        } else {
+            auto *accessible = QAccessible::queryAccessibleInterface(clear);
+            QVERIFY(accessible && accessible->actionInterface());
+            accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        }
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QCOMPARE(controller->tasks().size(), scrolling ? 1 : 0);
+        QCOMPARE(controller->activeTaskCount(), scrolling ? 1 : 0);
+        if (scrolling)
+            QCOMPARE(controller->tasks().first().toMap().value("id").toString(), "64");
+        QVERIFY(!controller->hasFinishedTasks());
+        QVERIFY(!clear->isEnabled());
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QCOMPARE(controller->taskModel()->rowCount(), scrolling ? 1 : 0);
+        QVERIFY(!clear->isEnabled());
+        QTRY_VERIFY(!scrollBar->isVisible());
+        QCOMPARE(menu->property("viewportScrollBarWidth").toReal(), 0.);
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        if (managed) {
+            xdzip::reader::Event event{};
+            event.kind = xdzip::reader::EventKind::TaskUpdate;
+            event.task.id = quint64(historyCount);
+            event.task.status = rust::String("succeeded");
+            controller->receive(event);
+            QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+            sessions.confirmQuit(false);
+            QTRY_VERIFY(!joined.isEmpty());
+        }
+    }
+    void taskMenuLabelsMatchOpenedTaskKinds_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("factor");
+        QTest::addColumn<bool>("dark");
+        for (const auto &language : {QString("zh-CN"), QString("en-US")})
+            for (const double factor : {1., 1.25, 1.5})
+                for (const bool dark : {false, true})
+                    QTest::newRow(
+                        qPrintable(language + QString::number(factor) + QString::number(dark)))
+                        << language << factor << dark;
+    }
+    void taskMenuLabelsMatchOpenedTaskKinds() {
+        QFETCH(QString, language);
+        QFETCH(double, factor);
+        QFETCH(bool, dark);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *page = window->property("activePage").value<QObject *>();
+        QVERIFY(controller && page);
+        QQmlComponent appearance(&engine);
+        appearance.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real factor:1; "
+            "property bool dark:false; onFactorChanged:Ui.Theme.fontScale=factor; "
+            "onDarkChanged:Ui.Theme.dark=dark }",
+            QUrl());
+        std::unique_ptr<QObject> theme(appearance.create());
+        QVERIFY(theme);
+        theme->setProperty("factor", factor);
+        theme->setProperty("dark", dark);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *button = findVisual(window->contentItem(), "browserTasks");
+        auto *menu = page->findChild<QObject *>("browserTaskMenu");
+        auto *taskWindow = page->findChild<QQuickWindow *>("taskWindow");
+        QVERIFY(button && menu && taskWindow);
+        const QStringList kinds{"extract", "create", "check",      "update",
+                                "move",    "export", "export-copy"};
+        const QStringList labelIds{"ui.fb4b66729449", "ui.9a63e2cb4339", "tasks.check", "tasks.add",
+                                   "move.task",       "tasks.export",    "tasks.export"};
+        for (int index = 0; index < kinds.size(); ++index) {
+            const auto kind = kinds.at(index);
+            const auto id = QString::number(index + 1);
+            xdzip::reader::Event event{};
+            event.kind = xdzip::reader::EventKind::TaskUpdate;
+            event.task.id = quint64(index + 1);
+            event.task.kind = rust::String(kind.toStdString());
+            event.task.creating = kind == "create";
+            event.task.source = rust::String("owned.zip");
+            event.task.status = rust::String("succeeded");
+            controller->receive(event);
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+            QTRY_VERIFY(menu->property("opened").toBool());
+            auto *entry = page->findChild<QQuickItem *>("taskMenuItem-" + id);
+            QVERIFY(entry);
+            QTRY_VERIFY(entry->isVisible() && entry->width() > 0);
+            QCOMPARE(entry->property("text").toString(),
+                     qtTrId(qPrintable(labelIds.at(index))).arg(id));
+            QCOMPARE(menu->property("viewportScrollBarWidth").toReal(), 0.);
+            auto *badge = findVisual(entry, entry->objectName() + "Status");
+            QVERIFY(badge);
+            auto *scrollBar = qvariant_cast<QQuickItem *>(menu->property("contentItem"))
+                                  ->findChild<QQuickItem *>("commandMenuScrollBar");
+            QVERIFY(scrollBar && !scrollBar->isVisible());
+            QTRY_VERIFY(qAbs(entry->width() -
+                             badge->mapToItem(entry, QPointF(badge->width(), 0)).x() - 8 * factor) <
+                        .5);
+            auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
+            auto *clear = page->findChild<QQuickItem *>("clearFinishedTasks");
+            QVERIFY(background && clear);
+            QTRY_VERIFY(qAbs(background->height() -
+                             clear->mapToItem(background, QPointF(0, clear->height())).y() -
+                             6 * factor) < .5);
+            if (!qEnvironmentVariableIsEmpty("XDZIP_TASK_MENU_AUDIT") && kind == "check") {
+                const auto directory = qEnvironmentVariable("XDZIP_TASK_MENU_AUDIT");
+                QVERIFY(QDir().mkpath(directory));
+                QVERIFY(visual_audit::save(window, directory,
+                                           "task-menu-" + language + QString::number(factor) +
+                                               QString::number(dark)));
+            }
+            // Popup placement follows a deferred size pass; click the displayed frame.
+            QSignalSpy menuFrame(window, &QQuickWindow::frameSwapped);
+            window->requestUpdate();
+            QVERIFY(!menuFrame.isEmpty() || menuFrame.wait(5000));
+            QTest::mouseClick(
+                window, Qt::LeftButton, Qt::NoModifier,
+                entry->mapToScene(QPointF(entry->width() / 2, entry->height() / 2)).toPoint());
+            QTRY_VERIFY2(taskWindow->isVisible(), qPrintable(kind));
+            QCOMPARE(taskWindow->property("operationKind").toString(), kind);
+            QCOMPARE(taskWindow->property("checking").toBool(), kind == "check");
+            QCOMPARE(page->property("taskSnapshot").toMap().value("id").toString(), id);
+            if (kind == "check")
+                QCOMPARE(taskWindow->title(), qtTrId("ui.06840dd516fe"));
+            controller->clearFinishedTasks();
+            QTRY_VERIFY(!taskWindow->isVisible());
+        }
+    }
+    void operationHeadersUseSharedGeometry_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("factor");
+        QTest::addColumn<bool>("dark");
+        for (const auto &language : {QString("zh-CN"),QString("en-US")})
+            for (const double factor : {1.,1.25,1.5})
+                for (const bool dark : {false,true})
+                    QTest::newRow(qPrintable(language+QString::number(factor)+QString::number(dark))) << language << factor << dark;
+    }
+    void operationHeadersUseSharedGeometry() {
+        QFETCH(QString,language); QFETCH(double,factor); QFETCH(bool,dark);
+        const auto restore=qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QQmlComponent appearance(&engine);
+        appearance.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real factor:1; property bool dark:false; onFactorChanged:Ui.Theme.fontScale=factor; onDarkChanged:Ui.Theme.dark=dark }",QUrl());
+        std::unique_ptr<QObject> theme(appearance.create());
+        QVERIFY(theme);
+        theme->setProperty("factor",factor); theme->setProperty("dark",dark);
+        for (const auto &name : {"extractWindow","createWindow","updateWindow","taskWindow","conflictWindow","aboutWindow","settingsWindow"}) {
+            auto *popup=window->findChild<QQuickWindow *>(name);
+            QVERIFY(popup);
+            popup->show();
+            QVERIFY(QTest::qWaitForWindowExposed(popup));
+            auto *header=findVisual(popup->contentItem(),"operationHeader");
+            if (!header) header=findVisual(popup->contentItem(),"updateHero");
+            QVERIFY(header);
+            QTRY_VERIFY(header->width()>0 && header->height()>=96);
+            auto *icon=header->findChild<QQuickItem *>(header->property("iconObjectName").toString());
+            auto *title=header->findChild<QQuickItem *>(header->property("titleObjectName").toString());
+            auto *subtitle=header->findChild<QQuickItem *>("operationHeaderSubtitle");
+            QVERIFY(icon && title && subtitle);
+            QCOMPARE(icon->width(),48.); QCOMPARE(icon->height(),48.); QCOMPARE(icon->x(),24.);
+            QCOMPARE(title->property("font").value<QFont>().pixelSize(),qRound(20*factor));
+            QCOMPARE(subtitle->property("font").value<QFont>().pixelSize(),qRound(13*factor));
+            QCOMPARE(title->mapToItem(header,QPointF()).x(),88.);
+            QVERIFY(title->mapToItem(header,QPointF(title->width(),title->height())).x()<=header->width()-24+.1);
+            QVERIFY(!title->property("truncated").toBool());
+            QVERIFY(!subtitle->property("truncated").toBool());
+            const auto bodyFollowsHeader = [&] {
+                auto *body=findVisual(popup->contentItem(),"operationHeaderBody");
+                if (body && !body->isVisible()) body=findVisual(popup->contentItem(),"taskResultPanel");
+                return body && body->isVisible() &&
+                    std::abs(body->mapToScene(QPointF()).y()-header->mapToScene(QPointF(0,header->height())).y())<.5;
+            };
+            QTRY_VERIFY(bodyFollowsHeader());
+            if (!qEnvironmentVariableIsEmpty("XDZIP_HEADER_VISUAL_AUDIT")) {
+                QVERIFY(QDir().mkpath(qEnvironmentVariable("XDZIP_HEADER_VISUAL_AUDIT")));
+                QVERIFY(visual_audit::save(popup,qEnvironmentVariable("XDZIP_HEADER_VISUAL_AUDIT"),
+                    QString(name)+"-"+language+QString::number(factor)+QString::number(dark)));
+            }
+            if (QString(name)=="taskWindow") {
+                for (const auto status : {"succeeded","failed","cancelled"}) {
+                    popup->setProperty("taskStatus",status);
+                    QTRY_VERIFY(bodyFollowsHeader());
+                    if (!qEnvironmentVariableIsEmpty("XDZIP_HEADER_VISUAL_AUDIT"))
+                        QVERIFY(visual_audit::save(popup,qEnvironmentVariable("XDZIP_HEADER_VISUAL_AUDIT"),
+                            QString(name)+"-"+status+"-"+language+QString::number(factor)+QString::number(dark)));
+                }
+            }
+            popup->close();
+        }
+    }
+    void nativeDragSuppressesSourceNameTooltips_data() {
+        QTest::addColumn<QString>("view");
+        QTest::newRow("list") << QString("list");
+        QTest::newRow("grid") << QString("grid");
+    }
+    void nativeDragSuppressesSourceNameTooltips() {
+        QFETCH(QString,view);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window=qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller=window->findChild<BrowserController *>();
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        window->setProperty("viewMode",view);
+        QQuickItem *entry=nullptr;
+        const auto entryName=view=="grid"?"grid-entry-0":"entry-0-0";
+        QTRY_VERIFY((entry=findVisual(window->contentItem(),entryName)));
+        auto *tip=entry->findChild<QObject *>(view=="grid"?"gridEntryTooltip-0":"entryTooltip-0-0");
+        QVERIFY(tip);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto point=entry->mapToScene(QPointF(entry->width()/2,entry->height()/2)).toPoint();
+        QTest::mouseMove(window,point);
+        QTRY_VERIFY_WITH_TIMEOUT(tip->property("visible").toBool(),2500);
+        controller->setNativeDragActive(true);
+        QTRY_VERIFY(tip->property("suppressed").toBool());
+        QTest::qWait(1300);
+        QVERIFY(!tip->property("visible").toBool());
+        controller->setNativeDragActive(false);
+        QTest::qWait(1300);
+        QVERIFY(!tip->property("visible").toBool());
+        QTest::mouseMove(window,point+QPoint(2,0));
+        QTest::qWait(700);
+        QVERIFY(!tip->property("visible").toBool());
+        QTRY_VERIFY_WITH_TIMEOUT(tip->property("visible").toBool(),1800);
+        controller->setNativeDragActive(true);
+        xdzip::reader::Event fault{};
+        fault.kind=xdzip::reader::EventKind::RuntimeFault;
+        controller->receive(fault);
+        QVERIFY(!controller->nativeDragActive());
+        QVERIFY(!tip->property("visible").toBool());
+    }
+    void globalTaskEntryDoesNotNavigateArchiveTabs_data() {
+        QTest::addColumn<bool>("closeSource");
+        QTest::newRow("source-open") << false;
+        QTest::newRow("source-closed") << true;
+    }
+    void globalTaskEntryDoesNotNavigateArchiveTabs() {
+        QFETCH(bool, closeSource);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *sourcePage = window->property("activePage").value<QObject *>();
+        auto *controller = sourcePage->findChild<BrowserController *>();
+        QTRY_VERIFY(!controller->busy());
+        const auto sourceId = window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        xdzip::reader::Event task{};
+        task.kind = xdzip::reader::EventKind::TaskUpdate;
+        task.task.id = 87;
+        task.task.status = rust::String("succeeded");
+        controller->receive(task);
+        sessions.newSession();
+        if (closeSource)
+            sessions.closeSession(sourceId);
+        auto *activePage = window->property("activePage").value<QObject *>();
+        QVERIFY(activePage != sourcePage);
+        const auto tabs = window->property("sessionTabs").toList();
+        auto *menu = activePage->findChild<QObject *>("browserTaskMenu");
+        auto *button = findVisual(qobject_cast<QQuickItem *>(activePage), "browserTasks");
+        QVERIFY(menu && button);
+        QTRY_VERIFY(QTest::qWaitForWindowExposed(window));
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier,
+                          button->mapToScene(QPointF(button->width()/2,button->height()/2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        const auto objectName = QStringLiteral("taskMenuItem-") + sourceId + "/87";
+        auto *entry = activePage->findChild<QQuickItem *>(objectName);
+        QVERIFY(entry);
+        QTRY_VERIFY(entry->width() > 0 && entry->isVisible());
+        QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier,
+                          entry->mapToScene(QPointF(entry->width()/2,entry->height()/2)).toPoint());
+        QTRY_VERIFY(!menu->property("visible").toBool());
+        QTRY_VERIFY(sourcePage->findChild<QQuickWindow *>("taskWindow")->isVisible());
+        QCOMPARE(window->property("activePage").value<QObject *>(), activePage);
+        QCOMPARE(window->property("sessionTabs").toList(), tabs);
+        QCOMPARE(sourcePage->property("sessionClosed").toBool(), closeSource);
+        sourcePage->findChild<QQuickWindow *>("taskWindow")->close();
+        sessions.showTask(sourceId + "/missing");
+        QVERIFY(!sourcePage->findChild<QQuickWindow *>("taskWindow")->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void nativeDragPreviewHasBoundedLogicalSizeAndCount() {
+        const QList<ExportItem> single{{"hello.txt", 12, false}};
+        const QList<ExportItem> nested{{"hello.txt", 12, false}, {"folder/nested.txt", 3, false}};
+        const QList<ExportItem> multiple{{"hello.txt", 12, false}, {"folder", 0, true}};
+        const auto one = nativeExportPreview(single, 1);
+        QVERIFY(!one.isNull());
+        QVERIFY(one.pixelColor(32,32).alpha() > 0);
+        QCOMPARE(one.deviceIndependentSize(), QSizeF(64,64));
+        QCOMPARE(nativeExportPreview(nested, 1), one);
+        QVERIFY(nativeExportPreview(multiple, 1) != one);
+        const auto scaled = nativeExportPreview(multiple, 1.5);
+        QCOMPARE(scaled.size(), QSize(96,96));
+        QCOMPARE(scaled.deviceIndependentSize(), QSizeF(64,64));
+        QVERIFY(one.save("drag-preview-native-single.png"));
+        QVERIFY(scaled.save("drag-preview-native-multiple.png"));
+        QVERIFY(nativeExportPreview({}, 1).isNull());
+        QVERIFY(nativeExportPreview(single, 0).isNull());
+#ifdef Q_OS_WIN
+        const auto initialized = OleInitialize(nullptr);
+        QVERIFY(SUCCEEDED(initialized));
+        const auto uninitialize = qScopeGuard([] { OleUninitialize(); });
+        const auto state = std::make_shared<NativeExportState>();
+        state->entries = multiple;
+        auto *data = nativeExportData(state);
+        const auto release = qScopeGuard([&] { data->Release(); });
+        QString imageFailure;
+        QVERIFY2(initializeNativeExportImage(data, scaled, &imageFailure), qPrintable(imageFailure));
+        FORMATETC feedback{CLIPFORMAT(RegisterClipboardFormatW(L"DragImageBits")), nullptr,
+                           DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+        QCOMPARE(data->QueryGetData(&feedback), HRESULT(S_OK));
+        STGMEDIUM imageData{};
+        QCOMPARE(data->GetData(&feedback, &imageData), HRESULT(S_OK));
+        QVERIFY(GlobalSize(imageData.hGlobal) > 0);
+        ReleaseStgMedium(&imageData);
+#endif
     }
     void modalOpenDefersNewWindowUntilUnblocked() {
         QQmlApplicationEngine engine;
@@ -1158,7 +1700,7 @@ QtObject {
         QVERIFY(taskEntry && taskEntry->isVisible());
         sessions.showTask(tabs.first().toMap().value("id").toString() + "/1");
         QVERIFY(
-            !window->property("activePage").value<QObject *>()->property("closedPage").toBool());
+            window->property("activePage").value<QObject *>()->property("closedPage").toBool());
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
@@ -1344,10 +1886,12 @@ QtObject {
         for (const auto &value : sessions.tasks())
             identities.insert(value.toMap().value("id").toString());
         QCOMPARE(identities.size(), 2);
+        const auto activeBeforeTask = window->property("activePage").value<QObject *>();
+        const auto tabsBeforeTask = window->property("sessionTabs").toList();
         sessions.showTask(firstTab + '/' + firstStarted.first().first().toString());
         QCOMPARE(
-            window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
-            first);
+            window->property("activePage").value<QObject *>(), activeBeforeTask);
+        QCOMPARE(window->property("sessionTabs").toList(), tabsBeforeTask);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
@@ -1854,6 +2398,13 @@ QtObject {
                         QTRY_VERIFY(!frames.isEmpty());
                         const auto scene = language + (dark ? "-dark-" : "-light-") +
                                            QString::number(scale) + "-" + QString::number(width);
+                        QQuickItem *firstCell = nullptr;
+                        QTRY_VERIFY((firstCell = item("entry-0-0")));
+                        auto *selection = findVisual(firstCell, "entrySelection");
+                        auto *icon = findVisual(firstCell, "entryIcon");
+                        QVERIFY(selection && icon);
+                        const auto selectionGap = icon->x() - selection->x() - selection->width();
+                        QVERIFY2(qAbs(selectionGap - 12) < .5, qPrintable(scene));
                         QJsonArray actions, headers;
                         QQuickItem *previous = nullptr;
                         for (const auto *name : {"browserViewMenuButton", "browserGridButton",
@@ -1886,21 +2437,24 @@ QtObject {
                             QVERIFY(header && arrow);
                             QTRY_VERIFY(arrow->isVisible());
                             const auto font = header->property("font").value<QFont>();
-                            const auto advance = QFontMetricsF(font).horizontalAdvance(
-                                header->property("text").toString());
                             const auto left = header->property("leftPadding").toDouble();
-                            const auto textStart =
+                            const auto textEnd =
                                 column == 1 || column == 2
-                                    ? qMax(left, header->width() -
-                                                     header->property("rightPadding").toDouble() -
-                                                     advance)
-                                    : left;
-                            const auto gap = textStart - arrow->x() - arrow->width();
+                                    ? header->width() - header->property("rightPadding").toDouble()
+                                    : left + header->property("contentWidth").toDouble();
+                            const auto gap = arrow->x() - textEnd;
                             QVERIFY2(qAbs(gap - 6) < .5, qPrintable(scene));
-                            headers.append(QJsonObject{{"column", column},
-                                                       {"width", header->width()},
-                                                       {"font", font.pixelSize()},
-                                                       {"arrow_gap", gap}});
+                            QVERIFY2(arrow->x() + arrow->width() <= header->width(),
+                                     qPrintable(scene));
+                            headers.append(
+                                QJsonObject{{"column", column},
+                                            {"width", header->width()},
+                                            {"font", font.pixelSize()},
+                                            {"text_end", textEnd},
+                                            {"arrow_x", arrow->x()},
+                                            {"arrow_width", arrow->width()},
+                                            {"truncated", header->property("truncated").toBool()},
+                                            {"arrow_gap", gap}});
                             if (width == 1440 && scale == 1.)
                                 QVERIFY(visual_audit::save(
                                     window, directory, scene + "-sort-" + QString::number(column)));
@@ -1916,6 +2470,7 @@ QtObject {
                                         {"width", window->width()},
                                         {"height", window->height()},
                                         {"dpr", window->devicePixelRatio()},
+                                        {"file_selection_gap", selectionGap},
                                         {"actions", actions},
                                         {"columns", headers}};
                         if (width == 1024) {
@@ -7477,6 +8032,7 @@ QtObject {
         QVERIFY(controller->moveDropState(token, destination).value("permitted").toBool());
         controller->cancelInternalDrag(token);
         QVERIFY(!controller->moveDropState(token, destination).value("permitted").toBool());
+        QVERIFY(controller->internalDragPreview(token).isEmpty());
         auto *proxy = findVisual(window->contentItem(), "archiveMoveDrag");
         QVERIFY(proxy);
         QQuickItem *from = nullptr, *to = nullptr, *rejected = nullptr;
@@ -7492,8 +8048,13 @@ QtObject {
         QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);
         QTest::mouseMove(window, start + QPoint(24, 0), 20);
         QTRY_VERIFY(!proxy->property("token").toString().isEmpty());
+        auto *dragPreview = findVisual(window->contentItem(), "archiveMoveFeedback");
+        QVERIFY(dragPreview && dragPreview->isVisible());
+        QCOMPARE(dragPreview->property("itemCount").toInt(), 2);
+        QCOMPARE(dragPreview->property("fileName").toString(), QStringLiteral("旅行清单.txt"));
         QTest::keyClick(window, Qt::Key_Escape);
         QTRY_VERIFY(proxy->property("token").toString().isEmpty());
+        QVERIFY(!dragPreview->isVisible());
         QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, start);
         QCOMPARE(accepted.count(), 0);
         QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, start);

@@ -11,6 +11,7 @@ window.XdzipControls = (() => {
         tooltipOwner = null,
         previousDescription = null,
         pointerPressed = false,
+        dragActive = false,
         serial = 0;
     const sourceScale = () =>
         parseFloat(
@@ -20,7 +21,7 @@ window.XdzipControls = (() => {
         ) || 1;
     const available = (item) => !item.disabled && item.type !== "separator";
     const focusable = (level) =>
-        [...level.element.querySelectorAll(":scope > .ui-menu-item")].filter(
+        [...level.element.querySelectorAll(":scope > .ui-menu-item, :scope > .ui-menu-scroll > .ui-menu-item")].filter(
             (node) => node.getAttribute("aria-disabled") !== "true",
         );
     function scrollSnapshot(trigger) {
@@ -79,7 +80,9 @@ window.XdzipControls = (() => {
         const top = (owner?.top || 0) + inset;
         const right = (owner?.right || innerWidth) - inset;
         const bottom = (owner?.bottom || innerHeight) - inset;
-        element.style.maxHeight = `${Math.max(80, bottom - top)}px`;
+        const maximum = element.classList.contains('ui-task-menu')
+            ? window.XDZIP_DISPLAY_SPEC.taskMenuMaximumHeight * sourceScale() : Infinity;
+        element.style.maxHeight = `${Math.min(maximum, Math.max(80, bottom - top))}px`;
         element.style.maxWidth = `${Math.max(120, right - left)}px`;
         const box = element.getBoundingClientRect();
         let x = point ? point.x : submenu ? anchor.right + gap : placement.endsWith("end") ? anchor.right - box.width : anchor.left;
@@ -219,6 +222,7 @@ window.XdzipControls = (() => {
         );
         element.addEventListener("keydown", (event) => {
             if (!active || event.isComposing) return;
+            if (event.target.closest('.ui-menu-fixed-footer')) return;
             const index = active.levels.indexOf(level);
             const nodes = focusable(level),
                 current = nodes.indexOf(document.activeElement);
@@ -253,7 +257,10 @@ window.XdzipControls = (() => {
                 event.preventDefault();
                 if (selected) activate(index, document.activeElement, selected);
             } else if (event.key === "Tab") {
-                close();
+                const footer = level.element.querySelector('.ui-menu-clear:not(:disabled)');
+                if (footer && document.activeElement !== footer) {
+                    event.preventDefault(); footer.focus();
+                } else close();
             } else if (
                 event.key.length === 1 &&
                 !event.ctrlKey &&
@@ -304,6 +311,7 @@ window.XdzipControls = (() => {
         id,
         onClose,
         suppressTouchRelease = false,
+        footer = null,
     }) {
         if (active?.trigger === trigger && !point) return close();
         close({ restoreFocus: false });
@@ -319,6 +327,25 @@ window.XdzipControls = (() => {
             touchReleaseUntil: suppressTouchRelease ? Date.now() + 700 : 0,
         };
         const level = build(items, label, owner);
+        if (footer) {
+            level.element.classList.add('ui-task-menu');
+            const scroll = document.createElement('div');
+            scroll.className = 'ui-menu-scroll';
+            while (level.element.firstChild) scroll.append(level.element.firstChild);
+            level.element.append(scroll);
+            const holder = document.createElement('div');
+            holder.className = 'ui-menu-fixed-footer';
+            const button = document.createElement('button');
+            button.type = 'button'; button.className = 'button operation-body-button ui-menu-clear';
+            button.textContent = footer.label; button.disabled = Boolean(footer.disabled);
+            button.onclick = () => { close(); footer.run?.(); };
+            button.onkeydown = event => {
+                if (event.key === 'ArrowUp' || event.key === 'Tab' && event.shiftKey) {
+                    event.preventDefault(); event.stopPropagation(); focusable(level).at(-1)?.focus();
+                }
+            };
+            holder.append(button); level.element.append(holder);
+        }
         if (id) level.element.id = id;
         active.levels.push(level);
         if (trigger?.isConnected) {
@@ -331,10 +358,10 @@ window.XdzipControls = (() => {
     }
     function queueTooltip(target) {
         hideTooltip();
-        if (pointerPressed || !target?.dataset.tooltip || (active && !target.closest(".ui-menu")))
+        if (pointerPressed || dragActive || !target?.dataset.tooltip || (active && !target.closest(".ui-menu")))
             return;
         tooltipTimer = setTimeout(() => {
-            if (!target.isConnected || pointerPressed) return;
+            if (!target.isConnected || pointerPressed || dragActive) return;
             tooltipOwner = target;
             previousDescription = target.getAttribute("aria-describedby");
             tooltip = document.createElement("div");
@@ -418,6 +445,9 @@ window.XdzipControls = (() => {
         queueTooltip(event.target.closest("[data-tooltip]")),
     );
     document.addEventListener("pointerup", () => { pointerPressed = false; }, true);
+    document.addEventListener("dragstart", () => { dragActive = true; hideTooltip(); }, true);
+    document.addEventListener("dragend", () => { dragActive = false; hideTooltip(); }, true);
+    document.addEventListener("drop", () => { dragActive = false; hideTooltip(); }, true);
     document.addEventListener("pointercancel", () => { pointerPressed = false; hideTooltip(); }, true);
     window.addEventListener("blur", () => { pointerPressed = false; hideTooltip(); });
     document.addEventListener("pointermove", (event) => {

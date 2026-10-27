@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="/xdzip">
+    <file>ui/OperationHeader.qml</file>
+    <file alias="drag-preview.json">../../docs/visual/drag-preview.json</file>
+    <file alias="drag-preview-palette.json">../../docs/visual/tokens.json</file>
+    <file>ui/ArchiveDragPreview.qml</file>
     <file alias="update-trust.json">../../resources/update-trust.json</file>
     <file alias="assets/menu/light-100.png">../../design/assets/menu/light-100.png</file>
     <file alias="assets/menu/light-125.png">../../design/assets/menu/light-125.png</file>

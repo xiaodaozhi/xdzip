@@ -62,140 +62,136 @@ OperationWindow {
             ColumnLayout {
                 id: body
                 width: scroll.availableWidth
-                spacing: Theme.aboutSectionGap
-                Item { Layout.preferredHeight: Theme.aboutContentInset - Theme.aboutSectionGap }
-                Image {
-                    objectName: "aboutArtwork"
+                spacing: Theme.operationHeaderBodyGap
+                OperationHeader {
+                    Layout.fillWidth: true
                     source: Qt.platform.os === "osx" ? "qrc:/xdzip/assets/app-icon-macos.png" : "qrc:/xdzip/assets/app-icon.png"
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: Theme.aboutArtworkSize
-                    Layout.preferredHeight: Theme.aboutArtworkSize
-                    fillMode: Image.PreserveAspectFit
-                    Accessible.ignored: true
-                }
-                Text { text: "xdzip"; Layout.alignment: Qt.AlignHCenter; font.pixelSize: Theme.aboutTitleSize * Theme.fontScale; font.bold: true; color: Theme.text }
-                Text {
-                    Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
-                    text: qsTrId("about.description"); horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: Theme.aboutBodySize * Theme.fontScale; color: Theme.textSecondary; wrapMode: Text.Wrap
-                }
-                GridLayout {
-                    Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
-                    columns: 2; columnSpacing: Theme.aboutSectionGap; rowSpacing: Theme.aboutRowGap
-                    Repeater {
-                        model: [qsTrId("about.version"), BuildInfo.version,
-                                qsTrId("about.build"), String(BuildInfo.buildNumber),
-                                qsTrId("about.revision"), BuildInfo.revision === "unknown" ? qsTrId("about.unknown") : BuildInfo.revision,
-                                qsTrId("about.runtime"), "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture]
-                        delegate: Text {
-                            required property string modelData
-                            required property int index
-                            objectName: "aboutValue-" + index
-                            Layout.fillWidth: index % 2 === 1
-                            Layout.alignment: Qt.AlignTop
-                            text: modelData
-                            font.pixelSize: Theme.aboutBodySize * Theme.fontScale
-                            color: index % 2 === 0 ? Theme.textSecondary : Theme.text
-                            wrapMode: Text.WrapAnywhere
-                        }
-                    }
-                }
-                Text {
-                    Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
-                    visible: BuildInfo.channel !== "stable" || BuildInfo.dirty
-                    text: (BuildInfo.channel !== "stable" ? qsTrId("about.development") : "") + (BuildInfo.dirty ? "\n" + qsTrId("about.modified") : "")
-                    color: Theme.textSecondary; font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
-                }
-                Text {
-                    Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
-                    text: qsTrId("about.license"); color: Theme.textSecondary
-                    font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
-                }
-                OperationButton {
-                    objectName: "aboutHomepage"
-                    Layout.alignment: Qt.AlignHCenter
-                    text: qsTrId("about.homepage")
-                    onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip")
+                    title: "xdzip"
+                    subtitle: qsTrId("about.description")
+                    iconObjectName: "aboutArtwork"
                 }
                 ColumnLayout {
-                    objectName: "aboutUpdateSection"
-                    Layout.leftMargin: Theme.aboutContentInset
-                    Layout.rightMargin: Theme.aboutContentInset
+                    objectName: "operationHeaderBody"
                     Layout.fillWidth: true
-                    spacing: Theme.aboutRowGap
+                    spacing: Theme.aboutSectionGap
+                    GridLayout {
+                        Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
+                        columns: 2; columnSpacing: Theme.aboutSectionGap; rowSpacing: Theme.aboutRowGap
+                        Repeater {
+                            model: [qsTrId("about.version"), BuildInfo.version,
+                                    qsTrId("about.build"), String(BuildInfo.buildNumber),
+                                    qsTrId("about.revision"), BuildInfo.revision === "unknown" ? qsTrId("about.unknown") : BuildInfo.revision,
+                                    qsTrId("about.runtime"), "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture]
+                            delegate: Text {
+                                required property string modelData
+                                required property int index
+                                objectName: "aboutValue-" + index
+                                Layout.fillWidth: index % 2 === 1
+                                Layout.alignment: Qt.AlignTop
+                                text: modelData
+                                font.pixelSize: Theme.aboutBodySize * Theme.fontScale
+                                color: index % 2 === 0 ? Theme.textSecondary : Theme.text
+                                wrapMode: Text.WrapAnywhere
+                            }
+                        }
+                    }
                     Text {
-                        objectName: "aboutUpdateStatus"
-                        Layout.fillWidth: true
-                        text: root.updateMessage()
-                        textFormat: Text.PlainText
-                        horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: Theme.aboutBodySize * Theme.fontScale
-                        color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary
-                        wrapMode: Text.Wrap
-                        Accessible.name: text
-                    }
-                    ProgressBar {
-                        objectName: "aboutUpdateProgress"
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: Theme.aboutUpdateProgressHeight
-                        visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
-                        indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
-                        value: root.updater ? Math.max(0, root.updater.progress) : 0
-                        Accessible.name: qsTrId("update.progress")
+                        Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
+                        visible: BuildInfo.channel !== "stable" || BuildInfo.dirty
+                        text: (BuildInfo.channel !== "stable" ? qsTrId("about.development") : "") + (BuildInfo.dirty ? "\n" + qsTrId("about.modified") : "")
+                        color: Theme.textSecondary; font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
                     }
                     Text {
-                        Layout.fillWidth: true
-                        visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
-                        text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
-                        font.pixelSize: Theme.aboutNoteSize * Theme.fontScale
-                        color: Theme.textSecondary
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.Wrap
+                        Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
+                        text: qsTrId("about.license"); color: Theme.textSecondary
+                        font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
                     }
-                    RowLayout {
+                    OperationButton {
+                        objectName: "aboutHomepage"
                         Layout.alignment: Qt.AlignHCenter
+                        text: qsTrId("about.homepage")
+                        onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip")
+                    }
+                    ColumnLayout {
+                        objectName: "aboutUpdateSection"
+                        Layout.leftMargin: Theme.aboutContentInset
+                        Layout.rightMargin: Theme.aboutContentInset
+                        Layout.fillWidth: true
                         spacing: Theme.aboutRowGap
-                        OperationButton {
-                            objectName: "aboutCheckUpdate"
-                            text: qsTrId("update.check")
-                            enabled: root.updater && !root.updater.busy
-                            onClicked: root.updater.check()
+                        Text {
+                            objectName: "aboutUpdateStatus"
+                            Layout.fillWidth: true
+                            text: root.updateMessage()
+                            textFormat: Text.PlainText
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: Theme.aboutBodySize * Theme.fontScale
+                            color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary
+                            wrapMode: Text.Wrap
+                            Accessible.name: text
+                        }
+                        ProgressBar {
+                            objectName: "aboutUpdateProgress"
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Theme.aboutUpdateProgressHeight
+                            visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
+                            indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
+                            value: root.updater ? Math.max(0, root.updater.progress) : 0
+                            Accessible.name: qsTrId("update.progress")
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
+                            text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
+                            font.pixelSize: Theme.aboutNoteSize * Theme.fontScale
+                            color: Theme.textSecondary
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.Wrap
+                        }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignHCenter
+                            spacing: Theme.aboutRowGap
+                            OperationButton {
+                                objectName: "aboutCheckUpdate"
+                                text: qsTrId("update.check")
+                                enabled: root.updater && !root.updater.busy
+                                onClicked: root.updater.check()
+                            }
+                            OperationButton {
+                                objectName: "aboutCancelUpdate"
+                                visible: root.updater && root.updater.busy && root.updateState !== "installing"
+                                enabled: root.updater && root.updateState !== "installing"
+                                text: qsTrId("update.cancel")
+                                onClicked: root.updater.cancel()
+                            }
                         }
                         OperationButton {
-                            objectName: "aboutCancelUpdate"
-                            visible: root.updater && root.updater.busy && root.updateState !== "installing"
-                            enabled: root.updater && root.updateState !== "installing"
-                            text: qsTrId("update.cancel")
-                            onClicked: root.updater.cancel()
+                            objectName: "aboutInstallUpdate"
+                            Layout.alignment: Qt.AlignHCenter
+                            visible: root.updater && ["available", "downloaded"].includes(root.updateState)
+                            text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
+                            onClicked: {
+                                if (root.updater.canInstall) root.updater.downloadAndInstall();
+                                else if (root.updater.trusted) root.updater.download();
+                                else root.updater.openReleasePage();
+                            }
+                        }
+                        OperationButton {
+                            objectName: "aboutUpdateRecovery"
+                            Layout.alignment: Qt.AlignHCenter
+                            visible: root.updater && root.updateState === "recovery_required"
+                            text: qsTrId("update.release")
+                            onClicked: root.updater.openReleasePage()
+                        }
+                        OperationButton {
+                            objectName: "aboutOpenUpdate"
+                            Layout.alignment: Qt.AlignHCenter
+                            visible: root.updater && root.updater.downloaded
+                            text: qsTrId("update.openDownload")
+                            onClicked: root.updater.openDownloadFolder()
                         }
                     }
-                    OperationButton {
-                        objectName: "aboutInstallUpdate"
-                        Layout.alignment: Qt.AlignHCenter
-                        visible: root.updater && ["available", "downloaded"].includes(root.updateState)
-                        text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
-                        onClicked: {
-                            if (root.updater.canInstall) root.updater.downloadAndInstall();
-                            else if (root.updater.trusted) root.updater.download();
-                            else root.updater.openReleasePage();
-                        }
-                    }
-                    OperationButton {
-                        objectName: "aboutUpdateRecovery"
-                        Layout.alignment: Qt.AlignHCenter
-                        visible: root.updater && root.updateState === "recovery_required"
-                        text: qsTrId("update.release")
-                        onClicked: root.updater.openReleasePage()
-                    }
-                    OperationButton {
-                        objectName: "aboutOpenUpdate"
-                        Layout.alignment: Qt.AlignHCenter
-                        visible: root.updater && root.updater.downloaded
-                        text: qsTrId("update.openDownload")
-                        onClicked: root.updater.openDownloadFolder()
-                    }
+                    Item { Layout.preferredHeight: Theme.aboutContentInset - Theme.aboutSectionGap }
                 }
-                Item { Layout.preferredHeight: Theme.aboutContentInset - Theme.aboutSectionGap }
             }
         }
         OperationFooter {

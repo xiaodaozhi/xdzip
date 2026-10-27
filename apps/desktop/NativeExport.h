@@ -2,6 +2,7 @@
 
 #pragma once
 #include <QList>
+#include <QImage>
 #include <QPointer>
 #include <QString>
 #include <QWindow>
@@ -43,6 +44,7 @@ struct NativeExportState {
     std::atomic<bool> inOperation{false};
     std::atomic<int> pendingPromises{0};
     std::function<void()> prepare, releaseLease;
+    std::function<void()> dragFinished;
     ~NativeExportState() {
         if (releaseLease)
             releaseLease();
@@ -54,8 +56,10 @@ struct NativeExportState {
 };
 void captureNativeExportGesture(QWindow *owner, const std::shared_ptr<NativeExportState> &state);
 bool startNativeExport(QWindow *owner, const std::shared_ptr<NativeExportState> &state);
+QImage nativeExportPreview(const QList<ExportItem> &entries, qreal devicePixelRatio);
 
 #ifdef Q_OS_WIN
 struct IDataObject;
 IDataObject *nativeExportData(const std::shared_ptr<NativeExportState> &state);
+bool initializeNativeExportImage(IDataObject *data, const QImage &preview, QString *failure = nullptr);
 #endif
