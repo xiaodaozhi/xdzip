@@ -90,6 +90,49 @@ bool scaledNativeExtent(qint64 extent, UINT currentDpi, UINT targetDpi, qint64 *
     *result = qint64(scaled);
     return true;
 }
+bool nativeSizeConstraints(HWND hwnd, const QWindow *window, const MINMAXINFO &incoming,
+                           MINMAXINFO *response) {
+    DWORD owner = 0;
+    if (GetWindowThreadProcessId(hwnd, &owner) != GetCurrentThreadId() ||
+        owner != GetCurrentProcessId() || !ordinaryCaptionWindow(hwnd, window) ||
+        !compatibleNativeScaling(hwnd) || qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
+        return false;
+    const UINT dpi = GetDpiForWindow(hwnd);
+    SIZE framedUnit{};
+    if (!nativeOuterSize(hwnd, dpi, 1, 1, &framedUnit))
+        return false;
+    const auto minimum = window->minimumSize();
+    const auto maximum = window->maximumSize();
+    auto adjusted = incoming;
+    const auto axis = [dpi](int axisMinimum, int axisMaximum, LONG border, LONG *minTrack,
+                            LONG *maxTrack) {
+        // QWindow's default maximum (2^24 - 1) means no application limit.
+        constexpr int unlimited = (1 << 24) - 1;
+        qint64 scaled = 0;
+        if (axisMinimum < 0 || axisMinimum >= unlimited || axisMaximum < 0)
+            return false;
+        if (axisMinimum > 0) {
+            if (!scaledNativeExtent(axisMinimum, 96, dpi, &scaled) ||
+                scaled + border > std::numeric_limits<LONG>::max())
+                return false;
+            *minTrack = LONG(scaled + border);
+        }
+        if (axisMaximum < unlimited) {
+            if (!scaledNativeExtent(qMax(axisMaximum, axisMinimum), 96, dpi, &scaled) ||
+                scaled + border > std::numeric_limits<LONG>::max())
+                return false;
+            *maxTrack = LONG(scaled + border);
+        }
+        return true;
+    };
+    if (!axis(minimum.width(), maximum.width(), framedUnit.cx - 1, &adjusted.ptMinTrackSize.x,
+              &adjusted.ptMaxTrackSize.x) ||
+        !axis(minimum.height(), maximum.height(), framedUnit.cy - 1, &adjusted.ptMinTrackSize.y,
+              &adjusted.ptMaxTrackSize.y))
+        return false;
+    *response = adjusted;
+    return true;
+}
 bool dpiOuterSize(HWND hwnd, const QWindow *window, WPARAM target, const SIZE &incoming,
                   SIZE *size) {
     DWORD owner = 0;
@@ -227,6 +270,20 @@ bool WindowsFrame::nativeEventFilter(const QByteArray &type, void *message, qint
     if (!m_id || msg->hwnd != reinterpret_cast<HWND>(m_id))
         return false;
     const auto hwnd = msg->hwnd;
+    if (msg->message == WM_GETMINMAXINFO && msg->lParam && result) {
+        const auto incoming = *reinterpret_cast<const MINMAXINFO *>(msg->lParam);
+        MINMAXINFO response{};
+        if (nativeSizeConstraints(hwnd, m_window, incoming, &response)) {
+            // During a real drag the HWND already has its destination DPI while
+            // Qt can still reference the previous screen. Consume this query so
+            // Qt cannot clamp the pending size with the previous DPI's limits.
+            // Borrow the writable payload only for this synchronous callback;
+            // keep Windows' maximize position/size and commit tracking limits once.
+            *reinterpret_cast<MINMAXINFO *>(msg->lParam) = response;
+            *result = 0;
+            return true;
+        }
+    }
     if (msg->message == WM_GETDPISCALEDSIZE && msg->lParam && result) {
         const auto incoming = *reinterpret_cast<const SIZE *>(msg->lParam);
         SIZE response{};

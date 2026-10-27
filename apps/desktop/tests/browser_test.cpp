@@ -14,6 +14,7 @@
 #include "UiText.h"
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
+#include "WindowsFrame.h"
 #include "native_monitor_audit.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
@@ -1997,6 +1998,145 @@ QtObject {
         QVERIFY(report.open(QIODevice::WriteOnly));
         QVERIFY(report.write(QJsonDocument(result).toJson()) > 0);
     }
+    void windowsNativeFrameSizeConstraints() {
+#ifdef Q_OS_WIN
+        if (QGuiApplication::platformName() != QStringLiteral("windows"))
+            QSKIP("Owned native HWND size-constraint regression requires Windows");
+        for (const auto *name :
+             {"QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS", "QT_DEVICE_PIXEL_RATIO", "QT_FONT_DPI",
+              "QT_ENABLE_HIGHDPI_SCALING", "QT_SCALE_FACTOR_ROUNDING_POLICY", "QT_USE_PHYSICAL_DPI",
+              "QT_AUTO_SCREEN_SCALE_FACTOR"})
+            if (qEnvironmentVariableIsSet(name))
+                QSKIP("Native constraint regression requires no startup Qt scale overrides");
+        if (QGuiApplication::highDpiScaleFactorRoundingPolicy() !=
+            Qt::HighDpiScaleFactorRoundingPolicy::PassThrough)
+            QSKIP("Native constraint regression requires Qt PassThrough scaling");
+
+        // This small private QWindow has no QML engine, archive, task or rendering
+        // content. Query the filter directly; the separate monitor round trip
+        // covers Qt's real dispatch and the transition with its previous screen.
+        QWindow window;
+        const QSize unlimitedMaximum = window.maximumSize();
+        window.setTitle(QStringLiteral("xdzip native size-constraint regression"));
+        window.resize(420, 280);
+        window.setMinimumSize(QSize(160, 120));
+        window.setMaximumSize(QSize(900, 700));
+        WindowsFrame frame;
+        frame.setWindow(&window);
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QVERIFY(frame.diagnostics().value(QStringLiteral("attached")).toBool());
+        const auto hwnd = reinterpret_cast<HWND>(window.winId());
+        DWORD owner = 0;
+        QCOMPARE(GetWindowThreadProcessId(hwnd, &owner), GetCurrentThreadId());
+        QCOMPARE(owner, GetCurrentProcessId());
+        QVERIFY(AreDpiAwarenessContextsEqual(GetWindowDpiAwarenessContext(hwnd),
+                                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
+        QVERIFY(AreDpiAwarenessContextsEqual(GetThreadDpiAwarenessContext(),
+                                             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
+        const UINT dpi = GetDpiForWindow(hwnd);
+        QVERIFY(dpi > 0);
+        RECT border{};
+        QVERIFY(AdjustWindowRectExForDpi(&border, DWORD(GetWindowLongPtrW(hwnd, GWL_STYLE)), FALSE,
+                                         DWORD(GetWindowLongPtrW(hwnd, GWL_EXSTYLE)), dpi));
+        const auto expectedOuter = [&](const QSize &logical) {
+            return QSize(qRound(logical.width() * dpi / qreal(96)) - border.left + border.right,
+                         qRound(logical.height() * dpi / qreal(96)) + 1 + border.bottom);
+        };
+        MINMAXINFO incoming{};
+        incoming.ptMinTrackSize = {GetSystemMetricsForDpi(SM_CXMINTRACK, dpi),
+                                   GetSystemMetricsForDpi(SM_CYMINTRACK, dpi)};
+        incoming.ptMaxTrackSize = {GetSystemMetricsForDpi(SM_CXMAXTRACK, dpi),
+                                   GetSystemMetricsForDpi(SM_CYMAXTRACK, dpi)};
+        incoming.ptReserved = {197, 199};
+        incoming.ptMaxPosition = {211, 223};
+        incoming.ptMaxSize = {227, 229};
+        const auto point = [](POINT value) { return QPoint(value.x, value.y); };
+        const auto sameMaximizeFields = [&](const MINMAXINFO &value) {
+            return point(value.ptReserved) == point(incoming.ptReserved) &&
+                   point(value.ptMaxPosition) == point(incoming.ptMaxPosition) &&
+                   point(value.ptMaxSize) == point(incoming.ptMaxSize);
+        };
+        const auto samePayload = [&](const MINMAXINFO &value) {
+            return sameMaximizeFields(value) &&
+                   point(value.ptMinTrackSize) == point(incoming.ptMinTrackSize) &&
+                   point(value.ptMaxTrackSize) == point(incoming.ptMaxTrackSize);
+        };
+        const auto query = [&](HWND target, MINMAXINFO *value, qintptr *result) {
+            MSG message{};
+            message.hwnd = target;
+            message.message = WM_GETMINMAXINFO;
+            message.lParam = reinterpret_cast<LPARAM>(value);
+            // Both borrowed stack values live through the synchronous callback.
+            // There is no SendMessage, input, simulated DPI or geometry operation.
+            return frame.nativeEventFilter(QByteArrayLiteral("windows_generic_MSG"), &message,
+                                           result);
+        };
+
+        auto response = incoming;
+        qintptr result = 31337;
+        QVERIFY(query(hwnd, &response, &result));
+        QCOMPARE(result, qintptr(0));
+        QCOMPARE(QSize(response.ptMinTrackSize.x, response.ptMinTrackSize.y),
+                 expectedOuter(window.minimumSize()));
+        QCOMPARE(QSize(response.ptMaxTrackSize.x, response.ptMaxTrackSize.y),
+                 expectedOuter(window.maximumSize()));
+        QVERIFY(sameMaximizeFields(response));
+
+        window.setMaximumSize(unlimitedMaximum);
+        for (const QSize minimum : {QSize(0, 120), QSize(160, 0)}) {
+            window.setMinimumSize(minimum);
+            response = incoming;
+            result = 31337;
+            QVERIFY(query(hwnd, &response, &result));
+            QCOMPARE(result, qintptr(0));
+            const QSize scaled = expectedOuter(minimum);
+            QCOMPARE(response.ptMinTrackSize.x,
+                     minimum.width() ? LONG(scaled.width()) : incoming.ptMinTrackSize.x);
+            QCOMPARE(response.ptMinTrackSize.y,
+                     minimum.height() ? LONG(scaled.height()) : incoming.ptMinTrackSize.y);
+            QCOMPARE(point(response.ptMaxTrackSize), point(incoming.ptMaxTrackSize));
+            QVERIFY(sameMaximizeFields(response));
+        }
+
+        {
+            // Qt's startup factor stays unchanged. This exercises only the
+            // conservative runtime environment guard, not scaled-app behavior.
+            const auto previousScale = qgetenv("QT_SCALE_FACTOR");
+            const bool scaleWasSet = qEnvironmentVariableIsSet("QT_SCALE_FACTOR");
+            const auto restoreScale = qScopeGuard([&] {
+                if (scaleWasSet)
+                    qputenv("QT_SCALE_FACTOR", previousScale);
+                else
+                    qunsetenv("QT_SCALE_FACTOR");
+            });
+            qputenv("QT_SCALE_FACTOR", "1.25");
+            response = incoming;
+            result = 31337;
+            QVERIFY(!query(hwnd, &response, &result));
+            QCOMPARE(result, qintptr(31337));
+            QVERIFY(samePayload(response));
+        }
+
+        // Another small invisible private HWND must never be handled by this
+        // frame. Do not inspect or send messages to any other application.
+        QWindow other;
+        other.resize(32, 32);
+        const auto otherHwnd = reinterpret_cast<HWND>(other.winId());
+        QVERIFY(otherHwnd && otherHwnd != hwnd);
+        response = incoming;
+        result = 31337;
+        QVERIFY(!query(otherHwnd, &response, &result));
+        QCOMPARE(result, qintptr(31337));
+        QVERIFY(samePayload(response));
+        QCOMPARE(GetDpiForWindow(hwnd), dpi);
+        qInfo() << "Owned native MINMAX boundaries" << dpi
+                << "finite limits, zero axes, unlimited maxima, override and foreign HWND";
+#else
+        QSKIP("Windows-only native frame size constraints");
+#endif
+    }
+
     void windowsNativeDpiClientSizeRoundTrip() {
 #ifdef Q_OS_WIN
         if (QGuiApplication::platformName() != QStringLiteral("windows"))
@@ -2069,6 +2209,7 @@ QtObject {
                                              DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2));
         class Messages final : public QAbstractNativeEventFilter {
             HWND m_owned;
+            QPointer<QWindow> m_window;
 
             bool nativeEventFilter(const QByteArray &, void *message, qintptr *) override {
                 // Qt lends MSG only for this callback. Observe this owned HWND,
@@ -2077,21 +2218,68 @@ QtObject {
                 if (msg->hwnd == m_owned) {
                     if (msg->message == WM_GETDPISCALEDSIZE)
                         scaledTargets.append(UINT(msg->wParam));
-                    else if (msg->message == WM_DPICHANGED)
+                    else if (msg->message == WM_DPICHANGED) {
                         dpiTargets.append(LOWORD(msg->wParam));
+                        if (m_window) {
+                            SizeHints probe{};
+                            probe.targetDpi = LOWORD(msg->wParam);
+                            probe.nativeDpi = GetDpiForWindow(m_owned);
+                            probe.qtDpr = m_window->devicePixelRatio();
+                            probe.logicalMinimum = m_window->minimumSize();
+                            probe.style = DWORD(GetWindowLongPtrW(m_owned, GWL_STYLE));
+                            probe.exStyle = DWORD(GetWindowLongPtrW(m_owned, GWL_EXSTYLE));
+                            probe.before.ptMinTrackSize = {
+                                GetSystemMetricsForDpi(SM_CXMINTRACK, probe.nativeDpi),
+                                GetSystemMetricsForDpi(SM_CYMINTRACK, probe.nativeDpi)};
+                            probe.before.ptMaxTrackSize = {
+                                GetSystemMetricsForDpi(SM_CXMAXTRACK, probe.nativeDpi),
+                                GetSystemMetricsForDpi(SM_CYMAXTRACK, probe.nativeDpi)};
+                            probe.before.ptReserved = {197, 199};
+                            probe.before.ptMaxPosition = {211, 223};
+                            probe.before.ptMaxSize = {227, 229};
+                            probe.after = probe.before;
+                            // Query only this GUI thread's owned HWND while Windows has
+                            // adopted the target DPI but Qt has not processed this event.
+                            // SendMessage borrows the stack value synchronously; no input,
+                            // geometry, DPI message or awareness state is synthesized.
+                            probe.result = SendMessageW(m_owned, WM_GETMINMAXINFO, 0,
+                                                        reinterpret_cast<LPARAM>(&probe.after));
+                            sizeHints.append(probe);
+                            qInfo()
+                                << "DPI entry MINMAX" << probe.targetDpi << probe.nativeDpi
+                                << probe.qtDpr << probe.logicalMinimum
+                                << QPoint(probe.after.ptMinTrackSize.x,
+                                          probe.after.ptMinTrackSize.y)
+                                << QPoint(probe.after.ptMaxTrackSize.x,
+                                          probe.after.ptMaxTrackSize.y)
+                                << QPoint(probe.after.ptReserved.x, probe.after.ptReserved.y)
+                                << QPoint(probe.after.ptMaxPosition.x, probe.after.ptMaxPosition.y)
+                                << QPoint(probe.after.ptMaxSize.x, probe.after.ptMaxSize.y)
+                                << probe.result;
+                        }
+                    }
                 }
                 return false;
             }
 
           public:
+            struct SizeHints {
+                UINT targetDpi = 0, nativeDpi = 0;
+                qreal qtDpr = 0;
+                QSize logicalMinimum;
+                DWORD style = 0, exStyle = 0;
+                MINMAXINFO before{}, after{};
+                LRESULT result = 0;
+            };
             QList<UINT> scaledTargets, dpiTargets;
-            explicit Messages(HWND owned) : m_owned(owned) {
+            QList<SizeHints> sizeHints;
+            explicit Messages(HWND owned, QWindow *window) : m_owned(owned), m_window(window) {
                 qApp->installNativeEventFilter(this);
             }
             ~Messages() override {
                 qApp->removeNativeEventFilter(this);
             }
-        } messages(hwnd);
+        } messages(hwnd, window);
         const auto sizeMatches = [&] {
             RECT client{};
             if (!window || !GetClientRect(hwnd, &client))
@@ -2149,6 +2337,34 @@ QtObject {
         QCOMPARE(GetDpiForWindow(hwnd), firstDpi);
         QCOMPARE(messages.scaledTargets, targetDpis);
         QCOMPARE(messages.dpiTargets, targetDpis);
+        QCOMPARE(messages.sizeHints.size(), 2);
+        UINT previousDpi = firstDpi;
+        for (qsizetype index = 0; index < messages.sizeHints.size(); ++index) {
+            const auto &probe = messages.sizeHints.at(index);
+            QCOMPARE(probe.targetDpi, targetDpis.at(index));
+            QCOMPARE(probe.nativeDpi, probe.targetDpi);
+            QCOMPARE(probe.qtDpr, previousDpi / qreal(96));
+            QVERIFY(qAbs(probe.qtDpr - probe.nativeDpi / qreal(96)) > .01);
+            previousDpi = probe.targetDpi;
+        }
+        for (const auto &probe : messages.sizeHints) {
+            RECT frame{};
+            QVERIFY(AdjustWindowRectExForDpi(&frame, probe.style, FALSE, probe.exStyle,
+                                             probe.nativeDpi));
+            const QSize expectedMinimum(
+                qRound(probe.logicalMinimum.width() * probe.nativeDpi / qreal(96)) - frame.left +
+                    frame.right,
+                qRound(probe.logicalMinimum.height() * probe.nativeDpi / qreal(96)) + 1 +
+                    frame.bottom);
+            QCOMPARE(QSize(probe.after.ptMinTrackSize.x, probe.after.ptMinTrackSize.y),
+                     expectedMinimum);
+            QCOMPARE(QPoint(probe.after.ptReserved.x, probe.after.ptReserved.y),
+                     QPoint(probe.before.ptReserved.x, probe.before.ptReserved.y));
+            QCOMPARE(QPoint(probe.after.ptMaxPosition.x, probe.after.ptMaxPosition.y),
+                     QPoint(probe.before.ptMaxPosition.x, probe.before.ptMaxPosition.y));
+            QCOMPARE(QPoint(probe.after.ptMaxSize.x, probe.after.ptMaxSize.y),
+                     QPoint(probe.before.ptMaxSize.x, probe.before.ptMaxSize.y));
+        }
         joinSessions();
         QVERIFY2(!joined.isEmpty(), "Native DPI regression session join did not complete");
 #else
