@@ -57,6 +57,7 @@ OperationWindow {
         spacing: 0
         ScrollView {
             id: scroll
+            objectName: "settingsScroll"
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
@@ -75,6 +76,7 @@ OperationWindow {
                 ColumnLayout {
                     objectName: "operationHeaderBody"
                     Layout.fillWidth: true
+                    Layout.bottomMargin: Theme.settingsContentInset
                     spacing: Theme.settingsSectionGap
                     ColumnLayout {
                         Layout.leftMargin: Theme.settingsContentInset; Layout.rightMargin: Theme.settingsContentInset; Layout.fillWidth: true

@@ -1484,6 +1484,19 @@ QtObject {
                                 QString::number(factor) + QString::number(dark)));
                 }
             }
+            if (QString(name) == "settingsWindow") {
+                auto *scroll = findVisual(popup->contentItem(), "settingsScroll");
+                auto *about = findVisual(popup->contentItem(), "settingsAbout");
+                auto *footer = findVisual(popup->contentItem(), "settingsFooter");
+                QVERIFY(scroll && about && footer);
+                auto *flick = qvariant_cast<QQuickItem *>(scroll->property("contentItem"));
+                QVERIFY(flick);
+                popup->setProperty("requestedHeight", 400);
+                QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
+                flick->setProperty("contentY", flick->property("contentHeight").toReal() - flick->height());
+                QTRY_VERIFY(qAbs(footer->mapToScene(QPointF()).y() -
+                                 about->mapToScene(QPointF(0, about->height())).y() - 24) < .5);
+            }
             popup->close();
         }
     }
@@ -2349,7 +2362,29 @@ QtObject {
         for (int column = 0; column < 5; ++column) {
             auto *header = item(QString("sort-column-%1").arg(column));
             auto *handle = item(QString("column-resize-%1").arg(column));
-            QVERIFY(header && handle);
+            auto *arrow = item(QString("sort-indicator-%1").arg(column));
+            QVERIFY(header && handle && arrow);
+            QString previousArrow;
+            for (int direction = 0; direction < 2; ++direction) {
+                controller->sortByColumn(column);
+                QTRY_VERIFY(!controller->busy());
+                QTRY_VERIFY(arrow->isVisible());
+                const auto textWidth = header->property("displayedTextWidth").toReal();
+                const bool rightAligned = column == 1 || column == 2;
+                const auto textStart = rightAligned
+                    ? header->width() - header->property("rightPadding").toReal() - textWidth
+                    : header->property("leftPadding").toReal();
+                const auto gap = rightAligned ? textStart - arrow->x() - arrow->width()
+                                              : arrow->x() - textStart - textWidth;
+                QVERIFY(qAbs(gap - 6) < .5);
+                QVERIFY(arrow->x() >= 0 && arrow->x() + arrow->width() <= header->width());
+                if (rightAligned)
+                    QVERIFY(!header->property("truncated").toBool());
+                const auto currentArrow = arrow->property("text").toString();
+                if (direction)
+                    QVERIFY(currentArrow != previousArrow);
+                previousArrow = currentArrow;
+            }
             // Scroll the right boundary into view before delivering actual pointer input.
             const auto viewLeft = table->mapToScene(QPointF()).x();
             const auto boundary = header->mapToScene(QPointF(header->width(), 0)).x();
@@ -2391,6 +2426,19 @@ QtObject {
             if (!captures.isEmpty())
                 QVERIFY(
                     visual_audit::save(window, captures, QString("column-%1-reset").arg(column)));
+        }
+        auto *preferences = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        const auto restore = qScopeGuard([&] { preferences->cancelPreview(); });
+        preferences->preview("light", 1.5);
+        table->setProperty("contentX", 0);
+        for (int column : {1, 2}) {
+            controller->sortByColumn(column);
+            QTRY_VERIFY(!controller->busy());
+            auto *header = item(QString("sort-column-%1").arg(column));
+            QQuickItem *cell = nullptr;
+            QTRY_VERIFY((cell = item(QString("entry-0-%1").arg(column))));
+            QTRY_COMPARE(header->width(), cell->width());
+            QTRY_VERIFY(!header->property("truncated").toBool());
         }
     }
     void nativeUiLayoutAcceptance() {
@@ -2482,18 +2530,22 @@ QtObject {
                             QTRY_VERIFY(arrow->isVisible());
                             const auto font = header->property("font").value<QFont>();
                             const auto left = header->property("leftPadding").toDouble();
-                            const auto textEnd =
-                                column == 1 || column == 2
-                                    ? header->width() - header->property("rightPadding").toDouble()
-                                    : left + header->property("contentWidth").toDouble();
-                            const auto gap = arrow->x() - textEnd;
+                            const bool rightAligned = column == 1 || column == 2;
+                            const auto textWidth = header->property("displayedTextWidth").toDouble();
+                            const auto textEnd = rightAligned
+                                ? header->width() - header->property("rightPadding").toDouble()
+                                : left + textWidth;
+                            const auto textStart = rightAligned ? textEnd - textWidth : left;
+                            const auto gap = rightAligned ? textStart - arrow->x() - arrow->width()
+                                                          : arrow->x() - textEnd;
                             QVERIFY2(qAbs(gap - 6) < .5, qPrintable(scene));
-                            QVERIFY2(arrow->x() + arrow->width() <= header->width(),
+                            QVERIFY2(arrow->x() >= 0 && arrow->x() + arrow->width() <= header->width(),
                                      qPrintable(scene));
                             headers.append(
                                 QJsonObject{{"column", column},
                                             {"width", header->width()},
                                             {"font", font.pixelSize()},
+                                            {"text_start", textStart},
                                             {"text_end", textEnd},
                                             {"arrow_x", arrow->x()},
                                             {"arrow_width", arrow->width()},

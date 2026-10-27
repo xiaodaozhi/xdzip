@@ -1487,9 +1487,11 @@ Item {
                                 width: table.columnSize(index)
                                 height: parent && parent.parent ? parent.parent.height : 0
                                 readonly property bool sorted: reader.sortOrder > 0 && (reader.sortOrder < 9 ? Math.floor((reader.sortOrder - 1) / 2) : Math.floor((reader.sortOrder - 3) / 2)) === index
-                                leftPadding: table.columnLeftInset(index, true)
-                                rightPadding: Math.max(table.columnRightInset(index), sorted ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
-                                horizontalAlignment: index === 1 || index === 2 ? Text.AlignRight : Text.AlignLeft
+                                readonly property bool rightAligned: index === 1 || index === 2
+                                readonly property real displayedTextWidth: Math.min(contentWidth, Math.max(0, width - leftPadding - rightPadding))
+                                leftPadding: Math.max(table.columnLeftInset(index, true), sorted && rightAligned ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
+                                rightPadding: Math.max(table.columnRightInset(index), sorted && !rightAligned ? sortIndicator.implicitWidth + Theme.mainSortIndicatorGap + Theme.mainUnits(4) : 0)
+                                horizontalAlignment: rightAligned ? Text.AlignRight : Text.AlignLeft
                                 verticalAlignment: Text.AlignVCenter
                                 objectName: "sort-column-" + index
                                 text: modelData
@@ -1533,7 +1535,9 @@ Item {
                                     id: sortIndicator
                                     objectName: "sort-indicator-" + columnHeader.index
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: (columnHeader.index === 1 || columnHeader.index === 2 ? columnHeader.width - columnHeader.rightPadding : columnHeader.leftPadding + columnHeader.contentWidth) + Theme.mainSortIndicatorGap
+                                    x: columnHeader.rightAligned
+                                        ? columnHeader.width - columnHeader.rightPadding - columnHeader.displayedTextWidth - width - Theme.mainSortIndicatorGap
+                                        : columnHeader.leftPadding + columnHeader.displayedTextWidth + Theme.mainSortIndicatorGap
                                     text: reader.sortOrder % 2 === 1 ? "↑" : "↓"
                                     visible: columnHeader.sorted
                                     color: Theme.accentInk
@@ -1653,13 +1657,22 @@ Item {
                                 table.hoveredRow = -1
                         }
                         model: reader.entries
+                        TextMetrics { id: originalSizeHeading; font.pixelSize: Theme.mainHeaderSize; text: qsTrId("ui.301a69c74dfc") }
+                        TextMetrics { id: packedSizeHeading; font.pixelSize: Theme.mainHeaderSize; text: qsTrId("ui.2582e6a2c9e2") }
+                        TextMetrics { id: sortUpWidth; font.pixelSize: Theme.mainHeaderSize; text: "↑" }
+                        TextMetrics { id: sortDownWidth; font.pixelSize: Theme.mainHeaderSize; text: "↓" }
                         function columnSize(column: int): real {
                             const scale = Math.max(1, Theme.fontScale);
-                            const other = [Theme.mainOriginalColumnWidth, Theme.mainPackedColumnWidth, Theme.mainTypeColumnWidth, Theme.mainDateColumnWidth];
+                            const arrowSpace = Math.max(sortUpWidth.advanceWidth, sortDownWidth.advanceWidth) + Theme.mainSortIndicatorGap + Theme.mainUnits(4);
+                            const other = [
+                                Math.max(Theme.mainOriginalColumnWidth * scale, Math.ceil(originalSizeHeading.advanceWidth + arrowSpace + Theme.mainOriginalColumnInset)),
+                                Math.max(Theme.mainPackedColumnWidth * scale, Math.ceil(packedSizeHeading.advanceWidth + arrowSpace + Theme.mainPackedColumnInset)),
+                                Theme.mainTypeColumnWidth * scale, Theme.mainDateColumnWidth * scale
+                            ];
                             const custom = BrowserLayout.columnWidths;
                             if (custom[column] > 0)
                                 return Math.round(Math.max(minimumColumnWidth(column), custom[column] * scale));
-                            return Math.round(column === 0 ? Math.max(Theme.mainUnits(250), width - other.reduce((sum, value, index) => sum + Math.round((custom[index + 1] || value) * scale), 0)) : other[column - 1] * scale);
+                            return Math.round(column === 0 ? Math.max(Theme.mainUnits(250), width - other.reduce((sum, value, index) => sum + Math.round(custom[index + 1] > 0 ? Math.max(minimumColumnWidth(index + 1), custom[index + 1] * scale) : value), 0)) : other[column - 1]);
                         }
                         function minimumColumnWidth(column: int): real {
                             return (column === 0 ? Theme.mainNameColumnMinimumWidth : Theme.mainColumnMinimumWidth) * Math.max(1, Theme.fontScale);
