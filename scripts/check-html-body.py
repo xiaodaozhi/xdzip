@@ -143,6 +143,46 @@ def main():
                 failures.append('Embedded comparison font did not load')
             # Approved floating-title revision moves top-anchored content; footer stays fixed.
             layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+            numerator, denominator = layout['main']['source_to_logical']
+            source_factor = denominator / numerator
+            footer_target = spec['dom_rect_targets']['.statusbar']
+            status_height = layout['main']['interaction']['statusbarHeight'] * source_factor
+            status_delta = status_height - footer_target[3]
+            # The authored task-history pair replaces the original single arrow.
+            # Validate its independent logical specification, retaining the old
+            # source ink below as review evidence rather than rewriting artwork.
+            disclosure = page.locator('#tasks .task-chevron-pair').evaluate('''pair => {
+                const ratio=Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
+                const r=pair.getBoundingClientRect(),button=pair.closest('button').getBoundingClientRect();
+                const label=document.querySelector('#task-count').getBoundingClientRect();
+                const glyphs=[...pair.querySelectorAll('[data-icon]')];
+                const boxes=glyphs.map(g=>g.getBoundingClientRect());
+                return {size:[r.width/ratio,r.height/ratio],
+                    glyphs:glyphs.map(g=>g.dataset.icon),
+                    glyphSizes:boxes.flatMap(b=>[b.width/ratio,b.height/ratio]),
+                    overlap:boxes.length===2 ? [(boxes[0].bottom-boxes[1].top)/ratio] : [],
+                    centers:[(r.y+r.height/2-button.y-button.height/2)/ratio,
+                        ...boxes.map(b=>(b.x+b.width/2-r.x-r.width/2)/ratio)],
+                    placement:[label.right<=r.left && r.right<=button.right && r.left>=button.left,
+                        r.top>=button.top && r.bottom<=button.bottom]};
+            }''')
+            controls = layout['controls']
+            glyph = controls['task_indicator_glyph_size']
+            for name, expected, actual in [
+                ('taskDisclosure.size', [controls['task_indicator_size'], 2*glyph-controls['task_indicator_overlap']], disclosure['size']),
+                ('taskDisclosure.glyphSizes', [glyph]*4, disclosure['glyphSizes']),
+                ('taskDisclosure.overlap', [controls['task_indicator_overlap']], disclosure['overlap']),
+                ('taskDisclosure.centers', [0, 0, 0], disclosure['centers']),
+            ]:
+                record_geometry(measurements, failures, 'authored task disclosure', name, expected, actual, .05)
+            for name, expected, actual in [
+                ('taskDisclosure.glyphs', ['chevron-up', 'chevron-down'], disclosure['glyphs']),
+                ('taskDisclosure.placement', [True, True], disclosure['placement']),
+            ]:
+                measurements.append({'kind':'authored task disclosure', 'name':name,
+                    'expected':expected, 'actual':actual, 'passed':actual==expected})
+                if actual != expected:
+                    failures.append(f'{name}: expected {expected}, got {actual}')
             title_delta = layout['main']['titlebar']['height'] * 1548 / 1024 - 57
             for selector, target in spec.get('dom_rect_targets', {}).items():
                 expected, tolerance = normalize_target(target, 'rect', args.rect_tolerance)
@@ -176,10 +216,16 @@ def main():
                     expected = revision['target']
                     kind = 'revised design rect'
                 expected = list(expected)
+                if selector == '.statusbar':
+                    expected[1] -= status_delta
+                    expected[3] = status_height
+                    kind = 'shared statusbar revision'
+                elif selector == '.storage-bar':
+                    expected[1] -= status_delta
                 if selector not in ['.storage-bar', '.statusbar']:
                     expected[1] += title_delta
                     if len(expected) == 4 and selector in ['.sidebar', '.files-pane', '.inspector']:
-                        expected[3] -= title_delta
+                        expected[3] -= title_delta + status_delta
                 record_geometry(measurements, failures, kind, selector, expected, actual, tolerance)
             for selector, target in spec.get('dom_center_targets', {}).items():
                 expected, tolerance = normalize_target(target, 'center', args.center_tolerance)
@@ -215,19 +261,26 @@ def main():
                 expected = painted_bounds(original, item['region'], mode)
                 region = list(item.get('target_region', item['region']))
                 moving = item['region'][1] < 915
+                footer_shift = -status_delta / 2 if item['region'][1] >= footer_target[1] else 0
+                region[1] += footer_shift
                 if moving:
                     region[1] += title_delta
                 actual = painted_bounds(shot, region, mode)
                 if moving and expected:
                     expected[1] += title_delta
+                elif expected:
+                    expected[1] += footer_shift
                 if expected is None:
                     failures.append(f'{item["name"]}: source ink region is empty; remeasure it')
                     continue
                 if item.get('interaction_revision'):
+                    if item['interaction_revision'] not in spec.get('design_revisions', {}):
+                        failures.append(f'{item["name"]}: unrecorded interaction revision')
+                        continue
                     measurements.append({'kind': 'source ink (design revised)', 'name': item['name'],
                                          'expected': expected, 'actual': actual, 'review_only': True,
                                          'design_revision': item['interaction_revision'],
-                                         'validation': 'check-html-density.py: logical slot dimensions and icon centers'})
+                                         'validation': item.get('validation', 'check-html-density.py: logical slot dimensions and icon centers')})
                     continue
                 revision = item.get('design_revision')
                 if revision:

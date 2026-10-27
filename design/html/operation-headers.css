@@ -37,5 +37,6 @@ dialog[data-kind="about"] .about-content > .shared-operation-header {
 .ui-menu-fixed-footer { flex:none; border-top:1px solid var(--ui-menu-border); padding-top:calc(8px * var(--ui-source-factor)); margin-top:calc(8px * var(--ui-source-factor)); }
 .ui-menu-fixed-footer .ui-menu-clear { width:100%; }
 .task-chevron-pair { display:flex; flex-direction:column; align-items:center; width:calc(16px * var(--ui-source-factor)); flex:none; }
-.task-chevron-pair > .icon { width:calc(12px * var(--ui-source-factor)); height:calc(12px * var(--ui-source-factor)); }
-.task-chevron-pair > .icon + .icon { margin-top:calc(-4px * var(--ui-source-factor)); }
+.task-chevron-pair > [data-icon] { flex:none; width:calc(12px * var(--ui-source-factor)); height:calc(12px * var(--ui-source-factor)); }
+.task-chevron-pair > [data-icon] svg { display:block; width:100%; height:100%; }
+.task-chevron-pair > [data-icon] + [data-icon] { margin-top:calc(-4px * var(--ui-source-factor)); }

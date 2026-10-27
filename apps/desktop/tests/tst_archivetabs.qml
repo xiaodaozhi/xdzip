@@ -57,6 +57,9 @@ Item {
             const strip=findChild(bar,"archiveTabStrip");
             tryVerify(()=>strip.itemAtIndex(0)!==null && strip.itemAtIndex(2)!==null);
             waitForRendering(bar,100);
+            verify(waitForPolish(surface.Window.window));
+            tryCompare(bar,"capsuleWidth",bar.preferredTabWidth);
+            tryVerify(()=>Math.abs(strip.contentX-strip.originX)<.01);
             const first=strip.itemAtIndex(0), second=strip.itemAtIndex(1), third=strip.itemAtIndex(2);
             const start=first.mapToItem(surface,first.width/2,first.height/2);
             const intermediate=second.mapToItem(surface,second.width/2,second.height/2);

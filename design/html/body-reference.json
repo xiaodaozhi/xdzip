@@ -452,7 +452,9 @@
         932,
         25,
         20
-      ]
+      ],
+      "interaction_revision": "task-history-disclosure-pair",
+      "validation": "check-html-body.py: authored taskDisclosure geometry, asset identities and placement"
     },
     {
       "name": "正文内缩分隔线",
@@ -2572,6 +2574,17 @@
       "gap_logical_pixels": 12,
       "translation_x_source_pixels": -13.859375,
       "preserved_revision": "folder-optical-balance"
+    },
+    "task-history-disclosure-pair": {
+      "reason": "#59 要求在任务按钮文字右侧增加上下箭头。双字形替换旧单箭头，旧原稿墨迹和量测保留；按独立逻辑规范严格检查槽宽、双字形尺寸、重叠、中心、顺序及按钮内位置。",
+      "source": "docs/visual/layout-scale.json",
+      "validation": "scripts/check-html-body.py taskDisclosure checks",
+      "source_comparison": "record-only for the superseded single-arrow ink; all other source targets and tolerances remain unchanged"
+    },
+    "shared-statusbar-height": {
+      "reason": "#63 将欢迎页与浏览页 footer 统一为 layout-scale.json 的 statusbarHeight。保持窗口与冻结原稿身份，底部状态栏顶边、内容区底边和底部锚定项目随新高度平移。",
+      "source": "docs/visual/layout-scale.json",
+      "validation": "scripts/check-html-body.py uses the archived footer bottom edge and authoritative logical height; no tolerance expansion"
     }
   },
   "dom_rect_revisions": {
