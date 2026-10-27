@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Review shared progress composition at real browser zoom and fractional DPR."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import hashlib
 import json
 import os
@@ -25,7 +26,7 @@ def main():
     reference = json.loads((ROOT / 'docs/visual/integrity-reference.json').read_text(encoding='utf-8'))
     assert hashlib.sha256((ROOT / reference['source']).read_bytes()).hexdigest() == reference['sha256']
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(Quiet, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(Quiet, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     checks, errors = [], []
 

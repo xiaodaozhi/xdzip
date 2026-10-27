@@ -5,7 +5,8 @@ import argparse
 from contextlib import contextmanager
 from functools import partial
 import hashlib
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import math
 import os
@@ -57,7 +58,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 @contextmanager
 def server_url():
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     try:
         yield f'http://127.0.0.1:{server.server_port}/design/hifi/sources/archive-add.html'

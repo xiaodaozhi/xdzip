@@ -3,7 +3,8 @@
 import argparse
 import hashlib
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 from itertools import product
 import json
 import os
@@ -83,7 +84,7 @@ def standalone_cases(browser, source, errors):
 def native_zoom_cases():
     """Use real browser zoom on a private CI display, never CSS/pinch zoom."""
     records = []
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     try:
         with isolated_display() as display, sync_playwright() as p:

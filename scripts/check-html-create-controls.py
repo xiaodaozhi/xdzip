@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Exercise creation controls at real 100/125% browser zoom and DPR 1/1.25/2."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,7 @@ class Quiet(SimpleHTTPRequestHandler):
 
 def main():
     OUTPUT.mkdir(parents=True,exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
     Thread(target=server.serve_forever,daemon=True).start()
     checks,envs,errors,external = [],[],[],[]
     reference = json.loads((ROOT/'docs/visual/create-reference.json').read_text(encoding="utf-8"))

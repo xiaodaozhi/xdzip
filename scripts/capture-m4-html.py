@@ -2,7 +2,8 @@
 """Capture reviewed creation/progress HTML at logical 100%; keep older evidence intact."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 from pathlib import Path
 import subprocess
@@ -15,7 +16,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
         pass
 
 def main():
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     worker = Thread(target=server.serve_forever, daemon=True)
     worker.start()
     try:

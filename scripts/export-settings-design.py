@@ -4,7 +4,8 @@
 import argparse
 from functools import partial
 import hashlib
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -26,7 +27,7 @@ def main():
     args = parser.parse_args()
     output = ROOT/'build/review/settings-session-design'
     output.mkdir(parents=True, exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     spec = json.loads((ROOT/'docs/visual/settings-reference.json').read_text())
     records = []

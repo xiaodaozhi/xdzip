@@ -2,7 +2,8 @@
 
 """Exercise browser-style tab overflow, sorting and loading cancellation in the design."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -20,7 +21,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     checks, errors = [], []
     try:

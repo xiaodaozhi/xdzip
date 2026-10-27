@@ -2,7 +2,8 @@
 """Capture the canonical HTML reviewer at logical 100%, without image resampling."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 from pathlib import Path
 import subprocess
@@ -21,7 +22,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 def main():
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     worker = Thread(target=server.serve_forever, daemon=True)
     worker.start()
     captures = []

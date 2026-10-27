@@ -2,7 +2,8 @@
 """Verify logical display size and equal HTML/reference scaling independently."""
 from contextlib import contextmanager
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread
 from urllib.parse import urlparse
@@ -91,7 +92,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 @contextmanager
 def local_server():
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(ROOT)))
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -112,7 +113,7 @@ def main():
         "passed": False, "logical_window_width": LOGICAL_WIDTH,
         "source_window": SOURCE_WINDOW, "source_to_logical": NORMAL_SCALE,
         "sources": {}, "checks": [], "failures": [],
-        "page_errors": [], "page_error_details": [], "external_requests": [],
+        "page_errors": [], "page_error_details": [], "asset_failures": [], "external_requests": [],
         "classic_scrollbars": {"playwright_hide_scrollbars": False, "overlay_scrollbar_disabled": True},
         "limits": [
             "CSS logical pixels are independent of devicePixelRatio and physical display pixels.",
@@ -136,6 +137,10 @@ def main():
                 "last_check": report["checks"][-1]["name"] if report["checks"] else None,
             })
         page.on("pageerror", page_error)
+        page.on("requestfailed", lambda request: report["asset_failures"].append({
+            "scenario": scenario, "path": urlparse(request.url).path,
+            "resource_type": request.resource_type, "failure": request.failure,
+        }))
 
     for view, path in SOURCES.items():
         source = ROOT / path
@@ -464,6 +469,16 @@ def main():
     except Exception as error:
         report["failures"].append({"name": "checker execution", "error": str(error)})
     check("no page JavaScript errors", not report["page_errors"], actual=report["page_errors"])
+    # Switching artboards replaces the reference image URL. Chromium can cancel
+    # that superseded request; the existing per-view image checks still require
+    # the selected image to finish with the correct dimensions and source hash.
+    reference_paths = {"/" + path for path in SOURCES.values()}
+    report["cancelled_reference_images"] = [item for item in report["asset_failures"]
+        if item["resource_type"] == "image" and item["failure"] == "net::ERR_ABORTED"
+        and item["path"] in reference_paths]
+    failures = [item for item in report["asset_failures"]
+                if item not in report["cancelled_reference_images"]]
+    check("no failed asset requests", not failures, actual=failures)
     check("no external network requests", not report["external_requests"], actual=report["external_requests"])
     report["passed"] = not report["failures"]
     (OUTPUT / "validation.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")

@@ -2,7 +2,8 @@
 """Compare live extraction controls with the immutable hifi reference and entry points."""
 from functools import partial
 from hashlib import sha256
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -38,7 +39,7 @@ def main():
         distance = max(abs(a-b) for a,b in zip(original.getpixel(tuple(point)), expected_rgb))
         check('hifi/card sample '+str(point), distance, 0, reference['color_channel_tolerance'])
 
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:

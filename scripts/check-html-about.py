@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Exercise A01 version provenance, languages, scaling and clipboard actions."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread
 import json
@@ -11,7 +12,7 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'build/review/about/html';OUT.mkdir(parents=True,exist_ok=True)
 class Quiet(SimpleHTTPRequestHandler):
     def log_message(self,*_):pass
-server=ThreadingHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
+server=ReviewHTTPServer(('127.0.0.1',0),partial(Quiet,directory=str(ROOT)))
 Thread(target=server.serve_forever,daemon=True).start()
 errors=[];records=[];update_records=[]
 UPDATE_STATES = [{"state": state} for state in (

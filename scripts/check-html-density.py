@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Measure composed main-window/menu proportions under actual browser page zoom."""
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -30,7 +31,7 @@ def main():
     assert reference['logical_width'] == 1024
     assert controls['size']['menuWidth'] == 240 and controls['size']['menuLabelSize'] == 13
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     checks, environments, errors, external = [], [], [], []

@@ -25,6 +25,10 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 Documentation、Foundation probes、Qt components 和 HTML design review 也支持 `workflow_dispatch` 手动核对指定分支或标签。手动执行复用相同权限、检查和平台限制；按实际 `head_sha` 绑定结果，不能用旧提交的成功记录补齐当前提交的缺失检查，也不因此获得发布授权。
 
+HTML 验收和设计导出使用 `scripts/html_review_server.py` 的共享本地 HTTP 服务，保持回环绑定与有界接收队列。浏览器会并发加载脚本、样式、图片和字体，不能用默认的小队列造成资源连接被拒绝，再把缺失全局对象误判为页面状态错误。缩放检查同时保留失败资源请求的路径、类型与错误，以及 JavaScript 堆栈和场景；修正驱动时仍保留原交互断言与等待期限。
+
+English: HTML review and export drivers share the bounded loopback server. Asset-load failures remain distinct from page-state failures, with request and JavaScript diagnostics retained. Server fixes do not relax interaction assertions or deadlines.
+
 [Windows native visual diagnostic](../../.github/workflows/windows-native-visual.yml)是仅支持手动调度的一次性 Windows hosted runner 诊断，使用同提交的 Release 测试程序和原生 windows/D3D11 路线。先执行一次菜单桌面可用性采样，成功后另启完整 15 类、各 3 次的冷进程采样，试跑不计入 45 次；真实前台、自有窗口遮挡、首帧代次和同帧阴影检查保持不变。无法捕获或记录不完整时保留失败和诊断工件，不能记为通过，也不冒充人工点击。
 
 该工作流只在一次性 hosted Windows 虚拟机内，从显示驱动真实枚举且通过系统测试的模式中选择足以容纳完整测试窗口的分辨率。切换不写注册表、不改系统 DPI，记录实际切换前后及测试期间读数，并在 finally 中按同一运行身份恢复原模式；不支持时阻断，不缩小产品组件或放松捕获护栏。该入口禁止在普通本机调用，虚拟屏幕不能冒充物理显示器。

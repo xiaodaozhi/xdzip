@@ -3,7 +3,8 @@
 """Export top-aligned W01 design states without replacing historical references."""
 import argparse
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import json
 import os
 from pathlib import Path
@@ -29,7 +30,7 @@ def main():
     output = ROOT/'build/review/welcome-design'
     output.mkdir(parents=True, exist_ok=True)
     target = ROOT/'design/hifi/screens' if args.write_design else output
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     spec = json.loads((ROOT/'docs/visual/welcome-reference.json').read_text(encoding='utf-8'))
     checks, errors = [], []

@@ -5,7 +5,8 @@ Requires Playwright and a Chromium executable. Screenshots and reports are writt
 under dist/html-design-review. This is not a product codec or platform safety test.
 """
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 from pathlib import Path
 from threading import Thread
 import json
@@ -23,7 +24,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_args):
         pass
 
-server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(PROJECT)))
+server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(PROJECT)))
 Thread(target=server.serve_forever, daemon=True).start()
 url = f'http://127.0.0.1:{server.server_port}/'
 canvas_url = url + 'design/html/canvas.html'
@@ -240,7 +241,7 @@ with sync_playwright() as p:
         for platform in ['macos', 'windows', 'linux']:
             page.locator('#platform').select_option(platform)
             page.locator('#extract').click()
-            expect(page.locator('.os-title')).to_have_text('解压')
+            expect(page.locator('.os-title')).to_have_text('解压文件')
             expect(page.locator('.os-maximize')).to_be_disabled()
             close_box = page.locator('.os-close').bounding_box()
             title_box = page.locator('.os-title').bounding_box()

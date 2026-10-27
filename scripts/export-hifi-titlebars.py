@@ -2,7 +2,8 @@
 """Export current editable design artboards, preserving frozen raster measurements."""
 import argparse
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import SimpleHTTPRequestHandler
+from html_review_server import ReviewHTTPServer
 import hashlib
 import json
 import os
@@ -37,7 +38,7 @@ def main():
     target = ROOT/'design/hifi/screens' if args.write_design else output
     spec = json.loads((ROOT/'docs/visual/layout-scale.json').read_text())
     factor = spec['main']['source_to_logical'][0]/spec['main']['source_to_logical'][1]
-    server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = ReviewHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     Thread(target=server.serve_forever, daemon=True).start()
     checks, errors, requests = [], [], []
     environment = {'platform': platform.system(), 'backend': 'headless Chromium',

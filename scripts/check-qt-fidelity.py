@@ -17,6 +17,12 @@ def audit(directory):
     layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text(encoding='utf-8'))
     scale = reference['logical_width'] / reference['source_window'][2]
     geometry = {key: value * scale for key, value in reference['source_geometry'].items()}
+    # Preserve the frozen artwork and apply its explicitly documented selection
+    # spacing revision, just as the independent titlebar revision below.
+    source_gap = geometry['nameIconInset'] - geometry['checkboxInset'] - geometry['checkboxSize']
+    selection_translation = layout['main']['interaction']['fileSelectionGap'] - source_gap
+    for key in ('nameIconInset', 'nameTextInset'):
+        geometry[key] += selection_translation
     title = layout['main']['titlebar']
     geometry.update(titleHeight=title['height'], tabHeight=title['tab_height'], tabTopInset=title['tab_vertical_inset'])
     title_delta = title['height'] - round(reference['source_geometry']['titleHeight'] * scale)
