@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "role": "design-assets-for-future-association-integration",
+  "source": "scripts/association_icon_assets.py",
+  "brand_source": "scripts/brand_assets.py",
+  "canvas": 1024,
+  "platforms": {
+    "default": {"viewbox": [32, 32, 960, 960], "body_height_ratio": 0.9},
+    "macos": {"viewbox": [-20, -20, 1064, 1064], "body_height_ratio": 0.8120300751879699}
+  },
+  "png_sizes": [16, 24, 32, 48, 64, 128, 256, 512, 1024],
+  "profiles": {
+    "tiny": {"sizes": [16, 24], "label": false, "brand_profile": "tiny"},
+    "small": {"sizes": [32], "label": false, "brand_profile": "small"},
+    "master": {"sizes": [48, 64, 128, 256, 512, 1024], "label": true}
+  },
+  "label": {"x_center": 512.5, "y": 817, "height": 61, "maximum_width": 504, "stroke_width": 14, "letter_gap": 34, "narrow_letter_gap": 38, "linecap": "square", "color": "#39465d"},
+  "families": {
+    "zip": ["#00beef", "#0068ff", "#153de2"],
+    "sevenzip": ["#8895ff", "#5855dd", "#3730a3"],
+    "rar": ["#ce83eb", "#a447bf", "#70268f"],
+    "tar": ["#f4b44e", "#d58a21", "#a65d13"],
+    "gzip": ["#4dd9be", "#159f8c", "#087568"],
+    "cab": ["#a6b6ca", "#6d819b", "#465c78"],
+    "iso": ["#6db9f4", "#3983cc", "#225c9c"],
+    "udf": ["#54d0df", "#199bad", "#126b83"],
+    "generic": ["#a8b3c7", "#78869e", "#52617a"]
+  },
+  "icons": [
+    {"id": "zip", "label": "ZIP", "family": "zip", "extensions": [".zip"], "name": "ZIP 压缩包"},
+    {"id": "7z", "label": "7Z", "family": "sevenzip", "extensions": [".7z"], "name": "7z 压缩包"},
+    {"id": "rar", "label": "RAR", "family": "rar", "extensions": [".rar"], "name": "RAR 压缩包"},
+    {"id": "tar", "label": "TAR", "family": "tar", "extensions": [".tar"], "name": "TAR 归档"},
+    {"id": "tar-gz", "label": "TAR.GZ", "family": "gzip", "extensions": [".tar.gz"], "name": "TAR.GZ 压缩归档"},
+    {"id": "tgz", "label": "TGZ", "family": "gzip", "extensions": [".tgz"], "name": "TGZ 压缩归档"},
+    {"id": "gz", "label": "GZ", "family": "gzip", "extensions": [".gz"], "name": "GZ 后缀候选，仅支持 TAR.GZ 内容"},
+    {"id": "cab", "label": "CAB", "family": "cab", "extensions": [".cab"], "name": "CAB 安装归档"},
+    {"id": "iso", "label": "ISO", "family": "iso", "extensions": [".iso"], "name": "ISO 光盘映像"},
+    {"id": "udf", "label": "UDF", "family": "udf", "extensions": [".udf"], "name": "UDF 光盘映像"},
+    {"id": "archive", "label": "", "family": "generic", "extensions": [], "name": "通用归档后备"}
+  ],
+  "excluded_associations": [".img", ".001", ".rNN", ".zNN"],
+  "review": {"backgrounds": ["#f5f5f3", "#20242d", "#e6eeff"], "sizes": [16, 24, 32, 48, 64, 128, 256], "native_acceptance": "separate"}
+}

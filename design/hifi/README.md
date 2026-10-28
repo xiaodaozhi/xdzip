@@ -1,5 +1,7 @@
 # xdzip 高保真设计统一入口
 
+[文件关联图标设计](sources/file-association-icons.html)提供 10 个格式与通用后备图标的浅深背景和实际尺寸审阅。母版、光学规则与后续系统映射见[图标规范](../../docs/visual/file-association-icons.md)。
+
 [完整图片画廊](index.html)，[原稿清单与 SHA-256](catalog.json)，[统一素材库](../assets/index.html)，[颜色尺寸规范](../../docs/visual/tokens.json)
 
 页面原稿、当前可编辑修订与目录树 B 组件图板统一放在 `screens/`，按页面功能命名。主窗口、独立解压确认与各操作状态共同构成当前视觉依据；不再按交付批次拆成不同目录。原始生成式设计图与可编辑源导出图在清单中区分，功能边界和精确几何仍以对应规范为准。

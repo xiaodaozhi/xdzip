@@ -1,5 +1,7 @@
 # xdzip 统一素材库
 
+[文件关联图标家族](../hifi/sources/file-association-icons.html)的矢量源位于 `file-associations/`，包含 ZIP、7Z、RAR、TAR、TAR.GZ、TGZ、GZ、CAB、ISO、UDF 和通用后备，纳入主清单。PNG／ICO／ICNS 导出到本地 build 工件，后续再接入逐格式系统映射。生成方法与边界见[关联图标规范](../../docs/visual/file-association-icons.md)。
+
 运行图标、原稿参考和演示照片统一维护在本目录；[素材画廊](index.html)按用途展示浅深色、固定尺寸及原稿并排对照。[完整高保真原稿](../hifi/README.md)只保存整幅设计图，不维护另一份运行资源。
 
 | 路径 | 数量 / 规格 | 用途 |

@@ -13,6 +13,7 @@ from pathlib import Path
 from PIL import Image
 from directory_tree_assets import TREE_CUTS, component_reference_coverage, tree_shapes
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
+from association_icon_assets import asset_entries as association_entries
 from asset_definitions import (
     CONTROL_PATHS, EXTRA_CONTROL_PATHS, FILE_OPTICAL_SPECS, MAIN_SHAPES,
     STATE_SHAPES, file_shapes, hero_shapes, revised_status_shapes, supplemental_shapes,
@@ -248,6 +249,9 @@ def main() -> None:
             with Image.open(ROOT / entry['file']) as image:
                 assert list(image.size) == entry['size'] and image.mode == 'RGBA', entry['file']
                 assert image.getchannel('A').getextrema()[1] > 0, entry['file']
+        elif kind == 'association-icon-source':
+            expected = next(item for item in association_entries() if item['file'] == entry['file'])
+            assert all(entry.get(key) == value for key, value in expected.items()), entry['file']
         elif kind in BRAND_KINDS:
             spec = brand_specs.get(entry['file'])
             assert spec and all(entry.get(key) == value for key, value in spec.items()), entry['file']
@@ -286,6 +290,7 @@ def main() -> None:
         for key in ('spec', 'geometry_spec'):
             target = (ROOT / component[key]).resolve()
             assert target.is_relative_to(ROOT.parents[1]) and target.is_file(), component[key]
+    subprocess.run([sys.executable, str(Path(__file__).with_name('build-association-icons.py')), '--check'], check=True)
     subprocess.run([sys.executable, str(Path(__file__).with_name('check-directory-tree-assets.py'))], check=True)
     report = {
         'status': 'passed', 'asset_entries': len(manifest['assets']), 'source_crops': counts['original-pixel-crop'],
