@@ -82,6 +82,10 @@ welcome.css 承担欢迎页样式，逻辑参数来自 [welcome-reference.json](
 
 运行 `python scripts/check-html-welcome.py`，验证布局、DPR 1／1.25／2、打开和新建、取消与焦点、最后标签关闭、拖入拒绝、菜单比例和断网离线流程。截图与报告只保存在 build/review/html-welcome/。
 
+加载取消回归在页面加载前安装 Playwright 时钟，在选择示例前暂停计时，再通过真实按钮点击取消；取消后推进 650 毫秒，超过示例的 500 毫秒完成期限，核对遮罩移除、正文恢复交互、焦点返回及没有迟到的页面跳转。切换审阅视图也须推进时钟核对旧回调失效，正常打开流程恢复自然计时。不能通过增加示例延时、强制点击或跳过取消步骤消除竞争。
+
+English: Cancellation checks use the Playwright clock to keep the 500 ms demo completion from racing a real button click. Advancing 650 ms after cancellation or a review-preset change verifies stale callbacks are suppressed. The normal opening flow resumes real time; no longer demo delay or forced click is used.
+
 [系统菜单与托盘交互稿](desktop-integration.html)展示 macOS 顶部菜单与三平台托盘、驻留及退出状态；原生尺寸由系统决定。离线导出同步生成 `dist/xdzip-desktop-integration.html`。
 
 退出与重启确认可从审阅入口选择 quit/restart，或打开[独立状态稿](../hifi/sources/confirmations.html)。共享确认布局与 Qt 同源参数，覆盖停止禁用、长文案滚动及英文大字号按钮内换行。执行 `scripts/check-html-confirmations.py` 验证实际布局；浏览器图不代替原生装饰验收。
