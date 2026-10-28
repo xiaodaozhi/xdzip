@@ -76,7 +76,7 @@ assets = []
 for relative, license_id in [('design/assets/fonts/xdzip-design-sans-sc.woff2','OFL-1.1'),
                              ('design/assets/fonts/xdzip-design-sans-sc.ttf','OFL-1.1'),
                              ('design/assets/brand/xdzip.svg','Apache-2.0'),
-                             ('design/assets/brand/xdzip-zip.svg','Apache-2.0')]:
+                             ('design/assets/file-associations/xdzip-zip-master.svg','Apache-2.0')]:
     assets.append({'path':relative, 'license':license_id, 'sha256':hashlib.sha256((root/relative).read_bytes()).hexdigest()})
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
 source_inventory = {

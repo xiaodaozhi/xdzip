@@ -2,8 +2,8 @@
 """Generate file-association SVG designs and optional local platform exports.
 
 Default writes reviewable design sources. --export writes PNG/ICO/ICNS only
-under build/ or dist/. --check checks sources and any requested export without
-changing them. No operating-system association or product resource is changed.
+under build/ or dist/. --check validates sources; --check-runtime validates
+the tracked product containers. No operating-system association is changed.
 """
 from __future__ import annotations
 
@@ -19,7 +19,8 @@ import struct
 import xml.etree.ElementTree as ET
 
 from association_icon_assets import ASSETS, ROOT, SPEC, icon_svg, source_specs
-from brand_assets import ICO_SIZES, ICNS_CHUNKS, png_name
+from brand_assets import ICO_SIZES, ICNS_CHUNKS, master_svg, png_name
+from association_types import WINDOWS_ICONS, MACOS_ICONS
 
 GALLERY = ROOT / 'design/hifi/sources/file-association-icons.html'
 
@@ -71,7 +72,7 @@ footer{margin-top:28px;border-top:1px solid var(--line);padding-top:18px;font-si
 <div class="grid">'''
     foot = '''</div><div class="principles"><div><strong>品牌一致</strong><p>纸张、折角与品牌标记复用现有几何，格式标签全部使用矢量轮廓。</p></div><div><strong>小尺寸做减法</strong><p>16 / 24 / 32 px 省去微字，扩大标记。文件名承担精确的格式识别。</p></div><div><strong>同族有联系</strong><p>TAR.GZ、TGZ、GZ 共用青绿色。GZ 图标不代表支持独立 GZIP。</p></div></div></section>
 <section class="sizes"><h2>按实际尺寸检查</h2><p class="hint">浏览器 100% 下按 CSS 像素显示，保持透明边缘，不把预览倍率写进图标几何。48 px 起保留标签，长标签优先在 64 px 以上阅读。</p><div class="table"><div class="size-row size-head"><strong>格式</strong><span>16</span><span>24</span><span>32</span><span>48</span><span>64</span><span>128</span></div>'''
-    end = '''</div></section><footer><p>设计素材，尚未接入新的逐格式系统映射。原生 Explorer、Finder 与 Linux 文件管理器的显示需在接入阶段分别验收。</p>
+    end = '''</div></section><footer><p>Windows 和 macOS 使用各自可识别的文档图标，Linux 保留系统 MIME 图标。Explorer 和 Finder 的原生显示需单独验收。</p>
 <p><a href="../../../docs/visual/file-association-icons.md">设计与映射规范</a><a href="../../assets/index.html">统一素材库</a><a href="../index.html">高保真总览</a></p></footer></main>
 <script>
 const params=new URLSearchParams(location.search);if(params.get('theme')==='dark')document.documentElement.dataset.theme='dark';
@@ -202,9 +203,57 @@ def validate_exports(output: Path) -> dict:
             'scope': 'design exports only; no associations installed'}
 
 
+def validate_runtime_assets() -> None:
+    """Validate each tracked platform representation and its vector receipt."""
+    import importlib.util
+    from PIL import Image
+    legacy_spec = importlib.util.spec_from_file_location('brand_export', ROOT / 'scripts/build-brand-assets.py')
+    legacy = importlib.util.module_from_spec(legacy_spec)
+    legacy_spec.loader.exec_module(legacy)
+    icons = {icon['id']: icon for icon in SPEC['icons']}
+    total = 0
+    for suffix, ids, platform in [('ico', WINDOWS_ICONS.values(), 'default'), ('icns', MACOS_ICONS, 'macos')]:
+        for icon_id in ids:
+            path = ASSETS / f'xdzip-{icon_id}.{suffix}'
+            with Image.open(path) as container:
+                if suffix == 'ico':
+                    if container.ico.sizes() != {(s, s) for s in ICO_SIZES}:
+                        raise ValueError(f'Missing ICO sizes: {path.name}')
+                    representations = [(s, container.ico.getimage((s, s))) for s in ICO_SIZES]
+                else:
+                    expected = {(s, s, 1) for s in (16, 32, 64, 128, 256, 512)} | {(s, s, 2) for s in (16, 32, 128, 256, 512)}
+                    if set(container.info['sizes']) != expected:
+                        raise ValueError(f'Missing ICNS sizes: {path.name}')
+                    representations = [(r[0] * r[2], container.icns.getimage(r)) for r in container.info['sizes']]
+                for size, image in representations:
+                    svg = legacy.source_svg('xdzip-zip', size, platform) if icon_id == 'zip' else icon_svg(icons[icon_id], size, platform)
+                    if image.info.get('xdzip-render-sha256') != digest(svg.encode()):
+                        raise ValueError(f'Stale icon source: {path.name} {size}')
+                    if icon_id == 'zip':
+                        if image.info.get('xdzip-source-sha256') != digest(master_svg('archive').encode()):
+                            raise ValueError(f'Stale legacy ZIP master: {path.name}')
+                    elif image.info.get('xdzip-format-id') != icon_id or image.info.get('xdzip-platform') != platform:
+                        raise ValueError(f'Wrong icon identity: {path.name}')
+                    rgba = image.convert('RGBA')
+                    alpha = rgba.getchannel('A')
+                    if rgba.size != (size, size) or alpha.getextrema() != (0, 255) or not alpha.getbbox():
+                        raise ValueError(f'Invalid icon image: {path.name} {size}')
+                    if any(alpha.getpixel(point) for point in [(0, 0), (size-1, 0), (0, size-1), (size-1, size-1)]):
+                        raise ValueError(f'Clipped icon corner: {path.name} {size}')
+                    bounds = alpha.point(lambda value: 255 if value >= 128 else 0).getbbox()
+                    ratio = SPEC['platforms'][platform]['body_height_ratio']
+                    canvas = SPEC['platforms'][platform]['viewbox'][2]
+                    expected_height = size * (ratio + (1.7 / canvas if size > 32 else 0))
+                    if not bounds or abs(bounds[3] - bounds[1] - expected_height) > 1.25:
+                        raise ValueError(f'Wrong optical height: {path.name} {size}')
+                    total += 1
+    print(f'{total} tracked ICO/ICNS representations and source receipts verified')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--check-runtime', action='store_true', help='Validate tracked product ICO and ICNS representations')
     parser.add_argument('--export', type=Path, help='Optional build/ or dist/ platform output folder')
     args = parser.parse_args()
     output = args.export.resolve() if args.export else None
@@ -214,11 +263,13 @@ def main() -> None:
         root = ET.fromstring(icon_svg(icon, size))
         if any(node.tag.rsplit('}', 1)[-1] in ['text', 'image', 'script', 'foreignObject'] for node in root.iter()):
             raise ValueError('Icon must contain self-contained vectors, without fonts or embedded images')
-    legacy_zip = ET.parse(ROOT / 'design/assets/brand/xdzip-zip.svg').getroot()
+    legacy_zip = ET.fromstring(master_svg('archive'))
     current_zip = ET.fromstring(icon_svg(next(icon for icon in SPEC['icons'] if icon['id'] == 'zip')))
     if ET.tostring(list(legacy_zip)[-1]) != ET.tostring(list(current_zip)[-1]):
         raise ValueError('ZIP lettering must preserve the original document master path exactly')
     write_sources(args.check)
+    if args.check_runtime:
+        validate_runtime_assets()
     if output:
         version = None if args.check else export(output)
         result = validate_exports(output)

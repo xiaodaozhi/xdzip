@@ -174,7 +174,7 @@ def svg_entries(check: bool = False) -> list[dict]:
                 entry['integration_status'] = ('html-and-qt-consumer' if name == 'tree-active-branch'
                                                else 'design-resource-status-consumer-pending')
             if name in ('app-mark', 'archive', 'archive-grey'):
-                brand_source = 'brand/xdzip.svg' if name == 'app-mark' else 'brand/xdzip-zip.svg'
+                brand_source = 'brand/xdzip.svg' if name == 'app-mark' else 'file-associations/xdzip-zip-master.svg'
                 entry['brand_source'] = brand_source
                 entry['source_sha256'] = digest(ROOT / brand_source)
                 entry['source_revision'] = 'current-logo'
@@ -353,13 +353,15 @@ def main() -> None:
     }
     if args.metadata_only:
         existing = json.loads((ROOT / 'manifest.json').read_text())
+        existing['assets'] = [item for item in existing['assets']
+                              if not item['file'].startswith(('brand/xdzip-zip', 'brand/macos/xdzip-zip'))]
         recorded = {item['file']: item for item in existing['assets']}
         for item in entries:
             if item['kind'] == 'association-icon-source' and item['file'] in recorded:
                 # These independently generated vector sources have no tracked
                 # raster receipts; refreshing them must preserve runtime PNGs.
                 recorded[item['file']].update(item)
-            if item['file'] not in recorded and item['kind'] in ('tray-vector', 'tray-rasterization', 'menu-shadow-rasterization', 'association-icon-source'):
+            if item['file'] not in recorded and item['kind'] in ('tray-vector', 'tray-rasterization', 'menu-shadow-rasterization', 'association-icon-source', 'association-icon-platform'):
                 existing['assets'].append(item)
                 recorded[item['file']] = item
             assert item['file'] in recorded, 'Generate a new image before refreshing its metadata'

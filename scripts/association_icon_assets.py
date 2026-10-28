@@ -10,6 +10,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 from brand_assets import brand_shapes, master_svg
+from association_types import WINDOWS_ICONS, MACOS_ICONS
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / 'docs/visual/file-association-icons.json'
@@ -112,10 +113,18 @@ def asset_entries() -> list[dict]:
     return [{
         'id': f"file-association/{icon['id']}/{profile}",
         'file': f'file-associations/{name}', 'kind': 'association-icon-source',
-        'purpose': 'future-file-association', 'format_id': icon['id'],
+        'purpose': 'file-association', 'format_id': icon['id'],
         'extensions': icon['extensions'], 'profile': profile,
         'source': '../../scripts/association_icon_assets.py',
         'brand_source': 'brand/mark.svg', 'specification': '../../docs/visual/file-association-icons.json',
-        'usage': 'design-only-until-platform-integration',
+        'usage': 'file-association-source',
         'sha256': hashlib.sha256((ASSETS / name).read_bytes()).hexdigest(),
-    } for icon, profile, _, name in source_specs()]
+    } for icon, profile, _, name in source_specs()] + [{
+        'id': f'file-association/{icon_id}/{suffix}',
+        'file': f'file-associations/xdzip-{icon_id}.{suffix}',
+        'kind': 'association-icon-platform', 'purpose': 'file-association',
+        'format_id': icon_id, 'format': suffix,
+        'source': f'file-associations/xdzip-{icon_id}-master.svg',
+        'sha256': hashlib.sha256((ASSETS / f'xdzip-{icon_id}.{suffix}').read_bytes()).hexdigest(),
+    } for suffix, ids in [('ico', WINDOWS_ICONS.values()), ('icns', MACOS_ICONS)]
+      for icon_id in ids]

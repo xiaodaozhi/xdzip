@@ -101,10 +101,13 @@ Invoke-Checked python (@('scripts/desktop.py', 'build') + $shared)
 $productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip' }
 if ($IsWindows) {
     Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', $productExe, '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
+    Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', 'build/desktop/apps/desktop/xdzip-association.exe', '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
+    Invoke-Checked python @('scripts/test-association-launcher.py', '--exe', 'build/desktop/apps/desktop/xdzip-association.exe')
 }
 if ($IsMacOS) {
     Invoke-Checked python @('scripts/check-macos-localization.py', 'build/desktop/apps/desktop/xdzip.app/Contents/Info.plist')
-    Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--output', 'build/review/macos-registration.json')
+    Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','tests/fixtures/zip/normal.zip','--output','build/installer-tests/association-fixtures')
+    Invoke-Checked python @('scripts/check-macos-registration.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'tests/fixtures/zip/normal.zip', '--formats', 'build/installer-tests/association-fixtures', '--output', 'build/review/macos-registration.json')
 }
 # Foundation independently executes locked workspace Rust tests.
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
@@ -332,7 +335,8 @@ if ($IsWindows) {
     foreach ($variant in @('1','2')) {
         Invoke-Checked python ($installerBase + @('--output',"build/installer-tests/windows-packages/qa$variant.exe",'--report',"build/installer-tests/windows-packages/qa$variant.json",'--qa-variant',$variant))
     }
-    Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Output','build/review/windows-install-lifecycle.json')
+    Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','build/desktop/apps/desktop/m2-flat.zip','--output','build/installer-tests/association-fixtures')
+    Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Formats','build/installer-tests/association-fixtures','-Output','build/review/windows-install-lifecycle.json')
 }
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD

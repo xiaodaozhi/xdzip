@@ -78,6 +78,8 @@
 
 Windows 安装器未签名；本地 macOS DMG 使用必要的 ad-hoc 完整性签名，未做 Developer ID 签名或公证。系统可能提示未验证的发布者。安装与文件关联说明见[安装指南](docs/engineering/installers-associations.md)，完整平台及维护范围见[支持政策](docs/engineering/support-policy.md)。
 
+Windows 和 macOS 为受支持的文件类型提供对应文档图标，Linux 沿用系统文件类型图标。安装不更改默认应用；Windows 用户若以前已将 xdzip 设为默认，可能需要重新选择对应格式才能看到新图标。系统对 `.tar.gz` 和 `.tgz` 的区分及图标缓存因平台而异。
+
 “关于 xdzip”提供用户主动检查更新与下载，安装版的更新入口需有效的发布签名和安装身份。生产更新公钥随客户端和安装助手内置，不自动覆盖未验证的安装；便携包和开发构建使用手动安装。状态、隐私和三平台交接边界见[更新契约](docs/engineering/software-update.md)。
 
 ## 从源码构建

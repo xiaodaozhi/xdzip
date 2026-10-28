@@ -1,9 +1,18 @@
 # Runs only on the disposable native Windows CI host, never on the developer Mac.
-param([string]$Packages, [string]$Fixture, [string]$Output)
+param([string]$Packages, [string]$Fixture, [string]$Formats, [string]$Output)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/windows-installer-paths.ps1"
 $classes = 'HKCU:\Software\Classes'
+$extensions = @('zip','tar','tgz','gz','7z','rar','cab','iso','udf')
+$formatFiles = @{zip='sample.zip';tar='sample.tar';tgz='sample.tgz';gz='sample.tar.gz';'7z'='sample.7z';rar='sample.rar';cab='sample.cab';iso='sample.iso';udf='sample.udf'}
+function Get-ProgId($Extension) {
+    if ($Extension -eq 'zip') { return 'xdzip.Archive' }
+    return 'xdzip.Archive.' + $Extension.ToUpperInvariant()
+}
 if (Test-Path "$classes\xdzip.Archive") { throw 'Refusing to replace an existing xdzip registration in this verification host' }
+foreach ($extension in $extensions) {
+    if ($extension -ne 'zip' -and (Test-Path "$classes\$(Get-ProgId $extension)")) { throw 'Refusing to replace an existing format registration' }
+}
 $testRoot = Join-Path $env:RUNNER_TEMP 'xdzip 安装, space'
 $evidenceRoot = Join-Path $env:RUNNER_TEMP 'xdzip-install-evidence'
 New-Item -ItemType Directory -Force $evidenceRoot | Out-Null
@@ -12,18 +21,21 @@ Set-Content $settings "[General]`nschemaVersion=1`n[appearance]`ntheme=dark`n[pr
 $env:XDZIP_SETTINGS_PATH = $settings
 $archive = Join-Path $evidenceRoot '中文 space & --smoke-test.zip'
 Copy-Item $Fixture $archive
-function Get-DefaultSnapshot {
-    $key = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey('.zip')
+function Get-DefaultSnapshot($Extension) {
+    $key = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey('.'+$Extension)
     $default = if ($key) { $key.GetValue(''); $key.Close() } else { $null }
-    $choice = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.zip\UserChoice')
+    $choice = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.'+$Extension+'\UserChoice')
     $progId = if ($choice) { $choice.GetValue('ProgId') } else { $null }
     $hash = if ($choice) { $choice.GetValue('Hash'); $choice.Close() } else { $null }
     return ([ordered]@{ default=$default; progId=$progId; hash=$hash } | ConvertTo-Json -Compress)
 }
-$defaultBefore = Get-DefaultSnapshot
-$foreignKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Software\Classes\.zip\OpenWithProgids')
-$foreignKey.SetValue('xdzip.QAForeign', [byte[]]@(), [Microsoft.Win32.RegistryValueKind]::None)
-$foreignKey.Close()
+$defaultBefore = @{}
+foreach ($extension in $extensions) {
+    $defaultBefore[$extension] = Get-DefaultSnapshot $extension
+    $foreignKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("Software\Classes\.$extension\OpenWithProgids")
+    $foreignKey.SetValue('xdzip.QAForeign', [byte[]]@(), [Microsoft.Win32.RegistryValueKind]::None)
+    $foreignKey.Close()
+}
 Add-Type @'
 using System;
 using System.Runtime.InteropServices;
@@ -53,15 +65,24 @@ function Invoke-Installer($File, $Label, $ExpectFailure=$false, $ExpectedCode=-1
     } elseif ($process.ExitCode -ne 0) { throw "Installer phase failed: $Label" }
 }
 function Assert-Default {
-    $current = Get-DefaultSnapshot
-    if ($current -ne $defaultBefore) { throw 'Foreign default association changed' }
+    foreach ($extension in $extensions) {
+        if ((Get-DefaultSnapshot $extension) -ne $defaultBefore[$extension]) { throw "Foreign default association changed: $extension" }
+    }
 }
 $phases = [Collections.Generic.List[string]]::new()
 function Test-AssociatedOpen($Label) {
-    foreach ($extension in @('zip','tar','tgz','gz')) {
+    foreach ($extension in $extensions) {
+        $progid = if ($Label -in @('historical-product-install','actual-product-rollback')) { 'xdzip.Archive' } else { Get-ProgId $extension }
         $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
-        if (!$key -or $key.GetValueNames() -notcontains 'xdzip.Archive') { throw 'OpenWith candidate value missing' }
+        if (!$key -or $key.GetValueNames() -notcontains $progid) { throw "OpenWith candidate value missing: $extension" }
         $key.Close()
+        if ($Label -notin @('historical-product-install','actual-product-rollback')) {
+            $icon = (Get-Item "$classes\$progid\DefaultIcon").GetValue('')
+            if ($icon -ne ('"'+(Join-Path $testRoot "xdzip-$extension.ico")+'",0')) { throw "Wrong format icon: $extension" }
+            $command = (Get-Item "$classes\$progid\shell\open\command").GetValue('')
+            $target = if ($extension -eq 'zip') { 'xdzip.exe' } else { 'xdzip-association.exe' }
+            if ($command -ne ('"'+(Join-Path $testRoot $target)+'" -- "%1"')) { throw "Wrong format command: $extension" }
+        }
     }
     $probe = Join-Path $evidenceRoot ($Label+'.json')
     $env:XDZIP_ASSOCIATION_PROBE = $probe
@@ -93,6 +114,35 @@ function Test-AssociatedOpen($Label) {
     $phases.Add($Label)
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE
 }
+function Test-FormatDispatch($Label, $Which, $Revision) {
+    foreach ($extension in $Which) {
+        $progid = Get-ProgId $extension
+        $probe = Join-Path $evidenceRoot ($Label+'-'+$extension+'.json')
+        $env:XDZIP_ASSOCIATION_PROBE = $probe
+        $info = [XdzipShell+ExecuteInfo]::new()
+        $info.cbSize = [Runtime.InteropServices.Marshal]::SizeOf($info)
+        $info.fMask = 0x541
+        $info.lpVerb = 'open'; $info.lpFile = (Resolve-Path (Join-Path $Formats $formatFiles[$extension])).Path
+        $info.lpClass = $progid; $info.nShow = 1
+        if (![XdzipShell]::ShellExecuteExW([ref]$info)) { throw "Format shell dispatch failed: $extension" }
+        try {
+            if ([XdzipShell]::WaitForSingleObject($info.hProcess,25000) -ne 0) { throw "Format launcher timed out: $extension" }
+        } finally { [void][XdzipShell]::CloseHandle($info.hProcess) }
+        for ($i=0; $i -lt 300 -and !(Test-Path $probe); $i++) { Start-Sleep -Milliseconds 50 }
+        if (!(Test-Path $probe)) { throw "Format product probe timed out: $extension" }
+        $result = Get-Content $probe -Raw | ConvertFrom-Json
+        if ($result.event -ne 'association_open' -or $result.records -lt 1 -or $result.revision -ne $Revision) { throw "Wrong format open result: $extension" }
+        for ($i=0; $i -lt 300; $i++) {
+            $handle = [XdzipShell]::OpenMutexW(0x100000,$false,'Local\xdzip.desktop.running')
+            if ($handle -eq [IntPtr]::Zero) { break }
+            [void][XdzipShell]::CloseHandle($handle); Start-Sleep -Milliseconds 50
+        }
+        if ($i -eq 300) { throw 'Associated product did not release its lifetime mutex' }
+        Remove-Item Env:XDZIP_ASSOCIATION_PROBE
+    }
+    Assert-Default
+    $phases.Add($Label+'-format-dispatch')
+}
 try {
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'historical-product-install'; Test-AssociatedOpen 'historical-product-install'
     $sentinel = Join-Path $testRoot 'user-kept.txt'; Set-Content $sentinel 'keep user data'
@@ -106,8 +156,10 @@ try {
     if (!(Test-Path $legacyExe) -or !(Test-Path $nestedSentinel)) { throw 'Legacy migration deleted files without an ownership manifest' }
     $phases.Add('legacy-to-flat-entrypoints-and-untracked-files-preserved')
     $current = Get-Content (Join-Path $evidenceRoot 'actual-product-upgrade.json') -Raw | ConvertFrom-Json
+    Test-FormatDispatch 'current' $extensions $current.revision
     if ($historical.revision -eq $current.revision -or $historical.version -eq $current.version -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change version/revision or preserve settings' }
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
+    Test-FormatDispatch 'historical-rollback' @('tgz') $historical.revision
     if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'
     $manifest = Join-Path $testRoot 'install-manifest.txt'
@@ -194,9 +246,13 @@ try {
     if ((Get-ChildItem $testRoot -Filter 'xdzip.exe' -Recurse -ErrorAction SilentlyContinue).Count) { throw 'Owned runtime remains' }
     if (!(Test-Path $sentinel) -or !(Select-String -Path $settings -SimpleMatch 'theme=dark' -Quiet)) { throw 'User data removed' }
     if (!(Test-Path $nestedSentinel) -or !(Test-Path $extra) -or (Test-Path $manifest)) { throw 'Uninstall lost nested user files or retained the ownership manifest' }
-    $remaining = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\.zip\OpenWithProgids')
-    if ($remaining.GetValueNames() -notcontains 'xdzip.QAForeign' -or $remaining.GetValueNames() -contains 'xdzip.Archive') { throw 'OpenWith uninstall ownership incorrect' }
-    $remaining.Close(); Assert-Default
+    foreach ($extension in $extensions) {
+        $remaining = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
+        if (!$remaining -or $remaining.GetValueNames() -notcontains 'xdzip.QAForeign' -or $remaining.GetValueNames() -contains (Get-ProgId $extension)) { throw "OpenWith uninstall ownership incorrect: $extension" }
+        $remaining.Close()
+        if (Test-Path "$classes\$(Get-ProgId $extension)") { throw "Owned format ProgID remains: $extension" }
+    }
+    Assert-Default
     $phases.Add('uninstall-preserves-user-data-and-default')
     $testRoot = Join-Path $env:RUNNER_TEMP 'xdzip fresh flat'
     Invoke-Installer (Join-Path $Packages 'product.exe') 'fresh-flat-install'; Test-AssociatedOpen 'fresh-flat-install'
@@ -213,6 +269,8 @@ try {
     Get-ChildItem $evidenceRoot -File | Where-Object { $_.Extension -in @('.log','.json') } | Copy-Item -Destination 'build/review/installer-diagnostics/' -ErrorAction SilentlyContinue
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE -ErrorAction SilentlyContinue
     Remove-Item Env:XDZIP_SETTINGS_PATH -ErrorAction SilentlyContinue
-    $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\.zip\OpenWithProgids',$true)
-    if ($key) { $key.DeleteValue('xdzip.QAForeign',$false); $key.Close() }
+    foreach ($extension in $extensions) {
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids",$true)
+        if ($key) { $key.DeleteValue('xdzip.QAForeign',$false); $key.Close() }
+    }
 }

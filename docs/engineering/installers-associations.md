@@ -1,6 +1,6 @@
 # 实验安装器与文件关联
 
-后续逐格式图标素材见[文件关联图标规范](../visual/file-association-icons.md)。该设计家族尚未替换本契约下的现有资源映射，也不改变默认选择、注册范围或 Linux 全局 MIME 图标政策。
+逐格式图标素材及平台映射见[文件关联图标规范](../visual/file-association-icons.md)。Linux 保留系统 MIME 图标，安装不改变默认选择或现有注册范围。
 
 提供 Windows x64 当前用户安装器、Ubuntu 24.04 amd64 X11 的 .deb，以及按明确需求制作的[本地 macOS 开发 DMG](macos-deployment.md)。它们仍是实验性开发交付；WP-12 开发与验收完成不代表发行许可复核获批。个人开源发行不要求付费证书、Developer ID 或公证，macOS 保留必要 ad-hoc 完整性签名；CI 不部署或上传 Mac 应用。支持范围见[支持政策](support-policy.md)。
 
@@ -32,7 +32,9 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 产品整个生命周期持有 Local\xdzip.desktop.running 命名互斥量。[AppMutex](https://jrsoftware.org/ishelp/topic_setup_appmutex.htm)阻止安装／卸载，CloseApplications=no，不强制结束应用。FFI 句柄创建失败时启动失败，进程关闭时释放。任务退出仍沿用现有选择与 Rust join 屏障。
 
-关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。命令为带引号的可执行路径、-- 和带引号的 %1，不经过命令解释器。文档图标使用 xdzip-zip.ico。
+关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。ZIP 沿用 `xdzip.Archive`，其他扩展名使用独立 ProgID 和对应 ICO；已有旧 ProgID 保留，因此旧默认选择仍能打开，但可能继续显示 ZIP 图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
+
+各格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`。该小型 GUI 启动器只接受单个文件参数，通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。ZIP 和旧选择继续直接使用共享入口。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
 ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO 和 UDF 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。CAB、ISO 和 UDF 为只读，不注册通用 `.img`、`.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
 
@@ -51,6 +53,10 @@ build-linux-installer.py 从同一核验目录生成 .deb，私有暂存目录�
 主应用和交付包的 Info.plist 以 Viewer／Alternate 声明文档和 ICNS，[不声明默认所有权](https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html)。开发和测试构建默认使用 Viewer／None，不进入系统打开方式候选；主开发包或交付构建须显式设置 `-DXDZIP_MACOS_HANDLER_RANK=Alternate`。默认应用由用户和 Launch Services 决定，不主动修改默认应用。开发验证副本的临时注册按[Mac 维护方法](macos-deployment.md)收尾，保留已有应用与用户默认选择。
 
 CAB、ISO、UDF 加入同一只读 Viewer 声明；CAB 和 UDF 的导入类型按各自扩展名与 MIME 声明，ISO 使用 `public.iso-image`。不增加 `.img` 或通用 `public.disk-image` 文档处理器；格式支持仍由实际内容识别及[官方后端契约](native-codecs.md)约束。
+
+各类型声明使用对应的 bundle ICNS；系统将 `.tar.gz` 和 `.tgz` 识别为同一个压缩 TAR 类型时共享 TAR.GZ 图标。GZ 候选仍只支持 TAR.GZ 内容。Finder 缓存、选定默认应用和系统类型识别影响实际显示，原生显示与人工验收单独记录。
+
+English: Windows registers per-extension icons and ProgIDs without changing defaults or UserChoice. The existing shared ProgID remains available; a small launcher delegates new format handlers to it so a legacy rollback uses the restored application. Existing user choices may retain the old ZIP icon until the user reselects xdzip. macOS uses per-type ICNS with the existing Viewer rank, sharing TAR.GZ for the compressed-TAR UTI. Linux keeps system MIME icons. GZ remains limited to TAR.GZ content.
 
 FileOpenRouter 在 QML 前接收 [QFileOpenEvent](https://doc.qt.io/qt-6.8/qfileopenevent.html)，只接受本地文件，等控制器空闲后复用真实打开与激活。命令行 -- 后都作为文件路径，避免误解为诊断开关。待处理意图最多 128 个，不抢占活跃任务。现有产品仍为单个真实会话，多输入串行打开并显示最后一个；不宣称跨进程单实例或多会话标签已实现。
 

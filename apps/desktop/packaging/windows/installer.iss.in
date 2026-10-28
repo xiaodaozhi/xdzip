@@ -56,14 +56,14 @@ Source: "@PAYLOAD@\*"; DestDir: "@RUNTIME_DIR@"; Flags: ignoreversion recursesub
 Name: "{userprograms}\xdzip"; Filename: "@RUNTIME_DIR@\xdzip.exe"
 
 [Registry]
-Root: HKCU; Subkey: "Software\Classes\xdzip.Archive"; ValueType: string; ValueData: "ZIP, TAR, TAR.GZ, 7z, RAR"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\xdzip.Archive"; ValueType: string; ValueData: "xdzip archive"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\DefaultIcon"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip-zip.ico"",0"
 Root: HKCU; Subkey: "Software\Classes\xdzip.Archive\shell\open\command"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip.exe"" -- ""%1"""
 Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\Applications\xdzip.exe\shell\open\command"; ValueType: string; ValueData: """@RUNTIME_DIR@\xdzip.exe"" -- ""%1"""
 Root: HKCU; Subkey: "Software\RegisteredApplications"; ValueType: string; ValueName: "xdzip"; ValueData: "Software\xdzip\Capabilities"; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationName"; ValueData: "xdzip"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "ZIP, TAR, TAR.GZ, 7z, RAR"
+Root: HKCU; Subkey: "Software\xdzip\Capabilities"; ValueType: string; ValueName: "ApplicationDescription"; ValueData: "ZIP, TAR, TAR.GZ, 7z, RAR, CAB, ISO, UDF"
 Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: dword; ValueName: "SettingsSchema"; ValueData: "1"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: string; ValueName: "Location"; ValueData: "{app}"
 Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: string; ValueName: "InstallId"; ValueData: "56DF0D26-2B26-40C4-9E85-FF0F8C8937CA"

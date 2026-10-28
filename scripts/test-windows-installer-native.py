@@ -19,6 +19,11 @@ def main():
     for label,variant,legacy in [('legacy','1',True),('qa1','1',False),('qa2','2',False)]:
         payload=output/('payload-'+label);payload.mkdir()
         (payload/'xdzip.exe').write_bytes(b'MZ QA file fixture, never executed\n')
+        if not legacy:
+            (payload/'xdzip-association.exe').write_bytes(b'MZ QA association fixture, never executed\n')
+            from association_types import WINDOWS_ICONS
+            for icon_id in WINDOWS_ICONS.values():
+                shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon_id}.ico', payload)
         # Compile the real agreement and bilingual notice even for the owned
         # file stubs. Missing supplier text must not be hidden by QA-only pages.
         license_dir=payload/'share/notices/Microsoft-VC-runtime';license_dir.mkdir(parents=True)

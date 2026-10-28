@@ -205,10 +205,10 @@ def main() -> None:
             assert entry['canvas'] == entry['logical_size'] == [24, 24]
             assert entry['theme'] in ('light', 'dark')
             if path.stem in ('app-mark', 'archive', 'archive-grey'):
-                source_file = 'brand/xdzip.svg' if path.stem == 'app-mark' else 'brand/xdzip-zip.svg'
+                source_file = 'brand/xdzip.svg' if path.stem == 'app-mark' else 'file-associations/xdzip-zip-master.svg'
                 assert entry.get('brand_source') == source_file, f'Missing current brand source: {entry["file"]}'
                 source = by_file.get(source_file)
-                assert source and source['kind'] == 'brand-master', source_file
+                assert source and source['kind'] == ('brand-master' if path.stem == 'app-mark' else 'association-icon-source'), source_file
                 assert entry.get('source_sha256') == source['sha256'], f'Stale brand SVG provenance: {entry["file"]}'
                 assert entry.get('source_revision') == 'current-logo', entry['file']
         elif kind in ('tray-vector', 'tray-rasterization'):
@@ -262,7 +262,7 @@ def main() -> None:
             with Image.open(ROOT / entry['file']) as image:
                 assert list(image.size) == entry['size'] and image.mode == 'RGBA', entry['file']
                 assert image.getchannel('A').getextrema()[1] > 0, entry['file']
-        elif kind == 'association-icon-source':
+        elif kind in ('association-icon-source', 'association-icon-platform'):
             expected = next(item for item in association_entries() if item['file'] == entry['file'])
             assert all(entry.get(key) == value for key, value in expected.items()), entry['file']
         elif kind in BRAND_KINDS:
@@ -304,7 +304,7 @@ def main() -> None:
         for key in ('spec', 'geometry_spec'):
             target = (ROOT / component[key]).resolve()
             assert target.is_relative_to(ROOT.parents[1]) and target.is_file(), component[key]
-    subprocess.run([sys.executable, str(Path(__file__).with_name('build-association-icons.py')), '--check'], check=True)
+    subprocess.run([sys.executable, str(Path(__file__).with_name('build-association-icons.py')), '--check', '--check-runtime'], check=True)
     subprocess.run([sys.executable, str(Path(__file__).with_name('check-directory-tree-assets.py'))], check=True)
     report = {
         'status': 'passed', 'asset_entries': len(manifest['assets']), 'source_crops': counts['original-pixel-crop'],

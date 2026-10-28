@@ -11,7 +11,8 @@ from deployment_audit import digest, within
 from installer_payload import verify_payload
 
 ROOT=Path(__file__).resolve().parents[1]
-EXTENSIONS=['zip','tar','tgz','gz','7z','rar','cab','iso','udf']
+from association_types import WINDOWS_ICONS, windows_progid
+EXTENSIONS=list(WINDOWS_ICONS)
 
 
 MANIFEST_NAME='install-manifest.txt'
@@ -57,6 +58,15 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
     if audit['status']!='passed' or audit['platform']!='windows' or audit['mode']!='deployed' or audit['identity']['dirty']:
         raise ValueError('Installer requires clean deployed Windows audit')
     verify_payload(payload,audit)
+    if not legacy:
+        if not (payload/'xdzip-association.exe').is_file():
+            raise ValueError('Installer payload lacks the association launcher')
+        for icon in WINDOWS_ICONS.values():
+            name = f'xdzip-{icon}.ico'
+            source = ROOT/'design/assets/file-associations'/name
+            delivered = payload/name
+            if not delivered.is_file() or digest(delivered) != digest(source):
+                raise ValueError(f'Installer payload lacks the verified {name} document icon')
     identity=audit['identity'];revision=identity['revision']
     if not re.fullmatch('[0-9a-f]{12}',revision):raise ValueError('Invalid revision')
     runtime=revision+'-'+digest(payload/'xdzip.exe')[:12]+('-qa'+qa if qa else '')
@@ -65,9 +75,18 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
     manifest_path=output.with_suffix('.files').resolve()
     associations=[]
     for ext in EXTENSIONS:
-        associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: string; ValueName: "xdzip.Archive"; Flags: uninsdeletevalue',
+        # Historical QA packages contain only the original ZIP document icon.
+        progid = 'xdzip.Archive' if legacy else windows_progid(ext)
+        if progid != 'xdzip.Archive':
+            icon = WINDOWS_ICONS[ext]
+            associations += [
+                f'Root: HKCU; Subkey: "Software\\Classes\\{progid}"; ValueType: string; ValueData: "xdzip {ext.upper()} archive"; Flags: uninsdeletekey',
+                f'Root: HKCU; Subkey: "Software\\Classes\\{progid}\\DefaultIcon"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-{icon}.ico"",0"',
+                f'Root: HKCU; Subkey: "Software\\Classes\\{progid}\\shell\\open\\command"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-association.exe"" -- ""%1"""',
+            ]
+        associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: string; ValueName: "{progid}"; Flags: uninsdeletevalue',
             f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe\\SupportedTypes"; ValueType: string; ValueName: ".{ext}"',
-            f'Root: HKCU; Subkey: "Software\\xdzip\\Capabilities\\FileAssociations"; ValueType: string; ValueName: ".{ext}"; ValueData: "xdzip.Archive"']
+            f'Root: HKCU; Subkey: "Software\\xdzip\\Capabilities\\FileAssociations"; ValueType: string; ValueName: ".{ext}"; ValueData: "{progid}"']
     values={'VERSION':identity['version'],'OUTPUT':str(output.parent.resolve()),'FILENAME':output.stem,
         'FILEVERSION':json.loads((ROOT/'VERSION.json').read_text(encoding='utf-8'))['version']+'.'+str(identity['build']),
         'APPICON':str((ROOT/'design/assets/brand/xdzip.ico').resolve()),'PAYLOAD':str(payload.resolve()),

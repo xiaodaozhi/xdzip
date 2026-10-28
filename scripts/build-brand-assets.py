@@ -78,8 +78,7 @@ def icns_bytes(stem: str) -> bytes:
 
 def validate() -> None:
     """Check exact vector sources, PNG receipts, transparency and package records."""
-    expected_svgs = {'mark.svg': mark_svg(), 'xdzip.svg': master_svg('application'),
-                     'xdzip-zip.svg': master_svg('archive')}
+    expected_svgs = {'mark.svg': mark_svg(), 'xdzip.svg': master_svg('application')}
     for name, expected in expected_svgs.items():
         path = OUTPUT / name
         if not path.exists() or path.read_text() != expected:
@@ -87,7 +86,7 @@ def validate() -> None:
         ET.fromstring(expected)
     with Image.open(OUTPUT / 'identity-reference.png') as reference:
         reference.verify()
-    for stem in ['xdzip', 'xdzip-zip']:
+    for stem in ['xdzip']:
         source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
         for platform in ('default', 'macos'):
             for size in EXPORT_SIZES:
@@ -143,7 +142,7 @@ def validate() -> None:
                 decoded = image.icns.getimage(size)
                 if decoded.size != (size[0] * size[2], size[1] * size[2]):
                     raise ValueError(f'Unreadable ICNS size {size}: {stem}')
-    print('2 brand families: 36 transparent PNGs, 14 ICO representations, 22 ICNS chunks; sources and receipts valid')
+    print('Application brand: 18 transparent PNGs, 7 ICO representations, 11 ICNS chunks; sources and receipts valid')
 
 
 def build(reference: Path | None) -> None:
@@ -158,7 +157,7 @@ def build(reference: Path | None) -> None:
     if not (OUTPUT / 'identity-reference.png').is_file():
         raise ValueError('Supply the generated visual direction with --reference on the first build')
     (OUTPUT / 'mark.svg').write_text(mark_svg())
-    for stem, kind in [('xdzip', 'application'), ('xdzip-zip', 'archive')]:
+    for stem, kind in [('xdzip', 'application')]:
         (OUTPUT / f'{stem}.svg').write_text(master_svg(kind))
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(
@@ -168,7 +167,7 @@ def build(reference: Path | None) -> None:
             page = browser.new_page(device_scale_factor=1)
             page.route('**/*', lambda route: route.abort())
             for platform in ('default', 'macos'):
-                for stem in ['xdzip', 'xdzip-zip']:
+                for stem in ['xdzip']:
                     source_hash = digest((OUTPUT / f'{stem}.svg').read_bytes())
                     for size in EXPORT_SIZES:
                         svg = source_svg(stem, size, platform)
@@ -182,7 +181,7 @@ def build(reference: Path | None) -> None:
                             image.convert('RGBA').save(OUTPUT / ('macos' if platform == 'macos' else '') / png_name(stem, size), pnginfo=receipt)
         finally:
             browser.close()
-    for stem in ['xdzip', 'xdzip-zip']:
+    for stem in ['xdzip']:
         (OUTPUT / f'{stem}.ico').write_bytes(ico_bytes(stem))
         (OUTPUT / f'{stem}.icns').write_bytes(icns_bytes(stem))
     validate()

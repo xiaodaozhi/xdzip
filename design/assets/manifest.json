@@ -3075,8 +3075,8 @@
       "sha256": "e2dc25d394973f818d8ffc7a0e02e25c33a0357437375ab1d55d086560c8e2f6",
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
-      "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "brand_source": "file-associations/xdzip-zip-master.svg",
+      "source_sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -3141,8 +3141,8 @@
         ]
       },
       "sha256": "9f504fe853eeb3050aea047cb47a63b1107727f9ca6bb2a1d884e4c43e60cb63",
-      "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "brand_source": "file-associations/xdzip-zip-master.svg",
+      "source_sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -5469,8 +5469,8 @@
       "sha256": "ed6d238b6c78dfb3376983f4237d08534a1b4e40c362f2f192326056e3979c3f",
       "source_reference": "reference/brand-extract.png",
       "reference_relation": "historical-design-reference",
-      "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "brand_source": "file-associations/xdzip-zip-master.svg",
+      "source_sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -5535,8 +5535,8 @@
         ]
       },
       "sha256": "61c65a6f3ca7dfbc3a3daa0d1a25bc3972b688c93c29bc3441fe80686f2f3fa9",
-      "brand_source": "brand/xdzip-zip.svg",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
+      "brand_source": "file-associations/xdzip-zip-master.svg",
+      "source_sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023",
       "source_revision": "current-logo",
       "visible_bounds": [
         4.3333,
@@ -8078,279 +8078,6 @@
         "platform_resources": [
           "macOS application bundle icon"
         ]
-      }
-    },
-    {
-      "id": "brand/xdzip-zip.svg",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip.svg",
-      "kind": "brand-master",
-      "purpose": "archive-document-icon",
-      "source": "brand/mark.svg",
-      "size": [
-        1024,
-        1024
-      ],
-      "sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "source_sha256": "5f783b8b64a20db572aba174427e560486525d4aba6de2a6a407cc908b4d8fa0",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-16.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-16.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        16,
-        16
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "4b80240d028831ea36c46821506819f6f5ce66c55abd813a5f28450045e8e508",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-24.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-24.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        24,
-        24
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "bf49cb671f810eb35fb645fb5122be5701a4341ffc57fcdf3ff7b1bb6cbbae4c",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-32.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-32.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        32,
-        32
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "baae6b0f120deb5e69a615577bf731939f4daa96b32e86ef24521df6c6cd10b0",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-48.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-48.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        48,
-        48
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "c6e8c7aa568f5f5fa5ac03b3ab1224ac45ce75529f6e21c0dfd7aefde0916773",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-64.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-64.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        64,
-        64
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "14a09601a55cc47181a5e6e98961a804ba700e7b4a46d0d68fb53854676cf6b0",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-128.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-128.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        128,
-        128
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "be7d8a44272f337131f5605c0b9dbac5414a9cefea1be46db07af8fc8701b4d1",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-256.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-256.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        256,
-        256
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "11d17e1bf542cb1887831f5abd2c73fa2c27ce9d203463734b92c1b9acb7b616",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        512,
-        512
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "11b848aa3012e9b5be40231ce3df62cd3161eec9424a903c443c599a4fadcdfb",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip-1024.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip-1024.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        1024,
-        1024
-      ],
-      "format": "png",
-      "optical_body_height": 0.9,
-      "raster_profile": "Compact document at 16/24; balanced document at 32; master lighting at 48–1024",
-      "sha256": "96761d086849a9ae17cf830972ecf22c577431cdb08a769c98974ae9bbb656ce",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip.ico",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip.ico",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "format": "ico",
-      "sizes": [
-        16,
-        24,
-        32,
-        48,
-        64,
-        128,
-        256
-      ],
-      "sha256": "bf1c445b6060ef26c50e003576c6c5ba11278bc37d026f89671109b59f8b0991",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/xdzip-zip.icns",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/xdzip-zip.icns",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "format": "icns",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "chunks": {
-        "icp4": 16,
-        "icp5": 32,
-        "icp6": 64,
-        "ic07": 128,
-        "ic08": 256,
-        "ic09": 512,
-        "ic10": 1024,
-        "ic11": 32,
-        "ic12": 64,
-        "ic13": 256,
-        "ic14": 512
-      },
-      "sha256": "d63932f962c7f0bfd7f15a172d75013f45c4d462098a2cb71dade187f981cc9c",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
       }
     },
     {
@@ -23846,204 +23573,6 @@
       }
     },
     {
-      "id": "brand/macos/xdzip-zip-16.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-16.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        16,
-        16
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "2e98a063d0eb651d177dd0264195bd8cf2e9022f634a22f7e4b680a2d7d27d19",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-24.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-24.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        24,
-        24
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "d1177a0a0f2d535b6a5b5fe52f254e3ac7cbb8a6dafbdfb3085cfb93ef38bc11",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-32.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-32.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        32,
-        32
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "f4fd006e98284dfba868d3df56510877453d24e6e46cbb6108e8c89bee347acf",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-48.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-48.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        48,
-        48
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "5df9e77181aecbab7d5b707cdc3d17a4543ad434710163fa2610bfd3a7e8d125",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-64.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-64.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        64,
-        64
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "7b86faec879a629407f9f2272f2e68a336f2b777a7c358d5e5cd8d53dc61e6f5",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-128.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-128.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        128,
-        128
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "6de164f0b791159eecc4babfe1c4cfc41b4e0776e60eea86a3822d08e0a61241",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-256.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-256.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        256,
-        256
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "908d1878aa78d5d438eee7d046812d228ea8dd671cba1e32cd15ed57afdd821a",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        512,
-        512
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "050776506917dd582bee4297c2a43fe45468314bfb2786bf99cb21176b82a642",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
-      "id": "brand/macos/xdzip-zip-1024.png",
-      "category": "brand",
-      "usage": "application-brand",
-      "file": "brand/macos/xdzip-zip-1024.png",
-      "kind": "platform-icon",
-      "purpose": "archive-document-icon",
-      "source": "brand/xdzip-zip.svg",
-      "size": [
-        1024,
-        1024
-      ],
-      "format": "png",
-      "platform": "macos",
-      "optical_body_height": 0.8120300751879699,
-      "sha256": "2d25d17a7784fc5a2a8cd176e851f38ca560783a29a0498d546ed541dc0c4027",
-      "source_sha256": "4bcc3e420c49fc12df3fee7ed948912b65e275f1f3cbdd0580ca5160a0608c54",
-      "runtime_usage": {
-        "qt_aliases": [],
-        "platform_resources": []
-      }
-    },
-    {
       "id": "tray/black.svg",
       "file": "tray/black.svg",
       "kind": "tray-vector",
@@ -30051,7 +29580,7 @@
       "id": "file-association/zip/master",
       "file": "file-associations/xdzip-zip-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "zip",
       "extensions": [
         ".zip"
@@ -30060,14 +29589,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "ab9c26eb16407684aca94768f675db165854be28b9434224e4c5add7d2abe023"
     },
     {
       "id": "file-association/zip/tiny",
       "file": "file-associations/xdzip-zip-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "zip",
       "extensions": [
         ".zip"
@@ -30076,14 +29605,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "eccbcfb33dde1eff36003d5d7a11c729f9dfe77de9b3a828fb111f2206600104"
     },
     {
       "id": "file-association/zip/small",
       "file": "file-associations/xdzip-zip-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "zip",
       "extensions": [
         ".zip"
@@ -30092,14 +29621,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "89e9b422553397cc205f8fce98b444c513df152c663fe69f2051566962ce3bb3"
     },
     {
       "id": "file-association/7z/master",
       "file": "file-associations/xdzip-7z-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "7z",
       "extensions": [
         ".7z"
@@ -30108,14 +29637,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "ac0620ede085decd926a26c5065fbe53b0a9c2a2004f29512807dfaab4ae20b2"
     },
     {
       "id": "file-association/7z/tiny",
       "file": "file-associations/xdzip-7z-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "7z",
       "extensions": [
         ".7z"
@@ -30124,14 +29653,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "88d7c4990dcde8d86ab144d87001577c2858025f7cbdff1bb4263a8e63981f73"
     },
     {
       "id": "file-association/7z/small",
       "file": "file-associations/xdzip-7z-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "7z",
       "extensions": [
         ".7z"
@@ -30140,14 +29669,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "e6beb5f04d84e1420d0787a61a441cd7bafb1e6fb52ee97265c6158d50795896"
     },
     {
       "id": "file-association/rar/master",
       "file": "file-associations/xdzip-rar-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "rar",
       "extensions": [
         ".rar"
@@ -30156,14 +29685,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "c191ecd0175c8236bbff6bccb9f653a34c9e152a60c463014b53bba255b07234"
     },
     {
       "id": "file-association/rar/tiny",
       "file": "file-associations/xdzip-rar-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "rar",
       "extensions": [
         ".rar"
@@ -30172,14 +29701,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "ec1d153e93387a4986581f597df01a29285d05593131e1f30f605d1456083143"
     },
     {
       "id": "file-association/rar/small",
       "file": "file-associations/xdzip-rar-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "rar",
       "extensions": [
         ".rar"
@@ -30188,14 +29717,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "48e67dff23dc12a6086eb3cdffeba2fff7cf6b9029f40e15c1d2e2d6c262727f"
     },
     {
       "id": "file-association/tar/master",
       "file": "file-associations/xdzip-tar-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar",
       "extensions": [
         ".tar"
@@ -30204,14 +29733,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "c288a566c166523197e8a502f7eadb8f963836457d9e0b4dc8fd5c35d34275bc"
     },
     {
       "id": "file-association/tar/tiny",
       "file": "file-associations/xdzip-tar-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar",
       "extensions": [
         ".tar"
@@ -30220,14 +29749,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "fa3f0588d332ebffd5d380eeeda70928dc5494e153de7abf9d90e885bf7d2440"
     },
     {
       "id": "file-association/tar/small",
       "file": "file-associations/xdzip-tar-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar",
       "extensions": [
         ".tar"
@@ -30236,14 +29765,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "7c433788bae884ee728e70466d13936f5b61a86852be2b079b76cb4204dfee6e"
     },
     {
       "id": "file-association/tar-gz/master",
       "file": "file-associations/xdzip-tar-gz-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar-gz",
       "extensions": [
         ".tar.gz"
@@ -30252,14 +29781,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "7e2393b55c07da566cf771694605333c82d588f1c276fa91e8ad0c2575518678"
     },
     {
       "id": "file-association/tar-gz/tiny",
       "file": "file-associations/xdzip-tar-gz-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar-gz",
       "extensions": [
         ".tar.gz"
@@ -30268,14 +29797,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "53d2a4a2fc490301c910f7cdafcdbddcd5de00494d2f340e6061301c0fb20562"
     },
     {
       "id": "file-association/tar-gz/small",
       "file": "file-associations/xdzip-tar-gz-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tar-gz",
       "extensions": [
         ".tar.gz"
@@ -30284,14 +29813,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "723dcc4e3fc76ccebd0117c8807dc3d56694fff22cba85ac64a159423cc1fb74"
     },
     {
       "id": "file-association/tgz/master",
       "file": "file-associations/xdzip-tgz-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tgz",
       "extensions": [
         ".tgz"
@@ -30300,14 +29829,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "ac632ad5febef305925d06751825cca90300e3108af71fd61f9df24301dc8e99"
     },
     {
       "id": "file-association/tgz/tiny",
       "file": "file-associations/xdzip-tgz-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tgz",
       "extensions": [
         ".tgz"
@@ -30316,14 +29845,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "6db31d4227e1e26bc8203ec843431edce118f91cc89e15d67349de5f48a9080e"
     },
     {
       "id": "file-association/tgz/small",
       "file": "file-associations/xdzip-tgz-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "tgz",
       "extensions": [
         ".tgz"
@@ -30332,14 +29861,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "c8dbd025dc3cca898ea7434716057c02b7fc017bb2e6e063a9ef07ba440d4703"
     },
     {
       "id": "file-association/gz/master",
       "file": "file-associations/xdzip-gz-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "gz",
       "extensions": [
         ".gz"
@@ -30348,14 +29877,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "8e70ef77fad288bfedc036c72dc04cadcc92171e01cbce501810a7ab174114ba"
     },
     {
       "id": "file-association/gz/tiny",
       "file": "file-associations/xdzip-gz-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "gz",
       "extensions": [
         ".gz"
@@ -30364,14 +29893,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "9d97e248d6c6fe3cd127861d69250c262cf6f60674ed08918aabe442650c8131"
     },
     {
       "id": "file-association/gz/small",
       "file": "file-associations/xdzip-gz-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "gz",
       "extensions": [
         ".gz"
@@ -30380,14 +29909,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "8b43fc2596bbcb0149a92ac465ae12e491d50f49c1f3d782a4c1480fa3b787cd"
     },
     {
       "id": "file-association/cab/master",
       "file": "file-associations/xdzip-cab-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "cab",
       "extensions": [
         ".cab"
@@ -30396,14 +29925,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "8d15d207c687786a30b3fe48bc5922329e64d34145015b940487b938121a2e20"
     },
     {
       "id": "file-association/cab/tiny",
       "file": "file-associations/xdzip-cab-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "cab",
       "extensions": [
         ".cab"
@@ -30412,14 +29941,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "3f15fd98b1e84040321d6669fd676782b16c7a8624e70792f5728a321a350546"
     },
     {
       "id": "file-association/cab/small",
       "file": "file-associations/xdzip-cab-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "cab",
       "extensions": [
         ".cab"
@@ -30428,14 +29957,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "35a21dbb22e28fb4a58ba9cbae041946911a20f5d4d31b586fed7c2b941fa321"
     },
     {
       "id": "file-association/iso/master",
       "file": "file-associations/xdzip-iso-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "iso",
       "extensions": [
         ".iso"
@@ -30444,14 +29973,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "292544102484484f73db29786479799ad88f6f90dcee16852975c948bec13b0a"
     },
     {
       "id": "file-association/iso/tiny",
       "file": "file-associations/xdzip-iso-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "iso",
       "extensions": [
         ".iso"
@@ -30460,14 +29989,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "f7d02f6d3b2fd2313f566d677591f1b768e46fc80b721c9f5bd091f4be694f39"
     },
     {
       "id": "file-association/iso/small",
       "file": "file-associations/xdzip-iso-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "iso",
       "extensions": [
         ".iso"
@@ -30476,14 +30005,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "1b48566bf8699d2c366bfd0a9c71c6bdec398d63e6877c6813ddf7b1b74ceaa6"
     },
     {
       "id": "file-association/udf/master",
       "file": "file-associations/xdzip-udf-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "udf",
       "extensions": [
         ".udf"
@@ -30492,14 +30021,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "029eaf0b267e8164a6328566174801c4217d3b0d925356247f05062ff34db4b7"
     },
     {
       "id": "file-association/udf/tiny",
       "file": "file-associations/xdzip-udf-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "udf",
       "extensions": [
         ".udf"
@@ -30508,14 +30037,14 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "73f73ede8f9fd373effb952bdc691b1e64aec1ab54af7e2878f0e788eec2e3d4"
     },
     {
       "id": "file-association/udf/small",
       "file": "file-associations/xdzip-udf-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "udf",
       "extensions": [
         ".udf"
@@ -30524,50 +30053,230 @@
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "8df68829e6d52e9c6ad06a88ff46e5695c2bd6be5787fae5d61f826fe5897c53"
     },
     {
       "id": "file-association/archive/master",
       "file": "file-associations/xdzip-archive-master.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "archive",
       "extensions": [],
       "profile": "master",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "046278f45b4cd0c1fa77c8eb0dbb5d36620cab05a21e6c20fa7daf2a96ec6728"
     },
     {
       "id": "file-association/archive/tiny",
       "file": "file-associations/xdzip-archive-tiny.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "archive",
       "extensions": [],
       "profile": "tiny",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "03fe546811e56ef352b60c4f0f014382857e1949f167adefbf1002dd4247da70"
     },
     {
       "id": "file-association/archive/small",
       "file": "file-associations/xdzip-archive-small.svg",
       "kind": "association-icon-source",
-      "purpose": "future-file-association",
+      "purpose": "file-association",
       "format_id": "archive",
       "extensions": [],
       "profile": "small",
       "source": "../../scripts/association_icon_assets.py",
       "brand_source": "brand/mark.svg",
       "specification": "../../docs/visual/file-association-icons.json",
-      "usage": "design-only-until-platform-integration",
+      "usage": "file-association-source",
       "sha256": "112eb0b0c6cdc74f0ab7802ea4f39fc20b5ab079aabb9b4613e34559deb5bdbc"
+    },
+    {
+      "id": "file-association/zip/ico",
+      "file": "file-associations/xdzip-zip.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "zip",
+      "format": "ico",
+      "source": "file-associations/xdzip-zip-master.svg",
+      "sha256": "bf1c445b6060ef26c50e003576c6c5ba11278bc37d026f89671109b59f8b0991"
+    },
+    {
+      "id": "file-association/tar/ico",
+      "file": "file-associations/xdzip-tar.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "tar",
+      "format": "ico",
+      "source": "file-associations/xdzip-tar-master.svg",
+      "sha256": "da0a17adcc80c17b9a4ab25ac96330af330fa74c38fd66a188f9cf402dd8081e"
+    },
+    {
+      "id": "file-association/tgz/ico",
+      "file": "file-associations/xdzip-tgz.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "tgz",
+      "format": "ico",
+      "source": "file-associations/xdzip-tgz-master.svg",
+      "sha256": "d86bf2067b5c7352130025bf7dbf5d7b41b15dc85e8a53b2a970ad2059047388"
+    },
+    {
+      "id": "file-association/gz/ico",
+      "file": "file-associations/xdzip-gz.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "gz",
+      "format": "ico",
+      "source": "file-associations/xdzip-gz-master.svg",
+      "sha256": "a8a866cf022d54f061f324cbfe8d55f1823b948fb657a47b8e7e0aa70d0de2fd"
+    },
+    {
+      "id": "file-association/7z/ico",
+      "file": "file-associations/xdzip-7z.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "7z",
+      "format": "ico",
+      "source": "file-associations/xdzip-7z-master.svg",
+      "sha256": "d2106133354c0a3bd8360030c61024e82951dad6fae43442bc6e7eab686088d2"
+    },
+    {
+      "id": "file-association/rar/ico",
+      "file": "file-associations/xdzip-rar.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "rar",
+      "format": "ico",
+      "source": "file-associations/xdzip-rar-master.svg",
+      "sha256": "87918c39b5353091d757602eae63a9bf0578ab64b3b3024bdb5665124ed07475"
+    },
+    {
+      "id": "file-association/cab/ico",
+      "file": "file-associations/xdzip-cab.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "cab",
+      "format": "ico",
+      "source": "file-associations/xdzip-cab-master.svg",
+      "sha256": "5f312be4a5d013dc23218ae302d91ce2dd7a8357b5f516f0673b2ffba8c08398"
+    },
+    {
+      "id": "file-association/iso/ico",
+      "file": "file-associations/xdzip-iso.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "iso",
+      "format": "ico",
+      "source": "file-associations/xdzip-iso-master.svg",
+      "sha256": "d05b64ab418ea6a81cea9048f707267807d3c0259feea4e2efc25d3c4529c4d9"
+    },
+    {
+      "id": "file-association/udf/ico",
+      "file": "file-associations/xdzip-udf.ico",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "udf",
+      "format": "ico",
+      "source": "file-associations/xdzip-udf-master.svg",
+      "sha256": "659593dc24381f4a71a4c3d15fc5d7ea59946d3af2d9d6e09dc926678f199abb"
+    },
+    {
+      "id": "file-association/zip/icns",
+      "file": "file-associations/xdzip-zip.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "zip",
+      "format": "icns",
+      "source": "file-associations/xdzip-zip-master.svg",
+      "sha256": "d63932f962c7f0bfd7f15a172d75013f45c4d462098a2cb71dade187f981cc9c"
+    },
+    {
+      "id": "file-association/tar/icns",
+      "file": "file-associations/xdzip-tar.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "tar",
+      "format": "icns",
+      "source": "file-associations/xdzip-tar-master.svg",
+      "sha256": "0ed6a9714ff9de2078eff0086eb9d08919f858ac296970f1d3424aa7d22fc280"
+    },
+    {
+      "id": "file-association/tar-gz/icns",
+      "file": "file-associations/xdzip-tar-gz.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "tar-gz",
+      "format": "icns",
+      "source": "file-associations/xdzip-tar-gz-master.svg",
+      "sha256": "7a8dca5265f1631ca2e9f8b00bfc5814f765823b1ef5079e66f0f5a97bab149e"
+    },
+    {
+      "id": "file-association/gz/icns",
+      "file": "file-associations/xdzip-gz.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "gz",
+      "format": "icns",
+      "source": "file-associations/xdzip-gz-master.svg",
+      "sha256": "a9e44437d3037bafed9048fc976015a94b1ab02bd6420e3439bebf8c9233b4a9"
+    },
+    {
+      "id": "file-association/7z/icns",
+      "file": "file-associations/xdzip-7z.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "7z",
+      "format": "icns",
+      "source": "file-associations/xdzip-7z-master.svg",
+      "sha256": "e23fd9641a832c4fc37abf8d44a2e8eabcee6babe94233e9f74ecb67a20b8bfa"
+    },
+    {
+      "id": "file-association/rar/icns",
+      "file": "file-associations/xdzip-rar.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "rar",
+      "format": "icns",
+      "source": "file-associations/xdzip-rar-master.svg",
+      "sha256": "a1cb2f42568573c8572728b13184c779ecb1aee07d059b5f3b59aee95df546b7"
+    },
+    {
+      "id": "file-association/cab/icns",
+      "file": "file-associations/xdzip-cab.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "cab",
+      "format": "icns",
+      "source": "file-associations/xdzip-cab-master.svg",
+      "sha256": "53599c3e5f47783dbd1be13516c1b1658b9abe6baa5dff1ab74ca0f3f6837e05"
+    },
+    {
+      "id": "file-association/iso/icns",
+      "file": "file-associations/xdzip-iso.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "iso",
+      "format": "icns",
+      "source": "file-associations/xdzip-iso-master.svg",
+      "sha256": "714cec581c12fade7f2fde7580dc349a98e713e57d01d7b8ba5e9874faa5467b"
+    },
+    {
+      "id": "file-association/udf/icns",
+      "file": "file-associations/xdzip-udf.icns",
+      "kind": "association-icon-platform",
+      "purpose": "file-association",
+      "format_id": "udf",
+      "format": "icns",
+      "source": "file-associations/xdzip-udf-master.svg",
+      "sha256": "07bb080793eed280635877f71b0bda9433a6b18fa1965d02d2007d1ed8e2530d"
     }
   ]
 }

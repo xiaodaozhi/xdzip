@@ -158,7 +158,7 @@ def main():
     parser.add_argument('--render', action='store_true', help='also verify isolated contour raster symmetry')
     parser.add_argument('--output', type=Path, help='save a JSON measurement report')
     args = parser.parse_args()
-    paths = [ROOT / 'design/assets/brand' / f'{name}.svg' for name in ('xdzip', 'xdzip-zip')]
+    paths = [ROOT / 'design/assets/brand/xdzip.svg', ROOT / 'design/assets/file-associations/xdzip-zip-master.svg']
     paths += [ROOT / 'design/assets/svg' / theme / f'{name}.svg'
               for theme in ('light', 'dark') for name in ('app-mark', 'archive', 'archive-grey')]
     results = [inspect(path) for path in paths]

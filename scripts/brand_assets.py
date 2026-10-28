@@ -169,7 +169,7 @@ def brand_export_specs() -> list[dict]:
          'purpose': 'generated-visual-direction', 'usage': 'visual-reference-only',
          'provenance': 'generated high-fidelity application and document design sheet'},
     ]
-    for stem, purpose in [('xdzip', 'application-icon'), ('xdzip-zip', 'archive-document-icon')]:
+    for stem, purpose in [('xdzip', 'application-icon')]:
         source = f'brand/{stem}.svg'
         entries.append({'file': source, 'kind': 'brand-master', 'purpose': purpose,
                         'source': 'brand/mark.svg', 'size': [1024, 1024]})

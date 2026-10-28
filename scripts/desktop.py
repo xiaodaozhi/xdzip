@@ -14,6 +14,7 @@ import urllib.request
 import uuid
 
 from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, locked_rust_version
+from association_types import WINDOWS_ICONS
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL_PACKAGES = tuple(name+'=='+version for name, version in PYTHON_PACKAGES.items())
@@ -320,7 +321,9 @@ class Workflow:
             shutil.copy2(self.app, self.runtime/'xdzip.exe')
             shutil.copy2(self.app.parent/'xdzip-update-helper.exe', self.runtime/'xdzip-update-helper.exe')
             shutil.copy2(self.app.parent/'xdzip-native-codec.exe', self.runtime/'xdzip-native-codec.exe')
-            shutil.copy2(ROOT/'design/assets/brand/xdzip-zip.ico', self.runtime)
+            shutil.copy2(self.app.parent/'xdzip-association.exe', self.runtime/'xdzip-association.exe')
+            for icon in WINDOWS_ICONS.values():
+                shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon}.ico', self.runtime)
             self.script('deploy_windows.py', '--root', self.runtime, '--qt-prefix', self.qt,
                         '--qml-dir', ROOT/'apps/desktop/ui', '--qml-import', self.build/'qml',
                         '--runtime', self.runtime_tools/'runtime')

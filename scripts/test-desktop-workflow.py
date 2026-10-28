@@ -193,12 +193,15 @@ class WorkflowTests(unittest.TestCase):
         self.receipt(workflow)
         (workflow.app.parent/'xdzip-update-helper.exe').write_bytes(b'updater fixture')
         (workflow.app.parent/'xdzip-native-codec.exe').write_bytes(b'codec fixture')
+        (workflow.app.parent/'xdzip-association.exe').write_bytes(b'association fixture')
         notices = workflow.output/'notices'
         notices.mkdir(parents=True)
         (notices/'source-license.txt').write_text('source')
-        icon = self.root/'design/assets/brand/xdzip-zip.ico'
-        icon.parent.mkdir(parents=True)
-        icon.write_bytes(b'fixture icon')
+        from association_types import WINDOWS_ICONS
+        for icon_id in WINDOWS_ICONS.values():
+            icon = self.root/'design/assets/file-associations'/f'xdzip-{icon_id}.ico'
+            icon.parent.mkdir(parents=True, exist_ok=True)
+            icon.write_bytes(b'fixture icon')
 
         def deploy(name, *args):
             self.assertEqual(name, 'deploy_windows.py')
@@ -220,6 +223,9 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual((workflow.runtime/'share/notices/source-license.txt').read_text(), 'source')
         self.assertEqual((workflow.runtime/'xdzip-update-helper.exe').read_bytes(), b'updater fixture')
         self.assertEqual((workflow.runtime/'xdzip-native-codec.exe').read_bytes(), b'codec fixture')
+        self.assertEqual((workflow.runtime/'xdzip-association.exe').read_bytes(), b'association fixture')
+        for icon_id in WINDOWS_ICONS.values():
+            self.assertEqual((workflow.runtime/f'xdzip-{icon_id}.ico').read_bytes(), b'fixture icon')
         self.assertEqual((workflow.runtime/'share/notices/Microsoft-VC-runtime/LICENSE.txt').read_text(), 'CRT notice')
         for relative in ['Microsoft-VC-runtime/LICENSE.txt', 'Windows-SDK-graphics/sdk_license.rtf',
                          'Windows-SDK-graphics/provenance.json', 'Windows-runtime-NOTICE.txt']:

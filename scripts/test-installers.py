@@ -17,6 +17,7 @@ import unittest
 from unittest.mock import patch
 from deployment_audit import digest
 from installer_payload import HISTORICAL_PRODUCT_REVISION
+from association_types import WINDOWS_ICONS, MACOS_ICONS, windows_progid
 
 ROOT=Path(__file__).resolve().parents[1]
 def module(name):
@@ -111,6 +112,10 @@ class InstallerTests(unittest.TestCase):
         app=root/('xdzip.exe' if platform=='windows' else 'bin/xdzip');app.parent.mkdir(exist_ok=True);app.write_bytes(b'MZowned' if platform=='windows' else b'\x7fELFowned')
         helper=root/('xdzip-update-helper.exe' if platform=='windows' else 'bin/xdzip-update-helper')
         helper.write_bytes(b'MZowned helper' if platform=='windows' else b'\x7fELFowned helper')
+        if platform == 'windows':
+            (root/'xdzip-association.exe').write_bytes(b'MZowned association launcher')
+            for icon_id in WINDOWS_ICONS.values():
+                shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon_id}.ico', root)
         (root/'share').mkdir();(root/'share/deployment.json').write_text(json.dumps({'system_packages':['libc6:amd64','libxcb1:amd64']}))
         (root/'xdzip').write_text('#!/bin/sh\n');(root/'xdzip').chmod(0o755)
         audit={'status':'passed','platform':platform,'mode':'deployed','identity':{'version':'0.1.0-dev.1','build':1,'revision':'a'*12,'dirty':False},
@@ -234,9 +239,13 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('chinesesimplified.LicenseLabel3=',text)
             self.assertIn(' -- ""%1""',text)
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
-            for extension in ('7z','rar','cab','iso','udf'):
+            for extension, icon in WINDOWS_ICONS.items():
+                progid = windows_progid(extension)
                 self.assertIn('Software\\Classes\\.'+extension+'\\OpenWithProgids',text)
-                self.assertIn('ValueName: ".'+extension+'"; ValueData: "xdzip.Archive"',text)
+                self.assertIn('ValueName: ".'+extension+'"; ValueData: "'+progid+'"',text)
+                self.assertIn('Software\\Classes\\'+progid+'\\DefaultIcon',text)
+                self.assertIn('xdzip-'+icon+'.ico',text)
+                self.assertIn('Software\\Classes\\'+progid+'\\shell\\open\\command',text)
             self.assertNotIn('Software\\Classes\\.001\\',text)
             self.assertNotIn('Software\\Classes\\.img\\',text)
             for line in text.splitlines():
@@ -271,6 +280,19 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('{app}\\versions\\',legacy)
             self.assertNotIn('function PrepareToInstall',legacy)
             self.assertNotIn('DestName: "install-manifest.txt"',legacy)
+
+    def test_windows_rejects_missing_or_changed_format_icon(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base=Path(temp); root,audit=self.payload(base,'windows')
+            icon=root/'xdzip-rar.ico'
+            icon.unlink()
+            audit['files']=[item for item in audit['files'] if item['path'] != icon.name]
+            with self.assertRaisesRegex(ValueError, 'lacks the verified xdzip-rar.ico'):
+                windows.render(root,audit,base/'setup.exe',base/'Chinese.isl')
+            icon.write_bytes(b'wrong icon')
+            audit['files'].append({'path':icon.name,'sha256':digest(icon)})
+            with self.assertRaisesRegex(ValueError, 'lacks the verified xdzip-rar.ico'):
+                windows.render(root,audit,base/'setup.exe',base/'Chinese.isl')
 
     def test_windows_manifest_is_exact_bounded_and_rejects_path_aliases(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -345,16 +367,24 @@ class InstallerTests(unittest.TestCase):
                         continue
                     self.assertEqual(result.returncode,0,result.stderr)
                     info=plistlib.loads(output.read_bytes())
-                    document=info['CFBundleDocumentTypes'][0]
-                    self.assertEqual(document['LSHandlerRank'],requested or 'None')
-                    self.assertEqual(document['CFBundleTypeRole'],'Viewer')
-                    self.assertEqual(document['CFBundleTypeIconFile'],'xdzip-zip.icns')
-                    self.assertTrue({'public.zip-archive','org.gnu.gnu-zip-tar-archive'}<=set(document['LSItemContentTypes']))
-                    self.assertTrue({'org.7-zip.7-zip-archive','com.rarlab.rar-archive'}<=set(document['LSItemContentTypes']))
-                    self.assertTrue({'7z','rar','cab','iso','udf'}<=set(document['CFBundleTypeExtensions']))
-                    self.assertNotIn('img',document['CFBundleTypeExtensions'])
-                    self.assertTrue({'com.microsoft.cab-archive','public.iso-image',
-                                     'org.xdzip.udf-image'}<=set(document['LSItemContentTypes']))
+                    documents=info['CFBundleDocumentTypes']
+                    self.assertEqual(len(documents),len(MACOS_ICONS))
+                    expected={'public.zip-archive':'zip','public.tar-archive':'tar',
+                        'org.gnu.gnu-zip-tar-archive':'tar-gz','org.gnu.gnu-zip-archive':'gz',
+                        'org.7-zip.7-zip-archive':'7z','com.rarlab.rar-archive':'rar',
+                        'com.microsoft.cab-archive':'cab','public.iso-image':'iso','org.xdzip.udf-image':'udf'}
+                    observed={}
+                    extensions=set()
+                    for document in documents:
+                        self.assertEqual(document['LSHandlerRank'],requested or 'None')
+                        self.assertEqual(document['CFBundleTypeRole'],'Viewer')
+                        self.assertEqual(len(document['LSItemContentTypes']),1)
+                        uti=document['LSItemContentTypes'][0]
+                        self.assertNotIn(uti,observed)
+                        observed[uti]=document['CFBundleTypeIconFile']
+                        extensions.update(document['CFBundleTypeExtensions'])
+                    self.assertEqual(observed,{uti:'xdzip-'+icon+'.icns' for uti,icon in expected.items()})
+                    self.assertEqual(extensions,set(WINDOWS_ICONS))
                     imported={item['UTTypeIdentifier']:item for item in info['UTImportedTypeDeclarations']}
                     self.assertEqual(imported['org.xdzip.udf-image']['UTTypeTagSpecification']['public.filename-extension'],['udf'])
                     self.assertEqual(info['CFBundleAllowMixedLocalizations'],True)

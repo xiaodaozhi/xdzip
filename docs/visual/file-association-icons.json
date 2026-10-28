@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "role": "design-assets-for-future-association-integration",
+  "role": "canonical-file-association-assets",
   "source": "scripts/association_icon_assets.py",
   "brand_source": "scripts/brand_assets.py",
   "canvas": 1024,

@@ -1,6 +1,6 @@
 # 文件关联图标
 
-系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](file-association-icons.json)，素材位于 [file-associations](../../design/assets/file-associations)。本规范定义后续逐格式接入的素材，不改变当前安装器和默认应用行为。
+系统文件图标沿用 xdzip 的折角文档、连续曲率徽章、四条交错带与开放 U 形标记。设计入口为[高保真审阅页](../../design/hifi/sources/file-association-icons.html)，参数来源为 [file-association-icons.json](file-association-icons.json)，文档图标源和产品所需平台容器统一位于 [file-associations](../../design/assets/file-associations)。默认应用仍由用户选择。
 
 ## 形状与识别
 
@@ -14,7 +14,7 @@
 
 界面中的 24 单位图标、主窗口和菜单密度继续遵循 [layout-scale.json](layout-scale.json)。本素材不新增 QML 窗口，也不改变主窗口或菜单的逻辑尺寸。平台 PNG 尺寸是图像采样尺寸，不能写入 QML 组件逻辑几何。
 
-## 格式与后续映射
+## 格式与平台映射
 
 | 图标标识 | 标签 | 后缀／用途 | 辅助色 |
 | --- | --- | --- | --- |
@@ -34,7 +34,7 @@
 
 加密与分卷是归档状态，不由扩展名图标猜测，不绘制锁或成功标记。已识别 ZIP、7z、RAR 分卷可在应用内复用对应家族，不注册通用 `.001`、`.rNN`、`.zNN` 或 `.img`。ISO／UDF 图标不表示挂载或执行能力。不能仅因后缀匹配就声明归档内容有效。
 
-后续接入按[安装与关联契约](../engineering/installers-associations.md)分别处理 Windows ProgID 文档图标、macOS 文档类型和 Linux 文件管理器能力。Linux 当前不覆盖全局 MIME 图标；本设计不能隐式更改这一政策。应用图标与文档图标保持各自用途。关联、默认选择、缓存刷新及卸载行为在实施阶段验证。
+Windows 使用逐扩展名 ProgID 和 ICO，保留旧共享入口；macOS 以文档类型映射 ICNS，压缩 TAR 类型共用 TAR.GZ 图标。Linux 保留系统 MIME 图标，不覆盖全局文件图标。原生显示受默认应用和图标缓存影响，关联与回退见[安装与关联契约](../engineering/installers-associations.md)。
 
 ## 生成与交付
 
@@ -43,7 +43,7 @@
 ```sh
 python scripts/build-association-icons.py
 python scripts/build-design-assets.py --metadata-only
-python scripts/build-association-icons.py --check
+python scripts/build-association-icons.py --check --check-runtime
 # 导出到本地工件，使用已有 Pillow、Playwright 环境与 Chromium。
 python scripts/build-association-icons.py --export build/file-association-icons
 python scripts/build-association-icons.py --check --export build/file-association-icons
@@ -51,7 +51,7 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 
 `XDZIP_CHROMIUM` 可指定已有 Chromium／Edge 路径。SVG 母版、小尺寸源、规范和高保真审阅页纳入版本管理；素材源在主 [manifest.json](../../design/assets/manifest.json) 中登记。生成入口是 [build-association-icons.py](../../scripts/build-association-icons.py)，组合定义见 [association_icon_assets.py](../../scripts/association_icon_assets.py)。
 
-平台输出每格式包含 16、24、32、48、64、128、256、512、1024 透明 PNG，另提供独立 `macos/` PNG。512 文件命名为 `xdzip-<id>.png`，其余为 `xdzip-<id>-<size>.png`。ICO 包含 16 至 256 的七档；ICNS 包含十一种普通／Retina 表示，内容只取自 macOS PNG。默认不写产品资源目录，不触碰已有 `brand/xdzip-zip.*`。平台导出、联系表和执行回执只保存到 `build/` 或 `dist/`，后续接入时再确定构建资源映射。
+导出工件每格式包含 16 至 1024 像素的通用与 macOS PNG，以及 ICO 和 ICNS。产品使用的九份 ICO、九份 ICNS 与矢量源同放 `file-associations/`；ZIP 容器保留迁移前原字节，其他容器来自相应导出。普通构建直接读取这些容器，不依赖浏览器。临时 PNG、完整导出、联系表和回执保留在 `build/` 或 `dist/`。
 
 ## 验证与验收
 
@@ -59,4 +59,4 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 
 视觉审阅同时覆盖浅色、深色与选中背景，16 至 256 像素，以及普通和高 DPR 的实际渲染。审阅页按 CSS 像素呈现，不将浏览器截图标记为 Explorer、Finder 或 Linux 原生验收。后续接入须检查真实文件名、复合后缀、图标缓存、默认选择前后和安装／卸载后的显示。阶段状态和实际执行范围在 GitHub issue 中记录，不在本规范累积测试报告。
 
-English: This family prepares ten format icons and a generic fallback for later system integration. It reuses xdzip document and brand geometry, with vector labels and supporting colors. The 16/24/32 px profiles omit lettering; file names remain necessary for exact recognition. GZ does not imply standalone GZIP support, compound suffix recognition is platform dependent, and no generic volume or IMG association is introduced. PNG/ICO/ICNS exports go to local build artifacts. Existing application icons, handlers, defaults and Linux global MIME icon policy are unchanged. Browser rendering and container validation do not replace native shell acceptance.
+English: Windows uses per-extension ICOs and macOS uses per-type ICNS; Linux retains system MIME icons. ZIP's original platform containers are preserved. Source vectors and required platform containers share one directory, and ordinary builds require no browser. The 16/24/32 px profiles omit lettering; GZ does not imply standalone GZIP support. Compound suffix recognition is platform dependent, and no generic volume or IMG association is introduced. Browser rendering and container validation do not replace native shell acceptance.

@@ -1,6 +1,6 @@
 # 系统应用图标
 
-品牌源文件和派生格式统一位于 [design/assets/brand](../../../design/assets/brand/)。`xdzip.png` 为 512×512 透明应用图标；`xdzip.ico` 和 `xdzip.icns` 提供对应平台的多尺寸表示。`xdzip-zip.png`、`xdzip-zip.ico` 和 `xdzip-zip.icns` 是 ZIP 文件图标，供后续安装器与文件关联工作包使用。
+应用品牌源和平台图标位于 [design/assets/brand](../../../design/assets/brand/)；各格式文档源和产品使用的 ICO／ICNS 统一位于 [file-associations](../../../design/assets/file-associations/)。应用和文档图标各司其职。
 
 | 平台 | 当前接入 |
 | --- | --- |

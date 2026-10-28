@@ -270,6 +270,11 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 - 运行中拒绝升级和卸载；卸载清理根目录及累计记录的历史程序，同时保留根目录和历史目录中的额外文件。
 - Windows 在完整 Qt 编译前用明确标为 QA、从不执行的文件夹具编译并安装真实 Inno 安装器，先检查根目录、快捷方式、实际清单清理与卸载。快捷方式使用 IShellLinkW 读取 Unicode 目标，再按现存文件句柄解析的路径比较；兼容路径别名，避免 WSH 的 ANSI 路径把中文转成问号，更不能用通配符把问号误判为有效目标。
 - scripts/test-installers.py 检查生成与路径契约，Windows 原生 scripts/check-windows-install.ps1 检查实际安装/关联/清理结果。其他平台目录布局不随本次调整改变。
+- Windows 检查全部受支持扩展的候选、独立图标、命令和真实归档打开，验证旧共享 ProgID、外部候选和 UserChoice 原样保留；历史产品回退后通过新格式入口打开回退版本，卸载只移除自身登记。`.tar.gz` 的最终扩展名及已有用户选择的图标限制单独记录。
+- macOS 逐类型核对 ICNS 已进入 bundle、Viewer 和 None／Alternate 声明，以及原生候选和默认应用不变；同 UTI 的压缩 TAR 共用图标。Linux 保持既有 MIME 候选和系统文件图标，不新增全局 MIME 图标。
+- 浏览器／离屏结果与 Windows Explorer、Finder 的原生显示和人工操作分别登记，不因关联命令或 CI 通过宣称视觉验收通过。
+
+English: Verify each Windows format handler, icon, real archive dispatch and historical rollback while preserving UserChoice and foreign candidates. Verify bundled macOS ICNS, Viewer ranks and native handler candidates; compressed TAR may share one UTI. Linux keeps system MIME icons. Native shell visuals and human acceptance remain separate from automated checks.
 
 ## 会话与预发布验收
 

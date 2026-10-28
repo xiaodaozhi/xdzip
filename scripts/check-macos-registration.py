@@ -13,6 +13,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, required=True)
     parser.add_argument('--fixture', type=Path, required=True)
+    parser.add_argument('--formats', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if sys.platform != 'darwin':
@@ -29,6 +30,17 @@ def main():
     if info.get('CFBundleIdentifier') != BUNDLE_ID or len(ranks) != 1 or not ranks <= {'None', 'Alternate'}:
         parser.error('Expected an explicit None or Alternate archive handler rank')
     rank = next(iter(ranks))
+    expected_icons = {'zip','tar','tar-gz','gz','7z','rar','cab','iso','udf'}
+    declared = {item.get('CFBundleTypeIconFile') for item in types}
+    if declared != {f'xdzip-{name}.icns' for name in expected_icons}:
+        parser.error('Expected one document icon for each declared type')
+    if any(not (app/'Contents/Resources'/name).is_file() for name in declared):
+        parser.error('A declared document icon is missing from the application')
+    format_names = ['sample.zip','sample.tar','sample.tar.gz','sample.tgz',
+                    'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf']
+    formats = args.formats.resolve()
+    if not formats.is_relative_to(ROOT/'build') or any(not (formats/name).is_file() for name in format_names):
+        parser.error('Expected owned format fixtures under build/')
     output.parent.mkdir(parents=True, exist_ok=True)
     executable = output.parent/'xdzip-launch-services-probe'
     compiled = subprocess.run(['/usr/bin/clang++', '-std=c++17', '-fobjc-arc', '-framework', 'AppKit',
@@ -39,26 +51,34 @@ def main():
             compiled.stderr.replace(str(ROOT), '<checkout>'))
         raise RuntimeError('Native registration probe compilation failed')
 
-    def query():
-        result = subprocess.run([str(executable), str(fixture), str(app)],
+    def query(target):
+        result = subprocess.run([str(executable), str(target), str(app)],
             capture_output=True, text=True, timeout=15)
         if result.returncode:
             raise RuntimeError('Native handler candidate query failed')
         return json.loads(result.stdout)
 
-    before = query()
+    before = query(fixture)
+    format_before = {name:query(formats/name) for name in format_names}
     with transient_registrations(app):
         registered = subprocess.run([str(LSREGISTER), '-f', str(app)], capture_output=True, timeout=15)
         if registered.returncode:
             raise RuntimeError('Owned test application registration failed')
-        after = query()
+        after = query(fixture)
         if after['selected_in_candidates'] != (rank == 'Alternate'):
             raise RuntimeError('Native handler candidates disagree with the bundle rank')
         if before['default_bundle_id'] != after['default_bundle_id']:
             raise RuntimeError('Default document handler unexpectedly changed')
-    cleaned = query()
+        format_after = {name:query(formats/name) for name in format_names}
+        for name in format_names:
+            if format_after[name]['selected_in_candidates'] != (rank == 'Alternate'):
+                raise RuntimeError('Native format handler candidate disagrees with bundle rank: '+name)
+            if format_before[name]['default_bundle_id'] != format_after[name]['default_bundle_id']:
+                raise RuntimeError('Default format handler unexpectedly changed: '+name)
+    cleaned = query(fixture)
     output.write_text(json.dumps({'status': 'passed', 'rank': rank, 'before': before,
         'after_forced_registration': after, 'after_cleanup': cleaned,
+        'format_candidates': {name:{'before':format_before[name], 'after':format_after[name]} for name in format_names},
         'limits': 'Native document handler query, not visual acceptance of a client application menu.'},
         ensure_ascii=False, indent=2)+'\n')
     print('Native macOS handler rank and unchanged default: passed')
