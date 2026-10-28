@@ -94,6 +94,38 @@ def rounded_gear_path():
     return ' '.join(commands) + 'Z'
 
 
+def archive_add_zipper():
+    """Interlocking teeth and a separate slider with an open pull-tab aperture."""
+    teeth = []
+    for row in range(7):
+        y = 4.05 + row * 1.25
+        tooth = (f'<path d="M9.32 {y:.2f}h.66q.16 0 .16.16v.01h.3q.16 0 .16.16v.04'
+                 'q0 .16-.16.16h-.3v.01q0 .16-.16.16h-.66q-.16 0-.16-.16v-.38q0-.16.16-.16Z"/>')
+        teeth.append(tooth)
+        teeth.append(f'<g transform="translate(21 .625) scale(-1 1)">{tooth}</g>')
+    return (
+        '<defs><linearGradient id="zip-teeth" x1="0" y1="0" x2="1" y2="0">'
+        '<stop stop-color="#e2f0ff"/><stop offset=".45" stop-color="#fff"/>'
+        '<stop offset="1" stop-color="#d0e5ff"/></linearGradient>'
+        '<linearGradient id="zip-metal" x1="0" y1="0" x2="1" y2="1">'
+        '<stop stop-color="#fff"/><stop offset=".48" stop-color="#edf6ff"/>'
+        '<stop offset="1" stop-color="#b6d5ff"/></linearGradient></defs>'
+        '<rect x="8.9" y="3.45" width="3.2" height="10.6" rx=".65" fill="#1454c9" fill-opacity=".2" stroke="none"/>'
+        '<path d="M9.02 3.85v9.2m2.96-9.2v9.2" stroke="#d9edff" stroke-opacity=".3" stroke-width=".18"/>'
+        '<rect x="9.15" y="3.45" width="2.7" height=".4" rx=".2" fill="#eef8ff" stroke="none"/>'
+        '<g fill="url(#zip-teeth)" stroke="none">' + ''.join(teeth) + '</g>'
+        '<path d="M9.5 12.95h2l.42 1.12a1.15 1.15 0 0 1-1.08 1.55h-.68a1.15 1.15 0 0 1-1.08-1.55Z" '
+        'fill="#1454c9" fill-opacity=".25" stroke="none" transform="translate(0 .2)"/>'
+        '<path d="M9.5 12.95h2l.42 1.12a1.15 1.15 0 0 1-1.08 1.55h-.68a1.15 1.15 0 0 1-1.08-1.55Z" '
+        'fill="url(#zip-metal)" stroke="#f5fbff" stroke-width=".16"/>'
+        '<path d="M9.83 13.48h1.34" stroke="white" stroke-width=".25"/>'
+        '<path fill="url(#zip-metal)" stroke="none" fill-rule="evenodd" '
+        'd="M10.08 14.65h.84a.86.86 0 0 1 .86.86v2.4a.9.9 0 0 1-.9.9h-.76a.9.9 0 0 1-.9-.9v-2.4a.86.86 0 0 1 .86-.86Z '
+        'M10.1 15.75a.38.38 0 0 0-.38.38v1.58a.45.45 0 0 0 .45.45h.66a.45.45 0 0 0 .45-.45v-1.58a.38.38 0 0 0-.38-.38Z"/>'
+        '<path d="M9.52 15.5v2.28a.67.67 0 0 0 .67.67" stroke="white" stroke-opacity=".85" stroke-width=".16"/>'
+    )
+
+
 def hero_shapes():
     """Paper illustrations use layered light, a fold and an inset hairline."""
     body = 'M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z'
@@ -116,7 +148,7 @@ def hero_shapes():
     mountain_blue = '<circle cx="8.1" cy="10.2" r="1.4" fill="#fff9d8" stroke="none"/><path fill="#3099e6" stroke="none" d="m4.5 17.2 4.8-4.8 4 3.7 3.1-3.2 3.1 3.6v3.3a1.7 1.7 0 0 1-1.7 1.7H6.2a1.7 1.7 0 0 1-1.7-1.7Z"/><path d="m7.4 14.3 1.9-1.9 2.3 2.1" stroke="#e7faff" stroke-width=".7"/>'
     mountain_amber = mountain_blue.replace('#3099e6', '#ee971e').replace('#e7faff', '#fff2c1')
     return {
-        'archive-add': blue + zipper + '<circle cx="18.4" cy="18.4" r="4.45" fill="#2874ff" stroke="white" stroke-width="1.1"/><path stroke="white" stroke-width="1.3" d="M18.4 16.1v4.6 M16.1 18.4h4.6"/>',
+        'archive-add': blue + archive_add_zipper() + '<circle cx="18.4" cy="18.4" r="4.45" fill="#2874ff" stroke="white" stroke-width="1.1"/><path stroke="white" stroke-width="1.3" d="M18.4 16.1v4.6 M16.1 18.4h4.6"/>',
         'archive-warning': amber_archive + zipper,
         'document-download': blue + '<path stroke="white" stroke-width="1.8" d="M12 10.6v6.4m-2.8-2.7 2.8 2.7 2.8-2.7"/>',
         'document-check': blue + '<path stroke="white" stroke-width="1.8" fill="none" d="m8.5 14 2.4 2.4 4.6-5.2"/>',

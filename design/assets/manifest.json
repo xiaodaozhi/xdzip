@@ -3107,7 +3107,7 @@
           "assets/archive-add-large.png"
         ]
       },
-      "sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "sha256": "763cfc64227cf175fd4e18196604dfcb48299b6e83c5f970c72f195714904248",
       "source_reference": "reference/create-archive.png",
       "visible_bounds": [
         4.0,
@@ -3115,7 +3115,9 @@
         23.6667,
         23.6667
       ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale",
+      "visual_revision": "interlocking-zipper",
+      "reference_relation": "historical-design-reference"
     },
     {
       "id": "light/archive-grey",
@@ -5495,7 +5497,7 @@
           "assets/dark/archive-add-large.png"
         ]
       },
-      "sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "sha256": "51bfcacbb9f90f785039858c66ccefd816f99b5d72f96fa3806114d90489541f",
       "source_reference": "reference/create-archive.png",
       "visible_bounds": [
         4.0,
@@ -5503,7 +5505,9 @@
         23.6667,
         23.6667
       ],
-      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale"
+      "visible_bounds_measurement": "3x Chromium raster, alpha > 8, divided by scale",
+      "visual_revision": "interlocking-zipper",
+      "reference_relation": "historical-design-reference"
     },
     {
       "id": "dark/archive-grey",
@@ -8661,7 +8665,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/archive-add.svg",
-      "source_sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "source_sha256": "763cfc64227cf175fd4e18196604dfcb48299b6e83c5f970c72f195714904248",
       "visible_bounds": [
         4.0,
         2.0,
@@ -8669,7 +8673,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a5a49a664ce1ce94c82c3755d2ade7d1e3e94e7e3cf0a63111aee20fb126c7de"
+      "sha256": "12b26181606b0c5703a885a210e0cce47df3f72ca92bb21c322aa4facdda3104"
     },
     {
       "id": "raster/light/archive-add@2x",
@@ -8691,7 +8695,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/archive-add.svg",
-      "source_sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "source_sha256": "763cfc64227cf175fd4e18196604dfcb48299b6e83c5f970c72f195714904248",
       "visible_bounds": [
         4.0,
         2.0,
@@ -8699,7 +8703,7 @@
         23.5
       ],
       "usage": "runtime-and-design",
-      "sha256": "461a10fa6edb8a8d90568a5566b82ae59c32aafc941cf9d6383bf69148aa8234"
+      "sha256": "735d37d123c473ef50ee9386157b40f3ea1f0ff13e2ad936dfeefff74483c15f"
     },
     {
       "id": "raster/light/archive-add@3x",
@@ -8721,7 +8725,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/archive-add.svg",
-      "source_sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "source_sha256": "763cfc64227cf175fd4e18196604dfcb48299b6e83c5f970c72f195714904248",
       "visible_bounds": [
         4.0,
         2.0,
@@ -8729,7 +8733,7 @@
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "ab14ffc94afe2159a99fb5954a43e73ad0d487c5c1ae4ccea3165e69166408e6"
+      "sha256": "2c719b2b52f4cfd841236d0d53ed6b7df7d1a3cde2756fc0659540b082a87d6e"
     },
     {
       "id": "raster/light/archive-add@9x",
@@ -8751,7 +8755,7 @@
       "theme": "light",
       "category": "illustration",
       "source": "svg/light/archive-add.svg",
-      "source_sha256": "8b201dd9ff24d57aae4f422f514af2f850be1716a0f115ca7d48346d218a6c96",
+      "source_sha256": "763cfc64227cf175fd4e18196604dfcb48299b6e83c5f970c72f195714904248",
       "visible_bounds": [
         4.0,
         2.0,
@@ -8759,7 +8763,7 @@
         23.4444
       ],
       "usage": "runtime-and-design",
-      "sha256": "04ad1675a32f71abab43f531590d8e4aea10bb25442f34a77ece95732b3f3b38"
+      "sha256": "51358b070730b851209a87d8880d2497811601fbf5d92e18cb9fb6daf22911d8"
     },
     {
       "id": "raster/light/archive-grey@1x",
@@ -16135,7 +16139,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/archive-add.svg",
-      "source_sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "source_sha256": "51bfcacbb9f90f785039858c66ccefd816f99b5d72f96fa3806114d90489541f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -16143,7 +16147,7 @@
         24.0
       ],
       "usage": "runtime-and-design",
-      "sha256": "a5a49a664ce1ce94c82c3755d2ade7d1e3e94e7e3cf0a63111aee20fb126c7de"
+      "sha256": "12b26181606b0c5703a885a210e0cce47df3f72ca92bb21c322aa4facdda3104"
     },
     {
       "id": "raster/dark/archive-add@2x",
@@ -16165,7 +16169,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/archive-add.svg",
-      "source_sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "source_sha256": "51bfcacbb9f90f785039858c66ccefd816f99b5d72f96fa3806114d90489541f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -16173,7 +16177,7 @@
         23.5
       ],
       "usage": "runtime-and-design",
-      "sha256": "461a10fa6edb8a8d90568a5566b82ae59c32aafc941cf9d6383bf69148aa8234"
+      "sha256": "735d37d123c473ef50ee9386157b40f3ea1f0ff13e2ad936dfeefff74483c15f"
     },
     {
       "id": "raster/dark/archive-add@3x",
@@ -16195,7 +16199,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/archive-add.svg",
-      "source_sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "source_sha256": "51bfcacbb9f90f785039858c66ccefd816f99b5d72f96fa3806114d90489541f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -16203,7 +16207,7 @@
         23.6667
       ],
       "usage": "runtime-and-design",
-      "sha256": "ab14ffc94afe2159a99fb5954a43e73ad0d487c5c1ae4ccea3165e69166408e6"
+      "sha256": "2c719b2b52f4cfd841236d0d53ed6b7df7d1a3cde2756fc0659540b082a87d6e"
     },
     {
       "id": "raster/dark/archive-add@9x",
@@ -16225,7 +16229,7 @@
       "theme": "dark",
       "category": "illustration",
       "source": "svg/dark/archive-add.svg",
-      "source_sha256": "bb3c188a5c756b6727d1b6b6c21656b959aa6fcc6c086c2ddf6306616a8bed97",
+      "source_sha256": "51bfcacbb9f90f785039858c66ccefd816f99b5d72f96fa3806114d90489541f",
       "visible_bounds": [
         4.0,
         2.0,
@@ -16233,7 +16237,7 @@
         23.4444
       ],
       "usage": "runtime-and-design",
-      "sha256": "04ad1675a32f71abab43f531590d8e4aea10bb25442f34a77ece95732b3f3b38"
+      "sha256": "51358b070730b851209a87d8880d2497811601fbf5d92e18cb9fb6daf22911d8"
     },
     {
       "id": "raster/dark/archive-grey@1x",

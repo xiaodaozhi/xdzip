@@ -162,6 +162,9 @@ def svg_entries(check: bool = False) -> list[dict]:
                 entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
                 if name in ('app-mark', 'archive', 'archive-grey'):
                     entry['reference_relation'] = 'historical-design-reference'
+            if name == 'archive-add':
+                entry['visual_revision'] = 'interlocking-zipper'
+                entry['reference_relation'] = 'historical-design-reference'
             if name in TREE_ICON_REFERENCES:
                 entry['source_reference'] = f'reference/{TREE_ICON_REFERENCES[name]}.png'
                 entry['component'] = 'directory-tree'

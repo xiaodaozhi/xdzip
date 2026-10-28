@@ -55,6 +55,10 @@ HTML 与 Qt 必须在同一逻辑宽度下对比；原稿只裁去外背景并�
 
 English: Create, add, extract, task/result, conflict, settings and about windows share OperationHeader; integrity checks inherit it. The common policy is a 48×48 logical icon slot, 20-unit title, 13-unit subtitle, 24-unit horizontal and 20-unit vertical padding, 16-unit icon gap, 6-unit text gap and 96-unit normal height baseline. Text is plain and grows using common font metrics for larger fonts or long content. Icons preserve aspect ratio. This supersedes per-window header sizing and the centered 24-unit about branding while preserving historical references. Text-only prompts keep their roles, and main-window/menu density remains separate.
 
+archive-add 插图的拉链采用两列交错的圆角齿牙、低对比织带、独立拉头和镂空拉环。齿牙与金属件使用克制的浅色高光，沿用蓝色文档、折角及添加徽标。形状在统一 24 单位矢量画布内定义，标题区仍使用共享 48 逻辑像素槽；浅深色 SVG 与 1×／2×／3×／9× PNG 从同一定义生成，历史原稿及切片保持原样。
+
+English: The archive-add illustration uses two interlocking rows of rounded zipper teeth, a low-contrast tape, a separate slider and an open pull tab. Restrained light highlights preserve the blue document, fold and add badge. Geometry stays inside the shared 24-unit vector canvas and the header keeps its 48-unit logical slot. Light/dark SVGs and 1x/2x/3x/9x PNGs share one definition; historical artwork and source crops remain unchanged.
+
 普通独立窗口沿用 1280／1548 源坐标换算，宽度约 612；进度原稿映射为 819.2／1548，正常宽度为 491、客户区随内容自适应，最高 600；标题 20、正文 13，footer 仍使用共享 13／12 字号。操作窗口随当前审阅上下文换回源坐标，不能因从解压窗进入进度窗而再次缩小。解压使用 [extract-reference.json](extract-reference.json) 冻结的原稿哈希、量测和映射，宽度 491、标题 20、正文 13、路径框约 35 高、内嵌更改按钮约 69×24。Qt 直接使用真实布局尺寸，不用 Item.scale 或截图缩小。HTML 将正常尺寸换回当前审阅上下文的源坐标，独立和嵌入入口最终尺寸必须相同。
 
 解压目标与重名卡片为均匀底色，范围卡片为浅色标题带与白色正文；浅色卡片 #F4F6FA、边框 #DFE5EF、路径与下拉框边框 #DCE2EC，深色对应值见 tokens.json。路径图标、可编辑路径和“更改”按钮共享一个边框。复选框使用统一素材库的选中图形。所有操作窗口复用 xdzip 内建下拉组件，覆盖选中、禁用、键盘导航、Escape、焦点返回及边缘翻转。菜单保持与调用控件 4 逻辑像素间距。
