@@ -34,7 +34,7 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。ZIP 沿用 `xdzip.Archive`，其他扩展名使用独立 ProgID 和对应 ICO；已有旧 ProgID 保留，因此旧默认选择仍能打开，但可能继续显示 ZIP 图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
 
-各格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`。该小型 GUI 启动器只接受单个文件参数，通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。ZIP 和旧选择继续直接使用共享入口。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
+各格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。ZIP 和旧选择继续直接使用共享入口。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
 ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO 和 UDF 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。CAB、ISO 和 UDF 为只读，不注册通用 `.img`、`.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
 
