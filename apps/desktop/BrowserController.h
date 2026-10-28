@@ -173,10 +173,11 @@ class BrowserController : public QObject {
                (m_result.extraction || m_result.creating || m_result.checking);
     }
     bool browsingBusy() const {
-        // Operation-window preparation does not replace the committed browser snapshot.
+        // Operation preparation and drag manifests keep the committed browser snapshot.
         return m_updateActive || (m_busy && m_result.updating) ||
                (m_busy && (m_closing || m_faulted ||
-                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview)));
+                           (!taskStarting() && !m_result.targetCheck && !m_result.inputPreview &&
+                            !m_result.exportManifest)));
     }
     QString archiveOperation() const {
         return runtimeAvailable() && browsingBusy() ? m_archiveOperation : QString{};

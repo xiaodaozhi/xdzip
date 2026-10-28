@@ -8935,7 +8935,13 @@ QtObject {
         QVERIFY(row(QStringLiteral("旅行清单.txt")) >= 0 && row(QStringLiteral("README.md")) >= 0);
         QTRY_VERIFY(controller->requestClose());
     }
+    void internalDragHandsFrozenSelectionToExternalExport_data() {
+        QTest::addColumn<QString>("view");
+        QTest::newRow("list") << QStringLiteral("list");
+        QTest::newRow("grid") << QStringLiteral("grid");
+    }
     void internalDragHandsFrozenSelectionToExternalExport() {
+        QFETCH(QString, view);
         for (bool deactivate : {false, true}) {
             QQmlApplicationEngine engine;
             engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -8947,8 +8953,24 @@ QtObject {
             QVERIFY(controller);
             controller->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
             QTRY_VERIFY(controller->ready() && !controller->busy());
+            QVERIFY(window->setProperty("viewMode", view));
+            auto *loading = window->findChild<QQuickItem *>("archiveLoadingOverlay");
+            QVERIFY(loading && !loading->isVisible());
+            QSignalSpy loadingChanges(loading, &QQuickItem::visibleChanged);
+            bool sawManifest = false;
+            bool replacedBrowser = false;
+            const auto observed = connect(controller, &BrowserController::changed, window, [&] {
+                if (controller->busy() && controller->m_result.exportManifest) {
+                    sawManifest = true;
+                    replacedBrowser |= controller->browsingBusy() || !controller->ready();
+                }
+            });
+            const auto disconnectObserved = qScopeGuard([&] { disconnect(observed); });
+            const auto directory = controller->directoryId();
+            const auto total = controller->total();
             QQuickItem *item = nullptr;
-            QTRY_VERIFY((item = findVisual(window->contentItem(), "entry-0-0")));
+            QTRY_VERIFY((item = findVisual(window->contentItem(),
+                                           view == "grid" ? "grid-entry-0" : "entry-0-0")));
             const auto point =
                 item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint();
             QTest::mousePress(window, Qt::LeftButton, Qt::NoModifier, point);
@@ -8970,8 +8992,18 @@ QtObject {
             QTest::mouseRelease(window, Qt::LeftButton, Qt::NoModifier, QPoint(-20, point.y()));
             QTRY_VERIFY(!controller->busy() && controller->activeTaskCount() == 0);
             QVERIFY(!controller->m_export->entries.isEmpty());
+            QVERIFY(sawManifest);
+            QVERIFY(!replacedBrowser);
+            QCOMPARE(loadingChanges.count(), 0);
+            QCOMPARE(controller->m_model.selectedIds(), ids);
+            QCOMPARE(controller->directoryId(), directory);
+            QCOMPARE(controller->total(), total);
             for (const auto &value : controller->tasks())
                 QVERIFY(value.toMap().value("kind") != "move");
+            controller->sortByColumn(0);
+            QVERIFY(controller->browsingBusy());
+            QVERIFY(loading->isVisible());
+            QTRY_VERIFY(!controller->busy() && !loading->isVisible());
             QTRY_VERIFY(controller->requestClose());
         }
     }

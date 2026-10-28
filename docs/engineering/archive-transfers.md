@@ -8,6 +8,10 @@
 
 列表和网格达到系统拖动阈值后冻结选择与包内目录。拖动未选项先单选，拖动已选项保留选择。目录展开后代，父子重复选择去重，保留当前目录以下的相对层级及空目录，不删除归档内容。链接不经拖出入口发布。清单最多十万项，名称及结构预算为 4 MiB，仍受安全解压的字节、路径、密码及配额约束。
 
+生成拖出清单只准备传输元数据，不属于目录读取。准备及原生交接期间保留已提交的列表／网格、选择和目录，不显示主页面的“正在读取”遮罩；请求仍保持忙碌与取消语义。真正的打开、目录查询以及归档修改继续使用各自的等待反馈。
+
+English: Building the drag-out manifest prepares transfer metadata rather than browsing a directory. Preparation and native handoff preserve the committed list or grid, selection and directory without showing the browser's reading overlay. Request busy/cancellation semantics remain intact; real opening, browsing and archive edits retain their own waiting feedback.
+
 Windows 通过 OLE `IDataObject` 的 FILEDESCRIPTOR/FILECONTENTS 和异步能力提供内容。目标接受后启动后台准备，私有副本完整校验后才交给消费者读取；同步消费者不能使 GUI 等待任务，未支持的目标明确失败。Explorer 决定最终位置和重名。FILEDESCRIPTORW 的路径须短于 260 个 UTF-16 单元。内容流只读，取消后停止提供后续数据。异步消费者结束前，退出仍等待本机传输结束。
 
 macOS 通过 NSFilePromiseProvider 向 Finder 提供顶层文件或目录承诺。私有副本准备完成后，Finder 提供的本地文件 URL 经 Rust 的独立 PublishExport 任务授权，逐文件暂存并校验来源后发布，不覆盖既有普通文件。POSIX 普通文件沿用安全解压的 0600 | (mode & 0155) 权限策略，保留可执行位并剥离特权和外部写位。目录合并及部分完成遵循安全解压的输出边界，不承诺传输整体回滚。文件承诺回调在后台等待，文件写入始终进入有界任务队列与退出屏障。
