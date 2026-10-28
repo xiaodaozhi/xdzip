@@ -51,6 +51,9 @@
     min-width: 0;
     overflow-wrap: anywhere;
 }
+.ui-menu-task { grid-template-columns:var(--ui-menu-icon-size) minmax(0,1fr) auto auto; }
+.ui-menu-task .ui-menu-arrow { display:none; }
+.ui-menu-task .ui-menu-label { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ui-menu-symbol,
 .ui-menu-arrow {
     display: grid;

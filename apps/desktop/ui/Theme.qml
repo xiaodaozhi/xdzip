@@ -276,6 +276,9 @@ QtObject {
     readonly property real menuLabelSize: 13 * fontScale
     readonly property real menuShortcutSize: 12 * fontScale
     readonly property real menuLabelInset: 8 * fontScale
+    readonly property real menuTagHorizontalInset: 7 * fontScale
+    readonly property real menuTagVerticalInset: 3 * fontScale
+    readonly property real menuTagRadius: 4 * fontScale
     readonly property real menuViewportInset: 8 * fontScale
     readonly property real tooltipMaxWidth: 320 * fontScale
     readonly property real tooltipPadding: 8 * fontScale

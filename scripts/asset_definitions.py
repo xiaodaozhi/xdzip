@@ -391,6 +391,16 @@ MAIN_SHAPES = {'task-list': '<g fill="{ink}" stroke="none"><circle cx="4" cy="6"
 # Selected view glyphs reuse the exact outlines; only the semantic ink changes.
 EXTRA_CONTROL_PATHS.update({name + '-selected': CONTROL_PATHS[name] for name in ('view-list', 'view-grid')})
 
+# Task-menu operations use the same 24-unit outlined glyph system as the toolbar.
+EXTRA_CONTROL_PATHS.update({
+    'task-create': 'M4 8v12h16V8 M3 4h18v4H3Z M12 11v6 M9 14h6',
+    'task-extract': CONTROL_PATHS['extract'],
+    'task-check': CONTROL_PATHS['archive-test'],
+    'task-add': 'M13 3H5v18h14V9L13 3Z M13 3v6h6 M8 14h7 M11.5 10.5v7',
+    'task-move': 'M3 8V5h6l3 3h9v12H3Z M7 14h10 M14 11l3 3-3 3',
+    'task-export': CONTROL_PATHS['external-open'],
+})
+
 STATE_SHAPES = {'info': '<g stroke="{muted}"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></g>',
  'remove': '<circle cx="12" cy="12" r="9" stroke="{track}"/><path d="M8 12h8"/>',
  'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 6v7l4 2"/>'}

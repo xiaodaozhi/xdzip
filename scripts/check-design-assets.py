@@ -53,6 +53,7 @@ REFERENCE_ICONS = {
 CONTROL_REFERENCES = {'check-selected', 'radio-selected', 'radio-unselected'}
 HISTORICAL_BRAND_REFERENCES = {'brand-titlebar', 'brand-extract'}
 NON_REFERENCE_NAMES = {
+    'task-create', 'task-extract', 'task-check', 'task-add', 'task-move', 'task-export',
     'activity', 'archive-grey', 'arrow-right', 'check', 'chevron-down',
     'chevron-right', 'chevron-up', 'clock', 'completed', 'external-open',
     'extract', 'info', 'maximize', 'minimize', 'moon', 'panel', 'plus',

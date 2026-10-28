@@ -185,18 +185,25 @@ window.XdzipControls = (() => {
             const text = document.createElement("span");
             text.className = "ui-menu-label";
             text.textContent = item.label;
+            const sequence = document.createElement("span");
+            sequence.className = "task-sequence";
+            sequence.textContent = item.sequence || "";
+            sequence.setAttribute("aria-hidden", "true");
+            node.classList.toggle("ui-menu-task", Boolean(item.sequence));
             const shortcut = document.createElement("span");
             shortcut.className = item.status ? "task-status" : "ui-menu-shortcut";
             shortcut.textContent = item.status || item.shortcut || "";
             shortcut.setAttribute("aria-hidden", "true");
             if (item.status) {
                 shortcut.dataset.status = item.statusKind || "running";
-                node.setAttribute("aria-label", item.label + "，" + item.status);
+                node.setAttribute("aria-label", (item.accessibleLabel || item.label + (item.sequence ? "，" + item.sequence : "")) + "，" + item.status);
             }
             const arrow = document.createElement("span");
             arrow.className = "ui-menu-arrow";
             arrow.innerHTML = item.children ? renderIcon("chevron-right") : "";
-            node.append(symbol, text, shortcut, arrow);
+            node.append(symbol, text);
+            if (item.sequence) node.append(sequence);
+            node.append(shortcut, arrow);
             node.addEventListener("pointerenter", () => {
                 clearTimeout(hoverTimer);
                 if (!active) return;

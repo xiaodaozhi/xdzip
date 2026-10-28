@@ -1162,6 +1162,10 @@ void BrowserController::start(const QString &path, int offset, const QString &pa
     m_result.generation = m_generation;
 }
 void BrowserController::submit(xdzip::reader::Command command, bool preflight) {
+    // Only an explicit Extract request owns the optional folder-opening intent.
+    // Native exports and temporary file opens must not inherit an earlier choice.
+    if (command.kind != xdzip::reader::CommandKind::Extract)
+        m_pendingOpenAfter = false;
     m_preflightReport.clear();
     m_result = {};
     m_result.opening = command.kind == xdzip::reader::CommandKind::Open ||
@@ -1321,9 +1325,9 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             {"archive", t.creating
                             ? QVariant(QFileInfo(text(t.target)).fileName())
                             : m_tasks.value(t.id).value(
-                                  "archive", text(t.kind) == "check"
+                                  "archive", !t.source.empty()
                                                  ? QVariant(QFileInfo(text(t.source)).fileName())
-                                                 : m_extractionIntent.value("archive"))},
+                                                 : m_extractionIntent.value("archive", m_title))},
             {"id", QString::number(t.id)},
             {"session", QString::number(t.session)},
             {"status", status},
@@ -1423,7 +1427,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
             m_ready = false;
         }
         m_hasPayload = true;
-        if (m_pendingOpenAfter && !m_result.creating) {
+        if (m_pendingOpenAfter && m_result.extraction && !m_result.exporting) {
+            m_pendingOpenAfter = false;
             const auto existing = m_tasks.value(event.task.id);
             if (existing.value("terminal").toBool()) {
                 if (existing.value("status") == "succeeded")

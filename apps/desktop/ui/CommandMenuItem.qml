@@ -9,6 +9,8 @@ MenuItem {
     property string asset: ""
     property string shortcutLabel: ""
     property string statusLabel: ""
+    property string sequenceLabel: ""
+    property string accessibleLabel: ""
     property color statusInk: Theme.accentInk
     // Disabled reasons remain available to assistive technology, without a visible hint or tooltip.
     property string disabledReason: ""
@@ -25,7 +27,7 @@ MenuItem {
     bottomPadding: 4
     property real labelSize: Theme.menuLabelSize
     font.pixelSize: labelSize
-    Accessible.name: statusLabel.length ? text + qsTrId("common.separator") + statusLabel : text
+    Accessible.name: (accessibleLabel.length ? accessibleLabel : text + (sequenceLabel.length ? qsTrId("common.separator") + sequenceLabel : "")) + (statusLabel.length ? qsTrId("common.separator") + statusLabel : "")
     Accessible.description: enabled ? "" : disabledReason
     indicator: null
     arrow: null
@@ -34,14 +36,17 @@ MenuItem {
         readonly property real gap: Theme.menuLabelInset
         // These describe content even while the popup is closed and its children are hidden.
         readonly property bool hasStatus: root.statusLabel.length > 0
+        readonly property bool hasSequence: root.sequenceLabel.length > 0
         readonly property bool hasShortcut: root.shortcutLabel.length > 0
         readonly property bool hasSubmenu: root.subMenu !== null
-        readonly property bool hasTrailing: hasStatus || hasShortcut || hasSubmenu
+        readonly property bool hasTrailing: hasSequence || hasStatus || hasShortcut || hasSubmenu
         implicitWidth: iconSlot.width + gap + label.implicitWidth
+            + (hasSequence ? gap + sequenceBadge.width : 0)
             + (hasStatus ? gap + statusBadge.width : 0)
             + (hasShortcut ? gap + shortcut.width : 0)
             + (hasSubmenu ? gap + submenuArrow.width : 0)
         implicitHeight: Math.max(iconSlot.height, label.implicitHeight,
+            hasSequence ? sequenceBadge.height : 0,
             hasStatus ? statusBadge.height : 0,
             hasShortcut ? shortcut.height : 0,
             hasSubmenu ? submenuArrow.height : 0)
@@ -71,7 +76,7 @@ MenuItem {
             objectName: root.objectName + "Label"
             anchors.left: iconSlot.right
             anchors.leftMargin: content.gap
-            anchors.right: content.hasStatus ? statusBadge.left : content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
+            anchors.right: content.hasSequence ? sequenceBadge.left : content.hasStatus ? statusBadge.left : content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
             anchors.rightMargin: content.hasTrailing ? content.gap : 0
             anchors.verticalCenter: parent.verticalCenter
             height: implicitHeight
@@ -81,25 +86,29 @@ MenuItem {
             font.pixelSize: root.labelSize
             elide: Text.ElideRight
         }
-        Rectangle {
+        CommandMenuTag {
+            id: sequenceBadge
+            objectName: root.objectName + "Sequence"
+            visible: content.hasSequence
+            width: implicitWidth
+            height: implicitHeight
+            anchors.right: content.hasStatus ? statusBadge.left : content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
+            anchors.rightMargin: content.hasStatus || content.hasShortcut || content.hasSubmenu ? content.gap : 0
+            anchors.verticalCenter: parent.verticalCenter
+            text: root.sequenceLabel
+            ink: Theme.menuSecondary
+        }
+        CommandMenuTag {
             id: statusBadge
             objectName: root.objectName + "Status"
             visible: content.hasStatus
-            implicitWidth: statusText.implicitWidth + 14
-            implicitHeight: statusText.implicitHeight + 6
             width: implicitWidth
             height: implicitHeight
             anchors.right: content.hasShortcut ? shortcut.left : content.hasSubmenu ? submenuArrow.left : parent.right
             anchors.rightMargin: content.hasShortcut || content.hasSubmenu ? content.gap : 0
             anchors.verticalCenter: parent.verticalCenter
-            radius: 4
-            color: Qt.rgba(root.statusInk.r, root.statusInk.g, root.statusInk.b, 0.10)
-            Text {
-                id: statusText
-                anchors.centerIn: parent
-                text: root.statusLabel; font.pixelSize: Theme.menuShortcutSize
-                color: root.statusInk
-            }
+            text: root.statusLabel
+            ink: root.statusInk
         }
         Text {
             id: shortcut

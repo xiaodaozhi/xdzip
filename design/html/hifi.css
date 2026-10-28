@@ -942,7 +942,9 @@ dialog[data-kind="conflict"] .comparison small, dialog[data-kind="conflict"] .no
 .button.primary:hover:not(:disabled), .operation-segment[aria-checked="true"]:hover:not(:disabled) { background:var(--accent-hover); }
 .button.primary:active:not(:disabled), .operation-segment[aria-checked="true"]:active:not(:disabled) { background:var(--accent-pressed); box-shadow:inset 0 calc(2px * var(--ui-source-factor)) calc(3px * var(--ui-source-factor)) #0002; }
 .button.primary:disabled { background:var(--accent-disabled); color:var(--accent-disabled-text); opacity:1; border-color:var(--accent-disabled); }
-.task-status { margin-left:auto; border-radius:calc(4px * var(--ui-source-factor)); padding:calc(3px * var(--ui-source-factor)) calc(7px * var(--ui-source-factor)); font-size:calc(12px * var(--ui-source-factor)); background:var(--selection); color:var(--accent-ink); }
+.task-status,.task-sequence { border-radius:var(--ui-menu-tag-radius); padding:var(--ui-menu-tag-vertical-inset) var(--ui-menu-tag-horizontal-inset); font-size:calc(var(--ui-menu-shortcut-size) * var(--settings-text-scale,1)); white-space:nowrap; }
+.task-status { margin-left:auto; background:var(--selection); color:var(--accent-ink); }
+.task-sequence { background:color-mix(in srgb,var(--ui-menu-secondary) 10%,transparent); color:var(--ui-menu-secondary); }
 .task-status[data-status="failed"], .task-status[data-status="waiting"] { background:var(--result-warning-surface); color:var(--result-warning-ink); }
 .task-status[data-status="cancelled"] { background:var(--canvas); color:var(--secondary); }
 

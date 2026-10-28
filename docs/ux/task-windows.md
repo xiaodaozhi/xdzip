@@ -2,6 +2,10 @@
 
 应用任务入口聚合所有会话，以会话 UUID 和后端任务 ID 路由进度、密码、冲突和结果。关闭页面保留所属控制器，显式退出等待全部异步 join，见[应用会话契约](../engineering/application-sessions.md)。
 
+任务菜单一行依次显示操作图标、归档文件名、序号标签、状态标签。图标按创建、解压、检查、添加、移动和导出选择共享素材，不显示操作类型文字前缀；两种标签使用同一组件，序号保留后端编号，跨会话内部身份不变。长文件名省略，无障碍名称仍包含操作类型、序号、文件名和状态。
+
+English: Task rows use an operation icon followed by the archive filename, backend sequence tag and status tag. Both tags share one component. Accessible names retain the operation, task number, filename and state; cross-session routing is unchanged.
+
 解压确认和创建确认分别是 ExtractWindow、CreateWindow，由各自主窗口持有，原生窗口装饰交给系统。每个主窗口只有一个 TaskWindow；选择解压或创建任务时绑定所选任务快照，任务终止后在原窗口显示结果。关闭窗口只隐藏视图，取消需要明确点击取消动作。各会话共享重任务串行准入，不为每个任务或状态同时创建窗口。普通文件双击复用此窗口，系统接受临时文件打开后自动隐藏；拒绝时显示错误并允许重试。手动重新查看历史结果不会因无关进度更新再次关闭，见[临时打开契约](../engineering/archive-opening.md)。
 
 创建格式为 ZIP、TAR、TAR.GZ 和 7z，RAR 仅用于读取。7z 保留既有四档级别，默认正常级别 LZMA2、非固实、不加密且不分卷；级别 0 仅存储。固实和文件名加密使用共享 OperationCheck，文件名加密仅在选择密码后可用；撤销密码或切换格式时清空密码并取消文件名加密，切换格式同时恢复非固实、不分卷。所有新选项进入滚动正文，不增加窗口宽度或覆盖 footer 外观。

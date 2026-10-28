@@ -1234,8 +1234,11 @@ QtObject {
         QCOMPARE(entry->property("rightPadding").toReal(),
                  entry->property("topPadding").toReal() +
                      menu->property("viewportScrollBarWidth").toReal());
-        QVERIFY(
-            entry->property("text").toString().startsWith(qtTrId("tasks.check").arg(historyCount)));
+        QVERIFY(entry->property("accessibleLabel")
+                    .toString()
+                    .startsWith(qtTrId("tasks.check").arg(historyCount)));
+        QCOMPARE(entry->property("sequenceLabel").toString(), QString::number(historyCount));
+        QCOMPARE(entry->property("asset").toString(), QString("task-check"));
         auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
         QVERIFY(background);
         QTRY_VERIFY(qAbs(background->height() -
@@ -1340,6 +1343,8 @@ QtObject {
                                 "move",    "export", "export-copy"};
         const QStringList labelIds{"ui.fb4b66729449", "ui.9a63e2cb4339", "tasks.check", "tasks.add",
                                    "move.task",       "tasks.export",    "tasks.export"};
+        const QStringList icons{"task-extract", "task-create", "task-check", "task-add",
+                                "task-move",    "task-export", "task-export"};
         for (int index = 0; index < kinds.size(); ++index) {
             const auto kind = kinds.at(index);
             const auto id = QString::number(index + 1);
@@ -1348,7 +1353,11 @@ QtObject {
             event.task.id = quint64(index + 1);
             event.task.kind = rust::String(kind.toStdString());
             event.task.creating = kind == "create";
-            event.task.source = rust::String("owned.zip");
+            const auto archive = kind == "check"
+                                     ? QString("owned-very-long-archive-name-").repeated(6) + ".zip"
+                                     : QString("owned.zip");
+            event.task.source = rust::String(archive.toStdString());
+            event.task.target = rust::String(archive.toStdString());
             event.task.status = rust::String("succeeded");
             controller->receive(event);
             QTest::mouseClick(
@@ -1358,11 +1367,26 @@ QtObject {
             auto *entry = page->findChild<QQuickItem *>("taskMenuItem-" + id);
             QVERIFY(entry);
             QTRY_VERIFY(entry->isVisible() && entry->width() > 0);
-            QCOMPARE(entry->property("text").toString(),
-                     qtTrId(qPrintable(labelIds.at(index))).arg(id));
+            QCOMPARE(entry->property("text").toString(), archive);
+            QCOMPARE(entry->property("sequenceLabel").toString(), id);
+            QCOMPARE(entry->property("asset").toString(), icons.at(index));
+            QVERIFY(visibleImagesReady(entry));
+            auto *accessible = QAccessible::queryAccessibleInterface(entry);
+            QVERIFY(accessible);
+            QVERIFY(accessible->text(QAccessible::Name)
+                        .contains(qtTrId(qPrintable(labelIds.at(index))).arg(id)));
             QTRY_COMPARE(menu->property("viewportScrollBarWidth").toReal(), 0.);
             auto *badge = findVisual(entry, entry->objectName() + "Status");
+            auto *sequence = findVisual(entry, entry->objectName() + "Sequence");
+            auto *label = findVisual(entry, entry->objectName() + "Label");
             QVERIFY(badge);
+            QVERIFY(sequence && label);
+            QCOMPARE(sequence->height(), badge->height());
+            QVERIFY(label->width() > 0);
+            QVERIFY(label->mapToItem(entry, QPointF(label->width(), 0)).x() <=
+                    sequence->mapToItem(entry, QPointF()).x() - 7.5);
+            QVERIFY(sequence->mapToItem(entry, QPointF(sequence->width(), 0)).x() <=
+                    badge->mapToItem(entry, QPointF()).x() - 7.5);
             auto *scrollBar = qvariant_cast<QQuickItem *>(menu->property("contentItem"))
                                   ->findChild<QQuickItem *>("commandMenuScrollBar");
             QVERIFY(scrollBar && !scrollBar->isVisible());
@@ -7632,12 +7656,69 @@ QtObject {
         QTRY_VERIFY(controller.requestClose());
 #endif
     }
+    void nativeExportDoesNotOpenDestination_data() {
+        QTest::addColumn<QString>("kind");
+        QTest::addColumn<bool>("terminalFirst");
+        for (const auto &kind : {QString("export"), QString("export-copy")})
+            for (const bool terminalFirst : {false, true})
+                QTest::newRow(qPrintable(kind + QString::number(terminalFirst)))
+                    << kind << terminalFirst;
+    }
+    void nativeExportDoesNotOpenDestination() {
+        QFETCH(QString, kind);
+        QFETCH(bool, terminalFirst);
+        DesktopUrlRecorder recorder;
+        QDesktopServices::setUrlHandler("file", &recorder, "record");
+        const auto restoreHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("file"); });
+        QTemporaryDir destination;
+        QVERIFY(destination.isValid());
+        BrowserController controller;
+        controller.m_pending = 9001;
+        controller.m_busy = true;
+        controller.m_result.extraction = true;
+        controller.m_result.exporting = true;
+        controller.m_pendingOpenAfter = true;
+        xdzip::reader::Event completed{};
+        completed.kind = xdzip::reader::EventKind::TaskUpdate;
+        completed.task.id = 91;
+        completed.task.kind = rust::String(kind.toStdString());
+        completed.task.status = rust::String("succeeded");
+        completed.task.target = rust::String(destination.path().toStdString());
+        xdzip::reader::Event accepted{};
+        accepted.kind = xdzip::reader::EventKind::TaskAccepted;
+        accepted.request_id = 9001;
+        accepted.task.id = 91;
+        if (terminalFirst)
+            controller.receive(completed);
+        controller.receive(accepted);
+        if (!terminalFirst)
+            controller.receive(completed);
+        xdzip::reader::Event finished{};
+        finished.kind = xdzip::reader::EventKind::Finished;
+        finished.request_id = 9001;
+        controller.receive(finished);
+        QCOMPARE(recorder.count, 0);
+        QVERIFY(controller.m_openAfterTasks.isEmpty());
+        QTRY_VERIFY(controller.requestClose());
+    }
     void externalExportPreparesRealSelectedFiles() {
+        DesktopUrlRecorder recorder;
+        QDesktopServices::setUrlHandler("file", &recorder, "record");
+        const auto restoreHandler = qScopeGuard([] { QDesktopServices::unsetUrlHandler("file"); });
         QTemporaryDir fixture;
         QVERIFY(fixture.isValid());
         BrowserController controller;
         controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/stored.zip"));
         QTRY_VERIFY(controller.ready() && !controller.busy());
+        const auto extractionTarget = fixture.filePath("explicit-extract");
+        QVERIFY(QDir().mkpath(extractionTarget));
+        controller.prepareExtraction(true);
+        QTRY_VERIFY(!controller.busy());
+        controller.checkTarget(extractionTarget);
+        QTRY_VERIFY(!controller.busy() && checkedTarget(&controller, extractionTarget));
+        controller.startExtraction(extractionTarget, true, false, 0, false, true);
+        QTRY_VERIFY(!controller.busy() && controller.activeTaskCount() == 0);
+        QTRY_COMPARE(recorder.count, 1);
         QQuickWindow owner;
         owner.show();
         controller.beginExport(0, &owner);
@@ -7664,6 +7745,15 @@ QtObject {
         QVERIFY2(state->error.isEmpty(), qPrintable(state->error));
         const auto file = QDir(state->directory).filePath(state->entries.last().name);
         QVERIFY(QFileInfo(file).isFile());
+        QCOMPARE(recorder.count, 1);
+        auto copy = std::make_shared<NativeExportCopy>();
+        copy->source = file;
+        copy->target = fixture.filePath("copied.txt");
+        controller.publishExternalExport(copy);
+        QTRY_VERIFY(copy->done);
+        QVERIFY2(copy->error.isEmpty(), qPrintable(copy->error));
+        QVERIFY(QFileInfo(copy->target).isFile());
+        QCOMPARE(recorder.count, 1);
 #ifdef Q_OS_WIN
         auto *data = nativeExportData(state);
         QVERIFY(data);

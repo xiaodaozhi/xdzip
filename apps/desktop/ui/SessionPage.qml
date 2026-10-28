@@ -2169,8 +2169,10 @@ Item {
                                 rightPadding: topPadding + taskMenu.viewportScrollBarWidth
                                 KeyNavigation.priority: KeyNavigation.BeforeItem
                                 KeyNavigation.tab: taskMenu.footerItem && taskMenu.footerItem.enabled ? taskMenu.footerItem : null
-                                text: root.taskLabel(taskData) + (root.sessionManager ? qsTrId("common.separator") + (taskData.archive || "") : "")
-                                asset: "task-list"
+                                text: taskData.archive || ""
+                                accessibleLabel: root.taskLabel(taskData) + qsTrId("common.separator") + text
+                                asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : taskData.kind === "move" ? "task-move" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
+                                sequenceLabel: taskData.backendId || taskData.id
                                 statusLabel: root.taskStateLabel(root.taskStatus(taskData))
                                 statusInk: taskData.status === "failed" ? Theme.menuDanger : ["waiting", "waiting_password"].includes(taskData.status) ? Theme.resultWarningInk : taskData.status === "cancelled" ? Theme.textSecondary : Theme.accentInk
                                 onTriggered: {

@@ -118,6 +118,9 @@
   --ui-menu-label-size: calc(13px * var(--ui-source-factor));
   --ui-menu-shortcut-size: calc(12px * var(--ui-source-factor));
   --ui-menu-label-inset: calc(8px * var(--ui-source-factor));
+  --ui-menu-tag-horizontal-inset: calc(7px * var(--ui-source-factor));
+  --ui-menu-tag-vertical-inset: calc(3px * var(--ui-source-factor));
+  --ui-menu-tag-radius: calc(4px * var(--ui-source-factor));
   --ui-menu-viewport-inset: calc(8px * var(--ui-source-factor));
   --ui-tooltip-max-width: calc(320px * var(--ui-source-factor));
   --ui-tooltip-padding: calc(8px * var(--ui-source-factor));

@@ -175,6 +175,19 @@
     <file>ui/CommandMenu.qml</file>
     <file>ui/Breadcrumb.qml</file>
     <file>ui/CommandMenuItem.qml</file>
+    <file>ui/CommandMenuTag.qml</file>
+    <file alias="assets/light/task-create.png">../../design/assets/png/light/task-create@3x.png</file>
+    <file alias="assets/dark/task-create.png">../../design/assets/png/dark/task-create@3x.png</file>
+    <file alias="assets/light/task-extract.png">../../design/assets/png/light/task-extract@3x.png</file>
+    <file alias="assets/dark/task-extract.png">../../design/assets/png/dark/task-extract@3x.png</file>
+    <file alias="assets/light/task-check.png">../../design/assets/png/light/task-check@3x.png</file>
+    <file alias="assets/dark/task-check.png">../../design/assets/png/dark/task-check@3x.png</file>
+    <file alias="assets/light/task-add.png">../../design/assets/png/light/task-add@3x.png</file>
+    <file alias="assets/dark/task-add.png">../../design/assets/png/dark/task-add@3x.png</file>
+    <file alias="assets/light/task-move.png">../../design/assets/png/light/task-move@3x.png</file>
+    <file alias="assets/dark/task-move.png">../../design/assets/png/dark/task-move@3x.png</file>
+    <file alias="assets/light/task-export.png">../../design/assets/png/light/task-export@3x.png</file>
+    <file alias="assets/dark/task-export.png">../../design/assets/png/dark/task-export@3x.png</file>
     <file>ui/CommandMenuSeparator.qml</file>
     <file>ui/CommandTooltip.qml</file>
     <file alias="assets/light/check.png">../../design/assets/png/light/check@3x.png</file>

@@ -16,6 +16,10 @@ Linux 的已支持基线为 Ubuntu 24.04 x86_64、X11。先准备私有副本，
 
 导出缓存与临时打开缓存分别存放。使用随机目录、身份标记及活动锁，准备失败不发布 URL。保持七天保留与有界后续清理，不在拖动返回时删除消费者可能仍需读取的文件。页面关闭保留任务所属控制器，明确退出取消准备并等待 Rust 工作线程与原生消费者结束。
 
+拖出到系统目标位置后，导出和复制任务均不自动打开 Explorer、Finder 或目标目录。普通解压的“完成后打开目录”只属于该次明确的解压请求，不能被后续导出或临时打开继承。用户主动点击结果窗口的打开入口仍按原行为处理。
+
+English: Drag-out preparation and copy completion never open the destination in the system file manager. The optional folder-opening choice belongs only to its explicit extraction request; export and temporary-open requests cannot inherit it.
+
 ## 外部拖入和确认
 
 CAB、ISO、UDF 与 RAR 均只读，外部添加和包内移动分别在界面和 Rust 执行入口拒绝；拖出、临时打开和普通解压复用既有安全读取路径。不以文件扩展名或界面禁用状态代替核心能力检查。

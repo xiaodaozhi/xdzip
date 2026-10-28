@@ -110,7 +110,9 @@ Qt 固定行高必须同时作为布局的行槽高度，不能再把额外字�
 - 所有蓝色按钮通过共享 tokens 区分 normal、hover、pressed、disabled。按下使用 accentPressed，禁用使用 accentDisabled 和 accentDisabledText，不以整体透明度或灰蓝混合代替；键盘按下与鼠标按下使用同一状态。
 - 解压目标字段在外部点击、Escape、Return 和数字键盘 Enter 后退出编辑焦点，不启动解压；第一次 Escape 保留窗口，后续 Escape 按窗口规则关闭。范围标题与右侧次要数量分栏排布，整行保留单一 radio 命中区域。
 - 全选和逐项选择共用焦点详情语义，全选聚焦当前列表最后一项，取消全选清空详情。未选择时隐藏四项属性和预览解压动作。预览解压按钮必须保留 hover、pressed、focus 和 disabled。
-- 状态栏任务数表示可重开的任务历史数，活动任务数单独用于提示与退出屏障；完成后不能显示成零任务。任务菜单复用 240 宽、13 字号和最小 32 行高，操作名在左，完成／等待／失败等状态以右侧语义色标记展示。历史最多 64 项，菜单超高可滚动，键盘导航及触发可重开对应任务。
+- 状态栏任务数表示可重开的任务历史数，活动任务数单独用于提示与退出屏障；完成后不能显示成零任务。任务菜单复用 240 宽、13 字号和最小 32 行高，依次显示操作图标、文件名、序号标签和状态标签，不再显示“创建任务”等类型前缀。创建、解压、检查、添加、移动和导出使用共享素材库的对应图标。序号和状态共用 CommandMenuTag，内距与圆角来自 controls.json；序号使用中性色，状态保留语义色。文件名让出标签空间并省略长名称，无障碍名称保留操作类型、序号、文件名和状态。历史最多 64 项，菜单超高可滚动，键盘导航及触发可重开对应任务。
+
+English: Task menu rows show an operation icon, archive filename, sequence tag and status tag. Visible operation prefixes are removed, while accessible names retain the operation and task identity. Both tags share the same component and geometry; filenames elide before either tag overlaps.
 - 菜单中的不可用动作保留禁用状态，不显示原因副行、hint 或 tooltip，准确原因仅供辅助功能描述读取。未选中时“解压所选”和“解压元数据预检”沿用此规则。真实操作失败与安全错误仍在对应任务或字段中明确显示。
 
 主窗口格式标记显示内容探测结果 ZIP、TAR、TAR.GZ、7z 或 RAR。最小宽度 32，左右各留 6 逻辑像素，宽度随真实文字度量增长；不得把较长格式名放进 ZIP 的固定宽度标签。主窗口与菜单字号比例仍遵循既有门槛。C01 创建窗在原有分段组中增加 7z，四个格式均分既有宽度；组的最小宽度来自 TAR.GZ 的真实文字度量乘以四，再加既有 track 内距。大字号翻译空间不足时左侧选项标签换行，不压缩字号或扩大窗口。固实和文件名加密使用 OperationCheck，新增内容由正文滚动承载，footer 固定可达。
