@@ -1410,10 +1410,42 @@ QtObject {
             QSignalSpy menuFrame(window, &QQuickWindow::frameSwapped);
             window->requestUpdate();
             QVERIFY(!menuFrame.isEmpty() || menuFrame.wait(5000));
-            QTest::mouseClick(
-                window, Qt::LeftButton, Qt::NoModifier,
-                entry->mapToScene(QPointF(entry->width() / 2, entry->height() / 2)).toPoint());
-            QTRY_VERIFY2(taskWindow->isVisible(), qPrintable(kind));
+            QSignalSpy triggered(entry, SIGNAL(triggered()));
+            QSignalSpy pressed(entry, SIGNAL(pressed()));
+            QSignalSpy released(entry, SIGNAL(released()));
+            QSignalSpy menuClosed(menu, SIGNAL(closed()));
+            QVERIFY(triggered.isValid() && pressed.isValid() && released.isValid() &&
+                    menuClosed.isValid());
+            const auto hitPoint =
+                entry->mapToScene(QPointF(entry->width() / 2, entry->height() / 2)).toPoint();
+            const auto *viewport = qvariant_cast<QQuickItem *>(menu->property("contentItem"));
+            QVERIFY(viewport);
+            const auto rowTop = entry->mapToItem(viewport, QPointF()).y();
+            const auto rowDiagnostic =
+                QStringLiteral(
+                    "kind=%1 id=%2 rowTop=%3 rowHeight=%4 viewportHeight=%5 contentY=%6 originY=%7 "
+                    "contentHeight=%8 interactive=%9 naturalHeight=%10")
+                    .arg(kind, id)
+                    .arg(rowTop)
+                    .arg(entry->height())
+                    .arg(viewport->height())
+                    .arg(viewport->property("contentY").toReal())
+                    .arg(viewport->property("originY").toReal())
+                    .arg(viewport->property("contentHeight").toReal())
+                    .arg(viewport->property("interactive").toBool())
+                    .arg(menu->property("naturalContentHeight").toReal());
+            QVERIFY2(rowTop >= -.5 && rowTop + entry->height() <= viewport->height() + .5,
+                     qPrintable(rowDiagnostic));
+            QTest::mouseClick(window, Qt::LeftButton, Qt::NoModifier, hitPoint);
+            QTRY_VERIFY2(
+                taskWindow->isVisible(),
+                qPrintable(QStringLiteral("%1 pressed=%2 released=%3 triggered=%4 menuClosed=%5")
+                               .arg(rowDiagnostic)
+                               .arg(pressed.size())
+                               .arg(released.size())
+                               .arg(triggered.size())
+                               .arg(menuClosed.size())));
+            QCOMPARE(triggered.size(), 1);
             QCOMPARE(taskWindow->property("operationKind").toString(), kind);
             QCOMPARE(taskWindow->property("checking").toBool(), kind == "check");
             QCOMPARE(page->property("taskSnapshot").toMap().value("id").toString(), id);

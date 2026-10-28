@@ -2101,6 +2101,13 @@ Item {
                             // Popup layout can adjust row geometry during its own size pass.
                             // Apply the measured result after that pass, without a height binding.
                             height = Math.min(naturalContentHeight + topPadding + bottomPadding, maximumViewportHeight);
+                            const list = contentItem as ListView;
+                            if (visible && list && naturalContentHeight + topPadding + bottomPadding <= maximumViewportHeight) {
+                                // ListView can retain a stale content offset while its rows change.
+                                // Finish that layout before positioning the fully visible short list.
+                                list.forceLayout();
+                                list.positionViewAtBeginning();
+                            }
                         }
                         onNaturalContentHeightChanged: Qt.callLater(taskMenu.fitViewport)
                         onFooterHeightChanged: Qt.callLater(taskMenu.fitViewport)
