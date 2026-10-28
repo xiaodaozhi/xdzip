@@ -22,6 +22,7 @@ from directory_tree_assets import TREE_CUTS, TREE_ICON_REFERENCES, component_ref
 from operation_reference_assets import OPERATION_CUTS, operation_reference_coverage
 from menu_shadow_assets import menu_shadow_entries
 from file_type_assets import FILE_CATEGORY_GLYPHS
+from zipper_assets import ZIPPER_ICONS
 
 REPO = Path(__file__).resolve().parents[1]
 ROOT = REPO / 'design/assets'
@@ -163,9 +164,10 @@ def svg_entries(check: bool = False) -> list[dict]:
                 entry['source_reference'] = f'reference/{REFERENCES[name]}.png'
                 if name in ('app-mark', 'archive', 'archive-grey'):
                     entry['reference_relation'] = 'historical-design-reference'
-            if name in ('archive-add', 'existing-archive'):
+            if name in ZIPPER_ICONS:
                 entry['visual_revision'] = 'interlocking-zipper'
-                entry['reference_relation'] = 'historical-design-reference'
+                if name in REFERENCES:
+                    entry['reference_relation'] = 'historical-design-reference'
             if name in TREE_ICON_REFERENCES:
                 entry['source_reference'] = f'reference/{TREE_ICON_REFERENCES[name]}.png'
                 entry['component'] = 'directory-tree'
