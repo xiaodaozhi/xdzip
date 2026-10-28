@@ -76,6 +76,10 @@
 
 ## W01 欢迎页
 
+任务入口图标按 [layout-scale.json](../../docs/visual/layout-scale.json) 的 16×16 逻辑像素量测。正文原稿检查保留历史图标墨迹与容差作为对照，并独立检查起始页和压缩文件页的实际图标尺寸、垂直中心、素材身份及按钮内位置，覆盖浅深色、三档字号与 DPR 1／1.25／2。不能把图标缩小后的合理墨迹差异当作回归，也不能仅跳过旧图标检查而缺少替代量测。
+
+English: The body checker retains the archived task-icon ink and tolerance for review, and separately measures the shared 16×16 logical icon on both welcome and archive pages. It checks size, vertical center, asset identity and placement across both themes, all three text sizes and DPR 1/1.25/2; the obsolete ink comparison is replaced by strict live geometry checks.
+
 [直接审阅欢迎页](index.html?view=welcome&zoom=1)，也可在画面菜单选择“欢迎页，最小窗口”。已接入浅深色、打开示例、新建、取消后焦点恢复、关闭最后标签返回、快捷键和拖入检查；拖入不读取文件内容，而是进入示例选择器。正式 Qt 已接入真实打开与新建，桌面人工验收另行登记。
 
 welcome.css 承担欢迎页样式，逻辑参数来自 [welcome-reference.json](../../docs/visual/welcome-reference.json)。欢迎页客户区沿用主窗口 1024×约622 或最小 832×544，标题栏复用同一 DOM、样式与历史源坐标换算，不增加欢迎页专属标题栏。浅色和深色对照分别显示对应原稿，最小窗口深色没有对应位图时明确隐藏对照。离线单文件包含相同页面和原稿。`python scripts/build-html-design.py` 另生成默认展示欢迎页的 `dist/xdzip-welcome-design.html`。

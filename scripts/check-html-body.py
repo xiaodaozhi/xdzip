@@ -70,6 +70,42 @@ def normalize_target(value, key, default_tolerance):
     return value, default_tolerance
 
 
+def check_task_entries(page, layout, measurements, failures, dpr):
+    """Measure the revised shared icon independently of the archived source ink."""
+    expected_size = layout['main']['interaction']['taskIconSize']
+    for theme in ('light', 'dark'):
+        for scale in (1, 1.25, 1.5):
+            for view in ('main', 'welcome'):
+                page.evaluate('''([theme, scale, view]) => {
+                    XdzipDesign.theme(theme);
+                    document.documentElement.style.setProperty('--settings-text-scale', scale);
+                    XdzipDesign.open(view);
+                }''', [theme, scale, view])
+                actual = page.locator('#tasks').evaluate('''button => {
+                    const factor = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
+                    const svg = button.querySelector('span:first-child svg');
+                    const icon = svg.getBoundingClientRect(), bounds = button.getBoundingClientRect();
+                    const label = button.querySelector('#task-count').getBoundingClientRect();
+                    return {size: [icon.width / factor, icon.height / factor],
+                        center: [(icon.y + icon.height / 2 - bounds.y - bounds.height / 2) / factor],
+                        asset: svg.parentElement.dataset.icon,
+                        viewBox: svg.getAttribute('viewBox'),
+                        placement: icon.left >= bounds.left && icon.right <= label.left
+                            && icon.top >= bounds.top && icon.bottom <= bounds.bottom};
+                }''')
+                name = f'taskEntry.{view}.{theme}.{scale}.dpr{dpr}'
+                record_geometry(measurements, failures, 'authored task entry', name + '.size',
+                                [expected_size, expected_size], actual['size'], .05)
+                record_geometry(measurements, failures, 'authored task entry', name + '.center',
+                                [0], actual['center'], .5)
+                expected = {'asset': 'task-list', 'viewBox': '0 0 24 24', 'placement': True}
+                observed = {key: actual[key] for key in expected}
+                measurements.append({'kind': 'authored task entry', 'name': name + '.assetAndPlacement',
+                                     'expected': expected, 'actual': observed, 'passed': observed == expected})
+                if observed != expected:
+                    failures.append(f'{name}: incorrect asset or placement: {observed}')
+
+
 def review_regions(spec):
     regions = dict(DEFAULT_REGIONS)
     for name, value in spec.get('review_regions', {}).items():
@@ -373,6 +409,15 @@ def main():
                                      'actual': overflow, 'passed': passed})
                 if not passed:
                     failures.append(f'{selector}: content overflows {overflow}')
+            check_task_entries(page, layout, measurements, failures, 1)
+            for dpr in (1.25, 2):
+                scaled = browser.new_page(viewport={'width': 1588, 'height': 1000}, device_scale_factor=dpr)
+                scaled.on('pageerror', lambda error: page_errors.append(str(error)))
+                scaled.route('**/*', block_external)
+                scaled.set_content(canvas)
+                scaled.evaluate('document.fonts.ready')
+                check_task_entries(scaled, layout, measurements, failures, dpr)
+                scaled.close()
         finally:
             browser.close()
     if page_errors:
@@ -382,6 +427,7 @@ def main():
     regions = review_regions(spec)
     report = {'source_sha256': spec['sha256'], 'source': spec['source'], 'viewport': [1588, 1000],
               'device_scale_factor': 1, 'body_crop': list(BODY_CROP),
+              'task_entry_device_scale_factors': [1, 1.25, 2],
               'font': 'Xdzip Design Sans SC embedded variable subset',
               'source_measurements': spec, 'review_regions': regions,
               'measurements': measurements, 'page_errors': page_errors, 'blocked_requests': requests,

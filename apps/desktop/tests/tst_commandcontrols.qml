@@ -132,9 +132,13 @@ Item {
             }
             verify(label.width >= 0);
             verify(Math.abs(previous.x + previous.width - content.width) < 0.01);
-            var badge = content.children[2];
-            compare(badge.width, badge.children[0].implicitWidth + 14);
-            compare(badge.height, badge.children[0].implicitHeight + 6);
+            // controls.json defines 7/3-unit insets at 100%; both shared tags scale with text.
+            for (var suffix of ["Sequence", "Status"]) {
+                var badge = findChild(content, item.objectName + suffix);
+                verify(badge !== null);
+                compare(badge.width, badge.children[0].implicitWidth + 14 * Ui.Theme.fontScale);
+                compare(badge.height, badge.children[0].implicitHeight + 6 * Ui.Theme.fontScale);
+            }
             verify(!containsVisibleText(item, item.disabledReason));
         }
         function test_first_render_after_font_and_slot_changes_data() {
@@ -152,16 +156,19 @@ Item {
             var submenuCommand = layoutMenu.itemAt(1);
             verify(submenuCommand && submenuCommand.subMenu === layoutSubmenu);
             var scales = [1, 1.25, 1.5];
-            for (var slots = 0; slots < 4; ++slots) {
+            for (var slots = 0; slots < 8; ++slots) {
                 layoutCommand.statusLabel = submenuCommand.statusLabel = (slots & 1) ? "Done" : "";
                 layoutCommand.shortcutLabel = submenuCommand.shortcutLabel = (slots & 2) ? "Ctrl+A" : "";
+                layoutCommand.sequenceLabel = submenuCommand.sequenceLabel = (slots & 4) ? "42" : "";
                 for (var i = 0; i < scales.length; ++i) {
                     layoutMenu.close();
                     compare(layoutMenu.visible, false);
                     Ui.Theme.fontScale = scales[i];
                     // Hidden popup inheritance must not remove logical trailing slots.
                     compare(layoutCommand.contentItem.hasStatus, Boolean(slots & 1));
+                    compare(layoutCommand.contentItem.hasSequence, Boolean(slots & 4));
                     compare(layoutCommand.contentItem.hasShortcut, Boolean(slots & 2));
+                    compare(submenuCommand.contentItem.hasSequence, Boolean(slots & 4));
                     compare(submenuCommand.contentItem.hasSubmenu, true);
                     layoutMenu.popup();
                     verify(waitForRendering(layoutCommand));
