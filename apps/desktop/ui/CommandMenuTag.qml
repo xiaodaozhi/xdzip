@@ -11,7 +11,11 @@ Rectangle {
     color: Qt.rgba(ink.r, ink.g, ink.b, 0.10)
     Text {
         id: label
-        anchors.centerIn: parent
+        objectName: root.objectName + "Text"
+        width: implicitWidth
+        height: implicitHeight
+        x: (root.width - width) / 2
+        y: (root.height - height) / 2
         text: root.text
         textFormat: Text.PlainText
         font.pixelSize: Theme.menuShortcutSize

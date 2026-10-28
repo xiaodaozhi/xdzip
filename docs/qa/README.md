@@ -9,6 +9,14 @@
 - [CI 策略](../engineering/ci-policy.md)
 - [部署依赖与 SBOM 契约](../engineering/deployment-audit.md)
 
+## 界面对照回归
+
+菜单首帧布局回归按对象名称定位序号和状态标签，分别核对真实文字度量及随字号变化的共享内距。覆盖中英文、浅深色、100%／125%／150% 字号，序号、状态、快捷键的八种组合和子菜单箭头；弹出与字号改变后的首个渲染帧直接断言，不通过额外等待或扩大容差消除布局失败。
+
+HTML 正文对照保留冻结原稿及哈希。任务入口图标使用已批准的 16 逻辑像素修订，严格测量实际 SVG 的尺寸、垂直中心及在按钮和文字之间的位置；旧原稿墨迹保留为审阅记录，不改写目标。主窗口与菜单的比例仍由真实浏览器缩放和 DPR 矩阵独立检查。
+
+English: First-frame menu checks locate sequence and status tags by object name and verify actual text metrics with the shared, font-scaled insets. Both languages and themes, 100/125/150% font scales, all eight tag/shortcut combinations and submenu arrows remain covered without geometry retries or wider tolerances. HTML body checks retain the frozen artwork and hash, recording its superseded task icon ink while strictly measuring the approved 16-unit SVG size, vertical center and placement. Main-window/menu proportions retain separate browser zoom and DPR checks.
+
 ## 状态与证据放在哪里
 
 具体工作、验收结论、未覆盖项和阻塞原因记录在 [GitHub Issues](https://github.com/xiaodaozhi/xdzip/issues)。工作包、缺陷与发行许可复核分开跟踪；同一问题复用既有 issue，不用新文档累积“第几批完成”。WP-12 历史验收保留于 [#5](https://github.com/xiaodaozhi/xdzip/issues/5)，发行许可复核见 [#4](https://github.com/xiaodaozhi/xdzip/issues/4)，不因目录整理重复要求用户验收。

@@ -127,6 +127,10 @@ Qt 固定行高必须同时作为布局的行槽高度，不能再把额外字�
 - 状态栏任务数表示可重开的任务历史数，活动任务数单独用于提示与退出屏障；完成后不能显示成零任务。任务菜单复用 240 宽、13 字号和最小 32 行高，依次显示操作图标、文件名、序号标签和状态标签，不再显示“创建任务”等类型前缀。创建、解压、检查、添加、移动和导出使用共享素材库的对应图标。序号和状态共用 CommandMenuTag，内距与圆角来自 controls.json；序号使用中性色，状态保留语义色。文件名让出标签空间并省略长名称，无障碍名称保留操作类型、序号、文件名和状态。历史最多 64 项，菜单超高可滚动，键盘导航及触发可重开对应任务。
 
 English: Task menu rows show an operation icon, archive filename, sequence tag and status tag. Visible operation prefixes are removed, while accessible names retain the operation and task identity. Both tags share the same component and geometry; filenames elide before either tag overlaps.
+
+标签文字的实际宽高直接绑定当前字体的隐式尺寸，位置由外框与文字尺寸同步计算，保证菜单打开或字号变化后的首个渲染帧仍与标签外框居中，不等待后续布局补正。首帧检查同时核对文字尺寸、共享内距和中心位置。
+
+English: Tag text width and height bind directly to the current font's implicit metrics, with positions calculated from the tag and text dimensions so the first rendered frame remains centered after opening the menu or changing font size. First-frame checks verify text size, shared insets and centers without waiting for later layout correction.
 - 菜单中的不可用动作保留禁用状态，不显示原因副行、hint 或 tooltip，准确原因仅供辅助功能描述读取。未选中时“解压所选”和“解压元数据预检”沿用此规则。真实操作失败与安全错误仍在对应任务或字段中明确显示。
 
 主窗口格式标记显示内容探测结果 ZIP、TAR、TAR.GZ、7z 或 RAR。最小宽度 32，左右各留 6 逻辑像素，宽度随真实文字度量增长；不得把较长格式名放进 ZIP 的固定宽度标签。主窗口与菜单字号比例仍遵循既有门槛。C01 创建窗在原有分段组中增加 7z，四个格式均分既有宽度；组的最小宽度来自 TAR.GZ 的真实文字度量乘以四，再加既有 track 内距。大字号翻译空间不足时左侧选项标签换行，不压缩字号或扩大窗口。固实和文件名加密使用 OperationCheck，新增内容由正文滚动承载，footer 固定可达。

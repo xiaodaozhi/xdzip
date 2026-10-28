@@ -115,7 +115,8 @@ Item {
         }
         function verifyCommandGeometry(item) {
             var content = item.contentItem;
-            var label = content.children[1];
+            var label = findChild(item, item.objectName + "Label");
+            verify(label && label.visible);
             compare(label.height, label.implicitHeight, "Text must use its current font height");
             compare(label.font.pixelSize, Math.round(Ui.Theme.menuLabelSize));
             verify(Math.abs(content.y + label.y + label.height / 2 - item.height / 2) <= 0.5);
@@ -132,12 +133,28 @@ Item {
             }
             verify(label.width >= 0);
             verify(Math.abs(previous.x + previous.width - content.width) < 0.01);
-            // controls.json defines 7/3-unit insets at 100%; both shared tags scale with text.
-            for (var suffix of ["Sequence", "Status"]) {
-                var badge = findChild(content, item.objectName + suffix);
-                verify(badge !== null);
-                compare(badge.width, badge.children[0].implicitWidth + 14 * Ui.Theme.fontScale);
-                compare(badge.height, badge.children[0].implicitHeight + 6 * Ui.Theme.fontScale);
+            var tags = [
+                { suffix: "Sequence", text: item.sequenceLabel },
+                { suffix: "Status", text: item.statusLabel }
+            ];
+            for (var j = 0; j < tags.length; ++j) {
+                var tag = tags[j];
+                var badge = findChild(item, item.objectName + tag.suffix);
+                verify(badge);
+                compare(badge.visible, tag.text.length > 0);
+                compare(badge.text, tag.text);
+                var badgeText = findChild(badge, badge.objectName + "Text");
+                verify(badgeText);
+                compare(badgeText.text, tag.text);
+                compare(badgeText.width, badgeText.implicitWidth);
+                compare(badgeText.height, badgeText.implicitHeight);
+                compare(badgeText.font.pixelSize, Math.round(Ui.Theme.menuShortcutSize));
+                compare(badge.width, badgeText.implicitWidth + Ui.Theme.menuTagHorizontalInset * 2);
+                compare(badge.height, badgeText.implicitHeight + Ui.Theme.menuTagVerticalInset * 2);
+                verify(Math.abs(badgeText.x + badgeText.width / 2 - badge.width / 2) <= 0.5,
+                       tag.suffix + " text x/width/tagWidth=" + [badgeText.x, badgeText.width, badge.width]);
+                verify(Math.abs(badgeText.y + badgeText.height / 2 - badge.height / 2) <= 0.5,
+                       tag.suffix + " text y/height/tagHeight=" + [badgeText.y, badgeText.height, badge.height]);
             }
             verify(!containsVisibleText(item, item.disabledReason));
         }
@@ -166,8 +183,10 @@ Item {
                     Ui.Theme.fontScale = scales[i];
                     // Hidden popup inheritance must not remove logical trailing slots.
                     compare(layoutCommand.contentItem.hasStatus, Boolean(slots & 1));
-                    compare(layoutCommand.contentItem.hasSequence, Boolean(slots & 4));
                     compare(layoutCommand.contentItem.hasShortcut, Boolean(slots & 2));
+                    compare(layoutCommand.contentItem.hasSequence, Boolean(slots & 4));
+                    compare(submenuCommand.contentItem.hasStatus, Boolean(slots & 1));
+                    compare(submenuCommand.contentItem.hasShortcut, Boolean(slots & 2));
                     compare(submenuCommand.contentItem.hasSequence, Boolean(slots & 4));
                     compare(submenuCommand.contentItem.hasSubmenu, true);
                     layoutMenu.popup();
