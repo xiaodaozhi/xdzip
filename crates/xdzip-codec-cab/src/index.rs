@@ -122,6 +122,16 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
     };
     let mut set_id = None;
     let mut active: BTreeMap<Key, VecDeque<usize>> = BTreeMap::new();
+    let mut origins = Vec::new();
+    let mut volume_indices = BTreeMap::new();
+    for (number, volume) in reader.volumes.iter().enumerate() {
+        if volume_indices
+            .insert(volume.name.to_ascii_lowercase(), number)
+            .is_some()
+        {
+            return Err(ScanError::Invalid);
+        }
+    }
     let mut previous_folder = None;
     let mut physical_files = 0usize;
     let mut names = 0usize;
@@ -175,21 +185,29 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
         } else {
             (0, 0)
         };
-        for (enabled, neighbor) in [
-            (flags & 1 != 0, volume.checked_sub(1)),
-            (flags & 2 != 0, volume.checked_add(1)),
-        ] {
-            if enabled {
-                let name = reader.string(volume, &mut cursor, 4096)?;
-                let _label = reader.string(volume, &mut cursor, 4096)?;
-                let expected = &reader
-                    .volumes
-                    .get(neighbor.ok_or(ScanError::Invalid)?)
-                    .ok_or(ScanError::MissingVolume)?
-                    .name;
-                if !name_matches(&name, expected) {
-                    return Err(ScanError::Invalid);
-                }
+        let previous = if flags & 1 != 0 {
+            let name = reader.string(volume, &mut cursor, 4096)?;
+            let _label = reader.string(volume, &mut cursor, 4096)?;
+            let number = *volume_indices
+                .get(&name.to_ascii_lowercase())
+                .ok_or(ScanError::Invalid)?;
+            if number >= volume {
+                return Err(ScanError::Invalid);
+            }
+            Some(number)
+        } else {
+            None
+        };
+        if flags & 2 != 0 {
+            let name = reader.string(volume, &mut cursor, 4096)?;
+            let _label = reader.string(volume, &mut cursor, 4096)?;
+            let expected = &reader
+                .volumes
+                .get(volume + 1)
+                .ok_or(ScanError::MissingVolume)?
+                .name;
+            if !name_matches(&name, expected) {
+                return Err(ScanError::Invalid);
             }
         }
         let mut local = Vec::with_capacity(folders_count);
@@ -357,6 +375,7 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
             return Err(ScanError::Invalid);
         }
         let mut next = BTreeMap::<Key, VecDeque<usize>>::new();
+        let mut previous_is_origin = false;
         for raw in raw_files {
             let folder = *mapping.get(raw.folder).ok_or(ScanError::Invalid)?;
             let key = Key {
@@ -368,10 +387,12 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
                 name: raw.name.clone(),
             };
             let record = if raw.from {
-                active
+                let record = active
                     .get_mut(&key)
                     .and_then(VecDeque::pop_front)
-                    .ok_or(ScanError::Invalid)?
+                    .ok_or(ScanError::Invalid)?;
+                previous_is_origin |= previous == origins.get(record).copied();
+                record
             } else {
                 let declared = raw.attributes & 0x80 != 0;
                 let name_encoding = if declared && std::str::from_utf8(&raw.name).is_err() {
@@ -404,6 +425,7 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
                     offset: raw.offset,
                     attributes: raw.attributes,
                 });
+                origins.push(volume);
                 record
             };
             if raw.to {
@@ -411,6 +433,11 @@ pub(crate) fn parse(reader: &mut Reader<'_>, limits: ScanLimits) -> Result<Index
             }
         }
         if active.values().any(|items| !items.is_empty()) {
+            return Err(ScanError::Invalid);
+        }
+        // Some producers use the adjacent cabinet; MS-CAB also permits the
+        // earlier cabinet where a continued file first appeared.
+        if previous.is_some_and(|number| number + 1 != volume && !previous_is_origin) {
             return Err(ScanError::Invalid);
         }
         active = next;

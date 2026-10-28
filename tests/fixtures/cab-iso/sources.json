@@ -104,6 +104,42 @@
       "license": "Apache-2.0",
       "generator": "scripts/generate-cab-iso-fixtures.py",
       "tool": "pycdlib 1.14.0"
+    },
+    {
+      "file": "owned-part1.cab",
+      "sha256": "600e8417ffffd84c99838488b8eda3dd99a10794dc1386bb148dfc014ec8bc44",
+      "license": "Apache-2.0",
+      "author_generator": "scripts/author-cab-spanning-fixture.py",
+      "tool": "Microsoft makecab.exe",
+      "tool_sha256": "070a98b4f7c03f99048a10f490d5916a9a98417e0d0de2c414c76b3dd00cb35e",
+      "payload_sha256": "a040e57bb81974b17665ca4968f8bdee642172ab8445700adaed5bffaf91055a"
+    },
+    {
+      "file": "owned-part2.cab",
+      "sha256": "fbbdac588b9653a7fbba965e02c445ce3fd7d4dc6668457b76b992da1d09a76f",
+      "license": "Apache-2.0",
+      "author_generator": "scripts/author-cab-spanning-fixture.py",
+      "tool": "Microsoft makecab.exe",
+      "tool_sha256": "070a98b4f7c03f99048a10f490d5916a9a98417e0d0de2c414c76b3dd00cb35e",
+      "payload_sha256": "a040e57bb81974b17665ca4968f8bdee642172ab8445700adaed5bffaf91055a"
+    },
+    {
+      "file": "owned-part3.cab",
+      "sha256": "6a71839a877eb192f6a189d9080140487a8d14752215260973733d36044a8b11",
+      "license": "Apache-2.0",
+      "author_generator": "scripts/author-cab-spanning-fixture.py",
+      "tool": "Microsoft makecab.exe",
+      "tool_sha256": "070a98b4f7c03f99048a10f490d5916a9a98417e0d0de2c414c76b3dd00cb35e",
+      "payload_sha256": "a040e57bb81974b17665ca4968f8bdee642172ab8445700adaed5bffaf91055a"
+    },
+    {
+      "file": "owned-part4.cab",
+      "sha256": "1598f75bb9773d558ca0206033f06f58d9e0ff3e7e8bfd7e1bd032ec8c3a3ebe",
+      "license": "Apache-2.0",
+      "author_generator": "scripts/author-cab-spanning-fixture.py",
+      "tool": "Microsoft makecab.exe",
+      "tool_sha256": "070a98b4f7c03f99048a10f490d5916a9a98417e0d0de2c414c76b3dd00cb35e",
+      "payload_sha256": "a040e57bb81974b17665ca4968f8bdee642172ab8445700adaed5bffaf91055a"
     }
   ],
   "upstream_commit": "55d501976171397ccd5d5a7a1ca7da065b1d9a06"

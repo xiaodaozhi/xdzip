@@ -82,6 +82,23 @@ def check(worker, output):
     details = verify(worker, parts, 8, {'test1.txt': joined[:76], 'test2.txt': joined[76:114],
                                       'test3.txt': joined[114:]}, names=names)
     results.append(dict(case='cab-cross-volume-files', status='passed', **details))
+    logical_names = [f'owned-part{i}.cab'.encode() for i in range(1, 5)]
+    logical_parts = [(fixtures / name.decode()).read_bytes() for name in logical_names]
+    value, logical_payload = 0x713A91D5, bytearray()
+    for _ in range(196608):
+        value = (value * 1664525 + 1013904223) & 0xFFFFFFFF
+        logical_payload.append(value >> 24)
+    details = verify(worker, logical_parts, 8, {'payload.bin': bytes(logical_payload)}, names=logical_names)
+    results.append(dict(case='cab-logical-previous-origin', status='passed', **details))
+    wrong_origin = logical_parts[3].replace(b'owned-part1.cab', b'owned-part2.cab')
+    assert wrong_origin != logical_parts[3]
+    try:
+        NATIVE.run_worker(worker, [*logical_parts[:3], wrong_origin], format_id=8,
+                          volume_names=logical_names)
+    except NATIVE.WorkerError:
+        results.append(dict(case='cab-unrelated-previous-origin', status='passed'))
+    else:
+        raise AssertionError('Unrelated earlier cabinet accepted as a continued file origin')
     wrong_set = bytearray(parts[2])
     wrong_set[32:34] = b'\x01\x00'
     for label, invalid_parts, invalid_names in [

@@ -835,6 +835,71 @@ fn cabinet_arbitrary_volume_names_open_from_every_part_and_detect_later_changes(
 
 #[test]
 #[ignore = "requires built isolated codec worker"]
+fn cabinet_logical_previous_opens_each_volume_and_rejects_false_origins() {
+    let fixture = Fixture::new();
+    let root = fixture.0.join("logical-previous");
+    std::fs::create_dir(&root).unwrap();
+    for part in 1..=4 {
+        let name = format!("owned-part{part}.cab");
+        std::fs::copy(readonly_fixture(&name), root.join(&name)).unwrap();
+    }
+    let mut value = 0x713a_91d5u32;
+    let expected: Vec<_> = (0..196608)
+        .map(|_| {
+            value = value.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (value >> 24) as u8
+        })
+        .collect();
+    for part in 1..=4 {
+        let archive = Archive::open(
+            &root.join(format!("owned-part{part}.cab")),
+            &Default::default(),
+        )
+        .unwrap();
+        assert_eq!(archive.format(), Format::Cab);
+        assert_eq!(
+            known_contents(&archive),
+            BTreeMap::from([("payload.bin".into(), expected.clone())])
+        );
+        if part == 3 {
+            check(&archive, false);
+            readonly_transfer(
+                &archive,
+                &fixture,
+                "logical-previous",
+                "payload.bin",
+                &expected,
+            );
+        }
+    }
+    let last = root.join("owned-part4.cab");
+    let original = std::fs::read(&last).unwrap();
+    let mut wrong_origin = original.clone();
+    let old = b"owned-part1.cab";
+    let positions: Vec<_> = wrong_origin
+        .windows(old.len())
+        .enumerate()
+        .filter_map(|(index, bytes)| (bytes == old).then_some(index))
+        .collect();
+    assert_eq!(positions.len(), 1);
+    wrong_origin[positions[0]..positions[0] + old.len()].copy_from_slice(b"owned-part2.cab");
+    std::fs::write(&last, wrong_origin).unwrap();
+    assert!(matches!(
+        Archive::open(&root.join("owned-part1.cab"), &Default::default()),
+        Err(ScanError::Invalid)
+    ));
+    std::fs::write(&last, original).unwrap();
+    let archive = Archive::open(&root.join("owned-part3.cab"), &Default::default()).unwrap();
+    std::fs::remove_file(&last).unwrap();
+    assert_eq!(archive.source.validate(), Err(ScanError::SourceChanged));
+    assert!(matches!(
+        Archive::open(&root.join("owned-part3.cab"), &Default::default()),
+        Err(ScanError::MissingVolume)
+    ));
+}
+
+#[test]
+#[ignore = "requires built isolated codec worker"]
 fn optical_images_preserve_names_readable_content_and_reject_link_output_and_udf_fallback() {
     use std::io::Read;
     let f = Fixture::new();

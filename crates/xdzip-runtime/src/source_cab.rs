@@ -1,6 +1,6 @@
 // crates/xdzip-runtime/src/source_cab.rs
 
-//! CAB adjacency is resolved by the host before a decoder sees any stream.
+//! CAB volume references are resolved by the host before a decoder sees a stream.
 use crate::source::SourceVersion;
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -186,10 +186,7 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
         }
         let previous = resolve(prev)?;
         let (before, _) = load(&previous, control)?;
-        if before.set != current.set
-            || before.index.checked_add(1) != Some(current.index)
-            || before.next.as_ref().map(|name| leaf(name)).transpose()? != Some(filename(&first)?)
-        {
+        if before.set != current.set || before.index >= current.index {
             return Err(ScanError::Invalid);
         }
         first = previous;
@@ -220,14 +217,14 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
             return Err(ScanError::Invalid);
         }
         if let Some(prev) = &current.prev {
-            if filename(&resolve(prev)?)?
-                != filename(&result.last().ok_or(ScanError::Invalid)?.path)?
-            {
-                return Err(ScanError::Invalid);
-            }
-            if result.len() == 1 {
+            let previous_name = filename(&resolve(prev)?)?;
+            let previous = result
+                .iter()
+                .position(|part| filename(&part.path).is_ok_and(|name| name == previous_name))
+                .ok_or(ScanError::Invalid)?;
+            if previous == 0 && result.len() == 1 {
                 result[0].name = prev.clone();
-            } else if !prev.eq_ignore_ascii_case(&result.last().ok_or(ScanError::Invalid)?.name) {
+            } else if !prev.eq_ignore_ascii_case(&result[previous].name) {
                 return Err(ScanError::Invalid);
             }
         }
@@ -322,6 +319,38 @@ mod tests {
         std::fs::write(final_part, changed).unwrap();
         assert_eq!(source.validate(), Err(ScanError::SourceChanged));
         assert!(matches!(source.fork(), Err(ScanError::SourceChanged)));
+    }
+    #[test]
+    fn logical_previous_can_skip_cabinets_and_still_freeze_the_full_chain() {
+        let fixture = Fixture::new();
+        fixture.write("first.cab", 42, 0, None, Some("second.cab"));
+        fixture.write("second.cab", 42, 1, Some("first.cab"), Some("third.cab"));
+        fixture.write("third.cab", 42, 2, Some("first.cab"), Some("fourth.cab"));
+        fixture.write("fourth.cab", 42, 3, Some("first.cab"), None);
+        for entry in ["first.cab", "second.cab", "third.cab", "fourth.cab"] {
+            let source = fixture.open(entry).unwrap();
+            assert_eq!(
+                source.volume_names().unwrap(),
+                ["first.cab", "second.cab", "third.cab", "fourth.cab"]
+                    .map(|name| name.as_bytes().to_vec())
+            );
+            assert_eq!(source.identities().unwrap().len(), 4);
+        }
+    }
+    #[test]
+    fn logical_previous_rejects_forward_or_escaping_references() {
+        let fixture = Fixture::new();
+        fixture.write("first.cab", 42, 0, None, Some("second.cab"));
+        fixture.write("second.cab", 42, 1, Some("third.cab"), Some("third.cab"));
+        fixture.write("third.cab", 42, 2, Some("first.cab"), None);
+        for entry in ["first.cab", "second.cab", "third.cab"] {
+            assert!(matches!(fixture.open(entry), Err(ScanError::Invalid)));
+        }
+        fixture.write("second.cab", 42, 1, Some("../first.cab"), Some("third.cab"));
+        assert!(matches!(
+            fixture.open("second.cab"),
+            Err(ScanError::Invalid)
+        ));
     }
     #[test]
     fn cabinet_chain_missing_cycles_mismatches_and_escaping_references_fail_closed() {

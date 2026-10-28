@@ -31,11 +31,11 @@ Rust 保存每卷句柄身份、长度和时间，并通过 ReadSource::volume_l
 
 ## CAB 分卷
 
-CAB 的前后卷名来自包头，允许任意合法文件名，不能套用编号卷的字节拼接规则。Rust 从用户选择的任意卷向前后发现同目录卷组，核对集合标识、相邻卷序及双向关系，再冻结每卷身份、长度和原始卷名。最多 1024 卷，同目录发现最多十万项。拒绝缺卷、错卷、循环、重复身份、绝对路径、目录分隔符、父目录逃逸、链接及重解析点，不将已打开子集作为完整归档发布。
+CAB 的卷名来自包头，允许任意合法文件名，不能套用编号卷的字节拼接规则。下一卷按卷序逐个连接；逻辑前卷可以指向持续文件最初出现的较早卷，而不一定紧邻当前卷，既有样例也可能使用紧邻前卷。Rust 从用户选择的任意卷沿逻辑前卷回溯，再沿下一卷完整发现同目录卷组，核对集合标识、连续卷序及身份后冻结每卷长度和原始卷名。解码器核对所有文件片段；非紧邻的前卷必须是实际持续文件的起始卷。最多 1024 卷，同目录发现最多十万项。拒绝缺卷、错卷、循环、重复身份、绝对路径、目录分隔符、父目录逃逸、链接及重解析点，不将已打开子集作为完整归档发布。
 
 工作进程的换卷回调只能选择该授权集合中的名称，每卷提供独立有界流。所有卷参与任务前和文件提交前来源复核及输出覆盖保护，原生处理器的警告或缺卷结果不能转为成功索引。CAB 单卷与分卷均只读。
 
-English: CAB uses header-specified names rather than concatenated numbered parts. Rust discovers and verifies the complete same-directory chain from any selected volume, freezes each part's identity and bounds, and authorizes exact names for bounded native streams. Missing, inconsistent, cyclic or unsafe volume chains fail without a partial index. All parts participate in source revalidation and output-overwrite protection.
+English: CAB uses header-specified names rather than concatenated numbered parts. The next reference advances one volume, while a logical previous reference may name an earlier cabinet containing the start of a continued file; adjacent previous references remain supported. Rust follows previous references back, then verifies the complete forward same-directory chain from any selected volume and freezes each part's identity and bounds. The decoder verifies all file fragments and requires a non-adjacent previous reference to identify an actual continued file's origin. Missing, inconsistent, cyclic or unsafe volume chains fail without a partial index. All parts participate in source revalidation and output-overwrite protection.
 
 ## 双击普通文件
 

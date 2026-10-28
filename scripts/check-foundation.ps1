@@ -58,6 +58,7 @@ Invoke-Checked $codecPython @('scripts/check-rar-rust-interop.py', '--worker', $
 Invoke-Checked $codecPython @('scripts/check-rar7-genuine-fixture.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--output', "$rustCodecEvidence/rar7-genuine")
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'optical_backend_tests', '--', '--ignored')
 Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'cab_backend_tests', '--', '--ignored')
+Invoke-Checked cargo @('test', '-p', 'xdzip-runtime', '--locked', 'cabinet_logical_previous_opens_each_volume_and_rejects_false_origins', '--', '--ignored')
 Invoke-Checked $codecPython @('scripts/prepare-native-interop.py')
 $codecReference = if ($IsWindows) { 'build/native-codec/reference/7za.exe' } else { 'build/native-codec/reference/7zz' }
 Invoke-Checked $codecPython @('scripts/check-sevenzip-rust-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--worker-build-cache', 'build/foundation/CMakeCache.txt', '--extract-binary', $extractProbe, '--output', "$rustCodecEvidence/sevenzip-interop.json")

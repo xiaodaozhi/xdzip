@@ -17,6 +17,12 @@ const PARTS: [&[u8]; 5] = [
     include_bytes!("../../../tests/fixtures/cab-iso/cabd_multi_basic_pt4.cab"),
     include_bytes!("../../../tests/fixtures/cab-iso/cabd_multi_basic_pt5.cab"),
 ];
+const OWNED_SPANNING: [&[u8]; 4] = [
+    include_bytes!("../../../tests/fixtures/cab-iso/owned-part1.cab"),
+    include_bytes!("../../../tests/fixtures/cab-iso/owned-part2.cab"),
+    include_bytes!("../../../tests/fixtures/cab-iso/owned-part3.cab"),
+    include_bytes!("../../../tests/fixtures/cab-iso/owned-part4.cab"),
+];
 #[derive(Default)]
 struct Sink {
     bytes: Vec<u8>,
@@ -170,6 +176,117 @@ fn five_volume_split_frame_coalesces_only_explicit_continuations() {
     assert_eq!(result[b"test1.txt".as_slice()], all[..76]);
     assert_eq!(result[b"test2.txt".as_slice()], all[76..114]);
     assert_eq!(result[b"test3.txt".as_slice()], all[114..]);
+}
+fn owned_spanning_parts(parts: &[&[u8]]) -> Parts {
+    let mut result = Parts::new(parts);
+    result.names = (1..=parts.len())
+        .map(|part| format!("owned-part{part}.cab").into_bytes())
+        .collect();
+    result
+}
+
+fn owned_spanning_payload() -> Vec<u8> {
+    let mut value = 0x713a_91d5u32;
+    (0..196608)
+        .map(|_| {
+            value = value.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            (value >> 24) as u8
+        })
+        .collect()
+}
+
+#[test]
+fn microsoft_authored_spanning_file_uses_its_logical_previous_cabinet() {
+    let result = decode(&mut owned_spanning_parts(&OWNED_SPANNING));
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[b"payload.bin".as_slice()], owned_spanning_payload());
+}
+
+#[test]
+fn unrelated_earlier_cabinet_cannot_impersonate_a_spanning_file_origin() {
+    let mut part = OWNED_SPANNING[3].to_vec();
+    let old = b"owned-part1.cab";
+    let new = b"owned-part2.cab";
+    let positions: Vec<_> = part
+        .windows(old.len())
+        .enumerate()
+        .filter_map(|(index, bytes)| (bytes == old).then_some(index))
+        .collect();
+    assert_eq!(positions.len(), 1);
+    part[positions[0]..positions[0] + old.len()].copy_from_slice(new);
+    let parts = [
+        OWNED_SPANNING[0],
+        OWNED_SPANNING[1],
+        OWNED_SPANNING[2],
+        &part[..],
+    ];
+    assert!(matches!(
+        CabCodec.scan(
+            &mut owned_spanning_parts(&parts),
+            &Cancellation::default(),
+            ScanLimits::default()
+        ),
+        Err(ScanError::Invalid)
+    ));
+}
+
+#[test]
+fn spanning_cabinet_names_truncation_and_cancellation_fail_closed() {
+    let control = Cancellation::default();
+    let mut duplicate = owned_spanning_parts(&OWNED_SPANNING);
+    duplicate.names[1] = duplicate.names[0].clone();
+    assert!(matches!(
+        CabCodec.scan(&mut duplicate, &control, ScanLimits::default()),
+        Err(ScanError::Invalid)
+    ));
+
+    let mut future = OWNED_SPANNING[2].to_vec();
+    let old = b"owned-part1.cab";
+    let offset = future
+        .windows(old.len())
+        .position(|bytes| bytes == old)
+        .unwrap();
+    future[offset..offset + old.len()].copy_from_slice(b"owned-part4.cab");
+    let parts = [
+        OWNED_SPANNING[0],
+        OWNED_SPANNING[1],
+        &future[..],
+        OWNED_SPANNING[3],
+    ];
+    assert!(matches!(
+        CabCodec.scan(
+            &mut owned_spanning_parts(&parts),
+            &control,
+            ScanLimits::default()
+        ),
+        Err(ScanError::Invalid)
+    ));
+
+    let truncated = &OWNED_SPANNING[3][..OWNED_SPANNING[3].len() - 1];
+    let parts = [
+        OWNED_SPANNING[0],
+        OWNED_SPANNING[1],
+        OWNED_SPANNING[2],
+        truncated,
+    ];
+    assert!(
+        CabCodec
+            .scan(
+                &mut owned_spanning_parts(&parts),
+                &control,
+                ScanLimits::default()
+            )
+            .is_err()
+    );
+    control.cancel();
+    assert!(matches!(
+        CabCodec.scan(
+            &mut owned_spanning_parts(&OWNED_SPANNING),
+            &control,
+            ScanLimits::default()
+        ),
+        Err(ScanError::Cancelled)
+    ));
 }
 #[test]
 fn missing_wrong_and_inconsistent_volumes_do_not_publish_partial_rows() {
