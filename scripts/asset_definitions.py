@@ -94,7 +94,7 @@ def rounded_gear_path():
     return ' '.join(commands) + 'Z'
 
 
-def archive_add_zipper():
+def archive_zipper():
     """Interlocking teeth and a separate slider with an open pull-tab aperture."""
     teeth = []
     for row in range(7):
@@ -148,7 +148,7 @@ def hero_shapes():
     mountain_blue = '<circle cx="8.1" cy="10.2" r="1.4" fill="#fff9d8" stroke="none"/><path fill="#3099e6" stroke="none" d="m4.5 17.2 4.8-4.8 4 3.7 3.1-3.2 3.1 3.6v3.3a1.7 1.7 0 0 1-1.7 1.7H6.2a1.7 1.7 0 0 1-1.7-1.7Z"/><path d="m7.4 14.3 1.9-1.9 2.3 2.1" stroke="#e7faff" stroke-width=".7"/>'
     mountain_amber = mountain_blue.replace('#3099e6', '#ee971e').replace('#e7faff', '#fff2c1')
     return {
-        'archive-add': blue + archive_add_zipper() + '<circle cx="18.4" cy="18.4" r="4.45" fill="#2874ff" stroke="white" stroke-width="1.1"/><path stroke="white" stroke-width="1.3" d="M18.4 16.1v4.6 M16.1 18.4h4.6"/>',
+        'archive-add': blue + archive_zipper() + '<circle cx="18.4" cy="18.4" r="4.45" fill="#2874ff" stroke="white" stroke-width="1.1"/><path stroke="white" stroke-width="1.3" d="M18.4 16.1v4.6 M16.1 18.4h4.6"/>',
         'archive-warning': amber_archive + zipper,
         'document-download': blue + '<path stroke="white" stroke-width="1.8" d="M12 10.6v6.4m-2.8-2.7 2.8 2.7 2.8-2.7"/>',
         'document-check': blue + '<path stroke="white" stroke-width="1.8" fill="none" d="m8.5 14 2.4 2.4 4.6-5.2"/>',
@@ -253,12 +253,7 @@ def supplemental_shapes(theme):
         + '<path fill="url(#existing-archive-paper)" stroke="none" d="M5.2 1h9L21 7.8v12.9a2.3 2.3 0 0 1-2.3 2.3H5.3A2.3 2.3 0 0 1 3 20.7V3.2A2.2 2.2 0 0 1 5.2 1Z"/>'
         + '<path fill="#1450ed" stroke="none" d="M14.2 1v4.8a2 2 0 0 0 2 2H21Z"/>'
         + paper_seam('existing-archive', '#09287c')
-        + '<path d="M11.3 2.15v11.8 M10.2 2.7h2.7 M11.3 4.7H14 M10.2 6.7h2.7 M11.3 8.7H14 M10.2 10.7h2.7" stroke="white" stroke-width=".88" stroke-linecap="square"/>'
-        + '<path fill="#f8fcff" stroke="none" d="M10.7 12.9h1.7a1 1 0 0 1 1 1v1.2l1.7 1v4.65a1.1 1.1 0 0 1-1.1 1.1H8.4a1.1 1.1 0 0 1-1.1-1.1V16.1l2.4-1v-1.2a1 1 0 0 1 1-1Z"/>'
-        + '<rect x="10.6" y="13.8" width="1.6" height="1.4" rx=".35" fill="#2475ff" stroke="none"/>'
-        # ZIP is drawn as paths, preserving the source pull-tab lettering without
-        # depending on a font being installed in Qt or the browser.
-        + '<path d="M8.6 17.8h1.8l-1.8 2.6h1.8 M11.65 17.8v2.6 M13 20.4v-2.6h.85a.75.75 0 0 1 0 1.5H13" stroke="#1764f4" stroke-width=".48"/>'
+        + '<g transform="translate(-.6 -1.7) scale(1.2)">' + archive_zipper() + '</g>'
     )
     conflict_pdf = (
         gradient('conflict-pdf-paper', '#ff5754', '#f22323')
