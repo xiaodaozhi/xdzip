@@ -1,6 +1,6 @@
-"""Shared zipper geometry for every current illustration and file-category icon."""
+"""Shared zipper geometry for operation illustrations."""
 
-ZIPPER_ICONS = frozenset({'archive-add', 'existing-archive', 'archive-warning', 'file-archive'})
+ZIPPER_ICONS = frozenset({'archive-add', 'existing-archive', 'archive-warning'})
 
 # Teeth, metal, tape, stitches, top stop, rim and highlight. The silver profile
 # preserves the approved blue illustrations; other surfaces only change color.
@@ -9,10 +9,6 @@ PALETTES = {
                '#1454c9', '#d9edff', '#eef8ff', '#f5fbff', 'white'),
     'warm': (('#fff1d5', '#fff', '#ffe3ac'), ('#fff', '#fff5df', '#e8c586'),
              '#a8660e', '#fff1d1', '#fff9e9', '#fffaf0', 'white'),
-    'ochre-light': (('#c49749', '#b27a27', '#a66e20'), ('#d0a255', '#b58130', '#986619'),
-                    '#a97424', '#c99b4c', '#be8c3b', '#d7b474', '#f3d79f'),
-    'ochre-dark': (('#f4d38c', '#e3b65f', '#ce9c45'), ('#f4d38c', '#dfb15d', '#c38e34'),
-                   '#b8832e', '#ebc77c', '#efc977', '#f0cf8c', '#fff0c9'),
 }
 
 
