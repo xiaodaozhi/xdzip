@@ -74,6 +74,14 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
     runtime_dir=f'{{app}}\\versions\\{runtime}' if legacy else '{app}'
     manifest_path=output.with_suffix('.files').resolve()
     associations=[]
+    if not legacy:
+        # The helper can be discovered by the Open With UI; keep its displayed
+        # application identity and direct invocation consistent with xdzip.
+        associations += [
+            'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey',
+            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\DefaultIcon"; ValueType: string; ValueData: """{runtime_dir}\\xdzip.exe"",0"',
+            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\shell\\open\\command"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-association.exe"" -- ""%1"""',
+        ]
     for ext in EXTENSIONS:
         # Historical QA packages contain only the original ZIP document icon.
         progid = 'xdzip.Archive' if legacy else windows_progid(ext)

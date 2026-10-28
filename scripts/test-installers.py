@@ -239,6 +239,8 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('chinesesimplified.LicenseLabel3=',text)
             self.assertIn(' -- ""%1""',text)
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
+            self.assertIn('Software\\Classes\\Applications\\xdzip-association.exe',text)
+            self.assertIn('ValueName: "FriendlyAppName"; ValueData: "xdzip"',text)
             for extension, icon in WINDOWS_ICONS.items():
                 progid = windows_progid(extension)
                 self.assertIn('Software\\Classes\\.'+extension+'\\OpenWithProgids',text)

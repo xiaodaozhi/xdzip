@@ -77,6 +77,8 @@ function Test-AssociatedOpen($Label) {
         if (!$key -or $key.GetValueNames() -notcontains $progid) { throw "OpenWith candidate value missing: $extension" }
         $key.Close()
         if ($Label -notin @('historical-product-install','actual-product-rollback')) {
+            $helperName = (Get-Item "$classes\Applications\xdzip-association.exe").GetValue('FriendlyAppName')
+            if ($helperName -ne 'xdzip') { throw 'Association launcher is missing its application identity' }
             $icon = (Get-Item "$classes\$progid\DefaultIcon").GetValue('')
             if ($icon -ne ('"'+(Join-Path $testRoot "xdzip-$extension.ico")+'",0')) { throw "Wrong format icon: $extension" }
             $command = (Get-Item "$classes\$progid\shell\open\command").GetValue('')
@@ -243,6 +245,7 @@ try {
     Invoke-Installer (Join-Path $testRoot 'unins000.exe') 'uninstall'
     for ($i=0; $i -lt 200 -and (Test-Path "$classes\xdzip.Archive"); $i++) { Start-Sleep -Milliseconds 50 }
     if (Test-Path "$classes\xdzip.Archive") { throw 'Owned ProgID remains' }
+    if (Test-Path "$classes\Applications\xdzip-association.exe") { throw 'Owned association launcher registration remains' }
     if ((Get-ChildItem $testRoot -Filter 'xdzip.exe' -Recurse -ErrorAction SilentlyContinue).Count) { throw 'Owned runtime remains' }
     if (!(Test-Path $sentinel) -or !(Select-String -Path $settings -SimpleMatch 'theme=dark' -Quiet)) { throw 'User data removed' }
     if (!(Test-Path $nestedSentinel) -or !(Test-Path $extra) -or (Test-Path $manifest)) { throw 'Uninstall lost nested user files or retained the ownership manifest' }
