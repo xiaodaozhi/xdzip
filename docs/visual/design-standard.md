@@ -128,6 +128,10 @@ Qt 固定行高必须同时作为布局的行槽高度，不能再把额外字�
 
 English: Task menu rows show an operation icon, archive filename, sequence tag and status tag. Visible operation prefixes are removed, while accessible names retain the operation and task identity. Both tags share the same component and geometry; filenames elide before either tag overlaps.
 
+起始页与压缩文件页的任务按钮共用相同的内部布局，右边距为 `layout-scale.json` 中的 14 逻辑像素；切换页面时按钮、图标、箭头和菜单锚点保持水平对齐。右边距不随字体倍率或设备像素比换算为组件尺寸。
+
+English: The welcome and archive pages share the task button's internal layout and the 14 logical-pixel right inset in `layout-scale.json`. The button, icon, disclosure and menu anchor stay horizontally aligned when switching pages, independently of text scale and device pixel ratio.
+
 标签文字的实际宽高直接绑定当前字体的隐式尺寸，位置由外框与文字尺寸同步计算，保证菜单打开或字号变化后的首个渲染帧仍与标签外框居中，不等待后续布局补正。首帧检查同时核对文字尺寸、共享内距和中心位置。
 
 English: Tag text width and height bind directly to the current font's implicit metrics, with positions calculated from the tag and text dimensions so the first rendered frame remains centered after opening the menu or changing font size. First-frame checks verify text size, shared insets and centers without waiting for later layout correction.

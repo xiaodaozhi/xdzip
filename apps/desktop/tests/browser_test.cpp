@@ -2067,6 +2067,102 @@ QtObject {
         QTRY_VERIFY(controller->ready() && !controller->busy());
         QTRY_COMPARE(footer->height(), welcomeHeight);
     }
+    void mainFooterTaskEntryAlignsBetweenPages_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<double>("scale");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<int>("windowWidth");
+        for (const auto &language : {QString("zh-CN"), QString("en-US")})
+            for (const double scale : {1., 1.25, 1.5})
+                for (const bool dark : {false, true})
+                    for (const int width : {832, 1024})
+                        QTest::newRow(qPrintable(language + QString::number(scale) +
+                                                 QString::number(dark) + "-" +
+                                                 QString::number(width)))
+                            << language << scale << dark << width;
+    }
+    void mainFooterTaskEntryAlignsBetweenPages() {
+        QFETCH(QString, language);
+        QFETCH(double, scale);
+        QFETCH(bool, dark);
+        QFETCH(int, windowWidth);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        window->setWidth(windowWidth);
+        QQmlComponent appearance(&engine);
+        appearance.setData(
+            "import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property real factor:1; "
+            "property bool dark:false; onFactorChanged:Ui.Theme.fontScale=factor; "
+            "onDarkChanged:Ui.Theme.dark=dark }",
+            QUrl());
+        std::unique_ptr<QObject> theme(appearance.create());
+        QVERIFY(theme);
+        theme->setProperty("factor", scale);
+        theme->setProperty("dark", dark);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        auto *button = findVisual(window->contentItem(), "browserTasks");
+        QVERIFY(button);
+        auto *icon = findVisual(button, "actionIcon");
+        auto *indicator = findVisual(button, "taskDisclosureIndicator");
+        auto *menu = window->findChild<QObject *>("browserTaskMenu");
+        QVERIFY(button && icon && indicator && menu);
+        QTRY_VERIFY(window->property("welcomeVisible").toBool());
+        QSignalSpy frame(window, &QQuickWindow::frameSwapped);
+        window->requestUpdate();
+        QVERIFY(!frame.isEmpty() || frame.wait(5000));
+        const auto buttonRight = [window, button] {
+            return window->width() - button->mapToScene(QPointF(button->width(), 0)).x();
+        };
+        const auto iconRight = [window, icon] {
+            return window->width() - icon->mapToScene(QPointF(icon->width(), 0)).x();
+        };
+        const auto indicatorRight = [window, indicator] {
+            return window->width() - indicator->mapToScene(QPointF(indicator->width(), 0)).x();
+        };
+        const auto welcomeButtonRight = buttonRight();
+        const auto welcomeIconRight = iconRight();
+        const auto welcomeIndicatorRight = indicatorRight();
+        const auto welcomeWidth = button->width();
+        QVERIFY(qAbs(welcomeButtonRight - 14.) < .1);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        auto *background = qvariant_cast<QQuickItem *>(menu->property("background"));
+        QVERIFY(background);
+        QTRY_VERIFY(background->width() > 0);
+        const auto menuRight = [window, background] {
+            return window->width() - background->mapToScene(QPointF(background->width(), 0)).x();
+        };
+        const auto welcomeMenuRight = menuRight();
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"));
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QTRY_VERIFY(!window->property("welcomeVisible").toBool());
+        frame.clear();
+        window->requestUpdate();
+        QVERIFY(!frame.isEmpty() || frame.wait(5000));
+        const auto diagnostic = QStringLiteral("welcomeRight=%1 archiveRight=%2")
+                                    .arg(welcomeButtonRight)
+                                    .arg(buttonRight());
+        QVERIFY2(qAbs(welcomeButtonRight - buttonRight()) < .1, qPrintable(diagnostic));
+        QVERIFY(qAbs(welcomeWidth - button->width()) < .1);
+        QVERIFY(qAbs(welcomeIconRight - iconRight()) < .1);
+        QVERIFY(qAbs(welcomeIndicatorRight - indicatorRight()) < .1);
+        QTest::mouseClick(
+            window, Qt::LeftButton, Qt::NoModifier,
+            button->mapToScene(QPointF(button->width() / 2, button->height() / 2)).toPoint());
+        QTRY_VERIFY(menu->property("opened").toBool());
+        QVERIFY(qAbs(welcomeMenuRight - menuRight()) < .1);
+        QVERIFY(QMetaObject::invokeMethod(menu, "close"));
+    }
     void closingMainWindowDismissesOwnedDialogs_data() {
         QTest::addColumn<bool>("anotherWindow");
         QTest::newRow("tray") << false;

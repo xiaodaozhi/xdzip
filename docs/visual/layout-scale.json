@@ -37,6 +37,7 @@
     "interaction": {
       "statusbarHeight": 32,
       "taskIconSize": 16,
+      "statusbarHorizontalInset": 14,
       "iconButtonSize": 28,
       "fileActionGap": 6.4,
       "fileSelectionGap": 12,

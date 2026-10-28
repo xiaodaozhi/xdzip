@@ -73,8 +73,10 @@ def normalize_target(value, key, default_tolerance):
 def check_task_entries(page, layout, measurements, failures, dpr):
     """Measure the revised shared icon independently of the archived source ink."""
     expected_size = layout['main']['interaction']['taskIconSize']
+    expected_inset = layout['main']['interaction']['statusbarHorizontalInset']
     for theme in ('light', 'dark'):
         for scale in (1, 1.25, 1.5):
+            archive_icon_inset = None
             for view in ('main', 'welcome'):
                 page.evaluate('''([theme, scale, view]) => {
                     XdzipDesign.theme(theme);
@@ -85,9 +87,12 @@ def check_task_entries(page, layout, measurements, failures, dpr):
                     const factor = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
                     const svg = button.querySelector('span:first-child svg');
                     const icon = svg.getBoundingClientRect(), bounds = button.getBoundingClientRect();
+                    const status = button.closest('.statusbar').getBoundingClientRect();
                     const label = button.querySelector('#task-count').getBoundingClientRect();
                     return {size: [icon.width / factor, icon.height / factor],
                         center: [(icon.y + icon.height / 2 - bounds.y - bounds.height / 2) / factor],
+                        rightInset: (status.right - bounds.right) / factor,
+                        iconInset: (status.right - icon.right) / factor,
                         asset: svg.parentElement.dataset.icon,
                         viewBox: svg.getAttribute('viewBox'),
                         placement: icon.left >= bounds.left && icon.right <= label.left
@@ -98,12 +103,63 @@ def check_task_entries(page, layout, measurements, failures, dpr):
                                 [expected_size, expected_size], actual['size'], .05)
                 record_geometry(measurements, failures, 'authored task entry', name + '.center',
                                 [0], actual['center'], .5)
+                record_geometry(measurements, failures, 'authored task entry', name + '.rightInset',
+                                [expected_inset], [actual['rightInset']], .1)
+                if view == 'main':
+                    archive_icon_inset = actual['iconInset']
+                else:
+                    record_geometry(measurements, failures, 'shared task entry', name + '.iconInset',
+                                    [archive_icon_inset], [actual['iconInset']], .1)
                 expected = {'asset': 'task-list', 'viewBox': '0 0 24 24', 'placement': True}
                 observed = {key: actual[key] for key in expected}
                 measurements.append({'kind': 'authored task entry', 'name': name + '.assetAndPlacement',
                                      'expected': expected, 'actual': observed, 'passed': observed == expected})
                 if observed != expected:
                     failures.append(f'{name}: incorrect asset or placement: {observed}')
+
+
+def check_narrow_task_alignment(page, layout, measurements, failures, dpr):
+    """Compare both pages at minimum width using the two catalog labels."""
+    width = layout['main']['minimum_window'][0]
+    inset = layout['main']['interaction']['statusbarHorizontalInset']
+    for language in ('zh-CN', 'en-US'):
+        messages = json.loads((ROOT / 'resources/i18n' / f'{language}.json').read_text(encoding='utf-8'))['messages']
+        label = messages['ui.76bbe94afbc9']['other'].replace('%n', '0')
+        for theme in ('light', 'dark'):
+            for scale in (1, 1.25, 1.5):
+                first = None
+                for view in ('main', 'welcome'):
+                    page.evaluate('''([theme, scale, view, label, width]) => {
+                        XdzipDesign.theme(theme);
+                        document.documentElement.style.setProperty('--settings-text-scale', scale);
+                        XdzipDesign.open(view);
+                        const factor = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
+                        document.querySelector('.window').style.width = `${width * factor}px`;
+                        document.querySelector('#task-count').textContent = label;
+                    }''', [theme, scale, view, label, width])
+                    actual = page.locator('#tasks').evaluate('''button => {
+                        const factor = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-source-factor'));
+                        const status = button.closest('.statusbar').getBoundingClientRect();
+                        const bounds = button.getBoundingClientRect();
+                        const icon = button.querySelector('span:first-child svg').getBoundingClientRect();
+                        const indicator = button.querySelector('.task-chevron-pair').getBoundingClientRect();
+                        return {right: (status.right - bounds.right) / factor, width: bounds.width / factor,
+                            icon: (status.right - icon.right) / factor,
+                            indicator: (status.right - indicator.right) / factor,
+                            indicatorVisible: indicator.width > 0 && indicator.height > 0};
+                    }''')
+                    name = f'taskAlignment.{view}.{language}.{theme}.{scale}.w{width}.dpr{dpr}'
+                    record_geometry(measurements, failures, 'narrow task entry', name + '.right',
+                                    [inset], [actual['right']], .1)
+                    if not actual['indicatorVisible']:
+                        failures.append(f'{name}: disclosure is not visible')
+                    if view == 'main':
+                        first = actual
+                    else:
+                        record_geometry(measurements, failures, 'shared narrow task entry', name + '.contents',
+                                        [first['width'], first['icon'], first['indicator']],
+                                        [actual['width'], actual['icon'], actual['indicator']], .1)
+    page.evaluate("document.querySelector('.window').style.removeProperty('width')")
 
 
 def review_regions(spec):
@@ -410,6 +466,7 @@ def main():
                 if not passed:
                     failures.append(f'{selector}: content overflows {overflow}')
             check_task_entries(page, layout, measurements, failures, 1)
+            check_narrow_task_alignment(page, layout, measurements, failures, 1)
             for dpr in (1.25, 2):
                 scaled = browser.new_page(viewport={'width': 1588, 'height': 1000}, device_scale_factor=dpr)
                 scaled.on('pageerror', lambda error: page_errors.append(str(error)))
@@ -417,6 +474,7 @@ def main():
                 scaled.set_content(canvas)
                 scaled.evaluate('document.fonts.ready')
                 check_task_entries(scaled, layout, measurements, failures, dpr)
+                check_narrow_task_alignment(scaled, layout, measurements, failures, dpr)
                 scaled.close()
         finally:
             browser.close()

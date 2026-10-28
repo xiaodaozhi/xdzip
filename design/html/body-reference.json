@@ -2589,6 +2589,11 @@
       "validation": "scripts/check-html-body.py taskEntry checks",
       "source_comparison": "record-only for the resized task-list ink; all other source targets and tolerances remain unchanged"
     },
+    "shared-task-entry-right-alignment": {
+      "reason": "#78 统一起始页与压缩文件页任务按钮的右侧内距和内部布局；保持冻结原稿及原始量测，按逻辑参数核对按钮与图标的两页位置。",
+      "source": "docs/visual/layout-scale.json main.interaction.statusbarHorizontalInset",
+      "validation": "scripts/check-html-body.py taskEntry rightInset and iconInset checks"
+    },
     "shared-statusbar-height": {
       "reason": "#63 将欢迎页与浏览页 footer 统一为 layout-scale.json 的 statusbarHeight。保持窗口与冻结原稿身份，底部状态栏顶边、内容区底边和底部锚定项目随新高度平移。",
       "source": "docs/visual/layout-scale.json",

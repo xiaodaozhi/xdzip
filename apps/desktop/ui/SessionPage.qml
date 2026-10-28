@@ -2064,8 +2064,8 @@ Item {
             RowLayout {
                 id: statusActions
                 anchors.fill: parent
-                anchors.leftMargin: root.welcomeVisible ? 14 : Theme.mainContentInset
-                anchors.rightMargin: root.welcomeVisible ? 14 : Theme.mainContentInset
+                anchors.leftMargin: Theme.mainStatusbarHorizontalInset
+                anchors.rightMargin: Theme.mainStatusbarHorizontalInset
                 spacing: Theme.mainUnits(8)
                 Rectangle {
                     visible: root.welcomeVisible
