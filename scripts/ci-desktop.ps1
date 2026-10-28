@@ -294,7 +294,7 @@ if ($IsMacOS) {
             Invoke-Checked 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' @('--smoke-test')
         }
     } finally { $env:XDZIP_LANGUAGE = $nativeLanguage }
-    Invoke-Checked python @('scripts/check-macos-open.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/macos-association.json')
+    Invoke-Checked python @('scripts/check-macos-open.py', '--app', 'build/desktop/apps/desktop/xdzip.app', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--formats', 'build/installer-tests/association-fixtures', '--output', 'build/review/macos-association.json')
 } elseif ($IsWindows) {
     $env:QT_QPA_PLATFORM = 'windows'
     Invoke-Checked $browserTests @('windowsCaptionControlsAndWindowState')
@@ -325,7 +325,8 @@ if ($IsLinux) {
         Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', "build/installer-tests/linux-packages/qa$variant.deb", '--report', "build/installer-tests/linux-packages/qa$variant.json", '--qa-variant', $variant)
     }
     Invoke-Checked python @('scripts/build-linux-installer.py', '--root', $auditRoot, '--audit', 'build/review/deployment-audit.json', '--output', 'build/installer-tests/linux-packages/qa-failure.deb', '--report', 'build/installer-tests/linux-packages/qa-failure.json', '--qa-variant', '2', '--qa-failure', 'postinst-once')
-    Invoke-Checked python @('scripts/verify-linux-installer.py', '--packages', 'build/installer-tests/linux-packages', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--output', 'build/review/linux-install-lifecycle.json')
+    Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','tests/fixtures/zip/normal.zip','--output','build/installer-tests/association-fixtures')
+    Invoke-Checked python @('scripts/verify-linux-installer.py', '--packages', 'build/installer-tests/linux-packages', '--fixture', 'build/desktop/apps/desktop/m2-flat.zip', '--formats', 'build/installer-tests/association-fixtures', '--output', 'build/review/linux-install-lifecycle.json')
 }
 if ($IsWindows) {
     New-Item -ItemType Directory -Force 'build/installer-tests/windows-packages' | Out-Null

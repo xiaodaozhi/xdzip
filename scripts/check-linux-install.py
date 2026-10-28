@@ -21,8 +21,11 @@ def main():
         target=home/relative;target.mkdir(parents=True,exist_ok=True)
     for p in home.rglob('*'):os.chown(p,1000,1000)
     (home/'runtime').chmod(0o700)
-    config=home/'.config/mimeapps.list';config.write_text('[Default Applications]\napplication/zip=other.desktop\n');os.chown(config,1000,1000)
-    other=home/'.local/share/applications/other.desktop';other.write_text('[Desktop Entry]\nType=Application\nName=Other\nExec=/bin/true %f\nMimeType=application/zip;\n');os.chown(other,1000,1000)
+    mime_types=('application/zip','application/x-tar','application/x-compressed-tar',
+                'application/x-7z-compressed','application/vnd.rar','application/x-rar',
+                'application/vnd.ms-cab-compressed','application/x-iso9660-image','application/x-udf')
+    config=home/'.config/mimeapps.list';config.write_text('[Default Applications]\n'+''.join(t+'=other.desktop\n' for t in mime_types));os.chown(config,1000,1000)
+    other=home/'.local/share/applications/other.desktop';other.write_text('[Desktop Entry]\nType=Application\nName=Other\nExec=/bin/true %f\nMimeType='+';'.join(mime_types)+';\n');os.chown(other,1000,1000)
     settings=home/'.config/settings.ini';settings.write_text('[General]\nschemaVersion=1\n[appearance]\ntheme=dark\n[privacy]\nrecentEnabled=false\n');os.chown(settings,1000,1000)
     env=dict(os.environ,HOME=str(home),XDG_CONFIG_HOME=str(home/'.config'),XDG_DATA_HOME=str(home/'.local/share'),XDG_CURRENT_DESKTOP='GNOME',
              LANG='C.UTF-8',QT_QPA_PLATFORM='xcb',QT_QUICK_BACKEND='software',DISPLAY=':99',XDZIP_SETTINGS_PATH=str(settings),XDG_RUNTIME_DIR=str(home/'runtime'))
@@ -35,15 +38,17 @@ def main():
             time.sleep(.05)
         fixture=home/'中文 space ; archive.zip';fixture.write_bytes(Path('/fixture.zip').read_bytes());os.chown(fixture,1000,1000)
         phases=[]
-        def verify_open(label):
+        def verify_open(label, target=fixture, expected_records=100000):
             probe=home/'probe'/f'{label}.json'
             launch=dict(user);launch['env']=dict(env,XDZIP_ASSOCIATION_PROBE=str(probe))
-            run(['gio','launch','/usr/share/applications/xdzip.desktop',str(fixture)],**launch)
+            run(['gio','launch','/usr/share/applications/xdzip.desktop',str(target)],**launch)
             for _ in range(300):
                 if probe.exists():break
                 time.sleep(.05)
             data=json.loads(probe.read_text())
-            if data['event']!='association_open' or data['records']!=100000:raise RuntimeError('Associated product did not read real archive')
+            if (data['event']!='association_open' or data['records']<1
+                    or (expected_records is not None and data['records']!=expected_records)):
+                raise RuntimeError('Associated product did not read real archive')
             if label not in ['historical-product-install','actual-product-rollback'] and (data.get('presented_frames',0)<1 or data.get('welcome_frames')!=0):
                 raise RuntimeError('Associated current product presented the welcome content before opening')
             # Probe requests normal close; wait until its lifetime lock is released.
@@ -60,6 +65,15 @@ def main():
         historical=json.loads((home/'probe/historical-product-install.json').read_text())
         historical_version=run(['dpkg-query','-W','-f=${Version}','xdzip'])
         run(['dpkg','-i','/packages/product.deb']);verify_open('actual-product-upgrade')
+        for mime in mime_types:
+            if run(['xdg-mime','query','default',mime],**user)!='other.desktop':
+                raise RuntimeError('Format default handler changed: '+mime)
+            if 'xdzip.desktop' not in run(['gio','mime',mime],**user):
+                raise RuntimeError('Format MIME candidate not registered: '+mime)
+        for name in ('sample.zip','sample.tar','sample.tar.gz','sample.tgz',
+                     'sample.7z','sample.rar','sample.cab','sample.iso','sample.udf'):
+            verify_open('format-'+name, Path('/formats')/name, expected_records=None)
+        phases.append('all-format-candidates-and-defaults')
         run(['dpkg','--compare-versions',run(['dpkg-query','-W','-f=${Version}','xdzip']),'gt',historical_version])
         current=json.loads((home/'probe/actual-product-upgrade.json').read_text())
         if historical['revision']==current['revision'] or settings.read_bytes()!=original_settings:
@@ -103,7 +117,8 @@ def main():
         run(['dpkg','--remove','xdzip']);run(['dpkg','--purge','xdzip'])
         if Path('/usr/bin/xdzip').exists() or Path('/usr/share/applications/xdzip.desktop').exists():raise RuntimeError('Installed entry points remain')
         if sentinel.read_text()!='keep user data' or 'theme=dark' not in settings.read_text():raise RuntimeError('User data removed')
-        if run(['xdg-mime','query','default','application/zip'],**user)!='other.desktop':raise RuntimeError('Uninstall changed foreign default')
+        for mime in mime_types:
+            if run(['xdg-mime','query','default',mime],**user)!='other.desktop':raise RuntimeError('Uninstall changed foreign default: '+mime)
         phases.append('uninstall-preserves-user-data-and-default')
         print('XDZIP_INSTALL '+json.dumps({'status':'passed','platform':'linux','phases':phases,'uid':1000,'records':100000,
             'product_revisions':{'previous':historical['revision'],'current':current['revision']},
