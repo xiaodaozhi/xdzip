@@ -2,7 +2,7 @@
 
 `xdzip-design-sans-sc.woff2` 是官方 **Noto Sans SC** 的小型可变字体子集，家族名为 **Xdzip Design Sans SC**。它用于固定 HTML 设计稿的字形、字重和文字宽度，覆盖当前界面、示例数据、ASCII 及常用界面标点，支持 400–750 的真实可变字重。文件由 `build-subset.py` 生成，不能手工编辑。
 
-Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 297 KiB。`export-qt.py` 保持字形、可变字重和度量不变，`UiFont.h` 在应用与测试加载相同家族；子集以外的归档名称仍由系统回退，不宣称覆盖所有语言。高保真原稿是生成图片，无法确认其中的原始字体；统一字体不能据此宣称字形与原稿完全相同，平台抗锯齿仍有差异。
+Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 299 KiB。`export-qt.py` 保持字形、可变字重和度量不变，`UiFont.h` 在应用与测试加载相同家族；子集以外的归档名称仍由系统回退，不宣称覆盖所有语言。高保真原稿是生成图片，无法确认其中的原始字体；统一字体不能据此宣称字形与原稿完全相同，平台抗锯齿仍有差异。
 
 ## 文件
 
@@ -10,11 +10,10 @@ Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 297 KiB。`export-qt.py
 | --- | --- |
 | `fonts.css` | `@font-face` 声明；界面样式另行设置家族名 |
 | `xdzip-design-sans-sc.woff2` | 实际用于 HTML 的离线字体 |
-| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `e35679c35dea165557a68a41981e932d82720fb43500f2d4e904446a9083026f` |
+| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `7fa3274b407822a13694d28c21d66c835a71ddcc580dd5470138c0b0cbd6ca0f` |
 | `export-qt.py` | 导出 TTF；`--check` 检查是否与当前 WOFF2 完全对应 |
 | `OFL.txt` | 上游原文版权及 SIL Open Font License 1.1 |
 | `manifest.json` | 固定来源、原始及子集 SHA-256、覆盖字符、字重和工具版本 |
-| `validation.json` | 当前子集在 Chromium 中加载的实际字体及重复生成证据 |
 | `build-subset.py` | 从固定的上游 TTF 生成子集，或检查当前界面字符覆盖 |
 | `requirements.txt` | 生成和检查工具的固定版本；不属于产品运行依赖 |
 
