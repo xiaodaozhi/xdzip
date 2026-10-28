@@ -59,9 +59,9 @@
 
 文件区域右侧的计数和操作按钮组成固定宽度组。列表、网格、排序和可见的详情入口保持 28×28 逻辑像素，按钮间距为 6.4，窗口变宽只增加面包屑可用空间。工具栏更多菜单仅保留设置，原始顺序、解压元数据预检、全选和详情使用已有专用入口。
 
-起始页和压缩文件页使用同一底栏高度，正常高度下限为32逻辑像素，来自 layout-scale.json 的 statusbarHeight。辅助字号按任务按钮的真实高度与相同上下留白共同增高，切换页面不改变底栏高度。
+起始页和压缩文件页使用同一底栏高度，正常高度下限为32逻辑像素，来自 layout-scale.json 的 statusbarHeight。辅助字号按任务按钮的真实高度与相同上下留白共同增高，切换页面不改变底栏高度。两页任务按钮使用同一 task-list 素材及 main.interaction.taskIconSize 定义的 16×16 逻辑像素图标槽，居中对齐，不随页面或辅助字号改变尺寸。
 
-English: Welcome and archive pages share a 32-unit minimum status bar and the same content-based growth for larger text.
+English: Welcome and archive pages share a 32-unit minimum status bar and the same content-based growth for larger text. Both task buttons use the same task-list asset in a centered 16×16 logical icon slot from main.interaction.taskIconSize, independent of page and text scale.
 
 文件列表选框右边缘到文件图标槽固定留 12 逻辑像素，图标、文件名和“名称”表头同步定位。辅助字号只改变真实文字度量，不扩大这段空白；选框仍与每行选择状态及表头全选状态共用原有选择模型。
 

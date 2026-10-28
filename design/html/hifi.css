@@ -558,7 +558,7 @@ tbody tr.selected td:last-child { border-radius:0 20px 20px 0 / 0 8px 8px 0; bac
 .read-status>span:first-child svg { width:32px; height:32px; }
 #tasks { margin-left:auto; font-size:19px; line-height:28px; gap:14px; height:40px; padding:0 6px 0 8px; }
 #task-count { transform:none; }
-#tasks>span:first-child svg { width:32px; height:32px; transform:none; }
+#tasks>span:first-child svg { width:var(--main-task-icon-size); height:var(--main-task-icon-size); transform:none; }
 #tasks .task-chevron { margin-left:4px; }
 #tasks .task-chevron svg { width:20px; height:20px; transform:none; }
 #settings { display:none; }

@@ -37,7 +37,6 @@
 .welcome-mode #selection-status::before { content:""; display:inline-block; width:calc(6px * var(--ui-source-factor)); height:calc(6px * var(--ui-source-factor)); border-radius:50%; background:var(--accent-ink); margin-right:calc(9px * var(--ui-source-factor)); }
 .welcome-mode .read-status,.welcome-mode #settings,.welcome-mode .task-chevron { display:none; }
 .welcome-mode #tasks { font-size:calc(12px * var(--ui-source-factor)); gap:calc(6px * var(--ui-source-factor)); padding:0; }
-.welcome-mode #tasks>svg { width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); }
 @container(max-width:1360px) {
     .welcome-mode .welcome h1 { font-size:calc(28px * var(--ui-source-factor)); margin-top:calc(12px * var(--ui-source-factor)); }
     .welcome-mode .welcome .welcome-subtitle { margin-bottom:calc(24px * var(--ui-source-factor)); }
@@ -45,7 +44,6 @@
 }
 .welcome-mode #selection-status { font-size:calc(11px * var(--ui-source-factor)); transform:none; }
 .welcome-mode #tasks { height:calc(28px * var(--ui-source-factor)); line-height:normal; }
-.welcome-mode #tasks>span:first-child svg { width:calc(16px * var(--ui-source-factor)); height:calc(16px * var(--ui-source-factor)); }
 body.welcome-artboard.welcome-narrow .window { width:calc(832px * var(--ui-source-factor)); height:calc(544px * var(--ui-source-factor)); min-height:0; }
 body.welcome-artboard.welcome-narrow { min-width:0; }
 body.welcome-artboard.welcome-narrow .stage { width:1296px; }

@@ -118,6 +118,7 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
     "logicalWindowWidth": 1024,
     "windowsCaption": {
         "statusbarHeight": 32,
+        "taskIconSize": 16,
         "iconButtonSize": 28,
         "fileActionGap": 6.4,
         "fileSelectionGap": 12,

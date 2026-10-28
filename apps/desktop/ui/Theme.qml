@@ -343,6 +343,7 @@ QtObject {
     readonly property real mainControlRadius: 6.4
     readonly property real mainToolbarRadius: 4.800000000000001
     readonly property real mainStatusbarHeight: 32
+    readonly property real mainTaskIconSize: 16
     readonly property real mainIconButtonSize: 28
     readonly property real mainFileActionGap: 6.4
     readonly property real mainFileSelectionGap: 12

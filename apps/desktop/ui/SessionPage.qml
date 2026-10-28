@@ -2085,7 +2085,7 @@ Item {
                     objectName: "browserTasks"
                     taskDisclosure: true
                     labelSize: root.welcomeVisible ? 12 * Theme.fontScale : Theme.mainHeaderSize
-                    glyphSize: root.welcomeVisible ? 16 : Theme.mainUnits(24)
+                    glyphSize: Theme.mainTaskIconSize
                     asset: "task-list"
                     text: qsTrId("ui.76bbe94afbc9", Number(root.globalTasks.length))
                     explanation: qsTrId("ui.bba8ad73d43c").arg(root.globalActiveTaskCount)

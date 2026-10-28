@@ -127,6 +127,7 @@
   --ui-focus-width: calc(0px * var(--ui-source-factor));
   --ui-select-popup-max-width: calc(360px * var(--ui-source-factor));
   --main-statusbar-height: calc(32px * var(--ui-source-factor));
+  --main-task-icon-size: calc(16px * var(--ui-source-factor));
   --main-icon-button-size: calc(28px * var(--ui-source-factor));
   --main-file-action-gap: calc(6.4px * var(--ui-source-factor));
   --main-file-selection-gap: calc(12px * var(--ui-source-factor));
