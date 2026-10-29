@@ -2,6 +2,8 @@ name: HTML design review
 on:
   workflow_dispatch:
   push:
+    branches: [main]
+    tags: ['**']
     paths:
       - 'scripts/check-extract-fidelity.py'
       - 'scripts/check-integrity-progress.py'
@@ -59,6 +61,9 @@ on:
       - '.gitattributes'
 permissions:
   contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   visual-anchors:
     env:
