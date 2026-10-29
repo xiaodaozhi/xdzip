@@ -1,5 +1,11 @@
 # CI 与合入策略
 
+普通工作流按命令记录阶段耗时、原始退出状态和源码提交，记录不包含命令参数或宿主路径。Foundation、Qt 的 `ci-timings.json` 与 HTML 的 `html-ci-timings.json` 随现有证据保留；命令失败或源码后置检查失败仍使作业失败。阶段计时不改变测试环境、测试顺序、十次整套重复及其时限。
+
+依赖下载缓存由 `scripts/ci-cache-policy.json` 声明，只包含 Cargo 下载归档和 Git 数据、pip 下载、HTML 的 Playwright 工具，以及固定 Qt 对应源码归档。缓存不包含已编译产品、安装的 Qt SDK、历史产品夹具、测试结论或凭据。键绑定输入文件、平台、架构和 runner 镜像，恢复时核对可信 main push 来源与逐文件哈希；不接受部分键或内容差异。只有成功的 main push 保存输入，PR、标签及手动运行仅恢复并重新执行检查。具体冷暖耗时和命中情况以实际运行记录为准。
+
+HTML 输入过滤覆盖 `docs/visual/*.json` 及共享 CI 工具，不再匹配 Git 排除的 `build/review` 生成物。Qt 扩展入口中只保留一次完全相同的共享操作控件源码检查；其他领域、桥接、视觉、部署与安装生命周期门槛继续独立执行。
+
 窗口状态、单实例与会话原生回归共用 `scripts/check-native-sessions.py`，在打标签前执行。Linux 安装 Xvfb、Openbox 和 xprop，以窗口管理器的 X11 状态验证最大化、全屏及弹窗行为；Windows、macOS 使用系统插件和窗口管理器。此步骤不部署或上传普通 macOS 应用包。
 
 Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动回执使用新建私有目录，等待与进程清理均有界。`_NET_SUPPORTING_WM_CHECK` 仅声明窗口管理器身份，写入时主题和事件处理仍可能未初始化完成，不能作为原生首窗测试的就绪条件。该屏障不创建预热 Qt 窗口，不增加首窗断言的等待期限，也不在断言失败后重试。

@@ -25,6 +25,8 @@ jobs:
           python3 scripts/publish-release.py --check-notes
           python3 scripts/test-desktop-environment.py
           python3 scripts/test-desktop-workflow.py
+          python3 scripts/test-ci-cache-inputs.py
+          python3 scripts/test-ci-observability.py
           python3 scripts/test-native-codec-sources.py
           python3 scripts/test-native-cab-credit.py
           python3 scripts/test-deployment-audit.py

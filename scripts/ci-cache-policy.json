@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "version": "inputs-v1",
+  "common_inputs": [
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "scripts/ci-cache-inputs.py",
+    "scripts/ci-cache-policy.json",
+    ".github/actions/cache-inputs/action.yml"
+  ],
+  "scopes": {
+    "foundation": {
+      "roots": ["cargo-archives", "cargo-git", "pip"],
+      "inputs": ["scripts/prepare-native-codecs.py"]
+    },
+    "qt": {
+      "roots": ["cargo-archives", "cargo-git", "pip", "qt-sources"],
+      "inputs": [
+        "scripts/desktop.py",
+        "scripts/desktop_environment.py",
+        "scripts/corresponding-sources.json",
+        "scripts/qt-license-sources.json"
+      ]
+    },
+    "html": {
+      "roots": ["pip", "playwright"],
+      "inputs": ["scripts/html-design-requirements.txt", "design/assets/fonts/requirements.txt"]
+    }
+  }
+}

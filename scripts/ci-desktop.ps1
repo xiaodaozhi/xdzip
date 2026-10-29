@@ -1,11 +1,11 @@
 # CI extension: shared local stages plus historical, visual and installer gates.
 param([string]$QtRoot, [string]$ToolsDirectory)
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/ci-observability.ps1"
+Initialize-CiTiming -Scope qt -OutputPath 'build/review/ci-timings.json'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
-    & $Program @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
-    Assert-CleanSources
+    Invoke-CiCommand -Program $Program -Arguments $Arguments -AfterSuccess { Assert-CleanSources }
 }
 function Assert-CleanSources {
     $changes = & git status --porcelain --untracked-files=normal
@@ -65,8 +65,10 @@ $qtPrefix = Join-Path $qtRoot "6.8.2/$qtFolder"
 $shared = @('--qt-prefix', $qtPrefix, '--qt-root', $qtRoot,
     '--build-dir', 'build/desktop', '--output-dir', 'build/review', '--tools-dir', $qtEnvironment)
 # Fail on PATH/compiler/SDK issues before downloads, compilation or license collection.
+Set-CiPhase 'prepare'
 Invoke-Checked python (@('scripts/desktop.py', 'prepare', '--install-qt', '--install-rust', '--packaging') + $shared)
 $aqtPython = if ($IsWindows) { Join-Path $qtEnvironment 'Scripts/python.exe' } else { Join-Path $qtEnvironment 'bin/python' }
+Set-CiPhase 'source-contracts'
 Invoke-Checked python @('scripts/sync-version.py', '--check')
 Invoke-Checked python @('scripts/check-ui-i18n.py')
 Invoke-Checked python @('scripts/check-window-contracts.py','--self-test','--output','build/review/window-contract-audit.json')
@@ -88,6 +90,7 @@ if ($IsWindows) {
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
 }
 # Source bytes and installed configuration are evidence, not a Qt rebuild claim.
+Set-CiPhase 'sdk-correspondence'
 Invoke-Checked python @('scripts/qt_sdk_correspondence.py', '--qt-prefix', $qtPrefix, '--fetch', '--output', 'build/review/qt-sdk-correspondence.json')
 $qtBin = Join-Path $qtPrefix 'bin'
 $env:PATH = "$qtBin$([IO.Path]::PathSeparator)$env:PATH"
@@ -95,9 +98,11 @@ if ($IsLinux) { $env:LD_LIBRARY_PATH = Join-Path $qtPrefix 'lib' }
 $env:QT_QPA_PLATFORM = 'offscreen'
 $env:QT_QUICK_BACKEND = 'software'
 $env:XDZIP_CI_POWERSHELL = (Get-Process -Id $PID).Path
+Set-CiPhase 'settings-compat'
 Invoke-Checked python @('scripts/check-settings-compat.py', '--qt-prefix', $qtPrefix, '--output', 'build/settings-compat')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-compat.json'
+Set-CiPhase 'native-build'
 Invoke-Checked python (@('scripts/desktop.py', 'build') + $shared)
 $productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip' }
 if ($IsWindows) {
@@ -112,6 +117,7 @@ if ($IsMacOS) {
 }
 # Foundation independently executes locked workspace Rust tests.
 $browserTests = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
+Set-CiPhase 'native-integration'
 if ($IsWindows) {
     Invoke-Checked pwsh @('-NoProfile', '-File', 'scripts/check-windows-menu-launcher.ps1', '-Tests', $browserTests, '-OutputDirectory', 'build/review/native-menu-launcher-selftest')
 }
@@ -122,6 +128,7 @@ Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserT
 # Keep per-case timings and each invocation's raw log, including a partial log
 # when CTest kills a timed-out suite. Repeats must not overwrite prior evidence.
 $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
+Set-CiPhase 'component-tests'
 try {
     try {
         Invoke-Checked python (@('scripts/desktop.py', 'test', '--skip-rust') + $shared)
@@ -129,11 +136,13 @@ try {
         Save-ComponentLogs 'initial'
     }
     # Repeat the complete browser suite without changing assertions or deadlines.
+    Set-CiPhase 'browser-repeat'
     Invoke-Checked ctest @('--test-dir', 'build/desktop', '-R', 'qt_zip_browser', '--repeat', 'until-fail:10', '--output-on-failure')
 } finally {
     Remove-Item Env:XDZIP_BROWSER_TIMING_DIR
 }
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
+Set-CiPhase 'resource-metrics'
 Invoke-Checked python @('scripts/check-build-version.py', '--app', $productExe, '--output', 'build/review/build-version.json')
 $metricsExe = if ($IsWindows) { 'build/desktop/tools/process-metrics/xdzip-process-metrics.exe' } else { 'build/desktop/tools/process-metrics/xdzip-process-metrics' }
 Invoke-Checked python @('scripts/test-performance.py','--metrics',$metricsExe)
@@ -146,6 +155,7 @@ Invoke-Checked python @('scripts/check-runtime-resources.py','--probe','build/re
 $rustStatic = (Get-ChildItem 'build/desktop/apps/desktop/rust' -Recurse -File | Where-Object { $_.Name -in @('libxdzip_qt_bridge.a','xdzip_qt_bridge.lib') } | Select-Object -First 1).FullName
 Invoke-Checked python @('scripts/linkage-evidence.py','--app',$productExe,'--map','build/desktop/apps/desktop/xdzip-link.map','--rust-library',$rustStatic,'--output','build/review/linkage-evidence.json')
 # Record synthetic IME/accessibility coverage; offscreen does not imply native desktop approval.
+Set-CiPhase 'visual-default'
 $env:XDZIP_PRIVATE_TEST_AUDIT = Join-Path (Get-Location) 'build/review'
 $desktopProbe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip-browser-tests.exe' } else { 'build/desktop/apps/desktop/xdzip-browser-tests' }
 Invoke-Checked $desktopProbe @('privateTestDesktopInputAndAccessibility')
@@ -178,6 +188,7 @@ Invoke-Checked $browserTests @('partialResultUsesActualOutcomes')
 Remove-Item Env:XDZIP_RESULT_AUDIT
 Invoke-Checked python @('scripts/check-result-ui.py', '--input', 'build/desktop/result-ui', '--output', 'build/review/result-ui.json')
 if (!$IsMacOS) { Copy-Item -Recurse 'build/desktop/result-ui' 'build/review/result-ui' }
+Set-CiPhase 'codec-interop'
 Invoke-Checked cargo @('build', '--release', '--locked', '-p', 'xdzip-m3-probe')
 $m3Probe = if ($IsWindows) { 'target/release/xdzip-m3-probe.exe' } else { 'target/release/xdzip-m3-probe' }
 Invoke-Checked python @('scripts/check-filename-encoding.py', '--probe', $m3Probe, '--output', 'build/review/filename-encoding-service.json')
@@ -185,7 +196,6 @@ Invoke-Checked python @('scripts/measure-m3-core.py', '--binary', $m3Probe, '--o
 $env:XDZIP_M4_VISUAL_AUDIT = Join-Path (Get-Location) 'build/desktop/m4-operations'
 Invoke-Checked $browserTests @('m4CreationWindowAndRoundTrip', 'tarCreationBrowseAndSafeExtraction')
 Remove-Item Env:XDZIP_M4_VISUAL_AUDIT
-Invoke-Checked python @('scripts/check-operation-components.py')
 $env:XDZIP_CREATE_CONTROLS_AUDIT = Join-Path (Get-Location) 'build/desktop/create-controls'
 Invoke-Checked $browserTests @('creationControlsMatchReviewedSource')
 Invoke-Checked python @('scripts/check-create-controls.py', '--input', 'build/desktop/create-controls', '--output', 'build/review/create-controls.json')
@@ -223,6 +233,7 @@ $m2Report | Set-Content 'build/review/m2-core-performance.json'
 Invoke-Checked python @('scripts/build-visual-audit.py', '--input', 'build/desktop/visual-audit', '--output', 'build/review/visual-audit', '--print-checks', '--fail-on-differences', '--require-navigation')
 Invoke-Checked python @('scripts/check-qt-fidelity.py', '--input', 'build/desktop/visual-audit', '--output', 'build/review/visual-audit/fidelity.json')
 # Fractional and Retina DPR change capture pixels, never the 1024-wide logical UI.
+Set-CiPhase 'visual-density'
 foreach ($density in @('1.25', '2')) {
     $env:QT_SCALE_FACTOR = $density
     $welcomePath = "build/desktop/welcome-dpr$density"
@@ -271,6 +282,7 @@ Remove-Item Env:QT_SCALE_FACTOR
 Remove-Item Env:XDZIP_VISUAL_AUDIT
 Copy-Item 'build/desktop/apps/desktop/*.png' 'build/review'
 Copy-Item 'build/desktop/Testing/Temporary/LastTest.log' 'build/review'
+Set-CiPhase 'runtime-package'
 if ($IsMacOS) {
     Invoke-Checked python @('scripts/collect-notices.py', 'build/review/notices')
     Invoke-Checked python @('scripts/prepare-runtime-notices.py', '--qt-prefix', $qtPrefix, '--output', 'build/review/notices/Qt-runtime')
@@ -279,9 +291,11 @@ if ($IsMacOS) {
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'runtime') + $shared)
     Copy-Item 'docs/engineering/developer-build.md' 'build/review/README.md'
     Invoke-Checked git @('archive', '--format=tar', '-o', 'build/review/xdzip-source.tar', 'HEAD')
+    Set-CiPhase 'historical-fixture'
     Invoke-Checked python @('scripts/prepare-previous-product.py', '--qt-prefix', $qtPrefix, '--output', 'build/previous-product', '--notices', 'build/review/notices')
     Copy-Item 'build/previous-product/previous-product.json' 'build/review/previous-product.json'
 }
+Set-CiPhase 'deployed-runtime'
 if ($IsMacOS) {
     # Validate the native executable using the installed SDK. Do not deploy Qt,
     # sign, archive or upload an Apple Silicon developer application package.
@@ -306,6 +320,7 @@ if ($IsMacOS) {
 $auditRoot = if ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app' } elseif ($IsWindows) { 'build/review/windows' } else { 'build/review/linux' }
 $auditExe = if ($IsMacOS) { $productExe } elseif ($IsWindows) { 'build/review/windows/xdzip.exe' } else { 'build/review/linux/bin/xdzip' }
 $auditMode = if ($IsMacOS) { 'sdk' } else { 'deployed' }
+Set-CiPhase 'attribution'
 if ($IsMacOS) {
     Invoke-Checked python @('scripts/deployment_audit.py', '--root', $auditRoot, '--app', $auditExe, '--qt-prefix', $qtPrefix, '--mode', $auditMode, '--output', 'build/review/deployment-audit.json')
     Invoke-Checked python @('scripts/native-redistribution.py','--root',$auditRoot,'--audit','build/review/deployment-audit.json','--output','build/review/native-redistribution.json')
@@ -316,8 +331,10 @@ if ($IsMacOS) {
     Invoke-Checked python @('scripts/sbom.py', '--audit', 'build/review/deployment-audit.json', '--source', 'build/review/source-build.cdx.json', '--output', 'build/review/artifact-files.cdx.json', '--attribution', 'build/review/runtime-attribution.json')
     Invoke-Checked $aqtPython @('scripts/validate-sbom.py', 'build/review/source-build.cdx.json', 'build/review/artifact-files.cdx.json')
 } else {
+    Set-CiPhase 'installer-package'
     Invoke-Checked python (@('scripts/desktop.py', 'package', '--kind', 'installer') + $shared)
 }
+Set-CiPhase 'installer-lifecycle'
 if ($IsLinux) {
     New-Item -ItemType Directory -Force 'build/installer-tests/linux-packages' | Out-Null
     Copy-Item 'build/review/xdzip-ubuntu24.04-amd64.deb' 'build/installer-tests/linux-packages/product.deb'
@@ -340,6 +357,7 @@ if ($IsWindows) {
     Invoke-Checked python @('scripts/prepare-association-fixtures.py','--zip','build/desktop/apps/desktop/m2-flat.zip','--output','build/installer-tests/association-fixtures')
     Invoke-Checked pwsh @('-File','scripts/check-windows-install.ps1','-Packages','build/installer-tests/windows-packages','-Fixture','build/desktop/apps/desktop/m2-flat.zip','-Formats','build/installer-tests/association-fixtures','-Output','build/review/windows-install-lifecycle.json')
 }
+Set-CiPhase 'manual-template'
 Invoke-Checked python @('scripts/prepare-private-test.py', '--output', 'build/review/manual-desktop.json')
 $commit = & git rev-parse HEAD
 $distribution = if ($IsMacOS) {

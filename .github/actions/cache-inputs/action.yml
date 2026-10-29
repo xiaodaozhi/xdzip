@@ -1,0 +1,49 @@
+name: Verified CI dependency inputs
+description: Restore public dependency downloads, or save them only from trusted main pushes
+inputs:
+  scope:
+    description: foundation, qt, or html
+    required: true
+  mode:
+    description: restore or save
+    default: restore
+outputs:
+  hit:
+    description: Exact cache hit
+    value: ${{ steps.restore.outputs.cache-hit }}
+runs:
+  using: composite
+  steps:
+    - name: Identify the fixed dependency inputs
+      id: identity
+      shell: pwsh
+      env:
+        XDZIP_CACHE_SCOPE: ${{ inputs.scope }}
+      run: python scripts/ci-cache-inputs.py plan --scope "$env:XDZIP_CACHE_SCOPE"
+    - name: Restore the exact input cache
+      id: restore
+      if: inputs.mode == 'restore'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        key: ${{ steps.identity.outputs.key }}
+        path: ${{ steps.identity.outputs.paths }}
+    - name: Verify every restored file before use
+      if: inputs.mode == 'restore'
+      shell: pwsh
+      env:
+        XDZIP_CACHE_SCOPE: ${{ inputs.scope }}
+        XDZIP_MATCHED_CACHE_KEY: ${{ steps.restore.outputs.cache-matched-key }}
+      run: python scripts/ci-cache-inputs.py verify --scope "$env:XDZIP_CACHE_SCOPE" --matched-key "$env:XDZIP_MATCHED_CACHE_KEY"
+    - name: Freeze trusted dependency inputs
+      id: seal
+      if: inputs.mode == 'save' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      shell: pwsh
+      env:
+        XDZIP_CACHE_SCOPE: ${{ inputs.scope }}
+      run: python scripts/ci-cache-inputs.py seal --scope "$env:XDZIP_CACHE_SCOPE"
+    - name: Save public inputs without products or verdicts
+      if: inputs.mode == 'save' && steps.seal.outputs.save == 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        key: ${{ steps.identity.outputs.key }}
+        path: ${{ steps.identity.outputs.paths }}

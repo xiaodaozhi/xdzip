@@ -1,5 +1,7 @@
 # Run inside the same shell as MSVC discovery so Cargo's cc build scripts inherit it.
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/ci-observability.ps1"
+Initialize-CiTiming -Scope foundation -OutputPath 'build/review/ci-timings.json'
 if ($IsMacOS) { $env:MACOSX_DEPLOYMENT_TARGET = '14.0' }
 if ($IsWindows) {
     $foundationProfile = $env:USERPROFILE
@@ -19,9 +21,9 @@ if ($IsWindows) {
 }
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
-    & $Program @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Program failed with exit code $LASTEXITCODE" }
+    Invoke-CiCommand -Program $Program -Arguments $Arguments
 }
+Set-CiPhase 'rust-contracts'
 Invoke-Checked rustc @('-vV')
 Invoke-Checked cargo @('fmt', '--all', '--', '--check')
 Invoke-Checked cargo @('clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings')
@@ -31,6 +33,7 @@ Invoke-Checked $codecPython @('scripts/test-native-cab-credit.py')
 Invoke-Checked $codecPython @('scripts/test-rar-rust-fixtures.py')
 Invoke-Checked $codecPython @('scripts/check-rar7-genuine-fixture.py', '--self-test')
 Invoke-Checked $codecPython @('scripts/prepare-native-codecs.py')
+Set-CiPhase 'native-worker'
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
 Invoke-Checked cmake @('--build', 'build/foundation', '--target', 'xdzip-native-codec', '--parallel', '2')
 $env:XDZIP_NATIVE_CODEC = Join-Path (Get-Location) $(if ($IsWindows) { 'build/foundation/tools/native-codec/xdzip-native-codec.exe' } else { 'build/foundation/tools/native-codec/xdzip-native-codec' })
@@ -40,10 +43,12 @@ $env:XDZIP_MOVE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/move-interop'
 $env:XDZIP_UPDATE_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/update-interop'
 $env:XDZIP_METADATA_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/macos-metadata-interop'
 $env:XDZIP_LEGACY_INTEROP_OUTPUT = Join-Path (Get-Location) 'build/legacy-name-interop'
+Set-CiPhase 'rust-tests'
 Invoke-Checked cargo @('test', '--workspace', '--locked')
 Invoke-Checked cargo @('build', '-p', 'xdzip-m3-probe', '-p', 'xdzip-m4-probe', '-p', 'xdzip-optical-probe', '-p', 'xdzip-cab-probe', '--locked')
 $rustCodecEvidence = 'build/review/independent-rust-codecs'
 New-Item -ItemType Directory -Path $rustCodecEvidence -Force | Out-Null
+Set-CiPhase 'codec-interop'
 Invoke-Checked $codecPython @('scripts/check-rar-filter-fixtures.py', '--output', "$rustCodecEvidence/rar-filters")
 Invoke-Checked $codecPython @('scripts/check-rar-large-fixtures.py', '--output', "$rustCodecEvidence/rar-large")
 $extractProbe = if ($IsWindows) { 'target/debug/xdzip-m3-probe.exe' } else { 'target/debug/xdzip-m3-probe' }
@@ -68,11 +73,13 @@ Invoke-Checked $codecPython $zipInteropArguments
 Invoke-Checked $codecPython @('scripts/check-native-codecs.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--sevenzip', $codecReference, '--output', 'build/review/native-codec-interop')
 Invoke-Checked $codecPython @('scripts/check-cab-iso-interop.py', '--worker', $env:XDZIP_NATIVE_CODEC, '--output', 'build/review/native-codec-interop/cab-iso')
 $updatePython = if ($IsWindows) { 'python' } else { 'python3' }
+Set-CiPhase 'archive-transfers'
 Invoke-Checked $updatePython @('scripts/check-filename-encoding.py', '--probe', $extractProbe, '--input', 'build/legacy-name-interop', '--output', 'build/review/legacy-name-rewrite.json')
 Invoke-Checked $updatePython @('scripts/check-update-interop.py', '--input', 'build/update-interop')
 Invoke-Checked $updatePython @('scripts/check-macos-metadata-interop.py', '--input', 'build/macos-metadata-interop')
 Invoke-Checked $updatePython @('scripts/check-move-interop.py', '--input', 'build/move-interop')
 Invoke-Checked $updatePython @('scripts/test-release-updates.py')
+Set-CiPhase 'native-bridge'
 Invoke-Checked cmake @('-S', '.', '-B', 'build/foundation', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DXDZIP_BUILD_QT_PROBE=OFF')
 Invoke-Checked cmake @('--build', 'build/foundation')
 Invoke-Checked ctest @('--test-dir', 'build/foundation', '--output-on-failure')
