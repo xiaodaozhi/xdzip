@@ -83,6 +83,7 @@ jobs:
           name: xdzip-checks-${{ runner.os }}-${{ runner.arch }}
           path: |
             build/desktop/apps/desktop/browser-tests.log
+            build/desktop/apps/desktop/browser-tests-shard-*.log
             build/desktop/apps/desktop/update-tests.log
             build/desktop/Testing/Temporary/LastTest.log
             build/review/*.json
@@ -90,8 +91,7 @@ jobs:
             build/review/native-sessions*.log
             build/review/tab-strip-native/*.json
             build/review/add-dialog*/*.json
-            build/review/browser-timings/*.log
-            build/review/browser-timings/*.json
+            build/review/browser-timings/**
             build/review/diagnostics/*.log
             build/review/diagnostics/*.json
           if-no-files-found: warn

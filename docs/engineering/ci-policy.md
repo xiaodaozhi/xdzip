@@ -75,7 +75,7 @@ Windows 部署验证拒绝 `opengl32sw.dll`，在隔离副本中分别观察默�
 
 Qt 组件的原始逐项 `qml-tests.log` 在成功与失败路径都保存到诊断工件，不以可能被后续重复测试覆盖的 `LastTest.log` 摘要替代。构建检查成功时，该原始日志必须存在且非空，缺失或为空使证据收集明确失败；构建本身失败时仍保留可获得的原始诊断。macOS 继续只上传日志和 JSON。
 
-浏览器首轮与十次整套重复各自保留独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。各测试方法的耗时用于定位慢项，不改变 240 秒整套时限、断言或重复次数。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。
+浏览器首轮与十次整套重复各自保留运行清单，以及每个工作进程独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。离屏测试自动发现并分配全部测试方法，每个方法只执行一次，进程使用各自的临时设置；原生平台或调用方指定共享设置、视觉审计时保持串行。整个 CTest 仍受同一个 240 秒时限约束，断言、逐项等待时限和重复次数不变。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。English: Each offscreen browser run keeps a suite manifest and raw Qt Test timing logs per worker. Offscreen workers receive isolated settings, while native, explicitly shared settings and visual-audit runs stay serial. The same 240-second CTest deadline covers all discovered methods, with unchanged assertions, per-check deadlines and repetition count.
 
 所有层级的 dist/ 及其全部内容都在 .gitignore 中排除，build/、target/ 也不进入 Git 源码树。Documentation 的 scripts/check-docs.py 检查 Git 索引，即使强制暂存 dist/ 文件也会失败。HTML 离线审阅工具仍可在本地生成 dist/，但生成结果只能作为本地文件或 Actions 工件，不能提交到仓库。
 

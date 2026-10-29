@@ -9823,6 +9823,138 @@ QtObject {
         QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 5000);
         QCOMPARE(controller.total(), 4);
     }
+    void browserEmptyStates_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<QString>("folderTitle");
+        QTest::addColumn<QString>("archiveTitle");
+        QTest::addColumn<QString>("searchTitle");
+        QTest::addColumn<QString>("searchHint");
+        QTest::newRow("zh-CN") << QStringLiteral("zh-CN")
+                               << QString::fromUtf8("此文件夹中没有可显示的内容")
+                               << QString::fromUtf8("压缩包为空")
+                               << QString::fromUtf8("没有匹配的条目")
+                               << QString::fromUtf8("请尝试其他搜索词。");
+        QTest::newRow("en-US") << QStringLiteral("en-US")
+                               << QStringLiteral("This folder has no visible contents")
+                               << QStringLiteral("This archive is empty")
+                               << QStringLiteral("No matching entries")
+                               << QStringLiteral("Try a different search term.");
+    }
+    void browserEmptyStates() {
+        QFETCH(QString, language);
+        QFETCH(QString, folderTitle);
+        QFETCH(QString, archiveTitle);
+        QFETCH(QString, searchTitle);
+        QFETCH(QString, searchHint);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *state = findVisual(window->contentItem(), "archiveEmptyState");
+        auto *overlay = findVisual(window->contentItem(), "archiveLoadingOverlay");
+        auto *title = findVisual(window->contentItem(), "archiveEmptyTitle");
+        auto *detail = findVisual(window->contentItem(), "archiveEmptyDetail");
+        auto *search = findVisual(window->contentItem(), "archiveSearch");
+        auto *clear = findVisual(window->contentItem(), "archiveSearchClear");
+        auto *grid = findVisual(window->contentItem(), "browserGridButton");
+        auto *page = window->property("activePage").value<QObject *>();
+        QVERIFY(controller && state && overlay && title && detail && search && clear && grid &&
+                page);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        window->resize(832, 544);
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(preferences);
+        const auto restoreAppearance = qScopeGuard([&] { preferences->cancelPreview(); });
+        const auto captures = qEnvironmentVariable("XDZIP_EMPTY_STATE_AUDIT");
+        if (!captures.isEmpty())
+            QVERIFY(QDir().mkpath(captures));
+        const auto checkLayout = [&](const QString &scene) {
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5}) {
+                    preferences->preview(dark ? "dark" : "light", scale);
+                    QTRY_VERIFY(title->height() + 1 >= title->property("contentHeight").toReal());
+                    QTRY_VERIFY(title->property("contentWidth").toReal() <= title->width() + 1);
+                    if (detail->isVisible()) {
+                        QTRY_VERIFY(detail->height() + 1 >=
+                                    detail->property("contentHeight").toReal());
+                        QTRY_VERIFY(detail->property("contentWidth").toReal() <=
+                                    detail->width() + 1);
+                    }
+                    const auto topLeft = state->mapToItem(overlay, QPointF());
+                    const auto bottomRight =
+                        state->mapToItem(overlay, QPointF(state->width(), state->height()));
+                    QVERIFY(topLeft.x() >= -1 && topLeft.y() >= -1);
+                    QVERIFY(bottomRight.x() <= overlay->width() + 1 &&
+                            bottomRight.y() <= overlay->height() + 1);
+                    if (!captures.isEmpty())
+                        QVERIFY(visual_audit::save(window, captures,
+                                                   language + "-" + scene +
+                                                       (dark ? "-dark-" : "-light-") +
+                                                       QString::number(scale)));
+                }
+        };
+
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QVERIFY(controller->archiveTotal() > 0);
+        QVERIFY(!state->isVisible());
+        int emptyRow = -1;
+        for (int row = 0; row < controller->entries()->rowCount(); ++row)
+            if (controller->entries()->data(controller->entries()->index(row, 0)).toString() ==
+                "empty")
+                emptyRow = row;
+        QVERIFY(emptyRow >= 0);
+        controller->enterDirectory(emptyRow);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() == 0, 5000);
+        QTRY_VERIFY(state->isVisible());
+        QCOMPARE(title->property("text").toString(), folderTitle);
+        QVERIFY(!detail->isVisible());
+        QVERIFY(!controller->searchActive());
+        checkLayout("folder");
+        QVERIFY(QMetaObject::invokeMethod(grid, "clicked"));
+        QTRY_COMPARE(page->property("viewMode").toString(), QStringLiteral("grid"));
+        QVERIFY(state->isVisible());
+        QCOMPARE(title->property("text").toString(), folderTitle);
+
+        // Editing the search field does not change the already committed view.
+        QVERIFY(search->setProperty("text", QStringLiteral("missing")));
+        QCOMPARE(title->property("text").toString(), folderTitle);
+        QVERIFY(QMetaObject::invokeMethod(search, "accepted"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->searchActive(), 5000);
+        QCOMPARE(title->property("text").toString(), searchTitle);
+        QCOMPARE(detail->property("text").toString(), searchHint);
+        QVERIFY(detail->isVisible());
+        checkLayout("search");
+        QVERIFY(QMetaObject::invokeMethod(clear, "clicked"));
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && !controller->searchActive(), 5000);
+        QCOMPARE(title->property("text").toString(), folderTitle);
+        QVERIFY(!detail->isVisible());
+        controller->showRoot();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() > 0, 5000);
+        QVERIFY(!state->isVisible());
+
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/empty.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QCOMPARE(controller->archiveTotal(), 0);
+        QTRY_VERIFY(state->isVisible());
+        QCOMPARE(title->property("text").toString(), archiveTitle);
+        QVERIFY(!detail->isVisible());
+        checkLayout("archive");
+
+        // A limited directory index can leave the root view empty in a nonempty archive.
+        controller->openPath(QStringLiteral(XDZIP_FIXTURES "/navigation-depth.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 5000);
+        QVERIFY(controller->navigationLimited() && controller->archiveTotal() > 0);
+        QCOMPARE(controller->total(), 0);
+        QCOMPARE(title->property("text").toString(), folderTitle);
+        controller->search("file");
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy() && controller->total() > 0, 5000);
+        QVERIFY(!state->isVisible());
+    }
     void typeHeaderSortGroupsDirectoriesBeforeExtensionlessFiles() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));

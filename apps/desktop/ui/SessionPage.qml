@@ -2007,20 +2007,31 @@ Item {
                         opacity: 0.95
                     }
                     ColumnLayout {
+                        objectName: "archiveEmptyState"
                         anchors.centerIn: parent
                         width: Math.min(parent.width - 60, 460)
                         visible: !root.archiveOperationVisible && (reader.browsingBusy || !reader.ready || reader.total === 0)
                         spacing: Theme.mainUnits(16)
                         Text {
+                            objectName: "archiveEmptyTitle"
                             Layout.fillWidth: true
-                            text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062") : reader.ready ? qsTrId("ui.4031b1da2311") : qsTrId("ui.ced325d6e7d0")
+                            text: reader.browsingBusy ? qsTrId("ui.86b6d0d63062")
+                                : !reader.ready ? qsTrId("ui.ced325d6e7d0")
+                                : reader.searchActive ? qsTrId("ui.4031b1da2311")
+                                : reader.archiveTotal === 0 ? qsTrId("browser.emptyArchive")
+                                : qsTrId("browser.emptyFolder")
                             color: Theme.text
                             font.pixelSize: Theme.mainPanelTitleSize
+                            wrapMode: Text.Wrap
                             horizontalAlignment: Text.AlignHCenter
                         }
                         Text {
+                            objectName: "archiveEmptyDetail"
                             Layout.fillWidth: true
-                            text: reader.message.length ? reader.message : qsTrId("ui.6a9e92783d20")
+                            text: reader.message.length ? reader.message
+                                : reader.ready && reader.searchActive ? qsTrId("browser.emptySearchHint")
+                                : !reader.ready && !reader.browsingBusy ? qsTrId("ui.6a9e92783d20") : ""
+                            visible: text.length > 0
                             color: Theme.textSecondary
                             font.pixelSize: Theme.mainBodySize
                             wrapMode: Text.Wrap

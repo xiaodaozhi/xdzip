@@ -583,6 +583,13 @@ function renderEmpty(list) {
             $("#search").value = "";
             render();
         };
+    if (state.archiveState === "ready" && !state.query) {
+        title = "此文件夹中没有可显示的内容";
+        desc = "";
+        ico = "folder";
+        label = "";
+        fn = null;
+    }
     if (state.archiveState === "empty") {
         title = "这个压缩包没有内容";
         desc = "目录读取完成，没有可解压的文件。";
@@ -613,8 +620,8 @@ function renderEmpty(list) {
         label = "打开其他文件";
         fn = () => openPicker();
     }
-    box.innerHTML = `${icon(ico)}<h2>${title}</h2><p>${desc}</p>${state.archiveState === "loading" ? '<div style="width:180px"><div class="skeleton"></div><div class="skeleton"></div></div>' : ""}<button class="button">${label}</button>`;
-    box.querySelector("button").onclick = fn;
+    box.innerHTML = `${icon(ico)}<h2>${title}</h2>${desc ? `<p>${desc}</p>` : ""}${state.archiveState === "loading" ? '<div style="width:180px"><div class="skeleton"></div><div class="skeleton"></div></div>' : ""}${label ? `<button class="button">${label}</button>` : ""}`;
+    if (fn) box.querySelector("button").onclick = fn;
 }
 function renderInspector(chosen) {
     if (state.archiveState !== "ready") {

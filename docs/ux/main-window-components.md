@@ -21,6 +21,10 @@
 | 状态与任务 | StatusBar、StatusAction、任务入口 | 选择统计、索引状态、后台任务；隐藏任务窗口不取消任务 |
 | 提示与操作窗 | Tooltip、Notice、Toast、平台独立窗口 | 提示完整名称 / 禁用理由；Esc、焦点返回、取消和关闭遵循各动作语义 |
 
+浏览列表和网格共用空状态。已提交的搜索没有结果时提示更换搜索词；未搜索且压缩包记录数为零时说明压缩包为空，否则只说明当前文件夹没有可显示内容，不推断被限制的目录索引是否完整。读取与错误显示真实状态，输入框中尚未提交的文字不改变当前结果的提示。未打开文件时的引导不枚举过时的格式列表。
+
+English: List and grid share their empty state. A committed search with no results suggests another search term. Without a search, an archive with no records is identified as empty; otherwise the message describes only the current folder's visible contents, including when the directory index is limited. Reading and errors keep their actual status, and unsubmitted search text does not change the displayed result's message.
+
 ## 统一命令与菜单
 
 按钮、快捷键、右键与下拉调用同一个命令，动作执行前重新检查当前能力。菜单打开时固定对象和选择范围；压缩包切换、查询变化或对象消失时关闭，不能把旧条目的命令应用到新压缩包。

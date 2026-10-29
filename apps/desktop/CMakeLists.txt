@@ -191,11 +191,14 @@ if(BUILD_TESTING)
     target_compile_definitions(xdzip-browser-tests PRIVATE XDZIP_FIXTURES="${PROJECT_SOURCE_DIR}/tests/fixtures/zip" XDZIP_M2_FIXTURE="${XDZIP_M2_FIXTURE}" XDZIP_M2_HIERARCHICAL="${XDZIP_M2_HIERARCHICAL}")
     target_link_libraries(xdzip-browser-tests PRIVATE xdzip-reader-rust
         Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 Qt6::Test)
-    add_test(NAME qt_zip_browser COMMAND xdzip-browser-tests -v1 -o "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log,txt")
+    add_test(NAME qt_zip_browser COMMAND Python3::Interpreter
+        "${PROJECT_SOURCE_DIR}/scripts/run-browser-suite.py"
+        --executable "$<TARGET_FILE:xdzip-browser-tests>"
+        --output "${CMAKE_CURRENT_BINARY_DIR}/browser-tests.log")
     # Whole-suite ceiling includes large scans and many event-loop waits. Individual
     # QTRY assertions keep their own deadlines; a slow host must report the assertion.
-    # The session, resizable-list and About-state matrices run together here.
-    # Their per-assertion and separate cold-menu budgets remain unchanged.
+    # All discovered functions run within this single ceiling. Offscreen workers
+    # have isolated settings; native and explicitly shared settings run serially.
     set_tests_properties(qt_zip_browser PROPERTIES TIMEOUT 240)
     add_test(NAME qt_browser_load COMMAND xdzip-browser --smoke-test)
     add_executable(xdzip-update-tests tests/update_controller_test.cpp

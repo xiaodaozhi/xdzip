@@ -83,6 +83,7 @@ Invoke-Checked python @('scripts/test-macos-attribution.py')
 Invoke-Checked python @('scripts/test-sparkle-bundle.py')
 Invoke-Checked python @('scripts/test-native-runtime-materials.py')
 Invoke-Checked python @('scripts/test-native-menus.py')
+Invoke-Checked python @('scripts/test-browser-suite.py')
 if ($IsWindows) {
     Invoke-Checked python @('scripts/test-windows-installer-native.py')
 }

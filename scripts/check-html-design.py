@@ -181,6 +181,25 @@ with sync_playwright() as p:
         expect(page.locator('#file-rows tr')).to_have_count(12)
         page.locator('#search').fill('')
         record('Folder navigation shows the actual child directories; scoped search finds all twelve nested files')
+        page.evaluate("""() => {
+            const folder = {id: 'empty-fixture', name: '空文件夹', parent: '', folder: true};
+            entries.push(folder); folders.push(folder); byId.set(folder.id, folder);
+            state.path = folder.id; state.query = ''; render();
+        }""")
+        expect(page.locator('#empty-state h2')).to_have_text('此文件夹中没有可显示的内容')
+        expect(page.locator('#empty-state button')).to_have_count(0)
+        page.locator('#search').fill('missing')
+        expect(page.locator('#empty-state h2')).to_have_text('没有找到匹配项')
+        page.locator('#empty-state button').click()
+        expect(page.locator('#empty-state h2')).to_have_text('此文件夹中没有可显示的内容')
+        page.evaluate("""() => {
+            const folder = byId.get('empty-fixture');
+            entries.splice(entries.indexOf(folder), 1);
+            folders.splice(folders.indexOf(folder), 1);
+            byId.delete(folder.id);
+        }""")
+        page.locator('#scenario').select_option('normal')
+        record('An empty folder and an unmatched search show distinct states')
         page.locator('#settings').click()
         page.locator('input[name="setting-theme"][value="dark"]').check()
         expect(page.locator('html')).to_have_attribute('data-theme','dark')

@@ -105,6 +105,7 @@ class BrowserController : public QObject {
     Q_PROPERTY(bool browserQueryAvailable READ browserQueryAvailable NOTIFY changed)
     Q_PROPERTY(bool queryAvailable READ queryAvailable NOTIFY changed)
     Q_PROPERTY(bool ready READ ready NOTIFY changed)
+    Q_PROPERTY(bool searchActive READ searchActive NOTIFY changed)
     Q_PROPERTY(QString title READ title NOTIFY changed)
     Q_PROPERTY(QString message READ message NOTIFY changed)
     Q_PROPERTY(QString creationError READ creationError NOTIFY changed)
@@ -194,6 +195,10 @@ class BrowserController : public QObject {
     }
     bool ready() const {
         return m_ready;
+    }
+    bool searchActive() const {
+        // The visible rows still belong to the last committed query during a retry or cancellation.
+        return m_ready && !m_committedQuery.search.isEmpty();
     }
     QString formatLabel() const {
         return m_format;

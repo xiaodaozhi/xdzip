@@ -86,7 +86,7 @@
     "ui.a77a6cca3ce2": "Copy name",
     "ui.567254b2f2a5": "Copy path in archive",
     "ui.dc3e93fbf81a": "Drop to open this archive",
-    "ui.a3c9bc4e63f7": "Drop a single local ZIP, TAR, or TAR.GZ archive",
+    "ui.a3c9bc4e63f7": "Drop a single local archive or disc image",
     "ui.1674a0c33f35": "Archive files",
     "ui.365d4b7cdd5c": "No archive open",
     "ui.569488175a99": {
@@ -111,7 +111,10 @@
     "ui.86b6d0d63062": "Reading…",
     "ui.4031b1da2311": "No matching entries",
     "ui.ced325d6e7d0": "Browse before extracting",
-    "ui.6a9e92783d20": "Open a ZIP, TAR, or TAR.GZ archive and extract to a folder you choose.",
+    "ui.6a9e92783d20": "Open a supported file to browse its contents and extract to a folder you choose.",
+    "browser.emptyArchive": "This archive is empty",
+    "browser.emptyFolder": "This folder has no visible contents",
+    "browser.emptySearchHint": "Try a different search term.",
     "ui.caf06adff4f1": "Cancel reading",
     "ui.d43d21c6f28f": "Files stay on this device",
     "ui.aeb126abb448": {
