@@ -17,7 +17,9 @@ Qt 运行时模块归档为 qtbase、qtdeclarative、qtsvg、qttranslations，�
 
 English: The separate rar-wire-mappings directory preserves bounded finite-mapping provenance and the exact original UnRAR 7.30 beta1 notice in the hashed delivery. The pinned download filename is unrarsrc-7.3.1.tar.gz; its numeric filename does not establish a separate upstream release version. These materials include no official engine source and do not relicense reference-derived facts as Apache-2.0 or replace candidate-specific redistribution review.
 
-另附固定的 Mesa 11.2.2、LLVM 3.6.2 原始源码归档及 ICU 73.2 完整许可，服务于保留的 Windows 软件渲染库和 Linux ICU；各平台原始通知的收集及供应方构建历史限制见[原生运行库来源与通知](native-runtime-materials.md)。这些材料同样纳入交付总清单，不能将新补材料记作历史包已经包含。
+另附固定的 ICU 73.2 完整许可，服务于 Linux ICU，并纳入交付总清单。当前 Windows 开发包不包含软件 OpenGL 库，不再为该库收集 Mesa／LLVM 材料；历史交付保留原有材料和义务，见[原生运行库来源与通知](native-runtime-materials.md)。
+
+English: The pinned ICU license remains in the source delivery for Linux. Current Windows developer packages omit the software OpenGL library and its dedicated Mesa/LLVM materials; historical deliveries retain their original materials and obligations.
 
 应用动态链接 Qt，提供源码重建入口和兼容库替换说明。[macOS 部署核验](macos-deployment.md)覆盖隔离副本的修改库加载，不声称已从源码重建整套 Qt。实际 Qt 源码构建与产品加载另有独立流程，见[自动验证契约](wp12-automation.md)。SDK 字节级构建等价性、精确静态链接归属和许可分支仍属于[发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)，不重新列为已完成 WP-12 的开发待办。
 

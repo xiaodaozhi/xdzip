@@ -16,11 +16,15 @@ Windows/Linux 的 `package --kind runtime|installer|all` 共用同一部署与�
 
 安装器展示随包的原始 Microsoft VC++ 运行库协议，许可页明确适用组件范围并要求接受，随后展示双语 Windows-runtime-NOTICE.txt。便携包附带同一原文和说明；项目原创代码仍采用 Apache-2.0，Qt 等组件的原始授权和替换权不受此页影响。编译前核对原始协议哈希和完整说明，材料附件保留同一文本，详见 [Windows 许可](windows-licensing.md)。
 
-便携包与安装器使用同一部署目录，由 [deploy_windows.py](../../scripts/deploy_windows.py) 调用 windeployqt，再按已固定的 Qt Quick Basic 策略移除 FluentWinUI3、Fusion、Imagine、Material、Universal、Windows、仅样式引用的 NativeStyle／Effects、qmltooling 和 .qmltypes。Basic、Controls impl、Templates、运行时 QML 与 qmldir 保留；Qt Widgets 的 qmodernwindowsstyle 继续服务原生控件。opengl32sw、DXC、DXIL、D3DCompiler 图形回退库保留。增加新样式或 Effects 功能时必须同时调整部署策略并复验。
+便携包与安装器使用同一部署目录，由 [deploy_windows.py](../../scripts/deploy_windows.py) 调用 windeployqt，再按已固定的 Qt Quick Basic 策略移除 FluentWinUI3、Fusion、Imagine、Material、Universal、Windows、仅样式引用的 NativeStyle／Effects、qmltooling 和 .qmltypes。Basic、Controls impl、Templates、运行时 QML 与 qmldir 保留；Qt Widgets 的 qmodernwindowsstyle 继续服务原生控件。DXC、DXIL、D3DCompiler 保留，`opengl32sw.dll` 不进入新部署目录；已存在的根目录副本会在受控暂存中移除，其他位置的同名残留使部署失败。增加新样式或 Effects 功能时必须同时调整部署策略并复验。
+
+Windows 上 Qt Quick 默认使用 Direct3D 11。Qt 在部分硬件或驱动功能不足的情况下可回退到 Direct3D WARP；这与软件 OpenGL 是不同路径。新包不承诺通过 `QT_OPENGL=software` 或 OpenGL 后端提供 Mesa 软件回退。历史包及其许可材料保持原样。[Qt 图形后端说明](https://doc.qt.io/qt-6.8/windows-graphics.html)列出默认和显式软件设备行为。
+
+English: New Windows developer deployments omit `opengl32sw.dll` while retaining the three Windows SDK graphics libraries. Qt Quick defaults to Direct3D 11 and may fall back to WARP in some cases; WARP is separate from software OpenGL. Explicit software OpenGL fallback is not provided by the new package. Historical package obligations remain unchanged.
 
 VC++ 采用应用目录内部署，使用 [固定来源与文件哈希](../../scripts/windows-runtime.json) 的微软官方 x64 14.44.35211 运行库。[准备脚本](../../scripts/prepare-windows-runtime.py) 用固定 WiX 工具解包，再校验每个 DLL 和许可正文，不执行 EXE 或 MSI 安装、不从 System32 复制文件。交付所需 MSVCP／VCRUNTIME DLL 与许可、来源记录，工具、CAB、MSI 和未执行的 vc_redist 安装程序不进入产品；Windows 10／11 自带 UCRT。应用目录内运行库须随产品更新维护，不能依赖系统集中运行库更新替换它们，参见 [Microsoft 部署方式](https://learn.microsoft.com/en-us/cpp/windows/choosing-a-deployment-method)。
 
-[部署回归](../../scripts/test-windows-deployment.py) 检查裁剪与运行库缺失边界；[实际运行检查](../../scripts/verify_windows_runtime.py) 在独立副本中加入测试 DLL，清除 SDK 搜索路径，执行系统翻译、设置重启、原生标题栏和双语启动。测试文件不写入产品目录，此检查不替代干净 Windows 上的安装／升级／卸载验收。
+[部署回归](../../scripts/test-windows-deployment.py) 检查裁剪与运行库缺失边界；[实际运行检查](../../scripts/verify_windows_runtime.py) 拒绝软件 OpenGL DLL，在独立副本中加入测试 DLL，清除 SDK 搜索路径，执行系统翻译、设置重启、原生标题栏和双语启动。它另在清除渲染覆盖后核对默认 D3D11 场景图初始化，并显式请求 WARP、核对实际选中的 Microsoft 软件设备。显式请求不证明故障下的自动回退，也不替代人工视觉验收。测试文件不写入产品目录，此检查不替代干净 Windows 上的安装／升级／卸载验收。
 
 build-windows-installer.py 只接受干净构建的 deployed 审计，重新核对每个文件的 SHA-256。固定 Inno Setup 6.7.3、官方安装程序哈希、源码提交、简体中文资源与许可正文见 [工具链配置](../../scripts/installer-toolchain.json)。编译器不进入产品，许可正文随 notices 交付；向导支持简体中文与 English，遵循系统语言。
 

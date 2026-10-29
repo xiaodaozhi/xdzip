@@ -71,6 +71,8 @@ macOS 使用已安装的 Qt SDK、sdk 模式部署审计和原生 cocoa 插件�
 
 Windows/Linux 继续上传实验运行包、安装器、同提交源码、许可及证据；CI 的 output-dir 保持 build/review，构建目录为 build/desktop，普通本地打包默认 build/package。macOS 不上传 Apple Silicon 应用包。所有记录或工件保存 14 天，均不作为正式签名发行。
 
+Windows 部署验证拒绝 `opengl32sw.dll`，在隔离副本中分别观察默认 Direct3D 11 初始化和显式请求后选中的 Microsoft WARP 软件设备。它不模拟显卡或驱动故障，不将显式 WARP 检查称为自动回退或人工视觉验收。
+
 Qt 组件的原始逐项 `qml-tests.log` 在成功与失败路径都保存到诊断工件，不以可能被后续重复测试覆盖的 `LastTest.log` 摘要替代。构建检查成功时，该原始日志必须存在且非空，缺失或为空使证据收集明确失败；构建本身失败时仍保留可获得的原始诊断。macOS 继续只上传日志和 JSON。
 
 浏览器首轮与十次整套重复各自保留独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。各测试方法的耗时用于定位慢项，不改变 240 秒整套时限、断言或重复次数。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。

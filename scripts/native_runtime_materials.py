@@ -1,12 +1,9 @@
 # scripts/native_runtime_materials.py
 
 """Collect hash-pinned upstream notices without selecting licenses or erasing gaps."""
-import hashlib
 import json
 from pathlib import Path, PurePosixPath
-import re
 import shutil
-import tarfile
 import urllib.request
 
 from deployment_audit import digest
@@ -41,54 +38,13 @@ def fetch(item, cache):
     return path
 
 
-def archive_notices(path, item):
-    prefix = item['file'].removesuffix('.tar.xz') + '/'
-    records, comments = {}, {}
-    with tarfile.open(path, 'r:xz') as archive:
-        for member in archive.getmembers():
-            relative = PurePosixPath(member.name)
-            if relative.is_absolute() or '..' in relative.parts or '\\' in member.name or not (member.name == prefix[:-1] or member.name.startswith(prefix)):
-                raise ValueError('Unbounded native source member')
-            name = member.name.removeprefix(prefix)
-            if name in item['notices']:
-                if not member.isfile() or member.size > 1024*1024:
-                    raise ValueError('Invalid upstream notice member')
-                records[name] = archive.extractfile(member).read()
-            # Preserve original per-file notices as a conservative source-wide
-            # reference. Unused drivers/targets are not asserted to be linked.
-            if member.isfile() and relative.suffix.lower() in {'.c', '.h', '.cpp', '.hpp', '.cc'} and member.size <= 2*1024*1024:
-                raw = archive.extractfile(member).read()
-                try:
-                    data = raw.decode('utf-8')
-                except UnicodeDecodeError:
-                    data = raw.decode('latin-1')
-                for block in re.findall(r'/\*[\s\S]*?\*/|(?://[^\n]*(?:\n|$))+', data):
-                    if re.search(r'copyright|permission|licen[cs]e|warranty', block, re.I):
-                        key = hashlib.sha256(block.encode()).hexdigest()
-                        comments.setdefault(key, {'source': name, 'text': block})
-    if set(records) != set(item['notices']):
-        raise ValueError('Missing upstream notice')
-    records['SOURCE-NOTICES.txt'] = (
-        'Source-wide reference notices, including unused components. This is not a linked-code license selection.\n\n' +
-        '\n\n'.join(row['source']+'\n'+row['text'] for _, row in sorted(comments.items())) + '\n').encode('utf-8')
-    return records
-
-
 def prepare(output, platform, cache=None):
     config = configuration()
     cache = cache or ROOT/'build/native-source-cache'
     inventory = []
-    if platform == 'windows':
-        for item in config['archives']:
-            source = fetch(item, cache)
-            directory = output/(item['component']+'-'+item['version'])
-            for name, data in archive_notices(source, item).items():
-                target = directory/name
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(data)
-                inventory.append({'file': target.relative_to(output).as_posix(),
-                                  'sha256': hashlib.sha256(data).hexdigest()})
-    elif platform == 'linux':
+    if platform == 'windows' and any((output/name).exists() for name in ('Mesa-11.2.2', 'LLVM-3.6.2')):
+        raise ValueError('Obsolete software OpenGL notices found; use a clean output directory')
+    if platform == 'linux':
         item = config['icu']
         target = output/'ICU-73.2'/item['file']
         target.parent.mkdir(parents=True, exist_ok=True)

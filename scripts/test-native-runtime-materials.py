@@ -1,48 +1,41 @@
 # scripts/test-native-runtime-materials.py
 
-"""Reject corrupted notice sources and unsafe members before material delivery."""
+"""Verify pinned notice sources and the platform-specific material set."""
 import hashlib
-import io
 from pathlib import Path
-import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
 
-from native_runtime_materials import ROOT, archive_notices, fetch, installer_notices, prepare
+from native_runtime_materials import ROOT, fetch, installer_notices, prepare
 
 
 class NativeMaterialsTests(unittest.TestCase):
-    def fixture(self, root, member='owned-1/LICENSE'):
-        path = root/'owned-1.tar.xz'
-        with tarfile.open(path, 'w:xz') as archive:
-            data = b'/* Copyright owned fixture. Permission granted. */\n'
-            item = tarfile.TarInfo(member); item.size = len(data)
-            archive.addfile(item, io.BytesIO(data))
+    def fixture(self, root):
+        path = root/'owned-license.txt'
+        path.write_bytes(b'Owned license fixture')
         return {'file': path.name, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
-                'url': 'https://invalid.test/not-used', 'notices': ['LICENSE']}
+                'url': 'https://invalid.test/not-used'}
 
-    def test_offline_verified_cache_and_missing_notice(self):
+    def test_offline_verified_cache_and_tampering(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); item = self.fixture(root)
             self.assertEqual(fetch(item, root), root/item['file'])
-            result = archive_notices(root/item['file'], item)
-            self.assertIn(b'Copyright owned fixture', result['LICENSE'])
-            item['notices'] = ['MISSING']
-            with self.assertRaisesRegex(ValueError, 'Missing upstream'):
-                archive_notices(root/item['file'], item)
             (root/item['file']).write_bytes(b'corrupted')
             with self.assertRaisesRegex(ValueError, 'checksum'):
                 fetch(item, root)
 
-    def test_archive_escape_is_not_extracted_or_trusted(self):
+    def test_windows_no_longer_fetches_software_opengl_notices(self):
         with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            for name in ['../escape', 'owned-1/../escape', '/absolute', 'other/LICENSE']:
-                item = self.fixture(root, name)
-                with self.assertRaisesRegex(ValueError, 'Unbounded'):
-                    archive_notices(root/item['file'], item)
-            self.assertFalse((root/'escape').exists())
+            root = Path(temp); output = root/'notices'
+            with patch('native_runtime_materials.fetch') as download:
+                report = prepare(output, 'windows', root/'cache')
+            download.assert_not_called()
+            self.assertEqual(report['files'], [])
+            self.assertTrue((output/'native-runtime-materials.json').is_file())
+            (output/'Mesa-11.2.2').mkdir()
+            with self.assertRaisesRegex(ValueError, 'Obsolete software OpenGL notices'):
+                prepare(output, 'windows', root/'cache')
 
     def test_icu_notice_copy_is_bound_to_hash_and_recorded(self):
         with tempfile.TemporaryDirectory() as temp:
