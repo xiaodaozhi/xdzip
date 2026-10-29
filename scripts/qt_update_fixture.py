@@ -13,6 +13,7 @@ import tarfile
 import tempfile
 from update_fixture import ROOT, KEYRING, run, dump, digest, manifest, qa_installer_text
 from deployment_audit import native
+from association_types import WINDOWS_ICONS
 
 
 def require_no_signing_authority():
@@ -230,8 +231,10 @@ def prepare(output, sdk, session, *, production_trust=False):
             checked([sys.executable,source/'scripts/collect-notices.py',notices])
             if sys.platform=='win32':
                 payload.mkdir()
-                for name in ('xdzip.exe','xdzip-update-helper.exe'):
+                for name in ('xdzip.exe','xdzip-update-helper.exe','xdzip-association.exe'):
                     shutil.copy2(build/'apps/desktop'/name,payload/name)
+                for icon in WINDOWS_ICONS.values():
+                    shutil.copy2(source/'design/assets/file-associations'/f'xdzip-{icon}.ico',payload)
                 shutil.copytree(notices,payload/'share/notices')
                 checked([sys.executable,source/'scripts/deploy_windows.py','--root',payload,'--qt-prefix',sdk,
                          '--qml-dir',source/'apps/desktop/ui','--qml-import',sdk/'qml',

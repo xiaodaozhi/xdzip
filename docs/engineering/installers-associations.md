@@ -86,6 +86,10 @@ windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实
 
 Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使 `CloseMainWindow` 按该配置执行正常退出；其他关联打开探针保留默认托盘配置并通过显式退出屏障结束。安装保护探针不得把“窗口隐藏”误判为“进程退出失败”，也不得通过强制终止正常路径跳过退出验证。
 
+Windows 更新协议夹具与真实 Qt 更新夹具同样提供关联启动器和全部九份文档 ICO，不能通过缺少必需载荷的安装器检查。协议夹具的小型 C 主程序与关联命令只验证更新交接；嵌入应用资源、原生候选和真实窗口由完整 Qt 产品链分别检查，不混用结论。
+
+English: Windows protocol and real Qt update fixtures include the required association launcher and all nine document ICOs. The small protocol fixture verifies updater handoff; application resources, native candidates and real windows are checked separately with the complete Qt product.
+
 ## 兼容基线的长期输入
 
 真实升级／回退使用固定的旧版完整产品源码，不从已重写的 main 历史获取。`prepare-previous-product.py` 锁定独立 `codex/installer-compat-baseline` 分支中的单根源码快照；该分支只保存构建和回归所需的原始源码及资源，不携带旧 main 父历史、执行报告或工作流。快照内 `COMPAT-BASELINE.json` 记录原始来源提交与树身份，不能合并回 main，也不作为发行包或当前产品的验收结论。
