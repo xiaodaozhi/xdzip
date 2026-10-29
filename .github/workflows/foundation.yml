@@ -33,7 +33,7 @@ jobs:
 
   bridge:
     needs: foundation-plan
-    if: always() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
+    if: always() && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
     strategy:
@@ -100,7 +100,7 @@ jobs:
 
   rar7-official-reference:
     needs: foundation-plan
-    if: always() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
+    if: always() && !cancelled() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

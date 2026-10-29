@@ -4,6 +4,8 @@ Documentation、Foundation probes、Qt components 和 HTML design review 的普�
 
 普通并发组按工作流和事件隔离。同一个 PR 的更新可以取消该 PR 的旧运行；main、tag 和 dispatch 使用各自 run ID，不相互取消，不共享排队槽。取消结果继续保留为取消，不作为通过。仓库保护规则、权限和发行环境不随此策略自动修改。
 
+重型作业的分类失败回退使用 `always() && !cancelled()`，保留依赖失败时的全量验证，同时尊重工作流取消。[GitHub 取消机制](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-cancellation)会重新判定运行中作业的条件，不能仅用 `always()` 保住重型作业。取消后的汇总仍要求真实结论与证据，不把取消记为成功。
+
 普通工作流按命令记录阶段耗时、原始退出状态和源码提交，记录不包含命令参数或宿主路径。Foundation、Qt 的 `ci-timings.json` 与 HTML 的 `html-ci-timings.json` 随现有证据保留；命令失败或源码后置检查失败仍使作业失败。阶段计时不改变测试环境、测试顺序、十次整套重复及其时限。
 
 依赖下载缓存由 `scripts/ci-cache-policy.json` 声明，只包含 Cargo 下载归档和 Git 数据、pip 下载、HTML 的 Playwright 工具，以及固定 Qt 对应源码归档。缓存不包含已编译产品、安装的 Qt SDK、历史产品夹具、测试结论或凭据。键绑定输入文件、平台、架构和 runner 镜像，恢复时核对可信 main push 来源与逐文件哈希；不接受部分键或内容差异。只有成功的 main push 保存输入，PR、标签及手动运行仅恢复并重新执行检查。具体冷暖耗时和命中情况以实际运行记录为准。

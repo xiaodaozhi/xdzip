@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Exercise complete Git diffs, PR merge identity and conservative fallbacks."""
 import importlib.util
+import ast
 import json
 from pathlib import Path
 import subprocess
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -144,6 +146,28 @@ class PlanTests(unittest.TestCase):
                      '.github/actions/cache-inputs/action.yml', 'scripts/ci-timing.sh']:
             self.assertTrue(any(fnmatch.fnmatchcase(name, pattern) for pattern in self.config['html_inputs']), name)
         self.assertFalse(any(pattern.startswith(('build/', 'target/', 'dist/')) for pattern in self.config['html_inputs']))
+
+    def test_actual_workflow_predicates_respect_cancellation_and_keep_full_failure_fallback(self):
+        jobs = [('foundation', 'foundation', 'bridge'), ('foundation', 'foundation', 'rar7-official-reference'),
+                ('qt-components', 'qt', 'native-qt'), ('html-design', 'html', 'visual-anchors')]
+        for file, scope, job in jobs:
+            source = (ROOT / '.github/workflows' / (file + '.yml')).read_text(encoding='utf-8')
+            block = re.search(r'^  ' + job + r':\n(.*?)(?=^  [a-z]|\Z)', source, re.M | re.S)[1]
+            expression = re.search(r'^    if: (.+)$', block, re.M)[1]
+            for cancelled in (False, True):
+                for outcome in ('success', 'failure', 'cancelled', 'skipped'):
+                    for output in ('true', 'false', ''):
+                        actual = expression.replace('!cancelled()', repr(not cancelled)).replace('always()', 'True')
+                        actual = actual.replace('needs.' + scope + '-plan.result', repr(outcome))
+                        actual = actual.replace('needs.' + scope + '-plan.outputs.run_heavy', repr(output))
+                        actual = actual.replace('&&', ' and ').replace('||', ' or ')
+                        tree = ast.parse(actual, mode='eval')
+                        allowed = (ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.Compare, ast.NotEq, ast.Eq, ast.Constant)
+                        self.assertTrue(all(isinstance(node, allowed) for node in ast.walk(tree)))
+                        value = eval(compile(tree, '<owned-workflow-condition>', 'eval'), {'__builtins__': {}}, {})
+                        expected = not cancelled and (outcome != 'success' or output != 'false')
+                        with self.subTest(job=job, cancelled=cancelled, outcome=outcome, output=output):
+                            self.assertEqual(value, expected)
 
 
 if __name__ == '__main__':unittest.main()

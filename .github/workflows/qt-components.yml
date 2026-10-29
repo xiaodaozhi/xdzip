@@ -33,7 +33,7 @@ jobs:
 
   native-qt:
     needs: qt-plan
-    if: always() && (needs.qt-plan.result != 'success' || needs.qt-plan.outputs.run_heavy != 'false')
+    if: always() && !cancelled() && (needs.qt-plan.result != 'success' || needs.qt-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
     strategy:

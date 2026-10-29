@@ -33,7 +33,7 @@ jobs:
 
   visual-anchors:
     needs: html-plan
-    if: always() && (needs.html-plan.result != 'success' || needs.html-plan.outputs.run_heavy != 'false')
+    if: always() && !cancelled() && (needs.html-plan.result != 'success' || needs.html-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/build/ci-input-cache/playwright
