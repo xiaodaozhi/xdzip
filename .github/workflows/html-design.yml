@@ -48,58 +48,58 @@ jobs:
           scope: html
       - name: Install isolated review tooling
         run: |
-          python3 -m venv .venv-design
-          .venv-design/bin/pip install -r scripts/html-design-requirements.txt
-          .venv-design/bin/python -m playwright install --with-deps chromium
+          python3 -m venv build/ci-html-tools
+          build/ci-html-tools/bin/pip install -r scripts/html-design-requirements.txt
+          build/ci-html-tools/bin/python -m playwright install --with-deps chromium
       - name: Build and compare source anchors
         run: |
           source scripts/ci-timing.sh
-          export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
-          ci_run anchors .venv-design/bin/python design/assets/fonts/build-subset.py --check
-          ci_run anchors .venv-design/bin/python design/assets/fonts/export-qt.py --check
-          ci_run anchors .venv-design/bin/python scripts/check-design-assets.py
-          ci_run anchors .venv-design/bin/python scripts/check-brand-corners.py --render
-          ci_run anchors .venv-design/bin/python scripts/check-asset-integration.py
-          ci_run anchors .venv-design/bin/python scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
-          ci_run anchors .venv-design/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
-          ci_run anchors .venv-design/bin/python scripts/check-directory-tree-delivery.py
-          ci_run anchors .venv-design/bin/python scripts/check-ui-i18n.py
-          ci_run anchors .venv-design/bin/python scripts/generate-ui-messages.py --check
-          ci_run anchors .venv-design/bin/python scripts/build-html-design.py
-          ci_run anchors .venv-design/bin/python scripts/generate-display-spec.py --check
-          ci_run anchors .venv-design/bin/python scripts/export-hifi-titlebars.py
-          ci_run anchors .venv-design/bin/python scripts/export-welcome-design.py
-          ci_run anchors .venv-design/bin/python scripts/generate-control-tokens.py --check
-          ci_run anchors .venv-design/bin/python scripts/sync-version.py --check
-          ci_run anchors .venv-design/bin/python scripts/check-html-about.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-settings.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-confirmations.py
-          ci_run anchors .venv-design/bin/python scripts/check-add-dialog.py --html --native-zoom --output build/review/add-dialog-html
-          ci_run anchors .venv-design/bin/python scripts/check-html-password.py --native-zoom
-          ci_run anchors .venv-design/bin/python scripts/check-html-desktop-integration.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-preflight.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-welcome.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-controls.py
-          ci_run anchors .venv-design/bin/python scripts/check-tab-strip.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-header.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-preview.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-references.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-scale.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-density.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-operation-ui.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-operation-headers.py
-          ci_run anchors .venv-design/bin/python scripts/check-integrity-progress.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-create-controls.py
-          ci_run anchors .venv-design/bin/python scripts/check-extract-fidelity.py
-          ci_run anchors .venv-design/bin/python scripts/check-html-design.py
-          ci_run anchors .venv-design/bin/python scripts/build-html-header-review.py
+          export XDZIP_CHROMIUM="$(build/ci-html-tools/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          ci_run anchors build/ci-html-tools/bin/python design/assets/fonts/build-subset.py --check
+          ci_run anchors build/ci-html-tools/bin/python design/assets/fonts/export-qt.py --check
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-design-assets.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-brand-corners.py --render
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-asset-integration.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/render-design-assets.py --gallery-only --standalone dist/xdzip-assets.html
+          ci_run anchors build/ci-html-tools/bin/python scripts/build-directory-tree-delivery.py --standalone dist/xdzip-directory-tree.html --package dist/xdzip-directory-tree.zip
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-directory-tree-delivery.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-ui-i18n.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/generate-ui-messages.py --check
+          ci_run anchors build/ci-html-tools/bin/python scripts/build-html-design.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/generate-display-spec.py --check
+          ci_run anchors build/ci-html-tools/bin/python scripts/export-hifi-titlebars.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/export-welcome-design.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/generate-control-tokens.py --check
+          ci_run anchors build/ci-html-tools/bin/python scripts/sync-version.py --check
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-about.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-settings.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-confirmations.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-add-dialog.py --html --native-zoom --output build/review/add-dialog-html
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-password.py --native-zoom
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-desktop-integration.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-preflight.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-welcome.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-controls.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-tab-strip.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-header.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-preview.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-references.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-scale.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-density.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-operation-ui.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-operation-headers.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-integrity-progress.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-create-controls.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-extract-fidelity.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/check-html-design.py
+          ci_run anchors build/ci-html-tools/bin/python scripts/build-html-header-review.py
       - name: Compare body anchors and build offline regional review
         run: |
           source scripts/ci-timing.sh
-          export XDZIP_CHROMIUM="$(.venv-design/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          export XDZIP_CHROMIUM="$(build/ci-html-tools/bin/python -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
           body_check_exit=0
-          ci_run body .venv-design/bin/python scripts/check-html-body.py || body_check_exit=$?
-          ci_run body .venv-design/bin/python scripts/build-html-body-review.py
+          ci_run body build/ci-html-tools/bin/python scripts/check-html-body.py || body_check_exit=$?
+          ci_run body build/ci-html-tools/bin/python scripts/build-html-body-review.py
           exit "$body_check_exit"
       - name: Upload actual review evidence
         if: always()

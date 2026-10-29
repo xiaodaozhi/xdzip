@@ -8,7 +8,7 @@ ci_run() {
   started="$(date +%s%N)"
   "$@" || result=$?
   ended="$(date +%s%N)"
-  .venv-design/bin/python scripts/ci-timing.py --phase "$phase" --label "$label" \
+  build/ci-html-tools/bin/python scripts/ci-timing.py --phase "$phase" --label "$label" \
     --started-ns "$started" --ended-ns "$ended" --exit-code "$result" || return $?
   return "$result"
 }

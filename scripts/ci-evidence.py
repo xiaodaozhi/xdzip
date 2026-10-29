@@ -75,7 +75,7 @@ def timings(reader, scope, context):
         expected |= {'attribution'} if context['platform'] == 'macOS' else {'historical-fixture', 'installer-package', 'installer-lifecycle'}
     require(expected <= phases, 'missing-validation-phase')
     if scope == 'html':
-        declared = Counter(re.findall(r'ci_run (?:anchors|body) \.venv-design/bin/python (\S+)',
+        declared = Counter(re.findall(r'ci_run (?:anchors|body) build/ci-html-tools/bin/python (\S+)',
                                      (reader.root / '.github/workflows/html-design.yml').read_text(encoding='utf-8')))
         require(Counter(row['command'] for row in rows) == Counter({Path(k).name: v for k, v in declared.items()}),
                 'missing-html-command')
@@ -274,14 +274,18 @@ def gate(scope, needs, plan, records, context, config):
             **{k: context[k] for k in ('revision', 'run_id', 'run_attempt')}}
 
 
+def require_clean_source(root):
+    require(not subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=normal'], cwd=root),
+            'validation-requires-clean-source')
+
+
 def context():
     env = os.environ
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     require(env.get('GITHUB_ACTIONS') == 'true' and env.get('CI') == 'true' and revision == env.get('GITHUB_SHA')
             and planner.SHA.fullmatch(revision) and env.get('GITHUB_RUN_ID', '').isdigit()
             and env.get('GITHUB_RUN_ATTEMPT', '').isdigit(), 'same-run-github-context-required')
-    require(not subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=normal'], cwd=ROOT),
-            'validation-requires-clean-source')
+    require_clean_source(ROOT)
     return {'revision': revision, 'run_id': env['GITHUB_RUN_ID'], 'run_attempt': env['GITHUB_RUN_ATTEMPT'],
             'platform': env['RUNNER_OS'], 'architecture': env['RUNNER_ARCH']}
 

@@ -4,6 +4,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 import uuid
@@ -160,6 +161,20 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing-or-failed-native-sessions'):self.qt()
         self.write('build/review/diagnostics/qml-initial.log', 'Totals: 4 passed, 1 failed, 0 skipped\nFinished testing\n')
         with self.assertRaisesRegex(ValueError, 'incomplete-or-failed-qt-log'):self.qt()
+
+    def test_isolated_build_tooling_is_clean_but_root_environment_and_source_edits_are_rejected(self):
+        self.write('.gitignore', '/build/\n/dist/\n')
+        def git(*args):
+            subprocess.run(['git', '-c', 'user.name=CI fixture', '-c', 'user.email=ci@example.invalid', *args],
+                           cwd=self.root, check=True, capture_output=True)
+        git('init', '-q', '-b', 'main');git('add', '.');git('commit', '-q', '-m', 'owned fixture')
+        self.write('build/ci-html-tools/owned.py', 'owned CI interpreter fixture')
+        ci.require_clean_source(self.root)
+        self.write('.venv-design/owned.py', 'owned unexpected root environment')
+        with self.assertRaisesRegex(ValueError, 'validation-requires-clean-source'):ci.require_clean_source(self.root)
+        (self.root / '.venv-design/owned.py').unlink()
+        self.write('scripts/check-native-sessions.py', 'owned changed source')
+        with self.assertRaisesRegex(ValueError, 'validation-requires-clean-source'):ci.require_clean_source(self.root)
 
 
 if __name__ == '__main__':unittest.main()
