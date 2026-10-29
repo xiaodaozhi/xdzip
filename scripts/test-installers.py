@@ -241,18 +241,27 @@ class InstallerTests(unittest.TestCase):
             self.assertNotIn('HKLM',text);self.assertNotIn('UserChoice',text);self.assertNotIn('[UninstallDelete]',text)
             self.assertIn('Software\\Classes\\Applications\\xdzip-association.exe',text)
             self.assertIn('ValueName: "FriendlyAppName"; ValueData: "xdzip"',text)
+            self.assertIn('Subkey: "Software\\Classes\\Applications\\xdzip.exe"; ValueType: string; ValueName: "NoOpenWith"',text)
+            self.assertIn('Subkey: "Software\\Classes\\xdzip.Archive"; ValueType: string; ValueName: "NoOpenWith"',text)
             for extension, icon in WINDOWS_ICONS.items():
                 progid = windows_progid(extension)
+                self.assertEqual(progid, 'xdzip.Archive.'+extension.upper())
                 self.assertIn('Software\\Classes\\.'+extension+'\\OpenWithProgids',text)
                 self.assertIn('ValueName: ".'+extension+'"; ValueData: "'+progid+'"',text)
                 self.assertIn('Software\\Classes\\'+progid+'\\DefaultIcon',text)
                 self.assertIn('xdzip-'+icon+'.ico',text)
                 self.assertIn('Software\\Classes\\'+progid+'\\shell\\open\\command',text)
+                self.assertIn('AfterInstall: PreventSilentDefault(\''+progid+'\')',text)
+                self.assertIn('Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\SupportedTypes"; ValueType: string; ValueName: ".'+extension+'"',text)
+                self.assertIn('Subkey: "Software\\Classes\\.'+extension+'\\OpenWithProgids"; ValueType: none; ValueName: "xdzip.Archive"; Flags: deletevalue',text)
             self.assertNotIn('Software\\Classes\\.001\\',text)
             self.assertNotIn('Software\\Classes\\.img\\',text)
             for line in text.splitlines():
                 if '\\OpenWithProgids' in line:
-                    self.assertIn('uninsdeletevalue',line);self.assertIn('ValueType: string',line)
+                    if 'Flags: deletevalue' in line:
+                        self.assertIn('ValueType: none; ValueName: "xdzip.Archive"',line)
+                    else:
+                        self.assertIn('uninsdeletevalue',line);self.assertIn('ValueType: string',line)
             self.assertFalse(r['qa_fixture'])
 
     def test_windows_flat_entrypoints_and_legacy_fixture(self):
@@ -263,7 +272,7 @@ class InstallerTests(unittest.TestCase):
             self.assertEqual(record['executable_relative_path'],'xdzip.exe')
             resource=(ROOT/'apps/desktop/packaging/windows/app.rc.in').read_text(encoding='utf-8')
             original=re.findall(r'VALUE\s+"OriginalFilename",\s*"([^"\\]+)\\0"',resource)
-            self.assertEqual(original,[record['executable_relative_path']])
+            self.assertEqual(original,['@XDZIP_RESOURCE_FILENAME@'])
             self.assertIn('DestDir: "{app}"; Flags: ignoreversion recursesubdirs',text)
             self.assertIn('Filename: "{app}\\xdzip.exe"',text)
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)
@@ -282,6 +291,9 @@ class InstallerTests(unittest.TestCase):
             self.assertIn('{app}\\versions\\',legacy)
             self.assertNotIn('function PrepareToInstall',legacy)
             self.assertNotIn('DestName: "install-manifest.txt"',legacy)
+            self.assertNotIn('NoOpenWith',legacy)
+            self.assertNotIn('PreventSilentDefault',legacy)
+            self.assertNotIn('xdzip.Archive.ZIP',legacy)
 
     def test_windows_rejects_missing_or_changed_format_icon(self):
         with tempfile.TemporaryDirectory() as temp:

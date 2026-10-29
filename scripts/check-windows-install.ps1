@@ -1,17 +1,18 @@
 # Runs only on the disposable native Windows CI host, never on the developer Mac.
 param([string]$Packages, [string]$Fixture, [string]$Formats, [string]$Output)
 $ErrorActionPreference = 'Stop'
+if ($env:CI -ne 'true' -or $env:RUNNER_OS -ne 'Windows') { throw 'Disposable Windows CI only' }
 . "$PSScriptRoot/windows-installer-paths.ps1"
+. "$PSScriptRoot/windows-association-handlers.ps1"
 $classes = 'HKCU:\Software\Classes'
 $extensions = @('zip','tar','tgz','gz','7z','rar','cab','iso','udf')
 $formatFiles = @{zip='sample.zip';tar='sample.tar';tgz='sample.tgz';gz='sample.tar.gz';'7z'='sample.7z';rar='sample.rar';cab='sample.cab';iso='sample.iso';udf='sample.udf'}
 function Get-ProgId($Extension) {
-    if ($Extension -eq 'zip') { return 'xdzip.Archive' }
     return 'xdzip.Archive.' + $Extension.ToUpperInvariant()
 }
 if (Test-Path "$classes\xdzip.Archive") { throw 'Refusing to replace an existing xdzip registration in this verification host' }
 foreach ($extension in $extensions) {
-    if ($extension -ne 'zip' -and (Test-Path "$classes\$(Get-ProgId $extension)")) { throw 'Refusing to replace an existing format registration' }
+    if (Test-Path "$classes\$(Get-ProgId $extension)") { throw 'Refusing to replace an existing format registration' }
 }
 $testRoot = Join-Path $env:RUNNER_TEMP 'xdzip 安装, space'
 $evidenceRoot = Join-Path $env:RUNNER_TEMP 'xdzip-install-evidence'
@@ -27,7 +28,13 @@ function Get-DefaultSnapshot($Extension) {
     $choice = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.'+$Extension+'\UserChoice')
     $progId = if ($choice) { $choice.GetValue('ProgId') } else { $null }
     $hash = if ($choice) { $choice.GetValue('Hash'); $choice.Close() } else { $null }
-    return ([ordered]@{ default=$default; progId=$progId; hash=$hash } | ConvertTo-Json -Compress)
+    $latest = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.'+$Extension+'\UserChoiceLatest\ProgId')
+    $latestValues = [ordered]@{}
+    if ($latest) {
+        try { foreach ($name in ($latest.GetValueNames() | Sort-Object)) { $latestValues[$name]=$latest.GetValue($name) } }
+        finally { $latest.Close() }
+    }
+    return ([ordered]@{ default=$default; progId=$progId; hash=$hash; latest=$latestValues } | ConvertTo-Json -Compress)
 }
 $defaultBefore = @{}
 foreach ($extension in $extensions) {
@@ -70,6 +77,30 @@ function Assert-Default {
     }
 }
 $phases = [Collections.Generic.List[string]]::new()
+$applicationChecks = [Collections.Generic.List[object]]::new()
+function Test-SingleApplication($Label) {
+    $rows = @(foreach ($extension in $extensions) {
+        $progid = Get-ProgId $extension
+        $our = @([XdzipAssociationHandlers]::Read('.'+$extension) | Where-Object { $_.UIName -eq 'xdzip' })
+        if ($our.Count -ne 1 -or $our[0].Name -ne (Join-Path $testRoot 'xdzip-association.exe')) { throw "Duplicate or incorrect application candidate: $extension" }
+        if ($our[0].Icon -ne (Join-Path $testRoot 'xdzip-association.exe')) { throw "Wrong application icon source: $extension" }
+        foreach ($id in @('xdzip.Archive',$progid)) {
+            $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\'+$id)
+            try {
+                if ($key.GetValueKind('AllowSilentDefaultTakeOver') -ne [Microsoft.Win32.RegistryValueKind]::None) { throw 'Missing silent-default opt-out marker' }
+            } finally { if ($key) { $key.Close() } }
+        }
+        # This is a fallback-route guard, not a substitute for the Settings UI.
+        if ([XdzipAssociationHandlers]::FallbackProgId('.'+$extension) -like 'xdzip.*') { throw "Unexpected xdzip automatic default: $extension" }
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\.'+$extension+'\OpenWithProgids')
+        try {
+            if ($key.GetValueNames() -notcontains 'xdzip.QAForeign') { throw 'Foreign application candidate removed' }
+            if ($Label -ne 'actual-product-rollback' -and $key.GetValueNames() -contains 'xdzip.Archive') { throw 'Legacy recommendation was not retired' }
+        } finally { $key.Close() }
+        [ordered]@{extension=$extension; application_count=$our.Count; application=[IO.Path]::GetFileName($our[0].Name); icon=[IO.Path]::GetFileName($our[0].Icon)}
+    })
+    $applicationChecks.Add([ordered]@{phase=$Label; formats=$rows})
+}
 function Test-AssociatedOpen($Label) {
     foreach ($extension in $extensions) {
         $progid = if ($Label -in @('historical-product-install','actual-product-rollback')) { 'xdzip.Archive' } else { Get-ProgId $extension }
@@ -82,7 +113,7 @@ function Test-AssociatedOpen($Label) {
             $icon = (Get-Item "$classes\$progid\DefaultIcon").GetValue('')
             if ($icon -ne ('"'+(Join-Path $testRoot "xdzip-$extension.ico")+'",0')) { throw "Wrong format icon: $extension" }
             $command = (Get-Item "$classes\$progid\shell\open\command").GetValue('')
-            $target = if ($extension -eq 'zip') { 'xdzip.exe' } else { 'xdzip-association.exe' }
+            $target = 'xdzip-association.exe'
             if ($command -ne ('"'+(Join-Path $testRoot $target)+'" -- "%1"')) { throw "Wrong format command: $extension" }
         }
     }
@@ -112,6 +143,7 @@ function Test-AssociatedOpen($Label) {
     } elseif ($installedExe -notlike (Join-Path $testRoot 'versions\*\xdzip.exe')) {
         throw 'Historical product fixture did not use the original versioned layout'
     }
+    if ($Label -ne 'historical-product-install') { Test-SingleApplication $Label }
     Assert-Default
     $phases.Add($Label)
     Remove-Item Env:XDZIP_ASSOCIATION_PROBE
@@ -161,7 +193,7 @@ try {
     Test-FormatDispatch 'current' $extensions $current.revision
     if ($historical.revision -eq $current.revision -or $historical.version -eq $current.version -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change version/revision or preserve settings' }
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
-    Test-FormatDispatch 'historical-rollback' @('tgz') $historical.revision
+    Test-FormatDispatch 'historical-rollback' @('zip','tgz') $historical.revision
     if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
     Invoke-Installer (Join-Path $Packages 'qa1.exe') 'install'; Test-AssociatedOpen 'install'
     $manifest = Join-Path $testRoot 'install-manifest.txt'
@@ -265,7 +297,7 @@ try {
     if ((Test-Path (Join-Path $testRoot 'xdzip.exe')) -or (Test-Path "$classes\xdzip.Archive")) { throw 'Fresh flat uninstall left executable or registration' }
     Assert-Default
     $phases.Add('fresh-flat-layout-install-and-uninstall')
-    @{ status='passed'; layout='flat'; legacy_directory_policy='Preserve legacy files without a manifest until cumulative uninstall'; platform='windows'; phases=$phases.ToArray(); records=100000; scope='current user'; busy_profile_tray_enabled=$false; product_revisions=@{ previous=$historical.revision; current=$current.revision }; limits='Native CI shell dispatch, not an Explorer human click, signed release or physical-device acceptance.' } | ConvertTo-Json -Depth 4 | Set-Content $Output
+    @{ status='passed'; layout='flat'; legacy_directory_policy='Preserve legacy files without a manifest until cumulative uninstall'; platform='windows'; phases=$phases.ToArray(); application_checks=$applicationChecks.ToArray(); records=100000; scope='current user'; busy_profile_tray_enabled=$false; product_revisions=@{ previous=$historical.revision; current=$current.revision }; limits='Native CI shell dispatch, not an Explorer human click, signed release or physical-device acceptance.' } | ConvertTo-Json -Depth 7 | Set-Content $Output
     Write-Host 'Windows install/upgrade/rollback/busy protection/native association/uninstall passed'
 } finally {
     New-Item -ItemType Directory -Force 'build/review/installer-diagnostics' | Out-Null

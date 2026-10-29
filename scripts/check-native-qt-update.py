@@ -465,7 +465,7 @@ def windows(output, prepared):
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\'+suffix) as key:
                 assert winreg.QueryValueEx(key,'')[0]=='xdzip.OwnedFixtureOther'
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\.zip\\OpenWithProgids') as key:
-            winreg.QueryValueEx(key,'xdzip.Archive')
+            winreg.QueryValueEx(key,'xdzip.Archive.ZIP')
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Software\\Classes\\Applications\\xdzip.exe\\shell\\open\\command') as key:
             assert winreg.QueryValueEx(key,'')[0]=='"'+str(root/'xdzip.exe')+'" -- "%1"'
     try:

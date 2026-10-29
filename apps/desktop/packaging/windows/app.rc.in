@@ -1,5 +1,5 @@
-// The application icon is embedded in the executable for Explorer and the taskbar.
-// ZIP document icons are delivered separately for a future installer.
+// Both desktop entry executables carry the same application identity and icon.
+// Format-specific document icons remain separate installer payloads.
 #define IDI_XDZIP_APP_ICON 1
 IDI_XDZIP_APP_ICON ICON "@XDZIP_APP_ICON_ICO@"
 
@@ -16,11 +16,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "xdzip Archive Manager\0"
+            VALUE "FileDescription", "@XDZIP_RESOURCE_DESCRIPTION@\0"
             VALUE "FileVersion", "@XDZIP_DISPLAY_VERSION@\0"
             VALUE "ProductName", "xdzip\0"
             VALUE "ProductVersion", "@XDZIP_DISPLAY_VERSION@\0"
-            VALUE "OriginalFilename", "xdzip.exe\0"
+            VALUE "OriginalFilename", "@XDZIP_RESOURCE_FILENAME@\0"
         END
     END
     BLOCK "VarFileInfo"

@@ -78,8 +78,10 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
         # The helper can be discovered by the Open With UI; keep its displayed
         # application identity and direct invocation consistent with xdzip.
         associations += [
+            'Root: HKCU; Subkey: "Software\\Classes\\xdzip.Archive"; ValueType: string; ValueName: "NoOpenWith"; AfterInstall: PreventSilentDefault(\'xdzip.Archive\')',
+            'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe"; ValueType: string; ValueName: "NoOpenWith"',
             'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "xdzip"; Flags: uninsdeletekey',
-            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\DefaultIcon"; ValueType: string; ValueData: """{runtime_dir}\\xdzip.exe"",0"',
+            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\DefaultIcon"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-association.exe"",0"',
             f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip-association.exe\\shell\\open\\command"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-association.exe"" -- ""%1"""',
         ]
     for ext in EXTENSIONS:
@@ -88,23 +90,32 @@ def render(payload,audit,output,chinese,qa=None,legacy=False):
         if progid != 'xdzip.Archive':
             icon = WINDOWS_ICONS[ext]
             associations += [
-                f'Root: HKCU; Subkey: "Software\\Classes\\{progid}"; ValueType: string; ValueData: "xdzip {ext.upper()} archive"; Flags: uninsdeletekey',
+                f'Root: HKCU; Subkey: "Software\\Classes\\{progid}"; ValueType: string; ValueData: "xdzip {ext.upper()} archive"; Flags: uninsdeletekey; AfterInstall: PreventSilentDefault(\'{progid}\')',
                 f'Root: HKCU; Subkey: "Software\\Classes\\{progid}\\DefaultIcon"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-{icon}.ico"",0"',
                 f'Root: HKCU; Subkey: "Software\\Classes\\{progid}\\shell\\open\\command"; ValueType: string; ValueData: """{runtime_dir}\\xdzip-association.exe"" -- ""%1"""',
             ]
+        if not legacy:
+            # Retire only our old recommendations, never the legacy command or
+            # any other application's candidate/default. Existing choices work.
+            associations += [
+                f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: none; ValueName: "xdzip.Archive"; Flags: deletevalue',
+                f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe\\SupportedTypes"; ValueType: none; ValueName: ".{ext}"; Flags: deletevalue',
+            ]
+        application = 'xdzip.exe' if legacy else 'xdzip-association.exe'
         associations += [f'Root: HKCU; Subkey: "Software\\Classes\\.{ext}\\OpenWithProgids"; ValueType: string; ValueName: "{progid}"; Flags: uninsdeletevalue',
-            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\xdzip.exe\\SupportedTypes"; ValueType: string; ValueName: ".{ext}"',
+            f'Root: HKCU; Subkey: "Software\\Classes\\Applications\\{application}\\SupportedTypes"; ValueType: string; ValueName: ".{ext}"',
             f'Root: HKCU; Subkey: "Software\\xdzip\\Capabilities\\FileAssociations"; ValueType: string; ValueName: ".{ext}"; ValueData: "{progid}"']
     values={'VERSION':identity['version'],'OUTPUT':str(output.parent.resolve()),'FILENAME':output.stem,
         'FILEVERSION':json.loads((ROOT/'VERSION.json').read_text(encoding='utf-8'))['version']+'.'+str(identity['build']),
         'APPICON':str((ROOT/'design/assets/brand/xdzip.ico').resolve()),'PAYLOAD':str(payload.resolve()),
         'CHINESE':str(chinese.resolve()),'RUNTIME_DIR':runtime_dir,'ASSOCIATIONS':'\n'.join(associations),
+        'ASSOCIATION_CODE':'' if legacy else (ROOT/'apps/desktop/packaging/windows/association-identity.iss').read_text(encoding='utf-8'),
         'MANIFEST_FILES':'' if legacy else (f'Source: "{manifest_path}"; DestName: "xdzip-package-files.txt"; Flags: dontcopy\n'
             f'Source: "{manifest_path}"; DestDir: "{{app}}"; DestName: "{MANIFEST_NAME}"; Flags: ignoreversion'),
         'CLEANUP_CODE':'' if legacy else (ROOT/'apps/desktop/packaging/windows/installed-files.iss').read_text(encoding='utf-8')}
     text=(ROOT/'apps/desktop/packaging/windows/installer.iss.in').read_text(encoding='utf-8')
     for name,value in values.items():
-        if name not in ('ASSOCIATIONS','MANIFEST_FILES','CLEANUP_CODE') and any(c in value for c in ['"','\r','\n']):raise ValueError('Unsafe installer substitution')
+        if name not in ('ASSOCIATIONS','ASSOCIATION_CODE','MANIFEST_FILES','CLEANUP_CODE') and any(c in value for c in ['"','\r','\n']):raise ValueError('Unsafe installer substitution')
         text=text.replace('@'+name+'@',value)
     return text,{'runtime_id':runtime,'identity':identity,'executable_sha256':digest(payload/'xdzip.exe'),'qa_fixture':qa is not None or legacy,'layout':'legacy-qa' if legacy else 'flat',
         'executable_relative_path':('versions/'+runtime+'/' if legacy else '')+'xdzip.exe',

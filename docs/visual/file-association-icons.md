@@ -36,6 +36,8 @@
 
 Windows 使用逐扩展名 ProgID 和 ICO，保留旧共享入口；macOS 以文档类型映射 ICNS，压缩 TAR 类型共用 TAR.GZ 图标。Linux 保留系统 MIME 图标，不覆盖全局文件图标。原生显示受默认应用和图标缓存影响，关联与回退见[安装与关联契约](../engineering/installers-associations.md)。
 
+Windows 默认应用与“打开方式”里的应用入口使用 [品牌应用 ICO](../../design/assets/brand/xdzip.ico)，主程序和关联启动器均嵌入此资源；不使用逐格式文档图标代替应用身份。系统应只展示一个名称为 xdzip、带品牌图标的可选入口，旧共享命令仅用于兼容既有选择。该调整复用已有素材，不改变主窗口、菜单或 QML 逻辑几何。原生应用图标、文档图标及候选数量分别验收，不能将操作系统的通用应用方框判作格式文档图标问题。
+
 ## 生成与交付
 
 在仓库根目录执行：
@@ -59,4 +61,4 @@ python scripts/build-association-icons.py --check --export build/file-associatio
 
 视觉审阅同时覆盖浅色、深色与选中背景，16 至 256 像素，以及普通和高 DPR 的实际渲染。审阅页按 CSS 像素呈现，不将浏览器截图标记为 Explorer、Finder 或 Linux 原生验收。后续接入须检查真实文件名、复合后缀、图标缓存、默认选择前后和安装／卸载后的显示。阶段状态和实际执行范围在 GitHub issue 中记录，不在本规范累积测试报告。
 
-English: Windows uses per-extension ICOs and macOS uses per-type ICNS; Linux retains system MIME icons. ZIP's original platform containers are preserved. Source vectors and required platform containers share one directory, and ordinary builds require no browser. The 16/24/32 px profiles omit lettering; GZ does not imply standalone GZIP support. Compound suffix recognition is platform dependent, and no generic volume or IMG association is introduced. Browser rendering and container validation do not replace native shell acceptance.
+English: Windows uses per-extension ICOs and macOS uses per-type ICNS; Linux retains system MIME icons. Windows main and association executables embed the existing brand application ICO, with one visible xdzip application candidate; application identity and document icons require separate native checks. ZIP's original platform containers are preserved. Source vectors and required platform containers share one directory, and ordinary builds require no browser. The 16/24/32 px profiles omit lettering; GZ does not imply standalone GZIP support. Compound suffix recognition is platform dependent, and no generic volume or IMG association is introduced. Browser rendering and container validation do not replace native shell acceptance.
