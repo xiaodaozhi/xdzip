@@ -11,5 +11,6 @@ MACOS_ICONS = ('zip', 'tar', 'tar-gz', 'gz', '7z', 'rar', 'cab', 'iso', 'udf')
 def windows_progid(extension: str) -> str:
     if extension not in WINDOWS_ICONS:
         raise ValueError('Unsupported Windows association')
-    # Keep the existing ZIP ID and the old shared handler for prior UserChoice.
-    return 'xdzip.Archive' if extension == 'zip' else 'xdzip.Archive.' + extension.upper()
+    # Every visible candidate uses the launcher. The hidden shared ID remains
+    # available separately for prior user choices and historical rollback.
+    return 'xdzip.Archive.' + extension.upper()

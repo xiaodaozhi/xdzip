@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 from update_fixture import ROOT, OLD, NEW, run, dump, digest, build_helpers, compile_product, manifest, request, await_file, qa_installer_text
+from association_types import WINDOWS_ICONS
 
 
 def installer_windows():
@@ -75,6 +76,13 @@ def main():
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     helper, signing = build_helpers(output, args.offline)
+    # The protocol fixture has a small C main program, but must still carry
+    # the real association command and all document icons required by Setup.
+    # Application resource/visual checks belong to the complete Qt product.
+    association = output / 'xdzip-association.exe'
+    run(['cl', '/nologo', '/MT', '/EHsc', ROOT/'apps/desktop/AssociationLauncher.cpp',
+         '/Fe:'+str(association), '/Fo:'+str(output/'association.obj'),
+         '/link', '/SUBSYSTEM:WINDOWS', 'shell32.lib', 'ole32.lib'])
     spec = importlib.util.spec_from_file_location('windows_builder', ROOT / 'scripts/build-windows-installer.py')
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)
@@ -87,6 +95,9 @@ def main():
         payload.mkdir(parents=True)
         compile_product(payload / 'xdzip.exe', executable_identity or identity)
         shutil.copy2(helper, payload / 'xdzip-update-helper.exe')
+        shutil.copy2(association, payload / association.name)
+        for icon in WINDOWS_ICONS.values():
+            shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon}.ico', payload)
         licenses = payload / 'share/notices/Microsoft-VC-runtime'
         licenses.mkdir(parents=True)
         shutil.copy2(ROOT / 'build/windows-runtime/runtime/Microsoft-VC-runtime-license.rtf', licenses / 'license.rtf')

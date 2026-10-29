@@ -36,9 +36,13 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 产品整个生命周期持有 Local\xdzip.desktop.running 命名互斥量。[AppMutex](https://jrsoftware.org/ishelp/topic_setup_appmutex.htm)阻止安装／卸载，CloseApplications=no，不强制结束应用。FFI 句柄创建失败时启动失败，进程关闭时释放。任务退出仍沿用现有选择与 Rust join 屏障。
 
-关联只写 HKCU：自有 ProgID、Applications/xdzip.exe、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice。卸载不删除其他应用候选。ZIP 沿用 `xdzip.Archive`，其他扩展名使用独立 ProgID 和对应 ICO；已有旧 ProgID 保留，因此旧默认选择仍能打开，但可能继续显示 ZIP 图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
+关联只写 HKCU：自有 ProgID、两个自有 Applications 入口、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice／UserChoiceLatest。卸载不删除其他应用候选。九类扩展统一使用 `xdzip.Archive.格式名`，ZIP 使用 `xdzip.Archive.ZIP`，文档图标继续按格式选择对应 ICO。旧共享 `xdzip.Archive` 保留直接打开命令，并与 `Applications/xdzip.exe` 一起设置 `NoOpenWith`；升级只删除各扩展 OpenWithProgids 中的旧共享推荐值及主程序的旧 SupportedTypes 值，不删除兼容命令。已有旧默认选择仍能打开，但可能继续显示 ZIP 文档图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
 
-各格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。ZIP 和旧选择继续直接使用共享入口。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
+全部格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`，其 Applications 注册承载完整 SupportedTypes，使系统“打开方式”只呈现一个 xdzip 应用入口。启动器嵌入同一品牌应用 ICO 和独立 OriginalFilename、产品版本资源；应用图标与逐格式文档图标分别核验，不能用文档 DefaultIcon 代替可执行文件的应用资源。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
+
+旧共享与九个独立 ProgID 均设置 REG_NONE 类型的 `AllowSilentDefaultTakeOver`。按 [Windows ProgID 约定](https://learn.microsoft.com/en-us/windows/win32/shell/fa-progids)，此标记要求系统在自动判定默认处理器时忽略该候选，用户仍可在“打开方式”中明确选择。Inno 的 `ValueType: none` 只创建键，因此安装器使用有界原生注册表调用写入准确类型；仅打开已创建的自有 ProgID，失败终止安装，句柄在失败路径释放。CI 同时快照保护选择、核对原生候选数量及自动后备路由，真实设置页面和 Explorer 的显示仍需单独人工验收。
+
+English: All nine Windows formats expose one branded association launcher through format-specific ProgIDs, including `xdzip.Archive.ZIP`. The hidden shared ProgID and main executable command remain available for existing choices and historical rollback. Upgrade removes only owned legacy recommendations, preserving foreign candidates and protected choices. Embedded application icon/version resources are separate from document icons. REG_NONE `AllowSilentDefaultTakeOver` markers prevent automatic default selection while keeping explicit Open With selection available. Native enumeration and installer lifecycle checks do not replace actual Settings/Explorer acceptance.
 
 ZIP、TAR、TGZ、GZ、7Z、RAR、CAB、ISO 和 UDF 注册为候选；GZ 仅用于 TAR.GZ，普通独立 GZIP 仍不支持，关联不扩大格式能力。CAB、ISO 和 UDF 为只读，不注册通用 `.img`、`.001` 或 `.rNN` 扩展名，避免占用其他文件类型；分卷仍可通过应用文件选择器打开。默认应用由用户在系统设置选择，安装器不绕过确认。
 
@@ -85,6 +89,10 @@ QA 变体共用本次核验二进制，只改变测试包版本／目录，验�
 windows-install-lifecycle.json、linux-install-lifecycle.json 及包哈希为实际证据。真实 Explorer/Finder 双击、默认选择 UI、重启后的服务／缓存、未正式签名提示、GPU 与桌面专项按人工清单核验。自动脚本不得自行把 INSTALL-01／ASSOC-01 全部标记通过；既有人工结论见 [WP-12 #5](https://github.com/xiaodaozhi/xdzip/issues/5)，不因重新生成 pending 模板而重开验收。未来 schema 迁移须另增实际兼容用例。
 
 Windows 忙时替换保护的无任务探针使用独立配置关闭托盘，使 `CloseMainWindow` 按该配置执行正常退出；其他关联打开探针保留默认托盘配置并通过显式退出屏障结束。安装保护探针不得把“窗口隐藏”误判为“进程退出失败”，也不得通过强制终止正常路径跳过退出验证。
+
+Windows 更新协议夹具与真实 Qt 更新夹具同样提供关联启动器和全部九份文档 ICO，不能通过缺少必需载荷的安装器检查。协议夹具的小型 C 主程序与关联命令只验证更新交接；嵌入应用资源、原生候选和真实窗口由完整 Qt 产品链分别检查，不混用结论。
+
+English: Windows protocol and real Qt update fixtures include the required association launcher and all nine document ICOs. The small protocol fixture verifies updater handoff; application resources, native candidates and real windows are checked separately with the complete Qt product.
 
 ## 兼容基线的长期输入
 

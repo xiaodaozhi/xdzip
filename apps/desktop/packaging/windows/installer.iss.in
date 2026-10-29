@@ -72,6 +72,8 @@ Root: HKCU; Subkey: "Software\xdzip\Install"; ValueType: string; ValueName: "Ins
 [Code]
 var UpdateGateHandle: THandle;
 
+@ASSOCIATION_CODE@
+
 @CLEANUP_CODE@
 
 function NativeCreateMutex(Attributes: LongWord; InitialOwner: Boolean; Name: String): THandle;
