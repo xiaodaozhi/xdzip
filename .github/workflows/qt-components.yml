@@ -11,7 +11,29 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  qt-plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run_heavy: ${{ steps.classify.outputs.run_heavy }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Classify complete source changes in shadow mode
+        id: classify
+        run: python3 scripts/ci-plan.py --scope qt
+      - name: Retain the source-bound plan
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-qt-input-plan-${{ github.run_attempt }}
+          path: build/ci-plans/qt-plan.json
+          if-no-files-found: error
+          retention-days: 14
+
   native-qt:
+    needs: qt-plan
+    if: always() && (needs.qt-plan.result != 'success' || needs.qt-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
     strategy:
@@ -78,12 +100,6 @@ jobs:
           if ('${{ steps.build_product.outcome }}' -eq 'success' -and !$qmlLogValid) {
             throw 'Successful native validation must retain its raw QML test log'
           }
-      - name: Save trusted dependency inputs
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
-        uses: ./.github/actions/cache-inputs
-        with:
-          scope: qt
-          mode: save
       - name: Upload review build and evidence
         if: always() && runner.os != 'macOS'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -112,5 +128,49 @@ jobs:
             build/review/browser-timings/**
             build/review/diagnostics/*.log
             build/review/diagnostics/*.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Validate completed qt evidence
+        run: python scripts/ci-evidence.py collect --scope qt --role qt
+      - name: Retain the same-run validation record
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-qt-input-qt-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: build/ci-evidence/qt-qt-${{ runner.os }}-${{ runner.arch }}.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save trusted dependency inputs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
+        uses: ./.github/actions/cache-inputs
+        with:
+          scope: qt
+          mode: save
+
+  qt-gate:
+    if: always()
+    needs: [qt-plan, native-qt]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download same-run plans and validation records
+        if: always()
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ci-qt-input-*
+          path: build/ci-gate-input
+          merge-multiple: false
+      - name: Require every applicable job and platform
+        if: always()
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: python3 scripts/ci-evidence.py gate --scope qt
+      - name: Retain the automatic summary
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-qt-summary-${{ github.run_attempt }}
+          path: build/ci-gate-results/qt.json
           if-no-files-found: warn
           retention-days: 14

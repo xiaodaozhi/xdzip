@@ -11,7 +11,29 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  foundation-plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run_heavy: ${{ steps.classify.outputs.run_heavy }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Classify complete source changes in shadow mode
+        id: classify
+        run: python3 scripts/ci-plan.py --scope foundation
+      - name: Retain the source-bound plan
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-foundation-input-plan-${{ github.run_attempt }}
+          path: build/ci-plans/foundation-plan.json
+          if-no-files-found: error
+          retention-days: 14
+
   bridge:
+    needs: foundation-plan
+    if: always() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     env:
       PIP_CACHE_DIR: ${{ github.workspace }}/build/ci-input-cache/pip
     strategy:
@@ -37,12 +59,14 @@ jobs:
       - name: Check native Rust and C++ bridge
         shell: pwsh
         run: ./scripts/check-foundation.ps1
-      - name: Save trusted dependency inputs
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
-        uses: ./.github/actions/cache-inputs
-        with:
-          scope: foundation
-          mode: save
+      - name: Collect raw foundation diagnostics
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path 'build/foundation/Testing/Temporary/LastTest.log') {
+            New-Item -ItemType Directory -Force 'build/review' | Out-Null
+            Copy-Item 'build/foundation/Testing/Temporary/LastTest.log' 'build/review/foundation-ctest.log'
+          }
       - name: Retain codec verification records
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -54,10 +78,29 @@ jobs:
             build/review/legacy-name-rewrite.json
             build/review/ci-timings.json
             build/review/ci-cache-foundation.json
+            build/review/foundation-ctest.log
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Validate completed bridge evidence
+        run: python scripts/ci-evidence.py collect --scope foundation --role bridge
+      - name: Retain the same-run validation record
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-foundation-input-bridge-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: build/ci-evidence/foundation-bridge-${{ runner.os }}-${{ runner.arch }}.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save trusted dependency inputs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.dependency_inputs.outputs.hit != 'true'
+        uses: ./.github/actions/cache-inputs
+        with:
+          scope: foundation
+          mode: save
+
   rar7-official-reference:
+    needs: foundation-plan
+    if: always() && (needs.foundation-plan.result != 'success' || needs.foundation-plan.outputs.run_heavy != 'false')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -77,6 +120,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Validate completed rar7 evidence
+        run: python scripts/ci-evidence.py collect --scope foundation --role rar7
+      - name: Retain the same-run validation record
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-foundation-input-rar7-${{ runner.os }}-${{ runner.arch }}-${{ github.run_attempt }}
+          path: build/ci-evidence/foundation-rar7-${{ runner.os }}-${{ runner.arch }}.json
+          if-no-files-found: error
+          retention-days: 14
+
   cpp-format:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -87,3 +140,31 @@ jobs:
           python3 -m venv /tmp/xdzip-format
           /tmp/xdzip-format/bin/pip install clang-format==18.1.8
           /tmp/xdzip-format/bin/clang-format --dry-run --Werror tools/bridge-probe/smoke.cpp tools/toolchain-probe/main.cpp tools/process-metrics/main.cpp tools/launch-services-probe/main.mm tools/native-codec/*.cpp tools/native-codec/*.hpp crates/xdzip-codec-bridge/include/*.hpp apps/desktop/*.cpp apps/desktop/*.h apps/desktop/tests/*.cpp tests/fixtures/native/*.c
+
+  foundation-gate:
+    if: always()
+    needs: [foundation-plan, bridge, rar7-official-reference, cpp-format]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download same-run plans and validation records
+        if: always()
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ci-foundation-input-*
+          path: build/ci-gate-input
+          merge-multiple: false
+      - name: Require every applicable job and platform
+        if: always()
+        env:
+          CI_NEEDS_JSON: ${{ toJSON(needs) }}
+        run: python3 scripts/ci-evidence.py gate --scope foundation
+      - name: Retain the automatic summary
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-foundation-summary-${{ github.run_attempt }}
+          path: build/ci-gate-results/foundation.json
+          if-no-files-found: warn
+          retention-days: 14

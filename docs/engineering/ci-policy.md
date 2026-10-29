@@ -8,7 +8,13 @@ Documentation、Foundation probes、Qt components 和 HTML design review 的普�
 
 依赖下载缓存由 `scripts/ci-cache-policy.json` 声明，只包含 Cargo 下载归档和 Git 数据、pip 下载、HTML 的 Playwright 工具，以及固定 Qt 对应源码归档。缓存不包含已编译产品、安装的 Qt SDK、历史产品夹具、测试结论或凭据。键绑定输入文件、平台、架构和 runner 镜像，恢复时核对可信 main push 来源与逐文件哈希；不接受部分键或内容差异。只有成功的 main push 保存输入，PR、标签及手动运行仅恢复并重新执行检查。具体冷暖耗时和命中情况以实际运行记录为准。
 
-HTML 输入过滤覆盖 `docs/visual/*.json` 及共享 CI 工具，不再匹配 Git 排除的 `build/review` 生成物。Qt 扩展入口中只保留一次完全相同的共享操作控件源码检查；其他领域、桥接、视觉、部署与安装生命周期门槛继续独立执行。
+HTML 输入集合在 `scripts/ci-plan-policy.json` 中集中声明，覆盖 `docs/visual/*.json` 及共享 CI 工具，不再匹配 Git 排除的 `build/review` 生成物。普通工作流始终触发计划与汇总，避免整个工作流因 paths 不匹配而没有检查上下文。shadow 阶段仍执行完整 HTML 检查，输入命中情况只记入计划。Qt 扩展入口中只保留一次完全相同的共享操作控件源码检查；其他领域、桥接、视觉、部署与安装生命周期门槛继续独立执行。
+
+变更分类由 `scripts/ci-plan.py` 使用完整 Git 树差异，不依赖 API 的文件分页或平台 paths 截断。当前为 shadow 模式，全量验证继续运行。普通文档候选仅限 `docs/README.md` 导航页的修改；README 产品说明、工程／接口／CI／发行及验收契约、字体、QML、视觉 JSON、运行资源和未知路径均走全量。新增、删除、改名、模式变化、大差异、缺少基线、fork PR、不能确认的 PR merge tree、显式运行及读取失败也走全量。启用跳过必须另有充分的 shadow 正反例证据；切换配置的提交本身仍走全量，不能把夹具测试当实际平台结果。
+
+四个普通工作流各保留独立的 `docs-gate`、`foundation-gate`、`qt-gate` 和 `html-gate`，使用同一运行中的计划、作业结论及有界证据记录汇总，不新增跨工作流读取权限。重型作业在分类作业失败时继续全量，汇总仍明确失败。适用作业必须成功，三平台必须齐备；失败、取消、超时、重复或缺失平台、跨提交／运行证据及缺少原始日志均不能通过。Qt 额外复核首轮加十次完整浏览器套件、各分片原始 XML、三份 QML 原始日志、原生会话及产品／资源身份；既有平台专用测试的明确 skip 单独计数，不冒充已执行。自动汇总不替代人工桌面验收或发行许可，服务端 required checks 如需调整仍由所有者单独决定。
+
+新增的计划与汇总输入按 run attempt 分别保留。只重跑失败作业时，允许使用同一 run、同一 SHA 中先前成功平台的完整证据，汇总注明各平台的实际 attempt；未来 attempt、跨 run 或跨提交记录不能使用。该规则不跨工作流共享测试结论，也不覆盖既有工件。当前作业结论为失败或取消时，历史成功记录不能使汇总通过。
 
 窗口状态、单实例与会话原生回归共用 `scripts/check-native-sessions.py`，在打标签前执行。Linux 安装 Xvfb、Openbox 和 xprop，以窗口管理器的 X11 状态验证最大化、全屏及弹窗行为；Windows、macOS 使用系统插件和窗口管理器。此步骤不部署或上传普通 macOS 应用包。
 
