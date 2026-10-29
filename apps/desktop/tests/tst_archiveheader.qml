@@ -90,5 +90,14 @@ Item {
             compare(search.text, "notes");
             compare(searchSpy.count, 1);
         }
+        function test_search_font_follows_user_text() {
+            const search = findChild(toolbar, "archiveSearch");
+            search.clear();
+            compare(search.font.family, Ui.Theme.uiFontFamily);
+            search.text = "稻草/日本語";
+            compare(search.font.family, Ui.Theme.userDataFontFamily);
+            search.clear();
+            compare(search.font.family, Ui.Theme.uiFontFamily);
+        }
     }
 }

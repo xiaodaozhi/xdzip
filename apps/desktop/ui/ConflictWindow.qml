@@ -55,7 +55,7 @@ OperationWindow {
                     RowLayout {
                         Layout.fillWidth: true; spacing: root.unit(12)
                         Image { Layout.preferredWidth: root.unit(36); Layout.preferredHeight: root.unit(36); source: AssetLibrary.fileIcon(root.task.promptName || "", false, false) }
-                        Text { Layout.fillWidth: true; text: root.task.promptName || ""; textFormat: Text.PlainText; font.pixelSize: 14 * Theme.fontScale; color: Theme.text; wrapMode: Text.WrapAnywhere }
+                        Text { Layout.fillWidth: true; text: root.task.promptName || ""; textFormat: Text.PlainText; font.family: Theme.userDataFontFamily; font.pixelSize: 14 * Theme.fontScale; color: Theme.text; wrapMode: Text.WrapAnywhere }
                     }
                     GridLayout {
                         Layout.fillWidth: true; columns: Theme.fontScale > 1.35 ? 1 : 2; columnSpacing: root.unit(16); rowSpacing: root.unit(12)

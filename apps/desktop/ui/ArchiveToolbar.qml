@@ -140,6 +140,7 @@ Rectangle {
             leftPadding: Theme.mainSearchTextInset
             rightPadding: text.length ? Theme.mainUnits(42) : Theme.mainUnits(12)
             font.pixelSize: Theme.mainToolbarSize
+            font.family: text.length || inputMethodComposing ? Theme.userDataFontFamily : Theme.uiFontFamily
             placeholderText: qsTrId("ui.1cd2322e6ab6")
             maximumLength: 256
             enabled: root.canSearch

@@ -144,6 +144,7 @@ OperationWindow {
                                         OperationField {
                                             id: fileName
                                             objectName: "createName"
+                                            font.family: Theme.userDataFontFamily
                                             Layout.fillWidth: true
                                             density: root.density
                                             implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
@@ -162,6 +163,7 @@ OperationWindow {
                                             OperationField {
                                                 id: target
                                                 objectName: "createTarget"
+                                                font.family: Theme.userDataFontFamily
                                                 Layout.fillWidth: true
                                                 density: root.density
                                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)

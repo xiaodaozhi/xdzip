@@ -70,6 +70,7 @@ FocusScope {
                     Text {
                         Layout.fillWidth: true
                         text: root.archiveName
+                        font.family: Theme.userDataFontFamily
                         textFormat: Text.PlainText
                         color: Theme.textSecondary
                         font.pixelSize: Theme.welcomeMainBodySize * Theme.fontScale

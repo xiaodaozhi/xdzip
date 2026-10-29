@@ -132,6 +132,7 @@ OperationWindow {
                                                 objectName: "updateArchiveName"
                                                 Layout.fillWidth: true
                                                 text: root.archiveLabel
+                                                font.family: Theme.userDataFontFamily
                                                 textFormat: Text.PlainText
                                                 wrapMode: Text.WrapAnywhere
                                                 font.pixelSize: Theme.operationCreateBodySize
@@ -165,6 +166,7 @@ OperationWindow {
                                                 objectName: "updateDirectoryName"
                                                 Layout.fillWidth: true
                                                 text: root.targetLabel
+                                                font.family: Theme.userDataFontFamily
                                                 textFormat: Text.PlainText
                                                 wrapMode: Text.WrapAnywhere
                                                 font.pixelSize: Theme.operationCreateBodySize

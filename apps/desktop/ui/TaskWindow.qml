@@ -19,6 +19,7 @@ OperationWindow {
     required property string archiveName
     required property string destination
     required property string currentFile
+    property bool currentFileUserData: true
     required property real fraction
     required property bool totalKnown
     required property bool stopping
@@ -65,6 +66,7 @@ OperationWindow {
                     source: "qrc:/xdzip/assets/" + (root.terminal ? root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning" : root.checking ? (Theme.dark ? "dark/document-check" : "document-check") : root.creating ? (Theme.dark ? "dark/archive-add-large" : "archive-add-large") : "document-download") + ".png"
                     title: root.heading
                     subtitle: root.checking ? root.archiveName : root.terminal ? root.creating ? root.taskStatus === "succeeded" ? qsTrId("ui.d7776832f17e") : root.outcomeUncertain ? qsTrId("ui.c96310851765") : qsTrId("ui.bd737a972601") : qsTrId("ui.d78e5fd4e099") : root.archiveName
+                    subtitleUserData: root.checking || !root.terminal
                 }
                 ColumnLayout {
                     objectName: "operationHeaderBody"
@@ -124,9 +126,10 @@ OperationWindow {
                         Layout.fillWidth: true; objectName: "currentFileCard"
                         heading: root.terminal ? root.checking ? qsTrId("ui.7c5569c38a3c") : qsTrId("ui.bb7ef73495dd") : qsTrId("ui.33e19add5200")
                         value: root.checking && root.terminal ? root.resultSummary : root.outcomeUncertain ? qsTrId("ui.e43731762133") : root.terminal ? root.resultSummary : root.currentFile
+                        valueUserData: !root.terminal && !root.outcomeUncertain && root.currentFileUserData
                         iconSource: root.terminal ? "qrc:/xdzip/assets/" + (root.taskStatus === "succeeded" ? "success-large" : root.taskStatus === "cancelled" ? "cancelled-large" : "document-warning") + ".png" : AssetLibrary.fileIcon(root.currentFile, root.currentFile.endsWith("/"), false)
                     }
-                    Text { objectName: "checkFailureEntry"; Layout.fillWidth: true; visible: root.checking && root.terminal && root.taskStatus !== "succeeded" && !!root.currentFile; text: qsTrId("integrity.stoppedAt").arg(root.currentFile); textFormat: Text.PlainText; color: Theme.textSecondary; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
+                    Text { objectName: "checkFailureEntry"; Layout.fillWidth: true; visible: root.checking && root.terminal && root.taskStatus !== "succeeded" && !!root.currentFile; text: qsTrId("integrity.stoppedAt").arg(root.currentFile); textFormat: Text.PlainText; color: Theme.textSecondary; wrapMode: Text.Wrap; font.family: root.currentFileUserData ? Theme.userDataFontFamily : Theme.uiFontFamily; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     Text { Layout.fillWidth: true; visible: !!root.errorSummary; text: root.errorSummary; textFormat: Text.PlainText; color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     Text { Layout.fillWidth: true; visible: root.cleanupWarning; text: qsTrId("ui.6739af981bf5"); color: Theme.menuDanger; wrapMode: Text.Wrap; font.pixelSize: Math.round(root.unit(Theme.operationNoteSize)) }
                     InfoRow { id: timingHint; Layout.fillWidth: true; text: qsTrId("ui.77ec1e1ef2e8"); labelSize: Math.round(root.unit(Theme.operationMetricLabelSize)); lineFactor: 1.4; iconSize: Theme.operationFooterIconSize }

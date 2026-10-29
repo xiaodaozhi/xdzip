@@ -63,6 +63,7 @@ inline void collect(QQuickItem *item, QJsonArray &nodes, const QString &path = "
         node["fontBold"] = font.bold();
         node["fontPointSize"] = font.pointSizeF();
         node["fontFamily"] = QFontInfo(font).family();
+        node["fontRequestedFamily"] = font.family();
         node["resolvedPixelSize"] = QFontInfo(font).pixelSize();
         node["fontWeight"] = static_cast<int>(font.weight());
     }
@@ -91,6 +92,8 @@ inline bool save(QQuickWindow *window, const QString &directory, const QString &
                      {"imageHeight", shot.height()},
                      {"qt", qVersion()},
                      {"platform", QGuiApplication::platformName()},
+                     {"userDataFontFamily",
+                      QGuiApplication::instance()->property("xdzipSystemFontFamily").toString()},
                      {"windowsCaption", window->property("windowsTitlebar").toBool()},
                      {"os", QSysInfo::prettyProductName()},
                      {"architecture", QSysInfo::currentCpuArchitecture()},

@@ -98,10 +98,11 @@ ColumnLayout {
                     Image { source: AssetLibrary.fileIcon("", true, false); Layout.preferredWidth: 28; Layout.preferredHeight: 28 }
                     ColumnLayout {
                         Layout.fillWidth: true; spacing: 3
-                        Text { Layout.fillWidth: true; text: root.task.target || ""; textFormat: Text.PlainText; elide: Text.ElideMiddle; font.pixelSize: Math.round(Theme.operationResultBodySize); color: Theme.text }
+                        Text { Layout.fillWidth: true; text: root.task.target || ""; textFormat: Text.PlainText; elide: Text.ElideMiddle; font.family: Theme.userDataFontFamily; font.pixelSize: Math.round(Theme.operationResultBodySize); color: Theme.text }
                         Text {
                             Layout.fillWidth: true; wrapMode: Text.Wrap
                             text: root.task.externalReader ? root.savedCaption + "\n" + qsTrId("ui.92ccb53e91dc") : root.savedCaption
+                            font.family: root.entries.some(e => e.status === "completed") ? Theme.userDataFontFamily : Theme.uiFontFamily
                             font.pixelSize: Math.round(Theme.operationResultNoteSize); color: Theme.textSecondary
                         }
                     }

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 Rectangle {
     id: root
     property real density: 1
+    property bool valueUserData: true
     readonly property alias valueItem: valueLabel
     property real labelSize: Math.round(Theme.operationBodySize * density)
     property real valueSize: Math.round(Theme.operationPathFontSize * density)
@@ -59,6 +60,7 @@ Rectangle {
                     textFormat: Text.PlainText
                     wrapMode: Text.WrapAnywhere
                     font.pixelSize: root.valueSize
+                    font.family: root.valueUserData ? Theme.userDataFontFamily : Theme.uiFontFamily
                     color: Theme.text
                 }
             }

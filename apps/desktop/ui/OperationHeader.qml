@@ -7,6 +7,7 @@ Item {
     required property url source
     required property string title
     property string subtitle: ""
+    property bool subtitleUserData: false
     property string titleObjectName: "operationHeaderTitle"
     property string iconObjectName: "operationHeaderIcon"
     readonly property alias titleItem: heading
@@ -53,6 +54,7 @@ Item {
             text: root.subtitle
             textFormat: Text.PlainText
             font.pixelSize: Math.round(Theme.operationHeaderSubtitleSize)
+            font.family: root.subtitleUserData ? Theme.userDataFontFamily : Theme.uiFontFamily
             lineHeight: Math.round(font.pixelSize * Theme.operationHeaderSubtitleLineFactor)
             lineHeightMode: Text.FixedHeight
             wrapMode: Text.WrapAnywhere

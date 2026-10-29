@@ -47,10 +47,11 @@ RowLayout {
                 Accessible.name: segment.modelData.more ? qsTrId("ui.163fd73d3df9") : segment.modelData.label
                 onClicked: segment.modelData.more ? hiddenMenu.popup(button, 0, button.height + Theme.mainPopupGap) : root.activated(segment.modelData.id)
                 contentItem: Text {
-                    objectName: segment.modelData.current ? "filePaneTitle" : ""
+                    objectName: segment.modelData.current ? "filePaneTitle" : "breadcrumbSegment-" + segment.index
                     text: segment.modelData.label
                     textFormat: Text.PlainText
                     color: segment.modelData.current ? Theme.text : Theme.textSecondary
+                    font.family: segment.modelData.more || segment.modelData.userData === false ? Theme.uiFontFamily : Theme.userDataFontFamily
                     font.pixelSize: Theme.mainPaneTitleSize
                     font.bold: segment.modelData.current
                     elide: Text.ElideMiddle
@@ -65,6 +66,7 @@ RowLayout {
                 CommandTooltip {
                     requested: button.hovered && !button.down
                     text: button.Accessible.name
+                    userData: !segment.modelData.more && segment.modelData.userData !== false
                 }
             }
         }
@@ -77,6 +79,7 @@ RowLayout {
             delegate: CommandMenuItem {
                 required property var modelData
                 text: modelData.label
+                userData: modelData.userData !== false
                 asset: "folder"
                 enabled: root.available
                 onTriggered: root.activated(modelData.id)

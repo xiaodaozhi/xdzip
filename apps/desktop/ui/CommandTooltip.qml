@@ -5,6 +5,7 @@ import QtQuick.Controls
 ToolTip {
     id: root
     property bool requested: false
+    property bool userData: false
     property bool suppressed: false
     property bool needsFreshPointer: false
     readonly property Item focusItem: parent && parent.Window.window ? parent.Window.window.activeFocusItem : null
@@ -83,6 +84,7 @@ ToolTip {
         // Archive display names must remain text, including angle brackets.
         textFormat: Text.PlainText
         font.pixelSize: Theme.menuShortcutSize
+        font.family: root.userData ? Theme.userDataFontFamily : Theme.uiFontFamily
         color: Theme.tooltipText
         wrapMode: Text.WrapAnywhere
         clip: true

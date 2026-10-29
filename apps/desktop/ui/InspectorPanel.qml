@@ -104,6 +104,7 @@ Rectangle {
                 text: panel.selectionCount > 1 ? qsTrId("ui.aeb126abb448", Number(panel.selectionCount)) : panel.detail.name || qsTrId("ui.ce2a58ab4ccf")
                 textFormat: Text.PlainText
                 wrapMode: Text.WrapAnywhere
+                font.family: panel.selectionCount <= 1 && panel.detail.name ? Theme.userDataFontFamily : Theme.uiFontFamily
                 font.pixelSize: Theme.mainDetailTitleSize
                 font.weight: Font.DemiBold
                 color: Theme.text

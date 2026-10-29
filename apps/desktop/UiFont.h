@@ -3,9 +3,15 @@
 #include <QFontDatabase>
 #include <QGuiApplication>
 
-// The same licensed subset provides stable UI metrics in HTML and Qt. Archive names
-// outside its character coverage still use Qt's platform font fallback.
+// Preserve the platform default before installing the shared interface font.
 inline bool installUiFont() {
+    auto *application = QGuiApplication::instance();
+    if (!application->property("xdzipSystemFontFamily").isValid()) {
+        auto family = QGuiApplication::font().family();
+        if (family.isEmpty())
+            family = QFontDatabase::systemFont(QFontDatabase::GeneralFont).family();
+        application->setProperty("xdzipSystemFontFamily", family);
+    }
     const int id =
         QFontDatabase::addApplicationFont(QStringLiteral(":/xdzip/fonts/xdzip-design-sans-sc.ttf"));
     const auto families = QFontDatabase::applicationFontFamilies(id);

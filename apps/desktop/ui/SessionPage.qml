@@ -539,6 +539,7 @@ Item {
         archiveName: root.taskSnapshot.archive || reader.extractionIntent.archive || ""
         destination: taskWindow.checking ? root.taskSnapshot.source || "" : root.taskSnapshot.target || reader.extractionIntent.target || ""
         currentFile: root.taskSnapshot.current || qsTrId("ui.f07335163e36")
+        currentFileUserData: Boolean(root.taskSnapshot.current)
         fraction: root.taskFraction()
         creating: root.taskSnapshot.creating || false
         operationKind: root.taskSnapshot.kind || (creating ? "create" : "extract")
@@ -1036,6 +1037,7 @@ Item {
                             text: reader.title.length ? reader.title : qsTrId("ui.365d4b7cdd5c")
                             textFormat: Text.PlainText
                             elide: Text.ElideMiddle
+                            font.family: reader.title.length ? Theme.userDataFontFamily : Theme.uiFontFamily
                             font.pixelSize: Theme.mainArchiveTitleSize
                             font.weight: Font.DemiBold
                             color: Theme.text
@@ -1184,7 +1186,8 @@ Item {
                         }
                         FontMetrics {
                             id: treeTextMetrics
-                            font.family: "Xdzip Design Sans SC"
+                            objectName: "directoryNameMetrics"
+                            font.family: Theme.userDataFontFamily
                             font.pixelSize: Theme.mainBodySize
                         }
                         onExpanded: forceLayout()
@@ -1322,12 +1325,14 @@ Item {
                                     fillMode: Image.PreserveAspectFit
                                 }
                                 Text {
+                                    objectName: "directoryNodeName"
                                     Layout.fillWidth: true
                                     Layout.rightMargin: directoryNode.hiddenCurrentBranch ? Theme.treeBranchMarkerCanvas : 0
                                     text: directoryNode.nodeName
                                     textFormat: Text.PlainText
                                     elide: Text.ElideRight
                                     color: Theme.text
+                                    font.family: Theme.userDataFontFamily
                                     font.pixelSize: Theme.mainBodySize
                                 }
                             }
@@ -1379,12 +1384,14 @@ Item {
                                         {
                                             id: "",
                                             label: qsTrId("ui.42ee2863b6d7"),
+                                            userData: false,
                                             current: true
                                         }
                                     ])] : [
                                 {
                                     id: "",
                                     label: qsTrId("ui.989ea71171f9"),
+                                    userData: false,
                                     current: true
                                 }
                             ]
@@ -1845,10 +1852,12 @@ Item {
                                 fillMode: Image.PreserveAspectFit
                             }
                             Text {
+                                objectName: cell.column === 0 ? "entryName-" + cell.row : ""
                                 anchors.fill: parent
                                 anchors.leftMargin: table.columnLeftInset(cell.column, false)
                                 anchors.rightMargin: cell.column === 0 && cell.attention ? Theme.mainUnits(24) : table.columnRightInset(cell.column)
                                 text: cell.column === 1 || cell.column === 2 ? (cell.isDirectory ? "—" : root.formatSize(cell.display)) : cell.display
+                                font.family: cell.column === 0 ? Theme.userDataFontFamily : Theme.uiFontFamily
                                 horizontalAlignment: cell.column === 1 || cell.column === 2 ? Text.AlignRight : Text.AlignLeft
                                 textFormat: Text.PlainText
                                 verticalAlignment: Text.AlignVCenter
@@ -1872,6 +1881,7 @@ Item {
                                 requested: hover.hovered && cell.column === 0 && !cellPointer.pressed
                                 suppressed: root.archiveTransferActive
                                 text: cell.display + "\n" + cell.entryStatus
+                                userData: true
                             }
                         }
                     }
@@ -1963,10 +1973,12 @@ Item {
                                     fillMode: Image.PreserveAspectFit
                                 }
                                 Text {
+                                    objectName: "gridEntryName-" + gridEntry.index
                                     Layout.fillWidth: true
                                     text: gridEntry.display
                                     textFormat: Text.PlainText
                                     horizontalAlignment: Text.AlignHCenter
+                                    font.family: Theme.userDataFontFamily
                                     font.pixelSize: Theme.mainBodySize
                                     color: Theme.text
                                     elide: Text.ElideRight
@@ -1996,6 +2008,7 @@ Item {
                                 requested: gridHover.hovered && !gridPointer.pressed
                                 suppressed: root.archiveTransferActive
                                 text: gridEntry.display + "\n" + gridEntry.entryStatus
+                                userData: true
                             }
                         }
                     }
@@ -2188,6 +2201,7 @@ Item {
                                 KeyNavigation.priority: KeyNavigation.BeforeItem
                                 KeyNavigation.tab: taskMenu.footerItem && taskMenu.footerItem.enabled ? taskMenu.footerItem : null
                                 text: taskData.archive || ""
+                                userData: true
                                 accessibleLabel: root.taskLabel(taskData) + qsTrId("common.separator") + text
                                 asset: taskData.kind === "check" ? "task-check" : taskData.kind === "update" ? "task-add" : taskData.kind === "move" ? "task-move" : ["export", "export-copy"].includes(taskData.kind) ? "task-export" : taskData.creating ? "task-create" : "task-extract"
                                 sequenceLabel: taskData.backendId || taskData.id

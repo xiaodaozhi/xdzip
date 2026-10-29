@@ -11,6 +11,7 @@ MenuItem {
     property string statusLabel: ""
     property string sequenceLabel: ""
     property string accessibleLabel: ""
+    property bool userData: false
     property color statusInk: Theme.accentInk
     // Disabled reasons remain available to assistive technology, without a visible hint or tooltip.
     property string disabledReason: ""
@@ -84,6 +85,7 @@ MenuItem {
             textFormat: Text.PlainText
             color: !root.enabled ? Theme.menuDisabled : root.dangerous ? Theme.menuDanger : Theme.menuText
             font.pixelSize: root.labelSize
+            font.family: root.userData ? Theme.userDataFontFamily : Theme.uiFontFamily
             elide: Text.ElideRight
         }
         CommandMenuTag {

@@ -48,6 +48,7 @@ Rectangle {
     readonly property real totalTabWidth: tabCount * capsuleWidth + (tabCount - 1) * Theme.mainTabGap
     property string draggedId: ""
     property string draggedTitle: ""
+    property bool draggedUserData: false
     property bool draggedSelected: false
     property int dragFrom: -1
     property int dropIndex: -1
@@ -139,6 +140,7 @@ Rectangle {
         if (!sessionControls || tabs.length < 2)
             return;
         draggedTitle = labelFor(tab);
+        draggedUserData = tab.title.length > 0;
         draggedSelected = tab.selected;
         dragFrom = index;
         dropIndex = index;
@@ -349,6 +351,7 @@ Rectangle {
                 objectName: "archiveTabTooltip-" + capsule.index
                 requested: hover.hovered && !pointer.pressed && !tabClose.hovered && !root.reordering && !tabContext.visible && !tabList.visible
                 text: root.labelFor(capsule.modelData)
+                userData: capsule.title.length > 0
             }
             MouseArea {
                 id: pointer
@@ -411,6 +414,7 @@ Rectangle {
                     textFormat: Text.PlainText
                     elide: Text.ElideRight
                     font.pixelSize: Theme.mainTabSize
+                    font.family: capsule.title.length ? Theme.userDataFontFamily : Theme.uiFontFamily
                     font.weight: capsule.modelData.selected ? Theme.mainTabActiveWeight : Theme.mainTabInactiveWeight
                     color: capsule.modelData.selected ? Theme.text : Theme.textSecondary
                 }
@@ -522,6 +526,7 @@ Rectangle {
                         required property var modelData
                         objectName: "archiveTabListItem-" + modelData.id
                         text: root.labelFor(modelData)
+                        userData: modelData.title.length > 0
                         checkable: true
                         checked: modelData.selected
                         onTriggered: root.tabSelected(modelData.id)
@@ -561,6 +566,7 @@ Rectangle {
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 font.pixelSize: Theme.mainTabSize
+                font.family: root.draggedUserData ? Theme.userDataFontFamily : Theme.uiFontFamily
                 font.weight: root.draggedSelected ? Theme.mainTabActiveWeight : Theme.mainTabInactiveWeight
                 color: Theme.text
             }

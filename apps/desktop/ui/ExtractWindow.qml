@@ -69,6 +69,7 @@ OperationWindow {
                     source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark/" : "light/") + "archive-large.png"
                     title: root.title
                     subtitle: root.intent.archive || ""
+                    subtitleUserData: true
                     titleObjectName: "extractWindowHeading"
                 }
                 ColumnLayout {
@@ -100,6 +101,7 @@ OperationWindow {
                                         id: target
                                         objectName: "extractTarget"
                                         density: root.density; framed: false
+                                        font.family: Theme.userDataFontFamily
                                         previewText: root.destinationPreview
                                         Layout.fillWidth: true; Layout.fillHeight: true
                                         Accessible.name: qsTrId("ui.26fa005acb80")
@@ -189,7 +191,7 @@ OperationWindow {
                                             Layout.fillWidth: true; Layout.minimumHeight: root.unit(45)
                                             Layout.leftMargin: root.unit(10); Layout.rightMargin: root.unit(10); spacing: root.unit(10)
                                             Image { source: AssetLibrary.fileIcon(String(sampleRow.modelData.name), Boolean(sampleRow.modelData.directory), false); Layout.preferredWidth: root.unit(30); Layout.preferredHeight: root.unit(30) }
-                                            Text { Layout.fillWidth: true; text: sampleRow.modelData.name; textFormat: Text.PlainText; elide: Text.ElideMiddle; color: Theme.text; font.pixelSize: Math.round(root.unit(Theme.operationBodySize)) }
+                                            Text { Layout.fillWidth: true; text: sampleRow.modelData.name; textFormat: Text.PlainText; elide: Text.ElideMiddle; color: Theme.text; font.family: Theme.userDataFontFamily; font.pixelSize: Math.round(root.unit(Theme.operationBodySize)) }
                                         }
                                     }
                                 }

@@ -159,6 +159,7 @@ OperationWindow {
                         objectName: "passwordFileName"
                         Layout.fillWidth: true
                         text: root.prompt.name || ""
+                        font.family: Theme.userDataFontFamily
                         textFormat: Text.PlainText
                         font.pixelSize: Math.round(Theme.passwordBodySize)
                         lineHeight: Math.round(font.pixelSize * Theme.passwordBodyLineFactor)

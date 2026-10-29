@@ -183,6 +183,7 @@ Rectangle {
                                 text: inputRow.modelData.name
                                 textFormat: Text.PlainText
                                 elide: Text.ElideMiddle
+                                font.family: Theme.userDataFontFamily
                                 font.pixelSize: Theme.operationCreateBodySize
                                 color: Theme.text
                                 Accessible.description: inputRow.modelData.path

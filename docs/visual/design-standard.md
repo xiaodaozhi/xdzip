@@ -2,6 +2,12 @@
 
 本规范约束界面创作、HTML 设计交付和 Qt 实现。尺寸换算以 [layout-scale.json](layout-scale.json) 为准；颜色、共享控件和目录树分别以 [tokens.json](tokens.json)、[controls.json](controls.json)、[directory-tree.json](directory-tree.json) 为准。原稿量测保存在 [qt-main-reference.json](qt-main-reference.json)，不以实现结果反向改写原图。
 
+## 界面字体与用户数据
+
+Qt 启动时保存系统默认字体家族，再安装内置的 Noto Sans SC 衍生子集作为固定界面文案字体。文件名、归档名、目录名、路径以及包含这些内容的提示和编辑字段优先使用保存的系统字体；缺少字形时由 Qt 和平台继续回退。含文件名的复合提示可整段使用系统字体，静态占位和操作文字保留界面字体。文字显示、目录树宽度及拖动预览测量须使用对应的相同字体；字号仍遵从现有逻辑尺寸和辅助字号，不因系统 DPI 调整组件逻辑尺寸。HTML 审阅示例仍使用内置子集；用户数据的实际字形与文字宽度以运行平台为准，结构尺寸按同一逻辑规范核验。
+
+English: Qt captures the platform's default font family before installing the bundled Noto Sans SC derivative for fixed interface text. Archive names, filenames, directory names, paths and text fields or messages containing them prefer the captured system family and retain Qt's platform fallback. Measurements for directory names and drag previews use the same family as their displayed text. Existing logical sizes and accessibility scaling remain authoritative; the HTML review examples continue using the bundled subset, while user-data glyphs and text widths depend on the runtime platform.
+
 ## 单位与密度
 
 1. 所有交付值使用逻辑像素：HTML 的 CSS px、Qt 的 device-independent pixel。截图物理像素除以 DPR 后才能和设计值比较。素材的 1×／2×／3×仅决定采样清晰度，不改变图标槽尺寸。

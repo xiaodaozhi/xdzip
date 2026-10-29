@@ -39,11 +39,20 @@ Item {
             Ui.Theme.fontScale = 1;
             task.totalKnown = true;
             task.currentFile = "旅途瞬间-08.jpg";
+            task.currentFileUserData = true;
             task.stopping = false;
             cancelSpy.clear();
             task.show();
         }
         function cleanup() { task.close(); }
+
+        function test_current_file_and_placeholder_families() {
+            const card = findChild(task, "currentFileCard");
+            verify(card !== null);
+            compare(card.valueItem.font.family, Ui.Theme.userDataFontFamily);
+            task.currentFileUserData = false;
+            compare(card.valueItem.font.family, Ui.Theme.uiFontFamily);
+        }
 
         function test_native_window_close_does_not_cancel() {
             compare(task.transientParent, ownerWindow);

@@ -24,7 +24,7 @@ target_include_directories(xdzip-ui-resources PUBLIC "${XDZIP_BUILD_INFO_DIR}")
 qt_add_qml_module(xdzip-ui-resources
     URI Xdzip.Settings VERSION 1.0
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Settings"
-    SOURCES UiPreferences.h UiPreferences.cpp WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
+    SOURCES UiPreferences.h UiPreferences.cpp UiFonts.h WindowsFrame.h WindowsFrame.cpp BuildInfo.h BuildInfo.cpp)
 target_link_libraries(xdzip-ui-resources PRIVATE Qt6::Core Qt6::Gui Qt6::Qml)
 if(WIN32)
     target_link_libraries(xdzip-ui-resources PRIVATE dwmapi user32)

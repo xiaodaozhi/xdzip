@@ -5205,7 +5205,13 @@ QtObject {
         if (qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
             qputenv("XDZIP_SETTINGS_PATH", m_settingsProfile.filePath("settings.ini").toUtf8());
         QVERIFY(initializeUiText(qEnvironmentVariable("XDZIP_UI_TEST_LANGUAGE", "zh-CN")));
+        const auto systemFontFamily = QGuiApplication::font().family();
         QVERIFY(installUiFont());
+        QCOMPARE(QGuiApplication::instance()->property("xdzipSystemFontFamily").toString(),
+                 systemFontFamily.isEmpty()
+                     ? QFontDatabase::systemFont(QFontDatabase::GeneralFont).family()
+                     : systemFontFamily);
+        QCOMPARE(QGuiApplication::font().family(), QStringLiteral("Xdzip Design Sans SC"));
         qmlRegisterType<BrowserController>("Xdzip.Native", 1, 0, "BrowserController");
     }
     void init() {
@@ -5216,6 +5222,48 @@ QtObject {
     }
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
+    }
+    void userDataFontInRealBrowser() {
+        QTemporaryDir fixture;
+        QVERIFY(fixture.isValid());
+        const auto archive = fixture.filePath(QString::fromUtf8("文件稻草-日本語.zip"));
+        QVERIFY(QFile::copy(QStringLiteral(XDZIP_FIXTURES "/visual-main.zip"), archive));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        controller->openPath(archive);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        const auto systemFamily =
+            QGuiApplication::instance()->property("xdzipSystemFontFamily").toString();
+        QVERIFY(!systemFamily.isEmpty());
+        const auto item = [window](const QString &name) {
+            return findVisual(window->contentItem(), name);
+        };
+        for (const auto *name : {"sidebarArchiveName", "archiveTabLabel-0", "breadcrumbSegment-0",
+                                 "directoryNodeName", "entryName-0"}) {
+            QQuickItem *textItem = nullptr;
+            QTRY_VERIFY((textItem = item(QString::fromLatin1(name))));
+            QCOMPARE(textItem->property("font").value<QFont>().family(), systemFamily);
+        }
+        auto *fixedLabel = item("inspectorPaneTitle");
+        QVERIFY(fixedLabel);
+        QCOMPARE(fixedLabel->property("font").value<QFont>().family(),
+                 QStringLiteral("Xdzip Design Sans SC"));
+        auto *treeName = item("directoryNodeName");
+        auto *treeMetrics = window->findChild<QObject *>("directoryNameMetrics");
+        QVERIFY(treeName && treeMetrics);
+        QCOMPARE(treeMetrics->property("font").value<QFont>().family(),
+                 treeName->property("font").value<QFont>().family());
+        QCOMPARE(treeMetrics->property("font").value<QFont>().pixelSize(),
+                 treeName->property("font").value<QFont>().pixelSize());
+        window->setProperty("viewMode", "grid");
+        QQuickItem *gridName = nullptr;
+        QTRY_VERIFY((gridName = item("gridEntryName-0")));
+        QCOMPARE(gridName->property("font").value<QFont>().family(), systemFamily);
     }
     void privateTestDesktopInputAndAccessibility() {
         const bool accessibilityWasActive = QAccessible::isActive();

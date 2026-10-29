@@ -105,6 +105,7 @@ OperationWindow {
                                 textFormat: Text.PlainText
                                 wrapMode: Text.Wrap
                                 color: Theme.text
+                                font.family: Theme.userDataFontFamily
                                 font.pixelSize: Theme.preflightBodySize
                             }
                         }

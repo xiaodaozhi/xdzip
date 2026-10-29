@@ -65,6 +65,7 @@ def audit(directory):
         def center(n):
             return n['y'] + n['height'] / 2
 
+        record('userDataFontFamilyKnown', bool(data['userDataFontFamily']), True)
         record('window.width', data['width'], reference['logical_width'], 0)
         record('image.logicalWidth', data['imageWidth'] / data['dpr'], data['width'], 1 / data['dpr'])
         record('image.logicalHeight', data['imageHeight'] / data['dpr'], data['height'], 1 / data['dpr'])
@@ -96,6 +97,7 @@ def audit(directory):
         record('paneTitles.baseline', left_title['y'] + left_title['baselineOffset'],
                right_title['y'] + right_title['baselineOffset'], .5)
         breadcrumb = within(left, lambda n: n['class'].startswith('QQuickText') and n.get('text') == '北境旅行.zip')
+        record('breadcrumb.archiveNameFamily', breadcrumb['fontRequestedFamily'], data['userDataFontFamily'])
         record('breadcrumb.archiveNameFits', breadcrumb['width'] + .01 >= breadcrumb['implicitWidth'], True)
         preview = named('previewContent')
         record('preview.top', preview['y'], named('fileTableHeader')['y'], .01)
@@ -116,7 +118,7 @@ def audit(directory):
             record(f'row{row_index}.iconCenterY', center(glyph), center(row), .5)
             record(f'row{row_index}.textCenterY', center(label), center(row), .5)
             record(f'row{row_index}.font', label['fontPixelSize'], sizes['table'], 0)
-            record(f'row{row_index}.family', label['fontFamily'], 'Xdzip Design Sans SC')
+            record(f'row{row_index}.family', label['fontRequestedFamily'], data['userDataFontFamily'])
             record(f'row{row_index}.canonicalIcon', glyph['source'].startswith('qrc:/xdzip/assets/'), True)
             for column in [1, 2, 3, 4]:
                 cell = named(f'entry-{row_index}-{column}')

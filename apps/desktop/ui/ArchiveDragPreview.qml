@@ -20,7 +20,7 @@ Rectangle {
     // This overlay has no input handlers: the destination keeps the drag.
     Accessible.role: Accessible.StaticText
     Accessible.name: fileName + (itemCount > 1 ? ", " + itemCount : "") + (message.length ? ", " + message : "")
-    TextMetrics { id: nameMetrics; text: root.fileName; font.pixelSize: Theme.menuLabelSize }
+    TextMetrics { id: nameMetrics; objectName: "dragPreviewNameMetrics"; text: root.fileName; font.family: Theme.userDataFontFamily; font.pixelSize: Theme.menuLabelSize }
     TextMetrics { id: countMetrics; text: String(root.itemCount); font.pixelSize: Theme.menuLabelSize; font.weight: Font.DemiBold }
     Column {
         id: body
@@ -51,6 +51,7 @@ Rectangle {
                 elide: Text.ElideMiddle
                 color: Theme.tooltipText
                 font.pixelSize: Theme.menuLabelSize
+                font.family: Theme.userDataFontFamily
             }
             Text {
                 id: count

@@ -25,6 +25,7 @@ Rectangle {
             Layout.fillWidth: true; spacing: 2
             Text {
                 Layout.fillWidth: true; text: root.entry.name
+                font.family: Theme.userDataFontFamily
                 textFormat: Text.PlainText; elide: Text.ElideMiddle
                 font.pixelSize: Math.round(Theme.operationResultBodySize)
                 lineHeight: Math.round(18 * Theme.fontScale); lineHeightMode: Text.FixedHeight
