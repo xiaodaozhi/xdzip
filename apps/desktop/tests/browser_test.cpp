@@ -11854,9 +11854,12 @@ int main(int argc, char **argv) {
         return QTest::qExec(&test, argc, argv);
     if (!QDir().mkpath(timingDirectory))
         return 2;
-    const auto stem = "browser-" + QUuid::createUuid().toString(QUuid::WithoutBraces);
+    const auto processId = QCoreApplication::applicationPid();
+    const auto stem = "browser-" + QString::number(processId) + "-" +
+                      QUuid::createUuid().toString(QUuid::WithoutBraces);
     const QDir output(timingDirectory);
     QJsonObject timing{{"schema_version", 1},
+                       {"process_id", processId},
                        {"revision", BuildInfo::revision()},
                        {"dirty", BuildInfo::dirty()},
                        {"started_at", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs)},

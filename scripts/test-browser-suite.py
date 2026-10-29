@@ -107,6 +107,9 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertEqual(len(names), len(set(names)))
         self.assertEqual(len(names), 6)
         self.assertTrue(all(shard['status'] == 'passed' for shard in manifest['shards']))
+        pids = [shard['process_id'] for shard in manifest['shards']]
+        self.assertEqual(len(set(pids)), len(pids))
+        self.assertTrue(all(type(pid) is int and pid > 0 for pid in pids))
         self.assertEqual(self.output.read_text().count('() entering'), 6)
 
     def test_two_worker_run_still_covers_every_function(self):

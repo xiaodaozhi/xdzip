@@ -108,11 +108,16 @@ def browser_evidence(reader, revision):
                     and shard.get('missing_or_duplicate') == [] and shard.get('extra') == [], 'failed-browser-shard')
             name = basename(shard['timing_directory'])
             require(name == 'browser-suite-' + suite_id + '-shard-' + str(index), 'browser-shard-identity-mismatch')
-            records = list((directory / name).glob('browser-*.json'))
+            process_id = shard.get('process_id')
+            require(type(process_id) is int and process_id > 0, 'missing-browser-worker-identity')
+            # Restart/helper children inherit the timing directory. Their outcome
+            # is checked by the parent test; only the launched worker is this shard.
+            records = list((directory / name).glob('browser-' + str(process_id) + '-*.json'))
             require(len(records) == 1, 'missing-or-ambiguous-browser-record')
             timing = reader.json(records[0].relative_to(reader.root).as_posix())
             require(timing.get('status') == 'passed' and timing.get('exit_code') == 0
-                    and timing.get('revision') == revision[:12] and timing.get('dirty') is False,
+                    and timing.get('revision') == revision[:12] and timing.get('dirty') is False
+                    and timing.get('process_id') == process_id,
                     'stale-or-incomplete-browser-record')
             log = basename(timing['log'])
             require(log == records[0].with_suffix('.log').name, 'browser-log-identity-mismatch')

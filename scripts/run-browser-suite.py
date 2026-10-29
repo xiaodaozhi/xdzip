@@ -236,8 +236,10 @@ def run_suite(command, output, env=None, cwd=None):
                                        'timing_directory': shard_timing.name if timing_dir else None,
                                        'status': 'running'})
             write_manifest(manifest_path, manifest)
-            processes.start([*command, *group, '-v1', '-o', str(log) + ',txt'], env=child_env,
-                            cwd=cwd, stdout=console, stderr=subprocess.STDOUT)
+            process = processes.start([*command, *group, '-v1', '-o', str(log) + ',txt'], env=child_env,
+                                      cwd=cwd, stdout=console, stderr=subprocess.STDOUT)
+            manifest['shards'][index]['process_id'] = process.pid
+            write_manifest(manifest_path, manifest)
         failed = False
         for index, (process, group, log) in enumerate(zip(processes.items, groups, logs)):
             result = process.wait()

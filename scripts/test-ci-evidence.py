@@ -48,14 +48,15 @@ class EvidenceTests(unittest.TestCase):
         for _ in range(11):
             suite = str(uuid.uuid4());stem = 'build/review/browser-timings/browser-suite-' + suite
             shard = 'browser-suite-' + suite + '-shard-0'
-            timing = stem + '-shard-0/browser-owned.json'
-            self.write_json(timing, dict(status='passed', exit_code=0, revision=SOURCE[:12], dirty=False, log='browser-owned.log'))
+            timing = stem + '-shard-0/browser-123-owned.json'
+            self.write_json(timing, dict(status='passed', exit_code=0, revision=SOURCE[:12], dirty=False,
+                                        process_id=123, log='browser-123-owned.log'))
             xml = '<TestCase name="BrowserTest">' + ''.join('<TestFunction name="' + n + '"><Incident type="pass"/></TestFunction>'
                                                           for n in ['initTestCase', 'ownedAlpha', 'ownedBeta', 'cleanupTestCase']) + '</TestCase>'
-            self.write(stem + '-shard-0/browser-owned.log', xml)
+            self.write(stem + '-shard-0/browser-123-owned.log', xml)
             self.write_json(stem + '.json', dict(schema_version=1, suite_id=suite, status='passed', functions=2,
                             shards=[dict(index=0, functions=['ownedAlpha', 'ownedBeta'], timing_directory=shard,
-                                         status='passed', exit_code=0, missing_or_duplicate=[], extra=[])]))
+                                         process_id=123, status='passed', exit_code=0, missing_or_duplicate=[], extra=[])]))
 
     def write(self, name, text):
         path = self.root / name;path.parent.mkdir(parents=True, exist_ok=True);path.write_text(text, encoding='utf-8')
@@ -131,11 +132,27 @@ class EvidenceTests(unittest.TestCase):
         data['status'] = 'running';path.write_text(json.dumps(data), encoding='utf-8')
         with self.assertRaisesRegex(ValueError, 'incomplete-browser-suite'):self.qt()
         path.write_text(original, encoding='utf-8')
-        record = next(path.parent.rglob('browser-owned.json'));data = json.loads(record.read_text(encoding='utf-8'))
+        record = next(path.parent.rglob('browser-123-owned.json'));data = json.loads(record.read_text(encoding='utf-8'))
         data['dirty'] = True;record.write_text(json.dumps(data), encoding='utf-8')
         with self.assertRaisesRegex(ValueError, 'stale-or-incomplete-browser-record'):self.qt()
         path.unlink()
         with self.assertRaisesRegex(ValueError, 'missing-initial-or-repeated-suite'):self.qt()
+
+    def test_helper_process_records_cannot_replace_missing_failed_or_ambiguous_worker(self):
+        record = next((self.root / 'build/review/browser-timings').rglob('browser-123-owned.json'))
+        parent = record.parent
+        data = json.loads(record.read_text(encoding='utf-8'))
+        child = dict(data, process_id=124, log='browser-124-child.log')
+        self.write_json((parent / 'browser-124-child.json').relative_to(self.root).as_posix(), child)
+        self.write((parent / 'browser-124-child.log').relative_to(self.root).as_posix(), record.with_suffix('.log').read_text(encoding='utf-8'))
+        self.assertEqual(self.qt()['facts']['browser']['suites'], 11)
+        data['status'] = 'failed';record.write_text(json.dumps(data), encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'stale-or-incomplete-browser-record'):self.qt()
+        record.unlink()
+        with self.assertRaisesRegex(ValueError, 'missing-or-ambiguous-browser-record'):self.qt()
+        data['status'] = 'passed';record.write_text(json.dumps(data), encoding='utf-8')
+        self.write_json((parent / 'browser-123-duplicate.json').relative_to(self.root).as_posix(), data)
+        with self.assertRaisesRegex(ValueError, 'missing-or-ambiguous-browser-record'):self.qt()
 
     def test_raw_xml_omission_failure_or_wrong_shard_cannot_hide_behind_success_metadata(self):
         log = next((self.root / 'build/review/browser-timings').rglob('*.log'))
