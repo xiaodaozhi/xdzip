@@ -166,7 +166,7 @@ OperationWindow {
                                                 objectName: "updateDirectoryName"
                                                 Layout.fillWidth: true
                                                 text: root.targetLabel
-                                                font.family: Theme.userDataFontFamily
+                                                font.family: root.targetDirectory.length ? Theme.userDataFontFamily : Theme.uiFontFamily
                                                 textFormat: Text.PlainText
                                                 wrapMode: Text.WrapAnywhere
                                                 font.pixelSize: Theme.operationCreateBodySize

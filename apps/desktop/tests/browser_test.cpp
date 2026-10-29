@@ -5264,6 +5264,37 @@ QtObject {
         QQuickItem *gridName = nullptr;
         QTRY_VERIFY((gridName = item("gridEntryName-0")));
         QCOMPARE(gridName->property("font").value<QFont>().family(), systemFamily);
+
+        const auto input = fixture.filePath(QStringLiteral("添加.txt"));
+        QFile inputFile(input);
+        QVERIFY(inputFile.open(QIODevice::WriteOnly));
+        QCOMPARE(inputFile.write("owned font fixture"), 18);
+        inputFile.close();
+        QFile archiveFile(archive);
+        QVERIFY(archiveFile.open(QIODevice::ReadOnly));
+        const auto originalArchive = archiveFile.readAll();
+        archiveFile.close();
+        auto *adding = window->findChild<QQuickWindow *>("updateWindow");
+        QVERIFY(adding);
+        controller->addDroppedUrls({QUrl::fromLocalFile(input)});
+        QTRY_VERIFY(adding->isVisible() && !controller->busy());
+        auto *destination = findVisual(adding->contentItem(), "updateDirectoryName");
+        QVERIFY(destination);
+        QVERIFY(controller->directoryId().isEmpty());
+        QCOMPARE(destination->property("font").value<QFont>().family(),
+                 QGuiApplication::font().family());
+        adding->close();
+        const auto directory = controller->m_directoryPaths.value(QStringLiteral("01 照片/"));
+        QVERIFY(!directory.isEmpty());
+        controller->navigateDirectory(directory);
+        QTRY_VERIFY(!controller->busy() && controller->directoryId() == directory);
+        controller->addDroppedUrls({QUrl::fromLocalFile(input)});
+        QTRY_VERIFY(adding->isVisible() && !controller->busy());
+        QCOMPARE(destination->property("text").toString(), controller->location());
+        QCOMPARE(destination->property("font").value<QFont>().family(), systemFamily);
+        adding->close();
+        QVERIFY(archiveFile.open(QIODevice::ReadOnly));
+        QCOMPARE(archiveFile.readAll(), originalArchive);
     }
     void privateTestDesktopInputAndAccessibility() {
         const bool accessibilityWasActive = QAccessible::isActive();

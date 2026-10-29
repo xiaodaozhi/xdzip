@@ -125,7 +125,7 @@
       "parent": "OperationWindow",
       "role": "operation",
       "width": "Theme.operationCreateWidth",
-      "reason": "以 C01 创建原稿为依据，491 逻辑宽度，图标标题与三块卡片，共享输入选择区和 footer，正文自适应并滚动，最高沿用创建窗上限，目标归档及包内目录只读",
+      "reason": "以 C01 创建原稿为依据，491 逻辑宽度，图标标题与三块卡片，共享输入选择区和 footer，正文自适应并滚动，最高沿用创建窗上限，目标归档及包内目录只读。用户目录路径使用系统字体，静态根目录说明使用界面字体，尺寸沿用原规范",
       "design": "design/hifi/sources/archive-add.html",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
