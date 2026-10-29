@@ -44,6 +44,15 @@ def archive_source(item, cache):
     return target
 
 
+def collect_native_sources(output, cache):
+    # The current dedicated runtime material is the full Linux ICU license.
+    item = configuration()['icu']
+    source = fetch(item, cache)
+    shutil.copy2(source, output/source.name)
+    shutil.copy2(ROOT/'scripts/native-runtime-sources.json', output/'native-runtime-sources.json')
+    return dict(item)
+
+
 def rebuild_instructions():
     """Keep offline product rebuild and separately prepared test data distinct."""
     return '''# 离线重建与 Qt 动态库替换
@@ -77,9 +86,10 @@ def rebuild_instructions():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Mesa 和 LLVM 原始源码归档以及 ICU 完整许可随目录提供，版本和原文哈希见
-   native-runtime-sources.json。软件渲染库的供应方编译配置仍需与实际 DLL 分开核对，
-   不将上游原始归档冒充已复现供应方全部构建输入。
+6. Linux ICU 的完整许可随目录提供，版本和原文哈希见 native-runtime-sources.json。
+   当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
+   English: The Linux ICU license is included. Current Windows developer packages
+   omit the software OpenGL library; historical deliveries retain their obligations.
 
 ## 显式测试数据前置与完整 runtime 批次
 
@@ -160,14 +170,7 @@ def main():
     materials += corresponding_sources(output)
     _, rar_mapping_record = collect_rar_mapping_materials(output)
     materials.append(rar_mapping_record)
-    # Preserve original Mesa/LLVM inputs, not only URLs, for the retained Windows
-    # software renderer. These are source references, not invented build records.
-    native_sources = configuration()
-    for item in native_sources['archives'] + [native_sources['icu']]:
-        source = fetch(item, ROOT/'build/native-source-cache')
-        shutil.copy2(source, output/source.name)
-        materials.append(dict(item))
-    shutil.copy2(ROOT/'scripts/native-runtime-sources.json', output/'native-runtime-sources.json')
+    materials.append(collect_native_sources(output, ROOT/'build/native-source-cache'))
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'
     patch_dir.mkdir()

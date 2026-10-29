@@ -38,6 +38,21 @@ replace_qt = module('verify-qt-replacement')
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_native_source_delivery_retains_icu_without_software_opengl_archives(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir(); (root/'scripts').mkdir()
+            data = b'Owned ICU license fixture'
+            item = {'file': 'ICU.txt', 'sha256': hashlib.sha256(data).hexdigest(),
+                    'url': 'https://invalid.test/not-used'}
+            (cache/'ICU.txt').write_bytes(data)
+            (root/'scripts/native-runtime-sources.json').write_text(json.dumps({'icu': item}))
+            with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value={'icu': item}):
+                material = source.collect_native_sources(output, cache)
+            self.assertEqual(material, item)
+            self.assertEqual((output/'ICU.txt').read_bytes(), data)
+            self.assertEqual({path.name for path in output.iterdir()}, {'ICU.txt', 'native-runtime-sources.json'})
+
     def test_rar_mapping_notice_bytes_match_in_notices_and_separate_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

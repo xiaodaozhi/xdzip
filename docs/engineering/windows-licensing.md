@@ -28,7 +28,7 @@ CI 记录实际 VS 产品、版本、编译器相对位置、工具版本及 SDK
 
 [VS 2022 REDIST 清单](https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution)明确包含有效许可的 Community 2022。当前使用 [windows-runtime.json](../../scripts/windows-runtime.json) 固定的正式版 VC_redist x64，原样提取并逐一核对八个 CRT DLL 和原始运行库许可，不打包编译器、调试器或 `debug_nonredist`。开发工具的 Community 免费路径和托管 CI 的 Enterprise 身份均不将微软 DLL 重新授权为 Apache-2.0。
 
-Windows SDK 的 `d3dcompiler_47.dll`、`dxcompiler.dll`、`dxil.dll` 来自显式 SDK 的 `Redist/D3D/x64`。[SDK REDIST 清单](https://learn.microsoft.com/en-us/legal/windows-sdk/redist)允许在有效 SDK 许可下原样随 Classic Windows 应用分发这些文件，禁止随 UWP 应用分发；xdzip 是 Classic Windows 桌面应用。SDK 自己的原始许可及第三方通知另外保留，不用 Community 许可替代 SDK 条款。Mesa 软件回退库另按其原始许可和通知交付。
+Windows SDK 的 `d3dcompiler_47.dll`、`dxcompiler.dll`、`dxil.dll` 来自显式 SDK 的 `Redist/D3D/x64`。[SDK REDIST 清单](https://learn.microsoft.com/en-us/legal/windows-sdk/redist)允许在有效 SDK 许可下原样随 Classic Windows 应用分发这些文件，禁止随 UWP 应用分发；xdzip 是 Classic Windows 桌面应用。SDK 自己的原始许可及第三方通知另外保留，不用 Community 许可替代 SDK 条款。新开发包不交付 Mesa 软件 OpenGL 库；历史包继续按原有许可和通知处理。
 
 包内 `share/notices/Windows-runtime-NOTICE.txt` 双语说明各组件许可边界。Microsoft CRT 原始条款位于 `Microsoft-VC-runtime/license.rtf`，SDK 原始条款位于 `Windows-SDK-graphics/sdk_license.rtf`。安装器展示原始 CRT 协议并要求接受，随后展示组件说明；便携包用户同样需要阅读并遵守随包 Microsoft 条款。两种包都保留原始许可及来源，下游再分发者应自行满足适用资格和分发条件，不能仅凭项目 Apache-2.0 许可转发 Microsoft 组件。
 

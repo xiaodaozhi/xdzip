@@ -4,7 +4,7 @@ xdzip 原创内容采用 Apache License 2.0。Qt、字体和其他第三方组�
 
 本包携带正式版 Microsoft Visual C++ x64 运行库。安装器的许可页展示该运行库的原始协议，仅适用于 Microsoft 运行库。使用便携包时也请先阅读并遵守 Microsoft-VC-runtime/license.rtf；不同意适用条款时，请勿使用这些 Microsoft 组件。
 
-本包的 d3dcompiler_47.dll、dxcompiler.dll 和 dxil.dll 是 Windows SDK 为 Classic Windows 应用提供的图形兼容组件。其原始许可和第三方通知位于 Windows-SDK-graphics，不能将这些组件随 UWP 应用再分发。opengl32sw.dll 是另按 Mesa／LLVM 原始条款交付的软件图形回退库。
+本包的 d3dcompiler_47.dll、dxcompiler.dll 和 dxil.dll 是 Windows SDK 为 Classic Windows 应用提供的图形兼容组件。其原始许可和第三方通知位于 Windows-SDK-graphics，不能将这些组件随 UWP 应用再分发。
 
 Microsoft 组件的再分发受适用开发工具／SDK 许可及 REDIST 清单约束。下游分发者须满足相应资格和条件，保持这些 DLL 未修改，并向下游保留适用的保护条款；下载本包或拥有项目的 Apache-2.0 许可本身不授予独立的 Microsoft 再分发权。普通用户运行 xdzip 无需安装 Visual Studio。
 
@@ -18,7 +18,7 @@ Original xdzip work is licensed under Apache License 2.0. Qt, fonts and other th
 
 This package includes release Microsoft Visual C++ x64 runtime files. Setup presents the original runtime agreement, which applies only to the Microsoft runtime. Portable users must also read and comply with Microsoft-VC-runtime/license.rtf before use. Do not use these Microsoft components if you do not agree to the applicable terms.
 
-d3dcompiler_47.dll, dxcompiler.dll and dxil.dll are Windows SDK graphics compatibility components for Classic Windows applications. Their original license and third-party notices are in Windows-SDK-graphics. They may not be redistributed with UWP applications. opengl32sw.dll is a separate software graphics fallback distributed under the original Mesa/LLVM terms.
+d3dcompiler_47.dll, dxcompiler.dll and dxil.dll are Windows SDK graphics compatibility components for Classic Windows applications. Their original license and third-party notices are in Windows-SDK-graphics. They may not be redistributed with UWP applications.
 
 Redistribution of Microsoft components requires compliance with the applicable developer-tool/SDK license and REDIST list. Downstream distributors must satisfy those conditions, preserve these DLLs unmodified and retain terms protecting the code downstream. Downloading this package or receiving the project's Apache-2.0 license does not itself grant independent Microsoft redistribution rights. End users do not need Visual Studio to run xdzip.
 

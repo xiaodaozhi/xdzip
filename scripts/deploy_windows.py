@@ -8,7 +8,6 @@ import shutil
 import subprocess
 from deployment_audit import ROOT, digest, run, windows_imports, within
 from installer_payload import historical_qa_identity, historical_qa_revision
-from native_runtime_materials import configuration
 
 STYLES = ('FluentWinUI3', 'Fusion', 'Imagine', 'Material', 'Universal', 'Windows')
 MODULES = tuple('qml/QtQuick/Controls/'+name for name in STYLES) + (
@@ -16,8 +15,8 @@ MODULES = tuple('qml/QtQuick/Controls/'+name for name in STYLES) + (
 LIBRARIES = tuple('Qt6QuickControls2'+name+'.dll' for name in (
     'FluentWinUI3StyleImpl', 'Fusion', 'FusionStyleImpl', 'Imagine', 'ImagineStyleImpl',
     'Material', 'MaterialStyleImpl', 'Universal', 'UniversalStyleImpl', 'WindowsStyleImpl')) + (
-    'Qt6QuickEffects.dll', 'vc_redist.x64.exe')
-FALLBACKS = ('opengl32sw.dll', 'dxcompiler.dll', 'dxil.dll', 'd3dcompiler_47.dll')
+    'Qt6QuickEffects.dll', 'vc_redist.x64.exe', 'opengl32sw.dll')
+FALLBACKS = ('dxcompiler.dll', 'dxil.dll', 'd3dcompiler_47.dll')
 
 
 def standalone_update_helper(path):
@@ -72,6 +71,11 @@ def prune(root):
     return removed
 
 
+def require_no_software_opengl(root):
+    if any(path.name.lower() == 'opengl32sw.dll' for path in root.rglob('*')):
+        raise ValueError('Software OpenGL library must not be present in the deployment')
+
+
 def copy_runtime(runtime, root):
     config = json.loads((ROOT/'scripts/windows-runtime.json').read_text())
     materials = dict(config['files'])
@@ -91,10 +95,10 @@ def copy_runtime(runtime, root):
     (notices.parent/notice.name).write_bytes(b'\xef\xbb\xbf'+notice.read_bytes())
 
 
-def copy_graphics(qt, sdk, sdk_version, root):
+def copy_graphics(sdk, sdk_version, root):
     # Do not let windeployqt discover these through PATH/System32. Only the
-    # selected Windows SDK's redistributable directory and the fixed Qt SDK
-    # are admitted. This records supplier inputs, not licensee eligibility.
+    # selected Windows SDK's redistributable directory is admitted. This
+    # records supplier inputs, not licensee eligibility.
     if not sdk_version or '/' in sdk_version or '\\' in sdk_version:
         raise ValueError('Explicit Windows SDK version required for graphics provenance')
     redist = sdk/'Redist/D3D/x64'
@@ -102,14 +106,10 @@ def copy_graphics(qt, sdk, sdk_version, root):
     if not license_file.is_file():
         license_file = sdk/'license.rtf'
     third_party = license_file.with_name('sdk_third_party_notices.rtf')
-    inputs = {name: redist/name for name in FALLBACKS if name != 'opengl32sw.dll'}
-    inputs['opengl32sw.dll'] = qt/'bin/opengl32sw.dll'
+    inputs = {name: redist/name for name in FALLBACKS}
     for path in [*inputs.values(), license_file]:
-        base = qt if path == inputs['opengl32sw.dll'] else sdk
-        if not within(path, base) or not path.is_file() or path.is_symlink():
+        if not within(path, sdk) or not path.is_file() or path.is_symlink():
             raise ValueError('Missing bounded SDK graphics redistributable/license')
-    if digest(inputs['opengl32sw.dll']) != configuration()['mesa_binary']['sha256']:
-        raise ValueError('Unreviewed Mesa software renderer; update source and notices together')
     notices = root/'share/notices/Windows-SDK-graphics'
     notices.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(license_file, notices/'sdk_license.rtf')
@@ -118,14 +118,13 @@ def copy_graphics(qt, sdk, sdk_version, root):
     files = []
     for name, path in inputs.items():
         shutil.copyfile(path, root/name)
-        base = qt if name == 'opengl32sw.dll' else sdk
         files.append({'file': name, 'sha256': digest(path),
-                      'supplier': 'Qt SDK Mesa build' if name == 'opengl32sw.dll' else 'Microsoft Windows SDK REDIST',
-                      'source_relative': path.relative_to(base).as_posix()})
+                      'supplier': 'Microsoft Windows SDK REDIST',
+                      'source_relative': path.relative_to(sdk).as_posix()})
     result = {'schema_version': 1, 'windows_sdk_version': sdk_version, 'files': files,
               'license': {'file': 'sdk_license.rtf', 'sha256': digest(license_file)},
               'redistribution_list': 'https://go.microsoft.com/fwlink/?LinkId=524842',
-              'limits': ['SDK file provenance does not certify licensee eligibility or Mesa/LLVM notice completeness.']}
+              'limits': ['SDK file provenance does not certify licensee eligibility.']}
     (notices/'provenance.json').write_text(json.dumps(result, indent=2)+'\n')
     return result
 
@@ -148,6 +147,7 @@ def main():
     if not within(root, ROOT/'build') or root == ROOT/'build' or not (root/'xdzip.exe').is_file():
         parser.error('Use an application staging directory under build/')
     subprocess.run([str(args.qt_prefix/'bin/windeployqt.exe'), '--release', '--no-compiler-runtime',
+                    '--no-opengl-sw',
                     '--no-system-d3d-compiler', '--no-system-dxc-compiler',
                     '--skip-plugin-types', 'qmltooling', '--qmldir', str(args.qml_dir),
                     '--qmlimport', str(args.qml_import), str(root/'xdzip.exe')], check=True)
@@ -155,7 +155,8 @@ def main():
     copy_runtime(args.runtime, root)
     sdk = Path(os.environ.get('WindowsSdkDir', ''))
     sdk_version = os.environ.get('WindowsSDKVersion', '').strip('\\/')
-    copy_graphics(args.qt_prefix.resolve(), sdk.resolve(), sdk_version, root)
+    copy_graphics(sdk.resolve(), sdk_version, root)
+    require_no_software_opengl(root)
     required = FALLBACKS + ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):

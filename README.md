@@ -66,7 +66,7 @@
 
 ## 获取与安装
 
-预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 包保留应用目录内 VC++ 运行库和图形兼容库，Mac 包仅 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
+预发布通过 [GitHub Releases](https://github.com/xiaodaozhi/xdzip/releases)提供六类下载包与校验清单，公开前仍保留为草稿。Windows 开发包保留应用目录内 VC++ 运行库和 Windows SDK 图形兼容库，不携带软件 OpenGL 回退库；Mac 包仅 ad-hoc 完整性签名。发行材料要求与更新协议见[发布说明](docs/engineering/release-protocol.md)。
 
 当前也可从 [GitHub Actions](https://github.com/xiaodaozhi/xdzip/actions/workflows/qt-components.yml?query=branch%3Amain) 获取通过检查的 Windows、Linux 开发工件，或从源码构建。选择 main 分支中成功完成的运行，在页面底部 **Artifacts** 下载对应平台工件；下载可能需要登录 GitHub，工件通常保留 14 天。
 
