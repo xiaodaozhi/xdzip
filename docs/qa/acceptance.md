@@ -8,6 +8,12 @@
 
 English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the deployed candidate, reuses exact section/address/flag, zero-fill, UUID and normalized import comparison to bind compiled link inputs, rejects changed or mixed/boundedness-invalid evidence, and checks the same-package SDK, difference and SBOM records. Signing/load-command layout and LINKEDIT, original gaps, reference budgets and human visual acceptance remain separate.
 
+| 场景 | 操作与判定 |
+| --- | --- |
+| RELEASE-VALIDATION-UNSIGNED | validate_only 汇总步骤不接收更新签名密钥或 key ID；即使调用环境注入自有测试密钥，也不生成清单签名或 appcast，并拒绝残留签名附件及与强制签名冲突的参数。正式发行路径仍强制验证完整更新签名，不以演练通过代替生产密钥或安装升级验收 |
+
+English: RELEASE-VALIDATION-UNSIGNED prevents validation assembly from receiving workflow signing inputs or producing update signatures, including with injected fixture keys, and rejects stale signing attachments and contradictory flags. Production signing and upgrade acceptance remain separate.
+
 ## 标题区、任务历史与拖动提示
 
 | 场景 | 操作与判定 |

@@ -142,15 +142,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
           VALIDATE_ONLY: ${{ inputs.validate_only || false }}
-          XDZIP_UPDATE_KEY_ID: ${{ vars.XDZIP_UPDATE_KEY_ID }}
-          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_UPDATE_SIGNING_KEY_HEX }}
-          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX }}
+          XDZIP_UPDATE_KEY_ID: ${{ !inputs.validate_only && vars.XDZIP_UPDATE_KEY_ID || '' }}
+          XDZIP_UPDATE_SIGNING_KEY_HEX: ${{ !inputs.validate_only && secrets.XDZIP_UPDATE_SIGNING_KEY_HEX || '' }}
+          XDZIP_SPARKLE_SIGNING_KEY_HEX: ${{ !inputs.validate_only && secrets.XDZIP_SPARKLE_SIGNING_KEY_HEX || '' }}
         run: |
           mkdir -p build/packages
           find build/downloaded/release-Windows build/downloaded/release-Linux build/downloaded/release-macOS build/downloaded/release-source -maxdepth 1 -type f -exec cp {} build/packages/ \;
           rustup toolchain install 1.99.0 --profile minimal
           UPDATE_ARGS=()
-          if [ "$VALIDATE_ONLY" != true ]; then UPDATE_ARGS+=(--require-update-signature); fi
+          if [ "$VALIDATE_ONLY" = true ]; then
+            UPDATE_ARGS+=(--validation-only)
+          else
+            UPDATE_ARGS+=(--require-update-signature)
+          fi
           python3 scripts/prepare-release.py --packages build/packages --output build/public-release --repository "$GITHUB_REPOSITORY" "${UPDATE_ARGS[@]}"
           if [ "$VALIDATE_ONLY" != true ]; then
             python3 scripts/publish-release.py --directory build/public-release --tag "$RELEASE_TAG" --repository "$GITHUB_REPOSITORY"

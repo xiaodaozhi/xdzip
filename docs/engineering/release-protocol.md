@@ -8,7 +8,9 @@
 
 说明按平台、实际提交和证据记录中英文验收边界，已有人工验收与未执行项分别保留；阶段进展仍由 issue 管理。初建草稿和公开使用同一份说明快照。草稿重跑若发现其正文与已审阅文件不同，会在上传／删除资产前停止，要求显式对齐输入；公开版本继续拒绝重跑替换资产。`CHANGELOG.md` 只归档实际公开版本，本地开发交付不补造为公开版本史。
 
-冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、签名、核验并汇总完整附件，保留 release-validation 工件，不创建草稿或公开 Release。正式发布仍使用版本标签，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
+冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、执行必要的 Mac ad-hoc 完整性签名、核验并汇总附件，保留 release-validation 工件，不创建草稿或公开 Release。验证模式不向汇总步骤传递更新签名密钥或 key ID；汇总器显式禁用更新签名，即使调用环境含有密钥也不使用，并拒绝残留的签名附件或冲突参数。正式发布仍使用版本标签和强制更新签名，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
+
+English: Validation-only assembly receives no update-signing keys or key ID from the workflow and explicitly disables update signing even if the caller environment contains keys. It rejects stale signing attachments and conflicting signing requirements. Production publication still requires the version tag and authenticated update signatures; macOS ad-hoc integrity signing remains separate.
 
 对应源码作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
 

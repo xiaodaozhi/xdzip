@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import struct
 import subprocess
@@ -24,6 +25,21 @@ SPEC.loader.exec_module(PUBLISH)
 PREPARE_SPEC = importlib.util.spec_from_file_location('prepare_release', Path(__file__).with_name('prepare-release.py'))
 PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
 PREPARE_SPEC.loader.exec_module(PREPARE)
+
+
+class ValidationOnlyWorkflowTests(unittest.TestCase):
+    def test_validation_workflow_does_not_expose_production_signing_inputs(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
+        marker = '      - name: Assemble complete immutable release\n'
+        self.assertEqual(workflow.count(marker), 1)
+        step = workflow.split(marker, 1)[1].split('\n      - name:', 1)[0]
+        for name in ['XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX']:
+            self.assertIn(f"{name}: ${{{{ !inputs.validate_only && secrets.{name} || '' }}}}", step)
+        self.assertIn("XDZIP_UPDATE_KEY_ID: ${{ !inputs.validate_only && vars.XDZIP_UPDATE_KEY_ID || '' }}", step)
+        self.assertRegex(step, re.compile(
+            r'if \[ "\$VALIDATE_ONLY" = true \]; then\s+'
+            r'UPDATE_ARGS\+=\(--validation-only\)\s+else\s+'
+            r'UPDATE_ARGS\+=\(--require-update-signature\)\s+fi'))
 
 
 class MacReleaseEvidenceTests(unittest.TestCase):
