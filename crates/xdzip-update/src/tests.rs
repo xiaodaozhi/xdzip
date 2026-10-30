@@ -142,6 +142,43 @@ fn complete_candidate_and_native_build_are_bound() {
 }
 
 #[test]
+fn installed_alpha7_recognizes_alpha8_only_with_a_newer_build() {
+    let text = candidate()
+        .to_string()
+        .replace("0.1.0-alpha.7", "0.1.0-alpha.8");
+    let mut value: Value = serde_json::from_str(&text).unwrap();
+    value["build"] = json!(21);
+    for (platform, architecture, package_type) in [
+        ("windows", "x86_64", "exe"),
+        ("macos", "arm64", "app.zip"),
+        ("linux", "x86_64", "deb"),
+    ] {
+        let result = inspect_release(
+            &value.to_string(),
+            "0.1.0-alpha.7",
+            20,
+            "alpha",
+            platform,
+            architecture,
+            package_type,
+        );
+        assert!(result.valid && result.newer, "{platform}: {result:?}");
+    }
+    value["build"] = json!(20);
+    let result = inspect_release(
+        &value.to_string(),
+        "0.1.0-alpha.7",
+        20,
+        "alpha",
+        "windows",
+        "x86_64",
+        "exe",
+    );
+    assert!(!result.valid);
+    assert_eq!(result.error, "non_monotonic_build");
+}
+
+#[test]
 fn metadata_mutations_fail_closed() {
     let original = candidate();
     let mut mutations = Vec::new();
