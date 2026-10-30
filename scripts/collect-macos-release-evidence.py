@@ -89,7 +89,7 @@ def collect(source, deployed, qt, output):
               'records': [{'file': name, 'sha256': digest(output/name)} for name in names if name.endswith('.json')
                           and name != 'release-deployment-evidence.json'],
               'limits': ['Compiled link inputs and deployed resource bytes have distinct executable hashes.',
-                         'Non-debug code/data section equivalence does not prove complete binary or SDK build equivalence.',
+                         'The shared Mach-O section/UUID/import comparison does not prove complete binary or SDK build equivalence.',
                          'One Cocoa/Metal probe is not reference-host performance or human visual acceptance.',
                          'Original attribution gaps, incomplete SBOM and license choices remain separate.'],
               'release_approved': False, 'manual_acceptance_claimed': False, 'reference_budget_approved': False}

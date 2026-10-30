@@ -28,7 +28,8 @@ PREPARE_SPEC.loader.exec_module(PREPARE)
 
 class MacReleaseEvidenceTests(unittest.TestCase):
     @staticmethod
-    def image(code=b'owned code', signature=b'first signature', zero_bytes=16):
+    def image(code=b'owned code', signature=b'first signature', zero_bytes=16,
+              uuid=b'0123456789abcdef', import_version=0x10000):
         commands = []
         for segment, section, length, offset, flags in [
             (b'__TEXT', b'__text', len(code), 512, 0),
@@ -39,9 +40,13 @@ class MacReleaseEvidenceTests(unittest.TestCase):
             command += struct.pack('<16s16sQQIIIIIIII', section, segment, 0x100000200,
                                    length, offset, 0, 0, 0, flags, 0, 0, 0)
             commands.append(command)
+        commands.append(struct.pack('<II16s', 0x1B, 24, uuid))
+        name = b'@rpath/QtCore.framework/Versions/A/QtCore\0'
+        import_size = (24 + len(name) + 7) & ~7
+        commands.append((struct.pack('<6I', 0xC, import_size, 24, 0, import_version, 0x10000) + name).ljust(import_size, b'\0'))
         commands.append(struct.pack('<4I', 0x1D, 16, 512 + len(code), len(signature)))
         table = b''.join(commands)
-        header = struct.pack('<8I', 0xFEEDFACF, 0x0100000C, 0, 2, 3, len(table), 0, 0)
+        header = struct.pack('<8I', 0xFEEDFACF, 0x0100000C, 0, 2, len(commands), len(table), 0, 0)
         return (header + table).ljust(512, b'\0') + code + signature
 
     def test_signature_metadata_changes_preserve_exact_section_relation(self):
@@ -55,6 +60,12 @@ class MacReleaseEvidenceTests(unittest.TestCase):
         for changed in [self.image(code=b'changed code'), self.image(zero_bytes=17)]:
             with self.subTest(changed=changed[-20:]):
                 with self.assertRaisesRegex(ValueError, 'changed compiled'):
+                    compare_macho_sections(self.image(), changed)
+
+    def test_changed_uuid_and_import_versions_are_rejected(self):
+        for changed in [self.image(uuid=b'fedcba9876543210'), self.image(import_version=0x20000)]:
+            with self.subTest(changed=changed[-20:]):
+                with self.assertRaises(ValueError):
                     compare_macho_sections(self.image(), changed)
 
     def test_truncated_commands_and_section_data_are_rejected(self):
@@ -100,7 +111,9 @@ class MacReleaseEvidenceTests(unittest.TestCase):
                                     (3, 'app_sha256', '0' * 64),
                                     (4, 'revision', 'b' * 40),
                                     (4, 'source_dirty', True),
-                                    (5, 'deployed_sha256', '0' * 64)]:
+                                    (5, 'deployed_sha256', '0' * 64),
+                                    (5, 'comparison', 'unverified'),
+                                    (5, 'fingerprint', None)]:
             values = self.bindings()
             values[index][field] = value
             with self.subTest(proof=index, field=field):

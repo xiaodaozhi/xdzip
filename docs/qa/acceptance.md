@@ -4,9 +4,9 @@
 
 | 场景 | 操作与判定 |
 | --- | --- |
-| RELEASE-MAC-EVIDENCE | 专用 Release 在部署应用仍存在时实际运行 Cocoa／Metal 资源探针，并核对审计、版本和源码提交；链接输入绑定对应编译应用，编译／部署应用非调试代码与数据节的精确字节及零填充大小相同。签名／加载命令元数据保留独立范围。负向检查拒绝变化节、截断／越界、错误架构及混合资源／链接／SDK 身份；检查 SDK 对应、差异分析、来源／文件 SBOM 和总回执确实进入同包材料。原始 gaps／incomplete、参考机预算和真人视觉分别保留，自动结果不代填人工通过 |
+| RELEASE-MAC-EVIDENCE | 专用 Release 在部署应用仍存在时实际运行 Cocoa／Metal 资源探针，并核对审计、版本和源码提交；链接输入绑定对应编译应用，复用既有 Mach-O 比较器核对节字节、地址、标志、零填充大小、UUID及归一化导入版本。签名／加载命令布局和LINKEDIT保留独立范围。负向检查拒绝变化节／UUID／导入、截断／越界、错误架构及混合资源／链接／SDK 身份；检查 SDK 对应、差异分析、来源／文件 SBOM 和总回执确实进入同包材料。原始 gaps／incomplete、参考机预算和真人视觉分别保留，自动结果不代填人工通过 |
 
-English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the deployed candidate, binds compiled link inputs through exact non-debug code/data sections and zero-fill sizes, rejects changed sections or mixed/boundedness-invalid evidence, and checks the same-package SDK, difference and SBOM records. Signing/load-command metadata, original gaps, reference budgets and human visual acceptance remain separate.
+English: RELEASE-MAC-EVIDENCE runs a real Cocoa/Metal resource probe against the deployed candidate, reuses exact section/address/flag, zero-fill, UUID and normalized import comparison to bind compiled link inputs, rejects changed or mixed/boundedness-invalid evidence, and checks the same-package SDK, difference and SBOM records. Signing/load-command layout and LINKEDIT, original gaps, reference budgets and human visual acceptance remain separate.
 
 ## 标题区、任务历史与拖动提示
 
