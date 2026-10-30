@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Validate workflow graphs and retain desktop CI without browser-driven web tests."""
+import importlib.util
+from pathlib import Path
+import re
+import unittest
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+class UniqueLoader(yaml.BaseLoader):
+    def construct_mapping(self, node, deep=False):
+        keys = [self.construct_object(key, deep=deep) for key, _ in node.value]
+        if len(keys) != len(set(keys)):
+            raise ValueError('duplicate-yaml-key')
+        return super().construct_mapping(node, deep=deep)
+
+
+def load(path):
+    with path.open(encoding='utf-8') as source:
+        return yaml.load(source, Loader=UniqueLoader)
+
+
+def import_script(name, filename):
+    spec = importlib.util.spec_from_file_location(name, ROOT / 'scripts' / filename)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def validate_graph(jobs):
+    graph = {}
+    for name, job in jobs.items():
+        needs = job.get('needs', [])
+        if isinstance(needs, str):
+            needs = [needs]
+        if not isinstance(needs, list) or any(item not in jobs for item in needs):
+            raise ValueError('missing-job-dependency')
+        graph[name] = needs
+    visiting, visited = set(), set()
+
+    def visit(name):
+        if name in visiting:
+            raise ValueError('cyclic-job-dependency')
+        if name in visited:
+            return
+        visiting.add(name)
+        for dependency in graph[name]:
+            visit(dependency)
+        visiting.remove(name)
+        visited.add(name)
+
+    for name in graph:
+        visit(name)
+    return graph
+
+
+class WorkflowTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        directory = ROOT / '.github/workflows'
+        files = sorted([*directory.glob('*.yml'), *directory.glob('*.yaml')])
+        cls.workflows = {p.name: load(p) for p in files}
+        cls.evidence = import_script('workflow_ci_evidence', 'ci-evidence.py')
+        cls.plan = import_script('workflow_ci_plan', 'ci-plan.py')
+
+    def test_all_workflows_and_cache_action_have_valid_yaml_and_job_graphs(self):
+        self.assertTrue(self.workflows)
+        self.assertIsInstance(load(ROOT / '.github/actions/cache-inputs/action.yml'), dict)
+        for name, workflow in self.workflows.items():
+            with self.subTest(workflow=name):
+                self.assertIsInstance(workflow, dict)
+                self.assertIn('on', workflow)
+                self.assertTrue(workflow.get('jobs'))
+                validate_graph(workflow['jobs'])
+                for job in workflow['jobs'].values():
+                    for step in job.get('steps', []):
+                        target = step.get('uses', '')
+                        if target.startswith('./'):
+                            directory = ROOT / target[2:]
+                            self.assertTrue((directory / 'action.yml').is_file() or
+                                            (directory / 'action.yaml').is_file() or
+                                            (directory / 'Dockerfile').is_file(), target)
+                        for script in re.findall(r'(?<![\w/.-])(?:scripts|design/assets/fonts)/[\w./-]+\.(?:py|ps1|sh)',
+                                                 step.get('run', '')):
+                            self.assertTrue((ROOT / script).is_file(), script)
+
+    def test_graph_rejects_missing_jobs_cycles_and_duplicate_yaml_keys(self):
+        with self.assertRaisesRegex(ValueError, 'missing-job-dependency'):
+            validate_graph({'a': {'needs': 'missing'}})
+        with self.assertRaisesRegex(ValueError, 'cyclic-job-dependency'):
+            validate_graph({'a': {'needs': 'b'}, 'b': {'needs': 'a'}})
+        with self.assertRaisesRegex(ValueError, 'duplicate-yaml-key'):
+            yaml.load('jobs:\n  a: {}\n  a: {}\n', Loader=UniqueLoader)
+
+    def test_default_workflow_gates_match_evidence_producers(self):
+        ordinary = {name for name, value in self.workflows.items()
+                    if 'pull_request' in value.get('on', {})}
+        self.assertEqual(ordinary, {'docs.yml', 'foundation.yml', 'qt-components.yml'})
+        self.assertEqual(set(self.plan.SCOPES), {'docs', 'foundation', 'qt'})
+        self.assertEqual(set(self.evidence.JOBS), set(self.plan.SCOPES))
+        for filename, scope in [('docs.yml', 'docs'), ('foundation.yml', 'foundation'),
+                                ('qt-components.yml', 'qt')]:
+            with self.subTest(scope=scope):
+                workflow = self.workflows[filename]
+                self.assertIn('push', workflow['on'])
+                self.assertIn('workflow_dispatch', workflow['on'])
+                gate = workflow['jobs'][scope + '-gate']
+                self.assertEqual(set(gate['needs']), set(self.evidence.JOBS[scope]))
+                self.assertEqual(gate.get('if'), 'always()')
+                runs = '\n'.join(step.get('run', '') for step in gate['steps'])
+                self.assertIn('ci-evidence.py gate --scope ' + scope, runs)
+
+    def test_workflows_do_not_start_web_browser_tests(self):
+        browser_drivers = re.compile(r'playwright|chromium|webdriver|selenium', re.I)
+        web_scripts = re.compile(
+            r'scripts/(?:check-html-[\w-]+|check-tab-strip|check-integrity-progress|'
+            r'check-extract-fidelity|check-directory-tree-delivery|export-hifi-titlebars|'
+            r'export-welcome-design|render-design-assets)\.py', re.I)
+        for name, workflow in self.workflows.items():
+            for job in workflow.get('jobs', {}).values():
+                for step in job.get('steps', []):
+                    run = step.get('run', '')
+                    with self.subTest(workflow=name, step=step.get('name', 'unnamed')):
+                        self.assertNotRegex(run, browser_drivers)
+                        self.assertNotRegex(run, web_scripts)
+                        if 'check-add-dialog.py' in run:
+                            self.assertNotIn('--html', run)
+                            self.assertNotIn('--native-zoom', run)
+        for name in ['ci-desktop.ps1', 'check-foundation.ps1', 'ci-release.ps1']:
+            content = (ROOT / 'scripts' / name).read_text(encoding='utf-8')
+            with self.subTest(script=name):
+                self.assertNotRegex(content, browser_drivers)
+                self.assertNotRegex(content, web_scripts)
+                for line in content.splitlines():
+                    if 'check-add-dialog.py' in line:
+                        self.assertIn('--qt-input', line)
+                        self.assertNotIn('--html', line)
+                        self.assertNotIn('--native-zoom', line)
+
+    def test_qt_desktop_and_native_coverage_remains(self):
+        source = (ROOT / 'scripts/ci-desktop.ps1').read_text(encoding='utf-8')
+        for required in ['qt_zip_browser', 'until-fail:10', 'qt_task_components',
+                         'check-native-sessions.py', 'check-add-dialog.py', '--qt-input']:
+            with self.subTest(check=required):
+                self.assertIn(required, source)
+        self.assertIn('native-qt', self.workflows['qt-components.yml']['jobs'])
+        self.assertEqual(self.evidence.JOBS['qt'], ['qt-plan', 'native-qt'])
+        self.assertIn('browser_evidence', (ROOT / 'scripts/ci-evidence.py').read_text(encoding='utf-8'))
+
+
+if __name__ == '__main__':
+    unittest.main()

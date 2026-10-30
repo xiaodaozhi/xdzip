@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Classify complete Git trees conservatively; shadow never suppresses validation."""
 import argparse
-import fnmatch
 import json
 import os
 from pathlib import Path
@@ -10,7 +9,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 SHA = re.compile('[a-f0-9]{40}')
-SCOPES = ('docs', 'foundation', 'qt', 'html')
+SCOPES = ('docs', 'foundation', 'qt')
 
 
 def git(root, *arguments):
@@ -85,7 +84,7 @@ def plan(root=ROOT, env=None, payload=None, scope='docs'):
     result = {'schema_version': 1, 'scope': scope, 'revision': env.get('GITHUB_SHA', ''),
               'run_id': env.get('GITHUB_RUN_ID', ''), 'run_attempt': env.get('GITHUB_RUN_ATTEMPT', ''),
               'mode': 'shadow', 'classification': 'full', 'reason': 'classification-failed',
-              'run_heavy': True, 'html_inputs_changed': True, 'changed_files': None, 'base': None}
+              'run_heavy': True, 'changed_files': None, 'base': None}
     try:
         config = policy(root)
         result['mode'] = config['mode']
@@ -98,8 +97,6 @@ def plan(root=ROOT, env=None, payload=None, scope='docs'):
         raw = git(root, 'diff', '--raw', '-z', '--no-renames', '--no-abbrev', base, revision, '--')
         records = changed_records(raw, config)
         result.update(base=base, changed_files=len(records))
-        result['html_inputs_changed'] = any(fnmatch.fnmatchcase(name, pattern)
-                                            for name, _, _ in records for pattern in config['html_inputs'])
         if any(name not in config['plain_documents'] for name, _, _ in records):
             raise ValueError('runtime-contract-or-unknown-path')
         for _, before, after in records:

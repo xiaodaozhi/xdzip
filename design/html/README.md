@@ -1,4 +1,4 @@
-本交付遵守[界面规范](../../docs/visual/design-standard.md)与[设计流程](../../docs/visual/design-workflow.md)。主窗口已按 0.8 校正，菜单保持正常密度；最新[比例与缩放复核（本地／CI 工件）](../../docs/qa/README.md)为当前验收依据。
+本交付遵守[界面规范](../../docs/visual/design-standard.md)与[设计流程](../../docs/visual/design-workflow.md)。主窗口已按 0.8 校正，菜单保持正常密度；最新[比例与缩放复核（本地工件）](../../docs/qa/README.md)为当前验收依据。
 
 # xdzip HTML 高保真设计
 
@@ -46,9 +46,9 @@
 - HTML 采用固定的离线字体，抗锯齿仍因浏览器和平台不同。原稿的原始字体无法证明。大图标的高光、阴影、拉链微字样仍有重建差异。
 - 原稿中只有部分输入、状态和数据；真实交互需要显示的搜索反馈、半选复选框、动态计数等遵循功能语义，不强行伪造静态状态。
 
-[HTML 正常设计尺寸主界面（本地／CI 工件）](../../docs/qa/README.md)
+[HTML 正常设计尺寸主界面（本地工件）](../../docs/qa/README.md)
 
-[HTML 解压确认（本地／CI 工件）（本地／CI 工件）](../../docs/qa/README.md)
+[HTML 解压确认（本地工件）](../../docs/qa/README.md)
 
 验证运行 `python scripts/check-html-design.py`，报告位于 `dist/html-design-review/validation.json`。它验证示例流程和交付可用性，不代表产品格式、安全或原生窗口验收。
 
@@ -56,23 +56,23 @@
 
 预览栏布局专项检查：`python scripts/check-html-preview.py`。启用真实经典滚动条，覆盖桌面与手机外层缩放、浅深色、自动与预留滚动条空间、照片/PDF/目录/多选/压缩包属性以及长名称。正常照片预览完整显示操作按钮，无内部横纵滚动；长内容须确实可以向下滚动，且操作按钮可达。
 
-画布滚动专项检查并入 `python scripts/check-html-scale.py`：关闭 Playwright 默认的 `--hide-scrollbars`，检查根文档无滚动条占位、主窗口四边完整可见、手机横向平移与原稿同步，并加入 CSS 缩放和画布尺寸减少 1 px 的容错用例。移除嵌入规则的负向用例须重现经典滚动条占位，防止截图环境再次掩盖问题。查看[画布滚动复核（本地／CI 工件）](../../docs/qa/README.md)。
+画布滚动专项检查并入 `python scripts/check-html-scale.py`：关闭 Playwright 默认的 `--hide-scrollbars`，检查根文档无滚动条占位、主窗口四边完整可见、手机横向平移与原稿同步，并加入 CSS 缩放和画布尺寸减少 1 px 的容错用例。移除嵌入规则的负向用例须重现经典滚动条占位，防止截图环境再次掩盖问题。查看[画布滚动复核（本地工件）](../../docs/qa/README.md)。
 
-顶部复核采用 [独立锚点与同尺寸叠加流程](../../docs/visual/html-fidelity.md)，查看 [原稿／修复后／叠加（本地／CI 工件）](../../docs/qa/README.md)。离线对照文件为 `dist/xdzip-header-review.html`，不是整张图片覆盖在 HTML 界面上。
+顶部复核采用 [独立锚点与同尺寸叠加流程](../../docs/visual/html-fidelity.md)，查看 [原稿／修复后／叠加（本地工件）](../../docs/qa/README.md)。离线对照文件为 `dist/xdzip-header-review.html`，不是整张图片覆盖在 HTML 界面上。
 
-工具栏下方采用同样流程，查看 [内容区域说明（本地／CI 工件）](../../docs/qa/README.md)、[逐区域对照（本地／CI 工件）](../../docs/qa/README.md) 和 [测量证据（本地／CI 工件）](../../docs/qa/README.md)。执行 `python scripts/check-html-body.py`、`python scripts/build-html-body-review.py` 后生成 `dist/xdzip-body-review.html`。同尺寸裁切包括侧栏、列表、预览和状态栏；手机可逐区域检查。几何与隔离图标采用 2 px 容差，文字轮廓只记录，不据此宣称整页像素一致。
+工具栏下方采用同样流程，查看 [内容区域说明（本地工件）](../../docs/qa/README.md)、[逐区域对照（本地工件）](../../docs/qa/README.md) 和 [测量证据（本地工件）](../../docs/qa/README.md)。执行 `python scripts/check-html-body.py`、`python scripts/build-html-body-review.py` 后生成 `dist/xdzip-body-review.html`。同尺寸裁切包括侧栏、列表、预览和状态栏；手机可逐区域检查。几何与隔离图标采用 2 px 容差，文字轮廓只记录，不据此宣称整页像素一致。
 
 原稿选中一项但全选框为空、节省标注 26% 但示意条约填 56% 的两处静态矛盾，HTML 分别保留半选状态和实际 26% 比例。它们是有记录的功能语义例外。本轮正文校准仍属于 HTML 设计交付，不表示 Qt 产品同步完成。
 
 主窗口[组件与交互契约](../../docs/ux/main-window-components.md)同时覆盖外观与行为。多压缩包示例、真实网格、各字段排序、递归目录、条目 / 空白 / 表头 / 标签右键、解压范围、更多 / 视图子菜单、快捷键、提示和焦点恢复已接入。按钮使用普通、悬停、按下、焦点、禁用及忙碌状态；完整性检查明确为演示任务，没有执行 CRC。压缩 / 解压仍使用示例进度。
 
-运行 `python3 scripts/check-html-controls.py` 验证主窗口交互并生成浅深色、三种平台外观和手机组件截图。单文件 `dist/xdzip-components.html` 可离线打开，[复核文档（本地／CI 工件）](../../docs/qa/README.md)区分 HTML 演示与 Qt 只读功能。
+运行 `python3 scripts/check-html-controls.py` 验证主窗口交互并生成浅深色、三种平台外观和手机组件截图。单文件 `dist/xdzip-components.html` 可离线打开，[复核文档（本地工件）](../../docs/qa/README.md)区分 HTML 演示与 Qt 只读功能。
 
 ## HTML／Qt 交互同步
 
-当前主窗口已同步固定方形查看按钮、6 图文间距、28 高面包屑按钮、4 菜单间隔、向上展开的任务菜单及无计数目录树。类型／日期排序、当前目录全量展示、网格隐藏表头继续沿用既有交互。尺寸由 `layout-scale.json` 生成，原稿历史量测保留。逐项状态和缩放实测见[同步验收（本地／CI 工件）](../../docs/qa/README.md)。
+当前主窗口已同步固定方形查看按钮、6 图文间距、28 高面包屑按钮、4 菜单间隔、向上展开的任务菜单及无计数目录树。类型／日期排序、当前目录全量展示、网格隐藏表头继续沿用既有交互。尺寸由 `layout-scale.json` 生成，原稿历史量测保留。逐项状态和缩放实测见[同步验收（本地工件）](../../docs/qa/README.md)。
 
-操作窗口已校正解压／进度的偏大参数，并统一 footer 的 13／12 逻辑字号与 16 图标槽。任务状态图片从统一素材库读取扁平圆盘。参见[最新窗口与素材验收（本地／CI 工件）](../../docs/qa/README.md)。
+操作窗口已校正解压／进度的偏大参数，并统一 footer 的 13／12 逻辑字号与 16 图标槽。任务状态图片从统一素材库读取扁平圆盘。参见[最新窗口与素材验收（本地工件）](../../docs/qa/README.md)。
 
 ## W01 欢迎页
 

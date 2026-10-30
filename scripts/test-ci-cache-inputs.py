@@ -28,7 +28,7 @@ class CacheTests(unittest.TestCase):
         (self.paths['pip'] / 'owned-wheel').write_bytes(b'owned dependency input')
         self.env = {'CI': 'true', 'GITHUB_EVENT_NAME': 'push', 'GITHUB_REF': 'refs/heads/main',
                     'GITHUB_REPOSITORY': 'owned/repo', 'GITHUB_RUN_ID': '123'}
-        self.plan = {'key': 'owned-key', 'scope': 'html', 'host': {'os': 'fixture'}, 'root_labels': ['pip']}
+        self.plan = {'key': 'owned-key', 'scope': 'foundation', 'host': {'os': 'fixture'}, 'root_labels': ['pip']}
         self.record = cache.seal(self.plan, self.paths, self.env)
 
     def test_exact_restore_accepts_only_frozen_bytes(self):
@@ -82,22 +82,25 @@ class CacheTests(unittest.TestCase):
 
     def test_dependency_or_host_change_invalidates_key(self):
         env = {'RUNNER_OS': 'owned', 'RUNNER_ARCH': 'x64', 'ImageOS': 'image', 'ImageVersion': '1'}
-        first = cache.identity('html', env=env)
-        changed = cache.identity('html', env=dict(env, RUNNER_ARCH='arm64'))
+        first = cache.identity('foundation', env=env)
+        changed = cache.identity('foundation', env=dict(env, RUNNER_ARCH='arm64'))
         self.assertNotEqual(first['key'], changed['key'])
-        changed = cache.identity('html', env=dict(env, ImageVersion='2'))
+        changed = cache.identity('foundation', env=dict(env, ImageVersion='2'))
         self.assertNotEqual(first['key'], changed['key'])
         policy = json.loads((ROOT / 'scripts/ci-cache-policy.json').read_text(encoding='utf-8'))
-        for name in policy['common_inputs'] + policy['scopes']['html']['inputs']:
+        for name in policy['common_inputs'] + policy['scopes']['foundation']['inputs']:
             target = self.root / name;target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes((ROOT / name).read_bytes())
-        before = cache.identity('html', root=self.root, env=env)
-        (self.root / 'scripts/html-design-requirements.txt').write_bytes(b'owned changed dependency\n')
-        after = cache.identity('html', root=self.root, env=env)
+        before = cache.identity('foundation', root=self.root, env=env)
+        (self.root / 'scripts/prepare-native-codecs.py').write_bytes(b'owned changed dependency\n')
+        after = cache.identity('foundation', root=self.root, env=env)
         self.assertNotEqual(before['key'], after['key'])
         for label in policy['scopes']['qt']['roots']:
             self.assertNotIn(label, ['target', 'product', 'credentials', 'sdk', 'verdict'])
         self.assertNotIn('cargo-src', policy['scopes']['foundation']['roots'])
+        self.assertNotIn('playwright', cache.roots())
+        with self.assertRaisesRegex(ValueError, 'Unknown cache policy or scope'):
+            cache.identity('html', env=env)
 
 
 if __name__ == '__main__':unittest.main()

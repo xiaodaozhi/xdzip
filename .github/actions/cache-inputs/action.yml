@@ -2,7 +2,7 @@ name: Verified CI dependency inputs
 description: Restore public dependency downloads, or save them only from trusted main pushes
 inputs:
   scope:
-    description: foundation, qt, or html
+    description: foundation or qt
     required: true
   mode:
     description: restore or save
