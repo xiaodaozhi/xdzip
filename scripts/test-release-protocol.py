@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -15,6 +16,7 @@ import tarfile
 import unittest
 from unittest.mock import patch
 from release_protocol import TARGETS, create, select, validate
+from release_evidence import compare_macho_sections, macho_sections, verify_bindings
 
 SPEC = importlib.util.spec_from_file_location('publish_release', Path(__file__).with_name('publish-release.py'))
 PUBLISH = importlib.util.module_from_spec(SPEC)
@@ -22,6 +24,92 @@ SPEC.loader.exec_module(PUBLISH)
 PREPARE_SPEC = importlib.util.spec_from_file_location('prepare_release', Path(__file__).with_name('prepare-release.py'))
 PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
 PREPARE_SPEC.loader.exec_module(PREPARE)
+
+
+class MacReleaseEvidenceTests(unittest.TestCase):
+    @staticmethod
+    def image(code=b'owned code', signature=b'first signature', zero_bytes=16):
+        commands = []
+        for segment, section, length, offset, flags in [
+            (b'__TEXT', b'__text', len(code), 512, 0),
+            (b'__DATA', b'__bss', zero_bytes, 0, 1),
+        ]:
+            command = struct.pack('<II16sQQQQiiII', 0x19, 152, segment, 0x100000000,
+                                  4096, 0, len(code), 7, 5, 1, 0)
+            command += struct.pack('<16s16sQQIIIIIIII', section, segment, 0x100000200,
+                                   length, offset, 0, 0, 0, flags, 0, 0, 0)
+            commands.append(command)
+        commands.append(struct.pack('<4I', 0x1D, 16, 512 + len(code), len(signature)))
+        table = b''.join(commands)
+        header = struct.pack('<8I', 0xFEEDFACF, 0x0100000C, 0, 2, 3, len(table), 0, 0)
+        return (header + table).ljust(512, b'\0') + code + signature
+
+    def test_signature_metadata_changes_preserve_exact_section_relation(self):
+        before, after = self.image(), self.image(signature=b'replacement ad-hoc signature')
+        proof = compare_macho_sections(before, after)
+        self.assertNotEqual(proof['compiled_sha256'], proof['deployed_sha256'])
+        self.assertEqual(proof['status'], 'exact-code-data-section-match')
+        self.assertEqual(len(proof['sections']), 2)
+
+    def test_changed_code_and_zero_fill_size_are_rejected(self):
+        for changed in [self.image(code=b'changed code'), self.image(zero_bytes=17)]:
+            with self.subTest(changed=changed[-20:]):
+                with self.assertRaisesRegex(ValueError, 'changed compiled'):
+                    compare_macho_sections(self.image(), changed)
+
+    def test_truncated_commands_and_section_data_are_rejected(self):
+        data = self.image()
+        truncated_command = bytearray(data)
+        struct.pack_into('<I', truncated_command, 20, len(data) + 1)
+        escaped_section = bytearray(data)
+        struct.pack_into('<Q', escaped_section, 32 + 72 + 40, len(data) + 1)
+        bad_size = bytearray(data)
+        struct.pack_into('<I', bad_size, 36, 7)
+        for bad in [data[:30], truncated_command, escaped_section, bad_size]:
+            with self.subTest(length=len(bad)):
+                with self.assertRaises(ValueError):
+                    macho_sections(bad)
+
+    def test_architecture_and_duplicate_sections_are_rejected(self):
+        foreign = bytearray(self.image())
+        struct.pack_into('<I', foreign, 4, 0x01000007)
+        with self.assertRaisesRegex(ValueError, 'arm64'):
+            macho_sections(foreign)
+        duplicate = bytearray(self.image())
+        duplicate[32 + 152:32 + 304] = duplicate[32:32 + 152]
+        with self.assertRaisesRegex(ValueError, 'Duplicate'):
+            macho_sections(duplicate)
+
+    def bindings(self):
+        revision = 'a' * 40
+        identity = {'revision': revision[:12], 'dirty': False}
+        match = compare_macho_sections(self.image(), self.image(signature=b'new signature'))
+        audit = {'status': 'passed', 'mode': 'deployed', 'platform': 'macos', 'identity': identity,
+                 'app': 'Contents/MacOS/xdzip',
+                 'files': [{'path': 'Contents/MacOS/xdzip', 'sha256': match['deployed_sha256']}]}
+        resource = {'identity': dict(identity), 'app_sha256': match['deployed_sha256']}
+        link = {'app_sha256': match['compiled_sha256']}
+        sdk = {'revision': revision, 'source_dirty': False}
+        return [revision, audit, resource, link, sdk, match]
+
+    def test_distinct_compiled_and_deployed_images_bind_to_their_own_proof(self):
+        verify_bindings(*self.bindings())
+
+    def test_mixed_resource_link_and_sdk_proofs_are_rejected(self):
+        for index, field, value in [(2, 'app_sha256', '0' * 64),
+                                    (3, 'app_sha256', '0' * 64),
+                                    (4, 'revision', 'b' * 40),
+                                    (4, 'source_dirty', True),
+                                    (5, 'deployed_sha256', '0' * 64)]:
+            values = self.bindings()
+            values[index][field] = value
+            with self.subTest(proof=index, field=field):
+                with self.assertRaises(ValueError):
+                    verify_bindings(*values)
+        values = self.bindings()
+        values[2]['identity']['dirty'] = True
+        with self.assertRaises(ValueError):
+            verify_bindings(*values)
 
 
 class MaterialsTests(unittest.TestCase):

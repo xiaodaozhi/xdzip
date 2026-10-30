@@ -182,6 +182,10 @@ def build(source, qt, output, release_distribution=False):
         source_bom = json.loads((notices/'source-build.cdx.json').read_text(encoding='utf-8'))
         file_bom = artifact_bom(report, source_bom, attribution)
         output.with_suffix('.cdx.json').write_text(json.dumps(file_bom, indent=2)+'\n')
+        if release_distribution:
+            checked([sys.executable, ROOT/'scripts/collect-macos-release-evidence.py',
+                     '--source-app', source, '--deployed-app', app, '--qt-prefix', qt,
+                     '--output-dir', output.parent])
         (stage/'Applications').symlink_to('/Applications')
         (stage/'安装说明.txt').write_text(
             '将 xdzip.app 拖入 Applications 后打开。替换旧版本前请退出 xdzip。\n'

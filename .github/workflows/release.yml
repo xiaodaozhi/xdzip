@@ -82,6 +82,7 @@ jobs:
             build/desktop/apps/desktop/*tests.log
             build/desktop/Testing/Temporary/LastTest.log
             build/release-package/*.json
+            build/release-package/*.log
           retention-days: 30
   source:
     needs: draft
