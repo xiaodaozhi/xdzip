@@ -16,6 +16,7 @@
 #include "WindowHoverPolicy.h"
 #include "WindowsFrame.h"
 #include "native_monitor_audit.h"
+#include "test_environment.h"
 #include "visual_audit.h"
 #include <QAbstractItemModelTester>
 #include <QAbstractNativeEventFilter>
@@ -3067,15 +3068,9 @@ QtObject {
                 QSKIP("Monitor work areas cannot contain the normal client without clamping");
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
-        const auto previousSettings = qgetenv("XDZIP_SETTINGS_PATH");
-        const bool settingsWereSet = qEnvironmentVariableIsSet("XDZIP_SETTINGS_PATH");
-        qputenv("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini").toUtf8());
-        const auto restoreSettings = qScopeGuard([&] {
-            if (settingsWereSet)
-                qputenv("XDZIP_SETTINGS_PATH", previousSettings);
-            else
-                qunsetenv("XDZIP_SETTINGS_PATH");
-        });
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
@@ -3657,11 +3652,139 @@ QtObject {
             QVERIFY(translator.translate("QFileDialog", "Copy", nullptr, -1).isEmpty());
         }
     }
+    void fixtureEnvironmentRestoresState() {
+        const auto *name = "XDZIP_TEST_SCOPED_ENVIRONMENT";
+        test_environment::ScopedVariable absent(name, QString());
+        QVERIFY2(absent.valid(), qPrintable(absent.error()));
+        QVERIFY(test_environment::processValue(name).isNull());
+        {
+            test_environment::ScopedVariable empty(name, QStringLiteral(""));
+            QVERIFY2(empty.valid(), qPrintable(empty.error()));
+            QVERIFY(!test_environment::processValue(name).isNull());
+            QVERIFY(test_environment::processValue(name).isEmpty());
+            const auto unicode = QString::fromUcs4(U"\u4e2d\u6587-\U00020000-\U0001f600");
+            const auto earlyReturn = [&] {
+                test_environment::ScopedVariable value(name, unicode);
+                return value.valid() && qEnvironmentVariable(name) == unicode &&
+                       test_environment::processValue(name) == unicode;
+            };
+            QVERIFY(earlyReturn());
+            QVERIFY(!test_environment::processValue(name).isNull());
+            QVERIFY(test_environment::processValue(name).isEmpty());
+            try {
+                test_environment::ScopedVariable value(name, unicode);
+                QVERIFY2(value.valid(), qPrintable(value.error()));
+                throw 42;
+            } catch (int value) {
+                QCOMPARE(value, 42);
+            }
+            QVERIFY(!test_environment::processValue(name).isNull());
+            QVERIFY(test_environment::processValue(name).isEmpty());
+        }
+        QVERIFY(test_environment::processValue(name).isNull());
+        bool rejected = false;
+        std::thread worker([&] {
+            test_environment::ScopedVariable value(name, QStringLiteral("wrong-thread"));
+            rejected = !value.valid();
+        });
+        worker.join();
+        QVERIFY(rejected);
+        QVERIFY(test_environment::processValue(name).isNull());
+    }
+    void fixtureEnvironmentRestoresInheritedEmpty() {
+        const auto *name = "XDZIP_TEST_INHERITED_EMPTY";
+        if (qEnvironmentVariable("XDZIP_TEST_EMPTY_CHILD") == "1") {
+            QVERIFY(!test_environment::processValue(name).isNull());
+            QVERIFY(test_environment::processValue(name).isEmpty());
+            {
+                test_environment::ScopedVariable value(name, QString::fromUcs4(U"\U00020000"));
+                QVERIFY2(value.valid(), qPrintable(value.error()));
+            }
+            QVERIFY(!test_environment::processValue(name).isNull());
+            QVERIFY(test_environment::processValue(name).isEmpty());
+            QVERIFY(QProcessEnvironment::systemEnvironment().contains(name));
+            QVERIFY(QProcessEnvironment::systemEnvironment().value(name).isEmpty());
+            QVERIFY(qEnvironmentVariable(name).isEmpty());
+            return;
+        }
+        const auto before = test_environment::processValue(name);
+        auto env = QProcessEnvironment::systemEnvironment();
+        env.insert(name, QStringLiteral(""));
+        env.insert("XDZIP_TEST_EMPTY_CHILD", "1");
+        QProcess child;
+        child.setProcessEnvironment(env);
+        child.start(QCoreApplication::applicationFilePath(),
+                    {"fixtureEnvironmentRestoresInheritedEmpty"});
+        QVERIFY(child.waitForFinished(20000));
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(child.exitCode(), 0);
+        QCOMPARE(test_environment::processValue(name), before);
+        QCOMPARE(test_environment::processValue(name).isNull(), before.isNull());
+    }
+    void fixtureStorageRejectsValidButUnusableDirectory() {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        QString error;
+        QVERIFY2(test_environment::checkStorage(directory.path(), &error), qPrintable(error));
+        QVERIFY(QDir(directory.path()).mkdir("fixture-canary"));
+        QVERIFY(!test_environment::checkStorage(directory.path(), &error));
+        QVERIFY(error.startsWith("Fixture precondition:"));
+        QVERIFY(error.contains("child file write"));
+        QProcess child;
+        child.start(QCoreApplication::applicationFilePath(),
+                    {"--fixture-preflight", directory.path()});
+        QVERIFY(child.waitForFinished(20000));
+        QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(child.exitCode(), 2);
+        QVERIFY(child.readAllStandardError().contains("Fixture precondition:"));
+    }
+    void settingsSaveFailureRetainsWindowAndDraft() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        QFile blocker(profile.filePath("blocked"));
+        QVERIFY(blocker.open(QIODevice::WriteOnly));
+        QCOMPARE(blocker.write("owned-canary"), 12);
+        blocker.close();
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      blocker.fileName() + "/settings.ini");
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings && preferences);
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        settings->setProperty("draftTheme", "dark");
+        settings->setProperty("draftLanguage", "en-US");
+        QSignalSpy saved(preferences, &UiPreferences::savedChanged);
+        QSignalSpy failed(preferences, &UiPreferences::errorChanged);
+        auto *save = findVisual(settings->contentItem(), "settingsSave");
+        QVERIFY(save);
+        QTest::mouseClick(
+            settings, Qt::LeftButton, Qt::NoModifier,
+            save->mapToScene(QPointF(save->width() / 2, save->height() / 2)).toPoint());
+        QTRY_COMPARE(failed.count(), 1);
+        QCOMPARE(saved.count(), 0);
+        QVERIFY(!preferences->error().isEmpty());
+        QVERIFY(settings->isVisible());
+        QCOMPARE(settings->property("draftTheme").toString(), "dark");
+        QCOMPARE(settings->property("draftLanguage").toString(), "en-US");
+        QVERIFY(!settings->property("saved").toBool());
+        auto *restart = window->findChild<QQuickWindow *>("restartWindow");
+        QVERIFY(restart && !restart->isVisible());
+        QVERIFY(blocker.open(QIODevice::ReadOnly));
+        QCOMPARE(blocker.readAll(), QByteArray("owned-canary"));
+        settings->close();
+    }
     void desktopTraySettingsCompatibility() {
         QTemporaryDir profile;
-        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
-        qputenv("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini").toUtf8());
-        const auto restore = qScopeGuard([&] { qputenv("XDZIP_SETTINGS_PATH", previous); });
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         UiPreferences preferences;
         QVERIFY(preferences.trayEnabled());
         QVERIFY(preferences.saveDetails("system", 1, "zh-CN", "standard", true, false, false));
@@ -3797,9 +3920,8 @@ QtObject {
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
         const auto path = profile.filePath("settings.ini");
-        const auto oldOverride = qgetenv("XDZIP_SETTINGS_PATH");
-        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
-        const auto reset = qScopeGuard([&] { qputenv("XDZIP_SETTINGS_PATH", oldOverride); });
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         auto bytes = [](const QString &name) {
             QFile input(name);
             return input.open(QIODevice::ReadOnly) ? input.readAll() : QByteArray{};
@@ -5202,8 +5324,10 @@ QtObject {
         QQuickStyle::setStyle("Basic");
         Q_INIT_RESOURCE(ui);
         QVERIFY(m_settingsProfile.isValid());
-        if (qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
-            qputenv("XDZIP_SETTINGS_PATH", m_settingsProfile.filePath("settings.ini").toUtf8());
+        QVERIFY(!qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"));
+        QString storageError;
+        QVERIFY2(test_environment::checkStorage(m_settingsProfile.path(), &storageError),
+                 qPrintable(storageError));
         QVERIFY(initializeUiText(qEnvironmentVariable("XDZIP_UI_TEST_LANGUAGE", "zh-CN")));
         const auto systemFontFamily = QGuiApplication::font().family();
         QVERIFY(installUiFont());
@@ -5381,14 +5505,9 @@ QtObject {
     void accessibleRadioActionsCommitSelection() {
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
-        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
-        qputenv("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini").toUtf8());
-        const auto restoreProfile = qScopeGuard([&] {
-            if (previous.isNull())
-                qunsetenv("XDZIP_SETTINGS_PATH");
-            else
-                qputenv("XDZIP_SETTINGS_PATH", previous);
-        });
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         const bool wasActive = QAccessible::isActive();
         QAccessible::setActive(false);
         const auto restoreAccessibility = qScopeGuard([&] { QAccessible::setActive(wasActive); });
@@ -5500,14 +5619,9 @@ QtObject {
     void accessibleCheckboxActionsCommitIntent() {
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
-        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
-        qputenv("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini").toUtf8());
-        const auto restore = qScopeGuard([&] {
-            if (previous.isNull())
-                qunsetenv("XDZIP_SETTINGS_PATH");
-            else
-                qputenv("XDZIP_SETTINGS_PATH", previous);
-        });
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                      profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         const bool wasActive = QAccessible::isActive();
         QAccessible::setActive(true);
         const auto restoreAccessibility = qScopeGuard([&] { QAccessible::setActive(wasActive); });
@@ -5597,10 +5711,9 @@ QtObject {
         }
         QTemporaryDir profile;
         QVERIFY(profile.isValid());
-        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
-        const auto restore = qScopeGuard([previous] { qputenv("XDZIP_SETTINGS_PATH", previous); });
         const auto path = profile.filePath("settings.ini");
-        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
@@ -5709,18 +5822,19 @@ QtObject {
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
     }
+    void settingsWindowPersistsAndRollsBack_data() {
+        QTest::addColumn<QString>("profileLabel");
+        QTest::newRow("ascii") << QStringLiteral("ascii");
+        QTest::newRow("chinese") << QString::fromUcs4(U"\u4e2d\u6587");
+        QTest::newRow("non-ansi") << QString::fromUcs4(U"\U00020000-\U0001f600");
+    }
     void settingsWindowPersistsAndRollsBack() {
-        QTemporaryDir profile;
+        QFETCH(QString, profileLabel);
+        QTemporaryDir profile(QDir::tempPath() + "/settings-" + profileLabel + "-XXXXXX");
         QVERIFY(profile.isValid());
-        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
-        const auto restore = qScopeGuard([previous] {
-            if (previous.isNull())
-                qunsetenv("XDZIP_SETTINGS_PATH");
-            else
-                qputenv("XDZIP_SETTINGS_PATH", previous);
-        });
         const auto path = profile.filePath("settings.ini");
-        qputenv("XDZIP_SETTINGS_PATH", path.toUtf8());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
@@ -5802,6 +5916,8 @@ QtObject {
         click(settings, save);
         QTRY_VERIFY(!settings->isVisible());
         QSettings persisted(path, QSettings::IniFormat);
+        QVERIFY(QFile::exists(path));
+        QCOMPARE(qEnvironmentVariable("XDZIP_SETTINGS_PATH"), path);
         QCOMPARE(persisted.value("locale/language").toString(), "en-US");
         QCOMPARE(persisted.value("appearance/theme").toString(), "dark");
         QCOMPARE(persisted.value("schemaVersion").toInt(), 1);
@@ -11833,7 +11949,21 @@ QtObject {
     }
 };
 int main(int argc, char **argv) {
+    test_environment::Runtime fixtures(QString::fromUtf8(XDZIP_TEST_TEMP_ROOT));
+    if (!fixtures.valid()) {
+        QTextStream(stderr) << fixtures.error() << '\n';
+        return 2;
+    }
     QApplication application(argc, argv);
+    const auto closeFixtures = qScopeGuard([&] { fixtures.close(); });
+    if (application.arguments().value(1) == "--fixture-preflight") {
+        QString error;
+        if (!test_environment::checkStorage(application.arguments().value(2), &error)) {
+            QTextStream(stderr) << error << '\n';
+            return 2;
+        }
+        return 0;
+    }
     if (application.arguments().value(1) == "--instance-client") {
         SingleInstance instance;
         return instance.start({application.arguments().value(3)},
