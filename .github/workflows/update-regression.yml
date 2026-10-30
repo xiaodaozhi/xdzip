@@ -83,9 +83,11 @@ jobs:
           python-version: '3.12'
       - name: Prepare native Apple Silicon SDK and pinned toolchain
         run: |
-          rustup toolchain install 1.99.0 --profile minimal
+          rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           python3 -m pip install aqtinstall==3.3.0
           python3 -m aqt install-qt mac desktop 6.8.2 clang_64 --outputdir '${{ runner.temp }}/Qt'
+      - name: Check production-signing admission with test keys only
+        run: python3 scripts/test-production-update-signing.py
       - name: Real owned old-to-new native Sparkle updater regression
         if: ${{ inputs.platform != 'macos' || !inputs.macos_product_only }}
         run: python3 scripts/check-macos-update.py --qt-prefix '${{ runner.temp }}/Qt/6.8.2/macos' --output build/update-regression/macos

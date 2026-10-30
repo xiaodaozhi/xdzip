@@ -96,8 +96,13 @@ def main():
     parser.add_argument('--platform', choices=['windows', 'linux', 'macos'])
     parser.add_argument('--repository', default='xiaodaozhi/xdzip')
     parser.add_argument('--update-key-id', default=os.environ.get('XDZIP_UPDATE_KEY_ID'))
-    parser.add_argument('--require-update-signature', action='store_true')
+    signing = parser.add_mutually_exclusive_group()
+    signing.add_argument('--require-update-signature', action='store_true')
+    signing.add_argument('--validation-only', action='store_true',
+                         help='Assemble an unsigned candidate without using update signing keys')
     args = parser.parse_args()
+    if args.validation_only and args.platform:
+        parser.error('--validation-only applies only to complete candidate assembly')
     for value in (args.packages, args.output):
         if not value.resolve().is_relative_to(ROOT/'build'):
             raise ValueError('Release staging belongs under build/')
@@ -105,15 +110,28 @@ def main():
     if args.platform:
         stage(args.packages, args.output, args.platform, version['display_version'])
         return
+    if args.validation_only:
+        for directory in (args.packages, args.output):
+            for name in ('release.json.sig', 'appcast.xml', 'macos-update.json'):
+                path = directory/name
+                if path.exists() or path.is_symlink():
+                    raise ValueError('Validation-only candidate contains update signing material')
     args.output.mkdir(parents=True, exist_ok=True)
     for path in args.packages.iterdir():
         if path.is_file(): shutil.copy2(path, args.output/path.name)
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, cwd=ROOT).strip()
     manifest = create(args.output, version, args.repository, revision)
-    from release_updates import prepare_appcast, sign_manifest
-    appcast_signed = prepare_appcast(args.output, manifest, required=args.require_update_signature)
+    if args.validation_only:
+        appcast_signed = False
+    else:
+        from release_updates import prepare_appcast
+        appcast_signed = prepare_appcast(args.output, manifest, required=args.require_update_signature)
     (args.output/'release.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
-    manifest_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature)
+    if args.validation_only:
+        manifest_signed = False
+    else:
+        from release_updates import sign_manifest
+        manifest_signed = sign_manifest(args.output, key_id=args.update_key_id, required=args.require_update_signature)
     (args.output/'update-readiness.json').write_text(json.dumps(dict(schema_version=1,
         signed_manifest=manifest_signed, signed_appcast=appcast_signed,
         status='authenticated' if manifest_signed and appcast_signed else 'signing_not_configured'), indent=2)+'\n', encoding='utf-8')

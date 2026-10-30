@@ -8,7 +8,9 @@
 
 说明按平台、实际提交和证据记录中英文验收边界，已有人工验收与未执行项分别保留；阶段进展仍由 issue 管理。初建草稿和公开使用同一份说明快照。草稿重跑若发现其正文与已审阅文件不同，会在上传／删除资产前停止，要求显式对齐输入；公开版本继续拒绝重跑替换资产。`CHANGELOG.md` 只归档实际公开版本，本地开发交付不补造为公开版本史。
 
-冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、签名、核验并汇总完整附件，保留 release-validation 工件，不创建草稿或公开 Release。正式发布仍使用版本标签，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
+冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、执行必要的 Mac ad-hoc 完整性签名、核验并汇总附件，保留 release-validation 工件，不创建草稿或公开 Release。验证模式不向汇总步骤传递更新签名密钥或 key ID；汇总器显式禁用更新签名，即使调用环境含有密钥也不使用，并拒绝残留的签名附件或冲突参数。正式发布仍使用版本标签和强制更新签名，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
+
+English: Validation-only assembly receives no update-signing keys or key ID from the workflow and explicitly disables update signing even if the caller environment contains keys. It rejects stale signing attachments and conflicting signing requirements. Production publication still requires the version tag and authenticated update signatures; macOS ad-hoc integrity signing remains separate.
 
 对应源码作业先构建同提交的隔离格式工作进程，再通过 `XDZIP_NATIVE_CODEC` 与 `XDZIP_NATIVE_CODEC_WORKER` 运行 Rust workspace 测试。只运行 Cargo 测试不能证明需要真实工作进程的路径已执行；原生三平台作业继续分别验证实际应用、部署与安装生命周期。
 
@@ -45,6 +47,8 @@ macOS 原生阶段在最终 app.zip 定名后，通过 `xdzip-update-tool sign-a
 正式原生签名与汇总阶段绑定受保护的 `release-signing` GitHub environment，所有者须配置匹配的秘密和环境保护规则。Mac 私钥只注入原生构建后的独立归档签名步骤，构建阶段不接收。validate_only 使用 `release-validation` 环境，不要求生产密钥；专用更新回归使用自己的临时测试密钥。配置环境和生产信任根是实际发布前提，不由普通 CI 自动创建。
 
 [生产更新验收](../../.github/workflows/production-update-acceptance.yml)是另一个仅手动执行、固定 `main` 和 `contents: read` 的入口，使用同一 `release-signing` 环境及其所有者审批，不调用 Release 工作流，也不创建标签、草稿或发行。先在无秘密步骤编译工具，再在独立步骤派生已有私钥对应的公钥，与本次提交中的两份公钥和公开 key ID 严格比较；条目存在不能代替匹配成功。三平台私有旧版 200 与新版 201 保留生产公钥，构建不接收秘密。签名步骤仅接受本次源码提交、私有产品身份及完整哈希绑定的固定候选，随后在无秘密进程中执行原生升级、失败恢复和普通重启。没有任意输入清单、资产、远端工件或发布参数。
+
+macOS 在无秘密的工具链准备步骤中一次安装 `rust-toolchain.toml` 声明的 `rustfmt` 和 `clippy`，再执行归档准入测试。测试密钥更新回归也覆盖该准备和准入流程；它不使用或验证生产私钥。
 
 生产验收的安装包、原始清单、签名、appcast 和应用仅留在一次性 runner 内，不上传；有界收集器只上传明确允许的日志、状态、身份及哈希记录，并拒绝签名附件误入结果槽。生产密钥匹配、签名验证、实际安装及人工桌面验收分别记录。macOS 使用原生 Apple Silicon 和实际 `SUPublicEDKey` 核对；Windows Server 的夹具仍不代替 Windows 11 人工验收。此流程不会读取 GitHub Secret 的值到本地，也不授权发布。
 

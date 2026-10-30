@@ -7,7 +7,9 @@ import copy
 import json
 import os
 from pathlib import Path
+import runpy
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -100,6 +102,40 @@ class UpdatePublishingTests(unittest.TestCase):
                 sign_manifest(self.directory, key_id=None, required=True, tool=self.tool)
             with self.assertRaises(ValueError):
                 verify_release_updates(self.directory, self.manifest, tool=self.tool)
+
+    def test_validation_assembly_never_signs_with_injected_keys(self):
+        build = ROOT/'build'
+        build.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='validation-only-', dir=build) as temporary:
+            root = Path(temporary)
+            packages, output = root/'packages', root/'output'
+            packages.mkdir()
+            version = runpy.run_path(str(ROOT/'scripts/sync-version.py'))['version_info']()['display_version']
+            for suffix, _ in TARGETS.values():
+                (packages/f'xdzip-{version}-{suffix}').write_bytes(b'owned package fixture')
+            environment = dict(os.environ, XDZIP_UPDATE_SIGNING_KEY_HEX='2a'*32,
+                               XDZIP_SPARKLE_SIGNING_KEY_HEX='2b'*32, XDZIP_UPDATE_KEY_ID='fixture-only')
+            command = [sys.executable, str(ROOT/'scripts/prepare-release.py'), '--packages', str(packages),
+                       '--output', str(output), '--validation-only']
+            result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            readiness = json.loads((output/'update-readiness.json').read_text(encoding='utf-8'))
+            self.assertFalse(readiness['signed_manifest'])
+            self.assertFalse(readiness['signed_appcast'])
+            for name in ['release.json.sig', 'appcast.xml', 'macos-update.json']:
+                self.assertFalse((output/name).exists(), name)
+            conflict = subprocess.run(command + ['--require-update-signature'], cwd=ROOT, env=environment,
+                                      capture_output=True, text=True)
+            self.assertNotEqual(conflict.returncode, 0)
+            platform = subprocess.run(command + ['--platform', 'macos'], cwd=ROOT, env=environment,
+                                      capture_output=True, text=True)
+            self.assertNotEqual(platform.returncode, 0)
+            for directory in [packages, output]:
+                for name in ['release.json.sig', 'appcast.xml', 'macos-update.json']:
+                    (directory/name).write_bytes(b'stale signing fixture')
+                    stale = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True)
+                    self.assertNotEqual(stale.returncode, 0, name)
+                    (directory/name).unlink()
 
     def test_independent_keys_sign_archives_feeds_and_exact_manifest_bytes(self):
         # Deterministic disposable test keys are never written to production resources.

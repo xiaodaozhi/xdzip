@@ -7,12 +7,15 @@ import io
 import json
 import os
 from pathlib import Path
+import re
+import shlex
 import shutil
 import struct
 import subprocess
 import sys
 import tempfile
 import tarfile
+import tomllib
 import unittest
 from unittest.mock import patch
 from release_protocol import TARGETS, create, select, validate
@@ -24,6 +27,50 @@ SPEC.loader.exec_module(PUBLISH)
 PREPARE_SPEC = importlib.util.spec_from_file_location('prepare_release', Path(__file__).with_name('prepare-release.py'))
 PREPARE = importlib.util.module_from_spec(PREPARE_SPEC)
 PREPARE_SPEC.loader.exec_module(PREPARE)
+
+
+class ValidationOnlyWorkflowTests(unittest.TestCase):
+    def test_validation_workflow_does_not_expose_production_signing_inputs(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/release.yml').read_text(encoding='utf-8')
+        marker = '      - name: Assemble complete immutable release\n'
+        self.assertEqual(workflow.count(marker), 1)
+        step = workflow.split(marker, 1)[1].split('\n      - name:', 1)[0]
+        for name in ['XDZIP_UPDATE_SIGNING_KEY_HEX', 'XDZIP_SPARKLE_SIGNING_KEY_HEX']:
+            self.assertIn(f"{name}: ${{{{ !inputs.validate_only && secrets.{name} || '' }}}}", step)
+        self.assertIn("XDZIP_UPDATE_KEY_ID: ${{ !inputs.validate_only && vars.XDZIP_UPDATE_KEY_ID || '' }}", step)
+        self.assertRegex(step, re.compile(
+            r'if \[ "\$VALIDATE_ONLY" = true \]; then\s+'
+            r'UPDATE_ARGS\+=\(--validation-only\)\s+else\s+'
+            r'UPDATE_ARGS\+=\(--require-update-signature\)\s+fi'))
+
+
+class ProductionUpdateWorkflowTests(unittest.TestCase):
+    def assert_macos_toolchain_prepared(self, workflow, channel, components):
+        macos = workflow.split('\n  macos:\n', 1)[1].split('\n  linux:\n', 1)[0]
+        preparation = macos.split('      - name: Prepare native Apple Silicon SDK', 1)[1].split('\n      - name:', 1)[0]
+        commands = [line.strip() for line in preparation.splitlines()
+                    if line.strip().startswith('rustup toolchain install ')]
+        self.assertEqual(len(commands), 1)
+        args = shlex.split(commands[0])
+        self.assertEqual(args[:4], ['rustup', 'toolchain', 'install', channel])
+        self.assertEqual({args[i + 1] for i, arg in enumerate(args[:-1]) if arg == '--component'}, components)
+        self.assertNotIn('secrets.', preparation)
+
+    def test_macos_prepares_declared_components_before_secret_free_admission(self):
+        root = Path(__file__).resolve().parents[1]
+        toolchain = tomllib.loads((root / 'rust-toolchain.toml').read_text(encoding='utf-8'))['toolchain']
+        for name, step in [
+            ('production-update-acceptance.yml', 'Check native archive admission without production secrets'),
+            ('update-regression.yml', 'Check production-signing admission with test keys only'),
+        ]:
+            with self.subTest(workflow=name):
+                workflow = (root / '.github/workflows' / name).read_text(encoding='utf-8')
+                self.assert_macos_toolchain_prepared(workflow, toolchain['channel'], set(toolchain['components']))
+                macos = workflow.split('\n  macos:\n', 1)[1].split('\n  linux:\n', 1)[0]
+                admission = macos.split(f'      - name: {step}\n', 1)[1].split('\n      - name:', 1)[0]
+                self.assertIn('python3 scripts/test-production-update-signing.py', admission)
+                self.assertNotIn('secrets.', admission)
+                self.assertLess(macos.index('Prepare native Apple Silicon SDK'), macos.index(step))
 
 
 class MacReleaseEvidenceTests(unittest.TestCase):
