@@ -22,6 +22,12 @@ Item {
         Ui.OperationFooterButton { id: done; text: "完成" }
     }
     Component { id: settingsComponent; Ui.SettingsWindow { owner: null } }
+    Component { id: fieldComponent; Ui.OperationField { width: 240; text: "abcdef" } }
+    Component { id: editableComponent; Ui.OperationSelect { width: 240; editable: true; model: ["abcdef"]; editText: "abcdef" } }
+    Component {
+        id: toolbarComponent
+        Ui.ArchiveToolbar { width: 640; canOpen: true; canSearch: true; canInspect: false; hasSelection: false }
+    }
     TestCase {
         name: "SettingsControls"
         when: windowShown
@@ -53,6 +59,101 @@ Item {
                 control.requestToggle();
                 compare(settings[draft], before);
             }
+        }
+        function test_settings_select_heights_data() {
+            const rows = [];
+            for (const dark of [false, true])
+                for (const scale of [1, 1.25, 1.5])
+                    rows.push({tag: dark + "-" + scale, dark, scale});
+            return rows;
+        }
+        function test_settings_select_heights(data) {
+            Ui.Theme.dark = data.dark;
+            Ui.Theme.fontScale = data.scale;
+            const settings = createTemporaryObject(settingsComponent, surface);
+            verify(settings !== null);
+            settings.show();
+            verify(waitForRendering(settings.contentItem));
+            const names = ["settingsDensity", "settingsTextScale", "settingsLanguage", "settingsOpenMode"];
+            const controls = names.map(name => findChild(settings.contentItem, name));
+            for (let index = 0; index < controls.length; ++index) {
+                const control = controls[index];
+                verify(control !== null, names[index]);
+                verify(control.height > 0, names[index]);
+                compare(control.height, controls[0].height, names[index] + " logical height");
+                verify(control.contentItem.implicitHeight <= control.height, names[index] + " text fits");
+                verify(control.indicator.y >= 0 && control.indicator.y + control.indicator.height <= control.height,
+                       names[index] + " indicator fits");
+            }
+            settings.close();
+        }
+        function test_input_selection_colors_data() {
+            return [{tag:"light",dark:false}, {tag:"dark",dark:true}];
+        }
+        function test_input_selection_colors(data) {
+            Ui.Theme.dark = data.dark;
+            const field = createTemporaryObject(fieldComponent, surface, {x: 10, y: 100});
+            const combo = createTemporaryObject(editableComponent, surface, {x: 10, y: 150});
+            const toolbar = createTemporaryObject(toolbarComponent, surface, {x: 0, y: 200});
+            verify(field && combo && toolbar);
+            const editor = combo.contentItem;
+            const search = findChild(toolbar, "archiveSearch");
+            verify(editor && search);
+            search.text = "abcdef";
+            for (const input of [field, editor, search]) {
+                input.forceActiveFocus();
+                input.select(1, 4);
+                compare(input.selectedText, "bcd");
+                compare(input.selectedTextColor.toString(), Ui.Theme.accentText.toString());
+                compare(input.selectionColor.toString(), Ui.Theme.accent.toString());
+                verify(input.selectByMouse);
+                const start = input.positionToRectangle(1);
+                const end = input.positionToRectangle(4);
+                const inset = input.leftPadding || 0;
+                mousePress(input, start.x + inset + 1, input.height / 2, Qt.LeftButton);
+                mouseMove(input, end.x + inset + 1, input.height / 2, 20);
+                mouseRelease(input, end.x + inset + 1, input.height / 2, Qt.LeftButton);
+                verify(input.selectedText.length > 0, "Pointer drag selects text: " + input.objectName +
+                       " start=" + start.x + " end=" + end.x + " width=" + input.width);
+                keyClick(Qt.Key_A, Qt.ControlModifier);
+                compare(input.selectedText, "abcdef");
+                // Capture composite controls through their parent so the selected
+                // glyphs are included on both hardware and software backends.
+                const captureItem = input === editor ? combo : (input === search ? toolbar : input);
+                verify(waitForRendering(captureItem));
+                const image = grabImage(captureItem);
+                const origin = input.mapToItem(captureItem, 0, 0);
+                const pixelScale = image.width / captureItem.width;
+                const left = Math.max(1, Math.floor((origin.x + input.positionToRectangle(0).x + inset) * pixelScale));
+                const right = Math.min(image.width - 2, Math.ceil((origin.x + input.positionToRectangle(6).x + inset) * pixelScale));
+                const accent = Ui.Theme.accent;
+                function isAccent(x, y) {
+                    return Math.abs(image.red(x, y) - Math.round(accent.r * 255)) < 5 &&
+                           Math.abs(image.green(x, y) - Math.round(accent.g * 255)) < 5 &&
+                           Math.abs(image.blue(x, y) - Math.round(accent.b * 255)) < 5;
+                }
+                let backgroundPixels = 0;
+                let whiteGlyphPixels = 0;
+                for (let y = 1; y < image.height - 1; ++y) {
+                    for (let x = left; x <= right; ++x) {
+                        if (isAccent(x, y)) ++backgroundPixels;
+                        if (image.red(x, y) > 185 && image.green(x, y) > 185 && image.blue(x, y) > 185 &&
+                            (isAccent(x - 1, y) || isAccent(x + 1, y))) ++whiteGlyphPixels;
+                    }
+                }
+                verify(backgroundPixels > 10, "Selected background was painted: " + input.objectName +
+                       " left=" + left + " right=" + right + " size=" + image.width + "x" + image.height +
+                       " inset=" + inset + " selected=" + input.selectedText);
+                verify(whiteGlyphPixels > 0, "Selected white text was painted: " + input.objectName);
+                keyClick(Qt.Key_X);
+                compare(input.text, "x");
+            }
+            field.text = "abcdef";
+            field.echoMode = TextInput.Password;
+            field.selectAll();
+            compare(field.text, "abcdef");
+            field.echoMode = TextInput.Normal;
+            compare(field.text, "abcdef");
         }
         function test_dropdown_data() { return [{tag:"100",scale:1},{tag:"125",scale:1.25},{tag:"150",scale:1.5},{tag:"legacy200",scale:2}]; }
         function test_dropdown(data) {

@@ -187,6 +187,7 @@ OperationWindow {
                             objectName: "settingsOpenMode"
                             Accessible.name: qsTrId("sessions.openMode")
                             density: Theme.settingsBodySize * Theme.fontScale / Theme.operationBodySize
+                            implicitHeight: Math.max(Theme.operationControlBodyButtonHeight, contentItem.implicitHeight + 8)
                             model: [qsTrId("sessions.tabs"), qsTrId("sessions.windows")]
                             currentIndex: root.draftOpenMode === "windows" ? 1 : 0
                             onActivated: root.draftOpenMode = currentIndex === 1 ? "windows" : "tabs"

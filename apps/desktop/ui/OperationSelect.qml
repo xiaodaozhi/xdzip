@@ -29,6 +29,8 @@ ComboBox {
         maximumLength: root.numericOnly ? 20 : 32767
         font: root.font
         color: root.enabled ? Theme.text : Theme.textSecondary
+        selectionColor: Theme.accent
+        selectedTextColor: Theme.accentText
         verticalAlignment: Text.AlignVCenter
         clip: true
         onTextEdited: root.editText = text

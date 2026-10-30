@@ -70,6 +70,10 @@ English: Closing a main window dismisses every owned dialog, including Settings 
 
 English: Closing a tray-resident window clears its browsing tabs and operation drafts; a plain restore shows one welcome tab. Minimizing preserves the window. Background tasks retain their original session/controller identity and remain reachable through the global task entry. A fresh blank session replaces the closed-page shell when capacity permits, without exceeding 32 live sessions, revealing a hidden window or stealing focus. Global task requests show only their task dialog; file requests may reopen the retained archive page. Other open windows are unaffected, and blocking dialogs prevent closing their owner.
 
+文件打开失败或取消后，未在读取、没有活动任务和密码提示的起始页可再次用于打开；旧路径不作为成功打开的归档身份。重新打开因任务保留的已关闭归档时，仅回收同一窗口中系统自动补建、仍为空且没有任务、错误或可见对话框的起始页。用户主动新建的页面、其他窗口和保留任务的会话不受影响，回收仍经过原有异步退出与 join。
+
+English: After an open fails or is cancelled, an idle welcome page without active work or a password prompt can be reused; the old path is not treated as an opened archive. Reopening a task-retained closed archive retires only an untouched, automatically restored welcome page in the same window, with no task, error or visible dialog. User-created pages, other windows and task-owning sessions remain intact; retirement still follows the asynchronous shutdown and join path.
+
 接受主窗口关闭时递增激活世代并断开模态等待连接，已经排队的旧唤醒回调也必须检查世代，不能在模态弹窗刚关闭后重新显示主窗口或恢复旧标签。此失效处理与正常打开入口共用，不取消后台任务。
 
 更新交接使用独立 `prepareForUpdate` 屏障，不复用立即重启。存在任务、任务启动或模态交互时拒绝交接；下载可继续，等待可取消。接受后关闭新意图入口并清理全部 Rust 连接，所有 join 完成仅发 `readyForUpdate`，不提前退出。更新提供者在释放安装提交之前发出退出屏障信号，主程序此时才解除正常退出拦截。安装提交失败时保留关于页恢复入口，用户可正常退出，不启动旧版本自动重启。详细行为见[主动更新](software-update.md)。

@@ -151,6 +151,8 @@ Rectangle {
             }
             color: Theme.text
             placeholderTextColor: Theme.textSecondary
+            selectionColor: Theme.accent
+            selectedTextColor: Theme.accentText
             Accessible.name: placeholderText
             background: Rectangle {
                 color: Theme.canvas
