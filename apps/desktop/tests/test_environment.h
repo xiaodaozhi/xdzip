@@ -37,6 +37,9 @@ class ScopedVariable {
 // The caller owns a fresh directory. Probe real child writes, locking, staging,
 // atomic commit and readback; existence/isValid alone is insufficient.
 bool checkStorage(const QString &directory, QString *error);
+#ifdef Q_OS_UNIX
+bool checkSocketPathBudget(const QString &directory, QString *error);
+#endif
 
 class Runtime {
   public:

@@ -8,6 +8,8 @@
 #include <QThread>
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
+#else
+#include <sys/un.h>
 #endif
 
 namespace test_environment {
@@ -137,13 +139,28 @@ bool checkStorage(const QString &directory, QString *error) {
     return true;
 }
 
+#ifdef Q_OS_UNIX
+bool checkSocketPathBudget(const QString &directory, QString *error) {
+    // QLocalServer's relative name becomes TMPDIR/name. Match the existing
+    // SingleInstance name length, including the terminating byte in sun_path.
+    const auto socket = QDir(directory).filePath("xdzip-" + QString(32, QLatin1Char('0')));
+    const sockaddr_un address{};
+    if (size_t(QFile::encodeName(socket).size()) >= sizeof(address.sun_path)) {
+        *error = QStringLiteral("Fixture precondition: temporary root exceeds Unix socket path "
+                                "budget; use a shorter checkout path");
+        return false;
+    }
+    return true;
+}
+#endif
+
 Runtime::Runtime(const QString &buildRoot) {
     auto root = qEnvironmentVariable("XDZIP_BROWSER_TEST_TEMP_ROOT");
     if (!root.isEmpty())
         root = QDir::cleanPath(QDir::fromNativeSeparators(root));
     if (root.isEmpty()) {
         QDir().mkpath(buildRoot);
-        m_directory = std::make_unique<QTemporaryDir>(QDir(buildRoot).filePath("browser-XXXXXX"));
+        m_directory = std::make_unique<QTemporaryDir>(QDir(buildRoot).filePath("t-XXXXXX"));
         if (!m_directory->isValid()) {
             m_error = QStringLiteral("Fixture precondition: cannot create owned temporary root");
             return;
@@ -154,6 +171,10 @@ Runtime::Runtime(const QString &buildRoot) {
             QStringLiteral("Fixture precondition: inherited temporary root is outside the build");
         return;
     }
+#ifdef Q_OS_UNIX
+    if (!checkSocketPathBudget(root, &m_error))
+        return;
+#endif
     // Auxiliary IPC/restart processes retain the parent's temp identity. Their
     // probes are private so concurrent clients cannot contend on the canary/lock.
     QTemporaryDir probe(QDir(root).filePath("preflight-XXXXXX"));

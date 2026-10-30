@@ -3725,6 +3725,13 @@ QtObject {
         QTemporaryDir directory;
         QVERIFY(directory.isValid());
         QString error;
+#ifdef Q_OS_UNIX
+        QVERIFY2(test_environment::checkSocketPathBudget(QDir::tempPath(), &error),
+                 qPrintable(error));
+        QVERIFY(
+            !test_environment::checkSocketPathBudget(QDir::tempPath() + QString(128, 'x'), &error));
+        QVERIFY(error.contains("socket path"));
+#endif
         QVERIFY2(test_environment::checkStorage(directory.path(), &error), qPrintable(error));
         QVERIFY(QDir(directory.path()).mkdir("fixture-canary"));
         QVERIFY(!test_environment::checkStorage(directory.path(), &error));
