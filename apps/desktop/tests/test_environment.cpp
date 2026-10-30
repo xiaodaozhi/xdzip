@@ -141,11 +141,16 @@ bool checkStorage(const QString &directory, QString *error) {
 
 #ifdef Q_OS_UNIX
 bool checkSocketPathBudget(const QString &directory, QString *error) {
-    // QLocalServer's relative name becomes TMPDIR/name. Match the existing
-    // SingleInstance name length, including the terminating byte in sun_path.
+    // Qt 6.8 checks TMPDIR/name plus two bytes on Linux (also for filesystem
+    // endpoints), one elsewhere. Match its check and the existing instance name.
     const auto socket = QDir(directory).filePath("xdzip-" + QString(32, QLatin1Char('0')));
     const sockaddr_un address{};
-    if (size_t(QFile::encodeName(socket).size()) >= sizeof(address.sun_path)) {
+#ifdef Q_OS_LINUX
+    constexpr size_t extra = 2;
+#else
+    constexpr size_t extra = 1;
+#endif
+    if (size_t(QFile::encodeName(socket).size()) + extra > sizeof(address.sun_path)) {
         *error = QStringLiteral("Fixture precondition: temporary root exceeds Unix socket path "
                                 "budget; use a shorter checkout path");
         return false;

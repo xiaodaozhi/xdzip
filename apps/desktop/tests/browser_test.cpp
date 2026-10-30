@@ -28,6 +28,9 @@
 #ifdef Q_OS_WIN
 #include <shlobj.h>
 #endif
+#ifdef Q_OS_UNIX
+#include <sys/un.h>
+#endif
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDragEnterEvent>
@@ -41,6 +44,7 @@
 #include <QItemSelectionModel>
 #include <QJSValue>
 #include <QJsonDocument>
+#include <QLocalServer>
 #include <QLockFile>
 #include <QMenu>
 #include <QMimeData>
@@ -3731,6 +3735,26 @@ QtObject {
         QVERIFY(
             !test_environment::checkSocketPathBudget(QDir::tempPath() + QString(128, 'x'), &error));
         QVERIFY(error.contains("socket path"));
+        const auto parent = QFileInfo(QDir::tempPath()).dir().path();
+        const sockaddr_un address{};
+        for (const int delta : {-1, 0, 1}) {
+            // The nominal boundary fits one NUL. Linux's Qt check needs another
+            // byte. Compare our preflight against an actual UserAccess endpoint.
+            const int bytes = int(sizeof(address.sun_path)) - 40 + delta;
+            const int padding = bytes - int(QFile::encodeName(parent).size()) - 7;
+            QVERIFY(padding >= 0);
+            QTemporaryDir boundary(parent + "/" + QString(padding, QLatin1Char('x')) + "XXXXXX");
+            QVERIFY(boundary.isValid());
+            test_environment::ScopedVariable temporary("TMPDIR", boundary.path());
+            QVERIFY2(temporary.valid(), qPrintable(temporary.error()));
+            const auto name =
+                "xdzip-" + QUuid::createUuid().toString(QUuid::WithoutBraces).remove('-');
+            QLocalServer server;
+            server.setSocketOptions(QLocalServer::UserAccessOption);
+            const bool budget = test_environment::checkSocketPathBudget(boundary.path(), &error);
+            QCOMPARE(server.listen(name), budget);
+            server.close();
+        }
 #endif
         QVERIFY2(test_environment::checkStorage(directory.path(), &error), qPrintable(error));
         QVERIFY(QDir(directory.path()).mkdir("fixture-canary"));
