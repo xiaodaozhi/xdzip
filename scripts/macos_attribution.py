@@ -2,6 +2,7 @@
 
 """Bind deployed Qt images to SDK inputs without treating signatures as code identity."""
 import hashlib
+import os
 from pathlib import Path
 import re
 import struct
@@ -118,18 +119,57 @@ def sdk_relative(relative):
     return None
 
 
+def audited_qml_aliases(root, audit):
+    """Bind audited QML file links to their actual in-bundle quick-plugin targets."""
+    aliases, seen = {}, set()
+    for item in audit['files']:
+        relative = item['path']
+        if not relative.startswith('Contents/Resources/qml/') or 'symlink_target' not in item:
+            continue
+        if relative in seen:
+            raise ValueError('Duplicate audited QML link')
+        seen.add(relative)
+        link = bounded(root, relative)
+        if not link.is_symlink():
+            raise ValueError('Audited QML link is no longer a symlink')
+        actual_target = os.path.relpath(link.resolve(), link.parent.resolve()).replace('\\', '/')
+        if item['symlink_target'] != actual_target or digest(link) != item['sha256']:
+            raise ValueError('Audited QML link changed after deployment audit')
+        target = link.resolve().relative_to(root.resolve()).as_posix()
+        if target.startswith('Contents/PlugIns/quick/'):
+            aliases.setdefault(target, set()).add(sdk_relative(relative))
+    return aliases
+
+
+def sdk_source_for_path(sdk, relative, aliases):
+    """Return one bounded SDK path; never guess when QML aliases are ambiguous."""
+    direct = sdk_relative(relative)
+    candidates = set()
+    if direct and bounded(sdk, direct).is_file():
+        candidates.add(bounded(sdk, direct).resolve().relative_to(sdk.resolve()).as_posix())
+    if not relative.startswith('Contents/PlugIns/quick/'):
+        return next(iter(candidates), None)
+    for source in aliases.get(relative, set()):
+        if not source or not bounded(sdk, source).is_file():
+            return None
+        candidates.add(bounded(sdk, source).resolve().relative_to(sdk.resolve()).as_posix())
+    if len(candidates) > 1:
+        raise ValueError('Ambiguous audited QML links for SDK attribution')
+    return next(iter(candidates), None)
+
+
 def deployment_record(root, sdk, audit):
     records = []
+    aliases = audited_qml_aliases(root, audit)
     for item in audit['files']:
         relative = item['path']
         path = bounded(root, relative)
         if digest(path) != item['sha256']:
             raise ValueError('Artifact changed before macOS attribution')
-        source = sdk_relative(relative)
-        if not source or not bounded(sdk, source).is_file():
+        source = sdk_source_for_path(sdk, relative, aliases)
+        if not source:
             continue
         original = bounded(sdk, source)
-        source = original.resolve().relative_to(sdk.resolve()).as_posix()
         if digest(original) == item['sha256']:
             method, fingerprint = 'sdk-byte-identity', None
         elif native(path, 'macos'):

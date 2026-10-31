@@ -49,6 +49,9 @@ jobs:
         uses: ./.github/actions/cache-inputs
         with:
           scope: qt
+      - name: Validate native macOS attribution links
+        if: runner.os == 'macOS'
+        run: python3 scripts/test-macos-attribution.py
       - name: Install Linux graphics development files
         if: runner.os == 'Linux'
         run: |

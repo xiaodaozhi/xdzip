@@ -150,6 +150,13 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.evidence.JOBS['qt'], ['qt-plan', 'native-qt'])
         self.assertIn('browser_evidence', (ROOT / 'scripts/ci-evidence.py').read_text(encoding='utf-8'))
 
+    def test_macos_attribution_links_run_on_native_macos(self):
+        steps = self.workflows['qt-components.yml']['jobs']['native-qt']['steps']
+        matching = [step for step in steps if 'scripts/test-macos-attribution.py' in step.get('run', '')]
+        self.assertEqual(len(matching), 1)
+        self.assertEqual(matching[0].get('if'), "runner.os == 'macOS'")
+        self.assertNotIn('continue-on-error', matching[0])
+
 
 if __name__ == '__main__':
     unittest.main()
