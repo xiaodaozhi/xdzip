@@ -25,6 +25,10 @@ English: The pinned ICU license remains in the source delivery for Linux. Curren
 
 verify-source-delivery.py 先重新核对交付文件哈希，将自有项目和 vendor 安全解到新的 build/ 目录，使用空 Cargo 缓存、CARGO_NET_OFFLINE=true 和现有固定 Qt SDK 构建真实应用，再执行启动／关闭冒烟。它验证项目与 Rust 交付输入可离线使用，不声称 Qt 已从模块源码重建，不声称字节级可重复构建。生成源码目录的 Git 身份为 unknown，由外部固定提交及交付清单绑定。
 
+源码交付在输出目录内以相对 `vendor` 参数运行 Cargo，并显式指定项目清单；只接受当前受支持的 crates.io 源映射与相对 `vendor` 配置。输出包含绝对目录、路径逃逸或意外源映射时直接失败，避免将构建机路径写入可迁移交付。
+
+English: Source delivery invokes Cargo in the output directory with a relative `vendor` destination and an explicit project manifest. Unexpected source mappings or non-relocatable paths are rejected.
+
 新增[Qt SDK 对应核验](qt-sdk-correspondence.md)：交付包总是包含固定对应清单和可重放的 AGL 消费端补丁，传入 --qt-prefix 后额外包含该 SDK 的逐文件源码声明核对、构建配置和明确缺口。交付清单递归哈希补丁子目录，重建验证同样复核这些字节。未传 SDK 时不伪造配置核验记录。
 
 实际 Qt 源码构建和加载／兼容替换流程见[自动化收尾契约](wp12-automation.md)，不再把应用使用现有 SDK 的离线重建误称为 Qt 本身的源码重建。

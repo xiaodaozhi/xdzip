@@ -157,6 +157,15 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(matching[0].get('if'), "runner.os == 'macOS'")
         self.assertNotIn('continue-on-error', matching[0])
 
+    def test_portable_vendor_config_runs_on_all_native_platforms(self):
+        steps = self.workflows['qt-components.yml']['jobs']['native-qt']['steps']
+        matching = [step for step in steps if 'DeliveryTests.test_vendor_config_real_cargo' in step.get('run', '')]
+        self.assertEqual(len(matching), 1)
+        self.assertNotIn('if', matching[0])
+        self.assertNotIn('continue-on-error', matching[0])
+        self.assertEqual(matching[0]['env']['CARGO_NET_OFFLINE'], 'true')
+        self.assertEqual(matching[0]['env']['XDZIP_VENDOR_INTEGRATION'], '1')
+
 
 if __name__ == '__main__':
     unittest.main()

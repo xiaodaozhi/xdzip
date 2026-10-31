@@ -53,6 +53,19 @@ def collect_native_sources(output, cache):
     return dict(item)
 
 
+def write_vendor_config(output):
+    """Ask Cargo for a relative output path and reject unexpected source mappings."""
+    result = subprocess.run(['cargo', 'vendor', '--locked', '--versioned-dirs',
+                             '--manifest-path', str(ROOT/'Cargo.toml'), 'vendor'],
+                            cwd=output, capture_output=True, text=True, check=True)
+    lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    expected = ['[source.crates-io]', 'replace-with = "vendored-sources"',
+                '[source.vendored-sources]', 'directory = "vendor"']
+    if lines != expected:
+        raise ValueError('Unexpected or non-relocatable Cargo vendor configuration')
+    (output/'cargo-config.toml').write_text(result.stdout, encoding='utf-8', newline='\n')
+
+
 def rebuild_instructions():
     """Keep offline product rebuild and separately prepared test data distinct."""
     return '''# 离线重建与 Qt 动态库替换
@@ -188,10 +201,7 @@ def main():
     # --locked binds checksummed registry sources to Cargo.lock, including build
     # dependencies; vendor does not run third-party build scripts.
     vendor = output/'vendor'
-    result = subprocess.run(['cargo', 'vendor', '--locked', '--versioned-dirs', str(vendor)],
-                            cwd=ROOT, capture_output=True, text=True, check=True)
-    config_dir = output/'cargo-config.toml'
-    config_dir.write_text(result.stdout.replace(str(vendor), 'vendor'), encoding='utf-8')
+    write_vendor_config(output)
     vendor_archive = output/'rust-vendor.tar.gz'
     with tarfile.open(vendor_archive, 'w:gz') as archive:
         archive.add(vendor, arcname='vendor')

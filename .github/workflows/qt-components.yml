@@ -83,6 +83,11 @@ jobs:
         id: build_product
         shell: pwsh
         run: ./scripts/ci-desktop.ps1
+      - name: Verify portable Cargo vendor config
+        env:
+          CARGO_NET_OFFLINE: 'true'
+          XDZIP_VENDOR_INTEGRATION: '1'
+        run: python scripts/test-source-delivery.py DeliveryTests.test_vendor_config_real_cargo
       - name: Collect test diagnostics
         if: always()
         shell: pwsh
