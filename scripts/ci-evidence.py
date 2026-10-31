@@ -21,8 +21,8 @@ planner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(planner)
 HOSTS = [('Linux', 'X64'), ('Windows', 'X64'), ('macOS', 'ARM64')]
 JOBS = {'docs': ['docs-plan', 'docs'], 'foundation': ['foundation-plan', 'bridge', 'rar7-official-reference', 'cpp-format'],
-        'qt': ['qt-plan', 'native-qt'], 'html': ['html-plan', 'visual-anchors']}
-HEAVY = {'docs': [], 'foundation': ['bridge', 'rar7-official-reference'], 'qt': ['native-qt'], 'html': ['visual-anchors']}
+        'qt': ['qt-plan', 'native-qt']}
+HEAVY = {'docs': [], 'foundation': ['bridge', 'rar7-official-reference'], 'qt': ['native-qt']}
 
 
 def require(condition, message):
@@ -56,8 +56,7 @@ class Reader:
 
 
 def timings(reader, scope, context):
-    name = 'build/review/html-ci-timings.json' if scope == 'html' else 'build/review/ci-timings.json'
-    data = reader.json(name)
+    data = reader.json('build/review/ci-timings.json')
     require(all(data.get(k) == context[k] for k in ('revision', 'run_id', 'run_attempt'))
             and data.get('scope') == scope and data.get('schema_version') == 1, 'timing-identity-mismatch')
     rows = data.get('commands')
@@ -69,16 +68,10 @@ def timings(reader, scope, context):
     expected = {'foundation': {'rust-contracts', 'native-worker', 'rust-tests', 'codec-interop', 'archive-transfers', 'native-bridge'},
                 'qt': {'prepare', 'source-contracts', 'sdk-correspondence', 'settings-compat', 'native-build',
                        'native-integration', 'component-tests', 'browser-repeat', 'resource-metrics', 'visual-default',
-                       'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime', 'manual-template'},
-                'html': {'anchors', 'body'}}[scope]
+                       'codec-interop', 'visual-density', 'runtime-package', 'deployed-runtime', 'manual-template'}}[scope]
     if scope == 'qt':
         expected |= {'attribution'} if context['platform'] == 'macOS' else {'historical-fixture', 'installer-package', 'installer-lifecycle'}
     require(expected <= phases, 'missing-validation-phase')
-    if scope == 'html':
-        declared = Counter(re.findall(r'ci_run (?:anchors|body) build/ci-html-tools/bin/python (\S+)',
-                                     (reader.root / '.github/workflows/html-design.yml').read_text(encoding='utf-8')))
-        require(Counter(row['command'] for row in rows) == Counter({Path(k).name: v for k, v in declared.items()}),
-                'missing-html-command')
     return {'commands': len(rows), 'phases': sorted(phases)}
 
 
@@ -140,12 +133,12 @@ def browser_evidence(reader, revision):
 
 
 def collect(scope, root, context, role=None):
-    role = role or {'docs': 'docs', 'foundation': 'bridge', 'qt': 'qt', 'html': 'html'}[scope]
-    require(role in {'docs': ['docs'], 'foundation': ['bridge', 'rar7'], 'qt': ['qt'], 'html': ['html']}[scope],
+    role = role or {'docs': 'docs', 'foundation': 'bridge', 'qt': 'qt'}[scope]
+    require(role in {'docs': ['docs'], 'foundation': ['bridge', 'rar7'], 'qt': ['qt']}[scope],
             'invalid-evidence-role')
     reader = Reader(root)
     facts = {}
-    if role in ('bridge', 'qt', 'html'):
+    if role in ('bridge', 'qt'):
         facts['timings'] = timings(reader, scope, context)
     if role == 'bridge':
         log = reader.read('build/review/foundation-ctest.log').decode('utf-8', errors='replace')
@@ -185,13 +178,6 @@ def collect(scope, root, context, role=None):
         native_log = reader.read('build/review/native-sessions.log').decode('utf-8', errors='replace')
         require(all('BrowserTest::' + case + '(' in native_log for case in cases), 'missing-native-session-case-log')
         facts['native_sessions'] = text_totals(reader, 'build/review/native-sessions.log')
-    elif role == 'html':
-        body = reader.json('build/review/html-body/measurements.json')
-        require(body.get('passed') is True and body.get('failures') == [] and body.get('page_errors') == []
-                and body.get('blocked_requests') == [], 'missing-or-failed-html-body')
-        design = reader.json('dist/html-design-review/validation.json')
-        require(design.get('checks') and design.get('page_errors') == [] and design.get('external_requests') == [],
-                'missing-or-failed-html-interactions')
     return dict(schema_version=1, scope=scope, role=role, **context, status='passed', facts=facts,
                 files=sorted(reader.files.values(), key=lambda row: row['file']))
 
@@ -223,9 +209,7 @@ def evidence_inventory(record):
                 'qt': {'build/review/ci-timings.json', 'build/review/build.json', 'build/review/runtime-resources.json',
                        'build/review/native-sessions.json', 'build/review/native-sessions.log',
                        *('build/review/diagnostics/qml-' + scale + '.log'
-                         for scale in ('initial', 'requested-scale-1.25', 'requested-scale-2'))},
-                'html': {'build/review/html-ci-timings.json', 'build/review/html-body/measurements.json',
-                         'dist/html-design-review/validation.json'}}
+                         for scale in ('initial', 'requested-scale-1.25', 'requested-scale-2'))}}
     require(role in required and required[role] <= set(names), 'missing-platform-logs')
     if role == 'qt':
         browser = record['facts']['browser']

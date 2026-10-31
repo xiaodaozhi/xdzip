@@ -47,7 +47,6 @@ def roots(root=ROOT, env=None):
     cargo = Path(env.get('CARGO_HOME') or Path.home() / '.cargo')
     return {'cargo-archives': cargo / 'registry/cache', 'cargo-git': cargo / 'git/db',
             'pip': root / 'build/ci-input-cache/pip',
-            'playwright': root / 'build/ci-input-cache/playwright',
             'qt-sources': root / 'build/source-cache'}
 
 
@@ -134,7 +133,7 @@ def github_output(name, value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('operation', choices=['plan', 'verify', 'seal'])
-    parser.add_argument('--scope', required=True, choices=['foundation', 'qt', 'html'])
+    parser.add_argument('--scope', required=True, choices=['foundation', 'qt'])
     parser.add_argument('--matched-key', default='')
     args = parser.parse_args()
     if os.environ.get('CI') != 'true' or os.environ.get('GITHUB_ACTIONS') != 'true':

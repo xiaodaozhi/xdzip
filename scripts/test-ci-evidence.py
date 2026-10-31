@@ -185,7 +185,7 @@ class EvidenceTests(unittest.TestCase):
             subprocess.run(['git', '-c', 'user.name=CI fixture', '-c', 'user.email=ci@example.invalid', *args],
                            cwd=self.root, check=True, capture_output=True)
         git('init', '-q', '-b', 'main');git('add', '.');git('commit', '-q', '-m', 'owned fixture')
-        self.write('build/ci-html-tools/owned.py', 'owned CI interpreter fixture')
+        self.write('build/ci-asset-tools/owned.py', 'owned CI interpreter fixture')
         ci.require_clean_source(self.root)
         self.write('.venv-design/owned.py', 'owned unexpected root environment')
         with self.assertRaisesRegex(ValueError, 'validation-requires-clean-source'):ci.require_clean_source(self.root)

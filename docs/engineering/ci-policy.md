@@ -1,24 +1,24 @@
 # CI 与合入策略
 
-Documentation、Foundation probes、Qt components 和 HTML design review 的普通自动入口为 main push 与 pull_request，继续保留全部 tag push 及 workflow_dispatch。无 PR 的临时分支按需显式分派普通工作流，不再为分支 push 与随后 main 集成重复生成全套证据。标签及手动入口不得因本次收敛被禁用。专用 Release、更新、Qt 源码与原生诊断入口独立管理。
+Documentation、Foundation probes 和 Qt components 的普通自动入口为 main push 与 pull_request，继续保留全部 tag push 及 workflow_dispatch。无 PR 的临时分支按需显式分派普通工作流，不再为分支 push 与随后 main 集成重复生成全套证据。标签及手动入口不得因本次收敛被禁用。专用 Release、更新、Qt 源码与原生诊断入口独立管理。
 
 普通并发组按工作流和事件隔离。同一个 PR 的更新可以取消该 PR 的旧运行；main、tag 和 dispatch 使用各自 run ID，不相互取消，不共享排队槽。取消结果继续保留为取消，不作为通过。仓库保护规则、权限和发行环境不随此策略自动修改。
 
 重型作业的分类失败回退使用 `always() && !cancelled()`，保留依赖失败时的全量验证，同时尊重工作流取消。[GitHub 取消机制](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-cancellation)会重新判定运行中作业的条件，不能仅用 `always()` 保住重型作业。取消后的汇总仍要求真实结论与证据，不把取消记为成功。
 
-普通工作流按命令记录阶段耗时、原始退出状态和源码提交，记录不包含命令参数或宿主路径。Foundation、Qt 的 `ci-timings.json` 与 HTML 的 `html-ci-timings.json` 随现有证据保留；命令失败或源码后置检查失败仍使作业失败。阶段计时不改变测试环境、测试顺序、十次整套重复及其时限。
+Foundation 和 Qt 工作流按命令记录阶段耗时、原始退出状态和源码提交，记录不包含命令参数或宿主路径。`ci-timings.json` 随现有证据保留；命令失败或源码后置检查失败仍使作业失败。阶段计时不改变测试环境、测试顺序、十次整套重复及其时限。
 
-依赖下载缓存由 `scripts/ci-cache-policy.json` 声明，只包含 Cargo 下载归档和 Git 数据、pip 下载、HTML 的 Playwright 工具，以及固定 Qt 对应源码归档。缓存不包含已编译产品、安装的 Qt SDK、历史产品夹具、测试结论或凭据。键绑定输入文件、平台、架构和 runner 镜像，恢复时核对可信 main push 来源与逐文件哈希；不接受部分键或内容差异。只有成功的 main push 保存输入，PR、标签及手动运行仅恢复并重新执行检查。具体冷暖耗时和命中情况以实际运行记录为准。
+依赖下载缓存由 `scripts/ci-cache-policy.json` 声明，只包含 Cargo 下载归档和 Git 数据、pip 下载，以及固定 Qt 对应源码归档。缓存不包含已编译产品、安装的 Qt SDK、历史产品夹具、测试结论或凭据。键绑定输入文件、平台、架构和 runner 镜像，恢复时核对可信 main push 来源与逐文件哈希；不接受部分键或内容差异。只有成功的 main push 保存输入，PR、标签及手动运行仅恢复并重新执行检查。具体冷暖耗时和命中情况以实际运行记录为准。
 
-HTML 输入集合在 `scripts/ci-plan-policy.json` 中集中声明，覆盖 `docs/visual/*.json` 及共享 CI 工具，不再匹配 Git 排除的 `build/review` 生成物。普通工作流始终触发计划与汇总，避免整个工作流因 paths 不匹配而没有检查上下文。shadow 阶段仍执行完整 HTML 检查，输入命中情况只记入计划。Qt 扩展入口中只保留一次完全相同的共享操作控件源码检查；其他领域、桥接、视觉、部署与安装生命周期门槛继续独立执行。
+普通工作流始终触发计划与汇总，避免整个工作流因 paths 不匹配而没有检查上下文。桌面产品默认 CI 不运行网页浏览器测试；HTML 设计脚本可按需本地使用。字体覆盖与 Qt 字体导出、设计资源及生成配置的静态检查继续执行，领域、桥接、Qt 视觉、部署与安装生命周期门槛保持独立。
 
 变更分类由 `scripts/ci-plan.py` 使用完整 Git 树差异，不依赖 API 的文件分页或平台 paths 截断。当前为 shadow 模式，全量验证继续运行。普通文档候选仅限 `docs/README.md` 导航页的修改；README 产品说明、工程／接口／CI／发行及验收契约、字体、QML、视觉 JSON、运行资源和未知路径均走全量。新增、删除、改名、模式变化、大差异、缺少基线、fork PR、不能确认的 PR merge tree、显式运行及读取失败也走全量。启用跳过必须另有充分的 shadow 正反例证据；切换配置的提交本身仍走全量，不能把夹具测试当实际平台结果。
 
-四个普通工作流各保留独立的 `docs-gate`、`foundation-gate`、`qt-gate` 和 `html-gate`，使用同一运行中的计划、作业结论及有界证据记录汇总，不新增跨工作流读取权限。重型作业在分类作业失败时继续全量，汇总仍明确失败。适用作业必须成功，三平台必须齐备；失败、取消、超时、重复或缺失平台、跨提交／运行证据及缺少原始日志均不能通过。Qt 额外复核首轮加十次完整浏览器套件、各分片原始 XML、三份 QML 原始日志、原生会话及产品／资源身份；既有平台专用测试的明确 skip 单独计数，不冒充已执行。自动汇总不替代人工桌面验收或发行许可，服务端 required checks 如需调整仍由所有者单独决定。
+三个普通工作流各保留独立的 `docs-gate`、`foundation-gate` 和 `qt-gate`，使用同一运行中的计划、作业结论及有界证据记录汇总，不新增跨工作流读取权限。重型作业在分类作业失败时继续全量，汇总仍明确失败。适用作业必须成功，三平台必须齐备；失败、取消、超时、重复或缺失平台、跨提交／运行证据及缺少原始日志均不能通过。Qt 额外复核首轮加十次完整 Qt 桌面归档浏览器套件、各分片原始 XML、三份 QML 原始日志、原生会话及产品／资源身份；既有平台专用测试的明确 skip 单独计数，不冒充已执行。自动汇总不替代人工桌面验收或发行许可，服务端 required checks 如需调整仍由所有者单独决定。
 
 新增的计划与汇总输入按 run attempt 分别保留。只重跑失败作业时，允许使用同一 run、同一 SHA 中先前成功平台的完整证据，汇总注明各平台的实际 attempt；未来 attempt、跨 run 或跨提交记录不能使用。该规则不跨工作流共享测试结论，也不覆盖既有工件。当前作业结论为失败或取消时，历史成功记录不能使汇总通过。
 
-浏览器分片清单记录驱动实际启动的进程 ID，逐项 JSON/XML 的文件名前缀和身份字段共同绑定该 worker。设置重启等辅助子进程继承计时目录，仍保留各自原始记录，其退出结果继续由原有父测试断言检查；汇总不把这些辅助记录误作分片主记录，也不能用成功的子进程替代缺失、失败或歧义的 worker。
+Qt 桌面测试分片清单记录驱动实际启动的进程 ID，逐项 JSON/XML 的文件名前缀和身份字段共同绑定该 worker。设置重启等辅助子进程继承计时目录，仍保留各自原始记录，其退出结果继续由原有父测试断言检查；汇总不把这些辅助记录误作分片主记录，也不能用成功的子进程替代缺失、失败或歧义的 worker。
 
 窗口状态、单实例与会话原生回归共用 `scripts/check-native-sessions.py`，在打标签前执行。Linux 安装 Xvfb、Openbox 和 xprop，以窗口管理器的 X11 状态验证最大化、全屏及弹窗行为；Windows、macOS 使用系统插件和窗口管理器。此步骤不部署或上传普通 macOS 应用包。
 
@@ -28,11 +28,11 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 专用 Release 工作流是经用户明确授权的例外，允许 Apple Silicon 原生部署、ad-hoc 签名、app.zip 和 DMG 打包及上传。上述 Mac 禁止条件仅约束普通 CI。专用流程必须通过同提交原生回归、包核验并齐备六类资产后才公开，详见[发布协议](release-protocol.md)。
 
-已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流和 HTML design review，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。检查方法见[验证入口](../qa/README.md)，具体结果绑定提交并记录到 issue 与 Actions 工件。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发行还须按[发行审查流程](../qa/release-review.md)单独确认。
+已配置 Documentation、Foundation probes 和 Qt components 三组产品工作流，分别检查文档与资源、无 Qt 核心及诊断桥接、三平台 Qt 产品。检查方法见[验证入口](../qa/README.md)，具体结果绑定提交并记录到 issue 与 Actions 工件。下表定义按变更类型执行的门槛，M3 已加入安全 I/O 和真实 ZIP 解压回归，WP-10 已加入真实 ZIP 创建互操作，正式发行还须按[发行审查流程](../qa/release-review.md)单独确认。
 
 | 变更 | 必需检查 |
 | --- | --- |
-| 文档/视觉 | 本地链接、JSON、HTML 生成、图片存在；核对设计与范围 |
+| 文档/视觉 | 本地链接、JSON、HTML 静态资源一致性、图片存在；核对设计与范围 |
 | Rust 核心 | fmt、Clippy、领域/性质测试、受影响集成测试 |
 | Qt/C++/QML | format、选定 tidy、qmllint、构建和焦点/模型行为测试 |
 | FFI/安全 I/O | 三平台原生测试、所有权/竞态/故障注入，额外审查 |
@@ -43,11 +43,11 @@ Linux 等待 Openbox 的 `--startup` 回调后才创建 Qt 测试进程，启动
 
 [生产更新验收](../../.github/workflows/production-update-acceptance.yml)是明确授权后的独立手动入口，只接受 main，固定源码 SHA，绑定 release-signing 审批且保持 contents:read。构建、生产签名和真实安装分别执行，只有签名步骤接收生产秘密；候选、应用和签名附件不上传。普通 CI 与现有测试密钥更新回归不因此获得生产秘密或 Mac 应用部署权限。English: The separately authorized production-update acceptance workflow runs only from main under the protected signing environment with read-only repository permissions. Only its isolated signing steps receive production secrets. Signed candidates and applications stay on disposable runners; ordinary CI remains unchanged.
 
-Documentation、Foundation probes、Qt components 和 HTML design review 也支持 `workflow_dispatch` 手动核对指定分支或标签。手动执行复用相同权限、检查和平台限制；按实际 `head_sha` 绑定结果，不能用旧提交的成功记录补齐当前提交的缺失检查，也不因此获得发布授权。
+Documentation、Foundation probes 和 Qt components 也支持 `workflow_dispatch` 手动核对指定分支或标签。手动执行复用相同权限、检查和平台限制；按实际 `head_sha` 绑定结果，不能用旧提交的成功记录补齐当前提交的缺失检查，也不因此获得发布授权。
 
-HTML 验收和设计导出使用 `scripts/html_review_server.py` 的共享本地 HTTP 服务，保持回环绑定与有界接收队列。浏览器会并发加载脚本、样式、图片和字体，不能用默认的小队列造成资源连接被拒绝，再把缺失全局对象误判为页面状态错误。缩放检查同时保留失败资源请求的路径、类型与错误，以及 JavaScript 堆栈和场景；修正驱动时仍保留原交互断言与等待期限。
+按需本地执行的 HTML 验收和设计导出使用 `scripts/html_review_server.py` 的共享本地 HTTP 服务，保持回环绑定与有界接收队列。浏览器会并发加载脚本、样式、图片和字体，不能用默认的小队列造成资源连接被拒绝，再把缺失全局对象误判为页面状态错误。缩放检查同时保留失败资源请求的路径、类型与错误，以及 JavaScript 堆栈和场景；修正驱动时仍保留原交互断言与等待期限。
 
-English: HTML review and export drivers share the bounded loopback server. Asset-load failures remain distinct from page-state failures, with request and JavaScript diagnostics retained. Server fixes do not relax interaction assertions or deadlines.
+English: Optional local HTML review and export drivers share the bounded loopback server. Asset-load failures remain distinct from page-state failures, with request and JavaScript diagnostics retained. Server fixes do not relax interaction assertions or deadlines.
 
 [Windows native visual diagnostic](../../.github/workflows/windows-native-visual.yml)是仅支持手动调度的一次性 Windows hosted runner 诊断，使用同提交的 Release 测试程序和原生 windows/D3D11 路线。先执行一次菜单桌面可用性采样，成功后另启完整 15 类、各 3 次的冷进程采样，试跑不计入 45 次；真实前台、自有窗口遮挡、首帧代次和同帧阴影检查保持不变。无法捕获或记录不完整时保留失败和诊断工件，不能记为通过，也不冒充人工点击。
 
@@ -61,7 +61,7 @@ English: HTML review and export drivers share the bounded loopback server. Asset
 
 分支保护必须等真实检查存在且成功运行后指定检查名称；CODEOWNERS 等实际审查者加入后建立。仓库当前可见性和保护设置不由文档生成过程默默修改。
 
-添加窗口使用 C01 独立原稿哈希和 `add-reference.json` 对照，三平台 Qt 量测 12 组语言、主题及字号组合，并执行独立草稿、真实元数据、辅助功能移除、取消和文件/空目录更新。HTML 独立验证 36 组语言、主题、字号、DPR 组合和 24 组真实浏览器 100%/125% 缩放，复用私有 Xvfb 输入隔离，不使用 CSS zoom 代替。检查入口为 `scripts/check-add-dialog.py`，结果只保存为 build/ 或 CI 工件。
+添加窗口使用 C01 独立原稿哈希和 `add-reference.json` 对照，三平台 Qt 量测 12 组语言、主题及字号组合，并执行独立草稿、真实元数据、辅助功能移除、取消和文件/空目录更新。按需本地 HTML 验证可覆盖语言、主题、字号、DPR 和浏览器缩放，复用私有 Xvfb 输入隔离，不使用 CSS zoom 代替。检查入口为 `scripts/check-add-dialog.py`；Qt CI 工件与本地 HTML 工件分别记录。
 
 元数据过滤回归在三平台核心测试中生成真实 ZIP、TAR、TAR.GZ 创建和更新夹具，再由 `scripts/check-macos-metadata-interop.py` 使用独立 Python 读取器核对元数据排除、原记录保留、空目录、内容和 UTF-8 名称。Qt 覆盖中英文空输入失败反馈及原包不变，沿用共享结果窗口与双语多字号布局门槛；离屏结果不等于桌面人工验收。
 
@@ -95,7 +95,7 @@ Windows 部署验证拒绝 `opengl32sw.dll`，在隔离副本中分别观察默�
 
 Qt 组件的原始逐项 `qml-tests.log` 在成功与失败路径都保存到诊断工件，不以可能被后续重复测试覆盖的 `LastTest.log` 摘要替代。构建检查成功时，该原始日志必须存在且非空，缺失或为空使证据收集明确失败；构建本身失败时仍保留可获得的原始诊断。macOS 继续只上传日志和 JSON。
 
-浏览器首轮与十次整套重复各自保留运行清单，以及每个工作进程独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。离屏测试自动发现并分配全部测试方法，每个方法只执行一次，进程使用各自的临时设置；原生平台或调用方指定共享设置、视觉审计时保持串行。整个 CTest 仍受同一个 240 秒时限约束，断言、逐项等待时限和重复次数不变。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。English: Each offscreen browser run keeps a suite manifest and raw Qt Test timing logs per worker. Offscreen workers receive isolated settings, while native, explicitly shared settings and visual-audit runs stay serial. The same 240-second CTest deadline covers all discovered methods, with unchanged assertions, per-check deadlines and repetition count.
+Qt 归档浏览器首轮与十次整套重复各自保留运行清单，以及每个工作进程独立的 Qt Test XML 格式 `.log` 和运行身份、耗时 JSON，位于 `build/review/browser-timings/`。离屏测试自动发现并分配全部测试方法，每个方法只执行一次，进程使用各自的临时设置；原生平台或调用方指定共享设置、视觉审计时保持串行。整个 CTest 仍受同一个 240 秒时限约束，断言、逐项等待时限和重复次数不变。被终止的进程可能只有 `running` 记录或不完整日志，不能记为完成；runner 的 post-job 和最终 job 结论仍须从 Actions 原始步骤与状态独立核对。English: Each offscreen Qt archive-browser run keeps a suite manifest and raw Qt Test timing logs per worker. Offscreen workers receive isolated settings, while native, explicitly shared settings and visual-audit runs stay serial. The same 240-second CTest deadline covers all discovered methods, with unchanged assertions, per-check deadlines and repetition count.
 
 所有层级的 dist/ 及其全部内容都在 .gitignore 中排除，build/、target/ 也不进入 Git 源码树。Documentation 的 scripts/check-docs.py 检查 Git 索引，即使强制暂存 dist/ 文件也会失败。HTML 离线审阅工具仍可在本地生成 dist/，但生成结果只能作为本地文件或 Actions 工件，不能提交到仓库。
 
@@ -111,7 +111,7 @@ WP-10 增加三平台真实创建窗口→生成 ZIP→重新打开→重名取�
 
 ZIP 高级创建增加真实 AES-256 与编号分卷输出，核心覆盖错误密码、边界预算、来源／目标变化、整组冲突、身份校验及晚取消。Foundation 三平台使用独立 7-Zip 双向验证，包含 8 种 Store／Deflate、单文件／分卷和明文／AES 创建组合，以及 4 种独立 AES 输入组合，复核空文件、空目录、Unicode 和全部有效载荷。另用独立 Python 写入的两种 ZIP64 尾部占位样本验证真实宿主扫描与解压，不只检查内存记录层。Linux/macOS 另以 Info-ZIP 创建两种 PKZIP 分卷，Windows 因缺少该独立工具显式登记未执行，不用编号分卷替代这两项结论。Linux Qt CI 继续复用该入口。合成密码仅通过终端或探针的有界 stdin 输入，不进入命令行、环境和报告。Windows 7-Zip 的重定向密码输入存在 Unicode 编码限制，独立工具矩阵使用 ASCII 密码并明确登记该限制；Unicode 密码另由独立 zip-rs 密文比对及读取测试覆盖。Linux/macOS 保留 UTF-8 密码终端矩阵。Qt 控件校验覆盖默认级别、自定义空值／零值、单位、密码非法值与清空。结果明细检查使用真实任务记录，截图与量测遵守本地／CI 工件政策。
 
-密码解压增加三平台格式与任务回归：AE-1／AE-2、严格结构及认证 EOF、错误重试、不同条目密码、空密码、满队列控制、取消／退出、来源变化、旧目标与链接保护。Qt 通过真实 AES 创建、自动打开、密码请求、重试、解压与关闭链路，核对密码输入角色及辅助功能动作。HTML 与 Qt 分别检查中英文、浅深色、多字号、小屏与 DPR，生成记录不含输入密码；原生装饰与系统读屏人工结果继续独立登记。互操作按[密码解压契约](password-extraction.md)及实际 CI 工件记录。
+密码解压增加三平台格式与任务回归：AE-1／AE-2、严格结构及认证 EOF、错误重试、不同条目密码、空密码、满队列控制、取消／退出、来源变化、旧目标与链接保护。Qt 通过真实 AES 创建、自动打开、密码请求、重试、解压与关闭链路，核对密码输入角色及辅助功能动作。Qt CI 检查中英文、浅深色、多字号、小屏与 DPR，HTML 检查可按需本地运行，生成记录不含输入密码；原生装饰与系统读屏人工结果继续独立登记。互操作按[密码解压契约](password-extraction.md)及实际 CI 工件记录。
 
 WP-11 复用三平台核心和 Qt 门槛，增加 TAR/TAR.GZ 真实创建、浏览及解压，以及 scripts/check-tar-interop.py 的 Python tarfile 与可用系统 tar 双向字节核对。GNU/PAX 长名称、空目录、多 member GZIP、逃逸及特殊项、CRC／截断、配额和取消均由实际测试登记。桌面人工验收不随自动化结果标记通过。
 

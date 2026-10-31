@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """CI instrumentation must preserve failure, source identity and bounded output."""
-import importlib.util
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -11,9 +9,6 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location('ci_timing', ROOT / 'scripts/ci-timing.py')
-timing = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(timing)
 
 
 class TimingTests(unittest.TestCase):
@@ -22,23 +17,6 @@ class TimingTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(dir=parent);self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.assertTrue(self.root.resolve().is_relative_to(parent.resolve()))
-
-    def test_failed_and_successful_commands_keep_original_status(self):
-        target = self.root / 'timing.json'
-        timing.append(target, 'anchors', 'owned.py', 1000000, 3000000, 7, 'a' * 40)
-        timing.append(target, 'body', 'other.py', 3000000, 4000000, 0, 'a' * 40)
-        rows = json.loads(target.read_text(encoding='utf-8'))['commands']
-        self.assertEqual([(r['status'], r['exit_code']) for r in rows], [('failed', 7), ('passed', 0)])
-        self.assertEqual(rows[0]['elapsed_ms'], 2)
-
-    def test_other_source_and_private_labels_cannot_be_mixed(self):
-        target = self.root / 'timing.json'
-        timing.append(target, 'anchors', 'owned.py', 1, 2, 0, 'a' * 40)
-        with self.assertRaisesRegex(ValueError, 'another source'):
-            timing.append(target, 'anchors', 'owned.py', 1, 2, 0, 'b' * 40)
-        for label in ['private/path.py', 'name\nsecret', 'C:\\private.py']:
-            with self.assertRaisesRegex(ValueError, 'label'):
-                timing.append(target, 'anchors', label, 1, 2, 0, 'a' * 40)
 
     def powershell(self, body):
         executable = shutil.which('pwsh')

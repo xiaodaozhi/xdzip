@@ -139,17 +139,9 @@ class PlanTests(unittest.TestCase):
         (self.root / 'scripts/ci-plan-policy.json').write_text('{broken', encoding='utf-8')
         self.assertTrue(self.plan(head)['run_heavy'])
 
-    def test_html_shared_json_and_font_dependencies_are_covered_without_generated_paths(self):
-        import fnmatch
-        for name in ['docs/visual/qt-main-reference.json', 'docs/visual/preflight-reference.json',
-                     'docs/visual/about-reference.json', 'docs/visual/tokens.json', 'design/assets/fonts/owned.ttf',
-                     '.github/actions/cache-inputs/action.yml', 'scripts/ci-timing.sh']:
-            self.assertTrue(any(fnmatch.fnmatchcase(name, pattern) for pattern in self.config['html_inputs']), name)
-        self.assertFalse(any(pattern.startswith(('build/', 'target/', 'dist/')) for pattern in self.config['html_inputs']))
-
     def test_actual_workflow_predicates_respect_cancellation_and_keep_full_failure_fallback(self):
         jobs = [('foundation', 'foundation', 'bridge'), ('foundation', 'foundation', 'rar7-official-reference'),
-                ('qt-components', 'qt', 'native-qt'), ('html-design', 'html', 'visual-anchors')]
+                ('qt-components', 'qt', 'native-qt')]
         for file, scope, job in jobs:
             source = (ROOT / '.github/workflows' / (file + '.yml')).read_text(encoding='utf-8')
             block = re.search(r'^  ' + job + r':\n(.*?)(?=^  [a-z]|\Z)', source, re.M | re.S)[1]

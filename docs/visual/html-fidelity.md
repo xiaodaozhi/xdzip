@@ -69,6 +69,6 @@ python scripts/build-html-body-review.py
 
 顶部离线文件是 `dist/xdzip-header-review.html`；正文离线文件是 `dist/xdzip-body-review.html`。两者均可切换原稿、修复前、修复后、透明叠加和像素差异；正文增加手机区域选择。界面单文件是 `dist/xdzip-hifi-design.html`。
 
-[HTML design review 工作流](../../.github/workflows/html-design.yml) 在相关设计变更时运行顶部和正文检查，生成离线复核并上传实际截图和报告。锚点失败使检查失败；几何通过后仍要看叠加证据。当前主窗口检查不替代其他页面各自的视觉校准，实际验证结果以报告和运行记录为准。
+上述 HTML 检查与离线复核按需在本地运行，不属于桌面产品默认 CI。锚点失败时应检查差异；几何通过后仍要看叠加证据。HTML 主窗口检查不替代其他页面校准，也不替代 Qt 产品与原生桌面验收。
 
-主窗口与菜单的正常密度按[界面规范](design-standard.md)执行。必须同时核验菜单／列表字号比例，并按[验证方法](../qa/README.md)检查实际页面缩放；旧源图坐标一致不能替代这一项。
+主窗口与菜单的正常密度按[界面规范](design-standard.md)执行。必须同时核验 Qt 菜单／列表字号比例；在本地复核 HTML 时按[验证方法](../qa/README.md)检查实际页面缩放，旧源图坐标一致不能替代这一项。

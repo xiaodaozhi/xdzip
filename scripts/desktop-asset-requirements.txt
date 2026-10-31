@@ -1,0 +1,4 @@
+# Static desktop asset and workflow checks; no browser runtime.
+-r ../design/assets/fonts/requirements.txt
+Pillow==12.1.0
+PyYAML==6.0.2
