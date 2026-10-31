@@ -16,7 +16,7 @@ import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
-from deployment_audit import digest
+from deployment_audit import digest, within
 from desktop_product import built_product
 import macos_launch_services as ls
 import rar_mapping_materials
@@ -38,6 +38,57 @@ replace_qt = module('verify-qt-replacement')
 
 
 class DeliveryTests(unittest.TestCase):
+    @unittest.skipUnless(os.environ.get('XDZIP_VENDOR_INTEGRATION') == '1', 'Explicit real Cargo vendor check only')
+    def test_vendor_config_real_cargo(self):
+        base = ROOT/'build'
+        base.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=base, prefix='vendor-test-') as temporary:
+            self.assertTrue(within(Path(temporary), base))
+            output = Path(temporary)/'交付 with spaces'
+            output.mkdir()
+            self.assertTrue(within(output, base))
+            source.write_vendor_config(output)
+            config = (output/'cargo-config.toml').read_text(encoding='utf-8')
+            self.assertIn('directory = "vendor"', config)
+            self.assertNotIn(str(output), config)
+            self.assertTrue(any(path.is_dir() for path in (output/'vendor').iterdir()))
+
+    def test_vendor_config_uses_relative_output_even_with_spaces(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)/'workspace 中文 with spaces'; root.mkdir()
+            output = root/'delivery 路径 with spaces'; output.mkdir()
+            config = ('[source.crates-io]\nreplace-with = "vendored-sources"\n\n'
+                      '[source.vendored-sources]\ndirectory = "vendor"\n')
+            completed = subprocess.CompletedProcess([], 0, stdout=config, stderr='')
+            with patch.object(source, 'ROOT', root), patch.object(source.subprocess, 'run', return_value=completed) as run:
+                source.write_vendor_config(output)
+            args, kwargs = run.call_args
+            self.assertEqual(args[0], ['cargo', 'vendor', '--locked', '--versioned-dirs',
+                                       '--manifest-path', str(root/'Cargo.toml'), 'vendor'])
+            self.assertEqual(kwargs['cwd'], output)
+            self.assertEqual((output/'cargo-config.toml').read_text(encoding='utf-8'), config)
+            self.assertNotIn(str(root), config)
+
+    def test_vendor_config_rejects_absolute_ambiguous_or_missing_paths(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            template = ('[source.crates-io]\nreplace-with = "vendored-sources"\n\n'
+                        '[source.vendored-sources]\ndirectory = "vendor"\n')
+            invalid = [template.replace('"vendor"', '"C:/host/build/vendor"'),
+                       template.replace('"vendor"', '"C:\\\\host\\\\build\\\\vendor"'),
+                       template.replace('"vendor"', '"/host/build/vendor"'),
+                       template.replace('"vendor"', '"../vendor"'),
+                       template.replace('directory = "vendor"\n', ''),
+                       template + 'directory = "vendor"\n',
+                       template + '[source.other]\nreplace-with = "vendored-sources"\n']
+            for index, value in enumerate(invalid):
+                output = root/str(index); output.mkdir()
+                result = subprocess.CompletedProcess([], 0, stdout=value, stderr='')
+                with self.subTest(index=index), patch.object(source.subprocess, 'run', return_value=result):
+                    with self.assertRaisesRegex(ValueError, 'non-relocatable'):
+                        source.write_vendor_config(output)
+                self.assertFalse((output/'cargo-config.toml').exists())
+
     def test_native_source_delivery_retains_icu_without_software_opengl_archives(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'

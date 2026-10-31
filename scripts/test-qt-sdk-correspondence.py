@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Reject false SDK/source matches, unknown patches and leaking build paths."""
+import base64
 import hashlib
+import importlib.util
 import io
 import json
 from pathlib import Path
@@ -9,6 +11,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import qt_sdk_correspondence as audit
+import qt_source_identity as identity
+
+source_spec = importlib.util.spec_from_file_location('source_delivery', audit.ROOT/'scripts/prepare-source-delivery.py')
+source = importlib.util.module_from_spec(source_spec)
+source_spec.loader.exec_module(source)
 
 
 class CorrespondenceTests(unittest.TestCase):
@@ -31,6 +38,10 @@ class CorrespondenceTests(unittest.TestCase):
             archive, declaration, item = self.fixture(Path(temp))
             result = audit.compare_sources(archive, item, declaration)
             self.assertEqual(result['matched_files'], 1)
+            self.assertEqual(result['archive_commit'], item['source_commit'])
+            self.assertEqual(result['archive_marker'], item['source_commit'])
+            self.assertEqual(result['archive_marker_type'], 'commit')
+            self.assertFalse(result['commit_tree_verified'])
             self.assertEqual(result['archive_only_files'], 1)
             self.assertEqual(result['status'], 'matching-declared-files')
             declaration.write_text('FileName: ./cmake/helper.cmake\nFileChecksum: SHA1: '+hashlib.sha1(b'original\r\n').hexdigest()+'\n')
@@ -61,6 +72,108 @@ class CorrespondenceTests(unittest.TestCase):
             item['sha256'] = '0'*64
             with self.assertRaisesRegex(ValueError, 'checksum'):
                 audit.compare_sources(archive, item)
+
+    def tree_fixture(self, root):
+        archive, declaration, item = self.fixture(root)
+        marker = 'a'*40
+        payload = (f'tree {marker}\nparent ' + 'b'*40 + '\n\nOwned fixture\n').encode('ascii')
+        commit = hashlib.sha1(b'commit '+str(len(payload)).encode('ascii')+b'\0'+payload).hexdigest()
+        proof = root/'scripts/qt-source-identity/owned.commit.base64'
+        proof.parent.mkdir(parents=True)
+        proof.write_bytes(base64.b64encode(payload)+b'\n')
+        item.update(source_commit=commit, archive_marker=marker, archive_marker_type='tree',
+                    commit_object='scripts/qt-source-identity/owned.commit.base64')
+        return archive, declaration, item, proof, payload
+
+    def test_tree_marker_binds_commit_across_both_collectors(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive, declaration, item, proof, payload = self.tree_fixture(root)
+            with patch.object(identity, 'ROOT', root):
+                result = audit.compare_sources(archive, item, declaration)
+                self.assertEqual(result['archive_commit'], item['source_commit'])
+                self.assertEqual(result['archive_marker'], item['archive_marker'])
+                self.assertEqual(result['archive_marker_type'], 'tree')
+                self.assertTrue(result['commit_tree_verified'])
+                self.assertNotEqual(result['archive_commit'], result['archive_marker'])
+                self.assertEqual(source.archive_source(item, root), archive)
+                output = root/'delivery'; output.mkdir()
+                source.collect_source_identity_proofs(output, [item])
+                self.assertEqual((output/item['commit_object']).read_bytes(), proof.read_bytes())
+                with self.assertRaisesRegex(ValueError, 'Duplicate'):
+                    source.collect_source_identity_proofs(output, [item])
+
+                for field, value in [('source_commit', 'b'*40), ('archive_marker', 'c'*40),
+                                     ('archive_marker_type', 'commit'), ('archive_marker_type', 'unknown')]:
+                    changed = dict(item, **{field: value})
+                    with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                        audit.compare_sources(archive, changed, declaration)
+                    with self.assertRaises(ValueError):
+                        source.archive_source(changed, root)
+                proof.write_bytes(base64.b64encode(payload+b'altered'))
+                with self.assertRaisesRegex(ValueError, 'proof mismatch'):
+                    audit.compare_sources(archive, item, declaration)
+                with self.assertRaisesRegex(ValueError, 'proof mismatch'):
+                    source.archive_source(item, root)
+                proof.write_bytes(b'not valid base64!')
+                with self.assertRaisesRegex(ValueError, 'Invalid Git commit object'):
+                    audit.compare_sources(archive, item, declaration)
+                proof.write_bytes(b'A'*16385)
+                with self.assertRaisesRegex(ValueError, 'too large'):
+                    audit.compare_sources(archive, item, declaration)
+                proof.write_bytes(base64.b64encode(payload)+b'\n')
+                with tarfile.open(archive, 'w:xz') as changed_archive:
+                    for name, content in {'.tag': b'b'*40, 'cmake/helper.cmake': b'original\n'}.items():
+                        member = tarfile.TarInfo('owned-src/'+name)
+                        member.size = len(content)
+                        changed_archive.addfile(member, io.BytesIO(content))
+                item['sha256'] = audit.digest(archive)
+                with self.assertRaisesRegex(ValueError, 'marker mismatch'):
+                    audit.compare_sources(archive, item, declaration)
+                with self.assertRaisesRegex(ValueError, 'marker mismatch'):
+                    source.archive_source(item, root)
+
+    def test_commit_object_path_rejects_escape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            _, _, item, _, _ = self.tree_fixture(root)
+            for name in ['../escape', '/absolute', 'scripts/qt-source-identity/../../escape',
+                         'scripts/qt-source-identity-other/file', 'C:/outside', 'scripts\\outside']:
+                with self.subTest(name=name), self.assertRaises(ValueError):
+                    identity.source_identity(dict(item, commit_object=name), root)
+
+    def test_commit_object_parent_symlink_cannot_escape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            outside = root/'outside'; outside.mkdir()
+            scripts = root/'scripts'; scripts.mkdir()
+            try:
+                (scripts/'qt-source-identity').symlink_to(outside, target_is_directory=True)
+            except OSError as error:
+                if getattr(error, 'winerror', None) != 1314:
+                    raise
+                self.skipTest('Native symlink creation needs Windows privilege')
+            (outside/'proof.base64').write_bytes(b'YQ==')
+            item = {'source_commit': 'a'*40, 'archive_marker': 'b'*40,
+                    'archive_marker_type': 'tree', 'commit_object': 'scripts/qt-source-identity/proof.base64'}
+            with self.assertRaisesRegex(ValueError, 'escapes'):
+                identity.source_identity(item, root)
+
+    def test_commit_object_delivery_symlink_cannot_escape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            _, _, item, _, _ = self.tree_fixture(root)
+            output = root/'delivery'; output.mkdir()
+            outside = root/'outside'; outside.mkdir()
+            try:
+                (output/'scripts').symlink_to(outside, target_is_directory=True)
+            except OSError as error:
+                if getattr(error, 'winerror', None) != 1314:
+                    raise
+                self.skipTest('Native symlink creation needs Windows privilege')
+            with patch.object(identity, 'ROOT', root), self.assertRaisesRegex(ValueError, 'escapes'):
+                source.collect_source_identity_proofs(output, [item])
+            self.assertEqual(list(outside.iterdir()), [])
 
     def test_source_declarations_reject_escape_and_duplicates(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -115,6 +228,11 @@ class CorrespondenceTests(unittest.TestCase):
         config = json.loads((audit.ROOT/'scripts/corresponding-sources.json').read_text())
         for item in config['archives']:
             self.assertRegex(item['source_commit'], r'^[a-f0-9]{40}$')
+            result = identity.source_identity(item)
+            if item['module'] == 'qtdeclarative':
+                self.assertEqual(result['source_commit'], '75534f3e7fff24ed7ccb364e2ed9950a73da879f')
+                self.assertEqual(result['archive_marker'], '0a8139c574fe150aba92d5f2484a8f3fdb774977')
+                self.assertTrue(result['commit_tree_verified'])
         for item in config['sdk_patches']:
             self.assertEqual(audit.digest(audit.ROOT/item['patch']), item['patch_sha256'])
 
