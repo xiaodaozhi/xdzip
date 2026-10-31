@@ -144,11 +144,11 @@ def audited_qml_aliases(root, audit):
 def sdk_source_for_path(sdk, relative, aliases):
     """Return one bounded SDK path; never guess when QML aliases are ambiguous."""
     direct = sdk_relative(relative)
-    if direct and bounded(sdk, direct).is_file():
-        return bounded(sdk, direct).resolve().relative_to(sdk.resolve()).as_posix()
-    if not relative.startswith('Contents/PlugIns/quick/'):
-        return None
     candidates = set()
+    if direct and bounded(sdk, direct).is_file():
+        candidates.add(bounded(sdk, direct).resolve().relative_to(sdk.resolve()).as_posix())
+    if not relative.startswith('Contents/PlugIns/quick/'):
+        return next(iter(candidates), None)
     for source in aliases.get(relative, set()):
         if not source or not bounded(sdk, source).is_file():
             return None

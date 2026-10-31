@@ -95,6 +95,12 @@ class MacAttributionTests(unittest.TestCase):
             (sdk/other).parent.mkdir(parents=True); (sdk/other).write_bytes(image())
             with self.assertRaisesRegex(ValueError, 'Ambiguous'):
                 sdk_source_for_path(sdk, relative, {relative: {source, other}})
+            direct = 'plugins/quick/libeffectsplugin.dylib'
+            (sdk/direct).parent.mkdir(parents=True); (sdk/direct).write_bytes(image())
+            self.assertEqual(sdk_source_for_path(sdk, relative, {}), direct)
+            with self.assertRaisesRegex(ValueError, 'Ambiguous'):
+                sdk_source_for_path(sdk, relative, {relative: {source}})
+            self.assertIsNone(sdk_source_for_path(sdk, relative, {relative: {'qml/missing/plugin.dylib'}}))
 
     def test_qml_link_provenance_round_trip_and_tampering(self):
         with tempfile.TemporaryDirectory() as temp:
