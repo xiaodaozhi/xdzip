@@ -12,6 +12,7 @@ import re
 import subprocess
 import tarfile
 from deployment_audit import digest, within
+from qt_source_identity import source_identity
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -84,9 +85,13 @@ def compare_sources(archive_path, item, declaration=None):
             if name not in expected:
                 archive_only += 1
         absent = sorted(set(expected)-seen)
-    if found_tag != item['source_commit']:
-        raise ValueError('Pinned source commit marker mismatch')
-    return {'module': item['module'], 'archive_sha256': item['sha256'], 'archive_commit': found_tag,
+    identity = source_identity(item)
+    if found_tag != identity['archive_marker']:
+        raise ValueError('Pinned source commit or tree marker mismatch')
+    return {'module': item['module'], 'archive_sha256': item['sha256'],
+            'archive_commit': identity['source_commit'], 'archive_marker': found_tag,
+            'archive_marker_type': identity['archive_marker_type'],
+            'commit_tree_verified': identity['commit_tree_verified'],
             'sdk_source_spdx_sha256': digest(declaration) if declaration else None,
             'matched_files': len(matched), 'different_files': different, 'sdk_only_files': absent,
             'exact_crlf_transformation_files': sum(d['exact_crlf_transformation'] for d in different),
@@ -220,7 +225,7 @@ def collect(prefix, cache, fetch=False):
         raise ValueError('SDK configuration inventory missing')
     patches = [patch_status(prefix, item, cache/next(a['file'] for a in config['archives'] if a['module'] == item['module'])) for item in config.get('sdk_patches', [])
                if (prefix/item['sdk_path']).exists()]
-    return {'schema_version': 1, 'status': 'evidence-collected-not-build-equivalence',
+    return {'schema_version': 2, 'status': 'evidence-collected-not-build-equivalence',
             'qt_version': config['qt_version'],
             'revision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
             'source_dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT).strip()),
@@ -228,7 +233,7 @@ def collect(prefix, cache, fetch=False):
             'modules': modules, 'installed_configuration': inputs,
             'consumer_patches': patches,
             'license_text_provenance': json.loads((ROOT/'scripts/qt-license-sources.json').read_text())['source_commits'],
-            'license_provenance_scope': 'License text retrieval commits only; archive commits are recorded per module.',
+            'license_provenance_scope': 'License text retrieval commits only; source commits and archive markers are recorded per module.',
             'gaps': ['SDK source SPDX covers declared files only; omitted/generated files and source changes require review.',
                      'Installed configuration and upstream configure comments do not include the full original CMake cache, environment or toolchain inputs.',
                      'SDK metadata architecture is the upstream configure host/default; it does not prove the actual runtime binary slices.',

@@ -16,6 +16,7 @@ import sys
 import tarfile
 from deployment_audit import ROOT, digest, within
 from qt_sdk_correspondence import replay_patch, sanitize
+from qt_source_identity import source_identity
 
 COMMON = ['-DCMAKE_BUILD_TYPE=Release', '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
           '-DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF', '-DBUILD_WITH_PCH=OFF', '-DWARNINGS_ARE_ERRORS=OFF']
@@ -123,7 +124,8 @@ def main():
         run(['cmake', '--build', build, '--parallel', str(args.parallel)], log)
         run(['cmake', '--install', build], log)
         commands.append({'module': name, 'configure_flags': [sanitize(x.replace(str(install), '<qt-install>')) for x in flags]})
-        records.append({'module': name, 'source_commit': items[name]['source_commit'],
+        identity = source_identity(items[name])
+        records.append({'module': name, **identity,
                         'archive_sha256': items[name]['sha256'],
                         'cmake_cache_sha256': digest(build/'CMakeCache.txt')})
         print('Source-built and installed '+name, flush=True)

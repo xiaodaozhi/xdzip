@@ -13,7 +13,10 @@
       "file": "qtdeclarative-everywhere-src-6.8.2.tar.xz",
       "url": "https://download.qt.io/archive/qt/6.8/6.8.2/submodules/qtdeclarative-everywhere-src-6.8.2.tar.xz",
       "sha256": "144d876adc8bb55909735143e678d1e24eadcd0a380a0186792d88b731346d56",
-      "source_commit": "0a8139c574fe150aba92d5f2484a8f3fdb774977"
+      "source_commit": "75534f3e7fff24ed7ccb364e2ed9950a73da879f",
+      "archive_marker": "0a8139c574fe150aba92d5f2484a8f3fdb774977",
+      "archive_marker_type": "tree",
+      "commit_object": "scripts/qt-source-identity/qtdeclarative-6.8.2.commit.base64"
     },
     {
       "module": "qtsvg",
