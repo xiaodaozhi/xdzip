@@ -150,6 +150,8 @@ class MacAttributionTests(unittest.TestCase):
             try:
                 alias.symlink_to(os.path.relpath(target, alias.parent))
             except OSError as error:
+                if os.name != 'nt' or getattr(error, 'winerror', None) != 1314:
+                    raise
                 self.skipTest(f'Creating a native symlink is unavailable: {error.__class__.__name__}')
             record = deployment_record(root, sdk, audit)
             self.assertEqual(next(r for r in record['sdk_files'] if r['path'] == audit['files'][0]['path'])['sdk_path'], source)
