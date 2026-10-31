@@ -21,6 +21,8 @@ SDK 中实际文件可能与上游构建 SPDX 中的 SHA-1 不同，例如后续
 
 专用 macOS 打包流程在最终签名应用仍存活时生成部署关联，按精确资源字节或 arm64 section、UUID、导入版本对应 SDK，并将该报告加入实际文件 SBOM。比较不覆盖签名、load-command 布局及 LINKEDIT，范围与原生运行库专属通知见[原生运行库来源与通知](native-runtime-materials.md)。普通 SDK 模式不据此获得部署结论。
 
+对于从 QML 目录迁移至 `Contents/PlugIns/quick/` 的插件，部署关联允许使用已审计的包内 QML 符号链接定位唯一 SDK 输入。生成和消费记录时均重新核对真实链接、审计目标及文件摘要，再执行相同的字节或 Mach-O 比较；来源缺失保留未验证，多个不同来源或链接变更直接拒绝。不能仅凭同名文件提升归属证据，也不消除上游 SDK 摘要差异或许可审查缺口。
+
 Rust 继续保存完整宿主构建图，并额外从实际静态库入口 xdzip-qt-bridge 沿普通依赖边生成 runtime candidates，排除 build、dev 和 proc-macro 工具及其依赖。这是潜在运行时输入，不能证明每个包的机器码最终保留；链接器裁剪、原生 C/C++ 与编译器运行库还需进一步核验。
 
 ## 执行与交付

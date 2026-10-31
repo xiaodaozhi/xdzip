@@ -120,6 +120,7 @@ def attribute(audit, root, sdk, deployment=None):
     for relative in index:
         by_name.setdefault(PurePosixPath(relative).name, []).append(relative)
     files, seeds, gaps = [], set(), []
+    macos_aliases = None
     for item in audit['files'] + audit['external_files']:
         external = item in audit['external_files']
         relative = item['path']
@@ -133,8 +134,10 @@ def attribute(audit, root, sdk, deployment=None):
             if p['artifact_sha256'] != item['sha256'] or digest(bounded(sdk, source)) != p['sdk_sha256']:
                 raise ValueError('Stale deployment copy provenance')
             if audit['platform'] == 'macos':
-                from macos_attribution import compare_images, sdk_relative
-                expected = sdk_relative(relative)
+                from macos_attribution import audited_qml_aliases, compare_images, sdk_source_for_path
+                if macos_aliases is None:
+                    macos_aliases = audited_qml_aliases(root, audit)
+                expected = sdk_source_for_path(sdk, relative, macos_aliases)
                 if not expected or bounded(sdk, source).resolve() != bounded(sdk, expected).resolve():
                     raise ValueError('Unexpected macOS SDK ownership path')
                 if p.get('comparison') == 'sdk-byte-identity':
