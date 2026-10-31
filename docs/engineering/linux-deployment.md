@@ -43,6 +43,8 @@ python3 scripts/desktop.py verify --kind all
 4. 宿主清除开发变量后，以 deployed 模式核验全部打包 ELF；不允许回退 SDK。实际文件 SBOM 保持同一版本／提交身份并通过官方 schema。
 5. 在相同无 SDK 镜像的新进程中启用网络，以隔离的 `XDZIP_SETTINGS_PATH` 执行产品 `--update-probe`，实际请求 GitHub HTTPS。必须报告 OpenSSL 后端可用并完成更新检查，单独保留 `.https.json` 与 `.https.log`；网络、证书或 TLS 失败均阻止验证通过。
 
+HTTPS 探针返回非零时，若已生成结构化结果，仍将结果和退出码保留在 `.https.log`；报告缺失、无效或容器前置条件失败时记录明确原因。诊断输出不改变失败状态，不以重试或空报告替代成功检查。
+
 linux-runtime.json 记录实际事件与可执行文件 SHA-256；Xvfb／Qt Quick 软件渲染仅用于运行闭环，不能证明物理 GPU、中文候选窗口、真实读屏或完整桌面安装通过。
 
 ## 下载交付与剩余门槛

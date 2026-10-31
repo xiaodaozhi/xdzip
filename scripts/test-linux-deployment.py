@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Boundary tests for Linux runtime planning and isolated product event evidence."""
 import json
+import subprocess
 import tarfile
 import sys
 from pathlib import Path
@@ -8,11 +9,71 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from deploy_linux import qml_roots, relative_rpath, runtime_origin, tls_requirements, TLS_PLUGIN
-from verify_linux_runtime import check_events, check_https
+from verify_linux_runtime import check_events, check_https, main as verify_runtime_main
 from package_linux import archive_payload
 
 
 class LinuxDeploymentTests(unittest.TestCase):
+    def test_runtime_keeps_https_failure_log_and_exit_code(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);payload=root/'payload';(payload/'share').mkdir(parents=True)
+            (payload/'share/deployment.json').write_text(json.dumps({'system_packages':['libssl3t64']}))
+            fixture=root/'owned.zip';fixture.touch();output=root/'review/linux-runtime.json'
+            events=[{'event':'first_frame','runtime_available':True},
+                    {'event':'open_ready','records':100000},
+                    {'event':'cancel_requested','pending':True},
+                    {'event':'cancel_settled','cancelled':True}, {'event':'quit_requested'}]
+            runtime='\n'.join('XDZIP_PROBE '+json.dumps(event) for event in events)
+            report={'ssl_supported':True,'ssl_backend':'openssl','state':'error','error':'network'}
+            https='XDZIP_UPDATE_HTTPS '+json.dumps(report)+'\n'
+            completed=[subprocess.CompletedProcess([],0,stdout='built',stderr=''),
+                       subprocess.CompletedProcess([],0,stdout=runtime,stderr=''),
+                       subprocess.CompletedProcess([],13,stdout=https,stderr='probe failed (exit 13)\n')]
+            args=['verify_linux_runtime.py','--root',str(payload),'--fixture',str(fixture),'--output',str(output)]
+            with patch.object(sys,'argv',args),patch('verify_linux_runtime.subprocess.run',side_effect=completed) as run:
+                with self.assertRaisesRegex(SystemExit,'exit 13'):verify_runtime_main()
+            self.assertEqual(output.with_suffix('.https.log').read_text(),https+'probe failed (exit 13)\n')
+            self.assertFalse(output.exists())
+            self.assertFalse(output.with_suffix('.https.json').exists())
+            self.assertTrue(any('verify-https-probe.sh:/verify-https-probe.sh:ro' in arg
+                                for arg in run.call_args_list[2].args[0]))
+
+    @unittest.skipIf(sys.platform=='win32','POSIX shell probe runs on Unix')
+    def test_https_probe_preserves_failures_and_never_accepts_missing_report(self):
+        helper=Path(__file__).resolve().parents[1]/'apps/desktop/packaging/linux/verify-https-probe.sh'
+        self.assertTrue(helper.is_file())
+        good={'ssl_supported':True,'ssl_backend':'openssl','state':'up_to_date','error':''}
+        failed={'ssl_supported':True,'ssl_backend':'openssl','state':'error','error':'network'}
+        cases=[('success',good,0,0),('failed-with-report',failed,13,13),
+               ('failed-without-report',None,13,13),('success-without-report',None,0,1),
+               ('malformed-report','not-json',0,1),('malformed-failed-report','not-json',13,13)]
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            for name,report,probe_exit,expected_exit in cases:
+                with self.subTest(name=name):
+                    fake=root/(name+'.sh');target=root/(name+'.json')
+                    script='#!/bin/sh\ntest "$1" = "--update-probe" || exit 91\n'
+                    if report is not None:
+                        content=json.dumps(report) if isinstance(report,dict) else report
+                        script+="cat > \"$2\" <<'OWNED_REPORT'\n"+content+"\nOWNED_REPORT\n"
+                    fake.write_text(script+f'exit {probe_exit}\n');fake.chmod(0o755)
+                    result=subprocess.run(['sh','-c','. "$1"; run_https_probe "$2" "$3"',
+                                           'https-test',str(helper),str(fake),str(target)],
+                                          capture_output=True,text=True,check=False)
+                    self.assertEqual(result.returncode,expected_exit, result.stdout+result.stderr)
+                    if isinstance(report,dict):
+                        self.assertIn('XDZIP_UPDATE_HTTPS ',result.stdout)
+                        actual=json.loads(result.stdout.split('XDZIP_UPDATE_HTTPS ',1)[1])
+                        self.assertEqual(actual,report)
+                    else:
+                        self.assertNotIn('XDZIP_UPDATE_HTTPS ',result.stdout)
+                    if report is None:
+                        self.assertIn('did not write a report',result.stderr)
+                    if name in ('failed-with-report','malformed-failed-report'):
+                        self.assertIn('exit 13',result.stderr)
+                    if name=='failed-with-report':
+                        with self.assertRaisesRegex(ValueError,'GitHub'):check_https(result.stdout)
+
     def test_https_requires_backend_system_ssl_and_nonempty_ca_store(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);sdk=root/'sdk'
