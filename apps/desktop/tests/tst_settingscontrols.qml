@@ -94,7 +94,8 @@ Item {
             Ui.Theme.dark = data.dark;
             const field = createTemporaryObject(fieldComponent, surface, {x: 10, y: 100});
             const combo = createTemporaryObject(editableComponent, surface, {x: 10, y: 150});
-            const toolbar = createTemporaryObject(toolbarComponent, surface, {x: 0, y: 200});
+            // Keep the search field inside the captured physical-pixel region at DPR 2.
+            const toolbar = createTemporaryObject(toolbarComponent, surface, {x: -300, y: 200});
             verify(field && combo && toolbar);
             const editor = combo.contentItem;
             const search = findChild(toolbar, "archiveSearch");
@@ -117,15 +118,16 @@ Item {
                        " start=" + start.x + " end=" + end.x + " width=" + input.width);
                 keyClick(Qt.Key_A, Qt.ControlModifier);
                 compare(input.selectedText, "abcdef");
-                // Capture composite controls through their parent so the selected
-                // glyphs are included on both hardware and software backends.
-                const captureItem = input === editor ? combo : (input === search ? toolbar : input);
-                verify(waitForRendering(captureItem));
-                const image = grabImage(captureItem);
-                const origin = input.mapToItem(captureItem, 0, 0);
-                const pixelScale = image.width / captureItem.width;
+                // QtTest captures physical pixels but clips to the logical item bounds.
+                // Grab the shared fixture and convert the input rectangle at its real DPR.
+                verify(waitForRendering(surface));
+                const image = grabImage(surface);
+                const origin = input.mapToItem(surface, 0, 0);
+                const pixelScale = Screen.devicePixelRatio;
                 const left = Math.max(1, Math.floor((origin.x + input.positionToRectangle(0).x + inset) * pixelScale));
                 const right = Math.min(image.width - 2, Math.ceil((origin.x + input.positionToRectangle(6).x + inset) * pixelScale));
+                const top = Math.max(0, Math.floor(origin.y * pixelScale));
+                const bottom = Math.min(image.height - 1, Math.ceil((origin.y + input.height) * pixelScale));
                 const accent = Ui.Theme.accent;
                 function isAccent(x, y) {
                     return Math.abs(image.red(x, y) - Math.round(accent.r * 255)) < 5 &&
@@ -134,7 +136,7 @@ Item {
                 }
                 let backgroundPixels = 0;
                 let whiteGlyphPixels = 0;
-                for (let y = 1; y < image.height - 1; ++y) {
+                for (let y = top; y <= bottom; ++y) {
                     for (let x = left; x <= right; ++x) {
                         if (isAccent(x, y)) ++backgroundPixels;
                         if (image.red(x, y) > 185 && image.green(x, y) > 185 && image.blue(x, y) > 185 &&
