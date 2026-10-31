@@ -65,9 +65,10 @@ def main():
         '--security-opt=no-new-privileges','--user','1000:1000','--tmpfs','/tmp:exec,mode=1777',
         '--volume',str(payload)+':/opt/xdzip runtime:ro',
         '--volume',str(ROOT/'apps/desktop/packaging/linux/verify-https.sh')+':/verify-https.sh:ro',
+        '--volume',str(ROOT/'apps/desktop/packaging/linux/verify-https-probe.sh')+':/verify-https-probe.sh:ro',
         image,'/bin/sh','/verify-https.sh'],capture_output=True,text=True,timeout=80)
     args.output.with_suffix('.https.log').write_text(https.stdout+https.stderr)
-    if https.returncode:raise SystemExit('SDK-free HTTPS update request failed; see HTTPS log')
+    if https.returncode:raise SystemExit(f'SDK-free HTTPS update request failed (exit {https.returncode}); see HTTPS log')
     try:https_record=check_https(https.stdout)
     except ValueError as error:raise SystemExit(str(error))
     args.output.with_suffix('.https.json').write_text(json.dumps(https_record,indent=2)+'\n')
