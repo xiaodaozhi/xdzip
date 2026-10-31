@@ -36,6 +36,19 @@ def gh(*args, capture=False):
     return subprocess.run(['gh', *map(str, args)], check=True, text=True, encoding='utf-8', capture_output=capture).stdout
 
 
+def require_release_state(state, tag, *, draft):
+    if (not isinstance(state, dict) or state.get('tagName') != tag or
+            state.get('isDraft') is not draft or state.get('isPrerelease') is not True):
+        phase = 'draft' if draft else 'public'
+        raise ValueError(f'{phase} release state for {tag} must be the expected prerelease; '
+                         'a public release may already exist and requires owner review')
+
+
+def read_release_state(tag, repository):
+    return json.loads(gh('release', 'view', tag, '--repo', repository, '--json',
+                         'tagName,isDraft,isPrerelease,assets,body', capture=True))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory', type=Path)
@@ -58,16 +71,18 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     notes = work/'notes.md'
     notes.write_text(reviewed, encoding='utf-8')
-    query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json', 'isDraft,assets,body'],
+    query = subprocess.run(['gh', 'release', 'view', args.tag, '--repo', args.repository, '--json',
+                            'tagName,isDraft,isPrerelease,assets,body'],
                            capture_output=True, text=True, encoding='utf-8')
     if query.returncode:
         gh('release', 'create', args.tag, '--repo', args.repository, '--verify-tag', '--draft', '--prerelease',
            '--title', 'xdzip '+version['display_version'], '--notes-file', notes)
-        state = dict(isDraft=True, assets=[], body=reviewed)
+        state = read_release_state(args.tag, args.repository)
     else:
         state = json.loads(query.stdout)
-    if not state['isDraft']:
+    if isinstance(state, dict) and state.get('isDraft') is False:
         raise ValueError('Public release is immutable; publish a new version for revisions')
+    require_release_state(state, args.tag, draft=True)
     if comparable_notes(state['body']) != comparable_notes(reviewed):
         raise ValueError('Draft notes differ from the reviewed file; reconcile them explicitly before publishing')
     if args.draft_only: return
@@ -102,6 +117,7 @@ def main():
         validate(json.loads((destination/'release.json').read_text()), destination)
         if phase == 'draft-download':
             gh('release', 'edit', args.tag, '--repo', args.repository, '--draft=false', '--prerelease', '--latest=false', '--notes-file', notes)
+        require_release_state(read_release_state(args.tag, args.repository), args.tag, draft=False)
     print('Published and downloaded all assets with matching hashes: '+args.tag)
 
 

@@ -8,6 +8,8 @@
 
 说明按平台、实际提交和证据记录中英文验收边界，已有人工验收与未执行项分别保留；阶段进展仍由 issue 管理。初建草稿和公开使用同一份说明快照。草稿重跑若发现其正文与已审阅文件不同，会在上传／删除资产前停止，要求显式对齐输入；公开版本继续拒绝重跑替换资产。`CHANGELOG.md` 只归档实际公开版本，本地开发交付不补造为公开版本史。
 
+发布器在改动草稿资产前回读 GitHub 标签、草稿状态和预发布标记；公开操作后及公开附件复核结束后再次回读，只有目标标签已公开且仍标记为预发布才报告成功。公开后的核对失败时，版本可能已经对外可见，脚本停止并要求所有者处理，不自动撤回、修改或替换已公开版本及资产。
+
 冻结版本标签前可手动以候选提交 SHA 和 `validate_only=true` 运行同一流水线，实际构建、部署、执行必要的 Mac ad-hoc 完整性签名、核验并汇总附件，保留 release-validation 工件，不创建草稿或公开 Release。验证模式不向汇总步骤传递更新签名密钥或 key ID；汇总器显式禁用更新签名，即使调用环境含有密钥也不使用，并拒绝残留的签名附件或冲突参数。正式发布仍使用版本标签和强制更新签名，不能以提交 SHA 冒充标签。此演练避免首次打包错误发生在不可变标签创建之后。
 
 English: Validation-only assembly receives no update-signing keys or key ID from the workflow and explicitly disables update signing even if the caller environment contains keys. It rejects stale signing attachments and conflicting signing requirements. Production publication still requires the version tag and authenticated update signatures; macOS ad-hoc integrity signing remains separate.
@@ -63,3 +65,5 @@ The separate production-update acceptance workflow is manually dispatched from m
 Each Windows deployment verification uses a fresh test copy and preserves prior evidence. Repeated verification never reuses or deletes an existing harness, and test DLLs stay outside the product runtime.
 
 Release notes come from a reviewed, version-specific Markdown file with matching version/build metadata. Offline notes preflight runs before native builds. Draft creation, retries and publication use the same reviewed body; a changed draft stops publication before any asset mutation. Manual acceptance remains scoped to the recorded platform and commit, in both languages. Missing notes for a new version never inherit old acceptance. Only actually published versions are archived in the changelog.
+
+Before changing draft assets, the publisher reads back the GitHub tag, draft state and prerelease flag. It checks them again after publication and after public attachment verification, and reports success only for the expected public prerelease. A failed public-state check may leave a release already visible; the script stops for owner review and never automatically withdraws, edits or replaces the public release or its assets.
