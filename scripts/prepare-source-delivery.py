@@ -12,6 +12,7 @@ from deployment_audit import digest, within
 from native_runtime_materials import configuration, fetch
 from sparkle_bundle import collect_sources as collect_sparkle_sources
 from rar_mapping_materials import collect as collect_rar_mapping_materials
+from qt_source_identity import commit_object_path, source_identity
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,10 +39,28 @@ def archive_source(item, cache):
                             '..' in Path(name).parts for name in names):
             raise ValueError('Unexpected source archive layout')
         if 'source_commit' in item:
+            identity = source_identity(item)
             tag = archive.getmember(prefix+'/.tag')
-            if not tag.isfile() or archive.extractfile(tag).read().decode('ascii').strip() != item['source_commit']:
-                raise ValueError('Pinned source commit marker mismatch')
+            if not tag.isfile() or archive.extractfile(tag).read().decode('ascii').strip() != identity['archive_marker']:
+                raise ValueError('Pinned source commit or tree marker mismatch')
     return target
+
+
+def collect_source_identity_proofs(output, items):
+    for item in items:
+        if item.get('archive_marker_type') != 'tree':
+            continue
+        source_identity(item)
+        proof = commit_object_path(item)
+        destination = output / item['commit_object']
+        parents = [output.joinpath(*Path(item['commit_object']).parts[:index])
+                   for index in range(1, len(Path(item['commit_object']).parts) + 1)]
+        if any(part.is_symlink() for part in parents) or not within(destination, output):
+            raise ValueError('Git commit object proof destination escapes output')
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists() or destination.is_symlink():
+            raise ValueError('Duplicate Git commit object proof destination')
+        shutil.copy2(proof, destination)
 
 
 def collect_native_sources(output, cache):
@@ -77,6 +96,7 @@ def rebuild_instructions():
 2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
    qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
+   scripts/qt-source-identity/ 保留固定 Git 提交对象输入，用于离线验证源码标记与提交的关系；\n   它不证明归档覆盖整个 Git 树或 SDK 由该树重建。
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
@@ -184,6 +204,7 @@ def main():
     _, rar_mapping_record = collect_rar_mapping_materials(output)
     materials.append(rar_mapping_record)
     materials.append(collect_native_sources(output, ROOT/'build/native-source-cache'))
+    collect_source_identity_proofs(output, all_archives)
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'
     patch_dir.mkdir()
