@@ -234,15 +234,29 @@ class ReleaseNotesTests(unittest.TestCase):
         self.notes.write_text('<!-- xdzip-release {"version":"0.1.0-alpha.7","build":20} -->\n\n'+self.body,
                               encoding='utf-8')
         self.commands = []
+        self.draft = dict(tagName='v0.1.0-alpha.7', isDraft=True, isPrerelease=True,
+                          assets=[], body=self.body)
 
-    def invoke(self, *arguments, state=None, source=None, use_override=True):
+    def invoke(self, *arguments, state=None, source=None, use_override=True,
+               created_state=None, public_state=None, state_after_public_download=None):
+        current = copy.deepcopy(state)
+        downloads = 0
         def command(args, **kwargs):
+            nonlocal current, downloads
             self.commands.append(args)
             if args[:3] == ['gh', 'release', 'view']:
-                return subprocess.CompletedProcess(args, 1 if state is None else 0,
-                    '' if state is None else json.dumps(state))
+                return subprocess.CompletedProcess(args, 1 if current is None else 0,
+                    '' if current is None else json.dumps(current))
+            if args[:3] == ['gh', 'release', 'create']:
+                current = copy.deepcopy(self.draft if created_state is None else created_state)
+            if args[:3] == ['gh', 'release', 'edit']:
+                current = copy.deepcopy(public_state if public_state is not None else
+                                        dict(self.draft, isDraft=False))
             if args[:3] == ['gh', 'release', 'download']:
+                downloads += 1
                 shutil.copytree(source, Path(args[args.index('--dir')+1]), dirs_exist_ok=True)
+                if downloads == 2 and state_after_public_download is not None:
+                    current = copy.deepcopy(state_after_public_download)
             return subprocess.CompletedProcess(args, 0, '')
         with patch.object(PUBLISH, 'ROOT', self.root), patch.object(PUBLISH.runpy, 'run_path',
                 return_value={'version_info': lambda: self.version}), patch.object(PUBLISH.subprocess, 'run', side_effect=command), \
@@ -288,13 +302,14 @@ class ReleaseNotesTests(unittest.TestCase):
         create_command = next(c for c in self.commands if c[:3] == ['gh', 'release', 'create'])
         snapshot = Path(create_command[create_command.index('--notes-file')+1])
         self.assertEqual(snapshot.read_text(encoding='utf-8'), self.body)
+        self.assertIn('--prerelease', create_command)
         self.commands.clear()
-        self.invoke(*arguments, state=dict(isDraft=True, assets=[], body=self.body.replace('\n', '\r\n')))
+        self.invoke(*arguments, state=dict(self.draft, body=self.body.replace('\n', '\r\n')))
         self.assertEqual(len(self.commands), 1)
 
     def test_changed_draft_and_public_release_are_never_silently_overwritten(self):
-        for state in [dict(isDraft=True, assets=[], body='Manually reviewed replacement'),
-                      dict(isDraft=False, assets=[], body=self.body)]:
+        for state in [dict(self.draft, body='Manually reviewed replacement'),
+                      dict(self.draft, isDraft=False)]:
             with self.subTest(state=state):
                 self.commands.clear()
                 with self.assertRaises(ValueError):
@@ -302,6 +317,43 @@ class ReleaseNotesTests(unittest.TestCase):
                 self.assertEqual(len(self.commands), 1)
 
     def test_final_publication_uses_same_notes_and_verifies_both_downloads(self):
+        source = self.make_packages()
+        self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--directory', str(source),
+                    state=self.draft, source=source)
+        edits = [c for c in self.commands if c[:3] == ['gh', 'release', 'edit']]
+        self.assertEqual(len(edits), 1)
+        self.assertEqual(Path(edits[0][edits[0].index('--notes-file')+1]).read_text(encoding='utf-8'), self.body)
+        self.assertIn('--prerelease', edits[0])
+        self.assertIn('--latest=false', edits[0])
+        self.assertEqual(sum(c[:3] == ['gh', 'release', 'download'] for c in self.commands), 2)
+        self.assertEqual(sum(c[:3] == ['gh', 'release', 'view'] for c in self.commands), 3)
+
+    def test_non_prerelease_draft_is_rejected_before_asset_changes(self):
+        for state in [dict(self.draft, isPrerelease=False), dict(self.draft, isPrerelease=None),
+                      dict(self.draft, isPrerelease='true'), dict(self.draft, tagName='v0.1.0-alpha.6')]:
+            with self.subTest(state=state):
+                self.commands.clear()
+                with self.assertRaisesRegex(ValueError, 'prerelease'):
+                    self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--draft-only', state=state)
+                self.assertFalse(any(c[:3] in (['gh', 'release', 'delete-asset'], ['gh', 'release', 'upload'],
+                                              ['gh', 'release', 'edit']) for c in self.commands))
+
+    def test_new_draft_state_is_checked_instead_of_assumed(self):
+        with self.assertRaisesRegex(ValueError, 'prerelease'):
+            self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--draft-only',
+                        created_state=dict(self.draft, isPrerelease=False))
+        self.assertEqual(sum(c[:3] == ['gh', 'release', 'create'] for c in self.commands), 1)
+
+    def test_public_state_requires_the_expected_tag_and_boolean_flags(self):
+        public = dict(self.draft, isDraft=False)
+        invalid_states = [dict(public, isDraft=True), dict(public, isPrerelease=False),
+                          dict(public, isPrerelease='true'), dict(public, tagName='v0.1.0-alpha.6'),
+                          {k: v for k, v in public.items() if k != 'isPrerelease'}, None]
+        for state in invalid_states:
+            with self.subTest(state=state), self.assertRaisesRegex(ValueError, 'prerelease'):
+                PUBLISH.require_release_state(state, 'v0.1.0-alpha.7', draft=False)
+
+    def make_packages(self):
         source = self.root/'packages'
         source.mkdir()
         for suffix, _ in TARGETS.values():
@@ -309,11 +361,22 @@ class ReleaseNotesTests(unittest.TestCase):
         manifest = create(source, self.version, 'owner/repo', 'a'*40)
         (source/'release.json').write_text(json.dumps(manifest), encoding='utf-8')
         (source/'SHA256SUMS').write_text(''.join(PUBLISH.sha256(p)+'  '+p.name+'\n' for p in sorted(source.iterdir())))
-        self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--directory', str(source),
-                    state=dict(isDraft=True, assets=[], body=self.body), source=source)
-        edits = [c for c in self.commands if c[:3] == ['gh', 'release', 'edit']]
-        self.assertEqual(len(edits), 1)
-        self.assertEqual(Path(edits[0][edits[0].index('--notes-file')+1]).read_text(encoding='utf-8'), self.body)
+        return source
+
+    def test_publication_rejects_wrong_prerelease_status(self):
+        source = self.make_packages()
+        with self.assertRaisesRegex(ValueError, 'prerelease'):
+            self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--directory', str(source),
+                        state=self.draft, source=source, public_state=dict(self.draft, isDraft=False, isPrerelease=False))
+        self.assertEqual(sum(c[:3] == ['gh', 'release', 'download'] for c in self.commands), 1)
+        self.assertFalse(any(c[:3] == ['gh', 'release', 'delete'] for c in self.commands))
+
+    def test_publication_rechecks_status_after_public_download(self):
+        source = self.make_packages()
+        with self.assertRaisesRegex(ValueError, 'prerelease'):
+            self.invoke('--tag', 'v0.1.0-alpha.7', '--repository', 'owner/repo', '--directory', str(source),
+                        state=self.draft, source=source,
+                        state_after_public_download=dict(self.draft, isDraft=False, isPrerelease=False))
         self.assertEqual(sum(c[:3] == ['gh', 'release', 'download'] for c in self.commands), 2)
 
 
