@@ -4823,12 +4823,12 @@ QtObject {
                         QCOMPARE(status->property("font").value<QFont>().pixelSize(),
                                  qRound(13 * scale));
                         if (state == "error") {
-                            for (const auto &error : {
-                                     qMakePair(QStringLiteral("unsafe_installation"),
-                                               "update.unsafeInstallation"),
-                                     qMakePair(QStringLiteral("download"), "update.network"),
-                                     qMakePair(QStringLiteral("unrecognized_error"),
-                                               "update.failed")}) {
+                            for (const auto &error :
+                                 {qMakePair(QStringLiteral("unsafe_installation"),
+                                            "update.unsafeInstallation"),
+                                  qMakePair(QStringLiteral("download"), "update.network"),
+                                  qMakePair(QStringLiteral("unrecognized_error"),
+                                            "update.failed")}) {
                                 service->setProperty("errorCode", error.first);
                                 QTRY_COMPARE(status->property("text").toString(),
                                              qtTrId(error.second));
