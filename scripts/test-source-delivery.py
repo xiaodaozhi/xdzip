@@ -73,6 +73,7 @@ def psl_fixture(root, wrong_generated=None):
             output.addfile(info, io.BytesIO(content))
     sha = lambda value: hashlib.sha256(value).hexdigest()
     config = {'qt_archive': archive_name, 'qt_archive_sha256': digest(archive),
+              'upstream_repository': 'https://github.com/publicsuffix/list',
               'upstream_commit': commit, 'upstream_git_blob': qt_psl_source.git_blob(data),
               'source_sha256': sha(data), 'license_sha256': sha(license_text),
               'generator_sha256': sha(generator), 'generated_cpp_sha256': sha(cpp),
@@ -85,6 +86,40 @@ def psl_fixture(root, wrong_generated=None):
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_qt_psl_runtime_notice_delivers_source_and_exact_license(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); _, output = psl_fixture(root)
+            (output/'license-texts').mkdir()
+            license_data = (root/'third_party/qt-public-suffix-list/PSL-LICENSE.txt').read_bytes()
+            (output/'license-texts/MPL-2.0.txt').write_bytes(license_data)
+            record = qt_psl_source.collect_runtime_source(output, root)
+            self.assertEqual((output/record['file']).read_bytes(), b'owned.example\n')
+            notice = (output/record['notice']).read_text(encoding='utf-8')
+            self.assertIn(record['source_url'], notice)
+            self.assertIn('license-texts/MPL-2.0.txt', notice)
+            self.assertIn(record['sha256'], notice)
+            self.assertEqual(qt_psl_source.collect_runtime_source(output, root), record)
+            (output/record['notice']).write_bytes(b'changed existing notice')
+            with self.assertRaisesRegex(ValueError, 'destination differs'):
+                qt_psl_source.collect_runtime_source(output, root)
+            self.assertEqual((output/record['notice']).read_bytes(), b'changed existing notice')
+
+    def test_qt_psl_runtime_notice_rejects_changed_source_or_license(self):
+        for changed in ['source', 'bundled_license', 'input_license']:
+            with self.subTest(changed=changed), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); _, output = psl_fixture(root)
+                (output/'license-texts').mkdir()
+                license_path = root/'third_party/qt-public-suffix-list/PSL-LICENSE.txt'
+                (output/'license-texts/MPL-2.0.txt').write_bytes(license_path.read_bytes())
+                target = {'source': root/'third_party/qt-public-suffix-list/public_suffix_list.dat',
+                          'bundled_license': output/'license-texts/MPL-2.0.txt',
+                          'input_license': license_path}[changed]
+                target.write_bytes(b'altered')
+                with self.assertRaisesRegex(ValueError, 'mismatch'):
+                    qt_psl_source.collect_runtime_source(output, root)
+                self.assertFalse((output/'public_suffix_list.dat').exists())
+                self.assertFalse((output/'public-suffix-list-SOURCE.md').exists())
+
     def test_qt_psl_collects_only_after_regenerating_both_forms(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); archive, output = psl_fixture(root)

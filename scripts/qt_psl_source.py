@@ -18,6 +18,45 @@ def git_blob(data):
     return hashlib.sha1(b'blob ' + str(len(data)).encode('ascii') + b'\0' + data).hexdigest()
 
 
+def collect_runtime_source(output, root=None):
+    """Provide the preferred editable form beside the Qt runtime notice."""
+    root = ROOT if root is None else root
+    output = Path(output)
+    config = json.loads((root/'scripts/qt-psl-source.json').read_bytes())
+    inputs = root/'third_party/qt-public-suffix-list'
+    source, license_file = inputs/'public_suffix_list.dat', inputs/'PSL-LICENSE.txt'
+    if any(not path.is_file() or path.is_symlink() for path in [source, license_file]):
+        raise ValueError('Qt Public Suffix List input missing or linked')
+    data, license_text = source.read_bytes(), license_file.read_bytes()
+    installed_license = output/'license-texts/MPL-2.0.txt'
+    if hashlib.sha256(data).hexdigest() != config['source_sha256'] or \
+            git_blob(data) != config['upstream_git_blob'] or \
+            hashlib.sha256(license_text).hexdigest() != config['license_sha256'] or \
+            not installed_license.is_file() or installed_license.is_symlink() or \
+            installed_license.read_bytes() != license_text:
+        raise ValueError('Qt Public Suffix List runtime source or license mismatch')
+    destination = output/'public_suffix_list.dat'
+    notice = output/'public-suffix-list-SOURCE.md'
+    url = config['upstream_repository']+'/blob/'+config['upstream_commit']+'/public_suffix_list.dat'
+    text = ('# Qt Network Public Suffix List source\n\n'
+            'Qt Network includes generated data from the Public Suffix List under MPL-2.0. '
+            'The preferred editable source form is the accompanying `public_suffix_list.dat`; '
+            'the full license is in `license-texts/MPL-2.0.txt`.\n\n'
+            'Qt Network 内嵌的 Public Suffix List 数据采用 MPL-2.0。可编辑源码为同目录的 '
+            '`public_suffix_list.dat`，完整许可见 `license-texts/MPL-2.0.txt`。\n\n'
+            f"Upstream revision: `{config['upstream_commit']}`\n\n"
+            f"Source SHA-256: `{config['source_sha256']}`\n\n"
+            f'Fixed upstream source: {url}\n')
+    notice_data = text.encode('utf-8')
+    for path, expected in [(destination, data), (notice, notice_data)]:
+        if path.is_symlink() or (path.exists() and (not path.is_file() or path.read_bytes() != expected)):
+            raise ValueError('Existing Qt Public Suffix List runtime destination differs')
+    destination.write_bytes(data)
+    notice.write_bytes(notice_data)
+    return {'file': destination.name, 'sha256': config['source_sha256'],
+            'license': 'MPL-2.0', 'notice': notice.name, 'source_url': url}
+
+
 def collect(output, qt_archive, root=None):
     """Rebuild both Qt-generated forms before admitting the fixed source input."""
     root = ROOT if root is None else root
