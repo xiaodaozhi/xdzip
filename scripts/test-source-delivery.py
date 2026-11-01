@@ -234,6 +234,30 @@ class DeliveryTests(unittest.TestCase):
                     rar_mapping_materials.collect(root/'output')
             self.assertFalse((root/'output').exists())
 
+    def test_rar_mapping_missing_or_changed_source_comment_fails_before_output(self):
+        notice_dir = ROOT/'third_party/rar-wire-mappings'
+        for target_name in rar_mapping_materials.SOURCE_FILES:
+            for replacement in ('', '// RAR archives without limitations free of charge, but can be'):
+                with self.subTest(target=target_name, replacement=replacement), tempfile.TemporaryDirectory() as temporary:
+                    root = Path(temporary)
+                    inputs = root/'third_party/rar-wire-mappings'
+                    inputs.mkdir(parents=True)
+                    for original in notice_dir.iterdir():
+                        (inputs/original.name).write_bytes(original.read_bytes())
+                    for name in rar_mapping_materials.SOURCE_FILES:
+                        target = root/name
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        text = (ROOT/name).read_text(encoding='utf-8')
+                        if name == target_name:
+                            original_line = '// RAR archives without limitations free of charge, but cannot be'
+                            self.assertEqual(text.count(original_line), 1)
+                            text = text.replace(original_line, replacement, 1)
+                        target.write_text(text, encoding='utf-8')
+                    with patch.object(rar_mapping_materials, 'ROOT', root):
+                        with self.assertRaisesRegex(ValueError, 'source notice paragraph missing or changed'):
+                            rar_mapping_materials.collect(root/'output')
+                    self.assertFalse((root/'output').exists())
+
     def test_rar_mapping_existing_candidate_notice_is_never_rewritten(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary)
