@@ -10,7 +10,7 @@ if ($IsWindows) {
     Import-Module "$installation/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
     Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
 }
-Checked rustup @('toolchain','install','1.99.0','--profile','minimal','--component','rust-src')
+Checked rustup @('toolchain','install','1.99.0','--profile','minimal','--component','rust-src','--component','rustfmt','--component','clippy')
 Checked python @('scripts/build-qt-source.py','--output','build/qt-source','--resume','--parallel','3')
 Checked python @('scripts/verify-qt-source-product.py','--qt-build','build/qt-source','--output','build/qt-source-product','--parallel','3')
 if ($IsWindows -or $IsLinux) {

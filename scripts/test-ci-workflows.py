@@ -172,6 +172,27 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(len(consumers), 1)
         self.assertLess(prepare[0], consumers[0])
 
+    def test_qt_source_uses_isolated_complete_rust_toolchain(self):
+        job = self.workflows['qt-source.yml']['jobs']['source-runtime']
+        self.assertEqual(job['if'], "github.ref == 'refs/heads/main'")
+        steps = job['steps']
+        isolation = [i for i, step in enumerate(steps)
+                     if step.get('name') == 'Isolate Rust toolchain for source validation']
+        build = [i for i, step in enumerate(steps)
+                 if 'scripts/ci-qt-source.ps1' in step.get('run', '')]
+        self.assertEqual(len(isolation), 1)
+        self.assertEqual(len(build), 1)
+        self.assertLess(isolation[0], build[0])
+        self.assertNotIn('if', steps[isolation[0]])
+        self.assertNotIn('continue-on-error', steps[isolation[0]])
+        for expected in ['$env:RUNNER_TEMP', 'xdzip-qt-source-rustup',
+                         'RUSTUP_HOME=', '$env:GITHUB_ENV']:
+            self.assertIn(expected, steps[isolation[0]]['run'])
+        version = tomllib.loads((ROOT / 'rust-toolchain.toml').read_text(encoding='utf-8'))['toolchain']['channel']
+        script = (ROOT / 'scripts/ci-qt-source.ps1').read_text(encoding='utf-8')
+        self.assertIn(f"'install','{version}','--profile','minimal','--component','rust-src',"
+                      "'--component','rustfmt','--component','clippy'", script)
+
     def test_qt_desktop_and_native_coverage_remains(self):
         source = (ROOT / 'scripts/ci-desktop.ps1').read_text(encoding='utf-8')
         for required in ['qt_zip_browser', 'until-fail:10', 'qt_task_components',

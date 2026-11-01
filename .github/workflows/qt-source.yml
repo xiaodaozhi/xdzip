@@ -14,6 +14,11 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Isolate Rust toolchain for source validation
+        shell: pwsh
+        run: |
+          $rustupDirectory = Join-Path $env:RUNNER_TEMP 'xdzip-qt-source-rustup'
+          "RUSTUP_HOME=$rustupDirectory" >> $env:GITHUB_ENV
       - name: Linux build prerequisites
         if: runner.os == 'Linux'
         run: |

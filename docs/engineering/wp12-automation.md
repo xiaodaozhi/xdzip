@@ -21,7 +21,7 @@ English: The source build requires Qt Network SSL. Linux explicitly enables the 
 
 当前本地 Command Line Tools 不提供上游参考 Xcode 版本，SDK 27 的 libc++ 与 Qt 6.8.2 的旧迭代器有编译不兼容；本地可显式使用已有 SDK 26.5。脚本记录实际 SDK 设置哈希、配置和编译器，不宣称该组合就是 Qt 官方支持矩阵或原预编译 SDK 的字节级复现。官方构建说明见 [macOS 源码构建](https://doc.qt.io/qt-6.8/macos-building.html)与 [Qt 模块构建](https://wiki.qt.io/Building_Qt_6_from_Git)。
 
-[独立源码验证工作流](../../.github/workflows/qt-source.yml)仅由可信 main 手动分派，运行三平台源码构建及真实产品验证。Windows/Linux 可复用按 runner 镜像、配置和构建脚本指纹区分的依赖缓存，失败后的 Windows/Linux 局部编译状态也可缓存，缓存不表示验证通过，源树和配置仍重新验证，真实产品验证重新执行；不从外部 PR 取缓存。Mac 只上传有界日志与 JSON，不缓存／部署／签名／压缩／上传应用或 SDK。
+[独立源码验证工作流](../../.github/workflows/qt-source.yml)仅由可信 main 手动分派，运行三平台源码构建及真实产品验证。Windows/Linux 可复用按 runner 镜像、配置和构建脚本指纹区分的依赖缓存，失败后的 Windows/Linux 局部编译状态也可缓存，缓存不表示验证通过，源树和配置仍重新验证，真实产品验证重新执行；不从外部 PR 取缓存。Mac 只上传有界日志与 JSON，不缓存／部署／签名／压缩／上传应用或 SDK。 三个平台的源码验证在 runner 临时目录隔离 rustup 工具链，一次安装固定版本、rust-src、rustfmt 与 clippy，避免复用宿主不完整的安装状态。
 
 本地额外执行 scripts/verify-qt-replacement.py：从开发包复制隔离应用，只替换源码构建的 QtCore，必要时重写开发 RPATH 并做 ad-hoc 完整性签名；核验递归导入无需 SDK，再从真实产品进程取得源码标记，完成十万条交互和 32 MiB 真实解压及独立字节检查。它区别于原有只修改 Mach-O 身份的替换试验，仍不保证任意 ABI 变化兼容。
 
