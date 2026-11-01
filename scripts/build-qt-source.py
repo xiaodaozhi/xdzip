@@ -22,7 +22,7 @@ from qt_source_identity import source_identity
 COMMON = ['-DCMAKE_BUILD_TYPE=Release', '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
           '-DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF', '-DBUILD_WITH_PCH=OFF', '-DWARNINGS_ARE_ERRORS=OFF']
 BASE = ['-DFEATURE_system_'+f+'=OFF' for f in ['zlib', 'pcre2', 'doubleconversion', 'freetype', 'harfbuzz', 'jpeg', 'png', 'sqlite']]
-BASE += ['-DFEATURE_'+f+'=OFF' for f in ['zstd', 'brotli', 'dbus', 'icu', 'glib', 'sql_mysql', 'sql_odbc', 'sql_psql', 'sql_mimer']]
+BASE += ['-DFEATURE_'+f+'=OFF' for f in ['zstd', 'brotli', 'dbus', 'icu', 'sql_mysql', 'sql_odbc', 'sql_psql', 'sql_mimer']]
 TOOLS = ['-DFEATURE_'+f+'=OFF' for f in ['assistant', 'designer', 'distancefieldgenerator', 'kmap2qmap', 'pixeltool', 'qdbus', 'qdoc', 'qtattributionsscanner', 'qtplugininfo', 'clang', 'clangcpp']]
 TOOLS += ['-DCMAKE_DISABLE_FIND_PACKAGE_WrapLibClang=ON']
 ORDER = ['qtbase', 'qtshadertools', 'qtsvg', 'qtdeclarative', 'qttools', 'qttranslations']
@@ -32,7 +32,9 @@ def qtbase_flags(platform):
     # Linux has no Schannel or SecureTransport fallback. Disabling OpenSSL
     # there disables QSslSocket, which the actual product's update code uses.
     openssl = 'ON' if platform.startswith('linux') else 'OFF'
-    flags = BASE + ['-DFEATURE_ssl=ON', '-DFEATURE_openssl='+openssl]
+    # The released Linux QtGui requires QtCore's private GLib dispatcher ABI.
+    glib = 'ON' if platform.startswith('linux') else 'OFF'
+    flags = BASE + ['-DFEATURE_ssl=ON', '-DFEATURE_openssl='+openssl, '-DFEATURE_glib='+glib]
     if platform.startswith('linux'):
         flags += ['-DFEATURE_openssl_runtime=ON']
     return flags
@@ -48,6 +50,17 @@ def require_ssl_configuration(install, platform=None):
     features = re.findall(r'^\s*#\s*define\s+QT_FEATURE_ssl\s+(-?\d+)\s*$', content, re.MULTILINE)
     if features != ['1'] or re.search(r'^\s*#\s*define\s+QT_NO_SSL\b', content, re.MULTILINE):
         raise ValueError('Source-built Qt Network must have SSL enabled')
+    return digest(header)
+
+
+def require_linux_glib_configuration(install):
+    header = install/'include/QtCore/qtcore-config.h'
+    if not header.is_file() or header.is_symlink():
+        raise ValueError('Source-built Linux Qt Core GLib configuration missing')
+    content = header.read_text(encoding='utf-8')
+    features = re.findall(r'^\s*#\s*define\s+QT_FEATURE_glib\s+(-?\d+)\s*$', content, re.MULTILINE)
+    if features != ['1'] or re.search(r'^\s*#\s*define\s+QT_NO_GLIB\b', content, re.MULTILINE):
+        raise ValueError('Source-built Linux Qt Core must have GLib enabled')
     return digest(header)
 
 
@@ -134,6 +147,7 @@ def main():
     if sys.platform == 'darwin' and args.apple_sdk:
         native_flags += ['-DCMAKE_OSX_SYSROOT='+str(args.apple_sdk.resolve())]
     commands = []
+    glib_config_sha256 = None
     for name in ORDER:
         source = sources/items[name]['file'].removesuffix('.tar.xz'); build = output/'qt-build'/name
         flags = COMMON+native_flags+[f'-DCMAKE_INSTALL_PREFIX={install}']
@@ -149,6 +163,8 @@ def main():
         run(['cmake', '--install', build], log)
         if name == 'qtbase':
             ssl_config_sha256 = require_ssl_configuration(install)
+            if sys.platform.startswith('linux'):
+                glib_config_sha256 = require_linux_glib_configuration(install)
         commands.append({'module': name, 'configure_flags': [sanitize(x.replace(str(install), '<qt-install>')) for x in flags]})
         identity = source_identity(items[name])
         records.append({'module': name, **identity,
@@ -170,6 +186,7 @@ def main():
               'qt_version':config['qt_version'], 'modules':records, 'configuration':commands,
               'installed_headers':configuration, 'qtcore_sha256':digest(core),
               'qt_network_ssl_config_sha256':ssl_config_sha256,
+              'qt_core_glib_config_sha256':glib_config_sha256,
               'patches':[{'file':p['patch'], 'sha256':p['patch_sha256']} for p in config['source_build_patches']+config['sdk_patches']],
               'toolchain':{tool:sanitize(subprocess.run(command,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).stdout.splitlines()[0])
                            for tool,command in [('cmake',['cmake','--version']),('ninja',['ninja','--version']),('compiler',['clang++','--version'] if sys.platform=='darwin' else ['cl'] if os.name=='nt' else ['c++','--version'])]},

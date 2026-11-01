@@ -31,6 +31,28 @@ class SourceTests(unittest.TestCase):
                 self.assertEqual(len([flag for flag in flags if flag.startswith('-DFEATURE_openssl=')]), 1)
                 if platform == 'linux':
                     self.assertIn('-DFEATURE_openssl_runtime=ON', flags)
+                glib = 'ON' if platform == 'linux' else 'OFF'
+                self.assertIn('-DFEATURE_glib='+glib, flags)
+                self.assertEqual(len([flag for flag in flags if flag.startswith('-DFEATURE_glib=')]), 1)
+
+    def test_linux_glib_header_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            install = Path(temporary)
+            header = install/'include/QtCore/qtcore-config.h'
+            with self.assertRaisesRegex(ValueError, 'configuration missing'):
+                source.require_linux_glib_configuration(install)
+            header.parent.mkdir(parents=True)
+            for text in ['#define QT_FEATURE_glib -1\n#define QT_NO_GLIB 1\n',
+                         '#define QT_FEATURE_glib 0\n',
+                         '#define QT_FEATURE_glib 1\n#define QT_NO_GLIB 1\n',
+                         '#define QT_FEATURE_glib 1\n#define QT_FEATURE_glib -1\n',
+                         '/* #define QT_FEATURE_glib 1 */\n']:
+                with self.subTest(text=text):
+                    header.write_text(text)
+                    with self.assertRaisesRegex(ValueError, 'must have GLib enabled'):
+                        source.require_linux_glib_configuration(install)
+            header.write_text('#define QT_FEATURE_glib 1\n')
+            self.assertEqual(source.require_linux_glib_configuration(install), source.digest(header))
 
     def test_qt_source_ssl_header_fails_closed(self):
         for platform in ['linux', 'win32', 'darwin']:
