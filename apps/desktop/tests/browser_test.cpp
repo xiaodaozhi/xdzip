@@ -4920,6 +4920,14 @@ QtObject {
                     auto *version = findVisual(about->contentItem(), "aboutValue-1");
                     QVERIFY(version);
                     QCOMPARE(version->property("text").toString(), BuildInfo::version());
+                    auto *license = findVisual(about->contentItem(), "aboutLicense");
+                    QVERIFY(license);
+                    const auto licenseText = license->property("text").toString();
+                    QVERIFY(licenseText.contains(QStringLiteral("Apache-2.0")));
+                    QVERIFY(licenseText.contains(QStringLiteral("LGPL-3.0")));
+                    QVERIFY(licenseText.contains(QStringLiteral("notices")));
+                    QVERIFY(license->width() > 0);
+                    QVERIFY(license->height() >= license->implicitHeight() - 1);
                     auto *copy = about->findChild<QQuickItem *>("aboutCopy");
                     auto *done = about->findChild<QQuickItem *>("aboutDone");
                     QVERIFY(copy && done);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect source-pinned license notices for private developer-review builds (stdlib only)."""
+"""Collect source-pinned license notices for xdzip distributions (stdlib only)."""
 import json
 import hashlib
 from pathlib import Path
