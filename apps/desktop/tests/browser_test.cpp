@@ -84,6 +84,7 @@
 void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
+void traceNativeWindowState(QWindow *window);
 
 class ActivationEventTrace final : public QObject {
   protected:
@@ -3671,6 +3672,12 @@ QtObject {
                     << window->property("xdzipNativeMinimized") << "was"
                     << window->property("xdzipWasMinimized") << "pending"
                     << window->property("xdzipWakePending");
+            traceNativeWindowState(window);
+            for (const auto delay : {500, 3000})
+                QTimer::singleShot(delay, window, [window] {
+                    if (window->property("xdzipTraceActivation").toBool())
+                        traceNativeWindowState(window);
+                });
 #endif
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {

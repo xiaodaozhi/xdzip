@@ -14,6 +14,8 @@ bool watchNativeWindowTransitions(QWindow *window) {
     if (!native)
         return false;
     window->setProperty("xdzipNativeStateWatched", true);
+    window->setProperty("xdzipNativeWatchedIdentity",
+                        QVariant::fromValue<qulonglong>(reinterpret_cast<quintptr>(native)));
     const QPointer<QWindow> guarded(window);
     NSMutableArray *tokens = [[NSMutableArray alloc] init];
     for (NSNotificationName name in @[
@@ -64,6 +66,18 @@ bool watchNativeWindowTransitions(QWindow *window) {
         [tokens release];
     });
     return true;
+}
+
+void traceNativeWindowState(QWindow *window) {
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    NSWindow *native = view.window;
+    qInfo() << "activation native snapshot" << "hasWindow" << bool(native) << "sameObservedWindow"
+            << (native && reinterpret_cast<quintptr>(native) ==
+                              window->property("xdzipNativeWatchedIdentity").toULongLong())
+            << "miniaturized" << (native && native.miniaturized) << "visible"
+            << (native && native.visible) << "transition"
+            << window->property("xdzipNativeTransition") << "qtStates" << window->windowStates()
+            << "pending" << window->property("xdzipWakePending");
 }
 
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state) {
