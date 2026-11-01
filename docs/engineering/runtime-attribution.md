@@ -12,6 +12,10 @@ Qt 运行时通知另随包提供 Qt Network 使用的 Public Suffix List 固定
 
 English: Runtime notices include the pinned editable Public Suffix List used by Qt Network, its MPL-2.0 text and source information. Collection verifies the upstream blob, SHA-256 and license bytes. The source delivery separately checks both generated forms against the Qt archive; other Qt source and replacement obligations remain separately reviewed.
 
+Qt Core 的 Tika MIME 数据通知同时保留 Apache Software Foundation 与英国国家档案馆 PRONOM 的相关署名、Apache-2.0 和 OGL-UK-3.0 许可文本，以及固定版本完整上游 NOTICE。完整 NOTICE 同时描述 Tika 上游的其他组件，不能据此推断它们随本产品提供；原始 MIME 数据和 Qt 转换的核验见[对应源码材料](source-delivery.md)。
+
+English: Qt Core Tika MIME notices include the relevant Apache Software Foundation and National Archives PRONOM attribution, Apache-2.0 and OGL-UK-3.0 license texts, and the complete pinned upstream NOTICE. The full NOTICE describes additional upstream Tika components and does not imply they ship with this product. Source input and conversion verification are described in [source delivery](source-delivery.md).
+
 ## 文件与组件关联
 
 1. 对核验根内文件重新计算哈希，拒绝在 deployment-audit.json 之后被修改的文件。

@@ -15,6 +15,10 @@ Qt 运行时模块归档为 qtbase、qtdeclarative、qtsvg、qttranslations，�
 
 English: Source delivery also includes the pinned editable Public Suffix List and its MPL-2.0 text. Collection verifies the input and Qt archive, then regenerates and compares both the C++ data and binary test data byte for byte. It stops on a mismatch and does not establish full SDK equivalence or approve release licensing.
 
+源码交付还保存 Qt Core MIME 数据所用的固定 Apache Tika 原始文件、上游 NOTICE 和 OGL-UK-3.0 原文。收集器用固定 Qt 归档内的转换脚本重建 Qt 的 MIME 数据，并核对归档声明和生成结果；仅允许 Windows 本地换行差异。完整 Tika NOTICE 覆盖整个上游发行，不表示其其他依赖包含于 xdzip。
+
+English: Source delivery retains the pinned Apache Tika input, upstream NOTICE and OGL-UK-3.0 text for Qt Core MIME data. It verifies the Qt archive attribution and regenerates its MIME data, allowing only native Windows line endings. The complete Tika NOTICE covers the broader upstream distribution and does not imply its other dependencies are shipped by xdzip.
+
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
 `rar-wire-mappings/` 单独保留有限 RAR 线映射的固定参考来源、说明和 UnRAR 7.30 beta1 精确原始许可，全部进入交付文件哈希清单。下载归档名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。交付前还核对相关 Rust 源码注释中完整保留的上游许可第 2 段，作为保守通知措施；缺失或变更时停止。它不携带官方引擎源码，也不将事实来源重新许可为 Apache-2.0，条款适用范围和实际再分发义务继续按候选复核。

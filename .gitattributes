@@ -27,3 +27,7 @@ third_party/rust-vendor-notices/r-efi/AUTHORS -text -whitespace
 # Preserve the Qt-pinned Public Suffix List and its original license bytes.
 third_party/qt-public-suffix-list/public_suffix_list.dat -text -whitespace
 third_party/qt-public-suffix-list/PSL-LICENSE.txt -text -whitespace
+# Preserve the original Apache Tika data and upstream notice and license bytes.
+third_party/qt-tika-mimetypes/tika-mimetypes.xml.orig -text -whitespace
+third_party/qt-tika-mimetypes/TIKA-NOTICE.txt -text -whitespace
+third_party/qt-tika-mimetypes/OGL-UK-3.0.txt -text -whitespace
