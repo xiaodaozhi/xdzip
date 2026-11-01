@@ -492,6 +492,7 @@
     "update.tls": "无法验证更新服务器的安全连接，请检查系统时间和网络。",
     "update.timeout": "更新请求超时，请稍后重试。",
     "update.disk": "无法保存更新文件，请检查磁盘空间和写入权限。",
+    "update.unsafeInstallation": "安装目录未通过安全检查，请检查目录权限，或从发布页手动安装更新。",
     "update.minimumSystem": "此更新不支持当前系统，请查看发布说明中的系统要求。",
     "update.verificationFailed": "更新文件验证失败，已停止安装，请重新下载。",
     "update.available": "发现新版本 %1",

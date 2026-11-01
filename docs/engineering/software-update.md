@@ -28,6 +28,8 @@ macOS 使用固定 Sparkle 2.10.0，通过薄 Objective-C++ 用户驱动把状�
 
 Windows 仅从登记的当前用户安装根复制独立无 Qt 助手到私有缓存，助手独立复验签名、大小和哈希，等待已捕获主进程退出后交给现有 Inno 安装器，保留交互许可确认。安装门阻止替换期间再次启动。
 
+安装根未通过安全检查时，关于页明确提示检查安装目录权限或从发布页手动安装，不将该拒绝归为网络故障；原有目录和身份检查不因此放宽。English: When the installation root fails its safety check, About identifies the installation folder and offers a manual update from the release page without classifying the rejection as a network failure. Directory and identity checks remain unchanged.
+
 Ubuntu 安装版使用固定 `/usr/libexec/xdzip-update-helper`，普通用户协调器仅通过固定参数调用 polkit。root 助手将包复制到 root 私有暂存后重新验签及核对 xdzip 包名、架构、版本，只允许固定 APT 操作，不接受命令、任意包名或目标目录，不使用 sudo shell。授权取消与缺少认证代理返回独立状态。dpkg 未配置不报告成功，不自动回滚或启动旧程序。新版以原用户重启时保留有界白名单中的 XDG 设置、数据、缓存与状态目录及桌面语言，不继承动态加载器、Qt SDK 或测试环境覆盖；这些变量不传入 root 的安装命令。
 
 macOS 在全部 join 完成后才释放 Sparkle 安装回调；主程序仅在 provider 已标记实际 committed 后、调用 SDK 安装回复前同步释放退出拦截，不能在 join 屏障上提前允许末窗自动退出。提交失败或取消后，普通退出继续等待原生 helper 观察门；Sparkle 负责实际归档替换和重启。取消不会留下下次退出时安装的计划。Framework、XPC 与 helper 单独保留所需签名参数和 entitlements，不能套用通用重签规则。
