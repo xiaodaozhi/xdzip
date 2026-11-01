@@ -1,0 +1,19 @@
+{
+  "qt_archive": "qtbase-everywhere-src-6.8.2.tar.xz",
+  "qt_archive_sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05",
+  "tika_repository": "https://github.com/apache/tika",
+  "tika_commit": "5101bc7fb090ed7deffe56837d7633c9485a1e5d",
+  "tika_path": "tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+  "source_git_blob": "f9465adfd70c519b606389a1ce1565355d5757be",
+  "source_sha256": "9d24640d5019c08985f2c557679b68453aee91fa2c2b294e536596a40a7d717e",
+  "notice_git_blob": "e4713574c826602f94419e2c7c01c6cd0d971288",
+  "notice_sha256": "4cd09bac8d81bd34decf6b95fb23d42fc9b3d6b653ec4be8ef44674b692c97cd",
+  "ogl_repository": "https://github.com/spdx/license-list-data",
+  "ogl_commit": "31ba1a50e5397e00a304dbadc76531740e89ee48",
+  "ogl_path": "text/OGL-UK-3.0.txt",
+  "ogl_git_blob": "febac4164b8129279b128c5eabaca5de70d1170c",
+  "ogl_sha256": "eb22384c866b63b513254ae3baff6b3bc7d001f559d03e02b6b8b83333a04806",
+  "generator_sha256": "f1514b02a8edb2910334a750eeee0c424ed864b91ac87cd28433973a54ec719d",
+  "qt_generated_sha256": "2d5106ce5d86e8dc64411d8a6248520c8093f9f1cf7d86e6c4f4a4c0af40150b",
+  "apache_license_sha256": "e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb"
+}

@@ -15,6 +15,7 @@ from rar_mapping_materials import collect as collect_rar_mapping_materials
 from qt_source_identity import commit_object_path, source_identity
 from vendor_notice_materials import collect as collect_vendor_notice_materials
 from qt_psl_source import collect as collect_qt_psl_source
+from qt_tika_materials import collect as collect_qt_tika_source
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -211,6 +212,7 @@ def main():
     if len(qtbase_sources) != 1:
         raise ValueError('Expected exactly one Qt base source archive')
     materials.append(collect_qt_psl_source(output, qtbase_sources[0]))
+    materials.append(collect_qt_tika_source(output, qtbase_sources[0]))
     materials += collect_sparkle_sources(output, args.cache)
     from native_codec_materials import corresponding_sources
     materials += corresponding_sources(output)

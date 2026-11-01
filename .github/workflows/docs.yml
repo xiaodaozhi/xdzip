@@ -72,6 +72,7 @@ jobs:
           python3 scripts/test-macos-dmg.py
           python3 scripts/test-repository-contents.py
           python3 scripts/test-source-delivery.py
+          python3 scripts/test-qt-tika-materials.py
           python3 scripts/test-qt-sdk-correspondence.py
           python3 scripts/test-qt-source-build.py
           python3 scripts/test-performance.py
