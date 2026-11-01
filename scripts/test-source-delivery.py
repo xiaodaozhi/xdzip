@@ -295,6 +295,50 @@ class DeliveryTests(unittest.TestCase):
                 with self.assertRaises(OSError):
                     source.collect_native_sources(output, cache)
 
+    @staticmethod
+    def data_source_fixture(cache, module, root_name, data, extra=None):
+        path = cache/(root_name+'.tar.gz')
+        members = {root_name+'/data.txt': data}
+        members.update(extra or {})
+        with tarfile.open(path, 'w:gz') as archive:
+            for name, contents in members.items():
+                member = tarfile.TarInfo(name)
+                member.size = len(contents)
+                archive.addfile(member, io.BytesIO(contents))
+        return {'module': module, 'file': path.name, 'url': path.as_uri(),
+                'sha256': digest(path), 'archive_root': root_name,
+                'anchors': {'data.txt': hashlib.sha256(data).hexdigest()}}
+
+    def test_editable_icu_and_cldr_data_sources_are_collected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                     self.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned', b'CLDR data')]
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
+                self.assertEqual(source.collect_icu_data_sources(output, cache), items)
+            for item in items:
+                self.assertEqual((output/item['file']).read_bytes(), (cache/item['file']).read_bytes())
+
+    def test_editable_data_sources_reject_missing_or_tampered_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor', 'escaping member']
+            for case in cases:
+                with self.subTest(case=case):
+                    items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                             self.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned', b'CLDR data',
+                                                      {'cldr-owned/../escape': b'x'} if case == 'escaping member' else None)]
+                    if case == 'missing module': items.pop()
+                    if case == 'wrong archive hash': items[1]['sha256'] = '0'*64
+                    if case == 'wrong anchor': items[1]['anchors']['data.txt'] = '0'*64
+                    if case == 'missing anchor': items[1]['anchors'] = {'absent.txt': '0'*64}
+                    with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
+                        with self.assertRaises(ValueError):
+                            source.collect_icu_data_sources(output, cache)
+                    self.assertEqual(list(output.iterdir()), [])
+
     def test_rar_mapping_notice_bytes_match_in_notices_and_separate_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

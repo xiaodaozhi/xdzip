@@ -2,6 +2,7 @@
 """Collect pinned Qt source archives, exact project source and locked Rust vendor inputs."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -100,6 +101,41 @@ def collect_native_sources(output, cache):
     return [dict(license_item), dict(source_item)]
 
 
+def collect_icu_data_sources(output, cache):
+    """Keep editable ICU/CLDR inputs as well as the pre-generated ICU archive."""
+    items = configuration()['icu_data_sources']
+    if len(items) != 2 or {item['module'] for item in items} != {'icu-data-source', 'cldr-data-source'}:
+        raise ValueError('Expected the pinned ICU and CLDR data sources')
+    sources = []
+    for item in items:
+        source = fetch(item, cache)
+        root = item['archive_root']
+        if PurePosixPath(root).name != root or '\\' in root or not item['anchors']:
+            raise ValueError('Unexpected ICU data source archive root')
+        with tarfile.open(source, 'r:gz') as archive:
+            members = archive.getmembers()
+            if not members or any('\\' in member.name or
+                                  not PurePosixPath(member.name).parts or
+                                  PurePosixPath(member.name).is_absolute() or
+                                  '..' in PurePosixPath(member.name).parts or
+                                  PurePosixPath(member.name).parts[0] != root
+                                  for member in members):
+                raise ValueError('Unexpected ICU data source archive layout')
+            for relative, expected in item['anchors'].items():
+                if not PurePosixPath(relative).parts or '\\' in relative or PurePosixPath(relative).is_absolute() or '..' in PurePosixPath(relative).parts:
+                    raise ValueError('Unexpected ICU data source anchor')
+                found = [member for member in members if member.name == root+'/'+relative]
+                if len(found) != 1 or not found[0].isfile() or found[0].size > 8 * 1024 * 1024:
+                    raise ValueError('Missing or ambiguous ICU data source anchor')
+                actual = hashlib.sha256(archive.extractfile(found[0]).read()).hexdigest()
+                if actual != expected:
+                    raise ValueError('ICU data source anchor checksum mismatch')
+        sources.append(source)
+    for source in sources:
+        shutil.copy2(source, output/source.name)
+    return [dict(item) for item in items]
+
+
 def write_vendor_config(output):
     """Ask Cargo for a relative output path and reject unexpected source mappings."""
     result = subprocess.run(['cargo', 'vendor', '--locked', '--versioned-dirs',
@@ -154,12 +190,13 @@ def rebuild_instructions():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Linux ICU 的完整许可和 ICU4C 73.2 上游源码归档随目录提供，版本与哈希见
-   native-runtime-sources.json。版本一致不证明供应商库由该归档无补丁构建。
+6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档及固定 ICU／CLDR 可编辑数据
+   源码树随目录提供，版本与哈希见 native-runtime-sources.json。版本一致不证明
+   供应商库由这些材料无补丁构建。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
-   English: The Linux ICU license and pinned ICU4C 73.2 upstream source archive are
-   included. Matching versions do not prove the supplier built its libraries without
-   patches from this archive. Current Windows developer packages
+   English: The Linux ICU license, ICU4C 73.2 upstream archive, and pinned editable
+   ICU/CLDR data source trees are included. Matching versions do not prove the supplier
+   built its libraries without patches from these inputs. Current Windows developer packages
    omit the software OpenGL library; historical deliveries retain their obligations.
 
 ## 显式测试数据前置与完整 runtime 批次
@@ -247,6 +284,7 @@ def main():
     _, rar_mapping_record = collect_rar_mapping_materials(output)
     materials.append(rar_mapping_record)
     materials += collect_native_sources(output, ROOT/'build/native-source-cache')
+    materials += collect_icu_data_sources(output, ROOT/'build/native-source-cache')
     collect_source_identity_proofs(output, all_archives)
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'

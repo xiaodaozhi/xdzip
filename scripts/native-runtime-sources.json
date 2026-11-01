@@ -11,5 +11,37 @@
     "file": "icu4c-73_2-src.tgz",
     "url": "https://github.com/unicode-org/icu/releases/download/release-73-2/icu4c-73_2-src.tgz",
     "sha256": "818a80712ed3caacd9b652305e01afc7fa167e6f2e94996da44b90c2ab604ce1"
-  }
+  },
+  "icu_data_sources": [
+    {
+      "module": "icu-data-source",
+      "version": "73.2",
+      "source_commit": "680f521746a3bd6a86f25f25ee50a62d88b489cf",
+      "source_tree": "0b0e97b8941c68d18e1f5b98fda41ce081935ec1",
+      "file": "icu-73.2-source-tree.tar.gz",
+      "url": "https://codeload.github.com/unicode-org/icu/tar.gz/680f521746a3bd6a86f25f25ee50a62d88b489cf",
+      "sha256": "9032f32c8edb43a7cd842f2c44349eb75756ee29c3a3d6a0bf2a01793a34b84c",
+      "archive_root": "icu-680f521746a3bd6a86f25f25ee50a62d88b489cf",
+      "anchors": {
+        "icu4c/LICENSE": "f3005e195ff74d8812cc1f182a1c446fab678d70a10e3dada497585befee5416",
+        "icu4c/source/data/brkitr/dictionaries/cjdict.txt": "e499417c2e1f4ed15f48897f3cdc31de7394f69ba4d888c5d94233fd9e121d35",
+        "icu4c/source/data/locales/en.txt": "e0738d2ab05a17a4cbe6ca09bc8bbb8f0708afda4d817dfa6bd89ba970ef9dc7"
+      }
+    },
+    {
+      "module": "cldr-data-source",
+      "version": "43.1",
+      "source_commit": "37d524354422f46731db74f3bd6b3f46516c3ced",
+      "source_tree": "1169ebe95f0168080c864fcc5f4c0c88608f0080",
+      "file": "cldr-43.1-source-tree.tar.gz",
+      "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/37d524354422f46731db74f3bd6b3f46516c3ced",
+      "sha256": "15f299d26d415b9e6eb50c80da1573d7b1773af61f0d3dd5ef430365556f4185",
+      "archive_root": "cldr-37d524354422f46731db74f3bd6b3f46516c3ced",
+      "anchors": {
+        "unicode-license.txt": "830ec6dd25a943b70a31d74caa56b08b34c35f5c9679fba664c1658712849271",
+        "common/main/en.xml": "75acc21b2475d250df4ca4a7255a0b65aad5e1f57b50a6590ad350df9853e303",
+        "tools/cldr-code/pom.xml": "63d1d8ab47d66ba1b9aa72e21a26b7672e037a2b0b1a32eb0ba1365ac88e8903"
+      }
+    }
+  ]
 }
