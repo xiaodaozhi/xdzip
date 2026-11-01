@@ -12,9 +12,40 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('replacement', ROOT/'scripts/verify-alpha8-qt-replacement.py')
 replacement = importlib.util.module_from_spec(spec); spec.loader.exec_module(replacement)
+mac_spec = importlib.util.spec_from_file_location('mac_replacement', ROOT/'scripts/verify-alpha8-macos-qt-replacement.py')
+mac_replacement = importlib.util.module_from_spec(mac_spec); mac_spec.loader.exec_module(mac_replacement)
 
 
 class ReplacementTests(unittest.TestCase):
+    def test_macos_bundle_probe_is_local_only(self):
+        mac_replacement.require_local_macos('darwin', None)
+        for platform, ci in [('linux', None), ('win32', None), ('darwin', 'true')]:
+            with self.subTest(platform=platform, ci=ci), self.assertRaisesRegex(ValueError, 'local Mac'):
+                mac_replacement.require_local_macos(platform, ci)
+
+    def test_macos_archive_links_must_stay_in_bundle_and_not_be_parent_entries(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            archive = Path(temporary)/'owned.zip'
+            def write_link(target, nested=False):
+                with zipfile.ZipFile(archive, 'w') as data:
+                    data.writestr('xdzip.app/Contents/Frameworks/Qt.framework/Versions/A/Qt', b'owned')
+                    link = zipfile.ZipInfo('xdzip.app/Contents/Frameworks/Qt.framework/Versions/Current')
+                    link.create_system = 3
+                    link.external_attr = (stat.S_IFLNK | 0o777) << 16
+                    data.writestr(link, target)
+                    if nested:
+                        data.writestr(link.filename+'/Qt', b'unsafe')
+            write_link('A')
+            self.assertEqual(mac_replacement.inspect_archive(archive)['internal_links'], 1)
+            for target in ['/outside', '../../../../../../escape', 'A\\other']:
+                with self.subTest(target=target):
+                    write_link(target)
+                    with self.assertRaisesRegex(ValueError, 'link'):
+                        mac_replacement.inspect_archive(archive)
+            write_link('A', nested=True)
+            with self.assertRaisesRegex(ValueError, 'beneath a symlink'):
+                mac_replacement.inspect_archive(archive)
+
     def test_archive_names_reject_escape_and_duplicates(self):
         replacement.check_member_names(['dir/', 'dir/file.txt'])
         for names in [['../file'], ['/absolute'], ['C:/drive'], ['dir\\file'], ['dir/a', 'dir/a']]:
