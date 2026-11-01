@@ -33,23 +33,28 @@ class SourceTests(unittest.TestCase):
                     self.assertIn('-DFEATURE_openssl_runtime=ON', flags)
 
     def test_qt_source_ssl_header_fails_closed(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            install = Path(temporary)
-            header = install/'include/QtNetwork/qtnetwork-config.h'
-            with self.assertRaisesRegex(ValueError, 'configuration missing'):
-                source.require_ssl_configuration(install)
-            header.parent.mkdir(parents=True)
-            for text in ['#define QT_FEATURE_ssl -1\n#define QT_NO_SSL 1\n',
-                         '#define QT_FEATURE_ssl 0\n',
-                         '#define QT_FEATURE_ssl 1\n#define QT_NO_SSL 1\n',
-                         '#define QT_FEATURE_ssl 1\n#define QT_FEATURE_ssl -1\n',
-                         '/* #define QT_FEATURE_ssl 1 */\n']:
-                with self.subTest(text=text):
-                    header.write_text(text)
-                    with self.assertRaisesRegex(ValueError, 'must have SSL enabled'):
-                        source.require_ssl_configuration(install)
-            header.write_text('#define QT_FEATURE_ssl 1\n#define QT_FEATURE_schannel 1\n')
-            self.assertEqual(source.require_ssl_configuration(install), source.digest(header))
+        for platform in ['linux', 'win32', 'darwin']:
+            with self.subTest(platform=platform), tempfile.TemporaryDirectory() as temporary:
+                install = Path(temporary)
+                framework = install/'lib/QtNetwork.framework/Versions/A/Headers/qtnetwork-config.h'
+                standard = install/'include/QtNetwork/qtnetwork-config.h'
+                header, decoy = (framework, standard) if platform == 'darwin' else (standard, framework)
+                decoy.parent.mkdir(parents=True)
+                decoy.write_text('#define QT_FEATURE_ssl 1\n')
+                with self.assertRaisesRegex(ValueError, 'configuration missing'):
+                    source.require_ssl_configuration(install, platform)
+                header.parent.mkdir(parents=True)
+                for text in ['#define QT_FEATURE_ssl -1\n#define QT_NO_SSL 1\n',
+                             '#define QT_FEATURE_ssl 0\n',
+                             '#define QT_FEATURE_ssl 1\n#define QT_NO_SSL 1\n',
+                             '#define QT_FEATURE_ssl 1\n#define QT_FEATURE_ssl -1\n',
+                             '/* #define QT_FEATURE_ssl 1 */\n']:
+                    with self.subTest(text=text):
+                        header.write_text(text)
+                        with self.assertRaisesRegex(ValueError, 'must have SSL enabled'):
+                            source.require_ssl_configuration(install, platform)
+                header.write_text('#define QT_FEATURE_ssl 1\n#define QT_FEATURE_schannel 1\n')
+                self.assertEqual(source.require_ssl_configuration(install, platform), source.digest(header))
 
     def test_recorded_source_patches_and_tool_pins(self):
         data=json.loads((ROOT/'scripts/corresponding-sources.json').read_text())

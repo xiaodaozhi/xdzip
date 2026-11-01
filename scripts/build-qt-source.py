@@ -38,8 +38,10 @@ def qtbase_flags(platform):
     return flags
 
 
-def require_ssl_configuration(install):
-    header = install/'include/QtNetwork/qtnetwork-config.h'
+def require_ssl_configuration(install, platform=None):
+    platform = sys.platform if platform is None else platform
+    header = install/('lib/QtNetwork.framework/Versions/A/Headers/qtnetwork-config.h'
+                      if platform == 'darwin' else 'include/QtNetwork/qtnetwork-config.h')
     if not header.is_file() or header.is_symlink():
         raise ValueError('Source-built Qt Network SSL configuration missing')
     content = header.read_text(encoding='utf-8')
