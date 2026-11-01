@@ -2,9 +2,30 @@
 import hashlib
 import json
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 DIRECTORY = 'rar-wire-mappings'
+SOURCE_FILES = (
+    'crates/xdzip-codec-rar/src/legacy_lz15_codes.rs',
+    'crates/xdzip-codec-rar/src/legacy_crypto/permutation.rs',
+)
+
+
+def verify_source_comments(notice):
+    text = notice.decode('utf-8')
+    paragraph = re.search(r'(?ms)^[ \t]*2\.[ \t]+(UnRAR source code.*?)(?=\r?\n[ \t]*\r?\n)', text)
+    if not paragraph:
+        raise ValueError('RAR mapping notice paragraph missing')
+    expected = ' '.join(paragraph.group(1).split())
+    for name in SOURCE_FILES:
+        path = ROOT / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError('RAR mapping source must be a regular file')
+        lines = path.read_text(encoding='utf-8').splitlines()
+        comments = ' '.join(line.lstrip()[2:].strip() for line in lines if line.lstrip().startswith('//'))
+        if expected not in ' '.join(comments.split()):
+            raise ValueError('RAR mapping source notice paragraph missing or changed: ' + name)
 
 
 def collect(output):
@@ -23,6 +44,7 @@ def collect(output):
             len(data[names[2]]) != notice['bytes'] or
             hashlib.sha256(data[names[2]]).hexdigest() != notice['sha256']):
         raise ValueError('RAR mapping original notice checksum or scope mismatch')
+    verify_source_comments(data[names[2]])
     destination = Path(output) / DIRECTORY
     if destination.is_symlink():
         raise ValueError('RAR mapping notice destination must not be a symlink')

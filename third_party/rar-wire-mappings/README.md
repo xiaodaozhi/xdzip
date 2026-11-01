@@ -8,6 +8,10 @@
 
 有限映射的事实交接、原创 Rust 表达和官方参考程序是不同材料。这些映射的参考来源不因独立实现、CSV 表达、空的官方产品源码清单或本项目 Apache-2.0 许可证而重新许可。原文保留不等于已裁定条款适用范围，不构成严格洁净室、法律风险清零或发行批准。逐候选仍须结合实际交付审查来源与适用义务，见[许可证契约](../../docs/engineering/licensing.md)和[RAR 来源](../../docs/engineering/rar-format-sources.md)。
 
+作为保守的通知补强，引用 RAR13/15 映射和承载 RAR20 置换的 Rust 源码注释保留上游许可第 2 段原文；通知及源码交付会核对该段内容，缺失或变更时停止。这不预先裁定有限映射是否属于该条款所述的修改源码，也不改变原始许可范围。
+
 打包将本目录的说明、来源记录和精确原文放入 `notices/rar-wire-mappings/`，对应源码交付另保留相同 `rar-wire-mappings/` 材料。交付后的说明链接指向对应源码树，在安装目录中不承诺存在这些相对路径。
 
 English: This directory preserves the pinned provenance and original notice for finite RAR13/15 wire code mappings and the historical RAR20 cipher permutation. It contains no official UnRAR engine and adds none to product builds or runtime dependencies. The upstream internal version is UnRAR 7.30 beta1; the downloaded archive is named unrarsrc-7.3.1.tar.gz. The filename's 7.3.1 is an archive identifier, not a separately inferred human release version. Its complete license is retained byte for byte, with the archive and notice hashes in sources.json. Independent fact handoffs, CSV data and original Rust representations do not relicense the reference-derived mappings as project-original Apache-2.0 material. Preserving the notice does not decide the applicable legal obligations, establish strict clean-room development or approve distribution. Candidate-specific provenance and redistribution review remain required. Packages retain this directory under notices/rar-wire-mappings; corresponding-source delivery also includes the same bounded notice material separately.
+
+As a precaution, source comments at the RAR13/15 mappings and the RAR20 permutation preserve the original second paragraph of the upstream license. Notice and source delivery check that paragraph and fail if it is missing or changed. This does not decide whether the finite mappings constitute modified source under that paragraph or alter the original license scope.

@@ -1,3 +1,14 @@
+// The following upstream paragraph is retained for this referenced finite
+// mapping as a precaution; its presence does not determine legal applicability.
+// UnRAR source code may be used in any software to handle
+// RAR archives without limitations free of charge, but cannot be
+// used to develop RAR (WinRAR) compatible archiver and to
+// re-create RAR compression algorithm, which is proprietary.
+// Distribution of modified UnRAR source code in separate form
+// or as a part of other software is permitted, provided that
+// full text of this paragraph, starting from "UnRAR source code"
+// words, is included in license, or in documentation if license
+// is not available, and in source code comments of resulting package.
 [
     0xd7, 0x13, 0x95, 0x23, 0x49, 0xc5, 0xc0, 0xcd, 0xf9, 0x1c, 0x10, 0x77, 0x30,
     0xdd, 0x02, 0x2a, 0xe8, 0x01, 0xb1, 0xe9, 0x0e, 0x58, 0xdb, 0x19, 0xdf, 0xc3,
