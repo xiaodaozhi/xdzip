@@ -14,6 +14,7 @@ from sparkle_bundle import collect_sources as collect_sparkle_sources
 from rar_mapping_materials import collect as collect_rar_mapping_materials
 from qt_source_identity import commit_object_path, source_identity
 from vendor_notice_materials import collect as collect_vendor_notice_materials
+from qt_psl_source import collect as collect_qt_psl_source
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -101,6 +102,10 @@ def rebuild_instructions():
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
    qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
    scripts/qt-source-identity/ 保留固定 Git 提交对象输入，用于离线验证源码标记与提交的关系；\n   它不证明归档覆盖整个 Git 树或 SDK 由该树重建。
+   qt-public-suffix-list/ 包含 Qt 固定的可编辑列表和 MPL-2.0 原文；收集时用 Qt 归档内
+   生成器重现并核对 C++ 和测试二进制数据，不据此声称整个 SDK 的构建等价。
+   English: qt-public-suffix-list/ includes the pinned editable input and MPL-2.0 text.
+   Both generated forms are checked against the Qt source archive during collection.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
@@ -202,6 +207,10 @@ def main():
     for source, item in zip(sources, all_archives):
         shutil.copy2(source, output/source.name)
         materials.append(dict(item))
+    qtbase_sources = [source for source, item in zip(sources, all_archives) if item.get('module') == 'qtbase']
+    if len(qtbase_sources) != 1:
+        raise ValueError('Expected exactly one Qt base source archive')
+    materials.append(collect_qt_psl_source(output, qtbase_sources[0]))
     materials += collect_sparkle_sources(output, args.cache)
     from native_codec_materials import corresponding_sources
     materials += corresponding_sources(output)

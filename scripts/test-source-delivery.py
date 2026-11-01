@@ -21,6 +21,7 @@ from desktop_product import built_product
 import macos_launch_services as ls
 import rar_mapping_materials
 import vendor_notice_materials
+import qt_psl_source
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,7 +39,96 @@ verify_dmg = module('verify-macos-dmg')
 replace_qt = module('verify-qt-replacement')
 
 
+def psl_fixture(root, wrong_generated=None):
+    """Owned miniature archive exercises provenance and both regeneration paths."""
+    inputs = root/'third_party/qt-public-suffix-list'
+    inputs.mkdir(parents=True)
+    (root/'scripts').mkdir()
+    data, license_text = b'owned.example\n', b'owned license fixture\n'
+    generator = (b'import pathlib,sys\n'
+                 b'data=pathlib.Path(sys.argv[-2]).read_bytes()\n'
+                 b'prefix=b"BIN:" if "binary" in sys.argv[1] else b"CPP:"\n'
+                 b'pathlib.Path(sys.argv[-1]).write_bytes(prefix+data)\n')
+    cpp, binary = b'CPP:'+data, b'BIN:'+data
+    if wrong_generated == 'cpp':
+        cpp = b'incorrect C++ data'
+    if wrong_generated == 'binary':
+        binary = b'incorrect binary data'
+    for name, value in [('public_suffix_list.dat', data), ('PSL-LICENSE.txt', license_text),
+                        ('README.md', b'owned provenance fixture')]:
+        (inputs/name).write_bytes(value)
+    commit = 'a'*40
+    attribution = b'"Version": "'+commit.encode()+b'", "LicenseId": "MPL-2.0"'
+    archive_name = 'qtbase-everywhere-src-fixture.tar.xz'
+    prefix = archive_name.removesuffix('.tar.xz')+'/'
+    members = {'src/3rdparty/libpsl/src/psl-make-dafsa': generator,
+               'src/3rdparty/libpsl/PSL-LICENSE.txt': license_text,
+               'src/3rdparty/libpsl/qt_attribution.json': attribution,
+               'src/3rdparty/libpsl/psl_data.cpp': cpp,
+               'tests/auto/network/access/qnetworkcookiejar/testdata/publicsuffix/public_suffix_list.dafsa': binary}
+    archive = root/archive_name
+    with tarfile.open(archive, 'w:xz') as output:
+        for name, content in members.items():
+            info = tarfile.TarInfo(prefix+name); info.size = len(content)
+            output.addfile(info, io.BytesIO(content))
+    sha = lambda value: hashlib.sha256(value).hexdigest()
+    config = {'qt_archive': archive_name, 'qt_archive_sha256': digest(archive),
+              'upstream_commit': commit, 'upstream_git_blob': qt_psl_source.git_blob(data),
+              'source_sha256': sha(data), 'license_sha256': sha(license_text),
+              'generator_sha256': sha(generator), 'generated_cpp_sha256': sha(cpp),
+              'generated_binary_sha256': sha(binary)}
+    (root/'scripts/qt-psl-source.json').write_text(json.dumps(config), encoding='utf-8')
+    (root/'scripts/corresponding-sources.json').write_text(json.dumps({'archives': [
+        {'module': 'qtbase', 'file': archive_name, 'sha256': digest(archive)}]}), encoding='utf-8')
+    destination = root/'delivery 中文 with spaces'; destination.mkdir()
+    return archive, destination
+
+
 class DeliveryTests(unittest.TestCase):
+    def test_qt_psl_collects_only_after_regenerating_both_forms(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); archive, output = psl_fixture(root)
+            record = qt_psl_source.collect(output, archive, root)
+            self.assertEqual(record['regenerated'], ['psl_data.cpp', 'public_suffix_list.dafsa'])
+            self.assertEqual((output/record['file']).read_bytes(), b'owned.example\n')
+            self.assertEqual({path.name for path in (output/'qt-public-suffix-list').iterdir()},
+                             {'public_suffix_list.dat', 'PSL-LICENSE.txt', 'README.md', 'source.json'})
+
+    def test_qt_psl_rejects_modified_inputs_and_archive_before_delivery(self):
+        for altered in ['list', 'license', 'archive', 'git_blob']:
+            with self.subTest(altered=altered), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); archive, output = psl_fixture(root)
+                if altered in ['list', 'license']:
+                    name = 'public_suffix_list.dat' if altered == 'list' else 'PSL-LICENSE.txt'
+                    (root/'third_party/qt-public-suffix-list'/name).write_bytes(b'altered')
+                elif altered == 'archive':
+                    archive.write_bytes(b'altered')
+                else:
+                    path = root/'scripts/qt-psl-source.json'
+                    config = json.loads(path.read_text(encoding='utf-8'))
+                    config['upstream_git_blob'] = 'b'*40
+                    path.write_text(json.dumps(config), encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'mismatch'):
+                    qt_psl_source.collect(output, archive, root)
+                self.assertFalse((output/'qt-public-suffix-list').exists())
+
+    def test_qt_psl_rejects_unreproducible_qt_generated_data(self):
+        for wrong in ['cpp', 'binary']:
+            with self.subTest(wrong=wrong), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); archive, output = psl_fixture(root, wrong)
+                with self.assertRaisesRegex(ValueError, 'regenerated .* differs'):
+                    qt_psl_source.collect(output, archive, root)
+                self.assertFalse((output/'qt-public-suffix-list').exists())
+
+    def test_qt_psl_never_overwrites_existing_delivery(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); archive, output = psl_fixture(root)
+            original = output/'qt-public-suffix-list'; original.mkdir()
+            (original/'owned').write_bytes(b'keep')
+            with self.assertRaisesRegex(ValueError, 'destination unavailable'):
+                qt_psl_source.collect(output, archive, root)
+            self.assertEqual((original/'owned').read_bytes(), b'keep')
+
     @unittest.skipUnless(os.environ.get('XDZIP_VENDOR_INTEGRATION') == '1', 'Explicit real Cargo vendor check only')
     def test_vendor_config_real_cargo(self):
         base = ROOT/'build'

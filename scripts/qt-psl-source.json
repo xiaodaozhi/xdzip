@@ -1,0 +1,13 @@
+{
+  "qt_archive": "qtbase-everywhere-src-6.8.2.tar.xz",
+  "qt_archive_sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05",
+  "upstream_repository": "https://github.com/publicsuffix/list",
+  "upstream_commit": "903a83ff7bfc3148e3692e09396f9f3bdc9462ef",
+  "upstream_path": "public_suffix_list.dat",
+  "upstream_git_blob": "6ba26da001a9a094a6dfab0ae7cca5e31f7e8e2e",
+  "source_sha256": "2dcffaa353cc1eb13be5c03d238dca7194dd35f4729d54740d2b9b5ec11b8f1e",
+  "license_sha256": "3f3d9e0024b1921b067d6f7f88deb4a60cbe7a78e76c64e3f1d7fc3b779b9d04",
+  "generator_sha256": "bae0c67459150063c253ed308d35a1b2b1ef883dd89de6d294037afac9b41779",
+  "generated_cpp_sha256": "f324a80476c92915bb56a961629d5ac69087a5ff11d720edd31dd57582983a0c",
+  "generated_binary_sha256": "26669adf8ebf5cc6dbb2c24fdd6af8ac5bb811a880ac22170a44dca2e44f52e0"
+}

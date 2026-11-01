@@ -11,6 +11,10 @@ python3 scripts/verify-source-delivery.py --delivery build/review/source-deliver
 
 Qt 运行时模块归档为 qtbase、qtdeclarative、qtsvg、qttranslations，另交付构建所需的 qtshadertools、qttools 及固定 Rust 标准库源码组件，来自 [Qt 官方 6.8.2 归档](https://download.qt.io/archive/qt/6.8/6.8.2/submodules/)。官方 .sha256 值固定于 scripts/corresponding-sources.json；缓存与下载均重新校验，下载先写 partial，再验证后提交。只检查归档目录，不自动解包第三方路径。Cargo vendor 使用 --locked，保留 registry 校验与构建依赖，不执行第三方构建脚本。
 
+源码交付另含 Qt Network 内嵌 Public Suffix List 的固定可编辑原始列表和 MPL-2.0 原文。收集时先核对列表、Qt 归档和生成器身份，再分别生成 C++ 数据及二进制测试数据，并与 Qt 归档中的文件逐字节比较；任一不符均停止交付。此对应关系不代表整个 SDK 构建等价或自动批准发行许可。
+
+English: Source delivery also includes the pinned editable Public Suffix List and its MPL-2.0 text. Collection verifies the input and Qt archive, then regenerates and compares both the C++ data and binary test data byte for byte. It stops on a mismatch and does not establish full SDK equivalence or approve release licensing.
+
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
 `rar-wire-mappings/` 单独保留有限 RAR 线映射的固定参考来源、说明和 UnRAR 7.30 beta1 精确原始许可，全部进入交付文件哈希清单。下载归档名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。它不携带官方引擎源码，也不将事实来源重新许可为 Apache-2.0，条款适用范围和实际再分发义务继续按候选复核。
