@@ -476,7 +476,7 @@
     "about.runtime": "运行环境",
     "about.development": "开发构建，仅供测试。",
     "about.modified": "包含未提交修改",
-    "about.license": "xdzip：Apache-2.0。Qt：LGPL-3.0。许可见 notices。",
+    "about.license": "Apache-2.0。Qt LGPL-3.0。许可见 notices。",
     "about.homepage": "项目主页",
     "about.copy": "复制版本信息",
     "about.copied": "已复制",

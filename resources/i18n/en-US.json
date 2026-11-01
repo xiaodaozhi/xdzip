@@ -476,7 +476,7 @@
     "about.runtime": "Runtime",
     "about.development": "Development build, for testing.",
     "about.modified": "Includes uncommitted changes",
-    "about.license": "xdzip: Apache-2.0. Qt: LGPL-3.0. See bundled notices.",
+    "about.license": "Apache-2.0. Qt LGPL-3.0. See notices.",
     "about.homepage": "Project website",
     "about.copy": "Copy version info",
     "about.copied": "Copied",
