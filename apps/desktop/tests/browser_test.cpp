@@ -25,6 +25,7 @@
 #include <QClipboard>
 #include <QCryptographicHash>
 #include <QCursor>
+#include <QDebug>
 #ifdef Q_OS_WIN
 #include <shlobj.h>
 #endif
@@ -83,6 +84,25 @@
 void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
+
+class ActivationEventTrace final : public QObject {
+  protected:
+    bool eventFilter(QObject *object, QEvent *event) override {
+        auto *window = qobject_cast<QWindow *>(object);
+        if (window && window->property("xdzipTraceActivation").toBool() &&
+            (event->type() == QEvent::WindowStateChange || event->type() == QEvent::Expose ||
+             event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut ||
+             event->type() == QEvent::Hide || event->type() == QEvent::Show)) {
+            qInfo() << "activation event" << event->type() << "spontaneous" << event->spontaneous()
+                    << "states" << window->windowStates() << "exposed" << window->isExposed()
+                    << "native" << window->property("xdzipNativeMinimized") << "was"
+                    << window->property("xdzipWasMinimized") << "pending"
+                    << window->property("xdzipWakePending") << "saved"
+                    << window->property("xdzipRestoreState");
+        }
+        return false;
+    }
+};
 #endif
 
 #ifdef Q_OS_WIN
@@ -3510,6 +3530,17 @@ QtObject {
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+#ifdef Q_OS_MACOS
+        ActivationEventTrace activationTrace;
+        window->installEventFilter(&activationTrace);
+        connect(window, &QWindow::windowStateChanged, window, [window](Qt::WindowState state) {
+            if (window->property("xdzipTraceActivation").toBool())
+                qInfo() << "activation state signal" << state << "native"
+                        << window->property("xdzipNativeMinimized") << "was"
+                        << window->property("xdzipWasMinimized") << "pending"
+                        << window->property("xdzipWakePending");
+        });
+#endif
         auto *controller = window->findChild<BrowserController *>();
         auto *preferences =
             engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
@@ -3626,8 +3657,21 @@ QtObject {
             }
             // A second activation may arrive while native minimization is still
             // in flight. It must be retained rather than cancelling that transition.
+#ifdef Q_OS_MACOS
+            window->setProperty("xdzipTraceActivation", true);
+            qInfo() << "activation before quick minimize" << window->windowStates() << "native"
+                    << window->property("xdzipNativeMinimized") << "was"
+                    << window->property("xdzipWasMinimized") << "pending"
+                    << window->property("xdzipWakePending");
+#endif
             window->showMinimized();
             desktop.restore();
+#ifdef Q_OS_MACOS
+            qInfo() << "activation after quick restore" << window->windowStates() << "native"
+                    << window->property("xdzipNativeMinimized") << "was"
+                    << window->property("xdzipWasMinimized") << "pending"
+                    << window->property("xdzipWakePending");
+#endif
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
                 QVERIFY(QTest::qWaitForWindowExposed(window));
@@ -3639,6 +3683,9 @@ QtObject {
                     QTRY_VERIFY(nativeWindowMatchesState(window, state));
 #endif
             }
+#ifdef Q_OS_MACOS
+            window->setProperty("xdzipTraceActivation", false);
+#endif
         }
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());

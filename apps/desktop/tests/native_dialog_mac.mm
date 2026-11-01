@@ -1,6 +1,7 @@
 // apps/desktop/tests/native_dialog_mac.mm
 
 #import <AppKit/AppKit.h>
+#include <QDebug>
 #include <QPointer>
 #include <QVariant>
 #include <QWindow>
@@ -24,7 +25,14 @@ bool watchNativeWindowTransitions(QWindow *window) {
                                           object:native
                                            queue:nil
                                       usingBlock:^(NSNotification *notification) {
-                                        Q_UNUSED(notification);
+                                        if (guarded &&
+                                            guarded->property("xdzipTraceActivation").toBool())
+                                            qInfo() << "activation native notification"
+                                                    << QString::fromNSString(notification.name)
+                                                    << "states" << guarded->windowStates()
+                                                    << "miniaturized" << native.miniaturized
+                                                    << "pending"
+                                                    << guarded->property("xdzipWakePending");
                                         if (guarded)
                                             guarded->setProperty("xdzipNativeTransition", true);
                                       }]];
@@ -38,7 +46,14 @@ bool watchNativeWindowTransitions(QWindow *window) {
                                           object:native
                                            queue:nil
                                       usingBlock:^(NSNotification *notification) {
-                                        Q_UNUSED(notification);
+                                        if (guarded &&
+                                            guarded->property("xdzipTraceActivation").toBool())
+                                            qInfo() << "activation native notification"
+                                                    << QString::fromNSString(notification.name)
+                                                    << "states" << guarded->windowStates()
+                                                    << "miniaturized" << native.miniaturized
+                                                    << "pending"
+                                                    << guarded->property("xdzipWakePending");
                                         if (guarded)
                                             guarded->setProperty("xdzipNativeTransition", false);
                                       }]];
