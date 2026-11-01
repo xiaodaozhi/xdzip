@@ -285,9 +285,13 @@ def rebuild_instructions():
    Both generated forms are checked against the Qt source archive during collection.
    cldr-46-common-only.tar.gz 保留 Qt 区域数据生成所需 CLDR 46 的 common 数据和许可；
    来源提交和原归档摘要见 qt-cldr-sources.json。Qt 的 qlocalexml2cpp.py 还需要
-   单独的 ISO 639-3 代码表，该表未在本交付中提供，其来源和条款须自行核对。
+   单独的 ISO 639-3 代码表，该表未在本交付中提供。试验用候选表的来源和摘要见
+   qt-cldr-sources.json；其是否为 Qt 历史输入未经确认。获取前须核对上游条款：
+   https://iso639-3.sil.org/code_tables/download_tables
    English: The CLDR 46 subset contains common data and its license; Qt's locale
    generator also needs a separate ISO 639-3 table, not included in this delivery.
+   qt-cldr-sources.json records a tested candidate, not a verified historical Qt input;
+   check its upstream terms before obtaining it at the URL above.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。

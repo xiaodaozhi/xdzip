@@ -3,6 +3,15 @@
   "qt_version": "6.8.2",
   "qtbase_archive": "qtbase-everywhere-src-6.8.2.tar.xz",
   "qtbase_archive_sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05",
+  "iso6393_regeneration_candidate": {
+    "recorded_version": "20240415",
+    "url": "https://github.com/unicode-org/cldr/blob/e1d37acce5dae468c414172be53b666d58d45be8/tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/iso-639-3.tab",
+    "git_blob": "1cb94ac1f56a4f789b15b2f4bd1c2b4ba293bb9a",
+    "sha256": "b31ae9d81d34d8e036b1adabcdaf133d0a46b19d91719ffc6cdc3030ebdb55b8",
+    "included_in_delivery": false,
+    "historical_qt_input_verified": false,
+    "upstream_terms": "https://iso639-3.sil.org/code_tables/download_tables"
+  },
   "cldr": {
     "version": "46",
     "source_commit": "e1d37acce5dae468c414172be53b666d58d45be8",
