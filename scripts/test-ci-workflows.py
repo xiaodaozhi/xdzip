@@ -3,6 +3,7 @@
 import importlib.util
 from pathlib import Path
 import re
+import tomllib
 import unittest
 
 import yaml
@@ -139,6 +140,25 @@ class WorkflowTests(unittest.TestCase):
                         self.assertIn('--qt-input', line)
                         self.assertNotIn('--html', line)
                         self.assertNotIn('--native-zoom', line)
+
+    def test_docs_use_isolated_pinned_rust_before_rust_tests(self):
+        job = self.workflows['docs.yml']['jobs']['docs']
+        self.assertEqual(job['env']['RUSTUP_HOME'], '${{ runner.temp }}/xdzip-docs-rustup')
+        steps = job['steps']
+        prepare = [i for i, step in enumerate(steps)
+                   if step.get('name') == 'Prepare isolated pinned Rust toolchain']
+        self.assertEqual(len(prepare), 1)
+        step = steps[prepare[0]]
+        self.assertNotIn('continue-on-error', step)
+        version = tomllib.loads((ROOT / 'rust-toolchain.toml').read_text(encoding='utf-8'))['toolchain']['channel']
+        for required in [f'rustup toolchain install {version} --profile minimal --component rustfmt --component clippy',
+                         f'toolchains/{version}-*/bin/rustc', 'rustup which rustc', '$RUSTUP_HOME',
+                         'cargo clippy --version', 'rustfmt --version']:
+            self.assertIn(required, step['run'])
+        consumers = [i for i, item in enumerate(steps)
+                     if 'scripts/test-production-update-signing.py' in item.get('run', '')]
+        self.assertEqual(len(consumers), 1)
+        self.assertLess(prepare[0], consumers[0])
 
     def test_qt_desktop_and_native_coverage_remains(self):
         source = (ROOT / 'scripts/ci-desktop.ps1').read_text(encoding='utf-8')

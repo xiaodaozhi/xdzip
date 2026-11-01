@@ -23,3 +23,7 @@ GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目
 系统维护状态、Qt 安全更新渠道及升级复验责任以[支持政策](support-policy.md)为准，来源与许可结论按[发行审查流程](../qa/release-review.md)登记。
 
 Windows 主窗口的客户区扩展由 WindowsFrame 使用公开 Qt 窗口接口和 Win32 实现，不链接 GuiPrivate。首次绑定普通窗口时按当前 QWindow 客户区逻辑尺寸、DPR 和原生边框度量确定外框，后续主题或 DPI 重应用只刷新边框。在无局部缩放覆盖、Qt PassThrough 舍入的 PMv2 普通窗口中，WM_GETDPISCALEDSIZE 保留待处理 SIZE 的缩放前调整量，缩放客户区后加目标 DPI 的实际边框；无效度量、溢出及其他状态不写入 SIZE，交回 Qt。借用的原生消息及其可写结构仅在同步回调中使用。升级 Qt 或替换 SDK 时须复验初始客户区、真实双屏往返、原生边框、DWM、最大化和全屏恢复；程序化往返不能代替物理拖动和视觉验收。
+
+文档 CI 在 runner 临时目录中独立安装 `rust-toolchain.toml` 固定版本及 rustfmt、clippy，检查实际编译器位于该目录后再执行签名工具与其他现有测试，避免复用宿主不完整的 rustup 工具链。该隔离不跳过任何原有检查，也不解释宿主工具链此前为何不完整。
+
+English: Documentation CI installs the pinned Rust version, rustfmt and clippy in an isolated runner-temporary rustup directory and checks the compiler path before running the existing signing-tool and other tests. Isolation does not skip checks or explain why a previous host toolchain was incomplete.
