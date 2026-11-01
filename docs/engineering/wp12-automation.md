@@ -25,6 +25,14 @@ English: The source build requires Qt Network SSL. Linux explicitly enables the 
 
 本地额外执行 scripts/verify-qt-replacement.py：从开发包复制隔离应用，只替换源码构建的 QtCore，必要时重写开发 RPATH 并做 ad-hoc 完整性签名；核验递归导入无需 SDK，再从真实产品进程取得源码标记，完成十万条交互和 32 MiB 真实解压及独立字节检查。它区别于原有只修改 Mach-O 身份的替换试验，仍不保证任意 ABI 变化兼容。
 
+Windows 和 Linux 的可信 main 源码工作流另在隔离副本核验固定 alpha.8 便携包：原始包与源码构建 QtCore 均按 SHA-256 固定，原库必须拒绝源码标记，替换后由原应用进程确认加载标记，完成十万条浏览与取消及 32 MiB 解压的独立字节比较。Windows 使用包内原生平台插件，Linux 使用包内离屏插件；只上传记录，不修改已发布资产或系统安装，不以自动验证代替真人验收，也不证明任意 ABI 兼容或原 SDK 可复现。
+
+English: On trusted main, Windows and Linux additionally verify the pinned alpha.8 portable package in an isolated copy. The original QtCore must reject the source marker; after replacement the released app must load it, browse and cancel a 100,000-entry fixture, and extract 32 MiB with independently checked bytes. Only records are uploaded. This is not manual desktop acceptance, arbitrary ABI compatibility or proof of reproducible upstream SDK binaries.
+
+本地 Apple Silicon Mac 可另对固定 alpha.8 原始 app.zip 执行 `scripts/verify-alpha8-macos-qt-replacement.py --qt-build build/wp12 --output build/alpha8-mac-qt-replacement`。脚本先核验原包和包内链接，在临时副本中替换已核验的源码 QtCore、执行必要的本地 ad-hoc 完整性签名，检查原应用代码段及依赖、进程内源码标记、浏览取消与真实解压，并清理本次临时应用注册和副本。它拒绝 CI 环境，不改变原安装或发布附件；受控原生验证不等于人工验收、Developer ID 签名或公证。
+
+English: A local Apple Silicon Mac can run `scripts/verify-alpha8-macos-qt-replacement.py` against the pinned published app.zip and a source-built QtCore. It preflights the archive, replaces the library in a disposable copy, applies local ad-hoc integrity signatures, checks the original app sections and imports, verifies the loaded marker and interaction, then cleans up its temporary app registration and copy. It refuses CI and does not change installed or published files. Controlled native testing is not manual acceptance, Developer ID signing or notarization.
+
 ## 性能与资源证据
 
 scripts/measure-desktop.py 使用 tools/process-metrics 的只读系统计数器。macOS 读取物理 footprint、CPU 和磁盘 I/O，CPU 的 Mach tick 按宿主 timebase 换算为秒，并与自有进程的独立 CPU 时钟交叉核验；Linux 使用 PSS、CPU ticks 和 /proc I/O；Windows 使用私有提交、CPU 与进程 I/O transfer。Windows transfer 不等于物理磁盘字节，各平台内存指标也不混作同一物理内存排名。进程开始时间区分 PID 复用，100 ms 采样仍可能漏峰、短命后代及退出前最后 I/O。

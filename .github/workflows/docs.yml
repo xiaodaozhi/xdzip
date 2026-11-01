@@ -74,6 +74,7 @@ jobs:
           python3 scripts/test-source-delivery.py
           python3 scripts/test-qt-sdk-correspondence.py
           python3 scripts/test-qt-source-build.py
+          python3 scripts/test-alpha8-qt-replacement.py
           python3 scripts/test-performance.py
           python3 scripts/test-wp12-readiness.py
           python3 scripts/check-macos-localization.py

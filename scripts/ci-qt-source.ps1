@@ -13,3 +13,6 @@ if ($IsWindows) {
 Checked rustup @('toolchain','install','1.99.0','--profile','minimal','--component','rust-src')
 Checked python @('scripts/build-qt-source.py','--output','build/qt-source','--resume','--parallel','3')
 Checked python @('scripts/verify-qt-source-product.py','--qt-build','build/qt-source','--output','build/qt-source-product','--parallel','3')
+if ($IsWindows -or $IsLinux) {
+    Checked python @('scripts/verify-alpha8-qt-replacement.py','--qt-build','build/qt-source','--output','build/alpha8-qt-replacement')
+}
