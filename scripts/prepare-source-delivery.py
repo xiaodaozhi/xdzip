@@ -3,7 +3,8 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import re
 import shutil
 import subprocess
 import tarfile
@@ -67,12 +68,36 @@ def collect_source_identity_proofs(output, items):
 
 
 def collect_native_sources(output, cache):
-    # The current dedicated runtime material is the full Linux ICU license.
-    item = configuration()['icu']
-    source = fetch(item, cache)
-    shutil.copy2(source, output/source.name)
+    # Verify and inspect the pinned archive without extracting third-party paths.
+    config = configuration()
+    license_item, source_item = config['icu'], config['icu_source']
+    license_file = fetch(license_item, cache)
+    source_file = fetch(source_item, cache)
+    with tarfile.open(source_file, 'r:gz') as archive:
+        members = archive.getmembers()
+        if not members or any('\\' in member.name or
+                              PurePosixPath(member.name).is_absolute() or
+                              '..' in PurePosixPath(member.name).parts or
+                              not PurePosixPath(member.name).parts or
+                              PurePosixPath(member.name).parts[0] != 'icu'
+                              for member in members):
+            raise ValueError('Unexpected ICU source archive layout')
+
+        def read_member(name):
+            matching = [member for member in members if member.name == name]
+            if len(matching) != 1 or not matching[0].isfile() or matching[0].size > 1024 * 1024:
+                raise ValueError('Missing or ambiguous ICU source identity file')
+            return archive.extractfile(matching[0]).read()
+        if read_member('icu/LICENSE') != license_file.read_bytes():
+            raise ValueError('ICU source license differs from pinned notice')
+        version_header = read_member('icu/source/common/unicode/uvernum.h').decode('utf-8')
+        versions = re.findall(r'^#define U_ICU_VERSION "([^"]+)"\s*$', version_header, re.MULTILINE)
+        if versions != [source_item['version']] or source_item['version'] != license_item['version']:
+            raise ValueError('ICU source version mismatch')
+    for path in (license_file, source_file):
+        shutil.copy2(path, output/path.name)
     shutil.copy2(ROOT/'scripts/native-runtime-sources.json', output/'native-runtime-sources.json')
-    return dict(item)
+    return [dict(license_item), dict(source_item)]
 
 
 def write_vendor_config(output):
@@ -129,9 +154,12 @@ def rebuild_instructions():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Linux ICU 的完整许可随目录提供，版本和原文哈希见 native-runtime-sources.json。
+6. Linux ICU 的完整许可和 ICU4C 73.2 上游源码归档随目录提供，版本与哈希见
+   native-runtime-sources.json。版本一致不证明供应商库由该归档无补丁构建。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
-   English: The Linux ICU license is included. Current Windows developer packages
+   English: The Linux ICU license and pinned ICU4C 73.2 upstream source archive are
+   included. Matching versions do not prove the supplier built its libraries without
+   patches from this archive. Current Windows developer packages
    omit the software OpenGL library; historical deliveries retain their obligations.
 
 ## 显式测试数据前置与完整 runtime 批次
@@ -218,7 +246,7 @@ def main():
     materials += corresponding_sources(output)
     _, rar_mapping_record = collect_rar_mapping_materials(output)
     materials.append(rar_mapping_record)
-    materials.append(collect_native_sources(output, ROOT/'build/native-source-cache'))
+    materials += collect_native_sources(output, ROOT/'build/native-source-cache')
     collect_source_identity_proofs(output, all_archives)
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'

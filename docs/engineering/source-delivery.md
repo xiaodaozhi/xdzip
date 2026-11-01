@@ -25,9 +25,9 @@ English: Source delivery retains the pinned Apache Tika input, upstream NOTICE a
 
 English: The separate rar-wire-mappings directory preserves bounded finite-mapping provenance and the exact original UnRAR 7.30 beta1 notice in the hashed delivery. The pinned download filename is unrarsrc-7.3.1.tar.gz; its numeric filename does not establish a separate upstream release version. As a precaution, delivery also requires the complete original second license paragraph in the related Rust source comments. These materials include no official engine source and do not relicense reference-derived facts as Apache-2.0 or replace candidate-specific redistribution review.
 
-另附固定的 ICU 73.2 完整许可，服务于 Linux ICU，并纳入交付总清单。当前 Windows 开发包不包含软件 OpenGL 库，不再为该库收集 Mesa／LLVM 材料；历史交付保留原有材料和义务，见[原生运行库来源与通知](native-runtime-materials.md)。
+另附固定的 ICU 73.2 完整许可和 ICU4C 官方源码归档，服务于 Linux ICU，并纳入交付总清单。收集时校验归档摘要、版本和归档内许可，不解包第三方路径；上游版本相符不证明供应商二进制由该归档无补丁构建。当前 Windows 开发包不包含软件 OpenGL 库，不再为该库收集 Mesa／LLVM 材料；历史交付保留原有材料和义务，见[原生运行库来源与通知](native-runtime-materials.md)。
 
-English: The pinned ICU license remains in the source delivery for Linux. Current Windows developer packages omit the software OpenGL library and its dedicated Mesa/LLVM materials; historical deliveries retain their original materials and obligations.
+English: The pinned ICU license and official ICU4C 73.2 source archive are included for Linux. Collection checks the archive hash, version and embedded license without extracting third-party paths. A matching upstream version does not prove the supplier built its binaries from that archive without patches. Current Windows developer packages omit the software OpenGL library and its dedicated Mesa/LLVM materials; historical deliveries retain their original materials and obligations.
 
 应用动态链接 Qt，提供源码重建入口和兼容库替换说明。[macOS 部署核验](macos-deployment.md)覆盖隔离副本的修改库加载，不声称已从源码重建整套 Qt。实际 Qt 源码构建与产品加载另有独立流程，见[自动验证契约](wp12-automation.md)。SDK 字节级构建等价性、精确静态链接归属和许可分支仍属于[发行许可复核](https://github.com/xiaodaozhi/xdzip/issues/4)，不重新列为已完成 WP-12 的开发待办。
 

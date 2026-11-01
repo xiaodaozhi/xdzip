@@ -224,20 +224,76 @@ class DeliveryTests(unittest.TestCase):
                         source.write_vendor_config(output)
                 self.assertFalse((output/'cargo-config.toml').exists())
 
-    def test_native_source_delivery_retains_icu_without_software_opengl_archives(self):
+    def test_native_source_delivery_retains_verified_icu_source_and_license(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir(); (root/'scripts').mkdir()
             data = b'Owned ICU license fixture'
-            item = {'file': 'ICU.txt', 'sha256': hashlib.sha256(data).hexdigest(),
+            item = {'file': 'ICU.txt', 'version': '73.2', 'sha256': hashlib.sha256(data).hexdigest(),
                     'url': 'https://invalid.test/not-used'}
             (cache/'ICU.txt').write_bytes(data)
-            (root/'scripts/native-runtime-sources.json').write_text(json.dumps({'icu': item}))
-            with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value={'icu': item}):
+            archive = cache/'icu-fixture.tgz'
+            self.write_icu_fixture(archive, data)
+            source_item = {'file': archive.name, 'version': '73.2',
+                           'sha256': digest(archive), 'url': 'https://invalid.test/not-used'}
+            config = {'icu': item, 'icu_source': source_item}
+            (root/'scripts/native-runtime-sources.json').write_text(json.dumps(config))
+            with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value=config):
                 material = source.collect_native_sources(output, cache)
-            self.assertEqual(material, item)
+            self.assertEqual(material, [item, source_item])
             self.assertEqual((output/'ICU.txt').read_bytes(), data)
-            self.assertEqual({path.name for path in output.iterdir()}, {'ICU.txt', 'native-runtime-sources.json'})
+            self.assertEqual((output/archive.name).read_bytes(), archive.read_bytes())
+            self.assertEqual({path.name for path in output.iterdir()},
+                             {'ICU.txt', archive.name, 'native-runtime-sources.json'})
+
+    @staticmethod
+    def write_icu_fixture(path, license_text, version='73.2', extra=None, include_version=True):
+        files = {'icu/LICENSE': license_text}
+        if include_version:
+            files['icu/source/common/unicode/uvernum.h'] = f'/* © ICU fixture */\n#define U_ICU_VERSION "{version}"\n'.encode()
+        files.update(extra or {})
+        with tarfile.open(path, 'w:gz') as archive:
+            for name, contents in files.items():
+                member = tarfile.TarInfo(name)
+                member.size = len(contents)
+                archive.addfile(member, io.BytesIO(contents))
+
+    def test_native_source_delivery_rejects_invalid_icu_archive(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir(); (root/'scripts').mkdir()
+            license_text = b'Owned ICU license fixture'
+            license_item = {'file': 'ICU.txt', 'version': '73.2',
+                            'sha256': hashlib.sha256(license_text).hexdigest(),
+                            'url': (root/'missing-license').as_uri()}
+            (cache/'ICU.txt').write_bytes(license_text)
+            archive = cache/'icu-fixture.tgz'
+            cases = [
+                ('wrong license', {'license_text': b'other license'}),
+                ('wrong version', {'license_text': license_text, 'version': '74.1'}),
+                ('missing version', {'license_text': license_text, 'include_version': False}),
+                ('escaping member', {'license_text': license_text, 'extra': {'icu/../escape': b'x'}}),
+            ]
+            for name, options in cases:
+                with self.subTest(name=name):
+                    self.write_icu_fixture(archive, **options)
+                    source_item = {'file': archive.name, 'version': '73.2',
+                                   'sha256': digest(archive), 'url': (root/'missing-source').as_uri()}
+                    config = {'icu': license_item, 'icu_source': source_item}
+                    (root/'scripts/native-runtime-sources.json').write_text(json.dumps(config))
+                    with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value=config):
+                        with self.assertRaises(ValueError):
+                            source.collect_native_sources(output, cache)
+                    self.assertEqual(list(output.iterdir()), [])
+            self.write_icu_fixture(archive, license_text)
+            source_item['sha256'] = '0'*64
+            with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value=config):
+                with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
+                    source.collect_native_sources(output, cache)
+            archive.unlink()
+            with patch.object(source, 'ROOT', root), patch.object(source, 'configuration', return_value=config):
+                with self.assertRaises(OSError):
+                    source.collect_native_sources(output, cache)
 
     def test_rar_mapping_notice_bytes_match_in_notices_and_separate_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:
