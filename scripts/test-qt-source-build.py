@@ -20,6 +20,37 @@ def load(name):
 source=load('build-qt-source');linkage=load('linkage-evidence');binary_diff=load('classify-qt-binary-differences')
 
 class SourceTests(unittest.TestCase):
+    def test_qt_source_configuration_keeps_ssl_on_for_all_platforms(self):
+        for platform in ['linux', 'win32', 'darwin']:
+            with self.subTest(platform=platform):
+                flags = source.qtbase_flags(platform)
+                self.assertIn('-DFEATURE_ssl=ON', flags)
+                self.assertNotIn('-DFEATURE_ssl=OFF', flags)
+                wanted = 'ON' if platform == 'linux' else 'OFF'
+                self.assertIn('-DFEATURE_openssl='+wanted, flags)
+                self.assertEqual(len([flag for flag in flags if flag.startswith('-DFEATURE_openssl=')]), 1)
+                if platform == 'linux':
+                    self.assertIn('-DFEATURE_openssl_runtime=ON', flags)
+
+    def test_qt_source_ssl_header_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            install = Path(temporary)
+            header = install/'include/QtNetwork/qtnetwork-config.h'
+            with self.assertRaisesRegex(ValueError, 'configuration missing'):
+                source.require_ssl_configuration(install)
+            header.parent.mkdir(parents=True)
+            for text in ['#define QT_FEATURE_ssl -1\n#define QT_NO_SSL 1\n',
+                         '#define QT_FEATURE_ssl 0\n',
+                         '#define QT_FEATURE_ssl 1\n#define QT_NO_SSL 1\n',
+                         '#define QT_FEATURE_ssl 1\n#define QT_FEATURE_ssl -1\n',
+                         '/* #define QT_FEATURE_ssl 1 */\n']:
+                with self.subTest(text=text):
+                    header.write_text(text)
+                    with self.assertRaisesRegex(ValueError, 'must have SSL enabled'):
+                        source.require_ssl_configuration(install)
+            header.write_text('#define QT_FEATURE_ssl 1\n#define QT_FEATURE_schannel 1\n')
+            self.assertEqual(source.require_ssl_configuration(install), source.digest(header))
+
     def test_recorded_source_patches_and_tool_pins(self):
         data=json.loads((ROOT/'scripts/corresponding-sources.json').read_text())
         self.assertEqual({i['module'] for i in data['archives']+data['build_tools']},set(source.ORDER))

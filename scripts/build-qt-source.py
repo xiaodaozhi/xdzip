@@ -10,6 +10,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -21,10 +22,31 @@ from qt_source_identity import source_identity
 COMMON = ['-DCMAKE_BUILD_TYPE=Release', '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
           '-DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF', '-DBUILD_WITH_PCH=OFF', '-DWARNINGS_ARE_ERRORS=OFF']
 BASE = ['-DFEATURE_system_'+f+'=OFF' for f in ['zlib', 'pcre2', 'doubleconversion', 'freetype', 'harfbuzz', 'jpeg', 'png', 'sqlite']]
-BASE += ['-DFEATURE_'+f+'=OFF' for f in ['zstd', 'brotli', 'openssl', 'dbus', 'icu', 'glib', 'sql_mysql', 'sql_odbc', 'sql_psql', 'sql_mimer']]
+BASE += ['-DFEATURE_'+f+'=OFF' for f in ['zstd', 'brotli', 'dbus', 'icu', 'glib', 'sql_mysql', 'sql_odbc', 'sql_psql', 'sql_mimer']]
 TOOLS = ['-DFEATURE_'+f+'=OFF' for f in ['assistant', 'designer', 'distancefieldgenerator', 'kmap2qmap', 'pixeltool', 'qdbus', 'qdoc', 'qtattributionsscanner', 'qtplugininfo', 'clang', 'clangcpp']]
 TOOLS += ['-DCMAKE_DISABLE_FIND_PACKAGE_WrapLibClang=ON']
 ORDER = ['qtbase', 'qtshadertools', 'qtsvg', 'qtdeclarative', 'qttools', 'qttranslations']
+
+
+def qtbase_flags(platform):
+    # Linux has no Schannel or SecureTransport fallback. Disabling OpenSSL
+    # there disables QSslSocket, which the actual product's update code uses.
+    openssl = 'ON' if platform.startswith('linux') else 'OFF'
+    flags = BASE + ['-DFEATURE_ssl=ON', '-DFEATURE_openssl='+openssl]
+    if platform.startswith('linux'):
+        flags += ['-DFEATURE_openssl_runtime=ON']
+    return flags
+
+
+def require_ssl_configuration(install):
+    header = install/'include/QtNetwork/qtnetwork-config.h'
+    if not header.is_file() or header.is_symlink():
+        raise ValueError('Source-built Qt Network SSL configuration missing')
+    content = header.read_text(encoding='utf-8')
+    features = re.findall(r'^\s*#\s*define\s+QT_FEATURE_ssl\s+(-?\d+)\s*$', content, re.MULTILINE)
+    if features != ['1'] or re.search(r'^\s*#\s*define\s+QT_NO_SSL\b', content, re.MULTILINE):
+        raise ValueError('Source-built Qt Network must have SSL enabled')
+    return digest(header)
 
 
 def load_delivery():
@@ -114,7 +136,7 @@ def main():
         source = sources/items[name]['file'].removesuffix('.tar.xz'); build = output/'qt-build'/name
         flags = COMMON+native_flags+[f'-DCMAKE_INSTALL_PREFIX={install}']
         if name == 'qtbase':
-            flags += BASE
+            flags += qtbase_flags(sys.platform)
         else:
             flags += [f'-DCMAKE_PREFIX_PATH={install}']
             if name == 'qttools': flags += TOOLS
@@ -123,6 +145,8 @@ def main():
         run(configure, log)
         run(['cmake', '--build', build, '--parallel', str(args.parallel)], log)
         run(['cmake', '--install', build], log)
+        if name == 'qtbase':
+            ssl_config_sha256 = require_ssl_configuration(install)
         commands.append({'module': name, 'configure_flags': [sanitize(x.replace(str(install), '<qt-install>')) for x in flags]})
         identity = source_identity(items[name])
         records.append({'module': name, **identity,
@@ -143,6 +167,7 @@ def main():
               'source_config_sha256':digest(ROOT/'scripts/corresponding-sources.json'),
               'qt_version':config['qt_version'], 'modules':records, 'configuration':commands,
               'installed_headers':configuration, 'qtcore_sha256':digest(core),
+              'qt_network_ssl_config_sha256':ssl_config_sha256,
               'patches':[{'file':p['patch'], 'sha256':p['patch_sha256']} for p in config['source_build_patches']+config['sdk_patches']],
               'toolchain':{tool:sanitize(subprocess.run(command,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT).stdout.splitlines()[0])
                            for tool,command in [('cmake',['cmake','--version']),('ninja',['ninja','--version']),('compiler',['clang++','--version'] if sys.platform=='darwin' else ['cl'] if os.name=='nt' else ['c++','--version'])]},
