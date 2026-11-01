@@ -33,6 +33,7 @@ OperationWindow {
             if (code === "authorization_cancelled") return qsTrId("update.authorizationCancelled");
             if (code.startsWith("authorization_") || code === "helper_exit") return qsTrId("update.authorizationFailed");
             if (code === "disk" || code === "cache") return qsTrId("update.disk");
+            if (code === "unsafe_installation") return qsTrId("update.unsafeInstallation");
             if (code === "minimum_system") return qsTrId("update.minimumSystem");
             if (code.includes("signature") || code.includes("hash") || code === "download_size") return qsTrId("update.verificationFailed");
             return qsTrId("update.failed");

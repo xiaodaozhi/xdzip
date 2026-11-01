@@ -492,6 +492,7 @@
     "update.tls": "Cannot verify the update server's secure connection. Check your system clock and network.",
     "update.timeout": "The update request timed out. Try again later.",
     "update.disk": "Cannot save the update. Check available disk space and write permissions.",
+    "update.unsafeInstallation": "The installation folder did not pass the safety check. Check its permissions or install the update manually from the release page.",
     "update.minimumSystem": "This update does not support your system. See the system requirements in the release notes.",
     "update.verificationFailed": "Update verification failed. Installation was stopped. Download the update again.",
     "update.available": "Version %1 is available",

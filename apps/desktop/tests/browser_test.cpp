@@ -4822,6 +4822,23 @@ QtObject {
                         QVERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
                         QCOMPARE(status->property("font").value<QFont>().pixelSize(),
                                  qRound(13 * scale));
+                        if (state == "error") {
+                            for (const auto &error :
+                                 {qMakePair(QStringLiteral("unsafe_installation"),
+                                            "update.unsafeInstallation"),
+                                  qMakePair(QStringLiteral("download"), "update.network"),
+                                  qMakePair(QStringLiteral("unrecognized_error"),
+                                            "update.failed")}) {
+                                service->setProperty("errorCode", error.first);
+                                QTRY_COMPARE(status->property("text").toString(),
+                                             qtTrId(error.second));
+                                QTRY_VERIFY(status->property("paintedWidth").toReal() <=
+                                            status->width() + 1);
+                                QTRY_VERIFY(status->property("paintedHeight").toReal() <=
+                                            status->height() + 1);
+                                QTRY_VERIFY(footer->y() + footer->height() <= about->height() + 1);
+                            }
+                        }
                         QCOMPARE(check->isEnabled(), !busy);
                         QCOMPARE(cancel->isVisible(), busy && state != "installing");
                         const bool showProgress =
