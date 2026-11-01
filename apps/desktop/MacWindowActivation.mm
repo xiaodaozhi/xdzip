@@ -5,7 +5,7 @@
 
 namespace {
 NSWindow *nativeWindow(QWindow *window) {
-    if (!window || !window->handle())
+    if (!window || !window->handle() || QGuiApplication::platformName() != QStringLiteral("cocoa"))
         return nil;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     return view.window;

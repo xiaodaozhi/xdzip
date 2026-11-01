@@ -2,11 +2,14 @@
 
 #import <AppKit/AppKit.h>
 #include <QDebug>
+#include <QGuiApplication>
 #include <QPointer>
 #include <QVariant>
 #include <QWindow>
 
 bool watchNativeWindowTransitions(QWindow *window) {
+    if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
+        return false;
     if (window->property("xdzipNativeStateWatched").toBool())
         return true;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
@@ -69,6 +72,8 @@ bool watchNativeWindowTransitions(QWindow *window) {
 }
 
 void traceNativeWindowState(QWindow *window) {
+    if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
+        return;
     NSView *view = reinterpret_cast<NSView *>(window->winId());
     NSWindow *native = view.window;
     qInfo() << "activation native snapshot" << "hasWindow" << bool(native) << "sameObservedWindow"

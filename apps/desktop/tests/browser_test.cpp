@@ -3661,25 +3661,29 @@ QtObject {
             // A second activation may arrive while native minimization is still
             // in flight. It must be retained rather than cancelling that transition.
 #ifdef Q_OS_MACOS
-            window->setProperty("xdzipTraceActivation", true);
-            qInfo() << "activation before quick minimize" << window->windowStates() << "native"
-                    << window->property("xdzipNativeMinimized") << "was"
-                    << window->property("xdzipWasMinimized") << "pending"
-                    << window->property("xdzipWakePending");
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                window->setProperty("xdzipTraceActivation", true);
+                qInfo() << "activation before quick minimize" << window->windowStates() << "native"
+                        << window->property("xdzipNativeMinimized") << "was"
+                        << window->property("xdzipWasMinimized") << "pending"
+                        << window->property("xdzipWakePending");
+            }
 #endif
             window->showMinimized();
             desktop.restore();
 #ifdef Q_OS_MACOS
-            qInfo() << "activation after quick restore" << window->windowStates() << "native"
-                    << window->property("xdzipNativeMinimized") << "was"
-                    << window->property("xdzipWasMinimized") << "pending"
-                    << window->property("xdzipWakePending");
-            traceNativeWindowState(window);
-            for (const auto delay : {500, 3000})
-                QTimer::singleShot(delay, window, [window] {
-                    if (window->property("xdzipTraceActivation").toBool())
-                        traceNativeWindowState(window);
-                });
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                qInfo() << "activation after quick restore" << window->windowStates() << "native"
+                        << window->property("xdzipNativeMinimized") << "was"
+                        << window->property("xdzipWasMinimized") << "pending"
+                        << window->property("xdzipWakePending");
+                traceNativeWindowState(window);
+                for (const auto delay : {500, 3000})
+                    QTimer::singleShot(delay, window, [window] {
+                        if (window->property("xdzipTraceActivation").toBool())
+                            traceNativeWindowState(window);
+                    });
+            }
 #endif
             QTRY_COMPARE(window->windowState(), state);
             if (QGuiApplication::platformName() != QStringLiteral("offscreen")) {
