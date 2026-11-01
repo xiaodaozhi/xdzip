@@ -24,3 +24,6 @@ third_party/rar-wire-mappings/UnRAR-7.3.1-license.txt -text -whitespace
 # Preserve the exact pinned upstream Rust vendor notices on every platform.
 third_party/rust-vendor-notices/bytecode-alliance/LICENSE-* -text -whitespace
 third_party/rust-vendor-notices/r-efi/AUTHORS -text -whitespace
+# Preserve the Qt-pinned Public Suffix List and its original license bytes.
+third_party/qt-public-suffix-list/public_suffix_list.dat -text -whitespace
+third_party/qt-public-suffix-list/PSL-LICENSE.txt -text -whitespace

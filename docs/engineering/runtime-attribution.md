@@ -8,6 +8,10 @@ Qt 6.8 起提供构建对应的 [SPDX 清单](https://doc.qt.io/qt-6.8/licenses-
 
 `scripts/qt-license-sources.json` 固定官方 Qt 源码及 SPDX license-list-data 提交、许可文本 URL 和 SHA-256。下载内容放入 build/ 缓存；任何缓存或下载的哈希不符都会失败。不会跟随 SPDX 中任意地址下载材料。除 LICENSES/ 的标准文本，还包含 Qt GUI 平滑缩放算法与 SVG 的原始通知，以及系统依赖声明涉及的 LGPL-2.1 文本；上游 LicenseRef 原文和版权声明保留在声明 JSON 中。
 
+Qt 运行时通知另随包提供 Qt Network 使用的 Public Suffix List 固定可编辑源码、MPL-2.0 原文和获取说明；收集器核对上游 blob、SHA-256 及许可字节。源码交付还验证该输入能重现 Qt 归档中的两种生成数据，见[对应源码材料](source-delivery.md)。此项不代替其他 Qt 模块的对应源码及替换核验。
+
+English: Runtime notices include the pinned editable Public Suffix List used by Qt Network, its MPL-2.0 text and source information. Collection verifies the upstream blob, SHA-256 and license bytes. The source delivery separately checks both generated forms against the Qt archive; other Qt source and replacement obligations remain separately reviewed.
+
 ## 文件与组件关联
 
 1. 对核验根内文件重新计算哈希，拒绝在 deployment-audit.json 之后被修改的文件。
