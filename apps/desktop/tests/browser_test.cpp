@@ -3549,8 +3549,10 @@ QtObject {
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY(controller->ready() && !controller->busy());
 #ifdef Q_OS_MACOS
-        if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
             QTRY_VERIFY(watchNativeWindowTransitions(window));
+            QTRY_VERIFY(window->property("xdzipCocoaActivationObserver").value<QObject *>());
+        }
 #endif
         for (const auto state : {Qt::WindowNoState, Qt::WindowMaximized, Qt::WindowFullScreen}) {
             window->setWindowState(state);

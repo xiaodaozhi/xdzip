@@ -8,6 +8,15 @@
 #include <QVariant>
 #include <QWindow>
 
+#ifdef Q_OS_MACOS
+#include <QPlatformSurfaceEvent>
+bool watchCocoaActivation(QWindow *window);
+void unwatchCocoaActivation(QWindow *window);
+bool cocoaActivationInFlight(QWindow *window);
+bool cocoaActivationIsMiniaturized(QWindow *window);
+bool cocoaActivationIsVisible(QWindow *window);
+#endif
+
 // Showing an already visible QWindow chooses the platform default state. Keep
 // the last non-minimized state instead; activation must never normalize it first.
 class WindowActivation final : public QObject {
@@ -21,9 +30,16 @@ class WindowActivation final : public QObject {
     static void reveal(QWindow *window) {
         if (!window)
             return;
+        bool nativeTransitionInFlight = false;
+#ifdef Q_OS_MACOS
+        const bool cocoa = QGuiApplication::platformName() == QStringLiteral("cocoa");
+        const bool cocoaObserved = cocoa && watchCocoaActivation(window);
+        nativeTransitionInFlight = cocoaObserved && cocoaActivationInFlight(window);
+#endif
         const bool minimized = window->windowStates().testFlag(Qt::WindowMinimized);
         if (!minimized && window->isExposed() && window->isActive() &&
-            int(window->windowStates()) == window->property("xdzipRestoreState").toInt()) {
+            int(window->windowStates()) == window->property("xdzipRestoreState").toInt() &&
+            !nativeTransitionInFlight) {
             window->setProperty("xdzipWasMinimized", false);
             window->setProperty("xdzipWakePending", false);
         }
@@ -35,7 +51,29 @@ class WindowActivation final : public QObject {
             (minimized || window->property("xdzipWasMinimized").toBool()) &&
             !window->property("xdzipNativeMinimized").toBool()) {
             window->setProperty("xdzipWakePending", true);
+#ifdef Q_OS_MACOS
+            if (cocoaObserved && cocoaActivationIsMiniaturized(window)) {
+                if (!window->windowStates().testFlag(Qt::WindowMinimized))
+                    window->setWindowStates(window->windowStates() | Qt::WindowMinimized);
+                window->setProperty("xdzipNativeMinimized", true);
+            } else if (cocoaObserved && !nativeTransitionInFlight && window->isExposed() &&
+                       cocoaActivationIsVisible(window)) {
+                // Qt may optimistically report Minimized even when AppKit did
+                // not start a transition. Cancel that request only when the
+                // observed native window is visible and no transition is active.
+                const auto state = Qt::WindowStates(window->property("xdzipRestoreState").toInt());
+                window->setWindowStates(state);
+                window->setProperty("xdzipWasMinimized", false);
+                window->setProperty("xdzipWakePending", false);
+                window->raise();
+                window->requestActivate();
+                return;
+            } else {
+                return;
+            }
+#else
             return;
+#endif
         }
         if (window->windowStates().testFlag(Qt::WindowMinimized)) {
             auto state = window->windowStates() & ~Qt::WindowMinimized;
@@ -59,11 +97,41 @@ class WindowActivation final : public QObject {
         window->requestActivate();
     }
 
+#ifdef Q_OS_MACOS
+    static void cocoaNativeMinimized(QWindow *window) {
+        if (window->property("xdzipWakePending").toBool() &&
+            !window->windowStates().testFlag(Qt::WindowMinimized))
+            window->setWindowStates(window->windowStates() | Qt::WindowMinimized);
+        window->setProperty("xdzipNativeMinimized", true);
+        queueWake(window);
+    }
+    static void cocoaTransitionFinished(QWindow *window) {
+        if (window->property("xdzipWakePending").toBool())
+            QTimer::singleShot(0, window, [window] {
+                if (window->property("xdzipWakePending").toBool())
+                    reveal(window);
+            });
+    }
+#endif
+
   protected:
     bool eventFilter(QObject *object, QEvent *event) override {
         auto *window = qobject_cast<QWindow *>(object);
         if (!window)
             return false;
+        bool nativeTransitionInFlight = false;
+#ifdef Q_OS_MACOS
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+            event->type() == QEvent::PlatformSurface &&
+            static_cast<QPlatformSurfaceEvent *>(event)->surfaceEventType() ==
+                QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+            unwatchCocoaActivation(window);
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+            (event->type() == QEvent::Show || event->type() == QEvent::Expose))
+            watchCocoaActivation(window);
+        nativeTransitionInFlight = QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+                                   cocoaActivationInFlight(window);
+#endif
         if (!window->property("xdzipActivationTracked").toBool()) {
             window->setProperty("xdzipActivationTracked", true);
             connect(window, &QWindow::windowStateChanged, window,
@@ -73,7 +141,8 @@ class WindowActivation final : public QObject {
         if (event->type() == QEvent::FocusIn && window->isExposed() &&
             !window->windowStates().testFlag(Qt::WindowMinimized) &&
             (!window->property("xdzipWakePending").toBool() ||
-             int(window->windowStates()) == window->property("xdzipRestoreState").toInt())) {
+             (int(window->windowStates()) == window->property("xdzipRestoreState").toInt() &&
+              !nativeTransitionInFlight))) {
             window->setProperty("xdzipWasMinimized", false);
             window->setProperty("xdzipWakePending", false);
             remember(window);
@@ -84,8 +153,13 @@ class WindowActivation final : public QObject {
                                 window->windowStates().testFlag(Qt::WindowMinimized));
             queueWake(window);
         }
-        if (event->type() == QEvent::Expose)
+        if (event->type() == QEvent::Expose) {
             queueWake(window);
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                cocoaTransitionFinished(window);
+#endif
+        }
         if (event->type() == QEvent::Hide)
             remember(window);
         return false;

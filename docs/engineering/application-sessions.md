@@ -48,6 +48,10 @@ System Quit, application-menu and tray quit share the desktop route. An owned pa
 
 `showMinimized()` 会替换原状态位。恢复时先在仍最小化的状态下补齐保存的最大化或全屏标志，再仅移除最小化标志，不先显示普通窗口。原生回归等待窗口实际暴露、激活及最终状态确认，避免把 Qt 请求值当作窗口管理器已完成的状态。
 
+Cocoa 路径观察所属 NSWindow 的最小化与全屏转换通知；转换进行时保留恢复请求，并在原生确认后继续。若 Qt 已报告最小化而同一原生窗口仍可见、已暴露且没有转换进行，则撤销未生效的 Qt 状态请求并恢复保存状态，避免等待不会到来的原生确认。原生窗口销毁时移除观察，无法取得窗口时继续保留请求，不以固定延时判断完成。
+
+English: The Cocoa activation path observes minimization and fullscreen transitions on the owned NSWindow. A restore remains pending while a native transition is in progress. If Qt reports a minimized request while the observed native window remains visible and exposed with no transition in progress, the ineffective Qt request is cancelled and the saved state is restored. Observers are removed when the native surface is destroyed; an unavailable native window keeps the request pending instead of relying on a fixed delay.
+
 密码与退出顺序回归使用真实 AES 等待，覆盖任务通知已建立请求、延迟窗口尚未显示时的同步 Quit，同页、其他会话、其他窗口及选择等待，另以窗口已显示后的真实 posted Quit 作投递对照。必须记录实际通知与投递状态，确认排队密码窗口不覆盖退出决定，返回或等待保留同一令牌，取消后完成全部 join；受控同步通知顺序不能替代某个平台历史事件顺序的证据。
 
 Password/quit ordering regressions use real AES waiting and synchronous Quit after the task prompt exists but before deferred window presentation. Coverage includes the same page, another session, another window, and choosing to wait, plus a genuinely posted Quit after presentation as a delivery control. Record actual notification and delivery states, preserve the prompt token on return or wait, and require every join after cancellation. A controlled synchronous notification does not establish an earlier platform event order.
