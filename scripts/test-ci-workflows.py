@@ -31,6 +31,12 @@ def import_script(name, filename):
     return module
 
 
+def validate_job_env_contexts(job):
+    for value in job.get('env', {}).values():
+        if re.search(r'\$\{\{[^}]*\brunner(?:\.|\[|\b)', str(value)):
+            raise ValueError('runner-context-unavailable-in-job-env')
+
+
 def validate_graph(jobs):
     graph = {}
     for name, job in jobs.items():
@@ -77,6 +83,7 @@ class WorkflowTests(unittest.TestCase):
                 self.assertTrue(workflow.get('jobs'))
                 validate_graph(workflow['jobs'])
                 for job in workflow['jobs'].values():
+                    validate_job_env_contexts(job)
                     for step in job.get('steps', []):
                         target = step.get('uses', '')
                         if target.startswith('./'):
@@ -95,6 +102,9 @@ class WorkflowTests(unittest.TestCase):
             validate_graph({'a': {'needs': 'b'}, 'b': {'needs': 'a'}})
         with self.assertRaisesRegex(ValueError, 'duplicate-yaml-key'):
             yaml.load('jobs:\n  a: {}\n  a: {}\n', Loader=UniqueLoader)
+        with self.assertRaisesRegex(ValueError, 'runner-context-unavailable-in-job-env'):
+            validate_job_env_contexts({'env': {'X': '${{ runner.temp }}/test'}})
+        validate_job_env_contexts({'steps': [{'env': {'X': '${{ runner.temp }}/test'}}]})
 
     def test_default_workflow_gates_match_evidence_producers(self):
         ordinary = {name for name, value in self.workflows.items()
@@ -143,12 +153,14 @@ class WorkflowTests(unittest.TestCase):
 
     def test_docs_use_isolated_pinned_rust_before_rust_tests(self):
         job = self.workflows['docs.yml']['jobs']['docs']
-        self.assertEqual(job['env']['RUSTUP_HOME'], '${{ runner.temp }}/xdzip-docs-rustup')
+        self.assertNotIn('RUSTUP_HOME', job.get('env', {}))
         steps = job['steps']
         prepare = [i for i, step in enumerate(steps)
                    if step.get('name') == 'Prepare isolated pinned Rust toolchain']
         self.assertEqual(len(prepare), 1)
         step = steps[prepare[0]]
+        self.assertEqual(step['env']['RUSTUP_HOME'], '${{ runner.temp }}/xdzip-docs-rustup')
+        self.assertIn('>> "$GITHUB_ENV"', step['run'])
         self.assertNotIn('continue-on-error', step)
         version = tomllib.loads((ROOT / 'rust-toolchain.toml').read_text(encoding='utf-8'))['toolchain']['channel']
         for required in [f'rustup toolchain install {version} --profile minimal --component rustfmt --component clippy',

@@ -34,12 +34,13 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      RUSTUP_HOME: ${{ runner.temp }}/xdzip-docs-rustup
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Prepare isolated pinned Rust toolchain
+        env:
+          RUSTUP_HOME: ${{ runner.temp }}/xdzip-docs-rustup
         run: |
+          printf 'RUSTUP_HOME=%s\n' "$RUSTUP_HOME" >> "$GITHUB_ENV"
           rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
           case "$(rustup which rustc)" in
             "$RUSTUP_HOME"/toolchains/1.99.0-*/bin/rustc) ;;
