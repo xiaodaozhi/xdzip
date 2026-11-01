@@ -232,3 +232,9 @@ English: Internal file drags immediately show a pointer-following type icon, pla
 标题区与其首个正文分组之间统一使用 operation.header.bodyGap，当前为 0 个逻辑像素。标题区自身已包含底部留白，正文不得再叠加旧 hero 的外部间距。卡片内距、正文段落及设置分组间距保留在正文容器内部。Qt 和 HTML 均测量标题区下边界到首个正文分组上边界，覆盖任务运行与三种终态。
 
 English: The first body group follows the shared header with a 0-unit bodyGap. Header padding already supplies the separation; legacy hero gaps must not be added again. Card insets and paragraph or settings-section spacing remain inside the body group. Qt and HTML measure this boundary, including running and terminal task views.
+
+## 关于窗口许可提示
+
+关于窗口在既有可滚动正文中明确列出 xdzip 许可和 Qt 所选 LGPL-3.0 分支，并指向随附 notices。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
+
+English: The existing scrollable About body identifies the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled notices. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.

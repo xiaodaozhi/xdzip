@@ -102,6 +102,7 @@ OperationWindow {
                         color: Theme.textSecondary; font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
                     }
                     Text {
+                        objectName: "aboutLicense"
                         Layout.leftMargin: Theme.aboutContentInset; Layout.rightMargin: Theme.aboutContentInset; Layout.fillWidth: true
                         text: qsTrId("about.license"); color: Theme.textSecondary
                         font.pixelSize: Theme.aboutNoteSize * Theme.fontScale; wrapMode: Text.Wrap
