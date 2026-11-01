@@ -20,6 +20,7 @@ from deployment_audit import digest, within
 from desktop_product import built_product
 import macos_launch_services as ls
 import rar_mapping_materials
+import vendor_notice_materials
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,6 +53,15 @@ class DeliveryTests(unittest.TestCase):
             self.assertIn('directory = "vendor"', config)
             self.assertNotIn(str(output), config)
             self.assertTrue(any(path.is_dir() for path in (output/'vendor').iterdir()))
+            before = {path.relative_to(output/'vendor').as_posix(): digest(path)
+                      for path in (output/'vendor').rglob('*') if path.is_file()}
+            record = vendor_notice_materials.collect(output/'vendor', output/'rust-vendor-notices')
+            self.assertEqual({item['name'] for item in record['packages']},
+                             {'r-efi', 'wasip3', 'wasm-encoder', 'wasm-metadata', 'wasmparser',
+                              'wit-component', 'wit-parser'})
+            self.assertEqual(before, {path.relative_to(output/'vendor').as_posix(): digest(path)
+                                     for path in (output/'vendor').rglob('*') if path.is_file()})
+            self.assertTrue((output/'rust-vendor-notices/index.json').is_file())
 
     def test_vendor_config_uses_relative_output_even_with_spaces(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -330,6 +340,89 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
                 exec(self.code(source.rebuild_instructions()), {})
             run.assert_not_called()
             download.assert_not_called()
+
+
+class VendorNoticeMaterialTests(unittest.TestCase):
+    def fixture(self, root):
+        vendor = root/'vendor'
+        package = vendor/'demo-1.2.3'
+        package.mkdir(parents=True)
+        cargo = b'[package]\nname = "demo"\nversion = "1.2.3"\nlicense = "MIT OR Apache-2.0"\n'
+        (package/'Cargo.toml').write_bytes(cargo)
+        revision = 'a'*40
+        (package/'.cargo_vcs_info.json').write_text(json.dumps({'git': {'sha1': revision},
+                                                               'path_in_vcs': 'crates/demo'}))
+        upstream = root/'third_party/rust-vendor-notices/fixture/AUTHORS'
+        upstream.parent.mkdir(parents=True)
+        data = b'Owned test notice, not an actual license.'
+        upstream.write_bytes(data)
+        blob = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+        item = {'name': 'demo', 'version': '1.2.3', 'vendor_directory': 'demo-1.2.3',
+                'license_expression': 'MIT OR Apache-2.0',
+                'manifest_sha256': hashlib.sha256(cargo).hexdigest(),
+                'upstream_repository': 'https://github.com/example/demo',
+                'upstream_revision': revision, 'upstream_package_path': 'crates/demo',
+                'notices': [{'name': 'AUTHORS',
+                             'repo_file': 'third_party/rust-vendor-notices/fixture/AUTHORS',
+                             'sha256': hashlib.sha256(data).hexdigest(),
+                             'upstream_git_blob': blob,
+                             'upstream_url': f'https://github.com/example/demo/blob/{revision}/AUTHORS'}]}
+        config = root/'sources.json'
+        config.write_text(json.dumps({'schema_version': 1, 'packages': [item]}), encoding='utf-8')
+        return vendor, package, upstream, config, item, data
+
+    def test_supplement_indexes_upstream_without_changing_vendor(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            vendor, package, _, config, item, data = self.fixture(root)
+            before = {p.name: p.read_bytes() for p in package.iterdir()}
+            output = root/'supplement'
+            record = vendor_notice_materials.collect(vendor, output, root=root, config_path=config)
+            self.assertEqual({p.name: p.read_bytes() for p in package.iterdir()}, before)
+            self.assertEqual((output/'demo-1.2.3/AUTHORS').read_bytes(), data)
+            self.assertEqual(record['packages'][0]['license_expression'], item['license_expression'])
+            self.assertEqual(record['packages'][0]['notices'][0]['upstream_url'], item['notices'][0]['upstream_url'])
+            self.assertEqual(json.loads((output/'index.json').read_text(encoding='utf-8')), record)
+
+    def test_unresolved_or_tampered_material_fails_before_output(self):
+        for kind in ('unknown', 'manifest', 'metadata', 'revision', 'notice', 'path', 'url', 'vendor-notice'):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                vendor, package, upstream, config, item, _ = self.fixture(root)
+                if kind == 'unknown':
+                    unknown = vendor/'unidentified-1'; unknown.mkdir()
+                    (unknown/'Cargo.toml').write_text('[package]')
+                elif kind == 'manifest':
+                    (package/'Cargo.toml').write_text('changed')
+                elif kind == 'metadata':
+                    item['license_expression'] = 'MIT'
+                elif kind == 'revision':
+                    (package/'.cargo_vcs_info.json').write_text(json.dumps({'git': {'sha1': 'b'*40},
+                                                                           'path_in_vcs': 'crates/demo'}))
+                elif kind == 'notice':
+                    upstream.write_bytes(b'tampered')
+                elif kind == 'path':
+                    item['notices'][0]['repo_file'] = '../outside'
+                elif kind == 'url':
+                    item['notices'][0]['upstream_url'] = 'https://example.invalid/notice'
+                elif kind == 'vendor-notice':
+                    (package/'AUTHORS').write_bytes(b'different')
+                config.write_text(json.dumps({'schema_version': 1, 'packages': [item]}), encoding='utf-8')
+                output = root/'supplement'
+                with self.assertRaises(ValueError):
+                    vendor_notice_materials.collect(vendor, output, root=root, config_path=config)
+                self.assertFalse(output.exists())
+
+    def test_nested_license_source_code_is_not_a_notice(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            vendor, package, _, config, _, _ = self.fixture(root)
+            code = package/'src/oci_annotations/licenses.rs'
+            code.parent.mkdir(parents=True)
+            code.write_text('pub struct Licenses;')
+            (package/'licenses.rs').write_text('pub struct Licenses;')
+            record = vendor_notice_materials.collect(vendor, root/'supplement', root=root, config_path=config)
+            self.assertEqual([item['name'] for item in record['packages']], ['demo'])
 
 
 class DisposableBundleTests(unittest.TestCase):

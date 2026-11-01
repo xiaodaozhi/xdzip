@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "scope": "Pinned supplemental notices for locked vendor source packages, not a license conclusion.",
+  "packages": [
+    {
+      "name": "r-efi",
+      "version": "6.0.0",
+      "vendor_directory": "r-efi-6.0.0",
+      "license_expression": "MIT OR Apache-2.0 OR LGPL-2.1-or-later",
+      "manifest_sha256": "a021f9fb0645cc5de5770cf7f41594c1deff4b388eca933b289752aa52666829",
+      "upstream_repository": "https://github.com/r-efi/r-efi",
+      "upstream_revision": "7e1b0322d31d625f81a5656096330934f9cd835d",
+      "upstream_package_path": "",
+      "notices": [
+        {
+          "name": "AUTHORS",
+          "repo_file": "third_party/rust-vendor-notices/r-efi/AUTHORS",
+          "sha256": "d027e91dbc9cdbb2f1190068e498bd6b61cff022b6a032b191021ba658d96111",
+          "upstream_git_blob": "79c8b7c4a1dabcfbc718b7fe6d43b1892f9850cd",
+          "upstream_url": "https://github.com/r-efi/r-efi/blob/7e1b0322d31d625f81a5656096330934f9cd835d/AUTHORS"
+        }
+      ]
+    },
+    {
+      "name": "wasip3",
+      "version": "0.4.0+wasi-0.3.0-rc-2026-01-06",
+      "vendor_directory": "wasip3-0.4.0+wasi-0.3.0-rc-2026-01-06",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "8c68ba791448b5727fb665a4faf8d344494f5dee1f099cd1df8300bd08f48b50",
+      "upstream_repository": "https://github.com/bytecodealliance/wasi-rs",
+      "upstream_revision": "06ce201370fcde0d1b0d47cac8ecb1b0b312c9f9",
+      "upstream_package_path": "crates/wasip3",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasi-rs/blob/06ce201370fcde0d1b0d47cac8ecb1b0b312c9f9/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasi-rs/blob/06ce201370fcde0d1b0d47cac8ecb1b0b312c9f9/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasi-rs/blob/06ce201370fcde0d1b0d47cac8ecb1b0b312c9f9/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "wasm-encoder",
+      "version": "0.244.0",
+      "vendor_directory": "wasm-encoder-0.244.0",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "5918b239d623f4de620208510e5f6f98238d5f381dc6a26e9a4726b48d1436ae",
+      "upstream_repository": "https://github.com/bytecodealliance/wasm-tools",
+      "upstream_revision": "d4e317f22c3bace76cb3205003bcc34b4929037d",
+      "upstream_package_path": "crates/wasm-encoder",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "wasm-metadata",
+      "version": "0.244.0",
+      "vendor_directory": "wasm-metadata-0.244.0",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "6664f62d0bc39281f4cf2f00e06cd411b58fcd72e7322c03717826cbfaf1c5ac",
+      "upstream_repository": "https://github.com/bytecodealliance/wasm-tools",
+      "upstream_revision": "d4e317f22c3bace76cb3205003bcc34b4929037d",
+      "upstream_package_path": "crates/wasm-metadata",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "wasmparser",
+      "version": "0.244.0",
+      "vendor_directory": "wasmparser-0.244.0",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "44fa0c6cd610439798dadcd0b35cf3ddc05df8f300e3df62713317d4e111c659",
+      "upstream_repository": "https://github.com/bytecodealliance/wasm-tools",
+      "upstream_revision": "d4e317f22c3bace76cb3205003bcc34b4929037d",
+      "upstream_package_path": "crates/wasmparser",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "wit-component",
+      "version": "0.244.0",
+      "vendor_directory": "wit-component-0.244.0",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "8142ea1fdeebc373aa1ef74dbf068351b2995b10ae9629a758dc6ece35f2fffd",
+      "upstream_repository": "https://github.com/bytecodealliance/wasm-tools",
+      "upstream_revision": "d4e317f22c3bace76cb3205003bcc34b4929037d",
+      "upstream_package_path": "crates/wit-component",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-MIT"
+        }
+      ]
+    },
+    {
+      "name": "wit-parser",
+      "version": "0.244.0",
+      "vendor_directory": "wit-parser-0.244.0",
+      "license_expression": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "manifest_sha256": "d7bcbbfa75bb0ee12fb76a45b75af7f4f92af9c3ed6046866a2315efb65773fe",
+      "upstream_repository": "https://github.com/bytecodealliance/wasm-tools",
+      "upstream_revision": "d4e317f22c3bace76cb3205003bcc34b4929037d",
+      "upstream_package_path": "crates/wit-parser",
+      "notices": [
+        {
+          "name": "LICENSE-APACHE",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "upstream_git_blob": "16fe87b06e802f094b3fbb0894b137bca2b16ef1",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-APACHE"
+        },
+        {
+          "name": "LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-Apache-2.0_WITH_LLVM-exception",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "upstream_git_blob": "f9d81955f4bcb8f96a025e2ecc46f39ec536d465",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "name": "LICENSE-MIT",
+          "repo_file": "third_party/rust-vendor-notices/bytecode-alliance/LICENSE-MIT",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "upstream_git_blob": "31aa79387f27e730e33d871925e152e35e428031",
+          "upstream_url": "https://github.com/bytecodealliance/wasm-tools/blob/d4e317f22c3bace76cb3205003bcc34b4929037d/LICENSE-MIT"
+        }
+      ]
+    }
+  ]
+}

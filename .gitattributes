@@ -21,3 +21,6 @@ apps/desktop/tests/preferences-compat/previous/*.h -text
 crates/xdzip-codec-rar/tests/fixtures/legacy20/LICENSE.junrar.txt -text whitespace=-blank-at-eol
 # Preserve the pinned original restricted-reference notice byte for byte.
 third_party/rar-wire-mappings/UnRAR-7.3.1-license.txt -text -whitespace
+# Preserve the exact pinned upstream Rust vendor notices on every platform.
+third_party/rust-vendor-notices/bytecode-alliance/LICENSE-* -text -whitespace
+third_party/rust-vendor-notices/r-efi/AUTHORS -text -whitespace

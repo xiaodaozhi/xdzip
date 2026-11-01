@@ -29,6 +29,10 @@ verify-source-delivery.py 先重新核对交付文件哈希，将自有项目和
 
 English: Source delivery invokes Cargo in the output directory with a relative `vendor` destination and an explicit project manifest. Unexpected source mappings or non-relocatable paths are rejected.
 
+对于锁定 vendor 源码中没有常见文件名的独立许可或通知文件的包，交付在 `rust-vendor-notices/` 另存按包索引的固定上游原文。收集器核对包的 Cargo 清单哈希、上游 Git 提交与路径、许可原文 SHA-256 和 Git blob；未知缺口或身份不符时停止。补充目录不改变 Cargo vendor 原文件及校验，许可表达式保留上游原样，不由此批准具体许可分支或既有发行的合规状态。
+
+English: For locked vendor source packages without conventionally named notice files, the delivery separately indexes pinned upstream notice texts by package. The collector verifies package identity, upstream revision and notice hashes, and stops on unknown gaps. It does not modify Cargo vendor files or approve a license choice or an earlier release.
+
 新增[Qt SDK 对应核验](qt-sdk-correspondence.md)：交付包总是包含固定对应清单和可重放的 AGL 消费端补丁，传入 --qt-prefix 后额外包含该 SDK 的逐文件源码声明核对、构建配置和明确缺口。交付清单递归哈希补丁子目录，重建验证同样复核这些字节。未传 SDK 时不伪造配置核验记录。
 
 交付还保留固定的 Qt Declarative Git 提交对象输入，供离线核对发布提交与归档 `.tag` 树对象的关系；交付清单会哈希该输入。树对象对应不代表源码归档覆盖整个树，或 SDK 与该树构建等价。

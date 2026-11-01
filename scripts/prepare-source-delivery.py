@@ -13,6 +13,7 @@ from native_runtime_materials import configuration, fetch
 from sparkle_bundle import collect_sources as collect_sparkle_sources
 from rar_mapping_materials import collect as collect_rar_mapping_materials
 from qt_source_identity import commit_object_path, source_identity
+from vendor_notice_materials import collect as collect_vendor_notice_materials
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -93,6 +94,9 @@ def rebuild_instructions():
 
 1. 将 xdzip-source.tar 和 rust-vendor.tar.gz 解到同一个工作目录，将 cargo-config.toml
    复制为该目录 .cargo/config.toml。保持 Cargo.lock，不执行 cargo update。
+   rust-vendor-notices/ 按包列出固定上游的补充许可原文与来源，不修改 vendor 内容。
+   English: rust-vendor-notices/ indexes pinned upstream notices by source package
+   without altering the vendored files or approving license compliance.
 2. rust-src-1.99.0.tar.xz 是固定 Rust 标准库原始源码组件，保留上游归档与通知。\n   按仓库固定的 Rust、CMake、编译器和 Qt 6.8.2 工具链构建。Qt 源码包保留原始归档，
    包含相应模块的第三方源码和通知；构建 Qt 时需匹配 SDK 的 configure/features/补丁。
    qt-patches/ 保留本地 SDK 消费端 CMake 补丁，按 corresponding-sources.json\n   的前后哈希核对；不要将消费端补丁当作 Qt 二进制源码变更。可选\n   qt-sdk-correspondence.json 保存实际 SDK 配置、来源文件核对及缺口。\n   现有 SDK 与上游源码逐项等价性、平台构建配置及再分发库仍须审查，不能假设一致。
@@ -223,6 +227,10 @@ def main():
     # dependencies; vendor does not run third-party build scripts.
     vendor = output/'vendor'
     write_vendor_config(output)
+    vendor_notices = collect_vendor_notice_materials(vendor, output/'rust-vendor-notices')
+    materials.append({'kind': 'rust-vendor-notice-supplements',
+                      'file': 'rust-vendor-notices/index.json',
+                      'packages': len(vendor_notices['packages'])})
     vendor_archive = output/'rust-vendor.tar.gz'
     with tarfile.open(vendor_archive, 'w:gz') as archive:
         archive.add(vendor, arcname='vendor')
