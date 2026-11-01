@@ -23,7 +23,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev libglib2.0-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-xfixes0-dev libxcb-sync-dev libxcb-shm0-dev libxcb-util-dev libxcb-xinerama0-dev libxcb-xkb-dev libfontconfig-dev libfreetype-dev libx11-xcb-dev libxrender-dev libxext-dev libxi-dev libxfixes-dev libxrandr-dev libice-dev libsm-dev fonts-noto-cjk
+          sudo apt-get install -y libssl-dev libglib2.0-dev libzstd-dev libgl1-mesa-dev libegl1-mesa-dev libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-render-util0-dev libxcb-shape0-dev libxcb-randr0-dev libxcb-xfixes0-dev libxcb-sync-dev libxcb-shm0-dev libxcb-util-dev libxcb-xinerama0-dev libxcb-xkb-dev libfontconfig-dev libfreetype-dev libx11-xcb-dev libxrender-dev libxext-dev libxi-dev libxfixes-dev libxrandr-dev libice-dev libsm-dev fonts-noto-cjk
       - name: Fingerprint trusted source build environment
         if: runner.os != 'macOS'
         id: qt-environment

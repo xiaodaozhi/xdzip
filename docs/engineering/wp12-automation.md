@@ -17,11 +17,11 @@ python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
 
 源码构建要求 Qt Network 的 SSL 功能：Linux 显式启用系统 OpenSSL 并要求其开发库，Windows 和 macOS 使用各自的系统 TLS 后端。安装后检查 Qt Network 生成配置，SSL 缺失或禁用直接失败；配置检查不代替实际网络更新验证。
 
-Linux 源码构建还显式启用 GLib，要求其开发库并核验 Qt Core 生成配置。原 alpha.8 的 Qt Gui 依赖 Qt Core 的 GLib 事件分发私有符号，关闭该功能会使单独替换 Qt Core 后的原程序无法启动；此配置检查不代替实际替换和加载验证。
+Linux 源码构建还显式启用 GLib 和 Zstandard，要求两者开发库并分别核验 Qt Core 的 `qtcore-config.h`、`qconfig.h`。原 alpha.8 的 Qt Gui 依赖 GLib 事件分发私有符号，原程序的资源使用 Zstandard；关闭任一功能都会使单独替换 Qt Core 后的原程序无法启动。配置检查不代替实际替换和加载验证。
 
 English: The source build requires Qt Network SSL. Linux explicitly enables the system OpenSSL development dependency; Windows and macOS use their native TLS backends. The installed Qt Network configuration must show SSL enabled, which is not a substitute for a live update test.
 
-English: The Linux source build also enables GLib, requires its development package and verifies the installed Qt Core configuration. The original alpha.8 Qt Gui depends on Qt Core's private GLib event dispatcher symbols, and disabling GLib prevents the original program from starting after replacing Qt Core alone. The configuration check does not replace the actual substitution and loading test.
+English: The Linux source build also enables GLib and Zstandard, requires their development packages and checks the installed Qt Core `qtcore-config.h` and `qconfig.h` respectively. The original alpha.8 Qt Gui depends on private GLib event dispatcher symbols and the original application uses Zstandard-compressed resources; disabling either prevents the original program from starting after replacing Qt Core alone. Configuration checks do not replace the actual substitution and loading test.
 
 当前本地 Command Line Tools 不提供上游参考 Xcode 版本，SDK 27 的 libc++ 与 Qt 6.8.2 的旧迭代器有编译不兼容；本地可显式使用已有 SDK 26.5。脚本记录实际 SDK 设置哈希、配置和编译器，不宣称该组合就是 Qt 官方支持矩阵或原预编译 SDK 的字节级复现。官方构建说明见 [macOS 源码构建](https://doc.qt.io/qt-6.8/macos-building.html)与 [Qt 模块构建](https://wiki.qt.io/Building_Qt_6_from_Git)。
 

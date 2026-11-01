@@ -34,6 +34,8 @@ class SourceTests(unittest.TestCase):
                 glib = 'ON' if platform == 'linux' else 'OFF'
                 self.assertIn('-DFEATURE_glib='+glib, flags)
                 self.assertEqual(len([flag for flag in flags if flag.startswith('-DFEATURE_glib=')]), 1)
+                self.assertIn('-DFEATURE_zstd='+glib, flags)
+                self.assertEqual(len([flag for flag in flags if flag.startswith('-DFEATURE_zstd=')]), 1)
 
     def test_linux_glib_header_fails_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -53,6 +55,26 @@ class SourceTests(unittest.TestCase):
                         source.require_linux_glib_configuration(install)
             header.write_text('#define QT_FEATURE_glib 1\n')
             self.assertEqual(source.require_linux_glib_configuration(install), source.digest(header))
+
+    def test_linux_zstd_header_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            install = Path(temporary)
+            header = install/'include/QtCore/qconfig.h'
+            decoy = install/'include/QtCore/qtcore-config.h'
+            decoy.parent.mkdir(parents=True)
+            decoy.write_text('#define QT_FEATURE_zstd 1\n')
+            with self.assertRaisesRegex(ValueError, 'configuration missing'):
+                source.require_linux_zstd_configuration(install)
+            for text in ['#define QT_FEATURE_zstd -1\n', '#define QT_FEATURE_zstd 0\n',
+                         '#define QT_FEATURE_zstd 1\n#define QT_NO_ZSTD 1\n',
+                         '#define QT_FEATURE_zstd 1\n#define QT_FEATURE_zstd -1\n',
+                         '/* #define QT_FEATURE_zstd 1 */\n']:
+                with self.subTest(text=text):
+                    header.write_text(text)
+                    with self.assertRaisesRegex(ValueError, 'must have Zstandard enabled'):
+                        source.require_linux_zstd_configuration(install)
+            header.write_text('#define QT_FEATURE_zstd 1\n')
+            self.assertEqual(source.require_linux_zstd_configuration(install), source.digest(header))
 
     def test_qt_source_ssl_header_fails_closed(self):
         for platform in ['linux', 'win32', 'darwin']:
