@@ -2,6 +2,7 @@
 """Collect pinned Qt source archives, exact project source and locked Rust vendor inputs."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import gzip
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -20,6 +21,10 @@ from qt_psl_source import collect as collect_qt_psl_source
 from qt_tika_materials import collect as collect_qt_tika_source
 
 ROOT = Path(__file__).resolve().parents[1]
+ISO639_DIRECTORY = 'tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/'
+ISO639_TABLES = frozenset(ISO639_DIRECTORY + name for name in (
+    'iso-639-3.tab', 'iso-639-3_Name_Index.tab', 'iso-639-3-macrolanguages.tab',
+    'iso-639-3_Retirements.tab', 'iso-639-3-version.tab'))
 
 
 def archive_source(item, cache):
@@ -118,9 +123,13 @@ def collect_icu_data_sources(output, cache):
                                   not PurePosixPath(member.name).parts or
                                   PurePosixPath(member.name).is_absolute() or
                                   '..' in PurePosixPath(member.name).parts or
-                                  PurePosixPath(member.name).parts[0] != root
+                                  PurePosixPath(member.name).parts[0] != root or
+                                  not (member.isfile() or member.isdir())
                                   for member in members):
                 raise ValueError('Unexpected ICU data source archive layout')
+            names = [member.name for member in members]
+            if len(names) != len(set(names)):
+                raise ValueError('Duplicate ICU data source archive member')
             for relative, expected in item['anchors'].items():
                 if not PurePosixPath(relative).parts or '\\' in relative or PurePosixPath(relative).is_absolute() or '..' in PurePosixPath(relative).parts:
                     raise ValueError('Unexpected ICU data source anchor')
@@ -130,10 +139,116 @@ def collect_icu_data_sources(output, cache):
                 actual = hashlib.sha256(archive.extractfile(found[0]).read()).hexdigest()
                 if actual != expected:
                     raise ValueError('ICU data source anchor checksum mismatch')
+            if item['module'] == 'cldr-data-source':
+                iso_names = {member.name.removeprefix(root+'/') for member in members
+                             if member.isfile() and 'iso-639-3' in member.name.lower()}
+                if iso_names != ISO639_TABLES:
+                    raise ValueError('Unexpected ISO 639-3 files in CLDR source archive')
         sources.append(source)
-    for source in sources:
-        shutil.copy2(source, output/source.name)
-    return [dict(item) for item in items]
+    records = []
+    for item, source in zip(items, sources):
+        record = dict(item)
+        if item['module'] == 'cldr-data-source':
+            if not source.name.endswith('.tar.gz'):
+                raise ValueError('Unexpected CLDR source archive filename')
+            name = source.name.removesuffix('.tar.gz') + '-without-iso6393.tar.gz'
+            target = output/name
+            root = item['archive_root']
+            filter_source_tar(source, target, lambda path: path.removeprefix(root+'/') not in ISO639_TABLES)
+            record['upstream_url'] = record.pop('url')
+            if 'source_tree' in record:
+                record['upstream_source_tree'] = record.pop('source_tree')
+            record.update(file=name, sha256=digest(target), upstream_file=item['file'],
+                          upstream_archive_sha256=item['sha256'], complete_upstream_tree=False,
+                          omitted_files=sorted(ISO639_TABLES))
+        else:
+            shutil.copy2(source, output/source.name)
+        records.append(record)
+    return records
+
+
+def filter_source_tar(source, target, include):
+    """Create a labelled subset without extracting any archive paths."""
+    temporary = target.with_suffix(target.suffix+'.partial')
+    if target.exists() or target.is_symlink() or temporary.exists() or temporary.is_symlink():
+        raise ValueError('Source subset destination already exists')
+    try:
+        with tarfile.open(source, 'r:gz') as original, temporary.open('xb') as raw:
+            with gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as compressed:
+                with tarfile.open(fileobj=compressed, mode='w') as subset:
+                    for member in original:
+                        if not include(member.name):
+                            continue
+                        if member.isfile():
+                            with original.extractfile(member) as data:
+                                subset.addfile(member, data)
+                        elif member.isdir():
+                            subset.addfile(member)
+                        else:
+                            raise ValueError('Unexpected source subset member type')
+        temporary.replace(target)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def collect_qt_cldr_source(output, qtbase, cache):
+    """Deliver the pinned CLDR common tree required by Qt's locale generator."""
+    config_path = ROOT/'scripts/qt-cldr-sources.json'
+    config = json.loads(config_path.read_text(encoding='utf-8'))
+    item = config['cldr']
+    if (config['schema_version'] != 1 or qtbase.name != config['qtbase_archive'] or
+            digest(qtbase) != config['qtbase_archive_sha256']):
+        raise ValueError('Qt base source identity mismatch for CLDR')
+    if (not re.fullmatch(r'[0-9]+', item['version']) or
+            not re.fullmatch(r'[0-9a-f]{40}', item['source_commit']) or
+            not re.fullmatch(r'[0-9a-f]{40}', item['common_tree']) or
+            item['archive_root'] != 'cldr-'+item['source_commit']):
+        raise ValueError('Unexpected Qt CLDR source identity')
+    prefix = qtbase.name.removesuffix('.tar.xz')
+    with tarfile.open(qtbase, 'r:xz') as archive:
+        for relative in ('src/corelib/text/qlocale_data_p.h',
+                         'src/corelib/time/qtimezoneprivate_data_p.h'):
+            found = [member for member in archive.getmembers() if member.name == prefix+'/'+relative]
+            if len(found) != 1 or not found[0].isfile() or found[0].size > 32 * 1024 * 1024:
+                raise ValueError('Missing or ambiguous Qt CLDR generated file')
+            marker = ('Common Locale Data Repository v'+item['version']).encode('ascii')
+            if marker not in archive.extractfile(found[0]).read():
+                raise ValueError('Qt CLDR generated version mismatch')
+
+    upstream = fetch(item, cache)
+    root = item['archive_root']
+    with tarfile.open(upstream, 'r:gz') as archive:
+        members = archive.getmembers()
+        names = [member.name for member in members]
+        if (not members or len(names) != len(set(names)) or
+                any('\\' in name or not PurePosixPath(name).parts or
+                    PurePosixPath(name).is_absolute() or '..' in PurePosixPath(name).parts or
+                    PurePosixPath(name).parts[0] != root or not (member.isfile() or member.isdir())
+                    for name, member in zip(names, members))):
+            raise ValueError('Unexpected Qt CLDR source archive layout')
+        required = {'LICENSE', 'common/main/root.xml', 'common/main/en.xml',
+                    'common/supplemental/windowsZones.xml', 'common/bcp47/timezone.xml'}
+        if set(item['anchors']) != required:
+            raise ValueError('Unexpected Qt CLDR source anchors')
+        for relative, expected in item['anchors'].items():
+            found = [member for member in members if member.name == root+'/'+relative]
+            if len(found) != 1 or not found[0].isfile() or found[0].size > 8 * 1024 * 1024:
+                raise ValueError('Missing or ambiguous Qt CLDR source anchor')
+            if hashlib.sha256(archive.extractfile(found[0]).read()).hexdigest() != expected:
+                raise ValueError('Qt CLDR source anchor checksum mismatch')
+        if any(member.isfile() and member.name.startswith(root+'/common/') and
+               'iso-639-3' in member.name.lower() for member in members):
+            raise ValueError('Unexpected ISO 639-3 table in Qt CLDR common tree')
+    name = 'cldr-'+item['version']+'-common-only.tar.gz'
+    target = output/name
+    filter_source_tar(upstream, target, lambda path: path in (root, root+'/LICENSE', root+'/common') or
+                      path.startswith(root+'/common/'))
+    shutil.copy2(config_path, output/'qt-cldr-sources.json')
+    return {'kind': 'qt-cldr-common-source', 'file': name, 'sha256': digest(target),
+            'version': item['version'], 'scope': 'common and LICENSE only',
+            'upstream_url': item['url'], 'upstream_archive_sha256': item['sha256'],
+            'source_commit': item['source_commit'], 'upstream_common_tree': item['common_tree'],
+            'iso_639_3_table_included': False}
 
 
 def write_vendor_config(output):
@@ -168,6 +283,11 @@ def rebuild_instructions():
    生成器重现并核对 C++ 和测试二进制数据，不据此声称整个 SDK 的构建等价。
    English: qt-public-suffix-list/ includes the pinned editable input and MPL-2.0 text.
    Both generated forms are checked against the Qt source archive during collection.
+   cldr-46-common-only.tar.gz 保留 Qt 区域数据生成所需 CLDR 46 的 common 数据和许可；
+   来源提交和原归档摘要见 qt-cldr-sources.json。Qt 的 qlocalexml2cpp.py 还需要
+   单独的 ISO 639-3 代码表，该表未在本交付中提供，其来源和条款须自行核对。
+   English: The CLDR 46 subset contains common data and its license; Qt's locale
+   generator also needs a separate ISO 639-3 table, not included in this delivery.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
@@ -190,13 +310,15 @@ def rebuild_instructions():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档及固定 ICU／CLDR 可编辑数据
-   源码树随目录提供，版本与哈希见 native-runtime-sources.json。版本一致不证明
-   供应商库由这些材料无补丁构建。
+6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树及
+   CLDR 43.1 源码子集随目录提供。CLDR 子集排除了五个 ISO 639-3 文件；须按
+   其上游来源和条款另行取得，不能将子集称为完整源码树。版本与哈希见清单；
+   版本一致不证明供应商库由这些材料无补丁构建。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
-   English: The Linux ICU license, ICU4C 73.2 upstream archive, and pinned editable
-   ICU/CLDR data source trees are included. Matching versions do not prove the supplier
-   built its libraries without patches from these inputs. Current Windows developer packages
+   English: The Linux ICU license, ICU4C 73.2 upstream archive, pinned editable ICU
+   data source tree and a CLDR 43.1 subset are included. Five ISO 639-3 files are
+   omitted and their upstream source and terms require separate review. Matching versions
+   do not prove the supplier built its libraries without patches from these inputs. Current Windows developer packages
    omit the software OpenGL library; historical deliveries retain their obligations.
 
 ## 显式测试数据前置与完整 runtime 批次
@@ -278,6 +400,7 @@ def main():
         raise ValueError('Expected exactly one Qt base source archive')
     materials.append(collect_qt_psl_source(output, qtbase_sources[0]))
     materials.append(collect_qt_tika_source(output, qtbase_sources[0]))
+    materials.append(collect_qt_cldr_source(output, qtbase_sources[0], ROOT/'build/native-source-cache'))
     materials += collect_sparkle_sources(output, args.cache)
     from native_codec_materials import corresponding_sources
     materials += corresponding_sources(output)

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "qt_version": "6.8.2",
+  "qtbase_archive": "qtbase-everywhere-src-6.8.2.tar.xz",
+  "qtbase_archive_sha256": "012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05",
+  "cldr": {
+    "version": "46",
+    "source_commit": "e1d37acce5dae468c414172be53b666d58d45be8",
+    "common_tree": "5c8bae6186ae9a4ad07ddf56792ae55f30502ec1",
+    "file": "cldr-46-upstream-source-tree.tar.gz",
+    "url": "https://codeload.github.com/unicode-org/cldr/tar.gz/e1d37acce5dae468c414172be53b666d58d45be8",
+    "sha256": "ddea68e71c412f65d6bce4a74490430ee89eeaa8930524a8eb4c44597802d04b",
+    "archive_root": "cldr-e1d37acce5dae468c414172be53b666d58d45be8",
+    "anchors": {
+      "LICENSE": "743308f92225393665b0722b73418b4d4061fd2163e8e9c38b3368904acf19d6",
+      "common/main/root.xml": "aa71adab2e9cbed1a57c08c7c48ba9fa246ca436498687c3ba5a87e17b743415",
+      "common/main/en.xml": "db3e463342604bd72ae4f798ecae078a37384a8620f6733b1c83ff20492c2953",
+      "common/supplemental/windowsZones.xml": "39714d7a5a276508aeca2289a490dddb8424dea0063f3f5fbc8bd8520dcbfcba",
+      "common/bcp47/timezone.xml": "99008ac7e936b61f4eda6c3a0f09fb4b2fb9cb87943b575657e69b2e71cc240d"
+    }
+  }
+}

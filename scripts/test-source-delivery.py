@@ -309,27 +309,116 @@ class DeliveryTests(unittest.TestCase):
                 'sha256': digest(path), 'archive_root': root_name,
                 'anchors': {'data.txt': hashlib.sha256(data).hexdigest()}}
 
+    @staticmethod
+    def cldr_data_fixture(cache, extra=None):
+        members = {'cldr-owned/'+name: b'owned ISO fixture' for name in source.ISO639_TABLES}
+        members.update(extra or {})
+        return DeliveryTests.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned',
+                                                  b'CLDR data', members)
+
+    @staticmethod
+    def qt_cldr_fixture(root, extra=None, qt_marker=b'Common Locale Data Repository v46'):
+        cache = root/'cache'; cache.mkdir()
+        output = root/'delivery'; output.mkdir()
+        (root/'scripts').mkdir()
+        qtbase = root/'qtbase-everywhere-src-fixture.tar.xz'
+        prefix = qtbase.name.removesuffix('.tar.xz')
+        with tarfile.open(qtbase, 'w:xz') as archive:
+            for relative in ('src/corelib/text/qlocale_data_p.h', 'src/corelib/time/qtimezoneprivate_data_p.h'):
+                member = tarfile.TarInfo(prefix+'/'+relative); member.size = len(qt_marker)
+                archive.addfile(member, io.BytesIO(qt_marker))
+        commit = 'a'*40
+        archive_root = 'cldr-'+commit
+        anchors = {'LICENSE': b'owned license', 'common/main/root.xml': b'root',
+                   'common/main/en.xml': b'english', 'common/supplemental/windowsZones.xml': b'zones',
+                   'common/bcp47/timezone.xml': b'timezones'}
+        members = {archive_root+'/'+name: data for name, data in anchors.items()}
+        members[archive_root+'/tools/iso-639-3.tab'] = b'owned restricted fixture'
+        members.update(extra or {})
+        upstream = cache/'cldr-fixture.tar.gz'
+        with tarfile.open(upstream, 'w:gz') as archive:
+            for name, data in members.items():
+                member = tarfile.TarInfo(name); member.size = len(data)
+                archive.addfile(member, io.BytesIO(data))
+        item = {'version': '46', 'source_commit': commit, 'common_tree': 'b'*40,
+                'archive_root': archive_root, 'file': upstream.name, 'url': upstream.as_uri(),
+                'sha256': digest(upstream),
+                'anchors': {name: hashlib.sha256(data).hexdigest() for name, data in anchors.items()}}
+        config = {'schema_version': 1, 'qt_version': '6.8.2', 'qtbase_archive': qtbase.name,
+                  'qtbase_archive_sha256': digest(qtbase), 'cldr': item}
+        (root/'scripts/qt-cldr-sources.json').write_text(json.dumps(config), encoding='utf-8')
+        return qtbase, output, cache, config
+
+    def test_qt_cldr_delivery_retains_common_and_license_but_not_iso_table(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); qtbase, output, cache, config = self.qt_cldr_fixture(root)
+            with patch.object(source, 'ROOT', root):
+                record = source.collect_qt_cldr_source(output, qtbase, cache)
+            self.assertEqual(record['upstream_archive_sha256'], config['cldr']['sha256'])
+            self.assertFalse(record['iso_639_3_table_included'])
+            self.assertEqual(record['scope'], 'common and LICENSE only')
+            self.assertEqual(record['sha256'], digest(output/record['file']))
+            with tarfile.open(output/record['file'], 'r:gz') as archive:
+                self.assertEqual(set(archive.getnames()),
+                                 {config['cldr']['archive_root']+'/'+name for name in config['cldr']['anchors']})
+                self.assertEqual(archive.extractfile(config['cldr']['archive_root']+'/common/main/en.xml').read(),
+                                 b'english')
+            self.assertFalse((output/config['cldr']['file']).exists())
+            self.assertEqual(json.loads((output/'qt-cldr-sources.json').read_text()), config)
+
+    def test_qt_cldr_delivery_rejects_wrong_or_unsafe_inputs(self):
+        for case in ('qt version', 'qt hash', 'source hash', 'anchor', 'escaping member', 'iso in common'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                extra = ({'cldr-'+'a'*40+'/../escape': b'x'} if case == 'escaping member' else
+                         {'cldr-'+'a'*40+'/common/iso-639-3.tab': b'x'} if case == 'iso in common' else None)
+                qtbase, output, cache, config = self.qt_cldr_fixture(
+                    root, extra, b'Common Locale Data Repository v45' if case == 'qt version' else
+                    b'Common Locale Data Repository v46')
+                if case == 'qt hash': config['qtbase_archive_sha256'] = '0'*64
+                if case == 'source hash': config['cldr']['sha256'] = '0'*64
+                if case == 'anchor': config['cldr']['anchors']['common/main/en.xml'] = '0'*64
+                (root/'scripts/qt-cldr-sources.json').write_text(json.dumps(config), encoding='utf-8')
+                with patch.object(source, 'ROOT', root), self.assertRaises(ValueError):
+                    source.collect_qt_cldr_source(output, qtbase, cache)
+                self.assertEqual(list(output.iterdir()), [])
+
     def test_editable_icu_and_cldr_data_sources_are_collected(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
-                     self.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned', b'CLDR data')]
+                     self.cldr_data_fixture(cache)]
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
-                self.assertEqual(source.collect_icu_data_sources(output, cache), items)
-            for item in items:
-                self.assertEqual((output/item['file']).read_bytes(), (cache/item['file']).read_bytes())
+                records = source.collect_icu_data_sources(output, cache)
+            self.assertEqual(records[0], items[0])
+            self.assertEqual((output/items[0]['file']).read_bytes(), (cache/items[0]['file']).read_bytes())
+            self.assertEqual(records[1]['upstream_archive_sha256'], items[1]['sha256'])
+            self.assertEqual(records[1]['upstream_url'], items[1]['url'])
+            self.assertNotIn('url', records[1])
+            self.assertFalse(records[1]['complete_upstream_tree'])
+            self.assertEqual(set(records[1]['omitted_files']), source.ISO639_TABLES)
+            with tarfile.open(output/records[1]['file'], 'r:gz') as archive:
+                self.assertEqual(archive.getnames(), ['cldr-owned/data.txt'])
+                self.assertEqual(archive.extractfile('cldr-owned/data.txt').read(), b'CLDR data')
+            second = root/'second-delivery'; second.mkdir()
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
+                second_records = source.collect_icu_data_sources(second, cache)
+            self.assertEqual(records[1]['sha256'], second_records[1]['sha256'])
 
     def test_editable_data_sources_reject_missing_or_tampered_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
-            cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor', 'escaping member']
+            cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor',
+                     'escaping member', 'unexpected ISO table']
             for case in cases:
                 with self.subTest(case=case):
                     items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
-                             self.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned', b'CLDR data',
-                                                      {'cldr-owned/../escape': b'x'} if case == 'escaping member' else None)]
+                             self.cldr_data_fixture(cache,
+                                 {'cldr-owned/../escape': b'x'} if case == 'escaping member' else
+                                 {'cldr-owned/unexpected/iso-639-3-extra.tab': b'x'}
+                                 if case == 'unexpected ISO table' else None)]
                     if case == 'missing module': items.pop()
                     if case == 'wrong archive hash': items[1]['sha256'] = '0'*64
                     if case == 'wrong anchor': items[1]['anchors']['data.txt'] = '0'*64
