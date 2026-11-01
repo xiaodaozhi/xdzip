@@ -15,6 +15,10 @@ python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
 
 源码构建安装在隔离 build/ 目录，不替换系统或既有 SDK。QtTools 保留 Linguist 和 lrelease，显式关闭可选的 Clang 解析器及 WrapLibClang 查找，避免 runner 中不完整的 LLVM 开发包配置进入构建。兼容补丁显式包含 ARM 指令头，并在 QtCore 增加只读证明导出；不改变现有公开函数行为。实际应用通过进程内已加载的 QtCore 查找该固定 C ABI 标记，缺失或不符直接失败。完整产品编译、六组 CTest、十万条浏览／搜索／排序／取消一起验证，不以字符串出现在文件中充当加载证明。
 
+源码构建要求 Qt Network 的 SSL 功能：Linux 显式启用系统 OpenSSL 并要求其开发库，Windows 和 macOS 使用各自的系统 TLS 后端。安装后检查 Qt Network 生成配置，SSL 缺失或禁用直接失败；配置检查不代替实际网络更新验证。
+
+English: The source build requires Qt Network SSL. Linux explicitly enables the system OpenSSL development dependency; Windows and macOS use their native TLS backends. The installed Qt Network configuration must show SSL enabled, which is not a substitute for a live update test.
+
 当前本地 Command Line Tools 不提供上游参考 Xcode 版本，SDK 27 的 libc++ 与 Qt 6.8.2 的旧迭代器有编译不兼容；本地可显式使用已有 SDK 26.5。脚本记录实际 SDK 设置哈希、配置和编译器，不宣称该组合就是 Qt 官方支持矩阵或原预编译 SDK 的字节级复现。官方构建说明见 [macOS 源码构建](https://doc.qt.io/qt-6.8/macos-building.html)与 [Qt 模块构建](https://wiki.qt.io/Building_Qt_6_from_Git)。
 
 [独立源码验证工作流](../../.github/workflows/qt-source.yml)仅由可信 main 手动分派，运行三平台源码构建及真实产品验证。Windows/Linux 可复用按 runner 镜像、配置和构建脚本指纹区分的依赖缓存，失败后的 Windows/Linux 局部编译状态也可缓存，缓存不表示验证通过，源树和配置仍重新验证，真实产品验证重新执行；不从外部 PR 取缓存。Mac 只上传有界日志与 JSON，不缓存／部署／签名／压缩／上传应用或 SDK。
