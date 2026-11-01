@@ -12,6 +12,8 @@
 | cxx | 1.0.205，构建期生成桥接，不提供稳定二进制 ABI | crate／生成器同版本，关闭竞态和异常边界回归 |
 | 系统 | macOS 14+ arm64、受维护 Windows 11 x64、Ubuntu 24.04 X11 x64 | 按已批准支持政策核对真实环境，不把 CI 宿主扩大为全部系统版本保证 |
 
+GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目标仍为 macOS 14.0。运行器升级不等于在 macOS 14 实机上完成验证；平台兼容与人工验收分别记录。
+
 日常准备、检查与执行统一见[开发构建指南](developer-build.md)。`scripts/desktop.py doctor` 默认检查 build；`doctor --for-stage package` 提前检查完整打包链，prepare 的 `--install-rust`、`--install-qt`、`--packaging` 显式准备相应工具与锁定材料。系统编译器／SDK 仍由开发者安装，不把预检当作隐式安装器。
 
 预检运行实际 PATH 中的 Rust／Cargo，核对锁定版本与原生 host，并检查 CMake、Ninja、Qt 前缀及平台工具。编译器已安装但当前 shell 不可调用也视为缺失。打包前还检查 Rust 锁定依赖元数据、Qt SPDX／许可材料及 schema 缓存；所有后继进程使用同一检查过的环境，避免构建成功却在许可收集时找不到 rustc／cargo。缺少 Docker 或 Inno Setup 只影响需要它的阶段，不阻止普通开发构建。
