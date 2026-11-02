@@ -18,6 +18,20 @@
 
 English: Each binary-difference record retains both the `attribution_path` from the attribution report and the `sdk_path`. Multiple distributed paths may refer to one SDK file, so record counts are not automatically counts of distinct SDK files. An upstream checksum difference still requires its own evidence.
 
+公开 alpha.8 macOS 材料中的 110 条差异对应 61 个 SDK 文件。[Qt 官方 PySide6 6.8.2 macOS wheel](https://download.qt.io/official_releases/QtForPython/pyside6-essentials/PySide6_Essentials-6.8.2-cp39-abi3-macosx_12_0_universal2.whl) 包含与 61 个原 SPDX SHA-1 分别匹配的文件；它的固定 SHA-256 为 `abe8446367413b7b56626352e05adc7b15a180956ac9d90e4ee6419c16eab23d`。可提供原公开 macOS materials、该 wheel 和对应 Qt SDK，运行以下命令复验 SDK 的完整字节关系：
+
+```sh
+python3 scripts/verify-alpha8-macos-sdk-signatures.py \
+  --materials path/to/xdzip-0.1.0-alpha.8-macos-materials.tar.gz \
+  --reference-wheel path/to/PySide6_Essentials-6.8.2-cp39-abi3-macosx_12_0_universal2.whl \
+  --qt-prefix path/to/Qt/6.8.2/macos \
+  --output build/alpha8-macos-signature-review.json
+```
+
+工具核对固定材料和 wheel 摘要、原始差异记录及每个 SDK 文件摘要，将 SDK 现有签名字节与必要的签名命令、链接段大小和对齐变化用于内存重建，并要求 61 个输出与 SDK 逐字节一致。它不签名文件，不修改原包，也不验证 Qt 签名的信任策略、证明历史签名命令或批准许可。原发行 SBOM 和历史材料不改写；详细证据见 [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466)。
+
+English: The 110 differences in the published alpha.8 macOS materials refer to 61 SDK files. The pinned Qt PySide6 6.8.2 macOS wheel above contains files matching all 61 original SPDX SHA-1 values. The command verifies the pinned inputs and reconstructs each SDK file in memory using the SDK's existing signature bytes plus the necessary signature-command, link-edit-size and alignment changes. All reconstructed bytes must match. The tool does not sign or alter files, verify Qt's signature trust, prove the historical signing command or approve licenses. Historical SBOM and release assets remain unchanged; see [#53](https://github.com/xiaodaozhi/xdzip/issues/53#issuecomment-6571328466).
+
 审查清单须逐平台核对报告的实际可用性与范围：最终文件 SBOM、部署后组件归属和 SDK 参考是三类输入。只有文件哈希或 SDK 模式归属时，将部署后的组件关联登记为缺失；裁剪架构、重定位、签名后的应用不能直接沿用 SDK 文件身份。历史候选与当前候选的观察数量只有在范围、文件与组件均匹配后才能比较，不能把数量变化当作已解决项。
 
 专用 macOS Release 在最终部署应用仍存在时采集 Cocoa／Metal 资源探针、SDK 源码对应与差异分析，提供通用名称的来源／文件 SBOM。链接图和静态库绑定编译应用，资源与审计绑定部署应用；`release-deployment-evidence.json` 复用既有 Mach-O 比较器，核对节的精确字节、地址、标志及零填充大小，以及 UUID 与归一化导入版本，保留不同的整文件哈希。加载命令布局、LINKEDIT 与签名元数据不计入该等价结论，异常边界、混合身份或节／UUID／导入变化直接失败。单次探针不批准参考机性能或真人视觉，原始归属缺口与 incomplete 保持。
