@@ -420,6 +420,11 @@ class BrowserController : public QObject {
     int m_admissionAttempts = 0;
     Result m_result;
     bool m_hasPayload = false;
+    enum class OpenCancellation { None, AwaitingOpen, Snapshot, Closing };
+    OpenCancellation m_openCancellation = OpenCancellation::None;
+    quint64 m_cancelledOpenSession = 0;
+    void beginCancelledOpenCleanup();
+    void finishCancelledOpenCleanup(const QString &error);
     void receive(const xdzip::reader::Event &event);
     void submit(xdzip::reader::Command command, bool preflight = false);
     void attemptSubmission();
