@@ -2,9 +2,9 @@
 
 本流程用于编辑和重建 Linux ICU 73.2 的区域资源。源码交付包括固定的 ICU 73.2 源码树、CLDR 43.1 子集，以及构建 CLDR 工具所需的 ICU 73.1 源码树。CLDR 子集有意排除五个 ISO 639-3 文件，不是完整上游树；本页验证的既有资源转换未要求补回这些文件，其他工具用途或新增数据仍须单独检查来源和条款。
 
-以下命令针对 Ubuntu 24.04 x86_64，要求 JDK 17、Ant、Maven、Python 3、C/C++ 编译工具、`make` 和 UTF-8 locale。Maven 首次构建需要访问其依赖仓库；ICU 73.1 的两个本地构建 JAR 只用于本流程，不能称为上游发布 JAR 的逐字节副本。先将 `XDZIP_DELIVERY` 指向可信源码交付目录，`JAVA_HOME` 指向 JDK 17；使用新目录，避免覆盖已有源码或构建结果。
+以下命令针对 Ubuntu 24.04 x86_64，要求 JDK 17、Ant、Maven、Python 3、C/C++ 编译工具、`make` 和 UTF-8 locale。Maven 首次构建需要访问其依赖仓库；ICU 73.1 的两个本地构建 JAR 只用于本流程，不能称为上游发布 JAR 的逐字节副本。先将 `XDZIP_DELIVERY` 指向可信源码交付目录，`JAVA_HOME` 指向 JDK 17；使用新目录，避免覆盖已有源码或构建结果。CLDR 子集的 gzip 字节可能随生成环境变化，按该次交付的清单核验；清单本身也须来自可信渠道。
 
-English: This Linux workflow rebuilds ICU 73.2 locale resources using the delivered ICU source, a CLDR 43.1 subset and ICU 73.1 bootstrap source. The subset omits five ISO 639-3 files; the verified existing-resource conversion did not require them, but other uses or added data need separate provenance and terms review. Use Ubuntu 24.04 x86_64 with JDK 17, Ant, Maven, Python 3, a C/C++ toolchain, `make` and a UTF-8 locale. Maven initially needs its dependency repositories. Set `XDZIP_DELIVERY` to the trusted delivery and `JAVA_HOME` to JDK 17. The locally built bootstrap JARs are not claimed to be byte-identical to upstream published artifacts.
+English: This Linux workflow rebuilds ICU 73.2 locale resources using the delivered ICU source, a CLDR 43.1 subset and ICU 73.1 bootstrap source. The subset omits five ISO 639-3 files; the verified existing-resource conversion did not require them, but other uses or added data need separate provenance and terms review. Use Ubuntu 24.04 x86_64 with JDK 17, Ant, Maven, Python 3, a C/C++ toolchain, `make` and a UTF-8 locale. Maven initially needs its dependency repositories. Set `XDZIP_DELIVERY` to the trusted delivery and `JAVA_HOME` to JDK 17. The locally built bootstrap JARs are not claimed to be byte-identical to upstream published artifacts. Gzip bytes for the CLDR subset may vary across build environments, so verify it against that delivery's manifest; obtain the manifest through a trusted channel.
 
 ```sh
 export XDZIP_DELIVERY=/path/to/source-delivery
@@ -14,10 +14,30 @@ export XDZIP_WORK="$PWD/build/icu-cldr-rebuild"
 (set -eu
 test ! -e "$XDZIP_WORK"
 mkdir -p "$XDZIP_WORK/sources" "$XDZIP_WORK/m2"
-printf '%s  %s\n' \
-  9032f32c8edb43a7cd842f2c44349eb75756ee29c3a3d6a0bf2a01793a34b84c "$XDZIP_DELIVERY/icu-73.2-source-tree.tar.gz" \
-  9bd802e3925ea97cac1e0d104c15acc3e0ce3971040824234e090536a5f277d6 "$XDZIP_DELIVERY/cldr-43.1-source-tree-without-iso6393.tar.gz" \
-  11e3d75119767e5a3a9a1ab1637f6e54e978da354cc0a2db230b65f7a9d72aac "$XDZIP_DELIVERY/icu-73.1-cldr-bootstrap-source-tree.tar.gz" | sha256sum -c -
+python3 - "$XDZIP_DELIVERY" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+manifest = json.loads((root / 'source-delivery.json').read_text(encoding='utf-8'))
+expected = {
+    'icu-73.2-source-tree.tar.gz': '9032f32c8edb43a7cd842f2c44349eb75756ee29c3a3d6a0bf2a01793a34b84c',
+    'cldr-43.1-source-tree-without-iso6393.tar.gz': None,
+    'icu-73.1-cldr-bootstrap-source-tree.tar.gz': '11e3d75119767e5a3a9a1ab1637f6e54e978da354cc0a2db230b65f7a9d72aac',
+}
+for name, pinned in expected.items():
+    entries = [item for item in manifest['files'] if item['file'] == name]
+    if len(entries) != 1:
+        raise SystemExit('Missing or duplicate manifest entry: ' + name)
+    path = root / name
+    with path.open('rb') as stream:
+        actual = hashlib.sha256()
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            actual.update(chunk)
+    if (actual.hexdigest() != entries[0]['sha256'] or path.stat().st_size != entries[0]['bytes']
+            or (pinned and actual.hexdigest() != pinned)):
+        raise SystemExit('Source archive verification failed: ' + name)
+    print(name + ': OK')
+PY
 tar -xzf "$XDZIP_DELIVERY/icu-73.2-source-tree.tar.gz" -C "$XDZIP_WORK/sources"
 tar -xzf "$XDZIP_DELIVERY/cldr-43.1-source-tree-without-iso6393.tar.gz" -C "$XDZIP_WORK/sources"
 tar -xzf "$XDZIP_DELIVERY/icu-73.1-cldr-bootstrap-source-tree.tar.gz" -C "$XDZIP_WORK/sources")
