@@ -116,6 +116,22 @@ def main():
         # exact production LicenseFile and notice remain compiled and validated;
         # neither the production template nor helper receives a silent bypass.
         text=qa_installer_text(text,outcome)
+        marker = '    Removed := False;\n'
+        if text.count(marker) != 1:
+            raise ValueError('Expected the exact owned retired-file cleanup hook')
+        text = text.replace(marker, '''    if FileExists(Name) then
+      Log('Owned retire entry present: ' + EntryPath(RetiredFiles[I]))
+    else
+      Log('Owned retire entry missing: ' + EntryPath(RetiredFiles[I]));
+''' + marker, 1)
+        marker = '    if Removed then\n'
+        if text.count(marker) != 1:
+            raise ValueError('Expected the exact owned retired-file result hook')
+        text = text.replace(marker, "    if Removed then Log('Owned retire entry removed');\n" + marker, 1)
+        marker = '  for I := 0 to GetArrayLength(RetiredFiles) - 1 do begin\n'
+        if text.count(marker) != 1:
+            raise ValueError('Expected the exact owned retired-file loop')
+        text = text.replace(marker, "  Log(Format('Owned retire pass: %d', [GetArrayLength(RetiredFiles)]));\n" + marker, 1)
         path.with_suffix('.files').write_text(builder.payload_manifest(audit), encoding='utf-8')
         path.with_suffix('.iss').write_text(text, encoding='utf-8-sig')
         run([ROOT / 'build/installer-toolchain/compiler/ISCC.exe', path.with_suffix('.iss')], stdout=subprocess.DEVNULL)
@@ -164,6 +180,7 @@ def main():
         actual = json.loads(subprocess.check_output([str(install_root/'xdzip.exe'), '--version-json'], text=True))
         assert actual['version'] == OLD['version'] and actual['build'] == OLD['build']
         modified.write_bytes(b'retired fixture dxil.dll')
+        assert all((install_root/name).read_bytes() == ('retired fixture '+name).encode('ascii') for name in names)
         install(new)
         assert all(not (install_root/name).exists() for name in names)
         results.append(dict(case='modified-retired-file-preserved', status='passed'))
