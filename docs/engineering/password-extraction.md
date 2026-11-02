@@ -44,6 +44,10 @@ ZIP 任务建立解码器时有 64 MiB 的实际元数据读取预算，随后�
 
 密码窗口及 HTML、高保真依据见[密码交互](../ux/password-extraction.md)。任务等待时自动显示应用模态窗口，也可从任务窗口重新显示。错误响应使用新 token，清空旧输入；接受响应后防止重复提交。系统关闭或取消按钮取消当前任务，Escape 继续遵循共享的先退出控件焦点、再关闭窗口规则。
 
+创建与解压密码框通过显式的界面文案属性提供辅助名称，不从输入内容派生名称。Qt 6.8.2 会在密码状态下隐藏附加名称，因此桌面程序为这两个字段安装专用辅助接口：仅覆盖名称，状态、文本／值和动作继续使用 Qt 实现，密码标记与遮蔽不变。该接口继承 Qt Quick 的私有类，构建及运行依赖与所用 Qt Quick 版本匹配；升级或替换该库时须重新构建并验证接口、密码保密和三平台兼容。自动接口检查与系统读屏人工验收分别记录。
+
+English: Creation and extraction password fields expose an explicit UI label independent of their input. Qt 6.8.2 suppresses the attached name while a field has password state, so the desktop app installs a narrowly scoped accessibility interface for these fields. It overrides only the name and retains Qt's state, text/value and action behavior. This interface subclasses a private Qt Quick class and requires a matching Qt Quick build; rebuild and recheck accessibility, secret masking and all three platforms when upgrading or replacing that library. Automated interface checks do not replace screen-reader acceptance.
+
 验收要求覆盖原始 AES 字段／CRC／描述符／ZIP64、同名物理记录、正确和错误密码、认证破坏、混合文件、不同密码、空密码／控制字符、重试资源累计、满队列、取消／退出唤醒、来源变化、旧目标保护、链接和执行权限，以及独立 7-Zip 双向字节核对。界面检查分别覆盖实际控制器闭环、可访问动作、双语多字号、浅深色、DPR 与原生窗口。自动化不等于系统读屏人工验收。
 
 English: Independent Rust 7z and official UnRAR handle their respective password profiles inside the isolated worker. Encrypted directories require a bounded OpenWithPassword request before any metadata is published. The private session and its admitted tasks retain zeroizing secret containers; events, settings and logs never contain passwords. Existing task prompts and cancellation remain in use. Only 7z creation supports encrypted filenames, requiring a creation password. Encrypted 7z and all RAR archives reject edits.

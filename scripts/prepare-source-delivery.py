@@ -352,6 +352,13 @@ def rebuild_instructions():
      -DCMAKE_PREFIX_PATH="$QT_PREFIX" -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
    cmake --build build/relink --parallel 3
    ctest --test-dir build/relink --output-on-failure
+   Windows 的 MSVC／Ninja 构建请使用如下命令代替上面两条 CMake 命令；构建入口会临时
+   使用 UTF-8 控制台并核查已有对象依赖，遇到不完整记录时保留原目录并要求新目录：
+   python scripts/windows_ninja_safety.py --build-dir build/relink -- cmake -S . -B build/relink -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:QT_PREFIX" -DXDZIP_BUILD_DESKTOP_PREVIEW=ON
+   python scripts/windows_ninja_safety.py --build-dir build/relink -- cmake --build build/relink --parallel 3
+   English: On Windows, replace the two CMake commands with the guarded commands above, using
+   PowerShell's $env:QT_PREFIX. They temporarily use a UTF-8 console and reject incomplete existing
+   Ninja dependencies without deleting the build directory. Direct CMake calls bypass the guard.
    macOS 另加 -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0。
    Mac 重建前从交付目录的 Sparkle-2.10.0.tar.xz 离线准备 SDK：
    python3 scripts/prepare-sparkle.py --archive <交付目录>/Sparkle-2.10.0.tar.xz \\
