@@ -82,9 +82,11 @@ void traceNativeWindowState(QWindow *window) {
             << "miniaturized" << (native && native.miniaturized) << "visible"
             << (native && native.visible) << "fullscreen"
             << (native && ((native.styleMask & NSWindowStyleMaskFullScreen) != 0)) << "exposed"
-            << window->isExposed() << "transition"
-            << window->property("xdzipNativeTransition") << "qtStates" << window->windowStates()
-            << "nativeMinimized" << window->property("xdzipNativeMinimized") << "saved"
+            << window->isExposed() << "transition" << window->property("xdzipNativeTransition")
+            << "qtStates" << window->windowStates() << "cocoaMiniTransition"
+            << window->property("xdzipCocoaMiniTransition") << "cocoaFullTransition"
+            << window->property("xdzipCocoaFullTransition") << "nativeMinimized"
+            << window->property("xdzipNativeMinimized") << "saved"
             << window->property("xdzipRestoreState") << "pending"
             << window->property("xdzipWakePending");
 }
