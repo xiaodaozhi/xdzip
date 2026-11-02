@@ -242,3 +242,9 @@ English: The first body group follows the shared header with a 0-unit bodyGap. H
 关于窗口在既有可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
 
 English: The existing scrollable About body identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.
+
+## 操作窗口的动态高度
+
+操作窗口的目标客户区高度仍按各窗口既有的内容、字号及可用屏幕表达式计算。动态调整时先放宽朝目标方向的高度约束，再设置目标高度，最后将上下限恢复为目标值，避免系统按旧限制拒绝调整；完成后窗口仍是固定客户区高度。窗口重开、内容变化及平台迟到的几何回调继续使用同一逻辑单位，不引入屏幕缩放系数或新尺寸参数。运行时几何检查不能代替原生桌面视觉验收。
+
+English: Each operation window keeps its existing content-, font- and screen-based target client height. During a change, widen the relevant constraint first, set the target height, then restore both fixed limits; this avoids asking the platform to resize against stale constraints. Reopening, content changes and late native geometry callbacks retain the same logical units, without introducing display-scale multipliers or new size tokens. Runtime geometry checks do not replace native visual acceptance.

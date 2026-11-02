@@ -1615,6 +1615,40 @@ QtObject {
             popup->close();
         }
     }
+    void operationWindowHeightTransitionsKeepValidBounds() {
+        QQmlApplicationEngine engine;
+        QQmlComponent component(&engine);
+        component.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                          "Window { id: host; width: 600; height: 500; visible: true; "
+                          "Ui.OperationWindow { objectName: 'probe'; owner: host; "
+                          "requestedHeight: 320 } }",
+                          QUrl());
+        std::unique_ptr<QObject> owner(component.create());
+        QVERIFY2(owner, qPrintable(component.errorString()));
+        auto *operation = owner->findChild<QQuickWindow *>("probe");
+        QVERIFY(operation);
+        QVERIFY(QMetaObject::invokeMethod(operation, "present"));
+        QTRY_VERIFY(operation->isVisible());
+        QTRY_COMPARE(operation->height(), 320);
+        QTRY_COMPARE(operation->minimumHeight(), 320);
+        QTRY_COMPARE(operation->maximumHeight(), 320);
+
+        bool boundsValid = true;
+        QObject observer;
+        const auto check = [&] {
+            boundsValid &= operation->minimumHeight() <= operation->maximumHeight();
+        };
+        connect(operation, &QWindow::minimumHeightChanged, &observer, check);
+        connect(operation, &QWindow::maximumHeightChanged, &observer, check);
+        for (const int desired : {420, 340, 360, 320}) {
+            QVERIFY(operation->setProperty("requestedHeight", desired));
+            QTRY_COMPARE(operation->height(), desired);
+            QTRY_COMPARE(operation->minimumHeight(), desired);
+            QTRY_COMPARE(operation->maximumHeight(), desired);
+            QVERIFY2(boundsValid, "The native window briefly received inverted height limits");
+        }
+        operation->close();
+    }
     void nativeDragSuppressesSourceNameTooltips_data() {
         QTest::addColumn<QString>("view");
         QTest::newRow("list") << QString("list");
