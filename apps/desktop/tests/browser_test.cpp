@@ -7908,11 +7908,20 @@ QtObject {
         });
         controller.openPath(input);
         QVERIFY(controller.busy());
-        QVERIFY(controller.m_pending);
+        QVERIFY(controller.m_pending || controller.m_waiting);
 
         // Let the receiver enqueue Page and Finished without dispatching GUI events.
         // The user can still see and cancel the pending opening at this boundary.
         if (queuedEvents) {
+            // Initial nonblocking admission may collide with the runtime's lock.
+            // Retry without draining GUI events, so a completed opening remains queued.
+            QElapsedTimer admission;
+            admission.start();
+            while (!controller.m_pending && controller.m_waiting && admission.elapsed() < 1000) {
+                QThread::msleep(1);
+                controller.attemptSubmission();
+            }
+            QVERIFY(controller.m_pending);
             QElapsedTimer timer;
             timer.start();
             while (controller.m_connection->statistics().peakQueued <
