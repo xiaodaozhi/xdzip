@@ -6979,7 +6979,8 @@ QtObject {
         QVERIFY(createPassword && createPassword->role() == QAccessible::EditableText);
         QVERIFY(createPassword->state().passwordEdit);
         QCOMPARE(createPassword->text(QAccessible::Name), qtTrId("ui.96d162db488e"));
-        QVERIFY(!createPassword->text(QAccessible::Value).contains(QStringLiteral("public fixture")));
+        QVERIFY(
+            !createPassword->text(QAccessible::Value).contains(QStringLiteral("public fixture")));
         header->setProperty("checked", true);
         solid->setProperty("checked", true);
         QTRY_VERIFY(start->isEnabled());
