@@ -37,6 +37,7 @@ source = module('prepare-source-delivery')
 mac = module('build-macos-dmg')
 verify_dmg = module('verify-macos-dmg')
 replace_qt = module('verify-qt-replacement')
+derive_locale_codes = module('derive-qt-locale-code-input')
 
 
 def psl_fixture(root, wrong_generated=None):
@@ -86,6 +87,54 @@ def psl_fixture(root, wrong_generated=None):
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_derive_qt_locale_codes_preserves_fields_and_deduplicates_lookup(self):
+        fixture = '''constexpr std::array<LanguageCodeEntry, 3> languageCodeList {
+    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // AnyLanguage
+    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // C
+    LanguageCodeEntry {{'e', 'n'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}, {'e', 'n', 'g'}}, // English
+};
+'''
+        data, entries, unique = derive_locale_codes.derived_table(fixture)
+        self.assertEqual((entries, unique), (3, 2))
+        self.assertEqual(data, b'Id\tPart2b\tPart2t\tPart1\tUnused\n'
+                         b'eng\teng\teng\ten\t\nund\tund\tund\t\t\n')
+        self.assertEqual(derive_locale_codes.derived_table(fixture.replace('\n', '\r\n')),
+                         (data, entries, unique))
+
+    def test_derive_qt_locale_codes_rejects_missing_malformed_and_conflicting_rows(self):
+        entry = "    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // C\n"
+        prefix = 'constexpr std::array<LanguageCodeEntry, 2> languageCodeList {\n'
+        conflict = "    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'a', 'a', 'a'}, {'a', 'a', 'a'}}, // other\n"
+        for fixture in ('no table', prefix + entry + '};\n',
+                        prefix + entry + entry.replace("'d'", "'D'", 1) + '};\n',
+                        prefix + entry + conflict + '};\n'):
+            with self.subTest(fixture=fixture), self.assertRaises(ValueError):
+                derive_locale_codes.derived_table(fixture)
+
+    def test_derive_qt_locale_cli_stays_in_build_and_never_overwrites(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root/'qtbase/src/corelib/text/qlocale_data_p.h'
+            source.parent.mkdir(parents=True)
+            source.write_text("constexpr std::array<LanguageCodeEntry, 1> languageCodeList {\n"
+                              "    LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // C\n"
+                              "};\n", encoding='utf-8')
+            output = root/'build/codes.tsv'
+            with patch.object(derive_locale_codes, 'ROOT', root), \
+                    patch.object(sys, 'argv', ['derive', '--qtbase', str(root/'qtbase'), '--output', str(output)]), \
+                    redirect_stdout(io.StringIO()):
+                derive_locale_codes.main()
+                expected = output.read_bytes()
+                with self.assertRaises(FileExistsError):
+                    derive_locale_codes.main()
+                self.assertEqual(output.read_bytes(), expected)
+            with patch.object(derive_locale_codes, 'ROOT', root), \
+                    patch.object(sys, 'argv', ['derive', '--qtbase', str(root/'qtbase'), '--output', str(root/'outside.tsv')]), \
+                    patch('sys.stderr', new_callable=io.StringIO):
+                with self.assertRaises(SystemExit):
+                    derive_locale_codes.main()
+            self.assertFalse((root/'outside.tsv').exists())
+
     def test_qt_psl_runtime_notice_delivers_source_and_exact_license(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); _, output = psl_fixture(root)

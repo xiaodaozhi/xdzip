@@ -292,6 +292,14 @@ def rebuild_instructions():
    generator also needs a separate ISO 639-3 table, not included in this delivery.
    qt-cldr-sources.json records a tested candidate, not a verified historical Qt input;
    check its upstream terms before obtaining it at the URL above.
+   已有语言可从 Qt 原生成源码派生有限输入，例如将 QtBase 解包到当前目录后执行：
+   python3 scripts/derive-qt-locale-code-input.py --qtbase qtbase-everywhere-src-6.8.2 \\
+     --output build/qt-locale-codes.tsv
+   该输入仅覆盖已有查找项，不是完整 ISO 表或历史输入；新增语言可能仍需其他代码。
+   派生输入不自动解决外部表的授权或完整对应源码判断。
+   English: The command above derives limited lookup input from Qt's generated source.
+   It is neither the complete ISO table nor the historical input; new languages may
+   require other codes. It does not resolve licensing or corresponding-source status.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
