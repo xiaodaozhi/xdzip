@@ -178,6 +178,8 @@ BrowserController::BrowserController(QObject *parent)
     connect(m_connection.get(), &RuntimeConnection::disconnected, this, [this](bool graceful) {
         m_busy = false;
         m_pending = 0;
+        m_openCancellation = OpenCancellation::None;
+        m_cancelledOpenSession = 0;
         m_deferredQuery.reset();
         m_waiting.reset();
         m_admissionRetry.stop();
@@ -1057,6 +1059,9 @@ void BrowserController::invalidateSnapshot() {
     m_detail.clear();
 }
 void BrowserController::cancel() {
+    // Cleanup is part of the original cancellation and must not itself be cancelled.
+    if (m_openCancellation != OpenCancellation::None)
+        return;
     m_deferredQuery.reset();
     if (m_result.updating) {
         const auto task =
@@ -1078,6 +1083,10 @@ void BrowserController::cancel() {
     if (m_waiting) {
         m_admissionRetry.stop();
         m_waiting.reset();
+        if (m_result.opening) {
+            beginCancelledOpenCleanup();
+            return;
+        }
         m_busy = false;
         m_archiveOperation.clear();
         restoreQuery();
@@ -1085,8 +1094,33 @@ void BrowserController::cancel() {
         emit changed();
         return;
     }
-    if (m_pending)
+    if (m_pending) {
+        if (m_result.opening)
+            m_openCancellation = OpenCancellation::AwaitingOpen;
         m_connection->cancel(m_pending);
+    }
+}
+void BrowserController::beginCancelledOpenCleanup() {
+    // Open can have installed a runtime session even when its payload was discarded.
+    // Snapshot the connection after the opening request finishes, then close that session.
+    m_openCancellation = OpenCancellation::Snapshot;
+    m_cancelledOpenSession = 0;
+    xdzip::reader::Command command{};
+    command.kind = xdzip::reader::CommandKind::Snapshot;
+    submit(std::move(command));
+}
+void BrowserController::finishCancelledOpenCleanup(const QString &error) {
+    m_openCancellation = OpenCancellation::None;
+    m_cancelledOpenSession = 0;
+    m_result = {};
+    m_hasPayload = false;
+    m_busy = false;
+    invalidateSnapshot();
+    m_message = explain(error.isEmpty() ? QStringLiteral("cancelled") : error);
+    QPointer<BrowserController> alive(this);
+    emit changed();
+    if (alive)
+        QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);
 }
 bool BrowserController::requestClose() {
     setNativeDragActive(false);
@@ -1102,6 +1136,8 @@ bool BrowserController::requestClose() {
     if (m_exportCopy)
         m_exportCopy->finish("runtime_closed");
     m_deferredQuery.reset();
+    m_openCancellation = OpenCancellation::None;
+    m_cancelledOpenSession = 0;
     m_admissionRetry.stop();
     m_waiting.reset();
     m_preflightReport.clear();
@@ -1241,6 +1277,11 @@ void BrowserController::attemptSubmission() {
                           : result.status == xdzip::reader::Admission::Exhausted
                               ? "identifier_exhausted"
                               : "busy";
+        if (m_openCancellation == OpenCancellation::Snapshot ||
+            m_openCancellation == OpenCancellation::Closing) {
+            finishCancelledOpenCleanup(QString::fromLatin1(code));
+            return;
+        }
         restoreQuery();
         m_message = explain(code);
         if (m_result.creating)
@@ -1269,6 +1310,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
         m_admissionRetry.stop();
         m_waiting.reset();
         m_faulted = true;
+        m_openCancellation = OpenCancellation::None;
+        m_cancelledOpenSession = 0;
         m_result = {};
         m_total = 0;
         m_offset = 0;
@@ -1420,6 +1463,8 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     // Cancel acknowledgements, stale events and shutdown control never mutate an active page.
     if (!m_pending || event.request_id != m_pending || m_closing)
         return;
+    if (m_openCancellation == OpenCancellation::AwaitingOpen && event.kind != EventKind::Finished)
+        return;
     if (event.kind == EventKind::TaskAccepted) {
         m_result.taskId = QString::number(event.task.id);
         if (m_result.updating) {
@@ -1557,6 +1602,10 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
                  row.size_known});
         }
         m_hasPayload = true;
+    } else if (event.kind == EventKind::Snapshot &&
+               m_openCancellation == OpenCancellation::Snapshot) {
+        m_cancelledOpenSession = event.session;
+        m_hasPayload = true;
     } else if (event.kind == EventKind::Snapshot && m_result.closeSession) {
         m_hasPayload = event.session == 0;
     } else if (event.kind == EventKind::Preflight) {
@@ -1589,6 +1638,27 @@ void BrowserController::receive(const xdzip::reader::Event &event) {
     } else if (event.kind == EventKind::Finished) {
         m_busy = false;
         m_pending = 0;
+        if (m_openCancellation == OpenCancellation::AwaitingOpen) {
+            beginCancelledOpenCleanup();
+            return;
+        }
+        if (m_openCancellation == OpenCancellation::Snapshot ||
+            m_openCancellation == OpenCancellation::Closing) {
+            auto error = text(event.error);
+            if (error.isEmpty() && !m_hasPayload)
+                error = QStringLiteral("runtime_unavailable");
+            if (error.isEmpty() && m_openCancellation == OpenCancellation::Snapshot &&
+                m_cancelledOpenSession) {
+                xdzip::reader::Command command{};
+                command.kind = xdzip::reader::CommandKind::CloseSession;
+                command.session = m_cancelledOpenSession;
+                m_openCancellation = OpenCancellation::Closing;
+                submit(std::move(command));
+                return;
+            }
+            finishCancelledOpenCleanup(error);
+            return;
+        }
         // Even a failed query must release a queued successful creation output.
         if (!m_createdArchivesToOpen.isEmpty())
             QTimer::singleShot(0, this, &BrowserController::drainCreationUiWhenIdle);

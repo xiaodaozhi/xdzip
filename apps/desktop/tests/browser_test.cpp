@@ -6672,9 +6672,8 @@ QtObject {
         QVERIFY(QMetaObject::invokeMethod(cancel, "clicked"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
         QVERIFY(!overlay->isVisible());
-        // Completion may beat cancellation; either terminal state must remove the mask.
-        if (!controller->ready())
-            QVERIFY(welcome->isVisible());
+        QVERIFY(!controller->ready());
+        QVERIFY(welcome->isVisible());
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
         QVERIFY(!welcome->isVisible() && !overlay->isVisible());
@@ -7735,6 +7734,141 @@ QtObject {
             QVERIFY(visual_audit::save(taskWindow, audit, QTest::currentDataTag()));
         }
         QTRY_VERIFY(controller->requestClose());
+    }
+    void cancelledOpenDoesNotCommitFinishedMailboxResult_data() {
+        QTest::addColumn<QString>("input");
+        QTest::addColumn<int>("queuedEvents");
+        const auto normal = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        QTest::newRow("immediate") << normal << 0;
+        QTest::newRow("finished-before-gui-drain") << normal << 2;
+        QTest::newRow("password-prompt-before-gui-drain")
+            << QStringLiteral(XDZIP_FIXTURES
+                              "/../native-archives/test_read_format_rar4_encrypted_filenames.rar")
+            << 1;
+    }
+    void cancelledOpenDoesNotCommitFinishedMailboxResult() {
+        QFETCH(QString, input);
+        QFETCH(int, queuedEvents);
+        BrowserController controller;
+        QSignalSpy opened(&controller, &BrowserController::archiveOpened);
+        bool repeatedDuringCleanup = false;
+        connect(&controller, &BrowserController::changed, &controller, [&] {
+            if (!repeatedDuringCleanup &&
+                controller.m_openCancellation == BrowserController::OpenCancellation::Snapshot) {
+                repeatedDuringCleanup = true;
+                controller.cancel();
+            }
+        });
+        controller.openPath(input);
+        QVERIFY(controller.busy());
+        QVERIFY(controller.m_pending);
+
+        // Let the receiver enqueue Page and Finished without dispatching GUI events.
+        // The user can still see and cancel the pending opening at this boundary.
+        if (queuedEvents) {
+            QElapsedTimer timer;
+            timer.start();
+            while (controller.m_connection->statistics().peakQueued <
+                       static_cast<std::size_t>(queuedEvents) &&
+                   timer.elapsed() < 30000)
+                QThread::msleep(1);
+            QVERIFY(controller.m_connection->statistics().peakQueued >=
+                    static_cast<std::size_t>(queuedEvents));
+        }
+        controller.cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 10000);
+        QVERIFY(repeatedDuringCleanup);
+        QVERIFY(!controller.ready());
+        QVERIFY(controller.passwordPrompt().isEmpty());
+        QCOMPARE(opened.count(), 0);
+        QTest::qWait(100);
+        QVERIFY(!controller.ready());
+        QCOMPARE(opened.count(), 0);
+
+        // A cancelled opening must not leave an untracked session in the runtime.
+        quint64 snapshot = std::numeric_limits<quint64>::max();
+        quint64 snapshotRequest = 0;
+        bool snapshotFinished = false;
+        controller.m_connection->setConsumer([&](const xdzip::reader::Event &event) {
+            if (event.request_id == snapshotRequest &&
+                event.kind == xdzip::reader::EventKind::Snapshot)
+                snapshot = event.session;
+            if (event.request_id == snapshotRequest &&
+                event.kind == xdzip::reader::EventKind::Finished)
+                snapshotFinished = true;
+            controller.receive(event);
+        });
+        xdzip::reader::Submission result{};
+        for (int attempt = 0; attempt < 32; ++attempt) {
+            xdzip::reader::Command command{};
+            command.kind = xdzip::reader::CommandKind::Snapshot;
+            result = controller.m_connection->submit(std::move(command));
+            if (result.status != xdzip::reader::Admission::Busy)
+                break;
+            QTest::qWait(1);
+        }
+        QCOMPARE(result.status, xdzip::reader::Admission::Accepted);
+        snapshotRequest = result.request_id;
+        QTRY_VERIFY_WITH_TIMEOUT(snapshotFinished, 10000);
+        QCOMPARE(snapshot, quint64(0));
+
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller.ready() && !controller.busy(), 10000);
+        QCOMPARE(opened.count(), 1);
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void cancelledOpenKeepsExistingExtractionTask() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QFile old(target.filePath(QStringLiteral("说明.txt")));
+        QVERIFY(old.open(QIODevice::WriteOnly));
+        QCOMPARE(old.write("owned original"), qint64(14));
+        old.close();
+
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/deflate.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.prepareExtraction(true);
+        controller.checkTarget(target.path());
+        QTRY_VERIFY(!controller.busy());
+        QVERIFY(checkedTarget(&controller, target.path()));
+        controller.startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.activeTaskCount() == 1 &&
+                                     controller.tasks().first().toMap().value("status") ==
+                                         QStringLiteral("waiting"),
+                                 10000);
+        const auto task = controller.tasks().first().toMap();
+        const auto id = task.value("id").toString();
+        const auto prompt = task.value("promptId").toString();
+        QVERIFY(!id.isEmpty() && !prompt.isEmpty());
+
+        // Cancel after the new Page arrives, while Finished is still pending.
+        quint64 openingRequest = 0;
+        bool cancelled = false;
+        controller.m_connection->setConsumer([&](const xdzip::reader::Event &event) {
+            controller.receive(event);
+            if (!cancelled && event.request_id == openingRequest &&
+                event.kind == xdzip::reader::EventKind::Page) {
+                cancelled = true;
+                controller.cancel();
+            }
+        });
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        openingRequest = controller.m_pending;
+        QVERIFY(openingRequest);
+        QTRY_VERIFY_WITH_TIMEOUT(cancelled && !controller.busy(), 10000);
+        QVERIFY(!controller.ready());
+        QCOMPARE(controller.activeTaskCount(), 1);
+        QCOMPARE(controller.tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("waiting"));
+        QVERIFY(controller.decideTask(id, prompt, 1, false));
+        QTRY_COMPARE_WITH_TIMEOUT(controller.activeTaskCount(), 0, 10000);
+        QVERIFY(old.open(QIODevice::ReadOnly));
+        QCOMPARE(old.readAll(), QByteArray("owned original"));
+        old.close();
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
     }
     void explicitOpenConsumesQueuedCreationOutput() {
         DesktopUrlRecorder recorder;

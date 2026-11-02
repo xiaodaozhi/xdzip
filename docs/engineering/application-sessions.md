@@ -78,6 +78,10 @@ English: Closing a tray-resident window clears its browsing tabs and operation d
 
 English: After an open fails or is cancelled, an idle welcome page without active work or a password prompt can be reused; the old path is not treated as an opened archive. Reopening a task-retained closed archive retires only an untouched, automatically restored welcome page in the same window, with no task, error or visible dialog. User-created pages, other windows and task-owning sessions remain intact; retirement still follows the asynchronous shutdown and join path.
 
+用户在打开仍显示进行中时取消，即使后台完成回执已排队，也不能提交该打开结果或显示密码提示。控制器等待原请求结束，查询并关闭可能已建立的后台归档会话；清理期间继续保持忙碌，重复取消不终止清理。清理失败时显示实际错误，不报告取消清理成功；其他已接受的后台任务仍按各自生命周期处理。
+
+English: Cancelling while opening is still shown as pending must not commit a queued completion or show a password prompt. The controller waits for the request, checks for and closes any runtime archive session, and remains busy throughout cleanup; repeated cancellation does not interrupt cleanup. A cleanup failure is reported as an error rather than successful cleanup, and other accepted background tasks retain their own lifecycle.
+
 接受主窗口关闭时递增激活世代并断开模态等待连接，已经排队的旧唤醒回调也必须检查世代，不能在模态弹窗刚关闭后重新显示主窗口或恢复旧标签。此失效处理与正常打开入口共用，不取消后台任务。
 
 更新交接使用独立 `prepareForUpdate` 屏障，不复用立即重启。存在任务、任务启动或模态交互时拒绝交接；下载可继续，等待可取消。接受后关闭新意图入口并清理全部 Rust 连接，所有 join 完成仅发 `readyForUpdate`，不提前退出。更新提供者在释放安装提交之前发出退出屏障信号，主程序此时才解除正常退出拦截。安装提交失败时保留关于页恢复入口，用户可正常退出，不启动旧版本自动重启。详细行为见[主动更新](software-update.md)。
