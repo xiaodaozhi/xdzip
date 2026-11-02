@@ -235,6 +235,6 @@ English: The first body group follows the shared header with a 0-unit bodyGap. H
 
 ## 关于窗口许可提示
 
-关于窗口在既有可滚动正文中明确列出 xdzip 许可和 Qt 所选 LGPL-3.0 分支，并指向随附 notices。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
+关于窗口在既有可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
 
-English: The existing scrollable About body identifies the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled notices. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.
+English: The existing scrollable About body identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.

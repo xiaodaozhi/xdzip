@@ -476,7 +476,7 @@
     "about.runtime": "运行环境",
     "about.development": "开发构建，仅供测试。",
     "about.modified": "包含未提交修改",
-    "about.license": "Apache-2.0。Qt LGPL-3.0。许可见 notices。",
+    "about.license": "xdzip 原创代码版权 (C) 2026 xiaodaozhi。Qt 版权 (C) The Qt Company Ltd. 和其他贡献人。xdzip 使用 Apache-2.0，Qt 运行库采用 LGPL-3.0 分支。GPL-3.0 和 LGPL-3.0 全文见 notices。",
     "about.homepage": "项目主页",
     "about.copy": "复制版本信息",
     "about.copied": "已复制",

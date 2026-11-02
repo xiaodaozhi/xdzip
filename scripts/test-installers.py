@@ -273,6 +273,8 @@ class InstallerTests(unittest.TestCase):
             resource=(ROOT/'apps/desktop/packaging/windows/app.rc.in').read_text(encoding='utf-8')
             original=re.findall(r'VALUE\s+"OriginalFilename",\s*"([^"\\]+)\\0"',resource)
             self.assertEqual(original,['@XDZIP_RESOURCE_FILENAME@'])
+            self.assertIn('VALUE "LegalCopyright", "Copyright (C) 2026 xiaodaozhi\\0"',resource)
+            self.assertIn('AppCopyright=Copyright (C) 2026 xiaodaozhi',text)
             self.assertIn('DestDir: "{app}"; Flags: ignoreversion recursesubdirs',text)
             self.assertIn('Filename: "{app}\\xdzip.exe"',text)
             self.assertIn('UninstallDisplayIcon={app}\\xdzip.exe',text)

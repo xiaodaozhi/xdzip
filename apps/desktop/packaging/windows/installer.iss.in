@@ -3,6 +3,7 @@ AppId={{56DF0D26-2B26-40C4-9E85-FF0F8C8937CA}
 AppName=xdzip
 AppVersion=@VERSION@
 VersionInfoVersion=@FILEVERSION@
+AppCopyright=Copyright (C) 2026 xiaodaozhi
 AppPublisher=xdzip contributors
 DefaultDirName={localappdata}\Programs\xdzip
 DefaultGroupName=xdzip

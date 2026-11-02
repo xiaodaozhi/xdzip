@@ -476,7 +476,7 @@
     "about.runtime": "Runtime",
     "about.development": "Development build, for testing.",
     "about.modified": "Includes uncommitted changes",
-    "about.license": "Apache-2.0. Qt LGPL-3.0. See notices.",
+    "about.license": "xdzip original code, Copyright (C) 2026 xiaodaozhi. Qt, Copyright (C) The Qt Company Ltd. and other contributors. xdzip uses Apache-2.0. The Qt runtime uses the LGPL-3.0 option. See notices for the GPL-3.0 and LGPL-3.0 texts.",
     "about.homepage": "Project website",
     "about.copy": "Copy version info",
     "about.copied": "Copied",
