@@ -27,8 +27,54 @@ Item {
         function populate(count, selected) {
             bar.tabs = Array.from({length:count}, (_, index) => ({id:"tab"+index,title:"archive-"+index+".zip",selected:index === selected}));
         }
-        function init() { Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.integratedTitlebar=false; moves.clear(); windowDrags.clear(); populate(3,0); }
+        function init() { Ui.Theme.fontScale=1; Ui.Theme.dark=false; bar.width=1024; bar.windowsControls=false; bar.integratedTitlebar=false; bar.idleWelcome=false; moves.clear(); windowDrags.clear(); populate(3,0); }
         function cleanup() { bar.cancelReorder(); Ui.Theme.fontScale=1; }
+        function test_close_hover_is_circular_data() {
+            const rows=[];
+            for (const dark of [false,true])
+                for (const scale of [1,1.25,1.5])
+                    rows.push({tag:(dark ? "dark-" : "light-")+scale,dark,scale});
+            return rows;
+        }
+        function test_close_hover_is_circular(data) {
+            Ui.Theme.dark=data.dark; Ui.Theme.fontScale=data.scale; populate(1,0);
+            const strip=findChild(bar,"archiveTabStrip");
+            tryVerify(()=>strip.itemAtIndex(0)!==null && strip.itemAtIndex(0).identity==="tab0");
+            const close=findChild(strip.itemAtIndex(0),"archiveTabClose");
+            const background=findChild(close,"actionBackground");
+            verify(close && background && close.visible);
+            compare(close.width,close.height);
+            compare(background.radius,close.width/2);
+            mouseMove(surface,2,bar.height+40);
+            mouseMove(close,close.width/2,close.height/2);
+            tryCompare(close,"hovered",true);
+            compare(background.color.toString(),Ui.Theme.controlHover.toString());
+            mouseMove(surface,2,bar.height+40);
+        }
+        function test_idle_single_welcome_hides_close() {
+            bar.idleWelcome=true;
+            bar.tabs=[{id:"welcome",title:"",selected:true}];
+            const strip=findChild(bar,"archiveTabStrip");
+            tryVerify(()=>strip.itemAtIndex(0)!==null && strip.itemAtIndex(0).identity==="welcome");
+            let close=findChild(strip.itemAtIndex(0),"archiveTabClose");
+            verify(close!==null);
+            tryCompare(close,"visible",false);
+            verify(!close.enabled);
+            compare(close.focusPolicy,Qt.NoFocus);
+            verify(!close.activeFocus);
+            mouseMove(strip.itemAtIndex(0),strip.itemAtIndex(0).width-5,strip.height/2);
+            verify(!close.visible);
+            bar.idleWelcome=false;
+            tryCompare(close,"visible",true);
+            bar.idleWelcome=true;
+            bar.tabs=[{id:"welcome",title:"",selected:true},{id:"other",title:"other.zip",selected:false}];
+            tryCompare(close,"visible",true);
+            bar.tabs=[{id:"welcome",title:"",selected:true}];
+            tryCompare(close,"visible",false);
+            bar.idleWelcome=false;
+            bar.tabs=[{id:"welcome",title:"archive.zip",selected:true}];
+            tryCompare(close,"visible",true);
+        }
         function test_full_filename_tooltip_uses_stationary_delay() {
             bar.tabs = [{id:"tab0", title:"<b>很长的原始归档文件名</b>.zip", selected:true},
                         {id:"tab1", title:"other.zip", selected:false}];

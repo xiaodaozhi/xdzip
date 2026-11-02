@@ -250,17 +250,20 @@ pub(crate) fn discover(path: &Path, control: &Cancellation) -> Result<Vec<Cabine
 mod tests {
     use super::*;
     use crate::source::Source;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use xdzip_codec_api::ReadSource;
+    static NEXT_FIXTURE: AtomicU64 = AtomicU64::new(0);
     struct Fixture(PathBuf);
     impl Fixture {
         fn new() -> Self {
             let path = std::env::temp_dir().join(format!(
-                "xdzip-cab-source-{}-{}",
+                "xdzip-cab-source-{}-{}-{}",
                 std::process::id(),
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap()
-                    .as_nanos()
+                    .as_nanos(),
+                NEXT_FIXTURE.fetch_add(1, Ordering::Relaxed)
             ));
             std::fs::create_dir(&path).unwrap();
             Self(path)
@@ -290,6 +293,26 @@ mod tests {
         fn drop(&mut self) {
             let _ = std::fs::remove_dir_all(&self.0);
         }
+    }
+    #[test]
+    fn concurrent_fixtures_own_distinct_directories() {
+        let gate = std::sync::Arc::new(std::sync::Barrier::new(16));
+        let threads: Vec<_> = (0..16)
+            .map(|_| {
+                let gate = gate.clone();
+                std::thread::spawn(move || {
+                    gate.wait();
+                    Fixture::new()
+                })
+            })
+            .collect();
+        let fixtures: Vec<_> = threads
+            .into_iter()
+            .map(|thread| thread.join().unwrap())
+            .collect();
+        let paths: std::collections::HashSet<_> =
+            fixtures.iter().map(|fixture| &fixture.0).collect();
+        assert_eq!(paths.len(), fixtures.len());
     }
     #[test]
     fn arbitrary_cabinet_names_open_from_any_part_and_protect_all_parts() {

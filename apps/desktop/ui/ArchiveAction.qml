@@ -8,6 +8,7 @@ Button {
     property bool glyphMirrored: false
     property bool primary: false
     property bool toolbarStyle: false
+    property bool circular: false
     property bool tooltipEnabled: true
     property bool selected: false
     // Reserved presentation for the unavailable extraction action; no dropdown is activated.
@@ -88,7 +89,7 @@ Button {
     }
     background: Rectangle {
         objectName: "actionBackground"
-        radius: root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
+        radius: root.circular ? Math.min(width, height) / 2 : root.toolbarStyle ? Theme.mainToolbarRadius : Theme.mainControlRadius
         color: root.primary && !root.enabled ? Theme.accentDisabled : root.primary ? (root.down ? Theme.accentPressed : root.hovered ? Theme.accentHover : Theme.accent) : !root.enabled ? "transparent" : root.down ? Theme.controlPressed : root.selected ? Theme.selection : root.hovered ? Theme.controlHover : "transparent"
         border.width: 0
         border.color: Theme.accent
