@@ -6,9 +6,9 @@
 
 English: This Linux workflow rebuilds ICU 73.2 locale resources using the delivered ICU source, a CLDR 43.1 subset and ICU 73.1 bootstrap source. The subset omits five ISO 639-3 files; the verified existing-resource conversion did not require them, but other uses or added data need separate provenance and terms review. Use Ubuntu 24.04 x86_64 with JDK 17, Ant, Maven, Python 3, a C/C++ toolchain, `make` and a UTF-8 locale. Maven initially needs its dependency repositories. Set `XDZIP_DELIVERY` to the trusted delivery and `JAVA_HOME` to JDK 17. The locally built bootstrap JARs are not claimed to be byte-identical to upstream published artifacts. Gzip bytes for the CLDR subset may vary across build environments, so verify it against that delivery's manifest; obtain the manifest through a trusted channel.
 
-此子集的其他文件仍含大量与 ISO 639-3 重合的语言标识符和别名；排除五份原始表不单独解决这些数据的来源或授权。[来源交付说明](source-delivery.md)和 [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6588990935)记录对照及跨版本限制。
+此子集的其他文件仍含大量与 ISO 639-3 重合的语言标识符和别名，并保留一份语言子标签注册表；排除五份原始表不单独解决这些数据的来源或授权。[来源交付说明](source-delivery.md)和 [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716)记录对照及跨版本限制。
 
-English: Other files in the subset retain many language identifiers and aliases matching ISO 639-3; omitting the five original tables does not by itself resolve their provenance or authorization. The [source delivery guide](source-delivery.md) and [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6588990935) describe the comparison and its cross-version limits.
+English: Other files in the subset retain many language identifiers and aliases matching ISO 639-3, as well as a language-subtag registry; omitting the five original tables does not by itself resolve their provenance or authorization. The [source delivery guide](source-delivery.md) and [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716) describe the comparison and its cross-version limits.
 
 ```sh
 export XDZIP_DELIVERY=/path/to/source-delivery
