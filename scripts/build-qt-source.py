@@ -18,6 +18,7 @@ import tarfile
 from deployment_audit import ROOT, digest, within
 from qt_sdk_correspondence import replay_patch, sanitize
 from qt_source_identity import source_identity
+from windows_ninja_safety import check_dependencies, utf8_console
 
 COMMON = ['-DCMAKE_BUILD_TYPE=Release', '-DQT_BUILD_TESTS=OFF', '-DQT_BUILD_EXAMPLES=OFF',
           '-DQT_BUILD_EXAMPLES_BY_DEFAULT=OFF', '-DBUILD_WITH_PCH=OFF', '-DWARNINGS_ARE_ERRORS=OFF']
@@ -168,8 +169,10 @@ def main():
             if name == 'qttools': flags += TOOLS
         configure = ['cmake', '-S', source, '-B', build, '-G', 'Ninja']+flags
         log = output/(name+'-build.log')
+        check_dependencies(build)
         run(configure, log)
         run(['cmake', '--build', build, '--parallel', str(args.parallel)], log)
+        check_dependencies(build, require_compiled=True)
         run(['cmake', '--install', build], log)
         if name == 'qtbase':
             ssl_config_sha256 = require_ssl_configuration(install)
@@ -208,4 +211,6 @@ def main():
     print('All required Qt runtime and build-tool modules built from pinned sources')
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    with utf8_console():
+        main()

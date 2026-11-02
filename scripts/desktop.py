@@ -15,6 +15,7 @@ import uuid
 
 from desktop_environment import PYTHON_PACKAGES, QT_VERSION, check_environment, locked_rust_version
 from association_types import WINDOWS_ICONS
+from windows_ninja_safety import check_dependencies, utf8_console
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL_PACKAGES = tuple(name+'=='+version for name, version in PYTHON_PACKAGES.items())
@@ -245,9 +246,12 @@ class Workflow:
         if self.system == 'macos':
             command += ['-DCMAKE_OSX_ARCHITECTURES=arm64', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
                         '-DXDZIP_MACOS_HANDLER_RANK='+self.args.macos_handler_rank]
-        self.run(command)
-        self.check_cached_sdk(configured=True)
-        self.run(['cmake', '--build', self.build, '--parallel', self.args.jobs])
+        with utf8_console():
+            check_dependencies(self.build)
+            self.run(command)
+            self.check_cached_sdk(configured=True)
+            self.run(['cmake', '--build', self.build, '--parallel', self.args.jobs])
+            check_dependencies(self.build, require_compiled=True)
         identity = self.run([self.app, '--version'], capture=True).strip()
         if self.source() != before:
             raise ValueError('Source changed during build; rebuild before continuing')

@@ -12,6 +12,10 @@
 | cxx | 1.0.205，构建期生成桥接，不提供稳定二进制 ABI | crate／生成器同版本，关闭竞态和异常边界回归 |
 | 系统 | macOS 14+ arm64、受维护 Windows 11 x64、Ubuntu 24.04 X11 x64 | 按已批准支持政策核对真实环境，不把 CI 宿主扩大为全部系统版本保证 |
 
+Windows 使用 MSVC 与 Ninja 时，桌面构建、Qt 源码构建和源码交付重建在构建期间临时使用 UTF-8 控制台代码页，并在结束后恢复原值；没有控制台时使用临时隐藏控制台。同一控制台中的受保护构建互斥，等待超过 30 秒则停止并提示重试；该协调不控制其他程序对控制台的修改。构建前后检查已编译对象的 Ninja 依赖记录，发现直接使用引号包含或同目录尖括号包含的源文件没有依赖记录时停止，保留原目录并要求使用新的构建目录，不自动删除或重用旧对象。Ninja 可能有意省略系统头文件，因此仅使用系统头的对象允许零依赖；检查不覆盖其他搜索路径的尖括号包含或所有编译器隐式输入，也不解析预处理条件，可能保守地拒绝未启用的包含项。直接运行 CMake／Ninja 不经过这些入口保护，应自行保证编译器输出与 Ninja 前缀一致，并在更换代码页或工具链后验证头文件改动确实触发重编译。
+
+English: On Windows, the desktop, Qt source and delivered-source build entry points temporarily use a UTF-8 console for MSVC/Ninja and restore its previous code pages afterwards; when no console is attached they create a temporary hidden one. Guarded builds sharing a console serialize, with a 30-second wait before stopping and requesting a retry; this does not control changes made by other programs. They inspect dependency records before and after building, stop if a compiled source with a direct quoted include or a same-directory angle include has no recorded dependencies, and ask for a new build directory without deleting the old one. Ninja can intentionally omit system headers, so zero dependencies are allowed for sources including only system headers. The check does not cover angle includes resolved through other search paths or every implicit compiler input; it does not evaluate preprocessor conditions and may conservatively reject inactive includes. Direct CMake/Ninja invocations bypass this protection: verify the compiler output prefix and a real header-triggered rebuild after changing code pages or toolchains.
+
 GitHub 托管的 Apple Silicon 作业使用 macOS 15 运行器，产品部署目标仍为 macOS 14.0。运行器升级不等于在 macOS 14 实机上完成验证；平台兼容与人工验收分别记录。
 
 日常准备、检查与执行统一见[开发构建指南](developer-build.md)。`scripts/desktop.py doctor` 默认检查 build；`doctor --for-stage package` 提前检查完整打包链，prepare 的 `--install-rust`、`--install-qt`、`--packaging` 显式准备相应工具与锁定材料。系统编译器／SDK 仍由开发者安装，不把预检当作隐式安装器。

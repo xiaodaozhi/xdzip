@@ -344,13 +344,14 @@ OperationWindow {
                             OperationField {
                                 id: password
                                 objectName: "createPassword"
+                                property string xdzipAccessiblePasswordLabel: qsTrId("ui.96d162db488e")
                                 Layout.fillWidth: true
                                 enabled: usePassword.checked
                                 density: root.density
                                 implicitHeight: Math.max(Theme.operationCreateFieldHeight, contentHeight + 8)
                                 echoMode: TextInput.Password
                                 placeholderText: qsTrId("ui.b1e4901deada")
-                                Accessible.name: qsTrId("ui.96d162db488e")
+                                Accessible.name: xdzipAccessiblePasswordLabel
                             }
                             Text {
                                 Layout.fillWidth: true
