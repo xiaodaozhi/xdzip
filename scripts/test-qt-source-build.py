@@ -6,6 +6,7 @@ import io
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 import tarfile
 import tempfile
@@ -158,5 +159,30 @@ class SourceTests(unittest.TestCase):
         signed.append(1)
         self.assertEqual(list(binary_diff.pe_unsigned_candidates(signed)),[])
         self.assertEqual(list(binary_diff.pe_unsigned_candidates(b'untrusted')),[])
+
+    def test_binary_difference_report_retains_each_attributed_path(self):
+        temporary_root=ROOT/'build/qt-binary-difference-tests'
+        temporary_root.mkdir(parents=True,exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=temporary_root) as temporary:
+            root=Path(temporary);sdk=root/'sdk';image=sdk/'lib/QtCore'
+            image.parent.mkdir(parents=True);image.write_bytes(b'owned-sdk-image')
+            sha=hashlib.sha256(image.read_bytes()).hexdigest()
+            paths=['artifact/Contents/Frameworks/QtCore.framework/QtCore',
+                   'artifact/Contents/Frameworks/QtCore.framework/Versions/A/QtCore']
+            checks=[{'algorithm':'SHA1','expected':'0'*40,'matches_sdk':False}]
+            attribution={'platform':'linux','identity':{},'files':[
+                {'path':path,'sdk_path':'lib/QtCore','sdk_sha256':sha,
+                 'upstream_checksums':checks} for path in paths]}
+            source_file=root/'attribution.json';source_file.write_text(json.dumps(attribution),encoding='utf-8')
+            output=root/'differences.json'
+            result=subprocess.run([sys.executable,str(ROOT/'scripts/classify-qt-binary-differences.py'),
+                '--attribution',str(source_file),'--qt-prefix',str(sdk),'--output',str(output)],
+                capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            rows=json.loads(output.read_text(encoding='utf-8'))['files']
+            self.assertEqual([row['attribution_path'] for row in rows],paths)
+            self.assertEqual([row['sdk_path'] for row in rows],['lib/QtCore']*2)
+            self.assertTrue(all(row['results'][0]['status']=='unexplained-publisher-provenance-required'
+                                for row in rows))
 
 if __name__=='__main__':unittest.main()

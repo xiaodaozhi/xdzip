@@ -14,6 +14,10 @@
 
 已有 runtime-attribution.json、qt-sdk-correspondence.json、qt-binary-differences.json、链接输入和内嵌资源记录。逐项审查输出到 build/，区分已精确解释的二进制转换、上游未声明构建来源、系统包装依赖、实际再分发库、主程序复合代码和待选许可分支。原始 gap 与 incomplete 保留，不把一个技术解释直接改为法律批准。
 
+二进制差异记录同时保留归属报告中的 `attribution_path` 和 `sdk_path`。同一 SDK 文件的多个发行路径可以分别出现，不能把这些记录数量直接当作不同 SDK 文件数量；上游摘要差异仍按各自实际证据判断。
+
+English: Each binary-difference record retains both the `attribution_path` from the attribution report and the `sdk_path`. Multiple distributed paths may refer to one SDK file, so record counts are not automatically counts of distinct SDK files. An upstream checksum difference still requires its own evidence.
+
 审查清单须逐平台核对报告的实际可用性与范围：最终文件 SBOM、部署后组件归属和 SDK 参考是三类输入。只有文件哈希或 SDK 模式归属时，将部署后的组件关联登记为缺失；裁剪架构、重定位、签名后的应用不能直接沿用 SDK 文件身份。历史候选与当前候选的观察数量只有在范围、文件与组件均匹配后才能比较，不能把数量变化当作已解决项。
 
 专用 macOS Release 在最终部署应用仍存在时采集 Cocoa／Metal 资源探针、SDK 源码对应与差异分析，提供通用名称的来源／文件 SBOM。链接图和静态库绑定编译应用，资源与审计绑定部署应用；`release-deployment-evidence.json` 复用既有 Mach-O 比较器，核对节的精确字节、地址、标志及零填充大小，以及 UUID 与归一化导入版本，保留不同的整文件哈希。加载命令布局、LINKEDIT 与签名元数据不计入该等价结论，异常边界、混合身份或节／UUID／导入变化直接失败。单次探针不批准参考机性能或真人视觉，原始归属缺口与 incomplete 保持。

@@ -66,7 +66,8 @@ def main():
             if not any(not c['matches_sdk'] for c in checks):continue
             file=a.qt_prefix/item['sdk_path']
             if not within(file,a.qt_prefix) or digest(file)!=item['sdk_sha256']:raise ValueError('SDK bytes changed before transformation analysis')
-            rows.append({'sdk_path':item['sdk_path'],'sdk_sha256':item['sdk_sha256'],'results':classify(file,checks,d['platform'],Path(temp))})
+            rows.append({'attribution_path':item['path'],'sdk_path':item['sdk_path'],
+                         'sdk_sha256':item['sdk_sha256'],'results':classify(file,checks,d['platform'],Path(temp))})
     result={'schema_version':1,'status':'transformation-analysis-complete-not-provenance-approval','platform':d['platform'],'identity':d['identity'],'attribution_sha256':digest(a.attribution),'files':rows,
             'limits':['Original upstream hash differences are retained. Only an exact reconstructed byte hash is marked explained.',
                       'No fuzzy match, publisher signature/rights inference or SDK binary build equivalence; unmatched publisher history requires external evidence.']}
