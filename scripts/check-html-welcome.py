@@ -40,6 +40,7 @@ with sync_playwright() as p:
                     expect(frame.locator('.toolbar')).to_be_hidden()
                     expect(frame.locator('.workspace')).to_be_hidden()
                     expect(frame.locator('.welcome-tab')).to_contain_text('起始页')
+                    expect(frame.locator('.welcome-tab .tab-close')).to_have_count(0)
                     expect(frame.locator('#selection-status')).to_have_text('文件在本机处理')
                     rects = frame.locator('.window').evaluate('el => {const f=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--ui-source-factor"));const rect=e=>{const r=e.getBoundingClientRect();return {width:r.width/f,height:r.height/f}};return {window:rect(el),titlebar:rect(el.querySelector(".titlebar")),status:rect(el.querySelector(".statusbar")),cards:[...el.querySelectorAll(".welcome-action")].map(rect),overflow:el.scrollWidth>el.clientWidth}}')
                     assert abs(rects['window']['width'] - width) <= 1 and abs(rects['window']['height'] - height) <= 1, rects

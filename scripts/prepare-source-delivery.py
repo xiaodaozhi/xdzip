@@ -323,6 +323,18 @@ def rebuild_instructions():
    supplies verification, isolated extraction and conversion commands. The package's
    license statement alone does not establish SIL table redistribution rights; neither
    the package nor the complete converted data is included in this delivery.
+   也可自行取得 IANA 语言子标签注册表及 LoC ISO 639-2 列表并转换：
+   python3 scripts/convert-iana-loc-for-qt.py \\
+     --iana path/to/language-subtag-registry.txt --loc path/to/ISO-639-2_utf-8.txt \\
+     --output build/qt-iana-loc-codes.tsv
+   工具报告输入摘要与未匹配项。对照来源、七个未匹配双字母子标签、八文件
+   正反对照及 IANA 声明的权利范围见 docs/engineering/source-delivery.md。
+   输入及完整转换表不随本交付提供；此路径不证明历史输入或完整对应源码。
+   English: The command above converts independently obtained IANA and LoC inputs.
+   It reports hashes and unmatched codes; see source-delivery.md for the comparison,
+   seven unmatched two-letter subtags and the limited scope of IANA's rights statement.
+   Inputs and complete converted data are not included; historical identity and complete
+   corresponding-source compliance are not established by this alternative.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。

@@ -1615,6 +1615,40 @@ QtObject {
             popup->close();
         }
     }
+    void operationWindowHeightTransitionsKeepValidBounds() {
+        QQmlApplicationEngine engine;
+        QQmlComponent component(&engine);
+        component.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                          "Window { id: host; width: 600; height: 500; visible: true; "
+                          "Ui.OperationWindow { objectName: 'probe'; owner: host; "
+                          "requestedHeight: 320 } }",
+                          QUrl());
+        std::unique_ptr<QObject> owner(component.create());
+        QVERIFY2(owner, qPrintable(component.errorString()));
+        auto *operation = owner->findChild<QQuickWindow *>("probe");
+        QVERIFY(operation);
+        QVERIFY(QMetaObject::invokeMethod(operation, "present"));
+        QTRY_VERIFY(operation->isVisible());
+        QTRY_COMPARE(operation->height(), 320);
+        QTRY_COMPARE(operation->minimumHeight(), 320);
+        QTRY_COMPARE(operation->maximumHeight(), 320);
+
+        bool boundsValid = true;
+        QObject observer;
+        const auto check = [&] {
+            boundsValid &= operation->minimumHeight() <= operation->maximumHeight();
+        };
+        connect(operation, &QWindow::minimumHeightChanged, &observer, check);
+        connect(operation, &QWindow::maximumHeightChanged, &observer, check);
+        for (const int desired : {420, 340, 360, 320}) {
+            QVERIFY(operation->setProperty("requestedHeight", desired));
+            QTRY_COMPARE(operation->height(), desired);
+            QTRY_COMPARE(operation->minimumHeight(), desired);
+            QTRY_COMPARE(operation->maximumHeight(), desired);
+            QVERIFY2(boundsValid, "The native window briefly received inverted height limits");
+        }
+        operation->close();
+    }
     void nativeDragSuppressesSourceNameTooltips_data() {
         QTest::addColumn<QString>("view");
         QTest::newRow("list") << QString("list");
@@ -5755,6 +5789,119 @@ QtObject {
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
+    void tabCloseTracksWelcomeAndSessionState_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("scale");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
+                                             QString::number(scale)))
+                        << language << dark << scale;
+    }
+    void tabCloseTracksWelcomeAndSessionState() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto activeClose = [window]() -> QQuickItem * {
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            auto *tab = page ? findVisual(page, "activeArchiveTab") : nullptr;
+            return tab ? findVisual(tab, "archiveTabClose") : nullptr;
+        };
+        QQuickItem *close = nullptr;
+        QTRY_VERIFY((close = activeClose()));
+        QTRY_VERIFY(!close->isVisible());
+        QVERIFY(!close->isEnabled());
+        QCOMPARE(close->property("focusPolicy").toInt(), int(Qt::NoFocus));
+        for (int i = 0; i < 6; ++i) {
+            QTest::keyClick(window, Qt::Key_Tab);
+            QVERIFY(!close->hasActiveFocus());
+        }
+        auto *hiddenAccessible = QAccessible::queryAccessibleInterface(close);
+        QVERIFY(hiddenAccessible && hiddenAccessible->state().invisible);
+        const auto captures = qEnvironmentVariable("XDZIP_TAB_CLOSE_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("welcome-") + QTest::currentDataTag()));
+        }
+
+        sessions.newSession();
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 2);
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        auto *visibleAccessible = QAccessible::queryAccessibleInterface(close);
+        QVERIFY(visibleAccessible && visibleAccessible->actionInterface());
+        visibleAccessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        QTRY_VERIFY((close = activeClose()) && !close->isVisible());
+
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        sessions.openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+        QVERIFY(controller->browsingBusy());
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        controller->cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
+        if (controller->ready()) {
+            const auto identity =
+                window->property("sessionTabs").toList().first().toMap().value("id").toString();
+            sessions.closeSession(identity);
+            QTRY_VERIFY(window->property("welcomeVisible").toBool());
+            QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        }
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        page = window->property("activePage").value<QObject *>();
+        controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->title(), QStringLiteral("normal.zip"));
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        if (!captures.isEmpty()) {
+            moveTestPointer(
+                window,
+                close->mapToScene(QPointF(close->width() / 2, close->height() / 2)).toPoint());
+            QTRY_VERIFY(close->property("hovered").toBool());
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("close-hover-") + QTest::currentDataTag()));
+        }
+        close->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(close->hasActiveFocus());
+        QTest::keyClick(window, Qt::Key_Space);
+        QTRY_VERIFY(window->property("welcomeVisible").toBool());
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        QTRY_VERIFY((close = activeClose()) && !close->isVisible());
+
+        page = window->property("activePage").value<QObject *>();
+        controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(!controller->ready() && !controller->message().isEmpty());
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void createOptionsLayoutSettles_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<double>("scale");
@@ -6672,9 +6819,8 @@ QtObject {
         QVERIFY(QMetaObject::invokeMethod(cancel, "clicked"));
         QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
         QVERIFY(!overlay->isVisible());
-        // Completion may beat cancellation; either terminal state must remove the mask.
-        if (!controller->ready())
-            QVERIFY(welcome->isVisible());
+        QVERIFY(!controller->ready());
+        QVERIFY(welcome->isVisible());
         controller->openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
         QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
         QVERIFY(!welcome->isVisible() && !overlay->isVisible());
@@ -7735,6 +7881,141 @@ QtObject {
             QVERIFY(visual_audit::save(taskWindow, audit, QTest::currentDataTag()));
         }
         QTRY_VERIFY(controller->requestClose());
+    }
+    void cancelledOpenDoesNotCommitFinishedMailboxResult_data() {
+        QTest::addColumn<QString>("input");
+        QTest::addColumn<int>("queuedEvents");
+        const auto normal = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        QTest::newRow("immediate") << normal << 0;
+        QTest::newRow("finished-before-gui-drain") << normal << 2;
+        QTest::newRow("password-prompt-before-gui-drain")
+            << QStringLiteral(XDZIP_FIXTURES
+                              "/../native-archives/test_read_format_rar4_encrypted_filenames.rar")
+            << 1;
+    }
+    void cancelledOpenDoesNotCommitFinishedMailboxResult() {
+        QFETCH(QString, input);
+        QFETCH(int, queuedEvents);
+        BrowserController controller;
+        QSignalSpy opened(&controller, &BrowserController::archiveOpened);
+        bool repeatedDuringCleanup = false;
+        connect(&controller, &BrowserController::changed, &controller, [&] {
+            if (!repeatedDuringCleanup &&
+                controller.m_openCancellation == BrowserController::OpenCancellation::Snapshot) {
+                repeatedDuringCleanup = true;
+                controller.cancel();
+            }
+        });
+        controller.openPath(input);
+        QVERIFY(controller.busy());
+        QVERIFY(controller.m_pending);
+
+        // Let the receiver enqueue Page and Finished without dispatching GUI events.
+        // The user can still see and cancel the pending opening at this boundary.
+        if (queuedEvents) {
+            QElapsedTimer timer;
+            timer.start();
+            while (controller.m_connection->statistics().peakQueued <
+                       static_cast<std::size_t>(queuedEvents) &&
+                   timer.elapsed() < 30000)
+                QThread::msleep(1);
+            QVERIFY(controller.m_connection->statistics().peakQueued >=
+                    static_cast<std::size_t>(queuedEvents));
+        }
+        controller.cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy(), 10000);
+        QVERIFY(repeatedDuringCleanup);
+        QVERIFY(!controller.ready());
+        QVERIFY(controller.passwordPrompt().isEmpty());
+        QCOMPARE(opened.count(), 0);
+        QTest::qWait(100);
+        QVERIFY(!controller.ready());
+        QCOMPARE(opened.count(), 0);
+
+        // A cancelled opening must not leave an untracked session in the runtime.
+        quint64 snapshot = std::numeric_limits<quint64>::max();
+        quint64 snapshotRequest = 0;
+        bool snapshotFinished = false;
+        controller.m_connection->setConsumer([&](const xdzip::reader::Event &event) {
+            if (event.request_id == snapshotRequest &&
+                event.kind == xdzip::reader::EventKind::Snapshot)
+                snapshot = event.session;
+            if (event.request_id == snapshotRequest &&
+                event.kind == xdzip::reader::EventKind::Finished)
+                snapshotFinished = true;
+            controller.receive(event);
+        });
+        xdzip::reader::Submission result{};
+        for (int attempt = 0; attempt < 32; ++attempt) {
+            xdzip::reader::Command command{};
+            command.kind = xdzip::reader::CommandKind::Snapshot;
+            result = controller.m_connection->submit(std::move(command));
+            if (result.status != xdzip::reader::Admission::Busy)
+                break;
+            QTest::qWait(1);
+        }
+        QCOMPARE(result.status, xdzip::reader::Admission::Accepted);
+        snapshotRequest = result.request_id;
+        QTRY_VERIFY_WITH_TIMEOUT(snapshotFinished, 10000);
+        QCOMPARE(snapshot, quint64(0));
+
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_VERIFY_WITH_TIMEOUT(controller.ready() && !controller.busy(), 10000);
+        QCOMPARE(opened.count(), 1);
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
+    }
+    void cancelledOpenKeepsExistingExtractionTask() {
+        QTemporaryDir target;
+        QVERIFY(target.isValid());
+        QFile old(target.filePath(QStringLiteral("说明.txt")));
+        QVERIFY(old.open(QIODevice::WriteOnly));
+        QCOMPARE(old.write("owned original"), qint64(14));
+        old.close();
+
+        BrowserController controller;
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/deflate.zip"));
+        QTRY_VERIFY(controller.ready() && !controller.busy());
+        controller.prepareExtraction(true);
+        controller.checkTarget(target.path());
+        QTRY_VERIFY(!controller.busy());
+        QVERIFY(checkedTarget(&controller, target.path()));
+        controller.startExtraction(target.path(), true, false, 0, false, false);
+        QTRY_VERIFY_WITH_TIMEOUT(!controller.busy() && controller.activeTaskCount() == 1 &&
+                                     controller.tasks().first().toMap().value("status") ==
+                                         QStringLiteral("waiting"),
+                                 10000);
+        const auto task = controller.tasks().first().toMap();
+        const auto id = task.value("id").toString();
+        const auto prompt = task.value("promptId").toString();
+        QVERIFY(!id.isEmpty() && !prompt.isEmpty());
+
+        // Cancel after the new Page arrives, while Finished is still pending.
+        quint64 openingRequest = 0;
+        bool cancelled = false;
+        controller.m_connection->setConsumer([&](const xdzip::reader::Event &event) {
+            controller.receive(event);
+            if (!cancelled && event.request_id == openingRequest &&
+                event.kind == xdzip::reader::EventKind::Page) {
+                cancelled = true;
+                controller.cancel();
+            }
+        });
+        controller.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        openingRequest = controller.m_pending;
+        QVERIFY(openingRequest);
+        QTRY_VERIFY_WITH_TIMEOUT(cancelled && !controller.busy(), 10000);
+        QVERIFY(!controller.ready());
+        QCOMPARE(controller.activeTaskCount(), 1);
+        QCOMPARE(controller.tasks().first().toMap().value("status").toString(),
+                 QStringLiteral("waiting"));
+        QVERIFY(controller.decideTask(id, prompt, 1, false));
+        QTRY_COMPARE_WITH_TIMEOUT(controller.activeTaskCount(), 0, 10000);
+        QVERIFY(old.open(QIODevice::ReadOnly));
+        QCOMPARE(old.readAll(), QByteArray("owned original"));
+        old.close();
+        controller.requestClose();
+        QTRY_VERIFY(controller.requestClose());
     }
     void explicitOpenConsumesQueuedCreationOutput() {
         DesktopUrlRecorder recorder;

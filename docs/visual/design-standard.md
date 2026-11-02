@@ -23,6 +23,10 @@ English: Qt captures the platform's default font family before installing the bu
 
 活动标签字重 600，非活动标签字重 400，无活动描边，仅悬停使用共享底色。标签宽度在既有首选宽度与 112 的最小宽度之间均分可用空间，字号放大时宽度上限与下限随之增长。超出后使用不显示滚动条的横向视口，保留新建、双向滚动和标签列表入口，设置及系统按钮不被挤压。滚轮、触控板、键盘切换、菜单激活与拖动边缘滚动共用同一有界视口；活动标签在打开、切换、关闭和尺寸变化后完整可见，用户主动滚动不被拉回。窗口内拖动显示浮动胶囊与插入标记，释放后按稳定会话身份排序，Escape 或输入取消放弃拖动。参数来自 layout-scale.json 的 titlebar，不从截图像素推导。
 
+标签关闭按钮保持既有正方形命中区域与居中位置，悬停及按下背景的圆角为宽高的一半，形成圆形。主窗口只有一个普通、空闲且无错误的起始页时隐藏该按钮；加载、错误或多标签状态下仍按既有规则显示，归档标签的关闭行为不变。隐藏的按钮不得获得键盘焦点或作为可见辅助功能操作。
+
+English: The tab close button retains its square hit area and centered position, with a circular hover and pressed background. Hide it for a single ordinary, idle welcome page without an error; preserve the existing visibility rules for loading, error, multiple tabs and archives. The hidden button must not receive keyboard focus or appear as a visible accessibility action.
+
 起始页加载卡片的正文可滚动，“取消加载”使用共享 OperationFooterButton，在卡片右下固定操作区中显示。加载不是解压，不复用“取消解压”文案。取消发出后显示取消中并禁用重复提交，加载结束后恢复起始页焦点。卡片逻辑宽度 360、内距 24，保留既有半透明遮罩与共享按钮尺寸，不覆盖 footer 按钮样式。
 
 已打开压缩包的修改等待复用该卡片参数，背景采用 layout-scale.json 的 operation_overlay 透明政策，原文件页继续显示且阻止重复操作。标题、说明、进度辅助名称和取消按钮按真实添加或包内移动命名，任务清理和目录刷新完成后恢复操作。取消请求已接纳时立即关闭失效的重名与密码提示，进度窗显示取消中并继续跟随真实终态；重名窗口绑定具体任务及提示令牌，切换任务或令牌失效时关闭。
@@ -242,3 +246,9 @@ English: The first body group follows the shared header with a 0-unit bodyGap. H
 关于窗口在既有可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
 
 English: The existing scrollable About body identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.
+
+## 操作窗口的动态高度
+
+操作窗口的目标客户区高度仍按各窗口既有的内容、字号及可用屏幕表达式计算。动态调整时先放宽朝目标方向的高度约束，再设置目标高度，最后将上下限恢复为目标值，避免系统按旧限制拒绝调整；完成后窗口仍是固定客户区高度。窗口重开、内容变化及平台迟到的几何回调继续使用同一逻辑单位，不引入屏幕缩放系数或新尺寸参数。运行时几何检查不能代替原生桌面视觉验收。
+
+English: Each operation window keeps its existing content-, font- and screen-based target client height. During a change, widen the relevant constraint first, set the target height, then restore both fixed limits; this avoids asking the platform to resize against stale constraints. Reopening, content changes and late native geometry callbacks retain the same logical units, without introducing display-scale multipliers or new size tokens. Runtime geometry checks do not replace native visual acceptance.

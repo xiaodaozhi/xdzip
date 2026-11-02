@@ -5,6 +5,7 @@
     "OperationWindow": {
       "parent": "Window",
       "role": "base",
+      "height_constraint_policy": "动态客户区高度变化时先放宽必要的上下限，再设置目标高度，最后恢复固定上下限；尺寸使用原有逻辑单位",
       "reason": "平台装饰与固定客户区约束"
     },
     "OperationConfirmationWindow": {

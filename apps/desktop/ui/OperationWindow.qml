@@ -15,23 +15,28 @@ Window {
     color: Theme.surface
     visible: false
     width: Theme.operationDefaultWidth
-    height: requestedHeight
     minimumWidth: width
     maximumWidth: width
-    minimumHeight: requestedHeight
-    maximumHeight: requestedHeight
 
-    // Cocoa may report an older resize after the content limits have changed.
-    // Reconcile that notification with the latest fixed client height.
+    // Widen the range before resizing so the native window never receives
+    // inverted limits or a target outside its current constraints.
     function applyRequestedHeight() {
-        if (height !== requestedHeight) height = requestedHeight;
+        const desired = requestedHeight;
+        if (minimumHeight > desired) minimumHeight = desired;
+        if (maximumHeight < desired) maximumHeight = desired;
+        if (height !== desired) height = desired;
+        if (minimumHeight !== desired) minimumHeight = desired;
+        if (maximumHeight !== desired) maximumHeight = desired;
     }
+    Component.onCompleted: applyRequestedHeight()
     onRequestedHeightChanged: Qt.callLater(applyRequestedHeight)
+    // Cocoa can deliver an older resize after the content limits have changed.
     onHeightChanged: if (visible && height !== requestedHeight) Qt.callLater(applyRequestedHeight)
 
     function present() {
         // Reopening preserves view state and uses the owner's current display.
         screen = owner.screen;
+        applyRequestedHeight();
         x = Math.max(Screen.virtualX, Math.min(owner.x + (owner.width - width) / 2,
                      Screen.virtualX + Screen.width - width));
         y = Math.max(Screen.virtualY, Math.min(owner.y + (owner.height - height) / 2,
