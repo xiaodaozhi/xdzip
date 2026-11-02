@@ -23,6 +23,14 @@ English: Source delivery retains the pinned Apache Tika input, upstream NOTICE a
 
 English: The delivery also contains the CLDR 46 `common` source and upstream license used by Qt 6.8.2 locale generation, not the rest of the CLDR source tree. Collection verifies the CLDR version in two generated Qt source files, the pinned upstream archive hash and selected inputs. Qt's second generation step additionally requires an ISO 639-3 table that is not included; `qt-cldr-sources.json` records the tested candidate's source, version and digest, and its [upstream download page and terms](https://iso639-3.sil.org/code_tables/download_tables) require separate review. Reproducing generated data with this candidate does not establish the precise historical input or the original SDK's complete build identity.
 
+不提供原始 ISO 表不意味着其他 CLDR 数据没有相关标识符。CLDR 46 `common/validity/language.xml` 保留压缩表示的语言代码，`common/supplemental/supplementalMetadata.xml` 还含别名。本机对交付子集的[对照](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6588994510)从这两份文件构造的三字母候选集合覆盖 CLDR 46 候选 ISO 表 7,920 个 `Id` 中的 7,919 个，并另含 338 个值；CLDR 43.1 子集按相同方法与较新的同一表跨版本对照覆盖 7,896 个，并另含 338 个值。候选集合不是原表，不含原表的完整字段；标识符重合不决定来源、授权或适用条款。不得以排除五个 ISO 命名文件推断交付中不存在其他相关数据。
+
+English: Omitting the original ISO tables does not remove all related identifiers from the other CLDR data. CLDR 46 `common/validity/language.xml` retains compact language codes and `common/supplemental/supplementalMetadata.xml` contains aliases. In the [local comparison](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6588994510), a three-letter candidate set constructed from these delivered files covered 7,919 of 7,920 `Id` values in the CLDR 46 candidate ISO table and had 338 extra values. Applying the same method to the CLDR 43.1 subset against that later table covered 7,896 values and had 338 extras. The candidate set is not the original table and does not contain its complete fields; matching identifiers alone does not settle provenance, authorization or applicable terms. Excluding the five ISO-named files does not establish that other related data is absent.
+
+CLDR 43.1 子集的工具数据还保留文件头日期为 2023-02-14 的 `language-subtag-registry`。该文件中 8,049 个三字母语言子标签有 7,713 个与上述较新候选 ISO 表重合；不同版本的差额不据此归因。Unicode 的更新说明将此文件列为从 IANA 取得的语言子标签注册表；IANA 的 CC0 声明只覆盖其拥有或有权转授的权利，并保留第三方可能的权利。文件内容对照及限制见 [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716)。
+
+English: The CLDR 43.1 subset also retains a `language-subtag-registry` tool input dated 2023-02-14 in its header. Of its 8,049 three-letter language subtags, 7,713 match identifiers in the later candidate ISO table above; that cross-version difference is not attributed here. Unicode's update instructions identify this file as the language-subtag registry obtained from IANA. IANA's CC0 statement covers only rights it owns or may sublicense and preserves possible third-party rights. See [#140](https://github.com/xiaodaozhi/xdzip/issues/140#issuecomment-6589292716) for the comparison and limits.
+
 对 Qt 源码中已有的语言，还可从原 `qlocale_data_p.h` 提取一个供 Qt 生成器读取的有限输入。例如，将 QtBase 归档解包到当前目录后运行 `python3 scripts/derive-qt-locale-code-input.py --qtbase qtbase-everywhere-src-6.8.2 --output build/qt-locale-codes.tsv`。此输入仅覆盖原文件中已有的查找项，不是完整 ISO 639-3 表，也不是上游历史输入；新增语言时可能仍需另行取得代码并核对条款。用固定 Qt 6.8.2 源码、CLDR 46 数据及此派生输入重生成八个源码文件的验证，仅允许生成日期和换行差异。该方法不自动解决 ISO 表的授权或完整对应源码判断。
 
 English: For languages already present in the Qt source, `scripts/derive-qt-locale-code-input.py` extracts a limited input from the original `qlocale_data_p.h`; the command and output location are shown above. This covers only existing lookup keys and is neither the complete ISO 639-3 table nor the historical upstream input. Adding languages may still require separately obtained codes and review of their terms. Regeneration of eight files with the pinned Qt 6.8.2 source, CLDR 46 data and this derived input was checked allowing only generation-date and line-ending differences. This does not by itself settle the ISO table's licensing or establish complete corresponding source.
@@ -57,20 +65,36 @@ python3 scripts/convert-iso-codes-for-qt.py \
 
 English: To reproduce the comparison, obtain the pinned Ubuntu `iso-codes` 4.16.0-1 package from the official archive linked above. On Linux, the commands above verify its SHA-256 before extracting it into a local build directory and converting its two JSON tables. The two verified input hashes and resulting table hash are listed above. The package copyright file declares LGPL-2.1-or-later, but that package-level statement alone does not establish the historical SIL table grant or redistribution rights for a complete code set. Neither the package nor the complete converted table is included in this delivery; review provenance, applicable terms and any subsequent redistribution separately.
 
-也可自行取得 [IANA 语言子标签注册表](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)和[美国国会图书馆 ISO 639-2 列表](https://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt)，使用以下命令生成另一份输入。工具只提取代码，不保留名称；它报告未匹配的代码、输入与输出摘要，并拒绝无效或有歧义的记录。
+也可自行取得 [IANA 语言子标签注册表](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)和[美国国会图书馆 ISO 639-2 列表](https://loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt)，使用以下命令生成另一份输入。工具只提取代码，不保留名称；它报告未匹配的代码、输入与输出摘要，并拒绝无效或有歧义的记录。下面的 Linux／macOS shell 示例使用新目录，校验本次核验的两个原始文件后才转换：
 
 ```sh
-python3 scripts/convert-iana-loc-for-qt.py \
-  --iana path/to/language-subtag-registry.txt \
-  --loc path/to/ISO-639-2_utf-8.txt \
-  --output build/qt-iana-loc-codes.tsv
+(
+  set -eu
+  mkdir -p build
+  mkdir build/qt-iana-loc-inputs
+  curl --fail --location --output build/qt-iana-loc-inputs/iana.txt \
+    https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+  curl --fail --location --output build/qt-iana-loc-inputs/loc.txt \
+    https://loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
+  python3 -c 'import hashlib,pathlib,sys; p=sys.argv[1:]; sys.exit(0 if all(hashlib.sha256(pathlib.Path(p[i]).read_bytes()).hexdigest()==p[i+1] for i in (0,2)) else "Input SHA-256 mismatch")' \
+    build/qt-iana-loc-inputs/iana.txt 755fad43283be7b41ebe3c89ad054b6eaf928f404f9c0edb74799e0eab74beb1 \
+    build/qt-iana-loc-inputs/loc.txt 42b71885e4dc885559fda5ad059fd81838cf4782cedb5fd08cc3431f7d067371
+  python3 scripts/convert-iana-loc-for-qt.py \
+    --iana build/qt-iana-loc-inputs/iana.txt \
+    --loc build/qt-iana-loc-inputs/loc.txt \
+    --output build/qt-iana-loc-inputs/qt-codes.tsv
+)
 ```
 
-对照所用 IANA 文件日期为 2026-09-17，SHA-256 为 `755fad43283be7b41ebe3c89ad054b6eaf928f404f9c0edb74799e0eab74beb1`；国会图书馆的 487 条记录取自网页渲染并在本地重建，不能把重建文本的摘要当成上游原始文件摘要。重建记录仅前三列、制表符分隔并使用 LF 换行的 SHA-256 为 `f575653835cdaa3c998b578969680c1222da58c27e9dd09592ef64c756dde0a1`；转换器的 LF 输出摘要为 `6a75bebfa694258a1a4125fc30512d8ae7994080701377b41306db665ad371c6`。该组合生成 8268 行，现有 Qt 语言的 346 个不同查找键全部一致；使用固定 Qt 与 CLDR 重生八个文件，仅规范化生成日期和换行后全部匹配，修改一项输入的负对照匹配七个。对照中 `bh`、`in`、`iw`、`ji`、`jw`、`mo`、`sh` 七个 IANA 双字母子标签没有 LoC 对应记录，工具会报告它们；其他版本和新增语言须单独核对。详情见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6577076799)。
+对照所用 IANA 文件日期为 2026-09-17，原始文件 SHA-256 为 `755fad43283be7b41ebe3c89ad054b6eaf928f404f9c0edb74799e0eab74beb1`。2026-11-03 从 LoC 直接取得的 UTF-8 原始文件为 16,010 字节、SHA-256 `42b71885e4dc885559fda5ad059fd81838cf4782cedb5fd08cc3431f7d067371`；其 487 条记录的前三个代码字段与此前网页重建记录逐项一致。转换器的 LF 输出摘要为 `6a75bebfa694258a1a4125fc30512d8ae7994080701377b41306db665ad371c6`。该组合生成 8268 行，现有 Qt 语言的 346 个不同查找键全部一致；使用固定 Qt 与 CLDR 重生八个文件，仅规范化生成日期和换行后全部匹配，修改一项输入的负对照匹配七个。对照中 `bh`、`in`、`iw`、`ji`、`jw`、`mo`、`sh` 七个 IANA 双字母子标签没有 LoC 对应记录，工具会报告它们；其他版本和新增语言须单独核对。上游地址可能更新，摘要不符时须重新核验，不应跳过检查。详情见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6588040592)。
 
-[IANA 与 IETF 的声明](https://www.iana.org/help/licensing-terms)将其拥有或有权转授的协议注册表相关权利按 CC0 处理，并保留第三方可能拥有的权利；该声明不自动证明 SIL 原始表的全部权利。项目不在此交付 IANA、LoC 输入或完整转换结果；接收者须分别核对来源、适用条款与后续分发条件。该替代输入不证明 Qt 上游历史输入，也不单独证明对应源码义务已经完成。
+[IANA 与 IETF 的声明](https://www.iana.org/help/licensing-terms)将其拥有或有权转授的协议注册表相关权利按 CC0 处理，并保留第三方可能拥有的权利；该声明不自动证明 SIL 原始表的全部权利。项目不在此交付本次对照使用的 2026-09-17 IANA 快照、LoC 原始输入或完整转换结果；前述 CLDR 43.1 子集另含较早的注册表。接收者须分别核对来源、适用条款与后续分发条件。该替代输入不证明 Qt 上游历史输入，也不单独证明对应源码义务已经完成。
 
-English: The command above converts independently obtained IANA language-subtag and Library of Congress ISO 639-2 data to Qt lookup rows without language names. It reports unmatched entries and hashes, and rejects malformed or conflicting records. In the comparison described in [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6577076799), the 2026-09-17 IANA snapshot and 487 LoC records reconstructed from the public web rendering produced 8268 rows and matched all 346 existing Qt lookup keys. Their IANA, code-only normalized LoC and LF-output hashes are listed above; the normalized LoC hash is not an upstream raw-file hash. All eight generated files matched after normalizing generation dates and line endings; a negative control matched seven. The seven unmatched two-letter subtags are listed above and reported by the tool; verify other versions and added languages separately. The IANA/IETF CC0 statement applies to rights they hold or can sublicense and preserves possible third-party rights. Neither input nor the complete converted table is included here; this alternative establishes neither Qt's historical input nor complete corresponding-source compliance.
+这里的独立对照指分别取得文件并运行转换，不表示标准来源独立。[RFC 5646 第 2.2.1 节](https://www.rfc-editor.org/rfc/rfc5646#section-2.2.1)将 ISO 639-2、639-3 和 639-5 列为 IANA 三字母语言子标签的标准来源，因此数值重合不能证明数据独立创作或完整转授权。
+
+English: The Linux/macOS shell example downloads the independently obtained IANA language-subtag registry and Library of Congress ISO 639-2 file into a new directory, checks the raw hashes above and converts codes without language names. In the comparison described in [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6588040592), the directly obtained 16,010-byte LoC file had 487 records whose first three code fields matched the earlier web reconstruction. Together with the 2026-09-17 IANA snapshot it produced 8268 rows and matched all 346 existing Qt lookup keys. All eight generated files matched after normalizing generation dates and line endings; a negative control matched seven. Upstream files may change; investigate a hash mismatch rather than bypassing the check. The seven unmatched two-letter subtags are listed above and reported by the tool; verify other versions and added languages separately. The IANA/IETF CC0 statement applies to rights they hold or can sublicense and preserves possible third-party rights. Neither the 2026 IANA and LoC comparison inputs nor the complete converted table is included here; the CLDR 43.1 subset separately contains the earlier registry described above. This alternative establishes neither Qt's historical input nor complete corresponding-source compliance.
+
+English: Independent comparison here means obtaining and converting the files separately, not independent standards provenance. [RFC 5646 section 2.2.1](https://www.rfc-editor.org/rfc/rfc5646#section-2.2.1) identifies ISO 639-2, 639-3 and 639-5 as standards sources for IANA three-letter language subtags. Matching values do not establish independent authorship or a complete sublicense.
 
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
