@@ -10666,12 +10666,51 @@ QtObject {
         window->setProperty("darkMode", false);
         auto *toggle = findVisual(task->contentItem(), "resultDetailsToggle");
         QVERIFY(toggle);
+        auto *body = findVisual(task->contentItem(), "taskBodyContent");
+        auto *footer = findVisual(task->contentItem(), "taskFooter");
+        QVERIFY(body);
+        QVERIFY(footer);
+        QElapsedTimer geometryClock;
+        geometryClock.start();
+        QJsonArray geometryTrace;
+        const auto traceGeometry = [&](const QString &event) {
+            if (output.isEmpty() || geometryTrace.size() >= 256)
+                return;
+            geometryTrace.append(QJsonObject{
+                {"event", event},
+                {"elapsed_ms", geometryClock.elapsed()},
+                {"height", task->height()},
+                {"minimum_height", task->minimumHeight()},
+                {"maximum_height", task->maximumHeight()},
+                {"requested_height", QJsonValue::fromVariant(task->property("requestedHeight"))},
+                {"body_implicit_height", body->implicitHeight()},
+                {"footer_implicit_height", footer->implicitHeight()},
+                {"available_screen_height", task->screen()->availableGeometry().height()}});
+        };
+        QObject traceLifetime;
+        QObject::connect(task, &QQuickWindow::heightChanged, &traceLifetime,
+                         [&] { traceGeometry(QStringLiteral("heightChanged")); });
+        QObject::connect(body, &QQuickItem::implicitHeightChanged, &traceLifetime,
+                         [&] { traceGeometry(QStringLiteral("bodyImplicitHeightChanged")); });
+        QObject::connect(footer, &QQuickItem::implicitHeightChanged, &traceLifetime,
+                         [&] { traceGeometry(QStringLiteral("footerImplicitHeightChanged")); });
+        traceGeometry(QStringLiteral("beforeExpand"));
         toggle->forceActiveFocus(Qt::TabFocusReason);
         QTest::qWait(20);
         QTest::keyClick(task, Qt::Key_Space);
+        traceGeometry(QStringLiteral("afterKey"));
         QTRY_VERIFY(toggle->property("checked").toBool());
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
         QVERIFY(capture("result-details"));
+        traceGeometry(QStringLiteral("afterCapture"));
+        if (!output.isEmpty()) {
+            QTest::qWait(1500);
+            traceGeometry(QStringLiteral("afterWait"));
+            QFile trace(QDir(output).filePath("result-height-trace.json"));
+            QVERIFY(trace.open(QIODevice::WriteOnly));
+            QVERIFY(trace.write(QJsonDocument(QJsonObject{{"samples", geometryTrace}}).toJson()) >
+                    0);
+        }
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
     }
