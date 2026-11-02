@@ -15,6 +15,31 @@ python3 scripts/verify-qt-source-product.py --qt-build build/wp12 \
 
 源码构建安装在隔离 build/ 目录，不替换系统或既有 SDK。QtTools 保留 Linguist 和 lrelease，显式关闭可选的 Clang 解析器及 WrapLibClang 查找，避免 runner 中不完整的 LLVM 开发包配置进入构建。兼容补丁显式包含 ARM 指令头，并在 QtCore 增加只读证明导出；不改变现有公开函数行为。实际应用通过进程内已加载的 QtCore 查找该固定 C ABI 标记，缺失或不符直接失败。完整产品编译、六组 CTest、十万条浏览／搜索／排序／取消一起验证，不以字符串出现在文件中充当加载证明。
 
+### 修改 Qt 区域数据
+
+以下示例假定已按上文在 `build/wp12` 完成一次源码构建，且已取得 CLDR 46 数据和 ISO 639 输入表。Qt 的区域数据生成器要求源码目录名为 `qtbase`；交付脚本解包目录名不同，因此先复制一份供编辑的源码。示例中的 CLDR 路径应包含 `common/main/root.xml`；表可按源码交付说明使用有限派生输入，或自行取得并转换 iso-codes 数据。先分别核对输入来源及许可。
+
+```sh
+python3 -c "from pathlib import Path; import shutil; shutil.copytree(Path('build/wp12/qt-src/qtbase-everywhere-src-6.8.2'), Path('build/qt-locale-edit/qtbase'))"
+python3 build/qt-locale-edit/qtbase/util/locale_database/cldr2qlocalexml.py path/to/cldr-root build/qt-locale-edit/locale.xml
+python3 build/qt-locale-edit/qtbase/util/locale_database/qlocalexml2cpp.py build/qt-locale-edit/locale.xml path/to/qt-locale-codes.tsv build/qt-locale-edit/qtbase
+```
+
+修改 CLDR 或表后重新生成。核对输出后，将以下八个相对文件从 `build/qt-locale-edit/qtbase` 复制到 `build/wp12/qt-src/qtbase-everywhere-src-6.8.2` 中对应位置，再执行下方命令。原始 Qt 源码归档不受影响；两个目录均为本地构建副本。
+
+- `src/corelib/text/qlocale_data_p.h`、`src/corelib/text/qlocale.h`、`src/corelib/text/qlocale.qdoc`。
+- `src/corelib/time/qhijricalendar_data_p.h`、`src/corelib/time/qjalalicalendar_data_p.h`、`src/corelib/time/qromancalendar_data_p.h`、`src/corelib/time/qtimezoneprivate_data_p.h`。
+- `util/locale_database/testlocales/localemodel.cpp`。
+
+```sh
+cmake --build build/wp12/qt-build/qtbase --parallel 3
+cmake --install build/wp12/qt-build/qtbase
+```
+
+不要对已修改源树再次运行 `build-qt-source.py --resume`：该自动化入口有意拒绝未登记的源码改动。上述 CMake 命令使用原有构建目录的配置，并将结果安装到原先的隔离前缀；按实际变更检查接口兼容性和应用替换。有限表不覆盖所有新语言，替代数据也不证明上游历史输入或完整许可状态。
+
+English: After a complete `build/wp12` source build, copy the extracted QtBase tree to a new directory named `qtbase`, as in the first command. Qt's locale generators require that directory name. Give them editable CLDR 46 data and a separately reviewed ISO table, then copy the eight listed generated files into the extracted QtBase build source. Rebuild and install with the two CMake commands above. Do not run `build-qt-source.py --resume` on the modified source: its integrity check intentionally rejects unrecorded modifications. The original source archive and any system Qt installation remain unchanged. The limited table does not cover every new language; alternative data does not prove historical input identity or complete license compliance.
+
 源码构建要求 Qt Network 的 SSL 功能：Linux 显式启用系统 OpenSSL 并要求其开发库，Windows 和 macOS 使用各自的系统 TLS 后端。安装后检查 Qt Network 生成配置，SSL 缺失或禁用直接失败；配置检查不代替实际网络更新验证。
 
 Linux 源码构建还显式启用 GLib 和 Zstandard，要求两者开发库并分别核验 Qt Core 的 `qtcore-config.h`、`qconfig.h`。原 alpha.8 的 Qt Gui 依赖 GLib 事件分发私有符号，原程序的资源使用 Zstandard；关闭任一功能都会使单独替换 Qt Core 后的原程序无法启动。配置检查不代替实际替换和加载验证。
