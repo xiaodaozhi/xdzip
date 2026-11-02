@@ -313,6 +313,16 @@ def rebuild_instructions():
    on other systems. Complete input produces a complete code set; check the terms
    before redistribution. The data is not included, and neither its historical
    identity nor complete corresponding-source status follows from an alternative.
+   可复现对照所用的 Ubuntu iso-codes 4.16.0-1 包，由接收者自行取得：
+   https://archive.ubuntu.com/ubuntu/pool/main/i/iso-codes/iso-codes_4.16.0-1_all.deb
+   包 SHA-256：cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7
+   项目源码中的 docs/engineering/source-delivery.md 提供校验、隔离解包和转换命令。
+   包级许可声明不单独确定 SIL 表的再分发权；完整数据及转换结果均未在本交付中提供。
+   English: The URL and SHA-256 above identify the independently obtained Ubuntu
+   iso-codes 4.16.0-1 comparison package. The project source's source-delivery.md
+   supplies verification, isolated extraction and conversion commands. The package's
+   license statement alone does not establish SIL table redistribution rights; neither
+   the package nor the complete converted data is included in this delivery.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
