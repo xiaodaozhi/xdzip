@@ -5,6 +5,7 @@
 #include "ApplicationSessions.h"
 #include "BrowserController.h"
 #include "DesktopIntegration.h"
+#include "DesktopProbe.h"
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "NativeDialogPolicy.h"
@@ -469,6 +470,38 @@ class BrowserTest : public QObject {
     QTemporaryDir m_settingsProfile;
     Q_OBJECT
   private slots:
+    void desktopProbeWaitsForCloseBeforeReopening() {
+        BrowserController controller;
+        QQuickWindow window;
+        const auto fixture = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        QVERIFY(QFile::exists(fixture));
+        DesktopProbe probe(&controller, &window, fixture, nullptr);
+        controller.m_ready = true;
+        controller.m_busy = true;
+        controller.m_result.closeSession = true;
+        probe.closeForCancel();
+        // A slow close must not be mistaken for a pending new open.
+        QTest::qWait(400);
+        QVERIFY(probe.m_phase == DesktopProbe::Phase::ClosingForCancel);
+        QVERIFY(controller.m_sourcePath.isEmpty());
+        QVERIFY(controller.m_busy);
+
+        bool reopened = false;
+        connect(&controller, &BrowserController::changed, &probe, [&] {
+            if (probe.m_phase == DesktopProbe::Phase::CancelOpening && controller.m_busy) {
+                reopened = true;
+                // Leave the rest of the probe to its existing integration tests.
+                probe.m_phase = DesktopProbe::Phase::Done;
+            }
+        });
+        controller.m_busy = false;
+        controller.m_ready = false;
+        controller.m_result = {};
+        emit controller.changed();
+        QTRY_VERIFY_WITH_TIMEOUT(reopened, 5000);
+        QCOMPARE(controller.m_sourcePath, fixture);
+        controller.cancel();
+    }
     void taskAdmissionCountsOriginatingRequestOnce_data() {
         QTest::addColumn<int>("kind");
         QTest::addColumn<int>("ordering");

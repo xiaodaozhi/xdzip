@@ -41,11 +41,13 @@ class DesktopProbe final : public QObject {
         Target,
         Extract,
         Closing,
+        ClosingForCancel,
         CancelOpening,
         Cancelling,
         Done
     };
     Phase m_phase = Phase::FirstFrame;
+    friend class BrowserTest;
     BrowserController *m_controller;
     QQuickWindow *m_window;
     QString m_path, m_extractTarget;
@@ -57,23 +59,48 @@ class DesktopProbe final : public QObject {
         std::fflush(stdout);
     }
     int m_idleMs = 1500, m_browseMs = 0, m_targetAttempts = 0;
-    void closeForCancel() {
-        m_phase = Phase::Closing;
-        QTimer::singleShot(200, this, [this] {
-            m_controller->closeArchive();
-            QTimer::singleShot(300, this, [this] {
-                m_phase = Phase::CancelOpening;
-                m_controller->openPath(m_path);
-                QTimer::singleShot(0, this, [this] {
-                    const bool pending = m_controller->browsingBusy();
-                    m_phase = Phase::Cancelling;
-                    m_stage.restart();
-                    emitEvent(QStringLiteral("cancel_requested"), {{"pending", pending}});
-                    m_controller->cancel();
-                    changed();
-                });
+    void scheduleReopenAfterClose() {
+        QTimer::singleShot(0, this, [this] {
+            if (m_phase != Phase::ClosingForCancel || m_controller->busy())
+                return;
+            const bool available = m_controller->runtimeAvailable();
+            const bool ready = m_controller->ready();
+            emitEvent(QStringLiteral("close_for_cancel_finished"),
+                      {{"ready", ready}, {"runtime_available", available}});
+            if (ready || !available) {
+                m_phase = Phase::Done;
+                QCoreApplication::exit(9);
+                return;
+            }
+            m_phase = Phase::CancelOpening;
+            m_controller->openPath(m_path);
+            QTimer::singleShot(0, this, [this] {
+                if (m_phase != Phase::CancelOpening)
+                    return;
+                const bool pending = m_controller->browsingBusy() && !m_controller->ready();
+                const bool available = m_controller->runtimeAvailable();
+                m_phase = Phase::Cancelling;
+                m_stage.restart();
+                emitEvent(QStringLiteral("cancel_requested"), {{"pending", pending},
+                                                               {"ready", m_controller->ready()},
+                                                               {"runtime_available", available}});
+                if (!pending || !available) {
+                    m_phase = Phase::Done;
+                    QCoreApplication::exit(9);
+                    return;
+                }
+                m_controller->cancel();
+                changed();
             });
         });
+    }
+    void closeForCancel() {
+        m_phase = Phase::ClosingForCancel;
+        emitEvent(QStringLiteral("close_for_cancel_requested"),
+                  {{"busy", m_controller->busy()}, {"ready", m_controller->ready()}});
+        m_controller->closeArchive();
+        if (!m_controller->busy())
+            scheduleReopenAfterClose();
     }
     void queryFrame() {
         if (m_phase == Phase::SearchFrame) {
@@ -119,6 +146,8 @@ class DesktopProbe final : public QObject {
                       : m_phase == Phase::Sort ? Phase::SortFrame
                                                : Phase::ResetFrame;
             m_window->update();
+        } else if (m_phase == Phase::ClosingForCancel && !m_controller->busy()) {
+            scheduleReopenAfterClose();
         } else if (m_phase == Phase::Target && !m_controller->busy()) {
             if (!m_controller->targetMatches(m_extractTarget)) {
                 if (++m_targetAttempts > 3) {
@@ -151,11 +180,16 @@ class DesktopProbe final : public QObject {
             m_phase = Phase::Done;
             emitEvent(QStringLiteral("cancel_settled"),
                       {{"elapsed_ms", m_stage.elapsed()},
-                       {"cancelled", !m_controller->ready() && m_controller->runtimeAvailable()}});
+                       {"cancelled", !m_controller->ready() && m_controller->runtimeAvailable()},
+                       {"ready", m_controller->ready()},
+                       {"runtime_available", m_controller->runtimeAvailable()}});
             QTimer::singleShot(300, this, [this] {
                 if (m_controller->ready() || m_controller->browsingBusy() ||
                     !m_controller->runtimeAvailable()) {
-                    emitEvent(QStringLiteral("cancel_rebound"));
+                    emitEvent(QStringLiteral("cancel_rebound"),
+                              {{"ready", m_controller->ready()},
+                               {"busy", m_controller->browsingBusy()},
+                               {"runtime_available", m_controller->runtimeAvailable()}});
                     QCoreApplication::exit(9);
                     return;
                 }
