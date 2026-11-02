@@ -38,6 +38,7 @@ mac = module('build-macos-dmg')
 verify_dmg = module('verify-macos-dmg')
 replace_qt = module('verify-qt-replacement')
 derive_locale_codes = module('derive-qt-locale-code-input')
+convert_iso_codes = module('convert-iso-codes-for-qt')
 
 
 def psl_fixture(root, wrong_generated=None):
@@ -87,6 +88,60 @@ def psl_fixture(root, wrong_generated=None):
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_convert_iso_codes_for_qt_handles_bibliographic_and_missing_part2(self):
+        part2 = json.dumps({'639-2': [{'alpha_3': 'eng'},
+                                     {'alpha_3': 'deu', 'bibliographic': 'ger'},
+                                     {'alpha_3': 'qaa-qtz'}]})
+        part3 = json.dumps({'639-3': [{'alpha_3': 'deu', 'alpha_2': 'de'},
+                                     {'alpha_3': 'eng', 'alpha_2': 'en'},
+                                     {'alpha_3': 'xyz'}]})
+        table, count2, count3 = convert_iso_codes.convert(part2, part3)
+        self.assertEqual((count2, count3), (3, 3))
+        self.assertEqual(table, b'Id\tPart2b\tPart2t\tPart1\tUnused\n'
+                         b'deu\tger\tdeu\tde\t\neng\teng\teng\ten\t\nxyz\t\t\t\t\n')
+
+    def test_convert_iso_codes_for_qt_rejects_ambiguous_or_invalid_inputs(self):
+        part2 = {'639-2': [{'alpha_3': 'eng'}]}
+        for part3 in ({'639-3': []}, {'639-3': [{'alpha_3': 'ENG'}]},
+                      {'639-3': [{'alpha_3': 'eng'}, {'alpha_3': 'eng'}]},
+                      {'639-3': [{'alpha_3': 'eng', 'alpha_2': 'en'},
+                                 {'alpha_3': 'xyz', 'alpha_2': 'en'}]}):
+            with self.subTest(part3=part3), self.assertRaises(ValueError):
+                convert_iso_codes.convert(json.dumps(part2), json.dumps(part3))
+        with self.assertRaises(ValueError):
+            convert_iso_codes.convert('{', '{}')
+        with self.assertRaises(ValueError):
+            convert_iso_codes.convert(json.dumps({'639-2': [{'alpha_3': 'eng'},
+                                                             {'alpha_3': 'eng'}]}),
+                                      json.dumps({'639-3': [{'alpha_3': 'eng'}]}))
+        with self.assertRaises(ValueError):
+            convert_iso_codes.convert(json.dumps({'639-2': [{'alpha_3': 'qaa-qtz'},
+                                                             {'alpha_3': 'qaa-qtz'}]}),
+                                      json.dumps({'639-3': [{'alpha_3': 'eng'}]}))
+
+    def test_convert_iso_codes_cli_stays_in_build_and_never_overwrites(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            part2, part3 = root/'2.json', root/'3.json'
+            part2.write_text('{"639-2":[{"alpha_3":"eng"}]}', encoding='utf-8')
+            part3.write_text('{"639-3":[{"alpha_3":"eng","alpha_2":"en"}]}', encoding='utf-8')
+            output = root/'build/codes.tsv'
+            argv = ['convert', '--iso-639-2', str(part2), '--iso-639-3', str(part3),
+                    '--output', str(output)]
+            with patch.object(convert_iso_codes, 'ROOT', root), patch.object(sys, 'argv', argv), \
+                    redirect_stdout(io.StringIO()):
+                convert_iso_codes.main()
+                expected = output.read_bytes()
+                with self.assertRaises(FileExistsError):
+                    convert_iso_codes.main()
+                self.assertEqual(output.read_bytes(), expected)
+            argv[-1] = str(root/'outside.tsv')
+            with patch.object(convert_iso_codes, 'ROOT', root), patch.object(sys, 'argv', argv), \
+                    patch('sys.stderr', new_callable=io.StringIO):
+                with self.assertRaises(SystemExit):
+                    convert_iso_codes.main()
+            self.assertFalse((root/'outside.tsv').exists())
+
     def test_derive_qt_locale_codes_preserves_fields_and_deduplicates_lookup(self):
         fixture = '''constexpr std::array<LanguageCodeEntry, 3> languageCodeList {
     LanguageCodeEntry {{}, {'u', 'n', 'd'}, {'u', 'n', 'd'}, {'u', 'n', 'd'}}, // AnyLanguage
@@ -703,6 +758,8 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
         self.assertIn('当前交付不包含', document)
         self.assertIn('tests/fixtures/cab-iso/', document)
         self.assertIn('tests/fixtures/native-archives/', document)
+        self.assertIn('scripts/convert-iso-codes-for-qt.py', document)
+        self.assertIn('完整输入会生成完整代码集', document)
 
     def test_generated_rebuild_stops_when_workspace_tests_fail(self):
         failure = subprocess.CalledProcessError(17, ['cargo', 'test'])

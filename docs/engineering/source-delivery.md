@@ -27,6 +27,19 @@ English: The delivery also contains the CLDR 46 `common` source and upstream lic
 
 English: For languages already present in the Qt source, `scripts/derive-qt-locale-code-input.py` extracts a limited input from the original `qlocale_data_p.h`; the command and output location are shown above. This covers only existing lookup keys and is neither the complete ISO 639-3 table nor the historical upstream input. Adding languages may still require separately obtained codes and review of their terms. Regeneration of eight files with the pinned Qt 6.8.2 source, CLDR 46 data and this derived input was checked allowing only generation-date and line-ending differences. This does not by itself settle the ISO table's licensing or establish complete corresponding source.
 
+另一种方式是自行取得 `iso-codes` 的 ISO 639-2 与 639-3 JSON 数据，再用转换器生成 Qt 可读取的输入。例如，在安装了该数据包的 Linux 环境中执行：
+
+```sh
+python3 scripts/convert-iso-codes-for-qt.py \
+  --iso-639-2 /usr/share/iso-codes/json/iso_639-2.json \
+  --iso-639-3 /usr/share/iso-codes/json/iso_639-3.json \
+  --output build/qt-iso-codes.tsv
+```
+
+转换器只提取语言代码及其映射，不保留名称；若输入是完整代码集，输出仍包含完整代码集。它拒绝无效代码、重复代码和 Qt 查找键冲突，并跳过 ISO 639-2 的本地使用保留范围。工具输出输入及结果的 SHA-256。Qt 6.8.2 与 Ubuntu `iso-codes` 4.16.0-1 的重建对照见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138)；其他版本须自行检查生成结果。`iso-codes` 数据不随本交付提供，其声明许可、来源及生成表的分发条件需由获取者核对；可用替代表不证明它是 Qt 历史输入，也不自动完成对应源码或许可判断。
+
+English: As another option, obtain the `iso-codes` ISO 639-2 and 639-3 JSON data independently and run the command above. The converter extracts code mappings without names; a complete input still produces a complete code set. It rejects invalid or ambiguous inputs, skips the reserved local-use range and reports input and output SHA-256 values. See [#138](https://github.com/xiaodaozhi/xdzip/issues/138) for the Qt 6.8.2 comparison with Ubuntu `iso-codes` 4.16.0-1; check results separately for other versions. The data is not included in this delivery. Review its stated license, provenance and redistribution terms for the generated table independently; an alternative table does not establish Qt's historical input or complete source compliance.
+
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
 `rar-wire-mappings/` 单独保留有限 RAR 线映射的固定参考来源、说明和 UnRAR 7.30 beta1 精确原始许可，全部进入交付文件哈希清单。下载归档名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。交付前还核对相关 Rust 源码注释中完整保留的上游许可第 2 段，作为保守通知措施；缺失或变更时停止。它不携带官方引擎源码，也不将事实来源重新许可为 Apache-2.0，条款适用范围和实际再分发义务继续按候选复核。

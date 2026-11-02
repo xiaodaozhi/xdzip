@@ -300,6 +300,19 @@ def rebuild_instructions():
    English: The command above derives limited lookup input from Qt's generated source.
    It is neither the complete ISO table nor the historical input; new languages may
    require other codes. It does not resolve licensing or corresponding-source status.
+   也可自行取得 iso-codes 的 ISO 639-2 与 639-3 JSON，按来源及许可分别核对后转换：
+   python3 scripts/convert-iso-codes-for-qt.py \\
+     --iso-639-2 /usr/share/iso-codes/json/iso_639-2.json \\
+     --iso-639-3 /usr/share/iso-codes/json/iso_639-3.json \\
+     --output build/qt-iso-codes.tsv
+   此示例路径适用于提供该数据包的 Linux 系统；其他系统应指定自行取得的文件。
+   完整输入会生成完整代码集；须核对生成表的分发条件。数据不在交付中，
+   Qt 历史输入及完整对应源码状态不能由替代表推定。
+   English: The command above converts independently obtained iso-codes JSON data.
+   The example paths are for Linux systems providing that package; use local paths
+   on other systems. Complete input produces a complete code set; check the terms
+   before redistribution. The data is not included, and neither its historical
+   identity nor complete corresponding-source status follows from an alternative.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
