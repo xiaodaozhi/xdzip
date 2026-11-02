@@ -9,6 +9,7 @@
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "NativeDialogPolicy.h"
+#include "PasswordAccessibility.h"
 #include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
@@ -6890,6 +6891,51 @@ QtObject {
                                        QStringLiteral("create-7z-") + QTest::currentDataTag()));
         }
     }
+    void passwordFieldsExposeLabelsWithoutSecrets_data() {
+        QTest::addColumn<QString>("language");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            QTest::newRow(qPrintable(language)) << language;
+    }
+    void passwordFieldsExposeLabelsWithoutSecrets() {
+        QFETCH(QString, language);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *create = window->findChild<QQuickWindow *>("createWindow");
+        auto *prompt = window->findChild<QQuickWindow *>("passwordWindow");
+        QVERIFY(create && prompt);
+        auto *creation = findVisual(create->contentItem(), "createPassword");
+        auto *extraction = findVisual(prompt->contentItem(), "extractionPassword");
+        auto *ordinary = findVisual(create->contentItem(), "createName");
+        QVERIFY(creation && extraction && ordinary);
+        QVERIFY(!ordinary->property("xdzipAccessiblePasswordLabel").isValid());
+        auto *ordinaryAccessible = QAccessible::queryAccessibleInterface(ordinary);
+        QVERIFY(ordinaryAccessible && ordinaryAccessible->role() == QAccessible::EditableText);
+        QVERIFY(!ordinaryAccessible->state().passwordEdit);
+        QCOMPARE(ordinaryAccessible->text(QAccessible::Name), qtTrId("ui.0d568cd7b07d"));
+        ordinary->setProperty("text", QStringLiteral("owned file name"));
+        QVERIFY(ordinaryAccessible->text(QAccessible::Value)
+                    .contains(QStringLiteral("owned file name")));
+        const auto secret = QStringLiteral("owned accessibility fixture");
+        for (const auto &entry : {qMakePair(creation, qtTrId("ui.96d162db488e")),
+                                  qMakePair(extraction, qtTrId("password.label"))}) {
+            auto *field = entry.first;
+            auto *accessible = QAccessible::queryAccessibleInterface(field);
+            QVERIFY(accessible && accessible->role() == QAccessible::EditableText);
+            QVERIFY(accessible->state().passwordEdit);
+            QCOMPARE(accessible->text(QAccessible::Name), entry.second);
+            field->setProperty("text", secret);
+            QVERIFY(!accessible->text(QAccessible::Value).contains(secret));
+            auto *text = accessible->textInterface();
+            QVERIFY(text);
+            QVERIFY(!text->text(0, text->characterCount()).contains(secret));
+            field->setProperty("text", QString());
+        }
+    }
     void sevenZipCreationRequestsHeaderPasswordBeforeBrowsing() {
         QTemporaryDir inputs, output;
         QVERIFY(inputs.isValid() && output.isValid());
@@ -6929,6 +6975,11 @@ QtObject {
         QTRY_VERIFY(!controller->busy() && checkedTarget(controller, output.path()));
         usePassword->setProperty("checked", true);
         password->setProperty("text", QStringLiteral("public fixture"));
+        auto *createPassword = QAccessible::queryAccessibleInterface(password);
+        QVERIFY(createPassword && createPassword->role() == QAccessible::EditableText);
+        QVERIFY(createPassword->state().passwordEdit);
+        QCOMPARE(createPassword->text(QAccessible::Name), qtTrId("ui.96d162db488e"));
+        QVERIFY(!createPassword->text(QAccessible::Value).contains(QStringLiteral("public fixture")));
         header->setProperty("checked", true);
         solid->setProperty("checked", true);
         QTRY_VERIFY(start->isEnabled());
@@ -8678,15 +8729,26 @@ QtObject {
         auto *editable = QAccessible::queryAccessibleInterface(field);
         QVERIFY(editable && editable->role() == QAccessible::EditableText);
         QVERIFY(editable->state().passwordEdit);
-        QVERIFY(!editable->text(QAccessible::Name).isEmpty());
+        QCOMPARE(editable->text(QAccessible::Name), qtTrId("password.label"));
+        const auto ownedSecret = QStringLiteral("owned accessibility fixture");
+        field->setProperty("text", ownedSecret);
+        QVERIFY(!editable->text(QAccessible::Value).contains(ownedSecret));
+        auto *textInterface = editable->textInterface();
+        QVERIFY(textInterface);
+        QVERIFY(!textInterface->text(0, textInterface->characterCount()).contains(ownedSecret));
+        field->setProperty("text", QString());
         auto *visibility = findVisual(promptWindow->contentItem(), "passwordVisibility");
         QVERIFY(visibility);
         auto *visibilityInterface = QAccessible::queryAccessibleInterface(visibility);
         QVERIFY(visibilityInterface && visibilityInterface->actionInterface());
         visibilityInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QTRY_COMPARE(field->property("echoMode").toInt(), 0);
+        QVERIFY(!editable->state().passwordEdit);
+        QCOMPARE(editable->text(QAccessible::Name), qtTrId("password.label"));
         visibilityInterface->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QTRY_COMPARE(field->property("echoMode").toInt(), 2);
+        QVERIFY(editable->state().passwordEdit);
+        QCOMPARE(editable->text(QAccessible::Name), qtTrId("password.label"));
         const auto first = controller->passwordPrompt();
         const auto task = first.value("taskId").toString();
         const auto token = first.value("promptId").toString();
@@ -12745,6 +12807,7 @@ int main(int argc, char **argv) {
         return 2;
     }
     QApplication application(argc, argv);
+    installPasswordAccessibility();
     const auto closeFixtures = qScopeGuard([&] { fixtures.close(); });
     if (application.arguments().value(1) == "--fixture-preflight") {
         QString error;

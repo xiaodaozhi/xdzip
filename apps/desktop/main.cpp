@@ -1,5 +1,6 @@
 #include "BuildInfo.h"
 #include "FocusDismissPolicy.h"
+#include "PasswordAccessibility.h"
 #include "UiFont.h"
 #include "UiText.h"
 #include "WindowHoverPolicy.h"
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
     if (BuildInfo::printVersionIfRequested(argc, argv))
         return 0;
     QGuiApplication application(argc, argv);
+    installPasswordAccessibility();
     FocusDismissPolicy::install(&application);
     WindowHoverPolicy::install(&application);
     application.setApplicationName(QStringLiteral("xdzip"));
