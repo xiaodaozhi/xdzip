@@ -98,6 +98,10 @@ def main():
         shutil.copy2(association, payload / association.name)
         for icon in WINDOWS_ICONS.values():
             shutil.copy2(ROOT/'design/assets/file-associations'/f'xdzip-{icon}.ico', payload)
+        if label == 'old':
+            # Owned bytes exercise retirement of the same names, not Microsoft DLLs.
+            for name in ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll'):
+                (payload/name).write_bytes(('retired fixture '+name).encode('ascii'))
         licenses = payload / 'share/notices/Microsoft-VC-runtime'
         licenses.mkdir(parents=True)
         shutil.copy2(ROOT / 'build/windows-runtime/runtime/Microsoft-VC-runtime-license.rtf', licenses / 'license.rtf')
@@ -131,8 +135,38 @@ def main():
     results = []
     def install(package):
         run([package, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/DIR=' + str(install_root)])
+
+    def retired_graphics_boundaries():
+        names = ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll')
+        install(old)
+        original_manifest = (install_root/'install-manifest.txt').read_bytes()
+        modified = install_root/'dxil.dll'
+        modified.write_bytes(b'owned locally modified fixture')
+        attempt = subprocess.run([str(new), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
+                                  '/DIR=' + str(install_root)], timeout=120)
+        assert attempt.returncode != 0, 'Modified retired file did not stop Setup'
+        assert modified.read_bytes() == b'owned locally modified fixture'
+        assert (install_root/'install-manifest.txt').read_bytes() == original_manifest
+        actual = json.loads(subprocess.check_output([str(install_root/'xdzip.exe'), '--version-json'], text=True))
+        assert actual['version'] == OLD['version'] and actual['build'] == OLD['build']
+        modified.write_bytes(b'retired fixture dxil.dll')
+        install(new)
+        assert all(not (install_root/name).exists() for name in names)
+        results.append(dict(case='modified-retired-file-preserved', status='passed'))
+
+        install(old)
+        (install_root/'install-manifest.txt').unlink()
+        install(new)
+        assert all((install_root/name).read_bytes() == ('retired fixture '+name).encode('ascii') for name in names)
+        assert all(name not in (install_root/'install-manifest.txt').read_text(encoding='utf-8-sig').lower()
+                   for name in names)
+        results.append(dict(case='unmanifested-retired-files-preserved', status='passed'))
+
     def scenario(label, candidate, expected='', cancel=False, corrupt=False):
         install(old)
+        retired = ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll')
+        for name in retired:
+            assert (install_root/name).read_bytes() == ('retired fixture '+name).encode('ascii')
         restart.unlink(missing_ok=True)
         job = output / ('job-' + label)
         job.mkdir()
@@ -182,6 +216,9 @@ def main():
             if not expected:
                 resumed = await_file(restart, timeout=20)
                 assert resumed['version'] == NEW['version'] and resumed['build'] == NEW['build'], resumed
+                assert all(not (install_root/name).exists() for name in retired)
+                installed = (install_root/'install-manifest.txt').read_text(encoding='utf-8-sig').lower()
+                assert all(name not in installed for name in retired)
             assert subprocess.run([str(install_root / 'xdzip.exe'), '--gate-probe']).returncode == 0
             results.append(dict(case=label, status='passed', error=expected))
         finally:
@@ -197,6 +234,7 @@ def main():
                 process.wait(timeout=10)
             log.close()
     try:
+        retired_graphics_boundaries()
         scenario('real-license-cancel',license_cancel,'installation_cancelled')
         scenario('real-setup-failure',setup_failure,'installation_failed')
         scenario('cancel', new, 'cancelled', cancel=True)

@@ -8,7 +8,7 @@ import re
 import shutil
 import subprocess
 from deployment_audit import ROOT, digest, within
-from deploy_windows import require_no_software_opengl
+from deploy_windows import require_no_sdk_graphics, require_no_software_opengl
 
 
 def renderer_environment(environment, root, output, software):
@@ -74,6 +74,7 @@ def main():
     if output.exists() or not within(output, ROOT/'build') or within(output, args.root):
         parser.error('Use a new build/ test directory outside the product')
     require_no_software_opengl(args.root)
+    require_no_sdk_graphics(args.root)
     root = output/'runtime'
     shutil.copytree(args.root, root)
     shutil.copyfile(args.tests, root/'xdzip-browser-tests.exe')
