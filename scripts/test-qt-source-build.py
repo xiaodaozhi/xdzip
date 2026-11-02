@@ -168,7 +168,8 @@ class SourceTests(unittest.TestCase):
             image.parent.mkdir(parents=True);image.write_bytes(b'owned-sdk-image')
             sha=hashlib.sha256(image.read_bytes()).hexdigest()
             paths=['artifact/Contents/Frameworks/QtCore.framework/QtCore',
-                   'artifact/Contents/Frameworks/QtCore.framework/Versions/A/QtCore']
+                   'artifact/Contents/Frameworks/QtCore.framework/Versions/A/QtCore',
+                   'qt-sdk/lib/QtCore']
             checks=[{'algorithm':'SHA1','expected':'0'*40,'matches_sdk':False}]
             attribution={'platform':'linux','identity':{},'files':[
                 {'path':path,'sdk_path':'lib/QtCore','sdk_sha256':sha,
@@ -181,18 +182,20 @@ class SourceTests(unittest.TestCase):
             self.assertEqual(result.returncode,0,result.stderr)
             rows=json.loads(output.read_text(encoding='utf-8'))['files']
             self.assertEqual([row['attribution_path'] for row in rows],paths)
-            self.assertEqual([row['sdk_path'] for row in rows],['lib/QtCore']*2)
+            self.assertEqual([row['sdk_path'] for row in rows],['lib/QtCore']*3)
             self.assertTrue(all(row['results'][0]['status']=='unexplained-publisher-provenance-required'
                                 for row in rows))
-            attribution['files'][0]['path']='C:\\Users\\private\\archive.zip'
-            source_file.write_text(json.dumps(attribution),encoding='utf-8')
-            unsafe_output=root/'unsafe.json'
-            result=subprocess.run([sys.executable,str(ROOT/'scripts/classify-qt-binary-differences.py'),
-                '--attribution',str(source_file),'--qt-prefix',str(sdk),'--output',str(unsafe_output)],
-                capture_output=True,text=True)
-            self.assertNotEqual(result.returncode,0)
-            self.assertIn('Unsafe attribution path',result.stderr)
-            self.assertNotIn('private',result.stderr)
-            self.assertFalse(unsafe_output.exists())
+            for unsafe in ['C:\\Users\\private\\archive.zip','artifact/../../private/archive.zip']:
+                with self.subTest(unsafe=unsafe):
+                    attribution['files'][0]['path']=unsafe
+                    source_file.write_text(json.dumps(attribution),encoding='utf-8')
+                    unsafe_output=root/'unsafe.json'
+                    result=subprocess.run([sys.executable,str(ROOT/'scripts/classify-qt-binary-differences.py'),
+                        '--attribution',str(source_file),'--qt-prefix',str(sdk),'--output',str(unsafe_output)],
+                        capture_output=True,text=True)
+                    self.assertNotEqual(result.returncode,0)
+                    self.assertIn('Unsafe attribution path',result.stderr)
+                    self.assertNotIn('private',result.stderr)
+                    self.assertFalse(unsafe_output.exists())
 
 if __name__=='__main__':unittest.main()
