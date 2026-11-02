@@ -8,6 +8,7 @@
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
+#include "PasswordAccessibility.h"
 #include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
     if (BuildInfo::printVersionIfRequested(argc, argv))
         return 0;
     QApplication application(argc, argv);
+    installPasswordAccessibility();
     application.setApplicationName(QStringLiteral("xdzip"));
     Q_INIT_RESOURCE(ui);
     WindowActivation::install(&application);

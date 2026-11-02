@@ -560,13 +560,17 @@ class DeliveryTests(unittest.TestCase):
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
-                     self.cldr_data_fixture(cache)]
+                     self.cldr_data_fixture(cache),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
+                                              b'ICU4J bootstrap')]
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
                 records = source.collect_icu_data_sources(output, cache)
             self.assertEqual(records[0], items[0])
             self.assertEqual((output/items[0]['file']).read_bytes(), (cache/items[0]['file']).read_bytes())
             self.assertEqual(records[1]['upstream_archive_sha256'], items[1]['sha256'])
             self.assertEqual(records[1]['upstream_url'], items[1]['url'])
+            self.assertEqual(records[2], items[2])
+            self.assertEqual((output/items[2]['file']).read_bytes(), (cache/items[2]['file']).read_bytes())
             self.assertNotIn('url', records[1])
             self.assertFalse(records[1]['complete_upstream_tree'])
             self.assertEqual(set(records[1]['omitted_files']), source.ISO639_TABLES)
@@ -583,18 +587,25 @@ class DeliveryTests(unittest.TestCase):
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor',
-                     'escaping member', 'unexpected ISO table']
+                     'escaping member', 'unexpected ISO table', 'bootstrap hash', 'bootstrap anchor',
+                     'bootstrap ISO table']
             for case in cases:
                 with self.subTest(case=case):
                     items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
                              self.cldr_data_fixture(cache,
                                  {'cldr-owned/../escape': b'x'} if case == 'escaping member' else
                                  {'cldr-owned/unexpected/iso-639-3-extra.tab': b'x'}
-                                 if case == 'unexpected ISO table' else None)]
+                                 if case == 'unexpected ISO table' else None),
+                             self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
+                                                      b'ICU4J bootstrap',
+                                                      {'bootstrap-owned/iso-639-3.tab': b'x'}
+                                                      if case == 'bootstrap ISO table' else None)]
                     if case == 'missing module': items.pop()
                     if case == 'wrong archive hash': items[1]['sha256'] = '0'*64
                     if case == 'wrong anchor': items[1]['anchors']['data.txt'] = '0'*64
                     if case == 'missing anchor': items[1]['anchors'] = {'absent.txt': '0'*64}
+                    if case == 'bootstrap hash': items[2]['sha256'] = '0'*64
+                    if case == 'bootstrap anchor': items[2]['anchors']['data.txt'] = '0'*64
                     with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
                         with self.assertRaises(ValueError):
                             source.collect_icu_data_sources(output, cache)
