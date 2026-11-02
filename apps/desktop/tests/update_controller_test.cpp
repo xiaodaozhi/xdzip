@@ -5,6 +5,8 @@
 #include "UiPreferences.h"
 #include "UiText.h"
 #include "UpdateController.h"
+#include "UpdateNetwork.h"
+#include <QNetworkProxyFactory>
 #ifdef Q_OS_MACOS
 #include "MacUpdateProvider.h"
 #endif
@@ -267,6 +269,56 @@ class UpdateControllerTest final : public QObject {
         QCOMPARE(updates.errorCode(), QStringLiteral("minimum_system"));
         QVERIFY(!updates.canInstall());
         QCOMPARE(network.requests.size(), 2);
+    }
+    void mirrorAndProxyPreserveUpdateVerification() {
+        const QString mirror = QStringLiteral("https://mirror.example.test/prefix");
+        QVERIFY(UpdateNetwork::validMirror(mirror));
+        QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("http://mirror.example.test")));
+        QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("https://user:secret@mirror.example.test")));
+        QVERIFY(!UpdateNetwork::validMirror(QStringLiteral("https://mirror.example.test/a/%2e%2e/b")));
+        QVERIFY(UpdateNetwork::validProxy(QStringLiteral("http://127.0.0.1:7890")));
+        QVERIFY(UpdateNetwork::validProxy(QStringLiteral("socks5://127.0.0.1:1080")));
+        QVERIFY(!UpdateNetwork::validProxy(QStringLiteral("http://user:secret@127.0.0.1:7890")));
+        const auto mapped = UpdateNetwork::mapped(QUrl(api), mirror);
+        QVERIFY(UpdateNetwork::isMirrorUrl(mapped, mirror));
+        QVERIFY(!UpdateNetwork::isMirrorUrl(QUrl(QStringLiteral("https://evil.example.test/prefix/a")), mirror));
+        QVERIFY(!UpdateNetwork::isMirrorUrl(QUrl(QStringLiteral("https://mirror.example.test/prefix/%2e%2e/evil")), mirror));
+        QTemporaryDir directory;
+        Network network;
+        configure(network);
+        const auto originalResponses = network.responses;
+        for (auto it = originalResponses.cbegin(); it != originalResponses.cend(); ++it)
+            network.responses.insert(UpdateNetwork::mapped(QUrl(it.key()), mirror).toString(), it.value());
+        UpdateController updates(nullptr, &network, fixture("network-trust.json"), directory.path(), [] { return true; });
+        updates.configureNetwork("custom", "http://127.0.0.1:7890", mirror);
+        QVERIFY(network.proxyFactory());
+        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(), QNetworkProxy::HttpProxy);
+        updates.check();
+        QTRY_COMPARE(updates.state(), QStringLiteral("available"));
+        QVERIFY(updates.trusted());
+        QCOMPARE(network.requests.first().url(), mapped);
+        updates.download();
+        QTRY_COMPARE(updates.state(), QStringLiteral("downloaded"));
+        QVERIFY(updates.downloaded());
+        for (const auto &request : network.requests)
+            QVERIFY(UpdateNetwork::isMirrorUrl(request.url(), mirror));
+        updates.configureNetwork("none", "", "");
+        QCOMPARE(network.proxyFactory()->queryProxy(QNetworkProxyQuery(QUrl(api))).first().type(), QNetworkProxy::NoProxy);
+    }
+    void invalidNetworkSettingsAreNotPersisted() {
+        QTemporaryDir directory;
+        const auto previous = qgetenv("XDZIP_SETTINGS_PATH");
+        const auto restore = qScopeGuard([&] { qputenv("XDZIP_SETTINGS_PATH", previous); });
+        qputenv("XDZIP_SETTINGS_PATH", directory.filePath("settings.ini").toUtf8());
+        UiPreferences prefs;
+        QVERIFY(!prefs.applyNetwork("custom", "http://user:secret@host:42", ""));
+        QCOMPARE(prefs.proxyMode(), QStringLiteral("system"));
+        QVERIFY(!prefs.applyNetwork("none", "", "http://mirror.example.test"));
+        QVERIFY(prefs.applyNetwork("custom", "socks5://127.0.0.1:1080", "https://mirror.example.test/prefix"));
+        UiPreferences restored;
+        QCOMPARE(restored.proxyMode(), QStringLiteral("custom"));
+        QCOMPARE(restored.proxyAddress(), QStringLiteral("socks5://127.0.0.1:1080"));
+        QCOMPARE(restored.mirrorAddress(), QStringLiteral("https://mirror.example.test/prefix"));
     }
     void signedDownloadChecksExactBytesAndHash() {
         QTemporaryDir directory(QDir::tempPath() + "/xdzip-update-network-XXXXXX");

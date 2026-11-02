@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QLibraryInfo>
 #include <QLocale>
+#include <QPointer>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTranslator>
@@ -82,20 +83,34 @@ inline bool initializeUiText(const QString &forcedLanguage = {}) {
     if (language != QStringLiteral("en-US"))
         language = QStringLiteral("zh-CN");
     // Qt-owned controls use the OS language, independently of the product locale.
-    auto *systemTranslator = new QTranslator(QCoreApplication::instance());
-    if (loadQtSystemTranslation(*systemTranslator, QLocale::system(),
-                                QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        QCoreApplication::installTranslator(systemTranslator);
-    else
-        delete systemTranslator;
+    static QPointer<QTranslator> systemTranslator;
+    static QPointer<UiTranslator> activeTranslator;
+    if (!systemTranslator) {
+        auto *candidate = new QTranslator(QCoreApplication::instance());
+        if (loadQtSystemTranslation(*candidate, QLocale::system(),
+                                    QLibraryInfo::path(QLibraryInfo::TranslationsPath)) &&
+            QCoreApplication::installTranslator(candidate))
+            systemTranslator = candidate;
+        else
+            delete candidate;
+    }
     auto *translator = new UiTranslator(QCoreApplication::instance());
     if (!translator->read(language)) {
         delete translator;
         return false;
     }
+    if (!QCoreApplication::installTranslator(translator)) {
+        delete translator;
+        return false;
+    }
+    if (activeTranslator) {
+        QCoreApplication::removeTranslator(activeTranslator);
+        delete activeTranslator;
+    }
+    activeTranslator = translator;
     QLocale::setDefault(QLocale(language));
     QCoreApplication::instance()->setProperty("xdzipUiLanguage", language);
-    return QCoreApplication::installTranslator(translator);
+    return true;
 }
 
 inline QString systemDialogText(const char *id) {

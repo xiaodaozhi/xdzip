@@ -11,6 +11,7 @@
 #include "SingleInstance.h"
 #include "UiFont.h"
 #include "UiPreferences.h"
+#include "FileAssociations.h"
 #include "UiText.h"
 #include "UpdateController.h"
 #include "WindowActivation.h"
@@ -153,6 +154,8 @@ int main(int argc, char *argv[]) {
 #else
     UpdateController updates;
 #endif
+    FileAssociations associations;
+    engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"), &associations);
     engine.rootContext()->setContextProperty(QStringLiteral("UpdateService"), &updates);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(
@@ -211,6 +214,12 @@ int main(int argc, char *argv[]) {
         QObject::connect(controller, &BrowserController::readyToClose, &application,
                          &QApplication::quit, Qt::QueuedConnection);
     auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+    auto configureUpdateNetwork = [&] {
+        updates.configureNetwork(settings->proxyMode(), settings->proxyAddress(),
+                                 settings->mirrorAddress());
+    };
+    QObject::connect(settings, &UiPreferences::savedChanged, &updates, configureUpdateNetwork);
+    configureUpdateNetwork();
     DesktopIntegration desktop(mainWindow, controller, settings, interactive);
     std::unique_ptr<ApplicationSessions> sessions;
     if (interactive) {

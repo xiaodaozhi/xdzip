@@ -1,5 +1,6 @@
 #include "UiPreferences.h"
 #include "UiText.h"
+#include "UpdateNetwork.h"
 #include <QDir>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -9,6 +10,8 @@
 #include <QSaveFile>
 #include <QStyleHints>
 #include <QTemporaryDir>
+#include <QQmlEngine>
+#include <QtQml/qqml.h>
 
 namespace {
 bool validTheme(const QString &theme) {
@@ -47,6 +50,17 @@ UiPreferences::UiPreferences(QObject *parent) : QObject(parent) {
             settings.value("desktop/openMode").toString() == "windows" ? "windows" : "tabs";
         m_trayEnabled = settings.value("desktop/trayEnabled", true).toBool();
         m_recentEnabled = settings.value("privacy/recentEnabled", true).toBool();
+        const auto proxyMode = settings.value("network/proxyMode", "system").toString();
+        const auto proxyAddress = settings.value("network/proxyAddress").toString();
+        const auto mirrorAddress = settings.value("network/mirrorAddress").toString();
+        if ((proxyMode == "none" || proxyMode == "system" || proxyMode == "custom") &&
+            (proxyAddress.isEmpty() || UpdateNetwork::validProxy(proxyAddress)) &&
+            (proxyMode != "custom" || UpdateNetwork::validProxy(proxyAddress)) &&
+            UpdateNetwork::validMirror(mirrorAddress)) {
+            m_proxyMode = proxyMode;
+            m_proxyAddress = proxyAddress;
+            m_mirrorAddress = mirrorAddress;
+        }
     } else {
         m_error = qtTrId("ui.056945d3a4fa");
     }
@@ -132,6 +146,9 @@ bool UiPreferences::save(const QString &theme, double scale, const QString &lang
     settings.setValue("privacy/recentEnabled", m_recentEnabled);
     settings.setValue("desktop/trayEnabled", m_trayEnabled);
     settings.setValue("desktop/openMode", m_openMode);
+    settings.setValue("network/proxyMode", m_proxyMode);
+    settings.setValue("network/proxyAddress", m_proxyAddress);
+    settings.setValue("network/mirrorAddress", m_mirrorAddress);
     settings.sync();
     if (settings.status() != QSettings::NoError)
         return failed();
@@ -249,4 +266,67 @@ QStringList UiPreferences::recentArchives() const {
             break;
     }
     return result;
+}
+
+bool UiPreferences::applyDetails(const QString &theme, double scale, const QString &language,
+                                 const QString &density, bool recentEnabled, bool trayEnabled,
+                                 const QString &openMode) {
+    const bool changeLanguage = language != activeLanguage();
+    const auto previousLanguage = activeLanguage();
+    if (changeLanguage && (!validLanguage(language) || !initializeUiText(language))) {
+        m_error = qtTrId("ui.c43b29d7cbdf");
+        emit errorChanged();
+        return false;
+    }
+    if (!saveDetails(theme, scale, language, density, recentEnabled, false, trayEnabled, openMode)) {
+        if (changeLanguage) {
+            initializeUiText(previousLanguage);
+            if (auto *engine = qmlEngine(this)) engine->retranslate();
+        }
+        return false;
+    }
+    if (changeLanguage) {
+        if (auto *engine = qmlEngine(this))
+            engine->retranslate();
+        emit savedChanged();
+    }
+    return true;
+}
+
+bool UiPreferences::applyNetwork(const QString &mode, const QString &proxy, const QString &mirror) {
+    const auto normalizedProxy = proxy.trimmed();
+    const auto normalizedMirror = mirror.trimmed();
+    if ((mode != "none" && mode != "system" && mode != "custom") ||
+        (!normalizedProxy.isEmpty() && !UpdateNetwork::validProxy(normalizedProxy)) ||
+        (mode == "custom" && !UpdateNetwork::validProxy(normalizedProxy)) ||
+        !UpdateNetwork::validMirror(normalizedMirror)) {
+        m_error = qtTrId("settings.invalidNetwork");
+        emit errorChanged();
+        return false;
+    }
+    const auto oldMode = m_proxyMode;
+    const auto oldProxy = m_proxyAddress;
+    const auto oldMirror = m_mirrorAddress;
+    m_proxyMode = mode;
+    m_proxyAddress = normalizedProxy;
+    m_mirrorAddress = normalizedMirror;
+    if (save(m_savedTheme, m_savedScale, m_language))
+        return true;
+    m_proxyMode = oldMode;
+    m_proxyAddress = oldProxy;
+    m_mirrorAddress = oldMirror;
+    return false;
+}
+
+bool UiPreferences::clearRecentArchives() {
+    const auto path = QFileInfo(uiSettingsPath()).dir().filePath("recent.json");
+    if (QFile::exists(path) && !QFile::remove(path)) {
+        m_error = qtTrId("ui.c43b29d7cbdf");
+        emit errorChanged();
+        return false;
+    }
+    m_error.clear();
+    emit errorChanged();
+    emit recentChanged();
+    return true;
 }

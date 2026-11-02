@@ -107,3 +107,9 @@ English: Windows protocol and real Qt update fixtures include the required assoc
 首个公开预发布开始使用 Debian epoch 1，包版本为 `1:语义版本映射+git提交`，例如 `1:0.1.0~alpha.1+git...`。历史 `0.1.0~dev.9` 按 dpkg 规则会排在无 epoch 的 alpha.1 之后，不能直接沿用旧映射。epoch 只用于系统包排序，产品界面、版本标签和 release.json 仍使用原语义版本，后续 Debian 包保持 epoch 1，alpha、beta、rc、stable 的顺序继续由上游版本表达，规则见 [Debian Policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version)。
 
 真实历史产品夹具使用仅 CI 允许的 `--qa-legacy-version` 保留原无 epoch 身份，不能把旧包改成新排序来掩盖升级问题。当前包必须在实际 dpkg 升级、回退和安装生命周期验收中通过；用户配置与外部默认关联保持原契约。
+
+## 设置中的默认应用
+
+设置页按当前系统查询显示九类关联。macOS 使用 NSWorkspace 的内容类型接口，并在关闭时由用户选取替代应用；开发副本按 None 等级禁用关联操作。Windows 打开系统默认应用页面并在返回后重查，只读系统关联，不修改 UserChoice。Linux 用 xdg-mime 查询与修改用户 MIME 默认，安装包声明 xdg-utils 依赖；移除关联时由用户选择已安装的替代桌面项。复合扩展可能共享系统类型；取消、系统拒绝或查询失败不显示伪造的成功。真实系统 UI 和多桌面环境行为须单独验收。
+
+English: Settings query operating-system defaults for each supported type. macOS requests changes through NSWorkspace, Windows opens the system default-app page, and Linux uses the user MIME configuration. Disabling a macOS or Linux association selects an alternative application. Composite extensions may share a system type. Native acceptance remains separate from automated checks.

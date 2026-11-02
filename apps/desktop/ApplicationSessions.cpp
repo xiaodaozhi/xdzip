@@ -46,7 +46,7 @@ ApplicationSessions::~ApplicationSessions() {
             session->controller->openIntent = {};
         }
         if (session->page)
-            for (const auto &name : {"settingsWindow", "aboutWindow"})
+            for (const auto &name : {"settingsWindow"})
                 if (auto *popup = session->page->findChild<QQuickWindow *>(name))
                     disconnect(popup, nullptr, this, nullptr);
     }
@@ -92,7 +92,7 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
         return nullptr;
     page->setProperty("sessionIdentity", session->id);
     session->controller->openIntent = [this](const QString &path) { openPath(path); };
-    for (const auto &name : {"settingsWindow", "aboutWindow"}) {
+    for (const auto &name : {"settingsWindow"}) {
         if (auto *popup = page->findChild<QQuickWindow *>(name))
             connect(popup, &QWindow::visibleChanged, this, [this, session] {
                 if (session->closed)
@@ -122,7 +122,7 @@ ApplicationSessions::Session *ApplicationSessions::add(QQuickWindow *window, QOb
                 session->controller->openIntent = {};
             }
             if (session->page)
-                for (const auto &name : {"settingsWindow", "aboutWindow"})
+                for (const auto &name : {"settingsWindow"})
                     if (auto *popup = session->page->findChild<QQuickWindow *>(name))
                         disconnect(popup, nullptr, this, nullptr);
             if (session->page && !session->page->property("retainShellPage").toBool())
@@ -480,7 +480,7 @@ void ApplicationSessions::reap(Session *session) {
     if (session->retiring)
         return;
     if (session->page)
-        for (const auto &name : {"settingsWindow", "aboutWindow"})
+        for (const auto &name : {"settingsWindow"})
             if (auto *popup = session->page->findChild<QQuickWindow *>(name);
                 popup && popup->isVisible())
                 return;
@@ -573,9 +573,11 @@ void ApplicationSessions::command(const QString &command) {
     if (command == "settings" || command == "about") {
         for (const auto &session : m_sessions) {
             auto *popup = session->page
-                              ? session->page->findChild<QQuickWindow *>(command + "Window")
+                              ? session->page->findChild<QQuickWindow *>("settingsWindow")
                               : nullptr;
             if (popup && popup->isVisible()) {
+                if (command == "about")
+                    popup->setProperty("currentTab", 5);
                 WindowActivation::reveal(popup);
                 return;
             }
@@ -586,23 +588,6 @@ void ApplicationSessions::command(const QString &command) {
     else if (QStringList{"open", "new", "settings", "about"}.contains(command))
         QMetaObject::invokeMethod(m_active->property("activePage").value<QObject *>(),
                                   "runDesktopCommand", Q_ARG(QVariant, command));
-}
-void ApplicationSessions::showAboutFor(QObject *page) {
-    if (!page)
-        return;
-    for (const auto &session : m_sessions) {
-        auto *popup =
-            session->page ? session->page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
-        if (popup && popup->isVisible()) {
-            WindowActivation::reveal(popup);
-            return;
-        }
-    }
-    for (const auto &session : m_sessions)
-        if (session->page == page && !session->retiring) {
-            QMetaObject::invokeMethod(page, "presentAbout");
-            return;
-        }
 }
 QVariantList ApplicationSessions::tasks() const {
     QVariantList result;

@@ -153,6 +153,15 @@ QtObject {
     readonly property real operationHeaderTitleLineFactor: 1.4
     readonly property real operationHeaderSubtitleLineFactor: 1.5
     readonly property real operationHeaderBodyGap: 0
+    readonly property real settingsClientHeight: 532
+    readonly property real settingsSidebarWidth: 144
+    readonly property real settingsSidebarRowHeight: 40
+    readonly property real settingsSidebarIconSize: 18
+    readonly property real settingsPageInset: 20
+    readonly property real settingsPageSectionGap: 16
+    readonly property real settingsSwitchWidth: 38
+    readonly property real settingsSwitchHeight: 22
+    readonly property real settingsSwitchThumb: 18
     readonly property real taskMenuMaximumHeight: 360
     readonly property real taskMenuFooterInset: 8
     readonly property real taskIndicatorSize: 16

@@ -88,6 +88,8 @@ for key, value in layout['operation']['footer'].items():
 for key, value in layout['operation']['header'].items():
     scale = ' * fontScale' if key in ['titleSize', 'subtitleSize'] else ''
     lines.append(f'    readonly property real operationHeader{key[0].upper() + key[1:]}: {value}{scale}')
+for key, value in layout['operation']['settings'].items():
+    lines.append(f'    readonly property real settings{key[0].upper() + key[1:]}: {value}')
 for key in ['task_menu_maximum_height', 'task_menu_footer_inset', 'task_indicator_size',
             'task_indicator_glyph_size', 'task_indicator_overlap']:
     name = ''.join(part.title() for part in key.split('_'))

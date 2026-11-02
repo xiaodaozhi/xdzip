@@ -525,8 +525,8 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
                 }
             }
             if (!state->check) {
-                sessions->showAboutFor(page);
-                auto *about = page ? page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
+                QMetaObject::invokeMethod(page, "presentAbout");
+                auto *about = page ? page->findChild<QQuickWindow *>("settingsWindow") : nullptr;
                 auto *button = about ? about->findChild<QObject *>("aboutCheckUpdate") : nullptr;
                 if (about && about->isVisible() && button && button->property("enabled").toBool()) {
                     QScopedValueRollback<bool> pressing(state->clicking, true);
@@ -535,8 +535,8 @@ void installNativeUpdateFixture(UpdateController *updates, ApplicationSessions *
             } else if (!state->install &&
                        (updates->state() == "available" || updates->state() == "downloaded") &&
                        updates->canInstall()) {
-                sessions->showAboutFor(page);
-                auto *about = page ? page->findChild<QQuickWindow *>("aboutWindow") : nullptr;
+                QMetaObject::invokeMethod(page, "presentAbout");
+                auto *about = page ? page->findChild<QQuickWindow *>("settingsWindow") : nullptr;
                 auto *button = about ? about->findChild<QObject *>("aboutInstallUpdate") : nullptr;
                 if (button && button->property("visible").toBool() &&
                     button->property("enabled").toBool()) {

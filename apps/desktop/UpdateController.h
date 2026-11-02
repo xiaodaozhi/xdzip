@@ -33,6 +33,7 @@ class UpdateController final : public QObject {
                               const std::function<bool()> &systemSupport = {});
     ~UpdateController() override;
     void setSessions(ApplicationSessions *sessions);
+    void configureNetwork(const QString &mode, const QString &proxy, const QString &mirror);
     void reportNativeProgress(const QString &state, qreal progress);
     QString state() const {
         return m_state;
@@ -87,6 +88,7 @@ class UpdateController final : public QObject {
     QString packageType() const;
     QString installedRoot() const;
     static bool allowedUrl(const QUrl &url);
+    void applyNetworkConfiguration();
     QNetworkAccessManager *m_network;
     QByteArray m_trustOverride;
     QString m_cacheRootOverride;
@@ -97,6 +99,9 @@ class UpdateController final : public QObject {
     QJsonObject m_candidate;
     QByteArray m_manifest, m_signature;
     QString m_state = QStringLiteral("idle"), m_error, m_packagePath;
+    QString m_proxyMode = QStringLiteral("system"), m_proxyAddress, m_mirrorAddress;
+    QString m_activeProxyMode = QStringLiteral("system"), m_activeMirror;
+    bool m_networkConfigured = false;
     qreal m_progress = -1;
     bool m_trusted = false, m_installAfterDownload = false;
     quint64 m_generation = 0;

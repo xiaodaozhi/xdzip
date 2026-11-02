@@ -12,13 +12,16 @@ class UiPreferences : public QObject {
     Q_PROPERTY(QString savedTheme READ savedTheme NOTIFY savedChanged)
     Q_PROPERTY(double savedTextScale READ savedTextScale NOTIFY savedChanged)
     Q_PROPERTY(QString language READ language NOTIFY savedChanged)
-    Q_PROPERTY(QString activeLanguage READ activeLanguage CONSTANT)
+    Q_PROPERTY(QString activeLanguage READ activeLanguage NOTIFY savedChanged)
     Q_PROPERTY(QString error READ error NOTIFY errorChanged)
     Q_PROPERTY(QString density READ density NOTIFY appearanceChanged)
     Q_PROPERTY(QString savedDensity READ savedDensity NOTIFY savedChanged)
     Q_PROPERTY(bool recentEnabled READ recentEnabled NOTIFY savedChanged)
     Q_PROPERTY(bool trayEnabled READ trayEnabled NOTIFY savedChanged)
     Q_PROPERTY(QString openMode READ openMode NOTIFY savedChanged)
+    Q_PROPERTY(QString proxyMode READ proxyMode NOTIFY savedChanged)
+    Q_PROPERTY(QString proxyAddress READ proxyAddress NOTIFY savedChanged)
+    Q_PROPERTY(QString mirrorAddress READ mirrorAddress NOTIFY savedChanged)
     QString m_openMode = QStringLiteral("tabs");
     bool m_trayEnabled = true;
     QString m_density = QStringLiteral("standard");
@@ -30,6 +33,9 @@ class UiPreferences : public QObject {
     double m_savedScale = 1;
     QString m_language = QStringLiteral("zh-CN");
     QString m_error;
+    QString m_proxyMode = QStringLiteral("system");
+    QString m_proxyAddress;
+    QString m_mirrorAddress;
     void applyColorScheme();
 
   public:
@@ -56,6 +62,14 @@ class UiPreferences : public QObject {
     QString openMode() const {
         return m_openMode;
     }
+    QString proxyMode() const { return m_proxyMode; }
+    QString proxyAddress() const { return m_proxyAddress; }
+    QString mirrorAddress() const { return m_mirrorAddress; }
+    Q_INVOKABLE bool applyDetails(const QString &theme, double textScale, const QString &language,
+                                  const QString &density, bool recentEnabled, bool trayEnabled,
+                                  const QString &openMode);
+    Q_INVOKABLE bool applyNetwork(const QString &mode, const QString &proxy, const QString &mirror);
+    Q_INVOKABLE bool clearRecentArchives();
     Q_INVOKABLE bool saveDetails(const QString &theme, double textScale, const QString &language,
                                  const QString &density, bool recentEnabled, bool clearRecent,
                                  bool trayEnabled, const QString &openMode);

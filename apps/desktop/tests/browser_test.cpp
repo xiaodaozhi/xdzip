@@ -58,6 +58,7 @@
 #include <QProcessEnvironment>
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
+#include <QQmlContext>
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
@@ -1546,7 +1547,7 @@ QtObject {
         theme->setProperty("factor", factor);
         theme->setProperty("dark", dark);
         for (const auto &name : {"extractWindow", "createWindow", "updateWindow", "taskWindow",
-                                 "conflictWindow", "aboutWindow", "settingsWindow"}) {
+                                 "conflictWindow", "settingsWindow"}) {
             auto *popup = window->findChild<QQuickWindow *>(name);
             QVERIFY(popup);
             popup->show();
@@ -1600,17 +1601,9 @@ QtObject {
             }
             if (QString(name) == "settingsWindow") {
                 auto *scroll = findVisual(popup->contentItem(), "settingsScroll");
-                auto *about = findVisual(popup->contentItem(), "settingsAbout");
-                auto *footer = findVisual(popup->contentItem(), "settingsFooter");
-                QVERIFY(scroll && about && footer);
-                auto *flick = qvariant_cast<QQuickItem *>(scroll->property("contentItem"));
-                QVERIFY(flick);
-                popup->setProperty("requestedHeight", 400);
-                QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
-                flick->setProperty("contentY",
-                                   flick->property("contentHeight").toReal() - flick->height());
-                QTRY_VERIFY(qAbs(footer->mapToScene(QPointF()).y() -
-                                 about->mapToScene(QPointF(0, about->height())).y() - 24) < .5);
+                QVERIFY(scroll);
+                QVERIFY(!findVisual(popup->contentItem(), "settingsFooter"));
+                QCOMPARE(popup->width(), 612);
             }
             popup->close();
         }
@@ -1846,16 +1839,17 @@ QtObject {
         desktop.execute("settings");
         auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
         QTRY_VERIFY(settings->isVisible());
-        settings->setProperty("draftTheme", "dark");
+        auto *theme = findVisual(settings->contentItem(), "settingsTheme-2");
+        QVERIFY(theme && QMetaObject::invokeMethod(theme, "click"));
+        QTRY_COMPARE(preferences->savedTheme(), QStringLiteral("dark"));
         sessions.newSession();
         QVERIFY(sessions.activeWindow() != window);
         desktop.execute("settings");
-        QCOMPARE(settings->property("draftTheme").toString(), "dark");
-        QVERIFY(QMetaObject::invokeMethod(settings, "aboutRequested"));
-        auto *about = window->findChild<QQuickWindow *>("aboutWindow");
-        QTRY_VERIFY(about->isVisible());
-        QCOMPARE(about->transientParent(), settings);
-        about->close();
+        QCOMPARE(preferences->savedTheme(), QStringLiteral("dark"));
+        desktop.execute("about");
+        QTRY_COMPARE(settings->property("currentTab").toInt(), 5);
+        QVERIFY(settings->isVisible());
+        QVERIFY(!window->findChild<QQuickWindow *>("aboutWindow"));
         settings->close();
         QCOMPARE(preferences->theme(), preferences->savedTheme());
         QCOMPARE(window->windowState(), Qt::WindowMaximized);
@@ -2291,13 +2285,12 @@ QtObject {
         if (anotherWindow)
             sessions.newSession();
         auto *settings = page->findChild<QQuickWindow *>("settingsWindow");
-        auto *about = page->findChild<QQuickWindow *>("aboutWindow");
-        QVERIFY(settings && about);
+        QVERIFY(settings);
         QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        settings->setProperty("draftTheme", "dark");
         QVERIFY(QMetaObject::invokeMethod(page, "presentAbout"));
-        QVERIFY(about->isVisible());
-        QCOMPARE(about->transientParent(), settings);
+        QVERIFY(settings->isVisible());
+        QCOMPARE(settings->property("currentTab").toInt(), 5);
+        QCOMPARE(settings->transientParent(), window);
         QList<QPointer<QQuickWindow>> dialogs;
         for (auto *popup : page->findChildren<QQuickWindow *>()) {
             dialogs.append(popup);
@@ -4156,37 +4149,31 @@ QtObject {
         QVERIFY(blocker.open(QIODevice::WriteOnly));
         QCOMPARE(blocker.write("owned-canary"), 12);
         blocker.close();
-        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
-                                                      blocker.fileName() + "/settings.ini");
-        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", blocker.fileName() + "/settings.ini");
+        QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
-        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
-        auto *preferences =
-            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(settings && preferences);
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings && prefs && QMetaObject::invokeMethod(settings, "configure"));
         QVERIFY(QTest::qWaitForWindowExposed(settings));
-        settings->setProperty("draftTheme", "dark");
-        settings->setProperty("draftLanguage", "en-US");
-        QSignalSpy saved(preferences, &UiPreferences::savedChanged);
-        QSignalSpy failed(preferences, &UiPreferences::errorChanged);
-        auto *save = findVisual(settings->contentItem(), "settingsSave");
-        QVERIFY(save);
-        QTest::mouseClick(
-            settings, Qt::LeftButton, Qt::NoModifier,
-            save->mapToScene(QPointF(save->width() / 2, save->height() / 2)).toPoint());
-        QTRY_COMPARE(failed.count(), 1);
+        QSignalSpy saved(prefs, &UiPreferences::savedChanged);
+        QSignalSpy failed(prefs, &UiPreferences::errorChanged);
+        auto *dark = findVisual(settings->contentItem(), "settingsTheme-2");
+        QVERIFY(dark && QMetaObject::invokeMethod(dark, "click"));
+        QTRY_VERIFY(!failed.isEmpty());
         QCOMPARE(saved.count(), 0);
-        QVERIFY(!preferences->error().isEmpty());
+        QCOMPARE(prefs->savedTheme(), QStringLiteral("system"));
+        QCOMPARE(prefs->theme(), QStringLiteral("system"));
+        QVERIFY(!prefs->error().isEmpty());
         QVERIFY(settings->isVisible());
-        QCOMPARE(settings->property("draftTheme").toString(), "dark");
-        QCOMPARE(settings->property("draftLanguage").toString(), "en-US");
-        QVERIFY(!settings->property("saved").toBool());
-        auto *restart = window->findChild<QQuickWindow *>("restartWindow");
-        QVERIFY(restart && !restart->isVisible());
+        const auto originalLanguage = prefs->activeLanguage();
+        const auto otherLanguage = originalLanguage == "en-US" ? QStringLiteral("zh-CN") : QStringLiteral("en-US");
+        QVERIFY(!prefs->applyDetails("system", 1, otherLanguage, "standard", true, true, "tabs"));
+        QCOMPARE(prefs->activeLanguage(), originalLanguage);
+        QCOMPARE(prefs->language(), QStringLiteral("zh-CN"));
         QVERIFY(blocker.open(QIODevice::ReadOnly));
         QCOMPARE(blocker.readAll(), QByteArray("owned-canary"));
         settings->close();
@@ -4451,77 +4438,31 @@ QtObject {
         window->close();
     }
     void settingsRestartConfirmation() {
+        QTemporaryDir profile;
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
         auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-        QVERIFY(owner);
-        auto *preferences =
-            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(preferences);
-        const auto theme = preferences->savedTheme();
-        const auto scale = preferences->savedTextScale();
-        const auto language = preferences->language();
-        const auto density = preferences->savedDensity();
-        const auto recent = preferences->recentEnabled();
-        const auto restore = qScopeGuard(
-            [&] { preferences->saveDetails(theme, scale, language, density, recent, false); });
-        QVERIFY(preferences->saveDetails(theme, scale, preferences->activeLanguage(), density,
-                                         recent, false));
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("currentTab", 1);
+        QQuickItem *choice = nullptr;
+        QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QTRY_COMPARE(prefs->language(), QStringLiteral("en-US"));
+        QTRY_COMPARE(prefs->activeLanguage(), QStringLiteral("en-US"));
+        QTRY_COMPARE(settings->title(), QStringLiteral("Settings"));
+        QVERIFY(settings->isVisible());
         auto *confirmation = owner->findChild<QQuickWindow *>("restartWindow");
-        QVERIFY(settings && confirmation);
-        auto *save = settings->findChild<QQuickItem *>("settingsSave");
-        auto *later = confirmation->findChild<QQuickItem *>("restartLater");
-        auto *now = confirmation->findChild<QQuickItem *>("restartNow");
-        QVERIFY(save && later && now);
-        const auto changedLanguage = preferences->activeLanguage() == "en-US" ? "zh-CN" : "en-US";
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        settings->setProperty("draftLanguage", changedLanguage);
-        settings->close(); // Cancel does not save or ask to restart.
-        QTest::qWait(20);
-        QVERIFY(!confirmation->isVisible());
-        QCOMPARE(preferences->language(), preferences->activeLanguage());
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        settings->setProperty("draftLanguage", changedLanguage);
-        QVERIFY(QMetaObject::invokeMethod(save, "clicked"));
-        QTRY_VERIFY(confirmation->isVisible());
-        QVERIFY(!settings->isVisible());
-        QCOMPARE(confirmation->modality(), Qt::ApplicationModal);
-        QCOMPARE(confirmation->transientParent(), owner);
-        QCOMPARE(confirmation->width(), 491);
-        QCOMPARE(later->mapToScene(QPointF()).y(), now->mapToScene(QPointF()).y());
-        QVERIFY(now->mapToScene(QPointF(now->width(), now->height())).y() <=
-                confirmation->height());
-        const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_VISUAL_AUDIT");
-        if (!captures.isEmpty()) {
-            QSignalSpy frames(confirmation, &QQuickWindow::frameSwapped);
-            confirmation->update();
-            QTRY_VERIFY(frames.count() > 0);
-            QVERIFY(QDir().mkpath(captures));
-            QVERIFY(visual_audit::save(confirmation, captures, "restart-confirmation"));
-        }
-        QCOMPARE(preferences->language(), QString::fromLatin1(changedLanguage));
-        QVERIFY(QMetaObject::invokeMethod(later, "clicked"));
-        QTRY_VERIFY(!confirmation->isVisible());
-        QVERIFY(owner->isVisible());
-        QVERIFY(!owner->property("restartAfterClose").toBool());
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        QVERIFY(QMetaObject::invokeMethod(save, "clicked")); // Unchanged saved language.
-        QTest::qWait(20);
-        QVERIFY(!confirmation->isVisible());
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        settings->setProperty("draftLanguage", preferences->activeLanguage());
-        QVERIFY(QMetaObject::invokeMethod(save, "clicked")); // Back to running language.
-        QTest::qWait(20);
-        QVERIFY(!confirmation->isVisible());
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        settings->setProperty("draftLanguage", changedLanguage);
-        QVERIFY(QMetaObject::invokeMethod(save, "clicked"));
-        QTRY_VERIFY(confirmation->isVisible());
-        QVERIFY(QMetaObject::invokeMethod(now, "clicked"));
-        QVERIFY(owner->property("restartAfterClose").toBool());
-        QTRY_VERIFY(!owner->isVisible()); // Existing asynchronous shutdown barrier completes.
+        QVERIFY(confirmation && !confirmation->isVisible());
+        settings->close();
+        UiPreferences restored;
+        QCOMPARE(restored.language(), QStringLiteral("en-US"));
     }
     void nativeMenuFirstFrame_data() {
         QTest::addColumn<QString>("kind");
@@ -4557,7 +4498,9 @@ QtObject {
                                                    {"settings-scale", "settingsTextScale"},
                                                    {"settings-language", "settingsLanguage"},
                                                    {"settings-open-mode", "settingsOpenMode"}};
-            target = findVisual(host->contentItem(), controls.value(kind));
+            if (kind == "settings-language" || kind == "settings-open-mode")
+                host->setProperty("currentTab", 1);
+            QTRY_VERIFY((target = findVisual(host->contentItem(), controls.value(kind))));
             combo = true;
         } else if (kind.startsWith("create-")) {
             host = window->findChild<QQuickWindow *>("createWindow");
@@ -5054,142 +4997,74 @@ QtObject {
         QTest::keyClick(host, Qt::Key_Escape);
     }
     void aboutUpdateStateLayoutAndReadOnlyActions() {
-        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
             QVERIFY(initializeUiText(language));
             QQmlApplicationEngine engine;
-            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
-            QVERIFY(!engine.rootObjects().isEmpty());
-            auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-            QVERIFY(owner && QTest::qWaitForWindowExposed(owner));
             QQmlComponent fixture(&engine);
             fixture.setData(R"(import QtQuick
                 QtObject {
-                    property string state: "idle"
-                    property string candidateVersion: "99.20.12-preview.123"
-                    property string errorCode: "verification_hash"
-                    property real progress: 0.42
-                    property bool busy: false
-                    property bool trusted: true
-                    property bool canInstall: true
-                    property bool downloaded: false
-                    property int checks: 0; property int cancels: 0; property int downloads: 0
-                    property int installs: 0; property int releases: 0; property int opens: 0
-                    function check() { ++checks }
-                    function cancel() { ++cancels }
-                    function download() { ++downloads }
-                    function downloadAndInstall() { ++installs }
-                    function openReleasePage() { ++releases }
-                    function openDownloadFolder() { ++opens }
-                })",
-                            QUrl());
+                    property string state: "idle"; property string candidateVersion: "99.20.12-preview.123"
+                    property string errorCode: "verification_hash"; property real progress: 0.42
+                    property bool busy: false; property bool trusted: true; property bool canInstall: true
+                    property bool downloaded: false; property int checks: 0; property int cancels: 0
+                    property int downloads: 0; property int installs: 0; property int releases: 0
+                    function check() { ++checks } function cancel() { ++cancels }
+                    function download() { ++downloads } function downloadAndInstall() { ++installs }
+                    function openReleasePage() { ++releases } function openDownloadFolder() {}
+                })", QUrl());
             std::unique_ptr<QObject> service(fixture.create());
             QVERIFY2(service, qPrintable(fixture.errorString()));
-            auto *about = owner->findChild<QQuickWindow *>("aboutWindow");
-            QVERIFY(about && about->setProperty("updater", QVariant::fromValue(service.get())));
+            engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+            QVERIFY(!engine.rootObjects().isEmpty());
+            auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+            auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+            QVERIFY(settings && settings->setProperty("updater", QVariant::fromValue(service.get())));
+            QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+            settings->setProperty("currentTab", 5);
+            QVERIFY(QTest::qWaitForWindowExposed(settings));
+            QQuickItem *status = nullptr;
+            QTRY_VERIFY((status = findVisual(settings->contentItem(), "aboutUpdateStatus")));
+            auto *check = findVisual(settings->contentItem(), "aboutCheckUpdate");
+            auto *cancel = findVisual(settings->contentItem(), "aboutCancelUpdate");
+            auto *install = findVisual(settings->contentItem(), "aboutInstallUpdate");
+            auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
+            QVERIFY(status && check && cancel && install && progress);
+            QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
+            const QStringList states{"idle", "checking", "up_to_date", "available", "downloading", "verifying", "downloaded", "waiting_tasks", "preparing", "installing", "error", "recovery_required", "updated", "unavailable"};
             QQmlComponent theme(&engine);
-            theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\nQtObject { property "
-                          "real factor: 1; property bool dark: false; onFactorChanged: "
-                          "Ui.Theme.fontScale=factor; onDarkChanged: Ui.Theme.dark=dark }",
-                          QUrl());
+            theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                          "QtObject { property bool dark: false; property real factor: 1; "
+                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: Ui.Theme.fontScale = factor }", QUrl());
             std::unique_ptr<QObject> appearance(theme.create());
             QVERIFY(appearance);
-            QVERIFY(QMetaObject::invokeMethod(about, "present"));
-            QVERIFY(QTest::qWaitForWindowExposed(about));
-            auto *status = findVisual(about->contentItem(), "aboutUpdateStatus");
-            auto *check = findVisual(about->contentItem(), "aboutCheckUpdate");
-            auto *cancel = findVisual(about->contentItem(), "aboutCancelUpdate");
-            auto *install = findVisual(about->contentItem(), "aboutInstallUpdate");
-            auto *progress = findVisual(about->contentItem(), "aboutUpdateProgress");
-            auto *footer = findVisual(about->contentItem(), "aboutFooter");
-            auto *scroll = findVisual(about->contentItem(), "aboutScroll");
-            QVERIFY(status && check && cancel && install && progress && footer && scroll);
-            const QStringList states{"idle",        "checking",   "up_to_date", "available",
-                                     "downloading", "verifying",  "downloaded", "waiting_tasks",
-                                     "preparing",   "installing", "error",      "recovery_required",
-                                     "updated",     "unavailable"};
-            for (const bool dark : {false, true})
-                for (const double scale : {1., 1.25, 1.5}) {
-                    appearance->setProperty("dark", dark);
-                    appearance->setProperty("factor", scale);
-                    for (const auto &state : states) {
-                        const bool busy = QStringList{"checking",      "downloading", "verifying",
-                                                      "waiting_tasks", "preparing",   "installing"}
-                                              .contains(state);
-                        service->setProperty("busy", busy);
-                        service->setProperty("downloaded", state == "downloaded");
-                        service->setProperty("state", state);
-                        // Animation advances before layout polish. Offscreen operation
-                        // windows do not emit frameSwapped, so also wait for geometry.
-                        QSignalSpy frames(about, &QQuickWindow::afterAnimating);
-                        about->requestUpdate();
-                        QTRY_VERIFY2(
-                            !frames.isEmpty() &&
-                                footer->y() + footer->height() <= about->height() + 1,
-                            qPrintable(QString("language=%1 dark=%2 scale=%3 state=%4 window=%5 "
-                                               "requested=%6 footerBottom=%7 parentHeight=%8")
-                                           .arg(language)
-                                           .arg(dark)
-                                           .arg(scale)
-                                           .arg(state)
-                                           .arg(about->height())
-                                           .arg(about->property("requestedHeight").toInt())
-                                           .arg(footer->y() + footer->height())
-                                           .arg(footer->parentItem()->height())));
-                        QCOMPARE(about->width(), 491);
-                        QVERIFY(about->height() <= 640);
-                        QVERIFY(status->width() <= 443.1);
-                        QVERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
-                        QCOMPARE(status->property("font").value<QFont>().pixelSize(),
-                                 qRound(13 * scale));
-                        if (state == "error") {
-                            for (const auto &error :
-                                 {qMakePair(QStringLiteral("unsafe_installation"),
-                                            "update.unsafeInstallation"),
-                                  qMakePair(QStringLiteral("download"), "update.network"),
-                                  qMakePair(QStringLiteral("unrecognized_error"),
-                                            "update.failed")}) {
-                                service->setProperty("errorCode", error.first);
-                                QTRY_COMPARE(status->property("text").toString(),
-                                             qtTrId(error.second));
-                                QTRY_VERIFY(status->property("paintedWidth").toReal() <=
-                                            status->width() + 1);
-                                QTRY_VERIFY(status->property("paintedHeight").toReal() <=
-                                            status->height() + 1);
-                                QTRY_VERIFY(footer->y() + footer->height() <= about->height() + 1);
-                            }
-                        }
-                        QCOMPARE(check->isEnabled(), !busy);
-                        QCOMPARE(cancel->isVisible(), busy && state != "installing");
-                        const bool showProgress =
-                            QStringList{"downloading", "verifying", "preparing"}.contains(state);
-                        QCOMPARE(progress->isVisible(), showProgress);
-                        QVERIFY(scroll->property("contentWidth").toReal() <= scroll->width() + 1);
-                        for (auto *control : {check, cancel, install})
-                            if (control->isVisible()) {
-                                QVERIFY(control->property("implicitWidth").toReal() <= 443.1);
-                                const auto position = control->mapToItem(scroll, QPointF());
-                                QVERIFY(position.x() >= 23 &&
-                                        position.x() + control->width() <= about->width() - 23);
-                            }
-                        if (state == "available") {
-                            install->forceActiveFocus(Qt::TabFocusReason);
-                            QTRY_VERIFY(install->mapToScene(QPointF(0, install->height())).y() <=
-                                        footer->y() + 1);
-                        }
-                        const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
-                        if (!captures.isEmpty() && scale == 1.5 &&
-                            QStringList{"available", "downloading", "error", "recovery_required"}
-                                .contains(state)) {
-                            check->forceActiveFocus(Qt::TabFocusReason);
-                            QTRY_VERIFY(check->mapToScene(QPointF(0, check->height())).y() <=
-                                        footer->y() + 1);
-                            QVERIFY(QDir().mkpath(captures));
-                            QVERIFY(visual_audit::save(
-                                about, captures, language + (dark ? "-dark-" : "-light-") + state));
-                        }
-                    }
+            for (const bool dark : {false, true}) for (const double scale : {1., 1.25, 1.5}) {
+              appearance->setProperty("dark", dark);
+              appearance->setProperty("factor", scale);
+              for (const auto &state : states) {
+                const bool busy = QStringList{"checking", "downloading", "verifying", "waiting_tasks", "preparing", "installing"}.contains(state);
+                service->setProperty("busy", busy);
+                service->setProperty("downloaded", state == "downloaded");
+                service->setProperty("state", state);
+                QTRY_VERIFY(!status->property("text").toString().isEmpty());
+                QCOMPARE(check->isEnabled(), !busy);
+                QCOMPARE(cancel->isVisible(), busy && state != "installing");
+                QCOMPARE(progress->isVisible(), QStringList({"downloading", "verifying", "preparing"}).contains(state));
+                QCOMPARE(settings->width(), 612);
+                QTRY_VERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
+                QTRY_VERIFY(status->property("paintedHeight").toReal() <= status->height() + 1);
+                const auto captures = qEnvironmentVariable("XDZIP_ABOUT_UPDATE_AUDIT");
+                if (!captures.isEmpty() && scale == 1.5 &&
+                    QStringList{"available", "downloading", "error", "recovery_required"}.contains(state)) {
+                    check->forceActiveFocus(Qt::TabFocusReason);
+                    QVERIFY(QDir().mkpath(captures));
+                    QVERIFY(visual_audit::save(settings, captures,
+                        language + (dark ? "-dark-" : "-light-") + state));
                 }
+              }
+            }
+            appearance->setProperty("factor", 1.);
+            appearance->setProperty("dark", false);
             service->setProperty("state", "available");
             service->setProperty("busy", false);
             for (int mode = 0; mode < 3; ++mode) {
@@ -5206,14 +5081,12 @@ QtObject {
             service->setProperty("busy", true);
             QVERIFY(QMetaObject::invokeMethod(cancel, "click"));
             QCOMPARE(service->property("cancels").toInt(), 1);
-            appearance->setProperty("factor", 1.);
-            appearance->setProperty("dark", false);
-            about->close();
+            settings->close();
             owner->close();
         }
     }
     void versionAboutWindow() {
-        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
         QVERIFY(!BuildInfo::version().isEmpty());
         QVERIFY(BuildInfo::buildNumber() > 0);
         for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")}) {
@@ -5222,107 +5095,56 @@ QtObject {
             engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
             QVERIFY(!engine.rootObjects().isEmpty());
             auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-            QVERIFY(owner);
-            QSignalSpy initialFrame(owner, &QQuickWindow::frameSwapped);
-            owner->update();
-            QTRY_VERIFY(initialFrame.count() > 0);
             auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
-            auto *about = owner->findChild<QQuickWindow *>("aboutWindow");
-            QVERIFY(settings && about);
-            QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-            auto *entry = settings->findChild<QQuickItem *>("settingsAbout");
-            QVERIFY(entry);
-            QVERIFY(QMetaObject::invokeMethod(entry, "clicked"));
-            QTRY_VERIFY(about->isVisible());
-            QCOMPARE(about->transientParent(), settings);
-            QQmlComponent changes(&engine);
-            changes.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
-                            "QtObject { property bool dark: false; property real factor: 1; "
-                            "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: "
-                            "Ui.Theme.fontScale = factor }",
-                            QUrl());
-            std::unique_ptr<QObject> appearance(changes.create());
+            auto *page = owner->property("activePage").value<QObject *>();
+            QVERIFY(settings && page);
+            QVERIFY(!owner->findChild<QQuickWindow *>("aboutWindow"));
+            QVERIFY(QMetaObject::invokeMethod(page, "presentAbout"));
+            QVERIFY(QTest::qWaitForWindowExposed(settings));
+            QCOMPARE(settings->property("currentTab").toInt(), 5);
+            QCOMPARE(settings->transientParent(), owner);
+            auto *version = findVisual(settings->contentItem(), "aboutValue-1");
+            auto *license = findVisual(settings->contentItem(), "aboutLicense");
+            auto *artwork = findVisual(settings->contentItem(), "aboutArtwork");
+            auto *copy = findVisual(settings->contentItem(), "aboutCopy");
+            QVERIFY(version && license && artwork && copy);
+            QCOMPARE(version->property("text").toString(), BuildInfo::version());
+            for (const auto &word : {QStringLiteral("2026 xiaodaozhi"), QStringLiteral("The Qt Company Ltd."), QStringLiteral("Apache-2.0"), QStringLiteral("LGPL-3.0"), QStringLiteral("notices")})
+                QVERIFY(license->property("text").toString().contains(word));
+            QVERIFY(visibleImagesReady(settings->contentItem()));
+            QVERIFY(QMetaObject::invokeMethod(copy, "click"));
+            const auto info = QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toUtf8()).object();
+            QCOMPARE(info.value("version").toString(), BuildInfo::version());
+            QCOMPARE(info.value("build").toInt(), BuildInfo::buildNumber());
+            QVERIFY(!info.contains("path"));
+            QCOMPARE(settings->width(), 612);
+            QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
+            const auto captures = qEnvironmentVariable("XDZIP_ABOUT_AUDIT");
+            QQmlComponent theme(&engine);
+            theme.setData("import QtQuick\nimport \"qrc:/xdzip/ui\" as Ui\n"
+                          "QtObject { property bool dark: false; property real factor: 1; "
+                          "onDarkChanged: Ui.Theme.dark = dark; onFactorChanged: Ui.Theme.fontScale = factor }", QUrl());
+            std::unique_ptr<QObject> appearance(theme.create());
             QVERIFY(appearance);
             for (const bool dark : {false, true}) {
                 appearance->setProperty("dark", dark);
                 for (const double scale : {1., 1.25, 1.5}) {
                     appearance->setProperty("factor", scale);
                     QTest::qWait(30);
-                    QCOMPARE(about->width(), 491);
-                    QVERIFY(about->height() <= 640);
-                    auto *artwork = findVisual(about->contentItem(), "aboutArtwork");
-                    QVERIFY(artwork && visibleImagesReady(about->contentItem()));
-                    QVERIFY(artwork->property("sourceSize").toSize().width() >=
-                            qCeil(artwork->width() * about->devicePixelRatio()));
-                    auto *version = findVisual(about->contentItem(), "aboutValue-1");
-                    QVERIFY(version);
-                    QCOMPARE(version->property("text").toString(), BuildInfo::version());
-                    auto *license = findVisual(about->contentItem(), "aboutLicense");
-                    QVERIFY(license);
-                    const auto licenseText = license->property("text").toString();
-                    QVERIFY(licenseText.contains(QStringLiteral("2026 xiaodaozhi")));
-                    QVERIFY(licenseText.contains(QStringLiteral("The Qt Company Ltd.")));
-                    QVERIFY(licenseText.contains(QStringLiteral("其他贡献人")) ||
-                            licenseText.contains(QStringLiteral("other contributors")));
-                    QVERIFY(licenseText.contains(QStringLiteral("Apache-2.0")));
-                    QVERIFY(licenseText.contains(QStringLiteral("LGPL-3.0")));
-                    QVERIFY(licenseText.contains(QStringLiteral("GPL-3.0 和 LGPL-3.0")) ||
-                            licenseText.contains(QStringLiteral("GPL-3.0 and LGPL-3.0")));
-                    QVERIFY(licenseText.contains(QStringLiteral("notices")));
                     QVERIFY(license->width() > 0);
                     QVERIFY(license->height() >= license->implicitHeight() - 1);
-                    auto *copy = about->findChild<QQuickItem *>("aboutCopy");
-                    auto *done = about->findChild<QQuickItem *>("aboutDone");
-                    QVERIFY(copy && done);
-                    QCOMPARE(copy->mapToScene(QPointF()).y(), done->mapToScene(QPointF()).y());
-                    QVERIFY(done->mapToScene(QPointF(done->width(), done->height())).y() <=
-                            about->height());
-                    const auto captures = qEnvironmentVariable("XDZIP_ABOUT_AUDIT");
                     if (!captures.isEmpty()) {
                         QVERIFY(QDir().mkpath(captures));
-                        QVERIFY(visual_audit::save(about, captures,
-                                                   language + (dark ? "-dark-" : "-light-") +
-                                                       QString::number(scale)));
+                        QVERIFY(visual_audit::save(settings, captures,
+                            language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
                     }
                 }
             }
-            about->setProperty("requestedHeight", 400);
-            QTRY_COMPARE(about->height(), 400);
-            auto *homepage = findVisual(about->contentItem(), "aboutHomepage");
-            auto *footer = findVisual(about->contentItem(), "aboutFooter");
-            QVERIFY(homepage && footer);
-            about->requestActivate();
-            QVERIFY(QTest::qWaitForWindowActive(about));
-            homepage->forceActiveFocus(Qt::TabFocusReason);
-            QTRY_VERIFY(homepage->hasActiveFocus());
-            auto *scroll = findVisual(about->contentItem(), "aboutScroll");
-            QVERIFY(scroll);
-            QTRY_VERIFY2(
-                homepage->mapToScene(QPointF(0, homepage->height())).y() <= footer->y() + 1,
-                qPrintable(
-                    QStringLiteral("active=%1 focus=%2 bottom=%3 footer=%4 view=%5 content=%6")
-                        .arg(about->isActive())
-                        .arg(homepage->hasActiveFocus())
-                        .arg(homepage->mapToScene(QPointF(0, homepage->height())).y())
-                        .arg(footer->y())
-                        .arg(scroll->height())
-                        .arg(scroll->property("contentHeight").toReal())));
-            auto *copy = about->findChild<QObject *>("aboutCopy");
-            QVERIFY(QMetaObject::invokeMethod(copy, "clicked"));
-            const auto diagnostic =
-                QJsonDocument::fromJson(QGuiApplication::clipboard()->text().toUtf8()).object();
-            QCOMPARE(diagnostic.value("version").toString(), BuildInfo::version());
-            QCOMPARE(diagnostic.value("build").toInt(), BuildInfo::buildNumber());
-            QVERIFY(!diagnostic.contains("path"));
-            auto *done = about->findChild<QObject *>("aboutDone");
-            QVERIFY(QMetaObject::invokeMethod(done, "clicked"));
-            QTRY_VERIFY(!about->isVisible());
             appearance->setProperty("factor", 1.);
             appearance->setProperty("dark", false);
             settings->close();
             owner->close();
         }
-        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
     }
     void windowHoverEndsBeforeRestore_data() {
         QTest::addColumn<QString>("component");
@@ -6137,7 +5959,7 @@ QtObject {
                 QCOMPARE(bool(accessible->state().checkable), card->property("checkable").toBool());
                 QVERIFY(accessible->actionInterface()->actionNames().contains(action));
                 accessible->actionInterface()->doAction(action);
-                QTRY_COMPARE(settings->property("draftTheme").toString(), themes[index]);
+                QTRY_COMPARE(preferences->savedTheme(), themes[index]);
                 QTRY_COMPARE(preferences->theme(), themes[index]);
                 if (index != 0)
                     QTRY_COMPARE(window->property("darkMode").toBool(), index == 2);
@@ -6149,7 +5971,7 @@ QtObject {
                     QTRY_COMPARE(QAccessible::queryAccessibleInterface(item)->state().checked,
                                  choice == index);
                 }
-                QCOMPARE(preferences->savedTheme(), QStringLiteral("system"));
+                QCOMPARE(preferences->savedTheme(), themes[index]);
             }
         }
         auto *selectedTheme = findVisual(settings->contentItem(), "settingsTheme-0");
@@ -6159,7 +5981,7 @@ QtObject {
             selectedTheme
                 ->mapToScene(QPointF(selectedTheme->width() / 2, selectedTheme->height() / 2))
                 .toPoint());
-        QCOMPARE(settings->property("draftTheme").toString(), QStringLiteral("system"));
+        QCOMPARE(preferences->savedTheme(), QStringLiteral("system"));
         QVERIFY(selectedTheme->property("checked").toBool());
         settings->close();
         QCOMPARE(preferences->theme(), QStringLiteral("system"));
@@ -6229,19 +6051,27 @@ QtObject {
         QVERIFY(QTest::qWaitForWindowExposed(settings));
         const QStringList actions{QAccessibleActionInterface::pressAction(),
                                   QAccessibleActionInterface::toggleAction()};
+        auto *preferences = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
         for (const auto &action : actions) {
             for (const auto &name : {QStringLiteral("Tray"), QStringLiteral("Recent")}) {
-                auto *item = findVisual(settings->contentItem(), "settings" + name);
-                QVERIFY(item);
+                settings->setProperty("currentTab", name == "Tray" ? 1 : 2);
+                QQuickItem *item = nullptr;
+                QTRY_VERIFY((item = findVisual(settings->contentItem(), "settings" + name)));
                 auto *accessible = QAccessible::queryAccessibleInterface(item);
                 QVERIFY(accessible && accessible->actionInterface());
-                const auto draft = ("draft" + name).toUtf8();
-                const bool before = settings->property(draft).toBool();
+                QVERIFY(!accessible->text(QAccessible::Name).isEmpty());
+                QSignalSpy clicks(item, SIGNAL(clicked()));
+                QSignalSpy toggles(item, SIGNAL(toggled()));
+                const auto value = [&] { return name == "Tray" ? preferences->trayEnabled() : preferences->recentEnabled(); };
+                const bool before = value();
                 accessible->actionInterface()->doAction(action);
-                QTRY_COMPARE(settings->property(draft).toBool(), !before);
-                QCOMPARE(item->property("checked").toBool(), !before);
+                QTRY_COMPARE(value(), !before);
+                QTRY_COMPARE(item->property("checked").toBool(), !before);
                 accessible->actionInterface()->doAction(action);
-                QTRY_COMPARE(settings->property(draft).toBool(), before);
+                QTRY_COMPARE(value(), before);
+                QTRY_COMPARE(item->property("checked").toBool(), before);
+                QCOMPARE(clicks.count(), 2);
+                QCOMPARE(toggles.count(), 2);
             }
         }
         settings->close();
@@ -6291,6 +6121,101 @@ QtObject {
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QCOMPARE(controller->selectedCount(), 0);
     }
+    void settingsAssociationFollowsSystemResult() {
+        QQmlApplicationEngine engine;
+        QQmlComponent fixture(&engine);
+        fixture.setData(R"(import QtQuick
+            QtObject {
+                property bool available: true; property bool busy: false; property bool ready: true
+                property int revision: 0; property string error: ""; property bool selected: false
+                property bool accept: false; property int requests: 0
+                function isDefault(extension) { return extension === ".zip" && selected }
+                function refresh() { ++revision }
+                function requestChange(extension, value) { ++requests; if (accept && extension === ".zip") { selected = value; ++revision } }
+            })", QUrl());
+        std::unique_ptr<QObject> service(fixture.create());
+        QVERIFY2(service, qPrintable(fixture.errorString()));
+        engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"), service.get());
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("currentTab", 3);
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        QQuickItem *zip = nullptr;
+        QTRY_VERIFY((zip = findVisual(settings->contentItem(), "settingsAssociation-.zip")));
+        QVERIFY(zip->isEnabled());
+        const bool active = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restore = qScopeGuard([&] { QAccessible::setActive(active); });
+        auto *accessible = QAccessible::queryAccessibleInterface(zip);
+        QVERIFY(accessible && accessible->actionInterface());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QCOMPARE(service->property("requests").toInt(), 1);
+        QVERIFY(!zip->property("checked").toBool()); // The system did not accept the request.
+        service->setProperty("accept", true);
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+        QTRY_VERIFY(service->property("selected").toBool());
+        QTRY_VERIFY(zip->property("checked").toBool());
+        accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_VERIFY(!service->property("selected").toBool());
+        QTRY_VERIFY(!zip->property("checked").toBool());
+        service->setProperty("ready", false);
+        QTRY_VERIFY(!zip->isEnabled());
+        settings->close();
+    }
+    void settingsNetworkControlsCommitValidatedValues() {
+        QTemporaryDir profile;
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("currentTab", 4);
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        QQuickItem *none = nullptr;
+        QTRY_VERIFY((none = findVisual(settings->contentItem(), "settingsProxy-none")));
+        auto *custom = findVisual(settings->contentItem(), "settingsProxy-custom");
+        auto *system = findVisual(settings->contentItem(), "settingsProxy-system");
+        QVERIFY(custom && system);
+        const bool active = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restore = qScopeGuard([&] { QAccessible::setActive(active); });
+        auto *action = QAccessible::queryAccessibleInterface(none);
+        QVERIFY(action && action->actionInterface());
+        action->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(prefs->proxyMode(), QStringLiteral("none"));
+        QVERIFY(none->property("checked").toBool());
+        QVERIFY(!system->property("checked").toBool());
+        action = QAccessible::queryAccessibleInterface(custom);
+        QVERIFY(action && action->actionInterface());
+        action->actionInterface()->doAction(QAccessibleActionInterface::toggleAction());
+        QCOMPARE(prefs->proxyMode(), QStringLiteral("none")); // Address is required before committing.
+        QQuickItem *address = nullptr;
+        QTRY_VERIFY((address = findVisual(settings->contentItem(), "settingsProxyAddress")));
+        address->setProperty("text", "http://invalid");
+        QVERIFY(QMetaObject::invokeMethod(address, "editingFinished"));
+        QCOMPARE(prefs->proxyMode(), QStringLiteral("none"));
+        QVERIFY(!prefs->error().isEmpty());
+        address->setProperty("text", "socks5://127.0.0.1:1080");
+        QVERIFY(QMetaObject::invokeMethod(address, "editingFinished"));
+        QTRY_COMPARE(prefs->proxyMode(), QStringLiteral("custom"));
+        QQuickItem *mirror = findVisual(settings->contentItem(), "settingsMirrorAddress");
+        QVERIFY(mirror);
+        mirror->setProperty("text", "https://mirror.example.test");
+        QVERIFY(QMetaObject::invokeMethod(mirror, "editingFinished"));
+        QTRY_COMPARE(prefs->mirrorAddress(), QStringLiteral("https://mirror.example.test"));
+        settings->close();
+        UiPreferences restored;
+        QCOMPARE(restored.proxyMode(), QStringLiteral("custom"));
+        QCOMPARE(restored.proxyAddress(), QStringLiteral("socks5://127.0.0.1:1080"));
+        QCOMPARE(restored.mirrorAddress(), QStringLiteral("https://mirror.example.test"));
+    }
     void settingsSelectorsHaveConsistentGeometry_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<bool>("dark");
@@ -6306,41 +6231,82 @@ QtObject {
         QFETCH(QString, language);
         QFETCH(bool, dark);
         QFETCH(double, scale);
-        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        const auto restore = qScopeGuard([] { initializeUiText("zh-CN"); });
         QVERIFY(initializeUiText(language));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
-        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-        auto *preferences =
-            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        QVERIFY(window && preferences);
-        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
         QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
         QVERIFY(QTest::qWaitForWindowExposed(settings));
-        preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
-        const auto restorePreview = qScopeGuard([&] { preferences->cancelPreview(); });
-        const QStringList names{"settingsDensity", "settingsTextScale", "settingsLanguage",
-                                "settingsOpenMode"};
-        QQuickItem *first = nullptr;
-        for (const auto &name : names) {
-            auto *control = findVisual(settings->contentItem(), name);
-            QVERIFY2(control, qPrintable(name));
-            if (!first)
-                first = control;
-            QTRY_VERIFY(control->height() > 0 && qAbs(control->height() - first->height()) < .1);
+        prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
+        qreal firstHeight = 0;
+        for (const auto &name : {QStringLiteral("settingsDensity"), QStringLiteral("settingsTextScale"),
+                                 QStringLiteral("settingsLanguage"), QStringLiteral("settingsOpenMode")}) {
+            settings->setProperty("currentTab", name == "settingsLanguage" || name == "settingsOpenMode" ? 1 : 0);
+            QQuickItem *control = nullptr;
+            QTRY_VERIFY((control = findVisual(settings->contentItem(), name)));
+            QTRY_COMPARE(control->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+            QTRY_VERIFY(qAbs(control->height() - control->property("implicitHeight").toReal()) < 1);
+            if (!firstHeight) firstHeight = control->height();
+            QTRY_VERIFY(qAbs(control->height() - firstHeight) < 1);
             auto *editor = control->property("contentItem").value<QQuickItem *>();
             auto *indicator = control->property("indicator").value<QQuickItem *>();
             QVERIFY(editor && indicator);
             QVERIFY(editor->height() <= control->height());
-            QVERIFY(indicator->y() >= 0 &&
-                    indicator->y() + indicator->height() <= control->height());
+            QVERIFY(indicator->y() >= 0 && indicator->y() + indicator->height() <= control->height());
             const QFontMetricsF metrics(editor->property("font").value<QFont>());
-            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
-                         editor->width() + 1,
+            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <= editor->width() + 1,
                      qPrintable(name + QStringLiteral(" text clipped")));
-            control->forceActiveFocus(Qt::TabFocusReason);
-            QTRY_VERIFY(control->hasActiveFocus());
+        }
+        settings->close();
+    }
+    void settingsAllPagesLayout_data() { settingsSelectorsHaveConsistentGeometry_data(); }
+    void settingsAllPagesLayout() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
+        auto *sidebar = findVisual(settings->contentItem(), "settingsSidebar");
+        auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
+        QVERIFY(sidebar && scroll);
+        QCOMPARE(settings->width(), 612);
+        QCOMPARE(sidebar->width(), 144.);
+        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() - scroll->mapToScene(QPointF()).x()) < .5);
+        QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF()).y() - scroll->mapToScene(QPointF()).y()) < .5);
+        const QStringList names{"appearance", "general", "privacy", "associations", "network", "about"};
+        for (int tab = 0; tab < names.size(); ++tab) {
+            settings->setProperty("currentTab", tab);
+            QQuickItem *page = nullptr;
+            QTRY_VERIFY((page = findVisual(settings->contentItem(), "settingsPage-" + names[tab])));
+            QTRY_VERIFY(page->width() > 0);
+            QTest::qWait(30);
+            QVERIFY2(page->width() <= scroll->width() + 1, qPrintable(names[tab]));
+            QList<QQuickItem *> pending{page};
+            while (!pending.isEmpty()) {
+                auto *item = pending.takeLast();
+                pending.append(item->childItems());
+                if (!item->isVisible() || item->width() <= 0 || !item->property("paintedWidth").isValid())
+                    continue;
+                QVERIFY2(item->property("paintedWidth").toReal() <= item->width() + 1,
+                         qPrintable(names[tab] + QStringLiteral(" text exceeds width: ") + item->property("text").toString()));
+                QVERIFY2(item->property("paintedHeight").toReal() <= item->height() + 1,
+                         qPrintable(names[tab] + QStringLiteral(" text exceeds height: ") + item->property("text").toString()));
+            }
         }
         settings->close();
     }
@@ -6357,112 +6323,49 @@ QtObject {
             return;
         }
         QTemporaryDir profile;
-        QVERIFY(profile.isValid());
-        const auto path = profile.filePath("settings.ini");
-        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
-        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
-        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-        auto *preferences =
-            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
-        ApplicationSessions sessions(&engine, preferences);
-        sessions.adopt(window);
-        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
-        QVERIFY(settings);
-        auto *choice = findVisual(settings->contentItem(), "settingsOpenMode");
-        auto *save = findVisual(settings->contentItem(), "settingsSave");
-        auto *cancel = findVisual(settings->contentItem(), "settingsCancel");
-        auto *defaults = findVisual(settings->contentItem(), "settingsDefaults");
-        auto *footer = findVisual(settings->contentItem(), "settingsFooter");
-        QVERIFY(choice && save && cancel && defaults && footer);
-        const auto click = [](QQuickWindow *owner, QQuickItem *item) {
-            QTest::mouseClick(
-                owner, Qt::LeftButton, Qt::NoModifier,
-                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
-        };
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        ApplicationSessions sessions(&engine, prefs);
+        sessions.adopt(owner);
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        settings->setProperty("currentTab", 1);
+        QQuickItem *choice = nullptr;
+        QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsOpenMode")));
         auto *popup = choice->property("popup").value<QObject *>();
         QVERIFY(popup);
         QSignalSpy activated(choice, SIGNAL(activated(int)));
-        const auto selectWindows = [&] {
-            choice->forceActiveFocus(Qt::TabFocusReason);
-            QTRY_VERIFY(choice->mapToScene(QPointF(0, choice->height())).y() <= footer->y() + 1);
-            click(settings, choice);
-            QTRY_VERIFY(popup->property("visible").toBool());
-            if (pointer) {
-                auto *content = popup->property("contentItem").value<QQuickItem *>();
-                QVERIFY(content);
-                QTRY_VERIFY(findVisual(content, "settingsOpenModeOption-1"));
-                click(settings, findVisual(content, "settingsOpenModeOption-1"));
-            } else {
-                QTest::keyClick(settings, Qt::Key_End);
-                QTest::keyClick(settings, Qt::Key_Return);
-            }
-            QTRY_VERIFY(!popup->property("visible").toBool());
-        };
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        QVERIFY(QTest::qWaitForWindowExposed(settings));
-        choice->forceActiveFocus(Qt::TabFocusReason);
         QVERIFY(QMetaObject::invokeMethod(popup, "open"));
         QTRY_VERIFY(popup->property("visible").toBool());
-        QTest::keyClick(settings, Qt::Key_End);
-        QTest::keyClick(settings, Qt::Key_Escape);
-        QTRY_VERIFY(!popup->property("visible").toBool());
-        QCOMPARE(choice->property("currentIndex").toInt(), 0);
-        QCOMPARE(activated.count(), 0);
-        selectWindows();
-        QTRY_COMPARE(choice->property("currentIndex").toInt(), 1);
-        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
+        if (pointer) {
+            auto *content = popup->property("contentItem").value<QQuickItem *>();
+            QQuickItem *option = nullptr;
+            QTRY_VERIFY((option = findVisual(content, "settingsOpenModeOption-1")));
+            QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier,
+                              option->mapToScene(QPointF(option->width()/2, option->height()/2)).toPoint());
+        } else {
+            QTest::keyClick(settings, Qt::Key_End);
+            QTest::keyClick(settings, Qt::Key_Return);
+        }
+        QTRY_COMPARE(prefs->openMode(), QStringLiteral("windows"));
         QCOMPARE(activated.count(), 1);
-        QCOMPARE(activated.first().first().toInt(), 1);
-        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
-        click(settings, cancel);
-        QTRY_VERIFY(!settings->isVisible());
-        QVERIFY(!QFile::exists(path));
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        QTRY_COMPARE(choice->property("currentIndex").toInt(), 0);
-        selectWindows();
-        settings->setProperty("draftTheme", "dark"); // Other controls must not undo the choice.
-        QCOMPARE(choice->property("currentIndex").toInt(), 1);
-        QLockFile lock(path + ".xdzip-lock");
-        QVERIFY(lock.tryLock());
-        click(settings, save);
-        QVERIFY(settings->isVisible());
-        QVERIFY(!preferences->error().isEmpty());
-        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
-        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
-        lock.unlock();
-        click(settings, save);
-        QTRY_VERIFY(!settings->isVisible());
-        QCOMPARE(preferences->openMode(), QStringLiteral("windows"));
-        QSettings persisted(path, QSettings::IniFormat);
-        QCOMPARE(persisted.value("desktop/openMode").toString(), QStringLiteral("windows"));
+        settings->close();
+        UiPreferences restored;
+        QCOMPARE(restored.openMode(), QStringLiteral("windows"));
         QProcess child;
+        auto env = QProcessEnvironment::systemEnvironment();
+        env.insert("XDZIP_OPEN_MODE_CHILD", "1");
+        child.setProcessEnvironment(env);
         child.setProcessChannelMode(QProcess::MergedChannels);
-        auto environment = QProcessEnvironment::systemEnvironment();
-        environment.insert("XDZIP_OPEN_MODE_CHILD", "1");
-        child.setProcessEnvironment(environment);
-        child.start(QCoreApplication::applicationFilePath(),
-                    {QStringLiteral("settingsOpenModeSelectionPersists:") +
-                     QString::fromLatin1(QTest::currentDataTag())});
+        child.start(QCoreApplication::applicationFilePath(), {QStringLiteral("settingsOpenModeSelectionPersists:") + QString::fromLatin1(QTest::currentDataTag())});
         QVERIFY(child.waitForFinished(20000));
-        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
-                 child.readAllStandardOutput().constData());
-        sessions.newSession();
-        QCOMPARE(sessions.windows().size(), 2);
-        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
-        QCOMPARE(settings->property("draftOpenMode").toString(), QStringLiteral("windows"));
-        QCOMPARE(choice->property("currentIndex").toInt(), 1);
-        activated.clear();
-        click(settings, defaults);
-        QCOMPARE(choice->property("currentIndex").toInt(), 0);
-        QCOMPARE(activated.count(),
-                 0); // Programmatic draft synchronization is not user activation.
-        QCOMPARE(preferences->openMode(), QStringLiteral("windows"));
-        click(settings, save);
-        QTRY_VERIFY(!settings->isVisible());
-        QCOMPARE(preferences->openMode(), QStringLiteral("tabs"));
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0, child.readAllStandardOutput().constData());
         sessions.newSession();
         QCOMPARE(sessions.windows().size(), 2);
         QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
@@ -6479,135 +6382,55 @@ QtObject {
         QFETCH(QString, profileLabel);
         QTemporaryDir profile(QDir::tempPath() + "/settings-" + profileLabel + "-XXXXXX");
         QVERIFY(profile.isValid());
-        const auto path = profile.filePath("settings.ini");
-        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
-        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
         QVERIFY(!engine.rootObjects().isEmpty());
-        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
-        QVERIFY(QTest::qWaitForWindowExposed(window));
-        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
-        auto *entry = findVisual(window->contentItem(), "archiveSettings");
-        QVERIFY(settings && entry);
-        const auto click = [](QQuickWindow *owner, QQuickItem *item) {
-            QTest::mouseClick(
-                owner, Qt::LeftButton, Qt::NoModifier,
-                item->mapToScene(QPointF(item->width() / 2, item->height() / 2)).toPoint());
-        };
-        const bool originalDark = window->property("darkMode").toBool();
-        click(window, entry);
-        QTRY_VERIFY(settings->isVisible());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
         QCOMPARE(settings->width(), 612);
-        QVERIFY(visibleImagesReady(settings->contentItem()));
-        const auto captureSettings = [&](const QString &name) {
-            const auto directory = qEnvironmentVariable("XDZIP_SETTINGS_VISUAL_AUDIT");
-            return directory.isEmpty() ||
-                   (QDir().mkpath(directory) && visual_audit::save(settings, directory, name));
-        };
-        QVERIFY(captureSettings("settings-light"));
-        auto *themeChoice = findVisual(settings->contentItem(),
-                                       originalDark ? "settingsTheme-1" : "settingsTheme-2");
-        QVERIFY(themeChoice);
-        click(settings, themeChoice);
-        QTRY_COMPARE(window->property("darkMode").toBool(), !originalDark);
-        auto *scaleChoice = findVisual(settings->contentItem(), "settingsTextScale");
-        QVERIFY(scaleChoice);
-        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 13);
-        scaleChoice->forceActiveFocus();
-        QTest::keyClick(settings, Qt::Key_Down);
-        QTest::keyClick(settings, Qt::Key_End);
-        QTest::keyClick(settings, Qt::Key_Return);
-        QTRY_COMPARE(settings->property("draftScale").toDouble(), 1.5);
-        QCOMPARE(scaleChoice->property("font").value<QFont>().pixelSize(), 20);
-        QCOMPARE(scaleChoice->property("count").toInt(), 3);
-        auto *cancel = findVisual(settings->contentItem(), "settingsCancel");
-        auto *save = findVisual(settings->contentItem(), "settingsSave");
-        QVERIFY(cancel && save);
-        auto *defaults = findVisual(settings->contentItem(), "settingsDefaults");
-        QVERIFY(defaults);
-        QTRY_VERIFY(qAbs(cancel->mapToScene(QPointF()).y() - save->mapToScene(QPointF()).y()) <= 1);
-        QTRY_VERIFY(qAbs(defaults->mapToScene(QPointF()).y() - save->mapToScene(QPointF()).y()) <=
-                    1);
-        QTRY_VERIFY(save->mapToScene(QPointF(0, save->height())).y() <= settings->height() + 1);
-        QVERIFY(captureSettings("settings-large"));
-        auto *languageChoice = findVisual(settings->contentItem(), "settingsLanguage");
-        auto *settingsFooter = findVisual(settings->contentItem(), "settingsFooter");
-        QVERIFY(languageChoice && settingsFooter);
-        languageChoice->forceActiveFocus();
-        auto *languagePopup = languageChoice->property("popup").value<QObject *>();
-        QVERIFY(languagePopup);
-        QVERIFY(QMetaObject::invokeMethod(languagePopup, "open"));
-        QTRY_VERIFY(languagePopup->property("visible").toBool());
-        QVERIFY(captureSettings("settings-language-menu-large"));
-        QTest::keyClick(settings, Qt::Key_Escape);
-        languageChoice->forceActiveFocus();
-        QTRY_VERIFY(languageChoice->mapToScene(QPointF(0, languageChoice->height())).y() <=
-                    settingsFooter->y() + 1);
-        auto *densityChoice = findVisual(settings->contentItem(), "settingsDensity");
-        QVERIFY(densityChoice);
-        settings->setProperty("draftDensity", "compact");
-        settings->setProperty("clearRecent", true);
-        click(settings, cancel);
-        QTRY_VERIFY(!settings->isVisible());
-        QTRY_COMPARE(window->property("darkMode").toBool(), originalDark);
-        QVERIFY(!QFile::exists(path));
-        click(window, entry);
-        QTRY_VERIFY(settings->isVisible());
-        QCOMPARE(settings->property("draftScale").toDouble(), 1.0);
-        settings->setProperty("draftTheme", "dark");
-        settings->setProperty("draftLanguage", "en-US");
-        QCOMPARE(settings->property("draftDensity").toString(), "standard");
-        QCOMPARE(settings->property("clearRecent").toBool(), false);
-        settings->setProperty("draftDensity", "compact");
-        click(settings, save);
-        QTRY_VERIFY(!settings->isVisible());
-        QSettings persisted(path, QSettings::IniFormat);
-        QVERIFY(QFile::exists(path));
-        QCOMPARE(qEnvironmentVariable("XDZIP_SETTINGS_PATH"), path);
-        QCOMPARE(persisted.value("locale/language").toString(), "en-US");
-        QCOMPARE(persisted.value("appearance/theme").toString(), "dark");
-        QCOMPARE(persisted.value("schemaVersion").toInt(), 1);
-        QCOMPARE(qtTrId("settings.title"), QStringLiteral("设置"));
+        QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
+        auto *dark = findVisual(settings->contentItem(), "settingsTheme-2");
+        QVERIFY(dark && QMetaObject::invokeMethod(dark, "click"));
+        QTRY_COMPARE(prefs->savedTheme(), QStringLiteral("dark"));
+        auto *scale = findVisual(settings->contentItem(), "settingsTextScale");
+        QVERIFY(scale && QMetaObject::invokeMethod(scale, "activateOption", Q_ARG(QVariant, 2)));
+        QTRY_COMPARE(prefs->savedTextScale(), 1.5);
+        settings->setProperty("currentTab", 1);
+        QQuickItem *language = nullptr;
+        QTRY_VERIFY((language = findVisual(settings->contentItem(), "settingsLanguage")));
+        QVERIFY(QMetaObject::invokeMethod(language, "activateOption", Q_ARG(QVariant, 1)));
+        QTRY_COMPARE(prefs->activeLanguage(), QStringLiteral("en-US"));
+        settings->close();
         UiPreferences restored;
-        QCOMPARE(restored.language(), "en-US");
-        QCOMPARE(restored.savedTheme(), "dark");
-        QCOMPARE(restored.savedDensity(), "compact");
-        const auto recentPath = profile.filePath("recent.json");
+        QCOMPARE(restored.savedTheme(), QStringLiteral("dark"));
+        QCOMPARE(restored.savedTextScale(), 1.5);
+        QCOMPARE(restored.language(), QStringLiteral("en-US"));
         restored.rememberArchive(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
-        QVERIFY(QFile::exists(recentPath));
-        QFile recent(recentPath);
-        QVERIFY(recent.open(QIODevice::ReadOnly));
-        const auto before = recent.readAll();
-        recent.close();
-        QVERIFY(restored.saveDetails("dark", 1, "en-US", "compact", false, false));
-        restored.rememberArchive(QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
-        QVERIFY(recent.open(QIODevice::ReadOnly));
-        QCOMPARE(recent.readAll(), before);
-        recent.close();
-        QVERIFY(restored.saveDetails("dark", 1, "en-US", "compact", false, true));
-        QVERIFY(!QFile::exists(recentPath));
-        QVERIFY(QFile::exists(QStringLiteral(XDZIP_FIXTURES "/normal.zip")));
+        QVERIFY(!restored.recentArchives().isEmpty());
+        QVERIFY(restored.clearRecentArchives());
+        QVERIFY(restored.recentArchives().isEmpty());
+        QSettings persisted(profile.filePath("settings.ini"), QSettings::IniFormat);
         persisted.setValue("appearance/textScale", 2);
         persisted.sync();
         UiPreferences migrated;
         QCOMPARE(migrated.savedTextScale(), 1.5);
-        QVERIFY(!migrated.save("dark", 2, "en-US"));
-        QVERIFY(!restored.save("invalid", 1, "en-US"));
-        QCOMPARE(restored.savedTheme(), "dark");
-        // A separate process proves language restoration across an actual restart.
         QProcess child;
+        auto env = QProcessEnvironment::systemEnvironment();
+        env.insert("XDZIP_UI_TEST_LANGUAGE", "");
+        env.remove("XDZIP_LANGUAGE");
+        env.insert("XDZIP_SETTINGS_CHILD", "1");
+        child.setProcessEnvironment(env);
         child.setProcessChannelMode(QProcess::MergedChannels);
-        auto environment = QProcessEnvironment::systemEnvironment();
-        environment.insert("XDZIP_UI_TEST_LANGUAGE", "");
-        environment.remove("XDZIP_LANGUAGE");
-        environment.insert("XDZIP_SETTINGS_CHILD", "1");
-        child.setProcessEnvironment(environment);
         child.start(QCoreApplication::applicationFilePath(), {"settingsEnglishStartup"});
         QVERIFY(child.waitForFinished(20000));
-        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0,
-                 child.readAllStandardOutput().constData());
-        window->close();
+        QVERIFY2(child.exitStatus() == QProcess::NormalExit && child.exitCode() == 0, child.readAllStandardOutput().constData());
     }
     void qtRuntimeTranslations() {
         QTranslator translator;

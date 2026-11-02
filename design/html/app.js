@@ -720,7 +720,6 @@ function dialog(html, kind, spec, focus) {
     XdzipControls.close({ restoreFocus: false });
     XdzipControls.hideTooltip();
     const el = $("#modal");
-    if (state.modal === "settings" && kind !== "about") restoreSettingsPreview();
     returnFocus = el.open ? returnFocus : document.activeElement;
     if (el.open) el.close();
     const template = document.createElement("template");
@@ -748,7 +747,6 @@ function dialog(html, kind, spec, focus) {
     const modeless = [
         "progress",
         "settings",
-        "about",
         "preflight",
         "result",
         "archive-test",
@@ -778,13 +776,10 @@ function dialog(html, kind, spec, focus) {
     if (focus) $(focus)?.focus();
 }
 function closeModal({ preserveReview = false } = {}) {
-    const resumeSettings = state.modal === "about" && !preserveReview ? aboutReturnDraft : null;
-    if (state.modal === "settings" || (state.modal === "about" && settingsPreview)) restoreSettingsPreview();
-    if (state.modal === "about") aboutReturnDraft = null;
     if ($("#modal").open) $("#modal").close();
     $("#modal").querySelectorAll('input[type="password"],#extraction-password').forEach(input => input.value = "");
     state.modal = null;
-    if (!preserveReview && !resumeSettings && document.body.dataset.standalone === "true") {
+    if (!preserveReview && document.body.dataset.standalone === "true") {
         document.body.dataset.standalone = "false";
         const baseView = document.body.classList.contains("welcome-artboard") ? (document.body.classList.contains("welcome-narrow") ? "welcome-narrow" : "welcome") : "main";
         setCanvasLogicalScale(baseView);
@@ -800,7 +795,6 @@ function closeModal({ preserveReview = false } = {}) {
             ? window.XdzipMain?.entryNode(returnFocus.dataset.id)
             : null;
     restored?.focus({ preventScroll: true });
-    if (resumeSettings) { settingsResumeDraft = resumeSettings; showSettings(); }
 }
 function header(title, subtitle, ico = "archive") {
     const spec = window.XDZIP_DISPLAY_SPEC.operationHeader;
@@ -1478,133 +1472,91 @@ function confirmCreateOverwrite() {
 }
 let activeSettingsLanguage = "zh-CN";
 let savedSettingsDemo = null;
-let settingsPreview = null;
-let aboutReturnDraft = null;
-let settingsResumeDraft = null;
 const settingText = id => window.XDZIP_UI_MESSAGES[document.documentElement.lang === "en-US" ? "en-US" : "zh-CN"].messages[id];
-function restoreSettingsPreview() {
-    if (!settingsPreview) return;
-    const original = settingsPreview.original;
-    settingsPreview = null;
-    setTheme(original.theme);
-    document.documentElement.style.setProperty("--list-density-factor", original.density === "compact" ? .8 : 1);
-    document.documentElement.dataset.listDensity = original.density;
-    document.documentElement.style.setProperty("--settings-text-scale", original.textScale);
-}
+
 function showPreflight() {
     const t = settingText;
     dialog(`<div class="preflight-body"><h1>${t("ui.9cb79c4bee66")}</h1><p>${t("ui.db661e297081")}</p><div class="preflight-stats"><div><span>${t("ui.0790c26b1e36")}</span><strong>9</strong></div><div><span>${t("ui.377532e93480")}</span><strong>77619200</strong></div><div><span>${t("ui.9d959257ce7e")}</span><strong>0</strong></div></div><p>${t("ui.f644f6ec6fad")}</p><p class="preflight-note">${t("ui.0d92f3d4cae3")}</p></div>` + footer(`<button class="button primary" id="preflight-close">${t("ui.26867436321f")}</button>`, ""), "preflight", "P01", "#preflight-close");
     $("#preflight-close").onclick = closeModal;
 }
-function showAbout() {
-    aboutReturnDraft = state.modal === "settings" && settingsPreview ? {...settingsPreview.draft} : null;
-    const locale = new URLSearchParams(location.search).get("lang") || "zh-CN";
-    const t = id => window.XDZIP_UI_MESSAGES[locale]?.messages[id] || settingText(id);
-    const version = window.XDZIP_VERSION;
-    const spec = window.XDZIP_DISPLAY_SPEC.about;
-    const rows = [[t("about.version"), version.display_version], [t("about.build"), String(version.build)],
-                  [t("about.revision"), t("about.unknown")], [t("about.runtime"), "HTML"]];
-    dialog(`<div class="modal-content about-content"><span class="about-artwork">${window.XDZIP_ASSETS.brand[document.body.dataset.platform === "macos" ? "applicationMac" : "application"]}</span><h1>xdzip</h1><p class="about-description">${t("about.description")}</p><dl>${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join("")}</dl><p>${version.channel === "stable" ? "" : t("about.development")}</p><p>${t("about.license")}</p><button id="about-homepage" class="button operation-body-button">${t("about.homepage")}</button></div>` +
-        footer(`<button id="about-copy" class="button">${t("about.copy")}</button><button class="button" data-close>${t("about.done")}</button>`, ""), "about", "A01", "#about-copy");
-    const modal = $("#modal");
-    modal.querySelector(".os-title").textContent = t("about.title");
-    modal.setAttribute("aria-label", t("about.title"));
-    const aboutContent = modal.querySelector('.about-content');
-    const brand = aboutContent.querySelector('.about-artwork').innerHTML;
-    aboutContent.querySelector('.about-artwork').remove();
-    aboutContent.querySelector('h1').remove();
-    aboutContent.querySelector('.about-description').remove();
-    aboutContent.insertAdjacentHTML('afterbegin', header('xdzip', esc(t('about.description'))));
-    const brandSlot = aboutContent.querySelector('.modal-symbol');
-    brandSlot.classList.add('about-artwork'); brandSlot.innerHTML = brand;
-    const aboutBody = document.createElement('div');
-    aboutBody.className = 'shared-operation-body';
-    const aboutHeader = aboutContent.querySelector('.shared-operation-header');
-    while (aboutHeader.nextSibling) aboutBody.append(aboutHeader.nextSibling);
-    aboutContent.append(aboutBody);
-    Object.entries(spec).forEach(([key,value])=>{if(typeof value === "number") modal.style.setProperty("--about-"+key.replaceAll("_","-"),String(value));});
-    bindClose();
-    $("#about-homepage").onclick = () => window.open("https://github.com/xiaodaozhi/xdzip", "_blank", "noopener");
-    const updateSection = document.createElement("section");
-    updateSection.className = "about-update-section";
-    aboutBody.append(updateSection);
-    // State fixtures only: preview actions never download, install or contact a server.
-    const updatePreview = (options = {}) => {
-        const update = {state:"idle", trusted:true, canInstall:true, downloaded:false, progress:.42, version:"99.20.12-preview.123", ...options};
-        const busy = ["checking","downloading","verifying","waiting_tasks","preparing","installing"].includes(update.state);
-        const keys = {idle:"idle", checking:"checking", up_to_date:"current", updated:"updated", available:"available", downloading:"downloading", verifying:"verifying", downloaded:"downloaded", waiting_tasks:"waitingTasks", preparing:"preparing", installing:"installing", recovery_required:"recovery", error:"failed", unavailable:"preview"};
-        let message = t("update." + (keys[update.state] || "idle")).replace("%1",update.version);
-        if (update.state === "error") message = t("update." + ({network:"network",tls:"tls",timeout:"timeout",rate_limited:"rateLimited",disk:"disk",minimum_system:"minimumSystem",verification_hash:"verificationFailed",authorization_cancelled:"authorizationCancelled",authorization_failed:"authorizationFailed"}[update.errorCode] || "failed"));
-        const progress = ["downloading","verifying","preparing"].includes(update.state);
-        const install = ["available","downloaded"].includes(update.state);
-        updateSection.dataset.state = update.state;
-        updateSection.innerHTML = `<p id="about-update-status" aria-live="polite"${["error","recovery_required"].includes(update.state)?' class="update-error"':""}>${esc(message)}</p>${progress?`<progress aria-label="${esc(t("update.progress"))}"${update.state==="downloading"?` value="${update.progress}" max="1"`:""}></progress>`:""}${install&&!update.canInstall?`<p class="about-update-note">${esc(t(update.trusted?"update.manual":"update.unsigned"))}</p>`:""}<div class="about-update-actions"><button id="about-check-update" class="button operation-body-button"${busy?" disabled":""}>${esc(t("update.check"))}</button>${busy&&update.state!=="installing"?`<button id="about-cancel-update" class="button operation-body-button">${esc(t("update.cancel"))}</button>`:""}</div>${install?`<button id="about-install-update" class="button operation-body-button">${esc(t(update.canInstall?"update.install":update.trusted?"update.download":"update.release"))}</button>`:""}${update.state==="recovery_required"?`<button id="about-recovery-update" class="button operation-body-button">${esc(t("update.release"))}</button>`:""}${update.downloaded?`<button id="about-open-update" class="button operation-body-button">${esc(t("update.openDownload"))}</button>`:""}`;
-        updateSection.querySelectorAll("button").forEach(button => { button.onclick = () => { $("#about-update-status").textContent = t("update.preview"); }; });
+function showAbout() { showSettings("about"); }
+function showSettings(tab = "appearance") {
+    const keys = ["appearance", "general", "privacy", "associations", "network", "about"];
+    if (!keys.includes(tab)) tab = "appearance";
+    const labels = ["Appearance", "General", "Privacy", "Associations", "Network", "About"];
+    const icons = [icon("view-list"), icon("settings"), icon("shield"), icon("file-text"), icon("external-open"), icon("info")];
+    const queryLanguage = new URLSearchParams(location.search).get("lang");
+    if (!savedSettingsDemo) savedSettingsDemo = {
+        theme:state.theme, textScale:1, language:queryLanguage === "en-US" ? "en-US" : "zh-CN",
+        density:"standard", recent:state.recent, tray:true, openMode:"tabs", proxyMode:"system",
+        proxyAddress:"", mirrorAddress:"", associations:{}
     };
-    window.XdzipAboutUpdatePreview = updatePreview;
-    updatePreview();
-    $("#about-copy").onclick = async () => {
-        try {
-            await navigator.clipboard.writeText(JSON.stringify({product:"xdzip",version:version.display_version,build:version.build,channel:version.channel,preview:"HTML"},null,2));
-            if (state.modal === "about") $("#about-copy").textContent = t("about.copied");
-        } catch { /* Keep the copy action available when browser permission is absent. */ }
-    };
-}
-function showSettings() {
-    if (state.modal === "about" && aboutReturnDraft) { settingsResumeDraft = aboutReturnDraft; aboutReturnDraft = null; }
-    restoreSettingsPreview();
-    const original = {theme:state.theme, textScale:Number(document.documentElement.style.getPropertyValue("--settings-text-scale")) || 1, language:"zh-CN", density:document.documentElement.dataset.listDensity || "standard", recent:state.recent, tray:true, openMode:"tabs", clearRecent:false};
-    const draft = {...(settingsResumeDraft || savedSettingsDemo || original)};
-    settingsResumeDraft = null;
-    const t = settingText;
-    const themePreviews = {system:icon("theme-system"),light:icon("theme-light"),dark:icon("theme-dark")};
-    dialog(
-        header(t("settings.title"), t("settings.subtitle"), "settings-tile") +
-        `<div class="modal-content settings-content">
-        <fieldset id="setting-theme" class="settings-theme"><legend>${t("settings.theme")}</legend>
-        <div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${themePreviews[mode]}<span><input type="radio" name="setting-theme" value="${mode}">${t("settings."+mode)}</span></label>`).join("")}</div></fieldset>
-        <div class="settings-row"><label for="setting-density">${t("settings.density")}</label><select id="setting-density" class="field-select"><option value="standard">${t("settings.standard")}</option><option value="compact">${t("settings.compact")}</option></select></div>
-        <div class="settings-row"><label for="setting-text-scale">${t("settings.textSize")}</label><select id="setting-text-scale" class="field-select">${[1,1.25,1.5].map(value=>`<option value="${value}">${value*100}%</option>`).join("")}</select></div>
-        <div class="settings-row"><label for="setting-open-mode">${t("sessions.openMode")}</label><select id="setting-open-mode" class="field-select"><option value="tabs">${t("sessions.tabs")}</option><option value="windows">${t("sessions.windows")}</option></select></div>
-        <div class="settings-section"><div class="settings-row"><label for="setting-language">${t("settings.language")}</label><select id="setting-language" class="field-select"><option value="zh-CN">${t("language.zhCN")}</option><option value="en-US">${t("language.enUS")}</option></select></div><p>${t("ui.3a593f5653b1")}</p></div><label class="check-label"><input id="tray-enabled" type="checkbox">${t("desktop.trayEnabled")}</label><label class="check-label"><input id="recent-enabled" type="checkbox">${t("settings.recent")}</label><div><button id="clear-recent" class="button">${t("settings.clearRecent")}</button></div><div class="notice">${t("settings.privacy")}</div><div><button id="settings-about" class="button">${t("about.title")}</button></div></div>` +
-        footer(`<button id="settings-defaults" class="button">${t("settings.defaults")}</button><button class="button" data-close>${t("common.cancel")}</button><button id="settings-save" class="button">${t("settings.done")}</button>`,t("ui.5fb5c0083f18"), "shield"),
-        "settings", "S01", "#settings-save",
-    );
-    $("#settings-about").onclick = showAbout;
-    settingsPreview = {original,draft};
-    function refresh() {
-        $(`input[name="setting-theme"][value="${draft.theme}"]`).checked = true;
-        $("#setting-text-scale").value = String(draft.textScale);
-        $("#setting-language").value = draft.language;
-        $("#setting-density").value = draft.density;
-        $("#recent-enabled").checked = draft.recent;
-        $("#setting-open-mode").value = draft.openMode || "tabs";
-        $("#tray-enabled").checked = draft.tray;
-        $("#clear-recent").textContent = t(draft.clearRecent ? "settings.clearPending" : "settings.clearRecent");
-        $("#clear-recent").disabled = draft.clearRecent;
-        $("#modal").querySelectorAll("select").forEach(select=>select._xdzipRefresh?.());
-        setTheme(draft.theme);
-        document.documentElement.style.setProperty("--list-density-factor",draft.density === "compact" ? .8 : 1);
-        document.documentElement.dataset.listDensity = draft.density;
-        document.documentElement.style.setProperty("--settings-text-scale",draft.textScale);
+    const prefs = savedSettingsDemo;
+    document.documentElement.lang = prefs.language;
+    activeSettingsLanguage = prefs.language;
+    document.documentElement.style.setProperty("--settings-text-scale",prefs.textScale);
+    document.documentElement.dataset.listDensity = prefs.density;
+    document.documentElement.style.setProperty("--list-density-factor",prefs.density === "compact" ? .8 : 1);
+    const t = id => window.XDZIP_UI_MESSAGES[prefs.language].messages[id] || id;
+    const label = (id) => esc(t(id));
+    const row = (id, description, selectId, options, current) => `<div class="settings-detail-row"><div><strong>${label(id)}</strong><p>${label(description)}</p></div><select class="field-select" id="${selectId}" aria-label="${label(id)}">${options.map(([v,n])=>`<option value="${esc(v)}"${String(v)===String(current)?" selected":""}>${esc(n)}</option>`).join("")}</select></div>`;
+    const toggle = (id, title, description, checked) => `<label class="settings-toggle-row"><span><strong>${esc(title)}</strong>${description?`<small>${esc(description)}</small>`:""}</span><input type="checkbox" role="switch" id="${esc(id)}"${checked?" checked":""}><span class="settings-switch" aria-hidden="true"></span></label>`;
+    const separator = `<hr class="settings-separator">`;
+    let body = "";
+    if (tab === "appearance") {
+        const previews = {system:icon("theme-system"), light:icon("theme-light"), dark:icon("theme-dark")};
+        body = `<h1>${label("settings.tabAppearance")}</h1>${separator}<fieldset id="setting-theme" class="settings-theme"><legend>${label("settings.theme")}</legend><div class="theme-cards">${["system","light","dark"].map(mode=>`<label class="theme-card">${previews[mode]}<span><input type="radio" name="setting-theme" value="${mode}"${prefs.theme===mode?" checked":""}>${label("settings."+mode)}</span></label>`).join("")}</div></fieldset>${separator}` +
+            row("settings.density","settings.densityDescription","setting-density",[["standard",t("settings.standard")],["compact",t("settings.compact")]],prefs.density) + separator +
+            row("settings.textSize","settings.scaleDescription","setting-text-scale",[[1,"100%"],[1.25,"125%"],[1.5,"150%"]],prefs.textScale);
+    } else if (tab === "general") {
+        body = `<h1>${label("settings.tabGeneral")}</h1>${separator}` +
+            row("sessions.openMode","settings.openDescription","setting-open-mode",[["tabs",t("sessions.tabs")],["windows",t("sessions.windows")]],prefs.openMode) + separator +
+            row("settings.language","settings.languageDescription","setting-language",[["zh-CN",t("language.zhCN")],["en-US",t("language.enUS")]],prefs.language) + separator +
+            toggle("tray-enabled",t("settings.trayLabel"),t("settings.trayDescription"),prefs.tray);
+    } else if (tab === "privacy") {
+        body = `<h1>${label("settings.tabPrivacy")}</h1>${separator}` + toggle("recent-enabled",t("settings.recent"),t("settings.recentDescription"),prefs.recent) + separator +
+            `<div class="settings-detail-row"><div><strong>${label("settings.clearRecent")}</strong><p>${label("settings.clearDescription")}</p></div><button class="button operation-body-button" id="clear-recent">${label("settings.clearRecent")}</button></div><aside class="settings-note"><strong>${label("settings.localTitle")}</strong><p>${label("settings.localDescription")}</p></aside>`;
+    } else if (tab === "associations") {
+        body = `<h1>${label("settings.tabAssociations")}</h1><p>${label("settings.associationDescription")}</p><div class="settings-associations">${[".zip",".tgz",".7z",".cab",".rar",".iso",".tar",".udf",".tar.gz"].map(ext=>toggle("association-"+ext,ext,"",prefs.associations[ext])).join("")}</div><p>${label("settings.associationSystem")}</p>`;
+    } else if (tab === "network") {
+        body = `<h1>${label("settings.tabNetwork")}</h1>${separator}<strong>${label("settings.proxy")}</strong><div class="settings-proxies">${[["none","settings.proxyNone"],["system","settings.proxySystem"],["custom","settings.proxyCustom"]].map(([value,id])=>`<label><input type="radio" name="setting-proxy" value="${value}"${prefs.proxyMode===value?" checked":""}>${label(id)}</label>`).join("")}</div>${prefs.proxyMode==="custom"?`<label class="settings-field">${label("settings.proxyAddress")}<input id="setting-proxy-address" type="text" value="${esc(prefs.proxyAddress)}" placeholder="http://127.0.0.1:7890"></label><p>${label("settings.proxyHint")}</p>`:""}${separator}<strong>${label("settings.mirror")}</strong><p>${label("settings.mirrorDescription")}</p><label class="settings-field">${label("settings.mirrorAddress")}<input id="setting-mirror-address" type="url" value="${esc(prefs.mirrorAddress)}" placeholder="https://mirror.example.com"></label><p>${label("settings.mirrorHint")}</p>`;
+    } else {
+        const version = window.XDZIP_VERSION;
+        body = `<h1>${label("settings.tabAbout")}</h1><div class="settings-about-brand"><span class="about-artwork">${window.XDZIP_ASSETS.brand[document.body.dataset.platform === "macos" ? "applicationMac" : "application"]}</span><div><h2>xdzip</h2><p>${esc(version.display_version)}</p><p>${label("about.description")}</p>${version.channel==="stable"?"":`<p>${label("about.development")}</p>`}</div></div>${separator}<strong>${label("settings.updateTitle")}</strong><section class="about-update-section" id="about-update-section"></section>${separator}<strong>${label("settings.versionTitle")}</strong><div class="settings-version"><span>${label("about.build")}</span><span>${esc(version.build)}</span><span>${label("about.revision")}</span><span>${label("about.unknown")}</span><span>${label("about.runtime")}</span><span>HTML</span></div><p>${label("about.license")}</p><div class="settings-about-actions"><button id="about-homepage" class="button operation-body-button">${label("about.homepage")}</button><button id="about-copy" class="button operation-body-button">${label("about.copy")}</button></div>`;
     }
-    refresh();
-    bindClose();
-    $("#setting-theme").onchange = e => { draft.theme=e.target.value;refresh(); };
-    $("#setting-text-scale").onchange = e => { draft.textScale=Number(e.target.value);refresh(); };
-    $("#setting-language").onchange = e => { draft.language=e.target.value; };
-    $("#setting-density").onchange = e => { draft.density=e.target.value; refresh(); };
-    $("#setting-open-mode").onchange = e => { draft.openMode=e.target.value; };
-    $("#tray-enabled").onchange = e => { draft.tray=e.target.checked; };
-    $("#recent-enabled").onchange = e => { draft.recent=e.target.checked; };
-    $("#clear-recent").onclick = () => { draft.clearRecent=true; refresh(); };
-    $("#settings-defaults").onclick = () => { Object.assign(draft,{theme:"system",textScale:1,language:"zh-CN",density:"standard",recent:true,tray:true,openMode:"tabs",clearRecent:false});refresh(); };
-    $("#settings-save").onclick = () => {
-        const restartNeeded = draft.language !== (savedSettingsDemo?.language || activeSettingsLanguage) && draft.language !== activeSettingsLanguage;
-        savedSettingsDemo={...draft,clearRecent:false};state.recent=draft.recent;settingsPreview=null;closeModal();
-        if (restartNeeded) showRestartConfirmation();
-    };
+    const side = keys.map((key,i)=>`<button type="button" role="tab" id="settings-tab-${key}" aria-selected="${tab===key}" class="settings-nav-item">${icons[i]}<span>${label("settings.tab"+labels[i])}</span></button>`).join("");
+    dialog(header(label("settings.title"),label("settings.subtitle"),"settings-tile") + `<div class="settings-workspace"><nav class="settings-sidebar" role="tablist" aria-label="${label("settings.title")}">${side}</nav><main class="settings-pane" role="tabpanel" aria-labelledby="settings-tab-${tab}" data-tab="${tab}">${body}</main></div>`, "settings", "S01");
+    $("#modal").querySelector(".os-title").textContent = t("settings.title");
+    keys.forEach(key => $("#settings-tab-"+key).onclick = () => showSettings(key));
+    $(".settings-theme")?.addEventListener("change",e=>{ prefs.theme=e.target.value; setTheme(prefs.theme); showSettings(tab); });
+    [["setting-density","density"],["setting-text-scale","textScale"],["setting-open-mode","openMode"],["setting-language","language"]].forEach(([id,key])=>{
+        const input=document.getElementById(id); if(input) input.onchange=()=>{prefs[key]=key==="textScale"?Number(input.value):input.value; showSettings(tab);};
+    });
+    [["tray-enabled","tray"],["recent-enabled","recent"]].forEach(([id,key])=>{const input=document.getElementById(id);if(input)input.onchange=()=>{prefs[key]=input.checked;if(key==="recent")state.recent=input.checked;};});
+    $("#clear-recent")?.addEventListener("click",()=>{ state.recentItems=[]; });
+    $(".settings-associations")?.addEventListener("change",e=>{ if(e.target.id.startsWith("association-"))prefs.associations[e.target.id.slice(12)]=e.target.checked; });
+    $(".settings-proxies")?.addEventListener("change",e=>{prefs.proxyMode=e.target.value;showSettings(tab);});
+    $("#setting-proxy-address")?.addEventListener("change",e=>{prefs.proxyAddress=e.target.value;});
+    $("#setting-mirror-address")?.addEventListener("change",e=>{prefs.mirrorAddress=e.target.value;});
+    if (tab === "about") {
+        const updateSection=$("#about-update-section");
+        window.XdzipAboutUpdatePreview = (options={}) => {
+            const update={state:"idle",trusted:true,canInstall:true,downloaded:false,progress:.42,version:"99.20.12-preview.123",...options};
+            const busy=["checking","downloading","verifying","waiting_tasks","preparing","installing"].includes(update.state);
+            const keys={idle:"idle",checking:"checking",up_to_date:"current",updated:"updated",available:"available",downloading:"downloading",verifying:"verifying",downloaded:"downloaded",waiting_tasks:"waitingTasks",preparing:"preparing",installing:"installing",recovery_required:"recovery",error:"failed",unavailable:"preview"};
+            let message=t("update."+(keys[update.state]||"idle")).replace("%1",update.version);
+            if(update.state==="error")message=t("update."+({network:"network",tls:"tls",timeout:"timeout",rate_limited:"rateLimited",disk:"disk",minimum_system:"minimumSystem",verification_hash:"verificationFailed",authorization_cancelled:"authorizationCancelled",authorization_failed:"authorizationFailed"}[update.errorCode]||"failed"));
+            const progress=["downloading","verifying","preparing"].includes(update.state), install=["available","downloaded"].includes(update.state);
+            updateSection.dataset.state=update.state;
+            updateSection.innerHTML=`<div class="settings-detail-row"><p id="about-update-status" aria-live="polite"${["error","recovery_required"].includes(update.state)?' class="update-error"':""}>${esc(message)}</p><button id="about-check-update" class="button operation-body-button"${busy?" disabled":""}>${label("update.check")}</button></div>${progress?`<progress aria-label="${label("update.progress")}"${update.state==="downloading"?` value="${update.progress}" max="1"`:""}></progress>`:""}${install&&!update.canInstall?`<p>${label(update.trusted?"update.manual":"update.unsigned")}</p>`:""}<div class="settings-about-actions">${busy&&update.state!=="installing"?`<button id="about-cancel-update" class="button operation-body-button">${label("update.cancel")}</button>`:""}${install?`<button id="about-install-update" class="button operation-body-button">${label(update.canInstall?"update.install":update.trusted?"update.download":"update.release")}</button>`:""}${update.state==="recovery_required"?`<button id="about-recovery-update" class="button operation-body-button">${label("update.release")}</button>`:""}${update.downloaded?`<button id="about-open-update" class="button operation-body-button">${label("update.openDownload")}</button>`:""}</div>`;
+            updateSection.querySelectorAll("button").forEach(button=>button.onclick=()=>{$("#about-update-status").textContent=t("update.preview");});
+        };
+        window.XdzipAboutUpdatePreview();
+        $("#about-homepage").onclick=()=>window.open("https://github.com/xiaodaozhi/xdzip","_blank","noopener");
+        $("#about-copy").onclick=async()=>{try{await navigator.clipboard.writeText(JSON.stringify({product:"xdzip",version:window.XDZIP_VERSION.display_version,build:window.XDZIP_VERSION.build,preview:"HTML"},null,2));$("#about-copy").textContent=t("about.copied");}catch{}};
+    }
 }
+
 function confirmationText(id) {
     const language = new URLSearchParams(location.search).get("lang") === "en-US" ? "en-US" : activeSettingsLanguage;
     return window.XDZIP_UI_MESSAGES[language].messages[id];
@@ -1942,7 +1894,10 @@ window.XdzipDesign = {
         } else scenario(view);
         } finally { applyingReviewPreset = false; }
     },
-    theme(value) { restoreSettingsPreview(); setTheme(value); },
+    theme(value) {
+        if (savedSettingsDemo) savedSettingsDemo.theme = value;
+        setTheme(value);
+    },
     platform(value) {
         document.body.dataset.platform = value;
         if (document.body.classList.contains("welcome-mode")) showWelcome();
@@ -1950,6 +1905,7 @@ window.XdzipDesign = {
 };
 window.XdzipControls.configure({ icon });
 function setCanvasLogicalScale(view) {
+    if (view === "about") view = "settings";
     const spec = window.XDZIP_DISPLAY_SPEC;
     for (const key of ["captionButtonWidth", "captionIconSize"])
         document.documentElement.style.setProperty(`--${key}`, spec.windowsCaption[key]);

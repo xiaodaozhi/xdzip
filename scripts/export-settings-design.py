@@ -36,20 +36,34 @@ def main():
             browser = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM'))
             try:
                 for theme in ['light', 'dark']:
-                    page = browser.new_page(viewport=dict(zip(['width', 'height'], spec['authoring_viewport'])),
-                                            device_scale_factor=1)
-                    page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}')
-                    frame = page.frame_locator('iframe')
-                    modal = frame.locator('#modal[data-kind=settings]')
-                    modal.wait_for(state='visible')
-                    frame.locator('#setting-open-mode-trigger').wait_for(state='visible')
-                    page.frames[1].evaluate('document.fonts.ready')
-                    page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
-                    image = output/f'settings-open-mode-{theme}.png'
-                    modal.screenshot(path=str(image))
-                    records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
-                                        bounds=modal.bounding_box(), theme=theme, browser=browser.version))
-                    page.close()
+                    for tab in ['appearance', 'general', 'privacy', 'associations', 'network', 'about']:
+                        page = browser.new_page(viewport=dict(zip(['width', 'height'], spec['authoring_viewport'])),
+                                                device_scale_factor=1)
+                        page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&tab={tab}')
+                        frame = page.frame_locator('iframe')
+                        modal = frame.locator('#modal[data-kind=settings]')
+                        modal.wait_for(state='visible')
+                        frame.locator(f'#settings-tab-{tab}[aria-selected="true"]').wait_for(state='visible')
+                        page.frames[1].evaluate('document.fonts.ready')
+                        page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
+                        image = output/f'settings-{tab}-{theme}.png'
+                        modal.screenshot(path=str(image))
+                        records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                            bounds=modal.bounding_box(), theme=theme, tab=tab, browser=browser.version))
+                        if tab == 'network':
+                            frame.locator('input[name=setting-proxy][value=custom]').check()
+                            frame.locator('#setting-proxy-address').wait_for(state='visible')
+                            image = output/f'settings-network-custom-{theme}.png'
+                            modal.screenshot(path=str(image))
+                            records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                                bounds=modal.bounding_box(), theme=theme, tab='network-custom', browser=browser.version))
+                        if tab == 'about':
+                            frame.locator('.settings-pane').evaluate('(element) => element.scrollTop = element.scrollHeight')
+                            image = output/f'settings-about-details-{theme}.png'
+                            modal.screenshot(path=str(image))
+                            records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                                bounds=modal.bounding_box(), theme=theme, tab='about-details', browser=browser.version))
+                        page.close()
             finally:
                 browser.close()
     finally:
@@ -61,7 +75,7 @@ def main():
     (output/'export.json').write_text(json.dumps(dict(role='code-authored-design', source='design/hifi/sources/settings.html',
         device_pixel_ratio=1, browser_zoom=1, images=records,
         limits='Design exports are not native visual acceptance or independent geometry references.'), indent=2)+'\n')
-    print('Exported light/dark settings artboards with the archive open mode')
+    print('Exported six settings pages in light and dark themes')
 
 
 if __name__ == '__main__': main()

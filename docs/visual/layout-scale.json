@@ -81,6 +81,17 @@
     }
   },
   "operation": {
+    "settings": {
+      "clientHeight": 532,
+      "sidebarWidth": 144,
+      "sidebarRowHeight": 40,
+      "sidebarIconSize": 18,
+      "pageInset": 20,
+      "pageSectionGap": 16,
+      "switchWidth": 38,
+      "switchHeight": 22,
+      "switchThumb": 18
+    },
     "header": {
       "normalHeight": 96,
       "iconSize": 48,

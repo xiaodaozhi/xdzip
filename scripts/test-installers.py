@@ -201,6 +201,7 @@ class InstallerTests(unittest.TestCase):
             self.assertNotIn('auth_admin_keep',policy)
             self.assertIn('/usr/libexec/xdzip-update-helper',policy)
             self.assertIn('pkexec',(stage/'DEBIAN/control').read_text())
+            self.assertIn('xdg-utils',(stage/'DEBIAN/control').read_text())
 
     def test_linux_installer_rejects_stale_or_ambiguous_desktop_commands(self):
         desktop=(ROOT/'apps/desktop/packaging/linux/xdzip.desktop').read_text(encoding='utf-8')

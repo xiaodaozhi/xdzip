@@ -147,7 +147,6 @@ Item {
     }
     function closeWindowDialogs() {
         hideSessionWindows();
-        if (aboutWindow.visible) aboutWindow.close();
         if (settingsWindow.visible) settingsWindow.close();
         if (restartWindow.visible) restartWindow.close();
         if (quitWindow.visible) quitWindow.close();
@@ -162,7 +161,7 @@ Item {
         quitWindow.present();
     }
     function presentAbout() {
-        aboutWindow.present();
+        settingsWindow.configureTab(5);
     }
     readonly property var globalTasks: sessionManager ? (visible ? sessionManager.tasks : []) : reader.tasks
     readonly property var globalTaskModel: sessionManager ? (visible ? sessionManager.taskModel : null) : reader.taskModel
@@ -237,7 +236,7 @@ Item {
             settingsWindow.configure();
             break;
         case "about":
-            aboutWindow.present();
+            settingsWindow.configureTab(5);
             break;
         case "closeArchive":
             if (sessionManager)
@@ -644,15 +643,9 @@ Item {
                 welcomePage.focusCreate();
         }
     }
-    AboutWindow {
-        id: aboutWindow
-        owner: settingsWindow.visible ? settingsWindow : root.windowHost
-    }
     SettingsWindow {
         id: settingsWindow
         owner: root.windowHost
-        onAboutRequested: root.sessionManager ? root.sessionManager.showAboutFor(root) : root.presentAbout()
-        onRestartConfirmationRequested: restartWindow.present()
     }
     RestartWindow {
         id: restartWindow

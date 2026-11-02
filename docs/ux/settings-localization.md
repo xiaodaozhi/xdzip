@@ -1,31 +1,17 @@
 # 设置窗口与界面语言
 
-新增 `desktop/openMode=tabs|windows`，默认 tabs，保存后影响后续所有打开入口及标题栏加号，取消不生效，不调整已打开会话。单例设置入口避免多份可见草稿，见[应用会话契约](../engineering/application-sessions.md)。
+设置使用非模态独立系统窗口，标题栏、应用菜单和托盘复用同一个可见窗口。左侧依次为外观、通用、隐私、文件关联、网络和关于；所有关于入口打开同一设置窗口的关于页。窗口逻辑宽度为 612，客户区高度为 532，屏幕空间不足时限制高度，侧栏和正文分别滚动。侧栏与正文相接，顶部不留额外空隙。窗口没有 footer、保存或取消按钮。设计源和各状态图见[设置设计](../../design/hifi/sources/settings.html)，尺寸令牌见[布局规范](../visual/layout-scale.json)。
 
-共享 OperationSelect 的鼠标选项与菜单内 Enter／Space 确认均更新 currentIndex 并发出一次 activated(index)，与收起状态的原生键盘选择保持相同语义，调用方据此提交设置草稿。仅移动菜单高亮、Escape 取消及程序同步索引不发出该信号。打开方式验收必须实际操作下拉菜单，检查保存后的会话路由、重开设置与跨进程恢复，不能仅通过直接改写草稿验证。
+主题、字号、列表密度、语言、打开方式、托盘和最近记录开关在操作时写入并生效；关闭窗口不会撤销已成功的更改。语言即时刷新产品文字和应用菜单，运行中的任务不受影响。打开方式影响后续所有打开入口和标题栏加号，不迁移已打开的会话。清空最近记录立即执行，不删除原文件。清空失败与设置写入失败均在页面显示错误，保留既有数据和实际设置。多选框基于 IntentCheckBox，主题和代理单选基于 IntentRadioButton；鼠标、键盘及原生辅助功能 press/toggle 必须提交同一个选择意图，并核对模型，不得只更改图形。下拉框继续使用 OperationSelect，选择确定后提交一次。
 
-当前设置高保真包含[浅色打开方式修订](../../design/hifi/screens/settings-open-mode-light.png)和[深色修订](../../design/hifi/screens/settings-open-mode-dark.png)，保留原宽度、共享控件与滚动正文规则，历史几何量测图不覆盖。
+设置持久化使用 schema 1，保留未知键，包含网络代理和镜像地址，不存放密码。保存持有独立配置锁，先在同目录暂存完整 INI，原子更新备份及主文件。读取失败、超过 1 MiB、非法或更高 schema、符号链接、备份或提交失败均拒绝覆盖原文件。设置应用失败时恢复运行中状态。最近路径独立保存在同目录 recent.json，最多 20 条、去重并限制读取为 64 KiB，文件仅用户可读写；关闭记录开关停止新增，清空入口删除已有记录。
 
-主题卡片与创建格式分段复用基于 Qt RadioButton 的 IntentRadioButton，鼠标、键盘及原生辅助功能 press/toggle 动作均提交同一选择意图；checked 只反映草稿或 currentIndex，不由平台适配器独立翻转。原生控件与辅助功能的 checkable 状态须一致，避免客户端晚启用时覆盖声明状态。重复激活已选项仍保持选中，禁用项不改变选择。HTML 的互斥单选行为保持不变，Qt 验收同时检查真实主题和格式扩展名，不以勾选图形自证选择成功。
+文件关联显示系统当前默认应用。macOS 通过系统默认应用接口请求更改，取消或失败后重新查询，不假定用户已同意；关闭关联时由用户选择其他应用。开发副本不注册可选处理器，故不提供修改。Windows 打开系统的默认应用设置，由用户确认选择，不写入受保护的 UserChoice。Linux 使用桌面环境的 MIME 设置，关闭时由用户选择已安装的其他桌面应用。`.tar.gz` 与 `.tgz` 可共享同一系统类型，关联变化可能同时影响两项；Windows 按最终 `.gz` 扩展名关联。系统拒绝、未安装或用户取消时，界面以实际查询结果为准。安装和卸载本身仍不擅自修改默认选择，详见[安装与关联](../engineering/installers-associations.md)。
 
-复选控件复用 IntentCheckBox，将原生辅助功能 press/toggle 路由到受 enabled 约束的原生 click，保留 nextCheckState、toggled 和 clicked 的统一语义。设置开关须提供完整可读名称，文件列表勾选须同步选择模型和全选三态，不允许只改 checked 外观。
+网络提供不使用代理、系统代理、自定义 HTTP 或 SOCKS5 代理，及可选 HTTPS GitHub 镜像地址。自定义代理必须包含主机和端口，不接收凭据；地址输入完成并验证后保存。镜像为空时直接访问官方地址；非空时仅改变更新流量的传输地址，校验和签名边界不变。进行中的更新保持原网络配置，下一次更新操作使用新配置。macOS Sparkle 只能使用系统代理，选择其他代理时提供经过验证的手动下载，不声称自动安装使用了该代理。完整信任和重定向策略见[软件更新](../engineering/software-update.md)。
 
-设置使用独立非模态系统窗口，主标题栏和更多菜单均进入同一窗口，支持平台标准设置快捷键。使用既有 OperationWindow、OperationFrame、OperationSelect、主题卡片和共享 footer 按钮；逻辑宽度 612，正文按内容增长，最高为可用屏幕高度减 80，超出时滚动。正文末尾保留 settingsContentInset 指定的 24 逻辑像素底部留白，滚动到底时不贴靠 footer。正文 13、说明 12、标题 20，辅助字号可增高。
+所有产品静态文字通过 `resources/i18n/zh-CN.json` 和 `en-US.json` 的稳定 ID 引用；QML 使用 `qsTrId`，C++ 使用 `qtTrId`。协议码、文件名、路径和用户内容不翻译。语言默认简体中文，支持 English (US)；字号支持 100%、125%、150%，历史 200% 读取为 150%。系统文件选择器遵循系统语言，独立于应用语言。macOS 包声明 zh-Hans、en 并允许混合本地化，Qt 标准控件按系统 locale 加载可用翻译，不修改用户的 AppleLanguages。
 
-English: The scrollable settings body retains the 24-unit settingsContentInset below its last visible content, including when scrolled to the bottom.
+验收覆盖六个标签、无 footer、各入口及跨会话关于页、即时保存与重开、保存失败回滚、语言即时切换、主题和字号、九类关联的系统确认与刷新、代理与镜像输入、更新各状态、两种语言及 150% 字号。必须通过 QAccessibleActionInterface 实际操作单选和开关，检查模型、互斥及事件；HTML 与组件测试不替代各平台真实桌面和系统默认应用的人工验收。测试截图和证据仅写 build/ 或 CI 工件。
 
-保留原 HTML 设置的图标标题、三张带插画的主题单选卡片、列表密度、最近记录与隐私区域，在原布局中增加文字大小和语言行。本次实际支持主题（跟随系统、浅色、深色）、文字大小（100%、125%、150%）和语言（中文 (简体)、English (US)）。列表密度提供标准和紧凑两档，仅改变压缩包表格行高，不缩小字号。最近记录仅在本机保存，可关闭；清空操作先标记“保存后清空”，点击“完成”才执行，不删除压缩包。外观、字号和密度即时预览；点击“完成”后持久化，取消或系统关闭恢复保存值，恢复默认仅修改草稿。语言保存后下次启动生效，运行中的任务保持同一界面语言。修改语言且新值与当前运行语言不同时，成功保存并关闭设置后，弹出应用模态确认“是否要重启应用使设置生效？”，提供“稍后”和“现在重启”。稍后、Escape 或关闭确认窗口均保留已保存设置；取消设置、保存失败、未修改语言或改回当前运行语言不弹出。现在重启沿用现有任务退出决策和后台 join 屏障，用户取消任务退出则取消重启；安全关闭完成后重新启动同一个可执行文件，不重放打开文件或诊断参数。HTML 仅演示确认与启动边界，不启动真实进程。
-
-配置通过 Qt 设置适配器写入应用配置目录，schema 为 1，不包含压缩包内容、路径或密码。最近路径独立保存在同目录 recent.json，最多 20 条、去重并限制读取为 64 KiB，仅成功打开时记录，文件仅用户可读写。关闭记录开关停止新增，已有记录由清空入口删除。无效值恢复默认，读取或写入失败有非阻塞说明；保存失败保留窗口及草稿。设置保存与记录清理是两个本地文件操作；若设置已保存但记录清理失败，保留窗口并提示写入错误，允许重试。首次默认简体中文，未知语言回退简体中文。文件备份仅用于迁移或恢复，不改变核心任务策略。
-
-保存持有独立配置锁，不等待另一个写入者；先在同目录临时目录中准备完整 INI，保留 schema 1 的未知键。超过 1 MiB、无法读取、非法或较新 schema 的配置拒绝覆盖；不删除较新配置或最近记录。原始文件先通过 QSaveFile 原子更新 .bak，再原子替换主配置，禁止直接写入回退；备份或提交失败保留原文件及草稿。配置与备份的符号链接拒绝写入。中断最多留下可忽略的暂存目录，不将半写入 INI 作为成功保存。该策略保护当前及后续程序，不能让已发布旧二进制获得新的保护能力。
-
-所有产品可见静态文案从 QML/C++ 逻辑提取到 resources/i18n/zh-CN.json 和 en-US.json，以稳定 ID 引用。Qt 翻译适配器读取资源，QML 使用 qsTrId，薄 C++ 使用 qtTrId；协议码、压缩包文件名、路径和用户内容不翻译。占位参数及复数形式保持语言资源一致，数字、时间和字节按界面 locale 格式化。HTML 同步设置设计与语言选择，演示边界仍需明确。
-
-验收包括两份目录的 ID/占位符完整性、无散落的产品静态中文、真实设置入口、预览回滚、保存和跨进程重启恢复、英文主界面及操作窗口、150% 字号和历史 200% 配置迁移、焦点规则和 macOS 标题栏。自动化证据只存 build/ 或 dist/，桌面人工与辅助功能验收另行登记。
-
-下拉菜单按全部选项的实际字体宽度加勾选列与内边距量测，右边缘对齐触发按钮，向左扩展。最小宽度为按钮宽度，扩展宽度上限为 360 逻辑像素，按钮本身更宽时沿用按钮宽度，并受当前窗口可用宽度约束；超长项省略显示。共享 footer 的动作始终横向排列，提示文字在宽度不足时单独占上一行，不因字号阈值把按钮改为纵向。设置仅提供 100%、125%、150%；历史 200% 配置读取为 150%，下次保存写入新值，其他已保存设置保留。
-
-系统文件和文件夹选择器遵循系统语言，独立于应用自身的语言选择。macOS 包显式声明 zh-Hans、en，并允许系统框架混合本地化；应用提供的对话框标题和过滤说明读取系统语言资源，Qt 标准控件按系统 locale 加载 SDK 的 qtbase 翻译，缺失时加载 windeployqt 合并生成的 qt 翻译。未覆盖的系统原生文案交由平台框架提供，不修改用户的 AppleLanguages。原理见 [Qt macOS 国际化说明](https://doc.qt.io/qt-6.8/macos-issues.html#internationalization)。
-
-桌面集成增加 `desktop/trayEnabled`，默认 true，保存后立即生效。关闭托盘前恢复隐藏窗口，取消设置不改变开关，详见[系统菜单与托盘](desktop-integration.md)。schema 保持 1，旧版可保留未知字段。
+English: The modeless 612 by 532 settings window contains Appearance, General, Privacy, File Associations, Network, and About tabs. Changes are applied and persisted on selection, with errors preserving the previous state. About and updates share this window. File associations reflect the operating system and require its confirmation where applicable. HTTP/SOCKS5 proxy and optional HTTPS GitHub mirror affect update transport only; signatures and verification remain mandatory. Existing transfers keep their configuration until completion. macOS non-system proxies use a verified manual download. Automated checks do not replace native desktop and accessibility acceptance.

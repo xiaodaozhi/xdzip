@@ -389,9 +389,10 @@ int main(int argc, char **argv) {
     };
     setMacUpdateCommitCallback(&guard, [&] { facade.releaseCommittedQuitGuard(); });
     QObject::connect(&updates, &UpdateController::quitForUpdate, &application, &QApplication::quit);
-    QQmlComponent component(&engine, QUrl("qrc:/xdzip/ui/AboutWindow.qml"));
+    QQmlComponent component(&engine, QUrl("qrc:/xdzip/ui/SettingsWindow.qml"));
     std::unique_ptr<QObject> aboutObject(component.createWithInitialProperties(
-        {{"owner", QVariant::fromValue(window)}, {"updater", QVariant::fromValue(&facade)}}));
+        {{"owner", QVariant::fromValue(window)}, {"updater", QVariant::fromValue(&facade)},
+         {"currentTab", 5}}));
     auto *about = qobject_cast<QQuickWindow *>(aboutObject.get());
     if (!about)
         return 67;

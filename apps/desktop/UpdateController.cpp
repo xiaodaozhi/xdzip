@@ -5,6 +5,7 @@
 #include "BuildInfo.h"
 #include "UiText.h"
 #include "UpdateHandoff.h"
+#include "UpdateNetwork.h"
 #include "xdzip-qt-bridge/src/update.rs.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
@@ -15,6 +16,8 @@
 #include <QFileInfo>
 #include <QJsonDocument>
 #include <QNetworkReply>
+#include <QNetworkProxy>
+#include <QNetworkProxyFactory>
 #include <QNetworkRequest>
 #include <QOperatingSystemVersion>
 #include <QSettings>
@@ -30,6 +33,22 @@ namespace {
 constexpr qsizetype listLimit = 8 * 1024 * 1024;
 constexpr qsizetype manifestLimit = 256 * 1024;
 constexpr qint64 packageLimit = 2LL * 1024 * 1024 * 1024;
+class UpdateProxyFactory final : public QNetworkProxyFactory {
+  public:
+    UpdateProxyFactory(QString mode, QString address) : m_mode(std::move(mode)), m_address(std::move(address)) {}
+    QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query) override {
+        if (m_mode == "system")
+            return QNetworkProxyFactory::systemProxyForQuery(query);
+        if (m_mode == "none")
+            return {QNetworkProxy(QNetworkProxy::NoProxy)};
+        const QUrl url(m_address, QUrl::StrictMode);
+        const auto type = url.scheme() == "socks5" ? QNetworkProxy::Socks5Proxy : QNetworkProxy::HttpProxy;
+        return {QNetworkProxy(type, url.host(), quint16(url.port()))};
+    }
+  private:
+    QString m_mode;
+    QString m_address;
+};
 QString fromRust(const rust::String &value) {
     return QString::fromUtf8(value.data(), qsizetype(value.size()));
 }
@@ -124,6 +143,29 @@ void UpdateController::setSessions(ApplicationSessions *sessions) {
     connect(sessions, &ApplicationSessions::readyForUpdate, this,
             &UpdateController::finishPreparation);
 }
+void UpdateController::configureNetwork(const QString &mode, const QString &proxy,
+                                        const QString &mirror) {
+    if ((mode != "none" && mode != "system" && mode != "custom") ||
+        (!proxy.isEmpty() && !UpdateNetwork::validProxy(proxy)) ||
+        (mode == "custom" && !UpdateNetwork::validProxy(proxy)) ||
+        !UpdateNetwork::validMirror(mirror))
+        return;
+    m_networkConfigured = true;
+    m_proxyMode = mode;
+    m_proxyAddress = proxy;
+    m_mirrorAddress = mirror;
+    if (!busy()) {
+        applyNetworkConfiguration();
+        emit changed();
+    }
+}
+void UpdateController::applyNetworkConfiguration() {
+    if (!m_networkConfigured)
+        return;
+    m_activeProxyMode = m_proxyMode;
+    m_activeMirror = m_mirrorAddress;
+    m_network->setProxyFactory(new UpdateProxyFactory(m_proxyMode, m_proxyAddress));
+}
 bool UpdateController::busy() const {
     return m_state == "checking" || m_state == "downloading" || m_state == "verifying" ||
            m_state == "waiting_tasks" || m_state == "preparing" || m_state == "installing";
@@ -180,7 +222,9 @@ QString UpdateController::packageType() const {
 }
 bool UpdateController::canInstall() const {
     return m_trusted && !installedRoot().isEmpty() && m_sessions &&
-           (platform() != "macos" || !m_candidate.value("appcast_url").toString().isEmpty());
+           (platform() != "macos" ||
+            (!m_candidate.value("appcast_url").toString().isEmpty() &&
+             m_activeProxyMode == "system"));
 }
 QString UpdateController::installReason() const {
     if (!m_trusted)
@@ -191,11 +235,16 @@ QString UpdateController::installReason() const {
         return QStringLiteral("preview");
     if (platform() == "macos" && m_candidate.value("appcast_url").toString().isEmpty())
         return QStringLiteral("manual_install");
+    if (platform() == "macos" && m_activeProxyMode != "system")
+        return QStringLiteral("manual_install");
     return {};
 }
 void UpdateController::setState(const QString &state, const QString &error) {
+    const bool wasBusy = busy();
     m_state = state;
     m_error = error;
+    if (wasBusy && !busy())
+        applyNetworkConfiguration();
     emit changed();
 }
 bool UpdateController::allowedUrl(const QUrl &url) {
@@ -213,14 +262,19 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
         callback({}, "invalid_url");
         return;
     }
-    QNetworkRequest request(url);
+    const auto requestUrl = UpdateNetwork::mapped(url, m_activeMirror);
+    if (!m_activeMirror.isEmpty() && !UpdateNetwork::isMirrorUrl(requestUrl, m_activeMirror)) {
+        callback({}, "invalid_url");
+        return;
+    }
+    QNetworkRequest request(requestUrl);
     request.setRawHeader("User-Agent", "xdzip/" + BuildInfo::version().toUtf8());
     request.setRawHeader("Accept", "application/vnd.github+json");
     request.setTransferTimeout(15000);
     request.setMaximumRedirectsAllowed(5);
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::UserVerifiedRedirectPolicy);
-    const auto cacheKey = url.toString();
+    const auto cacheKey = requestUrl.toString();
     if (m_cache.contains(cacheKey))
         request.setRawHeader("If-None-Match", m_cache[cacheKey].etag);
     auto *reply = m_network->get(request);
@@ -235,8 +289,9 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
             reply->abort();
         }
     });
-    connect(reply, &QNetworkReply::redirected, reply, [reply](const QUrl &target) {
-        if (allowedUrl(target))
+    const auto activeMirror = m_activeMirror;
+    connect(reply, &QNetworkReply::redirected, reply, [reply, activeMirror](const QUrl &target) {
+        if (allowedUrl(target) || UpdateNetwork::isMirrorUrl(target, activeMirror))
             reply->redirectAllowed();
         else
             reply->abort();
@@ -293,6 +348,7 @@ void UpdateController::fetch(const QUrl &url, qsizetype limit, FetchCallback cal
 void UpdateController::check() {
     if (busy())
         return;
+    applyNetworkConfiguration();
     ++m_generation;
     m_candidate = {};
     m_manifest.clear();
@@ -489,6 +545,7 @@ void UpdateController::beginDownload(bool install) {
         openReleasePage();
         return;
     }
+    applyNetworkConfiguration();
     m_installAfterDownload = install;
 #ifdef Q_OS_MACOS
     if (install) {
@@ -506,7 +563,16 @@ void UpdateController::beginDownload(bool install) {
         setState("error", "disk");
         return;
     }
-    QNetworkRequest request(QUrl(m_candidate.value("asset_url").toString()));
+    const QUrl originalUrl(m_candidate.value("asset_url").toString());
+    const auto downloadUrl = UpdateNetwork::mapped(originalUrl, m_activeMirror);
+    if (!allowedUrl(originalUrl) ||
+        (!m_activeMirror.isEmpty() && !UpdateNetwork::isMirrorUrl(downloadUrl, m_activeMirror))) {
+        m_output->cancelWriting();
+        m_output.reset();
+        setState("error", "invalid_url");
+        return;
+    }
+    QNetworkRequest request(downloadUrl);
     request.setRawHeader("User-Agent", "xdzip/" + BuildInfo::version().toUtf8());
     request.setTransferTimeout(30000);
     request.setMaximumRedirectsAllowed(5);
@@ -527,8 +593,9 @@ void UpdateController::beginDownload(bool install) {
     });
     m_progress = 0;
     setState("downloading");
-    connect(reply, &QNetworkReply::redirected, reply, [reply](const QUrl &target) {
-        if (allowedUrl(target))
+    const auto activeMirror = m_activeMirror;
+    connect(reply, &QNetworkReply::redirected, reply, [reply, activeMirror](const QUrl &target) {
+        if (allowedUrl(target) || UpdateNetwork::isMirrorUrl(target, activeMirror))
             reply->redirectAllowed();
         else
             reply->abort();
@@ -606,6 +673,7 @@ void UpdateController::startInstallation() {
     m_waitTasks.stop();
 #ifdef Q_OS_MACOS
     setState("preparing");
+    m_candidate.insert("transport_mirror", m_activeMirror);
     startMacUpdate(this, m_candidate, [this](QString error) {
         if (!error.isEmpty()) {
             setState("error", error);

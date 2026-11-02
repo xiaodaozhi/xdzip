@@ -33,7 +33,7 @@
 | [重名冲突](screens/conflict.png) | E02 等待决策 |
 | [任务进度](screens/progress.png) | T01 执行中 |
 | [部分失败](screens/partial-result.png) | R01 部分未完成 |
-| [设置](sources/settings.html) | S01 主题、文字大小、打开方式与界面语言，当前修订 |
+| [设置](sources/settings.html) | S01 六个标签页，外观、通用、隐私、文件关联、网络与关于 |
 | [任务状态](screens/task-states.png) | 成功 / 正在停止 / 已取消 |
 | [完整性检查进度](screens/integrity-progress.png) | 复用任务进度布局，只读对象、读取速度与校验阶段 |
 | [创建覆盖确认](screens/create-overwrite.png) | C02 覆盖准入 |
@@ -80,9 +80,7 @@
 
 欢迎页标题栏修订见 screens/welcome-titlebar-*.png，原有 welcome-*.png 与 sources/welcome-initial.html 保留历史。修订只设计正文，标题栏与主窗口共用，不再另设品牌、标签或按钮几何。
 
-S01 当前设置窗口修订见[主题、文字与语言设计源](sources/settings.html)，逻辑参数见[设置参数](../../docs/visual/settings-reference.json)，保存／取消与重启生效见[设置契约](../../docs/ux/settings-localization.md)。[历史 settings.png](screens/settings.png) 保留原图和哈希，不再定义当前设置功能范围。
-
-会话模式修订的[浅色图稿](screens/settings-open-mode-light.png)与[深色图稿](screens/settings-open-mode-dark.png)增加“在新标签页打开／在新窗口打开”，默认新标签页。可编辑源与正式 HTML 共用设置布局；正文超出可用高度时滚动，footer 保持可达。运行 `python scripts/export-settings-design.py --write-design` 导出，再显式更新 catalog 哈希与画廊。导出日志仅写入 build，不是原生视觉验收。settings-current 图稿和 settings-reference 的历史几何依据保持字节与哈希不变。
+S01 当前设置窗口的[可编辑设计源](sources/settings.html)包含外观、通用、隐私、文件关联、网络和关于六页。各页提供浅色与深色图稿；网络另有自定义代理状态，关于页另有滚动后的版本信息和许可状态。窗口不设底部 footer，设置在操作后生效。[设置契约](../../docs/ux/settings-localization.md)说明各平台行为和失败处理。运行 `python scripts/export-settings-design.py --write-design` 可导出图稿，再更新 catalog 哈希和画廊。原始 settings-current 图及量测参数保留为历史依据，不作为当前设置布局。
 
 P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色](screens/preflight-body-note-light.png)、[深色](screens/preflight-body-note-dark.png)，参数见 [preflight-reference.json](../../docs/visual/preflight-reference.json)。客户区 491 逻辑像素宽，按内容自适应，最高 600，使用共享操作 footer。
 
@@ -96,7 +94,7 @@ P01 解压元数据预检修订：[设计源](sources/preflight.html)、[浅色]
 
 欢迎页新增 [正在打开的浮动遮罩](sources/welcome.html?opening=1)，与 Qt、HTML 共用 [参数和交互契约](../../docs/ux/welcome-opening.md)，支持浅深色，保留原有标题栏。
 
-当前新增设计：[A01 关于 xdzip](about.html)，统一版本信息、开发状态与复制操作。参数来自 [about-reference.json](../../docs/visual/about-reference.json)，不覆盖历史原稿。
+关于信息和软件更新已合并到[设置的关于页](sources/settings.html?tab=about)。
 
 [系统菜单与托盘，D01](sources/desktop-integration.html)：原生菜单结构、关闭驻留及恢复交互，实际装饰由系统绘制。
 

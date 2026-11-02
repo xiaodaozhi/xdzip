@@ -6,7 +6,11 @@
 
 客户端只读取固定仓库 `xiaodaozhi/xdzip` 的公开 [Releases API](https://docs.github.com/en/rest/releases/releases)，不使用凭据，不上传文件名、归档内容、密码、最近记录或设置。GitHub 与其下载 CDN 会收到网络连接信息及包含应用版本的 User-Agent。点击发布页或下载目录使用系统打开接口。
 
-每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。
+每页最多 100 条，最多 10 页，每次响应最多 8 MiB，清单最多 256 KiB，签名最多 4 KiB。原始请求只允许 HTTPS 和明确登记的 GitHub/CDN 主机；用户配置镜像时传输地址允许该 HTTPS 镜像站点，重定向最多 5 次；元数据有 15 秒无数据超时和 30 秒总上限，下载有 30 秒无数据超时及一小时总上限。内存 ETag 缓存最多 24 项，304 只复用先前成功响应。离线、TLS、超时、限流、截断、缺包和清单错误均为失败，不等同于“已是最新”。重复点击不发起并行更新。
+
+更新使用设置中的系统代理、直连或自定义 HTTP/SOCKS5 代理，地址不含凭据。可选镜像必须是 HTTPS，且不含凭据、查询或片段；构造方式为镜像地址后拼接完整原始 GitHub HTTPS 地址。原始 URL 仍需通过固定主机白名单，镜像和重定向不会改变已签名清单的内容、校验、候选身份或安装门。配置在当前更新操作结束后用于下一次操作。macOS Sparkle 原生更新使用系统代理；选择直连或自定义代理时退化为经 Qt 下载和手动安装，避免自动安装绕过代理设置。
+
+Update transport supports system, direct, or custom HTTP/SOCKS5 proxy settings and an optional HTTPS mirror. The mirror receives the complete original GitHub HTTPS URL after its base address. Original URL validation, authenticated manifests, package verification, and installation gates remain in force. A running operation keeps its transport settings. Sparkle uses the system proxy; other modes offer a verified manual download.
 
 HTTP 429 表示限流。HTTP 403 只有在剩余额度为零、有效秒数的 Retry-After，或 GitHub JSON 错误消息明确表示限流时才归为限流；其他 403 保留为网络失败，不推断配额耗尽。产品不自动重试，也不读取 GitHub 凭据。匿名额度按请求源 IP 共享，CI 的仓库读取权限不能改变匿名请求额度。
 
@@ -38,7 +42,7 @@ On macOS, completing every Rust join is necessary but does not itself commit ins
 
 Sparkle 的取消回复在异步更新周期中处理，周期结束不等同于独立安装进程已经退出。未提交安装时，普通退出路径先请求取消，等待周期结束，再通过系统 `/bin/ps` 只读观察与本应用框架路径精确匹配的 Autoupdate 进程，确认其结束后才释放退出拦截。准备完成时先记录匹配的安装进程，观察失败不当作退出许可，不终止安装助手，也不记录无关进程信息。准备失败后的重试同样等待旧安装助手结束，不能替换尚未完成退出观察的更新驱动。已经提交的安装由 Sparkle 按原生流程退出和重启。
 
-Windows/Linux 的事务使用随机 ID 和固定名称的 ready/proceed/cancel/result 文件。客户端在退出前把事务、目标身份和缓存目录保存到设置旁独立 `update-state.ini`，不混入设置草稿。助手先原子写成功结果，再释放门和重启。下次启动限制回执路径与大小，核对事务及当前版本/build/安装身份；失败、缺回执或身份不符显示恢复入口，不自动重试安装。恢复记录缺少有效候选地址时仍可打开固定的官方发布列表。缓存材料保留供用户修复，公开证据不得含私人完整路径。
+Windows/Linux 的事务使用随机 ID 和固定名称的 ready/proceed/cancel/result 文件。客户端在退出前把事务、目标身份和缓存目录保存到设置旁独立 `update-state.ini`，不混入设置配置。助手先原子写成功结果，再释放门和重启。下次启动限制回执路径与大小，核对事务及当前版本/build/安装身份；失败、缺回执或身份不符显示恢复入口，不自动重试安装。恢复记录缺少有效候选地址时仍可打开固定的官方发布列表。缓存材料保留供用户修复，公开证据不得含私人完整路径。
 
 macOS 在释放 Sparkle 安装前保存目标版本/build 的本地尝试记录。重开时以实际运行身份和可靠安装标记判断完成或需要恢复；此记录不赋予安装权限，也不代替 Sparkle 验签。
 
