@@ -5755,6 +5755,119 @@ QtObject {
     void cleanup() {
         QTRY_COMPARE_WITH_TIMEOUT(RuntimeReceiver::activeReceivers(), 0, 5000);
     }
+    void tabCloseTracksWelcomeAndSessionState_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("scale");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
+                                             QString::number(scale)))
+                        << language << dark << scale;
+    }
+    void tabCloseTracksWelcomeAndSessionState() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const bool accessibilityWasActive = QAccessible::isActive();
+        QAccessible::setActive(true);
+        const auto restoreAccessibility =
+            qScopeGuard([&] { QAccessible::setActive(accessibilityWasActive); });
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto activeClose = [window]() -> QQuickItem * {
+            auto *page =
+                qobject_cast<QQuickItem *>(window->property("activePage").value<QObject *>());
+            auto *tab = page ? findVisual(page, "activeArchiveTab") : nullptr;
+            return tab ? findVisual(tab, "archiveTabClose") : nullptr;
+        };
+        QQuickItem *close = nullptr;
+        QTRY_VERIFY((close = activeClose()));
+        QTRY_VERIFY(!close->isVisible());
+        QVERIFY(!close->isEnabled());
+        QCOMPARE(close->property("focusPolicy").toInt(), int(Qt::NoFocus));
+        for (int i = 0; i < 6; ++i) {
+            QTest::keyClick(window, Qt::Key_Tab);
+            QVERIFY(!close->hasActiveFocus());
+        }
+        auto *hiddenAccessible = QAccessible::queryAccessibleInterface(close);
+        QVERIFY(hiddenAccessible && hiddenAccessible->state().invisible);
+        const auto captures = qEnvironmentVariable("XDZIP_TAB_CLOSE_AUDIT");
+        if (!captures.isEmpty()) {
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("welcome-") + QTest::currentDataTag()));
+        }
+
+        sessions.newSession();
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 2);
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        auto *visibleAccessible = QAccessible::queryAccessibleInterface(close);
+        QVERIFY(visibleAccessible && visibleAccessible->actionInterface());
+        visibleAccessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        QTRY_VERIFY((close = activeClose()) && !close->isVisible());
+
+        auto *page = window->property("activePage").value<QObject *>();
+        auto *controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        sessions.openPath(QStringLiteral(XDZIP_M2_FIXTURE));
+        QVERIFY(controller->browsingBusy());
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        controller->cancel();
+        QTRY_VERIFY_WITH_TIMEOUT(!controller->busy(), 20000);
+        if (controller->ready()) {
+            const auto identity =
+                window->property("sessionTabs").toList().first().toMap().value("id").toString();
+            sessions.closeSession(identity);
+            QTRY_VERIFY(window->property("welcomeVisible").toBool());
+            QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        }
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        page = window->property("activePage").value<QObject *>();
+        controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        QTRY_VERIFY_WITH_TIMEOUT(controller->ready() && !controller->busy(), 10000);
+        QCOMPARE(controller->title(), QStringLiteral("normal.zip"));
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        if (!captures.isEmpty()) {
+            moveTestPointer(
+                window,
+                close->mapToScene(QPointF(close->width() / 2, close->height() / 2)).toPoint());
+            QTRY_VERIFY(close->property("hovered").toBool());
+            QVERIFY(visual_audit::save(window, captures,
+                                       QStringLiteral("close-hover-") + QTest::currentDataTag()));
+        }
+        close->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(close->hasActiveFocus());
+        QTest::keyClick(window, Qt::Key_Space);
+        QTRY_VERIFY(window->property("welcomeVisible").toBool());
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        QTRY_VERIFY((close = activeClose()) && !close->isVisible());
+
+        page = window->property("activePage").value<QObject *>();
+        controller = page->findChild<BrowserController *>();
+        QVERIFY(controller);
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(!controller->ready() && !controller->message().isEmpty());
+        QTRY_VERIFY((close = activeClose()) && close->isVisible());
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void createOptionsLayoutSettles_data() {
         QTest::addColumn<QString>("language");
         QTest::addColumn<double>("scale");

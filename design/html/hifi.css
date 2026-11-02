@@ -123,12 +123,12 @@ body { min-width:1586px; font-size:18px; background:var(--canvas); }
 .tab-close {
     display:flex;
     width:28px;
-    height:32px;
+    height:28px;
     padding:0;
     align-items:center;
     justify-content:center;
     color:var(--secondary);
-    border-radius:5px;
+    border-radius:50%;
     line-height:0;
 }
 .tab-close [data-icon],.header-icon [data-icon] {
