@@ -1,37 +1,36 @@
-# .github/workflows/windows-native-visual.yml
-
-name: Windows native visual diagnostic
+name: Temporary Windows graphics distribution diagnostic
 on:
   workflow_dispatch:
-    inputs:
-      focused_failures:
-        description: Diagnose gallery hover and mixed directory geometry only, not full visual acceptance
-        type: boolean
-        required: false
-        default: false
 permissions:
   contents: read
-concurrency:
-  group: windows-native-visual-${{ github.ref }}
-  cancel-in-progress: false
 jobs:
-  native-visual:
+  graphics:
     runs-on: windows-2022
-    timeout-minutes: 35
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [d3d11, d3d12]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Build and sample the owned native Windows client
+      - name: Download the immutable public alpha.8 Windows portable package
         shell: pwsh
-        run: ./scripts/ci-windows-native-visual.ps1 -FocusedFailures:('${{ inputs.focused_failures }}' -eq 'true')
-      - name: Preserve diagnostic evidence even when desktop capture is blocked
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          New-Item -ItemType Directory -Force 'build/release-input' | Out-Null
+          gh release download v0.1.0-alpha.8 --repo xiaodaozhi/xdzip --pattern 'xdzip-0.1.0-alpha.8-windows-x86_64.zip' --dir 'build/release-input'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compare release copy with and without graphics DLLs
+        shell: pwsh
+        run: python scripts/windows-graphics-release-diagnostic.py --backend '${{ matrix.backend }}'
+      - name: Retain bounded diagnostic records
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ inputs.focused_failures && 'windows-native-failures' || 'windows-native-visual' }}-${{ github.sha }}
+          name: windows-graphics-${{ matrix.backend }}-${{ github.run_id }}
           path: |
-            build/windows-native-visual/
-            !build/windows-native-visual/private-temp/**
-            build/native-visual-desktop/desktop-build.json
-            build/native-visual-desktop/Testing/Temporary/LastTest.log
+            build/issue135-graphics-${{ matrix.backend }}/review.json
+            build/issue135-graphics-${{ matrix.backend }}/*/probe.log
           if-no-files-found: warn
           retention-days: 14
