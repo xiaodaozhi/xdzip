@@ -24,7 +24,7 @@ Windows 的 Community 免费路径、托管 Enterprise 的独立依据和再分�
 
 平台 materials 附件必须包含归属报告 `license_materials_base` 引用的目录，逐个复核许可原文哈希后再打包；不能仅因运行目录中另有相同原文，就交付指向缺失相对目录的报告。
 
-Windows 部署禁用 windeployqt 对软件 OpenGL、D3D 编译器和 DXC 的环境搜索，从当前显式选择的 Windows SDK `Redist/D3D/x64` 复制三个库。缺少 SDK 版本、许可或所需 DLL 时失败；受控暂存中残留的根目录软件 OpenGL DLL 会被清除，其他同名残留会被拒绝。记录只含 SDK 相对路径，不泄露开发机目录。
+Windows 部署禁用 windeployqt 对软件 OpenGL、D3D 编译器和 DXC 的环境搜索，不再从 Windows SDK 复制三个图形编译库；暂存中出现这些名称时拒绝部署。受控暂存中残留的根目录软件 OpenGL DLL 会被清除，其他同名残留会被拒绝。
 
 macOS 打包在最终签名应用仍存在时输出 `deployment-audit.json`、`macos-deployment.json`、`runtime-attribution.json`，文件 SBOM 使用同一审计及归属报告。Qt 原生文件按 arm64 分片、全部 section 字节、UUID 和导入版本比较，允许部署需要的 Qt 路径重定位；签名、load-command 布局及 LINKEDIT 不属于该比较结论。非原生资源按精确字节关联。未关联文件和原始 SPDX 缺口继续保留，不能将这个过程宣称为完整二进制等价。
 
