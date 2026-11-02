@@ -77,8 +77,12 @@ class SafetyTests(unittest.TestCase):
                  patch.object(safety.subprocess, 'run', side_effect=output):
                 with self.assertRaisesRegex(ValueError, 'omitted header dependencies'):
                     safety.check_dependencies(root, require_compiled=True)
-                source.write_text('int main() { return 1; }\n')
+                source.write_text('#include <windows.h>\nint main() { return 1; }\n')
                 safety.check_dependencies(root, require_compiled=True)
+                (root/'sentinel.h').write_text('')
+                source.write_text('#include <sentinel.h>\nint main() { return 1; }\n')
+                with self.assertRaisesRegex(ValueError, 'omitted header dependencies'):
+                    safety.check_dependencies(root, require_compiled=True)
 
     def test_guard_rejects_active_object_with_includes_and_no_record(self):
         with tempfile.TemporaryDirectory() as temporary:

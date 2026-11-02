@@ -69,7 +69,14 @@ def utf8_console():
 
 _ENTRY = re.compile(r'^(.+\.(?:obj|o)): #deps (\d+),', re.IGNORECASE)
 _TARGET = re.compile(r'^(.+\.(?:obj|o)):\s', re.IGNORECASE)
-_INCLUDE = re.compile(r'^\s*#\s*include\s*[<"]', re.MULTILINE)
+_INCLUDE = re.compile(r'^\s*#\s*include\s*([<"])([^>"\r\n]+)[>"]', re.MULTILINE)
+
+
+def has_project_include(source):
+    """System-only angle includes may legitimately be absent from Ninja's log."""
+    text = source.read_text(encoding='utf-8', errors='replace')
+    return any(match.group(1) == '"' or (source.parent/match.group(2)).is_file()
+               for match in _INCLUDE.finditer(text))
 
 
 def make_program(build):
@@ -132,8 +139,9 @@ def check_dependencies(build, *, require_compiled=False):
                 path = build/path
             if not path.is_file():
                 raise ValueError('Cannot inspect a Windows Ninja source dependency')
-            if _INCLUDE.search(path.read_text(encoding='utf-8', errors='replace')):
-                raise ValueError('Windows Ninja omitted header dependencies; use a new build directory')
+            if has_project_include(path):
+                name = target.replace('\\', '/').rsplit('/', 1)[-1]
+                raise ValueError('Windows Ninja omitted header dependencies for '+name+'; use a new build directory')
 
 
 def main():
