@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import windows_ninja_safety as safety
 
@@ -14,6 +14,11 @@ import windows_ninja_safety as safety
 class Console:
     def __init__(self):
         self.input, self.output = 936, 65001
+        self.CreateMutexW = Mock(return_value=1)
+        self.WaitForSingleObject = Mock(return_value=0)
+        self.ReleaseMutex = Mock(return_value=1)
+        self.CloseHandle = Mock(return_value=1)
+        self.GetConsoleWindow = Mock(return_value=100)
 
     def GetConsoleCP(self): return self.input
     def GetConsoleOutputCP(self): return self.output
@@ -31,6 +36,20 @@ class SafetyTests(unittest.TestCase):
                     self.assertEqual((console.input, console.output), (65001, 65001))
                     raise RuntimeError('sentinel')
         self.assertEqual((console.input, console.output), (936, 65001))
+        console.ReleaseMutex.assert_called_once_with(1)
+        console.CloseHandle.assert_called_once_with(1)
+
+    def test_console_lock_timeout_does_not_change_code_pages(self):
+        console = Console()
+        console.WaitForSingleObject.return_value = 258
+        with patch.object(safety.sys, 'platform', 'win32'), \
+             patch.object(safety.ctypes, 'WinDLL', return_value=console, create=True):
+            with self.assertRaisesRegex(OSError, 'retry later'):
+                with safety.utf8_console():
+                    self.fail('must not enter on timeout')
+        self.assertEqual((console.input, console.output), (936, 65001))
+        console.ReleaseMutex.assert_not_called()
+        console.CloseHandle.assert_called_once_with(1)
 
     def test_guard_rejects_missing_header_dependencies(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -132,6 +151,51 @@ print("detached console restored")
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('detached console restored', result.stdout)
+
+    @unittest.skipUnless(sys.platform == 'win32', 'requires Windows console APIs')
+    def test_two_processes_sharing_console_restore_original_code_pages(self):
+        worker_code = '''import sys, time
+from pathlib import Path
+sys.path.insert(0, sys.argv[3])
+from windows_ninja_safety import utf8_console
+marker = Path(sys.argv[2])
+if sys.argv[1] == "holder":
+    with utf8_console():
+        print("entered", flush=True)
+        for _ in range(100):
+            if marker.exists(): break
+            time.sleep(.05)
+        else: raise RuntimeError("waiter did not start")
+        time.sleep(.7)
+else:
+    marker.touch()
+    start = time.monotonic()
+    with utf8_console():
+        print(time.monotonic()-start, flush=True)
+'''
+        broker_code = '''import ctypes, subprocess, sys
+k = ctypes.WinDLL("kernel32")
+assert k.SetConsoleCP(936) and k.SetConsoleOutputCP(936)
+args = [sys.executable, sys.argv[1]]
+holder = subprocess.Popen(args+["holder", sys.argv[2], sys.argv[3]], stdout=subprocess.PIPE, text=True)
+assert holder.stdout.readline().strip() == "entered"
+waiter = subprocess.run(args+["waiter", sys.argv[2], sys.argv[3]], capture_output=True, text=True, timeout=15)
+assert waiter.returncode == 0, waiter.stderr
+assert holder.wait(timeout=15) == 0
+assert float(waiter.stdout.strip()) >= .4, waiter.stdout
+assert (k.GetConsoleCP(), k.GetConsoleOutputCP()) == (936, 936)
+print("shared console serialized and restored")
+'''
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            worker, broker = root/'worker.py', root/'broker.py'
+            worker.write_text(worker_code)
+            broker.write_text(broker_code)
+            result = subprocess.run([sys.executable, str(broker), str(worker), str(root/'ready'),
+                                     str(Path(__file__).parent)], creationflags=subprocess.CREATE_NO_WINDOW,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=25)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn('shared console serialized and restored', result.stdout)
 
 
 if __name__ == '__main__':

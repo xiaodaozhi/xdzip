@@ -16,31 +16,55 @@ def utf8_console():
         yield
         return
     kernel = ctypes.WinDLL('kernel32', use_last_error=True)
-    original = (kernel.GetConsoleCP(), kernel.GetConsoleOutputCP())
-    allocated = False
-    if not any(original):
-        if not kernel.AllocConsole():
-            raise OSError('Cannot create a temporary console for MSVC')
-        allocated = True
-        user = ctypes.WinDLL('user32', use_last_error=True)
-        kernel.GetConsoleWindow.restype = ctypes.c_void_p
-        user.ShowWindow.argtypes = [ctypes.c_void_p, ctypes.c_int]
-        user.ShowWindow(kernel.GetConsoleWindow(), 0)
-    elif not all(original):
-        raise OSError('Cannot determine both Windows console code pages')
+    kernel.CreateMutexW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_wchar_p]
+    kernel.CreateMutexW.restype = ctypes.c_void_p
+    kernel.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+    kernel.ReleaseMutex.argtypes = [ctypes.c_void_p]
+    kernel.CloseHandle.argtypes = [ctypes.c_void_p]
+    kernel.GetConsoleWindow.restype = ctypes.c_void_p
+    initial = (kernel.GetConsoleCP(), kernel.GetConsoleOutputCP())
+    console = kernel.GetConsoleWindow() if any(initial) else None
+    mutex = None
+    if any(initial):
+        mutex = kernel.CreateMutexW(None, False, 'Local\\xdzip-ninja-utf8-console-'+str(console or 'unknown'))
+        if not mutex:
+            raise OSError('Cannot coordinate Windows build consoles')
+    acquired = False
     try:
-        if not kernel.SetConsoleCP(65001) or not kernel.SetConsoleOutputCP(65001):
-            raise OSError('Cannot select UTF-8 for the MSVC console')
-        yield
+        if mutex:
+            result = kernel.WaitForSingleObject(mutex, 30000)
+            if result not in (0, 0x80):  # Acquired, including an abandoned mutex.
+                raise OSError('Another Windows build is using the console; retry later')
+            acquired = True
+        original = (kernel.GetConsoleCP(), kernel.GetConsoleOutputCP())
+        allocated = False
+        try:
+            if not any(original):
+                if not kernel.AllocConsole():
+                    raise OSError('Cannot create a temporary console for MSVC')
+                allocated = True
+                user = ctypes.WinDLL('user32', use_last_error=True)
+                user.ShowWindow.argtypes = [ctypes.c_void_p, ctypes.c_int]
+                user.ShowWindow(kernel.GetConsoleWindow(), 0)
+            elif not all(original):
+                raise OSError('Cannot determine both Windows console code pages')
+            if not kernel.SetConsoleCP(65001) or not kernel.SetConsoleOutputCP(65001):
+                raise OSError('Cannot select UTF-8 for the MSVC console')
+            yield
+        finally:
+            if allocated:
+                if not kernel.FreeConsole():
+                    raise OSError('Cannot release the temporary MSVC console')
+            elif all(original):
+                restored_input = kernel.SetConsoleCP(original[0])
+                restored_output = kernel.SetConsoleOutputCP(original[1])
+                if not restored_input or not restored_output:
+                    raise OSError('Cannot restore the original console code pages')
     finally:
-        if allocated:
-            if not kernel.FreeConsole():
-                raise OSError('Cannot release the temporary MSVC console')
-        else:
-            restored_input = kernel.SetConsoleCP(original[0])
-            restored_output = kernel.SetConsoleOutputCP(original[1])
-            if not restored_input or not restored_output:
-                raise OSError('Cannot restore the original console code pages')
+        released = kernel.ReleaseMutex(mutex) if acquired else True
+        closed = kernel.CloseHandle(mutex) if mutex else True
+        if not released or not closed:
+            raise OSError('Cannot release the Windows build console lock')
 
 
 _ENTRY = re.compile(r'^(.+\.(?:obj|o)): #deps (\d+),', re.IGNORECASE)
