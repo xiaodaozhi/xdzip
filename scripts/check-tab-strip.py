@@ -37,6 +37,14 @@ def main():
                             page.goto(f'http://127.0.0.1:{server.server_port}/design/html/canvas.html?view=main')
                             page.wait_for_function('window.XdzipMain && document.querySelector(".tab-viewport")')
                             page.evaluate('document.fonts.ready')
+                            close = page.locator('[data-tab="travel"] .tab-close')
+                            for theme in ('light', 'dark'):
+                                page.evaluate('(theme)=>document.documentElement.dataset.theme=theme', theme)
+                                close.hover()
+                                shape = close.evaluate('''el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return {width:r.width,height:r.height,radius:s.borderTopLeftRadius,background:s.backgroundColor}}''')
+                                assert abs(shape['width']-shape['height']) < .01 and shape['radius'] == '50%', shape
+                                assert shape['background'] != 'rgba(0, 0, 0, 0)', shape
+                            page.evaluate('document.documentElement.dataset.theme="light"')
                             width = 832 if scale > 1 else 1024
                             page.evaluate('''([language,scale,width,dpr])=>{
                                 document.documentElement.lang=language;

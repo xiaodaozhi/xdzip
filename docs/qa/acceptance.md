@@ -145,6 +145,7 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | UI-REV-13 | HTML 共享菜单的延迟滚动事件 | 通过真实右键输入在菜单打开前改变非祖先容器位置，延迟送达但位置未再变化的真实滚动事件不关闭菜单；打开后再次改变位置仍关闭。原双语三档字号及三种输入的 18 组目录组合保持通过。A trusted scroll queued by the preceding real context-menu input preserves the menu when the non-ancestor position is unchanged since opening; a subsequent position change closes it. Retain all 18 directory input, language and text-scale combinations. |
 | UI-REV-14 | 中英文、浅深色和三档字号下启动并打开创建窗口 | 选项标签可换行，四个格式文字不截断，窗口与 footer 可达；初始化和展示均不产生 Qt Quick 布局递归重排警告。In both languages, themes and all three text scales, labels wrap, format captions fit and the footer remains reachable, without a recursive layout warning during creation or presentation. |
 | UI-REV-15 | 在主窗口搜索、普通和密码输入框及可编辑下拉框中用鼠标、键盘选择与替换文字，切换浅深色 | 选区文字与背景均可读，密码模式和原有编辑行为保持有效。Selection foreground and background remain readable in both themes; password mode and editing behavior remain intact. |
+| UI-REV-16 | 单个空闲起始页、加载或错误状态、单归档及多个标签，浅深色和三档字号 | 唯一普通起始页不显示关闭按钮且按钮不可聚焦；其他情况按原规则显示，鼠标、键盘和辅助功能仍可关闭。关闭按钮悬停及按下背景为圆形，主窗口和菜单比例不变。The sole ordinary idle welcome tab hides its close button and removes it from focus; loading, errors, archives and multiple tabs preserve existing behavior. Hover and pressed backgrounds are circular. |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
 

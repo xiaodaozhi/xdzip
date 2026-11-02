@@ -12,6 +12,7 @@ Rectangle {
     required property string archiveTitle
     property var tabs: []
     property bool sessionControls: false
+    property bool idleWelcome: false
     property bool integratedTitlebar: false
     property bool windowsControls: false
     property bool maximized: false
@@ -425,12 +426,14 @@ Rectangle {
                         id: tabClose
                         objectName: "archiveTabClose"
                         anchors.fill: parent
-                        visible: (root.sessionControls || root.archiveTitle.length > 0) && (capsule.modelData.selected || hover.hovered || capsule.activeFocus)
+                        visible: (root.sessionControls || root.archiveTitle.length > 0) && !(root.tabCount === 1 && root.idleWelcome) && (capsule.modelData.selected || hover.hovered || capsule.activeFocus)
+                        circular: true
                         leftPadding: 0
                         rightPadding: 0
                         glyphSize: Theme.mainUnits(20)
                         asset: "close"
-                        enabled: root.sessionControls || root.canClose
+                        enabled: visible && (root.sessionControls || root.canClose)
+                        focusPolicy: visible ? Qt.StrongFocus : Qt.NoFocus
                         Accessible.name: qsTrId("tabs.close").arg(root.labelFor(capsule.modelData))
                         explanation: Accessible.name
                         onClicked: root.closeTab(capsule.modelData.id)

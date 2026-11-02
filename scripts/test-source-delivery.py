@@ -39,6 +39,17 @@ verify_dmg = module('verify-macos-dmg')
 replace_qt = module('verify-qt-replacement')
 derive_locale_codes = module('derive-qt-locale-code-input')
 convert_iso_codes = module('convert-iso-codes-for-qt')
+convert_iana_loc = module('convert-iana-loc-for-qt')
+
+
+def iana_loc_fixture():
+    iana = ('File-Date: 2026-09-17\n%%\nType: language\nSubtag: de\nDescription: owned\n'
+            '%%\nType: language\nSubtag: en\n%%\nType: language\nSubtag: xyz\n'
+            '%%\nType: language\nSubtag: zz\n%%\nType: language\nSubtag: qaa..qtz\n'
+            '%%\nType: region\nSubtag: ZZ\n')
+    loc = ('ger|deu|de|owned|owned\neng||en|owned|owned\n'
+           'qaa-qtz||||\nyyy|||owned|owned\n')
+    return iana, loc
 
 
 def psl_fixture(root, wrong_generated=None):
@@ -88,6 +99,63 @@ def psl_fixture(root, wrong_generated=None):
 
 
 class DeliveryTests(unittest.TestCase):
+    def test_convert_iana_loc_for_qt_preserves_codes_and_reports_omissions(self):
+        iana, loc = iana_loc_fixture()
+        table, report = convert_iana_loc.convert(iana, loc)
+        self.assertEqual(table, b'Id\tPart2b\tPart2t\tPart1\tUnused\n'
+                         b'deu\tger\tdeu\tde\t\neng\teng\teng\ten\t\nxyz\t\t\t\t\n')
+        self.assertEqual(report['iana_file_date'], '2026-09-17')
+        self.assertEqual(report['iana_two_letter_without_loc'], ['zz'])
+        self.assertEqual(report['loc_unmatched'], ['yyy'])
+        self.assertFalse(report['historical_input_verified'])
+        self.assertFalse(report['complete_corresponding_source_verified'])
+        self.assertEqual(convert_iana_loc.convert(iana.replace('\n', '\r\n'),
+                                                  '\ufeff'+loc)[0], table)
+
+    def test_convert_iana_loc_for_qt_rejects_malformed_and_conflicting_sources(self):
+        iana, loc = iana_loc_fixture()
+        invalid_iana = ('bad header\n'+iana, iana.replace('2026-09-17', '2026-99-99'),
+                        iana+'%%\nType: language\nSubtag: de\n',
+                        iana+'%%\nType: language\nSubtag: EN\n',
+                        iana+'%%\nType: language\n',
+                        iana+'%%\nType: language\nType: region\nSubtag: aa\n',
+                        iana+'%%\nType: language\nSubtag: qaa..qtz\n')
+        for fixture in invalid_iana:
+            with self.subTest(iana=fixture), self.assertRaises(ValueError):
+                convert_iana_loc.convert(fixture, loc)
+        invalid_loc = ('', loc+'bad\n', loc+'eng||en|duplicate|duplicate\n',
+                       loc+'aaa||en|duplicate|duplicate\n',
+                       loc+'xyz||aa|inconsistent|inconsistent\n',
+                       loc+'qaa-qtz||||\n', loc.replace('ger|deu|de', 'GER|deu|de'))
+        for fixture in invalid_loc:
+            with self.subTest(loc=fixture), self.assertRaises(ValueError):
+                convert_iana_loc.convert(iana, fixture)
+
+    def test_convert_iana_loc_cli_stays_in_build_and_never_overwrites(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            iana, loc = iana_loc_fixture()
+            first, second = root/'iana.txt', root/'loc.txt'
+            first.write_text(iana, encoding='utf-8')
+            second.write_text(loc, encoding='utf-8')
+            output = root/'build/codes.tsv'
+            argv = ['convert', '--iana', str(first), '--loc', str(second), '--output', str(output)]
+            with patch.object(convert_iana_loc, 'ROOT', root), patch.object(sys, 'argv', argv), \
+                    redirect_stdout(io.StringIO()) as out:
+                convert_iana_loc.main()
+                saved = output.read_bytes()
+                self.assertEqual(json.loads(out.getvalue())['output_sha256'],
+                                 hashlib.sha256(saved).hexdigest())
+                with self.assertRaises(FileExistsError):
+                    convert_iana_loc.main()
+                self.assertEqual(output.read_bytes(), saved)
+            argv[-1] = str(root/'outside.tsv')
+            with patch.object(convert_iana_loc, 'ROOT', root), patch.object(sys, 'argv', argv), \
+                    patch('sys.stderr', new_callable=io.StringIO):
+                with self.assertRaises(SystemExit):
+                    convert_iana_loc.main()
+            self.assertFalse((root/'outside.tsv').exists())
+
     def test_convert_iso_codes_for_qt_handles_bibliographic_and_missing_part2(self):
         part2 = json.dumps({'639-2': [{'alpha_3': 'eng'},
                                      {'alpha_3': 'deu', 'bibliographic': 'ger'},
@@ -762,6 +830,7 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
         self.assertIn('tests/fixtures/cab-iso/', document)
         self.assertIn('tests/fixtures/native-archives/', document)
         self.assertIn('scripts/convert-iso-codes-for-qt.py', document)
+        self.assertIn('scripts/convert-iana-loc-for-qt.py', document)
         self.assertIn('完整输入会生成完整代码集', document)
         self.assertIn('iso-codes_4.16.0-1_all.deb', document)
         self.assertIn('cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7', document)

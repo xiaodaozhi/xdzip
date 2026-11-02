@@ -919,6 +919,7 @@ Item {
             archiveTitle: root.closedPage ? "" : reader.title
             tabs: root.sessionManager && root.visible ? root.windowHost.sessionTabs : []
             sessionControls: root.sessionManager !== null
+            idleWelcome: !root.closedPage && root.welcomeVisible && !reader.browsingBusy && !reader.title.length && !reader.message.length && !AppSettings.error.length && reader.runtimeAvailable
             onTabSelected: identity => root.sessionManager.activateId(identity)
             onTabClosed: identity => root.sessionManager.closeSession(identity)
             onOtherTabsClosed: identity => root.sessionManager.closeOtherSessions(identity)
