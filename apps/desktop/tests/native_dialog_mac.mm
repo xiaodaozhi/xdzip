@@ -80,9 +80,15 @@ void traceNativeWindowState(QWindow *window) {
             << (native && reinterpret_cast<quintptr>(native) ==
                               window->property("xdzipNativeWatchedIdentity").toULongLong())
             << "miniaturized" << (native && native.miniaturized) << "visible"
-            << (native && native.visible) << "transition"
-            << window->property("xdzipNativeTransition") << "qtStates" << window->windowStates()
-            << "pending" << window->property("xdzipWakePending");
+            << (native && native.visible) << "fullscreen"
+            << (native && ((native.styleMask & NSWindowStyleMaskFullScreen) != 0)) << "exposed"
+            << window->isExposed() << "transition" << window->property("xdzipNativeTransition")
+            << "qtStates" << window->windowStates() << "cocoaMiniTransition"
+            << window->property("xdzipCocoaMiniTransition") << "cocoaFullTransition"
+            << window->property("xdzipCocoaFullTransition") << "nativeMinimized"
+            << window->property("xdzipNativeMinimized") << "saved"
+            << window->property("xdzipRestoreState") << "pending"
+            << window->property("xdzipWakePending");
 }
 
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state) {
