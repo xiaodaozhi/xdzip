@@ -214,6 +214,7 @@ void ApplicationSessions::ensureWelcome(QQuickWindow *window) {
     auto *blank = create(false, window);
     if (!blank)
         return;
+    blank->automaticWelcome = true;
     window->setProperty("needsWelcome", false);
     if (oldPage)
         oldPage->setProperty("visible", false);
@@ -243,20 +244,28 @@ void ApplicationSessions::openPath(const QString &path) {
         return;
     const auto identity = key(path);
     for (const auto &session : m_sessions) {
-        if (!session->retiring && session->path == identity) {
+        if (!session->retiring && session->controller && session->path == identity &&
+            (session->controller->ready() || session->controller->busy() ||
+             !session->controller->passwordPrompt().isEmpty())) {
             // A closed page with a task remains a real session and can be reopened.
-            session->closed = false;
+            const bool restoring = session->closed;
             activate(session.get());
+            if (restoring)
+                retireAutomaticWelcome(session.get());
             return;
         }
     }
+    const auto availableWelcome = [](const Session *value) {
+        return value && !value->closed && !value->retiring && value->controller &&
+               value->controller->runtimeAvailable() && !value->controller->ready() &&
+               !value->controller->busy() && !value->controller->activeTaskCount() &&
+               value->controller->passwordPrompt().isEmpty();
+    };
     auto *session = current();
-    if (!session || !session->path.isEmpty() || session->controller->busy() ||
-        session->controller->activeTaskCount()) {
+    if (!availableWelcome(session)) {
         session = nullptr;
         for (const auto &candidate : m_sessions)
-            if (!candidate->closed && candidate->path.isEmpty() && !candidate->controller->busy() &&
-                !candidate->controller->activeTaskCount()) {
+            if (availableWelcome(candidate.get())) {
                 session = candidate.get();
                 break;
             }
@@ -266,9 +275,31 @@ void ApplicationSessions::openPath(const QString &path) {
     if (!session)
         return;
     session->path = identity;
+    session->automaticWelcome = false;
     session->page->setProperty("externalFileOpening", true);
     session->controller->openPath(QFileInfo(path).absoluteFilePath());
     activate(session);
+}
+void ApplicationSessions::retireAutomaticWelcome(Session *restored) {
+    for (const auto &candidate : m_sessions) {
+        if (candidate.get() == restored || candidate->window != restored->window ||
+            candidate->closed || candidate->retiring || !candidate->automaticWelcome ||
+            !candidate->path.isEmpty() || !candidate->controller || !candidate->page ||
+            candidate->controller->busy() || candidate->controller->ready() ||
+            candidate->controller->activeTaskCount() || !candidate->controller->tasks().isEmpty() ||
+            !candidate->controller->passwordPrompt().isEmpty() ||
+            !candidate->controller->message().isEmpty())
+            continue;
+        const auto dialogs = candidate->page->findChildren<QQuickWindow *>();
+        if (std::any_of(dialogs.cbegin(), dialogs.cend(),
+                        [](const auto *dialog) { return dialog->isVisible(); }))
+            continue;
+        candidate->closed = true;
+        candidate->page->setProperty("sessionClosed", true);
+        candidate->page->setProperty("visible", false);
+        reap(candidate.get());
+    }
+    refresh();
 }
 void ApplicationSessions::activate(Session *session, bool reveal) {
     if (!session || session->retiring || !session->window || !session->page)

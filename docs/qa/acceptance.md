@@ -143,6 +143,8 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | UI-REV-11 | HTML 100%／125%，Qt DPR 1／1.25／2，长路径及辅助字号 | 逻辑尺寸不随 DPR 改变，正文与菜单比例正确，footer 可达 |
 | UI-REV-12 | 目录树根入口、普通父目录与叶子目录，右键、Menu 键、Shift+F10，双语、主题与三档字号 | 根入口的“收起子目录”禁用，所有不可用菜单项均无可见 hint、原因副行或 tooltip；辅助功能仍能读取准确的根入口及叶子原因。父目录可展开和收起，禁用操作不改变选择或路径。主标签在菜单项局部坐标中的中心偏差不超过 0.5 逻辑像素，祖先平移不得改变测量结果；不能忽略局部链上的缩放、旋转或自定义变换。覆盖关闭时切换字号后重开及已打开时切换字号的首个观测渲染，核对当前文字高度和各条件槽位。Disabled menu actions show no hint, reason subline or tooltip; accessible descriptions retain accurate root and leaf reasons, while parent toggle and selection/navigation behavior remain intact. Measure label centering within 0.5 logical pixels in the command's local coordinates, independently of ancestor translation; reject unhandled scale, rotation or custom transforms. Check current text height and conditional slots at the first observed rendering after closed and open font changes. |
 | UI-REV-13 | HTML 共享菜单的延迟滚动事件 | 通过真实右键输入在菜单打开前改变非祖先容器位置，延迟送达但位置未再变化的真实滚动事件不关闭菜单；打开后再次改变位置仍关闭。原双语三档字号及三种输入的 18 组目录组合保持通过。A trusted scroll queued by the preceding real context-menu input preserves the menu when the non-ancestor position is unchanged since opening; a subsequent position change closes it. Retain all 18 directory input, language and text-scale combinations. |
+| UI-REV-14 | 中英文、浅深色和三档字号下启动并打开创建窗口 | 选项标签可换行，四个格式文字不截断，窗口与 footer 可达；初始化和展示均不产生 Qt Quick 布局递归重排警告。In both languages, themes and all three text scales, labels wrap, format captions fit and the footer remains reachable, without a recursive layout warning during creation or presentation. |
+| UI-REV-15 | 在主窗口搜索、普通和密码输入框及可编辑下拉框中用鼠标、键盘选择与替换文字，切换浅深色 | 选区文字与背景均可读，密码模式和原有编辑行为保持有效。Selection foreground and background remain readable in both themes; password mode and editing behavior remain intact. |
 
 实现回归位于 tst_operationrevisions.qml、browser_test.cpp 和共享控件检查脚本；高保真与 HTML 修订入口见 design/hifi/operation-revisions.html。
 
@@ -172,6 +174,7 @@ ACL 夹具只修改测试自行创建的对象，不清除或更改真实用户�
 | W01-04 | 拖入多个、目录、网络 URL、不支持扩展名或损坏 ZIP | 输入形态拒绝或显示真实核心错误，无假成功 |
 | W01-05 | 浅深色，DPR 1 / 1.25 / 2，最小窗口，100%／125%／150% 字号 | 卡片与共享菜单比例正确，入口可键盘访问，正文可滚动 |
 | W01-06 | 运行任务后关闭归档，再从欢迎页任务菜单重开 | 历史数量与真实状态保留，欢迎页不取消后台任务 |
+| W01-09 | 打开失败或取消后重试，关闭含后台任务的窗口并再次打开同一归档 | 可重用空闲起始页；仅回收同窗内未使用的自动欢迎页，手动页面、其他窗口、对话框、密码提示和任务身份保留。Reuse an idle welcome page after failure or cancellation. Reopening a task-retained archive retires only an untouched automatic welcome in its window, preserving user pages, other windows, dialogs, prompts and task identity. |
 
 自动化记录只写入 build/review/welcome/ 或 CI 工件；原生拖放、系统文件选择器取消、读屏、输入法和平台窗口外观需桌面人工验收，未以离屏截图标记通过。
 
@@ -196,6 +199,7 @@ W01-07，欢迎页与打开归档后的标题栏、标签及外观按钮的位�
 - 自动化与设计稿不能替代原生系统主题、键盘、读屏及真实桌面外观人工验收。
 
 - 设置下拉框在 100%、125%、150% 下右对齐，宽度覆盖完整选项文字与勾选列，至少等于按钮宽，超长项受窗口与最大宽度约束。
+- 双语、浅深色和三档字号下，密度、文字大小、语言与打开方式四个下拉框等高，文字及指示器不裁切。All four settings selectors have equal height with unclipped text and indicators in both languages and themes at every supported text scale.
 - footer 在 150% 及历史 200% 布局验证中按钮保持同一行，提示可独立换行；旧 200% 设置迁移为 150%。
 - macOS 本地化声明和实际构建包均检查，中文系统下原生选择器使用系统语言，应用语言切换不写入系统偏好。真实原生对话框外观人工验收另行登记。
 

@@ -34,7 +34,8 @@ OperationWindow {
     readonly property bool passwordValid: !supportsPasswordAndVolumes || !usePassword.checked || (passwordBytes(password.text) > 0 && passwordBytes(password.text) <= 128 && !/[\x00-\x1f\x7f-\x9f]/.test(password.text))
     readonly property bool optionsValid: volumeBytes >= 0 && passwordValid
     readonly property real minimumFormatWidth: Math.ceil(formatTextMetrics.advanceWidth) * formatGroup.options.length + formatGroup.padding * 2
-    readonly property real optionLabelMaximumWidth: Math.max(0, optionsGrid.width - minimumFormatWidth - optionsGrid.columnSpacing)
+    // The grid's own width changes while it rearranges its labels.
+    readonly property real optionLabelMaximumWidth: Math.max(0, optionsForm.width - minimumFormatWidth - optionsGrid.columnSpacing)
     TextMetrics {
         id: formatTextMetrics
         text: "TAR.GZ"
