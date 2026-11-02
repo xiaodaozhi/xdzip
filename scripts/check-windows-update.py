@@ -133,8 +133,21 @@ def main():
     if restart.exists():
         raise RuntimeError('Refusing existing restart evidence')
     results = []
+    install_counter = 0
     def install(package):
-        run([package, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/DIR=' + str(install_root)])
+        nonlocal install_counter
+        install_counter += 1
+        log = output / ('fixture-install-' + str(install_counter) + '.log')
+        result = subprocess.run([str(package), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
+                                 '/DIR=' + str(install_root), '/LOG=' + str(log)], timeout=120)
+        if result.returncode:
+            files = []
+            for name in ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll'):
+                path = install_root/name
+                files.append({'name': name, 'present': path.is_file(),
+                              'sha256': digest(path) if path.is_file() else None})
+            dump(output / 'retired-graphics-failure.json', {'installer_exit': result.returncode, 'files': files})
+            raise subprocess.CalledProcessError(result.returncode, [package, '/VERYSILENT'])
 
     def retired_graphics_boundaries():
         names = ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll')
@@ -143,7 +156,8 @@ def main():
         modified = install_root/'dxil.dll'
         modified.write_bytes(b'owned locally modified fixture')
         attempt = subprocess.run([str(new), '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART',
-                                  '/DIR=' + str(install_root)], timeout=120)
+                                  '/DIR=' + str(install_root),
+                                  '/LOG=' + str(output/'fixture-modified-file.log')], timeout=120)
         assert attempt.returncode != 0, 'Modified retired file did not stop Setup'
         assert modified.read_bytes() == b'owned locally modified fixture'
         assert (install_root/'install-manifest.txt').read_bytes() == original_manifest

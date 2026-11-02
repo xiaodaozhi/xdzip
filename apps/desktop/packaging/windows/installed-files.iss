@@ -162,12 +162,18 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
-var I, Count: Integer; Name: String;
+var I, Count: Integer; Name: String; Removed: Boolean;
 begin
   if CurStep <> ssDone then exit;
   for I := 0 to GetArrayLength(RetiredFiles) - 1 do begin
     Name := ExpandConstant('{app}\') + EntryPath(RetiredFiles[I]);
-    if UnchangedFile(Name, RetiredFiles[I]) and DeleteFile(Name) then
+    Removed := False;
+    if UnchangedFile(Name, RetiredFiles[I]) then begin
+      Removed := DeleteFile(Name);
+      if not Removed then Log('Could not delete an unchanged obsolete manifest-owned file.');
+    end else
+      Log('An obsolete manifest-owned file could not be reverified at cleanup.');
+    if Removed then
       RemoveEmptyParents(Name)
     else begin
       { Keep a retry record if the file changed or became locked after preflight. }
