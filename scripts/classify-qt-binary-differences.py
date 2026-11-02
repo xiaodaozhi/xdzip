@@ -3,7 +3,7 @@
 import argparse
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import shutil
 import struct
 import subprocess
@@ -29,6 +29,16 @@ def pe_unsigned_candidates(data):
 
 def match(content,expected,algorithm):
     return hashlib.new(algorithm.lower().replace('-',''),content).hexdigest()==expected.lower()
+
+
+def attribution_path(value):
+    if not isinstance(value,str) or not value.startswith(('artifact/','qt-sdk/')) or \
+       '\\' in value or ':' in value or any(ord(char)<32 for char in value):
+        raise ValueError('Unsafe attribution path')
+    path=PurePosixPath(value)
+    if path.is_absolute() or '..' in path.parts or len(path.parts)<2:
+        raise ValueError('Unsafe attribution path')
+    return value
 
 
 def classify(file,checks,platform,temporary):
@@ -66,7 +76,7 @@ def main():
             if not any(not c['matches_sdk'] for c in checks):continue
             file=a.qt_prefix/item['sdk_path']
             if not within(file,a.qt_prefix) or digest(file)!=item['sdk_sha256']:raise ValueError('SDK bytes changed before transformation analysis')
-            rows.append({'attribution_path':item['path'],'sdk_path':item['sdk_path'],
+            rows.append({'attribution_path':attribution_path(item['path']),'sdk_path':item['sdk_path'],
                          'sdk_sha256':item['sdk_sha256'],'results':classify(file,checks,d['platform'],Path(temp))})
     result={'schema_version':1,'status':'transformation-analysis-complete-not-provenance-approval','platform':d['platform'],'identity':d['identity'],'attribution_sha256':digest(a.attribution),'files':rows,
             'limits':['Original upstream hash differences are retained. Only an exact reconstructed byte hash is marked explained.',

@@ -184,5 +184,15 @@ class SourceTests(unittest.TestCase):
             self.assertEqual([row['sdk_path'] for row in rows],['lib/QtCore']*2)
             self.assertTrue(all(row['results'][0]['status']=='unexplained-publisher-provenance-required'
                                 for row in rows))
+            attribution['files'][0]['path']='C:\\Users\\private\\archive.zip'
+            source_file.write_text(json.dumps(attribution),encoding='utf-8')
+            unsafe_output=root/'unsafe.json'
+            result=subprocess.run([sys.executable,str(ROOT/'scripts/classify-qt-binary-differences.py'),
+                '--attribution',str(source_file),'--qt-prefix',str(sdk),'--output',str(unsafe_output)],
+                capture_output=True,text=True)
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('Unsafe attribution path',result.stderr)
+            self.assertNotIn('private',result.stderr)
+            self.assertFalse(unsafe_output.exists())
 
 if __name__=='__main__':unittest.main()
