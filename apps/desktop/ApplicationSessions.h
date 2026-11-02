@@ -93,10 +93,12 @@ class ApplicationSessions final : public QObject {
         QPointer<QQuickWindow> window;
         bool closed = false;
         bool retiring = false;
+        bool automaticWelcome = false;
     };
     Session *add(QQuickWindow *window, QObject *page);
     Session *create(bool newWindow, QQuickWindow *target = nullptr);
     void ensureWelcome(QQuickWindow *window);
+    void retireAutomaticWelcome(Session *restored);
     void cancelPendingActivation();
     Session *current() const;
     std::vector<Session *> visibleTabs(QQuickWindow *window) const;

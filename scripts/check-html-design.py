@@ -59,6 +59,29 @@ with sync_playwright() as p:
     try:
         page.goto(canvas_url)
         page.add_style_tag(content=".reviewbar{display:flex} #settings{display:flex}")
+        for dark in (False, True):
+            if dark:
+                page.locator('#theme').click()
+            search = page.locator('#search')
+            search.fill('owned selection')
+            search.select_text()
+            selection = search.evaluate('''element => {
+                const style = getComputedStyle(element, '::selection');
+                const probe = document.createElement('span');
+                probe.style.color = 'var(--accent)';
+                document.body.appendChild(probe);
+                const accent = getComputedStyle(probe).color;
+                probe.remove();
+                return {foreground: style.color, background: style.backgroundColor,
+                        accent, start: element.selectionStart, end: element.selectionEnd};
+            }''')
+            assert selection == {'foreground': 'rgb(255, 255, 255)',
+                                 'background': selection['accent'], 'accent': selection['accent'],
+                                 'start': 0, 'end': len('owned selection')}
+            search.fill('')
+            if dark:
+                page.locator('#theme').click()
+        record('Editable text selections use readable themed accent colors')
         page.evaluate("state.selected.clear(); render();")
         expect(page.locator('#file-rows tr')).to_have_count(9)
         expect(page.locator('#extract-label')).to_have_text('全部解压')
