@@ -3959,11 +3959,40 @@ QtObject {
             if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                 QTRY_VERIFY(nativeWindowMatchesState(window, state));
 #endif
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                window->setProperty("xdzipTraceFirstMinimize", int(state) + 1);
+                window->setProperty("xdzipTraceActivation", true);
+                qInfo() << "first minimize before request" << state;
+                traceNativeWindowState(window);
+                for (const auto delay : {500, 3000})
+                    QTimer::singleShot(delay, window, [window, state, delay] {
+                        if (window->property("xdzipTraceFirstMinimize").toInt() == int(state) + 1) {
+                            qInfo() << "first minimize delayed snapshot" << state << delay;
+                            traceNativeWindowState(window);
+                        }
+                    });
+            }
+#endif
             window->showMinimized();
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                qInfo() << "first minimize after request" << state;
+                traceNativeWindowState(window);
+            }
+#endif
             QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QTRY_VERIFY(!window->isExposed());
             QTRY_VERIFY(nativeStateSettled(window, Qt::WindowMinimized));
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                qInfo() << "first minimize settled" << state;
+                traceNativeWindowState(window);
+                window->setProperty("xdzipTraceFirstMinimize", 0);
+                window->setProperty("xdzipTraceActivation", false);
+            }
+#endif
             qInfo() << "Restoring native minimized state" << window->windowStates() << "saved"
                     << window->property("xdzipRestoreState");
             desktop.restore();
