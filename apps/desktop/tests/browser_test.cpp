@@ -2354,6 +2354,259 @@ QtObject {
         sessions.confirmQuit(false);
         QTRY_VERIFY(!joined.isEmpty());
     }
+    void retainedArchiveDoesNotLeaveAutomaticWelcome_data() {
+        QTest::addColumn<bool>("throughController");
+        QTest::addColumn<bool>("throughDrop");
+        QTest::addColumn<bool>("userCreatedPage");
+        QTest::addColumn<bool>("visibleDialog");
+        QTest::addColumn<bool>("activeTask");
+        QTest::newRow("tray-external-open") << false << false << false << false << false;
+        QTest::newRow("tray-welcome-open") << true << false << false << false << false;
+        QTest::newRow("tray-drag-open") << false << true << false << false << false;
+        QTest::newRow("preserve-user-created-page") << false << false << true << false << false;
+        QTest::newRow("preserve-welcome-dialog") << false << false << false << true << false;
+        QTest::newRow("preserve-active-task") << false << false << false << false << true;
+    }
+    void retainedArchiveDoesNotLeaveAutomaticWelcome() {
+        QFETCH(bool, throughController);
+        QFETCH(bool, throughDrop);
+        QFETCH(bool, userCreatedPage);
+        QFETCH(bool, visibleDialog);
+        QFETCH(bool, activeTask);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *retained = window->findChild<BrowserController *>();
+        QVERIFY(retained);
+        DesktopIntegration desktop(window, retained, preferences, true, [] { return true; });
+        sessions.setDesktop(&desktop);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto archive = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        sessions.openPath(archive);
+        QTRY_VERIFY(retained->ready() && !retained->busy());
+        const auto retainedId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        retained->m_tasks[1] = {{"id", "1"},
+                                {"status", activeTask ? "running" : "succeeded"},
+                                {"terminal", !activeTask}};
+        emit retained->tasksChanged();
+        window->close();
+        QVERIFY(!window->isVisible());
+        desktop.restore();
+        QVERIFY(window->isVisible());
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 1);
+        const auto automaticId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        QVERIFY(automaticId != retainedId);
+        QString userId;
+        if (userCreatedPage) {
+            sessions.newSession();
+            const auto tabs = window->property("sessionTabs").toList();
+            QCOMPARE(tabs.size(), 2);
+            userId = tabs.last().toMap().value("id").toString();
+            QVERIFY(userId != automaticId);
+        }
+        QQuickWindow *settings = nullptr;
+        if (visibleDialog) {
+            auto *page = window->property("activePage").value<QObject *>();
+            settings = page->findChild<QQuickWindow *>("settingsWindow");
+            QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+            QTRY_VERIFY(settings->isVisible());
+        }
+        if (throughController || throughDrop) {
+            auto *page = window->property("activePage").value<QObject *>();
+            QVERIFY(page);
+            auto *controller = page->findChild<BrowserController *>();
+            QVERIFY(controller && controller != retained);
+            if (throughDrop)
+                QVERIFY(controller->openDroppedUrls({QUrl::fromLocalFile(archive)}));
+            else
+                controller->requestOpen(archive);
+        } else {
+            sessions.open({archive});
+        }
+        const int expected = userCreatedPage || visibleDialog ? 2 : 1;
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), expected);
+        QTRY_COMPARE(sessions.sessionCount(), expected);
+        const auto tabs = window->property("sessionTabs").toList();
+        QSet<QString> ids;
+        for (const auto &tab : tabs)
+            ids.insert(tab.toMap().value("id").toString());
+        QVERIFY(ids.contains(retainedId));
+        QCOMPARE(ids.contains(automaticId), visibleDialog);
+        if (userCreatedPage)
+            QVERIFY(ids.contains(userId));
+        if (visibleDialog) {
+            QVERIFY(settings->isVisible());
+            settings->close();
+        }
+        QCOMPARE(
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>(),
+            retained);
+        QCOMPARE(sessions.tasks().size(), 1);
+        QCOMPARE(sessions.tasks().first().toMap().value("id").toString(), retainedId + "/1");
+        QCOMPARE(sessions.activeTaskCount(), activeTask ? 1 : 0);
+        if (activeTask) {
+            retained->m_tasks[1]["status"] = "succeeded";
+            retained->m_tasks[1]["terminal"] = true;
+            emit retained->tasksChanged();
+        }
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void failedArchiveOpenReusesWelcome_data() {
+        QTest::addColumn<bool>("cancel");
+        QTest::newRow("failed") << false;
+        QTest::newRow("cancelled") << true;
+    }
+    void failedArchiveOpenReusesWelcome() {
+        QFETCH(bool, cancel);
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *initialPage = window->property("activePage").value<QObject *>();
+        auto *controller = initialPage->findChild<BrowserController *>();
+        QVERIFY(controller);
+        sessions.openPath(cancel ? QStringLiteral(XDZIP_M2_FIXTURE)
+                                 : QStringLiteral(XDZIP_FIXTURES "/invalid.zip"));
+        if (cancel) {
+            QVERIFY(controller->browsingBusy());
+            controller->cancel();
+        }
+        QTRY_VERIFY(!controller->busy());
+        QVERIFY(!controller->ready());
+        if (!cancel)
+            QVERIFY(!controller->message().isEmpty());
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QCOMPARE(window->property("activePage").value<QObject *>(), initialPage);
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        QCOMPARE(window->property("sessionTabs").toList().size(), 1);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void openingAnotherArchivePreservesPasswordPrompt() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        auto *encryptedPage = window->property("activePage").value<QObject *>();
+        auto *encrypted = encryptedPage->findChild<BrowserController *>();
+        QVERIFY(encrypted);
+        const auto encryptedPath = QStringLiteral(
+            XDZIP_FIXTURES "/../native-archives/test_read_format_rar4_encrypted_filenames.rar");
+        sessions.openPath(encryptedPath);
+        QTRY_VERIFY_WITH_TIMEOUT(!encrypted->passwordPrompt().isEmpty(), 30000);
+        const auto prompt = encrypted->passwordPrompt();
+        QCOMPARE(prompt.value("kind").toString(), QStringLiteral("open"));
+        QVERIFY(!encrypted->ready() && !encrypted->busy());
+        sessions.openPath(encryptedPath);
+        QCOMPARE(sessions.sessionCount(), 1);
+        QCOMPARE(encrypted->passwordPrompt(), prompt);
+        sessions.openPath(QStringLiteral(XDZIP_FIXTURES "/normal.zip"));
+        QTRY_COMPARE(window->property("sessionTabs").toList().size(), 2);
+        QCOMPARE(encrypted->passwordPrompt(), prompt);
+        QVERIFY(window->property("activePage").value<QObject *>() != encryptedPage);
+        auto *normal =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QVERIFY(normal && normal != encrypted);
+        QTRY_VERIFY(normal->ready() && !normal->busy());
+        encrypted->cancelTask(QStringLiteral("open"));
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void reopeningArchivePreservesUserBlankPage() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(
+            preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        const auto archive = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        sessions.openPath(archive);
+        auto *controller =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QTRY_VERIFY(controller->ready() && !controller->busy());
+        sessions.newSession();
+        const auto before = window->property("sessionTabs").toList();
+        QCOMPARE(before.size(), 2);
+        sessions.openPath(archive);
+        const auto after = window->property("sessionTabs").toList();
+        QCOMPARE(after.size(), 2);
+        QCOMPARE(after.last().toMap().value("id"), before.last().toMap().value("id"));
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
+    void reopeningRetainedArchivePreservesOtherWindow() {
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        QVERIFY(preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true,
+                                         "windows"));
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        QVERIFY(QTest::qWaitForWindowExposed(window));
+        const auto archive = QStringLiteral(XDZIP_FIXTURES "/normal.zip");
+        sessions.openPath(archive);
+        auto *retained =
+            window->property("activePage").value<QObject *>()->findChild<BrowserController *>();
+        QTRY_VERIFY(retained->ready() && !retained->busy());
+        const auto retainedId =
+            window->property("sessionTabs").toList().first().toMap().value("id").toString();
+        retained->m_tasks[1] = {{"id", "1"}, {"status", "succeeded"}, {"terminal", true}};
+        emit retained->tasksChanged();
+        sessions.newSession();
+        auto *other = sessions.activeWindow();
+        QVERIFY(other && other != window);
+        const auto otherTabs = other->property("sessionTabs").toList();
+        QCOMPARE(otherTabs.size(), 1);
+        sessions.closeWindow(window);
+        QVERIFY(!window->isVisible());
+        sessions.openPath(archive);
+        QCOMPARE(sessions.activeWindow(), window);
+        QCOMPARE(other->property("sessionTabs").toList(), otherTabs);
+        QCOMPARE(window->property("sessionTabs").toList().first().toMap().value("id").toString(),
+                 retainedId);
+        QCOMPARE(sessions.tasks().first().toMap().value("id").toString(), retainedId + "/1");
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        sessions.confirmQuit(false);
+        QTRY_VERIFY(!joined.isEmpty());
+    }
     void sessionTabReorderingPreservesControllers_data() {
         QTest::addColumn<double>("scale");
         QTest::newRow("100") << 1.;
@@ -5812,6 +6065,59 @@ QtObject {
         entry->setEnabled(false);
         accessible->actionInterface()->doAction(QAccessibleActionInterface::pressAction());
         QCOMPARE(controller->selectedCount(), 0);
+    }
+    void settingsSelectorsHaveConsistentGeometry_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<bool>("dark");
+        QTest::addColumn<double>("scale");
+        for (const auto &language : {QStringLiteral("zh-CN"), QStringLiteral("en-US")})
+            for (const bool dark : {false, true})
+                for (const double scale : {1., 1.25, 1.5})
+                    QTest::newRow(qPrintable(language + (dark ? "-dark-" : "-light-") +
+                                             QString::number(scale)))
+                        << language << dark << scale;
+    }
+    void settingsSelectorsHaveConsistentGeometry() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && preferences);
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        preferences->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { preferences->cancelPreview(); });
+        const QStringList names{"settingsDensity", "settingsTextScale", "settingsLanguage",
+                                "settingsOpenMode"};
+        QQuickItem *first = nullptr;
+        for (const auto &name : names) {
+            auto *control = findVisual(settings->contentItem(), name);
+            QVERIFY2(control, qPrintable(name));
+            if (!first)
+                first = control;
+            QTRY_VERIFY(control->height() > 0 && qAbs(control->height() - first->height()) < .1);
+            auto *editor = control->property("contentItem").value<QQuickItem *>();
+            auto *indicator = control->property("indicator").value<QQuickItem *>();
+            QVERIFY(editor && indicator);
+            QVERIFY(editor->height() <= control->height());
+            QVERIFY(indicator->y() >= 0 &&
+                    indicator->y() + indicator->height() <= control->height());
+            const QFontMetricsF metrics(editor->property("font").value<QFont>());
+            QVERIFY2(metrics.horizontalAdvance(editor->property("text").toString()) <=
+                         editor->width() + 1,
+                     qPrintable(name + QStringLiteral(" text clipped")));
+            control->forceActiveFocus(Qt::TabFocusReason);
+            QTRY_VERIFY(control->hasActiveFocus());
+        }
+        settings->close();
     }
     void settingsOpenModeSelectionPersists_data() {
         QTest::addColumn<bool>("pointer");

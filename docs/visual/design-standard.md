@@ -97,6 +97,10 @@ English: Operation-window zipper illustrations share the geometry and inventory 
 
 [create-reference.json](create-reference.json) 固定 C01 原图哈希、控件裁剪坐标与当前修订。操作按钮、输入框、下拉框及 footer 按钮的圆角统一为 5，浅色描边 #DCE2EC、深色 #485469，普通中性按钮底色 #FAFBFD。正文动作高 28、footer 动作高 32；footer 的文字 13、说明 12，不再由每扇窗口覆盖形状、描边、字体、颜色与密度。危险动作仍使用语义危险色，焦点不增加额外描边。
 
+设置窗口的密度、文字大小、语言和打开方式下拉框共用相同逻辑高度：不低于正文按钮高度，文字需要更多空间时使用文字高度加 8，确保大字号不裁切。可编辑输入框的文本选区使用现有 accent 背景和 accentText 前景，浅深色均保持可读；主窗口搜索、操作字段和可编辑下拉框以及 HTML 示例遵循同一颜色关系，不改变未选中文字与占位文字。
+
+English: All four settings selectors share the same logical height, at least the body-button height or the text height plus 8. Editable text selections use the existing accent background and accentText foreground in both themes. Search, operation fields, editable selectors and the HTML prototype follow the same contrast policy without changing unselected or placeholder text.
+
 Qt 使用 OperationButton、OperationFooterButton、OperationFrame、OperationSelect、OperationRemoveButton 和 OperationSegmentedGroup。窗口仅提供文字、数据、状态与操作；共享组件承担所有外观与行为。HTML 使用同一生成参数及共用样式、分段组选项生成器。下拉图标槽为 18，槽右边到控件右边为 6；HTML 下拉描边以 inset outline 绘制，避免浏览器对分数 CSS border 向下取整后移动图标。
 
 创建列表使用 28 命中区域与 24 图标槽的圆形减号，来自统一素材库；文件大小靠右。压缩格式是一条连续分段 radio group，等宽、零间距、单一外描边，禁用格式不接受鼠标或键盘选择。文件摘要读取后台普通文件元数据，三个原稿同名夹具的实际大小为 8.4、6.2、12.8 MB，显示“3 个文件，27.4 MB”。目录总量保留未知，开始任务时重新冻结输入树。

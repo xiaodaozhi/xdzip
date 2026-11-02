@@ -2,6 +2,7 @@
    The outer reviewer scales this whole artboard; it does not reflow desktop UI. */
 :root { --font:"Xdzip Design Sans SC",sans-serif; --canvas:#f7f8fa; --surface:#fff; --sidebar:#f5f6f8; --text:#141827; --secondary:#626b86; --border:#e3e7ef; --accent:#1956ff; --accent-ink:#1956ff; --accent-hover:#1048e8; --selection:#e7edff; --row-height:66px; }
 :root[data-theme="dark"] { --canvas:#171a20; --surface:#22262f; --sidebar:#1d2129; --text:#f0f2f8; --secondary:#a7b0c7; --border:#363d4b; --accent:#3264e9; --accent-ink:#8aafff; --selection:#30436a; }
+input::selection, textarea::selection { background:var(--accent); color:var(--on-accent); }
 :root { --pane-header-height:69px; --pane-header-font-size:20px; --pane-header-line-height:28px; --pane-header-text-offset:-2px; }
 /* Column labels and values share the same content edge at every row. */
 :root { --original-size-column-inset:26px; --compressed-size-column-inset:22px; --type-column-inset:28px; }
