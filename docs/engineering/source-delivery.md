@@ -57,6 +57,21 @@ python3 scripts/convert-iso-codes-for-qt.py \
 
 English: To reproduce the comparison, obtain the pinned Ubuntu `iso-codes` 4.16.0-1 package from the official archive linked above. On Linux, the commands above verify its SHA-256 before extracting it into a local build directory and converting its two JSON tables. The two verified input hashes and resulting table hash are listed above. The package copyright file declares LGPL-2.1-or-later, but that package-level statement alone does not establish the historical SIL table grant or redistribution rights for a complete code set. Neither the package nor the complete converted table is included in this delivery; review provenance, applicable terms and any subsequent redistribution separately.
 
+也可自行取得 [IANA 语言子标签注册表](https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)和[美国国会图书馆 ISO 639-2 列表](https://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt)，使用以下命令生成另一份输入。工具只提取代码，不保留名称；它报告未匹配的代码、输入与输出摘要，并拒绝无效或有歧义的记录。
+
+```sh
+python3 scripts/convert-iana-loc-for-qt.py \
+  --iana path/to/language-subtag-registry.txt \
+  --loc path/to/ISO-639-2_utf-8.txt \
+  --output build/qt-iana-loc-codes.tsv
+```
+
+对照所用 IANA 文件日期为 2026-09-17，SHA-256 为 `755fad43283be7b41ebe3c89ad054b6eaf928f404f9c0edb74799e0eab74beb1`；国会图书馆的 487 条记录取自网页渲染并在本地重建，不能把重建文本的摘要当成上游原始文件摘要。重建记录仅前三列、制表符分隔并使用 LF 换行的 SHA-256 为 `f575653835cdaa3c998b578969680c1222da58c27e9dd09592ef64c756dde0a1`；转换器的 LF 输出摘要为 `6a75bebfa694258a1a4125fc30512d8ae7994080701377b41306db665ad371c6`。该组合生成 8268 行，现有 Qt 语言的 346 个不同查找键全部一致；使用固定 Qt 与 CLDR 重生八个文件，仅规范化生成日期和换行后全部匹配，修改一项输入的负对照匹配七个。对照中 `bh`、`in`、`iw`、`ji`、`jw`、`mo`、`sh` 七个 IANA 双字母子标签没有 LoC 对应记录，工具会报告它们；其他版本和新增语言须单独核对。详情见 [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6577076799)。
+
+[IANA 与 IETF 的声明](https://www.iana.org/help/licensing-terms)将其拥有或有权转授的协议注册表相关权利按 CC0 处理，并保留第三方可能拥有的权利；该声明不自动证明 SIL 原始表的全部权利。项目不在此交付 IANA、LoC 输入或完整转换结果；接收者须分别核对来源、适用条款与后续分发条件。该替代输入不证明 Qt 上游历史输入，也不单独证明对应源码义务已经完成。
+
+English: The command above converts independently obtained IANA language-subtag and Library of Congress ISO 639-2 data to Qt lookup rows without language names. It reports unmatched entries and hashes, and rejects malformed or conflicting records. In the comparison described in [#138](https://github.com/xiaodaozhi/xdzip/issues/138#issuecomment-6577076799), the 2026-09-17 IANA snapshot and 487 LoC records reconstructed from the public web rendering produced 8268 rows and matched all 346 existing Qt lookup keys. Their IANA, code-only normalized LoC and LF-output hashes are listed above; the normalized LoC hash is not an upstream raw-file hash. All eight generated files matched after normalizing generation dates and line endings; a negative control matched seven. The seven unmatched two-letter subtags are listed above and reported by the tool; verify other versions and added languages separately. The IANA/IETF CC0 statement applies to rights they hold or can sublicense and preserves possible third-party rights. Neither input nor the complete converted table is included here; this alternative establishes neither Qt's historical input nor complete corresponding-source compliance.
+
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
 `rar-wire-mappings/` 单独保留有限 RAR 线映射的固定参考来源、说明和 UnRAR 7.30 beta1 精确原始许可，全部进入交付文件哈希清单。下载归档名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。交付前还核对相关 Rust 源码注释中完整保留的上游许可第 2 段，作为保守通知措施；缺失或变更时停止。它不携带官方引擎源码，也不将事实来源重新许可为 Apache-2.0，条款适用范围和实际再分发义务继续按候选复核。
