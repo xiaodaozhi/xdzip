@@ -164,6 +164,7 @@ def main():
                               'sha256': digest(path) if path.is_file() else None})
             dump(output / 'retired-graphics-failure.json', {'installer_exit': result.returncode, 'files': files})
             raise subprocess.CalledProcessError(result.returncode, [package, '/VERYSILENT'])
+        return log
 
     def retired_graphics_boundaries():
         names = ('d3dcompiler_47.dll', 'dxcompiler.dll', 'dxil.dll')
@@ -181,7 +182,10 @@ def main():
         assert actual['version'] == OLD['version'] and actual['build'] == OLD['build']
         modified.write_bytes(b'retired fixture dxil.dll')
         assert all((install_root/name).read_bytes() == ('retired fixture '+name).encode('ascii') for name in names)
-        install(new)
+        log = install(new)
+        raw = log.read_bytes()
+        contents = raw.decode('utf-16' if raw.startswith(b'\xff\xfe') else 'utf-8-sig', errors='replace')
+        assert contents.count('Owned retire pass: 3') == 1, 'Cleanup was processed more than once'
         assert all(not (install_root/name).exists() for name in names)
         results.append(dict(case='modified-retired-file-preserved', status='passed'))
 

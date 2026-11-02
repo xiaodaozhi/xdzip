@@ -5,7 +5,7 @@
   path/hash rechecks are not a handle-based adversarial race boundary. }
 var
   CurrentFiles, RetiredFiles: TArrayOfString;
-  CleanupFailed: Boolean;
+  CleanupFailed, CleanupProcessed: Boolean;
 
 function SafeRelativePath(const Value: String): Boolean;
 var
@@ -165,6 +165,9 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var I, Count: Integer; Name: String; Removed: Boolean;
 begin
   if CurStep <> ssDone then exit;
+  { Inno can call event functions more than once during one Setup run. }
+  if CleanupProcessed then exit;
+  CleanupProcessed := True;
   for I := 0 to GetArrayLength(RetiredFiles) - 1 do begin
     Name := ExpandConstant('{app}\') + EntryPath(RetiredFiles[I]);
     Removed := False;
