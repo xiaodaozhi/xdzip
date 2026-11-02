@@ -480,8 +480,8 @@ class BrowserTest : public QObject {
         controller.m_busy = true;
         controller.m_result.closeSession = true;
         probe.closeForCancel();
-        // A slow close must not be mistaken for a pending new open.
-        QTest::qWait(400);
+        // Exceed both old delays (200 ms before closing, 300 ms before reopening).
+        QTest::qWait(750);
         QVERIFY(probe.m_phase == DesktopProbe::Phase::ClosingForCancel);
         QVERIFY(controller.m_sourcePath.isEmpty());
         QVERIFY(controller.m_busy);
