@@ -25,6 +25,9 @@ ISO639_DIRECTORY = 'tools/cldr-code/src/main/resources/org/unicode/cldr/util/dat
 ISO639_TABLES = frozenset(ISO639_DIRECTORY + name for name in (
     'iso-639-3.tab', 'iso-639-3_Name_Index.tab', 'iso-639-3-macrolanguages.tab',
     'iso-639-3_Retirements.tab', 'iso-639-3-version.tab'))
+CLDR_IDENTIFIER_FILES = ('common/validity/language.xml',
+                         'common/supplemental/supplementalMetadata.xml')
+CLDR_LANGUAGE_REGISTRY = ISO639_DIRECTORY + 'language-subtag-registry'
 
 
 def archive_source(item, cache):
@@ -113,6 +116,7 @@ def collect_icu_data_sources(output, cache):
             'icu-data-source', 'cldr-data-source', 'icu-cldr-bootstrap-source'}:
         raise ValueError('Expected the pinned ICU, CLDR and ICU4J bootstrap sources')
     sources = []
+    retained_identifiers = {}
     for item in items:
         source = fetch(item, cache)
         root = item['archive_root']
@@ -145,6 +149,9 @@ def collect_icu_data_sources(output, cache):
                              if member.isfile() and 'iso-639-3' in member.name.lower()}
                 if iso_names != ISO639_TABLES:
                     raise ValueError('Unexpected ISO 639-3 files in CLDR source archive')
+                files = {member.name for member in members if member.isfile()}
+                retained_identifiers[item['module']] = [name for name in (*CLDR_IDENTIFIER_FILES, CLDR_LANGUAGE_REGISTRY)
+                                                        if root+'/'+name in files]
             elif item['module'] == 'icu-cldr-bootstrap-source':
                 if any(member.isfile() and 'iso-639-3' in member.name.lower() for member in members):
                     raise ValueError('Unexpected ISO 639-3 file in ICU4J bootstrap source')
@@ -164,7 +171,9 @@ def collect_icu_data_sources(output, cache):
                 record['upstream_source_tree'] = record.pop('source_tree')
             record.update(file=name, sha256=digest(target), upstream_file=item['file'],
                           upstream_archive_sha256=item['sha256'], complete_upstream_tree=False,
-                          omitted_files=sorted(ISO639_TABLES))
+                          omitted_files=sorted(ISO639_TABLES),
+                          identified_language_identifier_files=retained_identifiers[item['module']],
+                          identifier_file_list_exhaustive=False)
         else:
             shutil.copy2(source, output/source.name)
         records.append(record)
@@ -243,6 +252,8 @@ def collect_qt_cldr_source(output, qtbase, cache):
         if any(member.isfile() and member.name.startswith(root+'/common/') and
                'iso-639-3' in member.name.lower() for member in members):
             raise ValueError('Unexpected ISO 639-3 table in Qt CLDR common tree')
+        files = {member.name for member in members if member.isfile()}
+        retained_identifiers = [name for name in CLDR_IDENTIFIER_FILES if root+'/'+name in files]
     name = 'cldr-'+item['version']+'-common-only.tar.gz'
     target = output/name
     filter_source_tar(upstream, target, lambda path: path in (root, root+'/LICENSE', root+'/common') or
@@ -252,7 +263,9 @@ def collect_qt_cldr_source(output, qtbase, cache):
             'version': item['version'], 'scope': 'common and LICENSE only',
             'upstream_url': item['url'], 'upstream_archive_sha256': item['sha256'],
             'source_commit': item['source_commit'], 'upstream_common_tree': item['common_tree'],
-            'iso_639_3_table_included': False}
+            'iso_639_3_table_included': False,
+            'identified_language_identifier_files': retained_identifiers,
+            'identifier_file_list_exhaustive': False}
 
 
 def write_vendor_config(output):
@@ -296,6 +309,11 @@ def rebuild_instructions():
    generator also needs a separate ISO 639-3 table, not included in this delivery.
    qt-cldr-sources.json records a tested candidate, not a verified historical Qt input;
    check its upstream terms before obtaining it at the URL above.
+   CLDR 46 common 的 validity 和 supplemental 文件仍含大量语言标识符和别名；
+   不含原表不意味着没有相关数据。详见 docs/engineering/source-delivery.md。
+   English: CLDR 46 common still includes many language identifiers and aliases in
+   validity and supplemental data. Omitting the original table does not imply those
+   related data are absent; see docs/engineering/source-delivery.md.
    已有语言可从 Qt 原生成源码派生有限输入，例如将 QtBase 解包到当前目录后执行：
    python3 scripts/derive-qt-locale-code-input.py --qtbase qtbase-everywhere-src-6.8.2 \\
      --output build/qt-locale-codes.tsv
@@ -333,12 +351,16 @@ def rebuild_instructions():
      --output build/qt-iana-loc-codes.tsv
    工具报告输入摘要与未匹配项。对照来源、七个未匹配双字母子标签、八文件
    正反对照及 IANA 声明的权利范围见 docs/engineering/source-delivery.md。
-   输入及完整转换表不随本交付提供；此路径不证明历史输入或完整对应源码。
+   本次对照的 2026 年 IANA 快照、LoC 输入及完整转换表不随本交付提供；
+   CLDR 43.1 子集另含较早的语言注册表。另行获取不表示标准来源独立，
+   RFC 5646 将 ISO 639-3 列为来源之一。此路径不证明历史输入或完整对应源码。
    English: The command above converts independently obtained IANA and LoC inputs.
    It reports hashes and unmatched codes; see source-delivery.md for the comparison,
    seven unmatched two-letter subtags and the limited scope of IANA's rights statement.
-   Inputs and complete converted data are not included; historical identity and complete
-   corresponding-source compliance are not established by this alternative.
+   The 2026 IANA and LoC comparison inputs and complete converted data are not included;
+   the CLDR 43.1 subset separately retains an earlier registry. Independent acquisition
+   is not independent standards provenance; RFC 5646 lists ISO 639-3 as a source.
+   Historical identity and complete source compliance are not established by this alternative.
 3. 从源码工作目录离线核验当前 codec 构建材料：
    python3 scripts/prepare-native-codecs.py --offline --archives <交付目录>/native-codecs
    当前独立 Rust 后端的格式源码清单为空，此步骤不下载或编译官方格式引擎。
@@ -371,13 +393,15 @@ def rebuild_instructions():
 6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树、
    CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树随目录提供。
    CLDR 子集排除了五个 ISO 639-3 文件，不能称为完整源码树；其他用途需要这些
-   文件时须另行核对来源和条款。按项目 docs/engineering/icu-cldr-rebuild.md 的
+   文件时须另行核对来源和条款。子集的其他文件仍含语言标识符、别名和较早的
+   语言子标签注册表。按项目 docs/engineering/icu-cldr-rebuild.md 的
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
    不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
-   subset omits five ISO 639-3 files and is not a complete upstream tree; other uses
+   subset omits five ISO 639-3 files but retains language identifiers, aliases and an
+   earlier language-subtag registry. It is not a complete upstream tree; other uses
    needing them require separate source and terms review. See the ICU data rebuild
    instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
    Matching versions do not prove the supplier built its libraries without patches
