@@ -40,6 +40,23 @@ python3 scripts/convert-iso-codes-for-qt.py \
 
 English: As another option, obtain the `iso-codes` ISO 639-2 and 639-3 JSON data independently and run the command above. The converter extracts code mappings without names; a complete input still produces a complete code set. It rejects invalid or ambiguous inputs, skips the reserved local-use range and reports input and output SHA-256 values. See [#138](https://github.com/xiaodaozhi/xdzip/issues/138) for the Qt 6.8.2 comparison with Ubuntu `iso-codes` 4.16.0-1; check results separately for other versions. The data is not included in this delivery. Review its stated license, provenance and redistribution terms for the generated table independently; an alternative table does not establish Qt's historical input or complete source compliance.
 
+为复现该对照，可从 [Ubuntu 官方归档的 iso-codes 4.16.0-1 包](https://archive.ubuntu.com/ubuntu/pool/main/i/iso-codes/iso-codes_4.16.0-1_all.deb)自行取得数据。以下示例需要 Linux 的 `curl`、`dpkg-deb` 和 Python 3；它先校验包摘要，再在本地解包和转换，不修改系统安装：
+
+```sh
+mkdir -p build && mkdir build/qt-iso-peer &&
+curl --fail --location --silent --show-error --connect-timeout 15 --max-time 120 https://archive.ubuntu.com/ubuntu/pool/main/i/iso-codes/iso-codes_4.16.0-1_all.deb -o build/qt-iso-peer/iso-codes.deb &&
+python3 -c "import hashlib,pathlib,sys; p=pathlib.Path('build/qt-iso-peer/iso-codes.deb'); h=hashlib.sha256(p.read_bytes()).hexdigest(); sys.exit(0 if h=='cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7' else 'Package SHA-256 mismatch')" &&
+dpkg-deb -x build/qt-iso-peer/iso-codes.deb build/qt-iso-peer/data &&
+python3 scripts/convert-iso-codes-for-qt.py \
+  --iso-639-2 build/qt-iso-peer/data/usr/share/iso-codes/json/iso_639-2.json \
+  --iso-639-3 build/qt-iso-peer/data/usr/share/iso-codes/json/iso_639-3.json \
+  --output build/qt-iso-peer/qt-locale-codes.tsv
+```
+
+已核验两份输入的 SHA-256 分别为 `fa83810fdb59f9d84b4d58486d5e5e48e807d82a98d6a39ef0ba4fc57c2a9327` 和 `9636ce5266053867627140ce5ada1f9aa897ca07a7501302c1b14b8d1147cdda`，转换输出为 `85457a36e013e053b70dea19d500ebec2ae6bedf5dad9af0035b973c8db6a60a`。Ubuntu 包内 `usr/share/doc/iso-codes/copyright` 声明 LGPL-2.1-or-later；这项包级声明不单独证明 SIL 代码表的历史授权或完整代码集再分发权。项目不将该包或完整转换结果放入源码交付，使用者应分别核对来源、适用条款及后续分发范围。
+
+English: To reproduce the comparison, obtain the pinned Ubuntu `iso-codes` 4.16.0-1 package from the official archive linked above. On Linux, the commands above verify its SHA-256 before extracting it into a local build directory and converting its two JSON tables. The two verified input hashes and resulting table hash are listed above. The package copyright file declares LGPL-2.1-or-later, but that package-level statement alone does not establish the historical SIL table grant or redistribution rights for a complete code set. Neither the package nor the complete converted table is included in this delivery; review provenance, applicable terms and any subsequent redistribution separately.
+
 输出包含实际固定提交的 xdzip-source.tar、rust-vendor.tar.gz、离线 Cargo 配置、Qt 原始归档、REBUILD.md 和逐文件 SHA-256／大小清单。清单明确为 collected-not-compliance-verified，不能替代 SDK 构建 features／补丁、平台运行库、内嵌资源和许可履约的核对。项目源码重新配置的身份可能为 unknown，应由外部交付清单绑定原提交，不能伪造干净 Git 身份。
 
 `rar-wire-mappings/` 单独保留有限 RAR 线映射的固定参考来源、说明和 UnRAR 7.30 beta1 精确原始许可，全部进入交付文件哈希清单。下载归档名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。交付前还核对相关 Rust 源码注释中完整保留的上游许可第 2 段，作为保守通知措施；缺失或变更时停止。它不携带官方引擎源码，也不将事实来源重新许可为 Apache-2.0，条款适用范围和实际再分发义务继续按候选复核。

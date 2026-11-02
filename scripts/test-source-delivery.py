@@ -618,6 +618,9 @@ class DeliveryTests(unittest.TestCase):
                 runpy.run_path(str(ROOT/'scripts/collect-notices.py'), run_name='__main__')
             inventory = json.loads((output/'build-inventory.json').read_text())
             hashes = {item['file']: item['sha256'] for item in inventory['notice_hashes']}
+            copyright_notice = output/'xdzip-COPYRIGHT.txt'
+            self.assertEqual(copyright_notice.read_bytes(), (ROOT/'COPYRIGHT').read_bytes())
+            self.assertEqual(hashes['xdzip-COPYRIGHT.txt'], hashlib.sha256(copyright_notice.read_bytes()).hexdigest())
             for name in ['README.md', 'sources.json', 'UnRAR-7.3.1-license.txt']:
                 path = 'rar-wire-mappings/'+name
                 self.assertEqual(hashes[path], hashlib.sha256((output/path).read_bytes()).hexdigest())
@@ -760,6 +763,9 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
         self.assertIn('tests/fixtures/native-archives/', document)
         self.assertIn('scripts/convert-iso-codes-for-qt.py', document)
         self.assertIn('完整输入会生成完整代码集', document)
+        self.assertIn('iso-codes_4.16.0-1_all.deb', document)
+        self.assertIn('cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7', document)
+        self.assertIn('docs/engineering/source-delivery.md', document)
 
     def test_generated_rebuild_stops_when_workspace_tests_fail(self):
         failure = subprocess.CalledProcessError(17, ['cargo', 'test'])

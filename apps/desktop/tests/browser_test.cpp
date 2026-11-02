@@ -5226,8 +5226,14 @@ QtObject {
                     auto *license = findVisual(about->contentItem(), "aboutLicense");
                     QVERIFY(license);
                     const auto licenseText = license->property("text").toString();
+                    QVERIFY(licenseText.contains(QStringLiteral("2026 xiaodaozhi")));
+                    QVERIFY(licenseText.contains(QStringLiteral("The Qt Company Ltd.")));
+                    QVERIFY(licenseText.contains(QStringLiteral("其他贡献人")) ||
+                            licenseText.contains(QStringLiteral("other contributors")));
                     QVERIFY(licenseText.contains(QStringLiteral("Apache-2.0")));
                     QVERIFY(licenseText.contains(QStringLiteral("LGPL-3.0")));
+                    QVERIFY(licenseText.contains(QStringLiteral("GPL-3.0 和 LGPL-3.0")) ||
+                            licenseText.contains(QStringLiteral("GPL-3.0 and LGPL-3.0")));
                     QVERIFY(licenseText.contains(QStringLiteral("notices")));
                     QVERIFY(license->width() > 0);
                     QVERIFY(license->height() >= license->implicitHeight() - 1);

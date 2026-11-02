@@ -37,6 +37,8 @@ if sys.platform == 'darwin':
     native_dependencies.append(configuration())
 shutil.copyfile(root / 'LICENSE', out / 'xdzip-Apache-2.0.txt')
 notice_files.append(out / 'xdzip-Apache-2.0.txt')
+shutil.copyfile(root / 'COPYRIGHT', out / 'xdzip-COPYRIGHT.txt')
+notice_files.append(out / 'xdzip-COPYRIGHT.txt')
 host = next(line.removeprefix('host: ') for line in subprocess.check_output(['rustc', '-vV'], text=True).splitlines() if line.startswith('host: '))
 metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--locked', '--format-version', '1', '--filter-platform', host], cwd=root, text=True))
 resolved = {node['id'] for node in metadata['resolve']['nodes']}
