@@ -109,8 +109,9 @@ def collect_native_sources(output, cache):
 def collect_icu_data_sources(output, cache):
     """Keep editable ICU/CLDR inputs as well as the pre-generated ICU archive."""
     items = configuration()['icu_data_sources']
-    if len(items) != 2 or {item['module'] for item in items} != {'icu-data-source', 'cldr-data-source'}:
-        raise ValueError('Expected the pinned ICU and CLDR data sources')
+    if len(items) != 3 or {item['module'] for item in items} != {
+            'icu-data-source', 'cldr-data-source', 'icu-cldr-bootstrap-source'}:
+        raise ValueError('Expected the pinned ICU, CLDR and ICU4J bootstrap sources')
     sources = []
     for item in items:
         source = fetch(item, cache)
@@ -144,6 +145,9 @@ def collect_icu_data_sources(output, cache):
                              if member.isfile() and 'iso-639-3' in member.name.lower()}
                 if iso_names != ISO639_TABLES:
                     raise ValueError('Unexpected ISO 639-3 files in CLDR source archive')
+            elif item['module'] == 'icu-cldr-bootstrap-source':
+                if any(member.isfile() and 'iso-639-3' in member.name.lower() for member in members):
+                    raise ValueError('Unexpected ISO 639-3 file in ICU4J bootstrap source')
         sources.append(source)
     records = []
     for item, source in zip(items, sources):
@@ -364,16 +368,22 @@ def rebuild_instructions():
 5. 应用动态链接 Qt，用户可重建后重新部署兼容的修改版 Qt。macOS 对替换后的所有
    Mach-O、framework 和应用重新做 ad-hoc 签名，否则 ARM64 可能拒绝加载。
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
-6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树及
-   CLDR 43.1 源码子集随目录提供。CLDR 子集排除了五个 ISO 639-3 文件；须按
-   其上游来源和条款另行取得，不能将子集称为完整源码树。版本与哈希见清单；
-   版本一致不证明供应商库由这些材料无补丁构建。
+6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树、
+   CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树随目录提供。
+   CLDR 子集排除了五个 ISO 639-3 文件，不能称为完整源码树；其他用途需要这些
+   文件时须另行核对来源和条款。按项目 docs/engineering/icu-cldr-rebuild.md 的
+   ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
+   不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
-   English: The Linux ICU license, ICU4C 73.2 upstream archive, pinned editable ICU
-   data source tree and a CLDR 43.1 subset are included. Five ISO 639-3 files are
-   omitted and their upstream source and terms require separate review. Matching versions
-   do not prove the supplier built its libraries without patches from these inputs. Current Windows developer packages
-   omit the software OpenGL library; historical deliveries retain their obligations.
+   English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
+   source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
+   subset omits five ISO 639-3 files and is not a complete upstream tree; other uses
+   needing them require separate source and terms review. See the ICU data rebuild
+   instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
+   Matching versions do not prove the supplier built its libraries without patches
+   from these inputs or independently establish licensing compliance. Current Windows
+   developer packages omit the software OpenGL library; historical deliveries retain
+   their obligations.
 
 ## 显式测试数据前置与完整 runtime 批次
 

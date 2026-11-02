@@ -3960,11 +3960,40 @@ QtObject {
             if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
                 QTRY_VERIFY(nativeWindowMatchesState(window, state));
 #endif
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                window->setProperty("xdzipTraceFirstMinimize", int(state) + 1);
+                window->setProperty("xdzipTraceActivation", true);
+                qInfo() << "first minimize before request" << state;
+                traceNativeWindowState(window);
+                for (const auto delay : {500, 3000})
+                    QTimer::singleShot(delay, window, [window, state, delay] {
+                        if (window->property("xdzipTraceFirstMinimize").toInt() == int(state) + 1) {
+                            qInfo() << "first minimize delayed snapshot" << state << delay;
+                            traceNativeWindowState(window);
+                        }
+                    });
+            }
+#endif
             window->showMinimized();
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                qInfo() << "first minimize after request" << state;
+                traceNativeWindowState(window);
+            }
+#endif
             QTRY_VERIFY(window->windowStates().testFlag(Qt::WindowMinimized));
             if (QGuiApplication::platformName() != QStringLiteral("offscreen"))
                 QTRY_VERIFY(!window->isExposed());
             QTRY_VERIFY(nativeStateSettled(window, Qt::WindowMinimized));
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                qInfo() << "first minimize settled" << state;
+                traceNativeWindowState(window);
+                window->setProperty("xdzipTraceFirstMinimize", 0);
+                window->setProperty("xdzipTraceActivation", false);
+            }
+#endif
             qInfo() << "Restoring native minimized state" << window->windowStates() << "saved"
                     << window->property("xdzipRestoreState");
             desktop.restore();
@@ -10695,22 +10724,41 @@ QtObject {
                          [&] { traceGeometry(QStringLiteral("bodyImplicitHeightChanged")); });
         QObject::connect(footer, &QQuickItem::implicitHeightChanged, &traceLifetime,
                          [&] { traceGeometry(QStringLiteral("footerImplicitHeightChanged")); });
+        const auto saveGeometryTrace = [&] {
+            QFile trace(QDir(output).filePath("result-height-trace.json"));
+            return trace.open(QIODevice::WriteOnly) &&
+                   trace.write(QJsonDocument(QJsonObject{{"samples", geometryTrace}}).toJson()) > 0;
+        };
+        bool traceSaved = false;
+        const auto saveTraceOnExit = qScopeGuard([&] {
+            if (!output.isEmpty() && !traceSaved) {
+                traceGeometry(QStringLiteral("onExit"));
+                saveGeometryTrace();
+            }
+        });
         traceGeometry(QStringLiteral("beforeExpand"));
+        const auto collapsedBodyHeight = body->implicitHeight();
+        QVERIFY(!toggle->property("checked").toBool());
         toggle->forceActiveFocus(Qt::TabFocusReason);
         QTest::qWait(20);
         QTest::keyClick(task, Qt::Key_Space);
         traceGeometry(QStringLiteral("afterKey"));
         QTRY_VERIFY(toggle->property("checked").toBool());
         QTRY_VERIFY(visibleImagesReady(task->contentItem()));
+        // Expanding the fixed fixture must first change the natural content height.
+        // The requested and native window heights may settle on later event turns.
+        QTRY_VERIFY_WITH_TIMEOUT(body->implicitHeight() > collapsedBodyHeight, 5000);
+        QTRY_COMPARE_WITH_TIMEOUT(task->height(), task->property("requestedHeight").toInt(), 5000);
+        QTRY_COMPARE_WITH_TIMEOUT(task->minimumHeight(), task->height(), 5000);
+        QTRY_COMPARE_WITH_TIMEOUT(task->maximumHeight(), task->height(), 5000);
+        traceGeometry(QStringLiteral("beforeCapture"));
         QVERIFY(capture("result-details"));
         traceGeometry(QStringLiteral("afterCapture"));
         if (!output.isEmpty()) {
             QTest::qWait(1500);
             traceGeometry(QStringLiteral("afterWait"));
-            QFile trace(QDir(output).filePath("result-height-trace.json"));
-            QVERIFY(trace.open(QIODevice::WriteOnly));
-            QVERIFY(trace.write(QJsonDocument(QJsonObject{{"samples", geometryTrace}}).toJson()) >
-                    0);
+            QVERIFY(saveGeometryTrace());
+            traceSaved = true;
         }
         controller->requestClose();
         QTRY_VERIFY(controller->requestClose());
