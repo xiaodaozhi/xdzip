@@ -99,6 +99,8 @@ inline bool save(QQuickWindow *window, const QString &directory, const QString &
                      {"architecture", QSysInfo::currentCpuArchitecture()},
                      {"requestedQuickBackend", qEnvironmentVariable("QT_QUICK_BACKEND")},
                      {"nodes", nodes}};
+    data["maximumHeight"] = window->maximumHeight();
+    data["requestedHeight"] = QJsonValue::fromVariant(window->property("requestedHeight"));
     QFile file(directory + "/" + name + ".json");
     return file.open(QIODevice::WriteOnly) && file.write(QJsonDocument(data).toJson()) > 0 &&
            shot.save(directory + "/" + name + ".png");
