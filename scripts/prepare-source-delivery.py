@@ -145,6 +145,9 @@ def collect_icu_data_sources(output, cache):
                              if member.isfile() and 'iso-639-3' in member.name.lower()}
                 if iso_names != ISO639_TABLES:
                     raise ValueError('Unexpected ISO 639-3 files in CLDR source archive')
+            elif item['module'] == 'icu-cldr-bootstrap-source':
+                if any(member.isfile() and 'iso-639-3' in member.name.lower() for member in members):
+                    raise ValueError('Unexpected ISO 639-3 file in ICU4J bootstrap source')
         sources.append(source)
     records = []
     for item, source in zip(items, sources):

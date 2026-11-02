@@ -587,7 +587,8 @@ class DeliveryTests(unittest.TestCase):
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor',
-                     'escaping member', 'unexpected ISO table', 'bootstrap hash', 'bootstrap anchor']
+                     'escaping member', 'unexpected ISO table', 'bootstrap hash', 'bootstrap anchor',
+                     'bootstrap ISO table']
             for case in cases:
                 with self.subTest(case=case):
                     items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
@@ -596,7 +597,9 @@ class DeliveryTests(unittest.TestCase):
                                  {'cldr-owned/unexpected/iso-639-3-extra.tab': b'x'}
                                  if case == 'unexpected ISO table' else None),
                              self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
-                                                      b'ICU4J bootstrap')]
+                                                      b'ICU4J bootstrap',
+                                                      {'bootstrap-owned/iso-639-3.tab': b'x'}
+                                                      if case == 'bootstrap ISO table' else None)]
                     if case == 'missing module': items.pop()
                     if case == 'wrong archive hash': items[1]['sha256'] = '0'*64
                     if case == 'wrong anchor': items[1]['anchors']['data.txt'] = '0'*64
