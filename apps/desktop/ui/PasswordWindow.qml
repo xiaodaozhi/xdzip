@@ -133,7 +133,7 @@ OperationWindow {
                         id: heading
                         objectName: "passwordHeading"
                         Layout.fillWidth: true
-                        text: root.prompt.kind === "open" ? qsTrId("password.openHeading") : qsTrId("password.heading")
+                        text: root.prompt.kind === "open" ? qsTrId("password.openHeading") : root.prompt.kind === "check" ? qsTrId("integrity.passwordHeading") : qsTrId("password.heading")
                         textFormat: Text.PlainText
                         font.pixelSize: Math.round(Theme.passwordTitleSize)
                         font.bold: true

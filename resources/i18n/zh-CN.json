@@ -637,6 +637,7 @@
     "integrity.tarNote": "TAR 无文件内容校验和，仅检查结构与可读性，不写出文件。",
     "integrity.discImageNote": "%1 无逐文件内容校验和，仅检查结构与可读性，不写出文件。",
     "integrity.passwordTitle": "检查密码",
+    "integrity.passwordHeading": "输入密码以继续检查",
     "integrity.continue": "继续检查",
     "entry.open": "打开",
     "update.title": "添加到压缩包",

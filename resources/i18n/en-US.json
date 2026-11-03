@@ -637,6 +637,7 @@
     "integrity.tarNote": "TAR has no content checksums. Checks structure and readability without writing files.",
     "integrity.discImageNote": "%1 has no per-file content checksums. Checks structure and readability without writing files.",
     "integrity.passwordTitle": "Archive check password",
+    "integrity.passwordHeading": "Enter a password to check",
     "integrity.continue": "Continue check",
     "entry.open": "Open",
     "update.title": "Add to archive",

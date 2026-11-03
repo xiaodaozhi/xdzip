@@ -70,6 +70,7 @@ Item {
             testController.passwordPrompt = {taskId:"check-1",promptId:"check-password",name:"secret.pdf",retry:false,kind:"check"};
             tryCompare(passwordWindow,"visible",true);
             compare(passwordWindow.title,qsTrId("integrity.passwordTitle"));
+            compare(passwordWindow.headingItem.text,qsTrId("integrity.passwordHeading"));
             compare(findChild(passwordWindow,"passwordSubmit").text,qsTrId("integrity.continue"));
         }
         function test_open_password_uses_open_operation_and_identity() {
