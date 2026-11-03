@@ -6410,7 +6410,8 @@ QtObject {
         QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
-        QVERIFY(scroll && bar);
+        auto *pageContent = findVisual(settings->contentItem(), "settingsPageContent");
+        QVERIFY(scroll && bar && pageContent);
         auto *flick = scroll->property("contentItem").value<QQuickItem *>();
         QVERIFY(flick);
         QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
@@ -6418,12 +6419,15 @@ QtObject {
         const qreal initialHeight = flick->property("contentHeight").toReal();
         const qreal initialThumb = bar->property("size").toReal();
         QVERIFY(initialThumb > 0 && initialThumb < 1);
+        QSignalSpy thumbChanges(bar, SIGNAL(sizeChanged()));
+        QVERIFY(thumbChanges.isValid());
         QVERIFY(QMetaObject::invokeMethod(check, "click"));
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
         QTRY_COMPARE(service->property("checks").toInt(), 1);
         QTest::qWait(50);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, 1000);
+        QVERIFY2(thumbChanges.isEmpty(), "scrollbar size changed while starting the update check");
         const QList<QVariantMap> states{
             {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
             {{"state", "error"}, {"error", "unsafe_installation"}},
@@ -6443,9 +6447,11 @@ QtObject {
             service->setProperty("candidateVersion", QStringLiteral("65535.65535.65535-alpha.65535"));
             service->setProperty("state", state);
             QTest::qWait(30);
+            QVERIFY2(flick->property("contentHeight").toReal() + .5 >= pageContent->implicitHeight(), qPrintable(state));
             QTRY_VERIFY2_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5,
                 qPrintable(state + QStringLiteral(" content height %1, expected %2").arg(flick->property("contentHeight").toReal()).arg(initialHeight)), 1000);
             QTRY_VERIFY2_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, qPrintable(state), 1000);
+            QVERIFY2(thumbChanges.isEmpty(), qPrintable(state + QStringLiteral(" changed the scrollbar size")));
         }
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
         QVERIFY(license);

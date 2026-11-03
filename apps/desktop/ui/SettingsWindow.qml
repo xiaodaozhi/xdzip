@@ -215,18 +215,21 @@ OperationWindow {
                 Layout.fillHeight: true
                 clip: true
                 contentWidth: availableWidth
-                // Keep the scroll extent stable while the update section changes state.
-                contentHeight: pageContent.implicitHeight +
-                    (root.currentTab === 5 && pageLoader.item ?
-                        Math.max(0, pageLoader.item.updateReserveHeight - pageLoader.item.updateContentHeight) : 0)
+                // Measure the About page independently of the changing update section.
+                contentHeight: root.currentTab === 5 && pageLoader.item ?
+                    pageLoader.item.stablePageHeight + Theme.settingsPageInset + Theme.settingsPageSectionGap +
+                        (settingsError.visible ? settingsError.implicitHeight + Theme.settingsPageSectionGap : 0) :
+                    pageContent.implicitHeight
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                 ScrollBar.vertical: ScrollBar { objectName: "settingsVerticalScrollBar" }
                 ColumnLayout {
                     id: pageContent
+                    objectName: "settingsPageContent"
                     width: pageScroll.availableWidth
                     spacing: Theme.settingsPageSectionGap
                     Item { Layout.preferredHeight: 0 }
                     Text {
+                        id: settingsError
                         Layout.leftMargin: Theme.settingsPageInset
                         Layout.rightMargin: Theme.settingsPageInset
                         Layout.fillWidth: true
@@ -469,7 +472,8 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-about"
             spacing: Theme.settingsPageSectionGap
-            readonly property real updateContentHeight: updateSection.implicitHeight
+            readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight + updateReserveHeight +
+                                                     aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap * 2
             readonly property real updateActionHeight: Math.max(cancelUpdate.implicitHeight, installUpdate.implicitHeight,
                                                                 recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
             readonly property real updateReserveHeight: Math.max(
@@ -522,7 +526,7 @@ OperationWindow {
                             qsTrId("update.preview")]
                     delegate: Text {
                         required property string modelData
-                        width: Math.max(1, updateStatus.width)
+                        width: Math.max(1, updateSection.width - checkUpdate.implicitWidth - updateStatusRow.spacing)
                         text: modelData
                         font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
                         textFormat: Text.PlainText
@@ -536,7 +540,7 @@ OperationWindow {
                     model: [qsTrId("update.available").arg("65535.65535.65535-alpha.65535"), qsTrId("update.downloaded")]
                     delegate: Text {
                         required property string modelData
-                        width: Math.max(1, updateStatus.width)
+                        width: Math.max(1, updateSection.width - checkUpdate.implicitWidth - updateStatusRow.spacing)
                         text: modelData
                         font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
                         textFormat: Text.PlainText
@@ -558,30 +562,36 @@ OperationWindow {
                     }
                 }
             }
-            PageTitle { text: qsTrId("settings.tabAbout") }
-            RowLayout {
-                Layout.fillWidth: true; spacing: 16
-                Image {
-                    objectName: "aboutArtwork"
-                    Layout.preferredWidth: 56; Layout.preferredHeight: 56
-                    source: Qt.platform.os === "osx" ? "qrc:/xdzip/assets/app-icon-macos.png" : "qrc:/xdzip/assets/app-icon.png"
-                    fillMode: Image.PreserveAspectFit; Accessible.ignored: true
+            ColumnLayout {
+                id: aboutBeforeUpdate
+                Layout.fillWidth: true
+                spacing: Theme.settingsPageSectionGap
+                PageTitle { text: qsTrId("settings.tabAbout") }
+                RowLayout {
+                    Layout.fillWidth: true; spacing: 16
+                    Image {
+                        objectName: "aboutArtwork"
+                        Layout.preferredWidth: 56; Layout.preferredHeight: 56
+                        source: Qt.platform.os === "osx" ? "qrc:/xdzip/assets/app-icon-macos.png" : "qrc:/xdzip/assets/app-icon.png"
+                        fillMode: Image.PreserveAspectFit; Accessible.ignored: true
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Text { text: "xdzip"; color: Theme.text; font.bold: true; font.pixelSize: Math.round(Theme.settingsTitleSize * Theme.fontScale) }
+                        PageNote { text: BuildInfo.version }
+                        PageNote { text: qsTrId("about.description") }
+                        PageNote { visible: BuildInfo.channel !== "stable" || BuildInfo.dirty; text: (BuildInfo.channel !== "stable" ? qsTrId("about.development") : "") + (BuildInfo.dirty ? "\n" + qsTrId("about.modified") : "") }
+                    }
                 }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Text { text: "xdzip"; color: Theme.text; font.bold: true; font.pixelSize: Math.round(Theme.settingsTitleSize * Theme.fontScale) }
-                    PageNote { text: BuildInfo.version }
-                    PageNote { text: qsTrId("about.description") }
-                    PageNote { visible: BuildInfo.channel !== "stable" || BuildInfo.dirty; text: (BuildInfo.channel !== "stable" ? qsTrId("about.development") : "") + (BuildInfo.dirty ? "\n" + qsTrId("about.modified") : "") }
-                }
+                PageSeparator {}
+                SectionTitle { text: qsTrId("settings.updateTitle") }
             }
-            PageSeparator {}
-            SectionTitle { text: qsTrId("settings.updateTitle") }
             ColumnLayout {
                 id: updateSection
                 Layout.fillWidth: true
                 spacing: Theme.settingsPageSectionGap
                 RowLayout {
+                    id: updateStatusRow
                     Layout.fillWidth: true
                     PageNote { id: updateStatus; objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
                     OperationButton { id: checkUpdate; objectName: "aboutCheckUpdate"; text: qsTrId("update.check"); enabled: root.updater && !root.updater.busy; onClicked: root.updater.check() }
@@ -621,27 +631,32 @@ OperationWindow {
                     OperationButton { id: openUpdate; visible: root.updater && root.updater.downloaded; text: qsTrId("update.openDownload"); onClicked: root.updater.openDownloadFolder() }
                 }
             }
-            PageSeparator {}
-            SectionTitle { text: qsTrId("settings.versionTitle") }
-            GridLayout {
-                Layout.fillWidth: true; columns: 2; columnSpacing: 16; rowSpacing: 6
-                PageNote { text: qsTrId("about.version") }
-                PageNote { objectName: "aboutValue-1"; text: BuildInfo.version; color: Theme.text }
-                PageNote { text: qsTrId("about.build") }
-                PageNote { text: String(BuildInfo.buildNumber); color: Theme.text }
-                PageNote { text: qsTrId("about.revision") }
-                PageNote { text: BuildInfo.revision === "unknown" ? qsTrId("about.unknown") : BuildInfo.revision; color: Theme.text }
-                PageNote { text: qsTrId("about.runtime") }
-                PageNote { text: "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture; color: Theme.text }
+            ColumnLayout {
+                id: aboutAfterUpdate
+                Layout.fillWidth: true
+                spacing: Theme.settingsPageSectionGap
+                PageSeparator {}
+                SectionTitle { text: qsTrId("settings.versionTitle") }
+                GridLayout {
+                    Layout.fillWidth: true; columns: 2; columnSpacing: 16; rowSpacing: 6
+                    PageNote { text: qsTrId("about.version") }
+                    PageNote { objectName: "aboutValue-1"; text: BuildInfo.version; color: Theme.text }
+                    PageNote { text: qsTrId("about.build") }
+                    PageNote { text: String(BuildInfo.buildNumber); color: Theme.text }
+                    PageNote { text: qsTrId("about.revision") }
+                    PageNote { text: BuildInfo.revision === "unknown" ? qsTrId("about.unknown") : BuildInfo.revision; color: Theme.text }
+                    PageNote { text: qsTrId("about.runtime") }
+                    PageNote { text: "Qt " + BuildInfo.qtVersion + ", " + BuildInfo.platform + ", " + BuildInfo.architecture; color: Theme.text }
+                }
+                OperationButton {
+                    objectName: "aboutCopy"
+                    text: root.copiedVersion ? qsTrId("about.copied") : qsTrId("about.copy")
+                    onClicked: { BuildInfo.copyVersionInfo(); root.copiedVersion = true; copyTimer.restart(); }
+                }
+                PageSeparator {}
+                OperationButton { objectName: "aboutHomepage"; text: qsTrId("about.homepage"); onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip") }
+                PageNote { objectName: "aboutLicense"; text: qsTrId("about.license") }
             }
-            OperationButton {
-                objectName: "aboutCopy"
-                text: root.copiedVersion ? qsTrId("about.copied") : qsTrId("about.copy")
-                onClicked: { BuildInfo.copyVersionInfo(); root.copiedVersion = true; copyTimer.restart(); }
-            }
-            PageSeparator {}
-            OperationButton { objectName: "aboutHomepage"; text: qsTrId("about.homepage"); onClicked: Qt.openUrlExternally("https://github.com/xiaodaozhi/xdzip") }
-            PageNote { objectName: "aboutLicense"; text: qsTrId("about.license") }
         }
     }
     Timer { id: copyTimer; interval: 2000; onTriggered: root.copiedVersion = false }
