@@ -60,6 +60,28 @@ public static class XdzipShell {
  [DllImport("kernel32.dll")] public static extern uint WaitForSingleObject(IntPtr process,uint timeout);
  [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr handle);
  [DllImport("kernel32.dll",CharSet=CharSet.Unicode)] public static extern IntPtr OpenMutexW(uint access,bool inherit,string name);
+ [DllImport("shell32.dll")] public static extern void SHChangeNotify(uint eventId, uint flags, IntPtr item1, IntPtr item2);
+ private delegate bool WindowCallback(IntPtr hwnd, IntPtr state);
+ [DllImport("user32.dll")] private static extern bool EnumWindows(WindowCallback callback, IntPtr state);
+ [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
+ [DllImport("user32.dll",CharSet=CharSet.Unicode,ExactSpelling=true)] private static extern int GetWindowTextW(IntPtr hwnd, System.Text.StringBuilder text, int length);
+ [DllImport("user32.dll",ExactSpelling=true)] public static extern bool PostMessageW(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
+ public static IntPtr OwnedMainWindow(uint pid) {
+  IntPtr found = IntPtr.Zero;
+  EnumWindows((hwnd, state) => {
+   uint owner; GetWindowThreadProcessId(hwnd, out owner);
+   if (owner == pid) {
+    var text = new System.Text.StringBuilder(512); GetWindowTextW(hwnd, text, text.Capacity);
+    if (text.ToString().IndexOf("xdzip", StringComparison.OrdinalIgnoreCase) >= 0) { found = hwnd; return false; }
+   }
+   return true;
+  }, IntPtr.Zero);
+  return found;
+ }
+ public static bool CloseOwnedWindow(IntPtr hwnd, uint pid) {
+  uint owner; GetWindowThreadProcessId(hwnd, out owner);
+  return owner == pid && PostMessageW(hwnd, 0x10, IntPtr.Zero, IntPtr.Zero);
+ }
 }
 '@
 function Invoke-Installer($File, $Label, $ExpectFailure=$false, $ExpectedCode=-1) {
@@ -177,6 +199,127 @@ function Test-FormatDispatch($Label, $Which, $Revision) {
     Assert-Default
     $phases.Add($Label+'-format-dispatch')
 }
+function Test-InstalledDescriptionStartup {
+    # This runs only on the disposable CI host, against the installation owned
+    # by this script. Never overwrite an existing user profile.
+    $profileDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'xdzip\xdzip'
+    $profile = Join-Path $profileDir 'settings.ini'
+    if (Test-Path -LiteralPath $profile) { throw 'Refusing to replace an existing native profile' }
+    $installed = Join-Path $testRoot 'xdzip.exe'
+    $portable = (Resolve-Path -LiteralPath 'build/review/windows/xdzip.exe').Path
+    $installKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\xdzip\Install')
+    try {
+        if (!$installKey -or $installKey.GetValue('Location') -ne $testRoot -or
+            $installKey.GetValue('InstallId') -ne '56DF0D26-2B26-40C4-9E85-FF0F8C8937CA' -or
+            !(Test-Path -LiteralPath $installed -PathType Leaf) -or $portable -eq $installed) {
+            throw 'Description test requires the owned installed product and a separate portable build'
+        }
+    } finally { if ($installKey) { $installKey.Close() } }
+    $savedDescriptions = @{}; $ownedContracts = @{}
+    foreach ($extension in $extensions) {
+        $progid = Get-ProgId $extension
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\'+$progid)
+        try {
+            if (!$key -or $key.GetValueKind('') -ne [Microsoft.Win32.RegistryValueKind]::String) { throw 'Owned description is missing' }
+            $savedDescriptions[$extension] = $key.GetValue('')
+        } finally { if ($key) { $key.Close() } }
+        $icon = (Get-Item "$classes\$progid\DefaultIcon").GetValue('')
+        $command = (Get-Item "$classes\$progid\shell\open\command").GetValue('')
+        if ($command -ne ('"'+(Join-Path $testRoot 'xdzip-association.exe')+'" -- "%1"')) { throw 'Owned open command changed before description test' }
+        $ownedContracts[$extension] = @{ icon=$icon; command=$command }
+    }
+    $savedEnv = @{}
+    foreach ($name in @('XDZIP_SETTINGS_PATH','XDZIP_LANGUAGE','XDZIP_ASSOCIATION_PROBE')) {
+        $savedEnv[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
+    }
+    $createdDir = !(Test-Path -LiteralPath $profileDir)
+    $profileCreated = $false
+    try {
+        foreach ($name in $savedEnv.Keys) { [Environment]::SetEnvironmentVariable($name, $null, 'Process') }
+        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+        $isolatedProfile = Join-Path $evidenceRoot 'description-settings.ini'
+        Set-Content -LiteralPath $isolatedProfile -Encoding utf8 -Value "[General]`nschemaVersion=1`n[locale]`nlanguage=en-US`n[desktop]`ntrayEnabled=false"
+        $scenarios = @(
+            @{ name='installed-en'; language='en-US'; executable=$installed; mode='english' },
+            @{ name='installed-zh'; language='zh-CN'; executable=$installed; mode='chinese' },
+            @{ name='portable'; language='en-US'; executable=$portable; mode='unchanged' },
+            @{ name='isolated-settings'; language='en-US'; executable=$installed; mode='isolated' }
+        )
+        foreach ($scenario in $scenarios) {
+            $profileCreated = $true
+            Set-Content -LiteralPath $profile -Encoding utf8 -Value "[General]`nschemaVersion=1`n[locale]`nlanguage=$($scenario.language)`n[desktop]`ntrayEnabled=false"
+            if ($scenario.mode -eq 'isolated') { $env:XDZIP_SETTINGS_PATH = $isolatedProfile }
+            else { Remove-Item Env:XDZIP_SETTINGS_PATH -ErrorAction SilentlyContinue }
+            foreach ($extension in $extensions) {
+                $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\'+(Get-ProgId $extension),$true)
+                try { $key.SetValue('', 'owned sentinel '+$extension, [Microsoft.Win32.RegistryValueKind]::String) }
+                finally { $key.Close() }
+            }
+            $active = $null; $closeFailed = $false
+            try {
+                $active = Start-Process -FilePath $scenario.executable -WindowStyle Hidden -PassThru
+                $matched = $false; $window = [IntPtr]::Zero
+                for ($i=0; $i -lt 200; $i++) {
+                    $active.Refresh()
+                    if ($active.HasExited) { throw "Description test process exited early: $($scenario.name)" }
+                    $window = [XdzipShell]::OwnedMainWindow([uint32]$active.Id)
+                    if ($window -ne [IntPtr]::Zero) {
+                        $matched = $true
+                        foreach ($extension in $extensions) {
+                            $actual = (Get-Item "$classes\$(Get-ProgId $extension)").GetValue('')
+                            $expected = if ($scenario.mode -eq 'english') { $extension.ToUpperInvariant()+' archive' }
+                                        elseif ($scenario.mode -eq 'chinese') { $extension.ToUpperInvariant()+' 压缩包' }
+                                        else { 'owned sentinel '+$extension }
+                            if ($actual -cne $expected) { $matched = $false; break }
+                        }
+                        if ($matched) { break }
+                    }
+                    Start-Sleep -Milliseconds 100
+                }
+                if (!$matched) { throw "Installed description startup did not match: $($scenario.name)" }
+                foreach ($extension in $extensions) {
+                    $progid = Get-ProgId $extension
+                    if ((Get-Item "$classes\$progid\DefaultIcon").GetValue('') -ne $ownedContracts[$extension].icon -or
+                        (Get-Item "$classes\$progid\shell\open\command").GetValue('') -ne $ownedContracts[$extension].command) {
+                        throw 'Description sync changed an icon or command'
+                    }
+                    $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Software\Classes\.$extension\OpenWithProgids")
+                    try { if (!$key -or $key.GetValueNames() -notcontains 'xdzip.QAForeign' -or $key.GetValueNames() -notcontains $progid) { throw 'Description sync changed application candidates' } }
+                    finally { if ($key) { $key.Close() } }
+                }
+                Assert-Default
+                $phases.Add('description-startup-'+$scenario.name)
+            } finally {
+                if ($active) {
+                    $active.Refresh()
+                    if (!$active.HasExited) {
+                        $window = [XdzipShell]::OwnedMainWindow([uint32]$active.Id)
+                        if ($window -ne [IntPtr]::Zero) { [void][XdzipShell]::CloseOwnedWindow($window,[uint32]$active.Id) }
+                        if (!$active.WaitForExit(15000)) { $active.Kill(); $active.WaitForExit(); $closeFailed = $true }
+                    }
+                }
+            }
+            if ($closeFailed -or $active.ExitCode -ne 0) { throw "Owned description test process did not exit cleanly: $($scenario.name)" }
+        }
+    } finally {
+        try {
+            foreach ($extension in $extensions) {
+                $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Software\Classes\'+(Get-ProgId $extension),$true)
+                try { if ($key) { $key.SetValue('', $savedDescriptions[$extension], [Microsoft.Win32.RegistryValueKind]::String) } }
+                finally { if ($key) { $key.Close() } }
+            }
+            [XdzipShell]::SHChangeNotify(0x08000000,0,[IntPtr]::Zero,[IntPtr]::Zero)
+        } finally {
+            try {
+                if ($profileCreated) { Remove-Item -LiteralPath $profile -Force -ErrorAction SilentlyContinue }
+                if ($createdDir -and (Test-Path -LiteralPath $profileDir -PathType Container) -and
+                    @(Get-ChildItem -LiteralPath $profileDir -Force).Count -eq 0) { [IO.Directory]::Delete($profileDir) }
+            } finally {
+                foreach ($name in $savedEnv.Keys) { [Environment]::SetEnvironmentVariable($name, $savedEnv[$name], 'Process') }
+            }
+        }
+    }
+}
 try {
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'historical-product-install'; Test-AssociatedOpen 'historical-product-install'
     $sentinel = Join-Path $testRoot 'user-kept.txt'; Set-Content $sentinel 'keep user data'
@@ -192,6 +335,7 @@ try {
     $current = Get-Content (Join-Path $evidenceRoot 'actual-product-upgrade.json') -Raw | ConvertFrom-Json
     Test-FormatDispatch 'current' $extensions $current.revision
     if ($historical.revision -eq $current.revision -or $historical.version -eq $current.version -or [Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore) { throw 'Full product upgrade did not change version/revision or preserve settings' }
+    Test-InstalledDescriptionStartup
     Invoke-Installer (Join-Path $Packages 'previous.exe') 'actual-product-rollback'; Test-AssociatedOpen 'actual-product-rollback'
     Test-FormatDispatch 'historical-rollback' @('zip','tgz') $historical.revision
     if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -ne $settingsBefore -or !(Select-String -Path $sentinel -SimpleMatch 'keep user data' -Quiet)) { throw 'Full product rollback lost user data' }
