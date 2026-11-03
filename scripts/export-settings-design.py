@@ -50,6 +50,17 @@ def main():
                         modal.screenshot(path=str(image))
                         records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
                                             bounds=modal.bounding_box(), theme=theme, tab=tab, browser=browser.version))
+                        if tab == 'appearance':
+                            page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&hover=general')
+                            frame = page.frame_locator('iframe')
+                            modal = frame.locator('#modal[data-kind=settings]')
+                            frame.locator('#settings-tab-general[data-preview-hover="true"]').wait_for(state='visible')
+                            page.frames[1].evaluate('document.fonts.ready')
+                            page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
+                            image = output/f'settings-sidebar-hover-{theme}.png'
+                            modal.screenshot(path=str(image))
+                            records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                                bounds=modal.bounding_box(), theme=theme, tab='sidebar-hover', browser=browser.version))
                         if tab == 'network':
                             frame.locator('input[name=setting-proxy][value=custom]').check()
                             frame.locator('#setting-proxy-address').wait_for(state='visible')

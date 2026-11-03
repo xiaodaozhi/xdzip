@@ -130,6 +130,14 @@ OperationWindow {
             source: "qrc:/xdzip/assets/" + (Theme.dark ? "dark" : "light") + "/settings-tile.png"
             title: qsTrId("settings.title")
             subtitle: qsTrId("settings.subtitle")
+            Rectangle {
+                objectName: "settingsHeaderDivider"
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: Theme.settingsHeaderDividerHeight
+                color: Theme.border
+            }
         }
         RowLayout {
             objectName: "operationHeaderBody"
@@ -160,6 +168,8 @@ OperationWindow {
                                 objectName: "settingsTab-" + index
                                 width: parent ? parent.width : 0
                                 implicitHeight: Math.max(Theme.settingsSidebarRowHeight, tabLabel.implicitHeight + 12)
+                                leftPadding: Theme.settingsSidebarIconInset
+                                hoverEnabled: true
                                 checkable: true
                                 checked: root.currentTab === index
                                 Accessible.role: Accessible.PageTab
@@ -167,12 +177,12 @@ OperationWindow {
                                 onClicked: root.currentTab = index
                                 background: Rectangle {
                                     color: tab.checked ? Theme.selection : tab.hovered ? Theme.controlHover : "transparent"
-                                    Rectangle { visible: tab.checked; width: 3; height: parent.height; color: Theme.accent }
+                                    Rectangle { visible: tab.checked; width: Theme.settingsSidebarSelectionWidth; height: parent.height; color: Theme.accent }
                                 }
                                 contentItem: RowLayout {
-                                    spacing: 10
-                                    Item { implicitWidth: 12 }
+                                    spacing: Theme.settingsSidebarIconGap
                                     Image {
+                                        objectName: "settingsTabIcon-" + tab.index
                                         Layout.preferredWidth: Theme.settingsSidebarIconSize
                                         Layout.preferredHeight: Theme.settingsSidebarIconSize
                                         fillMode: Image.PreserveAspectFit
@@ -205,8 +215,14 @@ OperationWindow {
                 Layout.fillHeight: true
                 clip: true
                 contentWidth: availableWidth
+                // Keep the scroll extent stable while the update section changes state.
+                contentHeight: pageContent.implicitHeight +
+                    (root.currentTab === 5 && pageLoader.item ?
+                        Math.max(0, pageLoader.item.updateReserveHeight - pageLoader.item.updateContentHeight) : 0)
                 ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                ScrollBar.vertical: ScrollBar { objectName: "settingsVerticalScrollBar" }
                 ColumnLayout {
+                    id: pageContent
                     width: pageScroll.availableWidth
                     spacing: Theme.settingsPageSectionGap
                     Item { Layout.preferredHeight: 0 }
@@ -223,6 +239,7 @@ OperationWindow {
                         Accessible.role: Accessible.AlertMessage
                     }
                     Loader {
+                        id: pageLoader
                         Layout.leftMargin: Theme.settingsPageInset
                         Layout.rightMargin: Theme.settingsPageInset
                         Layout.bottomMargin: Theme.settingsPageInset
@@ -452,6 +469,95 @@ OperationWindow {
         ColumnLayout {
             objectName: "settingsPage-about"
             spacing: Theme.settingsPageSectionGap
+            readonly property real updateContentHeight: updateSection.implicitHeight
+            readonly property real updateActionHeight: Math.max(cancelUpdate.implicitHeight, installUpdate.implicitHeight,
+                                                                recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
+            readonly property real updateReserveHeight: Math.max(
+                Math.max(updateMeasurements.statusHeight, checkUpdate.implicitHeight)
+                    + Theme.aboutUpdateProgressHeight + updateActionHeight + Theme.settingsPageSectionGap * 2,
+                Math.max(updateMeasurements.installStatusHeight, checkUpdate.implicitHeight)
+                    + updateMeasurements.noteHeight + updateActionHeight + Theme.settingsPageSectionGap * 2)
+            Item {
+                id: updateMeasurements
+                visible: false
+                width: updateSection.width
+                property int revision: 0
+                readonly property real statusHeight: {
+                    let height = revision * 0;
+                    for (let i = 0; i < statusMeasures.count; ++i) {
+                        const item = statusMeasures.itemAt(i);
+                        if (item) height = Math.max(height, item.implicitHeight);
+                    }
+                    return height;
+                }
+                readonly property real noteHeight: {
+                    let height = revision * 0;
+                    for (let i = 0; i < noteMeasures.count; ++i) {
+                        const item = noteMeasures.itemAt(i);
+                        if (item) height = Math.max(height, item.implicitHeight);
+                    }
+                    return height;
+                }
+                readonly property real installStatusHeight: {
+                    let height = revision * 0;
+                    for (let i = 0; i < installMeasures.count; ++i) {
+                        const item = installMeasures.itemAt(i);
+                        if (item) height = Math.max(height, item.implicitHeight);
+                    }
+                    return height;
+                }
+                Repeater {
+                    id: statusMeasures
+                    onItemAdded: updateMeasurements.revision++
+                    onItemRemoved: updateMeasurements.revision++
+                    // Update manifests bound each version component to 65535.
+                    model: [qsTrId("update.idle"), qsTrId("update.checking"), qsTrId("update.current"),
+                            qsTrId("update.updated"), qsTrId("update.available").arg("65535.65535.65535-alpha.65535"),
+                            qsTrId("update.downloading"), qsTrId("update.verifying"), qsTrId("update.downloaded"),
+                            qsTrId("update.waitingTasks"), qsTrId("update.preparing"), qsTrId("update.installing"),
+                            qsTrId("update.recovery"), qsTrId("update.rateLimited"), qsTrId("update.tls"),
+                            qsTrId("update.network"), qsTrId("update.timeout"), qsTrId("update.authorizationCancelled"),
+                            qsTrId("update.authorizationFailed"), qsTrId("update.disk"), qsTrId("update.unsafeInstallation"),
+                            qsTrId("update.minimumSystem"), qsTrId("update.verificationFailed"), qsTrId("update.failed"),
+                            qsTrId("update.preview")]
+                    delegate: Text {
+                        required property string modelData
+                        width: Math.max(1, updateStatus.width)
+                        text: modelData
+                        font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
+                        textFormat: Text.PlainText
+                        wrapMode: Text.Wrap
+                    }
+                }
+                Repeater {
+                    id: installMeasures
+                    onItemAdded: updateMeasurements.revision++
+                    onItemRemoved: updateMeasurements.revision++
+                    model: [qsTrId("update.available").arg("65535.65535.65535-alpha.65535"), qsTrId("update.downloaded")]
+                    delegate: Text {
+                        required property string modelData
+                        width: Math.max(1, updateStatus.width)
+                        text: modelData
+                        font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
+                        textFormat: Text.PlainText
+                        wrapMode: Text.Wrap
+                    }
+                }
+                Repeater {
+                    id: noteMeasures
+                    onItemAdded: updateMeasurements.revision++
+                    onItemRemoved: updateMeasurements.revision++
+                    model: [qsTrId("update.manual"), qsTrId("update.unsigned")]
+                    delegate: Text {
+                        required property string modelData
+                        width: Math.max(1, updateSection.width)
+                        text: modelData
+                        font.pixelSize: Math.round(Theme.settingsNoteSize * Theme.fontScale)
+                        textFormat: Text.PlainText
+                        wrapMode: Text.Wrap
+                    }
+                }
+            }
             PageTitle { text: qsTrId("settings.tabAbout") }
             RowLayout {
                 Layout.fillWidth: true; spacing: 16
@@ -471,42 +577,49 @@ OperationWindow {
             }
             PageSeparator {}
             SectionTitle { text: qsTrId("settings.updateTitle") }
-            RowLayout {
+            ColumnLayout {
+                id: updateSection
                 Layout.fillWidth: true
-                PageNote { objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
-                OperationButton { objectName: "aboutCheckUpdate"; text: qsTrId("update.check"); enabled: root.updater && !root.updater.busy; onClicked: root.updater.check() }
-            }
-            ProgressBar {
-                objectName: "aboutUpdateProgress"; Layout.fillWidth: true
-                Layout.preferredHeight: Theme.aboutUpdateProgressHeight
-                visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
-                indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
-                value: root.updater ? Math.max(0, root.updater.progress) : 0
-                Accessible.name: qsTrId("update.progress")
-            }
-            PageNote {
-                visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
-                text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                OperationButton {
-                    objectName: "aboutCancelUpdate"
-                    visible: root.updater && root.updater.busy && root.updateState !== "installing"
-                    text: qsTrId("update.cancel"); onClicked: root.updater.cancel()
+                spacing: Theme.settingsPageSectionGap
+                RowLayout {
+                    Layout.fillWidth: true
+                    PageNote { id: updateStatus; objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
+                    OperationButton { id: checkUpdate; objectName: "aboutCheckUpdate"; text: qsTrId("update.check"); enabled: root.updater && !root.updater.busy; onClicked: root.updater.check() }
                 }
-                OperationButton {
-                    objectName: "aboutInstallUpdate"
-                    visible: root.updater && ["available", "downloaded"].includes(root.updateState)
-                    text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
-                    onClicked: {
-                        if (root.updater.canInstall) root.updater.downloadAndInstall();
-                        else if (root.updater.trusted) root.updater.download();
-                        else root.updater.openReleasePage();
+                ProgressBar {
+                    objectName: "aboutUpdateProgress"; Layout.fillWidth: true
+                    Layout.preferredHeight: Theme.aboutUpdateProgressHeight
+                    visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
+                    indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
+                    value: root.updater ? Math.max(0, root.updater.progress) : 0
+                    Accessible.name: qsTrId("update.progress")
+                }
+                PageNote {
+                    visible: root.updater && ["available", "downloaded"].includes(root.updateState) && !root.updater.canInstall
+                    text: root.updater && !root.updater.trusted ? qsTrId("update.unsigned") : qsTrId("update.manual")
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    OperationButton {
+                        id: cancelUpdate
+                        objectName: "aboutCancelUpdate"
+                        visible: root.updater && root.updater.busy && root.updateState !== "installing"
+                        text: qsTrId("update.cancel"); onClicked: root.updater.cancel()
                     }
+                    OperationButton {
+                        id: installUpdate
+                        objectName: "aboutInstallUpdate"
+                        visible: root.updater && ["available", "downloaded"].includes(root.updateState)
+                        text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
+                        onClicked: {
+                            if (root.updater.canInstall) root.updater.downloadAndInstall();
+                            else if (root.updater.trusted) root.updater.download();
+                            else root.updater.openReleasePage();
+                        }
+                    }
+                    OperationButton { id: recoveryUpdate; visible: root.updater && root.updateState === "recovery_required"; text: qsTrId("update.release"); onClicked: root.updater.openReleasePage() }
+                    OperationButton { id: openUpdate; visible: root.updater && root.updater.downloaded; text: qsTrId("update.openDownload"); onClicked: root.updater.openDownloadFolder() }
                 }
-                OperationButton { visible: root.updater && root.updateState === "recovery_required"; text: qsTrId("update.release"); onClicked: root.updater.openReleasePage() }
-                OperationButton { visible: root.updater && root.updater.downloaded; text: qsTrId("update.openDownload"); onClicked: root.updater.openDownloadFolder() }
             }
             PageSeparator {}
             SectionTitle { text: qsTrId("settings.versionTitle") }

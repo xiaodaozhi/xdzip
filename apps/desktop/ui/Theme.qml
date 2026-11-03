@@ -157,6 +157,10 @@ QtObject {
     readonly property real settingsSidebarWidth: 144
     readonly property real settingsSidebarRowHeight: 40
     readonly property real settingsSidebarIconSize: 18
+    readonly property real settingsSidebarIconInset: 15
+    readonly property real settingsSidebarIconGap: 10
+    readonly property real settingsSidebarSelectionWidth: 3
+    readonly property real settingsHeaderDividerHeight: 1
     readonly property real settingsPageInset: 20
     readonly property real settingsPageSectionGap: 16
     readonly property real settingsSwitchWidth: 38

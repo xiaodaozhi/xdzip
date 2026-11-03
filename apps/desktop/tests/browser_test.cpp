@@ -6340,6 +6340,121 @@ QtObject {
         }
         settings->close();
     }
+    void settingsChromeAndScrollbar_data() { settingsSelectorsHaveConsistentGeometry_data(); }
+    void settingsChromeAndScrollbar() {
+        QFETCH(QString, language);
+        QFETCH(bool, dark);
+        QFETCH(double, scale);
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(language));
+        QTemporaryDir profile;
+        test_environment::ScopedVariable path("XDZIP_SETTINGS_PATH", profile.filePath("settings.ini"));
+        QVERIFY2(path.valid(), qPrintable(path.error()));
+        QQmlApplicationEngine engine;
+        QQmlComponent fixture(&engine);
+        fixture.setData(R"(import QtQuick
+            QtObject {
+                property string state: "idle"; property string candidateVersion: ""
+                property string errorCode: "network"; property real progress: 0.42
+                property bool busy: false; property bool trusted: true; property bool canInstall: true
+                property bool downloaded: false; property int checks: 0
+                function check() { ++checks; busy = true; state = "checking" }
+                function cancel() {} function download() {} function downloadAndInstall() {}
+                function openReleasePage() {} function openDownloadFolder() {}
+            })", QUrl());
+        std::unique_ptr<QObject> service(fixture.create());
+        QVERIFY2(service, qPrintable(fixture.errorString()));
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *owner = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *prefs = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        auto *settings = owner->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && settings->setProperty("updater", QVariant::fromValue(service.get())));
+        QVERIFY(QMetaObject::invokeMethod(settings, "configure"));
+        QVERIFY(QTest::qWaitForWindowExposed(settings));
+        prefs->preview(dark ? QStringLiteral("dark") : QStringLiteral("light"), scale);
+        const auto restorePreview = qScopeGuard([&] { prefs->cancelPreview(); });
+        auto *divider = findVisual(settings->contentItem(), "settingsHeaderDivider");
+        auto *header = findVisual(settings->contentItem(), "operationHeader");
+        auto *sidebar = findVisual(settings->contentItem(), "settingsSidebar");
+        auto *selected = findVisual(settings->contentItem(), "settingsTab-0");
+        auto *other = findVisual(settings->contentItem(), "settingsTab-1");
+        auto *icon = findVisual(settings->contentItem(), "settingsTabIcon-1");
+        QVERIFY(divider && header && sidebar && selected && other && icon);
+        QCOMPARE(divider->height(), 1.);
+        QCOMPARE(divider->width(), settings->width());
+        QCOMPARE(divider->property("color").value<QColor>(), QColor(dark ? "#363D4B" : "#E3E7EF"));
+        QCOMPARE(divider->mapToItem(header, QPointF(0, divider->height())).y(), header->height());
+        QTRY_COMPARE(icon->mapToItem(other, QPointF()).x(), 15.);
+        const auto selectedBackground = selected->property("background").value<QObject *>();
+        const auto otherBackground = other->property("background").value<QObject *>();
+        QVERIFY(selectedBackground && otherBackground);
+        const auto originalCursor = QCursor::pos();
+        const auto restoreCursor = qScopeGuard([&] { if (nativeSystemPointer()) QCursor::setPos(originalCursor); });
+        moveTestPointer(settings, other->mapToScene(QPointF(other->width()/2, other->height()/2)).toPoint());
+        QTRY_VERIFY(other->property("hovered").toBool());
+        QCOMPARE(otherBackground->property("color").value<QColor>(), QColor(dark ? "#2B374C" : "#EDF2FF"));
+        moveTestPointer(settings, selected->mapToScene(QPointF(selected->width()/2, selected->height()/2)).toPoint());
+        QTRY_VERIFY(selected->property("hovered").toBool());
+        QCOMPARE(selectedBackground->property("color").value<QColor>(), QColor(dark ? "#30436A" : "#E7EDFF"));
+        const auto captures = qEnvironmentVariable("XDZIP_SETTINGS_CHROME_AUDIT");
+        if (!captures.isEmpty()) {
+            moveTestPointer(settings, other->mapToScene(QPointF(other->width()/2, other->height()/2)).toPoint());
+            QTRY_VERIFY(other->property("hovered").toBool());
+            QVERIFY(QDir().mkpath(captures));
+            QVERIFY(visual_audit::save(settings, captures,
+                language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
+        }
+        settings->setProperty("currentTab", 5);
+        QQuickItem *check = nullptr;
+        QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
+        auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
+        auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
+        QVERIFY(scroll && bar);
+        auto *flick = scroll->property("contentItem").value<QQuickItem *>();
+        QVERIFY(flick);
+        QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
+        QTest::qWait(50);
+        const qreal initialHeight = flick->property("contentHeight").toReal();
+        const qreal initialThumb = bar->property("size").toReal();
+        QVERIFY(initialThumb > 0 && initialThumb < 1);
+        QVERIFY(QMetaObject::invokeMethod(check, "click"));
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
+        QTRY_COMPARE(service->property("checks").toInt(), 1);
+        QTest::qWait(50);
+        QTRY_VERIFY_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, 1000);
+        const QList<QVariantMap> states{
+            {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
+            {{"state", "error"}, {"error", "unsafe_installation"}},
+            {{"state", "available"}, {"manual", true}}, {{"state", "available"}, {"manual", true}, {"untrusted", true}},
+            {{"state", "downloaded"}, {"manual", true}, {"downloaded", true}},
+            {{"state", "downloading"}, {"busy", true}}, {{"state", "verifying"}, {"busy", true}},
+            {{"state", "waiting_tasks"}, {"busy", true}}, {{"state", "preparing"}, {"busy", true}},
+            {{"state", "installing"}, {"busy", true}}, {{"state", "recovery_required"}, {"downloaded", true}},
+            {{"state", "updated"}}, {{"state", "unavailable"}}};
+        for (const auto &scenario : states) {
+            const auto state = scenario.value("state").toString();
+            service->setProperty("busy", scenario.value("busy", false));
+            service->setProperty("trusted", !scenario.value("untrusted", false).toBool());
+            service->setProperty("canInstall", !scenario.value("manual", false).toBool());
+            service->setProperty("downloaded", scenario.value("downloaded", false));
+            service->setProperty("errorCode", scenario.value("error", "network"));
+            service->setProperty("candidateVersion", QStringLiteral("65535.65535.65535-alpha.65535"));
+            service->setProperty("state", state);
+            QTest::qWait(30);
+            QTRY_VERIFY2_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5,
+                qPrintable(state + QStringLiteral(" content height %1, expected %2").arg(flick->property("contentHeight").toReal()).arg(initialHeight)), 1000);
+            QTRY_VERIFY2_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, qPrintable(state), 1000);
+        }
+        auto *license = findVisual(settings->contentItem(), "aboutLicense");
+        QVERIFY(license);
+        QVERIFY(flick->setProperty("contentY", initialHeight - flick->height()));
+        QTRY_VERIFY(license->mapToItem(flick, QPointF()).y() >= -.5);
+        QTRY_VERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() <= flick->height() + .5);
+        QVERIFY(license->mapToItem(flick, QPointF(0, license->height())).y() > 0);
+        settings->close();
+    }
     void settingsOpenModeSelectionPersists_data() {
         QTest::addColumn<bool>("pointer");
         QTest::newRow("pointer") << true;

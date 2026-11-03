@@ -37,11 +37,11 @@ English: The tab close button retains its square hit area and centered position,
 
 ### 设置窗口分类修订
 
-设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 下方为左侧导航和独立滚动的右侧页面；左栏宽 144、正常行高 40、图标槽 18，首行贴齐顶部，选中背景与右侧分隔线相接。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。辅助字号增大时行按内容增长并允许滚动。
+设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。辅助字号增大时行按内容增长并允许滚动。
 
 六个页面依次为外观、通用、隐私、文件关联、网络和关于。设置窗口不再使用 footer 或保存、取消、完成按钮；提交成功的变更即时生效，失败时保持已生效值并显示原因。关于页面保留版本、许可证和用户主动更新；所有关于入口打开该页，不再创建独立关于窗口。主题卡片、设置图标、品牌和已有状态素材继续复用原资源，不重复生成未变化切图。
 
-English: Settings and About share a 612-unit non-modal window with a 532-unit preferred client height, bounded by the available screen. The shared header is followed by a 144-unit sidebar and independently scrolling page; the first row touches the top and the selection reaches the right divider. The six pages are Appearance, General, Privacy, File associations, Network and About. There is no settings footer; successful changes take effect immediately, and failures retain the applied value and show an error. Existing unchanged artwork is reused.
+English: Settings and About share a 612-unit non-modal window with a 532-unit preferred client height, bounded by the available screen. A one-unit divider below the header precedes a 144-unit sidebar and independently scrolling page; the first row touches the top, its icon begins 15 units from the sidebar edge, and the selection reaches the right divider. Unselected rows use the shared controlHover color, distinct from the sidebar in both themes. The six pages are Appearance, General, Privacy, File associations, Network and About. There is no settings footer; successful changes take effect immediately, and failures retain the applied value and show an error. Existing unchanged artwork is reused.
 
 每个组件必须明确尺寸、字号、图标槽、内边距、对齐边、命中区域、状态和数据来源。禁止只交付默认状态。按钮必须覆盖 normal、hover、pressed、focus、disabled、busy；菜单必须覆盖键盘选中、子菜单、checked、disabled、边缘翻转和滚动；目录树必须覆盖子层级、叶节点、折叠当前路径、深层滚动和长名称；文件列表必须覆盖表头／内容同边对齐、排序、多选、空态和未知数据。
 

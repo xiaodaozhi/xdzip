@@ -28,8 +28,34 @@ def main():
         expect(modal.locator('.modal-footer')).to_have_count(0)
         assert not modal.get_by_role('button', name='完成').count()
         layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+        palette = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
+        controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
         ratio = layout['main']['source_to_logical'][0] / layout['main']['source_to_logical'][1]
         assert abs(modal.bounding_box()['width'] * ratio - 612) < 1
+        def rgb(value):
+            return 'rgb(' + ', '.join(str(int(value[index:index+2], 16)) for index in (1, 3, 5)) + ')'
+        for theme in ('light', 'dark'):
+            page.evaluate('theme => XdzipDesign.theme(theme)', theme)
+            header = modal.locator('.shared-operation-header')
+            divider = header.evaluate('''node => {
+                const style = getComputedStyle(node, '::after');
+                return {height:parseFloat(style.height), color:style.backgroundColor};
+            }''')
+            assert abs(divider['height'] * ratio - layout['operation']['settings']['headerDividerHeight']) < .1
+            assert divider['color'] == rgb(palette[theme]['border'])
+            sidebar = modal.locator('.settings-sidebar')
+            assert sidebar.evaluate('node => getComputedStyle(node).backgroundColor') == rgb(palette[theme]['sidebar'])
+            hovered = modal.locator('#settings-tab-general')
+            hovered.hover()
+            assert hovered.evaluate('node => getComputedStyle(node).backgroundColor') == rgb(controls[theme]['controlHover'])
+            assert hovered.evaluate('node => getComputedStyle(node).backgroundColor') != sidebar.evaluate('node => getComputedStyle(node).backgroundColor')
+            icon = hovered.locator('svg').bounding_box()
+            assert abs((icon['x'] - hovered.bounding_box()['x']) * ratio - layout['operation']['settings']['sidebarIconInset']) < .1
+            selected = modal.locator('#settings-tab-appearance')
+            selected.hover()
+            selected_color = selected.evaluate('node => getComputedStyle(node).backgroundColor')
+            assert selected_color == rgb(palette[theme]['selection']), (theme, selected_color, selected.get_attribute('aria-selected'))
+        page.mouse.move(0, 0)
         for tab in ('appearance', 'general', 'privacy', 'associations', 'network', 'about'):
             page.locator('#settings-tab-' + tab).click()
             expect(page.locator('.settings-pane')).to_have_attribute('data-tab', tab)

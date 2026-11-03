@@ -349,7 +349,7 @@
       "file": "screens/settings-appearance-light.png",
       "title": "设置，外观，浅色",
       "group": "current",
-      "sha256": "d3ea897170f49272cfccfef11d45e545f5c6c48d83e7f979b4c2080f0d7eacc9",
+      "sha256": "31473991469fc6e93224b72288f1443300eb021fa89ca68a5b621f1bba4816bf",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=appearance&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -358,16 +358,34 @@
       "file": "screens/settings-appearance-dark.png",
       "title": "设置，外观，深色",
       "group": "current",
-      "sha256": "c56c7923499321908a4dc4c3068704181e2635369d6409617241413654287391",
+      "sha256": "e51b46c592539826d88429a56dad4c9d5f611fd1d50104a814a389dbfae65836",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=appearance&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-sidebar-hover-light.png",
+      "title": "设置，侧栏悬停，浅色",
+      "group": "current",
+      "sha256": "ed6db58921f75957fa7ac868a3bbfab2ea4b1c78c2cc1398b27c21b12c634551",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?hover=general&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-sidebar-hover-dark.png",
+      "title": "设置，侧栏悬停，深色",
+      "group": "current",
+      "sha256": "8ae0fdc1e1485d9f08d1e49dfe42f92c5596e8cd4637eaef75ec354428f15613",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?hover=general&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
     },
     {
       "file": "screens/settings-general-light.png",
       "title": "设置，通用，浅色",
       "group": "current",
-      "sha256": "3c980013e9859ce9d414c775e53c2b771c16ee4a72f0380d1599d618fd756fd2",
+      "sha256": "f3a562d804faa5d163f65161dcade20b48721b8a7e00da15b99f01046b5679a7",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=general&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -376,7 +394,7 @@
       "file": "screens/settings-general-dark.png",
       "title": "设置，通用，深色",
       "group": "current",
-      "sha256": "617b32c53533c5f49ee3bcbd1f01ba22def2b38813a91724e93abc63a3796c79",
+      "sha256": "6e5761dea7852ea0cfe39c6800cc6ae09e3fdce7f124699c9d5949b0cdfbecef",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=general&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -385,7 +403,7 @@
       "file": "screens/settings-privacy-light.png",
       "title": "设置，隐私，浅色",
       "group": "current",
-      "sha256": "fe318fa946305f60a26d60ec8b0689fa14ec13ce37e3e064e6a03671d7f8aea1",
+      "sha256": "f7d529546379592c97e9b4742d9903f7442dd52dec2eb5a8080f001fb2440c18",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=privacy&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -394,7 +412,7 @@
       "file": "screens/settings-privacy-dark.png",
       "title": "设置，隐私，深色",
       "group": "current",
-      "sha256": "df9e6cf2267435f625cb3a13c9648cafd05bfa970fc48c7a0c469332478f0af4",
+      "sha256": "635c60d11bdf1246d34c4b71461aec49eaf136b8d95becab4c32a67b47f9f326",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=privacy&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -403,7 +421,7 @@
       "file": "screens/settings-associations-light.png",
       "title": "设置，文件关联，浅色",
       "group": "current",
-      "sha256": "ef64e843204dea73fa23851141ba38f9bcd08e7fe185fcbd358997e07b4dd6ff",
+      "sha256": "fcffed15e31013333eca8750ab569bc62703798230d4bb3194aacb4779140ac7",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=associations&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -412,7 +430,7 @@
       "file": "screens/settings-associations-dark.png",
       "title": "设置，文件关联，深色",
       "group": "current",
-      "sha256": "ce8dc07bf84ece5f0a32316739e0b763a7d32336799417412f500c277743db34",
+      "sha256": "867f5be4912b22f47edba8816cc326259d7bc438f82ad071db832a825ac4898f",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=associations&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -421,7 +439,7 @@
       "file": "screens/settings-network-light.png",
       "title": "设置，网络，浅色",
       "group": "current",
-      "sha256": "8037d8839707dfc5c04ec15b322a779a36dd5d0a1498006a5661ed13810ef4f7",
+      "sha256": "59248daa1016b84fa33a5efbab14a410323ba44d2af694bc3efc6c9d2a28d2f1",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=network&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -430,7 +448,7 @@
       "file": "screens/settings-network-dark.png",
       "title": "设置，网络，深色",
       "group": "current",
-      "sha256": "01deee9742fc39febc18d49c547b07a97bdda6e7c8c697dcd74d2f3630237df7",
+      "sha256": "92b4474ff38527e4b713185fabf821f014901fdffb4b65af62dc5f33ffb4ee77",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=network&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -439,7 +457,7 @@
       "file": "screens/settings-network-custom-light.png",
       "title": "设置，网络，自定义代理，浅色",
       "group": "current",
-      "sha256": "8f00152220e97ae9cabfe015325079a7eadd56baf5634cbe29b1202b26bb3def",
+      "sha256": "3e095f535f65ad30953a66767d7b00e1d3f75e133f80060170769a22f4ad911f",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=network&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -448,7 +466,7 @@
       "file": "screens/settings-network-custom-dark.png",
       "title": "设置，网络，自定义代理，深色",
       "group": "current",
-      "sha256": "7fa4a92aa00c0c4191726f6627d2f87420c73bc22cd28791136b313fd5717232",
+      "sha256": "2675fe5af343f88e643d3f769a9c07b0e937154e2ac97ad9899b42fc0710ef96",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=network&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -457,7 +475,7 @@
       "file": "screens/settings-about-light.png",
       "title": "设置，关于，浅色",
       "group": "current",
-      "sha256": "76df2fbbb9e8b3d91a94f4dfe35f176ea17979408a1c866977fa3f5e571895b5",
+      "sha256": "37dcb48dec8761a56451ee8245b9df70e358da0a407db68c9570f803559e68d7",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=about&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -466,7 +484,7 @@
       "file": "screens/settings-about-dark.png",
       "title": "设置，关于，深色",
       "group": "current",
-      "sha256": "4344bf375dbe110657db948edec4a80fdd8a0b842840951a2bf649b2135f600b",
+      "sha256": "fc4b0d9fcbfbc65994897c9f2bca486dd12ac8a98c012ca303d9082ed24c9eb8",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=about&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
@@ -475,7 +493,7 @@
       "file": "screens/settings-about-details-light.png",
       "title": "设置，关于，版本信息与许可，浅色",
       "group": "current",
-      "sha256": "0ea1d4775788e8b7eaeed58fa30532d273f8a3a551dd176194f36fbd9d73c088",
+      "sha256": "3ef9037ad2d5807556b112eec9b778b826a75c3367a79d164f9235802204e64d",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=about&theme=light",
       "spec": "../../docs/ux/settings-localization.md"
@@ -484,7 +502,7 @@
       "file": "screens/settings-about-details-dark.png",
       "title": "设置，关于，版本信息与许可，深色",
       "group": "current",
-      "sha256": "532b44b4616871e33012629ed7a293b7a3e78ab8202560bc22343b0dc2d75c7d",
+      "sha256": "a363a0e4cfc647e2ad3276f1d5e5e808edc9e1abae2998d882a69edfc19fe14a",
       "role": "code-authored-design",
       "design_source": "sources/settings.html?tab=about&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
