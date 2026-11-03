@@ -15,6 +15,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 from deployment_audit import digest, within
 from desktop_product import built_product
@@ -41,6 +42,7 @@ replace_qt = module('verify-qt-replacement')
 derive_locale_codes = module('derive-qt-locale-code-input')
 convert_iso_codes = module('convert-iso-codes-for-qt')
 convert_iana_loc = module('convert-iana-loc-for-qt')
+verify_emoji_alternatives = module('verify-cldr-emoji-alternatives')
 
 
 def iana_loc_fixture():
@@ -493,11 +495,9 @@ class DeliveryTests(unittest.TestCase):
     @staticmethod
     def cldr_replacement_fixture():
         data = b'owned replacement image'
-        return {'cldr_file': cldr_webapp_notices.REPLACEMENT_PATH,
-                'original_sha256': hashlib.sha256(b'owned original image').hexdigest(),
-                'sha256': hashlib.sha256(data).hexdigest(), 'data': data,
-                'upstream_commit': cldr_webapp_notices.NOTO_EMOJI_COMMIT,
-                'upstream_file': cldr_webapp_notices.REPLACEMENT_UPSTREAM}
+        return {'emoji_1f699.png': {'original_sha256': hashlib.sha256(b'owned original image').hexdigest(),
+                'sha256': hashlib.sha256(data).hexdigest(), 'data': data, 'source': 'noto',
+                'upstream_path': cldr_webapp_notices.REPLACEMENT_UPSTREAM}}
 
     @staticmethod
     def qt_cldr_fixture(root, extra=None, qt_marker=b'Common Locale Data Repository v46'):
@@ -593,7 +593,7 @@ class DeliveryTests(unittest.TestCase):
                      self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
                                               b'ICU4J bootstrap')]
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
-                 patch.object(source, 'cldr_emoji_replacement', return_value=self.cldr_replacement_fixture()):
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()):
                 records = source.collect_icu_data_sources(output, cache)
             self.assertEqual(records[0], items[0])
             self.assertEqual((output/items[0]['file']).read_bytes(), (cache/items[0]['file']).read_bytes())
@@ -615,7 +615,7 @@ class DeliveryTests(unittest.TestCase):
                                  b'owned replacement image')
             second = root/'second-delivery'; second.mkdir()
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
-                 patch.object(source, 'cldr_emoji_replacement', return_value=self.cldr_replacement_fixture()):
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()):
                 second_records = source.collect_icu_data_sources(second, cache)
             self.assertEqual(records[1]['sha256'], second_records[1]['sha256'])
 
@@ -630,7 +630,7 @@ class DeliveryTests(unittest.TestCase):
                      self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
                                               b'ICU4J bootstrap')]
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
-                 patch.object(source, 'cldr_emoji_replacement', return_value=self.cldr_replacement_fixture()):
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()):
                 record = source.collect_icu_data_sources(output, cache)[1]
             self.assertEqual(record['identified_language_identifier_files'], list(retained))
             self.assertFalse(record['identifier_file_list_exhaustive'])
@@ -650,7 +650,13 @@ class DeliveryTests(unittest.TestCase):
         autosize = b'owned Autosize fixture'
         emoji = {'emoji_1f600.png': b'owned emoji fixture', 'emoji_1f31a.png': b'another emoji fixture'}
         emoji_2021 = {'emoji_1f601.png': b'older emoji fixture'}
-        replacement = b'owned replacement fixture'
+        replacement = b'\x89PNG\r\n\x1a\nowned replacement fixture'
+        bundle_buffer = io.BytesIO()
+        with zipfile.ZipFile(bundle_buffer, 'w') as bundle:
+            member = zipfile.ZipInfo('emoji_1f699.png')
+            member.external_attr = 0o100644 << 16
+            bundle.writestr(member, replacement)
+        bundle = bundle_buffer.getvalue()
         config = {'schema_version': 1, 'kind': cldr_webapp_notices.DIRECTORY,
                   'archive_root': cldr_webapp_notices.ARCHIVE_ROOT,
                   'fonts_directory': cldr_webapp_notices.FONTS_DIRECTORY,
@@ -663,12 +669,13 @@ class DeliveryTests(unittest.TestCase):
                                  'files': {name: hashlib.sha256(data).hexdigest() for name, data in emoji.items()},
                                  'upstream_commit_2021': cldr_webapp_notices.NOTO_EMOJI_2021_COMMIT,
                                  'files_2021': {name: hashlib.sha256(data).hexdigest() for name, data in emoji_2021.items()}},
-                  'emoji_replacement': {'cldr_file': cldr_webapp_notices.REPLACEMENT_PATH,
-                                        'original_sha256': hashlib.sha256(b'owned original fixture').hexdigest(),
-                                        'file': cldr_webapp_notices.REPLACEMENT_FILE,
-                                        'sha256': hashlib.sha256(replacement).hexdigest(),
-                                        'upstream_commit': cldr_webapp_notices.NOTO_EMOJI_COMMIT,
-                                        'upstream_file': cldr_webapp_notices.REPLACEMENT_UPSTREAM},
+                  'emoji_replacements': {'file': cldr_webapp_notices.REPLACEMENT_FILE,
+                                         'sha256': hashlib.sha256(bundle).hexdigest(),
+                                         'upstreams': cldr_webapp_notices.REPLACEMENT_UPSTREAMS,
+                                         'files': {'emoji_1f699.png': {
+                                             'original_sha256': hashlib.sha256(b'owned original fixture').hexdigest(),
+                                             'sha256': hashlib.sha256(replacement).hexdigest(), 'source': 'noto',
+                                             'upstream_path': cldr_webapp_notices.REPLACEMENT_UPSTREAM}}},
                   'fonts': {name: hashlib.sha256(data).hexdigest() for name, data in fonts.items()},
                   'notices': {name: hashlib.sha256(data).hexdigest() for name, data in notices.items()}}
         if case == 'emoji-2021-overlap':
@@ -676,11 +683,11 @@ class DeliveryTests(unittest.TestCase):
         if case == 'emoji-2021-commit':
             config['noto_emoji']['upstream_commit_2021'] = '0'*40
         if case == 'replacement-upstream':
-            config['emoji_replacement']['upstream_commit'] = '0'*40
+            config['emoji_replacements']['upstreams'] = {'noto': {'commit': '0'*40}}
         (inputs/'sources.json').write_text(json.dumps(config), encoding='utf-8')
         (inputs/'README.md').write_text('owned fixture', encoding='utf-8')
         (inputs/cldr_webapp_notices.REPLACEMENT_FILE).write_bytes(
-            b'tampered' if case == 'replacement-asset' else replacement)
+            b'tampered' if case == 'replacement-asset' else bundle)
         for name, data in notices.items():
             (inputs/name).write_bytes(b'tampered' if case == 'notice' or
                                      (case == 'autosize-notice' and name == 'Autosize-MIT.txt') or
@@ -734,9 +741,10 @@ class DeliveryTests(unittest.TestCase):
                     tf.addfile(member, io.BytesIO(payload))
                     if case == 'emoji-duplicate' and name == 'emoji_1f600.png':
                         tf.addfile(member, io.BytesIO(payload))
-            member = tarfile.TarInfo(emoji_prefix+'emoji_123.png')
-            member.size = len(b'unreviewed emoji')
-            tf.addfile(member, io.BytesIO(b'unreviewed emoji'))
+            if case == 'emoji-extra':
+                member = tarfile.TarInfo(emoji_prefix+'emoji_123.png')
+                member.size = len(b'unreviewed emoji')
+                tf.addfile(member, io.BytesIO(b'unreviewed emoji'))
             if case != 'replacement-missing':
                 payload = b'tampered' if case == 'replacement-output' else replacement
                 member = tarfile.TarInfo(cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.REPLACEMENT_PATH)
@@ -768,7 +776,7 @@ class DeliveryTests(unittest.TestCase):
     def test_cldr_web_font_notices_reject_changed_or_unreviewed_inputs(self):
         for case in ('font', 'missing', 'extra', 'notice', 'symlink', 'bootstrap', 'bootstrap-missing',
                      'autosize', 'autosize-missing', 'autosize-symlink', 'autosize-duplicate', 'autosize-notice',
-                     'emoji-missing', 'emoji-tamper', 'emoji-symlink', 'emoji-duplicate', 'emoji-notice',
+                     'emoji-missing', 'emoji-tamper', 'emoji-symlink', 'emoji-duplicate', 'emoji-notice', 'emoji-extra',
                      'emoji-2021-missing', 'emoji-2021-tamper', 'emoji-2021-overlap', 'emoji-2021-commit',
                      'replacement-asset', 'replacement-output', 'replacement-missing', 'replacement-symlink',
                      'replacement-duplicate', 'replacement-upstream'):
@@ -803,10 +811,10 @@ class DeliveryTests(unittest.TestCase):
                     if case == 'bootstrap hash': items[2]['sha256'] = '0'*64
                     if case == 'bootstrap anchor': items[2]['anchors']['data.txt'] = '0'*64
                     replacement = self.cldr_replacement_fixture()
-                    if case == 'replacement original': replacement['original_sha256'] = '0'*64
-                    if case == 'replacement missing': replacement['cldr_file'] += '.absent'
+                    if case == 'replacement original': replacement['emoji_1f699.png']['original_sha256'] = '0'*64
+                    if case == 'replacement missing': replacement['emoji_absent.png'] = replacement.pop('emoji_1f699.png')
                     with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
-                         patch.object(source, 'cldr_emoji_replacement', return_value=replacement):
+                         patch.object(source, 'cldr_emoji_replacements', return_value=replacement):
                         with self.assertRaises(ValueError):
                             source.collect_icu_data_sources(output, cache)
                     self.assertEqual(list(output.iterdir()), [])
@@ -833,6 +841,64 @@ class DeliveryTests(unittest.TestCase):
                     source.filter_source_tar(original, target, lambda path: True, replacements={name: b'new'})
                 self.assertFalse(target.exists())
                 self.assertFalse(target.with_suffix(target.suffix+'.partial').exists())
+
+    def test_emoji_replacement_bundle_checks_members_and_paths(self):
+        data = b'\x89PNG\r\n\x1a\nowned image'
+        for case in ('valid', 'duplicate', 'symlink', 'path', 'missing', 'wrong-hash', 'not-png',
+                     'same-hash', 'upstream-path', 'upstream-version', 'wrong-image', 'noto-flag'):
+            with self.subTest(case=case):
+                name = ('../emoji_1f699.png' if case == 'path' else
+                        'emoji_1f1e6_1f1e8.png' if case == 'noto-flag' else 'emoji_1f699.png')
+                payload = b'not an image' if case == 'not-png' else data
+                buffer = io.BytesIO()
+                with zipfile.ZipFile(buffer, 'w') as archive:
+                    member = zipfile.ZipInfo(name)
+                    member.external_attr = (0o120777 if case == 'symlink' else 0o100644) << 16
+                    archive.writestr(member, payload)
+                    if case == 'duplicate':
+                        with self.assertWarns(UserWarning):
+                            archive.writestr(member, payload)
+                bundle = buffer.getvalue()
+                sha = hashlib.sha256(payload).hexdigest()
+                record = {'original_sha256': sha if case == 'same-hash' else '0'*64,
+                          'sha256': 'f'*64 if case == 'wrong-hash' else sha,
+                          'source': 'noto', 'upstream_path': '../elsewhere' if case == 'upstream-path' else
+                          'png/72/emoji_u1f600.png' if case == 'wrong-image' else
+                          'png/72/emoji_u1f1e6_1f1e8.png' if case == 'noto-flag' else
+                          cldr_webapp_notices.REPLACEMENT_UPSTREAM}
+                listed = 'emoji_missing.png' if case == 'missing' else name
+                config = {'emoji_replacements': {'file': cldr_webapp_notices.REPLACEMENT_FILE,
+                          'sha256': hashlib.sha256(bundle).hexdigest(),
+                          'upstreams': {} if case == 'upstream-version' else cldr_webapp_notices.REPLACEMENT_UPSTREAMS,
+                          'files': {listed: record}}}
+                if case == 'valid':
+                    self.assertEqual(cldr_webapp_notices.emoji_replacements(config, bundle)[name]['data'], data)
+                else:
+                    with self.assertRaises(ValueError):
+                        cldr_webapp_notices.emoji_replacements(config, bundle)
+
+    def test_emoji_upstream_archive_verifier_checks_hashes_and_ambiguity(self):
+        for case in ('valid', 'archive-hash', 'member-hash', 'missing', 'duplicate', 'symlink'):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                archive_path = Path(temporary)/'owned.tar.gz'
+                with tarfile.open(archive_path, 'w:gz') as archive:
+                    member = tarfile.TarInfo('owned/image.png')
+                    if case == 'symlink':
+                        member.type = tarfile.SYMTYPE
+                        member.linkname = 'outside'
+                        archive.addfile(member)
+                    else:
+                        member.size = 3
+                        archive.addfile(member, io.BytesIO(b'img'))
+                        if case == 'duplicate': archive.addfile(member, io.BytesIO(b'img'))
+                name = 'owned/missing.png' if case == 'missing' else 'owned/image.png'
+                expected = {name: '0'*64 if case == 'member-hash' else hashlib.sha256(b'img').hexdigest()}
+                archive_hash = '0'*64 if case == 'archive-hash' else verify_emoji_alternatives.digest(archive_path)
+                if case == 'valid':
+                    verify_emoji_alternatives.verify_archive(archive_path, archive_hash, expected)
+                else:
+                    with self.assertRaises(ValueError):
+                        verify_emoji_alternatives.verify_archive(archive_path, archive_hash, expected)
 
     def test_rar_mapping_notice_bytes_match_in_notices_and_separate_delivery(self):
         with tempfile.TemporaryDirectory() as temporary:

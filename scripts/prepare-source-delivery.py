@@ -22,7 +22,8 @@ from vendor_notice_materials import collect as collect_vendor_notice_materials
 from qt_psl_source import collect as collect_qt_psl_source
 from qt_tika_materials import collect as collect_qt_tika_source
 from cldr_webapp_notices import collect as collect_cldr_webapp_notices
-from cldr_webapp_notices import emoji_replacement as cldr_emoji_replacement
+from cldr_webapp_notices import EMOJI_DIRECTORY, REPLACEMENT_UPSTREAMS
+from cldr_webapp_notices import emoji_replacements as cldr_emoji_replacements
 
 ROOT = Path(__file__).resolve().parents[1]
 ISO639_DIRECTORY = 'tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/'
@@ -119,7 +120,7 @@ def collect_icu_data_sources(output, cache):
     if len(items) != 3 or {item['module'] for item in items} != {
             'icu-data-source', 'cldr-data-source', 'icu-cldr-bootstrap-source'}:
         raise ValueError('Expected the pinned ICU, CLDR and ICU4J bootstrap sources')
-    replacement = cldr_emoji_replacement()
+    replacements = cldr_emoji_replacements()
     sources = []
     retained_identifiers = {}
     for item in items:
@@ -150,10 +151,16 @@ def collect_icu_data_sources(output, cache):
                 if actual != expected:
                     raise ValueError('ICU data source anchor checksum mismatch')
             if item['module'] == 'cldr-data-source':
-                original = [member for member in members if member.name == root+'/'+replacement['cldr_file']]
-                if (len(original) != 1 or not original[0].isfile() or original[0].size > 1024 * 1024 or
-                        hashlib.sha256(archive.extractfile(original[0]).read()).hexdigest() != replacement['original_sha256']):
-                    raise ValueError('Original CLDR emoji image checksum mismatch')
+                prefix = root+'/'+EMOJI_DIRECTORY+'/'
+                original = [member for member in members if member.name.startswith(prefix) and
+                            member.name.removeprefix(prefix) in replacements]
+                if len(original) != len(replacements):
+                    raise ValueError('Missing original CLDR emoji image')
+                for member in original:
+                    expected = replacements[member.name.removeprefix(prefix)]['original_sha256']
+                    if (not member.isfile() or member.size > 1024 * 1024 or
+                            hashlib.sha256(archive.extractfile(member).read()).hexdigest() != expected):
+                        raise ValueError('Original CLDR emoji image checksum mismatch')
                 iso_names = {member.name.removeprefix(root+'/') for member in members
                              if member.isfile() and 'iso-639-3' in member.name.lower()}
                 if iso_names != ISO639_TABLES:
@@ -175,16 +182,20 @@ def collect_icu_data_sources(output, cache):
             target = output/name
             root = item['archive_root']
             filter_source_tar(source, target, lambda path: path.removeprefix(root+'/') not in ISO639_TABLES,
-                              replacements={root+'/'+replacement['cldr_file']: replacement['data']})
+                              replacements={root+'/'+EMOJI_DIRECTORY+'/'+name: replacement['data']
+                                            for name, replacement in replacements.items()})
             record['upstream_url'] = record.pop('url')
             if 'source_tree' in record:
                 record['upstream_source_tree'] = record.pop('source_tree')
             record.update(file=name, sha256=digest(target), upstream_file=item['file'],
                           upstream_archive_sha256=item['sha256'], complete_upstream_tree=False,
                           omitted_files=sorted(ISO639_TABLES),
-                          substituted_files=[{key: replacement[key] for key in
-                                              ('cldr_file', 'original_sha256', 'sha256',
-                                               'upstream_commit', 'upstream_file')}],
+                          substituted_files=[{'cldr_file': EMOJI_DIRECTORY+'/'+name,
+                                              'original_sha256': replacement['original_sha256'],
+                                              'sha256': replacement['sha256'], 'source': replacement['source'],
+                                              'upstream_commit': REPLACEMENT_UPSTREAMS[replacement['source']]['commit'],
+                                              'upstream_file': replacement['upstream_path']}
+                                             for name, replacement in sorted(replacements.items())],
                           identified_language_identifier_files=retained_identifiers[item['module']],
                           identifier_file_list_exhaustive=False)
         else:
@@ -418,25 +429,25 @@ def rebuild_instructions():
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
 6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树、
    CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树随目录提供。
-   CLDR 子集排除了五个 ISO 639-3 文件并替换了一张网页工具图片，不能称为完整源码树；其他用途需要这些
+   CLDR 子集排除了五个 ISO 639-3 文件并替换了 963 张网页工具图片，不能称为完整源码树；其他用途需要这些
    文件时须另行核对来源和条款。子集的其他文件仍含语言标识符、别名和较早的
    语言子标签注册表。按项目 docs/engineering/icu-cldr-rebuild.md 的
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
    不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
    子集网页工具中六份字体、Bootstrap 和 Autosize 脚本及 908 份已匹配的
-   Noto Emoji 图片的来源和许可补充见
+   Noto Emoji 图片及 963 张替代图片的来源和许可补充见
    cldr43-webapp-notices/，该目录不覆盖其余网页素材，也不属于 xdzip 界面。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
-   subset omits five ISO 639-3 files, replaces one web tool image, and retains language identifiers, aliases and an
+   subset omits five ISO 639-3 files, replaces 963 web tool images, and retains language identifiers, aliases and an
    earlier language-subtag registry. It is not a complete upstream tree; other uses
    needing them require separate source and terms review. See the ICU data rebuild
    instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
    Matching versions do not prove the supplier built its libraries without patches
    from these inputs or independently establish licensing compliance. See
    cldr43-webapp-notices/ for six web tool fonts, Bootstrap and Autosize scripts and 908
-   matched Noto Emoji images; these do not
+   matched Noto Emoji images and 963 replacement images; these do not
    cover other web assets or imply that xdzip uses them. Current Windows
    developer packages omit the software OpenGL library; historical deliveries retain
    their obligations.
