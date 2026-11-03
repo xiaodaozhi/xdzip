@@ -247,6 +247,8 @@ class InstallerTests(unittest.TestCase):
             for extension, icon in WINDOWS_ICONS.items():
                 progid = windows_progid(extension)
                 self.assertEqual(progid, 'xdzip.Archive.'+extension.upper())
+                self.assertIn('ValueData: "{code:AssociationDescription|'+extension.upper()+'}"',text)
+                self.assertNotIn('ValueData: "xdzip '+extension.upper()+' archive"',text)
                 self.assertIn('Software\\Classes\\.'+extension+'\\OpenWithProgids',text)
                 self.assertIn('ValueName: ".'+extension+'"; ValueData: "'+progid+'"',text)
                 self.assertIn('Software\\Classes\\'+progid+'\\DefaultIcon',text)
@@ -257,6 +259,11 @@ class InstallerTests(unittest.TestCase):
                 self.assertIn('Subkey: "Software\\Classes\\.'+extension+'\\OpenWithProgids"; ValueType: none; ValueName: "xdzip.Archive"; Flags: deletevalue',text)
             self.assertNotIn('Software\\Classes\\.001\\',text)
             self.assertNotIn('Software\\Classes\\.img\\',text)
+            self.assertIn("GetIniString('General', 'schemaVersion', '1', Profile)",text)
+            self.assertIn("GetIniString('locale', 'language', 'zh-CN', Profile)",text)
+            self.assertIn("Result := '' + Param + ' archive'",text)
+            self.assertIn("Result := '' + Param + ' 压缩包';",text)
+            self.assertNotIn('@ASSOCIATION_DESCRIPTION_',text)
             for line in text.splitlines():
                 if '\\OpenWithProgids' in line:
                     if 'Flags: deletevalue' in line:
