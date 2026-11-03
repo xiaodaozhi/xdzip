@@ -67,6 +67,10 @@ English: List and grid share their empty state. A committed search with no resul
 
 起始页和压缩文件页使用同一底栏高度，正常高度下限为32逻辑像素，来自 layout-scale.json 的 statusbarHeight。辅助字号按任务按钮的真实高度与相同上下留白共同增高，切换页面不改变底栏高度。两页任务按钮使用同一 task-list 素材及 main.interaction.taskIconSize 定义的 16×16 逻辑像素图标槽，居中对齐，不随页面或辅助字号改变尺寸。
 
+压缩文件页底栏显示选中数量；有选择且总大小已知时，在数量后显示分隔符和大小。选中项包含虚拟目录或未知大小文件等导致总大小未知时，只显示数量，不显示多余的分隔符和 `—`。已知的零字节大小仍正常显示，欢迎页文案不变。
+
+English: The archive status bar shows the selection count and appends the size only when a nonempty selection has a known total. If a virtual directory or unknown-size file makes the total unknown, it shows the count alone without a separator or dash. A known zero size remains visible; the welcome message is unchanged.
+
 English: Welcome and archive pages share a 32-unit minimum status bar and the same content-based growth for larger text. Both task buttons use the same task-list asset in a centered 16×16 logical icon slot from main.interaction.taskIconSize, independent of page and text scale.
 
 文件列表选框右边缘到文件图标槽固定留 12 逻辑像素，图标、文件名和“名称”表头同步定位。辅助字号只改变真实文字度量，不扩大这段空白；选框仍与每行选择状态及表头全选状态共用原有选择模型。

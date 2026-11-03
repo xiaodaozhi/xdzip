@@ -2101,7 +2101,7 @@ Item {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: root.welcomeVisible ? qsTrId("ui.d43d21c6f28f") : qsTrId("ui.aeb126abb448", Number(reader.selectedCount)) + (reader.selectedCount ? qsTrId("common.separator") + root.formatSize(reader.selectedBytes) : "")
+                    text: root.welcomeVisible ? qsTrId("ui.d43d21c6f28f") : qsTrId("ui.aeb126abb448", Number(reader.selectedCount)) + (reader.selectedCount && /^\d+$/.test(reader.selectedBytes) ? qsTrId("common.separator") + root.formatSize(reader.selectedBytes) : "")
                     color: Theme.textSecondary
                     font.pixelSize: root.welcomeVisible ? 11 * Theme.fontScale : Theme.mainStatusSize
                     elide: Text.ElideRight
