@@ -7,6 +7,10 @@
     "file": "tools/cldr-apps/src/main/webapp/js/bootstrap.min.js",
     "sha256": "898d05a17f2cfc5120ddcdba47a885c378c0b466f30f0700e502757e24b403a1"
   },
+  "autosize_script": {
+    "file": "tools/cldr-apps/src/main/webapp/js/autosize.min.js",
+    "sha256": "756f2ee1dbc42834e1269591c0b806ba06c04670373b6c2a05c55eae583d2cc7"
+  },
   "fonts": {
     "LICENSE-Noto.txt": "7d1715c2ceaa82e548db50261d2527ba2412d1344be317df0ebd2f0bd57f5219",
     "NotoSerifNyiakengPuachueHmong-Bold.otf": "bceb003047e669b97baf6a60d83f56ffd0909eb8a15e57ec7590e687ef82c27c",
@@ -17,6 +21,7 @@
     "glyphicons-halflings-regular.woff": "fc969dc1c6ff531abcf368089dcbaf5775133b0626ff56b52301a059fc0f9e1e"
   },
   "notices": {
+    "Autosize-MIT.txt": "be6b635bdbeb3650d19c794f430913c6bef92265d48536d4008db1f058130394",
     "Bootstrap-MIT.txt": "13964e59d8e91ad8b02719bc498917a5ca09673ce24106267cf458c5972bb0fe",
     "Glyphicons-MIT.txt": "56b756ee9ccfd0e2f32284e543bd9859d8b59526e9f2990855bac603c7d7c4ec",
     "Noto-OFL-1.1.txt": "b61b405a127fc3a4c5b35849faa41b736f2c91ee05b2818963171b229524a9d0"

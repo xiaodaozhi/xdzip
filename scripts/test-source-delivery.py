@@ -630,17 +630,21 @@ class DeliveryTests(unittest.TestCase):
         fonts = {name: ('owned font fixture '+name).encode() for name in cldr_webapp_notices.FONT_FILES}
         notices = {name: ('owned notice fixture '+name).encode() for name in cldr_webapp_notices.NOTICE_FILES}
         bootstrap = b'owned Bootstrap fixture'
+        autosize = b'owned Autosize fixture'
         config = {'schema_version': 1, 'kind': cldr_webapp_notices.DIRECTORY,
                   'archive_root': cldr_webapp_notices.ARCHIVE_ROOT,
                   'fonts_directory': cldr_webapp_notices.FONTS_DIRECTORY,
                   'bootstrap_script': {'file': cldr_webapp_notices.BOOTSTRAP_SCRIPT,
                                        'sha256': hashlib.sha256(bootstrap).hexdigest()},
+                  'autosize_script': {'file': cldr_webapp_notices.AUTOSIZE_SCRIPT,
+                                      'sha256': hashlib.sha256(autosize).hexdigest()},
                   'fonts': {name: hashlib.sha256(data).hexdigest() for name, data in fonts.items()},
                   'notices': {name: hashlib.sha256(data).hexdigest() for name, data in notices.items()}}
         (inputs/'sources.json').write_text(json.dumps(config), encoding='utf-8')
         (inputs/'README.md').write_text('owned fixture', encoding='utf-8')
         for name, data in notices.items():
-            (inputs/name).write_bytes(b'tampered' if case == 'notice' else data)
+            (inputs/name).write_bytes(b'tampered' if case == 'notice' or
+                                     (case == 'autosize-notice' and name == 'Autosize-MIT.txt') else data)
         archive = root/'subset.tar.gz'
         prefix = cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.FONTS_DIRECTORY+'/'
         if case == 'extra':
@@ -663,6 +667,17 @@ class DeliveryTests(unittest.TestCase):
                 member = tarfile.TarInfo(cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.BOOTSTRAP_SCRIPT)
                 member.size = len(payload)
                 tf.addfile(member, io.BytesIO(payload))
+            if case != 'autosize-missing':
+                payload = b'tampered' if case == 'autosize' else autosize
+                member = tarfile.TarInfo(cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.AUTOSIZE_SCRIPT)
+                if case == 'autosize-symlink':
+                    member.type = tarfile.SYMTYPE; member.linkname = 'elsewhere'
+                    tf.addfile(member)
+                else:
+                    member.size = len(payload)
+                    tf.addfile(member, io.BytesIO(payload))
+                if case == 'autosize-duplicate':
+                    tf.addfile(member, io.BytesIO(payload))
         return archive
 
     def test_cldr_web_font_notices_are_bound_to_subset_and_license_bytes(self):
@@ -672,13 +687,15 @@ class DeliveryTests(unittest.TestCase):
                 record = cldr_webapp_notices.collect(root/'delivery', archive)
             self.assertEqual(record['font_files'], 6)
             self.assertTrue(record['bootstrap_script'])
+            self.assertTrue(record['autosize_script'])
             destination = root/'delivery'/cldr_webapp_notices.DIRECTORY
             for name in ('README.md', 'sources.json', *cldr_webapp_notices.NOTICE_FILES):
                 self.assertEqual((destination/name).read_bytes(),
                                  (root/'third_party'/cldr_webapp_notices.DIRECTORY/name).read_bytes())
 
     def test_cldr_web_font_notices_reject_changed_or_unreviewed_inputs(self):
-        for case in ('font', 'missing', 'extra', 'notice', 'symlink', 'bootstrap', 'bootstrap-missing'):
+        for case in ('font', 'missing', 'extra', 'notice', 'symlink', 'bootstrap', 'bootstrap-missing',
+                     'autosize', 'autosize-missing', 'autosize-symlink', 'autosize-duplicate', 'autosize-notice'):
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary); archive = self.cldr_web_fonts_fixture(root, case)
                 with patch.object(cldr_webapp_notices, 'ROOT', root), self.assertRaises(ValueError):

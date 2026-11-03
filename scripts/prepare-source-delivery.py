@@ -398,7 +398,7 @@ def rebuild_instructions():
    语言子标签注册表。按项目 docs/engineering/icu-cldr-rebuild.md 的
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
    不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
-   子集网页工具中六份字体及一份 Bootstrap 脚本的版权和许可补充见
+   子集网页工具中六份字体及 Bootstrap、Autosize 脚本的版权和许可补充见
    cldr43-webapp-notices/，该目录不覆盖其余网页素材，也不属于 xdzip 界面。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
@@ -409,7 +409,7 @@ def rebuild_instructions():
    instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
    Matching versions do not prove the supplier built its libraries without patches
    from these inputs or independently establish licensing compliance. See
-   cldr43-webapp-notices/ for six web tool fonts and a Bootstrap script; these do not
+   cldr43-webapp-notices/ for six web tool fonts and Bootstrap and Autosize scripts; these do not
    cover other web assets or imply that xdzip uses them. Current Windows
    developer packages omit the software OpenGL library; historical deliveries retain
    their obligations.
