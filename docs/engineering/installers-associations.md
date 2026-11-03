@@ -42,6 +42,10 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 English: The nine format-specific Windows ProgIDs use the application language, for example `ZIP archive` or `ZIP 压缩包`, without an xdzip prefix. Setup reads the saved application locale and defaults to Simplified Chinese when no supported setting exists. A normal installed application refreshes its owned descriptions at startup and after a successful language change, only after checking its installation identity, manifest, launcher and all nine existing commands. Failed writes may be partial and are retried at the next normal start. Portable, development and isolated-settings or language-override processes do not update them. The legacy shared ProgID remains for compatibility; Explorer may display cached or system/other-handler descriptions.
 
+一次性 Windows CI 安装检查使用真实产品验证中英文启动同步，并以便携版及临时设置进程验证不写入；同时核对九类图标、命令、其他应用候选和默认选择未变。此自动检查不模拟运行中切换语言，也不替代 Explorer 或系统设置的人工显示验收。
+
+English: Disposable Windows CI checks startup synchronization in both languages using the installed product and verifies that a portable copy and an isolated-settings process do not write descriptions. It checks that icons, commands, other candidates and defaults remain unchanged; it does not simulate an in-session language switch or replace manual Explorer and Settings acceptance.
+
 全部格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`，其 Applications 注册承载完整 SupportedTypes，使系统“打开方式”只呈现一个 xdzip 应用入口。启动器嵌入同一品牌应用 ICO 和独立 OriginalFilename、产品版本资源；应用图标与逐格式文档图标分别核验，不能用文档 DefaultIcon 代替可执行文件的应用资源。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
 旧共享与九个独立 ProgID 均设置 REG_NONE 类型的 `AllowSilentDefaultTakeOver`。按 [Windows ProgID 约定](https://learn.microsoft.com/en-us/windows/win32/shell/fa-progids)，此标记要求系统在自动判定默认处理器时忽略该候选，用户仍可在“打开方式”中明确选择。Inno 的 `ValueType: none` 只创建键，因此安装器使用有界原生注册表调用写入准确类型；仅打开已创建的自有 ProgID，失败终止安装，句柄在失败路径释放。CI 同时快照保护选择、核对原生候选数量及自动后备路由，真实设置页面和 Explorer 的显示仍需单独人工验收。
