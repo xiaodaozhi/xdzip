@@ -180,6 +180,19 @@ assert k.WaitForSingleObject(gate,12000)==0
             for name in ('cl', 'cmake', 'ninja'):
                 self.assertIsNotNone(shutil.which(name), name+' is required for Windows CI')
 
+    def test_ci_desktop_build(self):
+        arguments = os.environ.get('XDZIP_DETACHED_DESKTOP_ARGUMENTS')
+        if not arguments:
+            self.skipTest('run after the native Windows CI build')
+        shared = json.loads(arguments)
+        self.assertIsInstance(shared, list)
+        result = subprocess.run([sys.executable, str(SCRIPT), '--timeout', '1200', '--',
+                                 sys.executable, str(ROOT/'scripts/desktop.py'), 'build', *shared],
+                                stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, timeout=1215)
+        self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
+        self.assertIn(b'build passed', result.stdout)
+
     @unittest.skipUnless(shutil.which('cl') and shutil.which('cmake') and shutil.which('ninja'),
                          'requires the MSVC, CMake and Ninja development environment')
     def test_owned_msvc_ninja_header_change_rebuilds(self):

@@ -106,6 +106,15 @@ New-Item -ItemType Directory -Force 'build/review' | Out-Null
 Copy-Item 'build/settings-compat/settings-compat.json' 'build/review/settings-compat.json'
 Set-CiPhase 'native-build'
 Invoke-Checked python (@('scripts/desktop.py', 'build') + $shared)
+if ($IsWindows) {
+    # Exercise the real desktop entry incrementally through the isolated console.
+    $env:XDZIP_DETACHED_DESKTOP_ARGUMENTS = ConvertTo-Json -InputObject $shared -Compress
+    try {
+        Invoke-Checked python @('scripts/test-windows-detached-console.py', 'IsolatedConsoleTests.test_ci_desktop_build')
+    } finally {
+        Remove-Item Env:XDZIP_DETACHED_DESKTOP_ARGUMENTS -ErrorAction SilentlyContinue
+    }
+}
 $productExe = if ($IsWindows) { 'build/desktop/apps/desktop/xdzip.exe' } elseif ($IsMacOS) { 'build/desktop/apps/desktop/xdzip.app/Contents/MacOS/xdzip' } else { 'build/desktop/apps/desktop/xdzip' }
 if ($IsWindows) {
     Invoke-Checked python @('scripts/check-windows-subsystem.py', '--gui', $productExe, '--console', 'build/desktop/apps/desktop/xdzip-browser-tests.exe')
