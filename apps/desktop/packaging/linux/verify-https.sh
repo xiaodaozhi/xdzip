@@ -16,6 +16,7 @@ test -f '/opt/xdzip runtime/plugins/tls/libqopensslbackend.so' || { echo 'Missin
 test -s /etc/ssl/certs/ca-certificates.crt || { echo 'Missing or empty system CA store' >&2; exit 1; }
 test "$(dpkg-query -W -f='${Status}' libssl3t64)" = 'install ok installed' || { echo 'OpenSSL runtime package is not installed' >&2; exit 1; }
 test "$(dpkg-query -W -f='${Status}' ca-certificates)" = 'install ok installed' || { echo 'CA certificates package is not installed' >&2; exit 1; }
+printf '%s\n' 'XDZIP_HTTPS_RUNTIME {"qt_openssl_backend_present":true,"openssl_package_installed":true,"system_ca_bundle_nonempty":true,"ca_package_installed":true}'
 mkdir -p /tmp/home /tmp/config /tmp/cache /tmp/runtime /tmp/probe
 chmod 700 /tmp/runtime
 export HOME=/tmp/home XDG_CONFIG_HOME=/tmp/config XDG_CACHE_HOME=/tmp/cache XDG_RUNTIME_DIR=/tmp/runtime

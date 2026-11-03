@@ -6,6 +6,7 @@
 #include "UiText.h"
 #include "UpdateController.h"
 #include "UpdateNetwork.h"
+#include "UpdateProbeDiagnostics.h"
 #include <QNetworkProxyFactory>
 #ifdef Q_OS_MACOS
 #include "MacUpdateProvider.h"
@@ -17,6 +18,8 @@
 #include <QJsonDocument>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QTcpServer>
+#include <QTcpSocket>
 #include <QQmlApplicationEngine>
 #include <QQuickItem>
 #include <QQuickStyle>
@@ -402,6 +405,70 @@ class UpdateControllerTest final : public QObject {
         QCOMPARE(updates.errorCode(), errorCode);
         QVERIFY(!updates.trusted());
         QCOMPARE(network.requests.size(), source == "manifest" ? 2 : 3);
+    }
+    void updateProbeNetworkRecordsARealReply() {
+        QTcpServer server;
+        QVERIFY(server.listen(QHostAddress::LocalHost));
+        connect(&server, &QTcpServer::newConnection, &server, [&] {
+            auto *client = server.nextPendingConnection();
+            connect(client, &QTcpSocket::readyRead, client, [client] {
+                client->readAll();
+                client->write("HTTP/1.1 429 Too Many Requests\r\nRetry-After: 60\r\n"
+                              "Content-Length: 0\r\nConnection: close\r\n\r\n");
+                client->disconnectFromHost();
+            });
+        });
+        UpdateProbeNetwork network;
+        network.setProxy(QNetworkProxy::NoProxy);
+        const QUrl url(QStringLiteral("http://127.0.0.1:%1/owned").arg(server.serverPort()));
+        auto *reply = network.get(QNetworkRequest(url));
+        QSignalSpy finished(reply, &QNetworkReply::finished);
+        QTRY_COMPARE(finished.count(), 1);
+        QTRY_COMPARE(network.evidence.report(QStringLiteral("rate_limited"), false)
+                         .value("http_responses")
+                         .toArray()
+                         .size(),
+                     1);
+        const auto evidence = network.evidence.report(QStringLiteral("rate_limited"), false);
+        QCOMPARE(evidence.value("request_count").toInt(), 1);
+        const auto response = evidence.value("http_responses").toArray().first().toObject();
+        QCOMPARE(response.value("host").toString(), QStringLiteral("other_allowed_host"));
+        QVERIFY2(response.value("status").toInt() != 0, qPrintable(reply->errorString()));
+        QCOMPARE(response.value("status").toInt(), 429);
+        QCOMPARE(response.value("rate_headers").toObject().value("retry_after").toString(),
+                 QStringLiteral("60"));
+        reply->deleteLater();
+    }
+    void updateProbeDiagnosticsRemainBoundedAndDoNotExposeRequests() {
+        UpdateProbeDiagnostics diagnostics;
+        QNetworkRequest request{QUrl(api + QStringLiteral("&private=owned-secret"))};
+        request.setRawHeader("Authorization", "owned-secret");
+        diagnostics.recordRequest(request);
+        diagnostics.recordEncrypted();
+        Response response{{}, 429};
+        response.headers = {{"X-RateLimit-Remaining", "0"},
+                            {"X-RateLimit-Reset", "1234"},
+                            {"Retry-After", "bad-header"}};
+        Reply reply(request, response, nullptr);
+        for (int i = 0; i < 33; ++i)
+            diagnostics.recordResponse(&reply);
+        const auto record = diagnostics.report(QStringLiteral("rate_limited"), false);
+        QCOMPARE(record.value("request_count").toInt(), 1);
+        QCOMPARE(record.value("encrypted_connections").toInt(), 1);
+        QVERIFY(record.value("authorization_present").toBool());
+        QVERIFY(record.value("response_records_truncated").toBool());
+        QVERIFY(record.value("rate_limit_confirmed").toBool());
+        const auto responses = record.value("http_responses").toArray();
+        QCOMPARE(responses.size(), 32);
+        const auto first = responses.first().toObject();
+        QCOMPARE(first.value("host").toString(), QStringLiteral("api.github.com"));
+        QCOMPARE(first.value("route").toString(), QStringLiteral("release_list"));
+        QCOMPARE(first.value("status").toInt(), 429);
+        const auto headers = first.value("rate_headers").toObject();
+        QCOMPARE(headers.value("remaining").toString(), QStringLiteral("0"));
+        QCOMPARE(headers.value("reset").toString(), QStringLiteral("1234"));
+        QCOMPARE(headers.value("retry_after").toString(), QStringLiteral("invalid"));
+        QVERIFY(!QJsonDocument(record).toJson().contains("owned-secret"));
     }
     void rateLimitIsNotCurrentVersion_data() {
         QTest::addColumn<int>("status");

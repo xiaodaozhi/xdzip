@@ -15,6 +15,9 @@
 #include "UiPreferences.h"
 #include "UiText.h"
 #include "UpdateController.h"
+#ifdef Q_OS_LINUX
+#include "UpdateProbeDiagnostics.h"
+#endif
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
 #include "WindowsAssociationDescriptions.h"
@@ -115,14 +118,19 @@ int main(int argc, char *argv[]) {
         if (updateProbeArgument + 1 >= args.size() ||
             qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH"))
             return 8;
+#ifdef Q_OS_LINUX
+        UpdateProbeNetwork probeNetwork;
+        UpdateController updates(nullptr, &probeNetwork);
+#else
         UpdateController updates;
+#endif
         const auto report = args.at(updateProbeArgument + 1);
         bool done = false;
         const auto finish = [&](bool timeout) {
             if (done || (!timeout && (updates.state() == "idle" || updates.busy())))
                 return;
             done = true;
-            const QJsonObject result{
+            QJsonObject result{
                 {"schema_version", 1},
                 {"state", updates.state()},
                 {"error", timeout ? QStringLiteral("probe_timeout") : updates.errorCode()},
@@ -132,14 +140,25 @@ int main(int argc, char *argv[]) {
                 {"ssl_backend", QSslSocket::activeBackend()},
                 {"version", BuildInfo::version()},
                 {"build", BuildInfo::buildNumber()}};
+#ifdef Q_OS_LINUX
+            const auto diagnostics = probeNetwork.evidence.report(updates.errorCode(), timeout);
+            for (auto item = diagnostics.constBegin(); item != diagnostics.constEnd(); ++item)
+                result.insert(item.key(), item.value());
+#endif
             QSaveFile file(report);
             const auto bytes = QJsonDocument(result).toJson();
             const bool written = file.open(QIODevice::WriteOnly) &&
                                  file.write(bytes) == bytes.size() && file.commit();
             application.exit(written && !timeout && updates.state() != "error" ? 0 : 13);
         };
-        QObject::connect(&updates, &UpdateController::changed, &application,
-                         [&] { finish(false); });
+        QObject::connect(&updates, &UpdateController::changed, &application, [&] {
+#ifdef Q_OS_LINUX
+            // Allow the network manager to publish its bounded response record first.
+            QTimer::singleShot(0, &application, [&] { finish(false); });
+#else
+            finish(false);
+#endif
+        });
         QTimer::singleShot(60000, &application, [&] { finish(true); });
         QTimer::singleShot(0, &updates, &UpdateController::check);
         return application.exec();
