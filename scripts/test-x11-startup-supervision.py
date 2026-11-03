@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Check the cold-start wrapper's bounded logging and owned process cleanup."""
 import importlib.util
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('x11_startup', ROOT/'scripts/check-x11-startup.py')
@@ -60,6 +63,25 @@ class X11SupervisionTests(unittest.TestCase):
         finally:
             unrelated.terminate()
             unrelated.wait(timeout=5)
+
+    @unittest.skipUnless(all(shutil.which(tool) for tool in ('cc', 'xvfb-run', 'Xvfb', 'xauth')),
+                         'Requires Xvfb, xauth and a C compiler')
+    def test_lost_xvfb_ready_signal_times_out_before_the_inner_test(self):
+        fixture = ROOT/'tests/fixtures/native/suppress_xvfb_ready.c'
+        injector = self.root/'suppress-ready.so'
+        subprocess.run(['cc', '-shared', '-fPIC', '-Wall', '-Wextra', '-Werror',
+                        str(fixture), '-o', str(injector), '-ldl'], check=True)
+        trace, marker = self.root/'trace', self.root/'inner-started'
+        auth = self.root/'Xauthority'
+        auth.touch(mode=0o600)
+        command = ['xvfb-run', '-a', '-e', str(self.root/'xvfb.log'), '-f', str(auth), sys.executable,
+                   '-c', 'from pathlib import Path; import sys; Path(sys.argv[1]).touch()', str(marker)]
+        with mock.patch.dict(os.environ, {'LD_PRELOAD': str(injector),
+                                         'XDZIP_TEST_XVFB_READY_TRACE': str(trace)}):
+            with self.assertRaises(subprocess.TimeoutExpired):
+                startup.supervise(command, self.root/'wrapper.log', timeout=5)
+        self.assertEqual(trace.read_text(encoding='ascii'), 'suppressed\n')
+        self.assertFalse(marker.exists())
 
 
 if __name__ == '__main__':

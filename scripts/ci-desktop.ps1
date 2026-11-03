@@ -133,6 +133,7 @@ if ($IsWindows) {
     Invoke-Checked pwsh @('-NoProfile', '-File', 'scripts/check-windows-menu-launcher.ps1', '-Tests', $browserTests, '-OutputDirectory', 'build/review/native-menu-launcher-selftest')
 }
 if ($IsLinux) {
+    Invoke-Checked python @('scripts/test-x11-startup-supervision.py')
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
 Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
