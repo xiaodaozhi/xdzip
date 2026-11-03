@@ -68,6 +68,7 @@
 #include <QScopeGuard>
 #include <QScreen>
 #include <QSignalSpy>
+#include <QStyleHints>
 #include <QTemporaryDir>
 #include <QTextStream>
 #include <QTimer>
@@ -6405,7 +6406,12 @@ QtObject {
             QVERIFY(visual_audit::save(settings, captures,
                 language + (dark ? "-dark-" : "-light-") + QString::number(scale)));
         }
-        settings->setProperty("currentTab", 5);
+        auto *aboutTab = findVisual(settings->contentItem(), "settingsTab-5");
+        QVERIFY(aboutTab);
+        const auto aboutPos = aboutTab->mapToScene(QPointF(aboutTab->width()/2, aboutTab->height()/2)).toPoint();
+        moveTestPointer(settings, aboutPos);
+        QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, aboutPos);
+        QTRY_COMPARE(settings->property("currentTab").toInt(), 5);
         QQuickItem *check = nullptr;
         QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
@@ -6415,19 +6421,39 @@ QtObject {
         auto *flick = scroll->property("contentItem").value<QQuickItem *>();
         QVERIFY(flick);
         QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
-        QTest::qWait(50);
+        QSignalSpy layoutChanges(flick, SIGNAL(contentHeightChanged()));
+        QVERIFY(layoutChanges.isValid());
+        QElapsedTimer layoutTimer;
+        layoutTimer.start();
+        do {
+            layoutChanges.clear();
+            QTest::qWait(100);
+        } while (!layoutChanges.isEmpty() && layoutTimer.elapsed() < 2000);
+        QVERIFY2(layoutChanges.isEmpty(), "initial About layout did not settle");
         const qreal initialHeight = flick->property("contentHeight").toReal();
         const qreal initialThumb = bar->property("size").toReal();
+        const qreal initialPosition = flick->property("contentY").toReal();
         QVERIFY(initialThumb > 0 && initialThumb < 1);
         QSignalSpy thumbChanges(bar, SIGNAL(sizeChanged()));
+        QSignalSpy positionChanges(flick, SIGNAL(contentYChanged()));
         QVERIFY(thumbChanges.isValid());
-        QVERIFY(QMetaObject::invokeMethod(check, "click"));
+        QVERIFY(positionChanges.isValid());
+        const auto clickPos = check->mapToScene(QPointF(check->width()/2, check->height()/2)).toPoint();
+        moveTestPointer(settings, clickPos);
+        QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, clickPos);
+        QTest::qWait(30);
+        const bool movedOnPress = !positionChanges.isEmpty();
+        QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, clickPos);
+        QVERIFY2(!movedOnPress, "pressing check update changed the scroll position");
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
         QTRY_COMPARE(service->property("checks").toInt(), 1);
         QTest::qWait(50);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(flick->property("contentHeight").toReal() - initialHeight) < .5, 1000);
         QTRY_VERIFY_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, 1000);
         QVERIFY2(thumbChanges.isEmpty(), "scrollbar size changed while starting the update check");
+        QVERIFY2(positionChanges.isEmpty(), qPrintable(QStringLiteral("update check scrolled from %1 to %2 (changes: %3, focus: %4)")
+            .arg(initialPosition).arg(flick->property("contentY").toReal()).arg(positionChanges.size())
+            .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName() : QStringLiteral("none"))));
         const QList<QVariantMap> states{
             {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
             {{"state", "error"}, {"error", "unsafe_installation"}},
@@ -6452,7 +6478,62 @@ QtObject {
                 qPrintable(state + QStringLiteral(" content height %1, expected %2").arg(flick->property("contentHeight").toReal()).arg(initialHeight)), 1000);
             QTRY_VERIFY2_WITH_TIMEOUT(qAbs(bar->property("size").toReal() - initialThumb) < .001, qPrintable(state), 1000);
             QVERIFY2(thumbChanges.isEmpty(), qPrintable(state + QStringLiteral(" changed the scrollbar size")));
+            QVERIFY2(positionChanges.isEmpty(), qPrintable(state + QStringLiteral(" changed the scroll position")));
         }
+        auto *flickContent = flick->property("contentItem").value<QQuickItem *>();
+        QVERIFY(flickContent);
+        for (int clipped = 0; clipped < 2; ++clipped) {
+            service->setProperty("busy", false);
+            service->setProperty("state", "idle");
+            QTRY_VERIFY(check->isEnabled());
+            aboutTab->forceActiveFocus(Qt::OtherFocusReason);
+            QTRY_VERIFY(aboutTab->hasActiveFocus());
+            QTest::qWait(30);
+            const qreal checkTop = check->mapToItem(flickContent, QPointF()).y();
+            const qreal maximum = std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+            const qreal target = std::clamp(checkTop + (clipped ? check->height() / 4 : -2.), qreal(0), maximum);
+            QVERIFY(flick->setProperty("contentY", target));
+            QTest::qWait(30);
+            const qreal beforeClick = flick->property("contentY").toReal();
+            const QPointF localPoint(check->width()/2, check->height() * .75);
+            const auto pointInViewport = check->mapToItem(flick, localPoint);
+            QVERIFY(pointInViewport.y() >= 0 && pointInViewport.y() <= flick->height());
+            positionChanges.clear();
+            thumbChanges.clear();
+            const auto point = check->mapToScene(localPoint).toPoint();
+            moveTestPointer(settings, point);
+            QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, point);
+            QTest::qWait(30);
+            const bool movedWhilePressed = !positionChanges.isEmpty();
+            QTest::mouseRelease(settings, Qt::LeftButton, Qt::NoModifier, point);
+            QVERIFY2(!movedWhilePressed, "pressing check update changed the scroll position");
+            QTRY_COMPARE(service->property("checks").toInt(), clipped + 2);
+            QTRY_COMPARE(service->property("state").toString(), QStringLiteral("checking"));
+            QTest::qWait(50);
+            QCOMPARE(flick->property("contentY").toReal(), beforeClick);
+            QVERIFY2(positionChanges.isEmpty(), "update check changed the scroll position");
+            QVERIFY2(thumbChanges.isEmpty(), "update check changed the scrollbar height");
+            service->setProperty("state", "up_to_date");
+            service->setProperty("busy", false);
+            QTest::qWait(30);
+            QVERIFY2(positionChanges.isEmpty(), "update result changed the scroll position");
+        }
+        QVERIFY(flick->setProperty("contentY", 0));
+        auto *styleHints = QGuiApplication::styleHints();
+        const auto originalTabBehavior = styleHints->tabFocusBehavior();
+        const auto restoreTabBehavior = qScopeGuard([&] { styleHints->setTabFocusBehavior(originalTabBehavior); });
+        styleHints->setTabFocusBehavior(Qt::TabFocusAllControls);
+        check->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(check->hasActiveFocus());
+        auto *copy = findVisual(settings->contentItem(), "aboutCopy");
+        QVERIFY(copy);
+        QTest::keyClick(settings, Qt::Key_Tab);
+        QTRY_VERIFY2_WITH_TIMEOUT(copy->hasActiveFocus(), qPrintable(QStringLiteral("Tab focus is %1 (%2), window active: %3")
+            .arg(settings->activeFocusItem() ? settings->activeFocusItem()->objectName() : QStringLiteral("none"))
+            .arg(settings->activeFocusItem() ? QString::fromLatin1(settings->activeFocusItem()->metaObject()->className()) : QStringLiteral("none"))
+            .arg(settings->isActive())), 1500);
+        QTRY_VERIFY(copy->mapToItem(flick, QPointF()).y() >= -.5 &&
+                    copy->mapToItem(flick, QPointF(0, copy->height())).y() <= flick->height() + .5);
         auto *license = findVisual(settings->contentItem(), "aboutLicense");
         QVERIFY(license);
         QVERIFY(flick->setProperty("contentY", initialHeight - flick->height()));

@@ -64,7 +64,16 @@ OperationWindow {
         default: return qsTrId("update.idle");
         }
     }
-    onActiveFocusItemChanged: if (visible) Qt.callLater(() => root.revealFocus(pageScroll))
+    // Disabling and reenabling the update button transfers focus through the page Loader.
+    // Mouse focus and automatic focus restoration must not reposition the page.
+    onActiveFocusItemChanged: if (visible && activeFocusItem && activeFocusItem !== pageLoader) {
+        const focusedItem = activeFocusItem;
+        const updateButtonWithoutKeyboardNavigation = focusedItem.objectName === "aboutCheckUpdate" &&
+            (focusedItem.focusReason === Qt.MouseFocusReason || focusedItem.focusReason === Qt.OtherFocusReason);
+        if (!updateButtonWithoutKeyboardNavigation) Qt.callLater(() => {
+            if (root.visible && root.activeFocusItem === focusedItem) root.revealFocus(pageScroll);
+        });
+    }
     onCurrentTabChanged: if (currentTab === 3 && associations) associations.refresh()
     width: Theme.settingsLogicalWidth
     requestedHeight: Math.min(Theme.settingsClientHeight, Screen.desktopAvailableHeight - 80)
