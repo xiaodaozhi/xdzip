@@ -631,6 +631,7 @@ class DeliveryTests(unittest.TestCase):
         notices = {name: ('owned notice fixture '+name).encode() for name in cldr_webapp_notices.NOTICE_FILES}
         bootstrap = b'owned Bootstrap fixture'
         autosize = b'owned Autosize fixture'
+        emoji = {'emoji_1f600.png': b'owned emoji fixture', 'emoji_1f31a.png': b'another emoji fixture'}
         config = {'schema_version': 1, 'kind': cldr_webapp_notices.DIRECTORY,
                   'archive_root': cldr_webapp_notices.ARCHIVE_ROOT,
                   'fonts_directory': cldr_webapp_notices.FONTS_DIRECTORY,
@@ -638,13 +639,17 @@ class DeliveryTests(unittest.TestCase):
                                        'sha256': hashlib.sha256(bootstrap).hexdigest()},
                   'autosize_script': {'file': cldr_webapp_notices.AUTOSIZE_SCRIPT,
                                       'sha256': hashlib.sha256(autosize).hexdigest()},
+                  'noto_emoji': {'directory': cldr_webapp_notices.EMOJI_DIRECTORY,
+                                 'upstream_commit': cldr_webapp_notices.NOTO_EMOJI_COMMIT,
+                                 'files': {name: hashlib.sha256(data).hexdigest() for name, data in emoji.items()}},
                   'fonts': {name: hashlib.sha256(data).hexdigest() for name, data in fonts.items()},
                   'notices': {name: hashlib.sha256(data).hexdigest() for name, data in notices.items()}}
         (inputs/'sources.json').write_text(json.dumps(config), encoding='utf-8')
         (inputs/'README.md').write_text('owned fixture', encoding='utf-8')
         for name, data in notices.items():
             (inputs/name).write_bytes(b'tampered' if case == 'notice' or
-                                     (case == 'autosize-notice' and name == 'Autosize-MIT.txt') else data)
+                                     (case == 'autosize-notice' and name == 'Autosize-MIT.txt') or
+                                     (case == 'emoji-notice' and name == 'Noto-Emoji-Apache-2.0.txt') else data)
         archive = root/'subset.tar.gz'
         prefix = cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.FONTS_DIRECTORY+'/'
         if case == 'extra':
@@ -678,6 +683,23 @@ class DeliveryTests(unittest.TestCase):
                     tf.addfile(member, io.BytesIO(payload))
                 if case == 'autosize-duplicate':
                     tf.addfile(member, io.BytesIO(payload))
+            emoji_prefix = cldr_webapp_notices.ARCHIVE_ROOT+'/'+cldr_webapp_notices.EMOJI_DIRECTORY+'/'
+            for name, data in emoji.items():
+                if case == 'emoji-missing' and name == 'emoji_1f600.png':
+                    continue
+                member = tarfile.TarInfo(emoji_prefix+name)
+                if case == 'emoji-symlink' and name == 'emoji_1f600.png':
+                    member.type = tarfile.SYMTYPE; member.linkname = 'elsewhere'
+                    tf.addfile(member)
+                else:
+                    payload = b'tampered' if case == 'emoji-tamper' and name == 'emoji_1f600.png' else data
+                    member.size = len(payload)
+                    tf.addfile(member, io.BytesIO(payload))
+                    if case == 'emoji-duplicate' and name == 'emoji_1f600.png':
+                        tf.addfile(member, io.BytesIO(payload))
+            member = tarfile.TarInfo(emoji_prefix+'emoji_123.png')
+            member.size = len(b'unreviewed emoji')
+            tf.addfile(member, io.BytesIO(b'unreviewed emoji'))
         return archive
 
     def test_cldr_web_font_notices_are_bound_to_subset_and_license_bytes(self):
@@ -688,6 +710,7 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual(record['font_files'], 6)
             self.assertTrue(record['bootstrap_script'])
             self.assertTrue(record['autosize_script'])
+            self.assertEqual(record['noto_emoji_files'], 2)
             destination = root/'delivery'/cldr_webapp_notices.DIRECTORY
             for name in ('README.md', 'sources.json', *cldr_webapp_notices.NOTICE_FILES):
                 self.assertEqual((destination/name).read_bytes(),
@@ -695,7 +718,8 @@ class DeliveryTests(unittest.TestCase):
 
     def test_cldr_web_font_notices_reject_changed_or_unreviewed_inputs(self):
         for case in ('font', 'missing', 'extra', 'notice', 'symlink', 'bootstrap', 'bootstrap-missing',
-                     'autosize', 'autosize-missing', 'autosize-symlink', 'autosize-duplicate', 'autosize-notice'):
+                     'autosize', 'autosize-missing', 'autosize-symlink', 'autosize-duplicate', 'autosize-notice',
+                     'emoji-missing', 'emoji-tamper', 'emoji-symlink', 'emoji-duplicate', 'emoji-notice'):
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary); archive = self.cldr_web_fonts_fixture(root, case)
                 with patch.object(cldr_webapp_notices, 'ROOT', root), self.assertRaises(ValueError):
