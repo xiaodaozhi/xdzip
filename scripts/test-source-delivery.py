@@ -648,6 +648,10 @@ class DeliveryTests(unittest.TestCase):
         notices = {name: ('owned notice fixture '+name).encode() for name in cldr_webapp_notices.NOTICE_FILES}
         bootstrap = b'owned Bootstrap fixture'
         autosize = b'owned Autosize fixture'
+        ibm_sources = {name: ('owned IBM web source '+name).encode()
+                       for name in cldr_webapp_notices.IBM_WEB_SOURCES}
+        cldr_licenses = {name: ('owned CLDR license fixture '+name).encode()
+                         for name in cldr_webapp_notices.CLDR_LICENSE_SOURCES}
         emoji = {'emoji_1f600.png': b'owned emoji fixture', 'emoji_1f31a.png': b'another emoji fixture'}
         emoji_2021 = {'emoji_1f601.png': b'older emoji fixture'}
         replacement = b'\x89PNG\r\n\x1a\nowned replacement fixture'
@@ -664,6 +668,8 @@ class DeliveryTests(unittest.TestCase):
                                        'sha256': hashlib.sha256(bootstrap).hexdigest()},
                   'autosize_script': {'file': cldr_webapp_notices.AUTOSIZE_SCRIPT,
                                       'sha256': hashlib.sha256(autosize).hexdigest()},
+                  'ibm_web_sources': {name: hashlib.sha256(data).hexdigest() for name, data in ibm_sources.items()},
+                  'cldr_license_sources': {name: hashlib.sha256(data).hexdigest() for name, data in cldr_licenses.items()},
                   'noto_emoji': {'directory': cldr_webapp_notices.EMOJI_DIRECTORY,
                                  'upstream_commit': cldr_webapp_notices.NOTO_EMOJI_COMMIT,
                                  'files': {name: hashlib.sha256(data).hexdigest() for name, data in emoji.items()},
@@ -701,6 +707,21 @@ class DeliveryTests(unittest.TestCase):
         if case == 'font':
             fonts['glyphicons-halflings-regular.ttf'] = b'tampered'
         with tarfile.open(archive, 'w:gz') as tf:
+            for name, data in {**ibm_sources, **cldr_licenses}.items():
+                if ((case == 'ibm-missing' and name.endswith('/browse_results.jsp')) or
+                        (case == 'cldr-license-missing' and name == 'unicode-license.txt')):
+                    continue
+                payload = b'tampered' if ((case == 'ibm-tamper' and name.endswith('/browse_results.jsp')) or
+                                          (case == 'cldr-readme-tamper' and name == 'README.md')) else data
+                member = tarfile.TarInfo(cldr_webapp_notices.ARCHIVE_ROOT+'/'+name)
+                if case == 'ibm-symlink' and name.endswith('/browse_results.jsp'):
+                    member.type = tarfile.SYMTYPE; member.linkname = 'elsewhere'
+                    tf.addfile(member)
+                else:
+                    member.size = len(payload)
+                    tf.addfile(member, io.BytesIO(payload))
+                    if case == 'ibm-duplicate' and name.endswith('/browse_results.jsp'):
+                        tf.addfile(member, io.BytesIO(payload))
             for name, data in fonts.items():
                 member = tarfile.TarInfo(prefix+name)
                 if case == 'symlink' and name == 'glyphicons-halflings-regular.ttf':
@@ -765,6 +786,7 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual(record['font_files'], 6)
             self.assertTrue(record['bootstrap_script'])
             self.assertTrue(record['autosize_script'])
+            self.assertEqual(record['ibm_marked_sources'], 3)
             self.assertEqual(record['noto_emoji_files'], 3)
             self.assertEqual(record['substituted_emoji_files'], 1)
             destination = root/'delivery'/cldr_webapp_notices.DIRECTORY
@@ -776,6 +798,8 @@ class DeliveryTests(unittest.TestCase):
     def test_cldr_web_font_notices_reject_changed_or_unreviewed_inputs(self):
         for case in ('font', 'missing', 'extra', 'notice', 'symlink', 'bootstrap', 'bootstrap-missing',
                      'autosize', 'autosize-missing', 'autosize-symlink', 'autosize-duplicate', 'autosize-notice',
+                     'ibm-missing', 'ibm-tamper', 'ibm-symlink', 'ibm-duplicate',
+                     'cldr-license-missing', 'cldr-readme-tamper',
                      'emoji-missing', 'emoji-tamper', 'emoji-symlink', 'emoji-duplicate', 'emoji-notice', 'emoji-extra',
                      'emoji-2021-missing', 'emoji-2021-tamper', 'emoji-2021-overlap', 'emoji-2021-commit',
                      'replacement-asset', 'replacement-output', 'replacement-missing', 'replacement-symlink',

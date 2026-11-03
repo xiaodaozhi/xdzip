@@ -14,6 +14,9 @@ ARCHIVE_ROOT = 'cldr-37d524354422f46731db74f3bd6b3f46516c3ced'
 FONTS_DIRECTORY = 'tools/cldr-apps/src/main/webapp/fonts'
 BOOTSTRAP_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/bootstrap.min.js'
 AUTOSIZE_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/autosize.min.js'
+IBM_WEB_SOURCES = frozenset('tools/cldr-apps/src/main/webapp/'+name for name in
+                            ('browse_results.jsp', 'xpath_results.jsp', 'surveytool.css'))
+CLDR_LICENSE_SOURCES = frozenset(('README.md', 'unicode-license.txt'))
 EMOJI_DIRECTORY = 'tools/cldr-apps/src/main/webapp/images/emoji'
 NOTO_EMOJI_COMMIT = '934a5706f1f3dd2605c4d9b5d9162fd7f89d8702'
 NOTO_EMOJI_2021_COMMIT = 'de7f127a26f7044e5647490af9e3b187d9532703'
@@ -129,8 +132,11 @@ def collect(output, subset):
             not emoji_files or not emoji_2021_files or set(emoji_files).intersection(emoji_2021_files) or
             any(not re.fullmatch(r'emoji_[0-9a-f_]+\.png', name) for name in (*emoji_files, *emoji_2021_files)) or
             set(config.get('fonts', {})) != FONT_FILES or set(config.get('notices', {})) != NOTICE_FILES or
+            set(config.get('ibm_web_sources', {})) != IBM_WEB_SOURCES or
+            set(config.get('cldr_license_sources', {})) != CLDR_LICENSE_SOURCES or
             any(not re.fullmatch(r'[0-9a-f]{64}', value)
                 for value in (*config['fonts'].values(), *config['notices'].values(),
+                              *config['ibm_web_sources'].values(), *config['cldr_license_sources'].values(),
                               *emoji_files.values(), *emoji_2021_files.values(),
                               config['bootstrap_script'].get('sha256', ''),
                               config['autosize_script'].get('sha256', '')))):
@@ -144,6 +150,11 @@ def collect(output, subset):
 
     prefix = ARCHIVE_ROOT + '/' + FONTS_DIRECTORY + '/'
     with tarfile.open(subset, 'r:gz') as archive:
+        for name, expected in {**config['ibm_web_sources'], **config['cldr_license_sources']}.items():
+            entries = [member for member in archive if member.name == ARCHIVE_ROOT+'/'+name]
+            if (len(entries) != 1 or not entries[0].isfile() or entries[0].size > 1024 * 1024 or
+                    hashlib.sha256(archive.extractfile(entries[0]).read()).hexdigest() != expected):
+                raise ValueError('CLDR web source or license checksum mismatch')
         members = [member for member in archive if member.name.startswith(prefix)]
         if (len(members) != len(FONT_FILES) or any(not member.isfile() for member in members) or
                 {member.name.removeprefix(prefix) for member in members} != FONT_FILES):
@@ -177,7 +188,7 @@ def collect(output, subset):
     for name in names:
         (destination / name).write_bytes(inputs[name])
     return {'kind': DIRECTORY, 'file': DIRECTORY + '/sources.json', 'font_files': len(FONT_FILES) - 1,
-            'bootstrap_script': True, 'autosize_script': True,
+            'bootstrap_script': True, 'autosize_script': True, 'ibm_marked_sources': len(IBM_WEB_SOURCES),
             'noto_emoji_files': len(emoji_files),
             'substituted_emoji_files': len(replacements),
-            'scope': 'CLDR 43.1 webapp fonts, Bootstrap/Autosize scripts and listed emoji images only'}
+            'scope': 'CLDR 43.1 webapp fonts, Bootstrap/Autosize, three IBM-marked sources and listed emoji only'}
