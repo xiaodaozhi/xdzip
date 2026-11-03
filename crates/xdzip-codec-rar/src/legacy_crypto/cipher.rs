@@ -311,7 +311,7 @@ fn table(byte: u8) -> u32 {
 
 // Functional finite mapping from frozen rar20-cipher-permutation-v1.csv.
 // SHA256 c38eb742ed1231b555a35ff7ee882b829eabaff62958109d7b8b84b68d96e928.
-// Its source is the fixed LicenseRef-UnRAR reference crypt2.cpp9..26, not an
+// Its source is the fixed UnRAR reference crypt2.cpp9..26, not an
 // independent primary specification or a claim of project-original constants.
 // Restricted origin and specialized license review remain separately recorded.
 const PERMUTATION: [u8; 256] = include!("permutation.rs");

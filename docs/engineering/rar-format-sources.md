@@ -6,7 +6,7 @@ RAR 自研迁移保留旧版、RAR5、RAR7、密码、头部加密、固实与�
 
 现代容器字段依据 RARLAB 的 [RAR 5.0 格式技术说明](https://www.rarlab.com/technote.htm)，RAR7 算法辨识参考 [UnRAR7 说明](https://www.rarlab.com/unrar7notes.htm)。技术说明并未完整公布压缩、历史密码、VM 或 checksum tweak 算法，不能从方法名称推导缺失状态机。在线技术说明没有独立版本号或签名，不把保存的 HTML 当作上游签名发布。
 
-旧容器及官方技术说明未覆盖的接受行为，经独立分析者按固定 UnRAR 来源形成纯事实交接。固定参考的上游内部版本为 7.30 beta1，下载归档文件名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。归档 SHA-256 为 `634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab`，许可为 LicenseRef-UnRAR，精确原始许可与来源说明见[有限映射材料](../../third_party/rar-wire-mappings/README.md)。容器、现代 LZ/过滤器、固实与密码分别交接，不据某一稿存在宣称其他算法已经完成分析。
+旧容器及官方技术说明未覆盖的接受行为，经独立分析者按固定 UnRAR 来源形成纯事实交接。固定参考的上游内部版本为 7.30 beta1，下载归档文件名为 `unrarsrc-7.3.1.tar.gz`，不据文件名另推上游发行版本。归档 SHA-256 为 `634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab`，许可为 UnRAR，精确原始许可与来源说明见[有限映射材料](../../third_party/rar-wire-mappings/README.md)。容器、现代 LZ/过滤器、固实与密码分别交接，不据某一稿存在宣称其他算法已经完成分析。
 
 English: The pinned reference identifies itself as UnRAR 7.30 beta1. Its download filename is unrarsrc-7.3.1.tar.gz; that filename does not establish a separate upstream release version. The exact original notice and pinned archive provenance are preserved separately for the finite mappings, without inferring legal clearance.
 
@@ -22,7 +22,7 @@ RAR29 PPM 使用纯事实交接 `RAR29-PPM-2026-10-26-v1`，主文 SHA-256 为 `
 
 RAR29 LZ 与六种标准过滤器分别依据纯事实主文 `e375c541e106d43a3e58a2fe8aab79f60ffc71beff08b76c2a66f26d0fd355cb`、`eeecbd9a247d4a8c98e3d1cd11371106c16fbb5bd565406731908241e7432d8a`，旧密码主文为 `9650bce5affb20ea4d616e1e68c25d52e5fa703bd0b7c56b3915fad825abdcb4`。古老容器补充 `RAR14-CONTAINER-2026-10-26-v1` 主文为 `d3a86f3cad6e1893959d40cc691e7c7d4ddfec4b96abc9f4ba12ea98fd7f484c`，独立冻结清单为 `e6adcbf16ad688c82ad5bd39ae7cdd4379003ae82dd19b30b4dd53ce52223f9c`。这些资料只交接数值、边界与接受行为；各实现者在各自首次实现相应模块时未阅读对应 UnRAR 核心，固定公开归档与官方工具仍仅作为独立黑盒对照。
 
-13/15 族依据旧算法事实主文 `d4cd5d61ee4b16fa7202cb6840d0e9592d67205c4fdbfd02f3e515320ebf96ef`，有限前缀映射和 Short 映射以独立数据表交接，SHA-256 分别为 `2e50aa5c3c9f97609cf7b7c91676b7266de9ca65ee977f9184c42ec104c9edeb`、`31d4186b3dbf06bdbf5aabd5f08cfa800bc810709cfd042fe6f32ef22c9cad1b`。数据表来源仍是固定 LicenseRef-UnRAR 参考，不把有限线映射、独立 CSV 或原创 Rust 组织方式当作版权或再许可结论。
+13/15 族依据旧算法事实主文 `d4cd5d61ee4b16fa7202cb6840d0e9592d67205c4fdbfd02f3e515320ebf96ef`，有限前缀映射和 Short 映射以独立数据表交接，SHA-256 分别为 `2e50aa5c3c9f97609cf7b7c91676b7266de9ca65ee977f9184c42ec104c9edeb`、`31d4186b3dbf06bdbf5aabd5f08cfa800bc810709cfd042fe6f32ef22c9cad1b`。数据表来源仍是固定 UnRAR 参考，不把有限线映射、独立 CSV 或原创 Rust 组织方式当作版权或再许可结论。
 
 旧容器例外与 Windows 宿主字符投影采用追加冻结 `RAR-COMPATIBILITY-GAPS-2026-10-26-v1`，事实主文为 `142e47f9a3c2920e0e0c674555df669ecde0bc29549a9a45f03133d11957a4ef`。Unix/macOS 的追加事实 `RAR-COMPATIBILITY-GAPS-UNIX-2026-10-26-v2` 为 `3853684c35ee672956ccaadb3efc1f1fffb58e0a7fa472d41c261fbacd69a479`。时间投影事实为 `2ea490c2304c8fe5188af371d77fe9013b23ae66e6ff4fe05cf489cb7c914a20`。纯系统服务只做本地字符或日历转换，格式选择、限长、截断和 DOS 数学留在 Rust；事实中的参考未检查系统失败行为不成为返回未初始化数据的许可。
 

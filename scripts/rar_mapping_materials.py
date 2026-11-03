@@ -40,6 +40,7 @@ def collect(output):
     config = json.loads(data['sources.json'])
     notice = config['original_notice']
     if (config['schema_version'] != 1 or config['kind'] != 'limited-reference-provenance' or
+            config['source_license'] != 'UnRAR' or
             config['official_engine_in_product'] is not False or notice['file'] != names[2] or
             len(data[names[2]]) != notice['bytes'] or
             hashlib.sha256(data[names[2]]).hexdigest() != notice['sha256']):

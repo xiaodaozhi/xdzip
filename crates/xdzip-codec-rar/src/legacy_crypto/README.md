@@ -10,7 +10,7 @@ RAR3 原始密码字节遵原 native 平台兼容：Windows 前 127 个 UTF16 �
 
 旧 13/15/20 使用 `NarrowPassword::from_projected` 接收宿主已明确投影的窄密码字节，截前 127 字节、首 NUL 结束。`ascii` 便利入口只接收跨平台无歧义的 ASCII；它不会把任意 UTF8 当作 Windows ACP、DOS OEM 或 Unix locale。对应宿主非 ASCII 投影契约须另明确。
 
-旧 20 的固定有限置换来自冻结 `rar20-cipher-permutation-v1.csv`，SHA256 `c38eb742ed1231b555a35ff7ee882b829eabaff62958109d7b8b84b68d96e928`。唯一已知来源是固定受限参考 `crypt2.cpp` 的有限输入输出映射，原始来源和 LicenseRef-UnRAR 限制没有消失，不称项目原创常量或独立公开规范。具体 provenance 由通用 RAR 来源文档登记，专项许可复核仍独立进行。密码准备中必要的正向分组数学只用于构造读取密钥状态，不是 RAR 压缩编码器。`Old20Cache` 只缓存一个活动密码的不可变初始状态，每个新文件取得新的工作副本；预算不为重复准备计费，后续文件内容仍由宿主累计解码和输出计量。
+旧 20 的固定有限置换来自冻结 `rar20-cipher-permutation-v1.csv`，SHA256 `c38eb742ed1231b555a35ff7ee882b829eabaff62958109d7b8b84b68d96e928`。唯一已知来源是固定受限参考 `crypt2.cpp` 的有限输入输出映射，原始来源和 UnRAR 限制没有消失，不称项目原创常量或独立公开规范。具体 provenance 由通用 RAR 来源文档登记，专项许可复核仍独立进行。密码准备中必要的正向分组数学只用于构造读取密钥状态，不是 RAR 压缩编码器。`Old20Cache` 只缓存一个活动密码的不可变初始状态，每个新文件取得新的工作副本；预算不为重复准备计费，后续文件内容仍由宿主累计解码和输出计量。
 
 `LegacyReader` 只读取授权 packed 范围，保留 byte 或 block 状态，提供 consumed/decoded/remaining/finish。旧 13/15 无数学对齐 padding；旧 20/AES128 只允许调用方已确认内容终止后的显式至多 15 字节尾部，不猜测 PKCS7 或要求零。带 payload 的 Interrupted 转为 Other 并保留类型，避免标准 Read combinator 吞错误；裸 OS Interrupted 重试。源错、取消、截断、未读完 finish 等均 poison。
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Boundary tests for import resolution, evidence scope, and source/binary binding."""
 from pathlib import Path
+import json
+import shutil
+import subprocess
 import tempfile
 import importlib.util
 import unittest
@@ -10,6 +13,24 @@ from sbom import artifact_bom, source_bom
 
 
 class AuditTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which('cargo'), 'requires Cargo metadata')
+    def test_rar_conservative_license_reaches_source_bom(self):
+        root = Path(__file__).resolve().parents[1]
+        metadata = json.loads(subprocess.check_output(
+            ['cargo', 'metadata', '--offline', '--locked', '--no-deps', '--format-version', '1'],
+            cwd=root, text=True))
+        package, = [item for item in metadata['packages'] if item['name'] == 'xdzip-codec-rar']
+        self.assertEqual(package['license'], 'Apache-2.0 AND UnRAR')
+        inventory = {'version_source': {'build': 1}, 'display_version': package['version'],
+                     'revision': 'a'*40, 'dirty': False,
+                     'rust_packages': [{'name': package['name'], 'version': package['version'],
+                                        'license': package['license'], 'bom_ref': 'cargo:rar',
+                                        'source_kind': 'workspace'}],
+                     'rust_dependencies': [{'ref': 'cargo:rar', 'dependsOn': []}],
+                     'qt_declared_product_modules': [], 'qt_version': '6.8.2', 'assets': []}
+        component, = source_bom(inventory)['components']
+        self.assertEqual(component['licenses'], [{'expression': 'Apache-2.0 AND UnRAR'}])
+
     def test_native_tool_parsers_preserve_missing_imports_and_spaces(self):
         self.assertEqual(audit.windows_imports('    Qt6Core.dll\n  KERNEL32.dll\n  delay.dll\n Summary'), ['KERNEL32.dll','Qt6Core.dll','delay.dll'])
         self.assertEqual(audit.mac_imports('binary:\n\t@rpath/QtCore.framework/QtCore (compatibility version 6.0.0, current version 6.8.2)'), ['@rpath/QtCore.framework/QtCore'])

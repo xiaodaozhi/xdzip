@@ -3,7 +3,7 @@
   "name": "RAR finite wire mappings",
   "kind": "limited-reference-provenance",
   "source_release": "UnRAR 7.30 beta1",
-  "source_license": "LicenseRef-UnRAR",
+  "source_license": "UnRAR",
   "source_archive": {
     "file": "unrarsrc-7.3.1.tar.gz",
     "url": "https://www.rarlab.com/rar/unrarsrc-7.3.1.tar.gz",
@@ -20,5 +20,5 @@
     "Historical RAR20 finite cipher permutation, recorded in crates/xdzip-codec-rar/src/legacy_crypto/README.md"
   ],
   "official_engine_in_product": false,
-  "licensing_status": "Original reference notice preserved; applicability and redistribution require candidate-specific review. No Apache-2.0 relicensing or legal clearance is inferred."
+  "licensing_status": "UnRAR paragraph 2 is applied conservatively to the referenced finite mappings; the RAR crate declares Apache-2.0 AND UnRAR. The original notice and source comments are retained, with no RAR creation or modification. This is not a determination of copyright scope or legal clearance."
 }

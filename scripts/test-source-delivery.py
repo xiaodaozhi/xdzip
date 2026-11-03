@@ -932,6 +932,7 @@ class DeliveryTests(unittest.TestCase):
                 paths, record = source.collect_rar_mapping_materials(output)
                 self.assertEqual(len(paths), 3)
                 self.assertEqual(record['source_release'], 'UnRAR 7.30 beta1')
+                self.assertEqual(record['source_license'], 'UnRAR')
                 self.assertEqual(record['source_archive']['file'], 'unrarsrc-7.3.1.tar.gz')
                 self.assertFalse(record['official_engine_in_product'])
                 self.assertEqual(record['kind'], 'limited-reference-provenance')
@@ -949,6 +950,21 @@ class DeliveryTests(unittest.TestCase):
             for original in (ROOT/'third_party/rar-wire-mappings').iterdir():
                 (inputs/original.name).write_bytes(original.read_bytes())
             (inputs/'UnRAR-7.3.1-license.txt').write_bytes(b'altered reference notice')
+            with patch.object(rar_mapping_materials, 'ROOT', root):
+                with self.assertRaisesRegex(ValueError, 'checksum or scope'):
+                    rar_mapping_materials.collect(root/'output')
+            self.assertFalse((root/'output').exists())
+
+    def test_rar_mapping_rejects_changed_license_identifier(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inputs = root/'third_party/rar-wire-mappings'
+            inputs.mkdir(parents=True)
+            for original in (ROOT/'third_party/rar-wire-mappings').iterdir():
+                (inputs/original.name).write_bytes(original.read_bytes())
+            config = json.loads((inputs/'sources.json').read_text(encoding='utf-8'))
+            config['source_license'] = 'Apache-2.0'
+            (inputs/'sources.json').write_text(json.dumps(config), encoding='utf-8')
             with patch.object(rar_mapping_materials, 'ROOT', root):
                 with self.assertRaisesRegex(ValueError, 'checksum or scope'):
                     rar_mapping_materials.collect(root/'output')
@@ -1018,7 +1034,7 @@ class DeliveryTests(unittest.TestCase):
                 self.assertEqual(hashes[path], hashlib.sha256((output/path).read_bytes()).hexdigest())
             self.assertEqual(inventory['native_dependencies'], [])
             self.assertEqual(len(inventory['limited_reference_materials']), 1)
-            self.assertEqual(inventory['limited_reference_materials'][0]['source_license'], 'LicenseRef-UnRAR')
+            self.assertEqual(inventory['limited_reference_materials'][0]['source_license'], 'UnRAR')
             self.assertFalse(inventory['limited_reference_materials'][0]['official_engine_in_product'])
 
     def test_current_product_and_historical_rebuild_names(self):
