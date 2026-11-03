@@ -11,6 +11,15 @@
     "file": "tools/cldr-apps/src/main/webapp/js/autosize.min.js",
     "sha256": "756f2ee1dbc42834e1269591c0b806ba06c04670373b6c2a05c55eae583d2cc7"
   },
+  "ibm_web_sources": {
+    "tools/cldr-apps/src/main/webapp/browse_results.jsp": "ff870814d5f3b56e37b6dfc71b86c737ab72c04b96ad9d756a827be630b50af5",
+    "tools/cldr-apps/src/main/webapp/xpath_results.jsp": "17ec48fd069a7377eee511766b102aea71b8200456086daf9efb940f740eaa9b",
+    "tools/cldr-apps/src/main/webapp/surveytool.css": "81ead39b15add9222483fb23af6831fcd06ece4965690c237b6dd8e188240bdb"
+  },
+  "cldr_license_sources": {
+    "README.md": "169d98c57567010fd427408b38f2e15db37b515e510d95d6a1919e32a59f6360",
+    "unicode-license.txt": "830ec6dd25a943b70a31d74caa56b08b34c35f5c9679fba664c1658712849271"
+  },
   "fonts": {
     "LICENSE-Noto.txt": "7d1715c2ceaa82e548db50261d2527ba2412d1344be317df0ebd2f0bd57f5219",
     "NotoSerifNyiakengPuachueHmong-Bold.otf": "bceb003047e669b97baf6a60d83f56ffd0909eb8a15e57ec7590e687ef82c27c",
