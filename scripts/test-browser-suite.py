@@ -79,6 +79,36 @@ def alive(pid):
     return True
 
 
+def ctest_diagnostics(returncode, stdout, stderr, elapsed, discovery, evidence_count, process_timeout=False):
+    """Retain bounded process facts without printing fixture paths or output."""
+    def has_timeout(value):
+        if isinstance(value, bytes):
+            return b'Timeout' in value
+        return isinstance(value, str) and 'Timeout' in value
+
+    def output_length(value):
+        if isinstance(value, str):
+            return {'length': len(value), 'unit': 'characters'}
+        if isinstance(value, bytes):
+            return {'length': len(value), 'unit': 'bytes'}
+        return {'length': 0, 'unit': 'absent'}
+
+    return {
+        'command': ['ctest', '--test-dir', '<owned-temp>', '--output-on-failure'],
+        'phase': 'discovery' if discovery else 'workers',
+        'exit_code': returncode,
+        'exit_code_hex32': f'0x{returncode & 0xffffffff:08X}' if type(returncode) is int else None,
+        'elapsed_ms': round(elapsed * 1000),
+        'ctest_timeout_seconds': 6,
+        'outer_timeout_seconds': 25,
+        'outer_process_timeout': process_timeout,
+        'stdout': output_length(stdout),
+        'stderr': output_length(stderr),
+        'timeout_marker': has_timeout(stdout) or has_timeout(stderr),
+        'owned_process_records': evidence_count,
+    }
+
+
 class BrowserSuiteTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -157,6 +187,27 @@ class BrowserSuiteTest(unittest.TestCase):
         self.assertEqual(self.run_probe(), 0)
         self.assertFalse((self.root / 'timings').exists())
 
+    def test_ctest_diagnostics_retains_exit_and_omits_private_output(self):
+        record = ctest_diagnostics(-1073741502, 'private fixture path', '', .125, False, 0)
+        self.assertEqual(record['exit_code_hex32'], '0xC0000142')
+        self.assertEqual(record['stdout'], {'length': len('private fixture path'), 'unit': 'characters'})
+        self.assertFalse(record['timeout_marker'])
+        self.assertNotIn('private fixture path', json.dumps(record))
+        record = ctest_diagnostics(None, b'partial Timeout', None, 25, True, 1, True)
+        self.assertTrue(record['outer_process_timeout'])
+        self.assertTrue(record['timeout_marker'])
+        self.assertEqual(record['phase'], 'discovery')
+
+    def test_ctest_empty_failure_reports_status_without_exposing_paths(self):
+        result = subprocess.CompletedProcess([], -1073741502, stdout='', stderr='')
+        with mock.patch('shutil.which', return_value='ctest'), mock.patch('subprocess.run', return_value=result):
+            with self.assertRaisesRegex(AssertionError, 'CTest timeout marker missing') as raised:
+                self.assert_ctest_timeout_terminates_processes()
+        message = str(raised.exception)
+        self.assertIn('0xC0000142', message)
+        self.assertIn('"owned_process_records": 0', message)
+        self.assertNotIn(str(self.root), message)
+
     def assert_ctest_timeout_terminates_processes(self, discovery=False):
         ctest = shutil.which('ctest')
         if not ctest:
@@ -176,10 +227,18 @@ class BrowserSuiteTest(unittest.TestCase):
         (self.root / 'CTestTestfile.cmake').write_text(
             f'add_test(timeout [==[{sys.executable}]==] [==[{launcher}]==])\n'
             'set_tests_properties(timeout PROPERTIES TIMEOUT 6)\n', encoding='utf-8')
-        result = subprocess.run([ctest, '--test-dir', str(self.root), '--output-on-failure'],
-                                env=self.env, capture_output=True, text=True, timeout=25)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn('Timeout', result.stdout + result.stderr)
+        started = time.monotonic()
+        try:
+            result = subprocess.run([ctest, '--test-dir', str(self.root), '--output-on-failure'],
+                                    env=self.env, capture_output=True, text=True, timeout=25)
+        except subprocess.TimeoutExpired as error:
+            record = ctest_diagnostics(None, error.stdout, error.stderr, time.monotonic() - started,
+                                       discovery, len(list(pids.glob('*.json'))), True)
+            self.fail('CTest process exceeded outer timeout: ' + json.dumps(record))
+        record = ctest_diagnostics(result.returncode, result.stdout, result.stderr,
+                                   time.monotonic() - started, discovery, len(list(pids.glob('*.json'))))
+        self.assertNotEqual(result.returncode, 0, json.dumps(record))
+        self.assertTrue(record['timeout_marker'], 'CTest timeout marker missing: ' + json.dumps(record))
         evidence = [json.loads(path.read_text()) for path in pids.glob('*.json')]
         self.assertTrue(evidence, 'No worker and child started before CTest timed out')
         ids = [item[key] for item in evidence for key in ('worker', 'child')]
