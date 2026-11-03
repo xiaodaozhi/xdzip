@@ -29,6 +29,8 @@ def current_characters() -> set[int]:
     """Include fixture text, UI labels, ASCII and a small set of stable punctuation."""
     codepoints = set(range(0x20, 0x7F))
     codepoints.update(map(ord, "\u00a0\u00b7×–—‘’“”…‰′″›←↑→↓−"))
+    # Retain previously shipped glyphs even when the current labels no longer use them.
+    codepoints.update(map(ord, "三循第遵"))
     for path in sorted((ROOT / "design/html").iterdir()):
         if path.suffix not in {".html", ".css", ".js"} or path.name == "assets.js":
             continue

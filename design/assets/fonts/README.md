@@ -10,7 +10,7 @@ Qt 产品使用由同一 WOFF2 无损导出的 TTF，约 300 KiB。`export-qt.py
 | --- | --- |
 | `fonts.css` | `@font-face` 声明；界面样式另行设置家族名 |
 | `xdzip-design-sans-sc.woff2` | 实际用于 HTML 的离线字体 |
-| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `b68301601a49a8ffec20d8ea2e1b155d9d7b5aa1ef36d37240f64e611f59b170` |
+| `xdzip-design-sans-sc.ttf` | Qt 原生运行字体，与 WOFF2 同源，SHA-256 `2a268d77c5febde40a9dfe3ef28392ee3d3f9e52f1dec467c763111a6adabc5a` |
 | `export-qt.py` | 导出 TTF；`--check` 检查是否与当前 WOFF2 完全对应 |
 | `OFL.txt` | 上游原文版权及 SIL Open Font License 1.1 |
 | `manifest.json` | 固定来源、原始及子集 SHA-256、覆盖字符、字重和工具版本 |
@@ -41,6 +41,6 @@ python design/assets/fonts/export-qt.py
 python design/assets/fonts/export-qt.py --check
 ```
 
-生成过程校验原始文件哈希，收集 `design/html/` 中 HTML、CSS、JavaScript 的文字（排除生成的图标登记文件 `assets.js`），保留常用标点和 ASCII，将可变字重范围限制为 400–750，然后通过 FontTools 与 Brotli 导出 WOFF2。检查过程验证字体、许可哈希、字重范围和当前界面的字形覆盖。增加界面文字时如检查发现缺字，应重新生成子集及单文件 HTML。
+生成过程校验原始文件哈希，收集 `design/html/` 中 HTML、CSS、JavaScript 的文字（排除生成的图标登记文件 `assets.js`），保留常用标点、ASCII 和已发行子集中的四个历史字形，将可变字重范围限制为 400–750，然后通过 FontTools 与 Brotli 导出 WOFF2。检查过程验证字体、许可哈希、字重范围和当前界面的字形覆盖。增加界面文字时如检查发现缺字，应重新生成子集及单文件 HTML。
 
 CSS 从 HTML 引用时使用 `../assets/fonts/fonts.css`，实际文字家族设为 `"Xdzip Design Sans SC"`。截图和几何测量前等待 `document.fonts.ready`，避免读取回退字体的宽度。单文件构建需要将 `fonts.css` 中的字体 URL 替换为 WOFF2 data URL，并嵌入完整许可。
