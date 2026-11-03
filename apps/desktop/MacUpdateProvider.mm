@@ -2,6 +2,7 @@
 
 #include "MacUpdateProvider.h"
 #include "UpdateController.h"
+#include "UpdateNetwork.h"
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
 #include "tests/mac_product_update_fixture.h"
 #endif
@@ -221,7 +222,8 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
 #ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
     return native(macProductUpdateFixtureFeed(candidate));
 #else
-    return native(candidate.value("appcast_url").toString());
+    const auto original = QUrl(candidate.value("appcast_url").toString());
+    return native(UpdateNetwork::mapped(original, candidate.value("transport_mirror").toString()).toString());
 #endif
 }
 - (BOOL)updaterShouldPromptForPermissionToCheckForUpdates:(SPUUpdater *)sender {
@@ -259,13 +261,13 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
     (void)item;
     return NO;
 }
-#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
 - (void)updater:(SPUUpdater *)sender
     willDownloadUpdate:(SUAppcastItem *)item
            withRequest:(NSMutableURLRequest *)request {
     (void)sender;
     const bool accepted = [self matches:item];
     const auto original = text(request.URL.absoluteString);
+#ifdef XDZIP_NATIVE_MAC_UPDATE_FIXTURE
     const auto destination =
         macProductUpdateFixtureAsset(accepted ? candidate : QJsonObject{}, original);
     // Only this private build changes the transport request after the original
@@ -277,8 +279,17 @@ void observeInstaller(const QString &path, InstallerObservation completion) {
                                  {{"item_matches", accepted},
                                   {"original_request_url", original},
                                   {"mapped_request_url", text(request.URL.absoluteString)}});
-}
+#else
+    const auto mirror = candidate.value("transport_mirror").toString();
+    const QUrl originalUrl(original, QUrl::StrictMode);
+    const auto mapped = UpdateNetwork::mapped(originalUrl, mirror);
+    const bool valid = accepted && original == candidate.value("asset_url").toString() &&
+                       UpdateNetwork::validMirror(mirror) &&
+                       (mirror.isEmpty() || UpdateNetwork::isMirrorUrl(mapped, mirror));
+    request.URL = valid ? [NSURL URLWithString:native(mapped.toString())]
+                        : [NSURL URLWithString:@"xdzip-owned-rejected://archive"];
 #endif
+}
 - (void)showUpdatePermissionRequest:(SPUUpdatePermissionRequest *)request
                               reply:(void (^)(SUUpdatePermissionResponse *))reply {
     (void)request;

@@ -41,6 +41,11 @@ def inspect(sources, registry):
                 errors.append(f'{name}: operation height must respect available screen geometry')
             if 'ScrollView {' not in text or 'OperationFooter {' not in text:
                 errors.append(f'{name}: operation needs a scrolling body and fixed shared footer')
+        if policy['role'] == 'settings':
+            if not re.search(r'^    requestedHeight:\s*Math\.min\(', text, re.M) or 'Screen.desktopAvailableHeight' not in text:
+                errors.append(f'{name}: settings height must respect available screen geometry')
+            if 'ScrollView {' not in text or 'OperationFooter {' in text:
+                errors.append(f'{name}: settings needs a scrolling body without a footer')
         if policy.get('design') and not (ROOT / policy['design'].split('?')[0]).is_file():
             errors.append(f'{name}: independent design source is missing')
     # Inline windows cannot silently escape a file-based inventory.

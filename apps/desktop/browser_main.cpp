@@ -5,6 +5,7 @@
 #include "BuildInfo.h"
 #include "DesktopIntegration.h"
 #include "DesktopProbe.h"
+#include "FileAssociations.h"
 #include "FileOpenRouter.h"
 #include "FocusDismissPolicy.h"
 #include "InstalledRuntimeGuard.h"
@@ -161,6 +162,9 @@ int main(int argc, char *argv[]) {
 #else
     UpdateController updates;
 #endif
+    FileAssociations associations;
+    engine.rootContext()->setContextProperty(QStringLiteral("FileAssociationService"),
+                                             &associations);
     engine.rootContext()->setContextProperty(QStringLiteral("UpdateService"), &updates);
     engine.setInitialProperties({{QStringLiteral("visible"), false}});
     QObject::connect(
@@ -219,6 +223,26 @@ int main(int argc, char *argv[]) {
         QObject::connect(controller, &BrowserController::readyToClose, &application,
                          &QApplication::quit, Qt::QueuedConnection);
     auto *settings = engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+#ifdef Q_OS_WIN
+    if (interactive && qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH") &&
+        qEnvironmentVariableIsEmpty("XDZIP_LANGUAGE")) {
+        QObject::connect(settings, &UiPreferences::savedChanged, &application,
+                         [settings, language = settings->activeLanguage()]() mutable {
+                             const auto current = settings->activeLanguage();
+                             if (language == current)
+                                 return;
+                             language = current;
+                             syncInstalledAssociationDescriptions(
+                                 qtTrId("association.typeDescription"));
+                         });
+    }
+#endif
+    auto configureUpdateNetwork = [&] {
+        updates.configureNetwork(settings->proxyMode(), settings->proxyAddress(),
+                                 settings->mirrorAddress());
+    };
+    QObject::connect(settings, &UiPreferences::savedChanged, &updates, configureUpdateNetwork);
+    configureUpdateNetwork();
     DesktopIntegration desktop(mainWindow, controller, settings, interactive);
     std::unique_ptr<ApplicationSessions> sessions;
     if (interactive) {

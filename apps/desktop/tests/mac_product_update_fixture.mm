@@ -589,9 +589,9 @@ void installMacProductUpdateFixture(UpdateController *updates, ApplicationSessio
             }
             return;
         }
-        sessions->showAboutFor(page);
+        QMetaObject::invokeMethod(page, "presentAbout");
         QQuickWindow *about = nullptr;
-        for (auto *candidate : window->findChildren<QQuickWindow *>("aboutWindow")) {
+        for (auto *candidate : window->findChildren<QQuickWindow *>("settingsWindow")) {
             if (!candidate->isVisible() || !candidate->isExposed() ||
                 candidate->transientParent() != window)
                 continue;

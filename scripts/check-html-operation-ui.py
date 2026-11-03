@@ -34,7 +34,7 @@ def main():
             for platform in ['macos', 'windows', 'linux']:
                 for theme in ['light', 'dark']:
                     page.evaluate('([platform,theme])=>{XdzipDesign.platform(platform);XdzipDesign.theme(theme);document.body.dataset.standalone="true";}', [platform,theme])
-                    for view in ['extract', 'create', 'settings', 'progress', 'conflict', 'result']:
+                    for view in ['extract', 'create', 'progress', 'conflict', 'result']:
                         if view == 'conflict':
                             page.evaluate('()=>{XdzipDesign.open("progress");state.task.status="conflict";showConflict()}')
                         elif view == 'result':

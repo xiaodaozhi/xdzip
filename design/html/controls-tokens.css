@@ -77,6 +77,20 @@
   --operation-control-remove-artwork-size: calc(24px * var(--ui-source-factor));
   --operation-control-segmented-height: calc(28px * var(--ui-source-factor));
   --operation-control-segmented-radius: calc(5px * var(--ui-source-factor));
+  --settings-client-height: calc(532px * var(--ui-source-factor));
+  --settings-sidebar-width: calc(144px * var(--ui-source-factor));
+  --settings-sidebar-row-height: calc(40px * var(--ui-source-factor));
+  --settings-sidebar-icon-size: calc(18px * var(--ui-source-factor));
+  --settings-sidebar-icon-inset: calc(15px * var(--ui-source-factor));
+  --settings-sidebar-icon-gap: calc(10px * var(--ui-source-factor));
+  --settings-sidebar-label-right-inset: calc(14px * var(--ui-source-factor));
+  --settings-sidebar-selection-width: calc(3px * var(--ui-source-factor));
+  --settings-header-divider-height: calc(1px * var(--ui-source-factor));
+  --settings-page-inset: calc(20px * var(--ui-source-factor));
+  --settings-page-section-gap: calc(16px * var(--ui-source-factor));
+  --settings-switch-width: calc(38px * var(--ui-source-factor));
+  --settings-switch-height: calc(22px * var(--ui-source-factor));
+  --settings-switch-thumb: calc(18px * var(--ui-source-factor));
   --operation-footer-height: calc(64px * var(--ui-source-factor));
   --operation-destination-indicator-slot-size: calc(24px * var(--ui-source-factor));
   --operation-destination-indicator-size: calc(16px * var(--ui-source-factor));
@@ -194,6 +208,7 @@
   --ui-menu-shadow: #1B294329;
   --ui-tooltip-surface: #202B41;
   --ui-tooltip-text: #FFFFFF;
+  --settings-sidebar-surface: #F7F9FC;
   --accent-disabled: #E4EAF5;
   --operation-card: #F4F6FA;
   --operation-card-border: #DFE5EF;
@@ -226,6 +241,7 @@
   --ui-menu-shadow: #00000066;
   --ui-tooltip-surface: #E3EBF9;
   --ui-tooltip-text: #182030;
+  --settings-sidebar-surface: #1D2129;
   --accent-disabled: #29364D;
   --operation-card: #202630;
   --operation-card-border: #343E4E;

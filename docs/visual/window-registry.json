@@ -93,20 +93,10 @@
     },
     "SettingsWindow": {
       "parent": "OperationWindow",
-      "role": "operation",
+      "role": "settings",
       "width": "Theme.settingsLogicalWidth",
-      "reason": "已批准的设置主题卡片布局，612 宽；正文底部使用 settingsContentInset 的 24 逻辑像素留白",
-      "design": "design/html/canvas.html?view=settings",
-      "header_design": "design/hifi/sources/operation-headers.html",
-      "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
-      "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."
-    },
-    "AboutWindow": {
-      "parent": "OperationWindow",
-      "role": "operation",
-      "width": "Theme.aboutLogicalWidth",
-      "reason": "491宽，标题区与其他图标弹窗共用OperationHeader；版本与更新状态保留可滚动正文及共享footer。旧品牌标题24不再作为当前例外。",
-      "design": "design/html/canvas.html?view=about",
+      "reason": "设置与关于共用 612 宽窗口，六个左侧标签，首项贴齐顶部及右分隔线；侧栏基准宽 144，大字号按最长单词增宽；正文独立滚动，无固定 footer，变更即时提交。",
+      "design": "design/hifi/sources/settings.html",
       "header_design": "design/hifi/sources/operation-headers.html",
       "header_policy": "OperationHeader: icon48, title20, subtitle13, minimum height96; shared insets, long text and larger fonts grow by measured content.",
       "header_body_policy": "Header-to-body gap is 0 logical units; paragraph/card spacing stays inside the body group."

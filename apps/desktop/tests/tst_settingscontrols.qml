@@ -44,21 +44,22 @@ Item {
             verify(settings !== null);
             Ui.Theme.dark = data.dark;
             Ui.Theme.fontScale = data.scale;
+            settings.show();
+            verify(waitForRendering(settings.contentItem));
             for (const name of ["Tray", "Recent"]) {
+                settings.currentTab = name === "Tray" ? 1 : 2;
+                tryVerify(() => findChild(settings.contentItem, "settings" + name) !== null);
                 const control = findChild(settings.contentItem, "settings" + name);
-                verify(control !== null);
-                compare(control.indicator.objectName, control.objectName + "Indicator");
-                compare(control.indicatorSize, Ui.Theme.operationControlIndicatorSize * control.density);
-                const label = findChild(control, control.objectName + "Label");
-                verify(label !== null);
-                compare(label.font.pixelSize, Math.round(Ui.Theme.settingsBodySize * data.scale));
-                const draft = "draft" + name;
-                const before = settings[draft];
+                const before = control.value;
+                verify(control.Accessible.name.length > 0);
                 control.requestToggle();
-                compare(settings[draft], !before);
+                tryCompare(control, "value", !before);
+                compare(control.checked, !before);
                 control.requestToggle();
-                compare(settings[draft], before);
+                tryCompare(control, "value", before);
+                compare(control.checked, before);
             }
+            settings.close();
         }
         function test_settings_select_heights_data() {
             const rows = [];
@@ -75,15 +76,18 @@ Item {
             settings.show();
             verify(waitForRendering(settings.contentItem));
             const names = ["settingsDensity", "settingsTextScale", "settingsLanguage", "settingsOpenMode"];
-            const controls = names.map(name => findChild(settings.contentItem, name));
-            for (let index = 0; index < controls.length; ++index) {
-                const control = controls[index];
-                verify(control !== null, names[index]);
-                verify(control.height > 0, names[index]);
-                compare(control.height, controls[0].height, names[index] + " logical height");
-                verify(control.contentItem.implicitHeight <= control.height, names[index] + " text fits");
+            let firstHeight = 0;
+            for (const name of names) {
+                settings.currentTab = name === "settingsLanguage" || name === "settingsOpenMode" ? 1 : 0;
+                tryVerify(() => findChild(settings.contentItem, name) !== null);
+                const control = findChild(settings.contentItem, name);
+                tryVerify(() => control.font.pixelSize === Math.round(Ui.Theme.settingsBodySize * data.scale));
+                tryVerify(() => Math.abs(control.height - control.implicitHeight) < 1);
+                if (!firstHeight) firstHeight = control.height;
+                tryVerify(() => Math.abs(control.height - firstHeight) < 1);
+                verify(control.contentItem.implicitHeight <= control.height, name + " text fits");
                 verify(control.indicator.y >= 0 && control.indicator.y + control.indicator.height <= control.height,
-                       names[index] + " indicator fits");
+                       name + " indicator fits");
             }
             settings.close();
         }

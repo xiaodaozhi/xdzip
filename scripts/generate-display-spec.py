@@ -28,7 +28,8 @@ def main():
     settings = json.loads((ROOT / 'docs/visual/settings-reference.json').read_text())
     preflight = json.loads((ROOT / 'docs/visual/preflight-reference.json').read_text())
     sizes['preflight'] = (Path(preflight['light_source_image']).name, preflight['source_size'])
-    sizes['settings'] = (Path(settings['source_image']).name, settings['source_size'])
+    # The frozen settings reference remains historical; the live reviewer uses the new artboard.
+    sizes['settings'] = ('settings-appearance-light.png', [742, 678])
     main_ratio = layout['main']['source_to_logical']
     operation_ratio = layout['operation']['source_to_logical']
     spec = dict(operationHeader=layout['operation']['header'], taskMenuMaximumHeight=layout['controls']['task_menu_maximum_height'], password=json.loads((ROOT / 'docs/visual/password-reference.json').read_text()), about=json.loads((ROOT / 'docs/visual/about-reference.json').read_text()), version=2, logicalWindowWidth=main_ratio[0],
@@ -45,7 +46,7 @@ def main():
     spec['views']['welcome']['sourceToLogical'] = main_ratio[0] / main_ratio[1]
     spec['views']['welcome-narrow']['window'] = [20, 30, 832 / spec['sourceToLogical'], 544 / spec['sourceToLogical']]
     spec['views']['preflight']['darkSource'] = '../hifi/screens/' + Path(preflight['dark_source_image']).name
-    spec['views']['settings']['darkSource'] = '../hifi/screens/settings-current-dark.png'
+    spec['views']['settings']['darkSource'] = '../hifi/screens/settings-appearance-dark.png'
     spec['views']['welcome']['darkSource'] = '../hifi/screens/welcome-top-dark.png'
     spec['views']['main']['darkSource'] = '../hifi/screens/main-capsule-dark.png'
     output = ('"use strict";\n// Generated from docs/visual/layout-scale.json; never infer logical size from DPR.\n'

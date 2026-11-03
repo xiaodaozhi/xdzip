@@ -191,6 +191,30 @@ bool verifyMacTitlebar(QQuickWindow *window) {
     return true;
 }
 
+// Qt merges these application-owned roles into AppKit's shared application menu
+// and supplies their titles from the system locale. Keep their existing native
+// actions and shortcuts, while translating only the three product commands.
+void syncMacApplicationMenuLanguage() {
+    if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+        return;
+    NSMenu *bar = NSApp.mainMenu;
+    NSMenu *application = bar.numberOfItems ? [bar itemAtIndex:0].submenu : nil;
+    if (!application.numberOfItems)
+        return;
+    const auto setTitle = [](NSMenuItem *item, const char *id) {
+        NSString *title = qtTrId(id).toNSString();
+        if (![item.title isEqualToString:title])
+            item.title = title;
+    };
+    setTitle([application itemAtIndex:0], "desktop.about");
+    for (NSMenuItem *item in application.itemArray) {
+        if ([item.keyEquivalent isEqualToString:@","])
+            setTitle(item, "desktop.settings");
+        else if ([item.keyEquivalent isEqualToString:@"q"])
+            setTitle(item, "desktop.quit");
+    }
+}
+
 // Inspect the actual AppKit menu after Qt has merged native action roles.
 // No screen automation or pixel assumptions are involved in this smoke assertion.
 bool verifyMacDesktopMenus() {
@@ -237,21 +261,21 @@ bool verifyMacDesktopMenus() {
         }
     }
     NSMenu *application = [bar itemAtIndex:0].submenu;
-    // PreferencesRole is localized by Qt's macOS plugin (for example 首选项...),
-    // so verify native key equivalents instead of imposing an application label.
     NSMenuItem *aboutItem = [application itemAtIndex:0];
+    const bool about = aboutItem && !aboutItem.hidden &&
+                       QString::fromNSString(aboutItem.title) == qtTrId("desktop.about");
     bool preferences = false, quit = false;
     for (NSMenuItem *item in application.itemArray) {
         if (item.hidden)
             continue;
         if ([item.keyEquivalent isEqualToString:@","])
-            preferences = true;
+            preferences = QString::fromNSString(item.title) == qtTrId("desktop.settings");
         if ([item.keyEquivalent isEqualToString:@"q"])
-            quit = true;
+            quit = QString::fromNSString(item.title) == qtTrId("desktop.quit");
     }
-    if (!aboutItem || aboutItem.hidden || !preferences || !quit) {
+    if (!about || !preferences || !quit) {
         qWarning("Native application roles missing: about=%d preferences=%d quit=%d",
-                 aboutItem && !aboutItem.hidden, preferences, quit);
+                 about, preferences, quit);
         return false;
     }
     int visibleGroups = 0;

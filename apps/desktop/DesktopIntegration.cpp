@@ -26,6 +26,7 @@
 bool macNativeEditorActive();
 bool macNativeEditorEnabled(const QString &command);
 void macNativeEditorExecute(const QString &command);
+void syncMacApplicationMenuLanguage();
 #endif
 
 namespace {
@@ -69,53 +70,55 @@ void hideForTray(QWindow *window) {
 #endif
 }
 QString text(const QString &command) {
-    static const QHash<QString, QString> labels{
-        {QStringLiteral("application"), qtTrId("desktop.application")},
-        {QStringLiteral("file"), qtTrId("desktop.file")},
-        {QStringLiteral("edit"), qtTrId("desktop.edit")},
-        {QStringLiteral("view"), qtTrId("desktop.view")},
-        {QStringLiteral("operation"), qtTrId("desktop.operation")},
-        {QStringLiteral("window"), qtTrId("desktop.window")},
-        {QStringLiteral("help"), qtTrId("desktop.help")},
-        {QStringLiteral("guide"), qtTrId("desktop.guide")},
-        {QStringLiteral("feedback"), qtTrId("desktop.feedback")},
-        {QStringLiteral("about"), qtTrId("desktop.about")},
-        {QStringLiteral("settings"), qtTrId("desktop.settings")},
-        {QStringLiteral("quit"), qtTrId("desktop.quit")},
-        {QStringLiteral("show"), qtTrId("desktop.show")},
-        {QStringLiteral("open"), qtTrId("desktop.open")},
-        {QStringLiteral("new"), qtTrId("desktop.new")},
-        {QStringLiteral("recent"), qtTrId("desktop.recent")},
-        {QStringLiteral("emptyRecent"), qtTrId("desktop.emptyRecent")},
-        {QStringLiteral("closeArchive"), qtTrId("desktop.closeArchive")},
-        {QStringLiteral("closeWindow"), qtTrId("desktop.closeWindow")},
-        {QStringLiteral("undo"), qtTrId("desktop.undo")},
-        {QStringLiteral("redo"), qtTrId("desktop.redo")},
-        {QStringLiteral("cut"), qtTrId("desktop.cut")},
-        {QStringLiteral("copy"), qtTrId("desktop.copy")},
-        {QStringLiteral("paste"), qtTrId("desktop.paste")},
-        {QStringLiteral("selectAll"), qtTrId("desktop.selectAll")},
-        {QStringLiteral("find"), qtTrId("desktop.find")},
-        {QStringLiteral("list"), qtTrId("desktop.list")},
-        {QStringLiteral("grid"), qtTrId("desktop.grid")},
-        {QStringLiteral("inspector"), qtTrId("desktop.inspector")},
-        {QStringLiteral("testArchive"), qtTrId("desktop.testArchive")},
-        {QStringLiteral("extractAll"), qtTrId("desktop.extractAll")},
-        {QStringLiteral("extractSelected"), qtTrId("desktop.extractSelected")},
-        {QStringLiteral("preflight"), qtTrId("desktop.preflight")},
-        {QStringLiteral("minimize"), qtTrId("desktop.minimize")},
-        {QStringLiteral("zoom"), qtTrId("desktop.zoom")},
-        {QStringLiteral("tasks"), qtTrId("desktop.tasks")},
-        {QStringLiteral("noTasks"), qtTrId("desktop.noTasks")},
-        {QStringLiteral("task"), qtTrId("desktop.task")},
-        {QStringLiteral("createTask"), qtTrId("desktop.createTask")},
-        {QStringLiteral("moveTask"), qtTrId("desktop.moveTask")},
-        {QStringLiteral("extractTask"), qtTrId("desktop.extractTask")},
-        {QStringLiteral("checkTask"), qtTrId("desktop.checkTask")},
-        {QStringLiteral("trayEnabled"), qtTrId("desktop.trayEnabled")},
-        {QStringLiteral("trayTip"), qtTrId("desktop.trayTip")},
+    using Translation = QString (*)();
+    static const QHash<QString, Translation> labels{
+        {QStringLiteral("application"), [] { return qtTrId("desktop.application"); }},
+        {QStringLiteral("file"), [] { return qtTrId("desktop.file"); }},
+        {QStringLiteral("edit"), [] { return qtTrId("desktop.edit"); }},
+        {QStringLiteral("view"), [] { return qtTrId("desktop.view"); }},
+        {QStringLiteral("operation"), [] { return qtTrId("desktop.operation"); }},
+        {QStringLiteral("window"), [] { return qtTrId("desktop.window"); }},
+        {QStringLiteral("help"), [] { return qtTrId("desktop.help"); }},
+        {QStringLiteral("guide"), [] { return qtTrId("desktop.guide"); }},
+        {QStringLiteral("feedback"), [] { return qtTrId("desktop.feedback"); }},
+        {QStringLiteral("about"), [] { return qtTrId("desktop.about"); }},
+        {QStringLiteral("settings"), [] { return qtTrId("desktop.settings"); }},
+        {QStringLiteral("quit"), [] { return qtTrId("desktop.quit"); }},
+        {QStringLiteral("show"), [] { return qtTrId("desktop.show"); }},
+        {QStringLiteral("open"), [] { return qtTrId("desktop.open"); }},
+        {QStringLiteral("new"), [] { return qtTrId("desktop.new"); }},
+        {QStringLiteral("recent"), [] { return qtTrId("desktop.recent"); }},
+        {QStringLiteral("emptyRecent"), [] { return qtTrId("desktop.emptyRecent"); }},
+        {QStringLiteral("closeArchive"), [] { return qtTrId("desktop.closeArchive"); }},
+        {QStringLiteral("closeWindow"), [] { return qtTrId("desktop.closeWindow"); }},
+        {QStringLiteral("undo"), [] { return qtTrId("desktop.undo"); }},
+        {QStringLiteral("redo"), [] { return qtTrId("desktop.redo"); }},
+        {QStringLiteral("cut"), [] { return qtTrId("desktop.cut"); }},
+        {QStringLiteral("copy"), [] { return qtTrId("desktop.copy"); }},
+        {QStringLiteral("paste"), [] { return qtTrId("desktop.paste"); }},
+        {QStringLiteral("selectAll"), [] { return qtTrId("desktop.selectAll"); }},
+        {QStringLiteral("find"), [] { return qtTrId("desktop.find"); }},
+        {QStringLiteral("list"), [] { return qtTrId("desktop.list"); }},
+        {QStringLiteral("grid"), [] { return qtTrId("desktop.grid"); }},
+        {QStringLiteral("inspector"), [] { return qtTrId("desktop.inspector"); }},
+        {QStringLiteral("testArchive"), [] { return qtTrId("desktop.testArchive"); }},
+        {QStringLiteral("extractAll"), [] { return qtTrId("desktop.extractAll"); }},
+        {QStringLiteral("extractSelected"), [] { return qtTrId("desktop.extractSelected"); }},
+        {QStringLiteral("preflight"), [] { return qtTrId("desktop.preflight"); }},
+        {QStringLiteral("minimize"), [] { return qtTrId("desktop.minimize"); }},
+        {QStringLiteral("zoom"), [] { return qtTrId("desktop.zoom"); }},
+        {QStringLiteral("tasks"), [] { return qtTrId("desktop.tasks"); }},
+        {QStringLiteral("noTasks"), [] { return qtTrId("desktop.noTasks"); }},
+        {QStringLiteral("task"), [] { return qtTrId("desktop.task"); }},
+        {QStringLiteral("createTask"), [] { return qtTrId("desktop.createTask"); }},
+        {QStringLiteral("moveTask"), [] { return qtTrId("desktop.moveTask"); }},
+        {QStringLiteral("extractTask"), [] { return qtTrId("desktop.extractTask"); }},
+        {QStringLiteral("checkTask"), [] { return qtTrId("desktop.checkTask"); }},
+        {QStringLiteral("trayEnabled"), [] { return qtTrId("desktop.trayEnabled"); }},
+        {QStringLiteral("trayTip"), [] { return qtTrId("desktop.trayTip"); }},
     };
-    return labels.value(command);
+    const auto translate = labels.value(command, nullptr);
+    return translate ? translate() : QString{};
 }
 bool ownedWindow(QWindow *window, QWindow *main) {
     if (!qobject_cast<QQuickWindow *>(window) || window->type() != Qt::Window)
@@ -168,12 +171,17 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     if (nativeMenuAvailable()) {
         m_bar = std::make_unique<QMenuBar>();
         m_bar->setNativeMenuBar(true);
+        const auto addMenu = [this](const QString &command) {
+            auto *menu = m_bar->addMenu(text(command));
+            m_menuTitles.insert(command, menu);
+            return menu;
+        };
         auto *application = m_bar->addMenu(QStringLiteral("xdzip"));
         add(application, "about")->setMenuRole(QAction::AboutRole);
         add(application, "settings", QKeySequence::Preferences)
             ->setMenuRole(QAction::PreferencesRole);
         add(application, "quit", QKeySequence::Quit)->setMenuRole(QAction::QuitRole);
-        auto *file = m_bar->addMenu(text("file"));
+        auto *file = addMenu("file");
         add(file, "open", QKeySequence::Open);
         add(file, "new", QKeySequence::New);
         m_recent = file->addMenu(text("recent"));
@@ -181,7 +189,7 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         file->addSeparator();
         add(file, "closeArchive", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_W));
         add(file, "closeWindow", QKeySequence::Close);
-        auto *edit = m_bar->addMenu(text("edit"));
+        auto *edit = addMenu("edit");
         add(edit, "undo", QKeySequence::Undo);
         add(edit, "redo", QKeySequence::Redo);
         edit->addSeparator();
@@ -190,7 +198,7 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         add(edit, "paste", QKeySequence::Paste);
         add(edit, "selectAll", QKeySequence::SelectAll);
         add(edit, "find", QKeySequence::Find);
-        auto *view = m_bar->addMenu(text("view"));
+        auto *view = addMenu("view");
         add(view, "list")->setCheckable(true);
         add(view, "grid")->setCheckable(true);
         view->addSeparator();
@@ -198,12 +206,12 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         // AppKit appends Full Screen with an icon. Keep its icon column out of our group.
         view->setSeparatorsCollapsible(false);
         view->addSeparator();
-        auto *operation = m_bar->addMenu(text("operation"));
+        auto *operation = addMenu("operation");
         add(operation, "testArchive");
         add(operation, "extractAll");
         add(operation, "extractSelected");
         add(operation, "preflight");
-        m_windowMenu = m_bar->addMenu(text("window"));
+        m_windowMenu = addMenu("window");
         add(m_windowMenu, "minimize", QKeySequence(Qt::CTRL | Qt::Key_M));
         add(m_windowMenu, "zoom");
         m_windowMenu->addSeparator();
@@ -211,7 +219,7 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
         m_taskMenus.append(m_windowMenu->addMenu(text("tasks").arg(0)));
         m_windowMenu->addSeparator();
         connect(m_windowMenu, &QMenu::aboutToShow, this, &DesktopIntegration::rebuildWindows);
-        auto *help = m_bar->addMenu(text("help"));
+        auto *help = addMenu("help");
         add(help, "guide");
         add(help, "feedback");
         help->addSeparator();
@@ -224,7 +232,11 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     connect(m_trayMenu.get(), &QMenu::aboutToShow, this, &DesktopIntegration::syncActions);
     connect(controller, &BrowserController::changed, this, &DesktopIntegration::syncActions);
     connect(controller, &BrowserController::tasksChanged, this, &DesktopIntegration::syncActions);
-    connect(settings, &UiPreferences::savedChanged, this, &DesktopIntegration::refresh);
+    m_menuLanguage = settings->activeLanguage();
+    connect(settings, &UiPreferences::savedChanged, this, [this] {
+        retranslateMenus();
+        refresh();
+    });
     connect(settings, &UiPreferences::recentChanged, this, [this] {
         if (m_recent && m_recent->isVisible())
             rebuildRecent();
@@ -259,6 +271,10 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
 #endif
             });
     qApp->installEventFilter(this);
+#ifdef Q_OS_MACOS
+    if (nativeMenuAvailable())
+        QTimer::singleShot(0, this, [] { syncMacApplicationMenuLanguage(); });
+#endif
     auto *timer = new QTimer(this);
     timer->setInterval(1500);
     connect(timer, &QTimer::timeout, this, &DesktopIntegration::refresh);
@@ -509,6 +525,23 @@ void DesktopIntegration::refresh() {
     updateIcon();
     syncActions();
 }
+void DesktopIntegration::retranslateMenus() {
+    const auto language = m_settings->activeLanguage();
+    if (language == m_menuLanguage)
+        return;
+    m_menuLanguage = language;
+    for (auto it = m_menuTitles.cbegin(); it != m_menuTitles.cend(); ++it)
+        it.value()->setTitle(text(it.key()));
+    if (m_recent) {
+        m_recent->setTitle(text("recent"));
+        rebuildRecent();
+    }
+    for (auto *item : m_actions)
+        item->setText(text(item->data().toString()));
+    if (m_controller && m_window)
+        for (auto *menu : m_taskMenus)
+            rebuildTasks(menu);
+}
 void DesktopIntegration::syncActions() {
     if (!m_controller || !m_window)
         return;
@@ -557,6 +590,10 @@ void DesktopIntegration::syncActions() {
         }
     }
     m_tray.setToolTip(text("trayTip").arg(count));
+#ifdef Q_OS_MACOS
+    if (nativeMenuAvailable())
+        syncMacApplicationMenuLanguage();
+#endif
 }
 void DesktopIntegration::rebuildTasks(QMenu *menu) {
     menu->clear();

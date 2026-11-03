@@ -58,7 +58,7 @@ xdzip_rust_library(xdzip-reader-rust xdzip-qt-bridge xdzip_qt_bridge)
 qt_add_executable(xdzip-browser browser_main.cpp)
 target_sources(xdzip-browser PRIVATE WindowsAssociationDescriptions.cpp WindowsAssociationDescriptions.h)
 if(WIN32)
-    target_link_libraries(xdzip-browser PRIVATE shell32)
+    target_link_libraries(xdzip-browser PRIVATE shell32 shlwapi)
     add_executable(xdzip-association-launcher WIN32 AssociationLauncher.cpp)
     set_target_properties(xdzip-association-launcher PROPERTIES OUTPUT_NAME xdzip-association)
     target_link_libraries(xdzip-association-launcher PRIVATE shell32 ole32)
@@ -99,7 +99,9 @@ if(APPLE)
     include(${PROJECT_SOURCE_DIR}/cmake/Sparkle.cmake)
     set_target_properties(xdzip-browser PROPERTIES OBJCXX_STANDARD 17
         OBJCXX_STANDARD_REQUIRED ON OBJCXX_EXTENSIONS OFF)
-    target_sources(xdzip-browser PRIVATE MacTitlebar.mm MacWindowActivation.mm)
+    target_sources(xdzip-browser PRIVATE MacTitlebar.mm MacWindowActivation.mm MacFileAssociations.mm)
+    set_source_files_properties(MacFileAssociations.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks")
+    target_link_libraries(xdzip-browser PRIVATE "-framework UniformTypeIdentifiers")
     target_sources(xdzip-browser PRIVATE MacUpdateProvider.mm MacUpdateProvider.h)
     set_source_files_properties(MacUpdateProvider.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc;-fblocks;-Werror=protocol")
     target_link_libraries(xdzip-browser PRIVATE "${XDZIP_SPARKLE_FRAMEWORK}")
@@ -127,7 +129,7 @@ qt_add_qml_module(xdzip-browser
     URI Xdzip.Native VERSION 1.0
     DEPENDENCIES QtQml.Models
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/qml/Xdzip/Native"
-    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp)
+    SOURCES BrowserController.h BrowserController.cpp RuntimeConnection.h RuntimeConnection.cpp DesktopIntegration.h DesktopIntegration.cpp ApplicationSessions.h ApplicationSessions.cpp SingleInstance.h SingleInstance.cpp UpdateController.h UpdateController.cpp UpdateHandoff.h UpdateHandoff.cpp FileAssociations.h FileAssociations.cpp)
 target_link_libraries(xdzip-browser PRIVATE xdzip-reader-rust
     Qt6::Widgets Qt6::Network Qt6::Quick Qt6::QuickControls2 ${CMAKE_DL_LIBS})
 include(${PROJECT_SOURCE_DIR}/cmake/UpdateHelper.cmake)

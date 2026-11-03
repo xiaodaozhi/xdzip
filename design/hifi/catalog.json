@@ -330,19 +330,289 @@
     {
       "file": "screens/settings-open-mode-light.png",
       "title": "设置，打开方式、外观与隐私，浅色",
-      "group": "current",
+      "group": "historical",
       "sha256": "51400c5ef4f5397aabce8a9b6320ec2c4a5f3b9e231d37ba37de612ba392b261",
       "role": "code-authored-design",
-      "design_source": "sources/settings.html?theme=light",
-      "spec": "../../docs/ux/settings-localization.md"
+      "spec": "../../docs/ux/settings-localization.md",
+      "status": "superseded-sidebar-settings"
     },
     {
       "file": "screens/settings-open-mode-dark.png",
       "title": "设置，打开方式、外观与隐私，深色",
-      "group": "current",
+      "group": "historical",
       "sha256": "37c253d188bbf21f0652347e2acad3566e5f4f9471d0da084c4cfe2a0211bf90",
       "role": "code-authored-design",
-      "design_source": "sources/settings.html?theme=dark",
+      "spec": "../../docs/ux/settings-localization.md",
+      "status": "superseded-sidebar-settings"
+    },
+    {
+      "file": "screens/settings-appearance-light.png",
+      "title": "设置，外观，浅色",
+      "group": "current",
+      "sha256": "c612723eda9a0913fbad170274430e98db83abeef0235651154b4532fdb8bfa2",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=appearance&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-appearance-dark.png",
+      "title": "设置，外观，深色",
+      "group": "current",
+      "sha256": "24ead9a9a7ff83ba22fd5635d9a4050855acce7bb9f3855c3502d297f602c942",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=appearance&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-sidebar-hover-light.png",
+      "title": "设置，侧栏悬停，浅色",
+      "group": "current",
+      "sha256": "8304c3fcdebaa1906fc295cd5fca082fb8135cacf9561da1b75fd00a04240cad",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?hover=general&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-sidebar-hover-dark.png",
+      "title": "设置，侧栏悬停，深色",
+      "group": "current",
+      "sha256": "ce7fa3c5d7718442bb0a7000d7a1b6744b095e8169f513dfe8831b4791102902",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?hover=general&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-general-light.png",
+      "title": "设置，通用，浅色",
+      "group": "current",
+      "sha256": "6113a8f7150e317a562503e121f191c1329e5010840e58b5525c719302aa81c2",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=general&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-general-dark.png",
+      "title": "设置，通用，深色",
+      "group": "current",
+      "sha256": "b0c46eb70b8d1cd7f92c82783a6c98f372cb9a288b7f8eb257d4149b63545e84",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=general&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-privacy-light.png",
+      "title": "设置，隐私，浅色",
+      "group": "current",
+      "sha256": "b4aa5dc583095c98c54eb6c7530fe37ddfd9d9d76162b32f7ed377bef443e38c",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=privacy&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-privacy-dark.png",
+      "title": "设置，隐私，深色",
+      "group": "current",
+      "sha256": "edd9264846e2b89403944bf47092085bde545df43a078c2c5c7a2e061cb7eafe",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=privacy&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-associations-light.png",
+      "title": "设置，文件关联，浅色",
+      "group": "current",
+      "sha256": "2f6400e06df82a400ed81b26ec66abddb0ca16ecf5c3249ef6ffbbd76af8589f",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=associations&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-associations-dark.png",
+      "title": "设置，文件关联，深色",
+      "group": "current",
+      "sha256": "7e5b75b711086d78e7e559bb95bde78acc6c0dc36e62bb6e87a038f427af5d15",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=associations&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-network-light.png",
+      "title": "设置，网络，浅色",
+      "group": "current",
+      "sha256": "f62f8b59834662c7be92b599795ecdac8378e15998da06b5d0607db3a343ee0d",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=network&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-network-dark.png",
+      "title": "设置，网络，深色",
+      "group": "current",
+      "sha256": "cf7ffa145f4827566fab1f8abcebd4b3d384c468fe731d2e2e8a6819f2c34b35",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=network&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-network-custom-light.png",
+      "title": "设置，网络，自定义代理，浅色",
+      "group": "current",
+      "sha256": "45f60b2686e3f4dfe6bf72c8bf9a4d89ec42dc2d4cbe8a478d7ce77f57fb49a5",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=network&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-network-custom-dark.png",
+      "title": "设置，网络，自定义代理，深色",
+      "group": "current",
+      "sha256": "2da51546ed9352b7959079a820d407ba432c9cb820eaf31cec8a9537d25c3532",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=network&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-light.png",
+      "title": "设置，关于，浅色",
+      "group": "current",
+      "sha256": "1b6c4306b7d831e04780d47a5c399bc2f7b678bc03c45cd3c3c02f4e0094fe0f",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-dark.png",
+      "title": "设置，关于，深色",
+      "group": "current",
+      "sha256": "68018e66ed849106ff43dc50b5659a1ec74c074cf1de9805c7504fc3ab6d22b8",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-checking-light.png",
+      "title": "设置，关于，检查更新中，浅色",
+      "group": "current",
+      "sha256": "19382e7825a582464ac5d316a495ada99e022d73a026acf88681b0384d520246",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=checking&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-checking-dark.png",
+      "title": "设置，关于，检查更新中，深色",
+      "group": "current",
+      "sha256": "dade5d61f40e9451c198e97e8953b0594cdef06027ad7f0e99ca22700eef2613",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=checking&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-available-light.png",
+      "title": "设置，关于，发现新版本，浅色",
+      "group": "current",
+      "sha256": "90903d24922bfa0d978584e2571be759ddbd0e850b0f9962220327814173f970",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=available&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-available-dark.png",
+      "title": "设置，关于，发现新版本，深色",
+      "group": "current",
+      "sha256": "84d31114b4f7347e8dc9dda941a1334630aeee89b3432ede81af53e4942394a7",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=available&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-installable-light.png",
+      "title": "设置，关于，可下载安装，浅色",
+      "group": "current",
+      "sha256": "5e4a2aab3924539ac3ee89509841f1d3b306850465131b603d920724de23d183",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=installable&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-installable-dark.png",
+      "title": "设置，关于，可下载安装，深色",
+      "group": "current",
+      "sha256": "7d39e31bf6aa8043828e974b4a68c53bfefc2d67a08420a7f01c7f5948282fab",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=installable&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloading-light.png",
+      "title": "设置，关于，下载中，浅色",
+      "group": "current",
+      "sha256": "c5e776d77816f0e8889e481ea911dc6ed630446d73cf00a8ceda2da3818d81f5",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloading&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloading-dark.png",
+      "title": "设置，关于，下载中，深色",
+      "group": "current",
+      "sha256": "4944966e942f3726fa761206f22da59b0fa1f0457f3d34099cd1a0a63f69dc55",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloading&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloaded-light.png",
+      "title": "设置，关于，下载完成，浅色",
+      "group": "current",
+      "sha256": "f1a94079cdb75e8c51e47392505e440bf45f9d043adcfbfec99d788da5d5bd18",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloaded&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloaded-dark.png",
+      "title": "设置，关于，下载完成，深色",
+      "group": "current",
+      "sha256": "13f8f71e3cae411b2f8246313db4bbcb40d8966b548389de6912f3019c5d926b",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloaded&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-recovery-light.png",
+      "title": "设置，关于，恢复，浅色",
+      "group": "current",
+      "sha256": "7fd0708e53485c6cb929e88e8830ce0902b9c9f584420a2e34f177d69a8f0371",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=recovery&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-recovery-dark.png",
+      "title": "设置，关于，恢复，深色",
+      "group": "current",
+      "sha256": "01f7449aef0b4be4c899abec3277f88fbce30eb475b131721063400505463463",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=recovery&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-details-light.png",
+      "title": "设置，关于，版本信息与许可，浅色",
+      "group": "current",
+      "sha256": "1a181e062451c8efae01de33cab0df78fb62b702f9c87f99b5a91e6422384895",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-details-dark.png",
+      "title": "设置，关于，版本信息与许可，深色",
+      "group": "current",
+      "sha256": "1c422f334a83bbcaf3aebb38635bc121c0f2af5605980280712ec4927ff35b41",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&theme=dark",
       "spec": "../../docs/ux/settings-localization.md"
     }
   ],

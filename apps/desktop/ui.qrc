@@ -88,8 +88,9 @@
     <file>ui/Theme.qml</file>
     <file>ui/BrowserLayout.qml</file>
     <file>ui/SettingsWindow.qml</file>
+    <file>ui/SettingsToggle.qml</file>
+    <file>ui/SettingsSelectRow.qml</file>
     <file>ui/RestartWindow.qml</file>
-    <file>ui/AboutWindow.qml</file>
     <file alias="i18n/zh-CN.json">../../resources/i18n/zh-CN.json</file>
     <file alias="i18n/en-US.json">../../resources/i18n/en-US.json</file>
     <file>ui/InfoRow.qml</file>
@@ -203,12 +204,16 @@
     <file alias="assets/light/archive-test.png">../../design/assets/png/light/archive-test@3x.png</file>
     <file alias="assets/light/more.png">../../design/assets/png/light/more@3x.png</file>
     <file alias="assets/light/settings.png">../../design/assets/png/light/settings@3x.png</file>
+    <file alias="assets/light/settings-associations.png">../../design/assets/png/light/settings-associations@3x.png</file>
+    <file alias="assets/light/settings-about.png">../../design/assets/png/light/settings-about@3x.png</file>
     <file alias="assets/light/search.png">../../design/assets/png/light/search@3x.png</file>
     <file alias="assets/dark/open.png">../../design/assets/png/dark/open@3x.png</file>
     <file alias="assets/dark/new.png">../../design/assets/png/dark/new@3x.png</file>
     <file alias="assets/dark/archive-test.png">../../design/assets/png/dark/archive-test@3x.png</file>
     <file alias="assets/dark/more.png">../../design/assets/png/dark/more@3x.png</file>
     <file alias="assets/dark/settings.png">../../design/assets/png/dark/settings@3x.png</file>
+    <file alias="assets/dark/settings-associations.png">../../design/assets/png/dark/settings-associations@3x.png</file>
+    <file alias="assets/dark/settings-about.png">../../design/assets/png/dark/settings-about@3x.png</file>
     <file alias="assets/dark/search.png">../../design/assets/png/dark/search@3x.png</file>
     <file alias="assets/light/folder.png">../../design/assets/png/light/folder@3x.png</file>
     <file alias="assets/light/file-text.png">../../design/assets/png/light/file-text@3x.png</file>

@@ -60,6 +60,9 @@ def main():
     for name, value in layout['operation']['controls'].items():
         key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
         declarations.append(f'  --operation-control-{key}: calc({value}px * var(--ui-source-factor));')
+    for name, value in layout['operation']['settings'].items():
+        key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
+        declarations.append(f'  --settings-{key}: calc({value}px * var(--ui-source-factor));')
     for name, value in layout['operation']['components'].items():
         if name.startswith('destinationIndicator') or name == 'footerHeight' or name.startswith('create'):
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
@@ -88,6 +91,8 @@ def main():
             key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
             declarations.append(f'  --ui-{key}: {value};')
         for name, value in palette[theme].items():
+            if name == 'sidebar':
+                declarations.append(f'  --settings-sidebar-surface: {value};')
             if name.startswith('operation') or name in {'accentHover', 'accentPressed', 'accentDisabled', 'accentDisabledText'}:
                 key = ''.join('-' + char.lower() if char.isupper() else char for char in name)
                 declarations.append(f'  --{key}: {value};')

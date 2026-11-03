@@ -35,7 +35,6 @@ class ApplicationSessions final : public QObject {
     Q_INVOKABLE void closeWindow(QQuickWindow *window);
     Q_INVOKABLE void focusWindow(QQuickWindow *window);
     Q_INVOKABLE void command(const QString &command);
-    Q_INVOKABLE void showAboutFor(QObject *page);
     Q_INVOKABLE void showTask(const QString &identity);
     Q_INVOKABLE void clearFinishedTasks();
     bool hasFinishedTasks() const;

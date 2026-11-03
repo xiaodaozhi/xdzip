@@ -27,6 +27,8 @@ FILE_OPTICAL_SPECS.update({name: {'bounds': [3.75, 1, 20.25, 23], 'center': [12,
 EXTRA_CONTROL_PATHS = {
     'plus': 'M12 5v14 M5 12h14',
     'shield': 'm12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z m-4 9 3 3 5-6',
+    'settings-associations': 'M5 3h8l5 5v3 M13 3v5h5 M5 3v16a2 2 0 0 0 2 2h5 M10 16h10 M17 13l3 3-3 3',
+    'settings-about': 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 11v5 M12 8h.01',
     'panel': 'M3 4h18v16H3z M15 4v16',
     'activity': 'M3 12h4l3-7 4 14 3-7h4',
     'sun': 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M5 5l1 1 M18 18l1 1 M5 19l1-1 M18 6l1-1',

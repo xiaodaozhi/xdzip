@@ -38,9 +38,9 @@ build-windows-installer.py 只接受干净构建的 deployed 审计，重新核�
 
 关联只写 HKCU：自有 ProgID、两个自有 Applications 入口、Capabilities、RegisteredApplications 及 OpenWithProgids 中自有值。不写 HKLM、扩展默认值或受保护 UserChoice／UserChoiceLatest。卸载不删除其他应用候选。九类扩展统一使用 `xdzip.Archive.格式名`，ZIP 使用 `xdzip.Archive.ZIP`，文档图标继续按格式选择对应 ICO。旧共享 `xdzip.Archive` 保留直接打开命令，并与 `Applications/xdzip.exe` 一起设置 `NoOpenWith`；升级只删除各扩展 OpenWithProgids 中的旧共享推荐值及主程序的旧 SupportedTypes 值，不删除兼容命令。已有旧默认选择仍能打开，但可能继续显示 ZIP 文档图标，用户可在系统中重新选择对应格式的 xdzip 候选。Windows 只识别最终扩展名时 `.tar.gz` 使用 GZ 图标。
 
-九个逐格式 ProgID 的类型描述使用应用语言，例如中文 `ZIP 压缩包`、英文 `ZIP archive`，不再添加 xdzip 前缀。安装或升级时读取本机应用的已保存语言，无有效设置时使用应用默认的简体中文；安装向导语言不改变应用语言。正常安装版在应用语言重启生效后同步这些描述并通知 Windows Shell 刷新。同步前核对安装标识、当前程序位置、安装清单、关联启动器及全部九个既有打开命令；条件不符时不写入，也不创建缺失项。注册表写入失败可能只完成部分描述，下次正常启动会重试；便携、开发和指定临时设置／语言的测试进程不触碰这些描述。旧共享 ProgID 保持兼容，不具备逐格式名称。Explorer 缓存、系统类型识别及用户所选默认处理器可能影响实际显示，原生视觉效果需单独验收。
+九个逐格式 ProgID 的类型描述使用应用语言，例如中文 `ZIP 压缩包`、英文 `ZIP archive`，不再添加 xdzip 前缀。安装或升级时读取本机应用的已保存语言，无有效设置时使用应用默认的简体中文；安装向导语言不改变应用语言。正常安装版在启动以及应用语言成功更改时同步这些描述并通知 Windows Shell 刷新。同步前核对安装标识、当前程序位置、安装清单、关联启动器及全部九个既有打开命令；条件不符时不写入，也不创建缺失项。注册表写入失败可能只完成部分描述，下次正常启动会重试；便携、开发和指定临时设置／语言的测试进程不触碰这些描述。旧共享 ProgID 保持兼容，不具备逐格式名称。Explorer 缓存、系统类型识别及用户所选默认处理器可能影响实际显示，原生视觉效果需单独验收。
 
-English: The nine format-specific Windows ProgIDs use the application language, for example `ZIP archive` or `ZIP 压缩包`, without an xdzip prefix. Setup reads the saved application locale and defaults to Simplified Chinese when no supported setting exists. A normal installed application refreshes its owned descriptions after a language restart, only after checking its installation identity, manifest, launcher and all nine existing commands. Failed writes may be partial and are retried at the next normal start. Portable, development and isolated-settings or language-override processes do not update them. The legacy shared ProgID remains for compatibility; Explorer may display cached or system/other-handler descriptions.
+English: The nine format-specific Windows ProgIDs use the application language, for example `ZIP archive` or `ZIP 压缩包`, without an xdzip prefix. Setup reads the saved application locale and defaults to Simplified Chinese when no supported setting exists. A normal installed application refreshes its owned descriptions at startup and after a successful language change, only after checking its installation identity, manifest, launcher and all nine existing commands. Failed writes may be partial and are retried at the next normal start. Portable, development and isolated-settings or language-override processes do not update them. The legacy shared ProgID remains for compatibility; Explorer may display cached or system/other-handler descriptions.
 
 全部格式 ProgID 的带引号命令启动 `xdzip-association.exe -- "%1"`，其 Applications 注册承载完整 SupportedTypes，使系统“打开方式”只呈现一个 xdzip 应用入口。启动器嵌入同一品牌应用 ICO 和独立 OriginalFilename、产品版本资源；应用图标与逐格式文档图标分别核验，不能用文档 DefaultIcon 代替可执行文件的应用资源。该小型 GUI 启动器只接受单个文件参数，先在自己的线程初始化 COM 单线程单元，再通过 ShellExecuteEx 的明确 `xdzip.Archive` 类委托既有打开命令，不经过命令解释器；调用返回后释放 COM。旧版回退会更新共享入口，逐格式候选因此仍指向回退后的程序；COM 初始化失败、入口不存在、参数无效或系统拒绝调用时启动器返回非零，不尝试其他应用或修改默认值。该机制依赖回退安装保留当前安装目录内的启动器，安装／回退和累计卸载须实测。
 
@@ -111,3 +111,9 @@ English: Windows protocol and real Qt update fixtures include the required assoc
 首个公开预发布开始使用 Debian epoch 1，包版本为 `1:语义版本映射+git提交`，例如 `1:0.1.0~alpha.1+git...`。历史 `0.1.0~dev.9` 按 dpkg 规则会排在无 epoch 的 alpha.1 之后，不能直接沿用旧映射。epoch 只用于系统包排序，产品界面、版本标签和 release.json 仍使用原语义版本，后续 Debian 包保持 epoch 1，alpha、beta、rc、stable 的顺序继续由上游版本表达，规则见 [Debian Policy](https://www.debian.org/doc/debian-policy/ch-controlfields.html#version)。
 
 真实历史产品夹具使用仅 CI 允许的 `--qa-legacy-version` 保留原无 epoch 身份，不能把旧包改成新排序来掩盖升级问题。当前包必须在实际 dpkg 升级、回退和安装生命周期验收中通过；用户配置与外部默认关联保持原契约。
+
+## 设置中的默认应用
+
+设置页按当前系统查询显示九类关联。macOS 使用 NSWorkspace 的内容类型接口，并在关闭时由用户选取替代应用；开发副本按 None 等级禁用关联操作。Windows 打开系统默认应用页面并在返回后重查，只读系统关联，不修改 UserChoice。Linux 用 xdg-mime 查询与修改用户 MIME 默认，安装包声明 xdg-utils 依赖；移除关联时由用户选择已安装的替代桌面项。复合扩展可能共享系统类型；取消、系统拒绝或查询失败不显示伪造的成功。真实系统 UI 和多桌面环境行为须单独验收。
+
+English: Settings query operating-system defaults for each supported type. macOS requests changes through NSWorkspace, Windows opens the system default-app page, and Linux uses the user MIME configuration. Disabling a macOS or Linux association selects an alternative application. Composite extensions may share a system type. Native acceptance remains separate from automated checks.

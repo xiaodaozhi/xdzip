@@ -41,7 +41,12 @@ def main():
                                 activeSettingsLanguage=language; document.documentElement.lang=language;
                                 XdzipDesign.theme(dark?'dark':'light');
                                 document.documentElement.style.setProperty('--settings-text-scale',scale);
-                                XdzipDesign.open(view); setCanvasLogicalScale(view);
+                                XdzipDesign.open(view);
+                                if (['settings','about'].includes(view)) {
+                                    savedSettingsDemo.language=language; savedSettingsDemo.textScale=scale;
+                                    XdzipDesign.open(view);
+                                }
+                                setCanvasLogicalScale(view === 'about' ? 'settings' : view);
                             }''', [language, dark, scale, view])
                             header = page.locator('dialog[open] .shared-operation-header')
                             expect(header).to_have_count(1)

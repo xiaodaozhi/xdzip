@@ -8,7 +8,7 @@
 
 `ApplicationSessions` 是 Qt 应用层协调器，不解释格式、授权目录或文件提交。每个会话拥有独立 SessionPage、BrowserController 和 Rust RuntimeConnection，保留查询、选择、目录与浏览状态。窗口只承载页面，标签页不会为每个归档创建隐藏的原生主窗口。文件关联、命令行、原生文件打开事件、打开按钮、最近记录、拖放和创建结果统一提交打开意图。优先复用无归档且无任务的欢迎页，重复路径激活已有会话，多文件请求按顺序接收并激活最后一个。路径规范化只用于 UI 去重，不授予写入权限。
 
-`desktop/openMode=tabs|windows` 默认 tabs，schema 保持 1，未知字段保留。设置草稿保存后影响后续打开，取消不生效，不迁移已打开页面。标题栏加号按此设置新建页面或窗口。
+`desktop/openMode=tabs|windows` 默认 tabs，schema 保持 1，未知字段保留。设置操作成功后立即影响后续打开，不迁移已打开页面。标题栏加号按此设置新建页面或窗口。
 
 标签排序通过稳定会话身份和窗口内目标索引提交，只改变同一窗口未关闭会话的展示顺序，不重排用于任务准入的控制器集合。拖动释放或键盘排序后保持当前活动页、归档、控制器、选择和任务身份，其他窗口与已关闭后台会话的相对顺序不变。关闭非活动标签不切换页面，关闭活动标签优先选择视觉顺序中的右邻，否则选择左邻。无效身份、已关闭会话、越界或退出期间的排序请求忽略；不创建或销毁 Rust 连接。当前仅支持窗口内重排，不支持跨窗口拖放、分离窗口或跨启动恢复顺序。标签栏溢出仅改变可视区域，不能丢弃会话；菜单与键盘激活后保证活动标签可见。
 
@@ -44,7 +44,7 @@ The application sets `quitDecisionPending` before presenting its quit confirmati
 
 System Quit, application-menu and tray quit share the desktop route. An owned password or conflict prompt in a managed session may be superseded by the global quit confirmation. Returning preserves the task and prompt token; cancelling and quitting still waits for every cleanup and Rust join. Native file selectors, other modal controls and prompts outside managed windows retain their blocking behavior.
 
-主窗口可见时，“显示并激活”只提升和请求激活。隐藏或最小化时恢复先前普通、最大化或全屏状态，不先还原再最大化。阻塞的模态窗口优先激活，弹窗 transientParent 绑定实际调用窗口。关闭最后一个主窗口继续遵循托盘设置。设置与关于从统一入口进入，已有窗口优先激活，不创建另一份可见草稿。
+主窗口可见时，“显示并激活”只提升和请求激活。隐藏或最小化时恢复先前普通、最大化或全屏状态，不先还原再最大化。阻塞的模态窗口优先激活，弹窗 transientParent 绑定实际调用窗口。关闭最后一个主窗口继续遵循托盘设置。设置与关于从统一入口进入，已有窗口优先激活，关于入口切换到该窗口的关于页。
 
 `showMinimized()` 会替换原状态位。恢复时先在仍最小化的状态下补齐保存的最大化或全屏标志，再仅移除最小化标志，不先显示普通窗口。原生回归等待窗口实际暴露、激活及最终状态确认，避免把 Qt 请求值当作窗口管理器已完成的状态。
 
@@ -62,11 +62,11 @@ English: One normal product process and tray serve each user login session. Each
 
 退出进入实际取消与 join 阶段后，IPC 明确拒绝新意图。关闭通道后才释放选举锁，全部连接完成后才启动重启进程，旧实例的重复清理不能移除新端点。Windows 重启同样转交本次用户操作的前台权限。
 
-阻塞弹窗期间接收的外部打开保留最后一个激活意图，先激活阻塞窗口，待其关闭后显示对应新窗口，不使隐藏的新窗口失去入口。设置中的关于窗口保留实际设置调用者，不因另一主窗口获得焦点而改变所属关系。
+阻塞弹窗期间接收的外部打开保留最后一个激活意图，先激活阻塞窗口，待其关闭后显示对应新窗口，不使隐藏的新窗口失去入口。设置窗口保留实际调用者，不因另一主窗口获得焦点而改变所属关系。
 
 原生回归入口为 `python3 scripts/check-native-sessions.py --tests <browser-tests> --output build/review/native-sessions.json`。Linux 使用 Xvfb 和 Openbox 的真实 X11 窗口管理路径，Windows、macOS 使用系统窗口管理器；脚本只管理自己启动的验证进程。普通 CI 与 Release 共用此入口，原生日志和 JSON 保存在 build/ 或 CI 工件，不能据此宣称完成人工视觉、GPU、输入法或屏幕阅读验收。
 
-关闭主窗口与最小化不同。关闭有托盘的最后窗口会清空该窗口所有浏览标签，关闭包括设置、关于在内的全部所属弹窗并撤销未保存的设置预览，销毁其原生窗口资源后再隐藏主窗口；从托盘、Dock 或无文件参数的第二次启动唤出后仅显示一个起始页，不恢复旧标签、草稿或附属弹窗。非最后窗口继续关闭并清理自己的浏览标签与附属弹窗，其他窗口不受影响。后台任务及提示令牌仍由原控制器保留，用户明确打开任务时才重新创建对应原生窗口。存在阻塞模态窗口时先激活它，不接受主窗口关闭。
+关闭主窗口与最小化不同。关闭有托盘的最后窗口会清空该窗口所有浏览标签，关闭包括设置在内的全部所属弹窗，已生效的设置保留，销毁其原生窗口资源后再隐藏主窗口；从托盘、Dock 或无文件参数的第二次启动唤出后仅显示一个起始页，不恢复旧标签或附属弹窗。非最后窗口继续关闭并清理自己的浏览标签与附属弹窗，其他窗口不受影响。后台任务及提示令牌仍由原控制器保留，用户明确打开任务时才重新创建对应原生窗口。存在阻塞模态窗口时先激活它，不接受主窗口关闭。
 
 English: Closing a main window dismisses every owned dialog, including Settings and About, cancels unsaved appearance previews and releases native dialog surfaces. Tray restoration shows only the welcome page. Background task identities and prompt tokens remain owned by their original controllers, and explicit task activation can recreate their windows.
 

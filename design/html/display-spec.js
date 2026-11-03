@@ -263,12 +263,12 @@ window.XDZIP_DISPLAY_SPEC = Object.freeze({
             ]
         },
         "settings": {
-            "source": "../hifi/screens/settings-current-light.png",
+            "source": "../hifi/screens/settings-appearance-light.png",
             "size": [
-                780,
-                1007
+                742,
+                678
             ],
-            "darkSource": "../hifi/screens/settings-current-dark.png"
+            "darkSource": "../hifi/screens/settings-appearance-dark.png"
         },
         "preflight": {
             "source": "../hifi/screens/preflight-body-note-light.png",

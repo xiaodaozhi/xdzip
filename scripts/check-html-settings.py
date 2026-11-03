@@ -1,117 +1,166 @@
 #!/usr/bin/env python3
-"""Exercise the shared settings design draft; persistence is verified in Qt."""
+"""Exercise the six-page, immediately applied settings design."""
 import json
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
-ROOT=Path(__file__).resolve().parents[1]
-OUTPUT=ROOT/'build/review/html-settings'
+ROOT = Path(__file__).resolve().parents[1]
+OUTPUT = ROOT / 'build/review/html-settings'
+
 
 def main():
-    OUTPUT.mkdir(parents=True,exist_ok=True)
+    OUTPUT.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
-        browser=p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM','/usr/bin/chromium'),args=['--no-sandbox','--disable-dev-shm-usage'])
-        holder=browser.new_page()
-        holder.set_content((ROOT/'dist/xdzip-hifi-design.html').read_text(encoding='utf-8'))
-        canvas=holder.evaluate('window.XDZIP_CANVAS')
-        page=browser.new_page(viewport={'width':1600,'height':1300})
-        errors=[]
-        page.on('pageerror',lambda error:errors.append(str(error)))
+        browser = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM'), args=['--no-sandbox'])
+        holder = browser.new_page()
+        holder.set_content((ROOT / 'dist/xdzip-hifi-design.html').read_text(encoding='utf-8'))
+        canvas = holder.evaluate('window.XDZIP_CANVAS')
+        page = browser.new_page(viewport={'width': 1600, 'height': 1300})
+        errors = []
+        page.on('pageerror', lambda error: errors.append(str(error)))
         page.set_content(canvas)
         page.evaluate('document.fonts.ready')
         page.locator('#title-settings').click()
-        modal=page.locator('#modal')
-        expect(modal).to_have_attribute('data-kind','settings')
-        expect(modal).to_have_attribute('data-modeless','true')
-        expect(page.locator('#setting-language option')).to_have_text(['中文 (简体)','English (US)'])
-        expect(page.locator('#setting-text-scale option')).to_have_text(['100%','125%','150%'])
-        expect(page.locator('#setting-open-mode option')).to_have_text(['在新标签页打开','在新窗口打开'])
-        expect(page.locator('#setting-open-mode')).to_have_value('tabs')
-        page.locator('#setting-open-mode-trigger').click()
-        page.keyboard.press('End')
-        page.keyboard.press('Enter')
-        expect(page.locator('#setting-open-mode')).to_have_value('windows')
-        expect(page.locator('#tray-enabled')).to_be_checked()
-        page.locator('#tray-enabled').uncheck()
-        page.locator('#modal [data-close]').last.click()
-        page.locator('#title-settings').click()
-        expect(page.locator('#tray-enabled')).to_be_checked()
-        expect(page.locator('#setting-open-mode')).to_have_value('tabs')
-        original=page.evaluate('state.theme')
-        expect(modal.locator('.modal-header')).to_be_visible()
-        expect(modal.locator('.theme-card')).to_have_count(3)
-        expect(modal.locator('.notice')).to_contain_text('不启用遥测')
-        normal=modal.locator('.modal-header h1').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')
-        layout=json.loads((ROOT/'docs/visual/layout-scale.json').read_text(encoding='utf-8'))
-        spec=json.loads((ROOT/'docs/visual/settings-reference.json').read_text(encoding='utf-8'))
-        ratio=layout['main']['source_to_logical'][0]/layout['main']['source_to_logical'][1]
-        assert abs(modal.bounding_box()['width']*ratio-spec['logical_width'])<=1
-        for selector in ['#setting-text-scale-trigger','#setting-language-trigger','#setting-open-mode-trigger']:
-            field=page.locator(selector)
-            assert abs(field.bounding_box()['height']*ratio-layout['operation']['controls']['bodyButtonHeight'])<=1
-            assert abs(field.evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')*ratio-spec['body_size'])<=.1
-        modal.screenshot(path=str(OUTPUT/'settings-light.png'))
+        modal = page.locator('#modal')
+        expect(modal).to_have_attribute('data-kind', 'settings')
+        expect(modal).to_have_attribute('data-modeless', 'true')
+        expect(modal.locator('.settings-nav-item')).to_have_count(6)
+        expect(modal.locator('.modal-footer')).to_have_count(0)
+        assert not modal.get_by_role('button', name='完成').count()
+        layout = json.loads((ROOT / 'docs/visual/layout-scale.json').read_text())
+        palette = json.loads((ROOT / 'docs/visual/tokens.json').read_text())
+        controls = json.loads((ROOT / 'docs/visual/controls.json').read_text())
+        ratio = layout['main']['source_to_logical'][0] / layout['main']['source_to_logical'][1]
+        assert abs(modal.bounding_box()['width'] * ratio - 612) < 1
+        def rgb(value):
+            return 'rgb(' + ', '.join(str(int(value[index:index+2], 16)) for index in (1, 3, 5)) + ')'
+        for theme in ('light', 'dark'):
+            page.evaluate('theme => XdzipDesign.theme(theme)', theme)
+            header = modal.locator('.shared-operation-header')
+            divider = header.evaluate('''node => {
+                const style = getComputedStyle(node, '::after');
+                return {height:parseFloat(style.height), color:style.backgroundColor};
+            }''')
+            assert abs(divider['height'] * ratio - layout['operation']['settings']['headerDividerHeight']) < .1
+            assert divider['color'] == rgb(palette[theme]['border'])
+            sidebar = modal.locator('.settings-sidebar')
+            assert sidebar.evaluate('node => getComputedStyle(node).backgroundColor') == rgb(palette[theme]['sidebar'])
+            hovered = modal.locator('#settings-tab-general')
+            hovered.hover()
+            assert hovered.evaluate('node => getComputedStyle(node).backgroundColor') == rgb(controls[theme]['controlHover'])
+            assert hovered.evaluate('node => getComputedStyle(node).backgroundColor') != sidebar.evaluate('node => getComputedStyle(node).backgroundColor')
+            icon = hovered.locator('svg').bounding_box()
+            assert abs((icon['x'] - hovered.bounding_box()['x']) * ratio - layout['operation']['settings']['sidebarIconInset']) < .1
+            selected = modal.locator('#settings-tab-appearance')
+            selected.hover()
+            selected_color = selected.evaluate('node => getComputedStyle(node).backgroundColor')
+            assert selected_color == rgb(palette[theme]['selection']), (theme, selected_color, selected.get_attribute('aria-selected'))
+        page.mouse.move(0, 0)
+        for tab in ('appearance', 'general', 'privacy', 'associations', 'network', 'about'):
+            page.locator('#settings-tab-' + tab).click()
+            pane = page.locator('.settings-pane')
+            expect(pane).to_have_attribute('data-tab', tab)
+            assert pane.locator(':scope > h1').count() == 0
+            assert pane.evaluate('node => node.firstElementChild.tagName') != 'HR'
+            assert page.locator('.settings-sidebar').bounding_box()['y'] == page.locator('.settings-pane').bounding_box()['y']
+            assert abs(page.locator('.settings-sidebar').bounding_box()['x'] + page.locator('.settings-sidebar').bounding_box()['width'] - page.locator('.settings-pane').bounding_box()['x']) < 1
+        page.locator('#settings-tab-appearance').click()
         page.locator('input[name=setting-theme][value=dark]').check()
-        expect(page.locator('html')).to_have_attribute('data-theme','dark')
-        modal.screenshot(path=str(OUTPUT/'settings-dark.png'))
-        page.locator('#clear-recent').click()
-        expect(page.locator('#clear-recent')).to_have_text('保存后清空')
-        expect(page.locator('#clear-recent')).to_be_disabled()
-        page.locator('#setting-text-scale-trigger').click()
-        page.keyboard.press('End')
-        page.keyboard.press('Enter')
-        expect(page.locator('#setting-text-scale')).to_have_value('1.5')
-        assert abs(modal.locator('.modal-header h1').evaluate('el=>parseFloat(getComputedStyle(el).fontSize)')-normal*1.5) < .01
-        bounds=modal.locator('.operation-footer-actions button').evaluate_all('els=>els.map(el=>el.getBoundingClientRect().y)')
-        assert max(bounds)-min(bounds) <= 1
-        modal.locator('[data-close]').click()
-        expect(modal).not_to_be_visible()
-        assert page.evaluate('state.theme')==original
-        page.locator('#title-settings').click()
-        expect(page.locator('#setting-text-scale')).to_have_value('1')
-        expect(page.locator('#clear-recent')).to_be_enabled()
-        page.locator('#setting-open-mode-trigger').click()
-        page.keyboard.press('End')
-        page.keyboard.press('Enter')
-        page.locator('#setting-density-trigger').click()
-        page.keyboard.press('End')
-        page.keyboard.press('Enter')
-        expect(page.locator('#setting-density')).to_have_value('compact')
-        assert page.locator('#file-rows td').first.evaluate('el=>parseFloat(getComputedStyle(el).height)') < 60
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        page.locator('#setting-text-scale').select_option('1.5', force=True)
+        page.locator('#settings-tab-general').click()
+        page.locator('#setting-open-mode').select_option('windows', force=True)
+        page.locator('#tray-enabled').uncheck()
+        page.locator('#setting-language').select_option('en-US', force=True)
+        expect(page.locator('#settings-tab-general')).to_have_text('General')
+        page.locator('#settings-tab-privacy').click()
         page.locator('#recent-enabled').uncheck()
-        page.locator('#setting-language-trigger').click()
-        menu=page.locator('#setting-language-trigger-options')
-        expect(menu).to_be_visible()
-        anchor=page.locator('#setting-language-trigger').bounding_box()
-        box=menu.bounding_box()
-        assert box['width'] >= anchor['width'] - 1
-        assert abs(box['x']+box['width']-anchor['x']-anchor['width']) <= 1
-        measured=menu.locator('.ui-menu-label').evaluate_all('els=>els.map(el=>({text:el.textContent,width:el.clientWidth,scroll:el.scrollWidth,font:getComputedStyle(el).font}))')
-        assert all(item['scroll']<=item['width']+1 for item in measured), {'labels':measured,'popup':box,'button':anchor}
-        menu.screenshot(path=str(OUTPUT/'language-options.png'))
-        page.keyboard.press('End')
-        page.keyboard.press('Enter')
-        expect(page.locator('#setting-language')).to_have_value('en-US')
-        page.locator('#settings-save').click()
-        expect(modal).to_have_attribute('data-kind','restart')
-        expect(modal).to_have_attribute('data-modeless','false')
-        expect(modal).to_contain_text('是否要重启应用使设置生效？')
-        modal.screenshot(path=str(OUTPUT/'restart-confirmation.png'))
-        page.locator('#restart-later').click()
-        expect(modal).not_to_be_visible()
+        page.locator('#settings-tab-associations').click()
+        expect(page.locator('.settings-associations input')).to_have_count(9)
+        page.locator('[id="association-.zip"]').check()
+        page.locator('#settings-tab-network').click()
+        page.locator('input[name=setting-proxy][value=custom]').check()
+        page.locator('#setting-proxy-address').fill('http://127.0.0.1:7890')
+        page.locator('#setting-proxy-address').dispatch_event('change')
+        page.locator('#setting-mirror-address').fill('https://mirror.example.com')
+        page.locator('#setting-mirror-address').dispatch_event('change')
+        page.locator('#settings-tab-about').click()
+        check = page.locator('#about-check-update')
+        expect(check).to_be_visible()
+        check.scroll_into_view_if_needed()
+        action_before = check.bounding_box()
+        scroll_before = page.locator('.settings-pane').evaluate('node => node.scrollTop')
+        check.click()
+        cancel_check = page.locator('#about-cancel-check')
+        expect(cancel_check).to_be_visible()
+        expect(page.locator('#about-check-update')).to_have_count(0)
+        expect(page.locator('#about-cancel-update')).to_have_count(0)
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        action_during = cancel_check.bounding_box()
+        scroll_during = page.locator('.settings-pane').evaluate('node => node.scrollTop')
+        assert all(abs(action_before[key] - action_during[key]) < 1 for key in ('x', 'y', 'width', 'height')), (action_before, action_during, scroll_before, scroll_during)
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        cancel_check.click()
+        expect(page.locator('#about-check-update')).to_be_visible()
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        messages = json.loads((ROOT / 'resources/i18n/en-US.json').read_text())['messages']
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:true,canInstall:false,version:"0.1.0-alpha.9"})')
+        download = page.locator('#about-install-update')
+        expect(download).to_have_text(messages['update.download'])
+        expect(page.locator('#about-check-update')).to_have_count(0)
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        download_bounds = download.bounding_box()
+        assert abs((download_bounds['x'] + download_bounds['width']) - (action_before['x'] + action_before['width'])) < 1
+        assert abs(download_bounds['y'] - action_before['y']) < 1
+        download.click()
+        cancel_download = page.locator('#about-cancel-update')
+        expect(cancel_download).to_have_text(messages['update.cancelDownload'])
+        expect(page.locator('#about-update-section progress')).to_be_visible()
+        cancel_bounds = cancel_download.bounding_box()
+        assert abs((cancel_bounds['x'] + cancel_bounds['width']) - (action_before['x'] + action_before['width'])) < 1
+        assert abs(cancel_bounds['y'] - action_before['y']) < 1
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        cancel_download.click()
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.download'])
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:true,canInstall:true})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.install'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:false,canInstall:false})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.release'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:false,downloaded:true})')
+        expect(page.locator('#about-open-update')).to_have_text(messages['update.openDownload'])
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:true,downloaded:true})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.installNow'])
+        expect(page.locator('#about-open-update-secondary')).to_have_text(messages['update.openDownload'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"recovery_required",downloaded:true})')
+        expect(page.locator('#about-recovery-update')).to_have_text(messages['update.release'])
+        expect(page.locator('#about-open-update-secondary')).to_have_text(messages['update.openDownload'])
+        modal.locator('.os-close').click()
         page.locator('#title-settings').click()
-        expect(page.locator('#setting-language')).to_have_value('en-US')
-        expect(page.locator('#setting-density')).to_have_value('compact')
+        expect(page.locator('html')).to_have_attribute('data-theme', 'dark')
+        page.locator('#settings-tab-general').click()
         expect(page.locator('#setting-open-mode')).to_have_value('windows')
+        expect(page.locator('#tray-enabled')).not_to_be_checked()
+        page.locator('#settings-tab-privacy').click()
         expect(page.locator('#recent-enabled')).not_to_be_checked()
-        page.locator('#settings-defaults').click()
-        expect(page.locator('#setting-language')).to_have_value('zh-CN')
-        modal.locator('[data-close]').click()
-        page.locator('#title-settings').click()
-        expect(page.locator('#setting-language')).to_have_value('en-US')
-        assert not errors,errors
+        page.locator('#settings-tab-associations').click()
+        expect(page.locator('[id="association-.zip"]')).to_be_checked()
+        page.locator('#settings-tab-network').click()
+        expect(page.locator('#setting-proxy-address')).to_have_value('http://127.0.0.1:7890')
+        expect(page.locator('#setting-mirror-address')).to_have_value('https://mirror.example.com')
+        page.evaluate('window.XdzipDesign.open("about")')
+        expect(modal).to_have_attribute('data-kind', 'settings')
+        expect(page.locator('.settings-pane')).to_have_attribute('data-tab', 'about')
+        assert not errors, errors
         browser.close()
-    (OUTPUT/'validation.json').write_text(json.dumps({'status':'passed','checks':['Real settings entry','Independent modeless design','Both supported language autonyms','Normal logical width','Shared field height and font','Theme preview','Text-size preview','Cancel rollback','Saved draft reopened','Defaults modify draft only'],'limits':['HTML keeps demo settings in memory; Qt verifies on-disk and restart behavior']},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print('Settings design: draft interactions and normal-density checks passed')
+    (OUTPUT / 'validation.json').write_text(json.dumps({
+        'status': 'passed', 'checks': ['six tabs', 'no footer', 'immediate changes', 'reopen state',
+        'two languages and 150% text', 'proxy and mirror fields', 'association switches', 'about update states'],
+        'limits': ['HTML settings are an in-memory design simulation; system associations and persistence require Qt tests.']
+    }, ensure_ascii=False, indent=2) + '\n')
+    print('Settings design: six tabs and immediate interactions passed')
 
-if __name__=='__main__':main()
+
+if __name__ == '__main__':
+    main()

@@ -35,6 +35,16 @@ English: The tab close button retains its square hit area and centered position,
 
 ## 组件规则
 
+### 设置窗口分类修订
+
+设置与关于共用一个 612 逻辑像素宽的非模态窗口，客户区首选高度 532，受屏幕可用高度约束。共享 OperationHeader 底部有 1 逻辑单位分隔线，下方为左侧导航和独立滚动的右侧页面；左栏基准宽 144、正常行高 40、图标槽 18，图标距侧栏左边 15，首行贴齐顶部，选中背景与右侧分隔线相接。辅助字号增大时，左栏按实际最宽单词和图文间距适当增宽，英文在单词之间换行；行按内容增长并允许滚动。未选中项悬停使用共享 controlHover 颜色，浅深主题均与侧栏底色区分。页面内距 20，分组间距 16。实际参数以 layout-scale.json 的 operation.settings 为准，不从截图、DPR 或审阅倍率推导。
+
+六个页面依次为外观、通用、隐私、文件关联、网络和关于。设置窗口不再使用 footer 或保存、取消、完成按钮；提交成功的变更即时生效，失败时保持已生效值并显示原因。关于页面保留版本、许可证和用户主动更新；所有关于入口打开该页，不再创建独立关于窗口。主题卡片、设置图标、品牌和已有状态素材继续复用原资源，不重复生成未变化切图。
+
+正文不重复显示与侧栏相同的页面标题，也不保留标题下的分隔线；实际设置分组标题及分组之间的分隔线保留。关于页的更新主要操作与状态同一行、右侧对齐：检查中显示“取消检查”，发现版本后显示下载、下载安装或发布页入口，下载中显示“取消下载”，下载完成后显示安装或打开下载位置。检查与取消检查保持相同位置和尺寸，进度条位于状态行下方；需要同时提供下载目录的次要操作时靠右排列。
+
+English: Settings and About share a 612-unit non-modal window with a 532-unit preferred client height, bounded by the available screen. A one-unit divider below the header precedes a sidebar with a 144-unit base width and an independently scrolling page; the first row touches the top, its icon begins 15 units from the sidebar edge, and the selection reaches the right divider. At larger text sizes, the sidebar grows to fit the widest word and the icon spacing; English labels wrap between words and rows may grow or scroll. Unselected rows use the shared controlHover color, distinct from the sidebar in both themes. The six pages are Appearance, General, Privacy, File associations, Network and About. Pages omit duplicate sidebar titles and their separators while retaining section headings and separators. Update actions align to the right of the status: Cancel Check during checking; download, install or release page when an update is available; Cancel Download during download; and install or open the download location after completion. Check and Cancel Check share the same position and size. Progress appears beneath the status; any secondary download-location action is right aligned. There is no settings footer; successful changes take effect immediately, and failures retain the applied value and show an error. Existing unchanged artwork is reused.
+
 每个组件必须明确尺寸、字号、图标槽、内边距、对齐边、命中区域、状态和数据来源。禁止只交付默认状态。按钮必须覆盖 normal、hover、pressed、focus、disabled、busy；菜单必须覆盖键盘选中、子菜单、checked、disabled、边缘翻转和滚动；目录树必须覆盖子层级、叶节点、折叠当前路径、深层滚动和长名称；文件列表必须覆盖表头／内容同边对齐、排序、多选、空态和未知数据。
 
 数字列同边右对齐，类型列同边左对齐。面包屑与预览标题区高度、字号、文字基线一致；预览顶边与文件表头顶边一致。图标按槽居中，文字按字体度量对齐。所有图标使用统一素材库，不从带底色截图中临时裁切。
@@ -59,11 +69,11 @@ HTML 与 Qt 必须在同一逻辑宽度下对比；原稿只裁去外背景并�
 
 ### 共享图标标题区
 
-创建、添加、解压、任务及结果、冲突、设置、关于窗口统一使用 OperationHeader，完整性检查随 TaskWindow 继承。图标槽为48×48，标题20、副标题13，左右内距24、上下20、图文间距16、标题与副标题间距6，正常高度基准96。图标保持原素材比例并居中，不使用窗口自己的 canvas／artwork 尺寸覆盖。标题与副标题均为纯文本，浅深色沿用 text／textSecondary，字号只按应用辅助字号变化。长文案或大字号使标题区按同一字体度量公式增高，不缩小字、不覆盖正文或footer。
+创建、添加、解压、任务及结果、冲突和设置窗口统一使用 OperationHeader，关于内容位于设置页，完整性检查随 TaskWindow 继承。图标槽为48×48，标题20、副标题13，左右内距24、上下20、图文间距16、标题与副标题间距6，正常高度基准96。图标保持原素材比例并居中，不使用窗口自己的 canvas／artwork 尺寸覆盖。标题与副标题均为纯文本，浅深色沿用 text／textSecondary，字号只按应用辅助字号变化。长文案或大字号使标题区按同一字体度量公式增高，不缩小字、不覆盖正文或footer。
 
 参数唯一来源为 [operation.header](layout-scale.json)，独立状态稿为 [operation-headers.html](../../design/hifi/sources/operation-headers.html)，窗口对应关系在 [window-registry.json](window-registry.json)。本修订替代旧的各窗图标槽、关于页居中品牌标题24及窗口专用header高度；原始图片、哈希和历史量测不改写。密码、预检、退出／重启确认等文字型标题区不凭空加入装饰图标，也不修改其既有安全交互。主窗口与菜单密度仍分别量测。
 
-English: Create, add, extract, task/result, conflict, settings and about windows share OperationHeader; integrity checks inherit it. The common policy is a 48×48 logical icon slot, 20-unit title, 13-unit subtitle, 24-unit horizontal and 20-unit vertical padding, 16-unit icon gap, 6-unit text gap and 96-unit normal height baseline. Text is plain and grows using common font metrics for larger fonts or long content. Icons preserve aspect ratio. This supersedes per-window header sizing and the centered 24-unit about branding while preserving historical references. Text-only prompts keep their roles, and main-window/menu density remains separate.
+English: Create, add, extract, task/result, conflict, and settings windows share OperationHeader; About is a settings tab; integrity checks inherit it. The common policy is a 48×48 logical icon slot, 20-unit title, 13-unit subtitle, 24-unit horizontal and 20-unit vertical padding, 16-unit icon gap, 6-unit text gap and 96-unit normal height baseline. Text is plain and grows using common font metrics for larger fonts or long content. Icons preserve aspect ratio. This supersedes per-window header sizing and the centered 24-unit about branding while preserving historical references. Text-only prompts keep their roles, and main-window/menu density remains separate.
 
 操作窗口中的拉链插图共用 scripts/zipper_assets.py 的结构与完整清单，采用两列交错的圆角齿牙、低对比织带、独立拉头和镂空拉环。齿牙与金属件使用克制的高光；仅在素材内等比缩放并按底色选择配色，不改变文档轮廓、图标槽或 UI 密度。新增插图消费者必须登记到 ZIPPER_ICONS，素材检查核对浅深色完整性和 HTML 内联渐变标识的一致性。
 
@@ -197,7 +207,7 @@ Windows 原生边框保留系统 caption 与缩放行为，取消 FramelessWindo
 
 全屏模式沿用系统无标题栏的客户区计算，不保留普通窗口的 1 个原生设备像素顶部边框，不提供边缘拉伸命中。否则 Qt 在最小化恢复时会因客户区未覆盖完整屏幕而误判普通状态。普通与最大化窗口继续保留既定系统边框、圆角能力和阴影规则；这些 Win32 参数不写入 QML 逻辑尺寸。
 
-设置重启确认沿用正常操作窗口宽 491、24 正文内距、20 标题和共享 footer，使用原生标题栏及应用模态。保存后的选择为“稍后”和“现在重启”，内容与中英文目录同步。创建压缩包的添加列表为空时保留空白列表框，不显示引导占位文案，添加按钮与下方真实摘要继续保留。
+历史重启确认保留共享窗口规范；设置的语言更改现已即时生效，不触发该确认。创建压缩包的添加列表为空时保留空白列表框，不显示引导占位文案，添加按钮与下方真实摘要继续保留。
 
 ## 原生桌面菜单
 
@@ -207,9 +217,9 @@ macOS 顶部系统菜单和全平台托盘菜单使用平台原生绘制，字�
 
 ## 2026-10-19 确认窗口正常密度
 
-退出、停止任务和设置重启确认共用 [operation.confirmation](layout-scale.json)：客户区宽 491、标题 20、正文 13、内容内距 24、段间距 12，最高 600，并受可用屏幕高度约束。高度由真实正文与共享 footer 决定，禁止使用 270/540 等分档固定高度，禁止从旧默认操作窗的 612/25/16 套用。正文滚动，footer 不随正文移动。三按钮在英文 150% 字号下允许文字在按钮内换行并增加共享行高，不减字号、不越界、不改为纵向三个按钮。停止时维持相同几何政策且禁用决策按钮。
+退出、停止任务和历史重启确认共用 [operation.confirmation](layout-scale.json)：客户区宽 491、标题 20、正文 13、内容内距 24、段间距 12，最高 600，并受可用屏幕高度约束。高度由真实正文与共享 footer 决定，禁止使用 270/540 等分档固定高度，禁止从旧默认操作窗的 612/25/16 套用。正文滚动，footer 不随正文移动。三按钮在英文 150% 字号下允许文字在按钮内换行并增加共享行高，不减字号、不越界、不改为纵向三个按钮。停止时维持相同几何政策且禁用决策按钮。
 
-[独立状态稿](../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。AboutWindow 的图标标题区执行下方共享规范，不再保留品牌标题字号例外。完整窗口清单与例外理由见 [window-registry.json](window-registry.json)。
+[独立状态稿](../../design/hifi/sources/confirmations.html)与 HTML 的 quit/restart 入口同步。SettingsWindow 的 612 宽及独立属性查看器的 360 宽属于各自已登记的不同用途，不作为同类确认窗尺寸不一致处理。关于内容已合并到设置窗口，不再注册独立 AboutWindow。完整窗口清单与例外理由见 [window-registry.json](window-registry.json)。
 
 ## 密码解压请求
 
@@ -241,11 +251,11 @@ English: Internal file drags immediately show a pointer-following type icon, pla
 
 English: The first body group follows the shared header with a 0-unit bodyGap. Header padding already supplies the separation; legacy hero gaps must not be added again. Card insets and paragraph or settings-section spacing remain inside the body group. Qt and HTML measure this boundary, including running and terminal task views.
 
-## 关于窗口许可提示
+## 关于页许可提示
 
-关于窗口在既有可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用原有文字角色、换行、窗口尺寸与固定 footer，不增加新的窗口或尺寸参数；HTML 与 Qt 使用同一中英文文案。
+设置的关于页在可滚动正文中列出 xdzip 原创代码和 Qt 的版权声明、xdzip 许可及 Qt 所选 LGPL-3.0 分支，并指向随附 notices 中的 GPL-3.0 与 LGPL-3.0 原文。复用文字角色与换行，不增加新的窗口或 footer；HTML 与 Qt 使用同一中英文文案。
 
-English: The existing scrollable About body identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role, wrapping, window sizes and fixed footer; HTML and Qt share the same bilingual copy.
+English: The scrollable About settings page identifies the copyrights of xdzip original code and Qt, the xdzip license and Qt's selected LGPL-3.0 option, and points to the bundled GPL-3.0 and LGPL-3.0 texts. It retains the existing text role and wrapping, without a separate window or footer; HTML and Qt share the same bilingual copy.
 
 ## 操作窗口的动态高度
 
