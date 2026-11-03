@@ -1,4 +1,5 @@
 #pragma once
+#include <QHash>
 #include <QKeySequence>
 #include <QObject>
 #include <QPointer>
@@ -55,6 +56,7 @@ class DesktopIntegration final : public QObject {
     bool blocked() const;
     bool textEditor() const;
     bool enabled(const QString &command) const;
+    void retranslateMenus();
     void syncActions();
     void rebuildTasks(QMenu *menu);
     void rebuildRecent();
@@ -70,6 +72,7 @@ class DesktopIntegration final : public QObject {
     std::unique_ptr<QMenuBar> m_bar;
     QMenu *m_recent = nullptr;
     QMenu *m_windowMenu = nullptr;
+    QHash<QString, QMenu *> m_menuTitles;
     QList<QMenu *> m_taskMenus;
     QList<QPointer<QWindow>> m_hiddenWindows;
     QList<QAction *> m_actions;
@@ -78,6 +81,7 @@ class DesktopIntegration final : public QObject {
     bool m_available = false;
     bool m_hidden = false;
     QString m_iconVariant;
+    QString m_menuLanguage;
     QString m_session;
     QPointer<ApplicationSessions> m_sessions;
 };

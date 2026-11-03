@@ -90,6 +90,9 @@ void scheduleNativeFileDialogCancellation();
 bool nativeWindowMatchesState(QWindow *window, Qt::WindowState state);
 bool watchNativeWindowTransitions(QWindow *window);
 void traceNativeWindowState(QWindow *window);
+bool verifyMacDesktopMenus();
+QStringList nativeDesktopMenuEntries(const QString &title);
+void updateNativeApplicationMenu();
 
 class ActivationEventTrace final : public QObject {
   protected:
@@ -4060,6 +4063,188 @@ QtObject {
                      translator.translate(nullptr, "desktop.edit", nullptr, -1));
             QVERIFY(translator.translate("QFileDialog", "Copy", nullptr, -1).isEmpty());
         }
+    }
+    void desktopMenusFollowSettingsLanguage() {
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        const auto path = profile.filePath("settings.ini");
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH", path);
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(QStringLiteral("zh-CN")));
+        const auto systemLanguages = QLocale::system().uiLanguages();
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && controller && preferences);
+        const auto previousQuit = QApplication::quitOnLastWindowClosed();
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        const bool nativeTray = QGuiApplication::platformName() == QStringLiteral("cocoa") &&
+                                QSystemTrayIcon::isSystemTrayAvailable();
+        DesktopIntegration desktop(window, controller, preferences, nativeTray);
+        if (nativeTray)
+            QVERIFY(desktop.trayAvailable());
+        auto *showAction = desktop.action("show");
+        auto *settingsAction = desktop.action("settings");
+        QVERIFY(showAction && settingsAction);
+        QMenu *taskMenu = nullptr;
+        for (auto *item : desktop.trayMenu()->actions())
+            if (item->menu())
+                taskMenu = item->menu();
+        QVERIFY(taskMenu);
+        controller->m_tasks[17] = {{"id", "17"}, {"kind", "check"}, {"status", "waiting"},
+                                   {"terminal", false}};
+        emit controller->tasksChanged();
+        QCOMPARE(controller->activeTaskCount(), 1);
+        QCOMPARE(showAction->text(), QStringLiteral("显示主窗口"));
+        QCOMPARE(settingsAction->text(), QStringLiteral("设置…"));
+        QCOMPARE(taskMenu->title(), QStringLiteral("任务 (活动中的任务: 1)"));
+        QCOMPARE(desktop.trayToolTip(), QStringLiteral("xdzip (活动中的任务: 1)"));
+        QVERIFY(QMetaObject::invokeMethod(taskMenu, "aboutToShow"));
+        QCOMPARE(taskMenu->actions().first()->data().toString(), QStringLiteral("17"));
+        QVERIFY(taskMenu->actions().first()->text().contains(qtTrId("ui.8fb3a3261b43")));
+
+        auto *settings = window->findChild<QQuickWindow *>("settingsWindow");
+        QVERIFY(settings && QMetaObject::invokeMethod(settings, "configure"));
+        settings->setProperty("currentTab", 1);
+        QQuickItem *choice = nullptr;
+        QTRY_VERIFY((choice = findVisual(settings->contentItem(), "settingsLanguage")));
+#ifdef Q_OS_MACOS
+        const auto systemMenuEntries = [] {
+            auto entries = nativeDesktopMenuEntries({});
+            entries.removeAll(qtTrId("desktop.about"));
+            entries.removeAll(qtTrId("desktop.settings"));
+            entries.removeAll(qtTrId("desktop.quit"));
+            return entries;
+        };
+        QStringList originalSystemMenuEntries;
+        if (desktop.nativeMenuAvailable()) {
+            QTRY_VERIFY(verifyMacDesktopMenus());
+            updateNativeApplicationMenu();
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.about")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.settings")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.quit")));
+            originalSystemMenuEntries = systemMenuEntries();
+        }
+#endif
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
+        QTRY_COMPARE(settings->title(), QStringLiteral("Settings"));
+        QCOMPARE(desktop.action("show"), showAction);
+        QCOMPARE(showAction->text(), QStringLiteral("Show Main Window"));
+        QCOMPARE(settingsAction->text(), QStringLiteral("Settings…"));
+        QCOMPARE(taskMenu->title(), QStringLiteral("Tasks (Active tasks: 1)"));
+        QCOMPARE(desktop.trayToolTip(), QStringLiteral("xdzip (Active tasks: 1)"));
+        QCOMPARE(taskMenu->actions().size(), 1);
+        QCOMPARE(taskMenu->actions().first()->data().toString(), QStringLiteral("17"));
+        QVERIFY(taskMenu->actions().first()->text().contains(qtTrId("desktop.checkTask")));
+        QVERIFY(taskMenu->actions().first()->text().contains(qtTrId("ui.8fb3a3261b43")));
+        for (auto *item : desktop.trayMenu()->actions()) {
+            const auto command = item->data().toString();
+            if (!command.isEmpty()) {
+                const auto id = (QStringLiteral("desktop.") + command).toUtf8();
+                QCOMPARE(item->text(), qtTrId(id.constData()));
+            }
+        }
+        QCOMPARE(controller->activeTaskCount(), 1);
+#ifdef Q_OS_MACOS
+        if (desktop.nativeMenuAvailable()) {
+            QTRY_VERIFY(verifyMacDesktopMenus());
+            updateNativeApplicationMenu();
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.about")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.settings")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.quit")));
+            QCOMPARE(systemMenuEntries(), originalSystemMenuEntries);
+            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
+            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
+        }
+#endif
+
+        QLockFile lock(path + QStringLiteral(".xdzip-lock"));
+        QVERIFY(lock.tryLock());
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QCOMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
+        QCOMPARE(settings->title(), QStringLiteral("Settings"));
+        QCOMPARE(showAction->text(), QStringLiteral("Show Main Window"));
+        QCOMPARE(taskMenu->title(), QStringLiteral("Tasks (Active tasks: 1)"));
+#ifdef Q_OS_MACOS
+        if (desktop.nativeMenuAvailable()) {
+            updateNativeApplicationMenu();
+            QTRY_VERIFY(verifyMacDesktopMenus());
+        }
+#endif
+        lock.unlock();
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 0)));
+        QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("zh-CN"));
+        QCOMPARE(showAction->text(), QStringLiteral("显示主窗口"));
+        QCOMPARE(settingsAction->text(), QStringLiteral("设置…"));
+        QCOMPARE(taskMenu->title(), QStringLiteral("任务 (活动中的任务: 1)"));
+        QCOMPARE(desktop.trayToolTip(), QStringLiteral("xdzip (活动中的任务: 1)"));
+        QVERIFY(QMetaObject::invokeMethod(taskMenu, "aboutToShow"));
+        QCOMPARE(taskMenu->actions().first()->data().toString(), QStringLiteral("17"));
+        QVERIFY(taskMenu->actions().first()->text().contains(qtTrId("desktop.checkTask")));
+        QVERIFY(taskMenu->actions().first()->text().contains(qtTrId("ui.8fb3a3261b43")));
+        QCOMPARE(controller->activeTaskCount(), 1);
+        QCOMPARE(QLocale::system().uiLanguages(), systemLanguages);
+#ifdef Q_OS_MACOS
+        if (desktop.nativeMenuAvailable()) {
+            QTRY_VERIFY(verifyMacDesktopMenus());
+            updateNativeApplicationMenu();
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.about")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.settings")));
+            QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(qtTrId("desktop.quit")));
+            QCOMPARE(systemMenuEntries(), originalSystemMenuEntries);
+            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.file")).contains(qtTrId("desktop.open")));
+            QTRY_VERIFY(nativeDesktopMenuEntries(qtTrId("desktop.help")).contains(qtTrId("desktop.guide")));
+        }
+#endif
+        controller->m_tasks.clear();
+        emit controller->tasksChanged();
+        QVERIFY(QMetaObject::invokeMethod(taskMenu, "aboutToShow"));
+        QCOMPARE(taskMenu->actions().first()->text(), QStringLiteral("暂无任务"));
+        QVERIFY(QMetaObject::invokeMethod(choice, "activateOption", Q_ARG(QVariant, 1)));
+        QTRY_COMPARE(preferences->activeLanguage(), QStringLiteral("en-US"));
+        QCOMPARE(taskMenu->actions().first()->text(), QStringLiteral("No Tasks"));
+        QCOMPARE(taskMenu->title(), QStringLiteral("Tasks (Active tasks: 0)"));
+        settings->close();
+    }
+    void desktopNativeEnglishStartupMenu() {
+#ifdef Q_OS_MACOS
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+            QSKIP("Requires the Cocoa menu bar");
+        QTemporaryDir profile;
+        QVERIFY(profile.isValid());
+        test_environment::ScopedVariable settingsPath("XDZIP_SETTINGS_PATH",
+                                                        profile.filePath("settings.ini"));
+        QVERIFY2(settingsPath.valid(), qPrintable(settingsPath.error()));
+        QSettings persisted(profile.filePath("settings.ini"), QSettings::IniFormat);
+        persisted.setValue("locale/language", "en-US");
+        persisted.sync();
+        const auto restore = qScopeGuard([] { initializeUiText(QStringLiteral("zh-CN")); });
+        QVERIFY(initializeUiText(QStringLiteral("en-US")));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window->findChild<BrowserController *>();
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && controller && preferences);
+        DesktopIntegration desktop(window, controller, preferences, false);
+        QTRY_VERIFY(verifyMacDesktopMenus());
+        updateNativeApplicationMenu();
+        QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(QStringLiteral("About xdzip")));
+        QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(QStringLiteral("Settings…")));
+        QTRY_VERIFY(nativeDesktopMenuEntries({}).contains(QStringLiteral("Quit xdzip")));
+        QCOMPARE(desktop.action("show")->text(), QStringLiteral("Show Main Window"));
+#else
+        QSKIP("Requires the Cocoa menu bar");
+#endif
     }
     void fixtureEnvironmentRestoresState() {
         const auto *name = "XDZIP_TEST_SCOPED_ENVIRONMENT";

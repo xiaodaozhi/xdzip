@@ -10,6 +10,10 @@ macOS 菜单按 xdzip、文件、编辑、显示、操作、窗口、帮助排�
 
 菜单和既有界面通过统一命令入口执行，打开时及触发前重新检查能力。⌘W 关闭当前窗口，⇧⌘W 关闭压缩包。文本编辑不误操作文件选择，模态窗口阻止主窗口命令，禁用项不附加解释行。最近文件仅在允许记录时展示，不额外复制或上传路径。文案使用 zh-CN/en-US 资源，系统自带项目遵循系统语言。
 
+语言设置保存成功后，原有菜单栏、应用菜单的关于／设置／退出、托盘菜单、任务子菜单和托盘提示立即切换语言；切换失败时保持原语言。菜单命令和快捷键的行为、任务身份及正在运行的任务均保持不变。macOS 服务、隐藏等系统自带项目与原生文件选择器继续遵循系统语言。
+
+English: Saving a language change immediately updates the existing menu bar, application-owned About, Settings and Quit entries, tray menu, task submenu and tray tooltip. A failed save retains the previous language; menu actions, shortcuts and task identities remain intact. System-owned macOS entries such as Services and Hide, and native file dialogs, continue to follow the system language.
+
 托盘默认启用，设置开关操作成功后立即生效。schema 1 增加 desktop/trayEnabled，旧配置默认 true，保留未知字段与原子保存策略。菜单提供显示主窗口、打开、新建、任务、设置、关于、退出；任务由真实控制器数据驱动，状态与任务详情一致。macOS 点击展开菜单；Windows/Linux 普通激活恢复窗口、右键展开菜单。任务完成不自动弹出通知或抢焦点。
 
 托盘可用时关闭最后主窗口会清除该窗口的浏览标签与操作窗草稿，再隐藏窗口；再次显示仅保留一个起始页。后台任务及其会话身份继续保留，从全局任务入口主动打开。最小化不清除标签。模态窗口或文件选择器存在时先激活阻塞窗口。明确退出、系统退出和重启绕过隐藏，继续现有任务确认与异步 join；取消退出恢复驻留策略。关闭托盘先恢复隐藏主窗口。无托盘时恢复正常关闭，运行中托盘消失且窗口隐藏时恢复主窗口。macOS Dock 保留，点击 Dock、文件关联重新打开均可恢复。测试探针以明确退出语义完成，不依赖驻留设置。

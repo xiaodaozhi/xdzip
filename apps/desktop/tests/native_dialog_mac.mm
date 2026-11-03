@@ -4,8 +4,32 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <QPointer>
+#include <QStringList>
 #include <QVariant>
 #include <QWindow>
+
+QStringList nativeDesktopMenuEntries(const QString &title) {
+    NSMenu *bar = NSApp.mainMenu;
+    NSMenu *menu = nil;
+    if (title.isEmpty() && bar.numberOfItems > 0) {
+        menu = [bar itemAtIndex:0].submenu;
+    } else {
+        for (NSMenuItem *item in bar.itemArray)
+            if (!item.hidden && QString::fromNSString(item.submenu.title) == title)
+                menu = item.submenu;
+    }
+    QStringList entries;
+    for (NSMenuItem *item in menu.itemArray)
+        if (!item.hidden && !item.separatorItem)
+            entries.append(QString::fromNSString(item.title));
+    return entries;
+}
+
+void updateNativeApplicationMenu() {
+    NSMenu *bar = NSApp.mainMenu;
+    if (bar.numberOfItems)
+        [[bar itemAtIndex:0].submenu update];
+}
 
 bool watchNativeWindowTransitions(QWindow *window) {
     if (!window || QGuiApplication::platformName() != QStringLiteral("cocoa"))
