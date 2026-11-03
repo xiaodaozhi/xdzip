@@ -485,8 +485,11 @@ class DeliveryTests(unittest.TestCase):
                 'anchors': {'data.txt': hashlib.sha256(data).hexdigest()}}
 
     @staticmethod
-    def cldr_data_fixture(cache, extra=None):
+    def cldr_data_fixture(cache, extra=None, with_standard=True):
         members = {'cldr-owned/'+name: b'owned ISO fixture' for name in source.ISO639_TABLES}
+        if with_standard:
+            members.update({'cldr-owned/'+name: b'owned standard fixture' for name in source.CLDR_STANDARD_PARTS})
+            members['cldr-owned/docs/ldml/images/owned.png'] = b'owned standard image'
         members['cldr-owned/'+cldr_webapp_notices.REPLACEMENT_PATH] = b'owned original image'
         members.update(extra or {})
         return DeliveryTests.data_source_fixture(cache, 'cldr-data-source', 'cldr-owned',
@@ -603,7 +606,9 @@ class DeliveryTests(unittest.TestCase):
             self.assertEqual((output/items[2]['file']).read_bytes(), (cache/items[2]['file']).read_bytes())
             self.assertNotIn('url', records[1])
             self.assertFalse(records[1]['complete_upstream_tree'])
-            self.assertEqual(set(records[1]['omitted_files']), source.ISO639_TABLES)
+            self.assertEqual(set(records[1]['omitted_files']),
+                             source.ISO639_TABLES | source.CLDR_STANDARD_PARTS | {'docs/ldml/images/owned.png'})
+            self.assertTrue(records[1]['file'].endswith('-without-iso6393-and-uts35.tar.gz'))
             self.assertEqual(records[1]['substituted_files'][0]['cldr_file'], cldr_webapp_notices.REPLACEMENT_PATH)
             self.assertEqual(records[1]['identified_language_identifier_files'], [])
             self.assertFalse(records[1]['identifier_file_list_exhaustive'])
@@ -618,6 +623,35 @@ class DeliveryTests(unittest.TestCase):
                  patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()):
                 second_records = source.collect_icu_data_sources(second, cache)
             self.assertEqual(records[1]['sha256'], second_records[1]['sha256'])
+
+    def test_cldr_subset_requires_the_pinned_technical_standard_parts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                     self.cldr_data_fixture(cache, with_standard=False),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned', b'bootstrap')]
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()), \
+                 self.assertRaisesRegex(ValueError, 'Missing CLDR technical standard parts'):
+                source.collect_icu_data_sources(output, cache)
+            self.assertEqual(list(output.iterdir()), [])
+
+    def test_cldr_subset_preserves_paths_next_to_the_standard_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            adjacent = 'docs/ldml-other/owned.txt'
+            items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                     self.cldr_data_fixture(cache, {'cldr-owned/'+adjacent: b'keep'}),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned', b'bootstrap')]
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}), \
+                 patch.object(source, 'cldr_emoji_replacements', return_value=self.cldr_replacement_fixture()):
+                record = source.collect_icu_data_sources(output, cache)[1]
+            with tarfile.open(output/record['file'], 'r:gz') as archive:
+                self.assertEqual(archive.extractfile('cldr-owned/'+adjacent).read(), b'keep')
+                self.assertFalse(any(name.startswith('cldr-owned/docs/ldml/') for name in archive.getnames()))
+            self.assertNotIn(adjacent, record['omitted_files'])
 
     def test_icu_cldr_manifest_identifies_retained_language_data_and_registry(self):
         with tempfile.TemporaryDirectory() as temporary:
