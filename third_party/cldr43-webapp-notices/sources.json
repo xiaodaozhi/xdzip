@@ -944,5 +944,13 @@
       "emoji_27bf.png": "8494d6065af5ee90a75529cf7d774e108102e2f8976671edee9de397aa5bef4e",
       "emoji_3030.png": "a7b40cec67c4ee6864464b9c52b165ca611775b474b15fa93f16a12a24f94df0"
     }
+  },
+  "emoji_replacement": {
+    "cldr_file": "tools/cldr-apps/src/main/webapp/images/emoji/emoji_1f699.png",
+    "original_sha256": "ef662fa8e7e343f4825e769f18ca9476921a810d8c6c280ca762ffc60b4ab8d0",
+    "file": "Noto-emoji-1f699.png",
+    "sha256": "de51a3a77e149a945ab83cc896f8a662d9b253f5f36fd063c0d34a8726b53907",
+    "upstream_commit": "934a5706f1f3dd2605c4d9b5d9162fd7f89d8702",
+    "upstream_file": "png/72/emoji_u1f699.png"
   }
 }

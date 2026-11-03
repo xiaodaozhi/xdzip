@@ -14,6 +14,9 @@ AUTOSIZE_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/autosize.min.js'
 EMOJI_DIRECTORY = 'tools/cldr-apps/src/main/webapp/images/emoji'
 NOTO_EMOJI_COMMIT = '934a5706f1f3dd2605c4d9b5d9162fd7f89d8702'
 NOTO_EMOJI_2021_COMMIT = 'de7f127a26f7044e5647490af9e3b187d9532703'
+REPLACEMENT_PATH = EMOJI_DIRECTORY + '/emoji_1f699.png'
+REPLACEMENT_FILE = 'Noto-emoji-1f699.png'
+REPLACEMENT_UPSTREAM = 'png/72/emoji_u1f699.png'
 FONT_FILES = frozenset(('LICENSE-Noto.txt', 'NotoSerifNyiakengPuachueHmong-Bold.otf',
                         'NotoSerifNyiakengPuachueHmong-Regular.ttf',
                         *(f'glyphicons-halflings-regular.{extension}'
@@ -22,9 +25,30 @@ NOTICE_FILES = frozenset(('Autosize-MIT.txt', 'Bootstrap-MIT.txt', 'Glyphicons-M
                           'Noto-Emoji-Apache-2.0.txt', 'Noto-OFL-1.1.txt'))
 
 
+def emoji_replacement():
+    """Load the pinned replacement without following a repository symlink."""
+    source = ROOT / 'third_party' / DIRECTORY
+    config_path = source / 'sources.json'
+    image_path = source / REPLACEMENT_FILE
+    if any(path.is_symlink() or not path.is_file() for path in (config_path, image_path)):
+        raise ValueError('CLDR replacement input must be a regular file')
+    item = json.loads(config_path.read_bytes()).get('emoji_replacement', {})
+    if (not isinstance(item, dict) or item.get('cldr_file') != REPLACEMENT_PATH or
+            item.get('file') != REPLACEMENT_FILE or item.get('upstream_commit') != NOTO_EMOJI_COMMIT or
+            item.get('upstream_file') != REPLACEMENT_UPSTREAM or
+            any(not isinstance(item.get(key), str) or not re.fullmatch(r'[0-9a-f]{64}', item[key])
+                for key in ('original_sha256', 'sha256')) or
+            item['original_sha256'] == item['sha256']):
+        raise ValueError('Unexpected CLDR emoji replacement configuration')
+    data = image_path.read_bytes()
+    if len(data) > 1024 * 1024 or hashlib.sha256(data).hexdigest() != item['sha256']:
+        raise ValueError('CLDR emoji replacement checksum mismatch')
+    return {**item, 'data': data}
+
+
 def collect(output, subset):
     source = ROOT / 'third_party' / DIRECTORY
-    names = ('README.md', 'sources.json', *sorted(NOTICE_FILES))
+    names = ('README.md', 'sources.json', *sorted(NOTICE_FILES), REPLACEMENT_FILE)
     inputs = {}
     for name in names:
         path = source / name
@@ -32,6 +56,10 @@ def collect(output, subset):
             raise ValueError('CLDR web font notice input must be a regular file')
         inputs[name] = path.read_bytes()
     config = json.loads(inputs['sources.json'])
+    replacement = emoji_replacement()
+    if (inputs[REPLACEMENT_FILE] != replacement['data'] or
+            config.get('emoji_replacement') != {key: value for key, value in replacement.items() if key != 'data'}):
+        raise ValueError('CLDR emoji replacement changed during collection')
     emoji = config.get('noto_emoji', {})
     if not isinstance(emoji, dict):
         raise ValueError('Unexpected CLDR web notice configuration')
@@ -85,6 +113,10 @@ def collect(output, subset):
             if (member.size > 1024 * 1024 or hashlib.sha256(archive.extractfile(member).read()).hexdigest()
                     != emoji_files[member.name.removeprefix(emoji_prefix)]):
                 raise ValueError('Matched Noto emoji image checksum mismatch')
+        replaced = [member for member in archive if member.name == ARCHIVE_ROOT+'/'+REPLACEMENT_PATH]
+        if (len(replaced) != 1 or not replaced[0].isfile() or replaced[0].size > 1024 * 1024 or
+                hashlib.sha256(archive.extractfile(replaced[0]).read()).hexdigest() != replacement['sha256']):
+            raise ValueError('CLDR substituted emoji image checksum mismatch')
 
     destination = Path(output) / DIRECTORY
     if destination.exists() or destination.is_symlink():
@@ -95,4 +127,5 @@ def collect(output, subset):
     return {'kind': DIRECTORY, 'file': DIRECTORY + '/sources.json', 'font_files': len(FONT_FILES) - 1,
             'bootstrap_script': True, 'autosize_script': True,
             'noto_emoji_files': len(emoji_files),
+            'substituted_emoji_files': 1,
             'scope': 'CLDR 43.1 webapp fonts, Bootstrap/Autosize scripts and listed Noto emoji images only'}

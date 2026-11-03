@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Collect pinned Qt source archives, exact project source and locked Rust vendor inputs."""
 import argparse
+import copy
 from concurrent.futures import ThreadPoolExecutor
 import gzip
 import hashlib
+import io
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -20,6 +22,7 @@ from vendor_notice_materials import collect as collect_vendor_notice_materials
 from qt_psl_source import collect as collect_qt_psl_source
 from qt_tika_materials import collect as collect_qt_tika_source
 from cldr_webapp_notices import collect as collect_cldr_webapp_notices
+from cldr_webapp_notices import emoji_replacement as cldr_emoji_replacement
 
 ROOT = Path(__file__).resolve().parents[1]
 ISO639_DIRECTORY = 'tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/'
@@ -116,6 +119,7 @@ def collect_icu_data_sources(output, cache):
     if len(items) != 3 or {item['module'] for item in items} != {
             'icu-data-source', 'cldr-data-source', 'icu-cldr-bootstrap-source'}:
         raise ValueError('Expected the pinned ICU, CLDR and ICU4J bootstrap sources')
+    replacement = cldr_emoji_replacement()
     sources = []
     retained_identifiers = {}
     for item in items:
@@ -146,6 +150,10 @@ def collect_icu_data_sources(output, cache):
                 if actual != expected:
                     raise ValueError('ICU data source anchor checksum mismatch')
             if item['module'] == 'cldr-data-source':
+                original = [member for member in members if member.name == root+'/'+replacement['cldr_file']]
+                if (len(original) != 1 or not original[0].isfile() or original[0].size > 1024 * 1024 or
+                        hashlib.sha256(archive.extractfile(original[0]).read()).hexdigest() != replacement['original_sha256']):
+                    raise ValueError('Original CLDR emoji image checksum mismatch')
                 iso_names = {member.name.removeprefix(root+'/') for member in members
                              if member.isfile() and 'iso-639-3' in member.name.lower()}
                 if iso_names != ISO639_TABLES:
@@ -166,13 +174,17 @@ def collect_icu_data_sources(output, cache):
             name = source.name.removesuffix('.tar.gz') + '-without-iso6393.tar.gz'
             target = output/name
             root = item['archive_root']
-            filter_source_tar(source, target, lambda path: path.removeprefix(root+'/') not in ISO639_TABLES)
+            filter_source_tar(source, target, lambda path: path.removeprefix(root+'/') not in ISO639_TABLES,
+                              replacements={root+'/'+replacement['cldr_file']: replacement['data']})
             record['upstream_url'] = record.pop('url')
             if 'source_tree' in record:
                 record['upstream_source_tree'] = record.pop('source_tree')
             record.update(file=name, sha256=digest(target), upstream_file=item['file'],
                           upstream_archive_sha256=item['sha256'], complete_upstream_tree=False,
                           omitted_files=sorted(ISO639_TABLES),
+                          substituted_files=[{key: replacement[key] for key in
+                                              ('cldr_file', 'original_sha256', 'sha256',
+                                               'upstream_commit', 'upstream_file')}],
                           identified_language_identifier_files=retained_identifiers[item['module']],
                           identifier_file_list_exhaustive=False)
         else:
@@ -181,8 +193,10 @@ def collect_icu_data_sources(output, cache):
     return records
 
 
-def filter_source_tar(source, target, include):
+def filter_source_tar(source, target, include, *, replacements=None):
     """Create a labelled subset without extracting any archive paths."""
+    replacements = replacements or {}
+    replaced = set()
     temporary = target.with_suffix(target.suffix+'.partial')
     if target.exists() or target.is_symlink() or temporary.exists() or temporary.is_symlink():
         raise ValueError('Source subset destination already exists')
@@ -193,6 +207,15 @@ def filter_source_tar(source, target, include):
                     for member in original:
                         if not include(member.name):
                             continue
+                        if member.name in replacements:
+                            data = replacements[member.name]
+                            if member.name in replaced or not member.isfile() or not isinstance(data, bytes):
+                                raise ValueError('Unexpected source subset replacement')
+                            rewritten = copy.copy(member)
+                            rewritten.size = len(data)
+                            subset.addfile(rewritten, io.BytesIO(data))
+                            replaced.add(member.name)
+                            continue
                         if member.isfile():
                             with original.extractfile(member) as data:
                                 subset.addfile(member, data)
@@ -200,6 +223,8 @@ def filter_source_tar(source, target, include):
                             subset.addfile(member)
                         else:
                             raise ValueError('Unexpected source subset member type')
+            if replaced != set(replacements):
+                raise ValueError('Missing source subset replacement')
         temporary.replace(target)
     finally:
         temporary.unlink(missing_ok=True)
@@ -393,7 +418,7 @@ def rebuild_instructions():
    不要求用户拥有本项目的 Developer ID 私钥。勿关闭 SIP 或系统安全保护。
 6. Linux ICU 的完整许可、ICU4C 73.2 上游源码归档、固定 ICU 可编辑数据源码树、
    CLDR 43.1 源码子集，以及生成工具使用的 ICU 73.1 源码树随目录提供。
-   CLDR 子集排除了五个 ISO 639-3 文件，不能称为完整源码树；其他用途需要这些
+   CLDR 子集排除了五个 ISO 639-3 文件并替换了一张网页工具图片，不能称为完整源码树；其他用途需要这些
    文件时须另行核对来源和条款。子集的其他文件仍含语言标识符、别名和较早的
    语言子标签注册表。按项目 docs/engineering/icu-cldr-rebuild.md 的
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
@@ -404,7 +429,7 @@ def rebuild_instructions():
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
-   subset omits five ISO 639-3 files but retains language identifiers, aliases and an
+   subset omits five ISO 639-3 files, replaces one web tool image, and retains language identifiers, aliases and an
    earlier language-subtag registry. It is not a complete upstream tree; other uses
    needing them require separate source and terms review. See the ICU data rebuild
    instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
