@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Deploy the Basic-only Windows runtime, retaining native widgets and graphics fallbacks."""
+"""Deploy the Basic-only Windows runtime without app-local graphics compiler DLLs."""
 import argparse
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,7 +15,7 @@ LIBRARIES = tuple('Qt6QuickControls2'+name+'.dll' for name in (
     'FluentWinUI3StyleImpl', 'Fusion', 'FusionStyleImpl', 'Imagine', 'ImagineStyleImpl',
     'Material', 'MaterialStyleImpl', 'Universal', 'UniversalStyleImpl', 'WindowsStyleImpl')) + (
     'Qt6QuickEffects.dll', 'vc_redist.x64.exe', 'opengl32sw.dll')
-FALLBACKS = ('dxcompiler.dll', 'dxil.dll', 'd3dcompiler_47.dll')
+EXCLUDED_GRAPHICS = ('dxcompiler.dll', 'dxil.dll', 'd3dcompiler_47.dll')
 
 
 def standalone_update_helper(path):
@@ -76,6 +75,14 @@ def require_no_software_opengl(root):
         raise ValueError('Software OpenGL library must not be present in the deployment')
 
 
+def require_no_sdk_graphics(root):
+    excluded = set(EXCLUDED_GRAPHICS)
+    if any(path.name.lower() in excluded for path in root.rglob('*')):
+        raise ValueError('SDK graphics compiler libraries must not be present in the deployment')
+    if (root/'share/notices/Windows-SDK-graphics').exists():
+        raise ValueError('Stale SDK graphics notices must not be present in the deployment')
+
+
 def copy_runtime(runtime, root):
     config = json.loads((ROOT/'scripts/windows-runtime.json').read_text())
     materials = dict(config['files'])
@@ -93,40 +100,6 @@ def copy_runtime(runtime, root):
     # independently of the installer machine's ANSI code page.
     notice = ROOT/'apps/desktop/packaging/windows/Windows-runtime-NOTICE.txt'
     (notices.parent/notice.name).write_bytes(b'\xef\xbb\xbf'+notice.read_bytes())
-
-
-def copy_graphics(sdk, sdk_version, root):
-    # Do not let windeployqt discover these through PATH/System32. Only the
-    # selected Windows SDK's redistributable directory is admitted. This
-    # records supplier inputs, not licensee eligibility.
-    if not sdk_version or '/' in sdk_version or '\\' in sdk_version:
-        raise ValueError('Explicit Windows SDK version required for graphics provenance')
-    redist = sdk/'Redist/D3D/x64'
-    license_file = sdk/'Licenses'/sdk_version/'sdk_license.rtf'
-    if not license_file.is_file():
-        license_file = sdk/'license.rtf'
-    third_party = license_file.with_name('sdk_third_party_notices.rtf')
-    inputs = {name: redist/name for name in FALLBACKS}
-    for path in [*inputs.values(), license_file]:
-        if not within(path, sdk) or not path.is_file() or path.is_symlink():
-            raise ValueError('Missing bounded SDK graphics redistributable/license')
-    notices = root/'share/notices/Windows-SDK-graphics'
-    notices.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(license_file, notices/'sdk_license.rtf')
-    if third_party.is_file() and within(third_party, sdk):
-        shutil.copyfile(third_party, notices/third_party.name)
-    files = []
-    for name, path in inputs.items():
-        shutil.copyfile(path, root/name)
-        files.append({'file': name, 'sha256': digest(path),
-                      'supplier': 'Microsoft Windows SDK REDIST',
-                      'source_relative': path.relative_to(sdk).as_posix()})
-    result = {'schema_version': 1, 'windows_sdk_version': sdk_version, 'files': files,
-              'license': {'file': 'sdk_license.rtf', 'sha256': digest(license_file)},
-              'redistribution_list': 'https://go.microsoft.com/fwlink/?LinkId=524842',
-              'limits': ['SDK file provenance does not certify licensee eligibility.']}
-    (notices/'provenance.json').write_text(json.dumps(result, indent=2)+'\n')
-    return result
 
 
 def main():
@@ -152,22 +125,20 @@ def main():
                     '--skip-plugin-types', 'qmltooling', '--qmldir', str(args.qml_dir),
                     '--qmlimport', str(args.qml_import), str(root/'xdzip.exe')], check=True)
     removed = prune(root)
+    require_no_sdk_graphics(root)
     copy_runtime(args.runtime, root)
-    sdk = Path(os.environ.get('WindowsSdkDir', ''))
-    sdk_version = os.environ.get('WindowsSDKVersion', '').strip('\\/')
-    copy_graphics(sdk.resolve(), sdk_version, root)
     require_no_software_opengl(root)
-    required = FALLBACKS + ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
+    required = ('styles/qmodernwindowsstyle.dll', 'platforms/qwindows.dll',
                            'qml/QtQuick/Controls/Basic/qmldir', 'translations/qt_zh_CN.qm')
     if any(not (root/path).is_file() for path in required):
-        raise ValueError('Required Basic/native/translation/graphics runtime missing')
+        raise ValueError('Required Basic/native/translation runtime missing')
     helper_record = update_helper_deployment(root, args.qa_historical_revision)
     (root/'share/deployment.json').write_text(json.dumps({
         'schema_version': 1, 'quick_style': 'Basic', 'removed': removed,
-        'graphics_fallbacks': list(FALLBACKS), 'vc_runtime': 'app-local',
+        'graphics_fallbacks': [], 'vc_runtime': 'app-local',
         'vc_runtime_config_sha256': digest(ROOT/'scripts/windows-runtime.json'),
         **helper_record}, indent=2)+'\n')
-    print(f'Windows runtime deployed, {len(removed)} redundant files removed; graphics retained')
+    print(f'Windows runtime deployed, {len(removed)} redundant files removed; no SDK graphics compilers')
 
 
 if __name__ == '__main__':

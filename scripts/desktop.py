@@ -335,10 +335,11 @@ class Workflow:
             # The source inventory remains a source inventory, not a claim that
             # these later deployment inputs were part of the Rust build graph.
             native_notices = self.runtime/'share/notices'
-            for name in ('Microsoft-VC-runtime', 'Windows-SDK-graphics'):
-                shutil.copytree(native_notices/name, notices/name, dirs_exist_ok=True)
+            shutil.copytree(native_notices/'Microsoft-VC-runtime', notices/'Microsoft-VC-runtime', dirs_exist_ok=True)
             shutil.copy2(native_notices/'Windows-runtime-NOTICE.txt', notices)
             shutil.copytree(notices, self.runtime/'share/notices', dirs_exist_ok=True)
+            from deploy_windows import require_no_sdk_graphics
+            require_no_sdk_graphics(self.runtime)
         else:
             self.script('deploy_linux.py', '--app', self.app, '--qt-prefix', self.qt,
                         '--notices', notices, '--output', self.runtime)

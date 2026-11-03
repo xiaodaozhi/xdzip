@@ -208,10 +208,6 @@ class WorkflowTests(unittest.TestCase):
             crt = workflow.runtime/'share/notices/Microsoft-VC-runtime'
             crt.mkdir(parents=True)
             (crt/'LICENSE.txt').write_text('CRT notice')
-            sdk = crt.parent/'Windows-SDK-graphics'
-            sdk.mkdir()
-            (sdk/'sdk_license.rtf').write_bytes(b'original SDK terms')
-            (sdk/'provenance.json').write_bytes(b'{"source":"SDK REDIST"}')
             (crt.parent/'Windows-runtime-NOTICE.txt').write_bytes(b'\xef\xbb\xbfbilingual notice')
 
         def audit():
@@ -227,8 +223,8 @@ class WorkflowTests(unittest.TestCase):
         for icon_id in WINDOWS_ICONS.values():
             self.assertEqual((workflow.runtime/f'xdzip-{icon_id}.ico').read_bytes(), b'fixture icon')
         self.assertEqual((workflow.runtime/'share/notices/Microsoft-VC-runtime/LICENSE.txt').read_text(), 'CRT notice')
-        for relative in ['Microsoft-VC-runtime/LICENSE.txt', 'Windows-SDK-graphics/sdk_license.rtf',
-                         'Windows-SDK-graphics/provenance.json', 'Windows-runtime-NOTICE.txt']:
+        self.assertFalse((notices/'Windows-SDK-graphics').exists())
+        for relative in ['Microsoft-VC-runtime/LICENSE.txt', 'Windows-runtime-NOTICE.txt']:
             self.assertEqual((notices/relative).read_bytes(), (workflow.runtime/'share/notices'/relative).read_bytes())
 
     def test_test_is_offscreen_and_never_implicitly_builds_or_installs(self):

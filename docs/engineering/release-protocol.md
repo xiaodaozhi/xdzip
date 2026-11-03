@@ -26,7 +26,7 @@ Windows 每次部署核验使用独立的临时测试副本，保留此前日志
 | macos、arm64 | app.zip、dmg | macOS 14.0 |
 | linux、x86_64 | tar.gz、deb | Ubuntu 24.04、glibc 2.39、X11 |
 
-六类包必须齐备，清单校验拒绝缺包、重复目标、不一致渠道、可变下载地址、错误字节数或哈希。对应源码、Rust vendor、Qt 原始源码与补丁、重建说明、平台通知和许可、SBOM 以同版本附件提供。Windows 继续使用 app-local VC++ 运行库与图形兼容库。
+六类包必须齐备，清单校验拒绝缺包、重复目标、不一致渠道、可变下载地址、错误字节数或哈希。对应源码、Rust vendor、Qt 原始源码与补丁、重建说明、平台通知和许可、SBOM 以同版本附件提供。Windows 使用 app-local VC++ 运行库，不随包分发 Windows SDK 图形编译库。
 
 macOS 的应用 ZIP、DMG 与通知材料必须在同一已部署、签名的临时应用仍存活时导出，随后才清理暂存 `.app` 和临时注册。不能在暂存清理后重新部署另一份应用来补 ZIP。
 

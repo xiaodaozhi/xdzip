@@ -57,36 +57,21 @@ class WindowsDeploymentTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'static CRT'):
                     deployment.standalone_update_helper(Path('owned.exe'))
 
-    def test_graphics_use_explicit_redist_with_notices_and_never_path(self):
+    def test_sdk_graphics_are_rejected_case_insensitively_at_any_depth(self):
         with tempfile.TemporaryDirectory() as temp:
-            base = Path(temp); sdk = base/'sdk'; root = base/'product'
-            root.mkdir()
-            for name in deployment.FALLBACKS:
-                path = sdk/'Redist/D3D/x64'/name
-                path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(b'owned SDK '+name.encode())
-            license_file = sdk/'Licenses/10.0.1.0/sdk_license.rtf'
-            license_file.parent.mkdir(parents=True); license_file.write_bytes(b'owned license')
-            result = deployment.copy_graphics(sdk, '10.0.1.0', root)
-            self.assertEqual({item['file'] for item in result['files']}, set(deployment.FALLBACKS))
-            self.assertTrue(all(item['supplier'] == 'Microsoft Windows SDK REDIST' for item in result['files']))
-            self.assertFalse((root/'opengl32sw.dll').exists())
-            self.assertTrue((root/'share/notices/Windows-SDK-graphics/sdk_license.rtf').is_file())
-            self.assertNotIn(str(base), json.dumps(result))
-            (sdk/'Redist/D3D/x64/dxil.dll').unlink()
-            with self.assertRaisesRegex(ValueError, 'Missing bounded'):
-                deployment.copy_graphics(sdk, '10.0.1.0', root)
-            with self.assertRaisesRegex(ValueError, 'Explicit Windows SDK'):
-                deployment.copy_graphics(sdk, '', root)
-
-    def test_incomplete_sdk_graphics_are_rejected_before_copy(self):
-        with tempfile.TemporaryDirectory() as temp:
-            base = Path(temp); sdk = base/'sdk'; root = base/'product'; root.mkdir()
-            path = sdk/'Redist/D3D/x64'/deployment.FALLBACKS[0]
-            path.parent.mkdir(parents=True); path.write_bytes(b'owned SDK')
-            (sdk/'license.rtf').write_bytes(b'owned license')
-            with self.assertRaisesRegex(ValueError, 'Missing bounded'):
-                deployment.copy_graphics(sdk, '10.0.1.0', root)
-            self.assertEqual(list(root.iterdir()), [])
+            root = Path(temp); nested = root/'nested'; nested.mkdir()
+            deployment.require_no_sdk_graphics(root)
+            for name in deployment.EXCLUDED_GRAPHICS:
+                with self.subTest(name=name):
+                    path = nested/name.upper(); path.write_bytes(b'owned')
+                    with self.assertRaisesRegex(ValueError, 'must not be present'):
+                        deployment.require_no_sdk_graphics(root)
+                    self.assertEqual(path.read_bytes(), b'owned')
+                    path.unlink()
+            notices = root/'share/notices/Windows-SDK-graphics'
+            notices.mkdir(parents=True)
+            with self.assertRaisesRegex(ValueError, 'Stale SDK graphics notices'):
+                deployment.require_no_sdk_graphics(root)
 
     def test_deploy_skips_and_removes_software_opengl(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -95,7 +80,7 @@ class WindowsDeploymentTests(unittest.TestCase):
             (base/'scripts/windows-runtime.json').write_text('{}')
             (root/'xdzip.exe').write_bytes(b'owned')
             (root/'share').mkdir()
-            for relative in deployment.FALLBACKS + ('styles/qmodernwindowsstyle.dll',
+            for relative in ('styles/qmodernwindowsstyle.dll',
                     'platforms/qwindows.dll', 'qml/QtQuick/Controls/Basic/qmldir',
                     'translations/qt_zh_CN.qm'):
                 path = root/relative; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(b'owned')
@@ -106,12 +91,14 @@ class WindowsDeploymentTests(unittest.TestCase):
             with patch.object(deployment, 'ROOT', base), patch.object(sys, 'argv', arguments), \
                  patch.dict(os.environ, {'WindowsSdkDir': str(base/'sdk'), 'WindowsSDKVersion': '10.0.1.0'}), \
                  patch.object(deployment.subprocess, 'run') as deploy, \
-                 patch.object(deployment, 'copy_runtime'), patch.object(deployment, 'copy_graphics'), \
+                 patch.object(deployment, 'copy_runtime'), \
                  patch.object(deployment, 'update_helper_deployment', return_value={}):
                 deployment.main()
             self.assertIn('--no-opengl-sw', deploy.call_args.args[0])
+            self.assertIn('--no-system-d3d-compiler', deploy.call_args.args[0])
+            self.assertIn('--no-system-dxc-compiler', deploy.call_args.args[0])
             self.assertFalse((root/'opengl32sw.dll').exists())
-            self.assertNotIn('opengl32sw.dll', json.loads((root/'share/deployment.json').read_text())['graphics_fallbacks'])
+            self.assertEqual([], json.loads((root/'share/deployment.json').read_text())['graphics_fallbacks'])
 
     def test_nested_software_opengl_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -148,11 +135,11 @@ class WindowsDeploymentTests(unittest.TestCase):
         warp = verification.renderer_environment(inherited, Path('runtime'), Path('output'), True)
         self.assertEqual(warp['QSG_RHI_PREFER_SOFTWARE_RENDERER'], '1')
 
-    def test_prune_preserves_basic_widgets_translations_and_graphics(self):
+    def test_prune_preserves_basic_widgets_and_translations(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             removed = [p+'/owned.qml' for p in deployment.MODULES] + list(deployment.LIBRARIES) + ['qml/core.qmltypes']
-            kept = list(deployment.FALLBACKS) + ['styles/qmodernwindowsstyle.dll',
+            kept = ['styles/qmodernwindowsstyle.dll',
                 'qml/QtQuick/Controls/Basic/qmldir', 'qml/QtQuick/Controls/qmldir',
                 'Qt6Widgets.dll', 'translations/qt_zh_CN.qm']
             for relative in removed+kept:
