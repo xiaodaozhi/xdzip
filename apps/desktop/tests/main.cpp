@@ -1,4 +1,5 @@
 #include "../FocusDismissPolicy.h"
+#include "../PasswordAccessibility.h"
 #include "../UiFont.h"
 #include "../UiText.h"
 #include "../WindowHoverPolicy.h"
@@ -20,6 +21,7 @@ class Setup : public QObject {
     }
   public slots:
     void applicationAvailable() {
+        installPasswordAccessibility();
         FocusDismissPolicy::install(QCoreApplication::instance());
         WindowHoverPolicy::install(QCoreApplication::instance());
         if (!initializeUiText(QStringLiteral("zh-CN")))

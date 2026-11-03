@@ -7,6 +7,8 @@ endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)
 qt_standard_project_setup()
 qt_policy(SET QTP0001 NEW)
+add_library(xdzip-password-accessibility STATIC PasswordAccessibility.cpp PasswordAccessibility.h)
+target_link_libraries(xdzip-password-accessibility PRIVATE Qt6::QuickPrivate)
 set(XDZIP_BUILD_INFO_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 add_custom_target(xdzip-build-info
     COMMAND "${CMAKE_COMMAND}" "-DXDZIP_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
@@ -40,7 +42,7 @@ if(BUILD_TESTING)
     set_tests_properties(qt_task_components PROPERTIES TIMEOUT 60)
 endif()
 
-foreach(target xdzip-ui-resources xdzip-ui-preview xdzip-ui-tests)
+foreach(target xdzip-password-accessibility xdzip-ui-resources xdzip-ui-preview xdzip-ui-tests)
     if(TARGET ${target})
         if(MSVC)
             target_compile_options(${target} PRIVATE /W4 /WX /utf-8)
@@ -267,7 +269,7 @@ endforeach()
 
 foreach(target xdzip-ui-preview xdzip-ui-tests xdzip-browser xdzip-browser-tests)
     if(TARGET ${target})
-        target_link_libraries(${target} PRIVATE xdzip-ui-resourcesplugin)
+        target_link_libraries(${target} PRIVATE xdzip-ui-resourcesplugin xdzip-password-accessibility)
     endif()
 endforeach()
 

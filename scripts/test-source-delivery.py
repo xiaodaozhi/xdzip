@@ -528,6 +528,8 @@ class DeliveryTests(unittest.TestCase):
                 record = source.collect_qt_cldr_source(output, qtbase, cache)
             self.assertEqual(record['upstream_archive_sha256'], config['cldr']['sha256'])
             self.assertFalse(record['iso_639_3_table_included'])
+            self.assertEqual(record['identified_language_identifier_files'], [])
+            self.assertFalse(record['identifier_file_list_exhaustive'])
             self.assertEqual(record['scope'], 'common and LICENSE only')
             self.assertEqual(record['sha256'], digest(output/record['file']))
             with tarfile.open(output/record['file'], 'r:gz') as archive:
@@ -537,6 +539,22 @@ class DeliveryTests(unittest.TestCase):
                                  b'english')
             self.assertFalse((output/config['cldr']['file']).exists())
             self.assertEqual(json.loads((output/'qt-cldr-sources.json').read_text()), config)
+
+    def test_qt_cldr_manifest_identifies_retained_language_data(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prefix = 'cldr-'+'a'*40+'/'
+            extra = {prefix+name: b'owned language fixture' for name in source.CLDR_IDENTIFIER_FILES}
+            extra[prefix+source.CLDR_LANGUAGE_REGISTRY] = b'outside common fixture'
+            qtbase, output, cache, config = self.qt_cldr_fixture(root, extra)
+            with patch.object(source, 'ROOT', root):
+                record = source.collect_qt_cldr_source(output, qtbase, cache)
+            self.assertEqual(record['identified_language_identifier_files'], list(source.CLDR_IDENTIFIER_FILES))
+            self.assertFalse(record['identifier_file_list_exhaustive'])
+            with tarfile.open(output/record['file'], 'r:gz') as archive:
+                for name in source.CLDR_IDENTIFIER_FILES:
+                    self.assertEqual(archive.extractfile(prefix+name).read(), b'owned language fixture')
+                self.assertNotIn(prefix+source.CLDR_LANGUAGE_REGISTRY, archive.getnames())
 
     def test_qt_cldr_delivery_rejects_wrong_or_unsafe_inputs(self):
         for case in ('qt version', 'qt hash', 'source hash', 'anchor', 'escaping member', 'iso in common'):
@@ -560,16 +578,22 @@ class DeliveryTests(unittest.TestCase):
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
-                     self.cldr_data_fixture(cache)]
+                     self.cldr_data_fixture(cache),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
+                                              b'ICU4J bootstrap')]
             with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
                 records = source.collect_icu_data_sources(output, cache)
             self.assertEqual(records[0], items[0])
             self.assertEqual((output/items[0]['file']).read_bytes(), (cache/items[0]['file']).read_bytes())
             self.assertEqual(records[1]['upstream_archive_sha256'], items[1]['sha256'])
             self.assertEqual(records[1]['upstream_url'], items[1]['url'])
+            self.assertEqual(records[2], items[2])
+            self.assertEqual((output/items[2]['file']).read_bytes(), (cache/items[2]['file']).read_bytes())
             self.assertNotIn('url', records[1])
             self.assertFalse(records[1]['complete_upstream_tree'])
             self.assertEqual(set(records[1]['omitted_files']), source.ISO639_TABLES)
+            self.assertEqual(records[1]['identified_language_identifier_files'], [])
+            self.assertFalse(records[1]['identifier_file_list_exhaustive'])
             with tarfile.open(output/records[1]['file'], 'r:gz') as archive:
                 self.assertEqual(archive.getnames(), ['cldr-owned/data.txt'])
                 self.assertEqual(archive.extractfile('cldr-owned/data.txt').read(), b'CLDR data')
@@ -578,23 +602,50 @@ class DeliveryTests(unittest.TestCase):
                 second_records = source.collect_icu_data_sources(second, cache)
             self.assertEqual(records[1]['sha256'], second_records[1]['sha256'])
 
+    def test_icu_cldr_manifest_identifies_retained_language_data_and_registry(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary); cache = root/'cache'; output = root/'delivery'
+            cache.mkdir(); output.mkdir()
+            retained = (*source.CLDR_IDENTIFIER_FILES, source.CLDR_LANGUAGE_REGISTRY)
+            extra = {'cldr-owned/'+name: b'owned language fixture' for name in retained}
+            items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
+                     self.cldr_data_fixture(cache, extra),
+                     self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
+                                              b'ICU4J bootstrap')]
+            with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
+                record = source.collect_icu_data_sources(output, cache)[1]
+            self.assertEqual(record['identified_language_identifier_files'], list(retained))
+            self.assertFalse(record['identifier_file_list_exhaustive'])
+            with tarfile.open(output/record['file'], 'r:gz') as archive:
+                for name in retained:
+                    self.assertEqual(archive.extractfile('cldr-owned/'+name).read(), b'owned language fixture')
+                for name in source.ISO639_TABLES:
+                    self.assertNotIn('cldr-owned/'+name, archive.getnames())
+
     def test_editable_data_sources_reject_missing_or_tampered_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); cache = root/'cache'; output = root/'delivery'
             cache.mkdir(); output.mkdir()
             cases = ['missing module', 'wrong archive hash', 'wrong anchor', 'missing anchor',
-                     'escaping member', 'unexpected ISO table']
+                     'escaping member', 'unexpected ISO table', 'bootstrap hash', 'bootstrap anchor',
+                     'bootstrap ISO table']
             for case in cases:
                 with self.subTest(case=case):
                     items = [self.data_source_fixture(cache, 'icu-data-source', 'icu-owned', b'ICU data'),
                              self.cldr_data_fixture(cache,
                                  {'cldr-owned/../escape': b'x'} if case == 'escaping member' else
                                  {'cldr-owned/unexpected/iso-639-3-extra.tab': b'x'}
-                                 if case == 'unexpected ISO table' else None)]
+                                 if case == 'unexpected ISO table' else None),
+                             self.data_source_fixture(cache, 'icu-cldr-bootstrap-source', 'bootstrap-owned',
+                                                      b'ICU4J bootstrap',
+                                                      {'bootstrap-owned/iso-639-3.tab': b'x'}
+                                                      if case == 'bootstrap ISO table' else None)]
                     if case == 'missing module': items.pop()
                     if case == 'wrong archive hash': items[1]['sha256'] = '0'*64
                     if case == 'wrong anchor': items[1]['anchors']['data.txt'] = '0'*64
                     if case == 'missing anchor': items[1]['anchors'] = {'absent.txt': '0'*64}
+                    if case == 'bootstrap hash': items[2]['sha256'] = '0'*64
+                    if case == 'bootstrap anchor': items[2]['anchors']['data.txt'] = '0'*64
                     with patch.object(source, 'configuration', return_value={'icu_data_sources': items}):
                         with self.assertRaises(ValueError):
                             source.collect_icu_data_sources(output, cache)
@@ -835,6 +886,8 @@ class DocumentedRuntimeTestInputs(unittest.TestCase):
         self.assertIn('iso-codes_4.16.0-1_all.deb', document)
         self.assertIn('cafca0a3a1f07b44fbba53ab7a1f1d9755e6b80cc041173afe2b52e53bed97a7', document)
         self.assertIn('docs/engineering/source-delivery.md', document)
+        self.assertIn('CLDR 43.1 子集另含较早的语言注册表', document)
+        self.assertIn('CLDR 43.1 subset separately retains an earlier registry', document)
 
     def test_generated_rebuild_stops_when_workspace_tests_fail(self):
         failure = subprocess.CalledProcessError(17, ['cargo', 'test'])

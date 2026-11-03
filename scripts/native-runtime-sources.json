@@ -42,6 +42,20 @@
         "common/main/en.xml": "75acc21b2475d250df4ca4a7255a0b65aad5e1f57b50a6590ad350df9853e303",
         "tools/cldr-code/pom.xml": "63d1d8ab47d66ba1b9aa72e21a26b7672e037a2b0b1a32eb0ba1365ac88e8903"
       }
+    },
+    {
+      "module": "icu-cldr-bootstrap-source",
+      "version": "73.1",
+      "source_commit": "5861e1fd52f1d7673eee38bc3c965aa18b336062",
+      "file": "icu-73.1-cldr-bootstrap-source-tree.tar.gz",
+      "url": "https://codeload.github.com/unicode-org/icu/tar.gz/5861e1fd52f1d7673eee38bc3c965aa18b336062",
+      "sha256": "11e3d75119767e5a3a9a1ab1637f6e54e978da354cc0a2db230b65f7a9d72aac",
+      "archive_root": "icu-5861e1fd52f1d7673eee38bc3c965aa18b336062",
+      "anchors": {
+        "icu4c/LICENSE": "f3005e195ff74d8812cc1f182a1c446fab678d70a10e3dada497585befee5416",
+        "icu4j/build.xml": "1b2f972ceda9c21fc1fb46dd69986690bb968e6fe23b8d5f6c5da1328a37a310",
+        "icu4j/build.properties": "dc74549f66565a02d2a2c649743267f1eb3d48d328463175ad20d8f9ab295a58"
+      }
     }
   ]
 }

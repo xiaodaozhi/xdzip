@@ -188,6 +188,7 @@ OperationWindow {
                             OperationField {
                                 id: password
                                 objectName: "extractionPassword"
+                                property string xdzipAccessiblePasswordLabel: qsTrId("password.label")
                                 Layout.fillWidth: true
                                 implicitHeight: Math.max(Theme.passwordFieldHeight,
                                                          contentHeight + Theme.passwordFieldVerticalInset * 2)
@@ -197,7 +198,7 @@ OperationWindow {
                                 maximumLength: 1024
                                 enabled: !root.pending
                                 placeholderText: qsTrId("password.placeholder")
-                                Accessible.name: qsTrId("password.label")
+                                Accessible.name: xdzipAccessiblePasswordLabel
                                 onAccepted: root.submit()
                                 onTextEdited: root.rejected = false
                             }
