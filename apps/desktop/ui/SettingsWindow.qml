@@ -64,11 +64,12 @@ OperationWindow {
         default: return qsTrId("update.idle");
         }
     }
-    // Disabling and reenabling the update button transfers focus through the page Loader.
+    // Update action changes can transfer focus through the page Loader.
     // Mouse focus and automatic focus restoration must not reposition the page.
     onActiveFocusItemChanged: if (visible && activeFocusItem && activeFocusItem !== pageLoader) {
         const focusedItem = activeFocusItem;
-        const updateButtonWithoutKeyboardNavigation = ["aboutCheckUpdate", "aboutCancelCheck"].includes(focusedItem.objectName) &&
+        const updateButtonWithoutKeyboardNavigation = ["aboutCheckUpdate", "aboutCancelCheck", "aboutCancelUpdate",
+            "aboutInstallUpdate", "aboutRecoveryUpdate", "aboutOpenDownload", "aboutOpenDownloadSecondary"].includes(focusedItem.objectName) &&
             (focusedItem.focusReason === Qt.MouseFocusReason || focusedItem.focusReason === Qt.OtherFocusReason);
         if (!updateButtonWithoutKeyboardNavigation) Qt.callLater(() => {
             if (root.visible && root.activeFocusItem === focusedItem) root.revealFocus(pageScroll);
@@ -467,8 +468,7 @@ OperationWindow {
             spacing: Theme.settingsPageSectionGap
             readonly property real stablePageHeight: aboutBeforeUpdate.implicitHeight + updateReserveHeight +
                                                      aboutAfterUpdate.implicitHeight + Theme.settingsPageSectionGap * 2
-            readonly property real updateActionHeight: Math.max(cancelUpdate.implicitHeight, installUpdate.implicitHeight,
-                                                                recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
+            readonly property real updateActionHeight: openUpdateSecondary.implicitHeight
             readonly property real updateReserveHeight: Math.max(
                 Math.max(updateMeasurements.statusHeight, updateActionSlot.implicitHeight)
                     + Theme.aboutUpdateProgressHeight + updateActionHeight + Theme.settingsPageSectionGap * 2,
@@ -479,6 +479,14 @@ OperationWindow {
                 visible: false
                 width: updateSection.width
                 property int revision: 0
+                readonly property real actionWidth: {
+                    let width = revision * 0;
+                    for (let i = 0; i < actionMeasures.count; ++i) {
+                        const item = actionMeasures.itemAt(i);
+                        if (item) width = Math.max(width, item.implicitWidth);
+                    }
+                    return Math.ceil(width) + checkUpdate.horizontalInset * 2 * checkUpdate.density;
+                }
                 readonly property real statusHeight: {
                     let height = revision * 0;
                     for (let i = 0; i < statusMeasures.count; ++i) {
@@ -502,6 +510,20 @@ OperationWindow {
                         if (item) height = Math.max(height, item.implicitHeight);
                     }
                     return height;
+                }
+                Repeater {
+                    id: actionMeasures
+                    onItemAdded: updateMeasurements.revision++
+                    onItemRemoved: updateMeasurements.revision++
+                    model: [qsTrId("update.check"), qsTrId("update.cancelCheck"), qsTrId("update.cancelDownload"),
+                            qsTrId("update.cancel"), qsTrId("update.install"), qsTrId("update.installNow"),
+                            qsTrId("update.download"), qsTrId("update.release"), qsTrId("update.openDownload")]
+                    delegate: Text {
+                        required property string modelData
+                        text: modelData
+                        textFormat: Text.PlainText
+                        font: checkUpdate.contentItem.font
+                    }
                 }
                 Repeater {
                     id: statusMeasures
@@ -588,16 +610,27 @@ OperationWindow {
                     PageNote { id: updateStatus; objectName: "aboutUpdateStatus"; text: root.updateMessage(); color: root.updateState === "error" || root.updateState === "recovery_required" ? Theme.menuDanger : Theme.textSecondary }
                     Item {
                         id: updateActionSlot
-                        Layout.preferredWidth: implicitWidth
+                        readonly property real checkWidth: Math.max(checkUpdate.implicitWidth, cancelCheck.implicitWidth)
+                        readonly property real activeWidth: {
+                            if (installUpdate.visible) return Math.max(checkWidth, installUpdate.implicitWidth);
+                            if (cancelUpdate.visible) return Math.max(checkWidth, cancelUpdate.implicitWidth);
+                            if (recoveryUpdate.visible) return Math.max(checkWidth, recoveryUpdate.implicitWidth);
+                            if (openUpdate.visible) return Math.max(checkWidth, openUpdate.implicitWidth);
+                            return checkWidth;
+                        }
+                        Layout.preferredWidth: activeWidth
                         Layout.preferredHeight: implicitHeight
                         Layout.alignment: Qt.AlignTop
-                        implicitWidth: Math.max(checkUpdate.implicitWidth, cancelCheck.implicitWidth)
-                        implicitHeight: Math.max(checkUpdate.implicitHeight, cancelCheck.implicitHeight)
+                        implicitWidth: Math.max(updateMeasurements.actionWidth, checkWidth)
+                        implicitHeight: Math.max(checkUpdate.implicitHeight, cancelCheck.implicitHeight,
+                                                 cancelUpdate.implicitHeight, installUpdate.implicitHeight,
+                                                 recoveryUpdate.implicitHeight, openUpdate.implicitHeight)
                         OperationButton {
                             id: checkUpdate
                             objectName: "aboutCheckUpdate"
                             anchors.fill: parent
-                            visible: root.updateState !== "checking"
+                            visible: !["checking", "available", "downloaded", "downloading", "verifying",
+                                       "waiting_tasks", "preparing", "installing", "recovery_required"].includes(root.updateState)
                             enabled: root.updater && !root.updater.busy
                             text: qsTrId("update.check")
                             onClicked: root.updater.check()
@@ -610,6 +643,45 @@ OperationWindow {
                             text: qsTrId("update.cancelCheck")
                             onClicked: root.updater.cancel()
                         }
+                        OperationButton {
+                            id: cancelUpdate
+                            objectName: "aboutCancelUpdate"
+                            anchors.fill: parent
+                            visible: root.updater && root.updater.busy && !["checking", "installing"].includes(root.updateState)
+                            text: root.updateState === "downloading" ? qsTrId("update.cancelDownload") : qsTrId("update.cancel")
+                            onClicked: root.updater.cancel()
+                        }
+                        OperationButton {
+                            id: installUpdate
+                            objectName: "aboutInstallUpdate"
+                            anchors.fill: parent
+                            visible: root.updater && (root.updateState === "available" ||
+                                (root.updateState === "downloaded" && (root.updater.canInstall || !root.updater.downloaded)))
+                            text: root.updater && root.updater.canInstall ?
+                                (root.updater.downloaded ? qsTrId("update.installNow") : qsTrId("update.install")) :
+                                root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
+                            onClicked: {
+                                if (root.updater.canInstall) root.updater.downloadAndInstall();
+                                else if (root.updater.trusted) root.updater.download();
+                                else root.updater.openReleasePage();
+                            }
+                        }
+                        OperationButton {
+                            id: recoveryUpdate
+                            objectName: "aboutRecoveryUpdate"
+                            anchors.fill: parent
+                            visible: root.updater && root.updateState === "recovery_required"
+                            text: qsTrId("update.release")
+                            onClicked: root.updater.openReleasePage()
+                        }
+                        OperationButton {
+                            id: openUpdate
+                            objectName: "aboutOpenDownload"
+                            anchors.fill: parent
+                            visible: root.updater && root.updateState === "downloaded" && root.updater.downloaded && !root.updater.canInstall
+                            text: qsTrId("update.openDownload")
+                            onClicked: root.updater.openDownloadFolder()
+                        }
                     }
                 }
                 ProgressBar {
@@ -618,6 +690,8 @@ OperationWindow {
                     visible: root.updater && ["downloading", "verifying", "preparing"].includes(root.updateState)
                     indeterminate: !root.updater || root.updater.progress < 0 || root.updateState !== "downloading"
                     value: root.updater ? Math.max(0, root.updater.progress) : 0
+                    palette.dark: Theme.accent
+                    palette.midlight: Theme.taskTrack
                     Accessible.name: qsTrId("update.progress")
                 }
                 PageNote {
@@ -627,28 +701,15 @@ OperationWindow {
                 RowLayout {
                     objectName: "aboutUpdateActions"
                     Layout.fillWidth: true
-                    visible: root.updater && ((root.updater.busy && !["checking", "installing"].includes(root.updateState)) ||
-                                             ["available", "downloaded", "recovery_required"].includes(root.updateState) ||
-                                             root.updater.downloaded)
+                    visible: root.updater && root.updater.downloaded &&
+                             !(root.updateState === "downloaded" && !root.updater.canInstall)
+                    Item { Layout.fillWidth: true }
                     OperationButton {
-                        id: cancelUpdate
-                        objectName: "aboutCancelUpdate"
-                        visible: root.updater && root.updater.busy && !["checking", "installing"].includes(root.updateState)
-                        text: qsTrId("update.cancel"); onClicked: root.updater.cancel()
+                        id: openUpdateSecondary
+                        objectName: "aboutOpenDownloadSecondary"
+                        text: qsTrId("update.openDownload")
+                        onClicked: root.updater.openDownloadFolder()
                     }
-                    OperationButton {
-                        id: installUpdate
-                        objectName: "aboutInstallUpdate"
-                        visible: root.updater && ["available", "downloaded"].includes(root.updateState)
-                        text: root.updater && root.updater.canInstall ? qsTrId("update.install") : root.updater && root.updater.trusted ? qsTrId("update.download") : qsTrId("update.release")
-                        onClicked: {
-                            if (root.updater.canInstall) root.updater.downloadAndInstall();
-                            else if (root.updater.trusted) root.updater.download();
-                            else root.updater.openReleasePage();
-                        }
-                    }
-                    OperationButton { id: recoveryUpdate; visible: root.updater && root.updateState === "recovery_required"; text: qsTrId("update.release"); onClicked: root.updater.openReleasePage() }
-                    OperationButton { id: openUpdate; visible: root.updater && root.updater.downloaded; text: qsTrId("update.openDownload"); onClicked: root.updater.openDownloadFolder() }
                 }
             }
             ColumnLayout {

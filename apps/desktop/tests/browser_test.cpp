@@ -60,6 +60,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QQmlContext>
+#include <QQmlProperty>
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QQuickWindow>
@@ -5039,10 +5040,10 @@ QtObject {
                     property string errorCode: "verification_hash"; property real progress: 0.42
                     property bool busy: false; property bool trusted: true; property bool canInstall: true
                     property bool downloaded: false; property int checks: 0; property int cancels: 0
-                    property int downloads: 0; property int installs: 0; property int releases: 0
+                    property int downloads: 0; property int installs: 0; property int releases: 0; property int opens: 0
                     function check() { ++checks } function cancel() { ++cancels }
                     function download() { ++downloads } function downloadAndInstall() { ++installs }
-                    function openReleasePage() { ++releases } function openDownloadFolder() {}
+                    function openReleasePage() { ++releases } function openDownloadFolder() { ++opens }
                 })", QUrl());
             std::unique_ptr<QObject> service(fixture.create());
             QVERIFY2(service, qPrintable(fixture.errorString()));
@@ -5061,8 +5062,13 @@ QtObject {
             auto *cancel = findVisual(settings->contentItem(), "aboutCancelUpdate");
             auto *actions = findVisual(settings->contentItem(), "aboutUpdateActions");
             auto *install = findVisual(settings->contentItem(), "aboutInstallUpdate");
+            auto *recovery = findVisual(settings->contentItem(), "aboutRecoveryUpdate");
+            auto *open = findVisual(settings->contentItem(), "aboutOpenDownload");
+            auto *openSecondary = findVisual(settings->contentItem(), "aboutOpenDownloadSecondary");
             auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
-            QVERIFY(status && check && cancelCheck && cancel && actions && install && progress);
+            QVERIFY(status && check && cancelCheck && cancel && actions && install && recovery && open && openSecondary && progress);
+            QCOMPARE(install->parentItem(), check->parentItem());
+            QCOMPARE(cancel->parentItem(), check->parentItem());
             QVERIFY(!findVisual(settings->contentItem(), "settingsFooter"));
             const QStringList states{"idle", "checking", "up_to_date", "available", "downloading", "verifying", "downloaded", "waiting_tasks", "preparing", "installing", "error", "recovery_required", "updated", "unavailable"};
             QQmlComponent theme(&engine);
@@ -5081,17 +5087,25 @@ QtObject {
                 service->setProperty("state", state);
                 QTRY_VERIFY(!status->property("text").toString().isEmpty());
                 QCOMPARE(check->isEnabled(), !busy);
-                QCOMPARE(check->isVisible(), state != "checking");
+                QCOMPARE(check->isVisible(), QStringList({"idle", "up_to_date", "updated", "error", "unavailable"}).contains(state));
                 QCOMPARE(cancelCheck->isVisible(), state == "checking");
                 QCOMPARE(cancel->isVisible(), busy && state != "checking" && state != "installing");
-                QCOMPARE(actions->isVisible(), (busy && state != "checking" && state != "installing") ||
-                         QStringList({"available", "downloaded", "recovery_required"}).contains(state));
+                QCOMPARE(install->isVisible(), state == "available" || state == "downloaded");
+                QCOMPARE(recovery->isVisible(), state == "recovery_required");
+                QCOMPARE(open->isVisible(), false);
+                QCOMPARE(actions->isVisible(), state == "downloaded");
+                if (state == "downloading")
+                    QCOMPARE(cancel->property("text").toString(), qtTrId("update.cancelDownload"));
                 if (state == "checking") {
                     QCOMPARE(cancelCheck->property("text").toString(), qtTrId("update.cancelCheck"));
                     QCOMPARE(cancelCheck->mapToScene(QPointF()), check->mapToScene(QPointF()));
                     QCOMPARE(cancelCheck->size(), check->size());
                 }
                 QCOMPARE(progress->isVisible(), QStringList({"downloading", "verifying", "preparing"}).contains(state));
+                if (state == "downloading") {
+                    QTRY_COMPARE(QQmlProperty::read(progress, "palette.dark").value<QColor>(), QColor(dark ? "#3264E9" : "#1956FF"));
+                    QTRY_COMPARE(QQmlProperty::read(progress, "palette.midlight").value<QColor>(), QColor(dark ? "#384353" : "#DFE4ED"));
+                }
                 QCOMPARE(settings->width(), 612);
                 QTRY_VERIFY(status->property("paintedWidth").toReal() <= status->width() + 1);
                 QTRY_VERIFY(status->property("paintedHeight").toReal() <= status->height() + 1);
@@ -5118,6 +5132,7 @@ QtObject {
             QCOMPARE(service->property("releases").toInt(), 1);
             QCOMPARE(service->property("downloads").toInt(), 1);
             QCOMPARE(service->property("installs").toInt(), 1);
+            service->setProperty("state", "idle");
             QVERIFY(QMetaObject::invokeMethod(check, "click"));
             QCOMPARE(service->property("checks").toInt(), 1);
             service->setProperty("state", "checking");
@@ -5127,6 +5142,18 @@ QtObject {
             service->setProperty("state", "downloading");
             QVERIFY(QMetaObject::invokeMethod(cancel, "click"));
             QCOMPARE(service->property("cancels").toInt(), 2);
+            service->setProperty("busy", false);
+            service->setProperty("state", "downloaded");
+            service->setProperty("downloaded", true);
+            service->setProperty("canInstall", false);
+            QTRY_VERIFY(open->isVisible());
+            QVERIFY(QMetaObject::invokeMethod(open, "click"));
+            QCOMPARE(service->property("opens").toInt(), 1);
+            service->setProperty("canInstall", true);
+            QTRY_VERIFY(install->isVisible() && openSecondary->isVisible());
+            QCOMPARE(install->property("text").toString(), qtTrId("update.installNow"));
+            QVERIFY(QMetaObject::invokeMethod(openSecondary, "click"));
+            QCOMPARE(service->property("opens").toInt(), 2);
             settings->close();
             owner->close();
         }
@@ -6382,10 +6409,11 @@ QtObject {
                 property string state: "idle"; property string candidateVersion: ""
                 property string errorCode: "network"; property real progress: 0.42
                 property bool busy: false; property bool trusted: true; property bool canInstall: true
-                property bool downloaded: false; property int checks: 0; property int cancels: 0
+                property bool downloaded: false; property int checks: 0; property int cancels: 0; property int downloads: 0
                 function check() { ++checks; busy = true; state = "checking" }
-                function cancel() { ++cancels; busy = false; state = "idle" }
-                function download() {} function downloadAndInstall() {}
+                function cancel() { const checking = state === "checking"; ++cancels; busy = false; state = checking ? "idle" : "available" }
+                function download() { ++downloads; busy = true; state = "downloading" }
+                function downloadAndInstall() { ++downloads; busy = true; state = "downloading" }
                 function openReleasePage() {} function openDownloadFolder() {}
             })", QUrl());
         std::unique_ptr<QObject> service(fixture.create());
@@ -6447,7 +6475,10 @@ QtObject {
         QQuickItem *check = nullptr;
         QTRY_VERIFY((check = findVisual(settings->contentItem(), "aboutCheckUpdate")));
         auto *cancelCheck = findVisual(settings->contentItem(), "aboutCancelCheck");
-        QVERIFY(cancelCheck);
+        auto *download = findVisual(settings->contentItem(), "aboutInstallUpdate");
+        auto *cancelDownload = findVisual(settings->contentItem(), "aboutCancelUpdate");
+        auto *progress = findVisual(settings->contentItem(), "aboutUpdateProgress");
+        QVERIFY(cancelCheck && download && cancelDownload && progress);
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
         auto *bar = findVisual(settings->contentItem(), "settingsVerticalScrollBar");
         auto *pageContent = findVisual(settings->contentItem(), "settingsPageContent");
@@ -6473,6 +6504,7 @@ QtObject {
         QVERIFY(thumbChanges.isValid());
         QVERIFY(positionChanges.isValid());
         const auto checkPosition = check->mapToScene(QPointF());
+        const qreal checkRight = check->mapToScene(QPointF(check->width(), 0)).x();
         const auto clickPos = check->mapToScene(QPointF(check->width()/2, check->height()/2)).toPoint();
         moveTestPointer(settings, clickPos);
         QTest::mousePress(settings, Qt::LeftButton, Qt::NoModifier, clickPos);
@@ -6512,6 +6544,38 @@ QtObject {
         QTest::qWait(50);
         QVERIFY2(positionChanges.isEmpty(), "canceling the update check changed the scroll position");
         QVERIFY2(thumbChanges.isEmpty(), "canceling the update check changed the scrollbar height");
+        service->setProperty("candidateVersion", QStringLiteral("0.1.0-alpha.9"));
+        service->setProperty("canInstall", false);
+        service->setProperty("state", "available");
+        QTRY_VERIFY(download->isVisible());
+        QVERIFY(!check->isVisible());
+        QTest::qWait(50);
+        QCOMPARE(download->mapToScene(QPointF(download->width(), 0)).x(), checkRight);
+        if (!updateCaptures.isEmpty())
+            QVERIFY(visual_audit::save(settings, updateCaptures,
+                language + (dark ? "-dark-" : "-light-") + QString::number(scale) + "-available"));
+        const auto downloadPoint = download->mapToScene(QPointF(download->width()/2, download->height()/2)).toPoint();
+        moveTestPointer(settings, downloadPoint);
+        QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, downloadPoint);
+        QTRY_COMPARE(service->property("downloads").toInt(), 1);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("downloading"));
+        QTRY_VERIFY(cancelDownload->isVisible() && progress->isVisible());
+        QCOMPARE(cancelDownload->property("text").toString(), qtTrId("update.cancelDownload"));
+        QCOMPARE(cancelDownload->mapToScene(QPointF(cancelDownload->width(), 0)).x(), checkRight);
+        if (!updateCaptures.isEmpty())
+            QVERIFY(visual_audit::save(settings, updateCaptures,
+                language + (dark ? "-dark-" : "-light-") + QString::number(scale) + "-downloading"));
+        QTest::qWait(50);
+        QVERIFY2(positionChanges.isEmpty(), "starting the download changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(), "starting the download changed the scrollbar height");
+        const auto cancelDownloadPoint = cancelDownload->mapToScene(QPointF(cancelDownload->width()/2, cancelDownload->height()/2)).toPoint();
+        moveTestPointer(settings, cancelDownloadPoint);
+        QTest::mouseClick(settings, Qt::LeftButton, Qt::NoModifier, cancelDownloadPoint);
+        QTRY_COMPARE(service->property("cancels").toInt(), 2);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("available"));
+        QTest::qWait(50);
+        QVERIFY2(positionChanges.isEmpty(), "canceling the download changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(), "canceling the download changed the scrollbar height");
         const QList<QVariantMap> states{
             {{"state", "up_to_date"}}, {{"state", "error"}, {"error", "network"}},
             {{"state", "error"}, {"error", "unsafe_installation"}},
@@ -6596,11 +6660,31 @@ QtObject {
         cancelCheck->forceActiveFocus(Qt::TabFocusReason);
         QTRY_VERIFY(cancelCheck->hasActiveFocus());
         QTest::keyClick(settings, Qt::Key_Return);
-        QTRY_COMPARE(service->property("cancels").toInt(), 2);
+        QTRY_COMPARE(service->property("cancels").toInt(), 3);
         QTRY_COMPARE(service->property("state").toString(), QStringLiteral("idle"));
         QTest::qWait(50);
         QVERIFY2(positionChanges.isEmpty(), "keyboard check or cancellation changed the scroll position");
         QVERIFY2(thumbChanges.isEmpty(), "keyboard check or cancellation changed the scrollbar height");
+        service->setProperty("canInstall", false);
+        service->setProperty("state", "available");
+        QTRY_VERIFY(download->isVisible());
+        download->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(download->hasActiveFocus());
+        QTest::qWait(30);
+        positionChanges.clear();
+        thumbChanges.clear();
+        QTest::keyClick(settings, Qt::Key_Return);
+        QTRY_COMPARE(service->property("downloads").toInt(), 2);
+        QTRY_VERIFY(cancelDownload->isVisible());
+        cancelDownload->forceActiveFocus(Qt::TabFocusReason);
+        QTRY_VERIFY(cancelDownload->hasActiveFocus());
+        QTest::keyClick(settings, Qt::Key_Return);
+        QTRY_COMPARE(service->property("cancels").toInt(), 4);
+        QTRY_COMPARE(service->property("state").toString(), QStringLiteral("available"));
+        QTest::qWait(50);
+        QVERIFY2(positionChanges.isEmpty(), "keyboard download or cancellation changed the scroll position");
+        QVERIFY2(thumbChanges.isEmpty(), "keyboard download or cancellation changed the scrollbar height");
+        service->setProperty("state", "idle");
         check->forceActiveFocus(Qt::TabFocusReason);
         QTRY_VERIFY(check->hasActiveFocus());
         auto *copy = findVisual(settings->contentItem(), "aboutCopy");

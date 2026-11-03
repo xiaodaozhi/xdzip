@@ -103,8 +103,39 @@ def main():
         cancel_check.click()
         expect(page.locator('#about-check-update')).to_be_visible()
         assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
-        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",canInstall:true})')
-        expect(page.locator('#about-install-update')).to_be_visible()
+        messages = json.loads((ROOT / 'resources/i18n/en-US.json').read_text())['messages']
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:true,canInstall:false,version:"0.1.0-alpha.9"})')
+        download = page.locator('#about-install-update')
+        expect(download).to_have_text(messages['update.download'])
+        expect(page.locator('#about-check-update')).to_have_count(0)
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        download_bounds = download.bounding_box()
+        assert abs((download_bounds['x'] + download_bounds['width']) - (action_before['x'] + action_before['width'])) < 1
+        assert abs(download_bounds['y'] - action_before['y']) < 1
+        download.click()
+        cancel_download = page.locator('#about-cancel-update')
+        expect(cancel_download).to_have_text(messages['update.cancelDownload'])
+        expect(page.locator('#about-update-section progress')).to_be_visible()
+        cancel_bounds = cancel_download.bounding_box()
+        assert abs((cancel_bounds['x'] + cancel_bounds['width']) - (action_before['x'] + action_before['width'])) < 1
+        assert abs(cancel_bounds['y'] - action_before['y']) < 1
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        cancel_download.click()
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.download'])
+        assert page.locator('.settings-pane').evaluate('node => node.scrollTop') == scroll_before
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:true,canInstall:true})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.install'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"available",trusted:false,canInstall:false})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.release'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:false,downloaded:true})')
+        expect(page.locator('#about-open-update')).to_have_text(messages['update.openDownload'])
+        expect(page.locator('#about-update-section .settings-about-actions')).to_have_count(0)
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"downloaded",trusted:true,canInstall:true,downloaded:true})')
+        expect(page.locator('#about-install-update')).to_have_text(messages['update.installNow'])
+        expect(page.locator('#about-open-update-secondary')).to_have_text(messages['update.openDownload'])
+        page.evaluate('window.XdzipAboutUpdatePreview({state:"recovery_required",downloaded:true})')
+        expect(page.locator('#about-recovery-update')).to_have_text(messages['update.release'])
+        expect(page.locator('#about-open-update-secondary')).to_have_text(messages['update.openDownload'])
         modal.locator('.os-close').click()
         page.locator('#title-settings').click()
         expect(page.locator('html')).to_have_attribute('data-theme', 'dark')

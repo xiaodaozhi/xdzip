@@ -1106,6 +1106,7 @@ dialog[data-kind="settings"] > .shared-operation-header::after { content:""; pos
 .settings-about-actions { display:flex; flex-wrap:wrap; gap:calc(8px * var(--ui-source-factor)); }
 .settings-pane .about-update-section { align-items:stretch; gap:calc(8px * var(--ui-source-factor)); }
 .settings-pane .about-update-section .settings-detail-row { justify-content:space-between; align-items:flex-start; }
+.settings-pane .about-update-section .settings-about-actions { justify-content:flex-end; }
 .settings-update-action { display:grid; flex:none; }
 .settings-update-action > button { grid-area:1 / 1; }
 .settings-update-measure { visibility:hidden; pointer-events:none; }

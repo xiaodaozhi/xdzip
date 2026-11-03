@@ -508,6 +508,96 @@
       "spec": "../../docs/ux/settings-localization.md"
     },
     {
+      "file": "screens/settings-about-available-light.png",
+      "title": "设置，关于，发现新版本，浅色",
+      "group": "current",
+      "sha256": "90903d24922bfa0d978584e2571be759ddbd0e850b0f9962220327814173f970",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=available&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-available-dark.png",
+      "title": "设置，关于，发现新版本，深色",
+      "group": "current",
+      "sha256": "84d31114b4f7347e8dc9dda941a1334630aeee89b3432ede81af53e4942394a7",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=available&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-installable-light.png",
+      "title": "设置，关于，可下载安装，浅色",
+      "group": "current",
+      "sha256": "5e4a2aab3924539ac3ee89509841f1d3b306850465131b603d920724de23d183",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=installable&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-installable-dark.png",
+      "title": "设置，关于，可下载安装，深色",
+      "group": "current",
+      "sha256": "7d39e31bf6aa8043828e974b4a68c53bfefc2d67a08420a7f01c7f5948282fab",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=installable&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloading-light.png",
+      "title": "设置，关于，下载中，浅色",
+      "group": "current",
+      "sha256": "c5e776d77816f0e8889e481ea911dc6ed630446d73cf00a8ceda2da3818d81f5",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloading&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloading-dark.png",
+      "title": "设置，关于，下载中，深色",
+      "group": "current",
+      "sha256": "4944966e942f3726fa761206f22da59b0fa1f0457f3d34099cd1a0a63f69dc55",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloading&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloaded-light.png",
+      "title": "设置，关于，下载完成，浅色",
+      "group": "current",
+      "sha256": "f1a94079cdb75e8c51e47392505e440bf45f9d043adcfbfec99d788da5d5bd18",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloaded&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-downloaded-dark.png",
+      "title": "设置，关于，下载完成，深色",
+      "group": "current",
+      "sha256": "13f8f71e3cae411b2f8246313db4bbcb40d8966b548389de6912f3019c5d926b",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=downloaded&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-recovery-light.png",
+      "title": "设置，关于，恢复，浅色",
+      "group": "current",
+      "sha256": "7fd0708e53485c6cb929e88e8830ce0902b9c9f584420a2e34f177d69a8f0371",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=recovery&theme=light",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
+      "file": "screens/settings-about-recovery-dark.png",
+      "title": "设置，关于，恢复，深色",
+      "group": "current",
+      "sha256": "01f7449aef0b4be4c899abec3277f88fbce30eb475b131721063400505463463",
+      "role": "code-authored-design",
+      "design_source": "sources/settings.html?tab=about&update=recovery&theme=dark",
+      "spec": "../../docs/ux/settings-localization.md"
+    },
+    {
       "file": "screens/settings-about-details-light.png",
       "title": "设置，关于，版本信息与许可，浅色",
       "group": "current",

@@ -24,6 +24,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--write-design', action='store_true', help='Copy authored artboards to hifi/screens')
+    parser.add_argument('--tab', action='append', choices=['appearance', 'general', 'privacy', 'associations', 'network', 'about'],
+                        help='Export selected pages only; may be repeated')
     args = parser.parse_args()
     output = ROOT/'build/review/settings-session-design'
     output.mkdir(parents=True, exist_ok=True)
@@ -36,7 +38,7 @@ def main():
             browser = p.chromium.launch(executable_path=os.environ.get('XDZIP_CHROMIUM'))
             try:
                 for theme in ['light', 'dark']:
-                    for tab in ['appearance', 'general', 'privacy', 'associations', 'network', 'about']:
+                    for tab in args.tab or ['appearance', 'general', 'privacy', 'associations', 'network', 'about']:
                         page = browser.new_page(viewport=dict(zip(['width', 'height'], spec['authoring_viewport'])),
                                                 device_scale_factor=1)
                         page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&tab={tab}')
@@ -74,16 +76,19 @@ def main():
                             modal.screenshot(path=str(image))
                             records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
                                                 bounds=modal.bounding_box(), theme=theme, tab='about-details', browser=browser.version))
-                            page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&tab=about&update=checking')
-                            frame = page.frame_locator('iframe')
-                            modal = frame.locator('#modal[data-kind=settings]')
-                            frame.locator('#about-cancel-check').wait_for(state='visible')
-                            page.frames[1].evaluate('document.fonts.ready')
-                            page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
-                            image = output/f'settings-about-checking-{theme}.png'
-                            modal.screenshot(path=str(image))
-                            records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
-                                                bounds=modal.bounding_box(), theme=theme, tab='about-checking', browser=browser.version))
+                            for state, button in [('checking', 'cancel-check'), ('available', 'install-update'),
+                                                  ('installable', 'install-update'), ('downloading', 'cancel-update'),
+                                                  ('downloaded', 'open-update'), ('recovery', 'recovery-update')]:
+                                page.goto(f'http://127.0.0.1:{server.server_port}/design/hifi/sources/settings.html?export=1&theme={theme}&tab=about&update={state}')
+                                frame = page.frame_locator('iframe')
+                                modal = frame.locator('#modal[data-kind=settings]')
+                                frame.locator(f'#about-{button}').wait_for(state='visible')
+                                page.frames[1].evaluate('document.fonts.ready')
+                                page.frames[1].wait_for_function('(theme)=>document.documentElement.dataset.theme===theme', arg=theme)
+                                image = output/f'settings-about-{state}-{theme}.png'
+                                modal.screenshot(path=str(image))
+                                records.append(dict(file=image.name, sha256=hashlib.sha256(image.read_bytes()).hexdigest(),
+                                                    bounds=modal.bounding_box(), theme=theme, tab=f'about-{state}', browser=browser.version))
                         page.close()
             finally:
                 browser.close()
@@ -96,7 +101,7 @@ def main():
     (output/'export.json').write_text(json.dumps(dict(role='code-authored-design', source='design/hifi/sources/settings.html',
         device_pixel_ratio=1, browser_zoom=1, images=records,
         limits='Design exports are not native visual acceptance or independent geometry references.'), indent=2)+'\n')
-    print('Exported six settings pages in light and dark themes')
+    print('Exported settings pages in light and dark themes')
 
 
 if __name__ == '__main__': main()
