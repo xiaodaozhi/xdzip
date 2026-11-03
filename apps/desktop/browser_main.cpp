@@ -16,6 +16,7 @@
 #include "UpdateController.h"
 #include "WindowActivation.h"
 #include "WindowHoverPolicy.h"
+#include "WindowsAssociationDescriptions.h"
 #include <QApplication>
 #include <QEvent>
 #include <QIcon>
@@ -102,6 +103,11 @@ int main(int argc, char *argv[]) {
     QQuickStyle::setStyle(QStringLiteral("Basic"));
     if (!initializeUiText())
         return 5;
+#ifdef Q_OS_WIN
+    if (interactive && qEnvironmentVariableIsEmpty("XDZIP_SETTINGS_PATH") &&
+        qEnvironmentVariableIsEmpty("XDZIP_LANGUAGE"))
+        syncInstalledAssociationDescriptions(qtTrId("association.typeDescription"));
+#endif
     if (!installUiFont())
         return 5;
     if (updateProbeArgument >= 0) {

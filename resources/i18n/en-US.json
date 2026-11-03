@@ -10,6 +10,7 @@
     "tasks.clearFinishedHint": "Clear completed, failed or cancelled history. Keep tasks in progress.",
     "extract.windowTitle": "Extract files",
     "archive.unknownSize": "Unknown size",
+    "association.typeDescription": "%1 archive",
     "error.emptyArchiveInput": "No files or folders remain to archive after excluding macOS metadata.",
     "ui.8f1009f1369b": "Start",
     "ui.1b59353f1874": "Open archive",

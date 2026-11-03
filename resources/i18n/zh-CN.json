@@ -10,6 +10,7 @@
     "tasks.clearFinishedHint": "仅清除已完成、失败或已取消的历史，保留正在进行的任务。",
     "extract.windowTitle": "解压文件",
     "archive.unknownSize": "尺寸未知",
+    "association.typeDescription": "%1 压缩包",
     "error.emptyArchiveInput": "排除 macOS 元数据后，没有可压缩的文件或文件夹。",
     "ui.8f1009f1369b": "起始页",
     "ui.1b59353f1874": "打开压缩包",
