@@ -76,10 +76,22 @@ class X11SupervisionTests(unittest.TestCase):
         auth.touch(mode=0o600)
         command = ['xvfb-run', '-a', '-e', str(self.root/'xvfb.log'), '-f', str(auth), sys.executable,
                    '-c', 'from pathlib import Path; import sys; Path(sys.argv[1]).touch()', str(marker)]
+        def diagnostics():
+            logs = []
+            for name in ('wrapper.log', 'xvfb.log'):
+                path = self.root/name
+                content = path.read_text(encoding='utf-8', errors='replace') if path.is_file() else '<missing>'
+                logs.append(name+': '+startup.sanitized(content[-4000:]))
+            return '\n'.join(logs)
         with mock.patch.dict(os.environ, {'LD_PRELOAD': str(injector),
                                          'XDZIP_TEST_XVFB_READY_TRACE': str(trace)}):
-            with self.assertRaises(subprocess.TimeoutExpired):
-                startup.supervise(command, self.root/'wrapper.log', timeout=5)
+            try:
+                code = startup.supervise(command, self.root/'wrapper.log', timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
+            else:
+                self.fail('Xvfb negative control exited '+str(code)+' instead of timing out\n'+diagnostics())
+        self.assertTrue(trace.is_file(), 'Xvfb did not record the injected signal\n'+diagnostics())
         self.assertEqual(trace.read_text(encoding='ascii'), 'suppressed\n')
         self.assertFalse(marker.exists())
 

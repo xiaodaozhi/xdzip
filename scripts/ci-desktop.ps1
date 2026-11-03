@@ -100,6 +100,9 @@ if ($IsLinux) { $env:LD_LIBRARY_PATH = Join-Path $qtPrefix 'lib' }
 $env:QT_QPA_PLATFORM = 'offscreen'
 $env:QT_QUICK_BACKEND = 'software'
 $env:XDZIP_CI_POWERSHELL = (Get-Process -Id $PID).Path
+if ($IsLinux) {
+    Invoke-Checked python @('scripts/test-x11-startup-supervision.py')
+}
 Set-CiPhase 'settings-compat'
 Invoke-Checked python @('scripts/check-settings-compat.py', '--qt-prefix', $qtPrefix, '--output', 'build/settings-compat')
 New-Item -ItemType Directory -Force 'build/review' | Out-Null
@@ -133,7 +136,6 @@ if ($IsWindows) {
     Invoke-Checked pwsh @('-NoProfile', '-File', 'scripts/check-windows-menu-launcher.ps1', '-Tests', $browserTests, '-OutputDirectory', 'build/review/native-menu-launcher-selftest')
 }
 if ($IsLinux) {
-    Invoke-Checked python @('scripts/test-x11-startup-supervision.py')
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
 Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
