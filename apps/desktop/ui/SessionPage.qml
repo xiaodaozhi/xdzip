@@ -2093,6 +2093,7 @@ Item {
                     color: Theme.accentInk
                 }
                 Text {
+                    objectName: "browserSelectionSummary"
                     Layout.fillWidth: true
                     text: root.welcomeVisible ? qsTrId("ui.d43d21c6f28f") : qsTrId("ui.aeb126abb448", Number(reader.selectedCount)) + (reader.selectedCount && /^\d+$/.test(reader.selectedBytes) ? qsTrId("common.separator") + root.formatSize(reader.selectedBytes) : "")
                     color: Theme.textSecondary

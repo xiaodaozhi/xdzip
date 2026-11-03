@@ -2135,6 +2135,78 @@ QtObject {
                                        "source-tar-browser"));
         }
     }
+    void mainFooterSelectionSummaryUsesOnlyKnownSizes_data() {
+        QTest::addColumn<QString>("language");
+        QTest::addColumn<QString>("welcome");
+        QTest::addColumn<QString>("none");
+        QTest::addColumn<QString>("one");
+        QTest::addColumn<QString>("two");
+        QTest::addColumn<QString>("separator");
+        QTest::newRow("zh-CN") << QStringLiteral("zh-CN") << QStringLiteral("文件在本机处理")
+                               << QStringLiteral("已选择 0 项") << QStringLiteral("已选择 1 项")
+                               << QStringLiteral("已选择 2 项") << QStringLiteral("，");
+        QTest::newRow("en-US") << QStringLiteral("en-US")
+                               << QStringLiteral("Files stay on this device")
+                               << QStringLiteral("0 items selected")
+                               << QStringLiteral("1 item selected")
+                               << QStringLiteral("2 items selected") << QStringLiteral(", ");
+    }
+    void mainFooterSelectionSummaryUsesOnlyKnownSizes() {
+        QFETCH(QString, language);
+        QFETCH(QString, welcome);
+        QFETCH(QString, none);
+        QFETCH(QString, one);
+        QFETCH(QString, two);
+        QFETCH(QString, separator);
+        const auto restoreLanguage = qScopeGuard([] { initializeUiText("zh-CN"); });
+        QVERIFY(initializeUiText(language));
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        QVERIFY(window);
+        auto *controller = window->findChild<BrowserController *>();
+        QVERIFY(controller);
+        auto *summary = findVisual(window->contentItem(), "browserSelectionSummary");
+        QVERIFY(summary);
+        QTRY_COMPARE(summary->property("text").toString(), welcome);
+
+        BrowserRow unknown;
+        unknown.id = "unknown";
+        unknown.cells = {"unknown", "", "", "", ""};
+        unknown.sizeKnown = false;
+        BrowserRow empty;
+        empty.id = "empty";
+        empty.cells = {"empty", "0", "", "", ""};
+        BrowserRow known;
+        known.id = "known";
+        known.cells = {"known", "7", "", "", ""};
+        BrowserRow folder;
+        folder.id = "folder";
+        folder.cells = {"folder", "", "", "", ""};
+        folder.directory = true;
+        folder.physical = false;
+        controller->m_model.replace({unknown, empty, known, folder});
+        controller->m_ready = true;
+        emit controller->changed();
+        QTRY_COMPARE(summary->property("text").toString(), none);
+
+        controller->selectOnlyRow(0);
+        QTRY_COMPARE(summary->property("text").toString(), one);
+        controller->selectRow(1);
+        QTRY_COMPARE(summary->property("text").toString(), two);
+        controller->selectOnlyRow(1);
+        QTRY_COMPARE(summary->property("text").toString(), one + separator + "0 B");
+        controller->selectOnlyRow(2);
+        QTRY_COMPARE(summary->property("text").toString(), one + separator + "7 B");
+        controller->selectRow(3);
+        QTRY_COMPARE(summary->property("text").toString(), two);
+        QVERIFY(!controller->canPreflight());
+        controller->selectOnlyRow(3);
+        QTRY_COMPARE(summary->property("text").toString(), one);
+        controller->selectAll(false);
+        QTRY_COMPARE(summary->property("text").toString(), none);
+    }
     void mainFooterHeightMatchesBetweenPages_data() {
         QTest::addColumn<double>("scale");
         QTest::newRow("100") << 1.;
