@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <QVariant>
 #include <QWindow>
+#include <functional>
 
 QStringList nativeDesktopMenuEntries(const QString &title) {
     NSMenu *bar = NSApp.mainMenu;
@@ -29,6 +30,60 @@ void updateNativeApplicationMenu() {
     NSMenu *bar = NSApp.mainMenu;
     if (bar.numberOfItems)
         [[bar itemAtIndex:0].submenu update];
+}
+
+static NSMenuItem *nativeQuitItem() {
+    NSMenu *bar = NSApp.mainMenu;
+    NSMenu *menu = bar.numberOfItems ? [bar itemAtIndex:0].submenu : nil;
+    [menu update];
+    for (NSMenuItem *item in menu.itemArray)
+        if (!item.hidden && [item.keyEquivalent isEqualToString:@"q"] &&
+            (item.keyEquivalentModifierMask & NSEventModifierFlagCommand))
+            return item;
+    return nil;
+}
+
+bool nativeQuitMenuEnabled() {
+    NSMenuItem *item = nativeQuitItem();
+    return item && item.enabled;
+}
+
+bool activateNativeQuitMenu() {
+    NSMenuItem *item = nativeQuitItem();
+    return item && item.enabled && [NSApp sendAction:item.action to:item.target from:item];
+}
+
+int probeNativeFileDialogQuit(const std::function<void()> &openDialog,
+                              const std::function<bool()> &quitStayedBlocked) {
+    __block int result = -1;
+    NSTimer *timer = [[NSTimer
+        timerWithTimeInterval:0.1
+                      repeats:YES
+                        block:^(NSTimer *current) {
+                          for (NSWindow *window in NSApp.windows) {
+                              if ([window isKindOfClass:[NSSavePanel class]] && window.visible) {
+                                  const bool enabled = nativeQuitMenuEnabled();
+                                  NSMenuItem *item = nativeQuitItem();
+                                  // Also exercise an already queued action if validation has since
+                                  // disabled the item while the selector was opening.
+                                  const bool dispatched = item && [NSApp sendAction:item.action
+                                                                                 to:item.target
+                                                                               from:item];
+                                  qInfo() << "Native selector Quit" << "menu enabled" << enabled
+                                          << "forced action dispatched" << dispatched;
+                                  result = quitStayedBlocked() ? 0 : 1;
+                                  [(NSSavePanel *)window cancel:nil];
+                                  [current invalidate];
+                                  return;
+                              }
+                          }
+                        }] retain];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSModalPanelRunLoopMode];
+    [[NSRunLoop mainRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+    openDialog();
+    [timer invalidate];
+    [timer release];
+    return result;
 }
 
 bool watchNativeWindowTransitions(QWindow *window) {

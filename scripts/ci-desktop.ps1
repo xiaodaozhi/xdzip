@@ -126,6 +126,15 @@ if ($IsLinux) {
     Invoke-Checked python @('scripts/check-x11-startup.py', '--tests', $browserTests, '--output', 'build/review/x11-startup.json')
 }
 Invoke-Checked python @('scripts/check-native-sessions.py', '--tests', $browserTests, '--output', 'build/review/native-sessions.json')
+if ($IsMacOS) {
+    # Exercise the AppKit Quit item over a real task-conflict prompt as well.
+    $env:QT_QPA_PLATFORM = 'cocoa'
+    try {
+        Invoke-Checked $browserTests @('moveConflictsUseFileActionsAndAccessibleApplyAll', 'nativeQuitMenuWithoutTask', '-o', 'build/review/native-sessions-macos-conflict.log,txt')
+    } finally {
+        $env:QT_QPA_PLATFORM = 'offscreen'
+    }
+}
 # Keep per-case timings and each invocation's raw log, including a partial log
 # when CTest kills a timed-out suite. Repeats must not overwrite prior evidence.
 $env:XDZIP_BROWSER_TIMING_DIR = Join-Path (Get-Location) 'build/review/browser-timings'
