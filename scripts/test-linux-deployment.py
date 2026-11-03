@@ -36,6 +36,55 @@ def probe_output(record):
 
 
 class LinuxDeploymentTests(unittest.TestCase):
+    def test_runtime_refuses_to_move_directory_at_evidence_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);output=root/'runtime.json';output.write_text('previous report')
+            directory=output.with_suffix('.https.log');directory.mkdir()
+            args=['verify_linux_runtime.py','--root',str(root),'--fixture',str(root/'fixture.zip'),
+                  '--output',str(output)]
+            with patch.object(sys,'argv',args),patch('verify_linux_runtime.subprocess.run') as run:
+                with self.assertRaisesRegex(ValueError,'not a file'):verify_runtime_main()
+            self.assertEqual(output.read_text(),'previous report')
+            self.assertTrue(directory.is_dir());run.assert_not_called()
+
+    def test_runtime_failed_rerun_archives_previous_success_before_build(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);payload=root/'payload';(payload/'share').mkdir(parents=True)
+            (payload/'share/deployment.json').write_text(json.dumps({'system_packages':['libssl3t64']}))
+            output=root/'review/linux-runtime.json';output.parent.mkdir()
+            previous={output:'old passed report',output.with_suffix('.https.json'):'old HTTPS success',
+                      output.with_suffix('.https.attempt-1.log'):'old attempt'}
+            for path,value in previous.items():path.write_text(value)
+            args=['verify_linux_runtime.py','--root',str(payload),'--fixture',str(root/'fixture.zip'),
+                  '--output',str(output)]
+            failed=subprocess.CompletedProcess([],1,stdout='',stderr='owned build failure')
+            with patch.object(sys,'argv',args),patch('verify_linux_runtime.subprocess.run',return_value=failed):
+                with self.assertRaisesRegex(SystemExit,'image build failed'):verify_runtime_main()
+            self.assertFalse(output.exists())
+            self.assertFalse(output.with_suffix('.https.json').exists())
+            history=list((output.parent/(output.stem+'.history')).iterdir())
+            self.assertEqual(len(history),1)
+            for path,value in previous.items():self.assertEqual((history[0]/path.name).read_text(),value)
+            self.assertIn('owned build failure',output.with_suffix('.build.log').read_text())
+
+    def test_https_failed_rerun_archives_prior_success_and_attempts(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output=Path(temp)/'runtime.json'
+            success=subprocess.CompletedProcess([],0,stdout=probe_output(https_success()),stderr='')
+            failed=https_limited();failed['error']='network'
+            failure=subprocess.CompletedProcess([],13,stdout=probe_output(failed),stderr='new failure')
+            with patch('verify_linux_runtime.subprocess.run',side_effect=[success,failure]):
+                run_https_probe(['owned'],output)
+                with self.assertRaisesRegex(SystemExit,'not_confirmed_rate_limit'):
+                    run_https_probe(['owned'],output)
+            self.assertFalse(output.with_suffix('.https.json').exists())
+            self.assertIn('new failure',output.with_suffix('.https.attempt-1.log').read_text())
+            history=list((output.parent/(output.stem+'.history')).iterdir())
+            self.assertEqual(len(history),1)
+            self.assertEqual(json.loads((history[0]/output.with_suffix('.https.json').name).read_text()),
+                             https_success())
+            self.assertIn('up_to_date',(history[0]/output.with_suffix('.https.attempt-1.log').name).read_text())
+
     def test_runtime_keeps_https_failure_log_and_exit_code(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp);payload=root/'payload';(payload/'share').mkdir(parents=True)
