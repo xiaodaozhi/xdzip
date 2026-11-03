@@ -31,3 +31,5 @@ third_party/qt-public-suffix-list/PSL-LICENSE.txt -text -whitespace
 third_party/qt-tika-mimetypes/tika-mimetypes.xml.orig -text -whitespace
 third_party/qt-tika-mimetypes/TIKA-NOTICE.txt -text -whitespace
 third_party/qt-tika-mimetypes/OGL-UK-3.0.txt -text -whitespace
+# Preserve the pinned CLDR web font notice bytes on every platform.
+third_party/cldr43-webapp-notices/*.txt -text -whitespace

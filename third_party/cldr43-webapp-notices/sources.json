@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "cldr43-webapp-notices",
+  "archive_root": "cldr-37d524354422f46731db74f3bd6b3f46516c3ced",
+  "fonts_directory": "tools/cldr-apps/src/main/webapp/fonts",
+  "fonts": {
+    "LICENSE-Noto.txt": "7d1715c2ceaa82e548db50261d2527ba2412d1344be317df0ebd2f0bd57f5219",
+    "NotoSerifNyiakengPuachueHmong-Bold.otf": "bceb003047e669b97baf6a60d83f56ffd0909eb8a15e57ec7590e687ef82c27c",
+    "NotoSerifNyiakengPuachueHmong-Regular.ttf": "08e8c52b549add21e6f355d4cb51dd39f7fa07dd0d249deed188941081aa0a53",
+    "glyphicons-halflings-regular.eot": "f495f34e4f177cf0115af995bbbfeb3fcabc88502876e76fc51a4ab439bc8431",
+    "glyphicons-halflings-regular.svg": "d168d50a88c730b4e6830dc0da2a2b51dae4658a77d9619943c27b8ecfc19d1a",
+    "glyphicons-halflings-regular.ttf": "bd18efd3efd70fec8ad09611a20cdbf99440b2c1d40085c29be036f891d65358",
+    "glyphicons-halflings-regular.woff": "fc969dc1c6ff531abcf368089dcbaf5775133b0626ff56b52301a059fc0f9e1e"
+  },
+  "notices": {
+    "Glyphicons-MIT.txt": "56b756ee9ccfd0e2f32284e543bd9859d8b59526e9f2990855bac603c7d7c4ec",
+    "Noto-OFL-1.1.txt": "b61b405a127fc3a4c5b35849faa41b736f2c91ee05b2818963171b229524a9d0"
+  },
+  "glyphicons_mit_reference": "https://github.com/apache/fineract/blob/56fc5476a6fca73c4ea82b24c3a0dad704eeb642/licenses/source/glyphicons.MIT"
+}

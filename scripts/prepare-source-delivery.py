@@ -19,6 +19,7 @@ from qt_source_identity import commit_object_path, source_identity
 from vendor_notice_materials import collect as collect_vendor_notice_materials
 from qt_psl_source import collect as collect_qt_psl_source
 from qt_tika_materials import collect as collect_qt_tika_source
+from cldr_webapp_notices import collect as collect_cldr_webapp_notices
 
 ROOT = Path(__file__).resolve().parents[1]
 ISO639_DIRECTORY = 'tools/cldr-code/src/main/resources/org/unicode/cldr/util/data/'
@@ -397,6 +398,8 @@ def rebuild_instructions():
    语言子标签注册表。按项目 docs/engineering/icu-cldr-rebuild.md 的
    ICU 数据重建说明，可从所含子集重新生成已验证范围内的 ICU 资源。版本一致
    不证明供应商库由这些材料无补丁构建，也不单独完成许可判断。
+   子集网页工具中六份字体的版权和许可补充见 cldr43-webapp-notices/，该目录
+   不覆盖其余网页素材，也不表示 xdzip 界面使用了这些字体。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
@@ -405,7 +408,9 @@ def rebuild_instructions():
    needing them require separate source and terms review. See the ICU data rebuild
    instructions in docs/engineering/icu-cldr-rebuild.md for the verified resource scope.
    Matching versions do not prove the supplier built its libraries without patches
-   from these inputs or independently establish licensing compliance. Current Windows
+   from these inputs or independently establish licensing compliance. See
+   cldr43-webapp-notices/ for the six web tool font notices; these do not cover other
+   web assets or imply that xdzip uses those fonts. Current Windows
    developer packages omit the software OpenGL library; historical deliveries retain
    their obligations.
 
@@ -495,7 +500,12 @@ def main():
     _, rar_mapping_record = collect_rar_mapping_materials(output)
     materials.append(rar_mapping_record)
     materials += collect_native_sources(output, ROOT/'build/native-source-cache')
-    materials += collect_icu_data_sources(output, ROOT/'build/native-source-cache')
+    icu_data = collect_icu_data_sources(output, ROOT/'build/native-source-cache')
+    materials += icu_data
+    cldr_data = [item for item in icu_data if item['module'] == 'cldr-data-source']
+    if len(cldr_data) != 1:
+        raise ValueError('Expected one CLDR data subset for its web font notices')
+    materials.append(collect_cldr_webapp_notices(output, output/cldr_data[0]['file']))
     collect_source_identity_proofs(output, all_archives)
     shutil.copy2(ROOT/'scripts/corresponding-sources.json', output/'corresponding-sources.json')
     patch_dir = output/'qt-patches'
