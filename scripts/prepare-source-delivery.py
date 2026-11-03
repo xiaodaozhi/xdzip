@@ -451,6 +451,8 @@ def rebuild_instructions():
    子集网页工具中六份字体、Bootstrap 和 Autosize 脚本、三份有 IBM 版权标记的
    源码、908 份已匹配的 Noto Emoji 图片及 963 张替代图片的来源和许可补充见
    cldr43-webapp-notices/，该目录不覆盖其余网页素材，也不属于 xdzip 界面。
+   docs/rfc 中两份 IETF 草案原文的来源及适用范围见项目
+   docs/engineering/source-delivery.md；不能将该判断推广到其他文件。
    当前 Windows 开发包不交付软件 OpenGL 库。历史包按原有材料和条款处理。
    English: The Linux ICU license, ICU4C 73.2 upstream archive, editable ICU data
    source, CLDR 43.1 subset and ICU 73.1 bootstrap source are included. The CLDR
@@ -465,7 +467,9 @@ def rebuild_instructions():
    from these inputs or independently establish licensing compliance. See
    cldr43-webapp-notices/ for six web tool fonts, Bootstrap and Autosize scripts,
    three IBM-marked source files, 908 matched Noto Emoji images and 963 replacement images; these do not
-   cover other web assets or imply that xdzip uses them. Current Windows
+   cover other web assets or imply that xdzip uses them. See
+   docs/engineering/source-delivery.md for the two original IETF draft texts in
+   docs/rfc; this assessment does not extend to other files. Current Windows
    developer packages omit the software OpenGL library; historical deliveries retain
    their obligations.
 

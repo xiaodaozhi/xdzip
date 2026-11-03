@@ -40,7 +40,9 @@
       "anchors": {
         "unicode-license.txt": "830ec6dd25a943b70a31d74caa56b08b34c35f5c9679fba664c1658712849271",
         "common/main/en.xml": "75acc21b2475d250df4ca4a7255a0b65aad5e1f57b50a6590ad350df9853e303",
-        "tools/cldr-code/pom.xml": "63d1d8ab47d66ba1b9aa72e21a26b7672e037a2b0b1a32eb0ba1365ac88e8903"
+        "tools/cldr-code/pom.xml": "63d1d8ab47d66ba1b9aa72e21a26b7672e037a2b0b1a32eb0ba1365ac88e8903",
+        "docs/rfc/draft-davis-t-langtag-ext.txt": "10b5fcc4ba1b1e819689748c9af6726eb8a095a7d8ae5371ce6ff5edba186791",
+        "docs/rfc/draft-davis-u-langtag-ext-00.txt": "2459e6107025324f13a6286a6eca2aa2b980a9f3a3235a7be60f31a9ce7f283f"
       }
     },
     {
