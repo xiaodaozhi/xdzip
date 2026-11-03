@@ -8,6 +8,7 @@ from pathlib import Path
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 
 from native_window_manager import OpenboxSession, stop_window_manager
@@ -27,16 +28,25 @@ def supervise(command, log, timeout):
         try:
             return process.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            # The process group was created for this one case. Kill it before
-            # waiting so an Xvfb or WM child cannot outlive a timed-out wrapper.
+            # The process group belongs to this case. Give Xvfb a brief chance
+            # to remove its socket and lock, then kill any remaining children.
+            # Do not reap the leader before the final group signal: its PID
+            # must remain reserved while addressing the same process group.
             try:
-                os.killpg(process.pid, signal.SIGKILL)
+                os.killpg(process.pid, signal.SIGTERM)
             except ProcessLookupError:
                 pass
             try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                print('Timed-out process group did not exit within five seconds', file=output, flush=True)
+                time.sleep(1)
+            finally:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    print('Timed-out process group did not exit within five seconds', file=output, flush=True)
             raise
 
 
@@ -144,17 +154,21 @@ def main():
             case_output = cases_dir/(name+'.json')
             case_output.unlink(missing_ok=True)
             xvfb_log = case_output.with_suffix('.xvfb.log')
-            command = ['xvfb-run', '-a', '-e', str(xvfb_log), sys.executable, str(Path(__file__).resolve()),
-                '--inside-x11', '--mode', mode, '--delay-ms', str(delay), '--injector', str(injector),
-                '--tests', str(args.tests.resolve()), '--output', str(case_output)]
             wrapper_log = case_output.with_suffix('.wrapper.log')
-            try:
-                code = supervise(command, wrapper_log, timeout=60)
-            finally:
-                for log in (wrapper_log, xvfb_log, case_output.with_suffix('.log'),
-                            case_output.with_suffix('.console.log')):
-                    if log.is_file():
-                        log.write_text(sanitized(log.read_text(encoding='utf-8', errors='replace')), encoding='utf-8')
+            with tempfile.TemporaryDirectory(prefix='xvfb-auth-', dir=cases_dir) as directory:
+                auth = Path(directory)/'Xauthority'
+                auth.touch(mode=0o600, exist_ok=False)
+                command = ['xvfb-run', '-a', '-e', str(xvfb_log), '-f', str(auth),
+                    sys.executable, str(Path(__file__).resolve()), '--inside-x11', '--mode', mode,
+                    '--delay-ms', str(delay), '--injector', str(injector),
+                    '--tests', str(args.tests.resolve()), '--output', str(case_output)]
+                try:
+                    code = supervise(command, wrapper_log, timeout=60)
+                finally:
+                    for log in (wrapper_log, xvfb_log, case_output.with_suffix('.log'),
+                                case_output.with_suffix('.console.log')):
+                        if log.is_file():
+                            log.write_text(sanitized(log.read_text(encoding='utf-8', errors='replace')), encoding='utf-8')
             if case_output.is_file():
                 reports.append(dict(name=name, **json.loads(case_output.read_text(encoding='utf-8'))))
             if code:

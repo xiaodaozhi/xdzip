@@ -33,14 +33,17 @@ class X11SupervisionTests(unittest.TestCase):
     def test_timeout_kills_owned_child_tree_and_preserves_unrelated_process(self):
         marker = self.root/'child.pid'
         log = self.root/'timeout.log'
+        child = ('import os,pathlib,signal,sys,time; signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+                 'pathlib.Path(sys.argv[1]).write_text(str(os.getpid())); time.sleep(30)')
         program = ('import pathlib,subprocess,sys,time; '
-                   'p=subprocess.Popen([sys.executable,"-c","import time; time.sleep(30)"]); '
-                   'pathlib.Path(sys.argv[1]).write_text(str(p.pid)); '
+                   'subprocess.Popen([sys.executable,"-c",sys.argv[2],sys.argv[1]]); '
+                   'p=pathlib.Path(sys.argv[1]); '
+                   'exec("while not p.exists():\\n time.sleep(.01)"); '
                    'print("child started",flush=True); time.sleep(30)')
         unrelated = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'], start_new_session=True)
         try:
             with self.assertRaises(subprocess.TimeoutExpired):
-                startup.supervise([sys.executable, '-c', program, str(marker)], log, timeout=2)
+                startup.supervise([sys.executable, '-c', program, str(marker), child], log, timeout=2)
             self.assertIn('child started', log.read_text(encoding='utf-8'))
             child = int(marker.read_text())
             stat = Path('/proc')/str(child)/'stat'
