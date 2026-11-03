@@ -1,5 +1,5 @@
 """Protect Windows MSVC/Ninja builds from lost localized include dependencies."""
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import argparse
 import ctypes
 from pathlib import Path
@@ -7,6 +7,55 @@ import re
 import shutil
 import subprocess
 import sys
+import time
+
+
+def console_processes(kernel):
+    """Snapshot attached process IDs, failing closed if the console is unstable."""
+    size = 32
+    for _ in range(8):
+        buffer = (ctypes.c_uint32 * size)()
+        count = kernel.GetConsoleProcessList(buffer, size)
+        if not count or count > 65536:
+            raise OSError('Cannot identify processes attached to the Windows console')
+        if count <= size:
+            processes = set(buffer[:count])
+            if not all(processes) or kernel.GetCurrentProcessId() not in processes:
+                raise OSError('Cannot identify processes attached to the Windows console')
+            return sorted(processes)
+        size = count
+    raise OSError('Windows console process list keeps changing')
+
+
+@contextmanager
+def console_locks(kernel, window=None):
+    """Lock attached PIDs in order under one deadline; the caller must stay attached."""
+    handles, acquired = [], []
+    deadline = time.monotonic() + 30
+    try:
+        # Each guarded process locks its own PID. While it remains attached,
+        # another guarded process sharing this console must list and lock it too.
+        names = ['Local\\xdzip-ninja-utf8-process-'+str(process)
+                 for process in console_processes(kernel)]
+        if window:
+            # Preserve coordination with older guards when a window is available.
+            names.append('Local\\xdzip-ninja-utf8-console-'+str(window))
+        for name in names:
+            mutex = kernel.CreateMutexW(None, False, name)
+            if not mutex:
+                raise OSError('Cannot coordinate Windows build consoles')
+            handles.append(mutex)
+            remaining = max(0, min(30000, int((deadline-time.monotonic())*1000)))
+            result = kernel.WaitForSingleObject(mutex, remaining)
+            if result not in (0, 0x80):
+                raise OSError('Another Windows build is using the console; retry later')
+            acquired.append(mutex)
+        yield
+    finally:
+        released = [kernel.ReleaseMutex(mutex) for mutex in reversed(acquired)]
+        closed = [kernel.CloseHandle(mutex) for mutex in reversed(handles)]
+        if not all(released) or not all(closed):
+            raise OSError('Cannot release the Windows build console lock')
 
 
 @contextmanager
@@ -21,21 +70,15 @@ def utf8_console():
     kernel.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
     kernel.ReleaseMutex.argtypes = [ctypes.c_void_p]
     kernel.CloseHandle.argtypes = [ctypes.c_void_p]
+    kernel.GetConsoleProcessList.argtypes = [ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
+    kernel.GetConsoleProcessList.restype = ctypes.c_uint32
+    kernel.GetCurrentProcessId.restype = ctypes.c_uint32
     kernel.GetConsoleWindow.restype = ctypes.c_void_p
     initial = (kernel.GetConsoleCP(), kernel.GetConsoleOutputCP())
-    console = kernel.GetConsoleWindow() if any(initial) else None
-    mutex = None
-    if any(initial):
-        mutex = kernel.CreateMutexW(None, False, 'Local\\xdzip-ninja-utf8-console-'+str(console or 'unknown'))
-        if not mutex:
-            raise OSError('Cannot coordinate Windows build consoles')
-    acquired = False
-    try:
-        if mutex:
-            result = kernel.WaitForSingleObject(mutex, 30000)
-            if result not in (0, 0x80):  # Acquired, including an abandoned mutex.
-                raise OSError('Another Windows build is using the console; retry later')
-            acquired = True
+    # A freshly allocated console has no outer lock so the isolated wrapper can
+    # run another guarded build inside it; existing consoles are coordinated.
+    lock = console_locks(kernel, kernel.GetConsoleWindow()) if any(initial) else nullcontext()
+    with lock:
         original = (kernel.GetConsoleCP(), kernel.GetConsoleOutputCP())
         allocated = False
         try:
@@ -60,11 +103,6 @@ def utf8_console():
                 restored_output = kernel.SetConsoleOutputCP(original[1])
                 if not restored_input or not restored_output:
                     raise OSError('Cannot restore the original console code pages')
-    finally:
-        released = kernel.ReleaseMutex(mutex) if acquired else True
-        closed = kernel.CloseHandle(mutex) if mutex else True
-        if not released or not closed:
-            raise OSError('Cannot release the Windows build console lock')
 
 
 _ENTRY = re.compile(r'^(.+\.(?:obj|o)): #deps (\d+),', re.IGNORECASE)
