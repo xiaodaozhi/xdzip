@@ -2,7 +2,7 @@
 
 多会话、单实例、窗口状态及全局退出以[应用会话契约](../engineering/application-sessions.md)为准。关闭非最后主窗口保留任务，最后窗口遵循托盘设置；退出确认覆盖所有会话。
 
-系统、菜单和托盘的显式退出在本应用密码或冲突提示中仍能进入全局退出确认，返回保留原任务和提示。文件选择器及其他模态控件先完成或取消，再处理退出。System, menu and tray Quit can open the global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. File selectors and other modal controls must be completed or cancelled first.
+系统、菜单和托盘的显式退出在本应用密码或冲突提示中仍能进入全局退出确认，返回保留原任务和提示。macOS 应用菜单中的退出项及 Command-Q 在这些任务提示下可用。文件选择器及其他模态控件先完成或取消，再处理退出；在阻挡期间触发的退出不得延迟到模态关闭后执行。System, menu and tray Quit can open the global confirmation over an owned task password or conflict prompt; Return preserves the task and prompt. On macOS, the application-menu Quit item and Command-Q remain available for these task prompts. File selectors and other modal controls must be completed or cancelled first; Quit triggered while blocked must not execute later after the modal closes.
 
 macOS 顶部菜单和三平台托盘使用操作系统原生菜单，保留已有主窗口标题栏。参数见 [桌面集成参数](../visual/desktop-integration.json)，[交互稿](../../design/html/desktop-integration.html)，[高保真入口](../../design/hifi/sources/desktop-integration.html)。原生字体、行高、菜单宽度与系统高亮不套用应用内 CommandMenu 的密度参数；HTML 为交互说明，不作为原生像素验收。
 

@@ -93,6 +93,10 @@ void traceNativeWindowState(QWindow *window);
 bool verifyMacDesktopMenus();
 QStringList nativeDesktopMenuEntries(const QString &title);
 void updateNativeApplicationMenu();
+bool nativeQuitMenuEnabled();
+bool activateNativeQuitMenu();
+int probeNativeFileDialogQuit(const std::function<void()> &openDialog,
+                              const std::function<bool()> &quitStayedBlocked);
 
 class ActivationEventTrace final : public QObject {
   protected:
@@ -847,6 +851,32 @@ QtObject {
             Qt::DirectConnection);
         QCOMPARE(sessions.sessionCount(), 2);
         QTRY_VERIFY(idle->runtimeAvailable() && working->runtimeAvailable());
+#ifdef Q_OS_MACOS
+        if (!quitTiming && QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+            const int result = probeNativeFileDialogQuit(
+                [&] { working->chooseArchive(workingWindow); },
+                [&] {
+                    // Cocoa dispatches Qt menu activation as a queued MetaCall.
+                    // Deliver it while the actual panel still owns the modal loop.
+                    QCoreApplication::sendPostedEvents(nullptr, QEvent::MetaCall);
+                    QCoreApplication::sendPostedEvents(qApp, QEvent::Quit);
+                    QEvent event(QEvent::Quit);
+                    QCoreApplication::sendEvent(qApp, &event);
+                    const bool modal =
+                        QApplication::activeModalWidget() || QGuiApplication::modalWindow();
+                    return modal && !confirmation->isVisible() && !sessions.isClosing() &&
+                           joined.isEmpty() && updateReady.isEmpty();
+                });
+            QCOMPARE(result, 0);
+            // Cocoa menu activation is queued. Confirm it cannot close the
+            // session after the native panel has returned.
+            QTest::qWait(250);
+            QVERIFY(!sessions.isClosing());
+            QVERIFY(!sessions.quitDecisionPending());
+            QVERIFY(joined.isEmpty() && updateReady.isEmpty());
+            QVERIFY(working->runtimeAvailable());
+        }
+#endif
         working->openPath(QStringLiteral(XDZIP_FIXTURES "/../extract/password-retry.zip"));
         QTRY_VERIFY(working->ready() && !working->busy());
         working->startArchiveTest();
@@ -927,6 +957,10 @@ QtObject {
             selector.setWindowModality(Qt::ApplicationModal);
             selector.show();
             QTRY_COMPARE(QApplication::activeModalWidget(), &selector);
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa"))
+                QVERIFY(!nativeQuitMenuEnabled());
+#endif
             QVERIFY(requestQuit());
             QVERIFY(!confirmation->isVisible() && !sessions.isClosing());
             QCOMPARE(working->passwordPrompt(), prompt);
@@ -934,7 +968,13 @@ QtObject {
             QVERIFY(joined.isEmpty() && updateReady.isEmpty());
             selector.close();
             QTRY_COMPARE(QGuiApplication::modalWindow(), password);
-            QVERIFY(requestQuit());
+#ifdef Q_OS_MACOS
+            if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+                QTRY_VERIFY(nativeQuitMenuEnabled());
+                QVERIFY(activateNativeQuitMenu());
+            } else
+#endif
+                QVERIFY(requestQuit());
         }
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
@@ -962,7 +1002,14 @@ QtObject {
         auto *activePage = sessions.activeWindow()->property("activePage").value<QObject *>();
         confirmation = activePage ? activePage->findChild<QQuickWindow *>("quitWindow") : nullptr;
         QVERIFY(confirmation);
-        QVERIFY(requestQuit());
+#ifdef Q_OS_MACOS
+        if ((!quitTiming || quitTiming == 4) &&
+            QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+            QTRY_VERIFY(nativeQuitMenuEnabled());
+            QVERIFY(activateNativeQuitMenu());
+        } else
+#endif
+            QVERIFY(requestQuit());
         QTRY_VERIFY(confirmation->isVisible());
         QVERIFY(QTest::qWaitForWindowExposed(confirmation));
         QTRY_COMPARE(QGuiApplication::modalWindow(), confirmation);
@@ -1011,6 +1058,35 @@ QtObject {
         QVERIFY(
             preferences->saveDetails("system", 1, "zh-CN", "standard", true, false, true, "tabs"));
     }
+#ifdef Q_OS_MACOS
+    void nativeQuitMenuWithoutTask() {
+        if (QGuiApplication::platformName() != QStringLiteral("cocoa"))
+            QSKIP("Requires the native Cocoa application menu");
+        const bool previousQuit = QApplication::quitOnLastWindowClosed();
+        QApplication::setQuitOnLastWindowClosed(false);
+        const auto restoreQuit =
+            qScopeGuard([&] { QApplication::setQuitOnLastWindowClosed(previousQuit); });
+        QQmlApplicationEngine engine;
+        engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
+        QVERIFY(!engine.rootObjects().isEmpty());
+        auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+        auto *controller = window ? window->findChild<BrowserController *>() : nullptr;
+        auto *preferences =
+            engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+        QVERIFY(window && controller && preferences);
+        ApplicationSessions sessions(&engine, preferences);
+        sessions.adopt(window);
+        DesktopIntegration desktop(window, controller, preferences, false);
+        sessions.setDesktop(&desktop);
+        QSignalSpy joined(&sessions, &ApplicationSessions::readyToQuit);
+        QTRY_VERIFY(controller->runtimeAvailable());
+        QTRY_VERIFY(nativeQuitMenuEnabled());
+        QVERIFY(activateNativeQuitMenu());
+        QTRY_COMPARE(joined.count(), 1);
+        QVERIFY(controller->shutdownComplete());
+        QVERIFY(!window->isVisible());
+    }
+#endif
     void globalWaitForExitDoesNotCloseACompletedPageEarly() {
         QQmlApplicationEngine engine;
         engine.load(QUrl("qrc:/xdzip/ui/Browser.qml"));
@@ -10726,6 +10802,18 @@ QtObject {
         auto *window = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
         auto *controller = window->findChild<BrowserController *>();
         QVERIFY(controller);
+#ifdef Q_OS_MACOS
+        std::unique_ptr<ApplicationSessions> sessions;
+        std::unique_ptr<DesktopIntegration> desktop;
+        if (QGuiApplication::platformName() == QStringLiteral("cocoa")) {
+            auto *preferences =
+                engine.singletonInstance<UiPreferences *>("Xdzip.Settings", "AppSettings");
+            sessions = std::make_unique<ApplicationSessions>(&engine, preferences);
+            sessions->adopt(window);
+            desktop = std::make_unique<DesktopIntegration>(window, controller, preferences, false);
+            sessions->setDesktop(desktop.get());
+        }
+#endif
         const auto row = [&](const QString &name) {
             for (int i = 0; i < controller->m_model.rowCount(); ++i)
                 if (controller->m_model.rowAt(i)->cells[0] == name)
@@ -10758,6 +10846,27 @@ QtObject {
         QQuickWindow *dialog = nullptr;
         QTRY_VERIFY((dialog = window->findChild<QQuickWindow *>("conflictWindow")) &&
                     dialog->isVisible());
+#ifdef Q_OS_MACOS
+        if (desktop) {
+            const auto beforeQuit = controller->tasks().first().toMap();
+            QCOMPARE(beforeQuit.value("status").toString(), QStringLiteral("waiting"));
+            QVERIFY(!beforeQuit.value("promptId").toString().isEmpty());
+            QCOMPARE(dialog->modality(), Qt::NonModal);
+            QTRY_VERIFY(nativeQuitMenuEnabled());
+            QVERIFY(activateNativeQuitMenu());
+            auto *confirmation = window->findChild<QQuickWindow *>("quitWindow");
+            QVERIFY(confirmation);
+            QTRY_VERIFY(confirmation->isVisible());
+            auto *returnButton = findVisual(confirmation->contentItem(), "quitReturn");
+            QVERIFY(returnButton && returnButton->isEnabled());
+            QVERIFY(QMetaObject::invokeMethod(returnButton, "click"));
+            QTRY_VERIFY(!confirmation->isVisible() && dialog->isVisible());
+            const auto afterReturn = controller->tasks().first().toMap();
+            QCOMPARE(afterReturn.value("id"), beforeQuit.value("id"));
+            QCOMPARE(afterReturn.value("promptId"), beforeQuit.value("promptId"));
+            QCOMPARE(afterReturn.value("status"), beforeQuit.value("status"));
+        }
+#endif
         auto *all = findVisual(dialog->contentItem(), "conflictApplyAll");
         QVERIFY(all && all->isVisible());
         QVERIFY(controller->browsingBusy());

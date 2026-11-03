@@ -39,6 +39,7 @@ class DesktopIntegration final : public QObject {
     Q_INVOKABLE void execute(const QString &command);
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void requestQuit();
+    bool nativeQuitMenuAllowed() const;
     QAction *action(const QString &command) const;
     QMenu *trayMenu() const {
         return m_trayMenu.get();
@@ -54,6 +55,7 @@ class DesktopIntegration final : public QObject {
 
   private:
     bool blocked() const;
+    bool taskPromptMayQuit() const;
     bool textEditor() const;
     bool enabled(const QString &command) const;
     void retranslateMenus();
@@ -84,4 +86,7 @@ class DesktopIntegration final : public QObject {
     QString m_menuLanguage;
     QString m_session;
     QPointer<ApplicationSessions> m_sessions;
+#ifdef Q_OS_MACOS
+    void *m_macQuitBridge = nullptr;
+#endif
 };

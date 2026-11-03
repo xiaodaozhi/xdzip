@@ -27,6 +27,9 @@ bool macNativeEditorActive();
 bool macNativeEditorEnabled(const QString &command);
 void macNativeEditorExecute(const QString &command);
 void syncMacApplicationMenuLanguage();
+void *createMacQuitMenuBridge(DesktopIntegration *owner);
+void syncMacQuitMenuBridge(void *bridge);
+void destroyMacQuitMenuBridge(void *bridge);
 #endif
 
 namespace {
@@ -272,8 +275,15 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
             });
     qApp->installEventFilter(this);
 #ifdef Q_OS_MACOS
-    if (nativeMenuAvailable())
-        QTimer::singleShot(0, this, [] { syncMacApplicationMenuLanguage(); });
+    if (nativeMenuAvailable()) {
+        m_macQuitBridge = createMacQuitMenuBridge(this);
+        connect(qGuiApp, &QGuiApplication::focusWindowChanged, this, [this](QWindow *) {
+            // Qt updates its native menu as the modal gains focus. Reapply the
+            // native Quit policy after that update, not while it is running.
+            QTimer::singleShot(0, this, &DesktopIntegration::syncActions);
+        });
+        QTimer::singleShot(0, this, &DesktopIntegration::syncActions);
+    }
 #endif
     auto *timer = new QTimer(this);
     timer->setInterval(1500);
@@ -284,6 +294,9 @@ DesktopIntegration::DesktopIntegration(QQuickWindow *window, BrowserController *
     refresh();
 }
 DesktopIntegration::~DesktopIntegration() {
+#ifdef Q_OS_MACOS
+    destroyMacQuitMenuBridge(m_macQuitBridge);
+#endif
     qApp->removeEventFilter(this);
     if (m_window)
         m_window->setProperty("desktopShell", QVariant{});
@@ -447,22 +460,25 @@ void DesktopIntegration::execute(const QString &command) {
         QMetaObject::invokeMethod(m_window, "runDesktopCommand", Q_ARG(QVariant, command));
     syncActions();
 }
-void DesktopIntegration::requestQuit() {
-    if (!m_window || !m_controller)
-        return;
+bool DesktopIntegration::taskPromptMayQuit() const {
     auto *modal = qobject_cast<QQuickWindow *>(QGuiApplication::modalWindow());
-    bool taskPrompt = false;
     if (m_sessions && !QApplication::activeModalWidget() && modal &&
         (modal->objectName() == QStringLiteral("passwordWindow") ||
          modal->objectName() == QStringLiteral("conflictWindow")))
         for (auto *owner : m_sessions->windows())
-            if (owner->findChildren<QQuickWindow *>().contains(modal)) {
-                taskPrompt = true;
-                break;
-            }
+            if (owner->findChildren<QQuickWindow *>().contains(modal))
+                return true;
+    return false;
+}
+bool DesktopIntegration::nativeQuitMenuAllowed() const {
+    return m_window && m_controller && (!blocked() || taskPromptMayQuit());
+}
+void DesktopIntegration::requestQuit() {
+    if (!m_window || !m_controller)
+        return;
     // A task prompt may be superseded by the global quit decision. Other
     // modals retain their normal protection, including native file selectors.
-    if (blocked() && !taskPrompt) {
+    if (blocked() && !taskPromptMayQuit()) {
         restore();
         return;
     }
@@ -591,8 +607,10 @@ void DesktopIntegration::syncActions() {
     }
     m_tray.setToolTip(text("trayTip").arg(count));
 #ifdef Q_OS_MACOS
-    if (nativeMenuAvailable())
+    if (nativeMenuAvailable()) {
         syncMacApplicationMenuLanguage();
+        syncMacQuitMenuBridge(m_macQuitBridge);
+    }
 #endif
 }
 void DesktopIntegration::rebuildTasks(QMenu *menu) {
