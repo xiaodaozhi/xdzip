@@ -106,16 +106,26 @@ class X11SupervisionTests(unittest.TestCase):
                 content = path.read_text(encoding='utf-8', errors='replace') if path.is_file() else '<missing>'
                 logs.append(name+': '+startup.sanitized(content[-4000:]))
             return '\n'.join(logs)
+        real_popen = subprocess.Popen
+        def start_after_injection(*args, **kwargs):
+            # The five-second timeout tests cleanup after the lost signal,
+            # not the time a busy host needs to start Xvfb and inject it.
+            process = real_popen(*args, **kwargs)
+            deadline = time.monotonic()+30
+            while not trace.exists() and process.poll() is None and time.monotonic() < deadline:
+                time.sleep(.02)
+            return process
         with mock.patch.dict(os.environ, {'LD_PRELOAD': str(injector),
                                          'PATH': str(bin_dir)+os.pathsep+os.environ.get('PATH', ''),
                                          'XDZIP_TEST_XVFB_STAGES': str(stages),
                                          'XDZIP_TEST_XVFB_READY_TRACE': str(trace)}):
-            try:
-                code = startup.supervise(command, self.root/'wrapper.log', timeout=5)
-            except subprocess.TimeoutExpired:
-                pass
-            else:
-                self.fail('Xvfb negative control exited '+str(code)+' instead of timing out\n'+diagnostics())
+            with mock.patch.object(startup.subprocess, 'Popen', side_effect=start_after_injection):
+                try:
+                    code = startup.supervise(command, self.root/'wrapper.log', timeout=5)
+                except subprocess.TimeoutExpired:
+                    pass
+                else:
+                    self.fail('Xvfb negative control exited '+str(code)+' instead of timing out\n'+diagnostics())
         self.assertTrue(trace.is_file(), 'Xvfb did not record the injected signal\n'+diagnostics())
         self.assertEqual(trace.read_text(encoding='ascii'), 'suppressed\n')
         self.assertIn('Xvfb exec requested\n', stages.read_text(encoding='utf-8'))
