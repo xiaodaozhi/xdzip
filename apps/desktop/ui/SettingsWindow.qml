@@ -14,6 +14,23 @@ OperationWindow {
     property var updater: typeof UpdateService === "undefined" ? null : UpdateService
     readonly property var associations: typeof FileAssociationService === "undefined" ? null : FileAssociationService
     readonly property string updateState: updater ? updater.state : "unavailable"
+    readonly property var sidebarLabels: [qsTrId("settings.tabAppearance"), qsTrId("settings.tabGeneral"),
+                                           qsTrId("settings.tabPrivacy"), qsTrId("settings.tabAssociations"),
+                                           qsTrId("settings.tabNetwork"), qsTrId("settings.tabAbout")]
+    readonly property real sidebarWordWidth: {
+        if (sidebarWordMetrics.font.pixelSize <= 0) return 0;
+        let widest = 0;
+        for (const label of sidebarLabels)
+            for (const word of label.split(/\s+/))
+                widest = Math.max(widest, sidebarWordMetrics.advanceWidth(word));
+        return Math.ceil(widest);
+    }
+
+    FontMetrics {
+        id: sidebarWordMetrics
+        font.pixelSize: Math.round(Theme.settingsBodySize * Theme.fontScale)
+        font.bold: true
+    }
 
     function configure() { configureTab(0); }
     function configureTab(tabIndex) {
@@ -149,7 +166,9 @@ OperationWindow {
             spacing: 0
             Rectangle {
                 objectName: "settingsSidebar"
-                Layout.preferredWidth: Theme.settingsSidebarWidth
+                Layout.preferredWidth: Math.max(Theme.settingsSidebarWidth,
+                    Theme.settingsSidebarIconInset + Theme.settingsSidebarIconSize +
+                    Theme.settingsSidebarIconGap + Theme.settingsSidebarLabelRightInset + root.sidebarWordWidth)
                 Layout.fillHeight: true
                 color: Theme.sidebar
                 Rectangle { anchors.right: parent.right; width: 1; height: parent.height; color: Theme.border }
@@ -161,9 +180,7 @@ OperationWindow {
                     Column {
                         width: parent.width
                         Repeater {
-                            model: [qsTrId("settings.tabAppearance"), qsTrId("settings.tabGeneral"),
-                                    qsTrId("settings.tabPrivacy"), qsTrId("settings.tabAssociations"),
-                                    qsTrId("settings.tabNetwork"), qsTrId("settings.tabAbout")]
+                            model: root.sidebarLabels
                             delegate: Button {
                                 id: tab
                                 required property int index
@@ -172,6 +189,7 @@ OperationWindow {
                                 width: parent ? parent.width : 0
                                 implicitHeight: Math.max(Theme.settingsSidebarRowHeight, tabLabel.implicitHeight + 12)
                                 leftPadding: Theme.settingsSidebarIconInset
+                                rightPadding: 0
                                 hoverEnabled: true
                                 checkable: true
                                 checked: root.currentTab === index
@@ -197,7 +215,7 @@ OperationWindow {
                                     Text {
                                         id: tabLabel
                                         Layout.fillWidth: true
-                                        Layout.rightMargin: 8
+                                        Layout.rightMargin: Theme.settingsSidebarLabelRightInset
                                         text: tab.modelData
                                         textFormat: Text.PlainText
                                         font.pixelSize: Math.round(Theme.settingsBodySize * Theme.fontScale)
@@ -274,6 +292,7 @@ OperationWindow {
                         required property int index
                         objectName: "settingsTheme-" + index
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
                         implicitHeight: Theme.settingsThemeArtworkHeight + choice.implicitHeight + Theme.settingsThemeCardVerticalInset
                         checked: AppSettings.savedTheme === modelData
                         Accessible.name: [qsTrId("settings.system"), qsTrId("settings.light"), qsTrId("settings.dark")][index]

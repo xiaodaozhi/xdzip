@@ -88,6 +88,7 @@
       "sidebarIconSize": 18,
       "sidebarIconInset": 15,
       "sidebarIconGap": 10,
+      "sidebarLabelRightInset": 14,
       "sidebarSelectionWidth": 3,
       "headerDividerHeight": 1,
       "pageInset": 20,

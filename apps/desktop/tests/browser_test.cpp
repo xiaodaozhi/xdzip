@@ -6543,7 +6543,9 @@ QtObject {
         auto *scroll = findVisual(settings->contentItem(), "settingsScroll");
         QVERIFY(sidebar && scroll);
         QCOMPARE(settings->width(), 612);
-        QCOMPARE(sidebar->width(), 144.);
+        QVERIFY(sidebar->width() >= 144.);
+        if (scale == 1.)
+            QCOMPARE(sidebar->width(), 144.);
         QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF(sidebar->width(), 0)).x() - scroll->mapToScene(QPointF()).x()) < .5);
         QTRY_VERIFY(qAbs(sidebar->mapToScene(QPointF()).y() - scroll->mapToScene(QPointF()).y()) < .5);
         const QStringList names{"appearance", "general", "privacy", "associations", "network", "about"};
@@ -6552,11 +6554,45 @@ QtObject {
                                      qtTrId("settings.tabNetwork"), qtTrId("settings.tabAbout")};
         for (int tab = 0; tab < names.size(); ++tab) {
             settings->setProperty("currentTab", tab);
+            auto *tabButton =
+                findVisual(settings->contentItem(), "settingsTab-" + QString::number(tab));
+            QVERIFY(tabButton);
+            auto *tabContent = tabButton->property("contentItem").value<QQuickItem *>();
+            QVERIFY(tabContent);
+            QQuickItem *tabText = nullptr;
+            for (auto *child : tabContent->childItems()) {
+                if (child->property("text").toString() == pageTitles[tab]) {
+                    tabText = child;
+                    break;
+                }
+            }
+            QVERIFY(tabText);
+            QTRY_COMPARE(tabText->property("font").value<QFont>().pixelSize(), qRound(13 * scale));
+            const QFontMetricsF tabMetrics(tabText->property("font").value<QFont>());
+            for (const auto &word :
+                 pageTitles[tab].split(QRegularExpression("\\s+"), Qt::SkipEmptyParts))
+                QTRY_VERIFY2(
+                    tabMetrics.horizontalAdvance(word) <= tabText->width() + 1,
+                    qPrintable(pageTitles[tab] +
+                               QStringLiteral(" breaks a word: width %1, needs %2, sidebar %3")
+                                   .arg(tabText->width())
+                                   .arg(tabMetrics.horizontalAdvance(word))
+                                   .arg(sidebar->width())));
             QQuickItem *page = nullptr;
             QTRY_VERIFY((page = findVisual(settings->contentItem(), "settingsPage-" + names[tab])));
             QTRY_VERIFY(page->width() > 0);
             QTest::qWait(30);
             QVERIFY2(page->width() <= scroll->width() + 1, qPrintable(names[tab]));
+            if (tab == 0) {
+                auto *firstCard = findVisual(page, "settingsTheme-0");
+                QVERIFY(firstCard);
+                for (int index = 1; index < 3; ++index) {
+                    auto *card = findVisual(page, "settingsTheme-" + QString::number(index));
+                    QVERIFY(card);
+                    QTRY_VERIFY(qAbs(card->height() - firstCard->height()) < 1);
+                    QTRY_VERIFY(qAbs(card->y() - firstCard->y()) < 1);
+                }
+            }
             QQuickItem *firstVisible = nullptr;
             for (auto *child : page->childItems()) {
                 if (child->isVisible()) { firstVisible = child; break; }
@@ -6671,6 +6707,17 @@ QtObject {
         auto *flick = scroll->property("contentItem").value<QQuickItem *>();
         QVERIFY(flick);
         QTRY_VERIFY(flick->property("contentHeight").toReal() > flick->height());
+        auto *initialFlickContent = flick->property("contentItem").value<QQuickItem *>();
+        QVERIFY(initialFlickContent);
+        const qreal checkBottom =
+            check->mapToItem(initialFlickContent, QPointF(0, check->height())).y();
+        const qreal maxScroll =
+            std::max(qreal(0), flick->property("contentHeight").toReal() - flick->height());
+        const qreal visibleScroll =
+            std::clamp(checkBottom - flick->height() + 2., qreal(0), maxScroll);
+        QVERIFY(flick->setProperty("contentY", visibleScroll));
+        QTRY_VERIFY(check->mapToItem(flick, QPointF(0, check->height())).y() <= flick->height());
+        QVERIFY(check->mapToItem(flick, QPointF()).y() >= 0);
         QSignalSpy layoutChanges(flick, SIGNAL(contentHeightChanged()));
         QVERIFY(layoutChanges.isValid());
         QElapsedTimer layoutTimer;
