@@ -13,6 +13,7 @@ BOOTSTRAP_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/bootstrap.min.js'
 AUTOSIZE_SCRIPT = 'tools/cldr-apps/src/main/webapp/js/autosize.min.js'
 EMOJI_DIRECTORY = 'tools/cldr-apps/src/main/webapp/images/emoji'
 NOTO_EMOJI_COMMIT = '934a5706f1f3dd2605c4d9b5d9162fd7f89d8702'
+NOTO_EMOJI_2021_COMMIT = 'de7f127a26f7044e5647490af9e3b187d9532703'
 FONT_FILES = frozenset(('LICENSE-Noto.txt', 'NotoSerifNyiakengPuachueHmong-Bold.otf',
                         'NotoSerifNyiakengPuachueHmong-Regular.ttf',
                         *(f'glyphicons-halflings-regular.{extension}'
@@ -35,19 +36,25 @@ def collect(output, subset):
     if not isinstance(emoji, dict):
         raise ValueError('Unexpected CLDR web notice configuration')
     emoji_files = emoji.get('files', {})
+    emoji_2021_files = emoji.get('files_2021', {})
+    if not isinstance(emoji_files, dict) or not isinstance(emoji_2021_files, dict):
+        raise ValueError('Unexpected CLDR web notice configuration')
     if (config.get('schema_version') != 1 or config.get('kind') != DIRECTORY or
             config.get('archive_root') != ARCHIVE_ROOT or config.get('fonts_directory') != FONTS_DIRECTORY or
             config.get('bootstrap_script', {}).get('file') != BOOTSTRAP_SCRIPT or
             config.get('autosize_script', {}).get('file') != AUTOSIZE_SCRIPT or
             emoji.get('directory') != EMOJI_DIRECTORY or emoji.get('upstream_commit') != NOTO_EMOJI_COMMIT or
-            not isinstance(emoji_files, dict) or not emoji_files or
-            any(not re.fullmatch(r'emoji_[0-9a-f_]+\.png', name) for name in emoji_files) or
+            emoji.get('upstream_commit_2021') != NOTO_EMOJI_2021_COMMIT or
+            not emoji_files or not emoji_2021_files or set(emoji_files).intersection(emoji_2021_files) or
+            any(not re.fullmatch(r'emoji_[0-9a-f_]+\.png', name) for name in (*emoji_files, *emoji_2021_files)) or
             set(config.get('fonts', {})) != FONT_FILES or set(config.get('notices', {})) != NOTICE_FILES or
             any(not re.fullmatch(r'[0-9a-f]{64}', value)
-                for value in (*config['fonts'].values(), *config['notices'].values(), *emoji_files.values(),
+                for value in (*config['fonts'].values(), *config['notices'].values(),
+                              *emoji_files.values(), *emoji_2021_files.values(),
                               config['bootstrap_script'].get('sha256', ''),
                               config['autosize_script'].get('sha256', '')))):
         raise ValueError('Unexpected CLDR web font notice configuration')
+    emoji_files = {**emoji_files, **emoji_2021_files}
     for name, expected in config['notices'].items():
         if hashlib.sha256(inputs[name]).hexdigest() != expected:
             raise ValueError('CLDR web font notice checksum mismatch')
