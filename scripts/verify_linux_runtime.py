@@ -6,12 +6,31 @@ from pathlib import Path
 import re
 import subprocess
 import time
+from uuid import uuid4
 from deployment_audit import digest
 from update_https_retry import https_retry_plan
 
 ROOT=Path(__file__).resolve().parents[1]
 HTTPS_ATTEMPTS=3
 HTTPS_WAIT_LIMIT=240
+
+
+def archive_previous_evidence(output, *, https_only=False):
+    """Keep earlier results without leaving them at the current run's paths."""
+    suffixes=['.https.json','.https.runtime.json','.https.log','.https-waits.json']
+    for attempt in range(1,HTTPS_ATTEMPTS+1):
+        suffixes.extend(f'.https.attempt-{attempt}.{end}' for end in ('log','json','runtime.json'))
+    paths=[output.with_suffix(suffix) for suffix in suffixes]
+    if not https_only:
+        paths=[output]+paths+[output.with_suffix('.build.log'),output.with_suffix('.runtime.log')]
+    existing=[path for path in paths if path.exists() or path.is_symlink()]
+    if not existing:return
+    if any(not path.is_symlink() and not path.is_file() for path in existing):
+        raise ValueError('A prior evidence path is not a file')
+    history=output.parent/(output.stem+'.history')/uuid4().hex
+    history.mkdir(parents=True)
+    for path in existing:
+        path.replace(history/path.name)
 
 
 def check_events(output):
@@ -60,6 +79,7 @@ def check_https(output):
 
 
 def run_https_probe(command, output, *, run=None, sleep=None, monotonic=None, wall_clock=None):
+    archive_previous_evidence(output,https_only=True)
     run=run or subprocess.run;sleep=sleep or time.sleep
     monotonic=monotonic or time.monotonic;wall_clock=wall_clock or time.time
     waited=0.0;waits=[]
@@ -124,6 +144,8 @@ def main():
     parser.add_argument('--root',type=Path,required=True);parser.add_argument('--fixture',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args();payload=args.root.resolve()
+    args.output.parent.mkdir(parents=True,exist_ok=True)
+    archive_previous_evidence(args.output)
     manifest=json.loads((payload/'share/deployment.json').read_text())
     packages=manifest['system_packages']
     if not packages or any(not re.fullmatch(r'[a-z0-9][a-z0-9+.-]*(?::amd64)?',p) for p in packages):
@@ -132,7 +154,6 @@ def main():
     build=subprocess.run(['docker','build','--build-arg','XDZIP_RUNTIME_PACKAGES='+' '.join(packages),
         '-f',str(ROOT/'apps/desktop/packaging/linux/ci-runtime.Dockerfile'),'-t',image,
         str(ROOT/'apps/desktop/packaging/linux')],capture_output=True,text=True)
-    args.output.parent.mkdir(parents=True,exist_ok=True)
     args.output.with_suffix('.build.log').write_text(build.stdout+build.stderr)
     if build.returncode:raise SystemExit('Runtime-only container image build failed; see build log')
     # A new mount location with a space verifies relative paths, not the CI build layout.
